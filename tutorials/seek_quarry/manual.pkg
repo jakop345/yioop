@@ -1,0 +1,29 @@
+      <refentry id="{@id}">
+
+       <refnamediv>
+
+        <refname>Manual</refname>
+
+        <refpurpose>Understanding The SeekQuarry Search Engine</refpurpose>
+
+       </refnamediv>
+
+       <refsynopsisdiv>
+
+        <author>
+
+         Chris Pollett
+
+         <authorblurb>
+
+          {@link mailto:chris@pollett.org}
+
+         </authorblurb>
+        </author>
+       </refsynopsisdiv>
+
+    <refsect1 id="{@id intro}">
+        <para>Hello World</para>
+    </refsect1>
+</refentry>
+

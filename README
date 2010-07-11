@@ -1,0 +1,68 @@
+SeekQuarry/Yioop --
+Open Source Pure PHP Search Engine, Crawler, and Indexer
+
+Copyright (C) 2009, 2010  Chris Pollett chris@pollett.org
+
+Version: 2010-06-03
+-------------------
+http://www.seekquarry.com/
+
+LICENSE:
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
+Summary
+-------
+The SeekQuarry search engine consists of three main
+scripts: 
+
+fetcher.php -- used to download batches of urls provided
+    the queue_server. 
+queue_server.php - maintains a queue of urls that are
+    going to be scheduled to be seen. It also keeps
+    track of what has been seen and robots.txt info.
+    It's last responsibility is to create the index_archive
+    that is used by the search front end.
+
+index.php -- a search engine web page. It is also used
+    to handle message passing between the fetchers 
+    (multiple machines can act as fetchers) and the
+    queue_server.
+
+Download
+--------
+You can download the SeekQuarry search engine from
+http://www.seekquarry.com/
+
+Requirements
+------------
+The SeekQuarry search engine requires Apache, 
+PHP, and Mysql to run. It was developed under 
+Apache 2.2, PHP 5.3, and Mysql 5.1 using a 
+default installation.
+
+Credits
+------
+Source code due to Chris Pollett. Several people helped
+with localization: Mary Pollett, Youn Kim, Sugi Widjaja, 
+Chao-Hsin Shih, Sujata Dongre, Jonathan Ben-David 
+
+Installation
+-------------
+Please see the INSTALL file
+
+Documentation and Support
+-------------------------
+Please check out seekquarry.com

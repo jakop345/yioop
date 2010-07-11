@@ -1,0 +1,697 @@
+/** 
+ *  SeekQuarry/Yioop --
+ *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ *
+ *  Copyright (C) 2009, 2010  Chris Pollett chris@pollett.org
+ *
+ *  LICENSE:
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *  END LICENSE
+ *
+ * @author Chris Pollett chris@pollett.org
+ * @package seek_quarry
+ * @subpackage stylesheet
+ * @license http://www.gnu.org/licenses/ GPL3
+ * @link http://www.seekquarry.com/
+ * @copyright 2009, 2010
+ * @filesource
+ */
+ 
+ /*
+    search.css
+    
+    Main stylesheet for Yioop search engine
+    
+    Contributors: Chris Pollett
+ */ 
+
+.html-tb
+{
+    block-progression: tb;
+}
+
+.html-rl
+{
+    block-progression: rl;
+    -webkit-transform: rotate(90deg) translate(2in) ; 
+    -moz-transform: rotate(90deg) translate(2in);
+}
+
+.html-lr
+{
+    block-progression: lr;
+    -webkit-transform: rotate(90deg); 
+    -moz-transform: rotate(90deg);
+}
+
+.html-rtl
+{
+    direction: rtl;
+    text-align:right;
+}
+
+.html-ltr
+{
+    direction: ltr;
+    text-align:left;
+}
+
+body
+{
+        font-family:Arial, Helvetica, sans-serif;
+}
+
+body.html-ltr
+{
+    margin-left:.5in;
+
+}
+
+ body.html-rtl
+{
+    margin-right:.5in;
+}
+
+body.html-rl-tb
+{
+    writing-mode: rl-tb;
+}
+
+body.html-lr-tb
+{
+    writing-mode: lr-tb;
+}
+
+body.html-tb-rl
+{
+    writing-mode: tb-rl;
+
+}
+
+body.html-tb-lr
+{
+    writing-mode: tb-lr;
+}
+
+#message
+{
+    text-align: center;
+    position: absolute;
+    top: .1in;
+    width: 100%;
+}
+
+.html-ltr .userNav
+{
+    text-align: right;
+    margin:0;
+    padding:0;
+    min-width: 10in;	
+}
+
+.html-rtl .userNav
+{
+    text-align: left;
+    margin:0;
+    padding:0;
+    min-width: 10in;	
+}
+
+.html-ltr .userNav ul li
+{
+    display: inline;
+    list-style-type: none;
+    padding-left: 3px; 
+    border-left: 1px solid #000;
+}
+
+.html-rtl .userNav ul li
+{
+    display:inline;
+    list-style-type: none;
+    padding-right: 3px;  
+    border-right: 1px solid #000;
+}
+
+.html-ltr .landing
+{
+    position:absolute;
+    top:1.5in;
+    left:2.5in;
+    min-width:6in;
+}
+
+.html-rtl .landing
+{
+    position:absolute;
+    top:1.5in;
+    right:2.5in;
+    min-width:6in;
+}
+
+.landing .logo
+{
+    text-align:center;  
+}
+
+.logo
+{
+    margin:0;
+    min-width: 8in;
+}
+.logo img
+{
+    border: 0;
+}
+
+.landing .logo img
+{
+    border: 0;
+}
+
+.logo span
+{
+    position:relative;
+    top: -.6in;
+}
+
+.html-ltr .login, .html-ltr .settings
+{
+    font-size: 16pt;
+    position:relative;
+    left:2.25in;
+}
+
+.html-rtl .login, .html-rtl .settings
+{
+    font-size: 16pt;
+    position:relative;
+    right:2.25in;
+}
+
+.html-ltr .table-label
+{
+    text-align: right;
+}
+.html-ltr .table-input
+{
+    text-align: left;
+}
+
+.html-rtl .table-label
+{
+    text-align: left;
+}
+.html-rtl .table-input
+{
+    text-align: right;
+}
+
+.login input
+{
+    margin: 5px;
+    font-size:16pt;
+}
+
+
+
+.settings button, .settings select, .login button
+{
+    font-size: 16pt;
+}
+
+
+.html-ltr .img .logo
+{
+    float:left;
+}
+
+.html-rtl .img .logo
+{
+    float:left;
+}
+
+.searchbox
+{
+    width:8in;
+    padding: .1in;
+    background-color: #ddddff;
+    border-width: 2px;
+    border-style: dashed;
+}
+
+.searchbox p
+{
+    font-size:16pt;
+}
+
+.searchbox input
+{
+    width: 6.5in;
+    font-size:16pt;
+    margin-right:0;
+    margin-left:0;
+    border: 0;
+    padding-top: 0;
+    padding-bottom:3pt;
+    padding-right:0;
+    padding-left:0;
+}
+
+.html-ltr .buttonbox
+{
+    position:relative;
+    left:-.05in;
+    top:.015in;
+    margin-left: 0pt;
+    text-align: center;
+    text-decoration: none;
+    font-size:16pt;
+    color: black;
+}
+
+.html-rtl .buttonbox
+{
+    position:relative;
+    right:-.05in;
+    top:.015in;
+    margin-right: 0pt;
+    text-align: center;
+    text-decoration: none;
+    font-size:16pt;
+    color: black;
+}
+
+.pagination
+{
+    margin-top: 10px;
+    margin-bottom: 10px
+}
+
+.html-ltr .pagination ul, .pagination ul li
+{
+    font-size: 20pt;
+
+    display:inline;
+    padding-left: 0px;
+    padding-right: 10px;
+}
+
+.html-rtl .pagination ul, .pagination ul li
+{
+    font-size: 20pt;
+
+    display:inline;
+    padding-left: 10px;
+    padding-right: 0px;
+}
+
+.html-ltr .pagination ul li span.end
+{
+    display:block;
+    float:left;
+    margin-right: 10px;  
+}
+
+.html-rtl .pagination ul li span.end
+{
+    display: block;
+    float: right;
+    margin-left: 10px;  
+}
+
+.html-ltr .pagination ul li a.item
+{
+    display:block;
+    float:left;
+    width: 30px;
+    height: 30px;
+    text-align:center;
+    border-color: blue; 
+    border-style: solid;
+    border-width: 3px;
+    margin-right: 10px;
+    text-decoration:none;
+}
+
+.html-rtl .pagination ul li a.item
+{
+    display:block;
+    float:right;
+    width: 30px;
+    height: 30px;
+    text-align:center;
+    border-color: blue; 
+    border-style: solid;
+    border-width: 3px;
+    margin-left: 10px;
+    text-decoration:none;
+}
+
+.pagination ul li a.item:hover
+{
+    background-color:#88F;
+    color: white;
+}
+
+.html-ltr .pagination ul li span.item
+{
+    position: relative;
+    top: -3px;
+    display: block;
+    float:left;
+    width: 30px;
+    height: 30px;
+    text-align:center;
+    border-color: black; 
+    border-style: solid;
+    border-width: 5px;
+    margin-right: 10px;
+}
+
+.html-rtl .pagination ul li span.item
+{
+    position: relative;
+    top: -3px;
+    display: block;
+    float:right;
+    width: 30px;
+    height: 30px;
+    text-align:center;
+    border-color: black; 
+    border-style: solid;
+    border-width: 5px;
+    margin-left: 10px;
+}
+
+h2
+{
+    margin-bottom:0;
+}
+
+p
+{
+    width: 8.25in;
+    margin:0;
+    padding:0;
+}
+
+.result h2
+{
+    font-weight:normal;
+}
+
+.echolink
+{
+    color:green
+}
+
+.left
+{
+    float:left;
+}
+
+.right
+{
+    float:right;
+}
+
+.alignRight
+{
+    text-align:right;
+}
+
+.red
+{
+    color:red;
+}
+
+.highlight
+{
+    background-color:red;
+}
+
+.frame
+{
+    background-color: #fff;
+    border: 1px solid #ccc;
+}
+
+.setting-footer, .signin-exit
+{
+    margin-top: 1in;
+    text-align: center;
+}
+
+.html-ltr .sidemenu
+{
+    float: left;
+    width: 2.5in;
+    padding: 0;
+    border-radius: 8px;
+    -moz-border-radius: 8px; -webkit-border-radius:8px;
+}
+
+.html-rtl .sidemenu
+{
+    float: right;
+    width: 2.5in;
+    padding: 0;
+    border-radius: 8px;
+    -moz-border-radius: 8px; -webkit-border-radius:8px;
+}
+
+.sidemenu h2
+{
+    color: #222;
+    background-color:#8A4;
+    margin: 0;
+    padding: .05in .15in .05in .15in ;
+    border-top-right-radius: 8px;
+    border-top-left-radius: 8px;
+    -moz-border-radius-topleft: 8px;
+    -moz-border-radius-topright: 8px;
+    -webkit-border-radius-topleft:8px;
+    -webkit-border-radius-topright:8px;
+}
+
+.sidemenu li
+{
+    list-style-type:none;
+    list-style-position:inside;
+    margin: 0;
+    padding: .10in;
+}
+
+.sidemenu li.bottom_border
+{
+    border-bottom: 1px solid #ccc;
+}
+
+.sidemenu li a
+{
+    color:#222;
+    text-decoration: none;
+}
+
+.sidemenu li a:hover
+{
+    color:#222;
+    text-decoration: underline;
+}
+
+.sidemenu ul
+{
+    display: block;
+    padding: 0;
+    margin: 0;
+    border-radius: 8px;
+    -moz-border-radius: 8px; -webkit-border-radius:8px;
+
+}
+
+.html-ltr .currentactivity
+{
+    position: relative;
+
+    margin-left: 2.75in;
+    padding-left: .1in;
+    padding-right: .1in;
+    padding-bottom: .1in;
+    width: 8in;
+    min-width: 7in;
+    min-height: 6in;
+    font-size:16pt;
+    background-color: #fff;
+    border: 1px solid #ccc;
+
+    border-radius: 8px;
+    -moz-border-radius: 8px; -webkit-border-radius:8px;
+}
+
+.html-rtl .currentactivity
+{
+    position: relative;
+
+    margin-right: 2.75in;
+    padding-right: .1in;
+    padding-left: .1in;
+    padding-bottom: .1in;
+    width: 8in;
+    min-width: 7in;
+    min-height: 6in;
+    font-size:16pt;
+    background-color: #fff;
+    border: 1px solid #ccc;
+
+    border-radius: 8px;
+    -moz-border-radius: 8px; -webkit-border-radius:8px;
+}
+
+
+.currentactivity h2
+{
+    padding-top: .05in;
+    margin-top: .05in; 
+}
+
+.currentactivity input
+{
+    font-size: 16pt;
+    position: relative;
+    top: 2px;
+}
+
+.currentactivity object
+{
+    width: 8in;
+    min-width: 6in;
+    height:2in;
+}
+
+.currentactivity select
+{
+    font-size:16pt;
+}
+
+.html-ltr .roletable, .html-ltr .roletable th, .html-ltr .roletable td
+{
+    margin-left: .2in;
+    padding: 1px;
+    border: 1px solid black;
+}
+
+.html-rtl .roletable, .html-rtl .roletable th, .html-rtl .roletable td
+{
+    margin-right: .2in;
+    padding: 1px;
+    border: 1px solid black;
+}
+
+.html-ltr .localetable, .html-ltr .localetable th, .html-ltr .localetable td
+{
+    margin-left: .2in;
+    border: 1px ridge black;
+}
+
+.html-rtl .localetable, .html-rtl .localetable th, .html-rtl .localetable td
+{
+    margin-right: .2in;
+    border: 1px ridge black;
+}
+
+
+.crawlstable, .crawlstable th, .crawlstable td
+{
+    border: 1px ridge black;
+    padding: 2px;
+}
+
+.translatetable, .translatetable th, .translatetable td
+{
+    border: 1px ridge black;
+}
+
+#query-statistics
+{
+    margin-top: .2in;
+    border-top: 2px solid gray;
+    color: gray;
+}
+
+.query
+{
+    margin: .1in;
+    border: 1px solid gray;
+    padding: .05in;
+}
+
+.nametable
+{
+    padding: 5px;
+}
+
+.narrowfield
+{
+    width:2in;
+}
+
+.widefield
+{
+    width:3in;
+}
+
+.extrawidefield
+{
+    width:5in;
+}
+.talltextarea
+{
+    width:100%;
+    height:4in;
+}
+
+.shorttextarea
+{
+    width:100%;
+    height:1in;
+}
+
+.center
+{
+    text-align:center;
+}
+
+.topmargin
+{
+    margin-top: .2in;
+}
+
+.slightpad
+{
+    padding: .1in;
+}
+
+fieldset
+{
+    border-color:black;
+}
+
+#restrict-sites-by-url
+{
+    width:.25in; 
+    height:.25in;
+}
