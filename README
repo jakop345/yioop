@@ -3,7 +3,7 @@ Open Source Pure PHP Search Engine, Crawler, and Indexer
 
 Copyright (C) 2009, 2010  Chris Pollett chris@pollett.org
 
-Version: 2010-06-03
+Version: 2010-07-13
 -------------------
 http://www.seekquarry.com/
 
@@ -25,7 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Summary
 -------
-The SeekQuarry search engine consists of three main
+The Yioop search engine consists of three main
 scripts: 
 
 fetcher.php -- used to download batches of urls provided
@@ -48,10 +48,11 @@ http://www.seekquarry.com/
 
 Requirements
 ------------
-The SeekQuarry search engine requires Apache, 
-PHP, and Mysql to run. It was developed under 
-Apache 2.2, PHP 5.3, and Mysql 5.1 using a 
-default installation.
+The Yioop search engine requires Apache and 
+PHP. It was developed under Apache 2.2, PHP 5.3, 
+and Mysql 5.1 using a default installation. Mysql
+is not necessary as the default installion uses
+the version of sqlite3 built into PHP.
 
 Credits
 ------

@@ -450,7 +450,7 @@ p
     border: 1px solid #ccc;
 }
 
-.setting-footer, .signin-exit
+.setting-footer, .signin-exit, .landing-footer
 {
     margin-top: 1in;
     text-align: center;

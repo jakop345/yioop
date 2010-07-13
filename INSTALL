@@ -24,15 +24,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Installation
 -------------
-(1) You need to edit the files config.php and seedsites.php 
-in the configs folder. You should set these up with values 
-which work for your system and for which sites you would 
-initially like to crawl.
-
-(2) You also need to set up the basic database, by running the 
-createdb.php scripts in the configs 
-folder:
-php createdb.php
+(1) Move the Yioop search engine into some folder under your
+web server's document root. Yioop makes use of an auxiliary
+folder to store profile/crawl data. Before Yioop will
+run you must configure this directory. To do this
+point your web browser to the location Yioop, a
+configuration page should appear and let you set the
+path to the auxiliary folder. For this
+step you must connect via localhost. Make sure the web
+server has permissions on the place where this auxiliary
+folder needs to be created. Once you have set the folder,
+you should see a second form beneath the select-a-path
+form. This form allows you to configure the debug settings,
+database settings, queue server and robot settings.
+After filling in this form and submitting it, 
+the installation is complete.
 
 (3) To start the queue server you type:
 
@@ -65,10 +71,3 @@ delete it, or set it as the current index.
 (7) If you set a crawl as the current index. Then when you go
 back to your installations web page and type a query in the search bar,
 the query will be answered with the results from that crawl.
-
-One potential problem you might have is that you have multiple
-versions of php and or mysql installed. If this is the case,
-you need to make sure the command line version of php knows
-about the particular mysql dbms where you are storing
-the SeekQuarry database. This might involve reordering the 
-directories listed in your path environment variable.

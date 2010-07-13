@@ -107,8 +107,7 @@ class CrawlModel extends Model implements CrawlConstants
             $machine = "localhost"; //used if the fetching and queue serving were on the same machine
         }
 
-        $request= "http://$machine/seek_quarry/?c=archive&a=cache&time=$time&session=$session&hash=$hash&offset=$offset&crawl_time=$crawl_time";
-
+        $request= "http://$machine/git/yioop/?c=archive&a=cache&time=$time&session=$session&hash=$hash&offset=$offset&crawl_time=$crawl_time";
         $page = @unserialize(base64_decode(FetchUrl::getPage($request)));
         $page['REQUEST'] = $request;
 

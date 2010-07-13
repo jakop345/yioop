@@ -92,6 +92,7 @@ class SearchView extends View implements CrawlConstants
         <?php
         if(!isset($data['PAGES'])) {
             ?>
+            <div class="landing-footer"><a href="http://www.seekquarry.com"><?php e(tl('search_view_developed_seek_quarry')); ?></a></div>
             </div><?php
         } else {
             ?>
