@@ -120,5 +120,7 @@ interface CrawlConstants
     const DISALLOWED_SITES = 'ab';
     const BREADTH_FIRST = 'ac';
     const PAGE_IMPORTANCE = 'ad';
+
+    const MACHINE_URI = 'ae';
 } 
 ?>

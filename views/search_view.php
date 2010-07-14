@@ -83,7 +83,7 @@ class SearchView extends View implements CrawlConstants
         <div class="searchbox">
         <form id="searchForm" method="get" action=''>
         <p>
-        <input type="text" title="<?php e(tl('search_view_input_label')); ?>" id="search-name" name="q" value="<?php if(isset($data['QUERY'])) {e($data['QUERY']);} ?>" 
+        <input type="text" title="<?php e(tl('search_view_input_label')); ?>" id="search-name" name="q" value="<?php if(isset($data['QUERY'])) {e(urldecode($data['QUERY']));} ?>" 
              placeholder="<?php e(tl('search_view_input_placeholder')); ?>" />
         <button class="buttonbox" type="submit"><?php e(tl('search_view_search')); ?></button>
         </p>

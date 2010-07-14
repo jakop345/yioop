@@ -367,6 +367,7 @@ class QueueServer implements CrawlConstants
         $start_time = microtime();
 
         $machine = $sites[self::MACHINE];
+        $machine_uri = $sites[self::MACHINE_URI];
 
         if(isset($sites[self::SEEN_URLS]) && count($sites[self::SEEN_URLS]) > 0) {
             $seen_sites = $sites[self::SEEN_URLS];
@@ -381,6 +382,7 @@ class QueueServer implements CrawlConstants
         for($i = 0; $i < $num_seen; $i++) {
             $index_archive->addPageFilter(self::HASH, $seen_sites[$i]);
             $seen_sites[$i][self::MACHINE] = $machine;
+            $seen_sites[$i][self::MACHINE_URI] = $machine_uri;
             $seen_sites[$i][self::HASH_URL] = crawlHash($seen_sites[$i][self::URL]);
         }
 

@@ -94,12 +94,13 @@ class CrawlModel extends Model implements CrawlConstants
      *  request of a fetcher machine for a cached page and get the results back.
      *
      *  @param string $machine the ip address of domain name of the machine the cached page lives on
+     *  @param string $machine_uri the path from document root on $machine where the yioop scripts live
      *  @param string $hash the hash that was used to represent the page in the WebArchiveBundle
      *  @param int $offset the offset in bytes into the WebArchive partition in the WebArchiveBundle at which the cached page lives.
      *  @param string $crawl_time the timestamp of the crawl the cache page is from
      *  @return array page data of the cached page
      */
-    function getCacheFile($machine, $hash, $offset, $crawl_time) 
+    function getCacheFile($machine, $machine_uri, $hash, $offset, $crawl_time) 
     {
         $time = time();
         $session = md5($time . AUTH_KEY);
@@ -107,7 +108,7 @@ class CrawlModel extends Model implements CrawlConstants
             $machine = "localhost"; //used if the fetching and queue serving were on the same machine
         }
 
-        $request= "http://$machine/git/yioop/?c=archive&a=cache&time=$time&session=$session&hash=$hash&offset=$offset&crawl_time=$crawl_time";
+        $request= "http://$machine$machine_uri?c=archive&a=cache&time=$time&session=$session&hash=$hash&offset=$offset&crawl_time=$crawl_time";
         $page = @unserialize(base64_decode(FetchUrl::getPage($request)));
         $page['REQUEST'] = $request;
 

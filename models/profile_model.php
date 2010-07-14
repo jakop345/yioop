@@ -33,6 +33,10 @@
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
+/** 
+ * For getPath
+ */
+require_once(BASE_DIR.'/lib/url_parser.php');
 
 /**
  * This is class is used to handle
@@ -47,7 +51,7 @@ class ProfileModel extends Model
 {
     var $profile_fields = array('USER_AGENT_SHORT', 
             'DEFAULT_LOCALE', 'DEBUG_LEVEL', 'DBMS','DB_URL', 'DB_NAME', 'DB_USER', 'DB_PASSWORD', 
-            'QUEUE_SERVER', 'AUTH_KEY', "ROBOT_DESCRIPTION");
+            'QUEUE_SERVER', 'AUTH_KEY', "ROBOT_DESCRIPTION", 'WEB_URI');
     /**
      *  {@inheritdoc}
      */
@@ -148,6 +152,9 @@ EOT;
                     $profile[$field] = constant($field);
             } else {
                     $profile[$field] = "";
+            }
+            if($field == "WEB_URI") {
+                $profile[$field] = UrlParser::getPath($_SERVER['REQUEST_URI']);
             }
             if($field == "ROBOT_DESCRIPTION") continue;
             if($field != "DEBUG_LEVEL") {

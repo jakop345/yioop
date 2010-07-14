@@ -273,9 +273,10 @@ class SearchController extends Controller implements CrawlConstants
 
         $data = array();
         $machine = $crawl_item[self::MACHINE];
+        $machine_uri = $crawl_item[self::MACHINE_URI];
         $page = $crawl_item[self::HASH];
         $offset = $crawl_item[self::OFFSET];
-        $cache_item = $this->crawlModel->getCacheFile($machine, $page, $offset, $crawl_time);
+        $cache_item = $this->crawlModel->getCacheFile($machine, $machine_uri, $page, $offset, $crawl_time);
 
         $cache_file = $cache_item[self::PAGE];
         $request = $cache_item['REQUEST'];

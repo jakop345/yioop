@@ -31,8 +31,9 @@
  * @filesource
  */
 
-define("BASE_DIR", substr($_SERVER['DOCUMENT_ROOT'].$_SERVER['PWD'].$_SERVER["SCRIPT_NAME"], 0, 
-    -strlen("bin/fetcher.php")));
+define("BASE_DIR", 
+    substr($_SERVER['DOCUMENT_ROOT'].$_SERVER['PWD'].$_SERVER["SCRIPT_NAME"],
+    0, -strlen("bin/fetcher.php")));
 
 ini_set("memory_limit","500M"); //so have enough memory to crawl big pages
 
@@ -149,7 +150,7 @@ class Fetcher implements CrawlConstants
      *  This is the function that should be called to get the fetcher to start fetching.
      *  Calls init to handle the command line arguments then enters the fetcher's main loop
      */
-    function start() 
+    function start()
     {
         global $argv;
 
@@ -162,7 +163,7 @@ class Fetcher implements CrawlConstants
     /**
      *
      */
-    function loop() 
+    function loop()
     {
         crawlLog("In Fetch Loop", "fetcher");
         
@@ -352,7 +353,9 @@ class Fetcher implements CrawlConstants
                     $seeds[$i][self::URL] = $site_pair['value'][0];
                     $seeds[$i][self::WEIGHT] = $site_pair['value'][1];
 
-                    if(UrlParser::getDocumentFilename($seeds[$i][self::URL]).".".UrlParser::getDocumentType($seeds[$i][self::URL]) == "robots.txt") {
+                    if(UrlParser::getDocumentFilename($seeds[$i][self::URL]).
+                        ".".UrlParser::getDocumentType($seeds[$i][self::URL]) 
+                        == "robots.txt") {
                         $seeds[$i][self::ROBOT_PATHS] = array();
                     }
                 } else {
@@ -655,7 +658,7 @@ class Fetcher implements CrawlConstants
             $this->buildMiniInvertedIndex();
         }
 
-        $post_data = array('c'=>'fetch', 'a'=>'update', 'crawl_time' => $this->crawl_time);
+        $post_data = array('c'=>'fetch', 'a'=>'update', 'crawl_time' => $this->crawl_time, 'machine_uri' => WEB_URI);
         $post_data['found'] = urlencode(base64_encode(gzcompress(serialize($this->found_sites))));
         $bytes_to_send = strlen($post_data['found']);
 

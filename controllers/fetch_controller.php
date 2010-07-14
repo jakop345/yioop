@@ -153,6 +153,7 @@ class FetchController extends Controller implements CrawlConstants
         $sites[self::SEEN_URLS] = NULL;
 
         $index_sites[self::MACHINE] = $_SERVER['REMOTE_ADDR'];
+        $index_sites[self::MACHINE_URI] = $_REQUEST['machine_uri'];
         if(isset($sites[self::INVERTED_INDEX])) {
             $index_sites[self::INVERTED_INDEX] = $sites[self::INVERTED_INDEX];
         }
