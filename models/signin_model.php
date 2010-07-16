@@ -61,11 +61,12 @@ class SigninModel extends Model
 
 
     /**
-     *  Checks that a username password pair is valid
+     * Checks that a username password pair is valid
      *
-     *  @param string $username the username to check
-     *  @param string $password the password to check
-     *  @return bool  where the password is that of the given user (or at least hashes to the same thing) 
+     * @param string $username the username to check
+     * @param string $password the password to check
+     * @return bool  where the password is that of the given user 
+     *      (or at least hashes to the same thing) 
      */
     function checkValidSignin($username, $password)
     {
@@ -74,12 +75,14 @@ class SigninModel extends Model
         $username = $this->db->escapeString($username);
         $password = $this->db->escapeString($password);
 
-        $sql = "SELECT USER_NAME, PASSWORD FROM USER WHERE USER_NAME = '$username' LIMIT 1";
+        $sql = "SELECT USER_NAME, PASSWORD FROM USER ".
+            "WHERE USER_NAME = '$username' LIMIT 1";
 
         $result = $this->db->execute($sql);
         $row = $this->db->fetchArray($result);
 
-        return ($username == $row['USER_NAME'] && crawlCrypt($password, $row['PASSWORD']) == $row['PASSWORD']) ;
+        return ($username == $row['USER_NAME'] && 
+            crawlCrypt($password, $row['PASSWORD']) == $row['PASSWORD']) ;
 
     }
 
@@ -136,7 +139,8 @@ class SigninModel extends Model
         $username = $this->db->escapeString($username);
         $password = $this->db->escapeString($password);
 
-        $sql = "UPDATE USER SET PASSWORD='".crawlCrypt($password)."' WHERE USER_NAME = '$username' "; 
+        $sql = "UPDATE USER SET PASSWORD='".
+            crawlCrypt($password)."' WHERE USER_NAME = '$username' "; 
 
         $result = $this->db->execute($sql);
         return $result != false;

@@ -91,7 +91,8 @@ class WebArchive
         $info_block = unserialize($info_string);
         $this->count = $info_block["count"];
         if(isset($info_block["data"])) {
-            return unserialize($this->compressor->uncompress($info_block["data"]));
+            return unserialize(
+                $this->compressor->uncompress($info_block["data"]));
         } else {
             return NULL;
         }
@@ -141,7 +142,8 @@ class WebArchive
     /**
      *
      */
-    public function addObjects($offset_field, &$objects, $data = NULL, $callback = NULL, $return_flag = true)
+    public function addObjects($offset_field, &$objects, 
+        $data = NULL, $callback = NULL, $return_flag = true)
     {
 
         $fh =  fopen($this->filename, "r+");
@@ -235,7 +237,8 @@ class WebArchive
                     $offset += $line_length + $len;
                     $objects[] = array($offset, $object);
                 } else {
-                    crawlLog("Web archive saw blank line when looked for offset $offset");
+                    crawlLog("Web archive saw blank line ".
+                        "when looked for offset $offset");
                 }
             }
 
@@ -252,10 +255,11 @@ class WebArchive
     }
 
     /**
-     *  Returns $num many objects from the web archive starting at the current iterator position, leaving the iterator position unchanged
+     * Returns $num many objects from the web archive starting at the current 
+     * iterator position, leaving the iterator position unchanged
      *
-     *  @param int $num number of objects to return
-     *  @return array an array of objects from the web archive
+     * @param int $num number of objects to return
+     * @return array an array of objects from the web archive
      */
     public function currentObjects($num)
     {
@@ -263,11 +267,12 @@ class WebArchive
     }
 
     /**
-     *  Returns $num many objects from the web archive starting at the current iterator position. 
-     *  The iterator is advance to the object after the last one returned
+     * Returns $num many objects from the web archive starting at the 
+     * current iterator position. The iterator is advance to the object 
+     * after the last one returned
      *
-     *  @param int $num number of objects to return
-     *  @return array an array of objects from the web archive
+     * @param int $num number of objects to return
+     * @return array an array of objects from the web archive
      */
     public function nextObjects($num)
     {
@@ -275,7 +280,8 @@ class WebArchive
     }
 
     /**
-     *  Resets the iterator for this web archive to the first object in the archive
+     * Resets the iterator for this web archive to the first object 
+     * in the archive
      */
     public function reset() 
     {

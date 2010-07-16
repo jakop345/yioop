@@ -35,9 +35,15 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**  For crawlHash function  */
 require_once BASE_DIR."/lib/utility.php";
-/** Loads common constants for web crawling, used for index_data_base_name and schedule_data_base_name */
+/** 
+ * Loads common constants for web crawling, used for index_data_base_name and 
+ * schedule_data_base_name 
+ */
 require_once BASE_DIR."/lib/crawl_constants.php";
-/** Crawl data is stored in an IndexArchiveBundle, so load the definition of this class*/
+/** 
+ * Crawl data is stored in an IndexArchiveBundle, 
+ * so load the definition of this class
+ */
 require_once BASE_DIR."/lib/index_archive_bundle.php";
 
 /**
@@ -52,8 +58,9 @@ require_once BASE_DIR."/lib/index_archive_bundle.php";
 class CrawlModel extends Model implements CrawlConstants
 {
     /**
-     *  Stores the name of the current index archive to use to get search results from
-     *  var string
+     * Stores the name of the current index archive to use to get search 
+     * results from
+     * @Var string
      */
     var $index_name;
 
@@ -68,17 +75,19 @@ class CrawlModel extends Model implements CrawlConstants
 
 
     /**
-     *  Get a summary of a document by it document id (a string hash value) and its offset
+     * Get a summary of a document by it document id (a string hash value) 
+     * and its offset
      *
-     *  @param string $ukey document id hash string
-     *  @param int $summary_offset offset into a partition in a WebArchiveBundle
-     *  @return array summary data of the matching document
+     * @param string $ukey document id hash string
+     * @param int $summary_offset offset into a partition in a WebArchiveBundle
+     * @return array summary data of the matching document
      */
     function getCrawlItem($ukey, $summary_offset)
     {
         $index_archive_name = self::index_data_base_name . $this->index_name;
 
-        $index_archive = new IndexArchiveBundle(CRAWL_DIR.'/cache/'.$index_archive_name);
+        $index_archive = 
+            new IndexArchiveBundle(CRAWL_DIR.'/cache/'.$index_archive_name);
 
         $summary = $index_archive->getPage($ukey, $summary_offset);
 
@@ -87,28 +96,38 @@ class CrawlModel extends Model implements CrawlConstants
 
 
     /**
-     *  Gets the cached version of a web page from the machine on which it was fetched.
+     * Gets the cached version of a web page from the machine on which it was 
+     * fetched.
      *
-     *  Complete cached versions of web pages typically only live on a fetcher machine. The
-     *  queue server machine typically only maintains summaries. This method makes a REST
-     *  request of a fetcher machine for a cached page and get the results back.
+     * Complete cached versions of web pages typically only live on a fetcher 
+     * machine. The queue server machine typically only maintains summaries. 
+     * This method makes a REST request of a fetcher machine for a cached page 
+     * and get the results back.
      *
-     *  @param string $machine the ip address of domain name of the machine the cached page lives on
-     *  @param string $machine_uri the path from document root on $machine where the yioop scripts live
-     *  @param string $hash the hash that was used to represent the page in the WebArchiveBundle
-     *  @param int $offset the offset in bytes into the WebArchive partition in the WebArchiveBundle at which the cached page lives.
-     *  @param string $crawl_time the timestamp of the crawl the cache page is from
-     *  @return array page data of the cached page
+     * @param string $machine the ip address of domain name of the machine the 
+     *      cached page lives on
+     * @param string $machine_uri the path from document root on $machine where 
+     *      the yioop scripts live
+     * @param string $hash the hash that was used to represent the page in the
+     *       WebArchiveBundle
+     * @param int $offset the offset in bytes into the WebArchive partition in 
+     *      the WebArchiveBundle at which the cached page lives.
+     * @param string $crawl_time the timestamp of the crawl the cache page is 
+     *      from
+     * @return array page data of the cached page
      */
     function getCacheFile($machine, $machine_uri, $hash, $offset, $crawl_time) 
     {
         $time = time();
         $session = md5($time . AUTH_KEY);
         if($machine == '::1') {
-            $machine = "localhost"; //used if the fetching and queue serving were on the same machine
+            $machine = "localhost"; 
+            //used if the fetching and queue serving were on the same machine
         }
 
-        $request= "http://$machine$machine_uri?c=archive&a=cache&time=$time&session=$session&hash=$hash&offset=$offset&crawl_time=$crawl_time";
+        $request= "http://$machine$machine_uri?c=archive&a=cache&time=$time".
+            "&session=$session&hash=$hash&offset=$offset".
+            "&crawl_time=$crawl_time";
         $page = @unserialize(base64_decode(FetchUrl::getPage($request)));
         $page['REQUEST'] = $request;
 
@@ -117,9 +136,10 @@ class CrawlModel extends Model implements CrawlConstants
 
 
     /**
-     *  Gets the name (aka timestamp) of the current index archive to be used to handle search queries
+     * Gets the name (aka timestamp) of the current index archive to be used to 
+     * handle search queries
      *
-     *  @return string the timestamp of the archive
+     * @return string the timestamp of the archive
      */
     function getCurrentIndexDatabaseName()
     {
@@ -134,10 +154,11 @@ class CrawlModel extends Model implements CrawlConstants
 
 
     /**
-     *  Sets the IndexArchive that will be used for search results
+     * Sets the IndexArchive that will be used for search results
      *
-     *  @param $timestamp  the timestamp of the index archive. The timestamp is when the crawl was started
-     *  Currently, the timestamp appears as substring of the index archives directory name
+     * @param $timestamp  the timestamp of the index archive. The timestamp is 
+     * when the crawl was started. Currently, the timestamp appears as substring
+     * of the index archives directory name
      */
     function setCurrentIndexDatabaseName($timestamp)
     {
@@ -150,11 +171,12 @@ class CrawlModel extends Model implements CrawlConstants
 
 
     /**
-     *  Gets a list of all index archives of crawls that have been conducted
+     * Gets a list of all index archives of crawls that have been conducted
      *
-     *  @return array Available IndexArchiveBundle directories and their meta information 
-     *  this meta information includes the time of the crawl, its description, the number of
-     *  pages downloaded, and the number of partitions used in storing the inverted index
+     * @return array Available IndexArchiveBundle directories and 
+     * their meta information this meta information includes the time of the 
+     * crawl, its description, the number of pages downloaded, and the number 
+     * of partitions used in storing the inverted index
      */
     function getCrawlList()
     {
@@ -162,9 +184,11 @@ class CrawlModel extends Model implements CrawlConstants
         $dirs = glob(CRAWL_DIR.'/cache/*', GLOB_ONLYDIR);
 
         foreach($dirs as $dir) {
-            if(strlen($pre_timestamp = strstr($dir, self::index_data_base_name)) > 0) {
+            if(strlen($pre_timestamp = 
+                strstr($dir, self::index_data_base_name)) > 0) {
                 $crawl = array();
-                $crawl['CRAWL_TIME'] = substr($pre_timestamp, strlen(self::index_data_base_name));
+                $crawl['CRAWL_TIME'] = 
+                    substr($pre_timestamp, strlen(self::index_data_base_name));
                 $info = IndexArchiveBundle::getArchiveInfo($dir);
                 $crawl['DESCRIPTION'] = $info['DESCRIPTION'];
                 $crawl['COUNT'] = $info['COUNT'];
@@ -221,7 +245,8 @@ class CrawlModel extends Model implements CrawlConstants
 EOT;
         $n[] = '[general]';
         $n[] = "crawl_order = '".$info['general']['crawl_order']."';";
-        $bool_string = ($info['general']['restrict_sites_by_url']) ? "true" : "false";
+        $bool_string = 
+            ($info['general']['restrict_sites_by_url']) ? "true" : "false";
         $n[] = "restrict_sites_by_url = $bool_string;";
         $n[] = "";
         

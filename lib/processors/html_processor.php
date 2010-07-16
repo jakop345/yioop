@@ -82,7 +82,8 @@ class HtmlProcessor extends TextProcessor
 
 
     /**
-     *  Return a document object based on a string containing the contents of a web page
+     * Return a document object based on a string containing the contents of 
+     * a web page
      *
      *  @param string $page   a web page
      *
@@ -98,8 +99,8 @@ class HtmlProcessor extends TextProcessor
     }
 
     /**
-     *  Check if there is a meta tag in the supplied document object that forbids robots
-     *  from crawling the page corresponding to the dom object.
+     * Check if there is a meta tag in the supplied document object that 
+     * forbids robots from crawling the page corresponding to the dom object.
      *
      *  @param object $dom - a document object to check the meta tags for
      * 
@@ -112,7 +113,8 @@ class HtmlProcessor extends TextProcessor
 
         foreach($metas as $meta) {
             // don't crawl if either noindex or nofollow
-            if(mb_stristr($meta->getAttribute('content'),"NOINDEX") || mb_stristr($meta->getAttribute('content'), "NOFOLLOW"))
+            if(mb_stristr($meta->getAttribute('content'),"NOINDEX") || 
+                mb_stristr($meta->getAttribute('content'), "NOFOLLOW"))
                 { return false; }
         }
 
@@ -123,7 +125,6 @@ class HtmlProcessor extends TextProcessor
      *  Returns html head title of a webpage based on its document object
      *
      *  @param object $dom   a document object to extract a title from.
-     *
      *  @return string  a title of the page 
      *
      */
@@ -144,11 +145,11 @@ class HtmlProcessor extends TextProcessor
     }
 
     /**
-     *  Returns descriptive text concerning a webpage based on its document object
+     * Returns descriptive text concerning a webpage based on its document 
+     * object
      *
-     *  @param object $dom   a document object to extract a description from.
-     *
-     *  @return string a description of the page 
+     * @param object $dom   a document object to extract a description from.
+     * @return string a description of the page 
      */
     static function description($dom) {
         $sites = array();
@@ -166,7 +167,8 @@ class HtmlProcessor extends TextProcessor
         }
 
         //concatenate the contents of all the h1, h2 tags in the document
-        $headings = $xpath->evaluate("/html/body//h1|/html/body//h2|/html/body//h3|/html/body//p[1]");
+        $headings = $xpath->evaluate(
+            "/html/body//h1|/html/body//h2|/html/body//h3|/html/body//p[1]");
 
         foreach($headings as $h) {
             $description .= " ".$h->textContent;
@@ -197,7 +199,8 @@ class HtmlProcessor extends TextProcessor
 
         foreach($hrefs as $href) {
             if($i < MAX_LINKS_PER_PAGE) {
-                $url = UrlParser::canonicalLink($href->getAttribute('href'), $site);
+                $url = UrlParser::canonicalLink(
+                    $href->getAttribute('href'), $site);
                 if(!UrlParser::checkRecursiveUrl($url)) {
                     if(isset($sites[$url])) { 
                         $sites[$url] .=" ".strip_tags($href->textContent);
@@ -214,7 +217,8 @@ class HtmlProcessor extends TextProcessor
         $frames = $xpath->evaluate("/html/frameset/frame|/html/body//iframe");
         foreach($frames as $frame) {
             if($i < MAX_LINKS_PER_PAGE) {
-                $url = UrlParser::canonicalLink($frame->getAttribute('src'), $site);
+                $url = UrlParser::canonicalLink(
+                    $frame->getAttribute('src'), $site);
 
                 if(!UrlParser::checkRecursiveUrl($url)) {
                     if(isset($sites[$url])) { 
@@ -238,7 +242,8 @@ class HtmlProcessor extends TextProcessor
 
                 if(strlen($alt) < 1) { continue; }
 
-                $url = UrlParser::canonicalLink($img->getAttribute('src'), $site);
+                $url = UrlParser::canonicalLink(
+                    $img->getAttribute('src'), $site);
                 if(!UrlParser::checkRecursiveUrl($url)) {
                     if(isset($sites[$url])) { 
                         $sites[$url] .=" ".$alt;

@@ -48,12 +48,13 @@ class AdminView extends View
      *  @var string
      */
     var $layout = "web";
-    /** An array of names of element objects that the view uses to display itself 
+    /** Names of element objects that the view uses to display itself 
      *  @var array
      */
-    var $elements = array("language", "activity", "signin", "managecrawl", "manageaccount", 
-        "manageusers", "manageroles", "managelocales", "editlocales", "crawloptions", "configure");
-    /** An array of names of helper objects that the view uses to help draw itself 
+    var $elements = array("language", "activity", "signin", 
+        "managecrawl", "manageaccount", "manageusers", "manageroles", 
+        "managelocales", "editlocales", "crawloptions", "configure");
+    /** Names of helper objects that the view uses to help draw itself 
      *  @var array
      */
     var $helpers = array('options');
@@ -62,7 +63,7 @@ class AdminView extends View
      * Renders the list of admin activities and draws the current activity
      * Renders the Javascript to autologout after an hour
      *
-     * @param array $data   what is contained in this array depend on the current
+     * @param array $data  what is contained in this array depend on the current
      * admin activity. The $data['ELEMENT'] says which activity to render
      */
     public function renderView($data) {
@@ -71,8 +72,10 @@ class AdminView extends View
         }
         ?>
 
-        <h1 class="logo"><a href="."><img src="resources/yioop.png" alt="Yioop!" /></a><span> - <?php 
-        e(tl('admin_view_admin')); e(' ['.$data['CURRENT_ACTIVITY'].']')?></span></h1>
+        <h1 class="logo"><a href="."><img 
+            src="resources/yioop.png" alt="Yioop!" /></a><span> - <?php 
+        e(tl('admin_view_admin')); 
+        e(' ['.$data['CURRENT_ACTIVITY'].']')?></span></h1>
 
         <?php
         $this->activityElement->render($data);
@@ -89,7 +92,9 @@ class AdminView extends View
          */
         function logoutWarn()
         {
-            doMessage("<h2 class='red'><?php e(tl('adminview_auto_logout_one_minute'))?></h2>");
+            doMessage(
+                "<h2 class='red'><?php 
+                    e(tl('adminview_auto_logout_one_minute'))?></h2>");
         }
         /*
             Javscript to perform autologout

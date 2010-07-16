@@ -48,13 +48,14 @@ class CrawlstatusView extends View
     /**
      * An Ajax call from the Manage Crawl Element in Admin View triggers 
      * this view to be instantiated. The renderView method then draws statistics
-     * about the currently active crawl. The $data is supplied by the crawlStatus
+     * about the currently active crawl.The $data is supplied by the crawlStatus
      * method of the AdminController.
      *
      * @param array $data   info about the current crawl status
      */ 
     public function renderView($data) {
-        $base_url = "?c=admin&a=manageCrawl&YIOOP_TOKEN=".$data['YIOOP_TOKEN']."&arg=";
+        $base_url = "?c=admin&a=manageCrawl&YIOOP_TOKEN=".
+            $data['YIOOP_TOKEN']."&arg=";
         ?>
 
         <h2><?php e(tl('crawlstatus_view_currently_processing')); ?></h2>
@@ -62,7 +63,10 @@ class CrawlstatusView extends View
         if(isset($data['DESCRIPTION'])) {
             e($data['DESCRIPTION']);
             ?>&nbsp;&nbsp;
-            <button class="buttonbox" type="button" onclick="javascript:document.location = '<?php e($base_url); ?>stop'" ><?php e(tl('managecrawl_element_stop_crawl'))?></button>
+            <button class="buttonbox" type="button" 
+                onclick="javascript:document.location = '<?php 
+                e($base_url); ?>stop'" ><?php 
+                e(tl('managecrawl_element_stop_crawl'))?></button>
             <?php
         } else {
             e(tl('crawlstatus_view_no_description'));
@@ -70,9 +74,12 @@ class CrawlstatusView extends View
         ?></p>
         <p><b><?php e(tl('crawlstatus_view_time_started')); ?></b>
         <?php 
-        if(isset($data['CRAWL_TIME'])) {  e(date("r",$data['CRAWL_TIME'])); } else {e(tl('crawlstatus_view_no_crawl_time'));} ?></p>
+        if(isset($data['CRAWL_TIME'])) {  e(date("r",$data['CRAWL_TIME'])); } 
+            else {e(tl('crawlstatus_view_no_crawl_time'));} ?></p>
 
-        <p><b><?php e(tl('crawlstatus_view_total_urls')); ?></b> <?php if(isset($data['COUNT'])) { e($data['COUNT']); } else {e("0");} ?></p>
+        <p><b><?php e(tl('crawlstatus_view_total_urls')); ?></b> <?php 
+            if(isset($data['COUNT'])) { e($data['COUNT']); } else {e("0");} 
+            ?></p>
         <p><b><?php e(tl('crawlstatus_view_most_recent_fetcher')); ?></b>
 
         <?php
@@ -84,7 +91,8 @@ class CrawlstatusView extends View
         ?></p>
         <h2><?php e(tl('crawlstatus_view_most_recent_urls')); ?></h2>
         <?php 
-        if(isset($data['MOST_RECENT_URLS_SEEN']) && count($data['MOST_RECENT_URLS_SEEN']) > 0) { 
+        if(isset($data['MOST_RECENT_URLS_SEEN']) && 
+            count($data['MOST_RECENT_URLS_SEEN']) > 0) { 
             foreach($data['MOST_RECENT_URLS_SEEN'] as $url) {
                 e("<p>$url</p>");
             }
@@ -99,19 +107,25 @@ class CrawlstatusView extends View
             ?>
 
             <table class="crawlstable">
-            <tr><th><?php e(tl('crawlstatus_view_description')); ?></th><th><?php e(tl('crawlstatus_view_time_started')); ?></th>
+            <tr><th><?php e(tl('crawlstatus_view_description'));?></th><th><?php 
+                e(tl('crawlstatus_view_time_started')); ?></th>
             <th><?php e(tl('crawlstatus_view_total_urls'));?></th>
             <th colspan="3"><?php e(tl('crawlstatus_view_actions'));?></th></tr>
             <?php
             foreach($data['RECENT_CRAWLS'] as $crawl) {
             ?>
-                <tr><td><b><?php e($crawl['DESCRIPTION']); ?></b></td><td> <?php  e(date("r", $crawl['CRAWL_TIME'])); ?></td>
+                <tr><td><b><?php e($crawl['DESCRIPTION']); ?></b></td><td> <?php
+                    e(date("r", $crawl['CRAWL_TIME'])); ?></td>
                 <td> <?php  e( $crawl['COUNT']); ?></td>
-                <td><a href="<?php e($base_url); ?>resume&timestamp=<?php e($crawl['CRAWL_TIME']); ?>"><?php e(tl('crawlstatus_view_resume'));?></a></td>
+                <td><a href="<?php e($base_url); ?>resume&timestamp=<?php 
+                    e($crawl['CRAWL_TIME']); ?>"><?php 
+                    e(tl('crawlstatus_view_resume'));?></a></td>
                 <td>
                 <?php 
                 if( $crawl['CRAWL_TIME'] != $data['CURRENT_INDEX']) { ?>
-                    <a href="<?php e($base_url); ?>index&timestamp=<?php e($crawl['CRAWL_TIME']); ?>"><?php e(tl('crawlstatus_view_set_index')); ?></a>
+                    <a href="<?php e($base_url); ?>index&timestamp=<?php 
+                        e($crawl['CRAWL_TIME']); ?>"><?php 
+                        e(tl('crawlstatus_view_set_index')); ?></a>
                 <?php 
                 } else { ?>
                     <?php e(tl('crawlstatus_view_search_index')); ?>
@@ -119,7 +133,9 @@ class CrawlstatusView extends View
                 }
                 ?>
                 </td>
-                <td><a href="<?php e($base_url); ?>delete&timestamp=<?php e($crawl['CRAWL_TIME']); ?>"><?php e(tl('crawlstatus_view_delete'))?></a></td>
+                <td><a href="<?php e($base_url); 
+                    ?>delete&timestamp=<?php e($crawl['CRAWL_TIME']); 
+                    ?>"><?php e(tl('crawlstatus_view_delete')); ?></a></td>
                 </tr>
             <?php
             }

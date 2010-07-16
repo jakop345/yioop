@@ -50,42 +50,56 @@ class SettingsView extends View
      *  @var string
      */
     var $layout = "web";
-    /** An array of names of element objects that the view uses to display itself 
-     *  @var array
+    /** 
+     * Names of element objects that the view uses to display itself 
+     * @var array
      */
     var $elements = array("language");
-    /** An array of names of helper objects that the view uses to help draw itself 
-     *  @var array
+    /** 
+     * Names of helper objects that the view uses to help draw itself
+     * @var array
      */
     var $helpers = array('options');
 
     /**
-     *  Draws the web page on which users can control their search settings.
+     * sDraws the web page on which users can control their search settings.
      *
-     *  @param array $data   contains anti CSRF token YIOOP_TOKEN, as well
-     *  the language info and the current and possible per page settings
+     * @param array $data   contains anti CSRF token YIOOP_TOKEN, as well
+     *      the language info and the current and possible per page settings
      */
     public function renderView($data) {
 ?>
 <div class="landing">
-<h1 class="logo"><a href="." ><img src="resources/yioop.png" alt="Yioop!" /></a><span> - <?php e(tl('settings_view_settings')); ?></span></h1>
+<h1 class="logo"><a href="." ><img 
+    src="resources/yioop.png" alt="Yioop!" /></a><span> - <?php 
+    e(tl('settings_view_settings')); ?></span></h1>
 <div class="settings">
 <form class="user_settings" method="get" action="">
 <table>
 <tr>
-<td class="table-label"><label for="per-page"><b><?php e(tl('settings_view_results_per_page')); ?></b></label></td><td class="table-input">
-<?php $this->optionsHelper->render("per-page", "perpage", $data['PER_PAGE'], $data['PER_PAGE_SELECTED']); ?>
+<td class="table-label"><label for="per-page"><b><?php 
+    e(tl('settings_view_results_per_page')); ?></b></label></td><td 
+    class="table-input"><?php $this->optionsHelper->render(
+    "per-page", "perpage", $data['PER_PAGE'], $data['PER_PAGE_SELECTED']); ?>
 </td></tr>
-<tr><td class="table-label"><label for="locale"><b><?php e(tl('settings_view_language_label')); ?></b></label></td><td class="table-input">
-<?php $this->languageElement->render($data); ?></td></tr>
-<tr><td><input type="hidden" name="YIOOP_TOKEN" value="<?php e($data['YIOOP_TOKEN']); ?>" /><button class="topmargin" type="submit" name="c" value="search"><?php e(tl('settings_view_return_yioop')); ?></button></td><td class="table-input">
-<button class="topmargin" type="submit" name="c" value="settings"><?php e(tl('settings_view_save')); ?></button>
+<tr><td class="table-label"><label for="locale"><b><?php 
+    e(tl('settings_view_language_label')); ?></b></label></td><td 
+    class="table-input"><?php $this->languageElement->render($data); ?>
+</td></tr>
+<tr><td><input type="hidden" name="YIOOP_TOKEN" value="<?php 
+    e($data['YIOOP_TOKEN']); ?>" /><button 
+    class="topmargin" type="submit" name="c" value="search"><?php 
+    e(tl('settings_view_return_yioop')); 
+    ?></button></td><td class="table-input">
+<button class="topmargin" type="submit" name="c" value="settings"><?php 
+    e(tl('settings_view_save')); ?></button>
 </td></tr>
 </table>
 </form>
 </div>
 <div class="setting-footer"><a 
-            href="javascript:window.external.AddSearchProvider('<?php e(QUEUE_SERVER."yioopbar.xml");?>')"><?php 
+            href="javascript:window.external.AddSearchProvider('<?php 
+            e(QUEUE_SERVER."yioopbar.xml");?>')"><?php 
     e(tl('setting_install_search_plugin'));
 ?></a>.</div>
 </div>

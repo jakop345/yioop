@@ -56,14 +56,19 @@ class GifProcessor extends ImageProcessor
     {
         if(is_string($page)) {
             file_put_contents(CRAWL_DIR."/cache/tmp.gif", $page); 
-            $image = @imagecreatefromgif(CRAWL_DIR."/cache/tmp.gif");  
+            $image = @imagecreatefromgif(CRAWL_DIR."/cache/tmp.gif");
             $thumb_string = self::createThumb($image);
             $summary[self::TITLE] = "";
-            $summary[self::DESCRIPTION] = "Image of ".UrlParser::getDocumentFilename($url);
+            $summary[self::DESCRIPTION] = 
+                "Image of ".UrlParser::getDocumentFilename($url);
             $summary[self::LINKS] = array();
-            $summary[self::PAGE] = "<html><body><div><img src='data:image/gif;base64,".base64_encode($page)
-                . "' alt='".$summary[self::DESCRIPTION]."' /></div></body></html>";
-            $summary[self::THUMB] = 'data:image/jpeg;base64,'.base64_encode($thumb_string);
+            $summary[self::PAGE] = 
+                "<html><body><div><img src='data:image/gif;base64,".
+                base64_encode($page) .
+                "' alt='".$summary[self::DESCRIPTION].
+                "' /></div></body></html>";
+            $summary[self::THUMB] = 'data:image/jpeg;base64,'.
+                base64_encode($thumb_string);
 
         }
         return $summary;

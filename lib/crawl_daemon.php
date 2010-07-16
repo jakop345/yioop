@@ -62,13 +62,16 @@ class CrawlDaemon implements CrawlConstants
                  // handle shutdown tasks
                  $info = array();
                  $info[self::STATUS] = self::STOP_STATE;
-                 file_put_contents(CRAWL_DIR."/schedules/".self::$name."_messages.txt", serialize($info));
+                 file_put_contents(
+                    CRAWL_DIR."/schedules/".self::$name."_messages.txt", 
+                    serialize($info));
                  unlink(CRAWL_DIR."/schedules/".self::$name."_lock.txt");
              break;
 
              case SIGSEGV:
                  // handle shutdown tasks
-                crawlLog("Segmentation Fault Caught!! Debug back trace follows:");
+                crawlLog(
+                    "Segmentation Fault Caught!! Debug back trace follows:");
                 crawlLog(var_dump(debug_backtrace(), true));
              break;
 
@@ -82,7 +85,8 @@ class CrawlDaemon implements CrawlConstants
     {
         self::$name = $name;
         //don't let our script be run from apache
-        if(isset($_SERVER['DOCUMENT_ROOT']) && strlen($_SERVER['DOCUMENT_ROOT']) > 0) {
+        if(isset($_SERVER['DOCUMENT_ROOT']) && 
+            strlen($_SERVER['DOCUMENT_ROOT']) > 0) {
             echo "BAD REQUEST";
             exit();
         }
@@ -91,7 +95,8 @@ class CrawlDaemon implements CrawlConstants
             echo "For example,\n";
             echo "php $name.php start //starts the $name as a daemon\n";
             echo "php $name.php stop //stops the $name daemon\n";
-            echo "php $name.php terminal //runs $name within the current process not as a daemon\n";
+            echo "php $name.php terminal //runs $name within the current ".
+                "process not as a daemon\n";
             exit();
         }
 
@@ -108,7 +113,8 @@ class CrawlDaemon implements CrawlConstants
             }
         } else { //for Windows systems we fall back to console operation
             if(!$terminal_flag) {
-                echo "pcntl_fork function does not exist falling back to terminal mode\n";
+                echo "pcntl_fork function does not exist falling back to ".
+                    "terminal mode\n";
             }
             $argv[1] = "terminal";
         }
@@ -130,18 +136,24 @@ class CrawlDaemon implements CrawlConstants
                 // setup signal handler
                 pcntl_signal(SIGTERM, "CrawlDaemon::processHandler");
 
-                file_put_contents(CRAWL_DIR."/schedules/$name"."_lock.txt", serialize(getmypid()));
+                file_put_contents(
+                    CRAWL_DIR."/schedules/$name"."_lock.txt", 
+                    serialize(getmypid()));
 
                 $info = array();
                 $info[self::STATUS] = self::WAITING_START_MESSAGE_STATE;
-                file_put_contents(CRAWL_DIR."/schedules/$name"."_messages.txt", serialize($info));
+                file_put_contents(
+                    CRAWL_DIR."/schedules/$name"."_messages.txt", 
+                    serialize($info));
 
-                define("LOG_TO_FILES", true); // if false log messages are sent to the console
+                define("LOG_TO_FILES", true); 
+                    // if false log messages are sent to the console
             break;
 
             case "stop":
                 if(file_exists(CRAWL_DIR."/schedules/$name"."_lock.txt")) {
-                    $pid = unserialize(file_get_contents(CRAWL_DIR."/schedules/$name"."_lock.txt"));
+                    $pid = unserialize(file_get_contents(
+                        CRAWL_DIR."/schedules/$name"."_lock.txt"));
                     echo "Stopping $name...$pid\n";
                     posix_kill($pid, SIGTERM);
                 } else {
@@ -153,7 +165,9 @@ class CrawlDaemon implements CrawlConstants
             case "terminal":
                 $info = array();
                 $info[self::STATUS] = self::WAITING_START_MESSAGE_STATE;
-                file_put_contents(CRAWL_DIR."/schedules/$name"."_messages.txt", serialize($info));
+                file_put_contents(
+                    CRAWL_DIR."/schedules/$name"."_messages.txt", 
+                    serialize($info));
 
                 define("LOG_TO_FILES", false);
             break;

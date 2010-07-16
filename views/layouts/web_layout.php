@@ -46,11 +46,11 @@ class WebLayout extends Layout
 {
 
     /**
-     *  Responsible for drawing the header of the document containing
-     *  Yioop! title and including basic.js. It calls the renderView method of the
-     *  View that lives on the layout. If the QUERY_STATISTIC config setting is set,
-     *  it output statistics about each query run on the database. Finally, it draws the footer of 
-     *  the document.
+     * Responsible for drawing the header of the document containing
+     * Yioop! title and including basic.js. It calls the renderView method of
+     * the View that lives on the layout. If the QUERY_STATISTIC config setting 
+     * is set, it output statistics about each query run on the database. 
+     * Finally, it draws the footer of the document.
      *
      *  @param array $data  an array of data set up by the controller to be
      *  be used in drawing the WebLayout and its View.
@@ -59,19 +59,22 @@ class WebLayout extends Layout
     ?>
     <!DOCTYPE html>
 
-    <html lang="<?php e($data['LOCALE_TAG']);?>" dir="<?php e($data['LOCALE_DIR']);?>">
+    <html lang="<?php e($data['LOCALE_TAG']);
+        ?>" dir="<?php e($data['LOCALE_DIR']);?>">
 
         <head>
             <title>Yioop!</title>
 
             <meta name="Author" content="Christopher Pollett" />
 
-            <meta name="description" content="<?php e(tl('web_layout_description')); ?>" />
+            <meta name="description" content="<?php 
+                e(tl('web_layout_description')); ?>" />
             <meta charset="utf-8" />
             <link rel="shortcut icon"   href="favicon.ico" />
             <link rel="stylesheet" type="text/css" href="css/search.css" />
         </head>
-        <body class="html-<?php e($data['BLOCK_PROGRESSION']);?> html-<?php e($data['LOCALE_DIR']);?> html-<?php e($data['WRITING_MODE']);?>">
+        <body class="html-<?php e($data['BLOCK_PROGRESSION']);?> html-<?php 
+            e($data['LOCALE_DIR']);?> html-<?php e($data['WRITING_MODE']);?>">
             <div id="message" ></div>
             <?php
                 $this->view->renderView($data);
@@ -79,10 +82,14 @@ class WebLayout extends Layout
                 <div id="query-statistics">
                 <?php
                     e("<h1>".tl('web_layout_query_statistics')."</h1>");
-                    e("<b>".tl('web_layout_total_elapsed_time', $data['TOTAL_ELAPSED_TIME'])."</b>"); 
+                    e("<b>".tl('web_layout_total_elapsed_time',
+                         $data['TOTAL_ELAPSED_TIME'])."</b>"); 
                     foreach($data['QUERY_STATISTICS'] as $query_info) {
-                        e("<div class='query'><div>".$query_info['QUERY']."</div><div><b>".
-                            tl('web_layout_query_time', $query_info['ELASPED_TIME'])."</b></div></div>");
+                        e("<div class='query'><div>".$query_info['QUERY'].
+                            "</div><div><b>".
+                            tl('web_layout_query_time', 
+                                $query_info['ELASPED_TIME']).
+                                "</b></div></div>");
                     }
                 ?>
                 </div>

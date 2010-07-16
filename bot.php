@@ -34,7 +34,8 @@
  * @filesource
  */
 
-define("BASE_DIR", substr($_SERVER['DOCUMENT_ROOT'].$_SERVER['PWD'].$_SERVER["SCRIPT_NAME"], 0, 
+define("BASE_DIR", substr($_SERVER['DOCUMENT_ROOT'].$_SERVER['PWD'].
+    $_SERVER["SCRIPT_NAME"], 0, 
     -strlen("bot.php")));
 
 /** Load search engine wide configuration file */
@@ -50,7 +51,9 @@ if(!PROFILE) {echo "BAD REQUEST"; exit();}
 <head>
     <title><?php echo USER_AGENT_SHORT; ?></title>
 
-    <meta name="description" content="A description of a robot based on the SeekQuarry/Yioop! Search Engine" />
+    <meta name="description" content=
+        "A description of a robot based on the SeekQuarry/Yioop! Search Engine" 
+        />
 
     <meta charset="utf-8" />
     <link rel="stylesheet" type="text/css" href="css/search.css" />  
@@ -60,7 +63,8 @@ if(!PROFILE) {echo "BAD REQUEST"; exit();}
     if(file_exists(WORK_DIRECTORY."/bot.txt")) {
         echo file_get_contents(WORK_DIRECTORY."/bot.txt");
     } else {
-        echo "Unfortunately, the person who is using this software did not provide a description of their user-agent";
+        echo "Unfortunately, the person who is using this software did not ".
+            "provide a description of their user-agent";
     }
 ?>
 </body>

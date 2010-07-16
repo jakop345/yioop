@@ -34,9 +34,11 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- *  A PersistentStructure is a data structure which every so many operations will be saved to secondary storage (such as disk).
- *  An operation occurs whenever the PersistentStructure's checkSave method is called. A PersistentStructure
- *  also supports the ability to be load (read in from) secondary storage.
+ * A PersistentStructure is a data structure which every so many operations 
+ * will be saved to secondary storage (such as disk).
+ * An operation occurs whenever the PersistentStructure's checkSave method is 
+ * called. A PersistentStructure also supports the ability to be load 
+ * (read in from) secondary storage.
  * 
  * @author Chris Pollett
  *
@@ -64,12 +66,15 @@ class PersistentStructure
     var $save_frequency;
 
     /**
-     *  Sets up the file name and save frequency for the PersistentStructure, initializes the oepration count
+     * Sets up the file name and save frequency for the PersistentStructure, 
+     * initializes the oepration count
      *
-     *  @param string $fname the name of the file to store the PersistentStructure in
-     *  @param int $save_frequency the number of operation before a save
+     * @param string $fname the name of the file to store the 
+     *      PersistentStructure in
+     * @param int $save_frequency the number of operation before a save
      */
-    public function __construct($fname, $save_frequency = self::DEFAULT_SAVE_FREQUENCY)
+    public function __construct($fname, 
+        $save_frequency = self::DEFAULT_SAVE_FREQUENCY)
     {
         $this->filename = $fname;
         $this->save_frequency = $save_frequency;
@@ -96,8 +101,8 @@ class PersistentStructure
     }
 
     /**
-     *  Add one to the unsaved_operations count. If this goes above the save_frquency
-     *  then save the PersistentStructure to secondary storage
+     * Add one to the unsaved_operations count. If this goes above the 
+     * save_frquency then save the PersistentStructure to secondary storage
      */
     function checkSave()
     {

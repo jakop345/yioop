@@ -67,7 +67,8 @@ abstract class UnitTest
             $this->setUp();
             $len = strlen($method);
             
-            if(substr_compare($method, self::case_name, $len - self::case_name_len) == 0) {
+            if(substr_compare(
+                $method, self::case_name, $len - self::case_name_len) == 0) {
                 $this->test_case_results = array();
                 $this->$method();
                 $test_results[$method] = $this->test_case_results;

@@ -54,8 +54,20 @@ require_once "datasource_manager.php";
  */
 class SqliteManager extends DatasourceManager
 {
+    /**
+     *  Stores the current Sqlite DB resource
+     *  @var resource
+     */
     var $dbhandle;
+    /**
+     *  Filename of the Sqlite Database
+     *  @var string
+     */
     var $dbname;
+    /**
+     *  Stores the result resource of the last DB exec
+     *  @var resource
+     */
     var $result;
 
     /** {@inheritdoc} */
@@ -71,8 +83,13 @@ class SqliteManager extends DatasourceManager
         $this->result = NULL;
     }
 
-    /** For an Sqlite database no connection needs to be made so this method does nothing*/
-    function connect($db_url = DB_URL, $db_user = DB_USER, $db_password = DB_PASSWORD) 
+    /** 
+     * For an Sqlite database no connection needs to be made so this 
+     * method does nothing
+     * {@inheritdoc}
+     */
+    function connect($db_url = DB_URL, $db_user = DB_USER, 
+        $db_password = DB_PASSWORD) 
     {
         return true;
     }

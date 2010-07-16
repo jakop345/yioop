@@ -62,7 +62,8 @@ class MysqlManager extends DatasourceManager
     }
 
     /** {@inheritdoc} */
-    function connect($db_url = DB_URL, $db_user = DB_USER, $db_password = DB_PASSWORD) 
+    function connect($db_url = DB_URL, $db_user = DB_USER, 
+        $db_password = DB_PASSWORD) 
     {
         return mysql_connect($db_url, $db_user, $db_password);
     }

@@ -53,7 +53,7 @@ class TextProcessor implements CrawlConstants
     /**
      *
      */
-    public static function process($page, $url)
+    static function process($page, $url)
     {
         if(is_string($page)) {
             $summary[self::TITLE] = "";
@@ -67,21 +67,24 @@ class TextProcessor implements CrawlConstants
     /**
      *
      */
-    public static function getBetweenTags($string, $cur_pos, $start_tag, $end_tag) 
+    static function getBetweenTags($string, $cur_pos, $start_tag, $end_tag) 
     {
         $len = strlen($string);
-        if(($between_start = strpos($string, $start_tag, $cur_pos)) === false ) {
+        if(($between_start = strpos($string, $start_tag, $cur_pos)) === 
+            false ) {
             return array($len, "");
         }
 
         $between_start  += strlen($start_tag);
-        if(($between_end = strpos($string, $end_tag, $between_start)) === false ) {
+        if(($between_end = strpos($string, $end_tag, $between_start)) === 
+            false ) {
             $between_end = $len;
         }
 
         $cur_pos = $between_end + strlen($end_tag);
 
-        $between_string = substr($string, $between_start, $between_end - $between_start);
+        $between_string = substr($string, $between_start, 
+            $between_end - $between_start);
         return array($cur_pos, $between_string);
 
     }

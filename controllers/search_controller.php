@@ -55,29 +55,34 @@ class SearchController extends Controller implements CrawlConstants
 {
     /**
      * Says which models to load for this controller.
-     * PhraseModel is used to extract words from the query; CrawlModel is used for cached web page requests
+     * PhraseModel is used to extract words from the query; CrawlModel 
+     * is used for cached web page requests
      * @var array
      */
     var $models = array("phrase", "crawl");
     /**
      * Says which views to load for this controller.
-     * The SearchView is used for displaying general search results as well as the initial search screen; NocacheView
+     * The SearchView is used for displaying general search results as well 
+     * as the initial search screen; NocacheView
      * is used on a cached web page request that fails
      * @var array
      */
     var $views = array("search",  "nocache");
     /**
-     * Says which activities (roughly methods invoke from the web) this controller will respond to
+     * Says which activities (roughly methods invoke from the web) this 
+     * controller will respond to
      * @var array
      */
     var $activities = array("query", "cache", "related", "signout");
 
     /**
-     *  This is the main entry point for handling a search request.
+     * This is the main entry point for handling a search request.
      *
-     *  ProcessRequest determines the type of search request (normal request , cache request, or related request), or if its a 
-     *  user is returning from the admin panel via signout. It then calls the appropriate method to handle the given activity.
-     *  Finally, it draw the search screen.
+     * ProcessRequest determines the type of search request (normal request , 
+     * cache request, or related request), or if its a 
+     * user is returning from the admin panel via signout. It then calls the 
+     * appropriate method to handle the given activity.Finally, it draw the 
+     * search screen.
      */
     function processRequest() 
     {
@@ -106,7 +111,8 @@ class SearchController extends Controller implements CrawlConstants
                 if($activity == "signout") {
                     unset($_SESSION['USER_ID']);
                     $user = $_SERVER['REMOTE_ADDR'];
-                    $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".tl('search_controller_logout_successful')."</h1>')";
+                    $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
+                        tl('search_controller_logout_successful')."</h1>')";
                 }
 
                 if(isset($_REQUEST['arg'])) {
@@ -133,7 +139,10 @@ class SearchController extends Controller implements CrawlConstants
                 if(!isset($query)) {
                     $query = NULL;
                 }
-                $data = $this->processQuery($query, $activity, $arg, $results_per_page); // calculate the results of a search if there is one
+                $data = 
+                    $this->processQuery(
+                        $query, $activity, $arg, $results_per_page); 
+                        // calculate the results of a search if there is one
             } else {
                 $highlight = true;
                 if(!isset($query)) {
@@ -152,15 +161,19 @@ class SearchController extends Controller implements CrawlConstants
     }
 
     /**
-     *  Searches the database for the most relevant pages for the supplied search terms
-     *  Renders the results to the HTML page.
+     * Searches the database for the most relevant pages for the supplied search
+     * terms. Renders the results to the HTML page.
      *
-     *  @param string $query a string containing the words to search on
-     *  @param string $activity besides a straight search for words query, one might have other searches, such as a search for related pages.
+     * @param string $query a string containing the words to search on
+     * @param string $activity besides a straight search for words query, 
+     *      one might have other searches, such as a search for related pages.
      *      this argument says what kind of search to do.
-     *  @param string $arg for a search other than a straight word query this argument provides auxiliary information on how to conduct the
-     *      search. For instance on a related web page search, it might provide the url of the site with which to perform the related search.
-     *  @param int $results_per_page the maixmum number of search results that can occur on a page
+     * @param string $arg for a search other than a straight word query this 
+     *      argument provides auxiliary information on how to conduct the
+     *      search. For instance on a related web page search, it might provide 
+     *      the url of the site with which to perform the related search.
+     *  @param int $results_per_page the maixmum number of search results 
+     *      that can occur on a page
      *  @return array an array of at most results_per_page many search results
      */
     function processQuery($query, $activity, $arg, $results_per_page) 
@@ -182,18 +195,23 @@ class SearchController extends Controller implements CrawlConstants
             $data['QUERY'] = "related:$arg";
                 $url = $arg;
                 $summary_offset = $this->clean($_REQUEST['so'], "int");
-                $crawl_item = $this->crawlModel->getCrawlItem(crawlHash($url), $summary_offset);
+                $crawl_item = $this->crawlModel->getCrawlItem(
+                    crawlHash($url), $summary_offset);
 
-                $top_phrases  = $this->phraseModel->getTopPhrases($crawl_item, 20);
+                $top_phrases  = 
+                    $this->phraseModel->getTopPhrases($crawl_item, 20);
                 $top_query = implode(" ", $top_phrases);
-                $phrase_results = $this->phraseModel->getPhrasePageResults($top_query, $limit, $results_per_page, false);
-                $data['PAGING_QUERY'] = "index.php?c=search&a=related&arg=".urlencode($url)."&so=$summary_offset";
+                $phrase_results = $this->phraseModel->getPhrasePageResults(
+                    $top_query, $limit, $results_per_page, false);
+                $data['PAGING_QUERY'] = "index.php?c=search&a=related&arg=".
+                    urlencode($url)."&so=$summary_offset";
             break;
 
             case "query":
             default:
                 if(trim($query) != "") { 
-                    $phrase_results = $this->phraseModel->getPhrasePageResults($query, $limit, $results_per_page);
+                    $phrase_results = $this->phraseModel->getPhrasePageResults(
+                        $query, $limit, $results_per_page);
                 }
                 $data['PAGING_QUERY'] = "index.php?q=".urlencode($query);
                 $data['QUERY'] = urlencode($this->clean($query,"string"));
@@ -212,12 +230,13 @@ class SearchController extends Controller implements CrawlConstants
     }
 
     /**
-     * This method is responsible for parsing out the kind of query from the raw query string
+     * This method is responsible for parsing out the kind of query 
+     * from the raw query string
      *
-     * This method parses the raw query string for query activities. It parses the name of each activity and
-     * its argument
+     * This method parses the raw query string for query activities. 
+     * It parses the name of each activity and its argument
      *
-     *  @return array a list of search activities parsed out of the search string
+     *  @return array list of search activities parsed out of the search string
      */
     function extractActivityQuery() {
 
@@ -265,7 +284,8 @@ class SearchController extends Controller implements CrawlConstants
         $this->crawlModel->index_name = $crawl_time;
 
         $summary_offset = $this->clean($_REQUEST['so'], "int");
-        if(!$crawl_item = $this->crawlModel->getCrawlItem(crawlHash($url), $summary_offset)) {
+        if(!$crawl_item = $this->crawlModel->getCrawlItem(crawlHash($url), 
+            $summary_offset)) {
 
             $this->displayView("nocache", $data);
             exit();
@@ -276,7 +296,8 @@ class SearchController extends Controller implements CrawlConstants
         $machine_uri = $crawl_item[self::MACHINE_URI];
         $page = $crawl_item[self::HASH];
         $offset = $crawl_item[self::OFFSET];
-        $cache_item = $this->crawlModel->getCacheFile($machine, $machine_uri, $page, $offset, $crawl_time);
+        $cache_item = $this->crawlModel->getCacheFile($machine, 
+            $machine_uri, $page, $offset, $crawl_time);
 
         $cache_file = $cache_item[self::PAGE];
         $request = $cache_item['REQUEST'];
@@ -307,9 +328,12 @@ class SearchController extends Controller implements CrawlConstants
 
         $divNode = $dom->createElement('div');
         $divNode = $body->insertBefore($divNode, $first_child);
-        $divNode->setAttributeNS("","style", "border-color: black; border-style:solid; border-width:3px;padding: 5px; background-color: white");
+        $divNode->setAttributeNS("","style", "border-color: black; ".
+            "border-style:solid; border-width:3px; ".
+            "padding: 5px; background-color: white");
 
-        $textNode = $dom->createTextNode(tl('search_controller_cached_version', "$page_url", $date));
+        $textNode = $dom->createTextNode(tl('search_controller_cached_version', 
+            "$page_url", $date));
         $textNode = $divNode->appendChild($textNode);
 
         $body = $this->markChildren($body, $words, $dom);
@@ -323,7 +347,9 @@ class SearchController extends Controller implements CrawlConstants
         foreach($words as $word) {
             if(strlen($word) > 0) {
             $match = crawlHash($word).$word;
-            $newDoc = preg_replace("/$match/i", '<span style="background-color:'.$colors[$i].'">$0</span>', $newDoc);
+            $newDoc = preg_replace("/$match/i", 
+                '<span style="background-color:'.
+                $colors[$i].'">$0</span>', $newDoc);
             $i = ($i + 1) % $color_count;
             $newDoc = preg_replace("/".crawlHash($word)."/", "", $newDoc);
             }
@@ -360,7 +386,8 @@ class SearchController extends Controller implements CrawlConstants
 
                 foreach($words as $word) {
                     if(strlen($word) > 0) {
-                        $text = preg_replace("/$word/i", crawlHash($word).'$0', $text);
+                        $text = preg_replace(
+                            "/$word/i", crawlHash($word).'$0', $text);
                     }
                 }
 

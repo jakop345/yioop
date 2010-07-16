@@ -40,7 +40,7 @@ require_once "datasource_manager.php";
 
 
 /**
- * SQLite4 DatasourceManager
+ * SQLite3 DatasourceManager
  *
  * This is concrete class, implementing
  * the abstract class DatasourceManager 
@@ -54,8 +54,15 @@ require_once "datasource_manager.php";
  */
 class Sqlite3Manager extends DatasourceManager
 {
+    /**
+     *  Stores  the current Sqlite3 DB object
+     *  @var object
+     */
     var $dbhandle;
-    var $dbname;
+    /**
+     *  Filename of the Sqlite3 Database
+     *  @var string
+     */
 
     /** {@inheritdoc} */
     function __construct() 
@@ -68,8 +75,13 @@ class Sqlite3Manager extends DatasourceManager
         $this->dbname = NULL;
     }
 
-    /** For an Sqlite database no connection needs to be made so this method does nothing*/
-    function connect($db_url = DB_URL, $db_user = DB_USER, $db_password = DB_PASSWORD) 
+    /** 
+     * For an Sqlite3 database no connection needs to be made so this 
+     * method does nothing
+     * {@inheritdoc}
+     */
+    function connect($db_url = DB_URL, $db_user = DB_USER, 
+        $db_password = DB_PASSWORD)
     {
         return true;
     }
@@ -82,7 +94,8 @@ class Sqlite3Manager extends DatasourceManager
         }
 
         $this->dbname = $db_name;
-        $this->dbhandle = new SQLite3(CRAWL_DIR."/data/$db_name.db", SQLITE3_OPEN_READWRITE |SQLITE3_OPEN_CREATE);
+        $this->dbhandle = new SQLite3(CRAWL_DIR."/data/$db_name.db", 
+            SQLITE3_OPEN_READWRITE |SQLITE3_OPEN_CREATE);
         return $this->dbhandle;
     }
 

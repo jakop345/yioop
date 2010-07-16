@@ -49,20 +49,23 @@ class FetchUrl implements CrawlConstants
 {
 
     /**
-     *  Make multi_curl requests for an array of sites with urls
+     * Make multi_curl requests for an array of sites with urls
      *
-     *  @param array $sites  an array containing urls of pages to request
-     *  @param bool $timer  flag, true means print timing statistics to log
-     *  @param string $key  the component of $sites[$i] that has the value of a url to get
-     *                defaults to URL
-     *  @param string $value  component of $sites[$i] in which to store the page that was gotten
-     *  @param string $hash  component of $sites[$i] in which to store a hash of page for de-deuplication
-     *                 purposes
+     * @param array $sites  an array containing urls of pages to request
+     * @param bool $timer  flag, true means print timing statistics to log
+     * @param string $key  the component of $sites[$i] that has the value of 
+     *      a url to get defaults to URL
+     * @param string $value component of $sites[$i] in which to store the 
+     *      page that was gotten
+     * @param string $hash component of $sites[$i] in which to store a hash 
+     *      of page for de-deuplication purposes
      * 
      *  @return array an updated array with the contents of those pages
      */ 
 
-    public static function getPages($sites, $timer = false, $key=CrawlConstants::URL, $value=CrawlConstants::PAGE, $hash=CrawlConstants::HASH)
+    public static function getPages($sites, $timer = false, 
+        $key=CrawlConstants::URL, $value=CrawlConstants::PAGE, 
+        $hash=CrawlConstants::HASH)
     {
         static $ex_cnt = 0;
 
@@ -84,7 +87,8 @@ class FetchUrl implements CrawlConstants
             curl_setopt($sites[$i][0], CURLOPT_RETURNTRANSFER, true);
             curl_setopt($sites[$i][0], CURLOPT_CONNECTTIMEOUT, PAGE_TIMEOUT);
             curl_setopt($sites[$i][0], CURLOPT_TIMEOUT, PAGE_TIMEOUT);
-            curl_setopt($sites[$i][0], CURLOPT_HTTPHEADER, array('Range: bytes=0-'.PAGE_RANGE_REQUEST));
+            curl_setopt($sites[$i][0], CURLOPT_HTTPHEADER, 
+                array('Range: bytes=0-'.PAGE_RANGE_REQUEST));
             curl_multi_add_handle($agent_handler, $sites[$i][0]);
         }
         if($timer) {
@@ -96,7 +100,8 @@ class FetchUrl implements CrawlConstants
         //Wait for responses
         do {
             $mrc = @curl_multi_exec($agent_handler, $active);
-        } while (time() - $start < PAGE_TIMEOUT && $mrc == CURLM_CALL_MULTI_PERFORM );
+        } while (time() - $start < PAGE_TIMEOUT && 
+            $mrc == CURLM_CALL_MULTI_PERFORM );
 
         if(time() - $start > PAGE_TIMEOUT) {crawlLog("  TIMED OUT!!!");}
 
@@ -104,7 +109,8 @@ class FetchUrl implements CrawlConstants
             if (curl_multi_select($agent_handler, 1) != -1) {
                 do {
                      $mrc = @curl_multi_exec($agent_handler, $active);
-                } while (time()-$start < PAGE_TIMEOUT && $mrc == CURLM_CALL_MULTI_PERFORM);
+                } while (time()-$start < PAGE_TIMEOUT && 
+                    $mrc == CURLM_CALL_MULTI_PERFORM);
             }
         }
 
@@ -119,18 +125,31 @@ class FetchUrl implements CrawlConstants
 
                 // Get Data and Message Code
                 $content = @curl_multi_getcontent($sites[$i][0]);
-                $sites[$i][self::HTTP_CODE] = curl_getinfo($sites[$i][0], CURLINFO_HTTP_CODE);
+                $sites[$i][self::HTTP_CODE] = 
+                    curl_getinfo($sites[$i][0], CURLINFO_HTTP_CODE);
                 if(!$sites[$i][self::HTTP_CODE]) {
                     $sites[$i][self::HTTP_CODE] = curl_error($sites[$i][0]);
                 }
 
-                // Store Data into our $sites array, create a hash for deduplication purposes
+                /* 
+                   Store Data into our $sites array, create a hash for 
+                   deduplication purposes
+                 */
                 if(isset($content)) {
-                    $sites[$i][$value] = mb_substr($content, 0, PAGE_RANGE_REQUEST);
-                    //to do dedup we strip script, noscript, and style tags as well as their content, then we strip tags, get rid of whitespace and hash
-                    $strip_array = array('@<script[^>]*?>.*?</script>@si', '@<noscript[^>]*?>.*?</noscript>@si', '@<style[^>]*?>.*?</style>@si');
-                    $dedup_string = preg_replace($strip_array, '', $sites[$i][$value]);
-                    $dedup_string = preg_replace('/\W+/', '', strip_tags($dedup_string));
+                    $sites[$i][$value] = 
+                        mb_substr($content, 0, PAGE_RANGE_REQUEST);
+                    /* to do dedup we strip script, noscript, and style tags 
+                       as well as their content, then we strip tags, get rid 
+                       of whitespace and hash
+                     */
+                    $strip_array = 
+                        array('@<script[^>]*?>.*?</script>@si', 
+                            '@<noscript[^>]*?>.*?</noscript>@si', 
+                            '@<style[^>]*?>.*?</style>@si');
+                    $dedup_string = preg_replace(
+                        $strip_array, '', $sites[$i][$value]);
+                    $dedup_string = preg_replace(
+                        '/\W+/', '', strip_tags($dedup_string));
                     $sites[$i][$hash] = crawlHash($dedup_string);
 
                 }
@@ -138,16 +157,21 @@ class FetchUrl implements CrawlConstants
                 //Get Time, Mime type and Character encoding
                 $sites[$i][self::TIMESTAMP] = time();
 
-                $type_parts = explode(";", curl_getinfo($sites[$i][0], CURLINFO_CONTENT_TYPE));
+                $type_parts = 
+                    explode(";", curl_getinfo($sites[$i][0], 
+                        CURLINFO_CONTENT_TYPE));
 
                 $sites[$i][self::TYPE] = trim($type_parts[0]);
                 if(isset($type_parts[1])) {
                     $encoding_parts = explode("charset=", $type_parts[1]);
                     if(isset($encoding_parts[1])) {
-                        $sites[$i][self::ENCODING] = mb_strtoupper(trim($encoding_parts[1])); //hopefuly safe to trust encoding sent
+                        $sites[$i][self::ENCODING] = 
+                            mb_strtoupper(trim($encoding_parts[1])); 
+                                //hopefuly safe to trust encoding sent
                     }
                 } else {
-                    $sites[$i][self::ENCODING] = mb_detect_encoding($content, 'auto');
+                    $sites[$i][self::ENCODING] = 
+                        mb_detect_encoding($content, 'auto');
                 }
 
 
@@ -158,7 +182,8 @@ class FetchUrl implements CrawlConstants
         } //end for
 
         if($timer) {
-            crawlLog("  Get Page Content time ".(changeInMicrotime($start_time)));
+            crawlLog("  Get Page Content time ".
+                (changeInMicrotime($start_time)));
         }
         curl_multi_close($agent_handler);
 

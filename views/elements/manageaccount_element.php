@@ -57,19 +57,30 @@ class ManageaccountElement extends Element
             <h2><?php e(tl('manageaccount_element_change_password'))?></h2>
             <form id="changePasswordForm" method="post" action=''>
             <input type="hidden" name="c" value="admin" />
-            <input type="hidden" name="YIOOP_TOKEN" value="<?php e($data['YIOOP_TOKEN']); ?>" /> 
+            <input type="hidden" name="YIOOP_TOKEN" value="<?php 
+                e($data['YIOOP_TOKEN']); ?>" /> 
             <input type="hidden" name="a" value="manageAccount" />
             <input type="hidden" name="arg" value="changepassword" />
 
             <table class="nametable">
-            <tr><td><label for="old-password"><?php e(tl('manageaccount_element_old_password'))?></label></td>
-                <td><input type="password" id="old-password" name="oldpassword"  maxlength="80" class="narrowfield"/></td></tr>
-            <tr><td><label for="new-password"><?php e(tl('manageaccount_element_new_password'))?></label></td>
-                <td><input type="password" id="new-password" name="newpassword"  maxlength="80" class="narrowfield"/></td></tr>
-            <tr><td><label for="retype-password"><?php e(tl('manageaccount_element_retype_password'))?></label></td>
-                <td><input type="password" id="retype-password" name="retypepassword"  maxlength="80" class="narrowfield" /></td></tr>
+            <tr><td><label for="old-password"><?php 
+                e(tl('manageaccount_element_old_password'))?></label></td>
+                <td><input type="password" id="old-password" 
+                    name="oldpassword"  maxlength="80" class="narrowfield"/>
+                </td></tr>
+            <tr><td><label for="new-password"><?php 
+                e(tl('manageaccount_element_new_password'))?></label></td>
+                <td><input type="password" id="new-password" 
+                    name="newpassword"  maxlength="80" class="narrowfield"/>
+                </td></tr>
+            <tr><td><label for="retype-password"><?php 
+                e(tl('manageaccount_element_retype_password'))?></label></td>
+                <td><input type="password" id="retype-password" 
+                    name="retypepassword"  maxlength="80" class="narrowfield" />
+                </td></tr>
             <tr><td></td>
-                <td class="center"><button class="buttonbox" type="submit"><?php e(tl('manageaccount_element_save')); ?></button></td></tr>
+                <td class="center"><button class="buttonbox" type="submit"><?php 
+                    e(tl('manageaccount_element_save')); ?></button></td></tr>
             </table>
             </form>
         </div>

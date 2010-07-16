@@ -83,10 +83,12 @@ class SettingsController extends Controller
 
         $languages = $this->localeModel->getLocaleList();
         foreach($languages as $language) {
-            $data['LANGUAGES'][$language['LOCALE_TAG']] = $language['LOCALE_NAME'];
+            $data['LANGUAGES'][$language['LOCALE_TAG']] = 
+                $language['LOCALE_NAME'];
         }
 
-        if($token_okay && isset($_REQUEST['lang']) && in_array($_REQUEST['lang'], array_keys($data['LANGUAGES']))) {
+        if($token_okay && isset($_REQUEST['lang']) && 
+            in_array($_REQUEST['lang'], array_keys($data['LANGUAGES']))) {
             $_SESSION['l'] = $_REQUEST['lang'];
             setLocaleObject( $_SESSION['l']);
             $changed_settings_flag = true;
@@ -94,8 +96,10 @@ class SettingsController extends Controller
         $data['LOCALE_TAG'] = getLocaleTag();
 
         $n = NUM_RESULTS_PER_PAGE;
-        $data['PER_PAGE'] = array($n => $n, 2*$n => 2*$n, 5*$n=> 5*$n, 10*$n=>10*$n);
-        if($token_okay && isset($_REQUEST['perpage']) && in_array($_REQUEST['perpage'], array_keys($data['PER_PAGE']))) {
+        $data['PER_PAGE'] = 
+            array($n => $n, 2*$n => 2*$n, 5*$n=> 5*$n, 10*$n=>10*$n);
+        if($token_okay && isset($_REQUEST['perpage']) && 
+            in_array($_REQUEST['perpage'], array_keys($data['PER_PAGE']))) {
             $_SESSION['MAX_PAGES_TO_SHOW'] = $_REQUEST['perpage'];
             $changed_settings_flag = true;
         }
@@ -107,7 +111,8 @@ class SettingsController extends Controller
         }
 
         if($changed_settings_flag) {
-            $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".tl('settings_controller_settings_saved')."</h1>')";
+            $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
+                tl('settings_controller_settings_saved')."</h1>')";
         }
 
         $this->displayView($view, $data);

@@ -61,7 +61,8 @@ class StringArray extends PersistentStructure
     /**
      *
      */
-    public function __construct($fname, $num_values, $data_size, $save_frequency = self::DEFAULT_SAVE_FREQUENCY) 
+    public function __construct($fname, $num_values, $data_size, 
+        $save_frequency = self::DEFAULT_SAVE_FREQUENCY) 
     {
         $this->filename = $fname;
         $this->num_values = $num_values;

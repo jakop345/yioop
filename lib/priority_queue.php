@@ -34,7 +34,7 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- *  Load in base classes and interfaces, get the crawlHash function, if necessary
+ *  Load in base classes and interfaces,get the crawlHash function, if necessary
  */
 require_once "string_array.php";
 require_once "notifier.php";
@@ -65,7 +65,9 @@ class PriorityQueue extends StringArray implements CrawlConstants
     /**
      *
      */
-    public function __construct($fname, $num_values, $value_size, $min_or_max, $notifier = NULL, $save_frequency = self::DEFAULT_SAVE_FREQUENCY) 
+    public function __construct($fname, $num_values, $value_size, 
+        $min_or_max, $notifier = NULL, 
+        $save_frequency = self::DEFAULT_SAVE_FREQUENCY) 
     {
         $this->num_values = $num_values;
         $this->value_size = $value_size;
@@ -75,7 +77,8 @@ class PriorityQueue extends StringArray implements CrawlConstants
 
         $this->notifier = $notifier;
 
-        parent::__construct($fname, $num_values, $value_size + $this->weight_size, $save_frequency);
+        parent::__construct($fname, $num_values, 
+            $value_size + $this->weight_size, $save_frequency);
 
     }
 
@@ -193,7 +196,8 @@ class PriorityQueue extends StringArray implements CrawlConstants
         $total_weight = $this->totalWeight();
 
         if($total_weight <= 0) {
-            crawlLog("Total queue weight was zero!!! Doing uniform renormalization!");
+            crawlLog(
+                "Total queue weight was zero!! Doing uniform renormalization!");
         }
 
         for($i = 1; $i <= $count; $i++) {
@@ -254,7 +258,7 @@ class PriorityQueue extends StringArray implements CrawlConstants
             if($child < $count) { // this 'if' checks if there is a right child 
                 $right_child_row = $this->getRow($child + 1);
 
-                if($this->compare($left_child_row[1], $right_child_row[1]) < 0) {
+                if($this->compare($left_child_row[1], $right_child_row[1]) <0) {
                     $child++;
                 }
             }

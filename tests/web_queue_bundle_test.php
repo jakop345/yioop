@@ -57,8 +57,8 @@ class WebQueueBundleTest extends UnitTest
     var $db;
 
     /**
-     * Sets up a miminal DBMS manager class so that we will be able to use unlinkRecursive to
-     * tear down own WebQueueBundle
+     * Sets up a miminal DBMS manager class so that we will be able to use 
+     * unlinkRecursive to tear down own WebQueueBundle
      */
     public function __construct()
     {
@@ -66,12 +66,14 @@ class WebQueueBundleTest extends UnitTest
         $this->db = new $db_class();
     }
     /**
-     *  Set up a web queue bundle that can store 1000 urls in ram, has bloom filter space for 1000 urls
-     *  and which uses a maximum value returning priority queue.
+     * Set up a web queue bundle that can store 1000 urls in ram, has bloom 
+     * filter space for 1000 urls and which uses a maximum value returning 
+     * priority queue.
      */
     public function setUp()
     {
-        $this->test_objects['FILE1'] = new WebQueueBundle("QueueTest", 1000, 1000, CrawlConstants::MAX);
+        $this->test_objects['FILE1'] = 
+            new WebQueueBundle("QueueTest", 1000, 1000, CrawlConstants::MAX);
     }
 
     /**
@@ -83,15 +85,18 @@ class WebQueueBundleTest extends UnitTest
     }
 
     /**
-     * Does two adds to the WebQueueBundle of urls and weight. Then checks the contents of the queue
-     * to see if as expected. Then does a rebuild on the hash table of the queue and checks that the contents
-     * have not changed.
+     * Does two adds to the WebQueueBundle of urls and weight. Then checks the 
+     * contents of the queue to see if as expected. Then does a rebuild on the 
+     * hash table of the queue and checks that the contents have not changed.
      */
     public function addQueueTestCase()
     {
-        $urls1 = array(array("http://www.pollett.com/", 10), array("http://www.ucanbuyart.com/", 15));
+        $urls1 = array(array("http://www.pollett.com/", 10), 
+            array("http://www.ucanbuyart.com/", 15));
         $this->test_objects['FILE1']->addUrlsQueue($urls1);
-        $urls2 = array(array("http://www.yahoo.com/", 2), array("http://www.google.com/", 20), array("http://www.slashdot.org/", 3));
+        $urls2 = array(array("http://www.yahoo.com/", 2), 
+            array("http://www.google.com/", 20), 
+            array("http://www.slashdot.org/", 3));
         $this->test_objects['FILE1']->addUrlsQueue($urls2);
 
         $expected_array = array(array('http://www.google.com/', 20),
@@ -102,10 +107,14 @@ class WebQueueBundleTest extends UnitTest
         );
 
 
-        $this->assertEqual($this->test_objects['FILE1']->getContents(), $expected_array, "Insert Queue matches predicted");
+        $this->assertEqual(
+            $this->test_objects['FILE1']->getContents(), $expected_array, 
+            "Insert Queue matches predicted");
 
         $this->test_objects['FILE1']->rebuildUrlTable();
-        $this->assertEqual($this->test_objects['FILE1']->getContents(), $expected_array, "Rebuild table should not affect contents");
+        $this->assertEqual(
+            $this->test_objects['FILE1']->getContents(), $expected_array, 
+            "Rebuild table should not affect contents");
 
     }
 

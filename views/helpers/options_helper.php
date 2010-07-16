@@ -68,8 +68,9 @@ class OptionsHelper extends Helper
         <?php
         foreach($options as $value => $text) {
         ?>
-            <option value="<?php e($value); ?>" 
-            <?php if($value==$selected) { e('selected="selected"'); } ?>><?php e($text); ?></option>
+            <option value="<?php e($value); ?>" <?php 
+                if($value==$selected) { e('selected="selected"'); } 
+             ?>><?php e($text); ?></option>
         <?php
         }
         ?>

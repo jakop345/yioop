@@ -59,10 +59,11 @@ class ActivityModel extends Model
 
 
     /**
-     *  Given the method name of a method to perform an activity return the translated activity name
+     * Given the method name of a method to perform an activity return the 
+     * translated activity name
      *
-     *  @param string $method_name  string with the name of the activity method
-     *  @return string  the translated name of the activity
+     * @param string $method_name  string with the name of the activity method
+     * @return string  the translated name of the activity
      */
     function getActivityNameFromMethodName($method_name)
     {
@@ -74,16 +75,19 @@ class ActivityModel extends Model
         $roles = array();
         $locale_tag = getLocaleTag();
 
-        $sql = "SELECT LOCALE_ID FROM LOCALE WHERE LOCALE_TAG = '$locale_tag' LIMIT 1";
+        $sql = "SELECT LOCALE_ID FROM LOCALE ".
+            "WHERE LOCALE_TAG = '$locale_tag' LIMIT 1";
         $result = $db->execute($sql);
         $row = $db->fetchArray($result);
         
         $locale_id = $row['LOCALE_ID'];
 
         $sql = "SELECT TL.TRANSLATION AS ACTIVITY_NAME  FROM ".
-            " TRANSLATION_LOCALE TL, LOCALE L, ACTIVITY A WHERE A.METHOD_NAME = '$method_name' ".
-            " AND TL.TRANSLATION_ID = A.TRANSLATION_ID AND L.LOCALE_ID='$locale_id' AND ".
-            " L.LOCALE_ID = TL.LOCALE_ID LIMIT 1"; 
+            " TRANSLATION_LOCALE TL, LOCALE L, ACTIVITY A ".
+            "WHERE A.METHOD_NAME = '$method_name' ".
+            "AND TL.TRANSLATION_ID = A.TRANSLATION_ID ".
+            "AND L.LOCALE_ID='$locale_id' AND ".
+            "L.LOCALE_ID = TL.LOCALE_ID LIMIT 1"; 
         $result = $db->execute($sql);
         $row = $db->fetchArray($result);
         
@@ -91,7 +95,8 @@ class ActivityModel extends Model
         if($row == NULL) {
 
             $sql = "SELECT T.IDENTIFIER_STRING AS ACTIVITY_NAME  FROM ".
-                " ACTIVITY A, TRANSLATION T WHERE A.METHOD_NAME = '$method_name' ".
+                " ACTIVITY A, TRANSLATION T ".
+                "WHERE A.METHOD_NAME = '$method_name' ".
                 " AND T.TRANSLATION_ID = A.TRANSLATION_ID LIMIT 1";
 
             $result = $db->execute($sql);
@@ -107,9 +112,10 @@ class ActivityModel extends Model
 
 
     /**
-     *  Gets a list of activity ids, method names, and translated name of each available activity
+     * Gets a list of activity ids, method names, and translated 
+     * name of each available activity
      *
-     *  @return array activities
+     * @return array activities
      */
     function getActivityList()
     {
@@ -119,12 +125,14 @@ class ActivityModel extends Model
         $activities = array();
         $locale_tag = getLocaleTag();
 
-        $sql = "SELECT LOCALE_ID FROM LOCALE WHERE LOCALE_TAG = '$locale_tag' LIMIT 1";
+        $sql = "SELECT LOCALE_ID FROM LOCALE ".
+            "WHERE LOCALE_TAG = '$locale_tag' LIMIT 1";
         $result = $db->execute($sql);
         $row = $db->fetchArray($result);
         $locale_id = $row['LOCALE_ID'];
 
-        $sql = "SELECT A.ACTIVITY_ID AS ACTIVITY_ID, A.METHOD_NAME AS METHOD_NAME, ".
+        $sql = "SELECT A.ACTIVITY_ID AS ACTIVITY_ID, ".
+            "A.METHOD_NAME AS METHOD_NAME, ".
             " T.IDENTIFIER_STRING AS IDENTIFIER_STRING FROM ".
             " ACTIVITY A, TRANSLATION T WHERE  ".
             " T.TRANSLATION_ID = A.TRANSLATION_ID"; 
@@ -134,8 +142,10 @@ class ActivityModel extends Model
         while($activities[$i] = $db->fetchArray($result)) {
             $id = $activities[$i]['ACTIVITY_ID'];
 
-            $sub_sql = "SELECT TRANSLATION AS ACTIVITY_NAME FROM TRANSLATION_LOCALE ".
-                " WHERE TRANSLATION_ID=$id AND LOCALE_ID=$locale_id LIMIT 1"; // maybe do left join at some point
+            $sub_sql = "SELECT TRANSLATION AS ACTIVITY_NAME ".
+                "FROM TRANSLATION_LOCALE ".
+                " WHERE TRANSLATION_ID=$id AND LOCALE_ID=$locale_id LIMIT 1"; 
+                // maybe do left join at some point
                     
             $result_sub =  $db->execute($sub_sql);
             $translate = $db->fetchArray($result_sub);
@@ -143,7 +153,8 @@ class ActivityModel extends Model
             if($translate) {
                 $activities[$i]['ACTIVITY_NAME'] = $translate['ACTIVITY_NAME'];
             } else {
-                $activities[$i]['ACTIVITY_NAME'] = $activities['IDENTIFIER_STRING'];
+                $activities[$i]['ACTIVITY_NAME'] = 
+                    $activities['IDENTIFIER_STRING'];
             }
             $i++;
         }

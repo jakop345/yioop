@@ -40,8 +40,9 @@ require_once "compressor.php";
 
  
 /**
- *  Implementation of a Compressor using GZIP/GUNZIP as the filter.
- *  More details on these algorithms can be found at {@link http://en.wikipedia.org/wiki/Gzip}
+ * Implementation of a Compressor using GZIP/GUNZIP as the filter.
+ * More details on these algorithms can be found at 
+ * {@link http://en.wikipedia.org/wiki/Gzip}
  *
  * @author Chris Pollett
  * @package seek_quarry
@@ -54,25 +55,25 @@ class GzipCompressor implements Compressor
     function __construct() {}
 
     /**
-     *  Applies the Compressor compress filter to a string before it is inserted into a WebArchive.
-     *  In this case, applying the filter means gzipping.
+     * Applies the Compressor compress filter to a string before it is inserted 
+     * into a WebArchive. In this case, applying the filter means gzipping.
      *
-     *  @param string $str  string to apply filter to
-     *  @return string  the result of applying the filter
+     * @param string $str  string to apply filter to
+     * @return string  the result of applying the filter
      */
-    public function compress($str)
+    function compress($str)
     {
         return gzcompress($str, 9);
     }
 
     /**
-     *  Used to unapply the compress filter as when data is read out of a WebArchive.
-     *  In this case, unapplying the filter means gunzipping.
+     * Used to unapply the compress filter as when data is read out of a 
+     * WebArchive. In this case, unapplying the filter means gunzipping.
      *
-     *  @param string $str  data read from a string archive
-     *  @return string result of uncompressing
+     * @param string $str  data read from a string archive
+     * @return string result of uncompressing
      */
-    public function uncompress($str)
+     function uncompress($str)
     {
         return gzuncompress($str);
     }

@@ -47,9 +47,9 @@ class ActivityElement extends Element
 {
 
     /**
-     *  Displays a list of admin activities
+     * Displays a list of admin activities
      *
-     *  @param array $data  available activities and CSRF token
+     * @param array $data  available activities and CSRF token
      */
     public function render($data) 
     {
@@ -67,8 +67,10 @@ class ActivityElement extends Element
                 } else {
                     $class="";
                 }
-                e("<li $class><a href='?c=admin&amp;YIOOP_TOKEN=".$data['YIOOP_TOKEN']
-                    ."&amp;a=".$activity[$i]['METHOD_NAME']."'>".$activity[$i]['ACTIVITY_NAME']."</a></li>");
+                e("<li $class><a href='?c=admin&amp;YIOOP_TOKEN=".
+                    $data['YIOOP_TOKEN']."&amp;a=".
+                    $activity[$i]['METHOD_NAME']."'>".
+                    $activity[$i]['ACTIVITY_NAME']."</a></li>");
             }
         }
         ?>

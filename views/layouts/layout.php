@@ -45,14 +45,14 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 class Layout
 {
     /**
-     *  The view that is to be drawn on this layout
-     *  @var object
+     * The view that is to be drawn on this layout
+     * @var object
      */
     var $view;
 
     /**
-     *  The constructor sets the view that will be drawn inside the
-     *  Layout.
+     * The constructor sets the view that will be drawn inside the
+     * Layout.
      *
      */
     public function __construct($v)
@@ -61,13 +61,13 @@ class Layout
     }
 
     /**
-     *  The render method of Layout and its subclasses is responsible for drawing the
-     *  header of the document, calling the renderView method of the
-     *  View that lives on the layout and then drawing the footer of 
-     *  the document.
+     * The render method of Layout and its subclasses is responsible for drawing
+     * the header of the document, calling the renderView method of the
+     * View that lives on the layout and then drawing the footer of 
+     * the document.
      *
-     *  @param array $data   an array of data set up by the controller to be
-     *  be used in drawing the Layout and its View.
+     * @param array $data   an array of data set up by the controller to be
+     * be used in drawing the Layout and its View.
      */
     public function render($data) {
        $this->view->renderView($data);

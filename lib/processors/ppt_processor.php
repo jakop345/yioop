@@ -121,10 +121,12 @@ class PptProcessor extends TextProcessor
                     break;
                      
                     case self::SCAN_TEXT_SEG:
-                        if(strpos($out_text, "lick to edit Master title style") > 0) {
+                        if(strpos($out_text, 
+                            "lick to edit Master title style") > 0) {
                             $state = self::ALWAYS_IGNORE;
                         } else if($scan_text_pos < $text_len) {
-                            if(($ascii >= 32 &&  $ascii <= 126) || $ascii == 10) {
+                            if(($ascii >= 32 &&  $ascii <= 126) ||
+                                $ascii == 10) {
                                 $out_text .= chr($ascii);
                                 $scan_text_pos++;
                              }

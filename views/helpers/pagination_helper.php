@@ -48,21 +48,26 @@ require_once BASE_DIR."/views/helpers/helper.php";
 class PaginationHelper extends Helper
 {
     /**
-     *  The maixmum numbered links to pages to show besides the next and previous links
+     * The maixmum numbered links to pages to show besides the next and 
+     * previous links
      *  @var int
      */
     const MAX_PAGES_TO_SHOW = 11;
 
     /**
-     *  Draws a strip of links which begins with a previous
-     *  link (if their are previous pages of links) followed by up to
-     *  ten links to more search result page (if available) followed
-     *  by a next set of pages link.
+     * Draws a strip of links which begins with a previous
+     * link (if their are previous pages of links) followed by up to
+     * ten links to more search result page (if available) followed
+     * by a next set of pages link.
      *
-     *  @param string $base_url   the url together with base query that the search was done on
-     *  @param int $limit   the number of the first link to display in the set of search results.
-     *  @param int $results_per_page   how many links are displayed on a given page of search results
-     *  @param int $total_results   the total number of search results for the current search term
+     * @param string $base_url the url together with base query that the 
+     *      search was done on
+     * @param int $limit the number of the first link to display in the 
+     *      set of search results.
+     * @param int $results_per_page   how many links are displayed on a given 
+     *      page of search results
+     * @param int $total_results the total number of search results for the 
+     *      current search term
      */
     public function render($base_url, $limit, $results_per_page, $total_results)
     {
@@ -84,7 +89,9 @@ class PaginationHelper extends Helper
         echo "<div class='pagination'><ul>";
         if(0 < $num_earlier_pages) {
             $prev_limit = ($num_earlier_pages - 1)*$results_per_page;
-            echo "<li><span class='end'>&laquo;<a  href='$base_url&amp;limit=$prev_limit'>".tl('pagination_helper_previous')."</a></span></li>";
+            echo "<li><span class='end'>&laquo;".
+                "<a href='$base_url&amp;limit=$prev_limit'>".
+                tl('pagination_helper_previous')."</a></span></li>";
         }
 
         for($i=$first_page; $i < $last_page; $i++) {
@@ -92,12 +99,15 @@ class PaginationHelper extends Helper
                 echo "<li><span class='item'>$i</span></li>";
              } else {
                 $cur_limit = $i * $results_per_page;
-                echo "<li><a class='item' href='$base_url&amp;limit=$cur_limit'>$i</a></li>";
+                echo "<li><a class='item' href='$base_url".
+                    "&amp;limit=$cur_limit'>$i</a></li>";
              }
         }
         if($num_earlier_pages < $total_pages - 1) {
             $next_limit = ($num_earlier_pages + 1)*$results_per_page;
-            echo "<li><span class='end'><a href='$base_url&amp;limit=$next_limit'>".tl('pagination_helper_next')."</a>&raquo;</span></li>";
+            echo "<li><span class='end'><a href='$base_url".
+                "&amp;limit=$next_limit'>".
+                tl('pagination_helper_next')."</a>&raquo;</span></li>";
         }
 
         echo "</ul></div>";

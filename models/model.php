@@ -76,9 +76,10 @@ class Model implements CrawlConstants
 
 
     /**
-     *  Sets up the database manager that will be used and name of the search engine database
+     * Sets up the database manager that will be used and name of the search 
+     * engine database
      *
-     *  @param string $db_name  the name of the database for the search engine
+     * @param string $db_name  the name of the database for the search engine
      */
     function __construct($db_name = DB_NAME) 
     {
@@ -92,13 +93,14 @@ class Model implements CrawlConstants
 
 
     /**
-     *  Given an array page summarries, for each summary extracts snippets which are related to a set of search words
-     *  For each snippet, bold faces the search terms, and then creates a new summary array.
+     * Given an array page summarries, for each summary extracts snippets which 
+     * are related to a set of search words. For each snippet, bold faces the 
+     * search terms, and then creates a new summary array.
      *
-     *  @param array $results an array of web pages summaries (these in turn are arrays!)
-     *  @param array $words  an array of keywords (typically what was searched on)
-     *
-     *  @return array summaries which have been snippified and bold faced
+     * @param array $results web pages summaries (these in turn are 
+     *      arrays!)
+     * @param array $words keywords (typically what was searched on)
+     * @return array summaries which have been snippified and bold faced
      */
     function formatPageResults($results, $words = NULL)
     {
@@ -117,7 +119,8 @@ class Model implements CrawlConstants
             $page[self::TITLE] = strip_tags($page[self::TITLE]);
 
             if(strlen($page[self::TITLE]) == 0 ) {
-                $offset = min(mb_strlen($page[self::DESCRIPTION]), TITLE_LENGTH);
+                $offset = 
+                    min(mb_strlen($page[self::DESCRIPTION]), TITLE_LENGTH);
                 $end_title = mb_strpos($page[self::DESCRIPTION], " ", $offset);
                 $ellipsis = "";
                 if($end_title > TITLE_LENGTH) {
@@ -126,19 +129,28 @@ class Model implements CrawlConstants
                         $end_title = MAX_TITLE_LENGTH;
                     }
                 }
-                $page[self::TITLE] = substr(strip_tags($page[self::DESCRIPTION]), 0, $end_title).$ellipsis;
+                $page[self::TITLE] = 
+                    substr(strip_tags($page[self::DESCRIPTION]), 0, $end_title).
+                    $ellipsis;
             }
 
 
             if($words != NULL) {
-                $page[self::TITLE] = $this->boldKeywords($page[self::TITLE], $words);
-                $page[self::DESCRIPTION] = substr(strip_tags($page[self::DESCRIPTION]), 0, DESCRIPTION_LENGTH);
+                $page[self::TITLE] = 
+                    $this->boldKeywords($page[self::TITLE], $words);
+                $page[self::DESCRIPTION] = 
+                    substr(strip_tags(
+                        $page[self::DESCRIPTION]), 0, DESCRIPTION_LENGTH);
 
-                $page[self::DESCRIPTION] = $this->getSnippets($page[self::DESCRIPTION], $words);
-                $page[self::DESCRIPTION] = $this->boldKeywords($page[self::DESCRIPTION], $words);
+                $page[self::DESCRIPTION] = 
+                    $this->getSnippets($page[self::DESCRIPTION], $words);
+                $page[self::DESCRIPTION] = 
+                    $this->boldKeywords($page[self::DESCRIPTION], $words);
 
             } else {
-                $page[self::DESCRIPTION] = substr(strip_tags($page[self::DESCRIPTION]), 0, DESCRIPTION_LENGTH);
+                $page[self::DESCRIPTION] = 
+                    substr(strip_tags(
+                        $page[self::DESCRIPTION]), 0, DESCRIPTION_LENGTH);
             }
 
             $page[self::SCORE] = substr($page[self::SCORE], 0, SCORE_PRECISION);
@@ -156,10 +168,11 @@ class Model implements CrawlConstants
 
 
     /**
-     *  Given a string, extracts a snippets of text related to a given set of key words.
-     *  For a given word a snippet is a window of characters to its left and right that
-     *  is less than a maximum total number of characters. There is also a rule that
-     *  a snippet should avoid ending in the middle of a word
+     * Given a string, extracts a snippets of text related to a given set of 
+     * key words. For a given word a snippet is a window of characters to its 
+     * left and right that is less than a maximum total number of characters. 
+     * There is also a rule that a snippet should avoid ending in the middle of 
+     * a word
      *
      *  @param string $text haystack to extract snippet from
      *  @param array $words keywords used to make look in haystack
@@ -189,22 +202,25 @@ class Model implements CrawlConstants
 
 
             foreach($word_locations as $pos => $word) {
-                $pre_low = ($pos >= SNIPPET_LENGTH_LEFT) ? $pos - SNIPPET_LENGTH_LEFT: 0;
+                $pre_low = ($pos >= SNIPPET_LENGTH_LEFT) ? 
+                    $pos - SNIPPET_LENGTH_LEFT: 0;
                 if(!($low = mb_strpos($text, " ", $pre_low))) {
                     $low = $pre_low;
                 }
 
-                $pre_high = ($pos + SNIPPET_LENGTH_RIGHT <= $len ) ? $pos + SNIPPET_LENGTH_RIGHT: $len;
+                $pre_high = ($pos + SNIPPET_LENGTH_RIGHT <= $len ) ? 
+                    $pos + SNIPPET_LENGTH_RIGHT: $len;
                 if(!($high = mb_strpos($text, " ", $pre_high))) {
                     $high = $pre_high;
                 }
 
                 if( strlen($snippet_string)  < DESCRIPTION_LENGTH) {
-                    $snippet_string .= $ellipsis.mb_substr($text, $low, $high - $low);
+                    $snippet_string .= 
+                        $ellipsis.mb_substr($text, $low, $high - $low);
                     $ellipsis = "...";
                 }
             }
-        } while( strlen($snippet_string) < DESCRIPTION_LENGTH && $offset < $len) ;
+        } while(strlen($snippet_string) < DESCRIPTION_LENGTH && $offset < $len);
 
         if(strlen($snippet_string) < MIN_SNIPPET_LENGTH) {
             $snippet_string = $text;
@@ -236,7 +252,7 @@ class Model implements CrawlConstants
     }
 
     /**
-     *  Gets a list of all DBMS that work with the search engine
+     * Gets a list of all DBMS that work with the search engine
      *
      *  @return array Names of availabledatasources
      */
@@ -246,7 +262,10 @@ class Model implements CrawlConstants
         $data_managers = glob(BASE_DIR.'/models/datasources/*_manager.php');
 
         foreach($data_managers as $data_manager) {
-            $dbms = substr($data_manager, strlen(BASE_DIR.'/models/datasources/'), -strlen("_manager.php"));
+            $dbms = 
+                substr($data_manager, 
+                    strlen(BASE_DIR.'/models/datasources/'), -
+                    strlen("_manager.php"));
             if($dbms != 'datasource') {
                 $list[] = $dbms;
             }
@@ -256,10 +275,11 @@ class Model implements CrawlConstants
     }
 
     /**
-     *  Returns whether the provided dbms needs a login and password or not (sqlite or sqlite3)
+     * Returns whether the provided dbms needs a login and password or not 
+     * (sqlite or sqlite3)
      *
-     *  @param string $dbms the name of a database management system
-     *  @return bool true if needs a login and password; false otherwise 
+     * @param string $dbms the name of a database management system
+     * @return bool true if needs a login and password; false otherwise 
      */
     function loginDbms($dbms)
     {

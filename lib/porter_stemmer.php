@@ -88,7 +88,7 @@ class PorterStemmer
     }
 
     /** m() measures the number of consonant sequences between k0 and j. if c is
-     *  a consonant sequence and v a vowel sequence, and <..> indicates arbitrary
+     *  a consonant sequence and v a vowel sequence, and <.> indicates arbitrary
      *  presence,
 
      *    <c><v>       gives 0
@@ -161,7 +161,8 @@ class PorterStemmer
 
     private static function cvc($i)
     {
-        if ($i < 2 || !self::cons($i) || self::cons($i - 1) || !self::cons($i - 2)) return false;
+        if ($i < 2 || !self::cons($i) || self::cons($i - 1) || 
+            !self::cons($i - 2)) return false;
 
         $ch = self::$buffer[$i];
         if ($ch == 'w' || $ch == 'x' || $ch == 'y') return false;
@@ -176,7 +177,8 @@ class PorterStemmer
         $len = strlen($s);
         $loc = self::$k - $len + 1;
         
-        if($loc < 0 || substr_compare(self::$buffer, $s, $loc, $len) != 0) return false;
+        if($loc < 0 || 
+            substr_compare(self::$buffer, $s, $loc, $len) != 0) return false;
 
         self::$j = self::$k - $len;
 
@@ -236,7 +238,8 @@ class PorterStemmer
         }
         if (self::ends("eed")) { 
             if (self::m() > 0) self::$k--; 
-        } else if ((self::ends("ed") || self::ends("ing")) && self::vowelinstem()) {
+        } else if ((self::ends("ed") || self::ends("ing")) && 
+            self::vowelinstem()) {
             self::$k = self::$j;
             if (self::ends("at")) {
                 self::setto("ate");
@@ -265,7 +268,7 @@ class PorterStemmer
 
 
     /* step2() maps double suffices to single ones. so -ization ( = -ize plus
-       -ation) maps to -ize etc. note that the string before the suffix must give
+       -ation) maps to -ize etc.Note that the string before the suffix must give
        m() > 0. */
 
     private static function step2() 
@@ -368,7 +371,9 @@ class PorterStemmer
                 if (self::ends("ent")) break;
                 return;
             case 'o':
-                if (self::ends("ion") && self::$j >= 0 && (self::$buffer[self::$j] == 's' || self::$buffer[self::$j] == 't')) break;
+                if (self::ends("ion") && self::$j >= 0 && 
+                    (self::$buffer[self::$j] == 's' || 
+                    self::$buffer[self::$j] == 't')) break;
                 if (self::ends("ou")) break;
                 return;
             /* takes care of -ous */
@@ -406,7 +411,8 @@ class PorterStemmer
             $a = self::m();
             if ($a > 1 || $a == 1 && !self::cvc(self::$k - 1)) self::$k--;
         }
-        if (self::$buffer[self::$k] == 'l' && self::doublec(self::$k) && self::m() > 1) self::$k--;
+        if (self::$buffer[self::$k] == 'l' && 
+            self::doublec(self::$k) && self::m() > 1) self::$k--;
     }
 
 

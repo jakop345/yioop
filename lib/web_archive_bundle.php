@@ -45,11 +45,11 @@ require_once 'gzip_compressor.php';
  
 /**
  * 
- * A web archive bundle is a collection of web archives which are managed together
- * It is useful to split data across several archive files rather than just store
- * it in one, for both read efficiency and to keep filesizes from getting too big.
- * In some places we are using 4 byte int's to store file offset which restricts the
- * size of the files we can use for wbe archives.
+ * A web archive bundle is a collection of web archives which are managed 
+ * together.It is useful to split data across several archive files rather than 
+ * just store it in one, for both read efficiency and to keep filesizes from 
+ * getting too big. In some places we are using 4 byte int's to store file 
+ * offset which restricts the size of the files we can use for wbe archives.
  *
  * @author Chris Pollett
  *
@@ -71,7 +71,9 @@ class WebArchiveBundle
     /**
      *
      */
-    public function __construct($dir_name, $filter_size = -1, $num_partitions = NULL, $description = NULL, $compressor = "GzipCompressor") 
+    public function __construct($dir_name, $filter_size = -1, 
+        $num_partitions = NULL, $description = NULL, 
+        $compressor = "GzipCompressor") 
     {
         //filter size = -1 used by web server to not get all partitions created
         
@@ -91,7 +93,8 @@ class WebArchiveBundle
         //store/read archive description
         $info = NULL;
         if(file_exists($dir_name."/description.txt")) {
-            $info = unserialize(file_get_contents($this->dir_name."/description.txt"));
+            $info = unserialize(
+                file_get_contents($this->dir_name."/description.txt"));
         }
 
         $this->num_partitions = $num_partitions;
@@ -119,12 +122,18 @@ class WebArchiveBundle
         $info['NUM_PARTITIONS'] = $this->num_partitions;
         $info['COUNT'] = $this->count;
         if(!$read_only_archive) {
-            file_put_contents($this->dir_name."/description.txt", serialize($info));
+            file_put_contents(
+                $this->dir_name."/description.txt", serialize($info));
         }
 
-        //filter bundle to check if a downloaded page should be put in archive (for de-duplication)
+        /* 
+           filter bundle to check if a downloaded page should be put in archive 
+           (for de-duplication)
+         */
         if($this->filter_size > 0) {
-            $this->page_exists_filter_bundle = new BloomFilterBundle($dir_name."/PageExistsFilterBundle", $filter_size);
+            $this->page_exists_filter_bundle = 
+                new BloomFilterBundle($dir_name."/PageExistsFilterBundle", 
+                    $filter_size);
         }
     }
 
@@ -139,7 +148,8 @@ class WebArchiveBundle
         }
 
         $num_pages = count($pages);
-        for($i = 0; $i < $num_pages; $i++) { //we are doing this to preserve the order of the returned array
+        for($i = 0; $i < $num_pages; $i++) { 
+            //we are doing this to preserve the order of the returned array
             $pages[$i]['TMP_INDEX'] = $i;
         }
 
@@ -147,7 +157,8 @@ class WebArchiveBundle
             if(isset($page[$key_field])) {
                 $this->count++;
 
-                $index = WebArchiveBundle::selectPartition($page[$key_field], $this->num_partitions);
+                $index = WebArchiveBundle::selectPartition(
+                    $page[$key_field], $this->num_partitions);
 
                 $partition_queue[$index][] =  $page;
             }
@@ -155,11 +166,14 @@ class WebArchiveBundle
 
         $pages_with_offsets = array();
         for($i = 0; $i < $this->num_partitions; $i++) {
-            $pages_with_offsets = array_merge($pages_with_offsets, $this->addObjectsPartition($offset_field, $i, $partition_queue[$i]));
+            $pages_with_offsets = array_merge($pages_with_offsets, 
+                $this->addObjectsPartition(
+                    $offset_field, $i, $partition_queue[$i]));
         }
 
         foreach($pages_with_offsets as $off_page) {
-            $pages[$off_page['TMP_INDEX']][$offset_field] = $off_page[$offset_field];
+            $pages[$off_page['TMP_INDEX']][$offset_field] = 
+                $off_page[$offset_field];
             unset($pages[$off_page['TMP_INDEX']]['TMP_INDEX'] );
         }
         return $pages;
@@ -170,7 +184,8 @@ class WebArchiveBundle
      */
     public function getPage($key, $offset)
     {
-        $partition = WebArchiveBundle::selectPartition($key, $this->num_partitions);
+        $partition = 
+            WebArchiveBundle::selectPartition($key, $this->num_partitions);
 
         return $this->getPageByPartition($partition, $offset);
     }
@@ -180,7 +195,9 @@ class WebArchiveBundle
      */
     public function getPageByPartition($partition, $offset, $file_handle = NULL)
     {
-        $page_array = $this->getPartition($partition)->getObjects($offset, 1, true, $file_handle);
+        $page_array = 
+            $this->getPartition($partition)->getObjects(
+                $offset, 1, true, $file_handle);
 
         if(isset($page_array[0][1])) {
             return $page_array[0][1];
@@ -205,12 +222,14 @@ class WebArchiveBundle
     /**
      *
      */
-    public function addObjectsPartition($offset_field, $partition, &$objects, $data = NULL, $callback = NULL, $return_flag = true)
+    public function addObjectsPartition($offset_field, $partition, 
+        &$objects, $data = NULL, $callback = NULL, $return_flag = true)
     {
         $num_objects = count($objects);
         $this->addCount($num_objects);
 
-        return $this->getPartition($partition)->addObjects($offset_field, $objects, $data, $callback, $return_flag);
+        return $this->getPartition($partition)->addObjects(
+            $offset_field, $objects, $data, $callback, $return_flag);
     }
 
     /**
@@ -253,7 +272,8 @@ class WebArchiveBundle
      */
     public function differencePagesFilter(&$page_array, $field_name = NULL)
     {
-        $this->page_exists_filter_bundle->differenceFilter($page_array, $field_name);
+        $this->page_exists_filter_bundle->differenceFilter(
+            $page_array, $field_name);
     }
 
     /**
@@ -271,12 +291,15 @@ class WebArchiveBundle
      */
     public function getPartition($index, $fast_construct = true)
     {
-        if(!isset($this->partition[$index])) { //this might not have been open yet
+        if(!isset($this->partition[$index])) { 
+            //this might not have been open yet
             $create_flag = false;
             if(!file_exists($this->dir_name."/web_archive_".$index)) {
                 $create_flag = true;
             }
-            $this->partition[$index] = new WebArchive($this->dir_name."/web_archive_".$index, new $this->compressor(), $fast_construct);
+            $this->partition[$index] = 
+                new WebArchive($this->dir_name."/web_archive_".$index, 
+                    new $this->compressor(), $fast_construct);
             if($create_flag) {
                 chmod($this->dir_name."/web_archive_".$index, 0777);
             }
@@ -290,7 +313,8 @@ class WebArchiveBundle
      */
     function addCount($num)
     {
-        $info = unserialize(file_get_contents($this->dir_name."/description.txt"));
+        $info = 
+            unserialize(file_get_contents($this->dir_name."/description.txt"));
         $info['COUNT'] += $num;
         file_put_contents($this->dir_name."/description.txt", serialize($info));
     }
@@ -302,7 +326,8 @@ class WebArchiveBundle
     {
         if(!is_dir($dir_name) || !file_exists($dir_name."/description.txt")) {
             $info = array();
-            $info['DESCRIPTION'] = "Archive does not exist OR Archive description file not found";
+            $info['DESCRIPTION'] = 
+                "Archive does not exist OR Archive description file not found";
             $info['COUNT'] = 0;
             $info['NUM_PARTITIONS'] = 0;
             return $info;

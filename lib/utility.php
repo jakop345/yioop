@@ -40,7 +40,8 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  *
  *  @param string $msg message to log
  *  @param string $lname name of log file in the LOG_DIR directory, rotated logs
- *      will also use this as their basename followed by a number followed by bz2 (since they are bzipped).
+ *      will also use this as their basename followed by a number followed by 
+ *      bz2 (since they are bzipped).
  */
 
 function crawlLog($msg, $lname = NULL)
@@ -71,7 +72,8 @@ function crawlLog($msg, $lname = NULL)
                     rename("$logfile.".($i-1).".bz2", "$logfile.$i.bz2");
                 }
             }
-            file_put_contents("$logfile.0.bz2", bzcompress(file_get_contents($logfile)));
+            file_put_contents("$logfile.0.bz2", 
+                bzcompress(file_get_contents($logfile)));
             unlink($logfile);
         }
         error_log($out_msg."\n", 3, $logfile);
@@ -106,7 +108,8 @@ function crawlHash($string, $raw=false)
     if(!$raw) {
         $hash = rtrim(base64_encode($combine), "=");
         $hash = str_replace("/", "_", $hash);
-        $hash = str_replace("+", "-" , $hash); // common variant of base64 safe for urls and paths
+        $hash = str_replace("+", "-" , $hash); 
+            // common variant of base64 safe for urls and paths
     } else {
         $hash = $combine;
     }
@@ -115,13 +118,15 @@ function crawlHash($string, $raw=false)
 }
 
 /**
- *  The search engine project's variation on the Unix crypt function using the crawlHash function instead of DES
+ * The search engine project's variation on the Unix crypt function using the 
+ * crawlHash function instead of DES
  *
- *  The crawlHash function is used to encrypt passwords stored in the database
+ * The crawlHash function is used to encrypt passwords stored in the database
  *
- *  @param string $string the string to encrypt
- *  @param int $salt salt value to be used (needed to verify if a password is valid)
- *  @return string the crypted string where crypting is done using crawlHash
+ * @param string $string the string to encrypt
+ * @param int $salt salt value to be used (needed to verify if a password is 
+ *      valid)
+ * @return string the crypted string where crypting is done using crawlHash
  */
 function crawlCrypt($string, $salt = NULL)
 {
@@ -138,13 +143,14 @@ function crawlCrypt($string, $salt = NULL)
 
 
 /**
- *  Measures the change in time in seconds between two timestamps to microsecond precision
+ * Measures the change in time in seconds between two timestamps to microsecond
+ * precision
  *
- *  @param string $start starting time with microseconds
- *  @param string $end ending time with microseconds
- *  @return float time difference in seconds
- *  @see SigninModel::changePassword()
- *  @see SigninModel::checkValidSignin()
+ * @param string $start starting time with microseconds
+ * @param string $end ending time with microseconds
+ * @return float time difference in seconds
+ * @see SigninModel::changePassword()
+ * @see SigninModel::checkValidSignin()
  */
 function changeInMicrotime( $start, $end=NULL ) 
 {
@@ -155,7 +161,8 @@ function changeInMicrotime( $start, $end=NULL )
     list($end_microseconds, $end_seconds) = explode(" ", $end);
 
     $change_in_seconds = intval($end_seconds) - intval($start_seconds);
-    $change_in_microseconds = floatval($end_microseconds) - floatval($start_microseconds);
+    $change_in_microseconds = 
+        floatval($end_microseconds) - floatval($start_microseconds);
 
     return floatval( $change_in_seconds ) + $change_in_microseconds;
 } 
@@ -163,10 +170,11 @@ function changeInMicrotime( $start, $end=NULL )
 // callbacks for Model::traverseDirectory
 
 /**
- *  This is a callback function used in the process of recursively deleting a directory
+ * This is a callback function used in the process of recursively deleting a 
+ * directory
  *
- *  @param string $file_or_dir the filename or directory name to be deleted
- *  @see DatasourceManager::unlinkRecursive()
+ * @param string $file_or_dir the filename or directory name to be deleted
+ * @see DatasourceManager::unlinkRecursive()
  */
 function deleteFileOrDir($file_or_dir)
 {
@@ -196,19 +204,21 @@ function setWorldPermissions($file)
  */
 function scoreOrderCallback($word_doc_a, $word_doc_b)
 {
-    return ((float)$word_doc_a[CrawlConstants::SCORE] > (float)$word_doc_b[CrawlConstants::SCORE]) ? -1 : 1;
+    return ((float)$word_doc_a[CrawlConstants::SCORE] > 
+        (float)$word_doc_b[CrawlConstants::SCORE]) ? -1 : 1;
 }
 
 /**
- *  Callback to check if $a is less than $b
+ * Callback to check if $a is less than $b
  *
- *  Used to help sort document results returned in PhraseModel called in IndexArchiveBundle
+ * Used to help sort document results returned in PhraseModel called 
+ * in IndexArchiveBundle
  *
- *  @param float $a first value to compare
- *  @param float $b second value to compare
- *  @return int -1 if $a is less than $b; 1 otherwise
- *  @see IndexArchiveBundle::getSelectiveWords()
- *  @see PhraseModel::getPhrasePageResults()
+ * @param float $a first value to compare
+ * @param float $b second value to compare
+ * @return int -1 if $a is less than $b; 1 otherwise
+ * @see IndexArchiveBundle::getSelectiveWords()
+ * @see PhraseModel::getPhrasePageResults()
  */
 function lessThan($a, $b) {
     if ($a == $b) {
@@ -220,13 +230,14 @@ function lessThan($a, $b) {
 /**
  *  Callback to check if $a is greater than $b
  *
- *  Used to help sort document results returned in PhraseModel called in IndexArchiveBundle
+ * Used to help sort document results returned in PhraseModel called in 
+ * IndexArchiveBundle
  *
- *  @param float $a first value to compare
- *  @param float $b second value to compare
- *  @return int -1 if $a is greater than $b; 1 otherwise
- *  @see IndexArchiveBundle::getSelectiveWords()
- *  @see PhraseModel::getTopPhrases()
+ * @param float $a first value to compare
+ * @param float $b second value to compare
+ * @return int -1 if $a is greater than $b; 1 otherwise
+ * @see IndexArchiveBundle::getSelectiveWords()
+ * @see PhraseModel::getTopPhrases()
  */
 function greaterThan($a, $b) {
     if ($a == $b) {

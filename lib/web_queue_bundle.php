@@ -75,7 +75,8 @@ class WebQueueBundle implements Notifier
     /**
      *
      */
-    public function __construct($dir_name, $filter_size, $num_urls_ram, $min_or_max) 
+    public function __construct($dir_name, 
+        $filter_size, $num_urls_ram, $min_or_max) 
     {
         $this->dir_name = $dir_name;
         $this->filter_size = $filter_size;
@@ -87,28 +88,38 @@ class WebQueueBundle implements Notifier
         }
 
         /*
-            if we are resuming a crawl we discard the old priority queue and associated hash table and archive
-            new queue data will be read in from any existing schedule
+            if we are resuming a crawl we discard the old priority queue and 
+            associated hash table and archive new queue data will be read in 
+            from any existing schedule
         */
         // set up the priority queue... stores (hash(url), weight) pairs.
-        $this->to_crawl_queue = new PriorityQueue($dir_name."/queue.dat", $num_urls_ram, 8, $min_or_max, $this);
+        $this->to_crawl_queue = new PriorityQueue($dir_name."/queue.dat", 
+            $num_urls_ram, 8, $min_or_max, $this);
 
-        // set up the hash table... stores (hash(url), offset into url archive, index in priority queue) triples.
+        /* set up the hash table... stores (hash(url), offset into url archive, i
+          ndex in priority queue) triples.
+         */
 
-        /*to ensure we can always insert into table, because of how deletions work we will periodically want to
-          rebuild our table we will also want to give a little more than the usual twice the number we want to
-          insert slack
+        /*to ensure we can always insert into table, because of how deletions 
+          work we will periodically want to
+          rebuild our table we will also want to give a little more than the 
+          usual twice the number we want to insert slack
         */
-        $this->to_crawl_table = $this->constructHashTable($dir_name."/hash_table.dat", 4*$num_urls_ram);
+        $this->to_crawl_table = $this->constructHashTable(
+            $dir_name."/hash_table.dat", 4*$num_urls_ram);
 
-        // set up url archive, used to store the full text of the urls which are on the priority queue
+        /* set up url archive, used to store the full text of the urls which 
+           are on the priority queue
+         */
         if(file_exists($dir_name."/url_archive")) {
             unlink($dir_name."/url_archive");
         }
-        $this->to_crawl_archive = new WebArchive($dir_name."/url_archive", new NonCompressor());
+        $this->to_crawl_archive = new WebArchive(
+            $dir_name."/url_archive", new NonCompressor());
 
         //filter bundle to check if we have already visited a URL
-        $this->url_exists_filter_bundle = new BloomFilterBundle($dir_name."/UrlExistsFilterBundle", $filter_size);
+        $this->url_exists_filter_bundle = new BloomFilterBundle(
+            $dir_name."/UrlExistsFilterBundle", $filter_size);
 
         //timestamp for robot filters (so can delete if get too old)
         if(!file_exists($dir_name."/robot_timestamp.txt")) {
@@ -117,26 +128,33 @@ class WebQueueBundle implements Notifier
 
         //filter to check if we have already have a copy of a robot.txt file
         if(file_exists($dir_name."/got_robottxt.ftr")) {
-            $this->got_robottxt_filter = BloomFilterFile::load($dir_name."/got_robottxt.ftr");
+            $this->got_robottxt_filter = BloomFilterFile::load(
+                $dir_name."/got_robottxt.ftr");
 
         } else {
-            $this->got_robottxt_filter = new BloomFilterFile($dir_name."/got_robottxt.ftr", $filter_size);
+            $this->got_robottxt_filter = new BloomFilterFile(
+                $dir_name."/got_robottxt.ftr", $filter_size);
         }
 
         //filter with disallowed robots.txt paths
         if(file_exists($dir_name."/dissallowed_robot.ftr")) {
-            $this->dissallowed_robot_filter = BloomFilterFile::load($dir_name."/dissallowed_robot.ftr");
+            $this->dissallowed_robot_filter = 
+                BloomFilterFile::load($dir_name."/dissallowed_robot.ftr");
 
         } else {
-            $this->dissallowed_robot_filter = new BloomFilterFile($dir_name."/dissallowed_robot.ftr", $filter_size);
+            $this->dissallowed_robot_filter = 
+                new BloomFilterFile(
+                    $dir_name."/dissallowed_robot.ftr", $filter_size);
         }
       
         //filter to check for and determine crawl delay
         if(file_exists($dir_name."/crawl_delay.ftr")) {
-            $this->crawl_delay_filter = BloomFilterFile::load($dir_name."/crawl_delay.ftr");
+            $this->crawl_delay_filter = 
+                BloomFilterFile::load($dir_name."/crawl_delay.ftr");
 
         } else {
-            $this->crawl_delay_filter = new BloomFilterFile($dir_name."/crawl_delay.ftr", $filter_size);
+            $this->crawl_delay_filter = 
+                new BloomFilterFile($dir_name."/crawl_delay.ftr", $filter_size);
         }
     }
 
@@ -163,8 +181,12 @@ class WebQueueBundle implements Notifier
                 $data = pack('N', $offset).pack("N", 0);
 
                 if($this->insertHashTable(crawlHash($url, true), $data)) {
-                    //we will change 0 to priority queue index in the notify callback
-                    $loc = $this->to_crawl_queue->insert(crawlHash($url, true), $weight);
+                    /* 
+                       we will change 0 to priority queue index in the 
+                       notify callback
+                     */
+                    $loc = $this->to_crawl_queue->insert(
+                        crawlHash($url, true), $weight);
                 } else {
                     echo "Error inserting $url into hash table !!";
                 }
@@ -321,7 +343,8 @@ class WebQueueBundle implements Notifier
      */
     public function differenceSeenUrls(&$url_array, $field_name = NULL)
     {
-        $this->url_exists_filter_bundle->differenceFilter($url_array, $field_name);
+        $this->url_exists_filter_bundle->differenceFilter(
+            $url_array, $field_name);
     }
 
     /**
@@ -362,7 +385,8 @@ class WebQueueBundle implements Notifier
     public function getRobotTxtAge()
     {
 
-        $creation_time = intval(file_get_contents($this->dir_name."/robot_timestamp.txt"));
+        $creation_time = intval(
+            file_get_contents($this->dir_name."/robot_timestamp.txt"));
 
         return (time() - $creation_time);
     }
@@ -372,7 +396,8 @@ class WebQueueBundle implements Notifier
      */
     public function setCrawlDelay($host, $value)
     {
-        $this->crawl_delay_filter->add("-1".$host); //used to say a crawl delay has been set
+        $this->crawl_delay_filter->add("-1".$host); 
+            //used to say a crawl delay has been set
 
         for($i = 0; $i < 8; $i++) {
             if(($value & 1) == 1) {
@@ -450,7 +475,8 @@ class WebQueueBundle implements Notifier
     {
         crawlLog("Rebuilding Hash table");
         $num_values = $this->to_crawl_table->num_values;
-        $tmp_table = $this->constructHashTable($this->dir_name."/tmp_table.dat", $num_values);
+        $tmp_table = $this->constructHashTable(
+            $this->dir_name."/tmp_table.dat", $num_values);
         $null = $this->to_crawl_table->null;
         $deleted = $this->to_crawl_table->deleted;
         
@@ -467,7 +493,8 @@ class WebQueueBundle implements Notifier
         if(file_exists($this->dir_name."/hash_table.dat")) {
             unlink($this->dir_name."/hash_table.dat");
             if(file_exists($this->dir_name."/tmp_table.dat")) {
-                rename($this->dir_name."/tmp_table.dat", $this->dir_name."/hash_table.dat");
+                rename($this->dir_name."/tmp_table.dat", 
+                    $this->dir_name."/hash_table.dat");
             }
         }
         $tmp_table->filename = $this->dir_name."/hash_table.dat";
@@ -475,8 +502,8 @@ class WebQueueBundle implements Notifier
     }
     
    /**
-    * Since offsets are integers, even if the queue is kept relatively small, periodically
-    * we will need to rebuild the archive for storing urls.
+    * Since offsets are integers, even if the queue is kept relatively small, 
+    * periodically we will need to rebuild the archive for storing urls.
     */
     public function rebuildUrlTable()
     {
@@ -484,7 +511,8 @@ class WebQueueBundle implements Notifier
         $dir_name = $this->dir_name;
 
         $count = $this->to_crawl_queue->count;
-        $tmp_archive = new WebArchive($dir_name."/tmp_archive", new NonCompressor());
+        $tmp_archive = 
+            new WebArchive($dir_name."/tmp_archive", new NonCompressor());
         
         for($i = 1; $i <= $count; $i++) {
 
@@ -533,9 +561,15 @@ class WebQueueBundle implements Notifier
         $this->crawl_delay_filter = NULL;
         gc_collect_cycles();
 
-        $this->got_robottxt_filter = new BloomFilterFile($this->dir_name."/got_robottxt.ftr", $this->filter_size);
-        $this->dissallowed_robot_filter = new BloomFilterFile($this->dir_name."/dissallowed_robot.ftr", $this->filter_size);
-        $this->crawl_delay_filter = new BloomFilterFile($this->dir_name."/crawl_delay.ftr", $this->filter_size);
+        $this->got_robottxt_filter = 
+            new BloomFilterFile(
+                $this->dir_name."/got_robottxt.ftr", $this->filter_size);
+        $this->dissallowed_robot_filter = 
+            new BloomFilterFile(
+                $this->dir_name."/dissallowed_robot.ftr", $this->filter_size);
+        $this->crawl_delay_filter = 
+            new BloomFilterFile(
+                $this->dir_name."/crawl_delay.ftr", $this->filter_size);
     }
 
     /**
@@ -551,7 +585,8 @@ class WebQueueBundle implements Notifier
 
             $this->insertHashTable($hash_url, $data);
         } else {
-            echo "NOTIFY LOOKUP FAILED. INDEX WAS $index. DATA WAS ".bin2hex($data[0])."\n";
+            echo "NOTIFY LOOKUP FAILED. INDEX WAS $index. DATA WAS ".
+                bin2hex($data[0])."\n";
           
         }
     }

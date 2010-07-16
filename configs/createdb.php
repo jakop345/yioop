@@ -43,10 +43,12 @@ if(isset($_SERVER['DOCUMENT_ROOT']) && strlen($_SERVER['DOCUMENT_ROOT']) > 0) {
  *
  *
  */
-define("BASE_DIR", substr($_SERVER['DOCUMENT_ROOT'].$_SERVER['PWD'].$_SERVER["SCRIPT_NAME"], 0, 
+define("BASE_DIR", substr($_SERVER['DOCUMENT_ROOT'].
+    $_SERVER['PWD'].$_SERVER["SCRIPT_NAME"], 0, 
     -strlen("configs/createdb.php")));
 require_once BASE_DIR.'/configs/config.php';
-require_once BASE_DIR."/models/datasources/".DBMS."_manager.php"; //get the database library
+require_once BASE_DIR."/models/datasources/".DBMS."_manager.php"; 
+    //get the database library
 require_once BASE_DIR."/lib/utility.php"; //for crawlHash function
 
 
@@ -59,7 +61,10 @@ if(in_array(DBMS, array("mysql"))) {
     $auto_increment = "AUTO_INCREMENT";
 }
 if(in_array(DBMS, array("sqlite"))) {
-    $auto_increment = ""; //in sqlite2 a primary key column will act as auto_increment if don't give value
+    $auto_increment = ""; 
+    /* in sqlite2 a primary key column will act 
+       as auto_increment if don't give value
+     */
 }
 if(!in_array(DBMS, array('sqlite', 'sqlite3'))) {
     $db->execute("DROP DATABASE IF EXISTS ".DB_NAME);
@@ -69,27 +74,35 @@ if(!in_array(DBMS, array('sqlite', 'sqlite3'))) {
 }
 $db->selectDB(DB_NAME);
 
-$db->execute("CREATE TABLE USER( USER_ID INTEGER PRIMARY KEY $auto_increment, USER_NAME VARCHAR(16) UNIQUE,  PASSWORD VARCHAR(16))");
+$db->execute("CREATE TABLE USER( USER_ID INTEGER PRIMARY KEY $auto_increment, ".
+    "USER_NAME VARCHAR(16) UNIQUE,  PASSWORD VARCHAR(16))");
 
 //default account is root without a password
 $sql ="INSERT INTO USER VALUES (1, 'root', '".crawlCrypt('')."' ) ";
 $db->execute($sql);
 
 
-$db->execute("CREATE TABLE TRANSLATION (TRANSLATION_ID INTEGER PRIMARY KEY $auto_increment, IDENTIFIER_STRING VARCHAR(512) UNIQUE)");
+$db->execute("CREATE TABLE TRANSLATION (TRANSLATION_ID INTEGER PRIMARY KEY ".
+    "$auto_increment, IDENTIFIER_STRING VARCHAR(512) UNIQUE)");
 
-$db->execute("CREATE TABLE LOCALE (LOCALE_ID INTEGER PRIMARY KEY  $auto_increment, LOCALE_TAG VARCHAR(16), LOCALE_NAME VARCHAR(256), WRITING_MODE CHAR(5))");
-$db->execute("CREATE TABLE TRANSLATION_LOCALE (TRANSLATION_ID INTEGER, LOCALE_ID INTEGER, TRANSLATION VARCHAR(4096) )");
-//we insert 1 by 1 rather than comma separate as sqlite does not support comma separated inserts
+$db->execute("CREATE TABLE LOCALE (LOCALE_ID INTEGER PRIMARY KEY ".
+    "$auto_increment, LOCALE_TAG VARCHAR(16), LOCALE_NAME VARCHAR(256),".
+    " WRITING_MODE CHAR(5))");
+$db->execute("CREATE TABLE TRANSLATION_LOCALE (TRANSLATION_ID INTEGER, ".
+    "LOCALE_ID INTEGER, TRANSLATION VARCHAR(4096) )");
+/* we insert 1 by 1 rather than comma separate as sqlite 
+   does not support comma separated inserts
+ */
 $db->execute("INSERT INTO LOCALE VALUES (1, 'en-US', 'English', 'lr-tb')");
 $db->execute("INSERT INTO LOCALE VALUES (2, 'fr-FR', 'Français', 'lr-tb')");
 $db->execute("INSERT INTO LOCALE VALUES (3, 'vi-VN', 'Tiếng Việt', 'lr-tb')");
 
-$db->execute("CREATE TABLE ROLE (ROLE_ID INTEGER PRIMARY KEY $auto_increment, NAME VARCHAR(512))");
+$db->execute("CREATE TABLE ROLE (ROLE_ID INTEGER PRIMARY KEY ".
+    "$auto_increment, NAME VARCHAR(512))");
 $sql ="INSERT INTO ROLE VALUES (1, 'Admin' ) ";
 $db->execute($sql);
 
-$db->execute("CREATE TABLE ROLE_ACTIVITY (ROLE_ID INTEGER, ACTIVITY_ID INTEGER)");
+$db->execute("CREATE TABLE ROLE_ACTIVITY (ROLE_ID INTEGER,ACTIVITY_ID INTEGER)");
 $db->execute("INSERT INTO ROLE_ACTIVITY VALUES (1, 1)");
 $db->execute("INSERT INTO ROLE_ACTIVITY VALUES (1, 2)");
 $db->execute("INSERT INTO ROLE_ACTIVITY VALUES (1, 3)");
@@ -98,7 +111,8 @@ $db->execute("INSERT INTO ROLE_ACTIVITY VALUES (1, 5)");
 $db->execute("INSERT INTO ROLE_ACTIVITY VALUES (1, 6)");
 
 $db->execute(
-    "CREATE TABLE ACTIVITY (ACTIVITY_ID INTEGER PRIMARY KEY $auto_increment, TRANSLATION_ID INTEGER, METHOD_NAME VARCHAR(256))");
+    "CREATE TABLE ACTIVITY (ACTIVITY_ID INTEGER PRIMARY KEY $auto_increment,".
+    " TRANSLATION_ID INTEGER, METHOD_NAME VARCHAR(256))");
 $db->execute("INSERT INTO ACTIVITY VALUES (1, 1, 'manageAccount')");
 $db->execute("INSERT INTO ACTIVITY VALUES (2, 2, 'manageUsers')");
 $db->execute("INSERT INTO ACTIVITY VALUES (3, 3, 'manageRoles')");
@@ -106,11 +120,11 @@ $db->execute("INSERT INTO ACTIVITY VALUES (4, 4, 'manageCrawl')");
 $db->execute("INSERT INTO ACTIVITY VALUES (5, 5, 'manageLocales')");
 $db->execute("INSERT INTO ACTIVITY VALUES (6, 6, 'configure')");
 
-$db->execute("INSERT INTO TRANSLATION VALUES (1, 'db_activity_manage_account' )");
+$db->execute("INSERT INTO TRANSLATION VALUES (1,'db_activity_manage_account')");
 $db->execute("INSERT INTO TRANSLATION VALUES (2, 'db_activity_manage_users')");
 $db->execute("INSERT INTO TRANSLATION VALUES (3, 'db_activity_manage_roles')");
 $db->execute("INSERT INTO TRANSLATION VALUES (4, 'db_activity_manage_crawl')");
-$db->execute("INSERT INTO TRANSLATION VALUES (5, 'db_activity_manage_locales')");
+$db->execute("INSERT INTO TRANSLATION VALUES (5,'db_activity_manage_locales')");
 $db->execute("INSERT INTO TRANSLATION VALUES (6, 'db_activity_configure')");
 
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (1, 1, 'Manage Account' )");

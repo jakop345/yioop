@@ -78,10 +78,13 @@ function setOffsetPointers($data, &$objects, $offset_field)
                 if(isset($tmp[1]) ) {
                     list($word_key, $block_num) = $tmp;
                     if(strcmp($word_key, "offset") != 0) {
-                        if(($block_num +1)*BLOCK_SIZE < COMMON_WORD_THRESHOLD) {
+                        if(($block_num +1)*BLOCK_SIZE < 
+                            COMMON_WORD_THRESHOLD) {
                             $data[$word_key][$block_num] = $offset;
-                        } else if(isset($docs_info[IndexingConstants::POINT_BLOCK])) {
-                            $data[$word_key][IndexingConstants::LIST_OFFSET] = $offset;
+                        } else if(isset(
+                            $docs_info[IndexingConstants::POINT_BLOCK])) {
+                            $data[$word_key][IndexingConstants::LIST_OFFSET] = 
+                                $offset;
                         } 
                     }
                 }
@@ -137,7 +140,9 @@ class WordIterator implements IndexingConstants, CrawlConstants
      */
     public function reset()
     {
-        $partition = WebArchiveBundle::selectPartition($this->word_key, $this->index->num_partitions_index);
+        $partition = 
+            WebArchiveBundle::selectPartition($this->word_key, 
+                $this->index->num_partitions_index);
 
         $this->info_block = $this->index->getPhraseIndexInfo($this->word_key);
 
@@ -147,13 +152,16 @@ class WordIterator implements IndexingConstants, CrawlConstants
 
             while($this->limit >= $count_till_generation) {
                 $this->info_block['CURRENT_GENERATION_INDEX']++;
-                if($this->num_generations <= $this->info_block['CURRENT_GENERATION_INDEX']) {
+                if($this->num_generations <= 
+                    $this->info_block['CURRENT_GENERATION_INDEX']) {
                     $this->num_docs = 0;
                     $this->current_pointer = -1;
                     return;
                 }
-                $info_block = $this->index->getPhraseIndexInfo($this->word_key, 
-                    $this->info_block['CURRENT_GENERATION_INDEX'], $this->info_block);
+                $info_block = $this->index->getPhraseIndexInfo(
+                    $this->word_key, 
+                    $this->info_block['CURRENT_GENERATION_INDEX'], 
+                    $this->info_block);
                 if($info_block !== NULL) {
                     $this->info_block = $info_block;
                 }
@@ -175,7 +183,9 @@ class WordIterator implements IndexingConstants, CrawlConstants
     {
 
         if($this->info_block !== NULL) {
-            $info_block = $this->index->getPhraseIndexInfo($this->word_key, $this->info_block['CURRENT_GENERATION_INDEX'], $this->info_block);
+            $info_block = $this->index->getPhraseIndexInfo(
+                $this->word_key, $this->info_block['CURRENT_GENERATION_INDEX'], 
+                $this->info_block);
             if($info_block === NULL) {
                 return false;
             }
@@ -186,9 +196,11 @@ class WordIterator implements IndexingConstants, CrawlConstants
             $this->current_pointer = floor($this->limit / BLOCK_SIZE);
 
             $this->last_block = $info_block[self::END_BLOCK];
-            $this->num_full_blocks = floor($this->num_docs_generation / BLOCK_SIZE);
+            $this->num_full_blocks = 
+                floor($this->num_docs_generation / BLOCK_SIZE);
             if($this->num_docs_generation > COMMON_WORD_THRESHOLD) {
-                $this->last_pointed_block = floor(COMMON_WORD_THRESHOLD / BLOCK_SIZE);
+                $this->last_pointed_block = 
+                    floor(COMMON_WORD_THRESHOLD / BLOCK_SIZE);
             } else {
                 $this->last_pointed_block = $this->num_full_blocks;
             }
@@ -204,7 +216,7 @@ class WordIterator implements IndexingConstants, CrawlConstants
                     $this->list_offset = NULL;
                 } else {
                     $this->list_offset = $info_block[self::LIST_OFFSET][0];
-                    $this->current_block_num = $info_block[self::LIST_OFFSET][1];
+                    $this->current_block_num =$info_block[self::LIST_OFFSET][1];
                 }
             }
 
@@ -221,7 +233,9 @@ class WordIterator implements IndexingConstants, CrawlConstants
      */
     public function currentDocsWithWord($restrict_phrases = NULL)
     {
-        $generation = $this->info_block['GENERATIONS'][$this->info_block['CURRENT_GENERATION_INDEX']];
+        $generation = 
+            $this->info_block['GENERATIONS'][
+                $this->info_block['CURRENT_GENERATION_INDEX']];
         if($this->current_pointer >= 0) {
             if($this->current_pointer == $this->num_full_blocks) {
                 $pages = $this->last_block;
@@ -236,9 +250,14 @@ class WordIterator implements IndexingConstants, CrawlConstants
             } else {
                 if(isset($this->block_pointers[$this->current_pointer])) {
                     $doc_block = $this->index->getWordDocBlock($this->word_key, 
-                        $this->block_pointers[$this->current_pointer], $generation);
-                    if(isset($doc_block[$this->word_key.":".$this->current_pointer])) {
-                        $pages = $doc_block[$this->word_key.":".$this->current_pointer];
+                        $this->block_pointers[$this->current_pointer], 
+                        $generation);
+                    if(isset(
+                        $doc_block[$this->word_key.":".$this->current_pointer]
+                        )) {
+                        $pages = 
+                            $doc_block[
+                                $this->word_key.":".$this->current_pointer];
                     } else {
                         $pages = array();
                     }
@@ -259,13 +278,19 @@ class WordIterator implements IndexingConstants, CrawlConstants
 
                          if(isset($doc_info[self::SUMMARY_OFFSET])) {
 
-                             $page = $this->index->getPage($doc_key, $doc_info[self::SUMMARY_OFFSET]);
-                             // build a string out of title, links, and description
-                             $page_string = mb_strtolower(PhraseParser::extractWordStringPageSummary($page));
+                             $page = $this->index->getPage(
+                                $doc_key, $doc_info[self::SUMMARY_OFFSET]);
+                             /* build a string out of title, links, 
+                                and description
+                              */
+                             $page_string = mb_strtolower(
+                                PhraseParser::extractWordStringPageSummary(
+                                    $page));
 
                              $found = true;
                              foreach($restrict_phrases as $phrase) {
-                                 if(mb_strpos($page_string, $phrase) === false) {
+                                 if(mb_strpos($page_string, $phrase) 
+                                    === false) {
                                      $found = false;
                                  }
                              }
@@ -295,18 +320,21 @@ class WordIterator implements IndexingConstants, CrawlConstants
         if($doc_block == -1 || !is_array($doc_block)) {
             return NULL;
         }
-        if(isset($doc_block[self::LIST_OFFSET]) && $doc_block[self::LIST_OFFSET] != NULL) {
+        if(isset($doc_block[self::LIST_OFFSET]) && 
+            $doc_block[self::LIST_OFFSET] != NULL) {
             $this->list_offset = $doc_block[self::LIST_OFFSET];
         }
         
         $this->current_pointer ++;
         if($this->current_pointer > $this->num_full_blocks) {
             $flag = false;
-            while ($this->info_block['CURRENT_GENERATION_INDEX'] < $this->num_generations -1 && !$flag) {
+            while ($this->info_block['CURRENT_GENERATION_INDEX'] < 
+                $this->num_generations -1 && !$flag) {
                 $this->info_block['CURRENT_GENERATION_INDEX']++;
                 $flag = $this->initGeneration();
             } 
-            if ($this->info_block['CURRENT_GENERATION_INDEX'] >= $this->num_generations -1) {
+            if ($this->info_block['CURRENT_GENERATION_INDEX'] >= 
+                $this->num_generations -1) {
                 $this->current_pointer = -1;
             }
         }
@@ -338,7 +366,9 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
     /**
      *
      */
-    public function __construct($dir_name, $filter_size = -1, $num_partitions_summaries = NULL, $num_partitions_index = NULL, $description = NULL)
+    public function __construct($dir_name, $filter_size = -1, 
+        $num_partitions_summaries = NULL, $num_partitions_index = NULL, 
+        $description = NULL)
     {
 
         $this->dir_name = $dir_name;
@@ -353,17 +383,21 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
         }
 
         if(file_exists($this->dir_name."/generation.txt")) {
-            $this->generation_info = unserialize(file_get_contents($this->dir_name."/generation.txt"));
+            $this->generation_info = unserialize(
+                file_get_contents($this->dir_name."/generation.txt"));
         } else {
             $this->generation_info['ACTIVE'] = 0;
             $this->generation_info['NUM_WORDS'] = 0;
-            file_put_contents($this->dir_name."/generation.txt", serialize($this->generation_info));
+            file_put_contents($this->dir_name."/generation.txt", 
+                serialize($this->generation_info));
         }
         $this->summaries = new WebArchiveBundle($dir_name."/summaries",
             $filter_size, $num_partitions_summaries, $description);
         $this->num_partitions_summaries = $this->summaries->num_partitions;
 
-        $this->index = new WebArchiveBundle($dir_name."/index".$this->generation_info['ACTIVE'], -1, $num_partitions_index);
+        $this->index = new WebArchiveBundle(
+            $dir_name."/index".$this->generation_info['ACTIVE'], -1, 
+            $num_partitions_index);
         $this->num_partitions_index = $this->index->num_partitions;
         $this->description = $this->summaries->description;
 
@@ -392,7 +426,7 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
         if(!count($index_data) > 0) return;
 
         /* Arrange the words according to the partitions they are in
-        */
+         */
 
         $this->diagnostics['SELECT_TIME'] = 0;
         $this->diagnostics['INFO_BLOCKS_TIME'] = 0;
@@ -401,27 +435,35 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
         $start_time = microtime();
         foreach($index_data as $word_key => $docs_info) {
 
-            $partition = WebArchiveBundle::selectPartition($word_key, $this->num_partitions_index);
+            $partition = WebArchiveBundle::selectPartition(
+                 $word_key, $this->num_partitions_index);
             $out_data[$partition][$word_key] = $docs_info;
 
         }
         $this->diagnostics['SELECT_TIME'] += changeInMicrotime($start_time);
 
-        //for each partition add the word data for the partition to the partition web archive
+        /* for each partition add the word data for the partition to the 
+           partition web archive
+         */
         $cnt = 0;
         foreach($out_data as $partition => $word_data) {
             $this->addPartitionWordData($partition, $word_data);
             $cnt++;
         }
-        file_put_contents($this->dir_name."/generation.txt", serialize($this->generation_info));
+        file_put_contents($this->dir_name."/generation.txt", 
+            serialize($this->generation_info));
         $out_data = NULL; 
         gc_collect_cycles();
 
         crawlLog("**ADD INDEX DIAGNOSTIC INFO...");
-        crawlLog("**Time calculating select partition functions ".$this->diagnostics['SELECT_TIME']);
-        crawlLog("**Time reading info blocks ".$this->diagnostics['INFO_BLOCKS_TIME']);
-        crawlLog("**Time adding objects to index ".$this->diagnostics['ADD_OBJECTS_TIME']);
-        crawlLog("**Time adding to filters ".$this->diagnostics['ADD_FILTER_TIME']);
+        crawlLog("**Time calculating select partition functions ".
+            $this->diagnostics['SELECT_TIME']);
+        crawlLog("**Time reading info blocks ".
+            $this->diagnostics['INFO_BLOCKS_TIME']);
+        crawlLog("**Time adding objects to index ".
+            $this->diagnostics['ADD_OBJECTS_TIME']);
+        crawlLog("**Time adding to filters ".
+            $this->diagnostics['ADD_FILTER_TIME']);
         crawlLog("**Number of partitions ".$cnt);
 
     }
@@ -429,14 +471,16 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
     /**
      *
      */
-    public function addPartitionWordData($partition, &$word_data, $overwrite = false)
+    public function addPartitionWordData($partition, 
+        &$word_data, $overwrite = false)
     {
         $start_time = microtime();
 
         $block_data = $this->readPartitionInfoBlock($partition);
 
         if(isset($this->diagnostics['INFO_BLOCKS_TIME'])) {
-            $this->diagnostics['INFO_BLOCKS_TIME'] += changeInMicrotime($start_time);
+            $this->diagnostics['INFO_BLOCKS_TIME'] += 
+                changeInMicrotime($start_time);
         }
         
         if($block_data == NULL) {
@@ -453,9 +497,11 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
             $start_time = microtime();
 
             $this->addPartitionIndexFilter($partition, $word_key);
-            $this->addPartitionIndexFilter($partition, $word_key . $this->generation_info['ACTIVE']);
+            $this->addPartitionIndexFilter(
+                $partition, $word_key . $this->generation_info['ACTIVE']);
             if(isset($this->diagnostics['ADD_FILTER_TIME'])) {
-                $this->diagnostics['ADD_FILTER_TIME'] += changeInMicrotime($start_time);
+                $this->diagnostics['ADD_FILTER_TIME'] += 
+                    changeInMicrotime($start_time);
             }
 
             if(!isset($block_data[$word_key]) || $overwrite == true) {
@@ -466,35 +512,42 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
                 $unfilled_block_num = 0;
 
             } else {
-                $unfilled_block_num = floor($block_data[$word_key][self::COUNT] / BLOCK_SIZE);
+                $unfilled_block_num = 
+                    floor($block_data[$word_key][self::COUNT] / BLOCK_SIZE);
             }
 
             $cnt = count($docs_info);
             $block_data[$word_key][self::COUNT] += $cnt;
 
-            $tmp = array_merge($block_data[$word_key][self::END_BLOCK], $docs_info);
+            $tmp = 
+                array_merge($block_data[$word_key][self::END_BLOCK],$docs_info);
             uasort($tmp, "scoreOrderCallback");
             $add_cnt = count($tmp);
             $num_blocks = floor($add_cnt / BLOCK_SIZE);
-            $block_data[$word_key][self::END_BLOCK] = array_slice($tmp, $num_blocks*BLOCK_SIZE);
+            $block_data[$word_key][self::END_BLOCK] = 
+                array_slice($tmp, $num_blocks*BLOCK_SIZE);
 
             $first_common_flag = true;
             $min_common = NULL;
             $slice_cnt = $num_blocks - 1;
-            for($i = $unfilled_block_num + $num_blocks - 1 ; $i >= $unfilled_block_num ; $i--) {
-                $out_data[0][$word_key .":". $i] = array_slice($tmp, $slice_cnt*BLOCK_SIZE, BLOCK_SIZE);
+            for($i = $unfilled_block_num + $num_blocks - 1; 
+                $i >= $unfilled_block_num ; $i--) {
+                $out_data[0][$word_key .":". $i] = 
+                    array_slice($tmp, $slice_cnt*BLOCK_SIZE, BLOCK_SIZE);
                 if(($i+1)*BLOCK_SIZE > COMMON_WORD_THRESHOLD) {
                     $min_common = $i;
                     if($first_common_flag) {
                         if(isset($block_data[$word_key][self::LIST_OFFSET])) {
-                            $out_data[0][$word_key .":". $i][self::LIST_OFFSET] = 
+                            $out_data[0][$word_key .":". $i][self::LIST_OFFSET]=
                                 $block_data[$word_key][self::LIST_OFFSET];
                         } else {
-                            $out_data[0][$word_key .":". $i][self::LIST_OFFSET] = NULL;
+                            $out_data[0][$word_key .":". $i][self::LIST_OFFSET]=
+                                NULL;
                         }
                         $first_common_flag = false;
                     } else {
-                        $out_data[0][$word_key .":". $i][self::LIST_OFFSET] = NULL; // next in list is in same block
+                        $out_data[0][$word_key .":". $i][self::LIST_OFFSET] = 
+                            NULL; // next in list is in same block
                     }
                 }
 
@@ -508,20 +561,25 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
         }
 
         $start_time = microtime();
-        $this->index->addObjectsPartition("offset", $partition, $out_data, $block_data, "setOffsetPointers", false);
+        $this->index->addObjectsPartition("offset", $partition, 
+            $out_data, $block_data, "setOffsetPointers", false);
 
         if(isset($this->diagnostics['ADD_OBJECTS_TIME'])) {
-            $this->diagnostics['ADD_OBJECTS_TIME'] += changeInMicrotime($start_time);
+            $this->diagnostics['ADD_OBJECTS_TIME'] += 
+                changeInMicrotime($start_time);
         }
 
 
-        if($this->generation_info['NUM_WORDS'] > $this->num_words_per_generation) {
+        if($this->generation_info['NUM_WORDS']>$this->num_words_per_generation){
             $index_filter_size = $this->index->filter_size;
             $this->generation_info['ACTIVE']++;
             $this->generation_info['NUM_WORDS'] = 0;
             $this->index = new WebArchiveBundle(
-                $this->dir_name."/index".$this->generation_info['ACTIVE'], $index_filter_size, $this->num_partitions_index);
-            file_put_contents($this->dir_name."/generation.txt", serialize($this->generation_info));
+                $this->dir_name."/index".$this->generation_info['ACTIVE'], 
+                $index_filter_size, $this->num_partitions_index);
+            file_put_contents(
+                $this->dir_name."/generation.txt", 
+                serialize($this->generation_info));
         }
 
     }
@@ -548,13 +606,18 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
     public function initPartitionIndexFilter($partition)
     {
         if(!isset($this->index_partition_filters[$partition])) {
-            if(file_exists($this->dir_name."/index_filters/partition$partition.ftr")) {
+            if(file_exists($this->dir_name.
+                "/index_filters/partition$partition.ftr")) {
                 $this->index_partition_filters[$partition] = 
-                    BloomFilterFile::load($this->dir_name."/index_filters/partition$partition.ftr");
+                    BloomFilterFile::load(
+                        $this->dir_name .
+                        "/index_filters/partition$partition.ftr");
             } else {
                 $filter_size = $this->num_words_per_generation;
                 $this->index_partition_filters[$partition] = 
-                    new BloomFilterFile($this->dir_name."/index_filters/partition$partition.ftr", $filter_size);
+                    new BloomFilterFile(
+                        $this->dir_name .
+                        "/index_filters/partition$partition.ftr", $filter_size);
             }
         }
         return true;
@@ -563,7 +626,8 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
     /**
      *
      */
-    public function getSummariesByHash($word_key, $limit, $num, $restrict_phrases = NULL, $phrase_key = NULL)
+    public function getSummariesByHash($word_key, $limit, $num, 
+        $restrict_phrases = NULL, $phrase_key = NULL)
     {
         if($phrase_key ==  NULL) {
             $phrase_key = $word_key;
@@ -574,7 +638,8 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
         if($phrase_info == NULL || (isset($phrase_info[self::PARTIAL_COUNT]) 
             && $phrase_info[self::PARTIAL_COUNT] < $limit + $num)) {
 
-            $this->addPhraseIndex($word_key, $restrict_phrases, $phrase_key, $limit + $num);
+            $this->addPhraseIndex(
+                $word_key, $restrict_phrases, $phrase_key, $limit + $num);
         }
 
         $iterator = new WordIterator($phrase_key, $this, $limit);
@@ -582,11 +647,13 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
         $num_retrieved = 0;
         $pages = array();
 
-         while(is_array($next_docs = $iterator->nextDocsWithWord()) && $num_retrieved < $num) {
+         while(is_array($next_docs = $iterator->nextDocsWithWord()) && 
+            $num_retrieved < $num) {
              $num_docs_in_block = count($next_docs);
              foreach($next_docs as $doc_key => $doc_info) {
                  if(isset($doc_info[self::SUMMARY_OFFSET])) {
-                     $page = $this->getPage($doc_key, $doc_info[self::SUMMARY_OFFSET]);
+                     $page = $this->getPage(
+                        $doc_key, $doc_info[self::SUMMARY_OFFSET]);
                      $pages[] = array_merge($doc_info, $page);
                      $num_retrieved++;
                  }
@@ -616,7 +683,8 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
         if($generation == -1) {
             return $this->index->getPage($word_key, $offset);
         } else {
-            $archive = new WebArchiveBundle($this->dir_name."/index".$generation);
+            $archive = 
+                new WebArchiveBundle($this->dir_name."/index".$generation);
             return $archive->getPage($word_key, $offset);
         }
     }
@@ -626,7 +694,8 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
      */
     public function getPageByPartition($partition, $offset, $file_handle = NULL)
     {
-        return $this->index->getPageByPartition($partition, $offset, $file_handle);
+        return $this->index->getPageByPartition(
+            $partition, $offset, $file_handle);
     }
 
     /**
@@ -642,7 +711,8 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
      */
     public function differenceContainsPages(&$page_array, $field_name = NULL)
     {
-        return $this->summaries->differencePagesFilter($page_array, $field_name);
+        return $this->summaries->differencePagesFilter(
+            $page_array, $field_name);
     }
 
     /**
@@ -661,10 +731,13 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
     /**
      *
      */
-    public function getPhraseIndexInfo($phrase_key, $generation_index = 0, $info_block = NULL)
+    public function getPhraseIndexInfo(
+        $phrase_key, $generation_index = 0, $info_block = NULL)
     {
 
-        $partition = WebArchiveBundle::selectPartition($phrase_key, $this->num_partitions_index);
+        $partition = 
+            WebArchiveBundle::selectPartition(
+                $phrase_key, $this->num_partitions_index);
         $info = array();
 
         if($info_block == NULL) {
@@ -684,7 +757,8 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
             for($i = 0; $i <= $active_generation; $i++) {
                 if($filter->contains($phrase_key . $i)) {
                     if($filter->contains("delete". $phrase_key . $i)) {
-                        $info['GENERATIONS'] = array(); //truncate all previously seen
+                        $info['GENERATIONS'] = array(); 
+                        //truncate all previously seen
                     } else {
                         $info['GENERATIONS'][] = $i;
                     }
@@ -699,24 +773,30 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
             $sample_size = min($num_generations, SAMPLE_GENERATIONS);
             $sum_count = 0;
             for($i = 0; $i < $sample_size; $i++) {
-                $block_info = $this->readPartitionInfoBlock($partition, $info['GENERATIONS'][$i]);
+                $block_info = 
+                    $this->readPartitionInfoBlock(
+                        $partition, $info['GENERATIONS'][$i]);
 
                 $sum_count += $block_info[$phrase_key][self::COUNT];
             }
 
-            $info['TOTAL_COUNT'] = ceil(($sum_count*$num_generations)/$sample_size); // this is an estimate
+            $info['TOTAL_COUNT'] = 
+                ceil(($sum_count*$num_generations)/$sample_size); 
+                // this is an estimate
         } else {
             $info['TOTAL_COUNT'] = $info_block['TOTAL_COUNT'];
             $info['GENERATIONS'] = $info_block['GENERATIONS'];
         }
 
-        $block_info = $this->readPartitionInfoBlock($partition, $info['GENERATIONS'][$generation_index]);
+        $block_info = $this->readPartitionInfoBlock(
+            $partition, $info['GENERATIONS'][$generation_index]);
         $phrase_info = $block_info[$phrase_key];
 
         $info['CURRENT_GENERATION_INDEX'] = $generation_index;
 
         if(isset($phrase_info)) {
-            $phrase_info['CURRENT_GENERATION_INDEX'] = $info['CURRENT_GENERATION_INDEX'];
+            $phrase_info['CURRENT_GENERATION_INDEX'] = 
+                $info['CURRENT_GENERATION_INDEX'];
             $phrase_info['TOTAL_COUNT'] = $info['TOTAL_COUNT'];
             $phrase_info['GENERATIONS'] = $info['GENERATIONS'];
 
@@ -732,7 +812,8 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
      */
     public function setPhraseIndexInfo($phrase_key, $info)
     {
-        $partition = WebArchiveBundle::selectPartition($phrase_key, $this->num_partitions_index);
+        $partition = WebArchiveBundle::selectPartition(
+            $phrase_key, $this->num_partitions_index);
 
         $partition_block_data = $this->readPartitionInfoBlock($partition);
 
@@ -749,13 +830,16 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
     /**
      *
      */
-    public function addPhraseIndex($word_key, $restrict_phrases, $phrase_key, $num_needed)
+    public function addPhraseIndex($word_key, $restrict_phrases, 
+        $phrase_key, $num_needed)
     {
         if($phrase_key == NULL) {
             return;
         }
 
-        $partition = WebArchiveBundle::selectPartition($phrase_key, $this->num_partitions_index);
+        $partition = 
+            WebArchiveBundle::selectPartition($phrase_key, 
+                $this->num_partitions_index);
 
         $iterator = new WordIterator($word_key, $this);
         $current_count = 0;
@@ -764,20 +848,24 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
         $partial_flag = false;
         $first_time = true;
 
-        while(is_array($next_docs = $iterator->nextDocsWithWord($restrict_phrases))) {
+        while(is_array($next_docs = 
+            $iterator->nextDocsWithWord($restrict_phrases))) {
             $buffer = array_merge($buffer, $next_docs);
             $cnt = count($buffer);
 
             if($cnt > COMMON_WORD_THRESHOLD) {
-                $word_data[$phrase_key] = array_slice($buffer, 0, COMMON_WORD_THRESHOLD);
+                $word_data[$phrase_key] = 
+                    array_slice($buffer, 0, COMMON_WORD_THRESHOLD);
 
-                $this->addPartitionWordData($partition, $word_data, $first_time);
+                $this->addPartitionWordData($partition,$word_data, $first_time);
                 $first_time = false;
                 $buffer = array_slice($buffer, COMMON_WORD_THRESHOLD); 
                 $current_count += COMMON_WORD_THRESHOLD;
 
                 if($current_count > $num_needed) { 
-                    // notice $num_needed only plays a role when greater than COMMON_WORD_THRESHOLD
+                    /* notice $num_needed only plays a role when 
+                      greater than COMMON_WORD_THRESHOLD
+                     */
                     $partial_flag = true;
                     break;
                 }
@@ -786,20 +874,25 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
 
         $word_data[$phrase_key] = $buffer;
 
-        $this->addPartitionIndexFilter($partition, "delete". $phrase_key . ($this->generation_info['ACTIVE'] - 1));
+        $this->addPartitionIndexFilter(
+            $partition, 
+            "delete". $phrase_key . ($this->generation_info['ACTIVE'] - 1));
 
         $this->addPartitionWordData($partition, $word_data);
         $this->addPartitionIndexFilter($partition, $phrase_key);
-        $this->addPartitionIndexFilter($partition, $phrase_key . $this->generation_info['ACTIVE']);
+        $this->addPartitionIndexFilter($partition, $phrase_key . 
+            $this->generation_info['ACTIVE']);
         $this->index_partition_filters[$partition]->save();
-        file_put_contents($this->dir_name."/generation.txt", serialize($this->generation_info));
+        file_put_contents($this->dir_name."/generation.txt", 
+            serialize($this->generation_info));
 
         $block_info = $this->readPartitionInfoBlock($partition);
         $info = $block_info[$phrase_key];
         $current_count += count($buffer);
         if($partial_flag) {
             $info[self::PARTIAL_COUNT] = $current_count;
-            $info[self::COUNT] =  floor($current_count * $iterator->num_docs/$iterator->seen_docs);
+            $info[self::COUNT] = 
+                floor($current_count*$iterator->num_docs/$iterator->seen_docs);
             $this->setPhraseIndexInfo($phrase_key, $info);
         }
     }
@@ -807,7 +900,8 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
     /**
      *
      */
-    public function getSelectiveWords($word_keys, $num, $comparison = "lessThan") //lessThan is in utility.php
+    public function getSelectiveWords($word_keys, $num, $comparison="lessThan") 
+        //lessThan is in utility.php
     {
         $words_array = array();
         if(!is_array($word_keys) || count($word_keys) < 1) { return NULL;}
@@ -834,7 +928,8 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
         if($generation == -1) {
             return $this->index->readPartitionInfoBlock($partition);
         } else {
-            $archive = new WebArchiveBundle($this->dir_name."/index".$generation);
+            $archive = new WebArchiveBundle(
+                $this->dir_name."/index".$generation);
             return $archive->readPartitionInfoBlock($partition);
         }
 

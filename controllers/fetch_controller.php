@@ -73,7 +73,9 @@ class FetchController extends Controller implements CrawlConstants
     {
         $data = array();
 
-        // do a quick test to see if this is a request seems like from a legitimate machine
+        /* do a quick test to see if this is a request seems like 
+           from a legitimate machine
+         */
         if(!$this->checkRequest()) {return; }
 
         $activity = $_REQUEST['a'];
@@ -112,7 +114,8 @@ class FetchController extends Controller implements CrawlConstants
          
         if(isset($_REQUEST['found'])) {
             $info =array();
-            $sites = unserialize(gzuncompress(base64_decode(urldecode($_REQUEST['found']))));
+            $sites = unserialize(gzuncompress(
+                base64_decode(urldecode($_REQUEST['found']))));
 
             $address = str_replace(".", "-", $_SERVER['REMOTE_ADDR']); 
             $address = str_replace(":", "_", $address);
@@ -126,7 +129,8 @@ class FetchController extends Controller implements CrawlConstants
 
             $info[self::STATUS] = self::CONTINUE_STATE;
             if(file_exists(CRAWL_DIR."/schedules/crawl_status.txt")) {
-                $crawl_status = unserialize(file_get_contents(CRAWL_DIR."/schedules/crawl_status.txt"));
+                $crawl_status = unserialize(
+                    file_get_contents(CRAWL_DIR."/schedules/crawl_status.txt"));
                 $info[self::CRAWL_TIME] = $crawl_status['CRAWL_TIME'];
             } else {
                 $info[self::CRAWL_TIME] = 0;
@@ -157,9 +161,12 @@ class FetchController extends Controller implements CrawlConstants
         if(isset($sites[self::INVERTED_INDEX])) {
             $index_sites[self::INVERTED_INDEX] = $sites[self::INVERTED_INDEX];
         }
-        $index_dir =  CRAWL_DIR."/schedules/".self::index_data_base_name.$_REQUEST['crawl_time'];
+        $index_dir =  
+            CRAWL_DIR."/schedules/".self::index_data_base_name.
+                $_REQUEST['crawl_time'];
 
-        $this->addScheduleToScheduleDirectory($index_dir, $index_sites, $address, $day, $time);
+        $this->addScheduleToScheduleDirectory(
+            $index_dir, $index_sites, $address, $day, $time);
         $sites[self::INVERTED_INDEX] = NULL;
     }
 
@@ -171,7 +178,8 @@ class FetchController extends Controller implements CrawlConstants
      */
     function addToCrawlSchedules(&$sites, $address, $day, $time)
     {
-        $base_dir =  CRAWL_DIR."/schedules/".self::schedule_data_base_name.$_REQUEST['crawl_time'];
+        $base_dir =  CRAWL_DIR."/schedules/".
+            self::schedule_data_base_name.$_REQUEST['crawl_time'];
         $scheduler_info = array();
 
         if(isset($sites[self::TO_CRAWL])) {
@@ -189,10 +197,12 @@ class FetchController extends Controller implements CrawlConstants
             $num_seen = count($seen_sites);
 
             for($i = 0; $i < $num_seen; $i++) {
-                $scheduler_info[self::SEEN_URLS][$i] = $seen_sites[$i][self::URL];
+                $scheduler_info[self::SEEN_URLS][$i] = 
+                    $seen_sites[$i][self::URL];
             }
         }
-        $this->addScheduleToScheduleDirectory($base_dir, $scheduler_info, $address, $day, $time);
+        $this->addScheduleToScheduleDirectory(
+            $base_dir, $scheduler_info, $address, $day, $time);
         $sites[self::TO_CRAWL] = NULL;
     }
 
@@ -204,13 +214,15 @@ class FetchController extends Controller implements CrawlConstants
      */
     function addRobotSchedules(&$sites, $address, $day, $time)
     {
-        $robot_dir =  CRAWL_DIR."/schedules/".self::robot_data_base_name.$_REQUEST['crawl_time'];
+        $robot_dir =  CRAWL_DIR."/schedules/".
+            self::robot_data_base_name.$_REQUEST['crawl_time'];
         if(isset($sites[self::ROBOT_TXT])) {
             $data = $sites[self::ROBOT_TXT];
         } else {
             $data = array();
         }
-        $this->addScheduleToScheduleDirectory($robot_dir, $data, $address, $day, $time);
+        $this->addScheduleToScheduleDirectory(
+            $robot_dir, $data, $address, $day, $time);
         $sites[self::ROBOT_TXT] = NULL;
     }
 
@@ -238,20 +250,24 @@ class FetchController extends Controller implements CrawlConstants
         
         $data_string = serialize($data);
         $data_hash = crawlHash($data_string);
-        file_put_contents($dir."/At".$time."From".$address."WithHash$data_hash.txt", $data_string);
+        file_put_contents(
+            $dir."/At".$time."From".$address.
+            "WithHash$data_hash.txt", $data_string);
     }
 
     /**
-     *  Returns the time in seconds from the start of the current epoch of the active crawl if it exists; 0 otherwise
-     *  
-     *  @return int  time of active crawl
+     * Returns the time in seconds from the start of the current epoch of the 
+     * active crawl if it exists; 0 otherwise
+     * 
+     * @return int  time of active crawl
      */
     function crawlTime()
     {
         $info = array();
         $info[self::STATUS] = self::CONTINUE_STATE;
         if(file_exists(CRAWL_DIR."/schedules/crawl_status.txt")) {
-            $crawl_status = unserialize(file_get_contents(CRAWL_DIR."/schedules/crawl_status.txt"));
+            $crawl_status = unserialize(file_get_contents(
+                CRAWL_DIR."/schedules/crawl_status.txt"));
         $info[self::CRAWL_TIME] = $crawl_status[self::CRAWL_TIME];
         } else {
             $info[self::CRAWL_TIME] = 0;

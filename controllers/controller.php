@@ -50,12 +50,14 @@ require_once BASE_DIR."/lib/utility.php";
 abstract class Controller 
 {
     /**
-     * Array of the model classes used by this controller (contructor loads these)
+     * Array of the model classes used by this controller 
+     * (contructor loads these)
      * @var array
      */
     var $models = array();
     /**
-     * Array of the view classes used by this controller (contructor loads these)
+     * Array of the view classes used by this controller 
+     * (contructor loads these)
      * @var array
      */
     var $views = array();
@@ -115,20 +117,22 @@ abstract class Controller
             foreach($this->models as $model) {
                 $model_name = ucfirst($model)."Model";
                 $model_instance_name = lcfirst($model_name);
-                $data['QUERY_STATISTICS'] = array_merge($data['QUERY_STATISTICS'], 
+                $data['QUERY_STATISTICS'] = array_merge(
+                    $data['QUERY_STATISTICS'], 
                     $this->$model_instance_name->db->query_log);
-                $data['TOTAL_ELAPSED_TIME'] += $this->$model_instance_name->db->total_time;
+                $data['TOTAL_ELAPSED_TIME'] += 
+                    $this->$model_instance_name->db->total_time;
             }
         }
         $this->$view_instance_name->render($data); 
     }
 
     /**
-     *  Generates a cross site request forgery preventing token based on the 
-     *  provided user name, the current time and the hidden AUTH_KEY
+     * Generates a cross site request forgery preventing token based on the 
+     * provided user name, the current time and the hidden AUTH_KEY
      *
-     *  @param string $user   username to use to generate token
-     *  @return string   a csrf token
+     * @param string $user   username to use to generate token
+     * @return string   a csrf token
      */
     public function generateCSRFToken($user)
     {
@@ -137,20 +141,22 @@ abstract class Controller
     }
 
     /**
-     *  Checks if the form CSRF (cross-site request forgery preventing) token matches 
-     *  the given user and has not expired (1 hour till expires)
+     * Checks if the form CSRF (cross-site request forgery preventing) token
+     * matches the given user and has not expired (1 hour till expires)
      *
-     *  @param string $token_name   attribute of $_REQUEST that contains the CSRFToken
-     *  @param string $user   username
-     *  @return bool  whether the CSRF token was valid
+     * @param string $token_name attribute of $_REQUEST containing CSRFToken
+     * @param string $user  username
+     * @return bool  whether the CSRF token was valid
      */
     public function checkCSRFToken($token_name, $user)
     {
         $token_okay = false;
-        if(isset($_REQUEST[$token_name]) && strlen($_REQUEST[$token_name]) == 22) {
+        if(isset($_REQUEST[$token_name]) && 
+            strlen($_REQUEST[$token_name]) == 22) {
             $token_parts = explode("|", $_REQUEST[$token_name]);
 
-            if($token_parts[1] + 3600 > time() && crawlHash($user.$token_parts[1].AUTH_KEY) == $token_parts[0]) {
+            if($token_parts[1] + 3600 > time() && 
+                crawlHash($user.$token_parts[1].AUTH_KEY) == $token_parts[0]) {
                 $token_okay = true;
             }
         }
@@ -159,13 +165,14 @@ abstract class Controller
     }
 
     /**
-     *  Used to clean strings that might be tainted as they originate from the user
+     * Used to clean strings that might be tainted as originate from the user
      *
-     *  @param mixed $value   tainted data
-     *  @param string $type   the type of the data in value: one of int, hash, or string
-     *  @param mixed $default   if $value is not set the default value is returned, this
-     *      isn't used much since if the error_reporting is E_ALL or -1 you would still get a Notice.
-     *  @return string   the clean input matching the type provided
+     * @param mixed $value tainted data
+     * @param string $type type of data in value: one of int, hash, or string
+     * @param mixed $default if $value is not set default value is returned, 
+     *      this isn't used much since if the error_reporting is E_ALL 
+     *      or -1 you would still get a Notice.
+     * @return string the clean input matching the type provided
      */
     public function clean($value, $type, $default = NULL) 
     {
@@ -205,16 +212,19 @@ abstract class Controller
     }
 
     /**
-     *  Checks the request if a request is for a valid activity and if it uses the correct authorization key 
+     * Checks the request if a request is for a valid activity and if it uses 
+     * the correct authorization key 
      *
-     *  @return bool whether the request was valid or not
+     * @return bool whether the request was valid or not
      */
     function checkRequest()
     {
-        if(!isset($_REQUEST['time'])
-            || !isset($_REQUEST['session']) || !in_array($_REQUEST['a'], $this->activities)) { return; }
+        if(!isset($_REQUEST['time']) || 
+            !isset($_REQUEST['session']) || 
+            !in_array($_REQUEST['a'], $this->activities)) { return; }
 
-        $time = $_REQUEST['time']; // request must be within an hour of this machine's clock
+        $time = $_REQUEST['time']; 
+            // request must be within an hour of this machine's clock
 
         if(abs(time() - $time) > 3600) { return false;}
 

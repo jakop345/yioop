@@ -33,11 +33,17 @@
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
-/** logging is done during crawl not through web, so will not be used in the phrase model */
+/** 
+ * logging is done during crawl not through web, 
+ * so it will not be used in the phrase model 
+ */
 define("LOG_TO_FILES", false); 
 /** For crawlHash function */
 require_once BASE_DIR."/lib/utility.php"; 
-/** Used to look up words and phrases in the inverted index associated with a given crawl*/
+/** 
+ * Used to look up words and phrases in the inverted index 
+ * associated with a given crawl
+ */
 require_once BASE_DIR."/lib/index_archive_bundle.php";
 
 /**
@@ -68,21 +74,25 @@ class PhraseModel extends Model
 
 
     /**
-     *  Given a query phrase, returns formatted document summaries of the documents that match the phrase.
+     * Given a query phrase, returns formatted document summaries of the 
+     * documents that match the phrase.
      *
-     *  @param string $phrase  the phrase to try to match
-     *  @param int $low  return results beginning with the $low document
-     *  @param int $results_per_page  how many results to return
-     *  @param bool $format  whether to highlight in the returned summaries the matched text
-     *
-     *  @return array an array of summary data
+     * @param string $phrase  the phrase to try to match
+     * @param int $low  return results beginning with the $low document
+     * @param int $results_per_page  how many results to return
+     * @param bool $format  whether to highlight in the returned summaries the 
+     *      matched text
+     * @return array an array of summary data
      */
-    function getPhrasePageResults($phrase, $low = 0, $results_per_page = NUM_RESULTS_PER_PAGE, $format = true)
+    function getPhrasePageResults(
+        $phrase, $low = 0, $results_per_page = NUM_RESULTS_PER_PAGE, 
+        $format = true)
     {
 
         $index_archive_name = self::index_data_base_name . $this->index_name;
 
-        $index_archive = new IndexArchiveBundle(CRAWL_DIR.'/cache/'.$index_archive_name);
+        $index_archive = new IndexArchiveBundle(
+            CRAWL_DIR.'/cache/'.$index_archive_name);
 
         $results = NULL;
 
@@ -91,29 +101,38 @@ class PhraseModel extends Model
 
         $phrase_hash = crawlHash($phrase_string);
 
-        //we search using the stemmed words, but we format snippets in the results by bolding either
+        /*
+            we search using the stemmed words, but we format snippets in the 
+            results by bolding either
+         */
         $query_words = explode(" ", $phrase_string); //not stemmed
-        $words = array_keys(PhraseParser::extractPhrasesAndCount($phrase_string)); //stemmed
+        $words = 
+            array_keys(PhraseParser::extractPhrasesAndCount($phrase_string)); 
+            //stemmed
 
         if($index_archive->getPhraseIndexInfo($phrase_hash) != NULL) {
 
-            $results = $index_archive->getSummariesByHash($phrase_hash, $low, $results_per_page);
+            $results = $index_archive->getSummariesByHash(
+                $phrase_hash, $low, $results_per_page);
 
             if(count($results) == 0) {
                 $results = NULL;
             }
 
         } else {
-            //handle strings in quotes (we want an exact match on such quoted strings)
-
+            /* 
+                handle strings in quotes 
+                (we want an exact match on such quoted strings)
+            */
             $quoteds =array();
             $hash_quoteds = array();
-            $num_quotes = preg_match_all('/\"((?:[^\"\\\]|\\\\.)*)\"/', $phrase, $quoteds);
+            $num_quotes = 
+                preg_match_all('/\"((?:[^\"\\\]|\\\\.)*)\"/', $phrase,$quoteds);
             if(isset($quoteds[1])) {
                 $quoteds = $quoteds[1];
                 foreach($quoteds as $quote_phrase) {
                     $hash_quote = crawlHash($quote_phrase);
-                    if($index_archive->getPhraseIndexInfo($hash_quote) != NULL) {
+                    if($index_archive->getPhraseIndexInfo($hash_quote) != NULL){
                         $hash_quoteds[] = $hash_quote;
                     }
                 }
@@ -139,7 +158,9 @@ class PhraseModel extends Model
             $word_key = $word_keys[0];
             $count = $words_array[$word_key];
             if($count > 0 ) {
-                $results = $index_archive->getSummariesByHash($word_key, $low, $results_per_page, $restrict_phrases, $phrase_hash);
+                $results = $index_archive->getSummariesByHash(
+                    $word_key, $low, $results_per_page, 
+                    $restrict_phrases, $phrase_hash);
             }
         }
 
@@ -162,24 +183,27 @@ class PhraseModel extends Model
 
 
     /**
-     *  Given a page summary extract the words from it and try to find documents which
-     *  match the most relevant words. The algorithm for "relevant" is pretty weak. For
-     *  now we pick the $num many words which appear in the fewest documents.
+     * Given a page summary extract the words from it and try to find documents
+     * which match the most relevant words. The algorithm for "relevant" is 
+     * pretty weak. For now we pick the $num many words which appear in the 
+     * fewest documents.
      *
-     *  @param string $craw_item a page summary
-     *  @param int $num number of key phrase to return
-     *
-     *  @return array  an array of most selective key phrases
+     * @param string $craw_item a page summary
+     * @param int $num number of key phrase to return
+     * @return array  an array of most selective key phrases
      */
     function getTopPhrases($crawl_item, $num) 
     {
         $index_archive_name = self::index_data_base_name . $this->index_name;
 
-        $index_archive = new IndexArchiveBundle(CRAWL_DIR.'/cache/'.$index_archive_name);
+        $index_archive = 
+            new IndexArchiveBundle(CRAWL_DIR.'/cache/'.$index_archive_name);
 
-        $phrase_string = PhraseParser::extractWordStringPageSummary($crawl_item);
+        $phrase_string = 
+            PhraseParser::extractWordStringPageSummary($crawl_item);
 
-        $words = array_keys(PhraseParser::extractPhrasesAndCount($phrase_string));
+        $words = 
+            array_keys(PhraseParser::extractPhrasesAndCount($phrase_string));
 
         $hashes = array();
         $lookup = array();
@@ -189,7 +213,8 @@ class PhraseModel extends Model
             $lookup[$tmp] = $word;
         }
 
-        $words_array = $index_archive->getSelectiveWords($hashes, $num, "greaterThan");
+        $words_array = 
+            $index_archive->getSelectiveWords($hashes, $num, "greaterThan");
         $word_keys = array_keys($words_array);
         $phrases = array();
 

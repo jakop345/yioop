@@ -56,25 +56,25 @@ class NonCompressor implements Compressor
     function __construct() {}
 
     /**
-     *  Applies the Compressor compress filter to a string before it is inserted into a WebArchive.
-     *  In this case, the filter does nothing.
+     * Applies the Compressor compress filter to a string before it is inserted 
+     * into a WebArchive. In this case, the filter does nothing.
      *
-     *  @param string $str  string to apply filter to
-     *  @return string  the result of applying the filter
+     * @param string $str  string to apply filter to
+     * @return string  the result of applying the filter
      */
-    public function compress($str)
+    function compress($str)
     {
         return $str;
     }
 
     /**
-     *  Used to unapply the compress filter as when data is read out of a WebArchive.
-     *  In this case, the unapplying filter does nothing.
+     * Used to unapply the compress filter as when data is read out of a 
+     * WebArchive. In this case, the unapplying filter does nothing.
      *
-     *  @param string $str  data read from a string archive
-     *  @return string result of uncompressing
+     * @param string $str  data read from a string archive
+     * @return string result of uncompressing
      */
-    public function uncompress($str)
+    function uncompress($str)
     {
         return $str;
     }

@@ -34,8 +34,8 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- * Used to draw the admin screen on which admin users can create roles, delete roles
- * and add and delete roles from users
+ * Used to draw the admin screen on which admin users can create roles, delete 
+ * roles and add and delete roles from users
  *
  * @author Chris Pollett
  * @package seek_quarry
@@ -46,9 +46,11 @@ class ManagerolesElement extends Element
 {
 
     /**
-     * reders the screen in which roles can be created, deleted, and added or deleted from a user
+     * renders the screen in which roles can be created, deleted, and added or 
+     * deleted from a user
      *
-     * @param array $data  contains antiCSRF token, as well as data on available roles or which user has what role
+     * @param array $data  contains antiCSRF token, as well as data on 
+     *      available roles or which user has what role
      */
     public function render($data) 
     {?>
@@ -56,13 +58,18 @@ class ManagerolesElement extends Element
         <h2><?php e(tl('manageroles_element_add_role'))?></h2>
         <form id="addRoleForm" method="post" action=''>
         <input type="hidden" name="c" value="admin" /> 
-        <input type="hidden" name="YIOOP_TOKEN" value="<?php e($data['YIOOP_TOKEN']); ?>" /> 
+        <input type="hidden" name="YIOOP_TOKEN" value="<?php 
+            e($data['YIOOP_TOKEN']); ?>" /> 
         <input type="hidden" name="a" value="manageRoles" />
         <input type="hidden" name="arg" value="addrole" />
 
         <table class="nametable">
-        <tr><td><label for="role-name"><?php e(tl('manageroles_element_rolename'))?></label></td>
-            <td><input type="text" id="role-name" name="rolename"  maxlength="80" class="narrowfield" /></td><td class="center"><button class="buttonbox" type="submit"><?php e(tl('manageroles_element_submit')); ?></button></td>
+        <tr><td><label for="role-name"><?php 
+            e(tl('manageroles_element_rolename'))?></label></td>
+            <td><input type="text" id="role-name" name="rolename" 
+                maxlength="80" class="narrowfield" /></td><td 
+                class="center"><button class="buttonbox" type="submit"><?php 
+                e(tl('manageroles_element_submit')); ?></button></td>
         </tr>
         </table>
         </form>
@@ -70,41 +77,56 @@ class ManagerolesElement extends Element
         <h2><?php e(tl('manageroles_element_delete_role'))?></h2>
         <form id="deleteRoleForm" method="post" action=''>
         <input type="hidden" name="c" value="admin" /> 
-        <input type="hidden" name="YIOOP_TOKEN" value="<?php e($data['YIOOP_TOKEN']); ?>" />
+        <input type="hidden" name="YIOOP_TOKEN" value="<?php 
+            e($data['YIOOP_TOKEN']); ?>" />
         <input type="hidden" name="a" value="manageRoles" /> 
         <input type="hidden" name="arg" value="deleterole" />
 
         <table class="nametable">
-         <tr><td><label for="delete-rolename"><?php e(tl('manageusers_element_delete_rolename'))?></label></td>
-            <td><?php $this->view->optionsHelper->render("delete-rolename", "selectrole", $data['ROLE_NAMES'], "-1"); ?></td><td><button class="buttonbox" type="submit"><?php e(tl('manageroles_element_submit')); ?></button></td>
+         <tr><td><label for="delete-rolename"><?php 
+            e(tl('manageusers_element_delete_rolename'))?></label></td>
+            <td><?php $this->view->optionsHelper->render(
+                "delete-rolename", "selectrole", $data['ROLE_NAMES'], "-1"); 
+                ?></td><td><button class="buttonbox" type="submit"><?php 
+                e(tl('manageroles_element_submit')); ?></button></td>
         </tr>
         </table>
         </form>
         <h2><?php e(tl('manageroles_element_view_role_activities'))?></h2>
         <form id="viewRoleActivityForm" method="get" action='' >
         <input type="hidden" name="c" value="admin" /> 
-        <input type="hidden" name="YIOOP_TOKEN" value="<?php e($data['YIOOP_TOKEN']); ?>" /> 
+        <input type="hidden" name="YIOOP_TOKEN" value="<?php 
+            e($data['YIOOP_TOKEN']); ?>" /> 
         <input type="hidden" name="a" value="manageRoles" /> 
         <input type="hidden" name="arg" value="viewroleactivities" />
         <table class="nametable">
-        <tr><td><label for="select-role"><?php e(tl('manageusers_element_select_role'))?></label></td>
-            <td><?php $this->view->optionsHelper->render("select-role", "selectrole", $data['ROLE_NAMES'], $data['SELECT_ROLE']); ?></td></tr>
+        <tr><td><label for="select-role"><?php 
+            e(tl('manageusers_element_select_role'))?></label></td>
+            <td><?php $this->view->optionsHelper->render("select-role", 
+            "selectrole", $data['ROLE_NAMES'], $data['SELECT_ROLE']); 
+            ?></td></tr>
         </table>
         </form>
         <?php
         if(isset($data['ROLE_ACTIVITIES'])) {
-             if(count($data['AVAILABLE_ACTIVITIES']) > 0  && $data['SELECT_ROLE'] != -1) {
-             ?>
+             if(count($data['AVAILABLE_ACTIVITIES']) > 0  && 
+                $data['SELECT_ROLE'] != -1) { ?>
                 <form id="addRoleActivityForm" method="get" action='' >
                 <input type="hidden" name="c" value="admin" /> 
-                <input type="hidden" name="YIOOP_TOKEN" value="<?php e($data['YIOOP_TOKEN']); ?>" />
+                <input type="hidden" name="YIOOP_TOKEN" value="<?php 
+                    e($data['YIOOP_TOKEN']); ?>" />
                 <input type="hidden" name="a" value="manageRoles" /> 
                 <input type="hidden" name="arg" value="addactivity" />
-                <input type="hidden" name="selectrole" value="<?php e($data['SELECT_ROLE']);?>" />
+                <input type="hidden" name="selectrole" value="<?php 
+                    e($data['SELECT_ROLE']);?>" />
                 <table class="nametable">
-                 <tr><td><label for="add-activity"><?php e(tl('manageusers_element_add_activity'))?></label></td>
-                    <td><?php $this->view->optionsHelper->render("add-activity", "selectactivity", $data['AVAILABLE_ACTIVITIES'], $data['SELECT_ACTIVITY']); ?></td>
-                    <td><button class="buttonbox" type="submit"><?php e(tl('manageroles_element_submit')); ?></button></td></tr>
+                 <tr><td><label for="add-activity"><?php 
+                    e(tl('manageusers_element_add_activity'))?></label></td>
+                    <td><?php $this->view->optionsHelper->render("add-activity", 
+                        "selectactivity", $data['AVAILABLE_ACTIVITIES'], 
+                        $data['SELECT_ACTIVITY']); ?></td>
+                    <td><button class="buttonbox" type="submit"><?php 
+                    e(tl('manageroles_element_submit')); ?></button></td></tr>
                  </table>
                  </form>
              <?php
@@ -112,8 +134,13 @@ class ManagerolesElement extends Element
              ?>
              <table class="roletable"><?php
              foreach($data['ROLE_ACTIVITIES'] as $role_activity) {
-                 e("<tr><td>".$role_activity['ACTIVITY_NAME']."</td><td><a href='?c=admin&amp;a=manageRoles&amp;arg=deleteactivity&amp;selectrole=".$role_activity['ROLE_ID'].
-                   "&amp;selectactivity=".$role_activity['ACTIVITY_ID']."&amp;YIOOP_TOKEN=".$data['YIOOP_TOKEN']."'>Delete</a></td>");
+                 e("<tr><td>".$role_activity['ACTIVITY_NAME'].
+                    "</td><td><a href='?c=admin&amp;a=manageRoles".
+                    "&amp;arg=deleteactivity&amp;selectrole=".
+                    $role_activity['ROLE_ID'].
+                    "&amp;selectactivity=".$role_activity['ACTIVITY_ID'].
+                    "&amp;YIOOP_TOKEN=".$data['YIOOP_TOKEN'].
+                    "'>Delete</a></td>");
              }
              ?>
              </table>

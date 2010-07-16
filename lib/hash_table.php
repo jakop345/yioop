@@ -66,7 +66,8 @@ class HashTable extends StringArray
 
     /**
     */
-    public function __construct($fname, $num_values, $key_size, $value_size, $save_frequency = self::DEFAULT_SAVE_FREQUENCY) 
+    public function __construct($fname, $num_values, $key_size, $value_size, 
+        $save_frequency = self::DEFAULT_SAVE_FREQUENCY) 
     {
         $this->key_size = $key_size;
         $this->value_size = $value_size;
@@ -75,7 +76,8 @@ class HashTable extends StringArray
 
         $this->count = 0;
 
-        parent::__construct($fname, $num_values, $key_size + $value_size, $save_frequency);
+        parent::__construct($fname, $num_values, 
+            $key_size + $value_size, $save_frequency);
     }
 
     public function insert($key, $value)
@@ -87,9 +89,11 @@ class HashTable extends StringArray
 
         if($probe === false) {
             /* this is a little slow
-               the idea is we can't use deleted slots until we are sure $key isn't in the table
+               the idea is we can't use deleted slots until we are sure 
+               $key isn't in the table
              */
-            $probe = $this->lookupArray($key, array($null, $deleted), self::ALWAYS_RETURN_PROBE);
+            $probe = $this->lookupArray(
+                $key, array($null, $deleted), self::ALWAYS_RETURN_PROBE);
 
             if($probe === false) {
                 crawlLog("No space in hash table");
@@ -120,18 +124,21 @@ class HashTable extends StringArray
     }
 
 
-    public function lookup($key, $return_probe_value = self::RETURN_VALUE)
+    function lookup($key, $return_probe_value = self::RETURN_VALUE)
     {
-        return $this->lookupArray($key, array($this->null), $return_probe_value);
+        return $this->lookupArray(
+            $key, array($this->null), $return_probe_value);
     }
 
 
-    public function lookupArray($key, $null_array, $return_probe_value = self::RETURN_VALUE)
+    function lookupArray($key, $null_array, 
+        $return_probe_value = self::RETURN_VALUE)
     {
         $index = $this->hash($key);
 
         $num_values = $this->num_values;
-        $probe_array = array(self::RETURN_PROBE_ON_KEY_FOUND, self::ALWAYS_RETURN_PROBE);
+        $probe_array = array(self::RETURN_PROBE_ON_KEY_FOUND, 
+            self::ALWAYS_RETURN_PROBE);
 
         for($j = 0; $j < $num_values; $j++)  {
             $probe = ($index + $j) % $num_values;

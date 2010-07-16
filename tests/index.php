@@ -34,7 +34,8 @@
  * @filesource
  */
 
-define("BASE_DIR", substr($_SERVER['DOCUMENT_ROOT'].$_SERVER['PWD'].$_SERVER["SCRIPT_NAME"], 0, 
+define("BASE_DIR", substr($_SERVER['DOCUMENT_ROOT'].$_SERVER['PWD'].
+    $_SERVER["SCRIPT_NAME"], 0, 
     -strlen("tests/index.php")));
 
 /** Load search engine wide configuration file */
@@ -54,7 +55,8 @@ if(!PROFILE || !DISPLAY_TESTS) {echo "BAD REQUEST"; exit();}
 
         <meta name="Author" content="Christopher Pollett" />
 
-        <meta name="description" content="Displays unit tests for search engine" />
+        <meta name="description" 
+            content="Displays unit tests for search engine" />
         <meta charset="utf-8" />
         <link rel="shortcut icon"   href="../favicon.ico" />
         <style type="text/css">
@@ -81,8 +83,10 @@ require_once BASE_DIR."/lib/unit_test.php";
 define("LOG_TO_FILES", false);
 
 
-$allowed_activities = array("listTests", "runAllTests", "runTestBasedOnRequest");
-if(isset($_REQUEST['activity']) && in_array($_REQUEST['activity'], $allowed_activities)) {
+$allowed_activities = 
+    array("listTests", "runAllTests", "runTestBasedOnRequest");
+if(isset($_REQUEST['activity']) && 
+    in_array($_REQUEST['activity'], $allowed_activities)) {
     $activity = $_REQUEST['activity'];
 } else {
     $activity = "listTests";
@@ -94,7 +98,8 @@ $activity();
 
 
 /**
- *  This function is responsible for listing out HTML links to the available unit tests a user can run
+ * This function is responsible for listing out HTML links to the available 
+ * unit tests a user can run
  */
 function listTests()
 {
@@ -106,7 +111,8 @@ function listTests()
     <?php
     foreach($names as $name) {
         $stem = substr($name, 0, strlen($name) - strlen("_test.php"));
-        echo "<li><a href='?activity=runTestBasedOnRequest&test=$stem'>".getClassNameFromFileName($name)."</a></li>";
+        echo "<li><a href='?activity=runTestBasedOnRequest&test=$stem'>".
+            getClassNameFromFileName($name)."</a></li>";
     }
     ?>
     </ul>
@@ -129,8 +135,9 @@ function runAllTests()
 }
 
 /**
- *  Run the single unit test whose name is given in $_REQUEST['test'] and display the results.
- *  If the unit test file was blah_test.php, then $_REQUEST['test'] should be blah.
+ * Run the single unit test whose name is given in $_REQUEST['test'] and 
+ * display the results. If the unit test file was blah_test.php, then 
+ * $_REQUEST['test'] should be blah.
  */
 function runTestBasedOnRequest()
 {
@@ -145,9 +152,10 @@ function runTestBasedOnRequest()
 }
 
 /**
- *  Uses $name to load a unit test class, run the tests in it and display the results
+ * Uses $name to load a unit test class, run the tests in it and display the 
+ * results
  *
- *  @param string $name  the name of a unit test file in the current directory
+ * @param string $name  the name of a unit test file in the current directory
  */
 function runTest($name)
 {
@@ -194,11 +202,11 @@ function runTest($name)
 }
 
 /**
- *  Gets the names of all the unit test files in the current directory.
- *  Doesn't really check for this explicitly, just checks if the file
- *  end with _test.php
+ * Gets the names of all the unit test files in the current directory.
+ * Doesn't really check for this explicitly, just checks if the file
+ * end with _test.php
  *
- *  @return array   an array of unit test files
+ * @return array   an array of unit test files
  */
 function getTestNames()
 {
@@ -207,12 +215,13 @@ function getTestNames()
 }
 
 /**
- *  Convert the convention for unit test file names into our convention
- *  for unit test class names
+ * Convert the convention for unit test file names into our convention
+ * for unit test class names
  *
- *  @param string $name  a file name with words separated by underscores, ending in .php
+ * @param string $name  a file name with words separated by underscores, ending 
+ * in .php
  *
- *  @return string  a camel-cased name ending with Test
+ * @return string  a camel-cased name ending with Test
  */
 function getClassNameFromFileName($name)
 {

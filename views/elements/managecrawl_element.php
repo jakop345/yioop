@@ -34,8 +34,8 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- *  Element responsible for displaying info about starting, stopping, deleting, and using
- *  a crawl. It makes use of the CrawlStatusView
+ * Element responsible for displaying info about starting, stopping, deleting, 
+ * and using a crawl. It makes use of the CrawlStatusView
  *
  * @author Chris Pollett
  * @package seek_quarry
@@ -46,9 +46,10 @@ class ManagecrawlElement
 {
 
     /**
-     *  Draw form to start a new crawl, has div place holder and ajax code to get info about current crawl
-     *  
-     *  @param array $data  form about about a crawl such as its description
+     * Draw form to start a new crawl, has div place holder and ajax code to 
+     * get info about current crawl
+     *
+     * @param array $data  form about about a crawl such as its description
      */
     public function render($data) 
     {?>
@@ -56,12 +57,22 @@ class ManagecrawlElement
         <h2><?php e(tl('managecrawl_element_create_crawl'))?></h2>
         <form id="crawlStartForm" method="get" action=''>
         <input type="hidden" name="c" value="admin" /> 
-        <input type="hidden" name="YIOOP_TOKEN" value="<?php e($data['YIOOP_TOKEN']); ?>" /> 
+        <input type="hidden" name="YIOOP_TOKEN" value="<?php 
+            e($data['YIOOP_TOKEN']); ?>" /> 
         <input type="hidden" name="a" value="manageCrawl" />
         <input type="hidden" name="arg" value="start" />
 
-        <p><label for="description-name"><?php e(tl('managecrawl_element_description'))?></label>: <input type="text" id="description-name" name="description" value="<?php if(isset($data['DESCRIPTION'])) {e($data['DESCRIPTION']);} ?>" maxlength="80" class="widefield"/>
-        <button class="buttonbox" type="submit"><?php e(tl('managecrawl_element_start_new_crawl')); ?></button> <a href="?c=admin&amp;a=manageCrawl&amp;arg=options&amp;YIOOP_TOKEN=<?php e($data['YIOOP_TOKEN']) ?>"><?php e(tl('managecrawl_element_options')); ?></a></p>
+        <p><label for="description-name"><?php 
+            e(tl('managecrawl_element_description')); ?></label>: 
+            <input type="text" id="description-name" name="description" 
+                value="<?php if(isset($data['DESCRIPTION'])) {
+                    e($data['DESCRIPTION']); } ?>" maxlength="80" 
+                    class="widefield"/>
+        <button class="buttonbox" type="submit"><?php 
+            e(tl('managecrawl_element_start_new_crawl')); ?></button> 
+    <a href="?c=admin&amp;a=manageCrawl&amp;arg=options&amp;YIOOP_TOKEN=<?php 
+                e($data['YIOOP_TOKEN']) ?>"><?php 
+                e(tl('managecrawl_element_options')); ?></a></p>
         </form>
         <div id="crawlstatus" >
         <h2><?php e(tl('managecrawl_element_awaiting_status'))?></h2>
@@ -70,7 +81,8 @@ class ManagecrawlElement
         var updateId;
         function crawlStatusUpdate()
         {
-            var startUrl = "?c=admin&YIOOP_TOKEN=<?php e($data['YIOOP_TOKEN']); ?>&a=crawlStatus";
+            var startUrl = "?c=admin&YIOOP_TOKEN=<?php 
+                e($data['YIOOP_TOKEN']); ?>&a=crawlStatus";
             var crawlTag = elt('crawlstatus');
             getPage(crawlTag, startUrl);
         }
@@ -79,7 +91,8 @@ class ManagecrawlElement
         {
              clearInterval(updateId );
              var crawlTag = elt('crawlstatus');
-             crawlTag.innerHTML= "<h2 class='red'><?php e(tl('managecrawl_element_up_longer_update'))?></h2>";
+             crawlTag.innerHTML= "<h2 class='red'><?php 
+                e(tl('managecrawl_element_up_longer_update'))?></h2>";
         }
         function doUpdate()
         {

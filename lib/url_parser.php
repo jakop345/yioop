@@ -47,16 +47,18 @@ class UrlParser
 {
 
     /**
-     *  Checks if the url scheme is either http or https.
+     * Checks if the url scheme is either http or https.
      *
-     *  @param string $url  the url to check
-     *  @return bool returns true if it is either http or https and false otherwise
+     * @param string $url  the url to check
+     * @return bool returns true if it is either http or https and false 
+     *      otherwise
      */
-    public static function isSchemeHttpOrHttps($url) 
+    static function isSchemeHttpOrHttps($url) 
     {
         $url_parts = @parse_url($url);
 
-        if(isset($url_parts['scheme']) && $url_parts['scheme'] != "http" && $url_parts['scheme'] != "https") {
+        if(isset($url_parts['scheme']) && $url_parts['scheme'] != "http" && 
+            $url_parts['scheme'] != "https") {
             return false;
         }
 
@@ -65,12 +67,12 @@ class UrlParser
     }
 
     /**
-     *  Checks if the url has a host part.
+     * Checks if the url has a host part.
      *
-     *  @param string $url  the url to check
-     *  @return bool true if it does; false otherwise
+     * @param string $url  the url to check
+     * @return bool true if it does; false otherwise
      */
-    public static function hasHostUrl($url) 
+    static function hasHostUrl($url) 
     {
        $url_parts = @parse_url($url);
 
@@ -78,12 +80,12 @@ class UrlParser
     }
 
     /**
-     *  Get the host name portion of a url if present; if not return false
+     * Get the host name portion of a url if present; if not return false
      *
-     *  @param string $url the url to parse
-     *  @return the host portion of the url if present; false otherwise
+     * @param string $url the url to parse
+     * @return the host portion of the url if present; false otherwise
      */
-    public static function getHost($url) 
+    static function getHost($url) 
     {
         $url_parts = @parse_url($url);
 
@@ -123,12 +125,14 @@ class UrlParser
     }
 
     /**
-     *  Gets an array of prefix urls from a given url. Each prefix contains at least the the hostname of the the start url
+     * Gets an array of prefix urls from a given url. Each prefix contains at 
+     * least the the hostname of the the start url
      *
-     *  http://host.com/b/c/ would yield http://host.com/ , http://host.com/b, http://host.com/b/, http://host.com/b/c, http://host.com/b/c/
+     * http://host.com/b/c/ would yield http://host.com/ , http://host.com/b, 
+     * http://host.com/b/, http://host.com/b/c, http://host.com/b/c/
      *
-     *  @param string $url the url to extract prefixes from
-     *  @return array the array of url prefixes
+     * @param string $url the url to extract prefixes from
+     * @return array the array of url prefixes
      */
     public static function getHostPaths($url) 
     {
@@ -159,14 +163,14 @@ class UrlParser
     }
 
     /**
-     *  Given a url tries to make a guess at the file type of the file it points to
+     * Given a url, makes a guess at the file type of the file it points to
      *
-     *  @param string $url a url to figure out the file type for
+     * @param string $url a url to figure out the file type for
      *
-     *  @return string the guessed file type.
+     * @return string the guessed file type.
      *
      */
-    public static function getDocumentType($url) 
+    static function getDocumentType($url) 
     {
 
         $url_parts = @parse_url($url); 
@@ -186,12 +190,13 @@ class UrlParser
     }
 
     /**
-     *  Gets the filename portion of a url if present; otherwise returns "Some File"
+     * Gets the filename portion of a url if present; 
+     * otherwise returns "Some File"
      *
-     *  @param string $url a url to parse
-     *  @return string the filename portion of this url
+     * @param string $url a url to parse
+     * @return string the filename portion of this url
      */
-    public static function getDocumentFilename($url)
+    static function getDocumentFilename($url)
     {
 
         $url_parts = @parse_url($url); 
@@ -211,12 +216,12 @@ class UrlParser
     }
 
     /**
-     *  Get the query string component of a url
+     * Get the query string component of a url
      *
-     *  @param string $url  a url to get the query string out of
-     *  @return string the query string if present; NULL otherwise
+     * @param string $url  a url to get the query string out of
+     * @return string the query string if present; NULL otherwise
      */
-    public static function getQuery($url) 
+    static function getQuery($url) 
     {
         $url_parts = @parse_url($url);
         if(isset($url_parts['query'])) {
@@ -271,7 +276,8 @@ class UrlParser
                 } else {
                     $pre_path = "";
                 }
-                if(isset($site_path_parts['basename']) && !isset($site_path_parts['extension'])) {
+                if(isset($site_path_parts['basename']) && 
+                    !isset($site_path_parts['extension'])) {
                     $pre_path .="/".$site_path_parts['basename'];
                 }
 
@@ -318,18 +324,23 @@ class UrlParser
     }
 
     /**
-     *  Checks if a url has a repeated set of subdirectories, and if the number of repeats occurs more than some threshold number of times
+     * Checks if a url has a repeated set of subdirectories, and if the number 
+     * of repeats occurs more than some threshold number of times
      *
-     *  A pattern like bob/.../bob counts as own reptition. bob/.../alice/.../bob/.../alice would count as two (... should be read as ellipsis,
-     *  not a directory name).If the threshold is three and there are at least three repeated mathes this function return true; it returns
-     *  false otherwise.
+     *  A pattern like bob/.../bob counts as own reptition. 
+     * bob/.../alice/.../bob/.../alice would count as two (... should be read 
+     * as ellipsis, not a directory name).If the threshold is three and there 
+     * are at least three repeated mathes this function return true; it returns
+     * false otherwise.
      *
-     *  @param string $url the url to check
-     *  @param int $repeat_threshold the number of repeats of a subdir name to trigger a true response
-     *  @return bool whether a repeated subdirectory name with more matches than the threshold was found
+     * @param string $url the url to check
+     * @param int $repeat_threshold the number of repeats of a subdir name to 
+     *      trigger a true response
+     * @return bool whether a repeated subdirectory name with more matches than
+     *      the threshold was found
      *
      */
-    public static function checkRecursiveUrl($url, $repeat_threshold = 3) 
+    static function checkRecursiveUrl($url, $repeat_threshold = 3) 
     {
         $url_parts = mb_split("/", $url);
 

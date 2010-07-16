@@ -34,9 +34,9 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- * A Compressor is used to apply a filter to objects before they are stored into a WebArchive.
- * The filter is assumed to be invertible, and the typical intention is the filter carries out
- * some kind of string compression.
+ * A Compressor is used to apply a filter to objects before they are stored 
+ * into a WebArchive. The filter is assumed to be invertible, and the typical 
+ * intention is the filter carries out some kind of string compression.
  *
  * @author Chris Pollett
  * @package seek_quarry
@@ -46,19 +46,21 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 interface Compressor
 {
     /**
-     *  Applies the Compressor compress filter to a string before it is inserted into a WebArchive.
+     * Applies the Compressor compress filter to a string before it is 
+     * inserted into a WebArchive.
      *
-     *  @param string $str  string to apply filter to
-     *  @return string  the result of applying the filter
+     * @param string $str  string to apply filter to
+     * @return string  the result of applying the filter
      */
-    public function compress($str);
+    function compress($str);
     
     /**
-     *  Used to unapply the compress filter as when data is read out of a WebArchive.
+     * Used to unapply the compress filter as when data is read out of a 
+     * WebArchive.
      *
-     *  @param string $str  data read from a string archive
-     *  @return string result of uncompressing
+     * @param string $str  data read from a string archive
+     * @return string result of uncompressing
      */
-    public function uncompress($str);
+    function uncompress($str);
 } 
 ?>

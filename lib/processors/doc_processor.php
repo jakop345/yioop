@@ -81,8 +81,8 @@ class DocProcessor extends TextProcessor
      * A Word Doc conists of a FIB, Piece Table, and
      * DocumentStream. The last contains the text.
      * The piece table is supposed to be used to reconstruct
-     * the order of the text from the DocumentStream and the FIB, file information block,
-     * is supposed to tell us where the piece table is.
+     * the order of the text from the DocumentStream and the FIB, file 
+     * information block,is supposed to tell us where the piece table is.
      * I am not using any of this for now. I am just brute
      * force looking for the text which I know has to be at a page (256 byte)
      * boundary. I then go until I no longer see ASCII. So the order
@@ -124,7 +124,8 @@ class DocProcessor extends TextProcessor
         $is_text = true;
         for($i = 0; $i < 8; $i++) {
             $ascii = ord($doc[$pos]);
-            if (!((9 <= $ascii && $ascii <= 13) || (32 <= $ascii && $ascii <= 126)) ){
+            if (!((9 <= $ascii && $ascii <= 13) || 
+                (32 <= $ascii && $ascii <= 126)) ){
                 $is_text = false;
                 break;
             }
@@ -159,7 +160,8 @@ class DocProcessor extends TextProcessor
         for($i = 0; $i < 8; $i++) {
             if(isset($doc[$pos])) {
                 $ascii = ord($doc[$pos]);
-                if((9<= $ascii && $ascii <= 13) ||(32<= $ascii && $ascii <= 126) ) {
+                if((9<= $ascii && $ascii <= 13) ||
+                    (32<= $ascii && $ascii <= 126) ) {
                     $text .= chr($ascii);
                 }
             }

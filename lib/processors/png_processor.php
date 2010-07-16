@@ -59,11 +59,16 @@ class PngProcessor extends ImageProcessor
             $image = @imagecreatefrompng(CRAWL_DIR."/cache/tmp.png");
             $thumb_string = self::createThumb($image);
             $summary[self::TITLE] = "";
-            $summary[self::DESCRIPTION] = "Image of ".UrlParser::getDocumentFilename($url);
+            $summary[self::DESCRIPTION] = "Image of ". 
+                UrlParser::getDocumentFilename($url);
             $summary[self::LINKS] = array();
-            $summary[self::PAGE] = "<html><body><div><img src='data:image/png;base64,".base64_encode($page)
-                . "' alt='".$summary[self::DESCRIPTION]."' /></div></body></html>";
-            $summary[self::THUMB] = 'data:image/jpeg;base64,'.base64_encode($thumb_string);
+            $summary[self::PAGE] = 
+                "<html><body><div><img src='data:image/png;base64,". 
+                base64_encode($page). 
+                "' alt='".$summary[self::DESCRIPTION].
+                "' /></div></body></html>";
+            $summary[self::THUMB] = 'data:image/jpeg;base64,' . 
+                base64_encode($thumb_string);
 
        }
        return $summary;

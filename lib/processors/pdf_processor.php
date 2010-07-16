@@ -88,11 +88,15 @@ class PdfProcessor extends TextProcessor
         
         $i = 0;
         while($cur_pos < $len) {
-            list($cur_pos, $object_string) = self::getNextObject($pdf_string, $cur_pos);
+            list($cur_pos, $object_string) = 
+                self::getNextObject($pdf_string, $cur_pos);
             $object_dictionary = self::getObjectDictionary($object_string);
-            if(!self::objectDictionaryHas($object_dictionary, array("Image", "Catalog"))) {
-                $stream_data = rtrim(ltrim(self::getObjectStream($object_string)));
-                if(self::objectDictionaryHas($object_dictionary, array("FlateDecode"))) {
+            if(!self::objectDictionaryHas(
+                $object_dictionary, array("Image", "Catalog"))) {
+                $stream_data = 
+                    rtrim(ltrim(self::getObjectStream($object_string)));
+                if(self::objectDictionaryHas(
+                    $object_dictionary, array("FlateDecode"))) {
                     $stream_data = @gzuncompress($stream_data);
                     if(strpos($stream_data, "PS-AdobeFont")){
                         $out .= $stream_data; 
@@ -150,7 +154,8 @@ class PdfProcessor extends TextProcessor
      */
     static function getObjectDictionary($object_string) 
     {
-        list( , $object_dictionary) =self::getBetweenTags($object_string, 0, '<<', '>>'); 
+        list( , $object_dictionary) =
+            self::getBetweenTags($object_string, 0, '<<', '>>'); 
         return $object_dictionary;
     }
 
@@ -159,7 +164,8 @@ class PdfProcessor extends TextProcessor
      */
     static function getObjectStream($object_string) 
     {
-        list( , $stream_data) = self::getBetweenTags($object_string, 0, 'stream', 'endstream');   
+        list( , $stream_data) = 
+            self::getBetweenTags($object_string, 0, 'stream', 'endstream');
         return $stream_data;
 
     }
@@ -173,10 +179,12 @@ class PdfProcessor extends TextProcessor
 
         //replace ASCII codes in decimal with their value
         $data = preg_replace_callback('/\\\(\d{3})/',
-            create_function( '$matches', 'return chr(intval($matches[1]));'), $data);
+            create_function( '$matches', 'return chr(intval($matches[1]));'), 
+            $data);
         //replace ASCII codes in hex with their value
         $data = preg_replace_callback('/\<([0-9A-F]{2})\>/',
-            create_function( '$matches', 'return chr(hexdec($matches[1]));'), $data);
+            create_function( '$matches', 'return chr(hexdec($matches[1]));'), 
+            $data);
         $len = strlen($data);
 
         $out = "";
@@ -226,8 +234,10 @@ class PdfProcessor extends TextProcessor
         }
 
         if(isset($data[$cur_pos]) && isset($data[$cur_pos + 1]) &&
-            ord($data[$cur_pos]) == ord('T') && ord($data[$cur_pos + 1]) == ord('J') ) {
-            if(isset($data[$cur_pos + 3]) && ord($data[$cur_pos + 3]) != ord('F')) {
+            ord($data[$cur_pos]) == ord('T') && 
+                ord($data[$cur_pos + 1]) == ord('J') ) {
+            if(isset($data[$cur_pos + 3]) && 
+                ord($data[$cur_pos + 3]) != ord('F')) {
                 $out .= " ";
             } else {
                 $out .= "\n";
@@ -257,7 +267,8 @@ class PdfProcessor extends TextProcessor
             } else {
                 if($escape_flag || $cur_char !=")"){
                     $ascii = ord($cur_char);
-                    if((9 <= $ascii && $ascii <= 13) || (32 <= $ascii && $ascii <= 126)) {
+                    if((9 <= $ascii && $ascii <= 13) || 
+                        (32 <= $ascii && $ascii <= 126)) {
                         $out .= $cur_char;
                     }
                 }

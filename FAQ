@@ -57,7 +57,8 @@ Extending Yioop
 ===============
 Q: How do I write a page processor for a new mime type?
 
-Q: How do I get the Yioop engine to work with a different database management system?
+Q: How do I get the Yioop engine to work with a different database management 
+system?
 
 Q: How do I get the Yioop engine to use a different crawl order algorithm?
 

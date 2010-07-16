@@ -75,15 +75,19 @@ class UserModel extends Model
         $activities = array();
         $locale_tag = getLocaleTag();
 
-        $sql = "SELECT LOCALE_ID FROM LOCALE WHERE LOCALE_TAG = '$locale_tag' LIMIT 1";
+        $sql = "SELECT LOCALE_ID FROM LOCALE ".
+            "WHERE LOCALE_TAG = '$locale_tag' LIMIT 1";
         $result = $this->db->execute($sql);
         $row = $this->db->fetchArray($result);
         $locale_id = $row['LOCALE_ID'];
 
-        $sql = "SELECT UR.ROLE_ID AS ROLE_ID, RA.ACTIVITY_ID AS ACTIVITY_ID, T.TRANSLATION_ID AS TRANSLATION_ID, A.METHOD_NAME AS METHOD_NAME, ".
+        $sql = "SELECT UR.ROLE_ID AS ROLE_ID, RA.ACTIVITY_ID AS ACTIVITY_ID, ".
+            "T.TRANSLATION_ID AS TRANSLATION_ID, A.METHOD_NAME AS METHOD_NAME,".
             " T.IDENTIFIER_STRING AS IDENTIFIER_STRING FROM ACTIVITY A, ".
-            " USER_ROLE UR, ROLE_ACTIVITY RA, TRANSLATION T WHERE UR.USER_ID = '$user_id' ".
-            " AND UR.ROLE_ID = RA.ROLE_ID AND T.TRANSLATION_ID = A.TRANSLATION_ID AND RA.ACTIVITY_ID = A.ACTIVITY_ID"; 
+            " USER_ROLE UR, ROLE_ACTIVITY RA, TRANSLATION T ".
+            "WHERE UR.USER_ID = '$user_id' ".
+            "AND UR.ROLE_ID=RA.ROLE_ID AND T.TRANSLATION_ID=A.TRANSLATION_ID ".
+            "AND RA.ACTIVITY_ID = A.ACTIVITY_ID"; 
 
         $result = $this->db->execute($sql);
         $i = 0;
@@ -91,8 +95,11 @@ class UserModel extends Model
 
             $id = $activities[$i]['TRANSLATION_ID'];
 
-            $sub_sql = "SELECT TRANSLATION AS ACTIVITY_NAME FROM TRANSLATION_LOCALE ".
-                " WHERE TRANSLATION_ID=$id AND LOCALE_ID=$locale_id LIMIT 1"; // maybe do left join at some point
+            $sub_sql = "SELECT TRANSLATION AS ACTIVITY_NAME ".
+                "FROM TRANSLATION_LOCALE ".
+                "WHERE TRANSLATION_ID=$id AND ".
+                "LOCALE_ID=$locale_id LIMIT 1"; 
+                // maybe do left join at some point
 
             $result_sub =  $this->db->execute($sub_sql);
             $translate = $this->db->fetchArray($result_sub);
@@ -100,7 +107,8 @@ class UserModel extends Model
             if($translate) {
                 $activities[$i]['ACTIVITY_NAME'] = $translate['ACTIVITY_NAME'];
             } else {
-                $activities[$i]['ACTIVITY_NAME'] = $activities[$i]['IDENTIFIER_STRING'];
+                $activities[$i]['ACTIVITY_NAME'] = 
+                    $activities[$i]['IDENTIFIER_STRING'];
             }
             $i++;
         }
@@ -126,7 +134,8 @@ class UserModel extends Model
         $roles = array();
         $locale_tag = getLocaleTag();
 
-        $sql = "SELECT LOCALE_ID FROM LOCALE WHERE LOCALE_TAG = '$locale_tag' LIMIT 1";
+        $sql = "SELECT LOCALE_ID FROM LOCALE ".
+            "WHERE LOCALE_TAG = '$locale_tag' LIMIT 1";
         $result = $this->db->execute($sql);
         $row = $this->db->fetchArray($result);
         $locale_id = $row['LOCALE_ID'];
@@ -168,56 +177,65 @@ class UserModel extends Model
 
 
     /**
-     *  Add a user with a given username and password to the list of users that can login to the admin panel
+     * Add a user with a given username and password to the list of users 
+     * that can login to the admin panel
      *
-     *  @param string $username  the username of the user to be added
-     *  @param string $password  the password of the user to be added
+     * @param string $username  the username of the user to be added
+     * @param string $password  the password of the user to be added
      */
     function addUser($username, $password)
     {
         $this->db->selectDB(DB_NAME);
-        $sql = "INSERT INTO USER(USER_NAME, PASSWORD) VALUES ('".$this->db->escapeString($username)."', '".crawlCrypt($this->db->escapeString($password))."' ) ";
+        $sql = "INSERT INTO USER(USER_NAME, PASSWORD) VALUES ('".
+            $this->db->escapeString($username)."', '".
+            crawlCrypt($this->db->escapeString($password))."' ) ";
         $result = $this->db->execute($sql);
     }
 
 
     /**
-     *  Deletes a user by username from the list of users that can login to the admin panel
+     * Deletes a user by username from the list of users that can login to 
+     * the admin panel
      *
-     *  @param string $username  the login name of the user to delete
+     * @param string $username  the login name of the user to delete
      */
     function deleteUser($username)
     {
         $this->db->selectDB(DB_NAME);
-        $sql = "DELETE FROM USER WHERE USER_NAME='".$this->db->escapeString($username)."'";
+        $sql = "DELETE FROM USER WHERE USER_NAME='".
+            $this->db->escapeString($username)."'";
         $result = $this->db->execute($sql);
     }
 
 
     /**
-     *  Adds a role to a given user
+     * Adds a role to a given user
      *
-     *  @param string $userid  the id of the user to add the role to
-     *  @param string $roleid  the id of the role to add
+     * @param string $userid  the id of the user to add the role to
+     * @param string $roleid  the id of the role to add
      */
     function addUserRole($userid, $roleid)
     {
         $this->db->selectDB(DB_NAME);
-        $sql = "INSERT INTO USER_ROLE  VALUES ('".$this->db->escapeString($userid)."', '".$this->db->escapeString($roleid)."' ) ";
+        $sql = "INSERT INTO USER_ROLE  VALUES ('".
+            $this->db->escapeString($userid)."', '".
+            $this->db->escapeString($roleid)."' ) ";
         $result = $this->db->execute($sql);
     }
 
 
     /**
-     *  Deletes a role from a given user
+     * Deletes a role from a given user
      *
-     *  @param string $userid  the id of the user to delete the role from
-     *  @param string $roleid  the id of the role to delete
+     * @param string $userid  the id of the user to delete the role from
+     * @param string $roleid  the id of the role to delete
      */
     function deleteUserRole($userid, $roleid)
     {
         $this->db->selectDB(DB_NAME);
-        $sql = "DELETE FROM USER_ROLE WHERE USER_ID='".$this->db->escapeString($userid)."' AND  ROLE_ID='".$this->db->escapeString($roleid)."'";
+        $sql = "DELETE FROM USER_ROLE WHERE USER_ID='".
+            $this->db->escapeString($userid)."' AND  ROLE_ID='".
+            $this->db->escapeString($roleid)."'";
         $result = $this->db->execute($sql);
     }
 }

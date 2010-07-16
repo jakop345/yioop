@@ -35,7 +35,8 @@
  * @filesource
  */
 
-define("BASE_DIR", substr($_SERVER['DOCUMENT_ROOT'].$_SERVER['PWD'].$_SERVER["SCRIPT_NAME"], 0, -strlen("index.php")));
+define("BASE_DIR", substr($_SERVER['DOCUMENT_ROOT'].$_SERVER['PWD'].
+    $_SERVER["SCRIPT_NAME"], 0, -strlen("index.php")));
 
 /**
  * Load the configuration file
@@ -67,7 +68,8 @@ if ( false === function_exists('lcfirst') ) {
     { return (string)(strtolower(substr($str,0,1)).substr($str,1));}
 } 
 
-$available_controllers = array("search", "fetch", "cache", "settings", "admin", "archive");
+$available_controllers = array("search", "fetch", "cache", 
+    "settings", "admin", "archive");
 
 //the request variable c is used to determine the controller
 if(!isset($_REQUEST['c'])) {
@@ -81,7 +83,7 @@ if(!checkAllowedController($controller_name))
     $controller_name = "search";
 }
 
-// if the install directory exists we force the page to be the configuration page
+// if no profile exists we force the page to be the configuration page
 if(!PROFILE ) {
     $controller_name = "admin";
 }
@@ -113,7 +115,8 @@ setLocaleObject($locale_tag);
 
 
 /**
- * Loads controller responsible for calculating the data needed to render the scene
+ * Loads controller responsible for calculating 
+ * the data needed to render the scene
  * 
  */
 require_once(BASE_DIR."/controllers/".$controller_name."_controller.php");
@@ -124,11 +127,12 @@ $controller = new $controller_class();
 $controller->processRequest();
 
 /**
- *  Verifies that the supplied controller string is a controller for the
- *  SeekQuarry app
+ * Verifies that the supplied controller string is a controller for the
+ * SeekQuarry app
  *
- *  @param string $controller_name  name of controller (this usually come from the query string)
- *  @return bool  whether it is a valid controller
+ * @param string $controller_name  name of controller 
+ *      (this usually come from the query string)
+ * @return bool  whether it is a valid controller
  */
 function checkAllowedController($controller_name)
 {
@@ -138,9 +142,9 @@ function checkAllowedController($controller_name)
 }
 
 /**
- *  shorthand for echo
+ * shorthand for echo
  *
- *  @param string $text   string to send to the current output
+ * @param string $text   string to send to the current output
  */
 function e($text)
 {
@@ -173,7 +177,8 @@ function tl()
 /**
  * Sets the language to be used for locale settings
  *
- * @param string $locale_tag   the tag of the language to use to determine locale settings
+ * @param string $locale_tag the tag of the language to use to determine 
+ *      locale settings
  */
 function setLocaleObject($locale_tag)
 {
@@ -183,10 +188,11 @@ function setLocaleObject($locale_tag)
 }
 
 /**
- *  Gets the language tag (for instance, en_US for American English) of the locale that
- *  is currently being used.
+ * Gets the language tag (for instance, en_US for American English) of the 
+ * locale that is currently being used.
  *
- *  @return string  the tag of the language currently being used for locale settings
+ * @return string  the tag of the language currently being used for locale 
+ *      settings
  */
 function getLocaleTag()
 {
@@ -195,9 +201,10 @@ function getLocaleTag()
 }
 
 /**
- *  Returns the current language directions. 
+ * Returns the current language directions. 
  *
- *  @return string   ltr or rtl depending on if the language is left-to-right or right-to-left
+ * @return string ltr or rtl depending on if the language is left-to-right 
+ * or right-to-left
  */
 function getLocaleDirection()
 {
@@ -206,11 +213,12 @@ function getLocaleDirection()
 }
 
 /**
- *  Returns the current locales method of writing blocks (things like divs or paragraphs).
- *  A language like English puts blocks one after another from the top of the page
- *  to the bottom. Other languages like classical Chinese list them from right to left.
+ * Returns the current locales method of writing blocks (things like divs or 
+ * paragraphs).A language like English puts blocks one after another from the 
+ * top of the page to the bottom. Other languages like classical Chinese list 
+ * them from right to left.
  *
- *  @return string   tb lr rl depending on the current locales block progression
+ *  @return string  tb lr rl depending on the current locales block progression
  */
 function getBlockProgression()
 {
@@ -220,9 +228,9 @@ function getBlockProgression()
 }
 
 /**
- *  Returns the writing mode of the current locale. This is a combination of the locale
- *  direction and the block progression. For instance, for English the writing mode is
- *  lr-tb (left-to-right top-to-bottom).
+ * Returns the writing mode of the current locale. This is a combination of the 
+ * locale direction and the block progression. For instance, for English the 
+ * writing mode is lr-tb (left-to-right top-to-bottom).
  *
  *  @return string   the locales writing mode
  */

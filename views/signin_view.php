@@ -59,28 +59,36 @@ class SigninView extends View
     public function renderView($data) {
 ?>
 <div class="landing">
-  <h1 class="logo"><a href="."><img src="resources/yioop.png" alt="Yioop!" /></a><span> - <?php e(tl('signin_view_signin')); ?></span></h1>
+    <h1 class="logo"><a href="."><img src="resources/yioop.png" alt="Yioop!" 
+        /></a><span> - <?php e(tl('signin_view_signin')); ?></span></h1>
 <form class="user_settings" method="post" action="">
 <div class="login">
     <table>
     <tr>
-    <td class="table-label" ><b><label for="username"><?php e(tl('signin_view_username')); ?></label>:</b></td><td class="table-input"><input
-    id="username" type="text" class="narrowfield" maxlength="80" name="u"/>
+    <td class="table-label" ><b><label for="username"><?php 
+        e(tl('signin_view_username')); ?></label>:</b></td><td 
+            class="table-input"><input id="username" type="text" 
+            class="narrowfield" maxlength="80" name="u"/>
     </td><td></td></tr>
     <tr>
-    <td class="table-label" ><b><label for="password"><?php e(tl('signin_view_password')); ?></label>:</b></td><td class="table-input"><input 
-    id="password" type="password" class="narrowfield" maxlength="80" name="p" /></td>
-    <td><input type="hidden" name="YIOOP_TOKEN" value="<?php e($data['YIOOP_TOKEN']); ?>" />
+    <td class="table-label" ><b><label for="password"><?php 
+        e(tl('signin_view_password')); ?></label>:</b></td><td 
+        class="table-input"><input id="password" type="password" 
+        class="narrowfield" maxlength="80" name="p" /></td>
+    <td><input type="hidden" name="YIOOP_TOKEN" value="<?php 
+        e($data['YIOOP_TOKEN']); ?>" />
     </td>
     </tr>
     <tr><td>&nbsp;</td><td class="center">
-    <button  type="submit" name="c" value="admin"><?php e(tl('signin_view_login')); ?></button>
+    <button  type="submit" name="c" value="admin"><?php 
+        e(tl('signin_view_login')); ?></button>
     </td><td>&nbsp;</td></tr>
     </table>
 </div>
 </form>
 
-<div class="signin-exit"><a href="."><?php e(tl('signin_view_return_yioop')); ?></a></div>
+<div class="signin-exit"><a href="."><?php 
+    e(tl('signin_view_return_yioop')); ?></a></div>
 </div>
 <?php
     }

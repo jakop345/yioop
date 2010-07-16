@@ -59,14 +59,16 @@ class BloomFilterFile extends PersistentStructure
     /**
      *
      */
-    public function __construct($fname, $num_values, $save_frequency = self::DEFAULT_SAVE_FREQUENCY) 
+    public function __construct($fname, $num_values, 
+        $save_frequency = self::DEFAULT_SAVE_FREQUENCY) 
     {
         $log2 = log(2);
         $this->num_keys = ceil(log($num_values)/($log2*$log2));
         $this->filter_size = ($this->num_keys)*$num_values;
 
         $mem_before =  memory_get_usage(true);
-        $this->filter = pack("x". ceil(.125*$this->filter_size)); // 1/8 =.125 = num bits/bytes, want to make things floats
+        $this->filter = pack("x". ceil(.125*$this->filter_size)); 
+            // 1/8 =.125 = num bits/bytes, want to make things floats
         $mem = memory_get_usage(true) - $mem_before;
         parent::__construct($fname, $save_frequency);
 

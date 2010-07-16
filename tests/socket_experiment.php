@@ -22,7 +22,9 @@
  *
  *  END LICENSE
  *
- * Test to see how many sockets system can open. On *nix systems, by doing ulimit -n, you can find this out,
+ * Test to see how many sockets system can open. On *nix systems, by doing 
+ * ulimit -n 
+ * you can find this out,
  * but the number doesn't exactly agree.
  *
  * On Macs you can change this value by editing /etc/launchd.conf

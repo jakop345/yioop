@@ -39,9 +39,9 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 require_once BASE_DIR."/lib/bloom_filter_file.php";
 
 /**
- *  Used to test that the BloomFilterFile class provides the basic functionality of
- *  a persistent set. I.e., we can insert things into it, and we can do membership
- *  testing
+ * Used to test that the BloomFilterFile class provides the basic functionality 
+ * of a persistent set. I.e., we can insert things into it, and we can do 
+ * membership testing
  *
  * @author Chris Pollett
  * @package seek_quarry
@@ -50,7 +50,8 @@ require_once BASE_DIR."/lib/bloom_filter_file.php";
 class BloomFilterFileTest extends UnitTest
 {
     /**
-     *  Set up a bloom filter that can store up to 10 items and that saves itself every 100 writes
+     * Set up a bloom filter that can store up to 10 items and that saves 
+     * itself every 100 writes
      */
     public function setUp()
     {
@@ -58,8 +59,8 @@ class BloomFilterFileTest extends UnitTest
     }
 
     /**
-     *  Since a BloomFilterFile is a PersistentStructure it periodically saves itself to a file.
-     *  To clean up we delete the files that might be created
+     * Since a BloomFilterFile is a PersistentStructure it periodically saves 
+     * itself to a file. To clean up we delete the files that might be created
      */
     public function tearDown()
     {
@@ -67,28 +68,33 @@ class BloomFilterFileTest extends UnitTest
     }
 
     /**
-     *  Tests that if nothing is in the bloom filter yet, that if we do a lookup we don't find anything
+     * Tests that if nothing is in the bloom filter yet, that if we do a lookup 
+     * we don't find anything
      */
     public function notInTestCase()
     {
-        $this->assertFalse($this->test_objects['FILE1']->contains(66), "File 1 contains 66");
+        $this->assertFalse(
+            $this->test_objects['FILE1']->contains(66), "File 1 contains 66");
     }
 
     /**
-     *  Tests if we insert something into the bloom filter, that when we look it up, we find it. On the other
-     *  hand, if we look something else up that we didn't insert, we shouldn't find it
+     * Tests if we insert something into the bloom filter, that when we look it 
+     * up, we find it. On the other hand, if we look something else up that we 
+     * didn't insert, we shouldn't find it
      *
      */
     public function inTestCase()
     {
         $this->test_objects['FILE1']->add(77);
-        $this->assertTrue($this->test_objects['FILE1']->contains(77), "File 1 contains 77");
-        $this->assertFalse($this->test_objects['FILE1']->contains(66), "File 1 contains 66");
+        $this->assertTrue(
+            $this->test_objects['FILE1']->contains(77), "File 1 contains 77");
+        $this->assertFalse(
+            $this->test_objects['FILE1']->contains(66), "File 1 contains 66");
     }
 
     /**
-     *  Check that if we force save the bloom filter file and then we reload it back in that
-     *  it has the same Contents
+     * Check that if we force save the bloom filter file and then we reload it 
+     * back in that it has the same Contents
      *
      */
     public function saveLoadTestCase()
@@ -98,8 +104,10 @@ class BloomFilterFileTest extends UnitTest
         $this->test_objects['FILE1'] = NULL;
 
         $this->test_objects['FILE2'] = BloomFilterFile::load("test.ftr");
-        $this->assertTrue($this->test_objects['FILE2']->contains(77), "File 2 contains 77");
-        $this->assertFalse($this->test_objects['FILE2']->contains(66), "File 2 contains 66");
+        $this->assertTrue(
+            $this->test_objects['FILE2']->contains(77), "File 2 contains 77");
+        $this->assertFalse(
+            $this->test_objects['FILE2']->contains(66), "File 2 contains 66");
 
     }
 }

@@ -99,7 +99,8 @@ class RtfProcessor extends TextProcessor
         $i = 0;
         while($cur_pos < $len) {
 
-        list($cur_pos, $object_string) = self::getNextObject($rtf_string, $cur_pos);
+        list($cur_pos, $object_string) = 
+            self::getNextObject($rtf_string, $cur_pos);
         if(strpos($object_string, "{")) {
             $out .= self::getText($object_string);
         } else {
@@ -108,7 +109,9 @@ class RtfProcessor extends TextProcessor
             } else if(preg_match('/\\\(par)/', $object_string) > 0) {
                 $text = preg_replace('/\\\(\w)+/', "", $object_string);
                 $out .= $text."\n";
-            } else if(preg_match('/(\\\(title)|\\\(author)|\\\(operator)|\\\(company))/', $object_string) > 0) {
+            } else if(preg_match(
+                '/(\\\(title)|\\\(author)|\\\(operator)|\\\(company))/', 
+                $object_string) > 0) {
                 $text = preg_replace('/\\\(\w)+/', "", $object_string);
                 $out .= $text."\n\n";
             }

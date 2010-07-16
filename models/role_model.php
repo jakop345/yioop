@@ -73,15 +73,20 @@ class RoleModel extends Model
         $activities = array();
         $locale_tag = getLocaleTag();
 
-        $sql = "SELECT LOCALE_ID FROM LOCALE WHERE LOCALE_TAG = '$locale_tag' LIMIT 1";
+        $sql = "SELECT LOCALE_ID FROM LOCALE ".
+            "WHERE LOCALE_TAG = '$locale_tag' LIMIT 1";
         $result = $this->db->execute($sql);
         $row = $this->db->fetchArray($result);
         $locale_id = $row['LOCALE_ID'];
 
-        $sql = "SELECT R.ROLE_ID AS ROLE_ID, RA.ACTIVITY_ID AS ACTIVITY_ID, A.METHOD_NAME AS METHOD_NAME, ".
-            " T.IDENTIFIER_STRING AS IDENTIFIER_STRING, T.TRANSLATION_ID AS TRANSLATION_ID FROM ".
-            " ROLE R, ROLE_ACTIVITY RA, ACTIVITY A, TRANSLATION T WHERE  R.ROLE_ID = '$role_id'  AND".
-            " R.ROLE_ID = RA.ROLE_ID AND T.TRANSLATION_ID = A.TRANSLATION_ID AND RA.ACTIVITY_ID = A.ACTIVITY_ID";
+        $sql = "SELECT R.ROLE_ID AS ROLE_ID, RA.ACTIVITY_ID AS ACTIVITY_ID, ".
+            "A.METHOD_NAME AS METHOD_NAME, ".
+            "T.IDENTIFIER_STRING AS IDENTIFIER_STRING, ".
+            "T.TRANSLATION_ID AS TRANSLATION_ID FROM ".
+            "ROLE R, ROLE_ACTIVITY RA, ACTIVITY A, TRANSLATION T ".
+            "WHERE  R.ROLE_ID = '$role_id'  AND ".
+            "R.ROLE_ID = RA.ROLE_ID AND T.TRANSLATION_ID = A.TRANSLATION_ID ".
+            "AND RA.ACTIVITY_ID = A.ACTIVITY_ID";
 
         $result = $this->db->execute($sql);
 
@@ -89,8 +94,10 @@ class RoleModel extends Model
         while($activities[$i] = $this->db->fetchArray($result)) {
             $id = $activities[$i]['TRANSLATION_ID'];
 
-            $sub_sql = "SELECT TRANSLATION AS ACTIVITY_NAME FROM TRANSLATION_LOCALE ".
-                " WHERE TRANSLATION_ID=$id AND LOCALE_ID=$locale_id LIMIT 1"; // maybe do left join at some point
+            $sub_sql = "SELECT TRANSLATION AS ACTIVITY_NAME ".
+                "FROM TRANSLATION_LOCALE ".
+                "WHERE TRANSLATION_ID=$id AND LOCALE_ID=$locale_id LIMIT 1"; 
+                // maybe do left join at some point
 
             $result_sub =  $this->db->execute($sub_sql);
             $translate = $this->db->fetchArray($result_sub);
@@ -98,7 +105,8 @@ class RoleModel extends Model
             if($translate) {
                 $activities[$i]['ACTIVITY_NAME'] = $translate['ACTIVITY_NAME'];
             } else {
-                $activities[$i]['ACTIVITY_NAME'] = $activities['IDENTIFIER_STRING'];
+                $activities[$i]['ACTIVITY_NAME'] = 
+                    $activities['IDENTIFIER_STRING'];
             }
             $i++;
         }
@@ -139,10 +147,10 @@ class RoleModel extends Model
 
 
     /**
-     *  Get the role id associated with a rolename (so rolenames better be unique)
+     * Get role id associated with rolename (so rolenames better be unique)
      *
-     *  @param string $rolename to use to look up a role_id
-     *  @return string  role_id corresponding to the rolename.
+     * @param string $rolename to use to look up a role_id
+     * @return string  role_id corresponding to the rolename.
      */
     function getRoleId($rolename)
     {
@@ -167,7 +175,8 @@ class RoleModel extends Model
     function addRole($rolename)
     {
         $this->db->selectDB(DB_NAME);
-        $sql = "INSERT INTO ROLE (NAME) VALUES ('".$this->db->escapeString($rolename)."')";
+        $sql = "INSERT INTO ROLE (NAME) VALUES ('".
+            $this->db->escapeString($rolename)."')";
 
         $this->db->execute($sql);
     }
@@ -182,7 +191,9 @@ class RoleModel extends Model
     function addActivityRole($roleid, $activityid)
     {
         $this->db->selectDB(DB_NAME);
-        $sql = "INSERT INTO ROLE_ACTIVITY VALUES ('".$this->db->escapeString($roleid)."', '".$this->db->escapeString($activityid)."')";
+        $sql = "INSERT INTO ROLE_ACTIVITY VALUES ('".
+            $this->db->escapeString($roleid)."', '".
+            $this->db->escapeString($activityid)."')";
 
         $this->db->execute($sql);
     }
@@ -199,7 +210,8 @@ class RoleModel extends Model
         $sql = "DELETE FROM ROLE_ACTIVITY WHERE ROLE_ID='$roleid'";
 
         $this->db->execute($sql);
-        $sql = "DELETE FROM ROLE WHERE ROLE_ID='".$this->db->escapeString($roleid)."'";
+        $sql = "DELETE FROM ROLE WHERE ROLE_ID='".
+            $this->db->escapeString($roleid)."'";
         $this->db->execute($sql);
     }
 
@@ -213,7 +225,9 @@ class RoleModel extends Model
     function deleteActivityRole($roleid, $activityid)
     {
         $this->db->selectDB(DB_NAME);
-        $sql = "DELETE FROM ROLE_ACTIVITY WHERE ROLE_ID='".$this->db->escapeString($roleid)."' AND ACTIVITY_ID='".$this->db->escapeString($activityid)."'";
+        $sql = "DELETE FROM ROLE_ACTIVITY WHERE ROLE_ID='".
+            $this->db->escapeString($roleid)."' AND ACTIVITY_ID='".
+            $this->db->escapeString($activityid)."'";
 
         $this->db->execute($sql);
     }

@@ -58,7 +58,8 @@ class BloomFilterBundle
     /**
      *
      */
-    public function __construct($dir_name, $filter_size = self::default_filter_size ) 
+    public function __construct($dir_name, 
+        $filter_size = self::default_filter_size ) 
     {
         $this->dir_name = $dir_name;
         if(!is_dir($dir_name)) {
@@ -68,14 +69,16 @@ class BloomFilterBundle
         $this->loadMetaData();
         
         if($this->num_filters == 0) {
-            $this->current_filter = new BloomFilterFile($dir_name."/filter_0.ftr", $filter_size);
+            $this->current_filter = 
+                new BloomFilterFile($dir_name."/filter_0.ftr", $filter_size);
             $this->num_filters++;
             $this->filter_size = $filter_size;
             $this->current_filter->save();
            $this->saveMetaData();
         } else {
             $last_filter = $this->num_filters - 1;
-            $this->current_filter = BloomFilterFile::load($dir_name."/filter_$last_filter.ftr");
+            $this->current_filter = 
+                BloomFilterFile::load($dir_name."/filter_$last_filter.ftr");
         }
 
 
@@ -91,7 +94,9 @@ class BloomFilterBundle
             $this->current_filter = NULL;
             gc_collect_cycles();
             $last_filter = $this->num_filters;
-            $this->current_filter = new BloomFilterFile($this->dir_name."/filter_$last_filter.ftr", $this->filter_size);
+            $this->current_filter = 
+                new BloomFilterFile($this->dir_name."/filter_$last_filter.ftr", 
+                    $this->filter_size);
             $this->current_filter_count = 0;
             $this->num_filters++;
         }
@@ -114,7 +119,8 @@ class BloomFilterBundle
             if($i == $num_filters - 1) {
                 $tmp_filter = $this->current_filter;
             } else {
-                $tmp_filter = BloomFilterFile::load($this->dir_name."/filter_$i.ftr");
+                $tmp_filter = 
+                    BloomFilterFile::load($this->dir_name."/filter_$i.ftr");
             }
 
             for($j = 0; $j < $count; $j++) {
@@ -137,7 +143,8 @@ class BloomFilterBundle
     public function loadMetaData()
     {
         if(file_exists($this->dir_name.'/meta.txt')) {
-            $meta = unserialize(file_get_contents($this->dir_name.'/meta.txt') );
+            $meta = unserialize(
+                file_get_contents($this->dir_name.'/meta.txt') );
             $this->num_filters = $meta['NUM_FILTERS'];
             $this->current_filter_count = $meta['CURRENT_FILTER_COUNT'];
             $this->filter_size = $meta['FILTER_SIZE'];

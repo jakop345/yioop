@@ -41,7 +41,8 @@ require_once BASE_DIR."/lib/web_archive_bundle.php";
 require_once BASE_DIR."/lib/crawl_constants.php";
 
 /**
- * Fetcher machines also act as archives for complete caches of web pages, this controller is used to handle access to these web page caches
+ * Fetcher machines also act as archives for complete caches of web pages, 
+ * this controller is used to handle access to these web page caches
  *
  * @author Chris Pollett
  * @package seek_quarry
@@ -60,15 +61,17 @@ class ArchiveController extends Controller implements CrawlConstants
      */
     var $views = array();
     /**
-     *  The only legal activity this controller will accept is a request for the cache of a web page
-     *  @var array
+     * The only legal activity this controller will accept is a request 
+     * for the cache of a web page
+     * @var array
      */
     var $activities = array("cache");
 
     /**
-     *  Main method for this controller to handle requests. It first checks the request is valid, and then handles the corresponding activity
+     * Main method for this controller to handle requests. It first checks 
+     * the request is valid, and then handles the corresponding activity
      *
-     *  For this controller the only activity is to handle a cache request
+     * For this controller the only activity is to handle a cache request
      */
     function processRequest() 
     {
@@ -76,7 +79,9 @@ class ArchiveController extends Controller implements CrawlConstants
         $data = array();
 
 
-        // do a quick test to see if this is a request seems like from a legitimate machine
+        /* do a quick test to see if this is a request seems like from a 
+           legitimate machine
+         */s
         if(!$this->checkRequest()) {return; }
 
         $activity = $_REQUEST['a'];
@@ -86,11 +91,14 @@ class ArchiveController extends Controller implements CrawlConstants
 
 
     /**
-     * Retrieves the requested page from the WebArchiveBundle and echo it page, base64 encoded
+     * Retrieves the requested page from the WebArchiveBundle and echo it page, 
+     * base64 encoded
      */
     function cache()
     {
-        $web_archive = new WebArchiveBundle(CRAWL_DIR.'/cache/'.self::archive_base_name.$_REQUEST['crawl_time'], -1);
+        $web_archive = new WebArchiveBundle(
+            CRAWL_DIR.'/cache/'.self::archive_base_name.
+                $_REQUEST['crawl_time'], -1);
         $page = $web_archive->getPage($_REQUEST['hash'], $_REQUEST['offset']);
 
         echo base64_encode(serialize($page));

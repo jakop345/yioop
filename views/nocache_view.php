@@ -49,7 +49,7 @@ class NocacheView extends View
      *  @var string
      */
     var $layout = "web";
-    /** An array of names of element objects that the view uses to display itself 
+    /** Names of element objects that the view uses to display itself 
      *  @var array
      */
     var $elements = array("language");

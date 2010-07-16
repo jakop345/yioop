@@ -44,7 +44,8 @@ if(isset($_SERVER['DOCUMENT_ROOT']) && strlen($_SERVER['DOCUMENT_ROOT']) > 0) {
     exit();
 }
 
-define("BASE_DIR", substr($_SERVER['DOCUMENT_ROOT'].$_SERVER['PWD'].$_SERVER["SCRIPT_NAME"], 0, 
+define("BASE_DIR", substr($_SERVER['DOCUMENT_ROOT'].$_SERVER['PWD'].
+    $_SERVER["SCRIPT_NAME"], 0, 
     -strlen("locale/extract_merge.php")));
 
 /** Loads config info */
@@ -76,14 +77,16 @@ $general_ini = parse_ini_file(LOCALE_DIR."/general.ini", true);
 updateLocales($general_ini, $strings);
 
 /**
- *  Cycles through locale subdirectories in LOCALE_DIR, for each
- *  locale it merges out the current gneral_ini and strings data.
- *  It deletes identifiers that are not in strings, it adds new identifiers
- *  and it leaves existing identifier translation pairs untouched.
+ * Cycles through locale subdirectories in LOCALE_DIR, for each
+ * locale it merges out the current gneral_ini and strings data.
+ * It deletes identifiers that are not in strings, it adds new identifiers
+ * and it leaves existing identifier translation pairs untouched.
  *
- *  @param array $general_ini  data that would typically come from the general.ini file
- *  @param array $string lines from what is equivalent to an ini file of msg_id msg_string pairs
- *      these lines also have comments on the file that strings were extracted from
+ * @param array $general_ini  data that would typically come from the 
+ *      general.ini file
+ * @param array $string lines from what is equivalent to an ini file of 
+ *      msg_id msg_string pairs these lines also have comments on the file 
+ *      that strings were extracted from
  * 
  */
 function updateLocales($general_ini, $strings)
@@ -104,18 +107,21 @@ function updateLocales($general_ini, $strings)
 }
 
 /**
- *  Updates the configure.ini file for a particular locale. 
+ * Updates the configure.ini file for a particular locale. 
  *  
- *  The configure.ini has general information (at this point not really being used) about 
- *  all locales together with specific msg_id (identifiers to be translated) and msg_string (translation)
- *  data. updateLocale takes line data coming from the general.ini file, strings extracted from
- *  documents that might need to be translation, as well as the old configure.ini file (this might have existing translations),
- *  and combines these to produce a new configure.ini file
+ * The configure.ini has general information (at this point not really being 
+ * used) about all locales together with specific msg_id (identifiers to be 
+ * translated) and msg_string (translation) data. updateLocale takes line data 
+ * coming from the general.ini file, strings extracted from documents that 
+ * might need to be translation, as well as the old configure.ini file (this 
+ * might have existing translations), and combines these to produce a new 
+ * configure.ini file
  *
- *  @param array $general_ini data from the general.ini file
- *  @param array $strings line array data extracted from files in directories that have strings in need of translation
- *  @param string $dir the directory of all the locales
- *  @param string $locale  the particular locale in $dir to update
+ * @param array $general_ini data from the general.ini file
+ * @param array $strings line array data extracted from files in directories 
+ *      that have strings in need of translation
+ * @param string $dir the directory of all the locales
+ * @param string $locale  the particular locale in $dir to update
  */
 function updateLocale($general_ini, $strings, $dir, $locale)
 {
@@ -154,14 +160,16 @@ EOT;
             $n[] = "[$general_name]";
             foreach($general_value as $name => $value) {
                 if(isset($old_configure[$general_name][$name])) {
-                    $n[] = $name.' = "'.addslashes($old_configure[$general_name][$name]).'"';
+                    $n[] = $name.' = "'.
+                        addslashes($old_configure[$general_name][$name]).'"';
                 } else {
                     $n[] = $name.' = "'.$value.'"';
                 }
             }
         } else {
             if(isset($old_configure[$general_name])) {
-                $n[] = $general_name.' = "'.addslashes($old_configure[$general_name]).'"';
+                $n[] = $general_name.' = "'.
+                    addslashes($old_configure[$general_name]).'"';
             } else {
                 $n[] = $name.' = "'.$value.'"';
             }
@@ -175,7 +183,8 @@ EOT;
             $n[] = $string;
         } else {
             if(isset($old_configure['strings'][$string])) {
-                $n[] = $string.' = "'.addslashes($old_configure['strings'][$string]).'"';
+                $n[] = $string.' = "'.
+                    addslashes($old_configure['strings'][$string]).'"';
             } else {
                 $n[] = $string.' = ""';
             }
@@ -188,16 +197,20 @@ EOT;
 
 
 /**
- *  Searches the directories provided looking for files matching the extensions provided. When such
- *  a file is found it is loaded and scanned for tl() function calls. The identifier string in this
- *  function call is then extracted and added to a line array of strings to be translated. This line
- *  array is formatted so that each line looks like a line that might occur in an PHP ini file.
- *  To understand this format one can look at the parse_ini_string function in the PHP manual or
- *  look at the configure.ini files in the locale directory
+ * Searches the directories provided looking for files matching the extensions 
+ * provided. When such a file is found it is loaded and scanned for tl() 
+ * function calls. The identifier string in this function call is then 
+ * extracted and added to a line array of strings to be translated. This line
+ * array is formatted so that each line looks like a line that might occur in 
+ * an PHP ini file. To understand this format one can look at the 
+ * parse_ini_string function in the PHP manual or look at the configure.ini 
+ * files in the locale directory
  *
- *  @param array $extract_dirs directories to start looking for files with strings to be translated
- *  @param array $extensions file extensions of files which might contain such strings
- *  @return array of lines for any ini file of msg_id msg_string pairs
+ * @param array $extract_dirs directories to start looking for files with 
+ *      strings to be translated
+ * @param array $extensions file extensions of files which might contain such 
+ *      strings
+ * @return array of lines for any ini file of msg_id msg_string pairs
  */
 function getTranslateStrings($extract_dirs, $extensions) 
 {
@@ -225,9 +238,11 @@ function getTranslateStrings($extract_dirs, $extensions)
  * the strings array. In addition, ini style comments are added givne the
  * line file and line number of the item to be translated
  *
- *  @param string $dir current directory to start looking for files with strings to be translated
- *  @param array $extensions  file extensions of files which might contain such strings
- *  @return array of lines for any ini file of msg_id msg_string pairs
+ * @param string $dir current directory to start looking for files with 
+ *      strings to be translated
+ * @param array $extensions  file extensions of files which might contain 
+ *      such strings
+ * @return array of lines for any ini file of msg_id msg_string pairs
  */
 function traverseExtractRecursive($dir, $extensions)
 {
@@ -254,12 +269,15 @@ function traverseExtractRecursive($dir, $extensions)
 
         if(is_file($cur_path)) {
             $path_parts = pathinfo($cur_path);
-            $extension = (isset($path_parts['extension'])) ? $path_parts['extension'] : "";
+            $extension = (isset($path_parts['extension'])) ? 
+                $path_parts['extension'] : "";
             if(in_array($extension, $extensions)) {
                 $lines = file($cur_path);
                 $num_lines = count($lines);
                 for($i = 0; $i < $num_lines; $i++) {
-                    $num_matches = preg_match_all('/tl\([\'|\"]?([[:word:]]+?)[\'|\"]?[(\))|(\s+\,)]/', $lines[$i], $to_translates);
+                    $num_matches = preg_match_all(
+                        '/tl\([\'|\"]?([[:word:]]+?)[\'|\"]?[(\))|(\s+\,)]/', 
+                        $lines[$i], $to_translates);
                     if($num_matches > 0) {
                         $strings[] = ";";
                         $strings[] = "; $obj line: $i";

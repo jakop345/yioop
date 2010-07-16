@@ -34,13 +34,15 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- *  Used by subclasses, so have succinct access (i.e., can use self:: rather than CrawlConstants::) to constants like:
- *  CrawlConstants::TITLE, CrawlConstants::DESCRIPTION, etc.
+ * Used by subclasses, so have succinct access (i.e., can use self:: rather 
+ * than CrawlConstants::) to constants like:
+ * CrawlConstants::TITLE, CrawlConstants::DESCRIPTION, etc.
  */
 require_once BASE_DIR."/lib/crawl_constants.php";
 
 /**
- * Base abstract class common to all processors used to create crawl summary information from images
+ * Base abstract class common to all processors used to create crawl summary 
+ * information from images
  *
  * @author Chris Pollett
  * @package seek_quarry
@@ -50,12 +52,15 @@ abstract class ImageProcessor implements CrawlConstants
 {
 
     /**
-     *  Extract summary data from the image provided in $page together the url in $url where it was downloaded from
-     *  
-     *  ImageProcessor class defers a proper implementation of this method to subclasses
-     *  @param string $page  the image represented as a character string
-     *  @param string $url  the url where the image was downloaded from
-     *  @return array summary information including a thumbnail and a description (where the description is just the url)
+     * Extract summary data from the image provided in $page together the url 
+     *      in $url where it was downloaded from
+     *
+     * ImageProcessor class defers a proper implementation of this method to 
+     *      subclasses
+     * @param string $page  the image represented as a character string
+     * @param string $url  the url where the image was downloaded from
+     * @return array summary information including a thumbnail and a 
+     *      description (where the description is just the url)
      */
     static function process($page, $url) { return NULL;} 
 
@@ -72,7 +77,8 @@ abstract class ImageProcessor implements CrawlConstants
             $size_x = imagesx($image);
             $size_y = imagesy($image);
 
-            @imagecopyresampled($thumb, $image, 0,0, 0,0, 50, 50, $size_x, $size_y);
+            @imagecopyresampled($thumb, 
+                $image, 0,0, 0,0, 50, 50, $size_x, $size_y);
             imagedestroy($image);
         }
         imagejpeg( $thumb, CRAWL_DIR."/cache/thumb.jpg", 100 );

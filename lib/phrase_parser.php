@@ -55,10 +55,12 @@ class PhraseParser
     /**
      *
      */
-    public static function extractWordStringPageSummary($page)
+    static function extractWordStringPageSummary($page)
     {
-        $title_phrase_string = mb_ereg_replace("[[:punct:]]", " ", $page[CrawlConstants::TITLE]);
-        $description_phrase_string = mb_ereg_replace("[[:punct:]]", " ", $page[CrawlConstants::DESCRIPTION]);
+        $title_phrase_string = mb_ereg_replace("[[:punct:]]", " ", 
+            $page[CrawlConstants::TITLE]);
+        $description_phrase_string = mb_ereg_replace("[[:punct:]]", " ", 
+            $page[CrawlConstants::DESCRIPTION]);
         $link_phrase_string = "";
         $link_urls = array(); 
 
@@ -66,8 +68,10 @@ class PhraseParser
             $link_phrase_string .= " $link_text";
         }
 
-        $link_phrase_string = mb_ereg_replace("[[:punct:]]", " ", $link_phrase_string);
-        $page_string = $title_phrase_string . " " . $description_phrase_string . " " . $link_phrase_string;
+        $link_phrase_string = mb_ereg_replace("[[:punct:]]", " ", 
+            $link_phrase_string);
+        $page_string = $title_phrase_string . " " . $description_phrase_string . 
+            " " . $link_phrase_string;
         $page_string = preg_replace("/(\s)+/", " ", $page_string);
 
         return $page_string;
@@ -76,13 +80,15 @@ class PhraseParser
     /**
      *
      */
-    public static function extractPhrasesAndCount($string, $len =  MAX_PHRASE_LEN) 
+    static function extractPhrasesAndCount($string, 
+        $len =  MAX_PHRASE_LEN) 
     {
 
         $phrases = array();
 
         for($i = 0; $i < $len; $i++) {
-            $phrases = array_merge($phrases, self::extractPhrasesOfLength($string, $i));
+            $phrases = 
+                array_merge($phrases,self::extractPhrasesOfLength($string, $i));
         }
 
         $phrase_counts = array_count_values($phrases);
@@ -93,12 +99,13 @@ class PhraseParser
     /**
      *
      */
-    public static function extractPhrasesOfLength($string, $phrase_len) 
+    static function extractPhrasesOfLength($string, $phrase_len) 
     {
         $phrases = array();
        
         for($i = 0; $i < $phrase_len; $i++) {
-            $phrases = array_merge($phrases, self::extractPhrasesOfLengthOffset($string, $phrase_len, $i));
+            $phrases = array_merge($phrases, 
+                self::extractPhrasesOfLengthOffset($string, $phrase_len, $i));
         }
 
         return $phrases;
@@ -107,7 +114,8 @@ class PhraseParser
     /**
      *
      */
-    private static function extractPhrasesOfLengthOffset($string, $phrase_len, $offset) 
+    static function extractPhrasesOfLengthOffset($string, 
+        $phrase_len, $offset) 
     {
        $words = mb_split("[[:space:]]", $string);
 

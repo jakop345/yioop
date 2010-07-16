@@ -43,18 +43,21 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  */
 abstract class View
 {
-    /** An array of names of element objects that the view uses to display itself 
-     *  @var array
+    /** 
+     * Names of element objects that the view uses to display itself
+     * @var array
      */
     var $elements = array();
 
-    /** An array of names of helper objects that the view uses to help draw itself 
-     *  @var array
+    /** 
+     * Names of helper objects that the view uses to help draw itself
+     * @var array
      */
     var $helpers = array();
 
-    /** An array of localized static page elements used by this view
-     *  @var array
+    /** 
+     * Localized static page elements used by this view
+     * @var array
      */
     var $pages = array();
 
@@ -120,22 +123,24 @@ abstract class View
     }
 
     /**
-     *  This method is responsible for drawing both the layout and the view. It should
-     *  not be modified to change the display of then view. Instead, implement renderView.
+     * This method is responsible for drawing both the layout and the view. It 
+     * should not be modified to change the display of then view. Instead, 
+     * implement renderView.
      *
-     *  @param array $data  an array of values set up by a controller to be used in rendering
-     *  the view
+     * @param array $data  an array of values set up by a controller to be used 
+     *      in rendering the view
      */
     function render($data) {
         $this->layout_object->render($data);
     }
 
     /**
-     *  This abstract method is implemented in sub classes with code which actually draws
-     *  the view. The current layouts render method calls this function.
+     * This abstract method is implemented in sub classes with code which 
+     * actually draws the view. The current layouts render method calls this 
+     * function.
      *
-     *  @param array $data  an array of values set up by a controller to be used in rendering
-     *  the view
+     *  @param array $data  an array of values set up by a controller to be used 
+     *      in rendering the view
      */
     abstract function renderView($data);
 }

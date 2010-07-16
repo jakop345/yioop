@@ -34,8 +34,8 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- *  Element responsible for displaying the form where users can input string
- *  translations for a given locale
+ * Element responsible for displaying the form where users can input string
+ * translations for a given locale
  *
  * @author Chris Pollett
  *
@@ -47,39 +47,53 @@ class EditlocalesElement extends Element
 {
 
     /**
-     *  Draws a form with strings to translate and a text field for the translation into
-     *  the given locale. Strings with no translations yet appear in red
+     * Draws a form with strings to translate and a text field for the 
+     * translation into
+     * the given locale. Strings with no translations yet appear in red
      *
-     *  @param array $data  contains msgid and already translated msg_string info
+     * @param array $data  contains msgid and already translated msg_string info
      */
     public function render($data) 
     {
     ?>
         <div class="currentactivity">
         <div class="<?php e($data['leftorright']);?>">
-        <a href="?c=admin&amp;a=manageLocales&amp;YIOOP_TOKEN=<?php e($data['YIOOP_TOKEN']) ?>"
+        <a href="?c=admin&amp;a=manageLocales&amp;YIOOP_TOKEN=<?php 
+            e($data['YIOOP_TOKEN']) ?>"
         ><?php e(tl('editlocales_element_back_to_manage'))?></a>
         </div>
-        <h2><?php e(tl('editlocales_element_edit_locale', $data['CURRENT_LOCALE_NAME']))?></h2>
+        <h2><?php e(tl('editlocales_element_edit_locale', 
+            $data['CURRENT_LOCALE_NAME']))?></h2>
         
         <form id="editLocaleForm" method="post" action=''>
         <input type="hidden" name="c" value="admin" />
-        <input type="hidden" name="YIOOP_TOKEN" value="<?php e($data['YIOOP_TOKEN']); ?>" />
+        <input type="hidden" name="YIOOP_TOKEN" value="<?php 
+            e($data['YIOOP_TOKEN']); ?>" />
         <input type="hidden" name="a" value="manageLocales" />
         <input type="hidden" name="arg" value="editlocale" />
-        <input type="hidden" name="selectlocale" value="<?php e($data['CURRENT_LOCALE_TAG']); ?>" />
+        <input type="hidden" name="selectlocale" value="<?php 
+            e($data['CURRENT_LOCALE_TAG']); ?>" />
         <table class="translatetable">
         <?php 
         foreach($data['STRINGS'] as $msg_id => $msg_string) {
             if(strlen($msg_string) > 0) {
-                e("<tr><td><label for='$msg_id'>$msg_id</label></td><td><input type='text' title='".@tl($msg_id,"%s", "%s", "%s")."' id='$msg_id' name='STRINGS[$msg_id]' value='$msg_string' /></td></tr>");
+                e("<tr><td><label for='$msg_id'>$msg_id</label>".
+                    "</td><td><input type='text' title='".
+                    @tl($msg_id,"%s", "%s", "%s").
+                    "' id='$msg_id' name='STRINGS[$msg_id]' ".
+                    "value='$msg_string' /></td></tr>");
             } else {
-                e("<tr><td><label for='$msg_id'>$msg_id</label></td><td><input class='highlight' type='text' title='".@tl($msg_id,"%s", "%s", "%s")."' id='$msg_id' name='STRINGS[$msg_id]' value='$msg_string' /></td></tr>");
+                e("<tr><td><label for='$msg_id'>$msg_id</label></td><td><input".
+                    " class='highlight' type='text' title='".
+                    @tl($msg_id,"%s", "%s", "%s")."' id='$msg_id' ".
+                    "name='STRINGS[$msg_id]' value='$msg_string' /></td></tr>");
             }
         }
         ?>
         </table>
-        <div class="center slightpad"><button class="buttonbox" type="submit"><?php e(tl('editlocales_element_submit')); ?></button></div>
+        <div class="center slightpad"><button class="buttonbox" 
+            type="submit"><?php 
+                e(tl('editlocales_element_submit')); ?></button></div>
         </form>
         </div>
     <?php

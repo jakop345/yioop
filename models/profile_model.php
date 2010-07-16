@@ -50,7 +50,8 @@ require_once(BASE_DIR.'/lib/url_parser.php');
 class ProfileModel extends Model
 {
     var $profile_fields = array('USER_AGENT_SHORT', 
-            'DEFAULT_LOCALE', 'DEBUG_LEVEL', 'DBMS','DB_URL', 'DB_NAME', 'DB_USER', 'DB_PASSWORD', 
+            'DEFAULT_LOCALE', 'DEBUG_LEVEL', 'DBMS','DB_URL', 
+            'DB_NAME', 'DB_USER', 'DB_PASSWORD', 
             'QUEUE_SERVER', 'AUTH_KEY', "ROBOT_DESCRIPTION", 'WEB_URI');
     /**
      *  {@inheritdoc}
@@ -61,9 +62,11 @@ class ProfileModel extends Model
     }
 
     /**
-     *  Creates a folder to be used to maintain local information about this instance of the Yioop/SeekQuarry engin
+     * Creates a folder to be used to maintain local information about this 
+     * instance of the Yioop/SeekQuarry engin
      *
-     *  Creates the directory provides as well as subdirectories for crawls, locales, logging, and sqlite DBs.
+     * Creates the directory provides as well as subdirectories for crawls, 
+     * locales, logging, and sqlite DBs.
      *
      *  @param string $directory parth and name of directory to create
      */
@@ -71,7 +74,8 @@ class ProfileModel extends Model
     {
 
         $to_make_dirs = array($directory, "$directory/locale",
-            "$directory/cache", "$directory/schedules", "$directory/log", "$directory/data");
+            "$directory/cache", "$directory/schedules", 
+            "$directory/log", "$directory/data");
         $dir_status = array();
         foreach($to_make_dirs as $dir) {
             $dir_status[$dir] = $this->createIfNecessaryDirectory($dir);
@@ -89,16 +93,23 @@ class ProfileModel extends Model
     }
 
     /**
-     *  Outputs a profile.php  file in the given directory containing profile data based on new and old data sources
+     * Outputs a profile.php  file in the given directory containing profile 
+     * data based on new and old data sources
      *
-     *  This function creates a profile.php file if it doesn't exist. A given field is output in the profile
-     *  according to the precedence that a new value is preferred to an old value is prefered to the value that
-     *  comes from a currently defined constant. It might be the case that a new value for a given field doesn't exist, etc.
+     * This function creates a profile.php file if it doesn't exist. A given 
+     * field is output in the profile
+     * according to the precedence that a new value is preferred to an old 
+     * value is prefered to the value that comes from a currently defined 
+     * constant. It might be the case that a new value for a given field 
+     * doesn't exist, etc.
      *
-     *  @param string $directory the work directory to output the profile.php file
-     *  @param array $new_profile_data fields and values containing at least some profile information (only $this->profile_fields
-     *  fields of $new_profile_data will be considered).
-     *  @param array $old_profile_data fields and values that come from preseumably a previously existing profile
+     * @param string $directory the work directory to output the profile.php 
+     *      file
+     * @param array $new_profile_data fields and values containing at least 
+     *      some profile information (only $this->profile_fields
+     * fields of $new_profile_data will be considered).
+     * @param array $old_profile_data fields and values that come from 
+     *      presumably a previously existing profile
      */
     function updateProfile($directory, $new_profile_data, $old_profile_data)
     {
@@ -164,10 +175,12 @@ EOT;
         }
         $out = implode("\n", $n);
         if(file_put_contents("$directory/profile.php", $out) !== false) {
-            chmod("$directory/profile.php", 0777);
+            @chmod("$directory/profile.php", 0777);
             if(isset($new_profile_data['ROBOT_DESCRIPTION'])) {
-                file_put_contents("$directory/bot.txt", $new_profile_data['ROBOT_DESCRIPTION']);
-                chmod("$directory/bot.txt", 0777);
+                file_put_contents(
+                    "$directory/bot.txt", 
+                    $new_profile_data['ROBOT_DESCRIPTION']);
+                @chmod("$directory/bot.txt", 0777);
             }
             return true;
         }
@@ -176,10 +189,11 @@ EOT;
     }
 
     /**
-     *  Creates a  directory and sets it to owrld prermission if it doesn't aleady exist
+     * Creates a  directory and sets it to owrld prermission if it doesn't 
+     * aleady exist
      *
-     *  @param string $directory name of directory to create
-     *  @return int -1 on failure, 0 if already existed, 1 if created
+     * @param string $directory name of directory to create
+     * @return int -1 on failure, 0 if already existed, 1 if created
      */
     function createIfNecessaryDirectory($directory)
     {
@@ -207,20 +221,32 @@ EOT;
             $auto_increment = "AUTO_INCREMENT";
         }
         if(in_array($dbinfo['DBMS'], array("sqlite"))) {
-            $auto_increment = ""; //in sqlite2 a primary key column will act as auto_increment if don't give value
+            $auto_increment = ""; 
+                /* in sqlite2 a primary key column will act 
+                   as auto_increment if don't give value
+                 */
         }
 
-        $tables = array("USER", "TRANSLATION", "LOCALE", "TRANSLATION_LOCALE", "ROLE", 
+        $tables = array("USER", "TRANSLATION", 
+            "LOCALE", "TRANSLATION_LOCALE", "ROLE", 
             "ROLE_ACTIVITY", "ACTIVITY", "USER_ROLE", "CURRENT_WEB_INDEX");
         $create_statements = array(
-            "CREATE TABLE USER( USER_ID INTEGER PRIMARY KEY $auto_increment, USER_NAME VARCHAR(16) UNIQUE,  PASSWORD VARCHAR(16))",
-            "CREATE TABLE TRANSLATION (TRANSLATION_ID INTEGER PRIMARY KEY $auto_increment, IDENTIFIER_STRING VARCHAR(512) UNIQUE)",
-            "CREATE TABLE LOCALE (LOCALE_ID INTEGER PRIMARY KEY  $auto_increment, LOCALE_TAG VARCHAR(16), LOCALE_NAME VARCHAR(256)," .
+            "CREATE TABLE USER( USER_ID INTEGER PRIMARY KEY $auto_increment, ".
+                "USER_NAME VARCHAR(16) UNIQUE,  PASSWORD VARCHAR(16))",
+            "CREATE TABLE TRANSLATION (TRANSLATION_ID INTEGER PRIMARY KEY ".
+                "$auto_increment, IDENTIFIER_STRING VARCHAR(512) UNIQUE)",
+            "CREATE TABLE LOCALE(LOCALE_ID INTEGER PRIMARY KEY ".
+                "$auto_increment, LOCALE_TAG VARCHAR(16), ".
+                "LOCALE_NAME VARCHAR(256)," .
                 "WRITING_MODE CHAR(5))",
-            "CREATE TABLE TRANSLATION_LOCALE (TRANSLATION_ID INTEGER, LOCALE_ID INTEGER, TRANSLATION VARCHAR(4096) )",
-            "CREATE TABLE ROLE (ROLE_ID INTEGER PRIMARY KEY $auto_increment, NAME VARCHAR(512))",
+            "CREATE TABLE TRANSLATION_LOCALE (TRANSLATION_ID INTEGER, ".
+                "LOCALE_ID INTEGER, TRANSLATION VARCHAR(4096) )",
+            "CREATE TABLE ROLE (ROLE_ID INTEGER PRIMARY KEY $auto_increment, ".
+                "NAME VARCHAR(512))",
             "CREATE TABLE ROLE_ACTIVITY (ROLE_ID INTEGER, ACTIVITY_ID INTEGER)",
-            "CREATE TABLE ACTIVITY (ACTIVITY_ID INTEGER PRIMARY KEY $auto_increment, TRANSLATION_ID INTEGER, METHOD_NAME VARCHAR(256))",
+            "CREATE TABLE ACTIVITY (ACTIVITY_ID INTEGER PRIMARY KEY ".
+                "$auto_increment, TRANSLATION_ID INTEGER, ".
+                "METHOD_NAME VARCHAR(256))",
             "CREATE TABLE USER_ROLE (USER_ID INTEGER, ROLE_ID INTEGER)",
             "CREATE TABLE CURRENT_WEB_INDEX (CRAWL_TIME INT(11) )");
         foreach($create_statements as $statement) {
@@ -230,10 +256,13 @@ EOT;
         require_once(BASE_DIR."/models/datasources/sqlite3_manager.php");
 
         $default_dbm = new Sqlite3Manager();
-        $default_dbm->dbhandle = new SQLite3(BASE_DIR."/data/default.db", SQLITE3_OPEN_READWRITE); // a little bit hacky
+        $default_dbm->dbhandle = new SQLite3(
+            BASE_DIR."/data/default.db", SQLITE3_OPEN_READWRITE); 
+            // a little bit hacky
         if(!$default_dbm->dbhandle) {return false;}
         foreach($tables as $table) {
-            if(!$this->copyTable($table, $default_dbm, $test_dbm)) {return false;}
+            if(!$this->copyTable($table, $default_dbm, $test_dbm)) 
+                {return false;}
         }
         return true;
     }
@@ -246,15 +275,19 @@ EOT;
         if(!isset($dbinfo['DBMS'])) {return false;}
 
         // check if can establish a connect to dbms
-        require_once(BASE_DIR."/models/datasources/".$dbinfo['DBMS']."_manager.php");
+        require_once(
+            BASE_DIR."/models/datasources/".$dbinfo['DBMS']."_manager.php");
         $dbms_manager = ucfirst($dbinfo['DBMS'])."Manager";
         $test_dbm = new $dbms_manager();
         if(isset($dbinfo['DB_URL'])) {
             if(isset($dbinfo['DB_USER'])) {
                 if(isset($dbinfo['DB_PASSWORD'])) {
-                    $conn = @$test_dbm->connect($dbinfo['DB_URL'], $dbinfo['DB_USER'], $dbinfo['DB_PASSWORD']);
+                    $conn = @$test_dbm->connect(
+                        $dbinfo['DB_URL'], 
+                        $dbinfo['DB_USER'], $dbinfo['DB_PASSWORD']);
                 } else {
-                    $conn = @$test_dbm->connect($dbinfo['DB_URL'], $dbinfo['DB_USER']);
+                    $conn = @$test_dbm->connect(
+                        $dbinfo['DB_URL'], $dbinfo['DB_USER']);
                 }
             } else {
                 $conn = @$test_dbm->connect($dbinfo['DB_URL']);
@@ -272,7 +305,9 @@ EOT;
             }
         }
 
-        //check if need to create db contents. We check if any locale exists if not create db
+        /* check if need to create db contents. 
+           We check if any locale exists if not create db
+         */
 
         $sql = "SELECT LOCALE_ID FROM LOCALE";
         $result = @$test_dbm->execute($sql);
@@ -311,12 +346,13 @@ EOT;
     function setWorkDirectoryConfigFile($directory)
     {
         $config = file_get_contents(BASE_DIR."/configs/config.php");
-        $start_machine_section = strpos($config, '/*+++ The next block of code is machine edited');
+        $start_machine_section = strpos($config,'/*+++ The next block of code');
         if($start_machine_section === false) return false;
         $end_machine_section = strpos($config, '/*++++++*/');
         if($end_machine_section === false) return false;
         $out = substr($config,  0, $start_machine_section + 1);
-        $out .= "/*+++ The next block of code is machine edited, change at your own risk, please use configure web page instead +++*/\n";
+        $out .= "/*+++ The next block of code is machine edited, change at ".
+            "your own risk, please use configure web page instead +++*/\n";
         $out .= "define('WORK_DIRECTORY', '$directory');\n";
         $out .= substr($config, $end_machine_section);
         if(file_put_contents(BASE_DIR."/configs/config.php", $out)) return true;
@@ -338,7 +374,8 @@ EOT;
         }
 
         if(file_exists($work_directory."/bot.txt")) {
-            $profile['ROBOT_DESCRIPTION'] = file_get_contents($work_directory."/bot.txt");
+            $profile['ROBOT_DESCRIPTION'] = 
+                file_get_contents($work_directory."/bot.txt");
         }
 
         return $profile;
@@ -349,7 +386,8 @@ EOT;
      */
     function matchDefine($defined, $string)
     {
-        preg_match("/define\((?:\"$defined\"|\'$defined\')\,([^\)]*)\)/", $string, $match);
+        preg_match("/define\((?:\"$defined\"|\'$defined\')\,([^\)]*)\)/", 
+            $string, $match);
         $match = (isset($match[1])) ? trim($match[1]) : "";
         $len = strlen($match);
         if( $len >=2 && ($match[0] == '"' || $match[0] == "'")) {

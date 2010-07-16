@@ -87,7 +87,7 @@ function makeRequest()
 }
 
 /*
-    Make an AJAX request for a url and put the results as the inner HTML of a tag
+    Make an AJAX request for a url and put the results as inner HTML of a tag
 
     Object tag  a DOM element to put the results of the AJAX request
     String url  web page to fetch using AJAX
