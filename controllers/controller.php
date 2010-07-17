@@ -190,7 +190,8 @@ abstract class Controller
 
         case "hash";
             if(isset($value)) {
-                if(strlen($value) == strlen(crawlHash("A")) && base64_decode($value)) {
+                if(strlen($value) == strlen(crawlHash("A")) && 
+                    base64_decode($value)) {
                     $clean_value = $value;
                 }
             } else {

@@ -209,7 +209,14 @@ EOT;
     }
 
     /**
+     * Check if $dbinfo provided the connection details for a Yioop/SeekQuarry
+     * database. If it does provide a valid db connection but no data then try 
+     * to recreate the database from the default copy stored in /data dir.
      *
+     * @param array $dbinfo has fields for DBMS, DB_USER, DB_PASSWORD, DB_URL
+     *      and DB_NAME
+     * @return bool returns true if can connect to/create a valid database;
+     *      returns false otherwise
      */
     function migrateDatabaseIfNecessary($dbinfo)
     {
@@ -268,7 +275,17 @@ EOT;
     }
 
     /**
+     * Checks if $dbinfo provides info to connect to an working instance of 
+     * app db.
      *
+     * @param array $dbinfo has field for DBMS, DB_USER, DB_PASSWORD, DB_URL
+     *      and DB_NAME
+     * @return mixed returns true if can connect to DBMS with username and 
+     *      password, can select the given database name and that database
+     *      seems to be of Yioop/SeekQuarry type. If the connection works
+     *      but database isn't there it attempts to create it. If the 
+     *      database is there but no data, then it returns a resource for
+     *      the database. Otherwise, it returns false.
      */
     function testDatabaseManager($dbinfo)
     {
@@ -306,7 +323,7 @@ EOT;
         }
 
         /* check if need to create db contents. 
-           We check if any locale exists if not create db
+           We check if any locale exists as proxy for contents being okay
          */
 
         $sql = "SELECT LOCALE_ID FROM LOCALE";
@@ -319,7 +336,12 @@ EOT;
     }
 
     /**
+     * Copies the contents of table in the first database into the same named
+     * table in a second database. It assumes the table exists in both databases
      *
+     * @param string $table name of the table to be copied
+     * @param resource $from_dbm database resource for the from table
+     * @param resource $to_dbm database resource for the to table
      */
     function copyTable($table, $from_dbm, $to_dbm)
     {
@@ -341,7 +363,10 @@ EOT;
     }
 
     /**
+     * Modifies the config.php file so the WORK_DIRECTORY define points at 
+     * $directory
      *
+     * @param string $directory folder that WORK_DIRECTORY should be defined to
      */
     function setWorkDirectoryConfigFile($directory)
     {
@@ -350,8 +375,8 @@ EOT;
         if($start_machine_section === false) return false;
         $end_machine_section = strpos($config, '/*++++++*/');
         if($end_machine_section === false) return false;
-        $out = substr($config,  0, $start_machine_section + 1);
-        $out .= "/*+++ The next block of code is machine edited, change at ".
+        $out = substr($config,  0, $start_machine_section);
+        $out .= "/*+++ The next block of code is machine edited, change at \n".
             "your own risk, please use configure web page instead +++*/\n";
         $out .= "define('WORK_DIRECTORY', '$directory');\n";
         $out .= substr($config, $end_machine_section);
@@ -360,7 +385,10 @@ EOT;
     }
 
     /**
+     * Reads a profile from a profile.php file in the provided directory
      *
+     * @param string $work_directory directory to look for profile in
+     * @return array associate array of the profile fields and their values
      */
     function getProfile($work_directory)
     {
@@ -382,7 +410,12 @@ EOT;
     }
 
     /**
+     * Finds the first occurrence of define('$defined', something) in $string 
+     * and returns something 
      *
+     * @param string $defined the constant being defined
+     * @param string $string the haystack string to search in
+     * @return string matched value of define if exists; empty string otherwise
      */
     function matchDefine($defined, $string)
     {

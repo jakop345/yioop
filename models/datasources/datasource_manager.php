@@ -40,8 +40,7 @@ require_once BASE_DIR."/lib/utility.php";
  * 
  * This abstract class defines the interface through which
  * the seek_quarry program communicates with a database and the
- * filesystem. Currently the only subclass of this class is MysqlManager
- * However, one could easily add support for other DBMSs
+ * filesystem. 
  *
  * @author Chris Pollett
  * @package seek_quarry
