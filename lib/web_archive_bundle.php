@@ -34,17 +34,26 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- * Load files we're dependent on if neccesary
+ * A WebArchiveBundle is a collection of WebArchive, so need definition of
+ * web archive
  */
 require_once 'web_archive.php';
+/**
+ *
+ */
 require_once 'bloom_filter_file.php';
+/**
+ *
+ */
 require_once 'bloom_filter_bundle.php';
+/**
+ *
+ */
 require_once 'gzip_compressor.php';
 
 
  
 /**
- * 
  * A web archive bundle is a collection of web archives which are managed 
  * together.It is useful to split data across several archive files rather than 
  * just store it in one, for both read efficiency and to keep filesizes from 
@@ -59,13 +68,37 @@ require_once 'gzip_compressor.php';
 class WebArchiveBundle 
 {
 
+    /**
+     *
+     */
     var $dir_name;
+    /**
+     *
+     */
     var $filter_size;
+    /**
+     *
+     */
     var $partition = array();
+    /**
+     *
+     */
     var $page_exists_filter_bundle;
+    /**
+     *
+     */
     var $num_partitions;
+    /**
+     *
+     */
     var $count;
+    /**
+     *
+     */
     var $description;
+    /**
+     *
+     */
     var $compressor;
 
     /**

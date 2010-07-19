@@ -60,7 +60,7 @@ class CrawlModel extends Model implements CrawlConstants
     /**
      * Stores the name of the current index archive to use to get search 
      * results from
-     * @Var string
+     * @var string
      */
     var $index_name;
 

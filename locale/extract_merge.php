@@ -44,6 +44,7 @@ if(isset($_SERVER['DOCUMENT_ROOT']) && strlen($_SERVER['DOCUMENT_ROOT']) > 0) {
     exit();
 }
 
+/** Calculate base directory of script */
 define("BASE_DIR", substr($_SERVER['DOCUMENT_ROOT'].$_SERVER['PWD'].
     $_SERVER["SCRIPT_NAME"], 0, 
     -strlen("locale/extract_merge.php")));
@@ -78,13 +79,13 @@ updateLocales($general_ini, $strings);
 
 /**
  * Cycles through locale subdirectories in LOCALE_DIR, for each
- * locale it merges out the current gneral_ini and strings data.
+ * locale it merges out the current gwneral_ini and strings data.
  * It deletes identifiers that are not in strings, it adds new identifiers
  * and it leaves existing identifier translation pairs untouched.
  *
  * @param array $general_ini  data that would typically come from the 
  *      general.ini file
- * @param array $string lines from what is equivalent to an ini file of 
+ * @param array $strings lines from what is equivalent to an ini file of 
  *      msg_id msg_string pairs these lines also have comments on the file 
  *      that strings were extracted from
  * 

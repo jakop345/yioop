@@ -47,12 +47,34 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 class BloomFilterBundle
 {
 
+    /**
+     * Reference to the filter which will be used to store new data
+     * @var object
+     */
     var $current_filter;
+    /**
+     * Total number of filter that this filter bundle currently has
+     * @var int
+     */
     var $num_filters;
+    /**
+     * The number of items which have been stored in the current filter
+     * @var int
+     */
     var $current_filter_count;
+    /**
+     * The maximum capacity of a filter in this filter bundle
+     * @var int
+     */
     var $filter_size;
+    /**
+     * The folder name of this filter bundle
+     * @var string
+     */
     var $dir_name;
-    
+    /**
+     * The default maximum size of a filter in a filter bundle
+     */
     const default_filter_size = 10000000;
 
     /**
@@ -156,7 +178,8 @@ class BloomFilterBundle
     }
 
     /**
-     *
+     * Saves the meta data (number of filter, number of items stored, and size)
+     * of the bundle
      */
     public function saveMetaData()
     {
@@ -169,7 +192,7 @@ class BloomFilterBundle
     }
 
     /**
-     *
+     * Used to save to disk all the file data associated with this bundle
      */
     public function forceSave()
     {

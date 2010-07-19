@@ -71,8 +71,9 @@ class PorterStemmer
     }
 
     /**
-     *  Checks to see if the ith character in the buffer is a consonant
+     * Checks to see if the ith character in the buffer is a consonant
      *
+     * @param int $i the character to check
      */
     private static function cons($i)
     {
@@ -97,8 +98,6 @@ class PorterStemmer
      *    <c>vcvcvc<v> gives 3
      *    ....
      */
-
-
     private static function m()
     {
         $n = 0;
@@ -270,7 +269,6 @@ class PorterStemmer
     /* step2() maps double suffices to single ones. so -ization ( = -ize plus
        -ation) maps to -ize etc.Note that the string before the suffix must give
        m() > 0. */
-
     private static function step2() 
     {
         if(self::$k < 1) return;

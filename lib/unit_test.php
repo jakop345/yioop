@@ -42,20 +42,31 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  */
 abstract class UnitTest
 {
-    var $test_case_results;
-    var $test_objects;
 
-    const case_name = "TestCase";
-    const case_name_len = 8;
     /**
-     *
+     * Used to store the results for each test sub case
+     */
+    var $test_case_results;
+    /**
+     * Used to hold objects to be used in tests
+     * @var array
+     */
+    var $test_objects;
+    /**
+     * The suffix that all TestCase methods need to have to be called by run()
+     */
+    const case_name = "TestCase";
+    /**
+     * Contructor should be overriden to do any set up that occurs before
+     * and test cases
      */
     public function __construct()
     {
     }
 
     /**
-     *
+     * Execute each of the test cases of this unit test and return the results
+     * @return array test case results
      */
     public function run()
     {
@@ -68,7 +79,7 @@ abstract class UnitTest
             $len = strlen($method);
             
             if(substr_compare(
-                $method, self::case_name, $len - self::case_name_len) == 0) {
+                $method, self::case_name, $len - strlen(self::case_name)) == 0){
                 $this->test_case_results = array();
                 $this->$method();
                 $test_results[$method] = $this->test_case_results;
@@ -80,7 +91,11 @@ abstract class UnitTest
     }
 
     /**
-     *
+     * Checks that $x can coerced to true, the result of the
+     * test is added to $this->test_case_results
+     * 
+     * @param mixed $x item to check
+     * @param string $description information about this test subcase
      */
     public function assertTrue($x, $description = "")
     {
@@ -96,7 +111,11 @@ abstract class UnitTest
     }
 
     /**
-     *
+     * Checks that $x can coerced to false, the result of the
+     * test is added to $this->test_case_results
+     * 
+     * @param mixed $x item to check
+     * @param string $description information about this test subcase
      */
     public function assertFalse($x, $description = "")
     {
@@ -112,7 +131,12 @@ abstract class UnitTest
     }
 
     /**
+     * Checks that $x and $y are the same, the result of the
+     * test is added to $this->test_case_results
      *
+     * @param mixed $x a first item to compare
+     * @param mixed $y a second item to compare
+     * @param string $description information about this test subcase
      */
     public function assertEqual($x, $y, $description = "")
     {
@@ -128,7 +152,12 @@ abstract class UnitTest
     }
 
     /**
+     * Checks that $x and $y are not the same, the result of the
+     * test is added to $this->test_case_results
      *
+     * @param mixed $x a first item to compare
+     * @param mixed $y a second item to compare
+     * @param string $description information about this test subcase
      */
     public function assertNotEqual($x, $y, $description = "")
     {
@@ -144,12 +173,13 @@ abstract class UnitTest
     }
 
     /**
-     *
+     * This method is called before each test case is run to set up the
+     * given test case
      */
     abstract public function setUp();
 
     /**
-     *
+     * This method is called after each test case is run to clean up
      */
     abstract public function tearDown();
 

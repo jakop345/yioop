@@ -154,7 +154,13 @@ class SearchController extends Controller implements CrawlConstants
             }
         }
 
+        $token_okay = $this->checkCSRFToken('YIOOP_TOKEN', $user);
+        if($token_okay === false) {
+            unset($_SESSION['USER_ID']);
+            $user = $_SERVER['REMOTE_ADDR'];
+        }
         $data['YIOOP_TOKEN'] = $this->generateCSRFToken($user);
+
 
         $data['ELAPSED_TIME'] = changeInMicrotime($start_time);
         $this->displayView($view, $data);
@@ -172,9 +178,9 @@ class SearchController extends Controller implements CrawlConstants
      *      argument provides auxiliary information on how to conduct the
      *      search. For instance on a related web page search, it might provide 
      *      the url of the site with which to perform the related search.
-     *  @param int $results_per_page the maixmum number of search results 
+     * @param int $results_per_page the maixmum number of search results 
      *      that can occur on a page
-     *  @return array an array of at most results_per_page many search results
+     * @return array an array of at most results_per_page many search results
      */
     function processQuery($query, $activity, $arg, $results_per_page) 
     {
@@ -236,7 +242,7 @@ class SearchController extends Controller implements CrawlConstants
      * This method parses the raw query string for query activities. 
      * It parses the name of each activity and its argument
      *
-     *  @return array list of search activities parsed out of the search string
+     * @return array list of search activities parsed out of the search string
      */
     function extractActivityQuery() {
 

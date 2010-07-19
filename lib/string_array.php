@@ -51,10 +51,25 @@ require_once "persistent_structure.php";
 class StringArray extends PersistentStructure 
 {
 
+    /**
+     *
+     */
     var $filename;
+    /**
+     *
+     */
     var $num_values;
+    /**
+     *
+     */
     var $array_size;
+    /**
+     *
+     */
     var $data_size;
+    /**
+     *
+     */
     var $string_array;
 
 

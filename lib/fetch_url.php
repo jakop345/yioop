@@ -34,6 +34,11 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
+ * Reads in constants used as enums used for storing web sites
+ */
+require_once BASE_DIR."/lib/crawl_constants.php";
+
+/**
  * 
  * Code used to manage HTTP requests from one or more URLS
  *
@@ -41,10 +46,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  *
  * @package seek_quarry
  * @subpackage library
- */ 
-
-require_once BASE_DIR."/lib/crawl_constants.php";
-
+ */
 class FetchUrl implements CrawlConstants
 {
 

@@ -34,14 +34,33 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- * Load classes we're dependent on
+ * We use a variety of bloom filters for handling robots.txt data
  */
 require_once 'bloom_filter_file.php';
-require_once 'bloom_filter_bundle.php'; 
+/**
+ * Data on which urls we've already crawled is stored in a bloom filter bundle
+ */
+require_once 'bloom_filter_bundle.php';
+/**
+ * Priority queue is used to store a 8 byte ids of urls to crawl next
+ */
 require_once 'priority_queue.php';
+/**
+ * Hash table is used to store for each id in the priority queue an offset into
+ * a web archive for that urls id actual complete url
+ */
 require_once 'hash_table.php';
-require_once 'non_compressor.php'; 
+/**
+ * Urls are stored in a web archive using a filter that does no compression
+ */
+require_once 'non_compressor.php';
+/**
+ *  Used to store to crawl urls
+ */
 require_once 'web_archive.php';
+/**
+ *  Used for the crawlHash function
+ */
 require_once 'utility.php'; 
 
 /**
@@ -54,20 +73,67 @@ require_once 'utility.php';
 class WebQueueBundle implements Notifier
 {
 
+    /**
+     * The folder name of this WebQueueBundle
+     * @var string
+     */
     var $dir_name;
+    /**
+     *
+     * @var int
+     */
     var $filter_size;
+    /**
+     *
+     * @var int
+     */
     var $num_urls_ram;
+    /**
+     *
+     * @var int
+     */
     var $min_or_max; 
-
+    /**
+     *
+     * @var object
+     */
     var $to_crawl_queue;
+    /**
+     *
+     * @var object
+     */
     var $to_crawl_table;
+    /**
+     *
+     * @var int
+     */
     var $hash_rebuild_count;
+    /**
+     *
+     * @var int
+     */
     var $max_hash_ops_before_rebuild;
+    /**
+     *
+     * @var object
+     */
     var $to_crawl_archive;
 
     var $url_exists_filter_bundle;
+    /**
+     *
+     * @var object
+     */
     var $got_robottxt_filter;
+    /**
+     *
+     * @var object
+     */
     var $dissallowed_robot_filter;
+    /**
+     *
+     * @var object
+     */
     var $crawl_delay_filter;
 
     const max_url_archive_offset = 1000000000;

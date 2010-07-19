@@ -36,9 +36,13 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 /**
  *  load the stem word function, if necessary
  */
- 
 require_once BASE_DIR."/lib/porter_stemmer.php";
  
+/**
+ * Reads in constants used as enums used for storing web sites
+ */
+require_once BASE_DIR."/lib/crawl_constants.php";
+
 /**
  * library of functions used to manipulate words and phrases 
  *
@@ -48,8 +52,6 @@ require_once BASE_DIR."/lib/porter_stemmer.php";
  * @package seek_quarry
  * @subpackage librarys
  */
-require_once BASE_DIR."/lib/crawl_constants.php";
-
 class PhraseParser 
 {
     /**
