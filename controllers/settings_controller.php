@@ -72,8 +72,8 @@ class SettingsController extends Controller
         $view = "settings";
         $changed_settings_flag = false;
 
-        if(isset($_SESSION['USERNAME'])) {
-            $user = $_SESSION['USERNAME'];
+        if(isset($_SESSION['USER_ID'])) {
+            $user = $_SESSION['USER_ID'];
         } else {
             $user = $_SERVER['REMOTE_ADDR']; 
         }

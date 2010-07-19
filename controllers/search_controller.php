@@ -98,6 +98,11 @@ class SearchController extends Controller implements CrawlConstants
 
         if(isset($_SESSION['USER_ID'])) {
             $user = $_SESSION['USER_ID'];
+            $token_okay = $this->checkCSRFToken('YIOOP_TOKEN', $user);
+            if($token_okay === false) {
+                unset($_SESSION['USER_ID']);
+                $user = $_SERVER['REMOTE_ADDR'];
+            }
         } else {
             $user = $_SERVER['REMOTE_ADDR']; 
         } 
@@ -154,11 +159,7 @@ class SearchController extends Controller implements CrawlConstants
             }
         }
 
-        $token_okay = $this->checkCSRFToken('YIOOP_TOKEN', $user);
-        if($token_okay === false) {
-            unset($_SESSION['USER_ID']);
-            $user = $_SERVER['REMOTE_ADDR'];
-        }
+
         $data['YIOOP_TOKEN'] = $this->generateCSRFToken($user);
 
 

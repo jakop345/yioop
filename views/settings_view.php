@@ -70,7 +70,8 @@ class SettingsView extends View
     public function renderView($data) {
 ?>
 <div class="landing">
-<h1 class="logo"><a href="." ><img 
+<h1 class="logo"><a href="./?YIOOP_TOKEN=<?php 
+    e($data['YIOOP_TOKEN'])?>"><img 
     src="resources/yioop.png" alt="Yioop!" /></a><span> - <?php 
     e(tl('settings_view_settings')); ?></span></h1>
 <div class="settings">

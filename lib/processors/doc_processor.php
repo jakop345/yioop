@@ -78,7 +78,7 @@ class DocProcessor extends TextProcessor
     
     /**
      * This is the main text from Word doc extractor
-     * A Word Doc conists of a FIB, Piece Table, and
+     * A Word Doc consists of a FIB, Piece Table, and
      * DocumentStream. The last contains the text.
      * The piece table is supposed to be used to reconstruct
      * the order of the text from the DocumentStream and the FIB, file 
@@ -88,7 +88,7 @@ class DocProcessor extends TextProcessor
      * boundary. I then go until I no longer see ASCII. So the order
      * of text extracted might be screwed up right now.
      *
-     *  @param string $doc   string data of a 2004 or earlier Word doc
+     * @param string $doc string data of a 2004 or earlier Word doc
      */
     static function extractASCIIText($doc) {
         $len = strlen($doc); 

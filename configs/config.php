@@ -22,9 +22,7 @@
  *
  *  END LICENSE
  *
- * Used to set the configuration settings of the three components of the
- * SeekQuarry project: the crawler (crawl.php), the ranker (rank.php), 
- * and the search results web page (index.php).
+ * Used to set the configuration settings of the SeekQuarry project.
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry

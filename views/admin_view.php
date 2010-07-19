@@ -72,7 +72,8 @@ class AdminView extends View
         }
         ?>
 
-        <h1 class="logo"><a href="."><img 
+        <h1 class="logo"><a href="./?YIOOP_TOKEN=<?php 
+            e($data['YIOOP_TOKEN'])?>"><img 
             src="resources/yioop.png" alt="Yioop!" /></a><span> - <?php 
         e(tl('admin_view_admin')); 
         e(' ['.$data['CURRENT_ACTIVITY'].']')?></span></h1>

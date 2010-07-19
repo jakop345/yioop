@@ -208,8 +208,12 @@ class CrawlModel extends Model implements CrawlConstants
      */
     function getSeedInfo()
     {
-        $info = parse_ini_file (BASE_DIR."/configs/crawl.ini", true);
-
+        if(file_exists(WORK_DIRECTORY."/crawl.ini")) {
+            $info = parse_ini_file (WORK_DIRECTORY."/crawl.ini", true);
+        } else {
+            $info = parse_ini_file (BASE_DIR."/configs/default_crawl.ini", true);
+        }
+        
         return $info;
     }
 
@@ -260,7 +264,7 @@ EOT;
         }
 
         $out = implode("\n", $n);
-        file_put_contents(BASE_DIR."/configs/crawl.ini", $out);
+        file_put_contents(WORK_DIRECTORY."/crawl.ini", $out);
     }
 }
 ?>
