@@ -185,6 +185,13 @@ function deleteFileOrDir($file_or_dir)
     }
 }
 
+/**
+ * This is a callback function used in the process of recursively chmoding to 
+ * 777 all files in a folder
+ *
+ * @param string $file the filename or directory name to be chmod
+ * @see DatasourceManager::etWorldPermissionsRecursive()
+ */
 function setWorldPermissions($file)
 {
     chmod($file, 0777);

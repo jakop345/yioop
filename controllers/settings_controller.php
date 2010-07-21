@@ -55,10 +55,11 @@ class SettingsController extends Controller
      */
     var $views = array("settings");
     /**
-     * LocaleModel used to get the available languages/locales
+     * LocaleModel used to get the available languages/locales, CrawlModel
+     * is used to get a list of available crawls
      * @var array
      */
-    var $models = array("locale");
+    var $models = array("locale", "crawl");
 
     /**
      *  Sets up the available perpage language options.
@@ -105,11 +106,29 @@ class SettingsController extends Controller
         }
 
         if(isset($_SESSION['MAX_PAGES_TO_SHOW'])){
-            $data['PER_PAGE_SELECTED']    = $_SESSION['MAX_PAGES_TO_SHOW'];
+            $data['PER_PAGE_SELECTED'] = $_SESSION['MAX_PAGES_TO_SHOW'];
         } else {
-            $data['PER_PAGE_SELECTED']    = NUM_RESULTS_PER_PAGE;
+            $data['PER_PAGE_SELECTED'] = NUM_RESULTS_PER_PAGE;
         }
 
+        $crawls = $this->crawlModel->getCrawlList();
+        $data['CRAWLS'] = array();
+        foreach($crawls as $crawl) {
+            $data['CRAWLS'][$crawl['CRAWL_TIME']] = $crawl['DESCRIPTION'];
+        }
+        $crawl_stamps = array_keys($data['CRAWLS']);
+        if($token_okay && isset($_REQUEST['index_ts']) &&
+            in_array($_REQUEST['index_ts'], $crawl_stamps)) {
+            $_SESSION['its'] = $_REQUEST['index_ts'];
+            $data['its'] = $_REQUEST['index_ts'];
+            $changed_settings_flag = true;
+        } else if(isset($_REQUEST['its']) && 
+            in_array($_REQUEST['its'],$crawl_stamps)){
+            $data['its'] = $_REQUEST['its'];
+        }else {
+            $data['its'] = $this->crawlModel->getCurrentIndexDatabaseName();
+        }
+        
         if($changed_settings_flag) {
             $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
                 tl('settings_controller_settings_saved')."</h1>')";

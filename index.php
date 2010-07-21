@@ -45,6 +45,7 @@ define("BASE_DIR", substr($_SERVER['DOCUMENT_ROOT'].$_SERVER['PWD'].
 require_once(BASE_DIR.'configs/config.php');
 
 ini_set("memory_limit","200M");
+header("X-FRAME-OPTIONS: DENY"); //prevent click jacking
 session_name(SESSION_NAME); 
 session_start();
 
@@ -91,7 +92,7 @@ if(!PROFILE ) {
 
 //the request variable l is used to determine the locale 
 if(isset($_SESSION['l']) ||isset($_REQUEST['l'])) {
-    $l = (isset($_SESSION['l'])) ? $_SESSION['l'] :$_REQUEST['l'];
+    $l = (isset($_REQUEST['l'])) ? $_REQUEST['l'] : $_SESSION['l'];
     if(strlen($l) < 10) {
         $l= addslashes($l);
         if(is_dir(LOCALE_DIR."/$l")) {

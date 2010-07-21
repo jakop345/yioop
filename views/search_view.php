@@ -84,6 +84,7 @@ class SearchView extends View implements CrawlConstants
         <div class="searchbox">
         <form id="searchForm" method="get" action=''>
         <p>
+        <input type="hidden" name="its" value="<?php e($data['its']); ?>" />
         <input type="text" title="<?php e(tl('search_view_input_label')); ?>" 
             id="search-name" name="q" value="<?php if(isset($data['QUERY'])) {
             e(urldecode($data['QUERY']));} ?>" 
@@ -134,8 +135,8 @@ class SearchView extends View implements CrawlConstants
                 <a href="?c=search&amp;a=cache&amp;q=<?php 
                     e($data['QUERY']); ?>&amp;arg=<?php 
                     e(urlencode($page[self::URL])); 
-                    ?>&amp;so=<?php 
-                    e(urlencode($page[self::SUMMARY_OFFSET])); ?>" >
+                    ?>&amp;so=<?php  e($page[self::SUMMARY_OFFSET]); 
+                    ?>&amp;its=<?php e($data['its']); ?>" >
                 <?php
                 if($page[self::TYPE] == "text/html" || 
                     stristr($page[self::TYPE], "image")) {
@@ -146,7 +147,8 @@ class SearchView extends View implements CrawlConstants
                 }
                 ?></a>. <a href="?c=search&amp;a=related&amp;arg=<?php 
                     e(urlencode($page[self::URL])); ?>&amp;so=<?php 
-                    e(urlencode($page[self::SUMMARY_OFFSET])); ?>" ><?php 
+                    e($page[self::SUMMARY_OFFSET]); 
+                    ?>&amp;its=<?php e($data['its']); ?>" ><?php 
                     e(tl('search_view_similar')); ?></a>.</p>
                 </div>
 

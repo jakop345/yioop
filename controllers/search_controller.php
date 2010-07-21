@@ -131,7 +131,13 @@ class SearchController extends Controller implements CrawlConstants
         } else {
             $activity = "query";
         }
-
+        if(isset($_REQUEST['its']) || isset($_SESSION['its'])) {
+            $its = (isset($_REQUEST['its'])) ? $_REQUEST['its'] : 
+                $_SESSION['its'];
+            $index_time_stamp = $this->clean($its, "int");
+        } else {
+            $index_time_stamp = 0; //use the default crawl index
+        }
         if(isset($_REQUEST['q']) || $activity != "query") {
             if($activity == "query") {
                 $activity_array = $this->extractActivityQuery();
@@ -144,9 +150,15 @@ class SearchController extends Controller implements CrawlConstants
                 if(!isset($query)) {
                     $query = NULL;
                 }
+                if(isset($_REQUEST['limit'])) {
+                    $limit = $this->clean($_REQUEST['limit'], "int");
+                } else {
+                    $limit = 0;
+                }
                 $data = 
                     $this->processQuery(
-                        $query, $activity, $arg, $results_per_page); 
+                        $query, $activity, $arg, 
+                        $results_per_page, $limit, $index_time_stamp); 
                         // calculate the results of a search if there is one
             } else {
                 $highlight = true;
@@ -155,10 +167,13 @@ class SearchController extends Controller implements CrawlConstants
                     list(,$query_activity,) = $this->extractActivityQuery();
                     if($query_activity != "query") {$highlight = false;}
                 }
-                $this->cacheRequest($query, $arg, $highlight);
+                $summary_offset = $this->clean($_REQUEST['so'], "int");
+                $this->cacheRequest($query, $arg, $summary_offset, $highlight,
+                    $index_time_stamp);
             }
         }
 
+        $data['its'] = (isset($index_time_stamp)) ? $index_time_stamp : 0;
 
         $data['YIOOP_TOKEN'] = $this->generateCSRFToken($user);
 
@@ -181,18 +196,21 @@ class SearchController extends Controller implements CrawlConstants
      *      the url of the site with which to perform the related search.
      * @param int $results_per_page the maixmum number of search results 
      *      that can occur on a page
+     * @param int $limit the first page of all the pages with the query terms
+     *      to return. For instance, if 10 then the tenth highest ranking page
+     *      for those query terms will be return, then the eleventh, etc.
+     * @param int $index_name the timestamp of an index to use, if 0 then 
+     *      default used
      * @return array an array of at most results_per_page many search results
      */
-    function processQuery($query, $activity, $arg, $results_per_page) 
+    function processQuery($query, $activity, $arg, $results_per_page, 
+        $limit = 0, $index_name = 0) 
     {
-        if(isset($_REQUEST['limit'])) {
-            $limit = $this->clean($_REQUEST['limit'], "int");
-        } else {
-            $limit = 0;
+
+        if($index_name == 0) {
+            $index_name = $this->crawlModel->getCurrentIndexDatabaseName();
         }
-        
-        $index_name = $this->crawlModel->getCurrentIndexDatabaseName();
-        
+
         $this->phraseModel->index_name = $index_name;
         $this->crawlModel->index_name = $index_name;
         
@@ -279,18 +297,25 @@ class SearchController extends Controller implements CrawlConstants
     }
 
     /**
-     *  Used to get and render a cached web page
+     * Used to get and render a cached web page
      *
-     *  @param string $query
-     *  @param string $url 
-     *  @param bool $highlight
+     * @param string $query the list of query terms
+     * @param string $url the url of the page to find the cached version of
+     * @param bool $highlight whether or not to highlight the query terms in
+     *      the cached page
+     * @param int $crawl_time the timestamp of the crawl to look up the cached
+     *      page in
      */
-    function cacheRequest($query, $url, $highlight=true)
+    function cacheRequest($query, $url, $summary_offset,
+        $highlight=true, $crawl_time = 0)
     {
-        $crawl_time = $this->crawlModel->getCurrentIndexDatabaseName();
+
+        if($crawl_time == 0) {
+            $crawl_time = $this->crawlModel->getCurrentIndexDatabaseName();
+        }
+
         $this->crawlModel->index_name = $crawl_time;
 
-        $summary_offset = $this->clean($_REQUEST['so'], "int");
         if(!$crawl_item = $this->crawlModel->getCrawlItem(crawlHash($url), 
             $summary_offset)) {
 

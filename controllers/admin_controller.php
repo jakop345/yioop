@@ -50,18 +50,21 @@ require_once BASE_DIR."/lib/crawl_constants.php";
 class AdminController extends Controller implements CrawlConstants
 {
     /**
-     *
+     * Says which models to load for this controller
+     * admin is the main one, sighin has the login screen crawlstatus
+     * is used to see how many pages crawled by the current crawl
      * @var array
      */
     var $views = array("admin", "signin", "crawlstatus");
     /**
-     *
+     * Says which views to load for this controller.
      * @var array
      */
     var $models = array(
         "signin", "user", "activity", "crawl", "role", "locale", "profile");
     /**
-     *
+     * Says which activities (roughly methods invoke from the web) this 
+     * controller will respond to
      * @var array
      */
     var $activities = array("signin", "manageAccount", 
@@ -69,7 +72,12 @@ class AdminController extends Controller implements CrawlConstants
         "manageLocales", "crawlStatus", "configure");
 
     /**
+     * This is the main entry point for handling requests to administer the
+     * Yioop/SeekQuarry site
      *
+     * ProcessRequest determines the type of request (signin , manageAccount, 
+     * etc) is being made.  It then calls the appropriate method to handle the 
+     * given activity.Finally, it draws the relevant admin screen
      */
     function processRequest() 
     {
@@ -117,7 +125,10 @@ class AdminController extends Controller implements CrawlConstants
     }
 
     /**
-     *  
+     * If there is no profile/work directory set up then this method
+     * get called to by pass any login and go to the configure screen.
+     * The configure screen is only displayed if the user is connected
+     * from localhost in this case
      */
     function configureRequest()
     {
@@ -127,7 +138,10 @@ class AdminController extends Controller implements CrawlConstants
     }
 
     /**
+     * Checks whether the user name and password sent presumably by the signin
+     * form match a user in the database
      *
+     * @return bool whether they do or not
      */
     function checkSignin()
     {
@@ -138,7 +152,13 @@ class AdminController extends Controller implements CrawlConstants
     }
 
     /**
+     * Determines the user's current allowed activities and current activity,
+     * then calls the method for the latter.
      *
+     * This is called from {@link processRequest()} once a user is logged in.
+     *
+     * @return array $data the results of doing the activity for display in the
+     *      view
      */
     function processSession()
     {
@@ -183,7 +203,10 @@ class AdminController extends Controller implements CrawlConstants
     }
 
     /**
+     * This method is data to signin a user and initialize the data to be 
+     * display in a view
      *
+     * @return array empty array of data to show so far in view
      */
     function signin()
     {
@@ -194,7 +217,12 @@ class AdminController extends Controller implements CrawlConstants
     }
 
     /**
+     * Used to handle crawlStatus REST activities requesting the status of the
+     * current web crawl
      *
+     * @return array $data contains crawl status of current crawl as well as 
+     *      info about prior crawls and which crawl is being used for default 
+     *      search results
      */
     function crawlStatus()
     {
@@ -236,7 +264,9 @@ class AdminController extends Controller implements CrawlConstants
     }
 
     /**
+     * Used to handle the change current user password admin activity
      *
+     * @return array $data SCRIPT field contains success or failure message
      */
     function manageAccount()
     {
@@ -279,7 +309,13 @@ class AdminController extends Controller implements CrawlConstants
     }
 
     /**
+     * Used to handle the manage user activity. 
      *
+     * This activity allows new users to be added, old users to be 
+     * deleted and allows roles to be added to/deleted from a user
+     *
+     * @return array $data infomation about users of the system, roles, etc.
+     *      as well as status messages on performing a given sub activity
      */
     function manageUsers()
     {
@@ -443,6 +479,13 @@ class AdminController extends Controller implements CrawlConstants
     }
 
     /**
+     * Used to handle the manage role activity. 
+     *
+     * This activity allows new roles to be added, old roles to be 
+     * deleted and allows activities to be added to/deleted from a role
+     *
+     * @return array $data infomation about roles in the system, activities,etc.
+     *      as well as status messages on performing a given sub activity
      *
      */
     function manageRoles()
@@ -610,7 +653,16 @@ class AdminController extends Controller implements CrawlConstants
     }
 
     /**
+     * Used to handle the manage crawl activity. 
      *
+     * This activity allows new crawls to be started, statistics about old
+     * crawls to be seen. It allows a user to stop the current crawl or 
+     * restart an old crawl. It also allows a user to configure the options
+     * by which a crawl is conducted
+     *
+     * @return array $data information and statistics about crawls in the system
+     *      as well as status messages on performing a given sub activity
+
      */
     function manageCrawl()
     {
@@ -794,7 +846,12 @@ class AdminController extends Controller implements CrawlConstants
     }
 
     /**
+     * Cleans a potentially tainted set of user input which are presented as
+     * an array of lines. This is used to handle data from the crawl options
+     * textareas.
      *
+     * @param array $arr the array of lines to be cleaned
+     * @return string a concatenated string of cleaned lines
      */
     function convertArrayCleanLines($arr)
     {
@@ -806,7 +863,11 @@ class AdminController extends Controller implements CrawlConstants
     }
 
     /**
+     * Cleans a string consisting of lines of urls into an array of urls. This
+     * is used in handling data from the crawl options text areas.
      *
+     * @param string $str contains the url data
+     * @return $url an array of urls
      */
     function convertStringCleanUrlsArray($str)
     {
@@ -822,7 +883,15 @@ class AdminController extends Controller implements CrawlConstants
     }
     
     /**
+     * Handles admin request related to the manage locale activity
      *
+     * The manage locale activity allows a user to add/delete locales, view
+     * statistics about a locale as well as edit the string for that locale
+     *
+     * @return array $data info about current locales, statistics for each
+     *      locale as well as potentially the currently set string of a 
+     *      locale and any messages about the success or failure of a 
+     *      sub activity.
      */
     function manageLocales()
     {
@@ -928,7 +997,15 @@ class AdminController extends Controller implements CrawlConstants
     }
 
     /**
+     * Responsible for handling admin request related to the configure activity
      *
+     * The configure activity allows a user to set the work directory for 
+     * storing data local to this SeekQuarry/Yioop instance. It also allows one
+     * to set the default language of the installation, dbms info, robot info,
+     * test info, as well as which machine acts as the queue server.
+     *
+     * @return array $data fields for available language, dbms, etc as well as
+     *      results of processing sub activity if any
      */
     function configure()
     {

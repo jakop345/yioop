@@ -55,7 +55,10 @@ class SigninElement extends Element
         <div class="userNav" >
         <ul>
         <li><a href="?c=settings&amp;YIOOP_TOKEN=<?php 
-                e($data['YIOOP_TOKEN'])?>"><?php 
+                e($data['YIOOP_TOKEN'])?>&amp;l=<?php
+                e(getLocaleTag()); 
+                e((isset($data['its'])) ? '&amp;its='.$data['its'] : '');
+                ?>"><?php 
             e(tl('signin_element_settings')); ?></a></li>
         <?php
         if(!isset($_SESSION['USER_ID'])) { ?>

@@ -39,6 +39,8 @@ define("BASE_DIR", substr($_SERVER['DOCUMENT_ROOT'].$_SERVER['PWD'].
     $_SERVER["SCRIPT_NAME"], 0, 
     -strlen("bot.php")));
 
+header("X-FRAME-OPTIONS: DENY"); //prevent click jacking
+
 /** Load search engine wide configuration file */
 require_once BASE_DIR.'/configs/config.php';
 

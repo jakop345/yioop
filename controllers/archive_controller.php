@@ -81,7 +81,7 @@ class ArchiveController extends Controller implements CrawlConstants
 
         /* do a quick test to see if this is a request seems like from a 
            legitimate machine
-         */s
+         */
         if(!$this->checkRequest()) {return; }
 
         $activity = $_REQUEST['a'];

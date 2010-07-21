@@ -118,7 +118,12 @@ class DocProcessor extends TextProcessor
     }
 
     /**
+     * Scans document starting at given position and looking forward eight
+     * character to see if these are ASCII printable or not.
      *
+     * @param string $doc document to scan
+     * @param int $pos position to start scanning
+     * @return whether the eight next characters were ASCII printable
      */
     static function checkPageForText($doc, $pos) {;
         $is_text = true;
@@ -136,7 +141,12 @@ class DocProcessor extends TextProcessor
     }
 
     /**
+     * Scans document starting at given position and looking forward eight
+     * character to see if these are all \0 or not.
      *
+     * @param string $doc document to scan
+     * @param int $pos position to start scanning
+     * @return whether the eight next characters were \0
      */
     static function checkAllZeros($doc, $pos) {
         $is_zero = true;
@@ -153,7 +163,12 @@ class DocProcessor extends TextProcessor
     }
 
     /**
+     * Scans document starting at given position forward eight
+     * character returning those characters which are ASCII printable
      *
+     * @param string $doc document to scan
+     * @param int $pos position to start scanning
+     * @return substring of ASCII printable characters
      */
     static function cleanTextBlock($doc, $pos) {
         $text = "";

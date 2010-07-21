@@ -83,19 +83,51 @@ mb_regex_encoding("UTF-8");
  */
 class QueueServer implements CrawlConstants
 {
+    /**
+     * @var object
+     */
     var $db;
+    /**
+     * @var array
+     */
     var $allowed_sites;
+    /**
+     * @var array
+     */
     var $disallowed_sites;
+    /**
+     * @var string
+     */
     var $crawl_order;
-    var $search_depth;
+    /**
+     * @var bool
+     */
     var $restrict_sites_by_url;
+    /**
+     * @var array
+     */
     var $indexed_file_types;
+    /**
+     * @var object
+     */
     var $web_queue;
+    /**
+     * @var object
+     */
     var $index_archive;
+    /**
+     * @var int
+     */
     var $crawl_time;
+    /**
+     * @var array
+     */
     var $waiting_hosts;
+    /**
+     * @var string
+     */
     var $most_recent_fetcher;
-    var $crawl_daemon;
+
 
     /**
      *
@@ -109,7 +141,6 @@ class QueueServer implements CrawlConstants
 
         //the next values be set for real in startCrawl
         $this->crawl_order = self::PAGE_IMPORTANCE; 
-        $this->search_depth = 1; 
         $this->restrict_sites_by_url = true;
         $this->allowed_sites = array();
         $this->disallowed_sites = array();
@@ -812,7 +843,7 @@ class QueueServer implements CrawlConstants
                         $delete_urls[$i] = $url; 
                             //want to remove from queue since robots forbid it
                         $this->web_queue->addSeenUrlFilter($url); 
-                            /* at this point we might miss some sites by marking 
+                            /* at this point we might miss some sites by marking
                                them seen: the robot url might change in 24 hours
                              */
                         break;
@@ -1011,8 +1042,8 @@ class QueueServer implements CrawlConstants
     }
 }
 
-/**
- *
+/*
+ *  Instantiate and runs the QueueSever
  */
 $queue_server =  new QueueServer($INDEXED_FILE_TYPES);
 $queue_server->start();

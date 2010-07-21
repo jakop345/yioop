@@ -50,7 +50,7 @@ require_once BASE_DIR."/lib/crawl_constants.php";
  * @author Chris Pollett
  *
  * @package seek_quarry
- * @subpackage librarys
+ * @subpackage library
  */
 class PhraseParser 
 {

@@ -71,7 +71,8 @@ class SettingsView extends View
 ?>
 <div class="landing">
 <h1 class="logo"><a href="./?YIOOP_TOKEN=<?php 
-    e($data['YIOOP_TOKEN'])?>"><img 
+    e($data['YIOOP_TOKEN'])?>&amp;its=<?php 
+    e($data['its'])?>"><img 
     src="resources/yioop.png" alt="Yioop!" /></a><span> - <?php 
     e(tl('settings_view_settings')); ?></span></h1>
 <div class="settings">
@@ -87,8 +88,14 @@ class SettingsView extends View
     e(tl('settings_view_language_label')); ?></b></label></td><td 
     class="table-input"><?php $this->languageElement->render($data); ?>
 </td></tr>
+<td class="table-label"><label for="index-ts"><b><?php 
+    e(tl('settings_view_search_index')); ?></b></label></td><td 
+    class="table-input"><?php $this->optionsHelper->render(
+    "index-ts", "index_ts", $data['CRAWLS'], $data['its']); ?>
+</td></tr>
 <tr><td><input type="hidden" name="YIOOP_TOKEN" value="<?php 
-    e($data['YIOOP_TOKEN']); ?>" /><button 
+    e($data['YIOOP_TOKEN']); ?>" /><input type="hidden" 
+    name="its" value="<?php e($data['its']); ?>" /><button 
     class="topmargin" type="submit" name="c" value="search"><?php 
     e(tl('settings_view_return_yioop')); 
     ?></button></td><td class="table-input">

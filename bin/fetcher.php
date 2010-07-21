@@ -58,7 +58,7 @@ foreach(glob(BASE_DIR."/lib/processors/*_processor.php") as $filename) {
     require_once $filename;
 }
 
-/** */
+/** To support English language stemming of words (jumps, jumping --> jump)*/
 require_once BASE_DIR."/lib/porter_stemmer.php";
 /** */
 require_once BASE_DIR."/lib/url_parser.php";
@@ -106,20 +106,61 @@ mb_regex_encoding("UTF-8");
  */
 class Fetcher implements CrawlConstants
 {
+    /**
+     * @var object
+     */
     var $db;
-
+    /**
+     * @var object
+     */
     var $queue_server;
+    /**
+     * @var array
+     */
     var $indexed_file_types;
+    /**
+     * @var array
+     */
     var $page_processors;
+    /**
+     * @var object
+     */
     var $web_archive;
+    /**
+     * @var int
+     */
     var $crawl_time;
+    /**
+     * @var array
+     */
     var $to_crawl;
+    /**
+     * @var array
+     */
     var $found_sites;
+    /**
+     * @var int
+     */
     var $schedule_time;
+    /**
+     * @var int
+     */
     var $sum_seen_site_description_length;
+    /**
+     * @var int
+     */
     var $sum_seen_title_length;
+    /**
+     * @var int
+     */
     var $sum_seen_site_link_length;
+    /**
+     * @var int
+     */
     var $num_seen_sites;
+    /**
+     * @var string
+     */
     var $crawl_order;
 
 
@@ -960,7 +1001,9 @@ class Fetcher implements CrawlConstants
     }
 
     /**
+     * Computes a sum of the values of an associative array of key-value pairs
      *
+     * @param array the associative array to compute the sum of
      */
     function sumCountArray(&$arr)
     {
@@ -973,8 +1016,8 @@ class Fetcher implements CrawlConstants
     }
 }
 
-/**
- *
+/*
+ *  Instantiate and runs the Fetcher
  */
 $fetcher =  new Fetcher($INDEXED_FILE_TYPES, $PAGE_PROCESSORS, QUEUE_SERVER);
 $fetcher->start();
