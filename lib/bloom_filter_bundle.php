@@ -35,14 +35,15 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
  * 
- * Code used to manage a bloom filter in-memory and in file
- * a Bloom filter is used to store a set of objects.
- * It can support inserts into the set and it can also be
- * used to check membership in the set.
+ * A BloomFilterBundle is a directory of BloomFilterFile.
+ * The filter bundle, like a Bloom filter, also acts as a set,
+ * but once the active filter in it fills up a new filter is 
+ * added to the bundle so that more data can be stored.
  *
  * @author Chris Pollett
  * @package seek_quarry
  * @subpackage library
+ * @see BloomFilterFile
  */ 
 class BloomFilterBundle
 {
@@ -78,9 +79,14 @@ class BloomFilterBundle
     const default_filter_size = 10000000;
 
     /**
+     * Creates or loads if already exists the directory structure and 
+     * BloomFilterFiles used by this bundle
      *
+     * @param $dir_name directory when this bundles data is stored
+     * @param $filter_size the size of an individual filter in this bundle
+     *      once a filter is filled a new one is added to the directory
      */
-    public function __construct($dir_name, 
+    function __construct($dir_name, 
         $filter_size = self::default_filter_size ) 
     {
         $this->dir_name = $dir_name;
@@ -107,9 +113,14 @@ class BloomFilterBundle
     }
 
     /**
+     * Inserts a $value into the BloomFilterBundle
      *
+     * This involves inserting into the current filter, if the filter
+     * is full, a new filter is added before the value is added
+     *
+     * @param string $value a item to add to the filter bundle
      */
-    public function add($value)
+    function add($value)
     {
         if($this->current_filter_count >= $this->filter_size) {
             $this->current_filter->save();
@@ -130,9 +141,14 @@ class BloomFilterBundle
     }
 
     /**
+     * Removes from the passed array those elements $elt who either are not in
+     * the filter bundle or whose $elt[$field_name] is not in the bundle.
      *
+     * @param array &$arr the array to remove elements from
+     * @param string $field_name if not NULL the field name of $arr to use to
+     *      do filtering
      */
-    public function differenceFilter(&$arr, $field_name = NULL)
+    function differenceFilter(&$arr, $field_name = NULL)
     {
 
         $num_filters = $this->num_filters;
@@ -160,9 +176,10 @@ class BloomFilterBundle
     }
 
     /**
-     *
+     * Loads from the filter bundles' meta.txt the meta data associated with
+     * this filter bundle and stores this data into field variables
      */
-    public function loadMetaData()
+    function loadMetaData()
     {
         if(file_exists($this->dir_name.'/meta.txt')) {
             $meta = unserialize(
@@ -181,7 +198,7 @@ class BloomFilterBundle
      * Saves the meta data (number of filter, number of items stored, and size)
      * of the bundle
      */
-    public function saveMetaData()
+    function saveMetaData()
     {
         $meta = array();
         $meta['NUM_FILTERS'] = $this->num_filters;
@@ -194,7 +211,7 @@ class BloomFilterBundle
     /**
      * Used to save to disk all the file data associated with this bundle
      */
-    public function forceSave()
+    function forceSave()
     {
         $this->saveMetaData();
         $this->current_filter->save();

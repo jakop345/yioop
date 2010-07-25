@@ -52,34 +52,41 @@ class StringArray extends PersistentStructure
 {
 
     /**
-     *
-     */
-    var $filename;
-    /**
-     *
+     * Number of items to be stored in the StringArray
+     * @var int
      */
     var $num_values;
     /**
-     *
-     */
-    var $array_size;
-    /**
-     *
+     * Size of each item in bytes to be stored
+     * @var int
      */
     var $data_size;
     /**
-     *
+     * Number of bytes of storage need by the string array
+     * @var int
+     */
+    var $array_size;
+    /**
+     * Character string used to store the packed data of the StringArray
+     * @var string
      */
     var $string_array;
 
 
     /**
+     * Initiliazes the fields of the StringArray and its parent class
+     * PersistentStructure. Creates a null filled string array of size 
+     * $this->string_array_size to stored data in.
      *
+     * @param string $fname the name of the file to store data persistently in
+     * @param int $num_values the number of items the StringArray will store
+     * @param int $data_size the size in bytes of a single item
+     * @param int $save_frequency how often the StringArray should be stored to
+     *      disk
      */
     public function __construct($fname, $num_values, $data_size, 
         $save_frequency = self::DEFAULT_SAVE_FREQUENCY) 
     {
-        $this->filename = $fname;
         $this->num_values = $num_values;
         $this->data_size = $data_size;
 
@@ -93,7 +100,10 @@ class StringArray extends PersistentStructure
 
 
     /**
+     *  Looks up the ith item in the StringArray
      *
+     *  @param int $i array index of item to look up
+     *  @return string the looked-up item of length $this->data_size
      */
     public function get($i)
     {
@@ -103,7 +113,11 @@ class StringArray extends PersistentStructure
     }
 
     /**
+     * Puts data into the ith item of the StringArray
      *
+     * @param int $i array index of where to store data
+     * @param string $data at least $this->data_size many bytes of data to 
+     *      store
      */
     public function put($i, $data)
     {

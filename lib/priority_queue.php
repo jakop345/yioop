@@ -34,11 +34,20 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- *  Load in base classes and interfaces,get the crawlHash function, if necessary
+ *  Load in base class
  */
 require_once "string_array.php";
+/**
+ *
+ */
 require_once "notifier.php";
+/**
+ *
+ */
 require_once "utility.php";
+/**
+ *
+ */
 require_once "crawl_constants.php";
 
 /**
@@ -53,19 +62,43 @@ require_once "crawl_constants.php";
  */ 
 class PriorityQueue extends StringArray implements CrawlConstants
 {
+    /**
+     *
+     *
+     */
     var $num_values;
+    /**
+     *
+     *
+     */
     var $value_size;
+    /**
+     *
+     *
+     */
     var $weight_size = 4; //size of a float
 
+    /**
+     *
+     *
+     */
     var $count;
+    /**
+     *
+     *
+     */
     var $min_or_max;
 
+    /**
+     *
+     *
+     */
     var $notifier; // who to call if move an item in queue
 
     /**
      *
      */
-    public function __construct($fname, $num_values, $value_size, 
+    function __construct($fname, $num_values, $value_size, 
         $min_or_max, $notifier = NULL, 
         $save_frequency = self::DEFAULT_SAVE_FREQUENCY) 
     {
@@ -85,7 +118,7 @@ class PriorityQueue extends StringArray implements CrawlConstants
     /**
      *
      */
-    public function peek($i = 1)
+    function peek($i = 1)
     {
         if($i < 1 || $i > $this->count) {
             crawlLog("Peek Index $i not in Range [1, {$this->count}]");
@@ -97,7 +130,7 @@ class PriorityQueue extends StringArray implements CrawlConstants
     /**
      *
      */
-    public function poll($i = 1)
+    function poll($i = 1)
     {
         if($i < 1 || $i > $this->count) {
             crawlLog("Index $i not in Range [1, {$this->count}]");
@@ -118,7 +151,7 @@ class PriorityQueue extends StringArray implements CrawlConstants
     /**
      *
      */
-    public function insert($data, $weight)
+    function insert($data, $weight)
     {
         if($this->count == $this->num_values) {
             return false;
@@ -136,7 +169,7 @@ class PriorityQueue extends StringArray implements CrawlConstants
     /**
      *
      */
-    public function adjustWeight($i, $delta)
+    function adjustWeight($i, $delta)
     {
         if( ($tmp = $this->peek($i)) === false) {
             crawlLog("Index $i not in queue adjust weight failed");
@@ -166,7 +199,7 @@ class PriorityQueue extends StringArray implements CrawlConstants
     /**
      *
      */
-    public function printContents()
+    function printContents()
     {
         for($i = 1; $i <= $this->count; $i++) {
             $row = $this->peek($i);
@@ -177,7 +210,7 @@ class PriorityQueue extends StringArray implements CrawlConstants
     /**
      *
      */
-    public function getContents()
+    function getContents()
     {
         $rows = array();
         for($i = 1; $i <= $this->count; $i++) {
@@ -190,7 +223,7 @@ class PriorityQueue extends StringArray implements CrawlConstants
     /**
      *
      */
-    public function normalize($new_total = NUM_URLS_QUEUE_RAM)
+    function normalize($new_total = NUM_URLS_QUEUE_RAM)
     {
         $count = $this->count;
         $total_weight = $this->totalWeight();

@@ -98,9 +98,6 @@ class PhraseModel extends Model
 
         $phrase_string = mb_ereg_replace("[[:punct:]]", " ", $phrase);
         $phrase_string = preg_replace("/(\s)+/", " ", $phrase_string);
-
-        $phrase_hash = crawlHash($phrase_string);
-
         /*
             we search using the stemmed words, but we format snippets in the 
             results by bolding either
@@ -109,11 +106,17 @@ class PhraseModel extends Model
         $words = 
             array_keys(PhraseParser::extractPhrasesAndCount($phrase_string)); 
             //stemmed
+        if(isset($words) && count($words) == 1) {
+            $phrase_string = $words[0];
+        }
+        $phrase_hash = crawlHash($phrase_string);
 
-        if($index_archive->getPhraseIndexInfo($phrase_hash) != NULL) {
+        $phrase_info = $index_archive->getPhraseIndexInfo($phrase_hash);
+
+        if($phrase_info  != NULL) {
 
             $results = $index_archive->getSummariesByHash(
-                $phrase_hash, $low, $results_per_page);
+                $phrase_hash, $low, $results_per_page, NULL, NULL, $phrase_info);
 
             if(count($results) == 0) {
                 $results = NULL;

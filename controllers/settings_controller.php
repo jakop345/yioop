@@ -114,7 +114,8 @@ class SettingsController extends Controller
         $crawls = $this->crawlModel->getCrawlList();
         $data['CRAWLS'] = array();
         foreach($crawls as $crawl) {
-            $data['CRAWLS'][$crawl['CRAWL_TIME']] = $crawl['DESCRIPTION'];
+            $data['CRAWLS'][$crawl['CRAWL_TIME']] = $crawl['DESCRIPTION'].
+                " ... ".$crawl['COUNT']." urls";
         }
         $crawl_stamps = array_keys($data['CRAWLS']);
         if($token_okay && isset($_REQUEST['index_ts']) &&

@@ -52,21 +52,54 @@ require_once "utility.php";
 class HashTable extends StringArray
 {
 
+    /**
+     *
+     * @var int
+     */
     var $key_size;
+    /**
+     *
+     * @var int
+     */
     var $value_size;
+    /**
+     *
+     * @var string
+     */
     var $null;
+    /**
+     *
+     * @var string
+     */
     var $deleted;
-
+    /**
+     *
+     * @var int
+     */
     var $count;
 
+    /**
+     *
+     *
+     */
     const ALWAYS_RETURN_PROBE = 1;
+    /**
+     *
+     *
+     */
     const RETURN_PROBE_ON_KEY_FOUND = 0;
+    /**
+     *
+     *
+     */
     const RETURN_VALUE = -1;
 
 
     /**
-    */
-    public function __construct($fname, $num_values, $key_size, $value_size, 
+     *
+     *
+     */
+    function __construct($fname, $num_values, $key_size, $value_size, 
         $save_frequency = self::DEFAULT_SAVE_FREQUENCY) 
     {
         $this->key_size = $key_size;
@@ -80,7 +113,11 @@ class HashTable extends StringArray
             $key_size + $value_size, $save_frequency);
     }
 
-    public function insert($key, $value)
+    /**
+     *
+     *
+     */
+    function insert($key, $value)
     {
         $null = $this->null;
         $deleted = $this->deleted;
@@ -124,13 +161,20 @@ class HashTable extends StringArray
     }
 
 
+    /**
+     *
+     *
+     */
     function lookup($key, $return_probe_value = self::RETURN_VALUE)
     {
         return $this->lookupArray(
             $key, array($this->null), $return_probe_value);
     }
 
-
+    /**
+     *
+     *
+     */
     function lookupArray($key, $null_array, 
         $return_probe_value = self::RETURN_VALUE)
     {
@@ -167,7 +211,11 @@ class HashTable extends StringArray
 
     }
 
-    public function delete($key)
+    /**
+     *
+     *
+     */
+    function delete($key)
     {
         $deleted = pack("H2x".($this->key_size + $this->value_size - 1), "FF");
             //deletes
@@ -185,6 +233,10 @@ class HashTable extends StringArray
 
     }
 
+    /**
+     *
+     *
+     */
     function getEntry($i)
     {
         $raw = $this->get($i);
@@ -194,6 +246,10 @@ class HashTable extends StringArray
         return array($key, $value);
     }
 
+    /**
+     *
+     *
+     */
     function hash($key)
     {
         $hash = substr(md5($key, true), 0, 4);

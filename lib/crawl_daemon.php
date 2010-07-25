@@ -34,14 +34,20 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- *
+ * Load system-wide defines
  */
-
 require_once BASE_DIR."/configs/config.php";
-require_once BASE_DIR."/lib/utility.php"; //for crawlLog
+/**
+ * Load the crawlLog function
+ */
+require_once BASE_DIR."/lib/utility.php"; 
+/**
+ *  Load common constants for crawling
+ */
 require_once BASE_DIR."/lib/crawl_constants.php";
 
 /**
+ * Used to run scripts as a daemon on *nix systems
  *
  * @author Chris Pollett
  * @package seek_quarry
@@ -49,10 +55,19 @@ require_once BASE_DIR."/lib/crawl_constants.php";
  */
 class CrawlDaemon implements CrawlConstants
 {
+
+    /**
+     * Name prefix to be used on files associated with this daemon
+     * (such as lock like and messages)
+     * @var string
+     * @static
+     */
     static $name;
 
     /**
+     * Callback function to handle signals sent to this daemon
      *
+     * @param int $signo signal sent to the daemon
      */
     static function processHandler($signo)
     {
@@ -65,7 +80,7 @@ class CrawlDaemon implements CrawlConstants
                  file_put_contents(
                     CRAWL_DIR."/schedules/".self::$name."_messages.txt", 
                     serialize($info));
-                 unlink(CRAWL_DIR."/schedules/".self::$name."_lock.txt");
+                 unlink(CRAWL_DIR."/schedules/".self::$name."_lock.txt"); 
              break;
 
              case SIGSEGV:
@@ -79,7 +94,17 @@ class CrawlDaemon implements CrawlConstants
     }
 
     /**
+     * Used to send a message the given daemon or run the program in the
+     * foreground.
      *
+     * @param array $argv an array of command line arguments. The argument
+     *      start will check if the process control functions exists if these
+     *      do they will fork and detach a child process to act as a daemon.
+     *      a lock file will be created to prevent additional daemons from
+     *      running. If the message is stop then a message file is written to 
+     *      tell the daemon to stop. If the argument is terminal then the
+     *      program won't be run as a daemon.
+     * @param string $name the prefix to use for lock and message files
      */
     static function init($argv, $name)
     {
@@ -103,8 +128,6 @@ class CrawlDaemon implements CrawlConstants
         //the next code is for running as a daemon on *nix systems
         $terminal_flag = strcmp($argv[1], "terminal") == 0;
         if(function_exists("pcntl_fork") && !$terminal_flag)  {
-
-
             $pid = pcntl_fork();
             if ($pid == -1) {
                 die("could not fork"); 

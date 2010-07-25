@@ -60,15 +60,15 @@ foreach(glob(BASE_DIR."/lib/processors/*_processor.php") as $filename) {
 
 /** To support English language stemming of words (jumps, jumping --> jump)*/
 require_once BASE_DIR."/lib/porter_stemmer.php";
-/** */
+/** Used to manipulate urls*/
 require_once BASE_DIR."/lib/url_parser.php";
-/** */
+/** Used to extract summaries from web pages*/
 require_once BASE_DIR."/lib/phrase_parser.php";
 /** for crawlHash and crawlLog */
 require_once BASE_DIR."/lib/utility.php"; 
 /** for crawlDaemon function */
 require_once BASE_DIR."/lib/crawl_daemon.php"; 
-/** */
+/** Used to fetches web pages and info from queue server*/
 require_once BASE_DIR."/lib/fetch_url.php";
 /** Loads common constants for web crawling*/
 require_once BASE_DIR."/lib/crawl_constants.php";
@@ -107,65 +107,93 @@ mb_regex_encoding("UTF-8");
 class Fetcher implements CrawlConstants
 {
     /**
+     * Reference to a database object. Used since has directory manipulation
+     * functions
      * @var object
      */
     var $db;
     /**
-     * @var object
+     * Url or IP address of the queue_server to get sites to crawl from
+     * @var string
      */
     var $queue_server;
     /**
+     * Contains each of the file extenstions this fetcher will try to process
      * @var array
      */
     var $indexed_file_types;
     /**
+     * An associative array of (mimetype => name of processor class to handle)
+     * pairs.
      * @var array
      */
     var $page_processors;
     /**
+     * WebArchiveBundle  used to store complete web pages and auxiliary data
      * @var object
      */
     var $web_archive;
     /**
+     * Timestamp of the current crawl
      * @var int
      */
     var $crawl_time;
     /**
+     * Contains the list of web pages to crawl from the queue_server
      * @var array
      */
     var $to_crawl;
     /**
+     * Summary information for visited sites that the fetcher hasn't sent to 
+     * the queue_server yet
      * @var array
      */
     var $found_sites;
     /**
+     * Timestamp from the queue_server of the current schedule of sites to
+     * download. This is sent back to the server once this schedule is completed
+     * to help the queue server implement crawl-delay if needed.
      * @var int
      */
     var $schedule_time;
     /**
+     * The sum of the number of words of all the page description for the current
+     * crawl. This is used in computing document statistics.
      * @var int
      */
     var $sum_seen_site_description_length;
     /**
+     * The sum of the number of words of all the page titles for the current
+     * crawl. This is used in computing document statistics.
      * @var int
      */
     var $sum_seen_title_length;
     /**
+     * The sum of the number of words in all the page links for the current
+     * crawl. This is used in computing document statistics.
      * @var int
      */
     var $sum_seen_site_link_length;
     /**
+     * Number of sites crawled in the current crawl
      * @var int
      */
     var $num_seen_sites;
     /**
+     * Stores the name of the ordering used to crawl pages. This is used in a
+     * switch/case when computing weights of urls to be crawled before sending
+     * these new urls back to the queue_server.
      * @var string
      */
     var $crawl_order;
 
 
     /**
+     * Sets up the field variables for that crawling can begin
      *
+     * @param array $indexed_file_types file extensions to index
+     * @param array $page_processors (mimetype => name of processor) pairs
+     * @param string $queue_server URL or IP address of the queue server
      */
     function __construct($indexed_file_types, $page_processors, $queue_server) 
     {
@@ -189,7 +217,7 @@ class Fetcher implements CrawlConstants
         $this->num_seen_sites = 0;
 
         //we will get the correct crawl order from the queue_server
-        $this->crawl_order = "OPIC";
+        $this->crawl_order = self::PAGE_IMPORTANCE;
     }
    
 
@@ -209,7 +237,13 @@ class Fetcher implements CrawlConstants
     }
 
     /**
+     * Main loop for the fetcher.
      *
+     * Checks for stop message, checks queue server if crawl has changed and
+     * for new pages to crawl. Loop gets a group of next pages to crawl if 
+     * there are pages left to crawl (otherwise sleep 5 seconds). It downloads
+     * these pages, deplicates them, and updates the found site info with the 
+     * result before looping again.
      */
     function loop()
     {
@@ -292,6 +326,11 @@ class Fetcher implements CrawlConstants
     }
     
     /**
+     * Deletes any crawl web archive bundles not in the provided array of crawls
+     *
+     * @param array $still_active_crawls those crawls which should be deleted,
+     *      so all others will be deleted
+     * @see loop()
      */
     function deleteOldCrawls(&$still_active_crawls)
     {
@@ -341,13 +380,17 @@ class Fetcher implements CrawlConstants
     }
     
     /**
+     * Get status, current crawl, crawl order, and new site information from 
+     * the queue_server.
+     *
+     * @return array containing this info
      */
     function checkScheduler() 
     {    
         $info = array();
-
+        $info[self::STATUS]  = self::CONTINUE_STATE;
         if(count($this->to_crawl) > 0) {
-            $info[self::STATUS]  = self::CONTINUE_STATE;
+            
             return; 
         }
 
@@ -374,18 +417,24 @@ class Fetcher implements CrawlConstants
         if(isset($info[self::SCHEDULE_TIME])) {
               $this->schedule_time = $info[self::SCHEDULE_TIME];
         }
+
         crawlLog("  Time to check Scheduler ".(changeInMicrotime($start_time)));
 
-        return $info;
+        return $info; 
     }
      
     /**
+     * Prepare an array of up to NUM_MULTI_CURL_PAGES' worth of sites to be
+     * downloaded in one go using the to_crawl array. Delete these sites 
+     * from the to_crawl array.
+     *
+     * @return array sites which are ready to be downloaded
      */
     function getFetchSites() 
     {
 
         $web_archive = $this->web_archive;
-            
+
         $start_time = microtime();
 
         $seeds = array();
@@ -439,6 +488,11 @@ class Fetcher implements CrawlConstants
     }
 
     /**
+     * Does page deduplication on an array of downloaded pages using a
+     * BloomFilterBundle of $this->web_archive. Deduplication based
+     * on summaries is also done on the queue server.
+     *
+     * @param array &$site_pages pages to deduplicate
      */
     function deleteSeenPages(&$site_pages)
     {
@@ -466,6 +520,14 @@ class Fetcher implements CrawlConstants
     }
 
     /**
+     * Processes an array of downloaded web pages with the appropriate page
+     * processor.
+     *
+     * Summary data is extracted from each non robots.txt file in the array.
+     * Disallowed paths and crawl-delays are extracted from robots.txt files.
+     *
+     * @param array $site_pages a collection of web pages to process
+     * @return array summary data extracted from these pages
      */
     function processFetchPages($site_pages)
     {
@@ -600,7 +662,13 @@ class Fetcher implements CrawlConstants
     }
 
     /**
+     * Parses the contents of a robots.txt page extracting disallowed paths and
+     * Crawl-delay
      *
+     * @param array $robot_site array containing info about one robots.txt page
+     * @return array the $robot_site array with two new fields: one containing
+     *      an array of disallowed paths, the other containing the crawl-delay
+     *      if any
      */
     function processRobotPage($robot_site)
     {
@@ -658,7 +726,15 @@ class Fetcher implements CrawlConstants
     }
     
     /**
-    */
+     * Updates the $this->found_sites array with data from the most recently
+     * downloaded sites. This means updating the following sub arrays:
+     * the self::ROBOT_PATHS, self::TO_CRAWL. It checks if there are still
+     * more urls to crawl or if self::SEEN_URLS has grown larger than
+     * SEEN_URLS_BEFORE_UPDATE_SCHEDULER. If so, a mini index is built and,
+     * the queue server is called with the data.
+     *
+     * @param array $sites site data to use for the update
+     */
     function updateFoundSites($sites) 
     {
         $start_time = microtime();
@@ -676,7 +752,7 @@ class Fetcher implements CrawlConstants
                         self::CRAWL_DELAY] = $site[self::CRAWL_DELAY];
                 }
             } else {
-                $this->found_sites[self::SEEN_URLS][] = $site;
+                $this->found_sites[self::ROBOT_PATHS][] = $site;
                 if(isset($site[self::LINKS])) {
                     if(!isset($this->found_sites[self::TO_CRAWL])) {
                         $this->found_sites[self::TO_CRAWL] = array();
@@ -730,7 +806,16 @@ class Fetcher implements CrawlConstants
     }
 
     /**
+     * Updates the queue_server about sites that have been crawled.
      *
+     * This method is called if there are currently no more sites to crawl or
+     * if SEEN_URLS_BEFORE_UPDATE_SCHEDULER many pages have been processed. It
+     * creates a inverted index of the non robot pages crawled and then compresses
+     * and does a post request to send the page summary data, robot data, 
+     * to crawl url data, and inverted index back to the server. In the event
+     * that the server doesn't acknowledge it loops and tries again after a
+     * delay until the post is successful. At this point, memory for this data
+     * is freed.
      */
     function updateScheduler() 
     {
@@ -788,6 +873,15 @@ class Fetcher implements CrawlConstants
     }
 
     /**
+     * Builds an inverted index (word --> {docs it appears in}) for the current
+     * batch of SEEN_URLS_BEFORE_UPDATE_SCHEDULER many pages. This inverted
+     * is then merged by the queue_server into the inverted index of the
+     * current generation of the crawl. The complete inverted index for the
+     * whole crawl is built out of these inverted indexes for generations.
+     * The point of computing a partial inverted index on the fetcher is to
+     * reduce some of the computational burden on the queue server. The
+     * resulting mini index computed by buildMiniInvertedIndex() is stored in
+     * $this->found_sites[self::INVERTED_INDEX]
      *
      */
     function buildMiniInvertedIndex()
@@ -926,7 +1020,11 @@ class Fetcher implements CrawlConstants
 
 
     /**
+     * Used to compute number of words in each component (title, description,
+     * links) of a document separately as well as compute average amongst the 
+     * current group of SEEN_URLS_BEFORE_UPDATE_SCHEDULER many docs.
      *
+     * @return array computed statistics
      */
     function computeDocumentStatistics()
     {
@@ -1003,7 +1101,7 @@ class Fetcher implements CrawlConstants
     /**
      * Computes a sum of the values of an associative array of key-value pairs
      *
-     * @param array the associative array to compute the sum of
+     * @param array &$arr the associative array to compute the sum of
      */
     function sumCountArray(&$arr)
     {

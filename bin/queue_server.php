@@ -52,10 +52,10 @@ require_once BASE_DIR."/models/datasources/".DBMS."_manager.php";
 /** Load the class that maintains our URL queue */
 require_once BASE_DIR."/lib/web_queue_bundle.php";
 
-/**  */
+/** Load word->{array of docs with word} index class */
 require_once BASE_DIR."/lib/index_archive_bundle.php";
 
-/**  */
+/** Used for manipulating urls*/
 require_once BASE_DIR."/lib/url_parser.php";
 
 /**  For crawlHash function */

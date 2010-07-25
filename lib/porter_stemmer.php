@@ -50,9 +50,33 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 class PorterStemmer
 {
 
-    static $buffer, $k, $j;
+    /**
+     * storage used in computing the stem
+     * @var string
+     */
+    static $buffer;
+    /**
+     * Index of the current end of the word at the current state of computing
+     * its stem
+     * @var int
+     */
+    static $k;
+    /**
+     * Index to start of the suffix of the word being considered for 
+     * manipulation
+     * @var int
+     */
+    static $j;
 
-    public static function stem($word)
+    /**
+     * Computes the stem of an English word
+     *
+     * For example, jumps, jumping, jumpy, all have jump as a stem
+     *
+     * @param string $word the string to stem
+     * @return string the stem of $words
+     */
+    static function stem($word)
     {
         self::$buffer = $word;
 
@@ -74,6 +98,7 @@ class PorterStemmer
      * Checks to see if the ith character in the buffer is a consonant
      *
      * @param int $i the character to check
+     * @return if the ith character is a constant
      */
     private static function cons($i)
     {
@@ -88,15 +113,17 @@ class PorterStemmer
         }
     }
 
-    /** m() measures the number of consonant sequences between k0 and j. if c is
-     *  a consonant sequence and v a vowel sequence, and <.> indicates arbitrary
-     *  presence,
-
-     *    <c><v>       gives 0
-     *    <c>vc<v>     gives 1
-     *    <c>vcvc<v>   gives 2
-     *    <c>vcvcvc<v> gives 3
+    /** 
+     * m() measures the number of consonant sequences between 0 and j. if c is
+     * a consonant sequence and v a vowel sequence, and [.] indicates arbitrary
+     * presence,
+     *  <pre>
+     *    [c][v]       gives 0
+     *    [c]vc[v]     gives 1
+     *    [c]vcvc[v]   gives 2
+     *    [c]vcvcvc[v] gives 3
      *    ....
+     *  </pre>
      */
     private static function m()
     {
@@ -130,7 +157,11 @@ class PorterStemmer
         }
     }
 
-    /* vowelinstem() is TRUE <=> k0,...j contains a vowel */
+    /**
+     * Checks if 0,...$j contains a vowel 
+     *
+     * @return bool whether it does not
+     */
 
     private static function vowelinstem()
     {
@@ -140,7 +171,11 @@ class PorterStemmer
         return false;
     }
 
-    /* doublec(j) is TRUE <=> j,(j-1) contain a double consonant. */
+    /**
+     * Checks if $j,($j-1) contain a double consonant.
+     *
+     * @return bool if it does or not
+     */
 
     private static function doublec($j)
     {
@@ -149,14 +184,17 @@ class PorterStemmer
         return self::cons($j);
     }
 
-    /* cvc(i) is TRUE <=> i-2,i-1,i has the form consonant - vowel - consonant
-       and also if the second c is not w,x or y. this is used when trying to
-       restore an e at the end of a short word. e.g.
-
-          cav(e), lov(e), hop(e), crim(e), but
-          snow, box, tray.
-
-    */
+    /** 
+     * Checks whether the letters at the indices $i-2, $i-1, $i in the buffer
+     * have the form consonant - vowel - consonant and also if the second c is 
+     * not w,x or y. this is used when trying to restore an e at the end of a 
+     * short word. e.g.
+     *<pre>
+     *    cav(e), lov(e), hop(e), crim(e), but
+     *    snow, box, tray.
+     *</pre>
+     * @return bool whether the letters at indices have the given form
+     */
 
     private static function cvc($i)
     {
@@ -169,7 +207,12 @@ class PorterStemmer
         return true;
     }
 
-    /* ends(s) is TRUE <=> k0,...k ends with the string s. */
+    /**
+     * Checks if the buffer currently ends with the string $s
+     * 
+     * @param string $s string to use for check
+     * @return bool whether buffer currently ends with $s
+     */
 
     private static function ends($s)
     {
@@ -184,8 +227,12 @@ class PorterStemmer
         return true;
     }
 
-    /* setto(s) sets (j+1),...k to the characters in the string s, readjusting
-       k. */
+    /**
+     * setto($s) sets (j+1),...k to the characters in the string $s, readjusting
+     * k. 
+     *
+     * @param string $s string to modify the end of buffer with
+     */
 
     private static function setto($s)
     {
@@ -195,34 +242,38 @@ class PorterStemmer
         self::$k = self::$j + $len;
     }
 
-    /* r(s) is used further down. */
-
+    /**
+     * Sets the ending in the buffer to $s if the number of consonant sequences 
+     * between $k and $j is positive.
+     *
+     * @param string $s what to change the suffix to
+     */
     private static function r($s) 
     {
         if (self::m() > 0) self::setto($s);
     }
 
-    /* step1ab() gets rid of plurals and -ed or -ing. e.g.
-
-           caresses  ->  caress
-           ponies    ->  poni
-           ties      ->  ti
-           caress    ->  caress
-           cats      ->  cat
-
-           feed      ->  feed
-           agreed    ->  agree
-           disabled  ->  disable
-
-           matting   ->  mat
-           mating    ->  mate
-           meeting   ->  meet
-           milling   ->  mill
-           messing   ->  mess
-
-           meetings  ->  meet
-
-    */
+    /** step1ab() gets rid of plurals and -ed or -ing. e.g.
+     * <pre>
+     *     caresses  ->  caress
+     *     ponies    ->  poni
+     *     ties      ->  ti
+     *     caress    ->  caress
+     *     cats      ->  cat
+     *
+     *     feed      ->  feed
+     *     agreed    ->  agree
+     *     disabled  ->  disable
+     *
+     *     matting   ->  mat
+     *     mating    ->  mate
+     *     meeting   ->  meet
+     *     milling   ->  mill
+     *     messing   ->  mess
+     *
+     *     meetings  ->  meet
+     * </pre>
+     */
 
     private static function step1ab()
     {
@@ -256,7 +307,9 @@ class PorterStemmer
        }
     }
 
-    /* step1c() turns terminal y to i when there is another vowel in the stem. */
+    /**
+     * step1c() turns terminal y to i when there is another vowel in the stem. 
+     */
 
     private static function step1c() 
     {
@@ -266,9 +319,11 @@ class PorterStemmer
     }
 
 
-    /* step2() maps double suffices to single ones. so -ization ( = -ize plus
-       -ation) maps to -ize etc.Note that the string before the suffix must give
-       m() > 0. */
+    /**
+     * step2() maps double suffices to single ones. so -ization ( = -ize plus
+     * -ation) maps to -ize etc.Note that the string before the suffix must give
+     * m() > 0. 
+     */
     private static function step2() 
     {
         if(self::$k < 1) return;
@@ -314,7 +369,9 @@ class PorterStemmer
         } 
     }
 
-    /* step3() deals with -ic-, -full, -ness etc. similar strategy to step2. */
+    /** 
+     * step3() deals with -ic-, -full, -ness etc. similar strategy to step2. 
+     */
 
     private static function step3() 
     {
@@ -338,8 +395,9 @@ class PorterStemmer
         }
     }
 
-    /* step4() takes off -ant, -ence etc., in context <c>vcvc<v>. */
-
+    /**
+     * step4() takes off -ant, -ence etc., in context <c>vcvc<v>. 
+     */
     private static function step4()
     {
         if(self::$k < 1) return;

@@ -50,19 +50,39 @@ require_once "utility.php";
 class WebArchive
 {
 
-    const OPEN_AND_CLOSE = 1;
-    const OPEN = 2;
-    const CLOSE = 3;
-
+    /**
+     *
+     */
     var $filename;
+    /**
+     *
+     */
     var $iterator_pos;
+    /**
+     *
+     */
     var $compressor;
+    /**
+     *
+     */
     var $count;
 
     /**
      *
      */
-    public function __construct($fname, $compressor, $fast_construct = false) 
+    const OPEN_AND_CLOSE = 1;
+    /**
+     *
+     */
+    const OPEN = 2;
+    /**
+     *
+     */
+    const CLOSE = 3;
+    /**
+     *
+     */
+    function __construct($fname, $compressor, $fast_construct = false) 
     {
         $this->filename = $fname;
         $this->compressor = $compressor;
@@ -83,7 +103,7 @@ class WebArchive
     /**
      *
      */
-    public function readInfoBlock()
+    function readInfoBlock()
     {
         $fh =  fopen($this->filename, "r");
         $len = $this->seekEndObjects($fh);
@@ -101,7 +121,7 @@ class WebArchive
     /**
      *
      */
-    public function writeInfoBlock($fh = NULL, &$data = NULL)
+    function writeInfoBlock($fh = NULL, &$data = NULL)
     {
         $open_flag = false;
         if($fh == NULL) {
@@ -129,7 +149,7 @@ class WebArchive
     /**
      *
      */
-    public function seekEndObjects($fh)
+    function seekEndObjects($fh)
     {
         fseek($fh, - 4, SEEK_END);
         $len_block_arr = unpack("N", fread($fh, 4));
@@ -142,7 +162,7 @@ class WebArchive
     /**
      *
      */
-    public function addObjects($offset_field, &$objects, 
+    function addObjects($offset_field, &$objects, 
         $data = NULL, $callback = NULL, $return_flag = true)
     {
 
@@ -192,7 +212,7 @@ class WebArchive
     /**
      *
      */
-    public function open($mode = "r")
+    function open($mode = "r")
     {
         $fh = fopen($this->filename, $mode);
         return $fh;
@@ -201,7 +221,7 @@ class WebArchive
     /**
      * Closes a file handle (which should be of a web archive)
      */
-    public function close($fh)
+    function close($fh)
     {
         fclose($fh);
     }
@@ -209,7 +229,7 @@ class WebArchive
     /**
      *
      */
-    public function getObjects($offset, $num, $next_flag = true, $fh = NULL)
+    function getObjects($offset, $num, $next_flag = true, $fh = NULL)
     {
 
         $open_flag = false;
@@ -261,7 +281,7 @@ class WebArchive
      * @param int $num number of objects to return
      * @return array an array of objects from the web archive
      */
-    public function currentObjects($num)
+    function currentObjects($num)
     {
         return $this->getObjects($this->iterator_pos, $num, false);
     }
@@ -274,7 +294,7 @@ class WebArchive
      * @param int $num number of objects to return
      * @return array an array of objects from the web archive
      */
-    public function nextObjects($num)
+    function nextObjects($num)
     {
         return $this->getObjects($this->iterator_pos, $num);
     }
@@ -283,7 +303,7 @@ class WebArchive
      * Resets the iterator for this web archive to the first object 
      * in the archive
      */
-    public function reset() 
+    function reset() 
     {
         $this->iterator_pos = 0;
     }

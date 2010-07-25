@@ -64,7 +64,9 @@ require_once 'web_archive.php';
 require_once 'utility.php'; 
 
 /**
- *
+ * Encapsulates the data structures needed to have a queue of urls to crawl 
+ * next
+ * 
  * @author Chris Pollett
  *
  * @package seek_quarry
@@ -136,12 +138,15 @@ class WebQueueBundle implements Notifier
      */
     var $crawl_delay_filter;
 
+    /**
+     *
+     */
     const max_url_archive_offset = 1000000000;
 
     /**
      *
      */
-    public function __construct($dir_name, 
+    function __construct($dir_name, 
         $filter_size, $num_urls_ram, $min_or_max) 
     {
         $this->dir_name = $dir_name;
@@ -227,7 +232,7 @@ class WebQueueBundle implements Notifier
     /**
      *
      */
-    public function addUrlsQueue(&$url_pairs)
+    function addUrlsQueue(&$url_pairs)
     {
         $add_urls = array();
         $count = count($url_pairs);
@@ -269,7 +274,7 @@ class WebQueueBundle implements Notifier
     /**
      *
      */
-    public function containsUrlQueue(&$url)
+    function containsUrlQueue(&$url)
     {
         $hash_url = crawlHash($url, true);
         $lookup_url = $this->lookupHashTable($hash_url);
@@ -279,7 +284,7 @@ class WebQueueBundle implements Notifier
     /**
      *
      */
-    public function adjustQueueWeight(&$url, $delta)
+    function adjustQueueWeight(&$url, $delta)
     {
         $hash_url = crawlHash($url, true);
         $data = $this->lookupHashTable($hash_url);
@@ -297,7 +302,7 @@ class WebQueueBundle implements Notifier
     /**
      *
      */
-    public function removeQueue($url)
+    function removeQueue($url)
     {
         $hash_url = crawlHash($url, true);
         $data = $this->lookupHashTable($hash_url);
@@ -319,7 +324,7 @@ class WebQueueBundle implements Notifier
     /**
      *
      */
-    public function peekQueue($i = 1, $fh = NULL)
+    function peekQueue($i = 1, $fh = NULL)
     {
         $tmp = $this->to_crawl_queue->peek($i);
         if(!$tmp) {
@@ -350,7 +355,7 @@ class WebQueueBundle implements Notifier
     /**
      *
      */
-    public function printContents()
+    function printContents()
     {
         $count = $this->to_crawl_queue->count;
 
@@ -360,7 +365,7 @@ class WebQueueBundle implements Notifier
         }
     }
 
-    public function getContents()
+    function getContents()
     {
         $count = $this->to_crawl_queue->count;
         $contents = array();
@@ -373,7 +378,7 @@ class WebQueueBundle implements Notifier
     /**
      *
      */
-    public function normalize($new_total = NUM_URLS_QUEUE_RAM)
+    function normalize($new_total = NUM_URLS_QUEUE_RAM)
     {
         $this->to_crawl_queue->normalize();
     }
@@ -383,7 +388,7 @@ class WebQueueBundle implements Notifier
     /**
      *
      */
-    public function openUrlArchive($mode = "r")
+    function openUrlArchive($mode = "r")
     {
         return $this->to_crawl_archive->open($mode);
     }
@@ -391,7 +396,7 @@ class WebQueueBundle implements Notifier
     /**
      *
      */
-    public function closeUrlArchive($fh)
+    function closeUrlArchive($fh)
     {
         $this->to_crawl_archive->close($fh);
     }
@@ -399,7 +404,7 @@ class WebQueueBundle implements Notifier
     /**
      *
      */
-    public function addSeenUrlFilter($url)
+    function addSeenUrlFilter($url)
     {
         $this->url_exists_filter_bundle->add($url);
     }
@@ -407,7 +412,7 @@ class WebQueueBundle implements Notifier
     /**
      *
      */
-    public function differenceSeenUrls(&$url_array, $field_name = NULL)
+    function differenceSeenUrls(&$url_array, $field_name = NULL)
     {
         $this->url_exists_filter_bundle->differenceFilter(
             $url_array, $field_name);
@@ -416,7 +421,7 @@ class WebQueueBundle implements Notifier
     /**
      *
      */
-    public function addGotRobotTxtFilter($host)
+    function addGotRobotTxtFilter($host)
     {
         $this->got_robottxt_filter->add($host);
     }
@@ -424,7 +429,7 @@ class WebQueueBundle implements Notifier
     /**
      *
      */
-    public function containsGotRobotTxt($host)
+    function containsGotRobotTxt($host)
     {
         return $this->got_robottxt_filter->contains($host);
     }
@@ -432,7 +437,7 @@ class WebQueueBundle implements Notifier
     /**
      *
      */
-    public function addDisallowedRobotFilter($host)
+    function addDisallowedRobotFilter($host)
     {
         $this->dissallowed_robot_filter->add($host);
     }
@@ -440,7 +445,7 @@ class WebQueueBundle implements Notifier
     /**
      *
      */
-    public function containsDisallowedRobot($host_path)
+    function containsDisallowedRobot($host_path)
     {
         return $this->dissallowed_robot_filter->contains($host_path);
     }
@@ -448,7 +453,7 @@ class WebQueueBundle implements Notifier
     /**
      *
      */
-    public function getRobotTxtAge()
+    function getRobotTxtAge()
     {
 
         $creation_time = intval(
@@ -460,7 +465,7 @@ class WebQueueBundle implements Notifier
     /**
      *
      */
-    public function setCrawlDelay($host, $value)
+    function setCrawlDelay($host, $value)
     {
         $this->crawl_delay_filter->add("-1".$host); 
             //used to say a crawl delay has been set
@@ -476,7 +481,7 @@ class WebQueueBundle implements Notifier
     /**
      *
      */
-    public function getCrawlDelay($host)
+    function getCrawlDelay($host)
     {
         if(!$this->crawl_delay_filter->contains("-1".$host)) {
             return -1;
@@ -495,7 +500,7 @@ class WebQueueBundle implements Notifier
     /**
      *
      */
-    public function constructHashTable($name, $num_values)
+    function constructHashTable($name, $num_values)
     {
         $this->hash_rebuild_count = 0;
         $this->max_hash_ops_before_rebuild = floor($num_values/4);
@@ -505,7 +510,7 @@ class WebQueueBundle implements Notifier
     /**
      *
      */
-    public function lookupHashTable($key)
+    function lookupHashTable($key)
     {
         return $this->to_crawl_table->lookup($key);
     }
@@ -513,7 +518,7 @@ class WebQueueBundle implements Notifier
     /**
      *
      */
-    public function deleteHashTable($value)
+    function deleteHashTable($value)
     {
         $this->to_crawl_table->delete($value);
         $this->hash_rebuild_count++;
@@ -525,7 +530,7 @@ class WebQueueBundle implements Notifier
     /**
      *
      */
-    public function insertHashTable($key, $value)
+    function insertHashTable($key, $value)
     {
         $this->hash_rebuild_count++;
         if($this->hash_rebuild_count > $this->max_hash_ops_before_rebuild) {
@@ -537,7 +542,7 @@ class WebQueueBundle implements Notifier
     /**
      *
      */
-    public function rebuildHashTable()
+    function rebuildHashTable()
     {
         crawlLog("Rebuilding Hash table");
         $num_values = $this->to_crawl_table->num_values;
@@ -571,7 +576,7 @@ class WebQueueBundle implements Notifier
     * Since offsets are integers, even if the queue is kept relatively small, 
     * periodically we will need to rebuild the archive for storing urls.
     */
-    public function rebuildUrlTable()
+    function rebuildUrlTable()
     {
         crawlLog("Rebuilding URL table");
         $dir_name = $this->dir_name;
@@ -613,7 +618,7 @@ class WebQueueBundle implements Notifier
     /**
      *
      */
-    public function emptyRobotFilters()
+    function emptyRobotFilters()
     {
         unlink($this->dir_name."/got_robottxt.ftr");  
         unlink($this->dir_name."/dissallowed_robot.ftr");

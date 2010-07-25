@@ -34,7 +34,9 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- * 
+ * Shared constants and enums used by components that are involved in the
+ * crawling process
+ *
  * @author Chris Pollett
  * @package seek_quarry
  * @subpackage library

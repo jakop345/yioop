@@ -34,7 +34,7 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- * A WebArchiveBundle is a collection of WebArchive, so need definition of
+ * A WebArchiveBundle is a collection of WebArchive, so load definition of
  * web archive
  */
 require_once 'web_archive.php';
@@ -104,7 +104,7 @@ class WebArchiveBundle
     /**
      *
      */
-    public function __construct($dir_name, $filter_size = -1, 
+    function __construct($dir_name, $filter_size = -1, 
         $num_partitions = NULL, $description = NULL, 
         $compressor = "GzipCompressor") 
     {
@@ -173,7 +173,7 @@ class WebArchiveBundle
     /**
      *
      */
-    public function addPages($key_field, $offset_field, &$pages)
+    function addPages($key_field, $offset_field, &$pages)
     {
         $partition_queue = array();
         for($i = 0; $i < $this->num_partitions; $i++) {
@@ -215,7 +215,7 @@ class WebArchiveBundle
     /**
      *
      */
-    public function getPage($key, $offset)
+    function getPage($key, $offset)
     {
         $partition = 
             WebArchiveBundle::selectPartition($key, $this->num_partitions);
@@ -226,7 +226,7 @@ class WebArchiveBundle
     /**
      *
      */
-    public function getPageByPartition($partition, $offset, $file_handle = NULL)
+    function getPageByPartition($partition, $offset, $file_handle = NULL)
     {
         $page_array = 
             $this->getPartition($partition)->getObjects(
@@ -242,7 +242,7 @@ class WebArchiveBundle
     /**
      *
      */
-    public function addPageFilter($key_field, &$page)
+    function addPageFilter($key_field, &$page)
     {
         if($this->filter_size > 0) {
             $this->page_exists_filter_bundle->add($page[$key_field]);
@@ -255,7 +255,7 @@ class WebArchiveBundle
     /**
      *
      */
-    public function addObjectsPartition($offset_field, $partition, 
+    function addObjectsPartition($offset_field, $partition, 
         &$objects, $data = NULL, $callback = NULL, $return_flag = true)
     {
         $num_objects = count($objects);
@@ -268,7 +268,7 @@ class WebArchiveBundle
     /**
      *
      */
-    public function readPartitionInfoBlock($partition)
+    function readPartitionInfoBlock($partition)
     {
         return $this->getPartition($partition)->readInfoBlock();
     }
@@ -276,7 +276,7 @@ class WebArchiveBundle
     /**
      *
      */
-    public function writePartitionInfoBlock($partition, &$data)
+    function writePartitionInfoBlock($partition, &$data)
     {
         $this->getPartition($partition)->writeInfoBlock(NULL, $data);
     }
@@ -284,7 +284,7 @@ class WebArchiveBundle
     /**
      *
      */
-    public function differencePageKeysFilter($pages, $key_field)
+    function differencePageKeysFilter($pages, $key_field)
     {
         if($this->filter_size > 0) {
             $page_array = array();
@@ -303,7 +303,7 @@ class WebArchiveBundle
     /**
      *
      */
-    public function differencePagesFilter(&$page_array, $field_name = NULL)
+    function differencePagesFilter(&$page_array, $field_name = NULL)
     {
         $this->page_exists_filter_bundle->differenceFilter(
             $page_array, $field_name);
@@ -312,7 +312,7 @@ class WebArchiveBundle
     /**
      *
      */
-    public function forceSave()
+    function forceSave()
     {
         if($this->filter_size > 0) {
            $this->page_exists_filter_bundle->forceSave();
@@ -322,7 +322,7 @@ class WebArchiveBundle
     /**
      *
      */
-    public function getPartition($index, $fast_construct = true)
+    function getPartition($index, $fast_construct = true)
     {
         if(!isset($this->partition[$index])) { 
             //this might not have been open yet
@@ -355,7 +355,7 @@ class WebArchiveBundle
     /**
      *
      */
-    public static function getArchiveInfo($dir_name)
+    static function getArchiveInfo($dir_name)
     {
         if(!is_dir($dir_name) || !file_exists($dir_name."/description.txt")) {
             $info = array();
@@ -375,7 +375,7 @@ class WebArchiveBundle
     /**
      *
      */
-    public static function selectPartition($value, $num_partitions)
+    static function selectPartition($value, $num_partitions)
     {
 
         $hash = substr(md5($value, true), 0, 4);

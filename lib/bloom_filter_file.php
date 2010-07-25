@@ -34,14 +34,13 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- *
+ * Load base class with methods for loading and saving this structure
  */
 require_once "persistent_structure.php";
 
 /**
- * 
- * Code used to manage a bloom filter in-memory and in file
- * a Bloom filter is used to store a set of objects.
+ * Code used to manage a bloom filter in-memory and in file.
+ * A Bloom filter is used to store a set of objects.
  * It can support inserts into the set and it can also be
  * used to check membership in the set.
  *
@@ -52,14 +51,35 @@ require_once "persistent_structure.php";
 class BloomFilterFile extends PersistentStructure
 {
 
+    /**
+     * Number of bit positions in the Bloom filter used to say an item is
+     * in the filter
+     * @var int
+     */
     var $num_keys;
+    /**
+     * Size in bits of the packed string array used to store the filter's
+     * contents
+     * @var int
+     */
     var $filter_size;
+    /**
+     * Packed string used to store the Bloom filters
+     * @var string
+     */
     var $filter;
 
     /**
+     * Initializes the fields of the BloomFilter and its base 
+     * PersistentStructure.
      *
+     * @param string $fname name of the file to store the BloomFilter data in
+     * @param int $num_values the maximum number of values that will be stored
+     *      in the BloomFilter. Filter will be sized so the odds of a false 
+     *      positive are roughly one over this value
+     * @param int $save_frequency how often to store the BloomFilter to disk
      */
-    public function __construct($fname, $num_values, 
+    function __construct($fname, $num_values, 
         $save_frequency = self::DEFAULT_SAVE_FREQUENCY) 
     {
         $log2 = log(2);
@@ -75,9 +95,11 @@ class BloomFilterFile extends PersistentStructure
     }
 
     /**
+     * Inserts the provided item into the Bloomfilter
      *
+     * @param string $value item to add to filter
      */
-    public function add($value)
+    function add($value)
     {
         $num_keys = $this->num_keys;
         for($i = 0;  $i < $num_keys; $i++) {
@@ -89,9 +111,12 @@ class BloomFilterFile extends PersistentStructure
     }
 
     /**
+     * Checks if the BloomFilter contains the provided $value
      *
+     * @param string $value item to check if is in the BloomFilter
+     * @return bool whether $value was in the filter or not
      */
-    public function contains($value)
+    function contains($value)
     {
         $num_keys = $this->num_keys;
         for($i = 0;  $i < $num_keys; $i++) {
@@ -106,7 +131,10 @@ class BloomFilterFile extends PersistentStructure
     }
 
     /**
+     * Hashes $value to a bit position in the BloomFilter
      *
+     * @param string $value value to map to a bit position in the filter
+     * @return int the bit position mapped to
      */
     function getHashBitPosition($value)
     {
@@ -120,7 +148,9 @@ class BloomFilterFile extends PersistentStructure
     }
 
     /**
+     * Sets to true the ith bit position in the filter.
      *
+     * @param int $i the position to set to true
      */
     function setBit($i)
     {
@@ -129,13 +159,16 @@ class BloomFilterFile extends PersistentStructure
         $bit_in_byte = $i - ($byte << 3);
 
         $tmp = $this->filter[$byte];
-              
+
         $this->filter[$byte] = $tmp | chr(1 << $bit_in_byte);
 
     }
 
     /**
+     * Looks up the value of the ith bit position in the filter
      *
+     * @param int $i the position to look up
+     * @return bool the value of the looked up position
      */
     function getBit($i)
     {

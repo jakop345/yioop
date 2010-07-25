@@ -34,7 +34,7 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- *  load the stem word function, if necessary
+ *  Load the stem word function, if necessary
  */
 require_once BASE_DIR."/lib/porter_stemmer.php";
  
@@ -44,7 +44,7 @@ require_once BASE_DIR."/lib/porter_stemmer.php";
 require_once BASE_DIR."/lib/crawl_constants.php";
 
 /**
- * library of functions used to manipulate words and phrases 
+ * Library of functions used to manipulate words and phrases 
  *
  *
  * @author Chris Pollett
@@ -55,7 +55,11 @@ require_once BASE_DIR."/lib/crawl_constants.php";
 class PhraseParser 
 {
     /**
+     * Converts a summary of a web page into a string of space separated words
      *
+     * @param array $page associateive array of page summary data. Contains
+     *      title, description, and links fields
+     * @return string the concatenated words extracted from the page summary
      */
     static function extractWordStringPageSummary($page)
     {
@@ -80,7 +84,12 @@ class PhraseParser
     }
     
     /**
+     * Extracts all phrases (sequences of adjacent words) from $string of 
+     * length less than or equal to $len.
      *
+     * @param string $string subject to extract phrases from
+     * @param int $len longest length of phrases to consider
+     * @return array pairs of the form (phrase, number of occurrences)
      */
     static function extractPhrasesAndCount($string, 
         $len =  MAX_PHRASE_LEN) 
@@ -99,7 +108,12 @@ class PhraseParser
     }
 
     /**
+     * Extracts all phrases (sequences of adjacent words) from $string of 
+     * length exactly equal to $len.
      *
+     * @param string $string subject to extract phrases from
+     * @param int $len length of phrases to consider
+     * @return array pairs of the form (phrase, number of occurrences)
      */
     static function extractPhrasesOfLength($string, $phrase_len) 
     {
@@ -114,7 +128,15 @@ class PhraseParser
     }
 
     /**
+     * Extracts phrases (sequences of adjacent words) from $string of 
+     * length exactly equal to $len, beginning with the $offset'th word.
+     * This extracts the the $len many words after offset, then the $len
+     * many words after that, and so on.
      *
+     * @param string $string subject to extract phrases from
+     * @param int $len length of phrases to consider
+     * @param int $offset the first word to begin with
+     * @return array pairs of the form (phrase, number of occurrences)
      */
     static function extractPhrasesOfLengthOffset($string, 
         $phrase_len, $offset) 
