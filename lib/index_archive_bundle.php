@@ -711,13 +711,14 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
         if($phrase_key ==  NULL) {
             $phrase_key = $word_key;
         }
-        
+
         if($phrase_info == NULL) {
-            	$phrase_info = $this->getPhraseIndexInfo($phrase_key);
+            $phrase_info = $this->getPhraseIndexInfo($phrase_key);
         }
 
         if($phrase_info == NULL || (isset($phrase_info[self::PARTIAL_COUNT]) 
             && $phrase_info[self::PARTIAL_COUNT] < $limit + $num)) {
+
             $this->addPhraseIndex(
                 $word_key, $restrict_phrases, $phrase_key, $limit + $num);
         }
@@ -1022,7 +1023,11 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
     }
 
     /**
+     * Gets teh description, count of summaries, and number of partions of the
+     * summaries store in the supplied directory
      *
+     * @param string path to a directory containing a summaries WebArchiveBundle
+     * @return array summary of the given archive
      */
     public static function getArchiveInfo($dir_name)
     {

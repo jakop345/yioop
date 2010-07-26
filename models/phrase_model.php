@@ -112,6 +112,11 @@ class PhraseModel extends Model
         $phrase_hash = crawlHash($phrase_string);
 
         $phrase_info = $index_archive->getPhraseIndexInfo($phrase_hash);
+        if(isset($phrase_info[IndexingConstants::PARTIAL_COUNT]) &&
+            $phrase_info[IndexingConstants::PARTIAL_COUNT] < 
+                $low + $results_per_page) {
+            $phrase_info = NULL;
+        }
 
         if($phrase_info  != NULL) {
 
