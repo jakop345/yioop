@@ -33,7 +33,8 @@
 
 /** Calculate base directory of script */
 define("BASE_DIR", 
-    substr($_SERVER['PWD'], 0, -strlen("bin")));
+    substr($_SERVER['PWD'].'/'.$_SERVER["SCRIPT_FILENAME"], 0, 
+    -strlen("/bin/queue_server.php")));
 
 ini_set("memory_limit","900M"); //so have enough memory to crawl big pages
 
