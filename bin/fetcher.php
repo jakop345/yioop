@@ -33,8 +33,7 @@
 
 /** Calculate base directory of script */
 define("BASE_DIR", 
-    substr($_SERVER['DOCUMENT_ROOT'].$_SERVER['PWD'].$_SERVER["SCRIPT_NAME"],
-    0, -strlen("bin/fetcher.php")));
+    substr($_SERVER['PWD'], 0, -strlen("bin")));
 
 ini_set("memory_limit","500M"); //so have enough memory to crawl big pages
 

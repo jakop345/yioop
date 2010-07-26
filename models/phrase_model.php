@@ -67,7 +67,7 @@ class PhraseModel extends Model
     /**
      * {@inheritdoc}
      */
-    public function __construct($db_name = DB_NAME) 
+    function __construct($db_name = DB_NAME) 
     {
         parent::__construct($db_name);
     }
