@@ -32,11 +32,11 @@
  */
 
 /** Calculate base directory of script */
-define("BASE_DIR", 
-    substr($_SERVER['PWD'].'/'.$_SERVER["SCRIPT_FILENAME"], 0, 
-    -strlen("/bin/fetcher.php")));
+define("BASE_DIR", substr(
+    dirname(realpath($_SERVER['PHP_SELF'])), 0, 
+    -strlen("/bin")));
 
-ini_set("memory_limit","500M"); //so have enough memory to crawl big pages
+ini_set("memory_limit","550M"); //so have enough memory to crawl big pages
 
 /** Load in global configuration settings */
 require_once BASE_DIR.'/configs/config.php';

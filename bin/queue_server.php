@@ -32,9 +32,9 @@
  */
 
 /** Calculate base directory of script */
-define("BASE_DIR", 
-    substr($_SERVER['PWD'].'/'.$_SERVER["SCRIPT_FILENAME"], 0, 
-    -strlen("/bin/queue_server.php")));
+define("BASE_DIR", substr(
+    dirname(realpath($_SERVER['PHP_SELF'])), 0, 
+    -strlen("/bin")));
 
 ini_set("memory_limit","900M"); //so have enough memory to crawl big pages
 
@@ -76,7 +76,12 @@ mb_regex_encoding("UTF-8");
 
 
 /**
- * 
+ * Command line program responsible for managing Yioop crawls.
+ *
+ * It maintains a queue of urls that are going to be scheduled to be seen.
+ * It also keeps track of what has been seen and robots.txt info.
+ * Its last responsibility is to create and populate the IndexArchiveBundle
+ * that is used by the search front end.
  *
  * @author Chris Pollett
  * @package seek_quarry
@@ -84,50 +89,69 @@ mb_regex_encoding("UTF-8");
 class QueueServer implements CrawlConstants
 {
     /**
+     * Reference to a database object. Used since has directory manipulation
+     * functions
      * @var object
      */
     var $db;
     /**
+     * Web-sites that crawler can crawl. If used, ONLY these will be crawled
      * @var array
      */
     var $allowed_sites;
     /**
+     * Web-sites that the crawler must not crawl
      * @var array
      */
     var $disallowed_sites;
     /**
+     * Constant saying the method used to order the priority queue for the crawl
      * @var string
      */
     var $crawl_order;
     /**
+     * Says whether the $allowed_sites array is being used or not
      * @var bool
      */
     var $restrict_sites_by_url;
     /**
+     * List of file extensions supported for the crawl
      * @var array
      */
     var $indexed_file_types;
     /**
+     * Holds the WebQueueBundle for the crawl. This bundle encapsulates
+     * the priority queue of urls that specifies what to crawl next
      * @var object
      */
     var $web_queue;
     /**
+     * Holds the IndexArchiveBundle for the current crawl. This encapsulates
+     * the inverted index word-->documents for the crawls as well as document
+     * summaries of each document.
      * @var object
      */
     var $index_archive;
     /**
+     * The timestamp of the current active crawl
      * @var int
      */
     var $crawl_time;
     /**
+     * This is a list of hosts whose robots.txt file had a Crawl-delay directive
+     * and which we have produced a schedule with urls for, but we have not
+     * heard back from the fetcher who was processing those urls. Hosts on
+     * this list will not be scheduled for more downloads until the fetcher
+     * with earlier urls has gotten back to the queue_server.
      * @var array
      */
     var $waiting_hosts;
     /**
+     * IP address as a string of the fetcher that most recently spoke with the
+     * queue_server.
      * @var string
      */
     var $most_recent_fetcher;
-
 
     /**
      *
@@ -147,7 +171,9 @@ class QueueServer implements CrawlConstants
     }
 
     /**
-     *
+     * This is the function that should be called to get the queue_server 
+     * to start. Calls init to handle the command line arguments then enters 
+     * the queue_server's main loop
      */
     function start()
     {

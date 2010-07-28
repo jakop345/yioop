@@ -43,9 +43,9 @@ if(isset($_SERVER['DOCUMENT_ROOT']) && strlen($_SERVER['DOCUMENT_ROOT']) > 0) {
  *
  *
  */
-define("BASE_DIR", substr($_SERVER['DOCUMENT_ROOT'].
-    $_SERVER['PWD'].$_SERVER["SCRIPT_NAME"], 0, 
-    -strlen("configs/createdb.php")));
+define("BASE_DIR", substr(
+    dirname(realpath($_SERVER['PHP_SELF'])), 0, 
+    -strlen("/configs")));
 require_once BASE_DIR.'/configs/config.php';
 require_once BASE_DIR."/models/datasources/".DBMS."_manager.php"; 
     //get the database library

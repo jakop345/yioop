@@ -40,34 +40,34 @@ database settings, queue server and robot settings.
 After filling in this form and submitting it, 
 the installation is complete.
 
-(3) To start the queue server you type:
+(2) To start the queue server you type:
 
-php queue_server.php
+php queue_server.php terminal
 
 from the bin folder. 
 
-(4) You need at least one fetcher running
+(3) You need at least one fetcher running
 to download pages. You can set fetchers up either on the
 same machine or on other machines. The QUEUE_SERVER
 in config.php says the url of the server to get fetch batches
 from. To run a fetcher, simply type:
 
-php fetcher.php
+php fetcher.php terminal
 
 from the bin folder.
 
-(5) To start a crawl, you need to point your browser at the url
+(4) To start a crawl, you need to point your browser at the url
 of your seek_quarry installation. Click on the admin link,
 then the manage crawl link. Type in a description of your
 crawl and click "Start New Crawl". After about a minute you should
 start the Currently Processing and Most Recent Urls sections updating
 with info about the current crawl. 
 
-(6) After running your crawl for a while you can click the Stop
+(5) After running your crawl for a while you can click the Stop
 button to stop it. The crawl should show up after a delay in the
 Previous Crawls table. Their you can choose to resume a crawl,
 delete it, or set it as the current index.
 
-(7) If you set a crawl as the current index. Then when you go
+(6) If you set a crawl as the current index. Then when you go
 back to your installations web page and type a query in the search bar,
 the query will be answered with the results from that crawl.

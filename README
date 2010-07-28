@@ -33,7 +33,7 @@ fetcher.php -- used to download batches of urls provided
 queue_server.php - maintains a queue of urls that are
     going to be scheduled to be seen. It also keeps
     track of what has been seen and robots.txt info.
-    It's last responsibility is to create the index_archive
+    Its last responsibility is to create the index_archive
     that is used by the search front end.
 
 index.php -- a search engine web page. It is also used

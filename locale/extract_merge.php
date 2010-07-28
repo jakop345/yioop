@@ -45,9 +45,9 @@ if(isset($_SERVER['DOCUMENT_ROOT']) && strlen($_SERVER['DOCUMENT_ROOT']) > 0) {
 }
 
 /** Calculate base directory of script */
-define("BASE_DIR", substr($_SERVER['DOCUMENT_ROOT'].$_SERVER['PWD'].
-    $_SERVER["SCRIPT_NAME"], 0, 
-    -strlen("locale/extract_merge.php")));
+define("BASE_DIR", substr(
+    dirname(realpath($_SERVER['PHP_SELF'])), 0, 
+    -strlen("/locale")));
 
 /** Loads config info */
 require_once BASE_DIR."/configs/config.php";
