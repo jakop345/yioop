@@ -455,7 +455,7 @@ class QueueServer implements CrawlConstants
         $index_archive = $this->index_archive;
         $sites = unserialize(file_get_contents($file));
 
-       crawlLog("A memory usage".memory_get_usage() .
+        crawlLog("A memory usage".memory_get_usage() .
           " time: ".(changeInMicrotime($start_time)));
         $start_time = microtime();
 

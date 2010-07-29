@@ -386,11 +386,11 @@ class Fetcher implements CrawlConstants
      * @return array containing this info
      */
     function checkScheduler() 
-    {    
+    {
         $info = array();
-        $info[self::STATUS]  = self::CONTINUE_STATE;
+        
         if(count($this->to_crawl) > 0) {
-            
+            $info[self::STATUS]  = self::CONTINUE_STATE;
             return; 
         }
 
@@ -752,7 +752,7 @@ class Fetcher implements CrawlConstants
                         self::CRAWL_DELAY] = $site[self::CRAWL_DELAY];
                 }
             } else {
-                $this->found_sites[self::ROBOT_PATHS][] = $site;
+                $this->found_sites[self::SEEN_URLS][] = $site;
                 if(isset($site[self::LINKS])) {
                     if(!isset($this->found_sites[self::TO_CRAWL])) {
                         $this->found_sites[self::TO_CRAWL] = array();
@@ -833,6 +833,7 @@ class Fetcher implements CrawlConstants
 
         $post_data = array('c'=>'fetch', 'a'=>'update', 
             'crawl_time' => $this->crawl_time, 'machine_uri' => WEB_URI);
+
         $post_data['found'] = urlencode(base64_encode(
             gzcompress(serialize($this->found_sites))));
         $bytes_to_send = strlen($post_data['found']);

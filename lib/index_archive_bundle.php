@@ -804,7 +804,8 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
     {
         $this->summaries->forceSave();
         for($i = 0; $i < $this->num_partitions_index; $i++) {
-            if($this->index_partition_filters[$i] != NULL) {
+            if($this->index_partition_filters[$i] &&
+                $this->index_partition_filters[$i] != NULL) {
                 $this->index_partition_filters[$i]->save();
             }
         }

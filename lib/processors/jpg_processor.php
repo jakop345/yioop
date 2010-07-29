@@ -56,7 +56,7 @@ class JpgProcessor extends ImageProcessor
     {
         if(is_string($page)) {
             file_put_contents(CRAWL_DIR."/cache/tmp.jpg", $page); 
-            $image = @imagecreatefromjpeg(CRAWL_DIR."/cache/tmp.jpg");  
+            $image = @imagecreatefromjpeg(CRAWL_DIR."/cache/tmp.jpg");
             $thumb_string = self::createThumb($image);
             $summary[self::TITLE] = "";
             $summary[self::DESCRIPTION] = "Image of ".

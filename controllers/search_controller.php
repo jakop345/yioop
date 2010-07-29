@@ -90,7 +90,7 @@ class SearchController extends Controller implements CrawlConstants
         $view = "search";
         $start_time = microtime();
 
-        if(isset($_SESSION['MAX_PAGES_TO_SHOW'])) {
+        if(isset($_SESSION['MAX_PAGES_TO_SHOW']) ) {
             $results_per_page = $_SESSION['MAX_PAGES_TO_SHOW'];
         } else {
             $results_per_page = NUM_RESULTS_PER_PAGE;
