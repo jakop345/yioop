@@ -34,9 +34,12 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- *
+ * Loads the base class
  */
 require_once "string_array.php";
+/**
+ * Needed for crawlHash
+ */
 require_once "utility.php";
 
 /**
@@ -53,51 +56,60 @@ class HashTable extends StringArray
 {
 
     /**
+     * The size in bytes for keys stored in the hash table
      *
      * @var int
      */
     var $key_size;
     /**
+     * The size in bytes of values associated with keys
      *
      * @var int
      */
     var $value_size;
     /**
-     *
+     * Holds an all \0 string used of length $this->key_size
      * @var string
      */
     var $null;
     /**
-     *
+     * Holds \0\0 followed by an all \FF string of length $this->key_size -1
+     * Used to indicate that a slot once held data but that data was deleted.
+     * Such a slot tells a lookup to keep going, but on an insert can be 
+     * overwritten in the inserted key is not already in the table
      * @var string
      */
     var $deleted;
     /**
-     *
+     * Number of items currently in the hash table
      * @var int
      */
     var $count;
 
     /**
-     *
-     *
+     * Flag for lookup methods
      */
     const ALWAYS_RETURN_PROBE = 1;
     /**
-     *
-     *
+     * Flag for lookup methods
      */
     const RETURN_PROBE_ON_KEY_FOUND = 0;
     /**
-     *
-     *
+     * Flag for lookup methods
      */
     const RETURN_VALUE = -1;
 
 
     /**
+     * Makes a persistently stored (i.e., on disk and ram)  hash table using the
+     * supplied parameters
      *
-     *
+     * @param string $fname filename to use when storing the hash table to disk
+     * @param int $num_values number of key value pairs the table can hold
+     * @param int $key_size number of bytes to store a hash table key
+     * @param int $value_size number of bytes to store a hash table value
+     * @param int $save_fequency how many non read operation before saving to
+     *      disk
      */
     function __construct($fname, $num_values, $key_size, $value_size, 
         $save_frequency = self::DEFAULT_SAVE_FREQUENCY) 
@@ -114,8 +126,12 @@ class HashTable extends StringArray
     }
 
     /**
+     * Inserts the provided $key - $value pair into the hash table
      *
-     *
+     * @param string $key the key to use for the insert (will be needed for
+     *      lookup)
+     * @param string $value the value associated with $key
+     * @return bool whether the insert was succesful or not
      */
     function insert($key, $value)
     {
@@ -162,8 +178,19 @@ class HashTable extends StringArray
 
 
     /**
+     * Tries to lookup the key in the hash table either return the
+     * location where it was found or the value associated with the key.
      *
-     *
+     * @param string $key key to look up in the hash table
+     * @param int $return_probe_value one of self::ALWAYS_RETURN_PROBE, 
+     *      self::RETURN_PROBE_ON_KEY_FOUND, or self::RETURN_VALUE. Here
+     *      value means the value associated with the key and probe is
+     *      either the location in the array where the key was found or
+     *      the first location in the array where it was determined the
+     *      key could not be found.
+     * @return mixed would be string if the value is being returned, 
+     *      an int if the probe is being returned, and false if the key
+     *      is not found
      */
     function lookup($key, $return_probe_value = self::RETURN_VALUE)
     {
@@ -172,8 +199,26 @@ class HashTable extends StringArray
     }
 
     /**
+     * Tries to lookup the key in the hash table either return the
+     * location where it was found or the value associated with the key.
+     * If the key is not at the initial probe value, linear search in the
+     * table is done. The values which cut-off the search are stored in 
+     * $null_array. Using an array allows for flexibility since a deleted
+     * entry needs to be handled different when doing a lookup then when
+     * doing an insert.
      *
-     *
+     * @param string $key key to look up in the hash table
+     * @param array $null_array key values that would cut-off the search
+     *      for key if the initial probe failed
+     * @param int $return_probe_value one of self::ALWAYS_RETURN_PROBE, 
+     *      self::RETURN_PROBE_ON_KEY_FOUND, or self::RETURN_VALUE. Here
+     *      value means the value associated with the key and probe is
+     *      either the location in the array where the key was found or
+     *      the first location in the array where it was determined the
+     *      key could not be found.
+     * @return mixed would be string if the value is being returned, 
+     *      an int if the probe is being returned, and false if the key
+     *      is not found
      */
     function lookupArray($key, $null_array, 
         $return_probe_value = self::RETURN_VALUE)
@@ -212,8 +257,10 @@ class HashTable extends StringArray
     }
 
     /**
+     * Deletes the data associated with the provided key from the hash table
      *
-     *
+     * @param string $key the key to delete the entry for
+     * @return bool whether or not something was deleted
      */
     function delete($key)
     {
@@ -234,8 +281,10 @@ class HashTable extends StringArray
     }
 
     /**
+     * Get the ith entry of the array for the hash table (no hashing here)
      *
-     *
+     * @param int $i an index of the hash table array
+     * @return array the key value pair stored at this index
      */
     function getEntry($i)
     {
@@ -247,8 +296,10 @@ class HashTable extends StringArray
     }
 
     /**
+     * Hashes the provided key to an index in the array of the hash table
      *
-     *
+     * @param string $key a key to hashed into the hash table
+     * @return int an index in the array of the hash table
      */
     function hash($key)
     {

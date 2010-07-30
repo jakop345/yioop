@@ -79,7 +79,10 @@ class PdfProcessor extends TextProcessor
     }
 
     /**
+     * Gets the text out of a PDF document
      *
+     * @param string $pdf_string a string representing the PDF document
+     * @return string text extracted from the document
      */
     static function getText($pdf_string) {
         $len = strlen($pdf_string);
@@ -128,7 +131,12 @@ class PdfProcessor extends TextProcessor
     }
 
     /**
+     * Gets between an obj and endobj tag at the current position in a PDF
+     * document
      *
+     * @param string $pdf_string astring of a PDF document
+     * @param int $cur_pos a integer postion in that string
+     * @return string the contents of the PDF object located at $cur_pos
      */
     static function getNextObject($pdf_string, $cur_pos) 
     {
@@ -137,11 +145,13 @@ class PdfProcessor extends TextProcessor
 
     /**
      *
+     * @param string $object_dictionary
+     * @param array $type_array
      */
-    static function objectDictionaryHas($object_Dictionary, $type_array) 
+    static function objectDictionaryHas($object_dictionary, $type_array) 
     {
         foreach ($type_array as $type) {
-            if(strstr($object_Dictionary, $type)) {
+            if(strstr($object_dictionary, $type)) {
                 return true;
             }
         }
@@ -151,6 +161,8 @@ class PdfProcessor extends TextProcessor
 
     /**
      *
+     * @param string $object_string
+     * @return string
      */
     static function getObjectDictionary($object_string) 
     {
@@ -161,6 +173,8 @@ class PdfProcessor extends TextProcessor
 
     /**
      *
+     * @param string $object_stream
+     * @return string
      */
     static function getObjectStream($object_string) 
     {
@@ -172,6 +186,8 @@ class PdfProcessor extends TextProcessor
 
     /**
      *
+     * @param string $data
+     * @return string
      */
     static function parseText($data)
     {
@@ -212,6 +228,9 @@ class PdfProcessor extends TextProcessor
 
     /**
      *
+     * @param string $data
+     * @param int $cur_pos
+     * @return array
      */
     static function parseBrackets($data, $cur_pos)
     {
@@ -250,6 +269,9 @@ class PdfProcessor extends TextProcessor
 
     /**
      *
+     * @param string $data
+     * @param int $cur_pos
+     * @return array
      */
     static function parseParentheses($data, $cur_pos)
     {

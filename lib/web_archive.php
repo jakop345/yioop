@@ -81,6 +81,9 @@ class WebArchive
     const CLOSE = 3;
     /**
      *
+     * @param string $fname
+     * @param string $compressor
+     * @param bool $fast_construct
      */
     function __construct($fname, $compressor, $fast_construct = false) 
     {
@@ -102,6 +105,7 @@ class WebArchive
 
     /**
      *
+     * @return array
      */
     function readInfoBlock()
     {
@@ -120,6 +124,8 @@ class WebArchive
 
     /**
      *
+     * @param resource $fh
+     * @param array &$data
      */
     function writeInfoBlock($fh = NULL, &$data = NULL)
     {
@@ -148,6 +154,8 @@ class WebArchive
 
     /**
      *
+     * @param resource $fh
+     * @return int
      */
     function seekEndObjects($fh)
     {
@@ -161,6 +169,12 @@ class WebArchive
 
     /**
      *
+     * @param string $offset_field
+     * @param array &$objects
+     * @param array $data
+     * @param string $callback
+     * @param bool $return_flag
+     * @return mixed
      */
     function addObjects($offset_field, &$objects, 
         $data = NULL, $callback = NULL, $return_flag = true)
@@ -211,6 +225,8 @@ class WebArchive
 
     /**
      *
+     * @param string $mode
+     * @return resource
      */
     function open($mode = "r")
     {
@@ -228,6 +244,11 @@ class WebArchive
 
     /**
      *
+     * @param int $offset
+     * @param int $num
+     * @param bool $next_flag
+     * @param resource $fh
+     * @return array
      */
     function getObjects($offset, $num, $next_flag = true, $fh = NULL)
     {

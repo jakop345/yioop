@@ -154,7 +154,10 @@ class QueueServer implements CrawlConstants
     var $most_recent_fetcher;
 
     /**
+     * Makes a queue_server object with the supplied indexed_file_types
      *
+     * As part of the creation process, a database manager is initialized so
+     * the queue_server cna make use of its file/folder manipulation functions.
      */
     function __construct($indexed_file_types) 
     {
@@ -247,6 +250,8 @@ class QueueServer implements CrawlConstants
 
     /**
      *
+     * @param array $info
+     * @return array 
      */
     function handleAdminMessages($info) 
     {
@@ -317,6 +322,7 @@ class QueueServer implements CrawlConstants
 
     /**
      *
+     * @param array $info
      */
     function startCrawl($info)
     {
@@ -394,6 +400,8 @@ class QueueServer implements CrawlConstants
 
     /**
      *
+     * @param string $base_dir
+     * @param string $callback_method
      */
     function processDataFile($base_dir, $callback_method)
     {
@@ -441,6 +449,7 @@ class QueueServer implements CrawlConstants
 
     /**
      *
+     * @param string $file
      */
     function processIndexArchive($file)
     {
@@ -552,6 +561,7 @@ class QueueServer implements CrawlConstants
 
     /**
      *
+     * @param string $file
      */
     function processRobotArchive($file)
     {
@@ -608,6 +618,7 @@ class QueueServer implements CrawlConstants
 
     /**
      *
+     * @return array
      */
     function processQueueUrls()
     {
@@ -638,7 +649,8 @@ class QueueServer implements CrawlConstants
     }
 
     /**
-     *
+     * @param string $file
+     * @return array
      */
     function processDataArchive($file)
     {
@@ -782,6 +794,7 @@ class QueueServer implements CrawlConstants
 
     /**
      *
+     * @param array &$sites
      */
     function deleteSeenUrls(&$sites)
     {
@@ -790,7 +803,17 @@ class QueueServer implements CrawlConstants
 
 
     /**
+     * Produces a schedule.txt file of url data for a fetcher to crawl next.
      *
+     * The hard part of scheduling is to make sure that the overall crawl
+     * process obeys robots.txt files. This involves checking the url is in
+     * an allowed path for that host and it also involves making sure the
+     * Crawl-delay directive is respected. The first fetcher that contacts the 
+     * server requesting data to crawl will get the schedule.txt
+     * produced by produceFetchBatch() at which point it will be unlinked
+     * (these latter thing are controlled in FetchController).
+     *
+     * @see FetchController
      */
     function produceFetchBatch()
     {
@@ -985,7 +1008,15 @@ class QueueServer implements CrawlConstants
     }
 
     /**
+     * Gets the first unfilled schedule slot after $index in $arr
      *
+     * A schedule of sites for a fetcher to crawl consists of MAX_FETCH_SIZE
+     * many slots earch of which could eventually hold url information.
+     * This function is used to schedule slots for crawl-delayed host.
+     *
+     * @param int $index location to begin searching for an empty slot
+     * @param array $arr list of slots to look in
+     * @return int index of first available slot
      */
     function getEarliestSlot($index, $arr)
     {
@@ -1002,7 +1033,11 @@ class QueueServer implements CrawlConstants
 
 
     /**
+     * Checks if url belongs to a list of sites that are allowed to be 
+     * crawled
      *
+     * @param string $url url to check
+     * @return bool whether is allowed to be crawled or not
      */
     function allowedToCrawlSite($url) 
     {
@@ -1018,7 +1053,11 @@ class QueueServer implements CrawlConstants
     }
 
     /**
+     * Checks if url belongs to a list of sites that aren't supposed to be 
+     * crawled
      *
+     * @param string $url url to check
+     * @return bool whether is shouldn't be crawled
      */
     function disallowedToCrawlSite($url)
     {
@@ -1026,7 +1065,14 @@ class QueueServer implements CrawlConstants
     }
 
     /**
+     * Checks if the url belongs to one of the sites list in site_array
+     * Sites can be either given in the form domain:host or
+     * in the form of a url in which case it is check that the site url
+     * is a substring of the passed url.
      *
+     * @param string $url url to check
+     * @param array $site_array sites to check against
+     * @return bool whether the url belongs to one of the sites
      */
     function urlMemberSiteArray($url, $site_array)
     {
@@ -1049,7 +1095,9 @@ class QueueServer implements CrawlConstants
     }
 
     /**
+     * Gets a list of all the timestamps of previously stored crawls
      *
+     * @return array list of timestamps
      */
     function getCrawlTimes()
     {

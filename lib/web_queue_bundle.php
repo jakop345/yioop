@@ -145,6 +145,10 @@ class WebQueueBundle implements Notifier
 
     /**
      *
+     * @param string $dir_name
+     * @param int $filter_size
+     * @param int $num_urls_ram
+     * @param string $min_or_max
      */
     function __construct($dir_name, 
         $filter_size, $num_urls_ram, $min_or_max) 
@@ -231,6 +235,7 @@ class WebQueueBundle implements Notifier
 
     /**
      *
+     * @param array $url_paris
      */
     function addUrlsQueue(&$url_pairs)
     {
@@ -273,6 +278,7 @@ class WebQueueBundle implements Notifier
 
     /**
      *
+     * @param string $url
      */
     function containsUrlQueue(&$url)
     {
@@ -283,6 +289,8 @@ class WebQueueBundle implements Notifier
 
     /**
      *
+     * @param string $url
+     * @param float $delta
      */
     function adjustQueueWeight(&$url, $delta)
     {
@@ -301,6 +309,7 @@ class WebQueueBundle implements Notifier
 
     /**
      *
+     * @param string $url
      */
     function removeQueue($url)
     {
@@ -323,6 +332,9 @@ class WebQueueBundle implements Notifier
 
     /**
      *
+     * @param int $i
+     * @param resource $fh
+     * @return mixed
      */
     function peekQueue($i = 1, $fh = NULL)
     {
@@ -365,6 +377,10 @@ class WebQueueBundle implements Notifier
         }
     }
 
+    /**
+     *
+     * @return array
+     */
     function getContents()
     {
         $count = $this->to_crawl_queue->count;
@@ -377,6 +393,7 @@ class WebQueueBundle implements Notifier
 
     /**
      *
+     * @param int $new_total
      */
     function normalize($new_total = NUM_URLS_QUEUE_RAM)
     {
@@ -387,6 +404,8 @@ class WebQueueBundle implements Notifier
 
     /**
      *
+     * @param string $mode
+     * @return resource 
      */
     function openUrlArchive($mode = "r")
     {
@@ -395,6 +414,7 @@ class WebQueueBundle implements Notifier
 
     /**
      *
+     * @param resource $fh
      */
     function closeUrlArchive($fh)
     {
@@ -403,6 +423,7 @@ class WebQueueBundle implements Notifier
 
     /**
      *
+     * @param string $url
      */
     function addSeenUrlFilter($url)
     {
@@ -411,6 +432,8 @@ class WebQueueBundle implements Notifier
 
     /**
      *
+     * @param array &$url_array
+     * @param string $field_name
      */
     function differenceSeenUrls(&$url_array, $field_name = NULL)
     {
@@ -420,6 +443,7 @@ class WebQueueBundle implements Notifier
 
     /**
      *
+     * @param string $host
      */
     function addGotRobotTxtFilter($host)
     {
@@ -428,6 +452,8 @@ class WebQueueBundle implements Notifier
 
     /**
      *
+     * @param string $host
+     * @return bool
      */
     function containsGotRobotTxt($host)
     {
@@ -436,6 +462,7 @@ class WebQueueBundle implements Notifier
 
     /**
      *
+     * @param string $host
      */
     function addDisallowedRobotFilter($host)
     {
@@ -444,6 +471,8 @@ class WebQueueBundle implements Notifier
 
     /**
      *
+     * @param string $host_path
+     * @return bool
      */
     function containsDisallowedRobot($host_path)
     {
@@ -452,6 +481,7 @@ class WebQueueBundle implements Notifier
 
     /**
      *
+     * @return int
      */
     function getRobotTxtAge()
     {
@@ -464,6 +494,8 @@ class WebQueueBundle implements Notifier
 
     /**
      *
+     * @param string $host
+     * @param int $value
      */
     function setCrawlDelay($host, $value)
     {
@@ -480,6 +512,8 @@ class WebQueueBundle implements Notifier
 
     /**
      *
+     * @param string $host
+     * @return int
      */
     function getCrawlDelay($host)
     {
@@ -499,6 +533,9 @@ class WebQueueBundle implements Notifier
 
     /**
      *
+     * @param string $name
+     * @param int $num_values
+     * @return object
      */
     function constructHashTable($name, $num_values)
     {
@@ -509,6 +546,8 @@ class WebQueueBundle implements Notifier
 
     /**
      *
+     * @param string $key
+     * @return string
      */
     function lookupHashTable($key)
     {
@@ -517,6 +556,7 @@ class WebQueueBundle implements Notifier
 
     /**
      *
+     * @param string $value
      */
     function deleteHashTable($value)
     {
@@ -529,6 +569,9 @@ class WebQueueBundle implements Notifier
 
     /**
      *
+     * @param string $key
+     * @param string $value
+     * @return bool
      */
     function insertHashTable($key, $value)
     {
@@ -617,6 +660,7 @@ class WebQueueBundle implements Notifier
 
     /**
      *
+     *
      */
     function emptyRobotFilters()
     {
@@ -645,6 +689,8 @@ class WebQueueBundle implements Notifier
 
     /**
      *
+     * @param int $index
+     * @param array $data
      */
     function notify($index, $data)
     {

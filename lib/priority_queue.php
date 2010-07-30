@@ -38,15 +38,15 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  */
 require_once "string_array.php";
 /**
- *
+ * A Notifier is called when data in the queue is move around
  */
 require_once "notifier.php";
 /**
- *
+ * Loaded for crawlLog function
  */
 require_once "utility.php";
 /**
- *
+ * Constants shared amoung classes involved in storing web crawl data
  */
 require_once "crawl_constants.php";
 
@@ -63,40 +63,50 @@ require_once "crawl_constants.php";
 class PriorityQueue extends StringArray implements CrawlConstants
 {
     /**
-     *
-     *
+     * Number of values that can be stored in the priority queue
+     * @var int
      */
     var $num_values;
     /**
-     *
-     *
+     * Number of bytes needed to store a value associated with a weight
+     * @var int
      */
     var $value_size;
     /**
-     *
-     *
+     * Number of bytes needed to store a weight in the queue
+     * @var int
      */
     var $weight_size = 4; //size of a float
 
     /**
-     *
-     *
+     * Number of items that are currently stored in the queue
+     * @var int
      */
     var $count;
     /**
-     *
-     *
+     * When the polling the queue returns the least or most weighted value
+     * @var string
      */
     var $min_or_max;
 
     /**
-     *
-     *
+     * An object that implements the Notifier interface (for instance,
+     * WebQueueArchive)
+     * @var object
      */
     var $notifier; // who to call if move an item in queue
 
     /**
+     * Makes a priority queue with the given operating parameters
      *
+     * @param string $fname filename to store the data associated with the queue
+     * @param int $num_values number of values the queue can hold
+     * @param int $value_size the size in a bytes of a value
+     * @param string $min_or_max whether this priority queue return least or
+     *  most weight values when polled
+     * @param object $notifier object to call when a value changes in the queue
+     * @param int $save_frequency how often the data in the queue should be
+     *      save to disk. (It's default location is RAM)
      */
     function __construct($fname, $num_values, $value_size, 
         $min_or_max, $notifier = NULL, 
@@ -116,7 +126,11 @@ class PriorityQueue extends StringArray implements CrawlConstants
     }
 
     /**
+     * Gets the data stored at the ith location in the priority queue
      *
+     * @param int $i location to return data from
+     * @return mixed data if the value of $i is between 1 and count, false
+     *      otherwise
      */
     function peek($i = 1)
     {
@@ -129,6 +143,8 @@ class PriorityQueue extends StringArray implements CrawlConstants
 
     /**
      *
+     * @param int $i
+     * @return mixed
      */
     function poll($i = 1)
     {
@@ -149,7 +165,9 @@ class PriorityQueue extends StringArray implements CrawlConstants
     }
 
     /**
-     *
+     * @param string $data
+     * @param float $weight
+     * @return mixed
      */
     function insert($data, $weight)
     {
@@ -168,6 +186,8 @@ class PriorityQueue extends StringArray implements CrawlConstants
 
     /**
      *
+     * @param int $i
+     * @param float $delta
      */
     function adjustWeight($i, $delta)
     {
@@ -209,6 +229,7 @@ class PriorityQueue extends StringArray implements CrawlConstants
 
     /**
      *
+     * @return array
      */
     function getContents()
     {
@@ -222,6 +243,7 @@ class PriorityQueue extends StringArray implements CrawlConstants
 
     /**
      *
+     * @param int $new_total
      */
     function normalize($new_total = NUM_URLS_QUEUE_RAM)
     {
@@ -246,6 +268,8 @@ class PriorityQueue extends StringArray implements CrawlConstants
 
     /**
      *
+     * @param int $i
+     * @return int
      */
     function percolateUp($i)
     {
@@ -274,6 +298,8 @@ class PriorityQueue extends StringArray implements CrawlConstants
 
     /**
      *
+     * @param int $i
+     * @return int
      */
     function percolateDown($i)
     {
@@ -314,6 +340,9 @@ class PriorityQueue extends StringArray implements CrawlConstants
 
     /**
      *
+     * @param float $value1
+     * @param float $value2
+     * @return float
      */
     function compare($value1, $value2)
     {
@@ -326,6 +355,9 @@ class PriorityQueue extends StringArray implements CrawlConstants
 
     /**
      *
+     *
+     * @param int $i
+     * @return array
      */
     function getRow($i)
     {
@@ -345,7 +377,13 @@ class PriorityQueue extends StringArray implements CrawlConstants
     }
 
     /**
+     * Add data to the $i row of the priority queue viewed as an array
+     * Calls the notifier associated with this queue about the change
+     * in data's location
      *
+     * @param int $i location to add data
+     * @param array $row data to add (a two element array in the form
+     *      key, float value).
      */
     function putRow($i, $row)
     {
@@ -359,7 +397,9 @@ class PriorityQueue extends StringArray implements CrawlConstants
     }
 
     /**
+     * Computes and returns the weight of all items in prority queue
      *
+     * @return float weight of all items stored in the priority queue
      */
     function totalWeight()
     {

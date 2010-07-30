@@ -132,29 +132,79 @@ function setOffsetPointers($data, &$objects, $offset_field)
  */
 class WordIterator implements IndexingConstants, CrawlConstants
 {
+    /**
+     *  
+     */
     var $word_key;
+    /**
+     *  
+     */
     var $index;
+    /**
+     *  
+     */
     var $seen_docs;
+    /**
+     *  
+     */
     var $restricted_seen_docs;
+    /**
+     *  
+     */
     var $count_block_unfiltered;
+    /**
+     *  
+     */
     var $num_docs;
-    
 
+    /**
+     *  
+     */
     var $next_offset;
+    /**
+     *  
+     */
     var $last_pointed_block;
+    /**
+     *  
+     */
     var $list_offset;
 
-
+    /**
+     *  
+     */
     var $block_pointers;
+    /**
+     *  
+     */
     var $num_full_blocks;
+    /**
+     *  
+     */
     var $num_generations;
+    /**
+     *  
+     */
     var $last_block;
+    /**
+     *  
+     */
     var $info_block;
+    /**
+     *  
+     */
     var $current_pointer;
+    /**
+     *  
+     */
     var $limit;
 
     /**
      *
+     * @param string $word_key
+     * @param object $index
+     * @param int $limit
+     * @param object $info_block
      */
     public function __construct($word_key, $index, $limit = 0, $info_block = NULL)
     {
@@ -166,6 +216,7 @@ class WordIterator implements IndexingConstants, CrawlConstants
 
     /**
      *
+     * @param object $info_block
      */
     public function reset($info_block = NULL)
     {
@@ -215,6 +266,7 @@ class WordIterator implements IndexingConstants, CrawlConstants
 
     /**
      *
+     * @return bool
      */
     public function initGeneration()
     {
@@ -267,6 +319,8 @@ class WordIterator implements IndexingConstants, CrawlConstants
 
     /**
      *
+     * @param array $restrict_phrases
+     * @return array
      */
     public function currentDocsWithWord($restrict_phrases = NULL)
     {
@@ -389,6 +443,8 @@ class WordIterator implements IndexingConstants, CrawlConstants
 
     /**
      *
+     * @param array $restrict_phrases
+     * @return array
      */
     public function nextDocsWithWord($restrict_phrases = NULL)
     {
@@ -444,6 +500,11 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
 
     /**
      *
+     * @param string $dir_name
+     * @param int $filter_size
+     * @param int $num_partitions_summaries
+     * @param int $num_parititions_index
+     * @param string $description
      */
     public function __construct($dir_name, $filter_size = -1, 
         $num_partitions_summaries = NULL, $num_partitions_index = NULL, 
@@ -486,6 +547,10 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
 
     /**
      *
+     * @param string $key_field
+     * @param string $offset_field
+     * @param array $pages
+     * @return array
      */
     public function addPages($key_field, $offset_field, $pages)
     {
@@ -496,6 +561,7 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
 
     /**
      *
+     * @param array $index_data
      */
     public function addIndexData($index_data)
     {
@@ -549,6 +615,9 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
 
     /**
      *
+     * @param int $partition
+     * @param array &$word_data
+     * @param bool $overwrite
      */
     public function addPartitionWordData($partition, 
         &$word_data, $overwrite = false)
@@ -665,6 +734,9 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
 
     /**
      *
+     * @param int $partition
+     * @param string $word_key
+     * @return bool
      */
     public function addPartitionIndexFilter($partition, $word_key)
     {
@@ -681,6 +753,8 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
 
     /**
      *
+     * @param int $partition
+     * @return bool
      */
     public function initPartitionIndexFilter($partition)
     {
@@ -704,6 +778,13 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
 
     /**
      *
+     * @param string $word_key
+     * @param int $Lint
+     * @param int $num
+     * @param array $restrict_phrases
+     * @param string $phrase_key
+     * @param array $phrase_info
+     * @return array
      */
     public function getSummariesByHash($word_key, $limit, $num, 
         $restrict_phrases = NULL, $phrase_key = NULL, $phrase_info = NULL)
@@ -751,6 +832,9 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
 
     /**
      *
+     * @param string $key
+     * @param int $offset
+     * @return array
      */
     public function getPage($key, $offset)
     {
@@ -759,6 +843,10 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
 
     /**
      *
+     * @param string $word_key
+     * @param int $offset
+     * @param int $generation
+     * @return array
      */
     public function getWordDocBlock($word_key, $offset, $generation = -1)
     {
@@ -773,6 +861,10 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
 
     /**
      *
+     * @param int $partition
+     * @param int $offset
+     * @param resource $file_handle
+     * @return array
      */
     public function getPageByPartition($partition, $offset, $file_handle = NULL)
     {
@@ -782,6 +874,8 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
 
     /**
      *
+     * @param string $key_field
+     * @param array $page
      */
     public function addPageFilter($key_field, $page)
     {
@@ -813,6 +907,10 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
 
     /**
      *
+     * @param string $phrase_key
+     * @param int $generation_index
+     * @param array $info_block
+     * @return array
      */
     public function getPhraseIndexInfo(
         $phrase_key, $generation_index = 0, $info_block = NULL)
@@ -889,6 +987,8 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
 
     /**
      *
+     * @param string $phrase_key
+     * @param array $info
      */
     public function setPhraseIndexInfo($phrase_key, $info)
     {
@@ -909,6 +1009,10 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
 
     /**
      *
+     * @param string $word_key
+     * @param array $restrict_phrases
+     * @param string $phrase_key
+     * @param $num_needed
      */
     public function addPhraseIndex($word_key, $restrict_phrases, 
         $phrase_key, $num_needed)
@@ -979,6 +1083,10 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
 
     /**
      *
+     * @param array $word_keys
+     * @param int $num
+     * @param string $comparison
+     * @return array
      */
     public function getSelectiveWords($word_keys, $num, $comparison="lessThan") 
         //lessThan is in utility.php
@@ -1002,6 +1110,9 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
 
     /**
      *
+     * @param int $partition
+     * @param int $generation
+     * @return array
      */
     public function readPartitionInfoBlock($partition, $generation = -1)
     {
@@ -1017,6 +1128,8 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
 
     /**
      *
+     * @param int $partition
+     * @param array $data
      */
     public function writePartitionInfoBlock($partition, $data)
     {

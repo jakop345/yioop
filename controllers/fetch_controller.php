@@ -67,6 +67,9 @@ class FetchController extends Controller implements CrawlConstants
     var $activities = array("schedule", "update", "crawlTime");
 
     /**
+     * Checks that the request seems to be coming from a legitimate fetcher then
+     * determines which activity the fetcher is requesting and calls that
+     * activity for processing.
      *
      */
     function processRequest() 
@@ -79,11 +82,12 @@ class FetchController extends Controller implements CrawlConstants
         if(!$this->checkRequest()) {return; }
 
         $activity = $_REQUEST['a'];
-        $this->$activity();
+        if(in_array($activity, $this->activities)) {$this->$activity();}
     }
 
     /**
-     *
+     * Checks if there is a schedule of sites to crawl available and
+     * if so present it to the requesting fetcher, and then delete it.
      */
     function schedule()
     {
@@ -106,7 +110,8 @@ class FetchController extends Controller implements CrawlConstants
     }
 
     /**
-     *
+     * Processes Robot, To Crawl, and Index data sent from a fetcher
+     * Acknowledge to the fetcher if this data was received okay.
      */
     function update()
     {
@@ -144,10 +149,17 @@ class FetchController extends Controller implements CrawlConstants
     }
 
     /**
-     *  @param &array $sites
-     *  @param string $address
-     *  @param string $day
-     *  @param string $time
+     * Adds a file containing the seen sites and inverted index from the
+     * just received $sites array to the schedules folder's index directory's 
+     * subfolder for the current crawl time. This file is added in a sub folder 
+     * $day and its name contains the $time at which it arrived and the ip
+     * $address from which it arrived. This file will then be process later 
+     * by the queue server.
+     *
+     * @param &array $sites a list of seen sites and an inverted inverted index
+     * @param string $address the IP address of the sending machine with . -->_
+     * @param string $day timestamp in seconds converted to days
+     * @param string $time timestamp in seconds
      */
     function addToIndexSchedules(&$sites, $address, $day, $time)
     {
@@ -171,10 +183,19 @@ class FetchController extends Controller implements CrawlConstants
     }
 
     /**
-     *  @param &array $sites
-     *  @param string $address
-     *  @param string $day
-     *  @param string $time
+     * Adds a file containing the to-crawl sites from the just received
+     * $sites array to the schedules folder's schedule data directory's
+     * subfolder for the current crawl time. This file is added in a sub folder 
+     * $day and its name contains the $time at which it arrived and the ip
+     * $address from which it arrived. This file will then be process later 
+     * by the queue server. In addition to to-crawl sites the seen urls
+     * in $sites are also save in the file. They are used to perform a sanity 
+     * check on the priority queue by the queue server.
+     *
+     * @param &array $sites a list of seen sites and to crawl sites
+     * @param string $address the IP address of the sending machine with . -->_
+     * @param string $day timestamp in seconds converted to days
+     * @param string $time timestamp in seconds
      */
     function addToCrawlSchedules(&$sites, $address, $day, $time)
     {
@@ -207,10 +228,17 @@ class FetchController extends Controller implements CrawlConstants
     }
 
     /**
-     *  @param &array $sites
-     *  @param string $address
-     *  @param string $day
-     *  @param string $time
+     * Adds a file containing the robot site data from the just received
+     * $sites array to the schedules folder's robot data directory's
+     * subfolder for the current crawl time. This file is added in a sub folder 
+     * $day and its name contains the $time at which it arrived and the ip
+     * $address from which it arrived. This file will then be process later 
+     * by the queue server.
+     *
+     * @param &array $sites a list of seen sites and an inverted inverted index
+     * @param string $address the IP address of the sending machine with . -->_
+     * @param string $day timestamp in seconds converted to days
+     * @param string $time timestamp in seconds
      */
     function addRobotSchedules(&$sites, $address, $day, $time)
     {
@@ -228,12 +256,14 @@ class FetchController extends Controller implements CrawlConstants
 
 
     /**
+     * Adds a file with contents $data and with name containing $address and 
+     * $time to a subfolder $day of a folder $dir
      *
-     *  @param string $dir
-     *  @param &array $data
-     *  @param string $address
-     *  @param string $day
-     *  @param string $time
+     * @param string $dir directory in which to add the schedule file
+     * @param &array $data data that the schedule file is to contain
+     * @param string $address the IP address of the sending machine with . -->_
+     * @param string $day timestamp in seconds converted to days
+     * @param string $time timestamp in seconds
      */
     function addScheduleToScheduleDirectory($dir, &$data, $address, $day, $time)
     {

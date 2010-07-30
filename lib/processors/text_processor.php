@@ -34,7 +34,7 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- *
+ * Loads in the common constant used by all classes related to crawling
  */
 require_once BASE_DIR."/lib/crawl_constants.php";
 
@@ -51,7 +51,15 @@ class TextProcessor implements CrawlConstants
 {
 
     /**
+     * Computes a summary based on a text string of a document
      *
+     * @param string $page text string of a document
+     * @param string $url location the document came from, not used by 
+     *      TextProcessor at this point. Some of its subclasses override
+     *      this method and use url to produce complete links for
+     *      relative links within a document
+     * @return array a summary of (title, description,links, and content) of 
+     *      the information in $page
      */
     static function process($page, $url)
     {
@@ -65,7 +73,15 @@ class TextProcessor implements CrawlConstants
     }
 
     /**
+     * Gets the text between two tags in a document starting at the current
+     * position.
      *
+     * @param string $string document to extract text from
+     * @param int $cur_pos current location to look if can extract text
+     * @param string $start_tag starting tag that we want to extract after
+     * @param string $end_tag ending tag that we want to extract until
+     * @return array pair consisting of when in the document we are after
+     *      the end tag, together with the data between the two tags
      */
     static function getBetweenTags($string, $cur_pos, $start_tag, $end_tag) 
     {

@@ -34,9 +34,12 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- * Load base class, if needed. We also might need to parse urls
+ * Load base class, if needed.
  */
 require_once BASE_DIR."/lib/processors/text_processor.php";
+/**
+ * Load so can parse urls
+ */
 require_once BASE_DIR."/lib/url_parser.php";
 
  /**

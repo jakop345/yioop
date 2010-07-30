@@ -34,7 +34,7 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- *
+ * Load the base class
  */
 
 require_once BASE_DIR."/lib/processors/text_processor.php";

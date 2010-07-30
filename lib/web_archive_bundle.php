@@ -103,6 +103,11 @@ class WebArchiveBundle
 
     /**
      *
+     * @param string $dir_name
+     * @param int $filter_size
+     * @param int $num_partitions
+     * @param string $description
+     * @param string $compressor
      */
     function __construct($dir_name, $filter_size = -1, 
         $num_partitions = NULL, $description = NULL, 
@@ -172,6 +177,10 @@ class WebArchiveBundle
 
     /**
      *
+     * @param string $key_field
+     * @param string $offset_field
+     * @param array &$pages
+     * @return array
      */
     function addPages($key_field, $offset_field, &$pages)
     {
@@ -214,6 +223,9 @@ class WebArchiveBundle
 
     /**
      *
+     * @param string $key
+     * @param int $offset
+     * @return array
      */
     function getPage($key, $offset)
     {
@@ -225,6 +237,10 @@ class WebArchiveBundle
 
     /**
      *
+     * @param int $partition
+     * @param int $offset
+     * @param resource $file_handle
+     * @return array
      */
     function getPageByPartition($partition, $offset, $file_handle = NULL)
     {
@@ -241,6 +257,9 @@ class WebArchiveBundle
 
     /**
      *
+     * @param string $key_field
+     * @param array &$page
+     * @return bool
      */
     function addPageFilter($key_field, &$page)
     {
@@ -254,6 +273,13 @@ class WebArchiveBundle
 
     /**
      *
+     * @param string $offset_field
+     * @param int $partition
+     * @param array &$objects
+     * @param array $data
+     * @param string $callback
+     * @param bool $return_flag
+     * @return mixed
      */
     function addObjectsPartition($offset_field, $partition, 
         &$objects, $data = NULL, $callback = NULL, $return_flag = true)
@@ -267,6 +293,8 @@ class WebArchiveBundle
 
     /**
      *
+     * @param int $partition
+     * @return array
      */
     function readPartitionInfoBlock($partition)
     {
@@ -275,6 +303,8 @@ class WebArchiveBundle
 
     /**
      *
+     * @param int $partition
+     * @param array $data
      */
     function writePartitionInfoBlock($partition, &$data)
     {
@@ -283,6 +313,9 @@ class WebArchiveBundle
 
     /**
      *
+     * @param array $pages
+     * @param string $key_field
+     * @return mixed
      */
     function differencePageKeysFilter($pages, $key_field)
     {
@@ -302,6 +335,8 @@ class WebArchiveBundle
 
     /**
      *
+     * @param array &$page_array
+     * @param string $field_name
      */
     function differencePagesFilter(&$page_array, $field_name = NULL)
     {
@@ -321,6 +356,8 @@ class WebArchiveBundle
 
     /**
      *
+     * @param int $index
+     * @param bool $fast_construct
      */
     function getPartition($index, $fast_construct = true)
     {
@@ -343,6 +380,7 @@ class WebArchiveBundle
 
     /**
      *
+     * @param int $num
      */
     function addCount($num)
     {
@@ -354,6 +392,8 @@ class WebArchiveBundle
 
     /**
      *
+     * @param string $dir_name
+     * @return array
      */
     static function getArchiveInfo($dir_name)
     {
@@ -374,6 +414,9 @@ class WebArchiveBundle
 
     /**
      *
+     * @param string $value
+     * @param int $num_partitions
+     * @return int
      */
     static function selectPartition($value, $num_partitions)
     {

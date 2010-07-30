@@ -50,7 +50,9 @@ class RtfProcessor extends TextProcessor
 {
 
     /**
-     *
+     * @param string $page
+     * @param string $url
+     * @return array
      */
     public static function process($page, $url)
     {
@@ -71,6 +73,8 @@ class RtfProcessor extends TextProcessor
 
     /**
      *
+     * @param string $rtf_string
+     * @return string
      */
     static function extractText($rtf_string) {
         $rtf_string = preg_replace('/\\\{/',"!ZZBL!", $rtf_string);
@@ -89,6 +93,8 @@ class RtfProcessor extends TextProcessor
 
     /**
      *
+     * @param string $rtf_string
+     * @return string
      */
     static function getText($rtf_string) 
     {
@@ -125,6 +131,9 @@ class RtfProcessor extends TextProcessor
 
     /**
      *
+     * @param string $rtf_string
+     * @param int $cur_pos
+     * @return string
      */
     static function getNextObject($rtf_string, $cur_pos) 
     {

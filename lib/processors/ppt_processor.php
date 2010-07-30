@@ -39,7 +39,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 require_once BASE_DIR."/lib/processors/text_processor.php";
 
 
- /**
+/**
  * Used to create crawl summary information 
  * for PPT files
  *
@@ -58,7 +58,21 @@ class PptProcessor extends TextProcessor
     const ALWAYS_IGNORE = 6;
 
     /**
+     * Computes a summary based on a string of a binary Powerpoint document
+     * (as opposed to the modern xml powerpoint format).
      *
+     * Text is extracted from the Powerpoint document using a crude finite
+     * state machine that was developed by looking at a few Powerpoint
+     * documents in a Hex editor. Then the TextProcessor:: process() method
+     * is used to make a summary
+     *
+     * @param string $page string of a Powerpoint document
+     * @param string $url location the document came from, not used by 
+     *      TextProcessor at this point. Some of its subclasses override
+     *      this method and use url to produce complete links for
+     *      relative links within a document
+     * @return array a summary of (title, description,links, and content) of 
+     *      the information in $page
      */
     public static function process($page, $url)
     {
