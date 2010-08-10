@@ -50,9 +50,15 @@ class RtfProcessor extends TextProcessor
 {
 
     /**
-     * @param string $page
-     * @param string $url
-     * @return array
+     * Computes a summary based on a rtf string of a document
+     *
+     * @param string $page rtf string of a document
+     * @param string $url location the document came from, not used by 
+     *      RTFProcessor at this point. Some of its subclasses override
+     *      this method and use url to produce complete links for
+     *      relative links within a document
+     * @return array a summary of (title, description,links, and content) of 
+     *      the information in $page
      */
     public static function process($page, $url)
     {
@@ -72,9 +78,13 @@ class RtfProcessor extends TextProcessor
     }
 
     /**
+     * Gets plain text out of an rtf string
      *
-     * @param string $rtf_string
-     * @return string
+     * Plain text is mainly extracted by getText(), this function does
+     * some pre and post processing of escape braces and stuff
+     *
+     * @param string $rtf_string what to extract plain text out of
+     * @return string plain texts
      */
     static function extractText($rtf_string) {
         $rtf_string = preg_replace('/\\\{/',"!ZZBL!", $rtf_string);
@@ -92,9 +102,10 @@ class RtfProcessor extends TextProcessor
     }
 
     /**
+     * Gets plain text out of an rtf string
      *
-     * @param string $rtf_string
-     * @return string
+     * @param string $rtf_string what to extract plain text out of
+     * @return string plain texts
      */
     static function getText($rtf_string) 
     {
@@ -130,10 +141,11 @@ class RtfProcessor extends TextProcessor
     }
 
     /**
+     * Gets the contents of the rtf group at the current position in the string
      *
-     * @param string $rtf_string
-     * @param int $cur_pos
-     * @return string
+     * @param string $rtf_string data to get rtf group from
+     * @param int $cur_pos position in $rtf_string at which to get  group
+     * @return string contents of rtf groups
      */
     static function getNextObject($rtf_string, $cur_pos) 
     {

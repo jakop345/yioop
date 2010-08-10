@@ -34,20 +34,20 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- * A WebArchiveBundle is a collection of WebArchive, so load definition of
+ * A WebArchiveBundle is a collection of WebArchive's, so load definition of
  * web archive
  */
 require_once 'web_archive.php';
 /**
- *
+ * Bloom Filter used by BloomFilterBundle
  */
 require_once 'bloom_filter_file.php';
 /**
- *
+ * Used to check if a page already stored in the WebArchiveBundle
  */
 require_once 'bloom_filter_bundle.php';
 /**
- *
+ * Used to compress data stored in WebArchiveBundle
  */
 require_once 'gzip_compressor.php';
 
@@ -58,7 +58,7 @@ require_once 'gzip_compressor.php';
  * together.It is useful to split data across several archive files rather than 
  * just store it in one, for both read efficiency and to keep filesizes from 
  * getting too big. In some places we are using 4 byte int's to store file 
- * offset which restricts the size of the files we can use for wbe archives.
+ * offsets which restricts the size of the files we can use for wbe archives.
  *
  * @author Chris Pollett
  *
@@ -69,45 +69,61 @@ class WebArchiveBundle
 {
 
     /**
-     *
+     * Folder name to use for this WebArchiveBundle
+     * @var string
      */
     var $dir_name;
     /**
-     *
+     * Maximum allowed insert into each BloomFilterFile in the 
+     * page_exists_filter_bundle
+     * @var int
      */
     var $filter_size;
     /**
-     *
+     * Used to contain the WebArchive paritions of the bundle
+     * @var array
      */
     var $partition = array();
     /**
-     *
+     * BloomFilterBundle used to keep track of which pages are already in
+     * WebArchiveBundle
+     * @var object
      */
     var $page_exists_filter_bundle;
     /**
-     *
+     * Number of WebArchives in the WebArchiveBundle
+     * @var int
      */
     var $num_partitions;
     /**
-     *
+     * Total number of page objects stored by this WebArchiveBundle
+     * @var int
      */
     var $count;
     /**
-     *
+     * A short text name for this WebArchiveBundle
+     * @var string
      */
     var $description;
     /**
-     *
+     * How Compressor object used to compress/uncompress data stored in
+     * the bundle
+     * @var object
      */
     var $compressor;
 
     /**
+     * Makes or initializes an existing WebArchiveBundle with the given 
+     * characteristics
      *
-     * @param string $dir_name
-     * @param int $filter_size
-     * @param int $num_partitions
-     * @param string $description
-     * @param string $compressor
+     * @param string $dir_name folder name of the bundle
+     * @param int $filter_size number of items that can be stored in
+     *      a given BloomFilterFile in the $page_exists_filter_bundle
+     * @param int $num_partitions number of WebArchive's in this bundle
+     * @param string $description a short text name/description of this
+     *      WebArchiveBundle
+     * @param string $compressor the Compressor object used to 
+     *      compress/uncompress data stored in the bundle
      */
     function __construct($dir_name, $filter_size = -1, 
         $num_partitions = NULL, $description = NULL, 
@@ -176,11 +192,14 @@ class WebArchiveBundle
     }
 
     /**
+     * Add the array of $pages to the WebArchiveBundle pages being stored in
+     * the partition according to the $key_field and the field used to store
+     * the resulting offsets given by $offset_field.
      *
-     * @param string $key_field
-     * @param string $offset_field
-     * @param array &$pages
-     * @return array
+     * @param string $key_field field used to select partition
+     * @param string $offset_field field used to record offsets after storing
+     * @param array &$pages data to store
+     * @return array $pages adjusted with offset field
      */
     function addPages($key_field, $offset_field, &$pages)
     {
@@ -222,10 +241,13 @@ class WebArchiveBundle
     }
 
     /**
+     * Gets the page out of the WebArchiveBundle with the given key and offset
      *
-     * @param string $key
-     * @param int $offset
-     * @return array
+     * The $key determines the partition WebArchive, the $offset give the
+     * byte offset within that archive.
+     * @param string $key hash to use to look up WebArchive partition
+     * @param int $offset byte offset in partition of desired page
+     * @return array desired page
      */
     function getPage($key, $offset)
     {
@@ -236,11 +258,13 @@ class WebArchiveBundle
     }
 
     /**
+     * Gets a page using in WebArchive $partition using the provided byte
+     * $offset and using existing $file_handle if possible.
      *
-     * @param int $partition
-     * @param int $offset
-     * @param resource $file_handle
-     * @return array
+     * @param int $partition which WebArchive to look in
+     * @param int $offset byte offset of page data
+     * @param resource $file_handle file handle resource of $partition archive
+     * @return array desired page
      */
     function getPageByPartition($partition, $offset, $file_handle = NULL)
     {
@@ -256,10 +280,11 @@ class WebArchiveBundle
     }
 
     /**
+     * Adds the given page to the page exists filter bundle
      *
-     * @param string $key_field
-     * @param array &$page
-     * @return bool
+     * @param string $key_field field of page with hash of page content
+     * @param array &$page contents/summary of page
+     * @return bool whether the add succeeded
      */
     function addPageFilter($key_field, &$page)
     {
@@ -272,14 +297,17 @@ class WebArchiveBundle
     }
 
     /**
+     * Adds a list of objects to a given WebArchive partition
      *
-     * @param string $offset_field
-     * @param int $partition
-     * @param array &$objects
-     * @param array $data
-     * @param string $callback
-     * @param bool $return_flag
-     * @return mixed
+     * @param string $offset_field field used to store offsets after the
+     *      addition
+     * @param int $partition WebArchive index to store data into
+     * @param array &$objects objects to store
+     * @param array $data info header data to write
+     * @param string $callback function name of function to call as each
+     *      object is stored. Can be used to save offset into $data
+     * @param bool $return_flag whether to return modified $objects or not
+     * @return mixed adjusted objects or void
      */
     function addObjectsPartition($offset_field, $partition, 
         &$objects, $data = NULL, $callback = NULL, $return_flag = true)
@@ -292,9 +320,10 @@ class WebArchiveBundle
     }
 
     /**
+     * Reads the info block of $partition WebArchive
      *
-     * @param int $partition
-     * @return array
+     * @param int $partition WebArchive to read from
+     * @return array data in its info block
      */
     function readPartitionInfoBlock($partition)
     {
@@ -302,9 +331,10 @@ class WebArchiveBundle
     }
 
     /**
+     * Write $data into the info block of the $partition WebArchive
      *
-     * @param int $partition
-     * @param array $data
+     * @param int $partition WebArchive to write into
+     * @param array $data what to write
      */
     function writePartitionInfoBlock($partition, &$data)
     {
@@ -312,10 +342,13 @@ class WebArchiveBundle
     }
 
     /**
+     * Looks at the $key_field key of elements of pages and computes an array
+     * consisting of $key_field values which are not in
+     * the page_exists_filter_bundle
      *
-     * @param array $pages
-     * @param string $key_field
-     * @return mixed
+     * @param array $pages set of page data to start from
+     * @param string $key_field field to check against filter bundle
+     * @return mixed false if filter empty; desired array otherwise
      */
     function differencePageKeysFilter($pages, $key_field)
     {
@@ -334,9 +367,11 @@ class WebArchiveBundle
     }
 
     /**
+     * Looks at the field_name key of elements of page_array and removes any
+     * of these which are in the page_exists_filter_bundle
      *
-     * @param array &$page_array
-     * @param string $field_name
+     * @param array &$page_array array to element remove elements from 
+     * @param string $field_name field to check against filter bundle
      */
     function differencePagesFilter(&$page_array, $field_name = NULL)
     {
@@ -345,7 +380,7 @@ class WebArchiveBundle
     }
 
     /**
-     *
+     * Forces the data in the page exists filter bundle to be save to disk
      */
     function forceSave()
     {
@@ -355,9 +390,14 @@ class WebArchiveBundle
     }
 
     /**
+     * Gets an object encapsulating the $index th WebArchive partition in
+     * this bundle.
      *
-     * @param int $index
-     * @param bool $fast_construct
+     * @param int $index the number of the partition within this bundle to
+     *      return
+     * @param bool $fast_construct should the constructor of the WebArchive
+     *      avoid reading in its info block.
+     * @return object the WebArchive file which was requested
      */
     function getPartition($index, $fast_construct = true)
     {
@@ -379,8 +419,10 @@ class WebArchiveBundle
     }
 
     /**
+     * Updates the description file with the current count for the number of
+     * items in the WebArchiveBundle
      *
-     * @param int $num
+     * @param int $num number of items to add to current count
      */
     function addCount($num)
     {
@@ -391,9 +433,14 @@ class WebArchiveBundle
     }
 
     /**
+     * Gets information about a WebArchiveBundle out of its description.txt 
+     * file
      *
-     * @param string $dir_name
-     * @return array
+     * @param string $dir_name folder name of the WebArchiveBundle to get info
+     *  for
+     * @return array containing the name (description) of the WebArchiveBundle,
+     *      the number of items stored in it, and the number of WebArchive
+     *      file partitions it uses.
      */
     static function getArchiveInfo($dir_name)
     {
@@ -413,10 +460,12 @@ class WebArchiveBundle
     }
 
     /**
+     * Hashes $value to a WebArchive partition  it should be read/written to, 
+     * if a bundle has $num_partitions partitions.
      *
-     * @param string $value
-     * @param int $num_partitions
-     * @return int
+     * @param string $value item to hash
+     * @param int $num_partitions number of partitions
+     * @return int which partition $value should be written to/read from
      */
     static function selectPartition($value, $num_partitions)
     {

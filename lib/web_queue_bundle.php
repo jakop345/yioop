@@ -64,8 +64,14 @@ require_once 'web_archive.php';
 require_once 'utility.php'; 
 
 /**
- * Encapsulates the data structures needed to have a queue of urls to crawl 
- * next
+ * Encapsulates the data structures needed to have a queue of to crawl urls
+ * 
+ * <pre>
+ * (hash of url, weights) are stored in a PriorityQueue, 
+ * (hash of url, index in PriorityQueue, offset of url in WebArchive) is stored
+ * in a HashTable
+ * urls are stored in a WebArchive in an uncompressed format
+ * </pre>
  * 
  * @author Chris Pollett
  *
@@ -81,74 +87,93 @@ class WebQueueBundle implements Notifier
      */
     var $dir_name;
     /**
-     *
+     * Number items that can be stored in a partition of the page exists filter
+     * bundle 
      * @var int
      */
     var $filter_size;
     /**
-     *
+     * number of entries the priority queue used by this web queue bundle
+     * can store
      * @var int
      */
     var $num_urls_ram;
     /**
-     *
+     * whether polling the first element of the priority queue returns the
+     * smallest or largest weighted element. This is set to a constant specified
+     * in PriorityQueue
      * @var int
      */
     var $min_or_max; 
     /**
-     *
+     * the PriorityQueue used by this WebQueueBundle
      * @var object
      */
     var $to_crawl_queue;
     /**
-     *
+     * the HashTable used by this WebQueueBundle
      * @var object
      */
     var $to_crawl_table;
     /**
-     *
+     * Current count of the number of non-read operation performed on the
+     * WebQueueBundles's hash table since the last time it was rebuilt.
      * @var int
      */
     var $hash_rebuild_count;
     /**
-     *
+     * Number of non-read operations on the hash table before it needs to be
+     * rebuilt.
      * @var int
      */
     var $max_hash_ops_before_rebuild;
     /**
-     *
+     * WebArchive used to store urls that are to be crawled
      * @var object
      */
     var $to_crawl_archive;
 
+    /**
+     * BloomFilter used to keep track of which urls we've already seen
+     * @var object
+     */
     var $url_exists_filter_bundle;
     /**
-     *
+     * BloomFilter used to store which hosts whose robots.txt file we 
+     * have already download
      * @var object
      */
     var $got_robottxt_filter;
     /**
-     *
+     * BloomFilter used to store dissallowed to crawl host paths
      * @var object
      */
     var $dissallowed_robot_filter;
     /**
-     *
+     * BloomFilter used to keep track of crawl delay in seconds for a given 
+     * host
      * @var object
      */
     var $crawl_delay_filter;
 
     /**
-     *
+     * The largest offset for the url WebArchive before we rebuild it.
+     * Entries are never deleted from the url WebArchive even if they are
+     * deleted from the priority queue. So when we pass this value we
+     * make a new WebArchive containing only those urls which are still in
+     * the queue.
      */
     const max_url_archive_offset = 1000000000;
 
     /**
+     * Makes a WebQueueBundle with the provided parameters
      *
-     * @param string $dir_name
-     * @param int $filter_size
-     * @param int $num_urls_ram
-     * @param string $min_or_max
+     * @param string $dir_name folder name used by this WebQueueBundle
+     * @param int $filter_size size of each partition in the page exists
+     *      BloomFilterBundle
+     * @param int $num_urls_ram number of entries in ram for the priority queue
+     * @param string $min_or_max when the priority queue maintain the heap
+     *      property with respect to the least or the largest weight
      */
     function __construct($dir_name, 
         $filter_size, $num_urls_ram, $min_or_max) 
@@ -234,8 +259,9 @@ class WebQueueBundle implements Notifier
     }
 
     /**
+     * Adds an array of (url, weight) pairs to the WebQueueBundle.
      *
-     * @param array $url_paris
+     * @param array $url_pairs a list of pairs to add
      */
     function addUrlsQueue(&$url_pairs)
     {
@@ -277,8 +303,9 @@ class WebQueueBundle implements Notifier
     }
 
     /**
-     *
-     * @param string $url
+     * Check is the url queue already contains the given url
+     * @param string $url what to check
+     * @return bool whether it is contained in the queue yet or not
      */
     function containsUrlQueue(&$url)
     {
@@ -288,9 +315,16 @@ class WebQueueBundle implements Notifier
     }
 
     /**
+     * Adjusts the weight of the given url in the priority queue by amount delta
      *
-     * @param string $url
-     * @param float $delta
+     * In a page importance crawl. a given web page casts its votes on who
+     * to crawl next by splitting its crawl money amongst its child links.
+     * This entails a mechanism for adusting weights of elements in the 
+     * priority queue periodically is necessary. This function is used to
+     * solve this problem.
+     *
+     * @param string $url url whose weight in queue we want to adjust
+     * @param float $delta change in weight (usually positive).
      */
     function adjustQueueWeight(&$url, $delta)
     {
@@ -308,8 +342,13 @@ class WebQueueBundle implements Notifier
     }
 
     /**
+     * Removes a url from the priority queue.
      *
-     * @param string $url
+     * This method would typical be called during a crawl after the given
+     * url is scheduled to be crawled. It only deletes the item from
+     * the bundles priority queue and hash table -- not from the web archive.
+     *
+     * @param string $url the url to delete
      */
     function removeQueue($url)
     {
@@ -331,10 +370,10 @@ class WebQueueBundle implements Notifier
     }
 
     /**
-     *
-     * @param int $i
-     * @param resource $fh
-     * @return mixed
+     * Gets the url and weight of the ith entry in the priority queue
+     * @param int $i entry to look up
+     * @param resource $fh a file handle to the WebArchive for urls
+     * @return mixed false on error, otherwise the ordered pair in an array
      */
     function peekQueue($i = 1, $fh = NULL)
     {
@@ -365,7 +404,7 @@ class WebQueueBundle implements Notifier
     }
 
     /**
-     *
+     * Pretty prints the contents of the queue bundle in order
      */
     function printContents()
     {
@@ -378,8 +417,9 @@ class WebQueueBundle implements Notifier
     }
 
     /**
-     *
-     * @return array
+     * Gets the contents of the queue bundle as an array of ordered url,weight
+     * pairs
+     * @return array a list of ordered url, wight pairs
      */
     function getContents()
     {
@@ -392,8 +432,9 @@ class WebQueueBundle implements Notifier
     }
 
     /**
-     *
-     * @param int $new_total
+     * Makes the weight sum of the to-crawl priority queue sum to $new_total
+     * @param int $new_total amount weights should sum to. All weights will be
+     *      scaled by the same factor.
      */
     function normalize($new_total = NUM_URLS_QUEUE_RAM)
     {
@@ -403,9 +444,10 @@ class WebQueueBundle implements Notifier
     //Filter and Filter Bundle Methods   
 
     /**
-     *
-     * @param string $mode
-     * @return resource 
+     * Opens the url WebArchive associated with this queue bundle in the
+     * given read/write mode
+     * @param string $mode the read/write mode to open the archive with
+     * @return resource a file handle to the WebArchive file
      */
     function openUrlArchive($mode = "r")
     {
@@ -413,8 +455,8 @@ class WebQueueBundle implements Notifier
     }
 
     /**
-     *
-     * @param resource $fh
+     * Closes a file handle to the url WebArchive
+     * @param resource $fh a valid handle to the url WebArchive file
      */
     function closeUrlArchive($fh)
     {
@@ -422,8 +464,8 @@ class WebQueueBundle implements Notifier
     }
 
     /**
-     *
-     * @param string $url
+     * Adds the supplied url to the url_exists_filter_bundle
+     * @param string $url url to add
      */
     function addSeenUrlFilter($url)
     {
@@ -431,9 +473,10 @@ class WebQueueBundle implements Notifier
     }
 
     /**
-     *
-     * @param array &$url_array
-     * @param string $field_name
+     * Removes all url objects from $url_array which have been seen
+     * @param array &$url_array objects to check if have been seen
+     * @param string $field_name component of a url_array element which 
+     *      contains a url to check if seen
      */
     function differenceSeenUrls(&$url_array, $field_name = NULL)
     {
@@ -442,8 +485,8 @@ class WebQueueBundle implements Notifier
     }
 
     /**
-     *
-     * @param string $host
+     * Adds the supplied $host to the got_robottxt_filter
+     * @param string $host url to add
      */
     function addGotRobotTxtFilter($host)
     {
@@ -451,9 +494,9 @@ class WebQueueBundle implements Notifier
     }
 
     /**
-     *
-     * @param string $host
-     * @return bool
+     * Checks if we have a fresh copy of robots.txt info for $host
+     * @param string $host url to check
+     * @return bool whether we do or not
      */
     function containsGotRobotTxt($host)
     {
@@ -461,18 +504,20 @@ class WebQueueBundle implements Notifier
     }
 
     /**
-     *
-     * @param string $host
+     * Adds a new entry to the disallowed robot host path Bloom filter
+     * @param string $host_path the path on host that is excluded. For example
+     * http://somewhere.com/bob disallows bob on somewhere.com
      */
-    function addDisallowedRobotFilter($host)
+    function addDisallowedRobotFilter($host_path)
     {
-        $this->dissallowed_robot_filter->add($host);
+        $this->dissallowed_robot_filter->add($host_path);
     }
 
     /**
-     *
-     * @param string $host_path
-     * @return bool
+     * Checks if the given $host_path is disallowed by the host's
+     * robots.txt info.
+     * @param string $host_path host path to check
+     * @return bool whether it was disallowed or nots
      */
     function containsDisallowedRobot($host_path)
     {
@@ -480,8 +525,9 @@ class WebQueueBundle implements Notifier
     }
 
     /**
-     *
-     * @return int
+     * Gets when the timestamp of the oldest robot data still stored in
+     * the queue bundle
+     * @return int a Unix timestamp
      */
     function getRobotTxtAge()
     {
@@ -493,9 +539,10 @@ class WebQueueBundle implements Notifier
     }
 
     /**
+     * Sets the Crawl-delay of $host to passes $value in seconds
      *
-     * @param string $host
-     * @param int $value
+     * @param string $host a host to set the Crawl-delay for
+     * @param int $value a delay in seconds up to 255
      */
     function setCrawlDelay($host, $value)
     {
@@ -511,9 +558,10 @@ class WebQueueBundle implements Notifier
     }
 
     /**
+     * Gets the Crawl-delay of $host from the crawl delay bloom filter
      *
-     * @param string $host
-     * @return int
+     * @param string $host site to check for a Crawl-delay
+     * @return int the crawl-delay in seconds or -1 if $host has no delay
      */
     function getCrawlDelay($host)
     {
@@ -532,10 +580,15 @@ class WebQueueBundle implements Notifier
     }
 
     /**
+     * Mainly, a Factory style wrapper around the HashTable's constructor.
+     * However, this function also sets up a rebuild frequency. It is used
+     * as part of the process of keeping the to crawl table from having too
+     * many entries
      *
-     * @param string $name
-     * @param int $num_values
-     * @return object
+     * @param string $name filename to store the hash table persistently
+     * @param int $num_values size of HashTable's arraya
+     * @return object the newly built hash table
+     * @see rebuildHashTable()
      */
     function constructHashTable($name, $num_values)
     {
@@ -545,9 +598,11 @@ class WebQueueBundle implements Notifier
     }
 
     /**
+     * Looks up $key in the to-crawl hash table
      *
-     * @param string $key
-     * @return string
+     * @param string $key the things to look up
+     * @return mixed would be string if the value is being returned, 
+     *      otherwise, false if the key is not found 
      */
     function lookupHashTable($key)
     {
@@ -555,12 +610,12 @@ class WebQueueBundle implements Notifier
     }
 
     /**
-     *
-     * @param string $value
+     * Removes an entries from the to crawl hash table
+     * @param string $key usually a hash of a url
      */
-    function deleteHashTable($value)
+    function deleteHashTable($key)
     {
-        $this->to_crawl_table->delete($value);
+        $this->to_crawl_table->delete($key);
         $this->hash_rebuild_count++;
         if($this->hash_rebuild_count > $this->max_hash_ops_before_rebuild) {
             $this->rebuildHashTable();
@@ -568,10 +623,12 @@ class WebQueueBundle implements Notifier
     }
 
     /**
+     * Inserts the $key, $value pair into this web queue's to crawl table
      *
-     * @param string $key
-     * @param string $value
-     * @return bool
+     * @param string $key intended to be a hash of a url
+     * @param string $value intended to be offset into a webarchive for urls
+     *      together with an index into the priority queue
+     * @return bool whether the insert was a success or not
      */
     function insertHashTable($key, $value)
     {
@@ -583,7 +640,21 @@ class WebQueueBundle implements Notifier
     }
 
     /**
+     * Makes a new HashTable without deleted rows
      *
+     * The hash table in Yioop is implemented using open addressing. i.e.,
+     * We store key value pair in the table itself and if there is a collision
+     * we look for the next available slot. Two codes are use to indicate
+     * space available in the table. One to indicate empty never used, the
+     * other used to indicate empty but previously used and deleted. The reason
+     * you need two codes is to ensure that if somebody inserted an item B,
+     * it hashes to the same value as A and we move to the next empty slot,
+     * to store B, then if we delete A we should still be able to lookup B.
+     * The problem is as the table gets reused a lot, it tends to fill up
+     * with a lot of deleted entries making lookup times get more and more
+     * linear in the hash table size. By rebuilding the table we mitigate
+     * against this problem. By choosing the rebuild frequecy appropriately,
+     * the amortized cost of this operation is only O(1).
      */
     function rebuildHashTable()
     {
@@ -688,9 +759,13 @@ class WebQueueBundle implements Notifier
     }
 
     /**
+     * Callback which is called when an item in the priority queue changes 
+     * position. The position is updated in the hash table.
+     * The priority queue stores (hash of url, weight). The hash table
+     * stores (hash of url, web_archive offset to url, index priority queue).
      *
-     * @param int $index
-     * @param array $data
+     * @param int $index new index in priority queue
+     * @param array $data (hash url, weight)
      */
     function notify($index, $data)
     {

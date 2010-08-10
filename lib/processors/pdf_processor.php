@@ -144,9 +144,11 @@ class PdfProcessor extends TextProcessor
     }
 
     /**
+     * Checks if the PDF object's object dictionary is in a list of types
      *
-     * @param string $object_dictionary
-     * @param array $type_array
+     * @param string $object_dictionary the object dictionary to check
+     * @param array $type_array the list of types to check against
+     * @return whether it is in or not
      */
     static function objectDictionaryHas($object_dictionary, $type_array) 
     {
@@ -160,9 +162,9 @@ class PdfProcessor extends TextProcessor
     }
 
     /**
-     *
-     * @param string $object_string
-     * @return string
+     * Gets the object dictionary portion of the current PDF object
+     * @param string $object_string represents the contents of a PDF object
+     * @return string the object dictionary for the object
      */
     static function getObjectDictionary($object_string) 
     {
@@ -172,9 +174,10 @@ class PdfProcessor extends TextProcessor
     }
 
     /**
+     * Gets the object stream portion of the current PDF object
      *
-     * @param string $object_stream
-     * @return string
+     * @param string $object_stream represents the contents of a PDF object
+     * @return string the object stream for the object
      */
     static function getObjectStream($object_string) 
     {
@@ -185,9 +188,12 @@ class PdfProcessor extends TextProcessor
     }
 
     /**
+     * Extracts ASCII text from PDF data, getting rid of non printable data,
+     * square brackets and parenthesis and converting char codes to their 
+     * values.
      *
-     * @param string $data
-     * @return string
+     * @param string $data source to extract character data from
+     * @return string extracted text
      */
     static function parseText($data)
     {
@@ -227,10 +233,12 @@ class PdfProcessor extends TextProcessor
     }
 
     /**
+     * Extracts ASCII text till the next close brackets
      *
-     * @param string $data
-     * @param int $cur_pos
-     * @return array
+     * @param string $data source to extract character data from
+     * @param int $cur_pos position to start in $data
+     * @return array pair consisting of the final position in $data as well
+     *      as extracted text
      */
     static function parseBrackets($data, $cur_pos)
     {
@@ -268,10 +276,12 @@ class PdfProcessor extends TextProcessor
     }
 
     /**
+     * Extracts ASCII text till the next close parenthesis
      *
-     * @param string $data
-     * @param int $cur_pos
-     * @return array
+     * @param string $data source to extract character data from
+     * @param int $cur_pos position to start in $data
+     * @return array pair consisting of the final position in $data as well
+     *      as extracted text
      */
     static function parseParentheses($data, $cur_pos)
     {
@@ -302,7 +312,7 @@ class PdfProcessor extends TextProcessor
         }
 
         $check_positioning = substr($data, $cur_pos, 4);
-        if(preg_match("/\-\d{3}/", $check_positioning) >0 ) {
+        if(preg_match("/\-\d{3}/", $check_positioning) > 0 ) {
             $out .= " ";
         }
 

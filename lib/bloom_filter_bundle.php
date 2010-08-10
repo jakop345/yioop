@@ -141,8 +141,8 @@ class BloomFilterBundle
     }
 
     /**
-     * Removes from the passed array those elements $elt who either are not in
-     * the filter bundle or whose $elt[$field_name] is not in the bundle.
+     * Removes from the passed array those elements $elt who either are in
+     * the filter bundle or whose $elt[$field_name] is in the bundle.
      *
      * @param array &$arr the array to remove elements from
      * @param string $field_name if not NULL the field name of $arr to use to

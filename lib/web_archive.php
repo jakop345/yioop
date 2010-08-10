@@ -51,39 +51,36 @@ class WebArchive
 {
 
     /**
-     *
+     * Filename used to store the web archive.
+     * @var string
      */
     var $filename;
     /**
      *
+     * Current offset into the web archive the iterator for the archive is at
+     * (at most one iterator / archive -- oh well)
+     * @var int
      */
     var $iterator_pos;
     /**
-     *
+     * Filter object used to compress/uncompress objects stored in archive
+     * @var object
      */
     var $compressor;
     /**
-     *
+     * number of item in archive
+     * @var int
      */
     var $count;
 
     /**
+     * Makes or initializes a WebArchive object using the supplied parameters
      *
-     */
-    const OPEN_AND_CLOSE = 1;
-    /**
-     *
-     */
-    const OPEN = 2;
-    /**
-     *
-     */
-    const CLOSE = 3;
-    /**
-     *
-     * @param string $fname
-     * @param string $compressor
-     * @param bool $fast_construct
+     * @param string $fname filename to use to store archive to disk
+     * @param string $compressor what kind of Compressor object should be
+     *      used to read and write objects in the archive
+     * @param bool $fast_construct do we read the info block of the web
+     *      archive as part of the constructing process
      */
     function __construct($fname, $compressor, $fast_construct = false) 
     {
@@ -104,8 +101,11 @@ class WebArchive
     }
 
     /**
-     *
-     * @return array
+     * Read the info block associated with this web archive.
+     * The info block is meta data for the archive stored at the end of
+     * the WebArchive file. The particular meta is up to who is using
+     * the web archive.
+     * @return array the contents of the info block
      */
     function readInfoBlock()
     {
@@ -123,9 +123,15 @@ class WebArchive
     }
 
     /**
+     * Serializes and applies the compressor to an info block and write it at
+     * the end of the web archive
+     * The info block is meta data for the archive stored at the end of
+     * the WebArchive file. The particular meta is up to who is using
+     * the web archive.
      *
-     * @param resource $fh
-     * @param array &$data
+     * @param resource $fh resource for the web archive file. If null
+     *      the web archive is open first and close when the data is written
+     * @param array &$data data to write into the info block of the archive
      */
     function writeInfoBlock($fh = NULL, &$data = NULL)
     {
@@ -153,9 +159,12 @@ class WebArchive
     }
 
     /**
+     * Seeks in the WebArchive file to the end of the last Object.
      *
-     * @param resource $fh
-     * @return int
+     * The last 4 bytes of a WebArchive say the length of an info block in bytes
+     *
+     * @param resource $fh resource for the WebArchive file
+     * @return int offset length of info block
      */
     function seekEndObjects($fh)
     {
@@ -168,13 +177,20 @@ class WebArchive
     }
 
     /**
+     * Adds objects to the WebArchive
      *
-     * @param string $offset_field
-     * @param array &$objects
-     * @param array $data
-     * @param string $callback
-     * @param bool $return_flag
-     * @return mixed
+     * @param string $offset_field field in objects to return the byte offset
+     *      at which they were stored
+     * @param array &$objects references to objects that will be stored
+     *      the offset field in these references will be adjusted if 
+     * @param array $data data to write in the WebArchive's info block
+     * @param string $callback name of a callback 
+     *      $callback($data, $new_objects, $offset_field)
+     *      used to modify $data before it is written
+     *      to the info block. For instance, we can add offset info to data.
+     * @param bool $return_flag if true rather than adjust the offsets by
+     *      reference, create copy objects and adjust their offsets anf return
+     * @return mixed adjusted objects or void
      */
     function addObjects($offset_field, &$objects, 
         $data = NULL, $callback = NULL, $return_flag = true)
@@ -224,9 +240,10 @@ class WebArchive
     }
 
     /**
+     * Open the web archive file associated with this WebArchive object.
      *
-     * @param string $mode
-     * @return resource
+     * @param string $mode read/write mode to open file with
+     * @return resource a file resource for the web archive
      */
     function open($mode = "r")
     {
@@ -243,12 +260,17 @@ class WebArchive
     }
 
     /**
+     * Gets $num many objects out of the web archive starting at byte $offset
      *
-     * @param int $offset
-     * @param int $num
-     * @param bool $next_flag
-     * @param resource $fh
-     * @return array
+     * If the $next_flag is true the archive iterator is advance and if $fh
+     * is not NULL then it is assumed to be an open resource pointing to the
+     * archive (saving the time to open it).
+     *
+     * @param int $offset a valid byte offset into a web archive
+     * @param int $num number of objects tot return
+     * @param bool $next_flag whether to advance the archive iterator
+     * @param resource $fh either NULL or a file resource to the archive
+     * @return array the $num objects beginning at $offset
      */
     function getObjects($offset, $num, $next_flag = true, $fh = NULL)
     {

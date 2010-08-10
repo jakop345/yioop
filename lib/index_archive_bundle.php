@@ -38,27 +38,19 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  */
 require_once 'web_archive_bundle.php'; 
 /**
- * Filters used to check if words appear in a given generation
+ * Bloom Filter used by BloomFilterBundle
  */
 require_once 'bloom_filter_file.php';
 /**
- *  
+ * Used to check if a page already stored in the WebArchiveBundle
  */
 require_once 'bloom_filter_bundle.php';
 /**
- *  
- */
-require_once 'gzip_compressor.php';
-/**
- *  
- */
-require_once 'non_compressor.php';
-/**
- *  
+ * Used for crawlLog and crawlHash
  */
 require_once 'utility.php';
-/** Loads common constants for web crawling
- *
+/** 
+ *Loads common constants for web crawling
  */
 require_once 'crawl_constants.php';
 
@@ -88,7 +80,7 @@ interface IndexingConstants
 
 /**
  * Callback function used to set the offsets into the archive file from
- * the paritcular word info in the header block of a WordArchive
+ * the particular word info in the header block of a WordArchive
  *
  * @param array $data
  * @param array $objects
@@ -125,86 +117,137 @@ function setOffsetPointers($data, &$objects, $offset_field)
 }
 
 /**
+ * Used to iterate through the documents associated with a word in
+ * an IndexArchiveBundle. It also makes it easy to get the summaries
+ * of these documents and restrict the documents by additional words.
+ *
+ * A description of how words and the documents containing them are stored 
+ * is given in the documentation of IndexArchiveBundle. To iterate over
+ * all documents containng a word, its hash, work_key, is formed. Then using
+ * the Bloom filter for that partition, it is determined if the word is stored
+ * at all, and if it is, which generations it occurs in. Then the iterator
+ * is set to point to the first block of the first generation the word appears
+ * in that is greater than the limit of the WordIterator. Thereafter, 
+ * nextDocsWithWord will advance $this->current_pointer by one per call.
+ * $this->current_pointer keeps track of which block of documents containing
+ * the word to return. If it is less than COMMON_WORD_THRESHOLD/BLOCK_SIZE and 
+ * there are still more blocks, then the corresponding block_pointer of the word 
+ * from the generation's partition info_block is used to look up the offset to
+ * the doc block. If it is greater than this value then the linked list 
+ * of doc blocks pointed to for the partition is followed to get the appropriate
+ * block. This list is in the order that words were stored in the index so
+ * LIST_OFFSET points to the last block stored, which in turn points to the
+ * next to last block, etc. Finally, when all the blocks in the linked-list are
+ * exhausted, the remaining docs for that generation for that word are stored 
+ * in the info block for the word itself (this will always be less than 
+ * BLOCK_SIZE many). Once all the docs for a word for a generation have been
+ * iterated through, than iteration proceeds to the next generation containing
+ * the word.
  *
  * @author Chris Pollett
  * @package seek_quarry
  * @subpackage library
+ * @see IndexArchiveBundle
  */
 class WordIterator implements IndexingConstants, CrawlConstants
 {
     /**
-     *  
+     * hash of word that the iterator iterates over 
+     * @var string
      */
     var $word_key;
     /**
-     *  
+     * The IndexArchiveBundle this index is associated with
+     * @var object
      */
     var $index;
     /**
-     *  
+     * The number of documents already iterated over
+     * @var int
      */
     var $seen_docs;
     /**
-     *  
+     * @var int
      */
     var $restricted_seen_docs;
     /**
-     *  
+     * The number of documents in the current block before filtering
+     * by restricted words
+     * @var int
      */
     var $count_block_unfiltered;
     /**
-     *  
+     * Estimate of the number of documents that this iterator can return
+     * @var int
      */
     var $num_docs;
 
     /**
-     *  
+     * If iterating through the linked-list portions of the documents
+     * the next byte offset in the WebArchive based linked-list
+     * @var int
      */
     var $next_offset;
     /**
-     *  
+     * Block number of the last block of docs
+     * @var int
      */
     var $last_pointed_block;
     /**
-     *  
+     * @var int
      */
     var $list_offset;
 
     /**
-     *  
+     * Pointers to offsets for blocks containing docs with the given word 
+     * for the current generation
+     * @var array
      */
     var $block_pointers;
     /**
-     *  
+     * Number of completely full blocks of documents for the current generation
+     * @var int
      */
     var $num_full_blocks;
     /**
-     *  
+     * Number of generations word appears in
+     * @var int
      */
     var $num_generations;
     /**
-     *  
+     * Used to store the contents of the last partially full block
+     * @var int
      */
     var $last_block;
     /**
-     *  
+     * 
+     * @var object
      */
     var $info_block;
     /**
-     *  
+     * Stores the number of the current block of documents we are at in the
+     * set of all blocks of BLOCK_SIZE many documents
+     * @var int
      */
     var $current_pointer;
     /**
-     *  
+     * First document that should be returned 
+     * amongst all of the documents associated with the
+     * iterator's $word_key
+     * @var int
      */
     var $limit;
 
     /**
+     * Creates a word iterator with the given parameters.
      *
-     * @param string $word_key
-     * @param object $index
-     * @param int $limit
-     * @param object $info_block
+     * @param string $word_key hash of word or phrase to iterate docs of 
+     * @param object $index the IndexArchiveBundle to use
+     * @param int $limit the first element to return from the list of docs
+     *      iterated over
+     * @param object $info_block the info block of the WebArchive
+     *      associated with the word in the index. If NULL, then this will
+     *      loaded in WordIterator::reset()
      */
     public function __construct($word_key, $index, $limit = 0, $info_block = NULL)
     {
@@ -215,8 +258,13 @@ class WordIterator implements IndexingConstants, CrawlConstants
     }
 
     /**
+     * Returns the iterators to the first document block that it could iterate
+     * over
      *
-     * @param object $info_block
+     * @param object $info_block the header block in the index WebArchiveBundle
+     *      for the word this iterator iterates over. If not NULL, this saves
+     *      the time to load it. If not it will be loaded, but this will be
+     *      slower.
      */
     public function reset($info_block = NULL)
     {
@@ -265,8 +313,9 @@ class WordIterator implements IndexingConstants, CrawlConstants
     }
 
     /**
+     * Sets up the iterator to iterate through the current generation.
      *
-     * @return bool
+     * @return bool whether the initialization succeeds
      */
     public function initGeneration()
     {
@@ -318,9 +367,11 @@ class WordIterator implements IndexingConstants, CrawlConstants
     }
 
     /**
-     *
-     * @param array $restrict_phrases
-     * @return array
+     * Gets the block of doc summaries associated with the current doc
+     * pointer and which match the array of additional word restrictions
+     * @param array $restrict_phrases an array of additional words or phrases
+     *      to see if contained in summary
+     * @return array doc summaries that match
      */
     public function currentDocsWithWord($restrict_phrases = NULL)
     {
@@ -442,9 +493,12 @@ class WordIterator implements IndexingConstants, CrawlConstants
     }
 
     /**
+     * Get the current block of doc summaries for the word iterator and advances
+     * the current pointer to the next block
      *
-     * @param array $restrict_phrases
-     * @return array
+     * @param array $restrict_phrases additional words to restrict doc summaries
+     *      returned
+     * @return array doc summaries matching the $restrict_phrases
      */
     public function nextDocsWithWord($restrict_phrases = NULL)
     {
@@ -480,6 +534,43 @@ class WordIterator implements IndexingConstants, CrawlConstants
 }
 
 /**
+ * Encapsulates a set of web page summaries and an inverted word-index of terms
+ * from these summaries which allow one to search for summaries containing a 
+ * particular word.
+ *
+ * The basic file structures for an IndexArchiveBundle are:
+ * <ol> 
+ * <li>A WebArchiveBundle for web page summaries.</li>
+ * <li>A set of WebArchiveBundles for the inverted index. Each such bundle
+ * is called a <b>generation</b>. These bundles have name index0, index1,...
+ * The file generations.txt keeps track of what is the current generation
+ * and how many words have been stored in it. A given generation can
+ * hold NUM_WORDS_PER_GENERATION words amongst all its partitions. After which 
+ * the next generation begins. In a given generation, a word is stored in
+ * the partition that its hash key hashes to. The same word may appear in
+ * several generations. The info block for a partition for a particular
+ * generation contains objects for each word of the generation that hashed 
+ * to that partition. Each such word object contains a count of the number
+ * of documents it occurred in for that generation. It also has an
+ * array of block_pointers to blocks of size BLOCK_SIZE. These blocks contains
+ * documents that the word occurred in, the score for the occurrence, and
+ * an offset into the summary file for that document. If the total number of
+ * documents is not a multiple of BLOCK_SIZE the remaining documents are stored
+ * directly in the word's info block object. If, in a given generation, a
+ * word occurs more than COMMON_WORD_THRESHOLD many times then the word object
+ * uses a LIST_OFFSET pointer to point to a linked list in the partition of
+ * addtional blocks of documents for that word.
+ * </li>
+ * <li>For each partition and for all generations a BloomFilterFile is used
+ * to keep track of which words appear in which generations for a 
+ * particular partition. These filters are stored in a folder within the
+ * IndexArchiveBundle called index_filters. When a word and documents
+ * containing it are stored in an IndexArchiveBundle, its word_key (its has) is 
+ * stored in the filter for the partition its word_key hash to. Further
+ * if the current generation is i, then work_ket concatenated with i is
+ * also stored in this same filter.</li>
+ * </ol>
+ *
  *
  * @author Chris Pollett
  * @package seek_quarry
@@ -487,24 +578,74 @@ class WordIterator implements IndexingConstants, CrawlConstants
  */
 class IndexArchiveBundle implements IndexingConstants, CrawlConstants
 {
+    /**
+     * Used to keep track of the time to perform various operations
+     * in this IndexArchiveBundle
+     * @var array
+     */
     var $diagnostics;
+    /**
+     * Folder name to use for this IndexArchiveBundle
+     * @var string
+     */
     var $dir_name;
+    /**
+     * A short text name for this IndexArchiveBundle
+     * @var string
+     */
     var $description;
+    /**
+     * Number of partitions in the summaries WebArchiveBundle
+     * @int
+     */
     var $num_partitions_summaries;
+    /**
+     * Number of partitions in the inverted word index 
+     * (same for each generation)
+     * @int
+     */
     var $num_partitions_index;
+    /**
+     * structure contains info about the current generation:
+     * its index (ACTIVE), and the number of words it contains
+     * (NUM_WORDS).
+     * @array
+     */
     var $generation_info;
+    /**
+     * Number of words before a new generation is started
+     * @int
+     */
     var $num_words_per_generation;
+    /**
+     * WebArchiveBundle for web page summaries
+     * @object
+     */
     var $summaries;
+    /**
+     * WebArchiveBundle for inverted word index
+     * @object
+     */
     var $index;
+    /**
+     * Bloom Filters used to figure out which words are in which generations for
+     * given paritions
+     * @object
+     */
     var $index_partition_filters;
 
     /**
+     * Makes or initializes an IndexArchiveBundle with the provided parameters
      *
-     * @param string $dir_name
-     * @param int $filter_size
-     * @param int $num_partitions_summaries
-     * @param int $num_parititions_index
-     * @param string $description
+     * @param string $dir_name folder name to store this bundle
+     * @param int $filter_size size of a Bloom filter for the word index
+     *      partition filters as wells as for the page_exists_filters in
+     *      the WebArchiveBundles
+     * @param int $num_partitions_summaries number of WebArchive partitions
+     *      to use in the summmaries WebArchiveBundle
+     * @param int $num_partitions_index number of WebArchive partitions
+     *      to use in the index WebArchiveBundle
+     * @param string $description a short text name for this IndexArchiveBundle 
      */
     public function __construct($dir_name, $filter_size = -1, 
         $num_partitions_summaries = NULL, $num_partitions_index = NULL, 
@@ -546,11 +687,14 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
     }
 
     /**
+     * Add the array of $pages to the summaries WebArchiveBundle pages being 
+     * stored in the partition according to the $key_field and the field used 
+     * to store the resulting offsets given by $offset_field.
      *
-     * @param string $key_field
-     * @param string $offset_field
-     * @param array $pages
-     * @return array
+     * @param string $key_field field used to select partition
+     * @param string $offset_field field used to record offsets after storing
+     * @param array &$pages data to store
+     * @return array $pages adjusted with offset field
      */
     public function addPages($key_field, $offset_field, $pages)
     {
@@ -560,8 +704,10 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
     }
 
     /**
+     * Adds the provided mini inverted index data to the IndexArchiveBundle
      *
-     * @param array $index_data
+     * @param array $index_data a mini inverted index of word_key=>doc data
+     *      to add to this IndexArchiveBundle
      */
     public function addIndexData($index_data)
     {
@@ -614,10 +760,18 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
     }
 
     /**
+     * Adds the mini-inverted index data that to a particular partition.
+     * It is assume the word keys in this data would hash to the destined
+     * index partitions
      *
-     * @param int $partition
-     * @param array &$word_data
-     * @param bool $overwrite
+     * @param int $partition WebArchive in the index WebArchiveBundle of the
+     *      current generation to write to
+     * @param array &$word_data what to wrtie
+     * @param bool $overwrite whether to signal that all data in prior 
+     * generations associated with keys that are being inserted should be 
+     * ignored (for instance, multi-word search are partially computed and
+     * added to the index. If these get recomputed we might want to ignore
+     * prior work. )
      */
     public function addPartitionWordData($partition, 
         &$word_data, $overwrite = false)
@@ -733,10 +887,11 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
     }
 
     /**
+     * Adds the provided $word_key to the BloomFilter for the given partition
      *
-     * @param int $partition
-     * @param string $word_key
-     * @return bool
+     * @param int $partition whose Bloom Filter we want to add the word_key to
+     * @param string $word_key the key to add
+     * @return bool whether the add was successful
      */
     public function addPartitionIndexFilter($partition, $word_key)
     {
@@ -752,9 +907,9 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
     }
 
     /**
-     *
-     * @param int $partition
-     * @return bool
+     * Initializes or constructs the Bloom filter assocaited with a partition
+     * @param int $partition index of desired partition
+     * @return bool whether the operation was successful
      */
     public function initPartitionIndexFilter($partition)
     {
@@ -777,14 +932,18 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
     }
 
     /**
-     *
-     * @param string $word_key
-     * @param int $Lint
-     * @param int $num
-     * @param array $restrict_phrases
-     * @param string $phrase_key
-     * @param array $phrase_info
-     * @return array
+     * Gets doc summaries of documents containing a given word and meeting the
+     * additional provided criteria
+     * @param string $word_key the word to iterate over to get document results
+     *      of
+     * @param int $limit number of first document in order to return
+     * @param int $num number of documents to return summaries of
+     * @param array $restrict_phrases additional words and phrase to store
+     *      further restrict the search 
+     * @param string $phrase_key a hash of the word and restricted phrases to
+     *      store the results of the look up
+     * @param array $phrase_info info block of the word
+     * @return array document summaries
      */
     public function getSummariesByHash($word_key, $limit, $num, 
         $restrict_phrases = NULL, $phrase_key = NULL, $phrase_info = NULL)
@@ -831,10 +990,14 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
     }
 
     /**
+     * Gets the page out of the summaries WebArchiveBundle with the given 
+     * key and offset
      *
-     * @param string $key
-     * @param int $offset
-     * @return array
+     * The $key determines the partition WebArchive, the $offset give the
+     * byte offset within that archive.
+     * @param string $key hash to use to look up WebArchive partition
+     * @param int $offset byte offset in partition of desired page
+     * @return array desired page
      */
     public function getPage($key, $offset)
     {
@@ -842,11 +1005,16 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
     }
 
     /**
+     * Returns a block of documents a word occur in. The doc block looked up
+     * is at a given offset into the word's partition WebArchive for a given
+     * generation. This is used when the word occurs more the 
+     * COMMON_WORD_THRESHOLD many times in a generation
      *
-     * @param string $word_key
-     * @param int $offset
-     * @param int $generation
-     * @return array
+     * @param string $word_key hash of word whose doc block we are looking up
+     * @param int $offset byte offset into word's partition WebArchive for the
+     *      supplied generation
+     * @param int $generation which generation to look up the doc block of
+     * @return array the desired doc block
      */
     public function getWordDocBlock($word_key, $offset, $generation = -1)
     {
@@ -860,11 +1028,14 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
     }
 
     /**
+     * Gets a page using in WebArchive $partition of the word index 
+     * using the provided byte $offset and using existing $file_handle 
+     * if possible.
      *
-     * @param int $partition
-     * @param int $offset
-     * @param resource $file_handle
-     * @return array
+     * @param int $partition which WebArchive to look in
+     * @param int $offset byte offset of page data
+     * @param resource $file_handle file handle resource of $partition archive
+     * @return array desired page
      */
     public function getPageByPartition($partition, $offset, $file_handle = NULL)
     {
@@ -873,9 +1044,10 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
     }
 
     /**
+     * Adds the given summary to the summary exists filter bundle
      *
-     * @param string $key_field
-     * @param array $page
+     * @param string $key_field field of page with hash of page content
+     * @param array $page summary of page
      */
     public function addPageFilter($key_field, $page)
     {
@@ -883,7 +1055,13 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
     }
 
     /**
+     * Looks at the $field key of elements of pages and computes an array
+     * consisting of $field values which are not in
+     * the page_exists_filter_bundle of the summaries bundle
      *
+     * @param array $pages set of page data to start from
+     * @param string $key_field field to check against filter bundle
+     * @return mixed false if filter empty; desired array otherwise
      */
     public function differenceContainsPages(&$page_array, $field_name = NULL)
     {
@@ -892,13 +1070,14 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
     }
 
     /**
-     *
+     * Forces the data in the page exists filter bundle of summaries 
+     * to be save to disk, forces each index partition summary to be saved
      */
     public function forceSave()
     {
         $this->summaries->forceSave();
         for($i = 0; $i < $this->num_partitions_index; $i++) {
-            if($this->index_partition_filters[$i] &&
+            if(isset($this->index_partition_filters[$i]) &&
                 $this->index_partition_filters[$i] != NULL) {
                 $this->index_partition_filters[$i]->save();
             }
@@ -906,11 +1085,16 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
     }
 
     /**
+     * Computes statistics for the provided phrase_key. 
+     * These include an estimate of the total number of documents it occurs in,
+     * as well as which generations it occurs in, and what are its info block
+     * looks like in the current generation
      *
-     * @param string $phrase_key
-     * @param int $generation_index
-     * @param array $info_block
-     * @return array
+     * @param string $phrase_key what to compute statistics for
+     * @param int $generation_index the current generation
+     * @param array $info_block info_block of the phrase_key (will look up
+     *      if not provided)
+     * @return array info for this $phrase_key
      */
     public function getPhraseIndexInfo(
         $phrase_key, $generation_index = 0, $info_block = NULL)
@@ -986,6 +1170,7 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
     }
 
     /**
+     * Sets the information associated with a word in the inverted index
      *
      * @param string $phrase_key
      * @param array $info
@@ -1008,11 +1193,17 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
     }
 
     /**
+     * Adds the supplied phrase to the IndexArchiveBundle.
      *
-     * @param string $word_key
-     * @param array $restrict_phrases
-     * @param string $phrase_key
-     * @param $num_needed
+     * The most selective word in the phrase is $word_key, the additional
+     * words are in $restrict_phrases, the hash of the phrase to add is 
+     * $phrase_key, and if the will be a lot of results compute at least
+     * the first $num_needed.
+     *
+     * @param string $word_key hash of most selective word in phrase 
+     * @param array $restrict_phrases additional words in phrase
+     * @param string $phrase_key hash of phrase to add
+     * @param $num_needed minimum number of doc results to save if possible
      */
     public function addPhraseIndex($word_key, $restrict_phrases, 
         $phrase_key, $num_needed)
@@ -1082,11 +1273,12 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
     }
 
     /**
+     * Computes the words which appear in the fewest or most documents
      *
-     * @param array $word_keys
-     * @param int $num
-     * @param string $comparison
-     * @return array
+     * @param array $word_keys keys of words to select amongst
+     * @param int $num number of words from the above set to return
+     * @param string $comparison callback function name for how to compare words
+     * @return array the $num most documents or $num least document words
      */
     public function getSelectiveWords($word_keys, $num, $comparison="lessThan") 
         //lessThan is in utility.php
@@ -1109,10 +1301,10 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
     }
 
     /**
+     * Reads the info block of $partition index WebArchive
      *
-     * @param int $partition
-     * @param int $generation
-     * @return array
+     * @param int $partition WebArchive to read from
+     * @return array data in its info block
      */
     public function readPartitionInfoBlock($partition, $generation = -1)
     {
@@ -1127,9 +1319,10 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
     }
 
     /**
+     * Write $data into the info block of the $partition index WebArchive
      *
-     * @param int $partition
-     * @param array $data
+     * @param int $partition WebArchive to write into
+     * @param array $data what to write
      */
     public function writePartitionInfoBlock($partition, $data)
     {
@@ -1137,7 +1330,7 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
     }
 
     /**
-     * Gets teh description, count of summaries, and number of partions of the
+     * Gets the description, count of summaries, and number of partions of the
      * summaries store in the supplied directory
      *
      * @param string path to a directory containing a summaries WebArchiveBundle

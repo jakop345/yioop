@@ -157,7 +157,7 @@ class QueueServer implements CrawlConstants
      * Makes a queue_server object with the supplied indexed_file_types
      *
      * As part of the creation process, a database manager is initialized so
-     * the queue_server cna make use of its file/folder manipulation functions.
+     * the queue_server can make use of its file/folder manipulation functions.
      */
     function __construct($indexed_file_types) 
     {
@@ -190,7 +190,11 @@ class QueueServer implements CrawlConstants
     }
 
     /**
+     * Main runtime loop of the queue_server. 
      *
+     * Loops until a stop message received, check for start, stop, resume
+     * crawl messages, deletes any WebQueueBundle for which an 
+     * IndexArchiveBundle does not exist. Processes
      */
     function loop()
     {
@@ -249,9 +253,15 @@ class QueueServer implements CrawlConstants
     }
 
     /**
+     * Handles messages passed via files to the QueueServer.
      *
-     * @param array $info
-     * @return array 
+     * These files are typically written by the CrawlDaemon::init()
+     * when QueueServer is run using command-line argument
+     *
+     * @param array $info associative array with info about current state of
+     *      queue_server
+     * @return array an updates version $info reflecting changes that occurred
+     *      during the handling of the admin messages files.
      */
     function handleAdminMessages($info) 
     {
@@ -274,7 +284,7 @@ class QueueServer implements CrawlConstants
                     }
                     if(isset($this->index_archive)) {
                         $this->index_archive->forceSave();
-                        // chmod so apahce can also write to these directories
+                        // chmod so apache can also write to these directories
                         $this->db->setWorldPermissionsRecursive(
                             CRAWL_DIR.'/cache/'.
                             self::index_data_base_name.$this->crawl_time);
@@ -321,8 +331,11 @@ class QueueServer implements CrawlConstants
     }
 
     /**
+     * Begins crawling base on time, order, restricted site $info 
+     * Setting up a crawl involves creating a queue bundle and an
+     * index archive bundle
      *
-     * @param array $info
+     * @param array $info parameter for the crawl
      */
     function startCrawl($info)
     {
@@ -378,7 +391,8 @@ class QueueServer implements CrawlConstants
     }
 
     /**
-     *
+     * Delete all the queue schedules in the cache that don't have an 
+     * associated index bundle as this means that crawl has been deleted.
      */
     function deleteOrphanedBundles()
     {
@@ -399,9 +413,13 @@ class QueueServer implements CrawlConstants
     }
 
     /**
-     *
-     * @param string $base_dir
-     * @param string $callback_method
+     * Generic function used to process Data, Index, and Robot info schedules
+     * Finds the first file in the the direcotry of schedules of the given
+     * type, and calls the appropriate callback method for that type.
+     * 
+     * @param string $base_dir directory for of schedules
+     * @param string $callback_method what method should be called to handle
+     *      a schedule
      */
     function processDataFile($base_dir, $callback_method)
     {
@@ -435,7 +453,9 @@ class QueueServer implements CrawlConstants
     }
 
     /**
-     *
+     * Sets up the directory to look for a file of unprocessed 
+     * index archive data from fetchers then calls the function 
+     * processDataFile to process the oldest file found
      */
     function processIndexData()
     {
@@ -448,8 +468,10 @@ class QueueServer implements CrawlConstants
     }
 
     /**
+     * Adds the summary and index data in $file to summary bundle and word index
      *
-     * @param string $file
+     * @param string $file containing web pages summaries and a mini-inverted
+     *      index for their content
      */
     function processIndexArchive($file)
     {
@@ -538,7 +560,9 @@ class QueueServer implements CrawlConstants
     }
 
     /**
-     *
+     * Checks how old the oldest robot data is and dumps if older then a 
+     * threshold, then sets up the path to the robot schedule directory
+     * and tries to process a file of robots.txt robot paths data from there
      */
     function processRobotUrls()
     {
@@ -560,8 +584,11 @@ class QueueServer implements CrawlConstants
     }
 
     /**
-     *
-     * @param string $file
+     * Reads in $file of robot data adding host-paths to the disallowed
+     * robot filter and setting the delay in the delay filter of
+     * crawled delayed hosts
+     * @param string $file file to read of robot data, is removed after
+     *      processing
      */
     function processRobotArchive($file)
     {
@@ -602,7 +629,13 @@ class QueueServer implements CrawlConstants
     }
 
     /**
-     *
+     * Deletes all Robot informations stored by the QueueServer. 
+     * 
+     * This function is called roughly every CACHE_ROBOT_TXT_TIME.
+     * It forces the crawler to redownload robots.txt files before hosts
+     * can be continued to be crawled. This ensures if the cache robots.txt
+     * file is never too old. Thus, if someone changes it to allow or disallow
+     * the crawler it will be noticed reasonably promptly.
      */
     function deleteRobotData()
     {
@@ -612,13 +645,16 @@ class QueueServer implements CrawlConstants
             self::robot_data_base_name.$this->crawl_time;
         $this->db->unlinkRecursive($robot_schedules, true);
 
-        crawlLog("... reseting robot bloom filters ...");
+        crawlLog("... resetting robot bloom filters ...");
         $this->web_queue->emptyRobotFilters();
     }
 
     /**
+     * Checks for a new crawl file or a schedule data for the current crawl and
+     * if such a exists then processes its contents adding the relevant urls to
+     * the priority queue
      *
-     * @return array
+     * @return array info array with continue status
      */
     function processQueueUrls()
     {
@@ -631,10 +667,9 @@ class QueueServer implements CrawlConstants
         if(file_exists(CRAWL_DIR."/schedules/".self::schedule_start_name)) {
             crawlLog(
                 "Start schedule urls".CRAWL_DIR.
-                    "/schedules/".self::schedule_start_name);
-            $info = array_merge($info, 
-                $this->processDataArchive(
-                    CRAWL_DIR."/schedules/".self::schedule_start_name));
+                    "/schedules/".self::schedule_start_name); 
+            $this->processDataArchive(
+                CRAWL_DIR."/schedules/".self::schedule_start_name);
             return $info;
         }
 
@@ -649,16 +684,17 @@ class QueueServer implements CrawlConstants
     }
 
     /**
-     * @param string $file
-     * @return array
+     * Process a file of to-crawl urls adding to or adjusting the weight in
+     * the PriorityQueue of those which have not been seen. Also 
+     * updates the queue with seen url info
+     *
+     * @param string $file containing serialized to crawl and seen url info
      */
     function processDataArchive($file)
     {
         crawlLog("Processing File: $file");
 
         $sites = unserialize(file_get_contents($file));
-
-        $info = array();
 
         if(isset($sites[self::MACHINE])) {
             $this->most_recent_fetcher = $sites[self::MACHINE];
@@ -788,13 +824,12 @@ class QueueServer implements CrawlConstants
             crawlLog("URL: $url");
         }
 
-        return $info;
-
     }
 
     /**
+     * Removes the already seen urls from the supplied array
      *
-     * @param array &$sites
+     * @param array &$sites url data to check if seen
      */
     function deleteSeenUrls(&$sites)
     {

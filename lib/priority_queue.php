@@ -52,8 +52,9 @@ require_once "crawl_constants.php";
 
 /**
  * 
- * Code used to manage a memory efficient priority queue
- * Weights for the queue must be flaots
+ * Code used to manage a memory efficient priority queue.
+ * Weights for the queue must be flaots. The queue itself is
+ * implemented using heaps
  *
  * @author Chris Pollett
  *
@@ -97,7 +98,8 @@ class PriorityQueue extends StringArray implements CrawlConstants
     var $notifier; // who to call if move an item in queue
 
     /**
-     * Makes a priority queue with the given operating parameters
+     * Makes a priority queue (implemented as an array heap) with the given 
+     * operating parameters
      *
      * @param string $fname filename to store the data associated with the queue
      * @param int $num_values number of values the queue can hold
@@ -129,7 +131,7 @@ class PriorityQueue extends StringArray implements CrawlConstants
      * Gets the data stored at the ith location in the priority queue
      *
      * @param int $i location to return data from
-     * @return mixed data if the value of $i is between 1 and count, false
+     * @return mixed array data if the value of $i is between 1 and count, false
      *      otherwise
      */
     function peek($i = 1)
@@ -142,9 +144,16 @@ class PriorityQueue extends StringArray implements CrawlConstants
     }
 
     /**
+     * Removes and returns the ith element out of the Priority queue.
+     * Since this is a priority queue the first element in the queue
+     * will either be the min or max (depending on queue type) element
+     * stored. If $i is not in range an error message is written to the log.
+     * This operation also performs a check to see if the queue should be
+     * saved to disk
      *
-     * @param int $i
-     * @return mixed
+     * @param int $i element to get out of the queue
+     * @return mixed array data if the value of $i is between 1 and count, false
+     *      otherwise
      */
     function poll($i = 1)
     {
@@ -165,9 +174,12 @@ class PriorityQueue extends StringArray implements CrawlConstants
     }
 
     /**
-     * @param string $data
-     * @param float $weight
-     * @return mixed
+     * Inserts a new item into the priority queue.
+     *
+     * @param string $data what to insert into the queue
+     * @param float $weight how much the new data should be weighted
+     * @return mixed index location in queue where item was stored if
+     *      successful, otherwise false.
      */
     function insert($data, $weight)
     {
@@ -185,9 +197,11 @@ class PriorityQueue extends StringArray implements CrawlConstants
     }
 
     /**
+     * Add $delta to the $ith element in the priority queue and then adjusts 
+     * the queue to store the heap property 
      *
-     * @param int $i
-     * @param float $delta
+     * @param int $i element whose weight should be adjusted
+     * @param float $delta how much to change the weight by
      */
     function adjustWeight($i, $delta)
     {
@@ -217,7 +231,8 @@ class PriorityQueue extends StringArray implements CrawlConstants
     }
 
     /**
-     *
+     * Pretty prints the contents of the queue viewed as an array.
+     * 
      */
     function printContents()
     {
@@ -228,8 +243,10 @@ class PriorityQueue extends StringArray implements CrawlConstants
     }
 
     /**
+     * Return the contents of the priority queue as an array of
+     * value weight pairs.
      *
-     * @return array
+     * @return array contents of the queue
      */
     function getContents()
     {
@@ -242,8 +259,14 @@ class PriorityQueue extends StringArray implements CrawlConstants
     }
 
     /**
+     * Scaless the weights of elements in the queue so that the sum fo the new
+     * weights is $new_total
      *
-     * @param int $new_total
+     * This function is used periodically to prevent the queue from being
+     * gummed up because all of the weights stored in it are too small.
+     *
+     * @param int $new_total what the new sum of weights of elements in the
+     *      queue will be after normalization
      */
     function normalize($new_total = NUM_URLS_QUEUE_RAM)
     {
@@ -267,9 +290,13 @@ class PriorityQueue extends StringArray implements CrawlConstants
     }
 
     /**
+     * If the $ith element in the PriorityQueue violates the heap
+     * property with its parent node (children should be of lower
+     * priority than the parent), this function 
+     * tries modify the heap to restore the heap property.
      *
-     * @param int $i
-     * @return int
+     * @param int $i node to consider in restoring the heap property
+     * @return int final position $ith node ends up at
      */
     function percolateUp($i)
     {
@@ -297,9 +324,12 @@ class PriorityQueue extends StringArray implements CrawlConstants
     }
 
     /**
+     * If the ith element in the PriorityQueue violates the heap
+     * property with some child node (children should be of lower
+     * priority than the parent), this function 
+     * tries modify the heap to restore the heap property.
      *
-     * @param int $i
-     * @return int
+     * @param int $i node to consider in restoring the heap property
      */
     function percolateDown($i)
     {
@@ -339,10 +369,14 @@ class PriorityQueue extends StringArray implements CrawlConstants
     }
 
     /**
+     * Computes the difference of the two values $value1 and $value2
+     * 
+     * Which is subtracted from which is determined by whether this is
+     * a min_or_max priority queue
      *
-     * @param float $value1
-     * @param float $value2
-     * @return float
+     * @param float $value1 a value to take the difference between
+     * @param float $value2 the other value
+     * @return float the differences
      */
     function compare($value1, $value2)
     {
@@ -354,10 +388,11 @@ class PriorityQueue extends StringArray implements CrawlConstants
     }
 
     /**
+     * Gets the ith element of the PriorityQueue viewed as an array
      *
-     *
-     * @param int $i
-     * @return array
+     * @param int $i element to get
+     * @return array value stored in queue together with its weight as a two
+     *      element array
      */
     function getRow($i)
     {
