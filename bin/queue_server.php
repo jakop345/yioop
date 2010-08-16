@@ -900,7 +900,8 @@ class QueueServer implements CrawlConstants
                         $sites[self::SITES]);
                     
                     if($next_slot < MAX_FETCH_SIZE) {
-                        $sites[self::SITES][$next_slot] = array($url, $weight);
+                        $sites[self::SITES][$next_slot] = 
+                            array($url, $weight, 0);
                         $delete_urls[$i] = $url;
                         /* note don't add to seen url filter 
                            since check robots every 24 hours as needed
@@ -971,7 +972,7 @@ class QueueServer implements CrawlConstants
                                 $sites[self::SITES])) < MAX_FETCH_SIZE) {
                             $crawl_delay_hosts[$host_url] = $next_slot;
                             $sites[self::SITES][$next_slot] = 
-                                array($url, $weight);
+                                array($url, $weight, $delay);
                             $delete_urls[$i] = $url;
                             $this->web_queue->addSeenUrlFilter($url); 
                                 /* we might miss some sites by marking them 
@@ -985,7 +986,8 @@ class QueueServer implements CrawlConstants
                     $next_slot = $this->getEarliestSlot(
                         $current_crawl_index, $sites[self::SITES]);
                     if($next_slot < MAX_FETCH_SIZE) {
-                        $sites[self::SITES][$next_slot] = array($url, $weight);
+                        $sites[self::SITES][$next_slot] = 
+                            array($url, $weight, 0);
                         $delete_urls[$i] = $url;
                         $this->web_queue->addSeenUrlFilter($url); 
                             /* we might miss some sites by marking them 
@@ -1012,7 +1014,7 @@ class QueueServer implements CrawlConstants
         }
 
         if(isset($sites[self::SITES]) && count($sites[self::SITES]) > 0 ) {
-            $dummy_slot = array(self::DUMMY, 0.0);  
+            $dummy_slot = array(self::DUMMY, 0.0, 0);
             /* dummy's are used for crawl delays of sites with longer delays
                when we don't have much else to crawl
              */

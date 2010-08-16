@@ -144,6 +144,12 @@ class Fetcher implements CrawlConstants
      */
     var $to_crawl;
     /**
+     * Contains the list of web pages to crawl that failed on first attempt
+     * (we give them one more try before bailing on them)
+     * @var array
+     */
+    var $to_crawl_again;
+    /**
      * Summary information for visited sites that the fetcher hasn't sent to 
      * the queue_server yet
      * @var array
@@ -209,6 +215,7 @@ class Fetcher implements CrawlConstants
         $this->schedule_time = NULL;
 
         $this->to_crawl = array();
+        $this->to_crawl_again = array();
         $this->found_sites = array();
 
         $this->sum_seen_title_length = 0;
@@ -273,9 +280,10 @@ class Fetcher implements CrawlConstants
                 continue;
             }
 
-            $tmp_base_name = CRAWL_DIR."/cache/".
-                self::archive_base_name.$info[self::CRAWL_TIME];
-            if($this->web_archive == NULL || (isset($info[self::CRAWL_TIME]) && 
+            $tmp_base_name = (isset($info[self::CRAWL_TIME])) ? 
+                CRAWL_DIR."/cache/" . self::archive_base_name .
+                    $info[self::CRAWL_TIME] : "";
+            if(isset($info[self::CRAWL_TIME]) && ($this->web_archive == NULL || 
                     $this->web_archive->dir_name != $tmp_base_name)) {
                 if(isset($this->web_archive->dir_name)) {
                     crawlLog("Old name: ".$this->web_archive->dir_name);
@@ -298,6 +306,10 @@ class Fetcher implements CrawlConstants
             }
 
             $start_time = microtime();
+            $can_schedule_again = false;
+            if(count($this->to_crawl) > 0)  {
+                $can_schedule_again = true;
+            }
             $sites = $this->getFetchSites();
             if(!$sites) {
                 crawlLog("No seeds to fetch...");
@@ -308,7 +320,19 @@ class Fetcher implements CrawlConstants
 
             $site_pages = FetchUrl::getPages($sites, true);
             
-            $deduplicated_pages = $this->deleteSeenPages($site_pages);
+            list($deduplicated_pages, $schedule_again_pages) = 
+                $this->deduplicateAndReschedulePages($site_pages);
+            if($can_schedule_again == true) {
+                foreach($schedule_again_pages as $schedule_again_page) {
+                    if($schedule_again_page[self::CRAWL_DELAY] == 0) {
+                        $this->to_crawl_again[] = 
+                            array($schedule_again_page[self::URL], 
+                                $schedule_again_page[self::WEIGHT],
+                                $schedule_again_page[self::CRAWL_DELAY]
+                            );
+                    }
+                }
+            }
 
             $start_time = microtime();
             $summarized_site_pages = 
@@ -389,7 +413,7 @@ class Fetcher implements CrawlConstants
     {
         $info = array();
         
-        if(count($this->to_crawl) > 0) {
+        if(count($this->to_crawl) > 0 || count($this->to_crawl_again) > 0) {
             $info[self::STATUS]  = self::CONTINUE_STATE;
             return; 
         }
@@ -440,7 +464,16 @@ class Fetcher implements CrawlConstants
         $seeds = array();
         $delete_indices = array();
         $num_items = count($this->to_crawl);
-        reset($this->to_crawl);
+        if($num_items > 0) {
+            $crawl_source = & $this->to_crawl;
+            $to_crawl_flag = true;
+        } else {
+            crawlLog("...Trying to crawl sites which failed the first time");
+            $num_items = count($this->to_crawl_again);
+            $crawl_source = & $this->to_crawl_again;
+            $to_crawl_flag = false;
+        }
+        reset($crawl_source);
 
         if($num_items > NUM_MULTI_CURL_PAGES) {
             $num_items = NUM_MULTI_CURL_PAGES;
@@ -449,12 +482,12 @@ class Fetcher implements CrawlConstants
         $i = 0;
         while ($i < $num_items) {
             if(!isset($site_pair)) {
-                $site_pair = each($this->to_crawl);
+                $site_pair = each($crawl_source);
                 $old_pair['key'] = $site_pair['key'] - 1;
 
             } else {
                 $old_pair =  $site_pair;
-                $site_pair = each($this->to_crawl);
+                $site_pair = each($crawl_source);
             }
 
             if($old_pair['key'] + 1 == $site_pair['key']) {
@@ -463,7 +496,14 @@ class Fetcher implements CrawlConstants
                 if($site_pair['value'][0] != self::DUMMY) {
                     $seeds[$i][self::URL] = $site_pair['value'][0];
                     $seeds[$i][self::WEIGHT] = $site_pair['value'][1];
-
+                    $seeds[$i][self::CRAWL_DELAY] = $site_pair['value'][2];
+                    /*
+                      Crawl delay is only used in scheduling on the queue_server
+                      on the fetcher, we only use crawl-delay to determine
+                      if we will give a page a second try if it doesn't
+                      download the first time
+                    */
+                    
                     if(UrlParser::getDocumentFilename($seeds[$i][self::URL]).
                         ".".UrlParser::getDocumentType($seeds[$i][self::URL]) 
                         == "robots.txt") {
@@ -479,7 +519,11 @@ class Fetcher implements CrawlConstants
         } //end while
 
         foreach($delete_indices as $delete_index) {
-            unset($this->to_crawl[$delete_index]);
+            if($to_crawl_flag == true) {
+                unset($this->to_crawl[$delete_index]);
+            } else {
+                unset($this->to_crawl_again[$delete_index]);
+            }
         }
 
         crawlLog("  Fetch Seed Time ".(changeInMicrotime($start_time)));
@@ -490,15 +534,19 @@ class Fetcher implements CrawlConstants
     /**
      * Does page deduplication on an array of downloaded pages using a
      * BloomFilterBundle of $this->web_archive. Deduplication based
-     * on summaries is also done on the queue server.
+     * on summaries is also done on the queue server. Also, sorts out pages
+     * for which no content was downloaded so that they cna be scheduled
+     * to be crawled again.
      *
      * @param array &$site_pages pages to deduplicate
      */
-    function deleteSeenPages(&$site_pages)
+    function deduplicateAndReschedulePages(&$site_pages)
     {
         $start_time = microtime();
 
         $deduplicated_pages = array();
+        $not_downloaded = array();
+
         $unseen_page_hashes = 
             $this->web_archive->differencePageKeysFilter($site_pages, 
             self::HASH);
@@ -510,13 +558,15 @@ class Fetcher implements CrawlConstants
                 $unseen_page_hashes)) {
                 $this->web_archive->addPageFilter(self::HASH, $site);
                 $deduplicated_pages[] = $site;
+            } else if(!isset($site[self::HASH])){
+                $not_downloaded[] = $site;
             }
 
         }
         crawlLog("  Delete duplicated pages time".
             (changeInMicrotime($start_time)));
 
-        return $deduplicated_pages;
+        return array($deduplicated_pages, $not_downloaded);
     }
 
     /**
@@ -794,7 +844,7 @@ class Fetcher implements CrawlConstants
         } // end for
 
 
-        if(count($this->to_crawl) <= 0 || 
+        if((count($this->to_crawl) <= 0 && count($this->to_crawl_again) <= 0) ||
             ( isset($this->found_sites[self::SEEN_URLS]) && 
             count($this->found_sites[self::SEEN_URLS]) > 
             SEEN_URLS_BEFORE_UPDATE_SCHEDULER)) {
