@@ -155,7 +155,7 @@ class PhraseModel extends Model
                 $hashes[] = $tmp;
             }
             $hashes = array_merge($hashes, $hash_quoteds);
-            $restrict_phrases = array_merge($words, $quoteds);
+            $restrict_phrases = array_merge($query_words, $quoteds);
   
   
             $hashes = array_unique($hashes);

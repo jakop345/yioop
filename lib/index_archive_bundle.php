@@ -276,7 +276,8 @@ class WordIterator implements IndexingConstants, CrawlConstants
                 $this->index->num_partitions_index);
 
         if($info_block == NULL) {
-        	    $this->info_block = $this->index->getPhraseIndexInfo($this->word_key);
+        	    $this->info_block = 
+        	        $this->index->getPhraseIndexInfo($this->word_key);
         } else {
             $this->info_block = $info_block; 
         }
@@ -375,6 +376,10 @@ class WordIterator implements IndexingConstants, CrawlConstants
      */
     public function currentDocsWithWord($restrict_phrases = NULL)
     {
+        if($this->num_generations <= 
+            $this->info_block['CURRENT_GENERATION_INDEX']) {
+            return -1;
+        }
         $generation = 
             $this->info_block['GENERATIONS'][
                 $this->info_block['CURRENT_GENERATION_INDEX']];
@@ -958,7 +963,6 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
 
         if($phrase_info == NULL || (isset($phrase_info[self::PARTIAL_COUNT]) 
             && $phrase_info[self::PARTIAL_COUNT] < $limit + $num)) {
-
             $this->addPhraseIndex(
                 $word_key, $restrict_phrases, $phrase_key, $limit + $num);
         }

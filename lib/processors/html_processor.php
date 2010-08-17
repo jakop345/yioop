@@ -52,6 +52,8 @@ require_once BASE_DIR."/lib/url_parser.php";
  */
 class HtmlProcessor extends TextProcessor
 {
+    const MAX_DESCRIPTION_LEN = 3000;
+
 
     /**
      *  Used to extract the title, description and links from
@@ -136,7 +138,7 @@ class HtmlProcessor extends TextProcessor
         $sites = array();
 
         $xpath = new DOMXPath($dom);
-        $titles = $xpath->evaluate("/html/head//title");
+        $titles = $xpath->evaluate("/html//title");
 
         $title = "";
 
@@ -158,7 +160,8 @@ class HtmlProcessor extends TextProcessor
         $sites = array();
 
         $xpath = new DOMXPath($dom);
-        $metas = $xpath->evaluate("/html/head//meta");
+
+        $metas = $xpath->evaluate("/html//meta");
 
         $description = "";
 
@@ -169,14 +172,22 @@ class HtmlProcessor extends TextProcessor
             }
         }
 
-        //concatenate the contents of all the h1, h2 tags in the document
-        $headings = $xpath->evaluate(
-            "/html/body//h1|/html/body//h2|/html/body//h3|/html/body//p[1]");
-
-        foreach($headings as $h) {
-            $description .= " ".$h->textContent;
+        /*
+          concatenate the contents of then additional dom elements up to
+          the limit of description length
+        */
+        $page_parts = array("/html//h1", "/html//h2", "/html//h3",
+            "/html//h4", "/html//h5", "/html//h6", "/html//p[1]",
+            "/html//div[1]", "/html//p[2]", "/html//div[2]", 
+            "/html//td");
+        foreach($page_parts as $part) {
+            $doc_nodes = $xpath->evaluate($part);
+            foreach($doc_nodes as $node) {
+                $description .= " ".$node->textContent;
+                if(strlen($description) > self::MAX_DESCRIPTION_LEN) { break 2;}
+            }
         }
-        $description = mb_ereg_replace("(\s)+", " ",  $description);  
+        $description = mb_ereg_replace("(\s)+", " ",  $description);
 
         return $description;
     }

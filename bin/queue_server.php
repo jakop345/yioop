@@ -574,7 +574,7 @@ class QueueServer implements CrawlConstants
             crawlLog("... less than max age\n");
         }
 
-        crawlLog("Checking for Robot.txt files to process...");
+        crawlLog("Checking for robots.txt files to process...");
         $robot_dir = 
             CRAWL_DIR."/schedules/".
                 self::robot_data_base_name.$this->crawl_time;
@@ -1002,7 +1002,7 @@ class QueueServer implements CrawlConstants
                 } //if delay else
             } // if containsGotRobotTxt
 
-            // handle robot.txt urls
+            // handle robots.txt urls
 
 
             $i++;

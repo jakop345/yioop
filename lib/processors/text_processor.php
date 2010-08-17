@@ -66,7 +66,7 @@ class TextProcessor implements CrawlConstants
         if(is_string($page)) {
             $summary[self::TITLE] = "";
             $summary[self::DESCRIPTION] = mb_substr($page, 0, 400);
-            $summary[self::LINKS] = array();
+            $summary[self::LINKS] = self::extractHttpHttpsUrls($page);
             $summary[self::PAGE] = "<html><body><pre>$page</pre></body></html>";
         }
         return $summary;
@@ -105,6 +105,27 @@ class TextProcessor implements CrawlConstants
 
     }
 
+    /**
+     * Tries to extract http or https links from a string of text.
+     * Does this by a very approximate regular expression.
+     *
+     * @param string $page text string of a document
+     * @return array a set of http or https links that were extracted from
+     *      the document
+     */
+    static function extractHttpHttpsUrls($page)
+    {
+        $pattern = 
+            '@((http|https)://([^ \t\r\n\v\f\'\"\;\,\<\>\[\]\{\}\(\)])*)@i';
+        $sites = array();
+        preg_match_all($pattern, $page, $matches);
+        foreach($matches[0] as $url) {
+            if(!isset($sites[$url])) {
+                $sites[$url] = strip_tags($url);
+            }
+        }
+        return $sites;
+    }
 }
 
 ?>
