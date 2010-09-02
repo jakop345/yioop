@@ -145,7 +145,7 @@ class WebArchiveBundle
         }
 
         //store/read archive description
-        $info = NULL;
+
         if(file_exists($dir_name."/description.txt")) {
             $info = unserialize(
                 file_get_contents($this->dir_name."/description.txt"));
@@ -169,8 +169,6 @@ class WebArchiveBundle
                 $this->description = "Archive created without a description";
             }
         }
-
-        $info = array();
 
         $info['DESCRIPTION'] = $this->description;
         $info['NUM_PARTITIONS'] = $this->num_partitions;
@@ -419,16 +417,35 @@ class WebArchiveBundle
     }
 
     /**
-     * Updates the description file with the current count for the number of
-     * items in the WebArchiveBundle
+     * Creates a new counter to be maintain in the description.txt
+     * file if the counter doesn't exist, leaves unchanged otherwise
      *
-     * @param int $num number of items to add to current count
+     * @param string $field field of info struct to add a counter for
      */
-    function addCount($num)
+    function initCountIfNotExists($field = "COUNT")
     {
         $info = 
             unserialize(file_get_contents($this->dir_name."/description.txt"));
-        $info['COUNT'] += $num;
+        if(!isset($info[$field])) {
+            $info[$field] = 0;
+        }
+        file_put_contents($this->dir_name."/description.txt", serialize($info));
+    }
+
+    /**
+     * Updates the description file with the current count for the number of
+     * items in the WebArchiveBundle. If the $field item is used counts of
+     * additional properties (visited urls say versus total urls) can be 
+     * maintained.
+     *
+     * @param int $num number of items to add to current count
+     * @param string $field field of info struct to add to the count of
+     */
+    function addCount($num, $field = "COUNT")
+    {
+        $info = 
+            unserialize(file_get_contents($this->dir_name."/description.txt"));
+        $info[$field] += $num;
         file_put_contents($this->dir_name."/description.txt", serialize($info));
     }
 

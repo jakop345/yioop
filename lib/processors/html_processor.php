@@ -52,7 +52,7 @@ require_once BASE_DIR."/lib/url_parser.php";
  */
 class HtmlProcessor extends TextProcessor
 {
-    const MAX_DESCRIPTION_LEN = 3000;
+    const MAX_DESCRIPTION_LEN = 2000;
 
 
     /**

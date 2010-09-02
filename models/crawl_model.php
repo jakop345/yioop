@@ -191,6 +191,9 @@ class CrawlModel extends Model implements CrawlConstants
                     substr($pre_timestamp, strlen(self::index_data_base_name));
                 $info = IndexArchiveBundle::getArchiveInfo($dir);
                 $crawl['DESCRIPTION'] = $info['DESCRIPTION'];
+                $crawl['VISITED_URLS_COUNT'] = 
+                    isset($info['VISITED_URLS_COUNT']) ?
+                    $info['VISITED_URLS_COUNT'] : 0;
                 $crawl['COUNT'] = $info['COUNT'];
                 $crawl['NUM_PARTITIONS'] = $info['NUM_PARTITIONS'];
                 $list[] = $crawl;

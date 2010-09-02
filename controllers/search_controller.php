@@ -138,7 +138,8 @@ class SearchController extends Controller implements CrawlConstants
         } else {
             $index_time_stamp = 0; //use the default crawl index
         }
-        if(isset($_REQUEST['q']) || $activity != "query") {
+        if(isset($_REQUEST['q']) && strlen($_REQUEST['q']) >0 
+            || $activity != "query") {
             if($activity == "query") {
                 $activity_array = $this->extractActivityQuery();
                 $query = $activity_array[0]; // dirty
@@ -224,7 +225,7 @@ class SearchController extends Controller implements CrawlConstants
                     crawlHash($url), $summary_offset);
 
                 $top_phrases  = 
-                    $this->phraseModel->getTopPhrases($crawl_item, 20);
+                    $this->phraseModel->getTopPhrases($crawl_item, 3);
                 $top_query = implode(" ", $top_phrases);
                 $phrase_results = $this->phraseModel->getPhrasePageResults(
                     $top_query, $limit, $results_per_page, false);
@@ -244,8 +245,10 @@ class SearchController extends Controller implements CrawlConstants
             break;
         }
 
-        $data['PAGES'] = $phrase_results['PAGES'];
-        $data['TOTAL_ROWS'] = $phrase_results['TOTAL_ROWS'];
+        $data['PAGES'] = (isset($phrase_results['PAGES'])) ?
+             $phrase_results['PAGES']: array();
+        $data['TOTAL_ROWS'] = (isset($phrase_results['TOTAL_ROWS'])) ? 
+            $phrase_results['TOTAL_ROWS'] : 0;
         $data['LIMIT'] = $limit;
         $data['RESULTS_PER_PAGE'] = $results_per_page;
 
@@ -332,11 +335,20 @@ class SearchController extends Controller implements CrawlConstants
             $machine_uri, $page, $offset, $crawl_time);
 
         $cache_file = $cache_item[self::PAGE];
+
         $request = $cache_item['REQUEST'];
 
+        $meta_words = array('link\:', 'site\:', 
+            'filetype\:', 'info\:', '\-', 
+            'index:', 'i:', 'weight:', 'w:');
+        foreach($meta_words as $meta_word) {
+            $pattern = "/(\s)($meta_word(\S)+)/";
+            $query = preg_replace($pattern, "", $query);
+        }
         $query = str_replace("'", " ", $query);
         $query = str_replace('"', " ", $query);
         $query = str_replace('\\', " ", $query);
+        $query = str_replace('|', " ", $query);
         $query = $this->clean($query, "string");
 
         $page_url = $url;

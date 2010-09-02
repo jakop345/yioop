@@ -60,7 +60,7 @@ class PersistentStructure
      *  @var int
      */
     var $unsaved_operations;
-    /** Number of operation between saves 
+    /** Number of operation between saves. If == -1 never save
      *  @var int
      */
     var $save_frequency;
@@ -71,7 +71,8 @@ class PersistentStructure
      *
      * @param string $fname the name of the file to store the 
      *      PersistentStructure in
-     * @param int $save_frequency the number of operation before a save
+     * @param int $save_frequency the number of operation before a save If 
+     *      <= 0 never save
      */
     public function __construct($fname, 
         $save_frequency = self::DEFAULT_SAVE_FREQUENCY)
@@ -107,7 +108,8 @@ class PersistentStructure
     function checkSave()
     {
         $this->unsaved_operations++;
-        if($this->unsaved_operations >= $this->save_frequency) {
+        if($this->save_frequency > 0 && 
+            $this->unsaved_operations >= $this->save_frequency) {
             $this->save();
             $this->unsaved_operations = 0;
         }

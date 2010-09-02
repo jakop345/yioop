@@ -73,7 +73,7 @@ abstract class ImageProcessor implements CrawlConstants
     static function createThumb($image)
     {
         $thumb = imagecreatetruecolor(50, 50);
-        if( isset($image) && $image == false ) {
+        if( isset($image) && $image !== false ) {
             $size_x = imagesx($image);
             $size_y = imagesy($image);
 

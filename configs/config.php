@@ -138,7 +138,7 @@ define('MAX_WAITING_HOSTS', 1000);
 define('URL_FILTER_SIZE', 10000000);
 
 /** number of fetchers that will be used in a given crawl */
-define('NUM_FETCHERS', 3); 
+define('NUM_FETCHERS', 4); 
 
 /**
  * maximum number of urls that will be held in ram

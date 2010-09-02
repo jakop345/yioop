@@ -216,6 +216,22 @@ function scoreOrderCallback($word_doc_a, $word_doc_b)
 }
 
 /**
+ *  Callback function used to sort documents by doc_rank
+ *
+ *  The function is used to sort documents being added to an IndexArchiveBundle
+ *
+ *  @param string $word_doc_a doc id of first document to compare
+ *  @param string $word_doc_b doc id of second document to compare
+ *  @return int -1 if first doc bigger 1 otherwise
+ *  @see IndexArchiveBundle::addPartitionWordData()
+ */
+function docRankOrderCallback($word_doc_a, $word_doc_b)
+{
+    return ((float)$word_doc_a[CrawlConstants::DOC_RANK] > 
+        (float)$word_doc_b[CrawlConstants::DOC_RANK]) ? -1 : 1;
+}
+
+/**
  * Callback to check if $a is less than $b
  *
  * Used to help sort document results returned in PhraseModel called 

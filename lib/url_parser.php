@@ -114,7 +114,7 @@ class UrlParser
      *  @param string $url the url to parse
      *  @return the host portion of the url if present; NULL otherwise
      */
-    public static function getPath($url) 
+    static function getPath($url) 
     {
         $url_parts = @parse_url($url);
         if(!isset($url_parts['path'])) {
@@ -134,7 +134,7 @@ class UrlParser
      * @param string $url the url to extract prefixes from
      * @return array the array of url prefixes
      */
-    public static function getHostPaths($url) 
+    static function getHostPaths($url) 
     {
         $host_paths = array($url);
 
@@ -162,6 +162,34 @@ class UrlParser
 
     }
 
+    /**
+     * Gets the subdomains of the host portion of a url. So
+     *
+     * http://a.b.c/d/f/
+     * will return a.b.c, .a.b.c, b.c, .b.c, c, .c
+     *
+     * @param string $url the url to extract prefixes from
+     * @return array the array of url prefixes
+     */
+    static function getHostSubdomains($url) 
+    {
+        $subdomains = array();
+        $url_parts = @parse_url($url);
+        if(strlen($url_parts['host']) <= 0) { return $subdomains; }
+        $host = $url_parts['host'];
+        $host_parts = explode(".", $host);
+        $num_parts = count($host_parts);
+        $domain = "";
+        for($i = $num_parts - 1; $i >= 0 ; $i--) {
+            $domain = $host_parts[$i].$domain;
+            $subdomains[] = $domain;
+            $domain = ".$domain";
+            $subdomains[] = $domain;
+        }
+
+        return $subdomains;
+    }
+    
     /**
      * Given a url, makes a guess at the file type of the file it points to
      *
@@ -312,7 +340,13 @@ class UrlParser
             $path2 = str_replace("//","/", $path);
         } while($path != $path2);
 
-        $path = str_replace("/./","/", $path);   
+        $path = str_replace("/./","/", $path);
+        if($path == "." || substr($path, -2) == "/.") {
+            $path = "/";
+        }
+        if($path == "") {
+            $path = "/";
+        }
 
         $url = $host.$path;
 

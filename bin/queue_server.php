@@ -503,19 +503,30 @@ class QueueServer implements CrawlConstants
             $num_seen = 0;
         }
 
-
+        $visited_urls_count = 0;
         for($i = 0; $i < $num_seen; $i++) {
             $index_archive->addPageFilter(self::HASH, $seen_sites[$i]);
             $seen_sites[$i][self::MACHINE] = $machine;
             $seen_sites[$i][self::MACHINE_URI] = $machine_uri;
             $seen_sites[$i][self::HASH_URL] = 
                 crawlHash($seen_sites[$i][self::URL]);
+            $link_url_parts = explode("|", $seen_sites[$i][self::URL]);
+            if(strcmp("url", $link_url_parts[0]) == 0 &&
+                strcmp("text", $link_url_parts[2]) == 0) {
+                $seen_sites[$i][self::HASH_URL] = 
+                    crawlHash($seen_sites[$i][self::URL]).
+                    ":".crawlHash($link_url_parts[1]).
+                    ":".crawlHash("info:".$link_url_parts[1]);
+            } else {
+                $visited_urls_count++;
+            }
         }
 
         if(isset($seen_sites)) {
             $seen_sites = 
                 $index_archive->addPages(
-                    self::HASH_URL, self::SUMMARY_OFFSET, $seen_sites);
+                    self::HASH_URL, self::SUMMARY_OFFSET, $seen_sites,
+                    $visited_urls_count);
 
             $summary_offsets = array();
             foreach($seen_sites as $site) {
@@ -727,13 +738,15 @@ class QueueServer implements CrawlConstants
                         "Removing $url from Queue (shouldn't still be there!)");
                     $this->web_queue->removeQueue($url);
                 }
-
-                array_push($most_recent_urls, $url);
-                if($cnt >= NUM_RECENT_URLS_TO_DISPLAY)
-                {
-                    array_shift($most_recent_urls);
+                if(strpos($url, "url|") !== 0) {
+                    array_push($most_recent_urls, $url);
+                    if($cnt >= NUM_RECENT_URLS_TO_DISPLAY)
+                    {
+                        array_shift($most_recent_urls);
+                    }
+                    $cnt++;
                 }
-                $cnt++;
+
             }
         }
 
@@ -809,6 +822,7 @@ class QueueServer implements CrawlConstants
         $info_bundle = IndexArchiveBundle::getArchiveInfo(
             CRAWL_DIR.'/cache/'.self::index_data_base_name.$this->crawl_time);
         $crawl_status['COUNT'] = $info_bundle['COUNT'];
+        $crawl_status['VISITED_URLS_COUNT'] = $info_bundle['VISITED_URLS_COUNT'];
         $crawl_status['DESCRIPTION'] = $info_bundle['DESCRIPTION'];
         file_put_contents(
             CRAWL_DIR."/schedules/crawl_status.txt", serialize($crawl_status));
@@ -818,7 +832,9 @@ class QueueServer implements CrawlConstants
 
         crawlLog(
             "The current crawl description is: ".$info_bundle['DESCRIPTION']);
-        crawlLog("Total seen urls so far: ".$info_bundle['COUNT']); 
+        crawlLog("Number of unique pages so far: ".
+            $info_bundle['VISITED_URLS_COUNT']);
+        crawlLog("Total urls extracted so far: ".$info_bundle['COUNT']); 
         crawlLog("Of these, the most recent urls are:");
         foreach($most_recent_urls as $url) {
             crawlLog("URL: $url");

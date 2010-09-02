@@ -54,28 +54,10 @@ require_once 'utility.php';
  */
 require_once 'crawl_constants.php';
 
-/**
- * Enumerative interface for common constants between WordIterator and
- * IndexArchiveBundle
- *
- * These constants are used as fields in arrays. They are negative to 
- * distinguish them from normal array elements 0, 1, 2... However, this
- * means you need to be slightly careful if you try to sort the array
- * as this might screw things up
- *
- * @author Chris Pollett
- * @package seek_quarry
- * @subpackage library
+/** 
+ *Loads common constants for word indexing
  */
-interface IndexingConstants
-{
-    const COUNT = -1;
-    const END_BLOCK = -2;
-    const LIST_OFFSET = -3;
-    const POINT_BLOCK = -4;
-    const PARTIAL_COUNT = -5;
-    const NAME = -6;
-} 
+require_once 'indexing_constants.php';
 
 
 /**
@@ -116,427 +98,7 @@ function setOffsetPointers($data, &$objects, $offset_field)
     return $data;
 }
 
-/**
- * Used to iterate through the documents associated with a word in
- * an IndexArchiveBundle. It also makes it easy to get the summaries
- * of these documents and restrict the documents by additional words.
- *
- * A description of how words and the documents containing them are stored 
- * is given in the documentation of IndexArchiveBundle. To iterate over
- * all documents containng a word, its hash, work_key, is formed. Then using
- * the Bloom filter for that partition, it is determined if the word is stored
- * at all, and if it is, which generations it occurs in. Then the iterator
- * is set to point to the first block of the first generation the word appears
- * in that is greater than the limit of the WordIterator. Thereafter, 
- * nextDocsWithWord will advance $this->current_pointer by one per call.
- * $this->current_pointer keeps track of which block of documents containing
- * the word to return. If it is less than COMMON_WORD_THRESHOLD/BLOCK_SIZE and 
- * there are still more blocks, then the corresponding block_pointer of the word 
- * from the generation's partition info_block is used to look up the offset to
- * the doc block. If it is greater than this value then the linked list 
- * of doc blocks pointed to for the partition is followed to get the appropriate
- * block. This list is in the order that words were stored in the index so
- * LIST_OFFSET points to the last block stored, which in turn points to the
- * next to last block, etc. Finally, when all the blocks in the linked-list are
- * exhausted, the remaining docs for that generation for that word are stored 
- * in the info block for the word itself (this will always be less than 
- * BLOCK_SIZE many). Once all the docs for a word for a generation have been
- * iterated through, than iteration proceeds to the next generation containing
- * the word.
- *
- * @author Chris Pollett
- * @package seek_quarry
- * @subpackage library
- * @see IndexArchiveBundle
- */
-class WordIterator implements IndexingConstants, CrawlConstants
-{
-    /**
-     * hash of word that the iterator iterates over 
-     * @var string
-     */
-    var $word_key;
-    /**
-     * The IndexArchiveBundle this index is associated with
-     * @var object
-     */
-    var $index;
-    /**
-     * The number of documents already iterated over
-     * @var int
-     */
-    var $seen_docs;
-    /**
-     * @var int
-     */
-    var $restricted_seen_docs;
-    /**
-     * The number of documents in the current block before filtering
-     * by restricted words
-     * @var int
-     */
-    var $count_block_unfiltered;
-    /**
-     * Estimate of the number of documents that this iterator can return
-     * @var int
-     */
-    var $num_docs;
 
-    /**
-     * If iterating through the linked-list portions of the documents
-     * the next byte offset in the WebArchive based linked-list
-     * @var int
-     */
-    var $next_offset;
-    /**
-     * Block number of the last block of docs
-     * @var int
-     */
-    var $last_pointed_block;
-    /**
-     * @var int
-     */
-    var $list_offset;
-
-    /**
-     * Pointers to offsets for blocks containing docs with the given word 
-     * for the current generation
-     * @var array
-     */
-    var $block_pointers;
-    /**
-     * Number of completely full blocks of documents for the current generation
-     * @var int
-     */
-    var $num_full_blocks;
-    /**
-     * Number of generations word appears in
-     * @var int
-     */
-    var $num_generations;
-    /**
-     * Used to store the contents of the last partially full block
-     * @var int
-     */
-    var $last_block;
-    /**
-     * 
-     * @var object
-     */
-    var $info_block;
-    /**
-     * Stores the number of the current block of documents we are at in the
-     * set of all blocks of BLOCK_SIZE many documents
-     * @var int
-     */
-    var $current_pointer;
-    /**
-     * First document that should be returned 
-     * amongst all of the documents associated with the
-     * iterator's $word_key
-     * @var int
-     */
-    var $limit;
-
-    /**
-     * Creates a word iterator with the given parameters.
-     *
-     * @param string $word_key hash of word or phrase to iterate docs of 
-     * @param object $index the IndexArchiveBundle to use
-     * @param int $limit the first element to return from the list of docs
-     *      iterated over
-     * @param object $info_block the info block of the WebArchive
-     *      associated with the word in the index. If NULL, then this will
-     *      loaded in WordIterator::reset()
-     */
-    public function __construct($word_key, $index, $limit = 0, $info_block = NULL)
-    {
-        $this->word_key = $word_key;
-        $this->index = $index;
-        $this->limit = $limit;
-        $this->reset($info_block);
-    }
-
-    /**
-     * Returns the iterators to the first document block that it could iterate
-     * over
-     *
-     * @param object $info_block the header block in the index WebArchiveBundle
-     *      for the word this iterator iterates over. If not NULL, this saves
-     *      the time to load it. If not it will be loaded, but this will be
-     *      slower.
-     */
-    public function reset($info_block = NULL)
-    {
-        $this->restricted_seen_docs = 0;
-        $this->count_block_unfiltered = 0;
-
-        $partition = 
-            WebArchiveBundle::selectPartition($this->word_key, 
-                $this->index->num_partitions_index);
-
-        if($info_block == NULL) {
-        	    $this->info_block = 
-        	        $this->index->getPhraseIndexInfo($this->word_key);
-        } else {
-            $this->info_block = $info_block; 
-        }
-        if($this->info_block !== NULL) {
-            $this->num_generations = count($this->info_block['GENERATIONS']);
-            $count_till_generation = $this->info_block[self::COUNT];
-
-            while($this->limit >= $count_till_generation) {
-                $this->info_block['CURRENT_GENERATION_INDEX']++;
-                if($this->num_generations <= 
-                    $this->info_block['CURRENT_GENERATION_INDEX']) {
-                    $this->num_docs = 0;
-                    $this->current_pointer = -1;
-                    return;
-                }
-                $info_block = $this->index->getPhraseIndexInfo(
-                    $this->word_key, 
-                    $this->info_block['CURRENT_GENERATION_INDEX'], 
-                    $this->info_block);
-                if($info_block !== NULL) {
-                    $this->info_block = $info_block;
-                }
-                $count_till_generation += $this->info_block[self::COUNT];
-            }
-            
-
-        }
-
-        $this->seen_docs = $count_till_generation - 
-            $this->info_block[self::COUNT];
-        $this->initGeneration();
-
-
-    }
-
-    /**
-     * Sets up the iterator to iterate through the current generation.
-     *
-     * @return bool whether the initialization succeeds
-     */
-    public function initGeneration()
-    {
-
-        if($this->info_block !== NULL) {
-            $info_block = $this->index->getPhraseIndexInfo(
-                $this->word_key, $this->info_block['CURRENT_GENERATION_INDEX'], 
-                $this->info_block);
-            if($info_block === NULL) {
-                return false;
-            }
-            $this->info_block = $info_block;
-            $this->num_docs = $info_block['TOTAL_COUNT'];
-            $this->num_docs_generation = $info_block[self::COUNT];
-
-            $this->current_pointer = 
-                max(floor(($this->limit - $this->seen_docs) / BLOCK_SIZE), 0);
-            $this->seen_docs += $this->current_pointer*BLOCK_SIZE;
-            $this->last_block = $info_block[self::END_BLOCK];
-            $this->num_full_blocks = 
-                floor($this->num_docs_generation / BLOCK_SIZE);
-            if($this->num_docs_generation > COMMON_WORD_THRESHOLD) {
-                $this->last_pointed_block = 
-                    floor(COMMON_WORD_THRESHOLD / BLOCK_SIZE);
-            } else {
-                $this->last_pointed_block = $this->num_full_blocks;
-            }
-
-            for($i = 0; $i < $this->last_pointed_block; $i++) {
-                if(isset($info_block[$i])) {
-                    $this->block_pointers[$i] = $info_block[$i];
-                }
-            }
-            
-            if($this->num_docs_generation > COMMON_WORD_THRESHOLD) {
-                if($info_block[self::LIST_OFFSET] === NULL) {
-                    $this->list_offset = NULL;
-                } else {
-                    $this->list_offset = $info_block[self::LIST_OFFSET];
-                }
-            }
-
-        } else {
-            $this->num_docs = 0;
-            $this->num_docs_generation = 0;
-            $this->current_pointer = -1;
-        }
-        return true;
-    }
-
-    /**
-     * Gets the block of doc summaries associated with the current doc
-     * pointer and which match the array of additional word restrictions
-     * @param array $restrict_phrases an array of additional words or phrases
-     *      to see if contained in summary
-     * @return array doc summaries that match
-     */
-    public function currentDocsWithWord($restrict_phrases = NULL)
-    {
-        if($this->num_generations <= 
-            $this->info_block['CURRENT_GENERATION_INDEX']) {
-            return -1;
-        }
-        $generation = 
-            $this->info_block['GENERATIONS'][
-                $this->info_block['CURRENT_GENERATION_INDEX']];
-        if($this->current_pointer >= 0) {
-            if($this->current_pointer == $this->num_full_blocks) {
-                $pages = $this->last_block;
-            } else if ($this->current_pointer >= $this->last_pointed_block) {
-                /* if there are more than COMMON_WORD_THRESHOLD many 
-                   results and we're not at the last block yet
-                 */
-                if($this->list_offset === NULL) {
-                    return -1;
-                }
-                $offset = $this->list_offset;
-                $found = false;
-                do {
-                    /* the link list is actually backwards to the order we want
-                       For now, we cycle along the list from the last data
-                       stored until we find the block we want. This is slow
-                       but we are relying on the fact that each generation is
-                       not too big.
-                     */
-                    $doc_block = $this->index->getWordDocBlock($this->word_key, 
-                        $offset, $generation);
-                    $word_keys = array_keys($doc_block);
-                    $found_key = NULL;
-                    foreach($word_keys as $word_key) {
-                        if(strstr($word_key, $this->word_key.":")) {
-                            $found_key = $word_key;
-                            if(isset($doc_block[
-                                $found_key][self::LIST_OFFSET])) {
-                                //only one list offset/docblock
-                                break;
-                            }
-                        }
-                    }
-                    if($found_key === NULL) {
-                        break;
-                    }
-                    if(isset($doc_block[
-                        $this->word_key.":".$this->current_pointer])) {
-                        $found = true;
-                        break;
-                    }
-                    $offset = $doc_block[$found_key][self::LIST_OFFSET];
-                } while($offset != NULL);
-                if($found != true) {
-                    $pages = array();
-                } else {
-                    $pages = $doc_block[
-                        $this->word_key.":".$this->current_pointer];
-                }
-            } else {
-                //first COMMON_WORD_THRESHOLD many results fast
-                if(isset($this->block_pointers[$this->current_pointer])) {
-                    $doc_block = $this->index->getWordDocBlock($this->word_key, 
-                        $this->block_pointers[$this->current_pointer], 
-                        $generation);
-                    if(isset(
-                        $doc_block[$this->word_key.":".$this->current_pointer]
-                        )) {
-                        $pages = 
-                            $doc_block[
-                                $this->word_key.":".$this->current_pointer];
-                    } else {
-                        $pages = array();
-                    }
-                } else {
-                    $pages = array();
-                }
-            }
-            
-            if($this->seen_docs < $this->limit) {
-                $diff_offset = $this->limit - $this->seen_docs;
-
-                $pages = array_slice($pages, $diff_offset);
-            }
-            $this->count_block_unfiltered = count($pages);
-
-            if($restrict_phrases != NULL) {
-
-                 $out_pages = array();
-                 if(count($pages) > 0 ) {
-                     foreach($pages as $doc_key => $doc_info) {
-
-                         if(isset($doc_info[self::SUMMARY_OFFSET])) {
-
-                             $page = $this->index->getPage(
-                                $doc_key, $doc_info[self::SUMMARY_OFFSET]);
-                             /* build a string out of title, links, 
-                                and description
-                              */
-                             $page_string = mb_strtolower(
-                                PhraseParser::extractWordStringPageSummary(
-                                    $page));
-
-                             $found = true;
-                             foreach($restrict_phrases as $phrase) {
-                                 if(mb_strpos($page_string, $phrase) 
-                                    === false) {
-                                     $found = false;
-                                 }
-                             }
-                             if($found == true) {
-                                 $out_pages[$doc_key] = $doc_info;
-                             }
-                         }
-                     }
-                 }
-                 $pages = $out_pages;
-            }
-            return $pages;
-        } else {
-            return -1;
-        }
-    }
-
-    /**
-     * Get the current block of doc summaries for the word iterator and advances
-     * the current pointer to the next block
-     *
-     * @param array $restrict_phrases additional words to restrict doc summaries
-     *      returned
-     * @return array doc summaries matching the $restrict_phrases
-     */
-    public function nextDocsWithWord($restrict_phrases = NULL)
-    {
-        $doc_block = $this->currentDocsWithWord($restrict_phrases);
-        if($this->seen_docs <  $this->limit) {
-            $this->seen_docs = $this->count_block_unfiltered + $this->limit;
-        } else {
-        	    $this->seen_docs += $this->count_block_unfiltered;
-        }
-        $this->restricted_seen_docs += count($doc_block);
-        if($doc_block == -1 || !is_array($doc_block)) {
-            return NULL;
-        }
-
-        $this->current_pointer ++;
-        if($this->current_pointer > $this->num_full_blocks) {
-            $flag = false;
-            while ($this->info_block['CURRENT_GENERATION_INDEX'] < 
-                $this->num_generations - 1 && !$flag) {
-                $this->info_block['CURRENT_GENERATION_INDEX']++;
-                $flag = $this->initGeneration();
-            } 
-            if ($this->info_block['CURRENT_GENERATION_INDEX'] >= 
-                $this->num_generations - 1) {
-                $this->current_pointer = - 1;
-            }
-        }
-
-        return $doc_block;
-
-    }
-
-}
 
 /**
  * Encapsulates a set of web page summaries and an inverted word-index of terms
@@ -679,6 +241,8 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
         }
         $this->summaries = new WebArchiveBundle($dir_name."/summaries",
             $filter_size, $num_partitions_summaries, $description);
+        $this->summaries->initCountIfNotExists("VISITED_URLS_COUNT");
+
         $this->num_partitions_summaries = $this->summaries->num_partitions;
 
         $this->index = new WebArchiveBundle(
@@ -699,12 +263,16 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
      * @param string $key_field field used to select partition
      * @param string $offset_field field used to record offsets after storing
      * @param array &$pages data to store
+     * @param int $visited_urls_count number to add to the count of visited urls
+     *      (visited urls is a smaller number than the total count of objects
+     *      stored in the index).
      * @return array $pages adjusted with offset field
      */
-    public function addPages($key_field, $offset_field, $pages)
+    public function addPages($key_field, $offset_field, $pages, 
+        $visited_urls_count)
     {
         $result = $this->summaries->addPages($key_field, $offset_field, $pages);
-
+        $this->summaries->addCount($visited_urls_count, "VISITED_URLS_COUNT");
         return $result;
     }
 
@@ -828,7 +396,7 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
 
             $tmp = 
                 array_merge($block_data[$word_key][self::END_BLOCK],$docs_info);
-            uasort($tmp, "scoreOrderCallback");
+            uasort($tmp, "docRankOrderCallback");
             $add_cnt = count($tmp);
             $num_blocks = floor($add_cnt / BLOCK_SIZE);
             $block_data[$word_key][self::END_BLOCK] = 
@@ -934,63 +502,6 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
             }
         }
         return true;
-    }
-
-    /**
-     * Gets doc summaries of documents containing a given word and meeting the
-     * additional provided criteria
-     * @param string $word_key the word to iterate over to get document results
-     *      of
-     * @param int $limit number of first document in order to return
-     * @param int $num number of documents to return summaries of
-     * @param array $restrict_phrases additional words and phrase to store
-     *      further restrict the search 
-     * @param string $phrase_key a hash of the word and restricted phrases to
-     *      store the results of the look up
-     * @param array $phrase_info info block of the word
-     * @return array document summaries
-     */
-    public function getSummariesByHash($word_key, $limit, $num, 
-        $restrict_phrases = NULL, $phrase_key = NULL, $phrase_info = NULL)
-    {
-        if($phrase_key ==  NULL) {
-            $phrase_key = $word_key;
-        }
-
-        if($phrase_info == NULL) {
-            $phrase_info = $this->getPhraseIndexInfo($phrase_key);
-        }
-
-        if($phrase_info == NULL || (isset($phrase_info[self::PARTIAL_COUNT]) 
-            && $phrase_info[self::PARTIAL_COUNT] < $limit + $num)) {
-            $this->addPhraseIndex(
-                $word_key, $restrict_phrases, $phrase_key, $limit + $num);
-        }
-
-        $iterator = new WordIterator($phrase_key, $this, $limit, $phrase_info);
-
-        $num_retrieved = 0;
-        $pages = array();
-
-         while(is_array($next_docs = $iterator->nextDocsWithWord()) && 
-            $num_retrieved < $num) {
-             $num_docs_in_block = count($next_docs);
-
-             foreach($next_docs as $doc_key => $doc_info) {
-                 if(isset($doc_info[self::SUMMARY_OFFSET])) {
-                     $page = $this->getPage(
-                        $doc_key, $doc_info[self::SUMMARY_OFFSET]);
-                     $pages[] = array_merge($doc_info, $page);
-                     $num_retrieved++;
-                 }
-                 if($num_retrieved >=  $num) {
-                     break 2;
-                 }
-             }
-         }
-        $results['TOTAL_ROWS'] = $iterator->num_docs;
-        $results['PAGES'] = $pages;
-        return $results;
     }
 
     /**
@@ -1108,7 +619,6 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
             WebArchiveBundle::selectPartition(
                 $phrase_key, $this->num_partitions_index);
         $info = array();
-
         if($info_block == NULL) {
 
             if(!$this->initPartitionIndexFilter($partition)) {
@@ -1116,7 +626,7 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
             }
             $filter = & $this->index_partition_filters[$partition];
 
-            if(!$filter->contains($phrase_key)) {
+            if($filter == NULL || !$filter->contains($phrase_key)) {
                 return NULL;
             }
 
@@ -1197,86 +707,6 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
     }
 
     /**
-     * Adds the supplied phrase to the IndexArchiveBundle.
-     *
-     * The most selective word in the phrase is $word_key, the additional
-     * words are in $restrict_phrases, the hash of the phrase to add is 
-     * $phrase_key, and if the will be a lot of results compute at least
-     * the first $num_needed.
-     *
-     * @param string $word_key hash of most selective word in phrase 
-     * @param array $restrict_phrases additional words in phrase
-     * @param string $phrase_key hash of phrase to add
-     * @param $num_needed minimum number of doc results to save if possible
-     */
-    public function addPhraseIndex($word_key, $restrict_phrases, 
-        $phrase_key, $num_needed)
-    {
-        if($phrase_key == NULL) {
-            return;
-        }
-
-        $partition = 
-            WebArchiveBundle::selectPartition($phrase_key, 
-                $this->num_partitions_index);
-
-        $iterator = new WordIterator($word_key, $this);
-        $current_count = 0;
-        $buffer = array();
-        $word_data = array();
-        $partial_flag = false;
-        $first_time = true;
-
-        while(is_array($next_docs = 
-            $iterator->nextDocsWithWord($restrict_phrases))) {
-            $buffer = array_merge($buffer, $next_docs);
-            $cnt = count($buffer);
-
-            if($cnt > COMMON_WORD_THRESHOLD) {
-                $word_data[$phrase_key] = 
-                    array_slice($buffer, 0, COMMON_WORD_THRESHOLD);
-
-                $this->addPartitionWordData($partition, $word_data, $first_time);
-                $first_time = false;
-                $buffer = array_slice($buffer, COMMON_WORD_THRESHOLD); 
-                $current_count += COMMON_WORD_THRESHOLD;
-
-                if($current_count > $num_needed) { 
-                    /* notice $num_needed only plays a role when 
-                      greater than COMMON_WORD_THRESHOLD
-                     */
-                    $partial_flag = true;
-                    break;
-                }
-             }
-        }
-
-        $word_data[$phrase_key] = $buffer;
-
-        $this->addPartitionIndexFilter(
-            $partition, 
-            "delete". $phrase_key . ($this->generation_info['ACTIVE'] - 1));
-
-        $this->addPartitionWordData($partition, $word_data);
-        $this->addPartitionIndexFilter($partition, $phrase_key);
-        $this->addPartitionIndexFilter($partition, $phrase_key . 
-            $this->generation_info['ACTIVE']);
-        $this->index_partition_filters[$partition]->save();
-        file_put_contents($this->dir_name."/generation.txt", 
-            serialize($this->generation_info));
-
-        $block_info = $this->readPartitionInfoBlock($partition);
-        $info = $block_info[$phrase_key];
-        $current_count += count($buffer);
-        if($partial_flag) {
-            $info[self::PARTIAL_COUNT] = $current_count;
-            $info[self::COUNT] = 
-                floor($current_count*$iterator->num_docs/$iterator->seen_docs);
-            $this->setPhraseIndexInfo($phrase_key, $info);
-        }
-    }
-
-    /**
      * Computes the words which appear in the fewest or most documents
      *
      * @param array $word_keys keys of words to select amongst
@@ -1296,6 +726,7 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
                 $words_array[$word_key] = $info['TOTAL_COUNT'];
             } else {
                 $words_array[$word_key] = 0;
+                return NULL;
             }
         }
 

@@ -76,7 +76,10 @@ class CrawlstatusView extends View
         <?php 
         if(isset($data['CRAWL_TIME'])) {  e(date("r",$data['CRAWL_TIME'])); } 
             else {e(tl('crawlstatus_view_no_crawl_time'));} ?></p>
-
+        <p><b><?php e(tl('crawlstatus_view_visited_urls')); ?></b> <?php 
+            if(isset($data['VISITED_URLS_COUNT'])) { 
+                e($data['VISITED_URLS_COUNT']); } else {e("0");} 
+            ?></p>
         <p><b><?php e(tl('crawlstatus_view_total_urls')); ?></b> <?php 
             if(isset($data['COUNT'])) { e($data['COUNT']); } else {e("0");} 
             ?></p>
@@ -109,14 +112,16 @@ class CrawlstatusView extends View
             <table class="crawlstable">
             <tr><th><?php e(tl('crawlstatus_view_description'));?></th><th><?php 
                 e(tl('crawlstatus_view_time_started')); ?></th>
-            <th><?php e(tl('crawlstatus_view_total_urls'));?></th>
+            <th><?php e(tl('crawlstatus_view_url_counts'));?></th>
             <th colspan="3"><?php e(tl('crawlstatus_view_actions'));?></th></tr>
             <?php
             foreach($data['RECENT_CRAWLS'] as $crawl) {
             ?>
                 <tr><td><b><?php e($crawl['DESCRIPTION']); ?></b></td><td> <?php
                     e(date("r", $crawl['CRAWL_TIME'])); ?></td>
-                <td> <?php  e( $crawl['COUNT']); ?></td>
+                <td> <?php e( (isset($crawl["VISITED_URLS_COUNT"]) ? 
+                    $crawl['VISITED_URLS_COUNT'] : 0) ."/".
+                    $crawl['COUNT']); ?></td>
                 <td><a href="<?php e($base_url); ?>resume&timestamp=<?php 
                     e($crawl['CRAWL_TIME']); ?>"><?php 
                     e(tl('crawlstatus_view_resume'));?></a></td>

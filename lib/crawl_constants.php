@@ -124,5 +124,9 @@ interface CrawlConstants
     const PAGE_IMPORTANCE = 'ad';
 
     const MACHINE_URI = 'ae';
+    const SITE_INFO = 'af';
+    const FILETYPE = 'ag';
+    const SUMMARY = 'ah';
+    const URL_INFO = 'ai';
 } 
 ?>

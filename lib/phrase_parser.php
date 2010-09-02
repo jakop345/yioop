@@ -67,17 +67,8 @@ class PhraseParser
             $page[CrawlConstants::TITLE]);
         $description_phrase_string = mb_ereg_replace("[[:punct:]]", " ", 
             $page[CrawlConstants::DESCRIPTION]);
-        $link_phrase_string = "";
-        $link_urls = array(); 
 
-        foreach($page[CrawlConstants::LINKS] as $url => $link_text) {
-            $link_phrase_string .= " $link_text";
-        }
-
-        $link_phrase_string = mb_ereg_replace("[[:punct:]]", " ", 
-            $link_phrase_string);
-        $page_string = $title_phrase_string . " " . $description_phrase_string . 
-            " " . $link_phrase_string;
+        $page_string = $title_phrase_string . " " . $description_phrase_string;
         $page_string = preg_replace("/(\s)+/", " ", $page_string);
 
         return $page_string;

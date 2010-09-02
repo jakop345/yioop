@@ -47,6 +47,14 @@ require_once BASE_DIR."/lib/utility.php";
 require_once BASE_DIR."/lib/index_archive_bundle.php";
 
 /**
+ * Load iterators to get docs out of index archive
+ */
+foreach(glob(BASE_DIR."/lib/index_bundle_iterators/*_iterator.php") 
+    as $filename) { 
+    require_once $filename;
+}
+
+/**
  * 
  * This is class is used to handle
  * db results for a given phrase search
@@ -89,44 +97,106 @@ class PhraseModel extends Model
         $format = true)
     {
 
-        $index_archive_name = self::index_data_base_name . $this->index_name;
+        $results = NULL;
+        $word_structs = array();
+        /* 
+            this is a quick and dirty parsing and will usually work,
+            exceptions would be | in quotes or if someone tried
+            to escape |. 
+        */
+        $disjunct_phrases = explode("|", $phrase); 
+        foreach($disjunct_phrases as $disjunct) {
+            list($word_struct, $format_words) = 
+                $this->parseWordStructConjunctiveQuery($disjunct);
+            if($word_struct != NULL) {
+                $word_structs[] = $word_struct;
+            }
+        }
+        
+        $results = $this->getSummariesByHash($word_structs, 
+            $low, $results_per_page);
+        if(count($results) == 0) {
+            $results = NULL;
+        }
+        if($results == NULL) {
+            $results['TOTAL_ROWS'] = 0;
+        }
+      
+        if($format) {
+            if(count($format_words) == 0 ){
+                $format_words = NULL;
+            }
+        } else {
+            $format_words = NULL;
+        }
 
+
+        $output = $this->formatPageResults($results, $format_words);
+
+        return $output;
+
+    }
+
+
+    function parseWordStructConjunctiveQuery($phrase)
+    {
+        $phrase = " ".$phrase;
+        $phrase_string = $phrase;
+        $meta_words = array('link\:', 'site\:', 
+            'filetype\:', 'info\:', '\-', 
+            'index:', 'i:', 'weight:', 'w:');
+        $index_name = $this->index_name;
+        $weight = 1;
+        $found_metas = array();
+        $disallow_phrases = array();
+        foreach($meta_words as $meta_word) {
+            $pattern = "/(\s)($meta_word(\S)+)/";
+            preg_match_all($pattern, $phrase, $matches);
+            if(in_array($meta_word, array('link\:', 'site\:', 
+            'filetype\:', 'info\:') )) {
+                $found_metas = array_merge($found_metas, $matches[2]);
+            } else if($meta_word == '\-') {
+                if(count($matches[0]) > 0) {
+                    $disallow_phrases = 
+                        array_merge($disallow_phrases, 
+                            array(substr($matches[2][0],2)));
+                }
+            } else if ($meta_word == "i:" || $meta_word == "index:") {
+                if(isset($matches[2][0])) {
+                    $index_name = substr($matches[2][0],strlen($meta_word));
+                }
+            } else if ($meta_word == "w:" || $meta_word == "weight:") {
+                if(isset($matches[2][0])) {
+                    $weight = substr($matches[2][0],strlen($meta_word));
+                }
+            }
+            $phrase_string = preg_replace($pattern,"", $phrase_string);
+        }
+
+        $index_archive_name = self::index_data_base_name . $index_name;
         $index_archive = new IndexArchiveBundle(
             CRAWL_DIR.'/cache/'.$index_archive_name);
 
-        $results = NULL;
-
-        $phrase_string = mb_ereg_replace("[[:punct:]]", " ", $phrase);
+        $phrase_string = mb_ereg_replace("[[:punct:]]", " ", $phrase_string);
         $phrase_string = preg_replace("/(\s)+/", " ", $phrase_string);
+        
         /*
             we search using the stemmed words, but we format snippets in the 
             results by bolding either
          */
         $query_words = explode(" ", $phrase_string); //not stemmed
-        $words = 
+        $base_words = 
             array_keys(PhraseParser::extractPhrasesAndCount($phrase_string)); 
             //stemmed
+            
+        $words = array_merge($base_words, $found_metas);
         if(isset($words) && count($words) == 1) {
             $phrase_string = $words[0];
-        }
-        $phrase_hash = crawlHash($phrase_string);
-
-        $phrase_info = $index_archive->getPhraseIndexInfo($phrase_hash);
-        if(isset($phrase_info[IndexingConstants::PARTIAL_COUNT]) &&
-            $phrase_info[IndexingConstants::PARTIAL_COUNT] < 
-                $low + $results_per_page) {
-            $phrase_info = NULL;
-        }
-
-        if($phrase_info  != NULL) {
-
-            $results = $index_archive->getSummariesByHash(
-                $phrase_hash, $low, $results_per_page, NULL, NULL, $phrase_info);
-
-            if(count($results) == 0) {
-                $results = NULL;
-            }
-
+            $phrase_hash = crawlHash($phrase_string);
+            $word_struct = array("KEYS" => array($phrase_hash),
+                "RESTRICT_PHRASES" => NULL, "DISALLOW_PHRASES" => NULL,
+                "WEIGHT" => $weight, "INDEX_ARCHIVE" => $index_archive
+            );
         } else {
             /* 
                 handle strings in quotes 
@@ -138,13 +208,6 @@ class PhraseModel extends Model
                 preg_match_all('/\"((?:[^\"\\\]|\\\\.)*)\"/', $phrase,$quoteds);
             if(isset($quoteds[1])) {
                 $quoteds = $quoteds[1];
-                foreach($quoteds as $quote_phrase) {
-                    $hash_quote = crawlHash($quote_phrase);
-                    if($index_archive->getPhraseIndexInfo($hash_quote) != NULL){
-                        $hash_quoteds[] = $hash_quote;
-                    }
-                }
-
             }
 
             //get a raw list of words and their hashes 
@@ -154,41 +217,41 @@ class PhraseModel extends Model
                 $tmp = crawlHash($word); 
                 $hashes[] = $tmp;
             }
-            $hashes = array_merge($hashes, $hash_quoteds);
+
             $restrict_phrases = array_merge($query_words, $quoteds);
-  
-  
+
             $hashes = array_unique($hashes);
             $restrict_phrases = array_unique($restrict_phrases);
+            $restrict_phrases = array_filter($restrict_phrases);
+            $words_array = $index_archive->getSelectiveWords($hashes, 10);
 
-            $words_array = $index_archive->getSelectiveWords($hashes, 1);
-            $word_keys = array_keys($words_array);
-            $word_key = $word_keys[0];
-            $count = $words_array[$word_key];
-            if($count > 0 ) {
-                $results = $index_archive->getSummariesByHash(
-                    $word_key, $low, $results_per_page, 
-                    $restrict_phrases, $phrase_hash);
+            if(is_array($words_array)) {
+                reset($words_array);
+                $word_key = key($words_array);
+                $word_count = $words_array[$word_key];
+                foreach($words_array as $key => $count) {
+                    if($count > 3 * $word_count) {
+                        unset($words_array[$key]);
+                    }
+                }
+                $word_keys = array_keys($words_array);
+                $word_struct = array("KEYS" => $word_keys,
+                    "RESTRICT_PHRASES" => $restrict_phrases, 
+                    "DISALLOW_PHRASES" => $disallow_phrases,
+                    "WEIGHT" => $weight,
+                    "INDEX_ARCHIVE" => $index_archive
+                );
+                if($word_count <= 0 ) {
+                    $word_struct = NULL;
+                }
+            } else {
+                $word_struct = NULL;
             }
         }
+        $format_words = array_merge($query_words, $base_words);
 
-        if($results == NULL) {
-            $results['TOTAL_ROWS'] = 0;
-        }
-      
-        if($format) {
-            $formatted_words = array_merge($query_words, $words);
-        } else {
-            $formatted_words = NULL;
-        }
-
-
-        $output = $this->formatPageResults($results, $formatted_words);
-
-        return $output;
-
+        return array($word_struct, $format_words);
     }
-
 
     /**
      * Given a page summary extract the words from it and try to find documents
@@ -232,6 +295,93 @@ class PhraseModel extends Model
 
         return $phrases;
 
+    }
+
+    /**
+     * Gets doc summaries of documents containing given words and meeting the
+     * additional provided criteria
+     * @param array $word_structs an array of word_structs. Here a word_struct
+     *      is an associative array with at least the following fields
+     *      KEYS -- an array of word keys
+     *      RESTRICT_PHRASES -- an array of phrases the document must contain
+     *      DISALLOW_PHRASES -- an array of words the document must not contain
+     *      WEIGHT -- a weight to multiple scores returned from this iterator by
+     *      INDEX_ARCHIVE -- an index_archive object to get results from
+     * @param int $limit number of first document in order to return
+     * @param int $num number of documents to return summaries of
+     * @param object $index_archive index archive to use to get summaries from
+     * @return array document summaries
+     */
+    function getSummariesByHash($word_structs, $limit, $num)
+    {
+
+        $iterators = array();
+        foreach($word_structs as $word_struct) {
+            if(!is_array($word_struct)) { continue;}
+            $word_keys = $word_struct["KEYS"];
+            $restrict_phrases = $word_struct["RESTRICT_PHRASES"];
+            $disallow_phrases = $word_struct["DISALLOW_PHRASES"];
+            $index_archive = $word_struct["INDEX_ARCHIVE"];
+            $weight = $word_struct["WEIGHT"];
+            $num_word_keys = count($word_keys);
+            if($num_word_keys < 1) {continue;}
+
+            for($i = 0; $i < $num_word_keys; $i++) {
+                $word_iterators[$i] = 
+                    new WordIterator($word_keys[$i], $index_archive, 0);
+            }
+            if($num_word_keys == 1) {
+                $base_iterator = $word_iterators[0];
+            } else {
+                $base_iterator = new IntersectIterator($word_iterators, 0);
+            }
+            if($restrict_phrases == NULL && $disallow_phrases == NULL &&
+                $weight == 1) {
+                $iterators[] = $base_iterator;
+            } else {
+                $iterators[] = new PhraseFilterIterator($base_iterator, 
+                    $restrict_phrases, $disallow_phrases, $weight, 0);
+            }
+
+        }
+        $num_iterators = count($iterators);
+        if( $num_iterators < 1) {
+            return NULL;
+        } else if($num_iterators == 1) {
+            $union_iterator = $iterators[0];
+        } else {
+            $union_iterator = new UnionIterator($iterators, 0);
+        }
+
+        $to_retrieve = $limit + max(2*$num, 200);
+        $group_iterator = new GroupIterator($union_iterator, 0);
+        $num_retrieved = 0;
+        $pages = array();
+        while(is_array($next_docs = $group_iterator->nextDocsWithWord()) &&
+            $num_retrieved < $to_retrieve) {
+             foreach($next_docs as $doc_key => $doc_info) {
+                 $summary = & $doc_info[CrawlConstants::SUMMARY];
+                 unset($doc_info[CrawlConstants::SUMMARY]);
+                 $pages[] = array_merge($doc_info, $summary);
+                 $num_retrieved++;
+                 if($num_retrieved >=  $to_retrieve) {
+
+                     break 2;
+                 }
+             }
+        }
+        uasort($pages, "scoreOrderCallback");
+        $pages = array_slice($pages, $limit, $num);
+        if($num_retrieved < $to_retrieve && $limit<=$group_iterator->num_docs) {
+            $results['TOTAL_ROWS'] = $num_retrieved;
+        } else {
+            $results['TOTAL_ROWS'] = max($group_iterator->num_docs, 
+                $num_retrieved);
+            /*num_docs is only approximate, so if gives contradictory info
+              use $num_retrieved */
+        }
+        $results['PAGES'] = $pages;
+        return $results;
     }
 
 }

@@ -114,7 +114,10 @@ class SearchView extends View implements CrawlConstants
             foreach($data['PAGES'] as $page) {?> 
                 <div class='result'> 
                 <h2>
-                <a href="<?php e($page[self::URL]); ?>" ><?php
+                <a href="<?php if($page[self::TYPE] != "link") {
+                    e($page[self::URL]); 
+                    } else 
+                    e(strip_tags($page[self::TITLE])); ?>" ><?php
                  if(isset($page[self::THUMB]) && $page[self::THUMB] != 'NULL') {
                     ?><img src="<?php e($page[self::THUMB]); ?>" alt="<?php 
                         e($page[self::TITLE]); ?>"  /> <?php
@@ -125,31 +128,44 @@ class SearchView extends View implements CrawlConstants
                 ?></a></h2>
                 <p><?php 
                 echo $page[self::DESCRIPTION]; ?></p>
-                <p class="echolink" ><?php e($page[self::URL]." "); 
+                <p class="echolink" ><?php 
+                    e(substr($page[self::URL],0, 200)." "); 
                     e(tl('search_view_rank', 
-                        number_format($page[self::DOC_RANK], 2))); 
+                        number_format($page[self::DOC_RANK], 2)));
+                    $page["WEIGHT"] = (isset($page["WEIGHT"])) ?
+                        $page["WEIGHT"] : 1;
                     e(tl('search_view_relevancy',
-                        number_format(1.25*floatval($page[self::SCORE]) 
-                        - floatval($page[self::DOC_RANK]), 2) )); 
-                    e(tl('search_view_score', 1.25* $page[self::SCORE]));?>
-                <a href="?c=search&amp;a=cache&amp;q=<?php 
-                    e($data['QUERY']); ?>&amp;arg=<?php 
-                    e(urlencode($page[self::URL])); 
-                    ?>&amp;so=<?php  e($page[self::SUMMARY_OFFSET]); 
-                    ?>&amp;its=<?php e($data['its']); ?>" >
-                <?php
-                if($page[self::TYPE] == "text/html" || 
-                    stristr($page[self::TYPE], "image")) {
-                    e(tl('search_view_cache'));
+                        number_format((1.25*floatval($page[self::SCORE])
+                        - floatval($page[self::DOC_RANK]))
+                        / $page["WEIGHT"] , 2) ));
+                    e(tl('search_view_score', 1.25* $page[self::SCORE]));
+                if($page[self::TYPE] != "link") {
+                ?>
+                    <a href="?c=search&amp;a=cache&amp;q=<?php 
+                        e($data['QUERY']); ?>&amp;arg=<?php 
+                        e(urlencode($page[self::URL])); 
+                        ?>&amp;so=<?php  e($page[self::SUMMARY_OFFSET]); 
+                        ?>&amp;its=<?php e($data['its']); ?>" >
+                    <?php
+                    if($page[self::TYPE] == "text/html" || 
+                        stristr($page[self::TYPE], "image")) {
+                        e(tl('search_view_cache'));
 
-                } else {
-                    e(tl('search_view_as_text'));
-                }
-                ?></a>. <a href="?c=search&amp;a=related&amp;arg=<?php 
-                    e(urlencode($page[self::URL])); ?>&amp;so=<?php 
-                    e($page[self::SUMMARY_OFFSET]); 
-                    ?>&amp;its=<?php e($data['its']); ?>" ><?php 
-                    e(tl('search_view_similar')); ?></a>.</p>
+                    } else {
+                        e(tl('search_view_as_text'));
+                    }
+                    ?></a>. <a href="?c=search&amp;a=related&amp;arg=<?php 
+                        e(urlencode($page[self::URL])); ?>&amp;so=<?php 
+                        e($page[self::SUMMARY_OFFSET]); 
+                        ?>&amp;its=<?php e($data['its']); ?>" ><?php 
+                        e(tl('search_view_similar')); 
+                    ?></a>. <a href="?c=search&amp;q=<?php 
+                        e("link:".urlencode($page[self::URL])); ?>&amp;
+                        its=<?php e($data['its']); ?>" ><?php 
+                        e(tl('search_view_inlink')); 
+                    ?></a>.</p>
+                <?php
+                } ?>
                 </div>
 
             <?php 
