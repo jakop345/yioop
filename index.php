@@ -124,7 +124,6 @@ require_once(BASE_DIR."/controllers/".$controller_name."_controller.php");
 $controller_class = ucfirst($controller_name)."Controller";
 $controller = new $controller_class();
 
-
 $controller->processRequest();
 
 /**
