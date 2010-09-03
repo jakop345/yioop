@@ -138,12 +138,12 @@ class SearchController extends Controller implements CrawlConstants
         } else {
             $index_time_stamp = 0; //use the default crawl index
         }
-        if(isset($_REQUEST['q']) && strlen($_REQUEST['q']) >0 
+        if(isset($_REQUEST['q']) && strlen($_REQUEST['q']) > 0 
             || $activity != "query") {
             if($activity == "query") {
                 $activity_array = $this->extractActivityQuery();
                 $query = $activity_array[0]; // dirty
-                $method = $activity_array[1];
+                $activity = $activity_array[1];
                 $arg = $activity_array[2]; 
             }
 
@@ -168,7 +168,10 @@ class SearchController extends Controller implements CrawlConstants
                     list(,$query_activity,) = $this->extractActivityQuery();
                     if($query_activity != "query") {$highlight = false;}
                 }
-                $summary_offset = $this->clean($_REQUEST['so'], "int");
+                $summary_offset = NULL;
+                if(isset($_REQUEST['so'])) {
+                    $summary_offset = $this->clean($_REQUEST['so'], "int");
+                }
                 $this->cacheRequest($query, $arg, $summary_offset, $highlight,
                     $index_time_stamp);
             }
@@ -207,7 +210,6 @@ class SearchController extends Controller implements CrawlConstants
     function processQuery($query, $activity, $arg, $results_per_page, 
         $limit = 0, $index_name = 0) 
     {
-
         if($index_name == 0) {
             $index_name = $this->crawlModel->getCurrentIndexDatabaseName();
         }
@@ -220,7 +222,14 @@ class SearchController extends Controller implements CrawlConstants
             case "related":
             $data['QUERY'] = "related:$arg";
                 $url = $arg;
-                $summary_offset = $this->clean($_REQUEST['so'], "int");
+                $summary_offset = NULL;
+                if(isset($_REQUEST['so'])) {
+                    $summary_offset = $this->clean($_REQUEST['so'], "int");
+                }
+                if($summary_offset === NULL) {
+                    $summary_offset = 
+                        $this->phraseModel->lookupSummaryOffset($url);
+                }
                 $crawl_item = $this->crawlModel->getCrawlItem(
                     crawlHash($url), $summary_offset);
 
@@ -317,7 +326,11 @@ class SearchController extends Controller implements CrawlConstants
             $crawl_time = $this->crawlModel->getCurrentIndexDatabaseName();
         }
 
+        $this->phraseModel->index_name = $crawl_time;
         $this->crawlModel->index_name = $crawl_time;
+        if($summary_offset === NULL) {
+            $summary_offset = $this->phraseModel->lookupSummaryOffset($url);
+        }
 
         if(!$crawl_item = $this->crawlModel->getCrawlItem(crawlHash($url), 
             $summary_offset)) {

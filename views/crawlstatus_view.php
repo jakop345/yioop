@@ -111,14 +111,16 @@ class CrawlstatusView extends View
 
             <table class="crawlstable">
             <tr><th><?php e(tl('crawlstatus_view_description'));?></th><th><?php 
-                e(tl('crawlstatus_view_time_started')); ?></th>
+                e(tl('crawlstatus_view_timestamp')); ?></th>
             <th><?php e(tl('crawlstatus_view_url_counts'));?></th>
             <th colspan="3"><?php e(tl('crawlstatus_view_actions'));?></th></tr>
             <?php
             foreach($data['RECENT_CRAWLS'] as $crawl) {
             ?>
-                <tr><td><b><?php e($crawl['DESCRIPTION']); ?></b></td><td> <?php
-                    e(date("r", $crawl['CRAWL_TIME'])); ?></td>
+                <tr><td><b><?php e($crawl['DESCRIPTION']); ?></b></td><td><?php
+                    e("<b>{$crawl['CRAWL_TIME']}</b><br />");
+                    e("<small>".date("r", $crawl['CRAWL_TIME']).
+                        "</small>"); ?></td>
                 <td> <?php e( (isset($crawl["VISITED_URLS_COUNT"]) ? 
                     $crawl['VISITED_URLS_COUNT'] : 0) ."/".
                     $crawl['COUNT']); ?></td>

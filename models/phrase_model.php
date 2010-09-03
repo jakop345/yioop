@@ -137,6 +137,28 @@ class PhraseModel extends Model
 
     }
 
+    function lookupSummaryOffset($url)
+    {
+        $index_archive_name = self::index_data_base_name . $this->index_name;
+        $index_archive = new IndexArchiveBundle(
+            CRAWL_DIR.'/cache/'.$index_archive_name);
+        $word_iterator = 
+            new WordIterator(crawlHash("info:$url"), $index_archive, 0);
+        $num_retrieved = 0;
+        $pages = array();
+        $summary_offset = NULL;
+        while(is_array($next_docs = $word_iterator->nextDocsWithWord()) &&
+            $num_retrieved < 1) {
+             foreach($next_docs as $doc_key => $doc_info) {
+                 $summary_offset = & $doc_info[CrawlConstants::SUMMARY_OFFSET];
+                 $num_retrieved++;
+                 if($num_retrieved >=  1) {
+                     break 2;
+                 }
+             }
+        }
+        return $summary_offset;
+    }
 
     function parseWordStructConjunctiveQuery($phrase)
     {
