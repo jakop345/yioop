@@ -24,7 +24,7 @@
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
- * @subpackage library
+ * @subpackage iterator
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
  * @copyright 2009, 2010
@@ -50,10 +50,12 @@ require_once BASE_DIR.'/lib/bloom_filter_file.php';
 require_once BASE_DIR.'/lib/index_bundle_iterators/index_bundle_iterator.php';
 
 /**
+ * Used to iterate over the documents which occur in any of a set of
+ * WordIterator results
  *
  * @author Chris Pollett
  * @package seek_quarry
- * @subpackage library
+ * @subpackage iterator
  * @see IndexArchiveBundle
  */
 class UnionIterator extends IndexBundleIterator

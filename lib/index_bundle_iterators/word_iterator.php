@@ -24,7 +24,7 @@
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
- * @subpackage library
+ * @subpackage iterator
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
  * @copyright 2009, 2010
