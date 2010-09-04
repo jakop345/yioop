@@ -42,7 +42,6 @@ define("BASE_DIR", substr($_SERVER['SCRIPT_FILENAME'], 0,-strlen("index.php")));
  * Load the configuration file
  */
 require_once(BASE_DIR.'configs/config.php');
-
 ini_set("memory_limit","200M");
 header("X-FRAME-OPTIONS: DENY"); //prevent click jacking
 session_name(SESSION_NAME); 
