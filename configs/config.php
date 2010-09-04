@@ -183,7 +183,7 @@ define('COMMON_WORD_THRESHOLD', 1000);
 define('MAX_LINKS_PER_PAGE', 50); 
 
 /**  maximum number of words from links to consider on any given page */
-define('MAX_LINKS_WORD_TEXT', 200); 
+define('MAX_LINKS_WORD_TEXT', 100); 
 
 /** request this many bytes out of a page */
 define('PAGE_RANGE_REQUEST', 50000);
@@ -258,7 +258,7 @@ $PAGE_PROCESSORS = array(   "text/html" => "HtmlProcessor",
  * How many non robot urls the fetcher successfully downloads before
  * between times data sent back to queue server
  */
-define ('SEEN_URLS_BEFORE_UPDATE_SCHEDULER', 500);
+define ('SEEN_URLS_BEFORE_UPDATE_SCHEDULER', 400);
 
 /** maximum number of urls to schedule to a given fetcher in one go */
 define ('MAX_FETCH_SIZE', 5000);
