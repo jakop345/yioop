@@ -150,6 +150,9 @@ class WebArchive
         $info_string = serialize($info_block);
         $len = strlen($info_string) + 4;
 
+        $offset = ftell($fh);
+        ftruncate($fh, $offset);
+
         $out = $info_string.pack("N", $len);
         fwrite($fh, $out, $len);
 
@@ -201,6 +204,7 @@ class WebArchive
         $this->seekEndObjects($fh);
 
         $offset = ftell($fh);
+        ftruncate($fh, $offset);
 
         $out = "";
 
@@ -221,7 +225,7 @@ class WebArchive
         }
         
         $this->count += $num_objects;
-    
+        
         fwrite($fh, $out, strlen($out));
         
         if($data != NULL && $callback != NULL) {
