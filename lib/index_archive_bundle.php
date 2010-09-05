@@ -279,10 +279,10 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
     /**
      * Adds the provided mini inverted index data to the IndexArchiveBundle
      *
-     * @param array &$index_data a mini inverted index of word_key=>doc data
+     * @param array $index_data a mini inverted index of word_key=>doc data
      *      to add to this IndexArchiveBundle
      */
-    public function addIndexData(&$index_data)
+    public function addIndexData($index_data)
     {
 
         $out_data = array();
@@ -301,7 +301,7 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
 
             $partition = WebArchiveBundle::selectPartition(
                  $word_key, $this->num_partitions_index);
-            $out_data[$partition][$word_key] = & $docs_info;
+            $out_data[$partition][$word_key] = $docs_info;
 
         }
         $this->diagnostics['SELECT_TIME'] += changeInMicrotime($start_time);

@@ -36,7 +36,7 @@ define("BASE_DIR", substr(
     dirname(realpath($_SERVER['PHP_SELF'])), 0, 
     -strlen("/bin")));
 
-ini_set("memory_limit","700M"); //so have enough memory to crawl big pages
+ini_set("memory_limit","600M"); //so have enough memory to crawl big pages
 
 /** Load in global configuration settings */
 require_once BASE_DIR.'/configs/config.php';
@@ -1095,7 +1095,7 @@ class Fetcher implements CrawlConstants
         }
         $this->found_duplicates = array();
 
-        $this->found_sites[self::INVERTED_INDEX] = & $words;
+        $this->found_sites[self::INVERTED_INDEX] = $words;
 
         crawlLog("  Build mini inverted index time ".
             (changeInMicrotime($start_time)));
