@@ -198,8 +198,8 @@ class PhraseModel extends Model
         $index_archive_name = self::index_data_base_name . $index_name;
         $index_archive = new IndexArchiveBundle(
             CRAWL_DIR.'/cache/'.$index_archive_name);
-
-        $phrase_string = mb_ereg_replace("[[:punct:]]", " ", $phrase_string);
+        $punct = "\.|\,|\:|\;|\"|\'|\`|\[|\]|\{|\}|\(|\)|\!|\|";
+        $phrase_string = mb_ereg_replace($punct, " ", $phrase_string);
         $phrase_string = preg_replace("/(\s)+/", " ", $phrase_string);
         
         /*

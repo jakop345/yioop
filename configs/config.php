@@ -164,9 +164,6 @@ define('NUM_WORDS_PER_GENERATION', 6*URL_FILTER_SIZE/NUM_INDEX_PARTITIONS);
 /** number of generations to sample in estimating number of urls in a query */
 define('SAMPLE_GENERATIONS', 3); 
 
-/** store inlink data in word inverted index */
-define('STORE_INLINKS_IN_DICTIONARY', false); 
-
 /** precision to round floating points document scores */
 define('PRECISION', 10); 
 

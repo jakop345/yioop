@@ -707,13 +707,13 @@ class AdminController extends Controller implements CrawlConstants
                         CRAWL_DIR."/schedules/queue_server_messages.txt", 
                         $info_string);
 
-                    $scheduler_info[self::SEEN_URLS] = array();
+                    $scheduler_info[self::HASH_SEEN_URLS] = array();
 
                     foreach ($seed_info['seed_sites']['url'] as $site) {
                         $scheduler_info[self::TO_CRAWL][] = array($site, 1.0);
                     }
-                    $scheduler_info[self::ROBOT_TXT] = array();
-                    $scheduler_string = serialize($scheduler_info);
+                    $scheduler_string = "\n".urlencode(base64_encode(
+                        gzcompress(serialize($scheduler_info))));
                     @unlink(CRAWL_DIR."/schedules/schedule.txt");
                     file_put_contents(
                         CRAWL_DIR."/schedules/ScheduleDataStartCrawl.txt", 
@@ -737,11 +737,19 @@ class AdminController extends Controller implements CrawlConstants
                 case "resume":
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('admin_controller_resume_crawl')."</h1>')";
-
+                    $seed_info = $this->crawlModel->getSeedInfo();
                     $info = array();
                     $info[self::STATUS] = "RESUME_CRAWL";
                     $info[self::CRAWL_TIME] = 
                         $this->clean($_REQUEST['timestamp'], "int");
+                    $info[self::CRAWL_ORDER] = 
+                        $seed_info['general']['crawl_order'];
+                    $info[self::RESTRICT_SITES_BY_URL] = 
+                        $seed_info['general']['restrict_sites_by_url'];
+                    $info[self::ALLOWED_SITES] = 
+                        $seed_info['allowed_sites']['url'];
+                    $info[self::DISALLOWED_SITES] = 
+                        $seed_info['disallowed_sites']['url'];
                     $info_string = serialize($info);
                     file_put_contents(
                         CRAWL_DIR."/schedules/queue_server_messages.txt", 

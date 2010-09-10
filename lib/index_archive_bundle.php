@@ -429,7 +429,8 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
                 $slice_cnt--;
             }
             if($min_common !== NULL) {
-                $out_data[0][$word_key .":". $min_common][self::POINT_BLOCK] = 0; 
+                $out_data[
+                    0][$word_key .":". $min_common][self::POINT_BLOCK] = 0;
                 // this index needs to point to previous block with word
             }
 

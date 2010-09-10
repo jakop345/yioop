@@ -103,7 +103,7 @@ class FetchController extends Controller implements CrawlConstants
         } else {
             $info = array();
             $info[self::STATUS] = self::NO_DATA_STATE;
-            $data['MESSAGE'] = serialize($info);
+            $data['MESSAGE'] = base64_encode(serialize($info))."\n";
         }
 
         $this->displayView($view, $data);
@@ -116,22 +116,30 @@ class FetchController extends Controller implements CrawlConstants
     function update()
     {
         $view = "fetch";
-         
-        if(isset($_REQUEST['found'])) {
+        $address = str_replace(".", "-", $_SERVER['REMOTE_ADDR']); 
+        $address = str_replace(":", "_", $address);
+        $time = time();
+        $day = floor($time/86400);
+
+        $info_flag = false;
+        if(isset($_REQUEST['robot_data'])) {
+            $this->addScheduleToScheduleDirectory(self::robot_data_base_name, 
+                $_REQUEST['robot_data']);
+            $info_flag = true;
+        }
+        if(isset($_REQUEST['schedule_data'])) {
+            $this->addScheduleToScheduleDirectory(self::schedule_data_base_name,
+                $_REQUEST['schedule_data']);
+            $info_flag = true;
+        }
+        if(isset($_REQUEST['index_data'])) {
+            $this->addScheduleToScheduleDirectory(self::index_data_base_name,
+                $_REQUEST['index_data']);
+            $info_flag = true;
+        }
+
+        if($info_flag == true) {
             $info =array();
-            $sites = unserialize(gzuncompress(
-                base64_decode(urldecode($_REQUEST['found']))));
-
-            $address = str_replace(".", "-", $_SERVER['REMOTE_ADDR']); 
-            $address = str_replace(":", "_", $address);
-            $time = time();
-            $day = floor($time/86400);
-
-
-            $this->addRobotSchedules($sites, $address, $day, $time); 
-            $this->addToCrawlSchedules($sites, $address, $day, $time);
-            $this->addToIndexSchedules($sites, $address, $day, $time);
-
             $info[self::STATUS] = self::CONTINUE_STATE;
             if(file_exists(CRAWL_DIR."/schedules/crawl_status.txt")) {
                 $crawl_status = unserialize(
@@ -139,8 +147,9 @@ class FetchController extends Controller implements CrawlConstants
                 $info[self::CRAWL_TIME] = $crawl_status['CRAWL_TIME'];
             } else {
                 $info[self::CRAWL_TIME] = 0;
-            }     
+            }
 
+            $info[self::MEMORY_USAGE] = memory_get_peak_usage();
             $data = array();
             $data['MESSAGE'] = serialize($info);
 
@@ -149,124 +158,22 @@ class FetchController extends Controller implements CrawlConstants
     }
 
     /**
-     * Adds a file containing the seen sites and inverted index from the
-     * just received $sites array to the schedules folder's index directory's 
-     * subfolder for the current crawl time. This file is added in a sub folder 
-     * $day and its name contains the $time at which it arrived and the ip
-     * $address from which it arrived. This file will then be process later 
-     * by the queue server.
-     *
-     * @param &array $sites a list of seen sites and an inverted inverted index
-     * @param string $address the IP address of the sending machine with . -->_
-     * @param string $day timestamp in seconds converted to days
-     * @param string $time timestamp in seconds
-     */
-    function addToIndexSchedules(&$sites, $address, $day, $time)
-    {
-        if(isset($sites[self::SEEN_URLS])) {
-            $index_sites[self::SEEN_URLS] = $sites[self::SEEN_URLS];
-        }
-        $sites[self::SEEN_URLS] = NULL;
-
-        $index_sites[self::MACHINE] = $_SERVER['REMOTE_ADDR'];
-        $index_sites[self::MACHINE_URI] = $_REQUEST['machine_uri'];
-        if(isset($sites[self::INVERTED_INDEX])) {
-            $index_sites[self::INVERTED_INDEX] = $sites[self::INVERTED_INDEX];
-        }
-        $index_dir =  
-            CRAWL_DIR."/schedules/".self::index_data_base_name.
-                $_REQUEST['crawl_time'];
-
-        $this->addScheduleToScheduleDirectory(
-            $index_dir, $index_sites, $address, $day, $time);
-        $sites[self::INVERTED_INDEX] = NULL;
-    }
-
-    /**
-     * Adds a file containing the to-crawl sites from the just received
-     * $sites array to the schedules folder's schedule data directory's
-     * subfolder for the current crawl time. This file is added in a sub folder 
-     * $day and its name contains the $time at which it arrived and the ip
-     * $address from which it arrived. This file will then be process later 
-     * by the queue server. In addition to to-crawl sites the seen urls
-     * in $sites are also save in the file. They are used to perform a sanity 
-     * check on the priority queue by the queue server.
-     *
-     * @param &array $sites a list of seen sites and to crawl sites
-     * @param string $address the IP address of the sending machine with . -->_
-     * @param string $day timestamp in seconds converted to days
-     * @param string $time timestamp in seconds
-     */
-    function addToCrawlSchedules(&$sites, $address, $day, $time)
-    {
-        $base_dir =  CRAWL_DIR."/schedules/".
-            self::schedule_data_base_name.$_REQUEST['crawl_time'];
-        $scheduler_info = array();
-
-        if(isset($sites[self::TO_CRAWL])) {
-            $scheduler_info[self::TO_CRAWL] = $sites[self::TO_CRAWL];
-        }
-        
-        $scheduler_info[self::MACHINE] = $_SERVER['REMOTE_ADDR'];
-
-        if(isset($sites[self::SCHEDULE_TIME])) {
-            $scheduler_info[self::SCHEDULE_TIME] = $sites[self::SCHEDULE_TIME];
-        }
-
-        if(isset($sites[self::SEEN_URLS])) {
-            $seen_sites = $sites[self::SEEN_URLS];
-            $num_seen = count($seen_sites);
-
-            for($i = 0; $i < $num_seen; $i++) {
-                $scheduler_info[self::SEEN_URLS][$i] = 
-                    $seen_sites[$i][self::URL];
-            }
-        }
-        $this->addScheduleToScheduleDirectory(
-            $base_dir, $scheduler_info, $address, $day, $time);
-        $sites[self::TO_CRAWL] = NULL;
-    }
-
-    /**
-     * Adds a file containing the robot site data from the just received
-     * $sites array to the schedules folder's robot data directory's
-     * subfolder for the current crawl time. This file is added in a sub folder 
-     * $day and its name contains the $time at which it arrived and the ip
-     * $address from which it arrived. This file will then be process later 
-     * by the queue server.
-     *
-     * @param &array $sites a list of seen sites and an inverted inverted index
-     * @param string $address the IP address of the sending machine with . -->_
-     * @param string $day timestamp in seconds converted to days
-     * @param string $time timestamp in seconds
-     */
-    function addRobotSchedules(&$sites, $address, $day, $time)
-    {
-        $robot_dir =  CRAWL_DIR."/schedules/".
-            self::robot_data_base_name.$_REQUEST['crawl_time'];
-        if(isset($sites[self::ROBOT_TXT])) {
-            $data = $sites[self::ROBOT_TXT];
-        } else {
-            $data = array();
-        }
-        $this->addScheduleToScheduleDirectory(
-            $robot_dir, $data, $address, $day, $time);
-        $sites[self::ROBOT_TXT] = NULL;
-    }
-
-
-    /**
      * Adds a file with contents $data and with name containing $address and 
      * $time to a subfolder $day of a folder $dir
      *
-     * @param string $dir directory in which to add the schedule file
-     * @param &array $data data that the schedule file is to contain
-     * @param string $address the IP address of the sending machine with . -->_
-     * @param string $day timestamp in seconds converted to days
-     * @param string $time timestamp in seconds
+     * @param string $schedule_name the name of the kind of schedule being saved
+     * @param string &$data_string encoded, compressed, serialized data the 
+     *      schedule is to contain
      */
-    function addScheduleToScheduleDirectory($dir, &$data, $address, $day, $time)
+    function addScheduleToScheduleDirectory($schedule_name, &$data_string)
     {
+        $dir = CRAWL_DIR."/schedules/".$schedule_name.$_REQUEST['crawl_time'];
+
+        $address = str_replace(".", "-", $_SERVER['REMOTE_ADDR']); 
+        $address = str_replace(":", "_", $address);
+        $time = time();
+        $day = floor($time/86400);
+
         if(!file_exists($dir)) {
             mkdir($dir);
             chmod($dir, 0777);
@@ -277,12 +184,18 @@ class FetchController extends Controller implements CrawlConstants
             mkdir($dir);
             chmod($dir, 0777);
         }
-        
-        $data_string = serialize($data);
+        $machine_data = array();
+        $machine_data[self::MACHINE] = $_SERVER['REMOTE_ADDR'];
+        $machine_data[self::MACHINE_URI] = $_REQUEST['machine_uri'];
+        $machine_string = base64_encode(serialize($machine_data))."\n";
+
         $data_hash = crawlHash($data_string);
-        file_put_contents(
-            $dir."/At".$time."From".$address.
-            "WithHash$data_hash.txt", $data_string);
+        $fh = fopen($dir."/At".$time."From".$address.
+            "WithHash$data_hash.txt", "wb");
+        fwrite($fh, $machine_string);
+        fwrite($fh, $data_string);
+        fclose($fh);
+
     }
 
     /**

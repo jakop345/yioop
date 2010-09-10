@@ -119,9 +119,12 @@ class TextProcessor implements CrawlConstants
             '@((http|https)://([^ \t\r\n\v\f\'\"\;\,\<\>\[\]\{\}\(\)])*)@i';
         $sites = array();
         preg_match_all($pattern, $page, $matches);
+        $i = 0;
         foreach($matches[0] as $url) {
             if(!isset($sites[$url])) {
                 $sites[$url] = strip_tags($url);
+                $i++;
+                if($i >= MAX_LINKS_PER_PAGE) {break;}
             }
         }
         return $sites;

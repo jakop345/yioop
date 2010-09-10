@@ -48,7 +48,8 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  
 class PersistentStructure
 {
-    /** If not specified in the constructor, this will be the number of operations between saves 
+    /** If not specified in the constructor, this will be the number of 
+     *  operations between saves
      *  @var int  
      */
     const DEFAULT_SAVE_FREQUENCY = 50000;
@@ -72,7 +73,7 @@ class PersistentStructure
      * @param string $fname the name of the file to store the 
      *      PersistentStructure in
      * @param int $save_frequency the number of operation before a save If 
-     *      <= 0 never save
+     *      <= 0 never check save
      */
     public function __construct($fname, 
         $save_frequency = self::DEFAULT_SAVE_FREQUENCY)
@@ -94,7 +95,9 @@ class PersistentStructure
     }
 
     /**
-     *  Save the PersistentStructure to its filename
+     *  Save the PersistentStructure to its filename 
+     *  This method is generic but super memory inefficient, so reimplement
+     *  for subclasses is needed
      */
     public function save()
     {

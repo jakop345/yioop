@@ -63,9 +63,10 @@ class PhraseParser
      */
     static function extractWordStringPageSummary($page)
     {
-        $title_phrase_string = mb_ereg_replace("[[:punct:]]", " ", 
+        $punct = "\.|\,|\:|\;|\"|\'|\`|\[|\]|\{|\}|\(|\)|\!|\|";
+        $title_phrase_string = mb_ereg_replace($punct, " ", 
             $page[CrawlConstants::TITLE]);
-        $description_phrase_string = mb_ereg_replace("[[:punct:]]", " ", 
+        $description_phrase_string = mb_ereg_replace($punct, " ", 
             $page[CrawlConstants::DESCRIPTION]);
 
         $page_string = $title_phrase_string . " " . $description_phrase_string;
@@ -132,7 +133,8 @@ class PhraseParser
     static function extractPhrasesOfLengthOffset($string, 
         $phrase_len, $offset) 
     {
-       $words = mb_split("[[:space:]]", $string);
+        $punct = "\.|\,|\:|\;|\"|\'|\`|\[|\]|\{|\}|\(|\)|\!|\|";
+        $words = mb_split("[[:space:]]|".$punct, $string);
 
         $stems = array();
 

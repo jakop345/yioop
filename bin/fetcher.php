@@ -36,7 +36,7 @@ define("BASE_DIR", substr(
     dirname(realpath($_SERVER['PHP_SELF'])), 0, 
     -strlen("/bin")));
 
-ini_set("memory_limit","600M"); //so have enough memory to crawl big pages
+ini_set("memory_limit","700M"); //so have enough memory to crawl big pages
 
 /** Load in global configuration settings */
 require_once BASE_DIR.'/configs/config.php';
@@ -333,6 +333,7 @@ class Fetcher implements CrawlConstants
             $this->found_duplicates = array_merge($this->found_duplicates,
                 $duplicates);
             if($can_schedule_again == true) {
+                //only schedule to crawl again on fail sites without crawl-delay
                 foreach($schedule_again_pages as $schedule_again_page) {
                     if($schedule_again_page[self::CRAWL_DELAY] == 0) {
                         $this->to_crawl_again[] = 
@@ -437,15 +438,27 @@ class Fetcher implements CrawlConstants
         $request =  
             $queue_server."?c=fetch&a=schedule&time=$time&session=$session";
 
-        $info_string = FetchUrl::getPage($request);
-        $info = unserialize(trim($info_string));
+        $info_string = trim(FetchUrl::getPage($request));
+        $tok = strtok($info_string, "\n");
+        $info = unserialize(base64_decode($tok));
 
         if(isset($info[self::CRAWL_ORDER])) {
             $this->crawl_order = $info[self::CRAWL_ORDER];
         }
 
         if(isset($info[self::SITES])) {
-            $this->to_crawl = $info[self::SITES];
+            $this->to_crawl = array();
+            while($tok !== false) {
+                $string = base64_decode($tok);
+                $tmp = unpack("f", substr($string, 0 , 4));
+                $weight = $tmp[1];
+                $tmp = unpack("N", substr($string, 4 , 4));
+                $delay = $tmp[1];
+                $url = substr($string, 8);
+                $this->to_crawl[] = array($url, $weight, $delay);
+                
+                $tok = strtok("\n");
+            }
         }
 
         if(isset($info[self::SCHEDULE_TIME])) {
@@ -645,8 +658,7 @@ class Fetcher implements CrawlConstants
                 $site[self::URL]);
 
             if($doc_info) {
-
-                $site[self::DOC_INFO] = $doc_info;
+                $site[self::DOC_INFO] =  $doc_info;
 
                 if(!is_dir(CRAWL_DIR."/cache")) {
                     mkdir(CRAWL_DIR."/cache");
@@ -888,26 +900,95 @@ class Fetcher implements CrawlConstants
 
 
         if(count($this->to_crawl) <= 0) {
-            $this->found_sites[self::SCHEDULE_TIME] = $this->schedule_time;
+            $schedule_time = $this->schedule_time;
         }
 
+        /* 
+            In what follows as we generate post data we delete stuff
+            from $this->found_sites, to try to minimize our memory
+            footprint.
+         */
+        $bytes_to_send = 0;
+        $post_data = array('c'=>'fetch', 'a'=>'update', 
+            'crawl_time' => $this->crawl_time, 'machine_uri' => WEB_URI);
+
+        //handle robots.txt data
+        if(isset($this->found_sites[self::ROBOT_TXT])) {
+            $post_data['robot_data'] = urlencode(base64_encode(
+                gzcompress(serialize($this->found_sites[self::ROBOT_TXT]))));
+            unset($this->found_sites[self::ROBOT_TXT]);
+            $bytes_to_send += strlen($post_data['robot_data']);
+        }
+
+        //handle schedule data
+        $schedule_data = array();
+        if(isset($this->found_sites[self::TO_CRAWL])) {
+            $schedule_data[self::TO_CRAWL] = &
+                $this->found_sites[self::TO_CRAWL];
+        }
+        unset($this->found_sites[self::TO_CRAWL]);
+
+        if(isset($this->found_sites[self::SEEN_URLS]) && 
+            count($this->found_sites[self::SEEN_URLS]) > 0 ) {
+            $hash_seen_urls = array();
+            $recent_urls = array();
+            $cnt = 0;
+            foreach($this->found_sites[self::SEEN_URLS] as $site) {
+                $hash_seen_urls[] =
+                    crawlHash($site[self::URL], true);
+                if(strpos($site[self::URL], "url|") !== 0) {
+                    array_push($recent_urls, $site[self::URL]);
+                    if($cnt >= NUM_RECENT_URLS_TO_DISPLAY)
+                    {
+                        array_shift($recent_urls);
+                    }
+                    $cnt++;
+                }
+            }
+            $schedule_data[self::HASH_SEEN_URLS] = & $hash_seen_urls;
+            unset($hash_seen_urls);
+            $schedule_data[self::RECENT_URLS] = & $recent_urls;
+            unset($recent_urls);
+        }
+        if(!empty($schedule_data)) {
+            if(isset($schedule_time)) {
+                $schedule_data[self::SCHEDULE_TIME] = $schedule_time;
+            }
+            $post_data['schedule_data'] = urlencode(base64_encode(
+                gzcompress(serialize($schedule_data))));
+            $bytes_to_send += strlen($post_data['schedule_data']);
+        }
+        unset($schedule_data);
+
+        //handle mini inverted index
         if(isset($this->found_sites[self::SEEN_URLS]) && 
             count($this->found_sites[self::SEEN_URLS]) > 0 ) {
             $this->buildMiniInvertedIndex();
         }
-
-        $post_data = array('c'=>'fetch', 'a'=>'update', 
-            'crawl_time' => $this->crawl_time, 'machine_uri' => WEB_URI);
-
-        $post_data['found'] = urlencode(base64_encode(
-            gzcompress(serialize($this->found_sites))));
-        $bytes_to_send = strlen($post_data['found']);
+        if(isset($this->found_sites[self::INVERTED_INDEX])) {
+            $index_data = array();
+            $index_data[self::SEEN_URLS] = & 
+                $this->found_sites[self::SEEN_URLS];
+            unset($this->found_sites[self::SEEN_URLS]);
+            $index_data[self::INVERTED_INDEX] = & 
+                $this->found_sites[self::INVERTED_INDEX];
+            unset($this->found_sites[self::INVERTED_INDEX]);
+            $post_data['index_data'] = urlencode(base64_encode(
+                gzcompress(serialize($index_data))));
+            unset($index_data);
+            $bytes_to_send += strlen($post_data['index_data']);
+        }
 
         $this->found_sites = array(); // reset found_sites so have more space.
+        if($bytes_to_send <= 0) {
+            crawlLog("No data to send aborting update scheduler...");
+            return;
+        }
 
+        //try to send to queue server
         $sleep = false;
         do {
-            
+
             if($sleep == true) {
                 crawlLog("Trouble sending to the scheduler\n $info_string...");
                 sleep(5);
@@ -927,7 +1008,10 @@ class Fetcher implements CrawlConstants
             $info = unserialize(trim($info_string));
             crawlLog("Queue Server info response code: ".$info[self::STATUS]);
             crawlLog("Queue Server's crawl time is: ".$info[self::CRAWL_TIME]);
-
+            crawlLog("Web Server peak memory usage: ".
+                $info[self::MEMORY_USAGE]);
+            crawlLog("This fetcher peak memory usage: ".
+                memory_get_peak_usage());
         } while(!isset($info[self::STATUS]) || 
             $info[self::STATUS] != self::CONTINUE_STATE);
 

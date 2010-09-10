@@ -65,7 +65,7 @@ class StringArray extends PersistentStructure
      * Number of bytes of storage need by the string array
      * @var int
      */
-    var $array_size;
+    var $string_array_size;
     /**
      * Character string used to store the packed data of the StringArray
      * @var string
@@ -98,6 +98,39 @@ class StringArray extends PersistentStructure
 
     }
 
+    /**
+     *  Load a StringArray from a file
+     *
+     *  @param string the name of the file to load the StringArray from
+     *  @return object the PersistentStructure loaded
+     */
+    public static function load($fname)
+    {
+        $fh = fopen($fname, "rb");
+        $tmp = unpack("N", fread($fh, 4));
+        $array_size = $tmp[1];
+        $array = fread($fh, $array_size);
+        $object = unserialize(fread($fh, 
+            filesize($fname) -4 - $array_size));
+        $object->string_array = & $array;
+        fclose($fh);
+        return $object;
+    }
+
+    /**
+     *  Save the StringArray to its filename 
+     */
+    public function save()
+    {
+        $fh = fopen($this->filename, "wb");
+        $tmp = & $this->string_array;
+        fwrite($fh, pack("N", $this->string_array_size));
+        fwrite($fh, $this->string_array);
+        unset($this->string_array);
+        fwrite($fh, serialize($this));
+        $this->string_array = & $tmp;
+        fclose($fh);
+    }
 
     /**
      *  Looks up the ith item in the StringArray

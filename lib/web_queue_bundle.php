@@ -348,11 +348,16 @@ class WebQueueBundle implements Notifier
      * url is scheduled to be crawled. It only deletes the item from
      * the bundles priority queue and hash table -- not from the web archive.
      *
-     * @param string $url the url to delete
+     * @param string $url the url or hash of url to delete
+     * @param bool $isHash flag to say whether or not is the hash of a url
      */
-    function removeQueue($url)
+    function removeQueue($url, $isHash = false)
     {
-        $hash_url = crawlHash($url, true);
+        if($isHash == true) {
+            $hash_url = $url;
+        } else {
+            $hash_url = crawlHash($url, true);
+        }
         $data = $this->lookupHashTable($hash_url);
 
         if(!$data) {
@@ -653,7 +658,7 @@ class WebQueueBundle implements Notifier
      * The problem is as the table gets reused a lot, it tends to fill up
      * with a lot of deleted entries making lookup times get more and more
      * linear in the hash table size. By rebuilding the table we mitigate
-     * against this problem. By choosing the rebuild frequecy appropriately,
+     * against this problem. By choosing the rebuild frequency appropriately,
      * the amortized cost of this operation is only O(1).
      */
     function rebuildHashTable()

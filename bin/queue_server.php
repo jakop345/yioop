@@ -484,14 +484,21 @@ class QueueServer implements CrawlConstants
         $start_time = microtime();
 
         $index_archive = $this->index_archive;
-        $sites = unserialize(file_get_contents($file));
-
+        $fh = fopen($file, "rb");
+        $machine_string = fgets($fh);
+        $len = strlen($machine_string);
+        $machine_info = unserialize(base64_decode($machine_string));
+        $sites = unserialize(gzuncompress(base64_decode(
+            urldecode(fread($fh, filesize($file) - $len))
+            )));
+        fclose($fh);
+        
         crawlLog("A memory usage".memory_get_usage() .
           " time: ".(changeInMicrotime($start_time)));
         $start_time = microtime();
 
-        $machine = $sites[self::MACHINE];
-        $machine_uri = $sites[self::MACHINE_URI];
+        $machine = $machine_info[self::MACHINE];
+        $machine_uri = $machine_info[self::MACHINE_URI];
 
         if(isset($sites[self::SEEN_URLS]) && 
             count($sites[self::SEEN_URLS]) > 0) {
@@ -606,9 +613,15 @@ class QueueServer implements CrawlConstants
         crawlLog("Processing Robots data in $file");
         $start_time = microtime();
 
-        $sites = unserialize(file_get_contents($file));
+        $fh = fopen($file, "rb");
+        $machine_string = fgets($fh);
+        $len = strlen($machine_string);
+        unset($machine_string);
+        $sites = unserialize(gzuncompress(base64_decode(
+            urldecode(fread($fh, filesize($file) - $len))
+            )));
+        fclose($fh);
 
-         
         if(isset($sites)) {
             foreach($sites as $robot_host => $robot_info) {
                 $this->web_queue->addGotRobotTxtFilter($robot_host);
@@ -705,10 +718,20 @@ class QueueServer implements CrawlConstants
     {
         crawlLog("Processing File: $file");
 
-        $sites = unserialize(file_get_contents($file));
+        $fh = fopen($file, "rb");
+        $machine_string = fgets($fh);
+        $len = strlen($machine_string);
+        if($len > 0) {
+            $machine_info = unserialize(base64_decode($machine_string));
+        }
+        $sites = unserialize(gzuncompress(base64_decode(
+            urldecode(fread($fh, filesize($file) - $len))
+            )));
+        fclose($fh);
 
-        if(isset($sites[self::MACHINE])) {
-            $this->most_recent_fetcher = $sites[self::MACHINE];
+        if(isset($machine_info[self::MACHINE])) {
+            $this->most_recent_fetcher = & $machine_info[self::MACHINE];
+            unset($machine_info);
         }
 
         crawlLog("...Updating Delayed Hosts Array ...");
@@ -730,28 +753,18 @@ class QueueServer implements CrawlConstants
         $start_time = microtime();
         $most_recent_urls = array();
 
-        if(isset($sites[self::SEEN_URLS])) {
+        if(isset($sites[self::HASH_SEEN_URLS])) {
             $cnt = 0;
-            foreach($sites[self::SEEN_URLS] as $url) {
-                if($this->web_queue->containsUrlQueue($url)) {
-                    crawlLog(
-                        "Removing $url from Queue (shouldn't still be there!)");
-                    $this->web_queue->removeQueue($url);
+            foreach($sites[self::HASH_SEEN_URLS] as $hash_url) {
+                if($this->web_queue->lookupHashTable($hash_url)) {
+                    crawlLog("Removing hash ". base64_encode($hash_url).
+                        " from Queue");
+                    $this->web_queue->removeQueue($hash_url, true);
                 }
-                if(strpos($url, "url|") !== 0) {
-                    array_push($most_recent_urls, $url);
-                    if($cnt >= NUM_RECENT_URLS_TO_DISPLAY)
-                    {
-                        array_shift($most_recent_urls);
-                    }
-                    $cnt++;
-                }
-
             }
         }
 
         crawlLog(" time: ".(changeInMicrotime($start_time)));
-
 
         crawlLog("... To Crawl ...");
         $start_time = microtime();
@@ -801,7 +814,7 @@ class QueueServer implements CrawlConstants
 
                 }
             }
-            
+
             crawlLog(" time: ".(changeInMicrotime($start_time)));
 
             crawlLog("C..");
@@ -817,7 +830,9 @@ class QueueServer implements CrawlConstants
 
         $crawl_status = array();
         $crawl_status['MOST_RECENT_FETCHER'] = $this->most_recent_fetcher;
-        $crawl_status['MOST_RECENT_URLS_SEEN'] = $most_recent_urls; 
+        if(isset($sites[self::RECENT_URLS])) {
+            $crawl_status['MOST_RECENT_URLS_SEEN'] = $sites[self::RECENT_URLS]; 
+        }
         $crawl_status['CRAWL_TIME'] = $this->crawl_time;
         $info_bundle = IndexArchiveBundle::getArchiveInfo(
             CRAWL_DIR.'/cache/'.self::index_data_base_name.$this->crawl_time);
@@ -835,9 +850,11 @@ class QueueServer implements CrawlConstants
         crawlLog("Number of unique pages so far: ".
             $info_bundle['VISITED_URLS_COUNT']);
         crawlLog("Total urls extracted so far: ".$info_bundle['COUNT']); 
+        if(isset($sites[self::RECENT_URLS])) {
         crawlLog("Of these, the most recent urls are:");
-        foreach($most_recent_urls as $url) {
-            crawlLog("URL: $url");
+            foreach($sites[self::RECENT_URLS] as $url) {
+                crawlLog("URL: $url");
+            }
         }
 
     }
@@ -876,12 +893,15 @@ class QueueServer implements CrawlConstants
 
         $count = $this->web_queue->to_crawl_queue->count;
 
+        $sites = array();
         $sites[self::CRAWL_TIME] = $this->crawl_time;
         $sites[self::SCHEDULE_TIME] = time();
         $sites[self::SAVED_CRAWL_TIMES] =  $this->getCrawlTimes(); 
             // fetcher should delete any crawl time not listed here
         $sites[self::CRAWL_ORDER] = $this->crawl_order;
         $sites[self::SITES] = array();
+        $first_line = base64_encode(serialize($sites))."\n";
+
 
         $delete_urls = array();
         $crawl_delay_hosts = array();
@@ -958,7 +978,7 @@ class QueueServer implements CrawlConstants
 
                 $delay = $this->web_queue->getCrawlDelay($host_url);
                 $num_waiting = count($this->waiting_hosts);
-                
+
                 if($delay > 0 ) { 
                     // handle adding a url if there is a crawl delay
                     if((!isset($this->waiting_hosts[crawlHash($host_url)])
@@ -1047,8 +1067,17 @@ class QueueServer implements CrawlConstants
             }
             ksort($sites[self::SITES]);
 
-            file_put_contents(CRAWL_DIR."/schedules/schedule.txt", 
-                serialize($sites));
+            //write schedule to disk
+            $fh = fopen(CRAWL_DIR."/schedules/schedule.txt", "wb");
+            fwrite($fh, $first_line);
+            foreach($sites[self::SITES] as $site) {
+                list($url, $weight, $delay) = $site;
+                $out_string = base64_encode(
+                    pack("f", $weight).pack("N", $delay).$url)."\n";
+                fwrite($fh, $out_string);
+            }
+            fclose($fh);
+
             crawlLog("End Produce Fetch Memory usage".memory_get_usage() );
             crawlLog("Created fetch batch... Queue size is now ".
                 $this->web_queue->to_crawl_queue->count.
@@ -1068,10 +1097,10 @@ class QueueServer implements CrawlConstants
      * This function is used to schedule slots for crawl-delayed host.
      *
      * @param int $index location to begin searching for an empty slot
-     * @param array $arr list of slots to look in
+     * @param array &$arr list of slots to look in
      * @return int index of first available slot
      */
-    function getEarliestSlot($index, $arr)
+    function getEarliestSlot($index, &$arr)
     {
         $cnt = count($arr);
 
@@ -1130,6 +1159,7 @@ class QueueServer implements CrawlConstants
     function urlMemberSiteArray($url, $site_array)
     {
         $flag = false;
+        if(!is_array($site_array)) {return false;}
         foreach($site_array as $site) {
             $site_parts = mb_split("domain:", $site);
             if(isset($site_parts[1]) && 

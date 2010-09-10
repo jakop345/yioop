@@ -128,5 +128,8 @@ interface CrawlConstants
     const FILETYPE = 'ag';
     const SUMMARY = 'ah';
     const URL_INFO = 'ai';
+    const HASH_SEEN_URLS ='aj';
+    const RECENT_URLS ='ak';
+    const MEMORY_USAGE ='al';
 } 
 ?>
