@@ -339,11 +339,24 @@ class QueueServer implements CrawlConstants
      */
     function startCrawl($info)
     {
+        //to get here we at least have to have a crawl_time
         $this->crawl_time = $info[self::CRAWL_TIME];
-        $this->crawl_order = $info[self::CRAWL_ORDER];
-        $this->restrict_sites_by_url = $info[self::RESTRICT_SITES_BY_URL];
-        $this->allowed_sites = $info[self::ALLOWED_SITES];
-        $this->disallowed_sites = $info[self::DISALLOWED_SITES];
+
+        $read_from_info = array(
+            "crawl_order" => self::CRAWL_ORDER,
+            "restrict_sites_by_url" => self::RESTRICT_SITES_BY_URL,
+            "allowed_sites" => self::ALLOWED_SITES,
+            "disallowed_sites" => self::DISALLOWED_SITES,
+        );
+        $try_to_set_from_old_index = array();
+        foreach($read_from_info as $index_field => $info_field) {
+            if(isset($info[$info_field])) {
+                $this->$index_field = $info[$info_field];
+            } else {
+                array_push($try_to_set_from_old_index,  $index_field);
+            }
+        }
+
         switch($this->crawl_order) 
         {
             case self::BREADTH_FIRST:
@@ -370,12 +383,21 @@ class QueueServer implements CrawlConstants
                 CRAWL_DIR.'/cache/'.
                     self::index_data_base_name.$this->crawl_time,
                 URL_FILTER_SIZE, NUM_ARCHIVE_PARTITIONS, 
-                NUM_INDEX_PARTITIONS, $info['DESCRIPTION']);
+                NUM_INDEX_PARTITIONS, serialize($info));
         } else {
-            $this->index_archive = new IndexArchiveBundle(
-                CRAWL_DIR.'/cache/'.
-                    self::index_data_base_name.$this->crawl_time,
+            $dir = CRAWL_DIR.'/cache/'.
+                    self::index_data_base_name.$this->crawl_time;
+            $this->index_archive = new IndexArchiveBundle($dir,
                 URL_FILTER_SIZE);
+            $archive_info = IndexArchiveBundle::getArchiveInfo($dir);
+            $index_info = unserialize($archive_info['DESCRIPTION']);
+
+            foreach($try_to_set_from_old_index as $index_field) {
+                if(isset($index_info[$read_from_info[$index_field]]) ) {
+                    $this->$index_field = 
+                        $index_info[$read_from_info[$index_field]];
+                }
+            }
         }
 
         // chmod so web server can also write to these directories
@@ -836,9 +858,11 @@ class QueueServer implements CrawlConstants
         $crawl_status['CRAWL_TIME'] = $this->crawl_time;
         $info_bundle = IndexArchiveBundle::getArchiveInfo(
             CRAWL_DIR.'/cache/'.self::index_data_base_name.$this->crawl_time);
+        $index_archive_info = unserialize($info_bundle['DESCRIPTION']);
         $crawl_status['COUNT'] = $info_bundle['COUNT'];
-        $crawl_status['VISITED_URLS_COUNT'] = $info_bundle['VISITED_URLS_COUNT'];
-        $crawl_status['DESCRIPTION'] = $info_bundle['DESCRIPTION'];
+        $crawl_status['VISITED_URLS_COUNT'] =$info_bundle['VISITED_URLS_COUNT'];
+        $crawl_status['DESCRIPTION'] = $index_archive_info['DESCRIPTION'];
+        $crawl_status['QUEUE_PEAK_MEMORY'] = memory_get_peak_usage();
         file_put_contents(
             CRAWL_DIR."/schedules/crawl_status.txt", serialize($crawl_status));
         chmod(CRAWL_DIR."/schedules/crawl_status.txt", 0777);
@@ -846,7 +870,8 @@ class QueueServer implements CrawlConstants
             "End checking for new URLs data memory usage".memory_get_usage());
 
         crawlLog(
-            "The current crawl description is: ".$info_bundle['DESCRIPTION']);
+            "The current crawl description is: ".
+                $index_archive_info['DESCRIPTION']);
         crawlLog("Number of unique pages so far: ".
             $info_bundle['VISITED_URLS_COUNT']);
         crawlLog("Total urls extracted so far: ".$info_bundle['COUNT']); 

@@ -212,7 +212,8 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
      *      to use in the summmaries WebArchiveBundle
      * @param int $num_partitions_index number of WebArchive partitions
      *      to use in the index WebArchiveBundle
-     * @param string $description a short text name for this IndexArchiveBundle 
+     * @param string $description a text name/serialized info about this
+     * IndexArchiveBundle 
      */
     public function __construct($dir_name, $filter_size = -1, 
         $num_partitions_summaries = NULL, $num_partitions_index = NULL, 

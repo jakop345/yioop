@@ -215,7 +215,8 @@ class HtmlProcessor extends TextProcessor
             if($i < MAX_LINKS_PER_PAGE) {
                 $url = UrlParser::canonicalLink(
                     $href->getAttribute('href'), $site);
-                if(!UrlParser::checkRecursiveUrl($url)) {
+                if(!UrlParser::checkRecursiveUrl($url)  && 
+                    strlen($url) < MAX_URL_LENGTH) {
                     if(isset($sites[$url])) { 
                         $sites[$url] .=" ".strip_tags($href->textContent);
                     } else {
@@ -234,8 +235,9 @@ class HtmlProcessor extends TextProcessor
                 $url = UrlParser::canonicalLink(
                     $frame->getAttribute('src'), $site);
 
-                if(!UrlParser::checkRecursiveUrl($url)) {
-                    if(isset($sites[$url])) { 
+                if(!UrlParser::checkRecursiveUrl($url) 
+                    && strlen($url) < MAX_URL_LENGTH) {
+                    if(isset($sites[$url]) ) { 
                         $sites[$url] .=" HTMLframe";
                     } else {
                         $sites[$url] = "HTMLframe";
@@ -258,8 +260,9 @@ class HtmlProcessor extends TextProcessor
 
                 $url = UrlParser::canonicalLink(
                     $img->getAttribute('src'), $site);
-                if(!UrlParser::checkRecursiveUrl($url)) {
-                    if(isset($sites[$url])) { 
+                if(!UrlParser::checkRecursiveUrl($url) 
+                    && strlen($url) < MAX_URL_LENGTH) {
+                    if(isset($sites[$url]) ) { 
                         $sites[$url] .=" ".$alt;
                     } else {
                         $sites[$url] = $alt;

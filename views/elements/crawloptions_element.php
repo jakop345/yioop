@@ -72,10 +72,16 @@ class CrawloptionsElement extends Element
         <input type="hidden" name="arg" value="options" />
         <input type="hidden" name="posted" value="posted" />
         <div class="topmargin"><label for="crawl-order"><b><?php 
+            e(tl('crawloptions_element_load_options'))?></b></label><?php
+            $this->view->optionsHelper->render("load-options", "load_option", 
+                $data['available_options'], $data['options_default']);
+        ?></div>
+        <div class="topmargin"><label for="crawl-order"><b><?php 
             e(tl('crawloptions_element_crawl_order'))?></b></label><?php
             $this->view->optionsHelper->render("crawl-order", "crawl_order", 
                 $data['available_crawl_orders'], $data['crawl_order']);
-        ?></div>
+        ?>
+        </div>
         <div class="topmargin"><label for="restrict-sites-by-url"><b><?php 
             e(tl('crawloptions_element_restrict_by_url'))?></b></label>
                 <input type="checkbox" id="restrict-sites-by-url" 

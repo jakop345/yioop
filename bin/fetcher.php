@@ -999,6 +999,7 @@ class Fetcher implements CrawlConstants
             $session = md5($time . AUTH_KEY);
             $post_data['time'] = $time;
             $post_data['session'] = $session;
+            $post_data['fetcher_peak_memory'] = memory_get_peak_usage();
 
             $info_string = FetchUrl::getPage($queue_server, $post_data);
             crawlLog(

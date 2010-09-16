@@ -190,7 +190,8 @@ class CrawlModel extends Model implements CrawlConstants
                 $crawl['CRAWL_TIME'] = 
                     substr($pre_timestamp, strlen(self::index_data_base_name));
                 $info = IndexArchiveBundle::getArchiveInfo($dir);
-                $crawl['DESCRIPTION'] = $info['DESCRIPTION'];
+                $index_info = unserialize($info['DESCRIPTION']);
+                $crawl['DESCRIPTION'] = $index_info['DESCRIPTION'];
                 $crawl['VISITED_URLS_COUNT'] = 
                     isset($info['VISITED_URLS_COUNT']) ?
                     $info['VISITED_URLS_COUNT'] : 0;
@@ -204,24 +205,70 @@ class CrawlModel extends Model implements CrawlConstants
     }
 
     /**
+     * Returns the crawl parameters that were used during a given crawl
+     *
+     * @param string $timestamp timestamp of the crawl to load the crawl
+     *      parameters of
+     * @return array  the first sites to crawl during the next crawl
+     *      restrict_by_url, allowed, disallowed_sites
+     */
+    function getCrawlSeedInfo($timestamp)
+    {
+        $dir = CRAWL_DIR.'/cache/'.self::index_data_base_name.$timestamp;
+        $seed_info = NULL;
+        if(file_exists($dir)) {
+            $info = IndexArchiveBundle::getArchiveInfo($dir);
+            $index_info = unserialize($info['DESCRIPTION']);
+            $seed_info['general']["restrict_sites_by_url"] = 
+                $index_info[self::RESTRICT_SITES_BY_URL];
+            $seed_info['general']["crawl_order"] = 
+                $index_info[self::CRAWL_ORDER];
+            $site_types = array(
+                "allowed_sites" => self::ALLOWED_SITES,
+                "disallowed_sites" => self::DISALLOWED_SITES,
+                "seed_sites" => self::TO_CRAWL
+            );
+            foreach($site_types as $type => $code) {
+                if(isset($index_info[$code])) {
+                    $tmp = & $index_info[$code];
+                } else {
+                    $tmp = array();
+                }
+                $seed_info[$type]['url'] = 
+                    $tmp;
+            }
+
+        }
+        return $seed_info;
+    }
+    
+    /**
      *  Returns the initial sites that a new crawl will start with along with
      *  crawl parameters such as crawl order, allowed and disallowed crawl sites
-     *
+     *  @param bool $use_default whether or not to use the Yioop! default
+     *      crawl.ini file rather than the one created by the user.
      *  @return array  the first sites to crawl during the next crawl
+     *      restrict_by_url, allowed, disallowed_sites
      */
-    function getSeedInfo()
+    function getSeedInfo($use_default = false)
     {
-        if(file_exists(WORK_DIRECTORY."/crawl.ini")) {
+        if(file_exists(WORK_DIRECTORY."/crawl.ini") && !$use_default) {
             $info = parse_ini_file (WORK_DIRECTORY."/crawl.ini", true);
         } else {
             $info = parse_ini_file (BASE_DIR."/configs/default_crawl.ini", true);
         }
-        
+
         return $info;
+
     }
 
     /**
-     *  
+     * Writes a crawl.ini file with the provided data to the user's 
+     * WORK_DIRECTORY
+     *
+     * @param array $info an array containing information about the crawl
+     * such as crawl_order, whether restricted_by_url, seed_sites, 
+     * allowed_sites and disallowed_sites
      */
     function setSeedInfo($info)
     {

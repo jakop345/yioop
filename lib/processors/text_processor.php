@@ -121,7 +121,7 @@ class TextProcessor implements CrawlConstants
         preg_match_all($pattern, $page, $matches);
         $i = 0;
         foreach($matches[0] as $url) {
-            if(!isset($sites[$url])) {
+            if(!isset($sites[$url]) && strlen($url) < MAX_URL_LENGTH) {
                 $sites[$url] = strip_tags($url);
                 $i++;
                 if($i >= MAX_LINKS_PER_PAGE) {break;}

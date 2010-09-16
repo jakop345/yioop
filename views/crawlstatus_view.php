@@ -76,6 +76,30 @@ class CrawlstatusView extends View
         <?php 
         if(isset($data['CRAWL_TIME'])) {  e(date("r",$data['CRAWL_TIME'])); } 
             else {e(tl('crawlstatus_view_no_crawl_time'));} ?></p>
+        <p><b><?php e(tl('crawlstatus_view_queue_memory')); ?></b>
+        <?php
+        if(isset($data['QUEUE_PEAK_MEMORY'])) {
+            e($data['QUEUE_PEAK_MEMORY']); 
+        } else {
+            e(tl('crawlstatus_view_no_mem_data'));
+        } ?>
+        </p>
+        <p><b><?php e(tl('crawlstatus_view_fetcher_memory')); ?></b>
+        <?php
+        if(isset($data['FETCHER_PEAK_MEMORY'])) {
+            e($data['FETCHER_PEAK_MEMORY']); 
+        } else {
+            e(tl('crawlstatus_view_no_mem_data'));
+        } ?>
+        </p>
+        <p><b><?php e(tl('crawlstatus_view_webapp_memory')); ?></b>
+        <?php
+        if(isset($data['WEBAPP_PEAK_MEMORY'])) {
+            e($data['WEBAPP_PEAK_MEMORY']); 
+        } else {
+            e(tl('crawlstatus_view_no_mem_data'));
+        } ?>
+        </p>
         <p><b><?php e(tl('crawlstatus_view_visited_urls')); ?></b> <?php 
             if(isset($data['VISITED_URLS_COUNT'])) { 
                 e($data['VISITED_URLS_COUNT']); } else {e("0");} 
@@ -92,6 +116,7 @@ class CrawlstatusView extends View
             e(tl('crawlstatus_view_no_fetcher'));
         }
         ?></p>
+
         <h2><?php e(tl('crawlstatus_view_most_recent_urls')); ?></h2>
         <?php 
         if(isset($data['MOST_RECENT_URLS_SEEN']) && 

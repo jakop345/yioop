@@ -684,7 +684,8 @@ class AdminController extends Controller implements CrawlConstants
                     $info[self::STATUS] = "NEW_CRAWL";
                     $info[self::CRAWL_TIME] = time();
                     $seed_info = $this->crawlModel->getSeedInfo();
-
+                    $info[self::TO_CRAWL] = 
+                        $seed_info['seed_sites']['url'];
                     $info[self::CRAWL_ORDER] = 
                         $seed_info['general']['crawl_order'];
                     $info[self::RESTRICT_SITES_BY_URL] = 
@@ -742,14 +743,10 @@ class AdminController extends Controller implements CrawlConstants
                     $info[self::STATUS] = "RESUME_CRAWL";
                     $info[self::CRAWL_TIME] = 
                         $this->clean($_REQUEST['timestamp'], "int");
-                    $info[self::CRAWL_ORDER] = 
-                        $seed_info['general']['crawl_order'];
-                    $info[self::RESTRICT_SITES_BY_URL] = 
-                        $seed_info['general']['restrict_sites_by_url'];
-                    $info[self::ALLOWED_SITES] = 
-                        $seed_info['allowed_sites']['url'];
-                    $info[self::DISALLOWED_SITES] = 
-                        $seed_info['disallowed_sites']['url'];
+                    /* 
+                        we only set crawl time. Other data such as allowed sites
+                        should come from index.
+                    */
                     $info_string = serialize($info);
                     file_put_contents(
                         CRAWL_DIR."/schedules/queue_server_messages.txt", 
@@ -797,24 +794,50 @@ class AdminController extends Controller implements CrawlConstants
                     $data["leftorright"] = 
                         (getLocaleDirection() == 'ltr') ? "right": "left";
                     $data["ELEMENT"] = "crawloptionsElement";
-                    $seed_info = $this->crawlModel->getSeedInfo();
+                    $crawls = $this->crawlModel->getCrawlList();
+                    $update_flag = false;
+                    $data['available_options'] = array(
+                        tl('admin_controller_use_below'),
+                        tl('admin_controller_use_defaults'));
+                    $data['options_default'] = tl('admin_controller_use_below');
+                    foreach($crawls as $crawl) {
+                        $data['available_options'][$crawl['CRAWL_TIME']] =
+                            tl('admin_controller_previous_crawl')." ".
+                            $crawl['DESCRIPTION'];
+                    }
+                    $no_further_changes = false;
+                    if(isset($_REQUEST['load_option']) && 
+                        $_REQUEST['load_option'] == 1) {
+                        $seed_info = $this->crawlModel->getSeedInfo(true);
+                        $update_flag = true;
+                        $no_further_changes = true;
+                    } else if (isset($_REQUEST['load_option']) && 
+                        $_REQUEST['load_option'] > 1 ) {
+                        $timestamp = 
+                            $this->clean($_REQUEST['load_option'], "int");
+                        $seed_info = $this->crawlModel->getCrawlSeedInfo(
+                            $timestamp);
+                        $update_flag = true;
+                        $no_further_changes = true;
+                    } else {
+                        $seed_info = $this->crawlModel->getSeedInfo();
+                    }
                     $data['available_crawl_orders'] = array(
                         self::BREADTH_FIRST => 
                             tl('admin_controller_breadth_first'), 
                         self::PAGE_IMPORTANCE => 
                             tl('admin_controller_page_importance'));
-                    $update_flag = false;
-                    if(isset($_REQUEST['crawl_order']) && 
-                        in_array($_REQUEST['crawl_order'], 
-                            array_keys($data['available_crawl_orders']))) {
 
+                    if(!$no_further_changes && isset($_REQUEST['crawl_order']) 
+                        &&  in_array($_REQUEST['crawl_order'], 
+                            array_keys($data['available_crawl_orders']))) {
                         $seed_info['general']['crawl_order'] = 
                             $_REQUEST['crawl_order'];
                         $update_flag = true;
                     }
                     $data['crawl_order'] = $seed_info['general']['crawl_order'];
                     
-                    if(isset($_REQUEST['posted'])) {
+                    if(!$no_further_changes && isset($_REQUEST['posted'])) {
                         $seed_info['general']['restrict_sites_by_url'] = 
                             (isset($_REQUEST['restrict_sites_by_url'])) ?
                             true : false;
@@ -825,7 +848,7 @@ class AdminController extends Controller implements CrawlConstants
                     $site_types = 
                         array('allowed_sites','disallowed_sites', 'seed_sites');
                     foreach($site_types as $type) {
-                        if(isset($_REQUEST[$type])) {
+                        if(!$no_further_changes && isset($_REQUEST[$type])) {
                             $seed_info[$type]['url'] = 
                                 $this->convertStringCleanUrlsArray(
                                 $_REQUEST[$type]);
@@ -837,7 +860,10 @@ class AdminController extends Controller implements CrawlConstants
                         ($data['restrict_sites_by_url']) ? 
                         "checked='checked'" : "";
                     $data['SCRIPT'] = "setDisplay('toggle', ".
-                        "'{$data['restrict_sites_by_url']}');";
+                        "'{$data['restrict_sites_by_url']}');".
+                        " elt('load-options').onchange = ".
+                        "function() { if(elt('load-options').selectedIndex !=".
+                        " 0) { elt('crawloptionsForm').submit();  }};";
                     if($update_flag) {
                         $this->crawlModel->setSeedInfo($seed_info);
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".

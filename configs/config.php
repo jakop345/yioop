@@ -180,7 +180,15 @@ define('COMMON_WORD_THRESHOLD', 1000);
 define('MAX_LINKS_PER_PAGE', 50); 
 
 /**  maximum number of words from links to consider on any given page */
-define('MAX_LINKS_WORD_TEXT', 100); 
+define('MAX_LINKS_WORD_TEXT', 100);
+
+/**  maximum length of urls to try to queue, this is important for
+ *   memory when creating schedule, since the amount of memory is
+ *   going to be greater than the product MAX_URL_LENGTH*MAX_FETCH_SIZE
+ *   text_processors need to promise to implement this check or rely
+ *   on the base class which does implement it in extractHttpHttpsUrls
+ */
+define('MAX_URL_LENGTH', 512); 
 
 /** request this many bytes out of a page */
 define('PAGE_RANGE_REQUEST', 50000);
