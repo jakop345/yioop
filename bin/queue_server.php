@@ -522,6 +522,7 @@ class QueueServer implements CrawlConstants
         $machine = $machine_info[self::MACHINE];
         $machine_uri = $machine_info[self::MACHINE_URI];
 
+        //do deduplication of summaries
         if(isset($sites[self::SEEN_URLS]) && 
             count($sites[self::SEEN_URLS]) > 0) {
             $seen_sites = $sites[self::SEEN_URLS];
@@ -851,6 +852,10 @@ class QueueServer implements CrawlConstants
         unlink($file);
 
         $crawl_status = array();
+        $stat_file = CRAWL_DIR."/schedules/crawl_status.txt";
+        if(file_exists($stat_file) ) {
+            $crawl_status = unserialize(file_get_contents($stat_file));
+        }
         $crawl_status['MOST_RECENT_FETCHER'] = $this->most_recent_fetcher;
         if(isset($sites[self::RECENT_URLS])) {
             $crawl_status['MOST_RECENT_URLS_SEEN'] = $sites[self::RECENT_URLS]; 
@@ -863,9 +868,8 @@ class QueueServer implements CrawlConstants
         $crawl_status['VISITED_URLS_COUNT'] =$info_bundle['VISITED_URLS_COUNT'];
         $crawl_status['DESCRIPTION'] = $index_archive_info['DESCRIPTION'];
         $crawl_status['QUEUE_PEAK_MEMORY'] = memory_get_peak_usage();
-        file_put_contents(
-            CRAWL_DIR."/schedules/crawl_status.txt", serialize($crawl_status));
-        chmod(CRAWL_DIR."/schedules/crawl_status.txt", 0777);
+        file_put_contents($stat_file, serialize($crawl_status));
+        chmod($stat_file, 0777);
         crawlLog(
             "End checking for new URLs data memory usage".memory_get_usage());
 

@@ -572,22 +572,31 @@ class Fetcher implements CrawlConstants
         $deduplicated_pages = array();
         $not_downloaded = array();
         $duplicates = array();
-        
+
+        /*
+            Time to Deduplicate!
+            $unseen_page_hashes array to check against all before this batch, 
+            $seen_pages to check against this batch
+        */
         $unseen_page_hashes = 
             $this->web_archive->differencePageKeysFilter($site_pages, 
             self::HASH);
+        $seen_pages = array();
 
         foreach($site_pages as $site) {
             if( isset($site[self::ROBOT_PATHS])) {
                 $deduplicated_pages[] = $site;
             } else if (isset($site[self::HASH]) && in_array($site[self::HASH], 
-                $unseen_page_hashes)) {
+                $unseen_page_hashes) && !in_array($site[self::HASH], 
+                $seen_pages)) {
                 $this->web_archive->addPageFilter(self::HASH, $site);
                 $deduplicated_pages[] = $site;
+                $seen_pages[] = $site[self::HASH];
             } else if(!isset($site[self::HASH])){
                 $not_downloaded[] = $site;
             } else {
                 $duplicates[] = $site[self::URL];
+                echo "Deduplicated:".$site[self::URL]."\n";
             }
 
         }

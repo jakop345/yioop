@@ -207,11 +207,18 @@ class GroupIterator extends IndexBundleIterator
                     if(is_array($doc_array) && count($doc_array) == 1) {
                         $keys = array_keys($doc_array);
                         $key = $keys[0];
-                        if($doc_array[$key][self::SCORE] > 0) {
+                        if($doc_array[$key][self::DOC_RANK] > -1) {
                             $pre_out_pages[$hash_url][$key] = $doc_array[$key];
                             $pre_out_pages[$hash_url][$key]['IS_PAGE'] = true;
-                        } else {
+                        } else { 
+                            /*
+                                Deduplication: idea is if the score < 0 
+                                a deduplicate info: page was written, so
+                                we should ignore that group. 
+                            */
                             unset($pre_out_pages[$hash_url]);
+                            $this->grouped_keys[$hash_url] = true;
+                            //mark we have seen this group
                         }
                     } 
                 } else {

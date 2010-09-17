@@ -148,7 +148,7 @@ class FetchController extends Controller implements CrawlConstants
                     file_get_contents(CRAWL_DIR."/schedules/crawl_status.txt"));
                 if(isset($_REQUEST['fetcher_peak_memory'])) {
                     if(!isset($crawl_status['FETCHER_MEMORY']) ||
-                        $_REQUEST['fetcher_peak_memory'] < 
+                        $_REQUEST['fetcher_peak_memory'] > 
                         $crawl_status['FETCHER_PEAK_MEMORY']
                     ) {
                         $crawl_status['FETCHER_PEAK_MEMORY'] = 
