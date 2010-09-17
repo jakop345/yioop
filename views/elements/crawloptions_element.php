@@ -86,7 +86,7 @@ class CrawloptionsElement extends Element
             e(tl('crawloptions_element_restrict_by_url'))?></b></label>
                 <input type="checkbox" id="restrict-sites-by-url" 
                     name="restrict_sites_by_url" value="true" 
-                    onchange="setDisplay('toggle', this.checked)" <?php 
+                    onclick="setDisplay('toggle', this.checked)" <?php 
                     e($data['TOGGLE_STATE']); ?> /></div>
         <div id="toggle">
             <div class="topmargin"><label for="allowed-sites"><b><?php 

@@ -125,7 +125,7 @@ function elt(id)
     Sets whether an elt is styled as display:none or block
 
     String id  the id of the DOM element one wants
-    Boolean value  true means display block; flase display none
+    Boolean value  true means display block; false display none
 */
 function setDisplay(id, value) 
 {
