@@ -596,7 +596,7 @@ class Fetcher implements CrawlConstants
                 $not_downloaded[] = $site;
             } else {
                 $duplicates[] = $site[self::URL];
-                echo "Deduplicated:".$site[self::URL]."\n";
+                crawlLog("Deduplicated:".$site[self::URL]);
             }
 
         }
@@ -1064,10 +1064,12 @@ class Fetcher implements CrawlConstants
             $description_length = $info[self::DESCRIPTION_LENGTH];
             $link_length = $info[self::LINK_LENGTH];
 
-            $title_ratio = $title_length/$average_title_length;
-            $description_ratio = 
-                $description_length/$average_description_length;
-            $link_ratio = $link_length/$average_total_link_text_length;
+            $title_ratio = ($average_title_length > 0) ? 
+                $title_length/$average_title_length : 0;
+            $description_ratio = ($average_description_length > 0) ?
+                $description_length/$average_description_length :0;
+            $link_ratio = ($average_total_link_text_length > 0) ?
+                $link_length/$average_total_link_text_length : 0;
 
             if(isset($info[self::TITLE_WORDS])) {
                 foreach($info[self::TITLE_WORDS] 

@@ -68,19 +68,24 @@ class HtmlProcessor extends TextProcessor
      */
     public static function process($page, $url)
     {
+        $summary = NULL;
         if(is_string($page)) {
             $dom = self::dom($page);
 
-            if(self::checkMetaRobots($dom)) {
+            if($dom !==false && self::checkMetaRobots($dom)) {
                 $summary[self::TITLE] = self::title($dom);
                 $summary[self::DESCRIPTION] = self::description($dom); 
                 $summary[self::LINKS] = self::links($dom, $url);
 
-                return $summary;
+                if(strlen($summary[self::DESCRIPTION] . $summary[self::TITLE])
+                    == 0 && count($summary[self::LINKS]) == 0) {
+                    //maybe not html? treat as text still try to get urls
+                    $summary = parent::process($page, url);
+                }
             }
         }
 
-        return NULL;
+        return $summary;
 
     }
 

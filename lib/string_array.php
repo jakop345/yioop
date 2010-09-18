@@ -41,7 +41,9 @@ require_once "persistent_structure.php";
 /**
  * Memory efficient implementation of persistent arrays
  *
- * The standard array ob
+ * The standard array objects in php and even spl have a large amount of
+ * overhead. The point of this class is to have the size as close to the
+ * optimal as possible
  *
  * @author Chris Pollett
  *

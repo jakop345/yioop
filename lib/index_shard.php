@@ -43,4 +43,49 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  
 class IndexShard extends PersistentStructure implements Serializable
 {
+    var $doc_ids;
+    var $word_docs;
+    var $count_doc256;
+
+    function __construct()
+    {
+    }
+    
+    function addDocumentWords($doc_id, $word_id_array)
+    {
+        $this->doc_ids[] = $doc_id;
+        
+        foreach($word_id_arr as $word_id => $relevance) {
+            $relevance = $relevance & 255;
+            $store = pack("N", $this->count_doc256 + $relevance); 
+            $this->word_docs[$word_id] .= $store;
+        }
+
+        $this->count_doc256 += 256;
+    }
+
+    function getWordSlice($word_id, $start, $len)
+    {
+        $result = array();
+        if(isset($word_docs[$word_id])) {
+            $docs_string = substr($word_docs[$word_id], $start << 2, $len <<2);
+            //check if got at least one item
+            if($docs_string !== false && ($doc_len = strlen($doc_string)) > 3) {
+                for($i = 0; $i < $doc_len; $i += 4) {
+                }
+            }
+        }
+
+        return $result;
+    }
+
+    function appendIndexShard($index_shard)
+    {
+    }
+
+    function docCount()
+    {
+        return ($this->count_doc256 >> 8);
+    }
+
 }

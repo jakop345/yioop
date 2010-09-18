@@ -115,9 +115,10 @@ class SearchView extends View implements CrawlConstants
                 <div class='result'> 
                 <h2>
                 <a href="<?php if($page[self::TYPE] != "link") {
-                    e($page[self::URL]); 
-                    } else 
-                    e(strip_tags($page[self::TITLE])); ?>" ><?php
+                        e($page[self::URL]); 
+                    } else {
+                        e(strip_tags($page[self::TITLE]));
+                    } ?>" ><?php
                  if(isset($page[self::THUMB]) && $page[self::THUMB] != 'NULL') {
                     ?><img src="<?php e($page[self::THUMB]); ?>" alt="<?php 
                         e($page[self::TITLE]); ?>"  /> <?php

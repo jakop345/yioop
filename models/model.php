@@ -132,6 +132,10 @@ class Model implements CrawlConstants
                 $page[self::TITLE] = 
                     substr(strip_tags($page[self::DESCRIPTION]), 0, $end_title).
                     $ellipsis;
+                //still no text revert to url
+                if(strlen($page[self::TITLE]) == 0) {
+                    $page[self::TITLE] = $page[self::URL];
+                }
             }
 
 

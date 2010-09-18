@@ -137,6 +137,14 @@ class PhraseModel extends Model
 
     }
 
+    /**
+     * Determines the offset into the summaries WebArchiveBundle of the
+     * provided url so that it can be retrieved. This relies on the
+     * fact that the info:url meta word has been stored.
+     *
+     * @param string $url what to lookup
+     * @return int offset into the web archive bundle
+     */
     function lookupSummaryOffset($url)
     {
         $index_archive_name = self::index_data_base_name . $this->index_name;
@@ -160,6 +168,15 @@ class PhraseModel extends Model
         return $summary_offset;
     }
 
+    /**
+     *  Parses from a string phrase representing a conjunctive query, a struct
+     *  consisting of the words keys searched for, the allowed and disallowed
+     *  phrases, the weight that should be put on these query results, and
+     *  which archive to use.
+     *
+     * @param string $phrase string to extract struct from
+     * @return array struct representing the conjunctive query
+     */
     function parseWordStructConjunctiveQuery($phrase)
     {
         $phrase = " ".$phrase;

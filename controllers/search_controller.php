@@ -376,11 +376,19 @@ class SearchController extends Controller implements CrawlConstants
 
         $dom = new DOMDocument();
 
-        @$dom->loadHTML($cache_file);
+        $did_dom = @$dom->loadHTML($cache_file);
+
         $xpath = new DOMXPath($dom);
 
 
         $body =  $dom->getElementsByTagName('body')->item(0);
+        if($body == false) {
+            $cache_file = "<html><head><title>Yioop! Cache</title></head>".
+                "<body>".htmlentities($cache_file)."</body></html>";
+            $dom = new DOMDocument();
+            @$dom->loadHTML($cache_file);
+            $body =  $dom->getElementsByTagName('body')->item(0);
+        }
         $first_child = $body->firstChild;
 
         $divNode = $dom->createElement('div');
@@ -402,13 +410,19 @@ class SearchController extends Controller implements CrawlConstants
 
         $i = 0;
         foreach($words as $word) {
-            if(strlen($word) > 0) {
-            $match = crawlHash($word).$word;
-            $newDoc = preg_replace("/$match/i", 
-                '<span style="background-color:'.
-                $colors[$i].'">$0</span>', $newDoc);
-            $i = ($i + 1) % $color_count;
-            $newDoc = preg_replace("/".crawlHash($word)."/", "", $newDoc);
+            //only mark string of length at least 2
+            if(strlen($word) > 1) {
+                $mark_prefix = crawlHash($word);
+                if(stristr($mark_prefix, $word) !== false) {
+                    $mark_prefix = preg_replace(
+                    "/$word/i", '', $mark_prefix);
+                }
+                $match = $mark_prefix.$word;
+                $newDoc = preg_replace("/$match/i", 
+                    '<span style="background-color:'.
+                    $colors[$i].'">$0</span>', $newDoc);
+                $i = ($i + 1) % $color_count;
+                $newDoc = preg_replace("/".$mark_prefix."/", "", $newDoc);
             }
         }
 
@@ -442,9 +456,15 @@ class SearchController extends Controller implements CrawlConstants
                 $text = $clone->textContent;
 
                 foreach($words as $word) {
-                    if(strlen($word) > 0) {
+                    //only mark string of length at least 2
+                    if(strlen($word) > 1) {
+                        $mark_prefix = crawlHash($word);
+                        if(stristr($mark_prefix, $word) !== false) {
+                            $mark_prefix = preg_replace(
+                            "/$word/i", '', $mark_prefix);
+                        }
                         $text = preg_replace(
-                            "/$word/i", crawlHash($word).'$0', $text);
+                            "/$word/i", $mark_prefix.'$0', $text);
                     }
                 }
 

@@ -67,7 +67,8 @@ class TextProcessor implements CrawlConstants
             $summary[self::TITLE] = "";
             $summary[self::DESCRIPTION] = mb_substr($page, 0, 400);
             $summary[self::LINKS] = self::extractHttpHttpsUrls($page);
-            $summary[self::PAGE] = "<html><body><pre>$page</pre></body></html>";
+            $summary[self::PAGE] = "<html><body><pre>".
+                strip_tags($page)."</pre></body></html>";
         }
         return $summary;
     }
