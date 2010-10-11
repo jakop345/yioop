@@ -102,13 +102,10 @@ class IntersectIterator extends IndexBundleIterator
      *
      * @param object $index_bundle_iterator to use as a source of documents
      *      to iterate over
-     * @param int $limit the first element to return from the list of docs
-     *      iterated over
      */
-    function __construct($index_bundle_iterators, $limit = 0)
+    function __construct($index_bundle_iterators)
     {
         $this->index_bundle_iterators = $index_bundle_iterators;
-        $this->limit = $limit;
 
         $this->num_iterators = count($index_bundle_iterators);
         $this->num_docs = -1;
@@ -138,19 +135,8 @@ class IntersectIterator extends IndexBundleIterator
 
         $this->seen_docs = 0;
         $this->seen_docs_unfiltered = 0;
-        $beneath_limit = true;
-        while($beneath_limit == true) {
-            $doc_block = $this->currentDocsWithWord();
-            if($doc_block == -1 || !is_array($doc_block)) {
-                $beneath_limit = false;
-                continue;
-            }
-            if($this->seen_docs + $this->count_block >= $this->limit) {
-                $beneath_limit = false;
-                continue;
-            }
-            $this->advance();
-        }
+        $doc_block = $this->currentDocsWithWord();
+
     }
 
     /**
@@ -294,7 +280,7 @@ class IntersectIterator extends IndexBundleIterator
      * Returns the index associated with this iterator
      * @return object the index
      */
-    function getIndex($key = NULL)
+    function &getIndex($key = NULL)
     {
         return $this->index_bundle_iterators[0]->getIndex($key = NULL);
     }

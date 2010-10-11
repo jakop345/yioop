@@ -131,5 +131,8 @@ interface CrawlConstants
     const HASH_SEEN_URLS ='aj';
     const RECENT_URLS ='ak';
     const MEMORY_USAGE ='al';
+    const DOC_ID ='am';
+    const RELEVANCE ='an';
+    const DUPLICATE ='ao';
 } 
 ?>

@@ -39,6 +39,11 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 require_once "persistent_structure.php";
 
 /**
+ * Load charCopy
+ */
+require_once "utility.php";
+
+/**
  * Memory efficient implementation of persistent arrays
  *
  * The standard array objects in php and even spl have a large amount of
@@ -159,12 +164,10 @@ class StringArray extends PersistentStructure
         $data_size = $this->data_size;
 
         $start = $i * $data_size;
-        $end = $start + $data_size;
 
-        for($j = $start, $k = 0; $j < $end; $j++, $k++) {
-            $this->string_array[$j] = $data[$k];
-        }
+        charCopy($data, $this->string_array, $start, $data_size);
+
     }
-   
+
 }
 ?>

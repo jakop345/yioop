@@ -231,7 +231,7 @@ class SearchController extends Controller implements CrawlConstants
                         $this->phraseModel->lookupSummaryOffset($url);
                 }
                 $crawl_item = $this->crawlModel->getCrawlItem(
-                    crawlHash($url), $summary_offset);
+                    crawlHash($url, true), $summary_offset);
 
                 $top_phrases  = 
                     $this->phraseModel->getTopPhrases($crawl_item, 3);
@@ -332,7 +332,7 @@ class SearchController extends Controller implements CrawlConstants
             $summary_offset = $this->phraseModel->lookupSummaryOffset($url);
         }
 
-        if(!$crawl_item = $this->crawlModel->getCrawlItem(crawlHash($url), 
+        if(!$crawl_item = $this->crawlModel->getCrawlItem(crawlHash($url, true), 
             $summary_offset)) {
 
             $this->displayView("nocache", $data);

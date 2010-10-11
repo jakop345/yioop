@@ -90,73 +90,61 @@ class WordIterator extends IndexBundleIterator
     var $index;
 
     /**
-     * If iterating through the linked-list portions of the documents
-     * the next byte offset in the WebArchive based linked-list
+     * The next byte offset in the IndexShard
      * @var int
      */
     var $next_offset;
-    /**
-     * Block number of the last block of docs
-     * @var int
-     */
-    var $last_pointed_block;
-    /**
-     * @var int
-     */
-    var $list_offset;
 
     /**
-     * Pointers to offsets for blocks containing docs with the given word 
-     * for the current generation
-     * @var array
-     */
-    var $block_pointers;
-    /**
-     * Number of completely full blocks of documents for the current generation
+     * The current byte offset in the IndexShard
      * @var int
      */
-    var $num_full_blocks;
+    var $current_offset;
+
     /**
-     * Number of generations word appears in
+     * Last Offset of word occurence in the IndexShard
      * @var int
      */
-    var $num_generations;
+    var $last_offset;
+
     /**
-     * Used to store the contents of the last partially full block
+     * Keeps track of whether the word_iterator list is empty becuase the
+     * word does not appear in the index shard
      * @var int
      */
-    var $last_block;
+    var $empty;
+
     /**
-     * the info block of the WebArchive that the word lives in
-     * @var object
-     */
-    var $info_block;
-    /**
-     * Stores the number of the current block of documents we are at in the
-     * set of all blocks of BLOCK_SIZE many documents
+     *  Number of documents returned for each block (at most)
      * @var int
      */
-    var $current_pointer;
+    const RESULTS_PER_BLOCK = 2000;
 
     /**
      * Creates a word iterator with the given parameters.
      *
      * @param string $word_key hash of word or phrase to iterate docs of 
-     * @param object $index the IndexArchiveBundle to use
+     * @param object &$index the IndexArchiveBundle to use
      * @param int $limit the first element to return from the list of docs
      *      iterated over
-     * @param object $info_block the info block of the WebArchive
-     *      associated with the word in the index. If NULL, then this will
-     *      loaded in WordIterator::reset()
+     * @param bool $raw whether the $word_key is our variant of base64 encoded
      */
-    function __construct($word_key, $index, $limit = 0, $info_block = NULL)
+    function __construct($word_key, &$index, $raw = false)
     {
         $this->word_key = $word_key;
-        $this->index = $index;
-        $this->limit = $limit;
-        $this->info_block = $info_block;
+        
+        $this->index = & $index;
         $this->current_block_fresh = false;
-        $this->reset();
+        $tmp = $index->getCurrentShard()->getWordInfo($word_key, $raw);
+        if ($tmp === false) {
+            $this->empty = true;
+        } else {
+            list($this->current_offset, $this->last_offset, $this->num_docs) 
+                = $tmp;
+            $this->empty = false;
+
+            $this->reset();
+        }
     }
 
     /**
@@ -168,99 +156,9 @@ class WordIterator extends IndexBundleIterator
     {
         $this->count_block = 0;
         $this->seen_docs = 0;
-        
-        $partition = 
-            WebArchiveBundle::selectPartition($this->word_key, 
-                $this->index->num_partitions_index);
-        if($this->info_block == NULL) {
-            $this->info_block = 
-                $this->index->getPhraseIndexInfo($this->word_key);
-        }
-        if($this->info_block !== NULL) {
-            $this->num_generations = count($this->info_block['GENERATIONS']);
-            $count_till_generation = $this->info_block[self::COUNT];
-
-            while($this->limit >= $count_till_generation) {
-                $this->info_block['CURRENT_GENERATION_INDEX']++;
-                if($this->num_generations <= 
-                    $this->info_block['CURRENT_GENERATION_INDEX']) {
-                    $this->num_docs = 0;
-                    $this->current_pointer = -1;
-                    return;
-                }
-                $info_block = $this->index->getPhraseIndexInfo(
-                    $this->word_key, 
-                    $this->info_block['CURRENT_GENERATION_INDEX'], 
-                    $this->info_block);
-                if($info_block !== NULL) {
-                    $this->info_block = $info_block;
-                }
-                $count_till_generation += $this->info_block[self::COUNT];
-            }
-            $this->seen_docs = $count_till_generation - 
-                $this->info_block[self::COUNT];
-
-        }
-
-
-        $this->initGeneration();
-
 
     }
 
-    /**
-     * Sets up the iterator to iterate through the current generation.
-     *
-     * @return bool whether the initialization succeeds
-     */
-    function initGeneration()
-    {
-
-        if($this->info_block !== NULL) {
-            $info_block = $this->index->getPhraseIndexInfo(
-                $this->word_key, $this->info_block['CURRENT_GENERATION_INDEX'], 
-                $this->info_block);
-            if($info_block === NULL) {
-                return false;
-            }
-            $this->info_block = & $info_block;
-            $this->num_docs = $info_block['TOTAL_COUNT'];
-            $this->num_docs_generation = $info_block[self::COUNT];
-
-            $this->current_pointer = 
-                max(floor(($this->limit - $this->seen_docs) / BLOCK_SIZE), 0);
-            $this->seen_docs += $this->current_pointer*BLOCK_SIZE;
-            $this->last_block = $info_block[self::END_BLOCK];
-            $this->num_full_blocks = 
-                floor($this->num_docs_generation / BLOCK_SIZE);
-            if($this->num_docs_generation > COMMON_WORD_THRESHOLD) {
-                $this->last_pointed_block = 
-                    floor(COMMON_WORD_THRESHOLD / BLOCK_SIZE);
-            } else {
-                $this->last_pointed_block = $this->num_full_blocks;
-            }
-
-            for($i = 0; $i < $this->last_pointed_block; $i++) {
-                if(isset($info_block[$i])) {
-                    $this->block_pointers[$i] = $info_block[$i];
-                }
-            }
-            
-            if($this->num_docs_generation > COMMON_WORD_THRESHOLD) {
-                if($info_block[self::LIST_OFFSET] === NULL) {
-                    $this->list_offset = NULL;
-                } else {
-                    $this->list_offset = $info_block[self::LIST_OFFSET];
-                }
-            }
-
-        } else {
-            $this->num_docs = 0;
-            $this->num_docs_generation = 0;
-            $this->current_pointer = -1;
-        }
-        return true;
-    }
 
     /**
      * Hook function used by currentDocsWithWord to return the current block
@@ -270,96 +168,13 @@ class WordIterator extends IndexBundleIterator
      */
     function findDocsWithWord()
     {
-        if($this->num_generations <= 
-            $this->info_block['CURRENT_GENERATION_INDEX']) {
-            $this->pages = NULL;
+        if($this->current_offset > $this->last_offset || $this->empty) {
             return -1;
         }
-        $generation = 
-            $this->info_block['GENERATIONS'][
-                $this->info_block['CURRENT_GENERATION_INDEX']];
-        if($this->current_pointer >= 0) {
-            if($this->current_pointer == $this->num_full_blocks) {
-                $pages = $this->last_block;
-            } else if ($this->current_pointer >= $this->last_pointed_block) {
-                /* if there are more than COMMON_WORD_THRESHOLD many 
-                   results and we're not at the last block yet
-                 */
-                if($this->list_offset === NULL) {
-                    $this->pages = NULL;
-                    return -1;
-                }
-                $offset = $this->list_offset;
-                $found = false;
-                do {
-                    /* the link list is actually backwards to the order we want
-                       For now, we cycle along the list from the last data
-                       stored until we find the block we want. This is slow
-                       but we are relying on the fact that each generation is
-                       not too big.
-                     */
-                    $doc_block = $this->index->getWordDocBlock($this->word_key, 
-                        $offset, $generation);
-                    $word_keys = array_keys($doc_block);
-                    $found_key = NULL;
-                    foreach($word_keys as $word_key) {
-                        if(strstr($word_key, $this->word_key.":")) {
-                            $found_key = $word_key;
-                            if(isset($doc_block[
-                                $found_key][self::LIST_OFFSET])) {
-                                //only one list offset/docblock
-                                break;
-                            }
-                        }
-                    }
-                    if($found_key === NULL) {
-                        break;
-                    }
-                    if(isset($doc_block[
-                        $this->word_key.":".$this->current_pointer])) {
-                        $found = true;
-                        break;
-                    }
-                    $offset = $doc_block[$found_key][self::LIST_OFFSET];
-                } while($offset != NULL);
-                if($found != true) {
-                    $pages = array();
-                } else {
-                    $pages = & $doc_block[
-                        $this->word_key.":".$this->current_pointer];
-                }
-            } else {
-                //first COMMON_WORD_THRESHOLD many results fast
-                if(isset($this->block_pointers[$this->current_pointer])) {
-                    $doc_block = $this->index->getWordDocBlock($this->word_key, 
-                        $this->block_pointers[$this->current_pointer], 
-                        $generation);
-                    if(isset(
-                        $doc_block[$this->word_key.":".$this->current_pointer]
-                        )) {
-                        $pages = &
-                            $doc_block[
-                                $this->word_key.":".$this->current_pointer];
-                    } else {
-                        $pages = array();
-                    }
-                } else {
-                    $pages = array();
-                }
-            }
-
-            if($this->seen_docs < $this->limit) {
-                $diff_offset = $this->limit - $this->seen_docs;
-
-                $pages = array_slice($pages, $diff_offset);
-            }
-            $this->pages = & $pages;
-            $this->count_block = count($pages);
-            return $pages;
-        } else {
-            $this->pages = NULL;
-            return -1;
-        }
+        $this->next_offset = $this->current_offset;
+        $results = $this->index->getCurrentShard()->getWordSlice(
+            $this->next_offset, $this->last_offset, self::RESULTS_PER_BLOCK);
+        return $results;
     }
 
 
@@ -368,30 +183,21 @@ class WordIterator extends IndexBundleIterator
      */
     function advance() 
     {
-        if($this->current_pointer < 0) {return;}
-
         $this->advanceSeenDocs();
-
-        $this->current_pointer ++;
-        if($this->current_pointer > $this->num_full_blocks) {
-            $flag = false;
-            while ($this->info_block['CURRENT_GENERATION_INDEX'] < 
-                $this->num_generations - 1 && !$flag) {
-                $this->info_block['CURRENT_GENERATION_INDEX']++;
-                $flag = $this->initGeneration();
-            } 
-            if ($this->info_block['CURRENT_GENERATION_INDEX'] >= 
-                $this->num_generations - 1) {
-                $this->current_pointer = - 1;
-            }
+        if($this->current_offset < $this->next_offset) {
+            $this->current_offset = $this->next_offset;
+        } else {
+            $this->current_offset = $this->last_offset + 1;
         }
+        
+
     }
     
     /**
      * Returns the index associated with this iterator
-     * @return object the index
+     * @return &object the index
      */
-    function getIndex($key = NULL)
+    function &getIndex($key = NULL)
     {
         return $this->index;
     }

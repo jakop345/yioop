@@ -78,6 +78,9 @@ class GroupIterator extends IndexBundleIterator
      */
     var $count_block;
 
+    /**
+     *
+     */
     var $current_block_hashes;
 
     /**
@@ -98,13 +101,11 @@ class GroupIterator extends IndexBundleIterator
      *
      * @param object $index_bundle_iterator to use as a source of documents
      *      to iterate over
-     * @param int $limit the first element to return from the list of docs
-     *      iterated over
+
      */
-    function __construct($index_bundle_iterator, $limit = 0)
+    function __construct($index_bundle_iterator)
     {
         $this->index_bundle_iterator = $index_bundle_iterator;
-        $this->limit = $limit;
         $this->num_docs = $this->index_bundle_iterator->num_docs;
         $this->reset();
     }
@@ -116,26 +117,10 @@ class GroupIterator extends IndexBundleIterator
     function reset()
     {
         $this->index_bundle_iterator->reset();
-        $time = time();
         $this->grouped_keys = array();
             // -1 == never save, so file name not used using time to be safer
         $this->seen_docs = 0;
         $this->seen_docs_unfiltered = 0;
-        $beneath_limit = true;
-        while($beneath_limit == true) {
-
-            $doc_block = $this->currentDocsWithWord();
-            if($doc_block == -1 || !is_array($doc_block)) {
-                $beneath_limit = false;
-                continue;
-            }
-            if($this->seen_docs + $this->count_block >= $this->limit) {
-                $beneath_limit = false;
-                continue;
-            }
-            $this->advance();
-        }
-
     }
 
     /**
@@ -148,6 +133,7 @@ class GroupIterator extends IndexBundleIterator
     {
         $pages = 
             $this->index_bundle_iterator->currentDocsWithWord();
+
         $this->count_block_unfiltered = count($pages);
         if(!is_array($pages)) {
             return $pages;
@@ -159,28 +145,28 @@ class GroupIterator extends IndexBundleIterator
         if($this->count_block_unfiltered > 0 ) {
             $i = $this->seen_docs;
             foreach($pages as $doc_key => $doc_info) {
-                if(!is_array($doc_info)) {continue;}
+                if(!is_array($doc_info) || 
+                    isset($doc_info[self::DUPLICATE])) {continue;}
                 $doc_info['KEY'] = $doc_key;
-                $doc_key_parts = explode(":", $doc_key);
-                if(count($doc_key_parts) == 1) {
-                    $hash_url = $doc_key_parts[0];
+                if(strlen($doc_key) == 8) {
+                    $hash_url = $doc_key;
                     $doc_info['IS_PAGE'] = true;
                 } else {
+                    $doc_key_parts = array(
+                        substr($doc_key, 0, 8),substr($doc_key, 9, 8),
+                        substr($doc_key, 18, 8)
+                    );
                     $hash_url = $doc_key_parts[1];
                     $doc_info['IS_PAGE'] = false;
                 }
                 if(isset($this->grouped_keys[$hash_url])) {
-                    if( $i < $this->limit) {
-                        continue;
-                    } else {
-                        if(isset($pre_out_pages[$hash_url]) ) {
-                            $pre_out_pages[$hash_url][] = $doc_info;
-                            if($doc_info['IS_PAGE'] == true) {
-                                $pre_out_pages[$hash_url]['IS_PAGE'] = true;
-                            } else {
-                                $pre_out_pages[$hash_url]['HASH_INFO_URL'] =
-                                    $doc_key_parts[2];
-                            }
+                    if(isset($pre_out_pages[$hash_url]) ) {
+                        $pre_out_pages[$hash_url][] = $doc_info;
+                        if($doc_info['IS_PAGE'] == true) {
+                            $pre_out_pages[$hash_url]['IS_PAGE'] = true;
+                        } else {
+                            $pre_out_pages[$hash_url]['HASH_INFO_URL'] =
+                                $doc_key_parts[2];
                         }
                     }
                 } else {
@@ -202,17 +188,17 @@ class GroupIterator extends IndexBundleIterator
                     $hash_info_url= $pre_out_pages[$hash_url]['HASH_INFO_URL'];
                     $word_iterator = 
                          new WordIterator($hash_info_url, 
-                            $this->getIndex(), 0);
+                            $this->getIndex(), true);
                     $doc_array = $word_iterator->currentDocsWithWord();
                     if(is_array($doc_array) && count($doc_array) == 1) {
                         $keys = array_keys($doc_array);
                         $key = $keys[0];
-                        if($doc_array[$key][self::DOC_RANK] > -1) {
+                        if(!isset($doc_array[$key][self::DUPLICATE]) ) {
                             $pre_out_pages[$hash_url][$key] = $doc_array[$key];
                             $pre_out_pages[$hash_url][$key]['IS_PAGE'] = true;
                         } else { 
                             /*
-                                Deduplication: idea is if the score < 0 
+                                Deduplication: 
                                 a deduplicate info: page was written, so
                                 we should ignore that group. 
                             */
@@ -230,15 +216,6 @@ class GroupIterator extends IndexBundleIterator
             }
             $this->count_block = count($pre_out_pages);
 
-            if($this->seen_docs  <  $this->limit) {
-                $total_docs = $this->seen_docs + $this->count_block;
-                if($total_docs <  $this->limit) {
-                    $pre_out_pages =array();
-                } else {
-                    $pre_out_pages = array_slice($pre_out_pages, 
-                        $this->limit - $this->seen_docs, NULL, true);
-                }
-            }
             $out_pages = array();
             foreach($pre_out_pages as $hash_url => $group_infos) {
                 foreach($group_infos as $doc_info) {
@@ -312,7 +289,7 @@ class GroupIterator extends IndexBundleIterator
                 $out_pages[$doc_key] = $doc_info;
                 foreach($doc_info[self::SUMMARY_OFFSET] as $offset_array) {
                     list($key, $summary_offset) = $offset_array;
-                    $index = $this->getIndex($key);
+                    $index = & $this->getIndex($key);
                     $page = $index->getPage(
                         $key, $summary_offset);
                     if(!isset($out_pages[$doc_key][self::SUMMARY])) {
@@ -358,9 +335,9 @@ class GroupIterator extends IndexBundleIterator
 
     /**
      * Returns the index associated with this iterator
-     * @return object the index
+     * @return &object the index
      */
-    function getIndex($key = NULL)
+    function &getIndex($key = NULL)
     {
         return $this->index_bundle_iterator->getIndex($key);
     }

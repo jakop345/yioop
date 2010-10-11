@@ -57,7 +57,7 @@ foreach(glob(BASE_DIR."/lib/index_bundle_iterators/*_iterator.php")
 /**
  * 
  * This is class is used to handle
- * db results for a given phrase search
+ * results for a given phrase search
  *
  * @author Chris Pollett
  * @package seek_quarry
@@ -151,7 +151,7 @@ class PhraseModel extends Model
         $index_archive = new IndexArchiveBundle(
             CRAWL_DIR.'/cache/'.$index_archive_name);
         $word_iterator = 
-            new WordIterator(crawlHash("info:$url"), $index_archive, 0);
+            new WordIterator(crawlHash("info:$url"), $index_archive);
         $num_retrieved = 0;
         $pages = array();
         $summary_offset = NULL;
@@ -262,6 +262,7 @@ class PhraseModel extends Model
             $hashes = array_unique($hashes);
             $restrict_phrases = array_unique($restrict_phrases);
             $restrict_phrases = array_filter($restrict_phrases);
+            $index_archive->setCurrentShard(0);
             $words_array = $index_archive->getSelectiveWords($hashes, 10);
 
             if(is_array($words_array)) {
@@ -348,10 +349,54 @@ class PhraseModel extends Model
      *      INDEX_ARCHIVE -- an index_archive object to get results from
      * @param int $limit number of first document in order to return
      * @param int $num number of documents to return summaries of
-     * @param object $index_archive index archive to use to get summaries from
      * @return array document summaries
      */
     function getSummariesByHash($word_structs, $limit, $num)
+    {
+
+        $pages = array();
+        $generation = 0;
+        $to_retrieve = $limit + max(2*$num, 200);
+        $num_retrieved = 0;
+        while($num_retrieved < $to_retrieve) {
+            $gen_pages = $this->getGenerationSummariesByHash(
+                $word_structs, $to_retrieve, $generation);
+             if(!is_array($gen_pages)) { break; }
+             $num_retrieved += count($gen_pages);
+             $pages += $gen_pages;
+             $generation++;
+        }
+        uasort($pages, "scoreOrderCallback");
+        $pages = array_slice($pages, $limit, $num);
+        if($num_retrieved < $to_retrieve ) {
+            $results['TOTAL_ROWS'] = $num_retrieved;
+        } else {
+            $results['TOTAL_ROWS'] =  
+                $num_retrieved;
+            //num_docs is only approximate, so if gives contradictory info
+              //use $num_retrieved 
+        } 
+        $results['PAGES'] = & $pages;
+        return $results;
+    }
+
+
+    /**
+     * Gets doc summaries of documents containing given words and meeting the
+     * additional provided criteria in a given index shard generation
+     * @param array $word_structs an array of word_structs. Here a word_struct
+     *      is an associative array with at least the following fields
+     *      KEYS -- an array of word keys
+     *      RESTRICT_PHRASES -- an array of phrases the document must contain
+     *      DISALLOW_PHRASES -- an array of words the document must not contain
+     *      WEIGHT -- a weight to multiple scores returned from this iterator by
+     *      INDEX_ARCHIVE -- an index_archive object to get results from
+     * @param int $num number of documents to return summaries of
+     * @param int $generation the index of the generation to get summaries from
+     * @return array document summaries
+     */
+    function getGenerationSummariesByHash($word_structs, 
+        $num, $generation)
     {
 
         $iterators = array();
@@ -361,25 +406,29 @@ class PhraseModel extends Model
             $restrict_phrases = $word_struct["RESTRICT_PHRASES"];
             $disallow_phrases = $word_struct["DISALLOW_PHRASES"];
             $index_archive = $word_struct["INDEX_ARCHIVE"];
+            if($generation > $index_archive->generation_info['ACTIVE']) {
+                continue;
+            }
+            $index_archive->setCurrentShard($generation);
             $weight = $word_struct["WEIGHT"];
             $num_word_keys = count($word_keys);
             if($num_word_keys < 1) {continue;}
 
             for($i = 0; $i < $num_word_keys; $i++) {
                 $word_iterators[$i] = 
-                    new WordIterator($word_keys[$i], $index_archive, 0);
+                    new WordIterator($word_keys[$i], $index_archive);
             }
             if($num_word_keys == 1) {
                 $base_iterator = $word_iterators[0];
             } else {
-                $base_iterator = new IntersectIterator($word_iterators, 0);
+                $base_iterator = new IntersectIterator($word_iterators);
             }
             if($restrict_phrases == NULL && $disallow_phrases == NULL &&
                 $weight == 1) {
                 $iterators[] = $base_iterator;
             } else {
                 $iterators[] = new PhraseFilterIterator($base_iterator, 
-                    $restrict_phrases, $disallow_phrases, $weight, 0);
+                    $restrict_phrases, $disallow_phrases, $weight);
             }
 
         }
@@ -389,38 +438,26 @@ class PhraseModel extends Model
         } else if($num_iterators == 1) {
             $union_iterator = $iterators[0];
         } else {
-            $union_iterator = new UnionIterator($iterators, 0);
+            $union_iterator = new UnionIterator($iterators);
         }
 
-        $to_retrieve = $limit + max(2*$num, 200);
-        $group_iterator = new GroupIterator($union_iterator, 0);
+        $to_retrieve =  max(2*$num, 200);
+        $group_iterator = new GroupIterator($union_iterator);
         $num_retrieved = 0;
         $pages = array();
         while(is_array($next_docs = $group_iterator->nextDocsWithWord()) &&
-            $num_retrieved < $to_retrieve) {
+            $num_retrieved < $num) {
              foreach($next_docs as $doc_key => $doc_info) {
                  $summary = & $doc_info[CrawlConstants::SUMMARY];
                  unset($doc_info[CrawlConstants::SUMMARY]);
                  $pages[] = array_merge($doc_info, $summary);
                  $num_retrieved++;
                  if($num_retrieved >=  $to_retrieve) {
-
                      break 2;
                  }
              }
         }
-        uasort($pages, "scoreOrderCallback");
-        $pages = array_slice($pages, $limit, $num);
-        if($num_retrieved < $to_retrieve && $limit<=$group_iterator->num_docs) {
-            $results['TOTAL_ROWS'] = $num_retrieved;
-        } else {
-            $results['TOTAL_ROWS'] = max($group_iterator->num_docs, 
-                $num_retrieved);
-            /*num_docs is only approximate, so if gives contradictory info
-              use $num_retrieved */
-        }
-        $results['PAGES'] = $pages;
-        return $results;
+        return $pages;
     }
 
 }

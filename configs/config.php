@@ -152,29 +152,14 @@ define('MIN_QUEUE_WEIGHT', 1/100000);
 /**  number of web archive files to use to store web pages in */
 define('NUM_ARCHIVE_PARTITIONS', 10);
 
-/** 
- * number of web archive files to use for the inverted index of 
- * word->docs in a given generation
- */
-define('NUM_INDEX_PARTITIONS', 250); 
-
-/** number of words before next gen */
-define('NUM_WORDS_PER_GENERATION', 6*URL_FILTER_SIZE/NUM_INDEX_PARTITIONS);
+/** number of documents before next gen */
+define('NUM_DOCS_PER_GENERATION', 10000);
 
 /** number of generations to sample in estimating number of urls in a query */
 define('SAMPLE_GENERATIONS', 3); 
 
 /** precision to round floating points document scores */
 define('PRECISION', 10); 
-
-/**
- * when index data from relatively uncommon words, 
- * how many docs should be grouped together in a block
- */
-define('BLOCK_SIZE', 50); 
-
-/** how many documents a word needs to be to get its own index file. */
-define('COMMON_WORD_THRESHOLD', 1000); 
 
 /** maximum number of links to consider on any given page */
 define('MAX_LINKS_PER_PAGE', 50); 
@@ -263,7 +248,7 @@ $PAGE_PROCESSORS = array(   "text/html" => "HtmlProcessor",
  * How many non robot urls the fetcher successfully downloads before
  * between times data sent back to queue server
  */
-define ('SEEN_URLS_BEFORE_UPDATE_SCHEDULER', 400);
+define ('SEEN_URLS_BEFORE_UPDATE_SCHEDULER', 500);
 
 /** maximum number of urls to schedule to a given fetcher in one go */
 define ('MAX_FETCH_SIZE', 5000);

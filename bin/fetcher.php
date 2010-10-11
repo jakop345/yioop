@@ -72,6 +72,8 @@ require_once BASE_DIR."/lib/crawl_daemon.php";
 require_once BASE_DIR."/lib/fetch_url.php";
 /** Loads common constants for web crawling*/
 require_once BASE_DIR."/lib/crawl_constants.php";
+/** used to build miniinverted index*/
+require_once BASE_DIR."/lib/index_shard.php";
 
 
 /*
@@ -1033,231 +1035,56 @@ class Fetcher implements CrawlConstants
     }
 
     /**
-     * Builds an inverted index (word --> {docs it appears in}) for the current
-     * batch of SEEN_URLS_BEFORE_UPDATE_SCHEDULER many pages. This inverted
-     * is then merged by the queue_server into the inverted index of the
-     * current generation of the crawl. The complete inverted index for the
-     * whole crawl is built out of these inverted indexes for generations.
-     * The point of computing a partial inverted index on the fetcher is to
-     * reduce some of the computational burden on the queue server. The
-     * resulting mini index computed by buildMiniInvertedIndex() is stored in
+     * Builds an inverted index shard (word --> {docs it appears in}) 
+     * for the current batch of SEEN_URLS_BEFORE_UPDATE_SCHEDULER many pages. 
+     * This inverted index shard is then merged by the queue_server 
+     * into the inverted index of the current generation of the crawl. 
+     * The complete inverted index for the whole crawl is built out of these 
+     * inverted indexes for generations. The point of computing a partial 
+     * inverted index on the fetcher is to reduce some of the computational 
+     * burden on the queue server. The resulting mini index computed by 
+     * buildMiniInvertedIndex() is stored in
      * $this->found_sites[self::INVERTED_INDEX]
      *
      */
     function buildMiniInvertedIndex()
     {
         $start_time = microtime();
-        $words = array();
-        $doc_statistics = $this->computeDocumentStatistics();
-        $average_title_length = $doc_statistics[self::AVERAGE_TITLE_LENGTH];
-        $average_description_length = 
-            $doc_statistics[self::AVERAGE_DESCRIPTION_LENGTH];
-        $average_total_link_text_length = 
-            $doc_statistics[self::AVERAGE_TOTAL_LINK_TEXT_LENGTH];
 
-        $special_case_fields = array(self::INLINKS, self::SITE_INFO,
-            self::FILETYPE, self::URL_INFO);
-
-        foreach($doc_statistics as $doc_key => $info) {
-            if(in_array($doc_key, $special_case_fields)) {continue;}
-            $title_length = $info[self::TITLE_LENGTH];
-            $description_length = $info[self::DESCRIPTION_LENGTH];
-            $link_length = $info[self::LINK_LENGTH];
-
-            $title_ratio = ($average_title_length > 0) ? 
-                $title_length/$average_title_length : 0;
-            $description_ratio = ($average_description_length > 0) ?
-                $description_length/$average_description_length :0;
-            $link_ratio = ($average_total_link_text_length > 0) ?
-                $link_length/$average_total_link_text_length : 0;
-
-            if(isset($info[self::TITLE_WORDS])) {
-                foreach($info[self::TITLE_WORDS] 
-                    as $word_key => $num_occurrences) {
-                    $title_frequency = $num_occurrences/$title_length;
-
-                    $words[crawlHash($word_key)][$doc_key][
-                        self::TITLE_WORD_SCORE] =
-                            number_format(3 * $title_frequency/
-                                ($title_frequency + .5 + 1.5* $title_ratio),
-                                PRECISION);
-                    $words[crawlHash($word_key)][$doc_key][
-                        self::DESCRIPTION_WORD_SCORE] = 0; 
-                        // will set in a moment if has value
-                    $words[crawlHash($word_key)][$doc_key][
-                        self::LINK_WORD_SCORE] = 0;
-                }
-            }
-
-            if(isset($info[self::DESCRIPTION_WORDS])) {
-                foreach($info[self::DESCRIPTION_WORDS] 
-                    as $word_key => $num_occurrences) {
-                    $description_frequency = 
-                        $num_occurrences/$description_length;
-
-                    $words[crawlHash($word_key)][$doc_key][
-                        self::DESCRIPTION_WORD_SCORE] = 
-                            number_format(3 * $description_frequency/
-                                ($description_frequency 
-                                + .5 + 1.5* $description_ratio), PRECISION);
-
-                    if(!isset($words[crawlHash($word_key)][$doc_key][
-                        self::TITLE_WORD_SCORE])) {
-                            $words[crawlHash($word_key)][$doc_key][
-                                self::TITLE_WORD_SCORE] = 0;
-                    }
-
-                    $words[crawlHash($word_key)][$doc_key][
-                        self::LINK_WORD_SCORE] = 0;
-                }
-            }
-
-            if(isset($info[self::LINK_WORDS])) {
-                foreach($info[self::LINK_WORDS] 
-                    as $word_key => $num_occurrences) {
-                    $link_frequency = $num_occurrences/$link_length;
-
-                    $words[crawlHash($word_key)][$doc_key][
-                        self::LINK_WORD_SCORE] = number_format(
-                            3 * $link_frequency/
-                            ($link_frequency + .5 + 1.5* $link_ratio), 
-                            PRECISION);
-
-                    if(!isset($words[crawlHash($word_key)][$doc_key][
-                        self::TITLE_WORD_SCORE])) {
-                        $words[crawlHash($word_key)][$doc_key][
-                            self::TITLE_WORD_SCORE] = 0;
-                    }
-
-                    if(!isset($words[crawlHash($word_key)][$doc_key][
-                        self::DESCRIPTION_WORD_SCORE])) {
-                        $words[crawlHash($word_key)][$doc_key][
-                            self::DESCRIPTION_WORD_SCORE] = 0;
-                    }
-                }
-            }
-
-        } // end foreach
-         
-        foreach($words as $word_key => $docs_info) {
-            foreach($docs_info as $doc_key => $info) {
-                $doc_depth =  $doc_statistics[$doc_key][self::DOC_DEPTH];
-                $doc_rank = (11 - $doc_depth) + 
-                    $doc_statistics[$doc_key][self::URL_WEIGHT];
-                $words[$word_key][$doc_key][self::DOC_RANK] = 
-                    number_format($doc_rank, PRECISION); //proxy for page rank
-
-                $orphan = (isset($info[self::LINK_WORDS]) && 
-                    $info[self::LINK_WORDS] == true) ? 1 : .5;
-
-                $words[$word_key][$doc_key][self::SCORE] = number_format(
-                    .8*($doc_rank) 
-                    + $info[self::TITLE_WORD_SCORE]
-                    + 2*$info[self::DESCRIPTION_WORD_SCORE]*$orphan 
-                    + 1.5*$info[self::LINK_WORD_SCORE],  PRECISION);
-
-            }
-        }
-
-
-        //add word_keys for inlink, sites, filetype
-        foreach($special_case_fields as $special_case_field) {
-            if(isset($doc_statistics[$special_case_field])) {
-            foreach($doc_statistics[$special_case_field] 
-                as $url_word_key => $docs_info) {
-                foreach($docs_info as $doc_key) {
-                    $doc_depth = $doc_statistics[$doc_key][self::DOC_DEPTH] + 1;
-                    $words[$url_word_key][$doc_key][self::TITLE_WORD_SCORE] = 0;
-                    $words[$url_word_key][$doc_key][
-                        self::DESCRIPTION_WORD_SCORE] = 0;
-                    $words[$url_word_key][$doc_key][self::LINK_WORD_SCORE] = 0;
-                    $words[$url_word_key][$doc_key][self::DOC_RANK] = 
-                        number_format(11 - $doc_depth, PRECISION);
-                    $words[$url_word_key][$doc_key][self::SCORE] = 
-                        number_format(11 - $doc_depth, PRECISION);
-                }
-
-            }
-            }
-        }
-        foreach($this->found_duplicates as $duplicate) {
-            $doc_key = crawlHash($duplicate);
-            $url_word_key = crawlHash("info:".$duplicate);
-            $words[$url_word_key][$doc_key][self::TITLE_WORD_SCORE] = -1;
-            $words[$url_word_key][$doc_key][self::DESCRIPTION_WORD_SCORE] = -1;
-            $words[$url_word_key][$doc_key][self::LINK_WORD_SCORE] = -1;
-            $words[$url_word_key][$doc_key][self::DOC_RANK] = -1;
-            $words[$url_word_key][$doc_key][self::SCORE] = -1;
-        }
-        $this->found_duplicates = array();
-
-        $this->found_sites[self::INVERTED_INDEX] = $words;
-
-        crawlLog("  Build mini inverted index time ".
-            (changeInMicrotime($start_time)));
-    }
-
-
-    /**
-     * Used to compute number of words in each component (title, description,
-     * links) of a document separately as well as compute average amongst the 
-     * current group of SEEN_URLS_BEFORE_UPDATE_SCHEDULER many docs.
-     *
-     * @return array computed statistics
-     */
-    function computeDocumentStatistics()
-    {
-        $doc_statistics = array();
         $num_seen = count($this->found_sites[self::SEEN_URLS]);
         $this->num_seen_sites += $num_seen;
+        /*
+            for the fetcher we are not saving the index shards so
+            name doesn't matter.
+        */
+        $index_shard = new IndexShard("fetcher_shard");
         for($i = 0; $i < $num_seen; $i++) {
             $site = $this->found_sites[self::SEEN_URLS][$i];
-            $doc_key = crawlHash($site[self::URL]);
+            $doc_key = crawlHash($site[self::URL], true);
+            $word_counts = array();
+            $phrase_string = 
+                mb_ereg_replace("[[:punct:]]", " ", $site[self::TITLE] .
+                   " ". $site[self::DESCRIPTION]); 
+            $word_counts = 
+                PhraseParser::extractPhrasesAndCount($phrase_string); 
 
-            $doc_statistics[$doc_key][self::URL_WEIGHT] =  
-                3 - log(strlen($site[self::URL])); //negative except short urls
-            $doc_statistics[$doc_key][self::DOC_DEPTH] = 
-                log($site[self::INDEX]*NUM_FETCHERS, 10); 
-            $title_phrase_string = 
-                mb_ereg_replace("[[:punct:]]", " ", $site[self::TITLE]); 
-            $doc_statistics[$doc_key][self::TITLE_WORDS] = 
-                PhraseParser::extractPhrasesAndCount($title_phrase_string); 
-            $doc_statistics[$doc_key][self::TITLE_LENGTH] = 
-                $this->sumCountArray(
-                    $doc_statistics[$doc_key][self::TITLE_WORDS]);
-            $this->sum_seen_site_title_length += 
-                $doc_statistics[$doc_key][self::TITLE_LENGTH];
+            $meta_ids = array();
 
-            $description_phrase_string = 
-                mb_ereg_replace("[[:punct:]]", " ", $site[self::DESCRIPTION]);
-            $doc_statistics[$doc_key][self::DESCRIPTION_WORDS] = 
-                PhraseParser::extractPhrasesAndCount(
-                    $description_phrase_string);
-            $doc_statistics[$doc_key][self::DESCRIPTION_LENGTH] = 
-                $this->sumCountArray(
-                    $doc_statistics[$doc_key][self::DESCRIPTION_WORDS]);
-            $this->sum_seen_site_description_length += 
-                $doc_statistics[$doc_key][self::DESCRIPTION_LENGTH];
-            $doc_statistics[$doc_key][self::LINK_WORDS] = array();
-            $doc_statistics[$doc_key][self::LINK_LENGTH] = 0;
             // store the sites the doc_key belongs to, so you can search by site
             $url_sites = UrlParser::getHostPaths($site[self::URL]);
             $url_sites = array_merge($url_sites, 
                 UrlParser::getHostSubdomains($site[self::URL]));
             foreach($url_sites as $url_site) {
                 if(strlen($url_site) > 0) {
-                    $doc_statistics[self::SITE_INFO][
-                        crawlHash('site:'.$url_site)][] = $doc_key;
+                    $meta_ids[] = 'site:'.$url_site;
                 }
             }
-            $doc_statistics[self::URL_INFO][
-                crawlHash('info:'.$site[self::URL])][] = $doc_key;
+            $meta_ids[] = 'info:'.$site[self::URL];
 
             // store the filetype info
             $url_type = UrlParser::getDocumentType($site[self::URL]);
             if(strlen($url_type) > 0) {
-                $doc_statistics[self::FILETYPE][
-                    crawlHash('filetype:'.$url_type)][] = $doc_key;
+                $meta_ids[] = 'filetype:'.$url_type;
             }
             
             $link_phrase_string = "";
@@ -1271,6 +1098,7 @@ class Fetcher implements CrawlConstants
             }
             $had_links = false;
 
+            $link_shard = new IndexShard("link_shard");
             foreach($site[self::LINKS] as $url => $link_text) {
                 if(strlen($url) > 0) {
                     $summary = array();
@@ -1278,8 +1106,9 @@ class Fetcher implements CrawlConstants
                     $link_text = strip_tags($link_text);
                     $link_id = 
                         "url|".$url."|text|$link_text|ref|".$site[self::URL];
-                    $link_key =  crawlHash($link_id).":".crawlHash($url).":"
-                        .crawlHash("info:".$url);
+                    $link_key =  crawlHash($link_id, true).":".
+                        crawlHash($url, true).":"
+                        .crawlHash("info:".$url, "true");
                     $summary[self::URL] =  $link_id;
                     $summary[self::TITLE] = $url; 
                         // stripping html to be on the safe side
@@ -1289,72 +1118,33 @@ class Fetcher implements CrawlConstants
                     $summary[self::HASH] =  crawlHash($link_id);
                     $summary[self::TYPE] = "link";
                     $summary[self::HTTP_CODE] = "link";
-                    $summary[self::WEIGHT] =  $link_weight;
                     $this->found_sites[self::SEEN_URLS][] = $summary;
-                    
-                    $doc_statistics[$link_key][self::URL_WEIGHT] =  
-                        3 - log(strlen($url)); 
-                        //negative except short urls
-                    $doc_statistics[$link_key][self::TITLE_WORDS]  =array();
-                    $doc_statistics[$link_key][self::TITLE_LENGTH] = 0;
-                    $doc_statistics[$link_key][self::DESCRIPTION_WORDS] = 
-                        array();
-                    $doc_statistics[$link_key][self::DESCRIPTION_LENGTH] = 0;
 
                     $link_text = 
                         mb_ereg_replace("[[:punct:]]", " ", $link_text);
-                    $doc_statistics[$link_key][self::LINK_WORDS] = 
+                    $link_word_counts = 
                         PhraseParser::extractPhrasesAndCount($link_text);
-                    $doc_statistics[$link_key][self::LINK_LENGTH] = 
-                        $this->sumCountArray(
-                            $doc_statistics[$link_key][self::LINK_WORDS]);
-                    $this->sum_seen_site_link_length += 
-                        $doc_statistics[$link_key][self::LINK_LENGTH];
+                    $link_shard->addDocumentWords($link_key, 0, 
+                        $link_word_counts, array());
 
-                    $doc_statistics[$link_key][self::DOC_DEPTH] = 
-                        log(10*$site[self::INDEX]*NUM_FETCHERS, 10); 
-                        //our proxy for page rank, 10=average links/page
-                    $doc_statistics[self::INLINKS][crawlHash('link:'.$url)][] =
-                        $doc_key;
+                    $meta_ids[] = 'link:'.$url;
                 }
-                $this->found_sites[self::SEEN_URLS][$i][self::LINKS] = 
-                    $had_links;
+
             }
-
+            $index_shard->addDocumentWords($doc_key, 0, $word_counts,
+                $meta_ids);
+            
+            $index_shard->appendIndexShard($link_shard);
 
         }
+        $index_shard->markDuplicateDocs($this->found_duplicates);
 
-        $doc_statistics[self::AVERAGE_TITLE_LENGTH] = 
-            $this->sum_seen_site_title_length/$this->num_seen_sites; 
+        $this->found_duplicates = array();
 
-        $doc_statistics[self::AVERAGE_DESCRIPTION_LENGTH] = 
-            $this->sum_seen_site_description_length/$this->num_seen_sites; 
+        $this->found_sites[self::INVERTED_INDEX] = & $index_shard;
 
-        $doc_statistics[self::AVERAGE_TOTAL_LINK_TEXT_LENGTH] = 
-            $this->sum_seen_site_link_length/$this->num_seen_sites; 
-
-        crawlLog("AVERAGE TITLE LENGTH".
-            $doc_statistics[self::AVERAGE_TITLE_LENGTH]);
-        crawlLog("AVERAGE DESCRIPTION LENGTH".
-            $doc_statistics[self::AVERAGE_DESCRIPTION_LENGTH]);
-        crawlLog("AVERAGE TOTAL LINK TEXT LENGTH".
-            $doc_statistics[self::AVERAGE_TOTAL_LINK_TEXT_LENGTH]);
-        return $doc_statistics;
-    }
-
-    /**
-     * Computes a sum of the values of an associative array of key-value pairs
-     *
-     * @param array &$arr the associative array to compute the sum of
-     */
-    function sumCountArray(&$arr)
-    {
-        $sum = 0;
-        foreach($arr as $key => $value) {
-            $sum += $value;
-        }
-
-        return $sum;
+        crawlLog("  Build mini inverted index time ".
+            (changeInMicrotime($start_time)));
     }
 }
 

@@ -64,13 +64,6 @@ abstract class IndexBundleIterator implements IndexingConstants, CrawlConstants
     var $seen_docs;
 
     /**
-     * First document that should be returned 
-     * amongst all of the documents associated with the
-     * iterator's $word_key
-     * @var int
-     */
-    var $limit;
-    /**
      * The number of documents in the current block
      * @var int
      */
@@ -104,7 +97,7 @@ abstract class IndexBundleIterator implements IndexingConstants, CrawlConstants
      * Returns the index associated with this iterator
      * @return object the index
      */
-    abstract function getIndex($key = NULL);
+    abstract function &getIndex($key = NULL);
 
     /**
      * Hook function used by currentDocsWithWord to return the current block

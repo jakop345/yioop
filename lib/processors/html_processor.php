@@ -80,7 +80,7 @@ class HtmlProcessor extends TextProcessor
                 if(strlen($summary[self::DESCRIPTION] . $summary[self::TITLE])
                     == 0 && count($summary[self::LINKS]) == 0) {
                     //maybe not html? treat as text still try to get urls
-                    $summary = parent::process($page, url);
+                    $summary = parent::process($page, $url);
                 }
             }
         }

@@ -102,9 +102,9 @@ class BloomFilterFile extends PersistentStructure
     function add($value)
     {
         $num_keys = $this->num_keys;
+        $pos_array = $this->getHashBitPositionArray($value, $num_keys);
         for($i = 0;  $i < $num_keys; $i++) {
-            $pos = $this->getHashBitPosition($value.$i);
-            $this->setBit($pos);
+            $this->setBit($pos_array[$i]);
         }
 
         $this->checkSave();
@@ -119,10 +119,9 @@ class BloomFilterFile extends PersistentStructure
     function contains($value)
     {
         $num_keys = $this->num_keys;
+        $pos_array = $this->getHashBitPositionArray($value, $num_keys);
         for($i = 0;  $i < $num_keys; $i++) {
-            $pos = $this->getHashBitPosition($value.$i);
-
-            if(!$this->getBit($pos)) {
+            if(!$this->getBit($pos_array[$i])) {
                 return false;
             }
         }
@@ -136,15 +135,31 @@ class BloomFilterFile extends PersistentStructure
      * @param string $value value to map to a bit position in the filter
      * @return int the bit position mapped to
      */
-    function getHashBitPosition($value)
+    function getHashBitPositionArray($value, $num_keys)
     {
-        $hash = substr(md5($value, true), 0, 4);
-        $int_array = unpack("N", $hash);
-        $seed = $int_array[1];
+        $md5 = md5($value, true);
+        $seed = array();
+        for($i = 0; $i < 16; $i += 4) {
+            $hash = substr($md5, $i, 4);
+            $int_array = unpack("N", $hash);
+            $seed[] = $int_array[1];
+        }
 
-        mt_srand($seed);
-        $pos = mt_rand(0, $this->filter_size -1);
-        return $pos;
+        //$pos_array = array_fill(0, $num_keys, 0);
+        $pos_array = array();
+        $offset = $num_keys >> 2;
+        $size = $this->filter_size - 1;
+        $index = 0;
+        for($j = 0; $j < $num_keys; $j += $offset) {
+            $high = $j + $offset;
+            if($index < 4) {
+                mt_srand($seed[$index++]);
+            }
+            for($i = $j; $i < $high; $i++) {
+                $pos_array[$i] = mt_rand(0, $size);
+            }
+        }
+        return $pos_array;
     }
 
     /**
@@ -154,7 +169,7 @@ class BloomFilterFile extends PersistentStructure
      */
     function setBit($i)
     {
-        $byte = ($i >> 3);;
+        $byte = ($i >> 3);
 
         $bit_in_byte = $i - ($byte << 3);
 

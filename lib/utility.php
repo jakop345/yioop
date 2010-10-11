@@ -22,7 +22,7 @@
  *
  *  END LICENSE
  *
- * A library of log, hash, and time functions
+ * A library of string, log, hash, and time functions
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -34,6 +34,46 @@
  */
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
+
+/**
+ *
+ */
+function charCopy($source, &$destination, $start, $length) 
+{
+    $end = $start + $length;
+    for($j = $start, $k = 0; $j < $end; $j++, $k++) {
+        $destination[$j] = $source[$k];
+    }
+}
+
+/**
+ *
+ */
+function vByteEncode($pos_int) 
+{
+    $result = chr($pos_int & 127);
+    $pos_int >>= 7;
+    while($pos_int > 0){
+        $result .= chr(128 | ($pos_int & 127));
+        $pos_int >>= 7;
+    }
+    return $result;
+}
+
+/**
+ *
+ */
+function vByteDecode(&$str, &$offset) 
+{
+    $pos_int = ord($str[$offset] & 127) ;
+    $shift = 7;
+    while (ord($str[$offset++]) & 128 > 0) {
+        $pos_int += (ord($str[$offset] & 127) << $shift);
+        $shift += 7;
+    }
+
+    return $pos_int;
+}
 
 /**
  *  Logs a message to a logfile or the screen

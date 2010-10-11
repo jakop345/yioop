@@ -383,7 +383,7 @@ class QueueServer implements CrawlConstants
                 CRAWL_DIR.'/cache/'.
                     self::index_data_base_name.$this->crawl_time,
                 URL_FILTER_SIZE, NUM_ARCHIVE_PARTITIONS, 
-                NUM_INDEX_PARTITIONS, serialize($info));
+                serialize($info));
         } else {
             $dir = CRAWL_DIR.'/cache/'.
                     self::index_data_base_name.$this->crawl_time;
@@ -505,7 +505,6 @@ class QueueServer implements CrawlConstants
 
         $start_time = microtime();
 
-        $index_archive = $this->index_archive;
         $fh = fopen($file, "rb");
         $machine_string = fgets($fh);
         $len = strlen($machine_string);
@@ -526,7 +525,8 @@ class QueueServer implements CrawlConstants
         if(isset($sites[self::SEEN_URLS]) && 
             count($sites[self::SEEN_URLS]) > 0) {
             $seen_sites = $sites[self::SEEN_URLS];
-            $index_archive->differenceContainsPages($seen_sites, self::HASH);
+            $this->index_archive->differenceContainsPages(
+                $seen_sites, self::HASH);
             $seen_sites = array_values($seen_sites);
             $num_seen = count($seen_sites);
         } else {
@@ -535,18 +535,18 @@ class QueueServer implements CrawlConstants
 
         $visited_urls_count = 0;
         for($i = 0; $i < $num_seen; $i++) {
-            $index_archive->addPageFilter(self::HASH, $seen_sites[$i]);
+            $this->index_archive->addPageFilter(self::HASH, $seen_sites[$i]);
             $seen_sites[$i][self::MACHINE] = $machine;
             $seen_sites[$i][self::MACHINE_URI] = $machine_uri;
             $seen_sites[$i][self::HASH_URL] = 
-                crawlHash($seen_sites[$i][self::URL]);
+                crawlHash($seen_sites[$i][self::URL], true);
             $link_url_parts = explode("|", $seen_sites[$i][self::URL]);
             if(strcmp("url", $link_url_parts[0]) == 0 &&
                 strcmp("text", $link_url_parts[2]) == 0) {
                 $seen_sites[$i][self::HASH_URL] = 
-                    crawlHash($seen_sites[$i][self::URL]).
-                    ":".crawlHash($link_url_parts[1]).
-                    ":".crawlHash("info:".$link_url_parts[1]);
+                    crawlHash($seen_sites[$i][self::URL], true).
+                    ":".crawlHash($link_url_parts[1],true).
+                    ":".crawlHash("info:".$link_url_parts[1], true);
             } else {
                 $visited_urls_count++;
             }
@@ -554,7 +554,7 @@ class QueueServer implements CrawlConstants
 
         if(isset($seen_sites)) {
             $seen_sites = 
-                $index_archive->addPages(
+                $this->index_archive->addPages(
                     self::HASH_URL, self::SUMMARY_OFFSET, $seen_sites,
                     $visited_urls_count);
 
@@ -563,37 +563,24 @@ class QueueServer implements CrawlConstants
                 $summary_offsets[$site[self::HASH_URL]] = 
                     $site[self::SUMMARY_OFFSET];
             }
-            crawlLog("B memory usage".memory_get_usage() .
+            crawlLog("B (dedup + random) memory usage".memory_get_usage() .
                 " time: ".(changeInMicrotime($start_time)));
             $start_time = microtime();
             // added summary offset info to inverted index data
-            if(isset($sites[self::INVERTED_INDEX])) {
-                $index_data = & $sites[self::INVERTED_INDEX];
-                foreach( $index_data as $word_key => $docs_info) {
-                    foreach($docs_info as $doc_key => $info) {
-                        if(isset($summary_offsets[$doc_key])) {
-                            $index_data[$word_key][$doc_key][
-                                self::SUMMARY_OFFSET] = 
-                                    $summary_offsets[$doc_key];
-                        }
-                    }
-                }
+            if(isset($sites[self::INVERTED_INDEX])) { 
+                $index_shard = & $sites[self::INVERTED_INDEX];
+                $index_shard->changeDocumentOffsets($summary_offsets);
             }
         }
-        crawlLog("C memory usage".memory_get_usage() .
-            " time: ".(changeInMicrotime($start_time)));
-        $start_time = microtime();
-        $index_archive->forceSave();
-        crawlLog("D memory usage".memory_get_usage() .
+        crawlLog("C (update shard offsets) memory usage".memory_get_usage() .
             " time: ".(changeInMicrotime($start_time)));
         $start_time = microtime();
 
-        if(isset($index_data)) {
-            $index_archive->addIndexData($index_data);
+        if(isset($index_shard)) {
+            $this->index_archive->addIndexData($index_shard);
         }
-        crawlLog("E memory usage".memory_get_usage(). 
+        crawlLog("D (add index shard) memory usage".memory_get_usage(). 
             " time: ".(changeInMicrotime($start_time)));
-
 
         crawlLog("Done Processing File: $file");
 

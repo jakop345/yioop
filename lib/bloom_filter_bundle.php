@@ -102,7 +102,7 @@ class BloomFilterBundle
             $this->num_filters++;
             $this->filter_size = $filter_size;
             $this->current_filter->save();
-           $this->saveMetaData();
+            $this->saveMetaData();
         } else {
             $last_filter = $this->num_filters - 1;
             $this->current_filter = 
@@ -132,12 +132,13 @@ class BloomFilterBundle
                     $this->filter_size);
             $this->current_filter_count = 0;
             $this->num_filters++;
+            $this->saveMetaData();
         }
 
         $this->current_filter->add($value);
 
         $this->current_filter_count++;
-        $this->saveMetaData();
+
     }
 
     /**

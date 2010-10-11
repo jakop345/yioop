@@ -119,14 +119,11 @@ class PhraseFilterIterator extends IndexBundleIterator
      *      phrases
      * @param float $weight a quantity to multiply each score returned from
      *      this iterator with
-     * @param int $limit the first element to return from the list of docs
-     *      iterated over
      */
     function __construct($index_bundle_iterator, $restrict_phrases,
-        $disallow_phrases, $weight = 1, $limit = 0)
+        $disallow_phrases, $weight = 1)
     {
         $this->index_bundle_iterator = $index_bundle_iterator;
-        $this->limit = $limit;
         $this->restrict_phrases = $restrict_phrases;
         $this->disallow_phrases = $disallow_phrases;
         $this->num_docs = $this->index_bundle_iterator->num_docs;
@@ -144,19 +141,7 @@ class PhraseFilterIterator extends IndexBundleIterator
         $this->index_bundle_iterator->reset();
         $this->seen_docs = 0;
         $this->seen_docs_unfiltered = 0;
-        $beneath_limit = true;
-        while($beneath_limit == true) {
-            $doc_block = $this->currentDocsWithWord();
-            if($doc_block == -1 || !is_array($doc_block)) {
-                $beneath_limit = false;
-                continue;
-            }
-            if($this->seen_docs + $this->count_block > $this->limit) {
-                $beneath_limit = false;
-                continue;
-            }
-            $this->advance();
-        }
+        $doc_block = $this->currentDocsWithWord();
     }
 
     /**
@@ -224,15 +209,6 @@ class PhraseFilterIterator extends IndexBundleIterator
         }
         $this->count_block = count($pages);
 
-        if($this->seen_docs < $this->limit) {
-            $total_docs = $this->seen_docs + $this->count_block;
-            if($total_docs <  $this->limit) {
-                $pages =array();
-            } else {
-                $pages = array_slice($pages, 
-                    $this->limit - $this->seen_docs, NULL, true);
-            }
-        }
         $this->summaries = $pages;
         $this->pages = array();
         foreach($pages as $doc_key => $doc_info) {
@@ -301,9 +277,9 @@ class PhraseFilterIterator extends IndexBundleIterator
 
     /**
      * Returns the index associated with this iterator
-     * @return object the index
+     * @return &object the index
      */
-    function getIndex($key = NULL)
+    function &getIndex($key = NULL)
     {
         return $this->index_bundle_iterator->getIndex($key = NULL);
     }
