@@ -218,7 +218,6 @@ class PhraseModel extends Model
         $punct = "\.|\,|\;|\"|\'|\`|\[|\]|\{|\}|\(|\)|\!|\|";
         $phrase_string = mb_ereg_replace($punct, " ", $phrase_string);
         $phrase_string = preg_replace("/(\s)+/", " ", $phrase_string);
-        echo $phrase_string;
         /*
             we search using the stemmed words, but we format snippets in the 
             results by bolding either

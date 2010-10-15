@@ -388,7 +388,7 @@ class WebArchiveBundle
     }
 
     /**
-     * Gets an object encapsulating the $index th WebArchive partition in
+     * Gets an object encapsulating the $index the WebArchive partition in
      * this bundle.
      *
      * @param int $index the number of the partition within this bundle to
