@@ -105,6 +105,41 @@ class CrawloptionsElement extends Element
         <textarea class="talltextarea"  name="seed_sites" ><?php 
             e($data['seed_sites']);
         ?></textarea>
+        <div class="topmargin"><b><?php 
+            e(tl('crawloptions_element_meta_words'))?></b></div>
+        <table class="metawordstable">
+            <tr><th><?php e(tl('crawloptions_element_word'));?></th>
+                <th><?php 
+                e(tl('crawloptions_element_url_pattern')); ?></th></tr>
+            <?php
+            $i = 0;
+            foreach($data['META_WORDS'] as $word => $url) {
+            ?>
+                <tr><td class="input-word" ><input
+                    title="<?php e(tl('crawloptions_element_word')); ?>"
+                    name="META_WORDS[<?php e($i); ?>]['WORD']" 
+                    value="<?php e($word); ?>" 
+                    />
+                </td>
+                <td class="input-url"><input
+                    title="<?php e(tl('crawloptions_element_url_pattern')); ?>"
+                    name="META_WORDS[<?php e($i); ?>]['URL_PATTERN']" 
+                    value="<?php e($url); ?>" 
+                     />
+                </td>
+                </tr>
+            <?php
+                $i++;
+            }
+            ?>
+            <tr><td class="input-word"><input type="text"  title="New Word" 
+                name="META_WORDS[<?php e($i); ?>]['WORD']"
+                />
+                </td>
+                <td class="input-url"><input type="text"  title="New URL Pattern" 
+                   name="META_WORDS[<?php e($i); ?>]['URL_PATTERN']" /></td>
+            </tr>
+            </table>
         <div class="center slightpad"><button class="buttonbox" 
             type="submit"><?php e(tl('crawloptions_element_save_options')); 
             ?></button></div>

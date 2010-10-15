@@ -284,11 +284,12 @@ class IndexArchiveBundle implements IndexingConstants, CrawlConstants
      public function setCurrentShard($i)
      {
         if(isset($this->generation_info['CURRENT']) && 
-            $i == $this->generation_info['CURRENT'] ||
-            $i > $this->generation_info['ACTIVE']) {
+            ($i == $this->generation_info['CURRENT'] ||
+            $i > $this->generation_info['ACTIVE'])) {
             return false;
         } else {
             $this->generation_info['CURRENT'] = $i;
+            unset($this->current_shard);
             return true;
         }
      }

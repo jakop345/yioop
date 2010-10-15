@@ -625,6 +625,37 @@ p
     border: 1px ridge black;
 }
 
+.metawordstable
+{
+   width:100%;
+}
+.metawordstable, .metawordstable th, .metawordstable td
+{
+    border: 1px ridge black;
+}
+.metawordstable th
+{
+    padding: .04in;
+}
+.metawordstable td.input-word
+{
+    width: 1.5in;
+}
+.metawordstable td.input-word input
+{
+    width: 1.3in;
+    margin:.05in;
+}
+.metawordstable td.input-url
+{
+    margin:.03in;
+    width: 100%;
+}
+.metawordstable td.input-url input
+{
+    margin:.05in;
+    width: 97%;
+}
 #query-statistics
 {
     margin-top: .2in;

@@ -120,6 +120,12 @@ class QueueServer implements CrawlConstants
      */
     var $indexed_file_types;
     /**
+     * Holds an array of word -> url patterns which are used to 
+     * add meta words to the words that are extracted from any given doc
+     * @var array
+     */
+    var $meta_words;
+    /**
      * Holds the WebQueueBundle for the crawl. This bundle encapsulates
      * the priority queue of urls that specifies what to crawl next
      * @var object
@@ -152,7 +158,16 @@ class QueueServer implements CrawlConstants
      * @var string
      */
     var $most_recent_fetcher;
-
+    /**
+     * Last time index was saved to disk
+     * @var int
+     */
+    var $last_index_save_time;
+    /**
+     * flasg for whether the index has data to be written to disk
+     * @var int
+     */
+     var $index_dirty;
     /**
      * Makes a queue_server object with the supplied indexed_file_types
      *
@@ -166,11 +181,14 @@ class QueueServer implements CrawlConstants
         $this->indexed_file_types = $indexed_file_types;
         $this->most_recent_fetcher = "No Fetcher has spoken with me";
 
-        //the next values be set for real in startCrawl
+        //the next values will be set for real in startCrawl
         $this->crawl_order = self::PAGE_IMPORTANCE; 
         $this->restrict_sites_by_url = true;
         $this->allowed_sites = array();
         $this->disallowed_sites = array();
+        $this->meta_words = array();
+        $this->last_index_save_time = 0;
+        $this->index_dirty = false;
     }
 
     /**
@@ -222,6 +240,9 @@ class QueueServer implements CrawlConstants
             $count = $this->web_queue->to_crawl_queue->count;
 
             $this->processIndexData();
+            if(time() - $this->last_index_save_time > INDEX_SAVE_TIME){
+                $this->indexSave();
+            }
 
             $this->processRobotUrls();
 
@@ -282,13 +303,7 @@ class QueueServer implements CrawlConstants
                     if(file_exists(CRAWL_DIR."/schedules/crawl_status.txt")) {
                         unlink(CRAWL_DIR."/schedules/crawl_status.txt");
                     }
-                    if(isset($this->index_archive)) {
-                        $this->index_archive->forceSave();
-                        // chmod so apache can also write to these directories
-                        $this->db->setWorldPermissionsRecursive(
-                            CRAWL_DIR.'/cache/'.
-                            self::index_data_base_name.$this->crawl_time);
-                    }
+                    $this->indexSave();
                     crawlLog("Stopping crawl !!\n");
                     $info[self::STATUS] = self::WAITING_START_MESSAGE_STATE;
                 break;
@@ -331,6 +346,22 @@ class QueueServer implements CrawlConstants
     }
 
     /**
+     * Saves the index_archive and, in particular, its current shard to disk
+     */
+    function indexSave()
+    {
+        if(isset($this->index_archive) && $this->index_dirty) {
+            $this->index_archive->forceSave();
+            $this->index_dirty = false;
+            $this->last_index_save_time = time();
+            // chmod so apache can also write to these directories
+            $this->db->setWorldPermissionsRecursive(
+                CRAWL_DIR.'/cache/'.
+                self::index_data_base_name.$this->crawl_time);
+        }
+    }
+
+    /**
      * Begins crawling base on time, order, restricted site $info 
      * Setting up a crawl involves creating a queue bundle and an
      * index archive bundle
@@ -355,6 +386,9 @@ class QueueServer implements CrawlConstants
             } else {
                 array_push($try_to_set_from_old_index,  $index_field);
             }
+        }
+        if(isset($info[self::META_WORDS])) {
+            $this->meta_words = $info[self::META_WORDS];
         }
 
         switch($this->crawl_order) 
@@ -397,6 +431,9 @@ class QueueServer implements CrawlConstants
                     $this->$index_field = 
                         $index_info[$read_from_info[$index_field]];
                 }
+            }
+            if(isset($index_info[self::META_WORDS])) {
+                $this->meta_words = $index_info[self::META_WORDS];
             }
         }
 
@@ -578,6 +615,7 @@ class QueueServer implements CrawlConstants
 
         if(isset($index_shard)) {
             $this->index_archive->addIndexData($index_shard);
+            $this->index_dirty = true;
         }
         crawlLog("D (add index shard) memory usage".memory_get_usage(). 
             " time: ".(changeInMicrotime($start_time)));
@@ -916,6 +954,7 @@ class QueueServer implements CrawlConstants
             // fetcher should delete any crawl time not listed here
         $sites[self::CRAWL_ORDER] = $this->crawl_order;
         $sites[self::SITES] = array();
+        $sites[self::META_WORDS] = $this->meta_words;
         $first_line = base64_encode(serialize($sites))."\n";
 
 

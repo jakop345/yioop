@@ -131,6 +131,12 @@ class Fetcher implements CrawlConstants
      */
     var $page_processors;
     /**
+     * Holds an array of word -> url patterns which are used to 
+     * add meta words to the words that are extracted from any given doc
+     * @var array
+     */
+    var $meta_words;
+    /**
      * WebArchiveBundle  used to store complete web pages and auxiliary data
      * @var object
      */
@@ -217,6 +223,7 @@ class Fetcher implements CrawlConstants
         $this->indexed_file_types = $indexed_file_types;
         $this->queue_server = $queue_server;
         $this->page_processors = $page_processors;
+        $this->meta_words = array();
 
         $this->web_archive = NULL;
         $this->crawl_time = NULL;
@@ -277,7 +284,7 @@ class Fetcher implements CrawlConstants
                 if(isset($info[self::STATUS]) && 
                     $info[self::STATUS] == self::STOP_STATE) {continue;}
             }
-            
+
             $info = $this->checkScheduler();
             if(!isset($info[self::STATUS])) {
                 $info[self::STATUS] = self::CONTINUE_STATE;
@@ -447,7 +454,9 @@ class Fetcher implements CrawlConstants
         if(isset($info[self::CRAWL_ORDER])) {
             $this->crawl_order = $info[self::CRAWL_ORDER];
         }
-
+        if(isset($info[self::META_WORDS])) {
+            $this->meta_words = $info[self::META_WORDS];
+        }
         if(isset($info[self::SITES])) {
             $this->to_crawl = array();
             while($tok !== false) {
@@ -1070,7 +1079,11 @@ class Fetcher implements CrawlConstants
 
             $meta_ids = array();
 
-            // store the sites the doc_key belongs to, so you can search by site
+            /*
+                Handle the built-in meta words. For example
+                store the sites the doc_key belongs to, 
+                so you can search by site
+            */
             $url_sites = UrlParser::getHostPaths($site[self::URL]);
             $url_sites = array_merge($url_sites, 
                 UrlParser::getHostSubdomains($site[self::URL]));
@@ -1080,13 +1093,33 @@ class Fetcher implements CrawlConstants
                 }
             }
             $meta_ids[] = 'info:'.$site[self::URL];
-
             // store the filetype info
             $url_type = UrlParser::getDocumentType($site[self::URL]);
             if(strlen($url_type) > 0) {
                 $meta_ids[] = 'filetype:'.$url_type;
             }
-            
+
+            // handles user added meta words
+            if(isset($this->meta_words)) {
+                $matches = array();
+                $url = $site[self::URL];
+                foreach($this->meta_words as $word => $url_pattern) {
+                    $meta_word = 'u:'.$word;
+                    if(strlen(stristr($url_pattern, "@")) > 0) {
+                        continue; // we are using "@" as delimiter, so bail
+                    }
+                    preg_match_all("@".$url_pattern."@", $url, $matches);
+                    if(isset($matches[0][0]) && strlen($matches[0][0]) > 0){
+                        unset($matches[0]);
+                        foreach($matches as $match) {
+                            $meta_word .= ":".$match[0];
+                            $meta_ids[] = $meta_word;
+                        }
+
+                    }
+                }
+            }
+
             $link_phrase_string = "";
             $link_urls = array(); 
             //store inlinks so they can be searched by

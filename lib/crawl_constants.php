@@ -134,5 +134,6 @@ interface CrawlConstants
     const DOC_ID ='am';
     const RELEVANCE ='an';
     const DUPLICATE ='ao';
+    const META_WORDS ='ap';
 } 
 ?>

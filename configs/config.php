@@ -153,10 +153,7 @@ define('MIN_QUEUE_WEIGHT', 1/100000);
 define('NUM_ARCHIVE_PARTITIONS', 10);
 
 /** number of documents before next gen */
-define('NUM_DOCS_PER_GENERATION', 10000);
-
-/** number of generations to sample in estimating number of urls in a query */
-define('SAMPLE_GENERATIONS', 3); 
+define('NUM_DOCS_PER_GENERATION', 25000);
 
 /** precision to round floating points document scores */
 define('PRECISION', 10); 
@@ -255,6 +252,9 @@ define ('MAX_FETCH_SIZE', 5000);
 
 /** fetcher must wait at least this long between multi-curl requests */
 define ('MINIMUM_FETCH_LOOP_TIME', 5); 
+
+/** Max time before dirty index saved in seconds*/
+define('INDEX_SAVE_TIME', 300);
 
 /** default number of search results to display per page */
 define ('NUM_RESULTS_PER_PAGE', 10); 

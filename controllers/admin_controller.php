@@ -694,6 +694,8 @@ class AdminController extends Controller implements CrawlConstants
                         $seed_info['allowed_sites']['url'];
                     $info[self::DISALLOWED_SITES] = 
                         $seed_info['disallowed_sites']['url'];
+                    $info[self::META_WORDS] = 
+                        $seed_info['meta_words'];
 
                     if(isset($_REQUEST['description'])) {
                         $description = 
@@ -859,17 +861,37 @@ class AdminController extends Controller implements CrawlConstants
                     $data['TOGGLE_STATE'] = 
                         ($data['restrict_sites_by_url']) ? 
                         "checked='checked'" : "";
+                    $data['META_WORDS'] = array();
+                    if(!$no_further_changes) {
+                        if(isset($_REQUEST["META_WORDS"])){
+                            foreach($_REQUEST["META_WORDS"] as $pair) {
+                                list($word, $url_pattern)=array_values($pair);
+                                $word = $this->clean($word, "string");
+                                $url_pattern = 
+                                    $this->clean($url_pattern, "string");
+                                if(trim($word) != "" &&trim($url_pattern) !=""){
+                                    $data['META_WORDS'][$word] =
+                                        $url_pattern;
+                                }
+                            }
+                            $seed_info['meta_words'] = $data['META_WORDS'];
+                            $update_flag = true;
+                        } else if(isset($seed_info['meta_words'])){
+                            $data['META_WORDS'] = $seed_info['meta_words'];
+                        }
+                    }
                     $data['SCRIPT'] = "setDisplay('toggle', ".
                         "'{$data['restrict_sites_by_url']}');".
                         " elt('load-options').onchange = ".
                         "function() { if(elt('load-options').selectedIndex !=".
                         " 0) { elt('crawloptionsForm').submit();  }};";
+
                     if($update_flag) {
                         $this->crawlModel->setSeedInfo($seed_info);
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('admin_controller_update_seed_info')."</h1>');";
                     }
-
+                break;
  
                 default:
 

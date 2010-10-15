@@ -68,11 +68,13 @@ class ManagecrawlElement
                 value="<?php if(isset($data['DESCRIPTION'])) {
                     e($data['DESCRIPTION']); } ?>" maxlength="80" 
                     class="widefield"/>
-        <button class="buttonbox" type="submit"><?php 
-            e(tl('managecrawl_element_start_new_crawl')); ?></button> 
-    <a href="?c=admin&amp;a=manageCrawl&amp;arg=options&amp;YIOOP_TOKEN=<?php 
+            <button class="buttonbox" type="submit"><?php 
+                e(tl('managecrawl_element_start_new_crawl')); ?></button> 
+            <a href="?c=admin&amp;a=manageCrawl<?php
+                ?>&amp;arg=options&amp;YIOOP_TOKEN=<?php
                 e($data['YIOOP_TOKEN']) ?>"><?php 
-                e(tl('managecrawl_element_options')); ?></a></p>
+                e(tl('managecrawl_element_options')); ?></a>
+        </p>
         </form>
         <div id="crawlstatus" >
         <h2><?php e(tl('managecrawl_element_awaiting_status'))?></h2>

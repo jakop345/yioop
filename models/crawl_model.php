@@ -234,8 +234,11 @@ class CrawlModel extends Model implements CrawlConstants
                 } else {
                     $tmp = array();
                 }
-                $seed_info[$type]['url'] = 
-                    $tmp;
+                $seed_info[$type]['url'] =  $tmp;
+            }
+            $seed_info['meta_words'] = array();
+            if(isset($index_info['meta_words']) ) {
+                $seed_info['meta_words'] = $index_info['meta_words'];
             }
 
         }
@@ -255,7 +258,7 @@ class CrawlModel extends Model implements CrawlConstants
         if(file_exists(WORK_DIRECTORY."/crawl.ini") && !$use_default) {
             $info = parse_ini_file (WORK_DIRECTORY."/crawl.ini", true);
         } else {
-            $info = parse_ini_file (BASE_DIR."/configs/default_crawl.ini", true);
+            $info =parse_ini_file (BASE_DIR."/configs/default_crawl.ini", true);
         }
 
         return $info;
@@ -309,6 +312,13 @@ EOT;
             $n[] = "[$type]";
             foreach($info[$type]['url'] as $url) {
                 $n[] = "url[] = '$url';";
+            }
+            $n[]="";
+        }
+        $n[] = "[meta_words]";
+        if(isset($info["meta_words"])) {
+            foreach($info["meta_words"] as $word_pattern => $url_pattern) {
+                $n[] = "$word_pattern = '$url_pattern';";
             }
             $n[]="";
         }
