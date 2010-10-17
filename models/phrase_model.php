@@ -215,7 +215,7 @@ class PhraseModel extends Model
         $index_archive_name = self::index_data_base_name . $index_name;
         $index_archive = new IndexArchiveBundle(
             CRAWL_DIR.'/cache/'.$index_archive_name);
-        $punct = "\.|\,|\;|\"|\'|\`|\[|\]|\{|\}|\(|\)|\!|\|";
+        $punct = "\.|\,|\:|\;|\"|\'|\`|\[|\]|\{|\}|\(|\)|\!|\|";
         $phrase_string = mb_ereg_replace($punct, " ", $phrase_string);
         $phrase_string = preg_replace("/(\s)+/", " ", $phrase_string);
         /*
@@ -378,7 +378,7 @@ class PhraseModel extends Model
             $avg_docs_gen = ($generation > 1) ? 
                 ($num_retrieved - $gen_count + $gen_num_rows)/$generation :
                 $gen_num_rows;
-            $results['TOTAL_ROWS'] = $avg_docs_gen * $max_num_generations;
+            $results['TOTAL_ROWS'] = ceil($avg_docs_gen * $max_num_generations);
             //this is only an approximation 
         } 
         $results['PAGES'] = & $pages;

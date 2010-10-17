@@ -363,5 +363,51 @@ class IndexShardTest extends UnitTest
             $c_data[crawlHash($doc_urls[0], true)][CrawlConstants::DUPLICATE]),  
             "Duplicate data shows up as duplicate");
     }
+
+    /**
+     * Check that save and load work
+     */
+    public function saveLoadTestCase()
+    {
+        $docid = "AAAAAAAA";
+        $offset = 5;
+        $word_counts = array(
+            'BBBBBBBB' => 1,
+            'CCCCCCCC' => 2,
+            'DDDDDDDD' => 6,
+        );
+
+        $meta_ids = array(
+            "EEEEEEEE",
+            "FFFFFFFF"
+        );
+
+        $this->test_objects['shard']->addDocumentWords($docid, 
+            $offset, $word_counts, $meta_ids);
+        $this->test_objects['shard']->save();
+        $this->test_objects['shard2'] = IndexShard::load("shard.txt");
+        $this->assertEqual($this->test_objects['shard2']->len_all_docs, 9, 
+            "Len All Docs Correctly Counts Length of First Doc");
+        $c_data = $this->test_objects['shard2']->getWordSliceById(
+            crawlHash('BBBBBBBB', true), 5);
+        $this->assertTrue(isset($c_data["AAAAAAAA"]), 
+            "Doc lookup by word works");
+        $c_data = $this->test_objects['shard2']->getWordSliceById(
+            crawlHash('CCCCCCCC', true), 5);
+        $this->assertTrue(isset($c_data["AAAAAAAA"]), 
+            "Doc lookup 2 by word works");
+        $c_data = $this->test_objects['shard2']->getWordSliceById(
+            crawlHash('DDDDDDDD', true), 5);
+        $this->assertTrue(isset($c_data["AAAAAAAA"]), 
+            "Doc lookup 2 by word works");
+        $c_data = $this->test_objects['shard2']->getWordSliceById(
+            crawlHash('EEEEEEEE', true), 5);
+        $this->assertTrue(isset($c_data["AAAAAAAA"]), 
+            "Doc lookup 2 by word works");
+        $c_data = $this->test_objects['shard2']->getWordSliceById(
+            crawlHash('FFFFFFFF', true), 5);
+        $this->assertTrue(isset($c_data["AAAAAAAA"]), 
+            "Doc lookup 2 by word works");
+    }
 }
 ?>

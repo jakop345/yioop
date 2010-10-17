@@ -427,8 +427,8 @@ class IndexShard extends PersistentStructure implements CrawlConstants
             $add_last_string = substr($word_docs_offset, 4, 4);
             $tmp = unpack("N", $add_last_string);
             $add_last_offset = $tmp[1];
-            $add_count = substr($word_docs_offset, 8, 4);
-            $tmp = unpack("N", $add_count);
+            $add_count_string = substr($word_docs_offset, 8, 4);
+            $tmp = unpack("N", $add_count_string);
             $add_count = $tmp[1];
             if(!isset($this->words[$word_key])) {
                 $new_word_docs_offset = 
@@ -444,9 +444,10 @@ class IndexShard extends PersistentStructure implements CrawlConstants
                 $count_string = substr($value, 8, 4);
                 $tmp = unpack("N", $count_string);
                 $count = $tmp[1];
-                if($count == 0x7FFFFFFF) {
-
-                    continue; 
+                if($count == 0x7FFFFFFF || $add_count == 0x7FFFFFFF) {
+                    $new_count = 0x7FFFFFFF;
+                } else {
+                    $new_count = $count + $add_count;
                 }
                 $to_new_docs_offset = $add_first_offset
                    + ($old_word_docs_len - $last_offset);
@@ -455,7 +456,7 @@ class IndexShard extends PersistentStructure implements CrawlConstants
                     $last_offset + 4, 4);
                 $new_word_docs_offset = $first_string .
                     pack("N", $old_word_docs_len + $add_last_offset) .
-                    pack("N", $count + $add_count);
+                    pack("N", $new_count);
             }
             $this->words[$word_key] = $new_word_docs_offset;
         }
@@ -527,4 +528,95 @@ class IndexShard extends PersistentStructure implements CrawlConstants
 
     }
 
+    /**
+     *  Save the IndexShard to its filename 
+     */
+    public function save()
+    {
+        ksort($this->words);
+        $num_words = count($this->words);
+        $header = pack("N", $num_words*20) . 
+            pack("N", $this->word_docs_len) .
+            pack("N", $this->docids_len) . 
+            pack("N", $this->generation_offset) .
+            pack("N", $this->num_docs) .
+            pack("N", $this->num_link_docs) .
+            pack("N", $this->len_all_docs) .
+            pack("N", $this->len_all_link_docs);
+        $fh = fopen($this->filename, "wb");
+        fwrite($fh, $header);
+        array_walk($this->words, 'IndexShard::writeWords', $fh);
+        fwrite($fh, $this->word_docs);
+        fwrite($fh, $this->doc_infos);
+        fclose($fh);
+    }
+
+    /**
+     * Callback function for save method. Write a single word, word_info pair
+     * to disk
+     *
+     * @param string &$value first, last offset, count for word in word_docs
+     * @param string $word_key hash of word
+     * @param resource &$fh filehandle to use to write to disk
+     */
+    function writeWords(&$value, $word_key, &$fh) 
+    {
+        fwrite($fh, $word_key . $value);
+    }
+
+    /**
+     *  Load an IndexShard from a file
+     *
+     *  @param string the name of the file to load the IndexShard from
+     *  @return object the IndexShard loaded
+     */
+    public static function load($fname)
+    {
+        $shard = new IndexShard($fname);
+        $fh = fopen($fname, "rb");
+        $header = fread($fh, 32);
+        $header_array = str_split($header, 4);
+        $header_data = array_map('IndexShard::unpackInt', $header_array);
+        $words = fread($fh, $header_data[0]);
+        $shard->word_docs = fread($fh, $header_data[1]);
+        $shard->doc_infos = fread($fh, $header_data[2]);
+        fclose($fh);
+        $shard->word_docs_len = $header_data[1];
+        $shard->docids_len = $header_data[2];
+        $shard->generation_offset = $header_data[3];
+        $shard->num_docs = $header_data[4];
+        $shard->num_link_docs = $header_data[5];
+        $shard->len_all_docs = $header_data[6];
+        $shard->len_all_link_docs = $header_data[7];
+        $pre_words_array = str_split($words, 20);
+        unset($words);
+        array_walk($pre_words_array, 'IndexShard::makeWords', $shard);
+
+        return $shard;
+    }
+
+    /**
+     * Callback function for load method. Unpacks an int from a 4 char string
+     *
+     * @param string $str where to extract int from
+     * @return int extracted integer
+     */
+    static function unpackInt($str)
+    {
+        $tmp = unpack("N", $str);
+        return $tmp[1];
+    }
+
+    /**
+     * Callback function for load method. splits a word_key . word_info string
+     * into an entry in the passed shard $shard->words[word_key] = $word_info.
+     *
+     * @param string &value  the word_key . word_info string 
+     * @param int $key index in array - we don't use
+     * @param object $shard IndexShard to add the entry to word table for
+     */
+    static function makeWords(&$value, $key, &$shard)
+    {
+        $shard->words[substr($value, 0, 8)] = substr($value, 8, 12);
+    }
 }
