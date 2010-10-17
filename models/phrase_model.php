@@ -411,13 +411,13 @@ class PhraseModel extends Model
             $restrict_phrases = $word_struct["RESTRICT_PHRASES"];
             $disallow_phrases = $word_struct["DISALLOW_PHRASES"];
             $index_archive = $word_struct["INDEX_ARCHIVE"];
-            if($generation > $index_archive->generation_info['ACTIVE']) {
-                continue;
-            }
             if($index_archive->generation_info['ACTIVE'] > 
                 $max_num_generations) {
                 $max_num_generations = 
                     $index_archive->generation_info['ACTIVE'];
+            }
+            if($generation > $index_archive->generation_info['ACTIVE']) {
+                continue;
             }
             $index_archive->setCurrentShard($generation);
             $weight = $word_struct["WEIGHT"];
@@ -471,7 +471,8 @@ class PhraseModel extends Model
         } else {
             $pages["GEN_NUM_ROWS"] = $group_iterator->num_docs;
         }
-        $pages["MAX_NUM_GENERATIONS"] = $max_num_generations;
+        $pages["MAX_NUM_GENERATIONS"] = $max_num_generations + 1;
+          //add one since num generation starts at zero
         return $pages;
     }
 
