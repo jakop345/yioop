@@ -34,11 +34,6 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /** 
- *Loads common constants for word indexing
- */
-require_once BASE_DIR.'/lib/indexing_constants.php';
-
-/** 
  *Loads base class for iterating
  */
 require_once BASE_DIR.'/lib/index_bundle_iterators/index_bundle_iterator.php';

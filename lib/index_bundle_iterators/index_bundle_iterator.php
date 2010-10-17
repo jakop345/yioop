@@ -33,11 +33,6 @@
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
-/** 
- *Loads common constants for word indexing
- */
-require_once BASE_DIR.'/lib/indexing_constants.php';
-
 /**
  * Abstract classed used to model iterating documents indexed in 
  * an IndexArchiveBundle or set of such bundles. 
@@ -48,7 +43,7 @@ require_once BASE_DIR.'/lib/indexing_constants.php';
  * @subpackage iterator
  * @see IndexArchiveBundle
  */
-abstract class IndexBundleIterator implements IndexingConstants, CrawlConstants
+abstract class IndexBundleIterator implements CrawlConstants
 {
 
     /**

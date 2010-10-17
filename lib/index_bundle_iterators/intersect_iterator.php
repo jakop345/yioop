@@ -34,11 +34,6 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /** 
- *Loads common constants for word indexing
- */
-require_once BASE_DIR.'/lib/indexing_constants.php';
-
-/** 
  *Loads BloomFilterFile to remember things we've already grouped
  */
 require_once BASE_DIR.'/lib/bloom_filter_file.php';

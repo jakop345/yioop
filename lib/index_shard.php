@@ -215,7 +215,7 @@ class IndexShard extends PersistentStructure implements CrawlConstants
                 $previous_string = substr($value, 4, 4);
                 $count_array = unpack("N", substr($value, 8, 4));
                 $count =  $count_array[1];
-                if($count == 0x7FFFFFFF) { continue; }
+                if($count == self::DUPLICATE_FLAG) { continue; }
                 $count++;
                 $value = $first_string . pack("N", $this->word_docs_len) .
                     pack("N", $count);
@@ -332,7 +332,8 @@ class IndexShard extends PersistentStructure implements CrawlConstants
             $is_doc = false;
             $skip_stats = false;
             
-            if($item[self::SUMMARY_OFFSET] == 0x7FFFFFFF) {
+            if($item[self::SUMMARY_OFFSET] == self::DUPLICATE_FLAG ||
+                $item[self::SUMMARY_OFFSET] == self::NEEDS_OFFSET_FLAG) {
                 $skip_stats = true;
                 $item[self::DUPLICATE] = true;
             } else if(($tmp[1] & self::COMPOSITE_ID_FLAG) !== 0) {
@@ -444,8 +445,11 @@ class IndexShard extends PersistentStructure implements CrawlConstants
                 $count_string = substr($value, 8, 4);
                 $tmp = unpack("N", $count_string);
                 $count = $tmp[1];
-                if($count == 0x7FFFFFFF || $add_count == 0x7FFFFFFF) {
-                    $new_count = 0x7FFFFFFF;
+                if($count == self::DUPLICATE_FLAG || 
+                    $count == self::NEEDS_OFFSET_FLAG ||
+                    $add_count == self::DUPLICATE_FLAG ||
+                    $add_count == self::NEEDS_OFFSET_FLAG) {
+                    $new_count =self::DUPLICATE_FLAG;
                 } else {
                     $new_count = $count + $add_count;
                 }
@@ -487,7 +491,8 @@ class IndexShard extends PersistentStructure implements CrawlConstants
             $id = substr($this->doc_infos, $i, 8);
             $tmp = unpack("N", substr($this->doc_infos, $i + 8, 4));
             $offset = $tmp[1];
-            if($offset == 0x7FFFFFFF) {continue; }//ignore duplicates
+            if($offset == self::DUPLICATE_FLAG) {continue; }//ignore duplicates
+                //notice don't ignore NEEDS_OFFSET_FLAG
             $comp_flag = 0;
             if(($offset & self::COMPOSITE_ID_FLAG) !== 0) {
                 //handle link item case
@@ -507,8 +512,8 @@ class IndexShard extends PersistentStructure implements CrawlConstants
     /**
      * Marks a set of urls as duplicates of urls previously seen
      * To do this the url's doc_id has associated with a summary
-     * offset of value 0x7FFFFFFF, and its length is set to
-     * 0XFFFFFFFF
+     * offset of value 0x7FFFFFFF (CrawlConstants::DUPLICATE_FLAG), and its 
+     * length is set to 0XFFFFFFFF
      *
      * @param array $doc_urls urls to mark as duplicates.
      */
@@ -516,12 +521,12 @@ class IndexShard extends PersistentStructure implements CrawlConstants
     {
         foreach($doc_urls as $duplicate) {
             $doc_key = crawlHash($duplicate, true);
-            $this->doc_infos .= $doc_key . pack("N", 0x7FFFFFFF).
+            $this->doc_infos .= $doc_key . pack("N", self::DUPLICATE_FLAG).
                 pack("N", 0xFFFFFFFF);
             $word_key = crawlHash("info:".$duplicate, true);
             $this->word_docs .= pack("N", ($this->docids_len<< 4)).pack("N",0);
             $tmp = pack("N", $this->word_docs_len);
-            $this->words[$word_key] = $tmp.$tmp.pack("N", 0x7FFFFFFF);
+            $this->words[$word_key] = $tmp.$tmp.pack("N", self::DUPLICATE_FLAG);
             $this->word_docs_len += 8;
             $this->docids_len += 16;
         }

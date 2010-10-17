@@ -54,11 +54,6 @@ require_once 'utility.php';
  */
 require_once 'crawl_constants.php';
 
-/** 
- *Loads common constants for word indexing
- */
-require_once 'indexing_constants.php';
-
 
 /**
  * Encapsulates a set of web page summaries and an inverted word-index of terms
@@ -81,7 +76,7 @@ require_once 'indexing_constants.php';
  * @package seek_quarry
  * @subpackage library
  */
-class IndexArchiveBundle implements IndexingConstants, CrawlConstants
+class IndexArchiveBundle implements CrawlConstants
 {
 
     /**

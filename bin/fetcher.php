@@ -1157,16 +1157,17 @@ class Fetcher implements CrawlConstants
                         mb_ereg_replace("[[:punct:]]", " ", $link_text);
                     $link_word_counts = 
                         PhraseParser::extractPhrasesAndCount($link_text);
-                    $link_shard->addDocumentWords($link_key, 0, 
+                    $link_shard->addDocumentWords($link_key, 
+                        self::NEEDS_OFFSET_FLAG, 
                         $link_word_counts, array());
 
                     $meta_ids[] = 'link:'.$url;
                 }
 
             }
-            $index_shard->addDocumentWords($doc_key, 0, $word_counts,
-                $meta_ids);
-            
+            $index_shard->addDocumentWords($doc_key, self::NEEDS_OFFSET_FLAG, 
+                $word_counts, $meta_ids);
+
             $index_shard->appendIndexShard($link_shard);
 
         }
