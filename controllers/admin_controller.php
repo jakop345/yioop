@@ -879,6 +879,8 @@ class AdminController extends Controller implements CrawlConstants
                         } else if(isset($seed_info['meta_words'])){
                             $data['META_WORDS'] = $seed_info['meta_words'];
                         }
+                    } else if(isset($seed_info['meta_words'])){
+                            $data['META_WORDS'] = $seed_info['meta_words'];
                     }
                     $data['SCRIPT'] = "setDisplay('toggle', ".
                         "'{$data['restrict_sites_by_url']}');".

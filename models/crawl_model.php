@@ -242,10 +242,9 @@ class CrawlModel extends Model implements CrawlConstants
                 $seed_info[$type]['url'] =  $tmp;
             }
             $seed_info['meta_words'] = array();
-            if(isset($index_info['meta_words']) ) {
-                $seed_info['meta_words'] = $index_info['meta_words'];
+            if(isset($index_info[self::META_WORDS]) ) {
+                $seed_info['meta_words'] = $index_info[self::META_WORDS];
             }
-
         }
         return $seed_info;
     }
