@@ -139,33 +139,38 @@ class PhraseModel extends Model
 
     /**
      * Determines the offset into the summaries WebArchiveBundle of the
-     * provided url so that it can be retrieved. This relies on the
-     * fact that the info:url meta word has been stored.
+     * provided url so that the info:url summary can be retrieved. 
+     * This assumes of course that  the info:url meta word has been stored.
      *
      * @param string $url what to lookup
-     * @return int offset into the web archive bundle
+     * @return array (offset, generation) into the web archive bundle
      */
-    function lookupSummaryOffset($url)
+    function lookupSummaryOffsetGeneration($url)
     {
         $index_archive_name = self::index_data_base_name . $this->index_name;
         $index_archive = new IndexArchiveBundle(
             CRAWL_DIR.'/cache/'.$index_archive_name);
-        $word_iterator = 
-            new WordIterator(crawlHash("info:$url"), $index_archive);
         $num_retrieved = 0;
         $pages = array();
         $summary_offset = NULL;
-        while(is_array($next_docs = $word_iterator->nextDocsWithWord()) &&
-            $num_retrieved < 1) {
-             foreach($next_docs as $doc_key => $doc_info) {
-                 $summary_offset = & $doc_info[CrawlConstants::SUMMARY_OFFSET];
-                 $num_retrieved++;
-                 if($num_retrieved >=  1) {
-                     break 2;
+        $num_generations = $index_archive->generation_info['ACTIVE'];
+        for($i = 0; $i <= $num_generations && $num_retrieved < 1; $i++) {
+            $index_archive->setCurrentShard($i);
+            $word_iterator = 
+                new WordIterator(crawlHash("info:$url"), $index_archive);
+            while(is_array($next_docs = $word_iterator->nextDocsWithWord()) &&
+                $num_retrieved < 1) {
+                 foreach($next_docs as $doc_key => $doc_info) {
+                     $summary_offset = & 
+                        $doc_info[CrawlConstants::SUMMARY_OFFSET];
+                     $num_retrieved++;
+                     if($num_retrieved >=  1) {
+                         break 3;
+                     }
                  }
-             }
+            }
         }
-        return $summary_offset;
+        return array($summary_offset, $i);
     }
 
     /**
@@ -419,6 +424,7 @@ class PhraseModel extends Model
             if($generation > $index_archive->generation_info['ACTIVE']) {
                 continue;
             }
+
             $index_archive->setCurrentShard($generation);
             $weight = $word_struct["WEIGHT"];
             $num_word_keys = count($word_keys);

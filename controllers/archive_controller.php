@@ -98,8 +98,9 @@ class ArchiveController extends Controller implements CrawlConstants
     {
         $web_archive = new WebArchiveBundle(
             CRAWL_DIR.'/cache/'.self::archive_base_name.
-                $_REQUEST['crawl_time'], -1);
-        $page = $web_archive->getPage($_REQUEST['hash'], $_REQUEST['offset']);
+                $_REQUEST['crawl_time']);
+        $page = $web_archive->getPage($_REQUEST['offset'], 
+            $_REQUEST['partition']);
 
         echo base64_encode(serialize($page));
     }

@@ -113,7 +113,7 @@ class SearchView extends View implements CrawlConstants
                     $data['TOTAL_ROWS'])); 
             ?> )</h2>
             <?php
-            foreach($data['PAGES'] as $page) {?> 
+            foreach($data['PAGES'] as $page) {?>
                 <div class='result'> 
                 <h2>
                 <a href="<?php if($page[self::TYPE] != "link") {
@@ -148,6 +148,7 @@ class SearchView extends View implements CrawlConstants
                         e($data['QUERY']); ?>&amp;arg=<?php 
                         e(urlencode($page[self::URL])); 
                         ?>&amp;so=<?php  e($page[self::SUMMARY_OFFSET]); 
+                        ?>&amp;g=<?php  e($page[self::CACHE_PAGE_PARTITION]);
                         ?>&amp;its=<?php e($data['its']); ?>" >
                     <?php
                     if($page[self::TYPE] == "text/html" || 

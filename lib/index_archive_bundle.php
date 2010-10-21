@@ -127,14 +127,11 @@ class IndexArchiveBundle implements CrawlConstants
      *      the WebArchiveBundles
      * @param int $num_partitions_summaries number of WebArchive partitions
      *      to use in the summmaries WebArchiveBundle
-     * @param int $num_partitions_index number of WebArchive partitions
-     *      to use in the index WebArchiveBundle
      * @param string $description a text name/serialized info about this
      * IndexArchiveBundle 
      */
     public function __construct($dir_name, $filter_size = -1, 
-        $num_partitions_summaries = NULL, $description = NULL,
-        $num_docs_per_generation = NUM_DOCS_PER_GENERATION)
+        $description = NULL, $num_docs_per_generation = NUM_DOCS_PER_GENERATION)
     {
 
         $this->dir_name = $dir_name;
@@ -147,7 +144,6 @@ class IndexArchiveBundle implements CrawlConstants
             $index_archive_exists = true;
 
         }
-
         if(file_exists($this->dir_name."/generation.txt")) {
             $this->generation_info = unserialize(
                 file_get_contents($this->dir_name."/generation.txt"));
@@ -157,10 +153,8 @@ class IndexArchiveBundle implements CrawlConstants
                 serialize($this->generation_info));
         }
         $this->summaries = new WebArchiveBundle($dir_name."/summaries",
-            $filter_size, $num_partitions_summaries, $description);
+            $filter_size, -1, $description);
         $this->summaries->initCountIfNotExists("VISITED_URLS_COUNT");
-
-        $this->num_partitions_summaries = $this->summaries->num_partitions;
 
         $this->description = $this->summaries->description;
 
@@ -170,36 +164,52 @@ class IndexArchiveBundle implements CrawlConstants
 
     /**
      * Add the array of $pages to the summaries WebArchiveBundle pages being 
-     * stored in the partition according to the $key_field and the field used 
+     * stored in the partition $generation and the field used 
      * to store the resulting offsets given by $offset_field.
      *
-     * @param string $key_field field used to select partition
+     * @param int $generation field used to select partition
      * @param string $offset_field field used to record offsets after storing
      * @param array &$pages data to store
      * @param int $visited_urls_count number to add to the count of visited urls
      *      (visited urls is a smaller number than the total count of objects
      *      stored in the index).
-     * @return array $pages adjusted with offset field
      */
-    public function addPages($key_field, $offset_field, $pages, 
+    public function addPages($generation, $offset_field, &$pages, 
         $visited_urls_count)
     {
-        $result = $this->summaries->addPages($key_field, $offset_field, $pages);
+        $this->summaries->setWritePartition($generation);
+        $this->summaries->addPages($offset_field, $pages);
         $this->summaries->addCount($visited_urls_count, "VISITED_URLS_COUNT");
-        return $result;
     }
 
     /**
      * Adds the provided mini inverted index data to the IndexArchiveBundle
      *
-     * @param array $index_data a mini inverted index of word_key=>doc data
+     * @param object &$index_shard a mini inverted index of word_key=>doc data
      *      to add to this IndexArchiveBundle
      */
-    public function addIndexData($index_shard)
+    public function addIndexData(&$index_shard)
     {
 
         crawlLog("**ADD INDEX DIAGNOSTIC INFO...");
         $start_time = microtime();
+
+        $this->getActiveShard()->appendIndexShard($index_shard);
+        crawlLog("Append Index Shard: Memory usage:".memory_get_usage() .
+          " Time: ".(changeInMicrotime($start_time)));
+    }
+
+    /**
+     * Determines based on its size, if index_shard should be added to
+     * the active generation or in a new generation should be started.
+     * If so, a new generation is started.
+     *
+     * @param object &$index_shard a mini inverted index of word_key=>doc data
+     * @return int the active generation after the check and possible change has
+     *      been performed
+     */
+    public function initGenerationToAdd(&$index_shard)
+    {
         $current_num_docs = $this->getActiveShard()->num_docs;
         $add_num_docs = $index_shard->num_docs;
         if($current_num_docs + $add_num_docs > $this->num_docs_per_generation){
@@ -217,9 +227,8 @@ class IndexArchiveBundle implements CrawlConstants
                 serialize($this->generation_info));
             crawlLog("Switch Shard time:".changeInMicrotime($switch_time));
         }
-        $this->getActiveShard()->appendIndexShard($index_shard);
-        crawlLog("Append Index Shard: Memory usage:".memory_get_usage() .
-          " Time: ".(changeInMicrotime($start_time)));
+
+        return $this->generation_info['ACTIVE'];
     }
 
     /**
@@ -291,17 +300,19 @@ class IndexArchiveBundle implements CrawlConstants
 
     /**
      * Gets the page out of the summaries WebArchiveBundle with the given 
-     * key and offset
+     * offset and generation
      *
-     * The $key determines the partition WebArchive, the $offset give the
-     * byte offset within that archive.
-     * @param string $key hash to use to look up WebArchive partition
      * @param int $offset byte offset in partition of desired page
+     * @param int $generation which generation WebArchive to look up in
+     *      defaults to the same number as the current shard
      * @return array desired page
      */
-    public function getPage($key, $offset)
+    public function getPage($offset, $generation = -1)
     {
-        return $this->summaries->getPage($key, $offset);
+        if($generation == -1 ) {
+            $generation = $this->generation_info['CURRENT'];
+        }
+        return $this->summaries->getPage($offset, $generation);
     }
 
 

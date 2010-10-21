@@ -154,8 +154,7 @@ abstract class IndexBundleIterator implements CrawlConstants
                 $doc_info = $pages[$doc_key];
             }
             if(isset($doc_info[self::SUMMARY_OFFSET])) {
-                $page = $index->getPage(
-                    $doc_key, $doc_info[self::SUMMARY_OFFSET]);
+                $page = $index->getPage($doc_info[self::SUMMARY_OFFSET]);
                 $out_pages[$doc_key] = $doc_info;
                 $out_pages[$doc_key][self::SUMMARY] = $page;
             }

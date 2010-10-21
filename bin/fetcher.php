@@ -305,7 +305,7 @@ class Fetcher implements CrawlConstants
                     crawlLog("Old name: ".$this->web_archive->dir_name);
                 }
                 $this->web_archive = new WebArchiveBundle($tmp_base_name, 
-                    URL_FILTER_SIZE, NUM_ARCHIVE_PARTITIONS);
+                    URL_FILTER_SIZE);
                 $this->crawl_time = $info[self::CRAWL_TIME];
                 $this->sum_seen_title_length = 0;
                 $this->sum_seen_description_length = 0;
@@ -740,7 +740,7 @@ class Fetcher implements CrawlConstants
                 $i++;
             }
         } // end for
-        $stored_site_pages = $this->web_archive->addPages(self::HASH, 
+        $cache_page_partition = $this->web_archive->addPages(
             self::OFFSET, $stored_site_pages);
 
         $num_pages = count($stored_site_pages);
@@ -750,6 +750,8 @@ class Fetcher implements CrawlConstants
             if(isset($stored_site_pages[$i][self::OFFSET])) {
                 $summarized_site_pages[$i][self::OFFSET] = 
                     $stored_site_pages[$i][self::OFFSET];
+                $summarized_site_pages[$i][self::CACHE_PAGE_PARTITION] = 
+                    $cache_page_partition;
             }
         }
 

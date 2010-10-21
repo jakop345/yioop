@@ -91,15 +91,15 @@ class WebArchiveBundle
      */
     var $page_exists_filter_bundle;
     /**
-     * Number of WebArchives in the WebArchiveBundle
-     * @var int
-     */
-    var $num_partitions;
-    /**
      * Total number of page objects stored by this WebArchiveBundle
      * @var int
      */
     var $count;
+    /**
+     * The index of the partition to which new documents will be added
+     * @var int
+     */
+    var $write_partition;
     /**
      * A short text name for this WebArchiveBundle
      * @var string
@@ -119,24 +119,27 @@ class WebArchiveBundle
      * @param string $dir_name folder name of the bundle
      * @param int $filter_size number of items that can be stored in
      *      a given BloomFilterFile in the $page_exists_filter_bundle
-     * @param int $num_partitions number of WebArchive's in this bundle
+     * @param int $num_docs_per_partition number of documents before the
+     *      web archive is changed
      * @param string $description a short text name/description of this
      *      WebArchiveBundle
      * @param string $compressor the Compressor object used to 
      *      compress/uncompress data stored in the bundle
      */
     function __construct($dir_name, $filter_size = -1, 
-        $num_partitions = NULL, $description = NULL, 
+        $num_docs_per_partition = NUM_DOCS_PER_GENERATION, $description = NULL, 
         $compressor = "GzipCompressor") 
     {
         //filter size = -1 used by web server to not get all partitions created
         
         $this->dir_name = $dir_name;
         $this->filter_size = $filter_size;
+        $this->num_docs_per_partition = $num_docs_per_partition;
         $this->compressor = $compressor;
+        $this->write_partition = 0;
 
         $read_only_archive = false;
-        if($num_partitions == NULL) {
+        if($filter_size == -1) {
             $read_only_archive = true;
         }
 
@@ -151,16 +154,18 @@ class WebArchiveBundle
                 file_get_contents($this->dir_name."/description.txt"));
         }
 
-        $this->num_partitions = $num_partitions;
-        if(isset($info['NUM_PARTITIONS'])) {
-            $this->num_partitions = $info['NUM_PARTITIONS'];
+        if(isset($info['NUM_DOCS_PER_PARTITION'])) {
+            $this->num_docs_per_partition = $info['NUM_DOCS_PER_PARTITION'];
         }
 
         $this->count = 0;
         if(isset($info['COUNT'])) {
             $this->count = $info['COUNT'];
         }
-        
+
+        if(isset($info['WRITE_PARTITION'])) {
+            $this->write_partition = $info['WRITE_PARTITION'];
+        }
         if(isset($info['DESCRIPTION']) ) {
             $this->description = $info['DESCRIPTION'];
         } else {
@@ -171,8 +176,9 @@ class WebArchiveBundle
         }
 
         $info['DESCRIPTION'] = $this->description;
-        $info['NUM_PARTITIONS'] = $this->num_partitions;
+        $info['NUM_DOCS_PER_PARTITION'] = $this->num_docs_per_partition;
         $info['COUNT'] = $this->count;
+        $info['WRITE_PARTITION'] = $this->write_partition;
         if(!$read_only_archive) {
             file_put_contents(
                 $this->dir_name."/description.txt", serialize($info));
@@ -191,80 +197,61 @@ class WebArchiveBundle
 
     /**
      * Add the array of $pages to the WebArchiveBundle pages being stored in
-     * the partition according to the $key_field and the field used to store
+     * the partition according to write partition and the field used to store
      * the resulting offsets given by $offset_field.
      *
-     * @param string $key_field field used to select partition
      * @param string $offset_field field used to record offsets after storing
      * @param array &$pages data to store
-     * @return array $pages adjusted with offset field
+     * @return int the write_partition the pages were stored in
      */
-    function addPages($key_field, $offset_field, &$pages)
+    function addPages($offset_field, &$pages)
     {
-        $partition_queue = array();
-        for($i = 0; $i < $this->num_partitions; $i++) {
-            $partition_queue[$i] = array();
-        }
 
         $num_pages = count($pages);
-        for($i = 0; $i < $num_pages; $i++) { 
-            //we are doing this to preserve the order of the returned array
-            $pages[$i]['TMP_INDEX'] = $i;
+
+        if($this->num_docs_per_partition > 0 && 
+            $num_pages > $this->num_docs_per_partition) {
+            crawlLog("ERROR! At most ".$this->num_docs_per_partition. 
+                "many pages can be added in one go!");
+            exit();
         }
 
-        foreach($pages as $page) {
-            if(isset($page[$key_field])) {
-                $this->count++;
-
-                $index = WebArchiveBundle::selectPartition(
-                    $page[$key_field], $this->num_partitions);
-
-                $partition_queue[$index][] =  $page;
-            }
+        $partition = $this->getPartition($this->write_partition);
+        $part_count = $partition->count;
+        if($this->num_docs_per_partition > 0 && 
+            $num_pages + $part_count > $this->num_docs_per_partition) {
+            $this->setWritePartition($this->writePartition + 1);
+            $partition = $this->getPartition($this->write_partition);
         }
 
-        $pages_with_offsets = array();
-        for($i = 0; $i < $this->num_partitions; $i++) {
-            $pages_with_offsets = array_merge($pages_with_offsets, 
-                $this->addObjectsPartition(
-                    $offset_field, $i, $partition_queue[$i]));
-        }
+        $this->addCount($num_pages); //only adds to count on disk
+        $this->count += $num_pages;
 
-        foreach($pages_with_offsets as $off_page) {
-            $pages[$off_page['TMP_INDEX']][$offset_field] = 
-                $off_page[$offset_field];
-            unset($pages[$off_page['TMP_INDEX']]['TMP_INDEX'] );
-        }
-        return $pages;
+        $partition->addObjects($offset_field, $pages, NULL, NULL, false);
+
+        return $this->write_partition;
     }
 
     /**
-     * Gets the page out of the WebArchiveBundle with the given key and offset
-     *
-     * The $key determines the partition WebArchive, the $offset give the
-     * byte offset within that archive.
-     * @param string $key hash to use to look up WebArchive partition
-     * @param int $offset byte offset in partition of desired page
-     * @return array desired page
+     * Advances the index of the write partition by one and creates the 
+     * corresponding web archive.
      */
-    function getPage($key, $offset)
+    function setWritePartition($i)
     {
-        $partition = 
-            WebArchiveBundle::selectPartition($key, $this->num_partitions);
-
-        return $this->getPageByPartition($partition, $offset);
+        $this->write_partition = $i;
+        $this->getPartition($this->write_partition);
     }
 
     /**
      * Gets a page using in WebArchive $partition using the provided byte
      * $offset and using existing $file_handle if possible.
      *
-     * @param int $partition which WebArchive to look in
      * @param int $offset byte offset of page data
+     * @param int $partition which WebArchive to look in
      * @param resource $file_handle file handle resource of $partition archive
      * @return array desired page
      */
-    function getPageByPartition($partition, $offset, $file_handle = NULL)
+    function getPage($offset, $partition, $file_handle = NULL)
     {
         $page_array = 
             $this->getPartition($partition)->getObjects(
@@ -292,51 +279,6 @@ class WebArchiveBundle
         } else {
             return false;
         }
-    }
-
-    /**
-     * Adds a list of objects to a given WebArchive partition
-     *
-     * @param string $offset_field field used to store offsets after the
-     *      addition
-     * @param int $partition WebArchive index to store data into
-     * @param array &$objects objects to store
-     * @param array $data info header data to write
-     * @param string $callback function name of function to call as each
-     *      object is stored. Can be used to save offset into $data
-     * @param bool $return_flag whether to return modified $objects or not
-     * @return mixed adjusted objects or void
-     */
-    function addObjectsPartition($offset_field, $partition, 
-        &$objects, $data = NULL, $callback = NULL, $return_flag = true)
-    {
-        $num_objects = count($objects);
-        $this->addCount($num_objects);
-
-        return $this->getPartition($partition)->addObjects(
-            $offset_field, $objects, $data, $callback, $return_flag);
-    }
-
-    /**
-     * Reads the info block of $partition WebArchive
-     *
-     * @param int $partition WebArchive to read from
-     * @return array data in its info block
-     */
-    function readPartitionInfoBlock($partition)
-    {
-        return $this->getPartition($partition)->readInfoBlock();
-    }
-
-    /**
-     * Write $data into the info block of the $partition WebArchive
-     *
-     * @param int $partition WebArchive to write into
-     * @param array $data what to write
-     */
-    function writePartitionInfoBlock($partition, &$data)
-    {
-        $this->getPartition($partition)->writeInfoBlock(NULL, $data);
     }
 
     /**
@@ -387,6 +329,8 @@ class WebArchiveBundle
         }
     }
 
+
+
     /**
      * Gets an object encapsulating the $index the WebArchive partition in
      * this bundle.
@@ -412,7 +356,6 @@ class WebArchiveBundle
                 chmod($this->dir_name."/web_archive_".$index, 0777);
             }
         }
-        
         return $this->partition[$index];
     }
 
@@ -466,7 +409,7 @@ class WebArchiveBundle
             $info['DESCRIPTION'] = 
                 "Archive does not exist OR Archive description file not found";
             $info['COUNT'] = 0;
-            $info['NUM_PARTITIONS'] = 0;
+            $info['NUM_DOCS_PER_PARTITION'] = -1;
             return $info;
         }
 
@@ -476,26 +419,5 @@ class WebArchiveBundle
 
     }
 
-    /**
-     * Hashes $value to a WebArchive partition  it should be read/written to, 
-     * if a bundle has $num_partitions partitions.
-     *
-     * @param string $value item to hash
-     * @param int $num_partitions number of partitions
-     * @return int which partition $value should be written to/read from
-     */
-    static function selectPartition($value, $num_partitions)
-    {
-
-        $hash = substr(md5($value, true), 0, 4);
-        $int_array = unpack("N", $hash);
-        $seed = $int_array[1];
-
-        mt_srand($seed);
-        $index = mt_rand(0, $num_partitions - 1);
-
-        return $index;
-
-    }
 }
 ?>

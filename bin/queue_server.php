@@ -416,8 +416,7 @@ class QueueServer implements CrawlConstants
             $this->index_archive = new IndexArchiveBundle(
                 CRAWL_DIR.'/cache/'.
                     self::index_data_base_name.$this->crawl_time,
-                URL_FILTER_SIZE, NUM_ARCHIVE_PARTITIONS, 
-                serialize($info));
+                URL_FILTER_SIZE, serialize($info));
         } else {
             $dir = CRAWL_DIR.'/cache/'.
                     self::index_data_base_name.$this->crawl_time;
@@ -589,11 +588,14 @@ class QueueServer implements CrawlConstants
             }
         }
 
-        if(isset($seen_sites)) {
-            $seen_sites = 
-                $this->index_archive->addPages(
-                    self::HASH_URL, self::SUMMARY_OFFSET, $seen_sites,
-                    $visited_urls_count);
+        if(isset($seen_sites) && isset($sites[self::INVERTED_INDEX])) {
+            $index_shard = & $sites[self::INVERTED_INDEX];
+            $generation = 
+                $this->index_archive->initGenerationToAdd($index_shard);
+
+            $this->index_archive->addPages(
+                $generation, self::SUMMARY_OFFSET, $seen_sites,
+                $visited_urls_count);
 
             $summary_offsets = array();
             foreach($seen_sites as $site) {
@@ -604,16 +606,13 @@ class QueueServer implements CrawlConstants
                 " time: ".(changeInMicrotime($start_time)));
             $start_time = microtime();
             // added summary offset info to inverted index data
-            if(isset($sites[self::INVERTED_INDEX])) { 
-                $index_shard = & $sites[self::INVERTED_INDEX];
-                $index_shard->changeDocumentOffsets($summary_offsets);
-            }
-        }
-        crawlLog("C (update shard offsets) memory usage".memory_get_usage() .
-            " time: ".(changeInMicrotime($start_time)));
-        $start_time = microtime();
 
-        if(isset($index_shard)) {
+            $index_shard->changeDocumentOffsets($summary_offsets);
+
+            crawlLog("C (update shard offsets) memory usage".memory_get_usage().
+                " time: ".(changeInMicrotime($start_time)));
+            $start_time = microtime();
+
             $this->index_archive->addIndexData($index_shard);
             $this->index_dirty = true;
         }

@@ -75,21 +75,22 @@ class CrawlModel extends Model implements CrawlConstants
 
 
     /**
-     * Get a summary of a document by it document id (a string hash value) 
-     * and its offset
+     * Get a summary of a document by the generation it is in
+     * and its offset into the corresponding WebArchive.
      *
-     * @param string $ukey document id hash string
-     * @param int $summary_offset offset into a partition in a WebArchiveBundle
+     * @param int $summary_offset offset in $generation WebArchive
+     * @param int $generation the index of the WebArchive in the 
+     *      IndexArchiveBundle to find the item in.
      * @return array summary data of the matching document
      */
-    function getCrawlItem($ukey, $summary_offset)
+    function getCrawlItem($summary_offset, $generation)
     {
         $index_archive_name = self::index_data_base_name . $this->index_name;
 
         $index_archive = 
             new IndexArchiveBundle(CRAWL_DIR.'/cache/'.$index_archive_name);
 
-        $summary = $index_archive->getPage($ukey, $summary_offset);
+        $summary = $index_archive->getPage($summary_offset, $generation);
 
         return $summary;
     }
@@ -108,27 +109,29 @@ class CrawlModel extends Model implements CrawlConstants
      *      cached page lives on
      * @param string $machine_uri the path from document root on $machine where 
      *      the yioop scripts live
-     * @param string $hash the hash that was used to represent the page in the
-     *       WebArchiveBundle
+     * @param int $partition the partition in the WebArchiveBundle the page is
+     *       in
      * @param int $offset the offset in bytes into the WebArchive partition in 
      *      the WebArchiveBundle at which the cached page lives.
      * @param string $crawl_time the timestamp of the crawl the cache page is 
      *      from
      * @return array page data of the cached page
      */
-    function getCacheFile($machine, $machine_uri, $hash, $offset, $crawl_time) 
+    function getCacheFile($machine, $machine_uri, $partition, 
+        $offset, $crawl_time) 
     {
         $time = time();
         $session = md5($time . AUTH_KEY);
-        if($machine == '::1') {
-            $machine = "localhost"; 
+        if($machine == '::1') { //IPv6 :(
+            $machine = "[::1]/"; 
             //used if the fetching and queue serving were on the same machine
         }
 
         $request= "http://$machine$machine_uri?c=archive&a=cache&time=$time".
-            "&session=$session&hash=$hash&offset=$offset".
+            "&session=$session&partition=$partition&offset=$offset".
             "&crawl_time=$crawl_time";
-        $page = @unserialize(base64_decode(FetchUrl::getPage($request)));
+        $tmp = FetchUrl::getPage($request);
+        $page = @unserialize(base64_decode($tmp));
         $page['REQUEST'] = $request;
 
         return $page;
@@ -196,7 +199,9 @@ class CrawlModel extends Model implements CrawlConstants
                     isset($info['VISITED_URLS_COUNT']) ?
                     $info['VISITED_URLS_COUNT'] : 0;
                 $crawl['COUNT'] = $info['COUNT'];
-                $crawl['NUM_PARTITIONS'] = $info['NUM_PARTITIONS'];
+                $crawl['NUM_DOCS_PER_PARTITION'] = 
+                    $info['NUM_DOCS_PER_PARTITION'];
+                $crawl['WRITE_PARTITION'] = $info['WRITE_PARTITION'];
                 $list[] = $crawl;
             }
         }

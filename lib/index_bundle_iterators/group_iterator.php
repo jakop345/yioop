@@ -285,8 +285,7 @@ class GroupIterator extends IndexBundleIterator
                 foreach($doc_info[self::SUMMARY_OFFSET] as $offset_array) {
                     list($key, $summary_offset) = $offset_array;
                     $index = & $this->getIndex($key);
-                    $page = $index->getPage(
-                        $key, $summary_offset);
+                    $page = $index->getPage($summary_offset);
                     if(!isset($out_pages[$doc_key][self::SUMMARY])) {
                         $out_pages[$doc_key][self::SUMMARY] = $page;
                     } else if (isset($page[self::DESCRIPTION])) {

@@ -172,8 +172,12 @@ class SearchController extends Controller implements CrawlConstants
                 if(isset($_REQUEST['so'])) {
                     $summary_offset = $this->clean($_REQUEST['so'], "int");
                 }
-                $this->cacheRequest($query, $arg, $summary_offset, $highlight,
-                    $index_time_stamp);
+                $generation = -1;
+                if(isset($_REQUEST['g'])) {
+                    $generation = $this->clean($_REQUEST['g'], "int");
+                }
+                $this->cacheRequest($query, $arg, $summary_offset, $generation,
+                    $highlight, $index_time_stamp);
             }
         }
 
@@ -226,12 +230,16 @@ class SearchController extends Controller implements CrawlConstants
                 if(isset($_REQUEST['so'])) {
                     $summary_offset = $this->clean($_REQUEST['so'], "int");
                 }
-                if($summary_offset === NULL) {
-                    $summary_offset = 
-                        $this->phraseModel->lookupSummaryOffset($url);
+                $generation = -1;
+                if(isset($_REQUEST['g'])) {
+                    $generation = $this->clean($_REQUEST['g'], "int");
                 }
-                $crawl_item = $this->crawlModel->getCrawlItem(
-                    crawlHash($url, true), $summary_offset);
+                if($summary_offset === NULL || $generation == -1) {
+                    list($summary_offset, $generation) =  
+                        $this->phraseModel->lookupSummaryOffsetGeneration($url);
+                }
+                $crawl_item = $this->crawlModel->getCrawlItem($summary_offset, 
+                    $generation);
 
                 $top_phrases  = 
                     $this->phraseModel->getTopPhrases($crawl_item, 3);
@@ -318,7 +326,7 @@ class SearchController extends Controller implements CrawlConstants
      * @param int $crawl_time the timestamp of the crawl to look up the cached
      *      page in
      */
-    function cacheRequest($query, $url, $summary_offset,
+    function cacheRequest($query, $url, $summary_offset = -1, $generation = -1,
         $highlight=true, $crawl_time = 0)
     {
 
@@ -328,24 +336,26 @@ class SearchController extends Controller implements CrawlConstants
 
         $this->phraseModel->index_name = $crawl_time;
         $this->crawlModel->index_name = $crawl_time;
-        if($summary_offset === NULL) {
-            $summary_offset = $this->phraseModel->lookupSummaryOffset($url);
+        if($summary_offset == -1 || $generation == -1) {
+            list($summary_offset, $generation) = 
+                $this->phraseModel->lookupSummaryOffsetGeneration($url);
         }
 
-        if(!$crawl_item = $this->crawlModel->getCrawlItem(crawlHash($url, true), 
-            $summary_offset)) {
+        $data = array();
+        if(!$crawl_item = $this->crawlModel->getCrawlItem($summary_offset, 
+            $generation)) {
 
             $this->displayView("nocache", $data);
             exit();
         }
 
-        $data = array();
+
         $machine = $crawl_item[self::MACHINE];
         $machine_uri = $crawl_item[self::MACHINE_URI];
         $page = $crawl_item[self::HASH];
         $offset = $crawl_item[self::OFFSET];
         $cache_item = $this->crawlModel->getCacheFile($machine, 
-            $machine_uri, $page, $offset, $crawl_time);
+            $machine_uri, $generation, $offset,  $crawl_time);
 
         $cache_file = $cache_item[self::PAGE];
 
