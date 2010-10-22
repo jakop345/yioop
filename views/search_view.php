@@ -144,7 +144,8 @@ class SearchView extends View implements CrawlConstants
                     e(tl('search_view_score', 1.25* $page[self::SCORE]));
                 if($page[self::TYPE] != "link") {
                 ?>
-                    <a href="?c=search&amp;a=cache&amp;q=<?php 
+                    <a href="?YIOOP_TOKEN=<?php e($data['YIOOP_TOKEN']);
+                        ?>&amp;c=search&amp;a=cache&amp;q=<?php 
                         e($data['QUERY']); ?>&amp;arg=<?php 
                         e(urlencode($page[self::URL])); 
                         ?>&amp;so=<?php  e($page[self::SUMMARY_OFFSET]); 
@@ -158,7 +159,8 @@ class SearchView extends View implements CrawlConstants
                     } else {
                         e(tl('search_view_as_text'));
                     }
-                    ?></a>. <a href="?c=search&amp;a=related&amp;arg=<?php 
+                    ?></a>. <a href="?YIOOP_TOKEN=<?php e($data['YIOOP_TOKEN']);
+                        ?>&amp;c=search&amp;a=related&amp;arg=<?php 
                         e(urlencode($page[self::URL])); ?>&amp;so=<?php 
                         e($page[self::SUMMARY_OFFSET]); 
                         ?>&amp;its=<?php e($data['its']); ?>" ><?php 
