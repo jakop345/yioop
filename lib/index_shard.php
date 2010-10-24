@@ -312,6 +312,7 @@ class IndexShard extends PersistentStructure implements CrawlConstants
      *
      * @param string $word_id id of the word one wants to look up
      * @param bool $raw whether the id is our version of base64 encoded or not
+     * @return array first offset, last offset, count
      */
     function getWordInfo($word_id, $raw = false)
     {
@@ -335,7 +336,8 @@ class IndexShard extends PersistentStructure implements CrawlConstants
     }
 
     /**
-     * Returns documents using the word_docs string of records starting
+     * Returns documents using the word_docs string (either as stored
+     * on disk or completely read in) of records starting
      * at the given offset and using its link-list of records. Traversal of
      * the list stops if an offset larger than $last_offset is seen or
      * $len many doc's have been returned. Since $next_offset is passed by
@@ -617,6 +619,17 @@ class IndexShard extends PersistentStructure implements CrawlConstants
     }
 
 
+    /**
+     * Returns the first offset, last offset, and number of documents the
+     * word occurred in for this shard. The first offset (similarly, the last
+     * offset) is the byte offset into the word_docs string of the first
+     * (last) record involving that word. This method assumes the word data
+     * for the $word_id has been written to disk. It reads in only the 
+     * pages from disk needed to retrieve this disk-based data.
+     *
+     * @param string $word_id id of the word one wants to look up
+     * @return array first offset, last offset, count
+     */
     function getWordInfoDisk($word_id)
     {
         $this->getShardHeader();
@@ -647,6 +660,16 @@ class IndexShard extends PersistentStructure implements CrawlConstants
         return false;
     }
 
+    /**
+     * Returns the first offset, last offset, and number of documents the
+     * word occurred in for this shard. The first offset (similarly, the last
+     * offset) is the byte offset into the word_docs string of the first
+     * (last) record involving that word. This method assumes the word data
+     * is stored in the $this->words array.
+     *
+     * @param string $word_id id of the word one wants to look up
+     * @return array first offset, last offset, count
+     */
     function getWordInfoLoaded($word_id)
     {
         if(!isset($this->words[$word_id])) {
@@ -655,6 +678,13 @@ class IndexShard extends PersistentStructure implements CrawlConstants
         return $this->getWordInfoFromString($this->words[$word_id]);
     }
 
+    /**
+     * Splits $str into 3 ints for a first offset into word_docs,
+     * a last offset into word_docs, and a count of number of docs
+     * with that word.
+     *
+     * @return array of these three int's
+     */
     function getWordInfoFromString($str)
     {
         $first_string = substr($str, 0, 4);
@@ -670,6 +700,15 @@ class IndexShard extends PersistentStructure implements CrawlConstants
         return array($first_offset, $last_offset, $count);
     }
 
+    /**
+     * From disk gets $len many bytes starting from $offset in the word_docs
+     * strings 
+     *
+     * @param $offset byte offset to begin getting data out of disk-based
+     *      word_docs
+     * @param $len number of bytes to get
+     * @return desired string
+     */
     function getWordDocsSubstring($offset, $len)
     {
         if($this->read_only_from_disk) {
@@ -679,6 +718,15 @@ class IndexShard extends PersistentStructure implements CrawlConstants
         return substr($this->word_docs, $offset, $len);
     }
 
+    /**
+     * From disk gets $len many bytes starting from $offset in the doc_infos
+     * strings 
+     *
+     * @param $offset byte offset to begin getting data out of disk-based
+     *      doc_infos
+     * @param $len number of bytes to get
+     * @return desired string
+     */
     function getDocInfoSubstring($offset, $len)
     {
         if($this->read_only_from_disk) {
@@ -689,6 +737,14 @@ class IndexShard extends PersistentStructure implements CrawlConstants
         return substr($this->doc_infos, $offset, $len);
     }
 
+    /**
+     *  Gets from Disk Data $len many bytes beginning at $offset from the
+     *  current IndexShard
+     *
+     * @param int $offset byte offset to start reading from
+     * @param int $len number of bytes to read
+     * @return string data fromthat location  in the shard
+     */
     function getShardSubstring($offset, $len)
     {
         $block_offset = (($offset >> 12) << 12);
@@ -705,6 +761,13 @@ class IndexShard extends PersistentStructure implements CrawlConstants
         return substr($substring, 0, $len);
     }
 
+    /**
+     * Reads SHARD_BLOCK_SIZE from the current IndexShard's file beginning
+     * at byte offset $bytes
+     *
+     * @param $bytes byte offset to start reading from
+     * @return &string data fromIndexShard file
+     */
     function &readBlockShardAtOffset($bytes)
     {
         global $MEMCACHE;
@@ -727,6 +790,11 @@ class IndexShard extends PersistentStructure implements CrawlConstants
         return $this->blocks[$bytes];
     }
 
+    /**
+     * If not already loaded, reads in from disk the fixed-length'd field 
+     * variables of this IndexShard ($this->words_len, 
+     * $this->word_docs_len, etc)
+     */
     function getShardHeader()
     {
         if($this->word_docs !== "" ) {

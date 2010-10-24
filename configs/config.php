@@ -110,7 +110,7 @@ define ('SESSION_NAME', "yioopbiscuit");
 /** Says whether or not to use Memcache. For Memcache to work you
  *  of course need a memcached daemon running somewhere
  */
-define('USE_MEMCACHE', false);
+define('USE_MEMCACHE', true);
 
 /**
  * @global array addresses of memcached servers to use assumming memcached is
@@ -170,7 +170,7 @@ define('MIN_QUEUE_WEIGHT', 1/100000);
 define('NUM_ARCHIVE_PARTITIONS', 10);
 
 /** number of documents before next gen */
-define('NUM_DOCS_PER_GENERATION', 25000);
+define('NUM_DOCS_PER_GENERATION', 100000);
 
 /** precision to round floating points document scores */
 define('PRECISION', 10); 

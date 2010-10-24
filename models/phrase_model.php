@@ -356,10 +356,28 @@ class PhraseModel extends Model
      */
     function getSummariesByHash($word_structs, $limit, $num)
     {
+        global $MEMCACHE;
 
         $pages = array();
         $generation = 0;
-        $to_retrieve = $limit + max(2*$num, 200);
+        $to_retrieve = ceil(($limit+$num)/200) * 200;
+        $start_slice = floor(($limit)/200) * 200;
+        if(USE_MEMCACHE) {
+            $tmp = "";
+            foreach($word_structs as $word_struct) {
+                $tmp .= serialize($word_struct["KEYS"]).
+                    serialize($word_struct["RESTRICT_PHRASES"]) .
+                    serialize($word_struct["DISALLOW_PHRASES"]) .
+                    $word_struct["WEIGHT"] .
+                    $word_struct["INDEX_ARCHIVE"]->dir_name;
+            }
+            $summary_hash = crawlHash($tmp.":".$to_retrieve);
+            if(($results = $MEMCACHE->get($summary_hash)) !== false) {
+                $results['PAGES'] = 
+                    array_slice($results['PAGES'], $limit - $start_slice, $num);
+                return $results;
+            }
+        }
         $num_retrieved = 0;
         while($num_retrieved < $to_retrieve) {
             $gen_pages = $this->getGenerationSummariesByHash(
@@ -375,7 +393,6 @@ class PhraseModel extends Model
              $generation++;
         }
         uasort($pages, "scoreOrderCallback");
-        $pages = array_slice($pages, $limit, $num);
 
         if($num_retrieved < $to_retrieve) {
             $results['TOTAL_ROWS'] = $num_retrieved;
@@ -385,8 +402,17 @@ class PhraseModel extends Model
                 $gen_num_rows;
             $results['TOTAL_ROWS'] = ceil($avg_docs_gen * $max_num_generations);
             //this is only an approximation 
-        } 
+        }
+        
         $results['PAGES'] = & $pages;
+        $results['PAGES'] = array_slice($results['PAGES'], $start_slice);
+        if(USE_MEMCACHE) {
+
+            $MEMCACHE->set($summary_hash, $results);
+        }
+        $results['PAGES'] = array_slice($results['PAGES'], $limit -$start_slice,
+            $num);
+
         return $results;
     }
 
