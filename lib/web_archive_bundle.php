@@ -253,11 +253,23 @@ class WebArchiveBundle
      */
     function getPage($offset, $partition, $file_handle = NULL)
     {
+        global $MEMCACHE;
+        if(USE_MEMCACHE) {
+            if(($page = 
+                $MEMCACHE->get("Page$offset$partition".$this->dir_name) ) !==
+                false) {
+                return $page;
+            }
+        }
         $page_array = 
             $this->getPartition($partition)->getObjects(
                 $offset, 1, true, $file_handle);
 
         if(isset($page_array[0][1])) {
+            if(USE_MEMCACHE) {
+                $MEMCACHE->set("Page$offset$partition".$this->dir_name,
+                    $page_array[0][1]);
+            }
             return $page_array[0][1];
         } else {
             return array();

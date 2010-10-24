@@ -268,9 +268,17 @@ class IndexArchiveBundle implements CrawlConstants
             $current_index_shard_file = $this->dir_name."/index".
                 $this->generation_info['CURRENT'];
                 
-            if(file_exists($current_index_shard_file) ) {
-                $this->current_shard = 
-                    IndexShard::load($current_index_shard_file);
+            if(file_exists($current_index_shard_file)) {
+                if(isset($this->generation_info['DISK_BASED']) &&
+                    $this->generation_info['DISK_BASED'] == true) {
+                    $this->current_shard =new IndexShard(
+                        $current_index_shard_file,
+                        $this->generation_info['CURRENT']*
+                        $this->num_docs_per_generation, true);
+                } else {
+                    $this->current_shard = 
+                        IndexShard::load($current_index_shard_file);
+                }
             } else {
                 $this->current_shard = new IndexShard($current_index_shard_file,
                     $this->generation_info['CURRENT']*
@@ -284,9 +292,12 @@ class IndexArchiveBundle implements CrawlConstants
      * Sets the current shard to be the $i th shard in the index bundle.
      *
      * @param $i which shard to set the current shard to be
+     * @param $disk_based whether to read the whole shard in before using or
+     *      leave it on disk except for pages need and use memcache
      */
-     public function setCurrentShard($i)
+     public function setCurrentShard($i, $disk_based = false)
      {
+        $this->generation_info['DISK_BASED'] = $disk_based;
         if(isset($this->generation_info['CURRENT']) && 
             ($i == $this->generation_info['CURRENT'] ||
             $i > $this->generation_info['ACTIVE'])) {

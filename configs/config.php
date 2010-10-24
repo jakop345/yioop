@@ -107,6 +107,21 @@ define('USER_AGENT',
  */
 define ('SESSION_NAME', "yioopbiscuit"); 
 
+/** Says whether or not to use Memcache. For Memcache to work you
+ *  of course need a memcached daemon running somewhere
+ */
+define('USE_MEMCACHE', false);
+
+/**
+ * @global array addresses of memcached servers to use assumming memcached is
+ * available
+ */
+$MEMCACHES = array(
+  array("host" => "localhost", "port" => "11211", 
+    "persistent" => true, "weight" => 1, "timeout" => 1, "retry" => 5
+  )
+);
+
 /** maximum size of a log file before it is rotated */
 define("MAX_LOG_FILE_SIZE", 5000000); 
 
@@ -129,6 +144,8 @@ define('MAXIMUM_CRAWL_DELAY', 64);
 /** maximum number of active crawl-delayed hosts */
 define('MAX_WAITING_HOSTS', 1000); 
 
+
+ 
 /** 
  * bloom filters are used to keep track of which urls are visited, 
  * this parameter determines up to how many

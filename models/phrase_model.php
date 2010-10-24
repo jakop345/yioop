@@ -265,7 +265,7 @@ class PhraseModel extends Model
             $hashes = array_unique($hashes);
             $restrict_phrases = array_unique($restrict_phrases);
             $restrict_phrases = array_filter($restrict_phrases);
-            $index_archive->setCurrentShard(0);
+            $index_archive->setCurrentShard(0, true);
             $words_array = $index_archive->getSelectiveWords($hashes, 10);
 
             if(is_array($words_array)) {
@@ -424,8 +424,7 @@ class PhraseModel extends Model
             if($generation > $index_archive->generation_info['ACTIVE']) {
                 continue;
             }
-
-            $index_archive->setCurrentShard($generation);
+            $index_archive->setCurrentShard($generation, true);
             $weight = $word_struct["WEIGHT"];
             $num_word_keys = count($word_keys);
             if($num_word_keys < 1) {continue;}

@@ -52,6 +52,15 @@ session_start();
  */
 require_once(BASE_DIR."/models/datasources/".DBMS."_manager.php"); 
 
+if(USE_MEMCACHE) {
+    $MEMCACHE = new Memcache();
+    foreach($MEMCACHES as $mc) {
+        $MEMCACHE->addServer($mc['host'], $mc['port'], $mc['persistent'],
+            $mc['weight'], $mc['timeout'], $mc['retry']);
+    }
+    unset($mc);
+}
+
 mb_internal_encoding("UTF-8");
 mb_regex_encoding("UTF-8");
 
