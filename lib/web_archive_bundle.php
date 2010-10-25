@@ -220,7 +220,7 @@ class WebArchiveBundle
         $part_count = $partition->count;
         if($this->num_docs_per_partition > 0 && 
             $num_pages + $part_count > $this->num_docs_per_partition) {
-            $this->setWritePartition($this->writePartition + 1);
+            $this->setWritePartition($this->write_partition + 1);
             $partition = $this->getPartition($this->write_partition);
         }
 

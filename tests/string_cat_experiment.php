@@ -85,6 +85,16 @@ for($i = 10; $i< 10000000; $i *= 10) {
     echo "Num Hello Cats = $i Time =".changeInMicroTime($start)."secs \n";
 }
 
+/**
+ * Measures the change in time in seconds between two timestamps to microsecond
+ * precision
+ *
+ * @param string $start starting time with microseconds
+ * @param string $end ending time with microseconds
+ * @return float time difference in seconds
+ * @see SigninModel::changePassword()
+ * @see SigninModel::checkValidSignin()
+ */
 function changeInMicrotime( $start, $end=NULL )
 {
     if( !$end ) {

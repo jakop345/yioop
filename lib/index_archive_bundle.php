@@ -91,7 +91,7 @@ class IndexArchiveBundle implements CrawlConstants
     var $description;
     /**
      * Number of partitions in the summaries WebArchiveBundle
-     * @int
+     * @var int
      */
     var $num_partitions_summaries;
 
@@ -99,22 +99,22 @@ class IndexArchiveBundle implements CrawlConstants
      * structure contains info about the current generation:
      * its index (ACTIVE), and the number of words it contains
      * (NUM_WORDS).
-     * @array
+     * @var array
      */
     var $generation_info;
     /**
      * Number of docs before a new generation is started
-     * @int
+     * @var int
      */
     var $num_docs_per_generation;
     /**
      * WebArchiveBundle for web page summaries
-     * @object
+     * @var object
      */
     var $summaries;
     /**
      * Index Shard for current generation inverted word index
-     * @object
+     * @var object
      */
     var $current_shard;
 

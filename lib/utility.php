@@ -36,7 +36,13 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
+ * Copies from $source string beginning at position $start, $length many
+ * bytes to destination string
  *
+ * @param string $source  string to copy from
+ * @param string &$destination string to copy to
+ * @param $start starting offset
+ * @param $length number of bytes to copy
  */
 function charCopy($source, &$destination, $start, $length) 
 {
@@ -47,7 +53,10 @@ function charCopy($source, &$destination, $start, $length)
 }
 
 /**
+ *  Encodes an integer using variable byte coding.
  *
+ *  @param int $pos_int integer to encode
+ *  @return string a string of 1-5 chars depending on how bit $pos_int was
  */
 function vByteEncode($pos_int) 
 {
@@ -61,7 +70,11 @@ function vByteEncode($pos_int)
 }
 
 /**
+ *  Decodes from a string using variable byte coding an integer.
  *
+ *  @param string &$str string to use for decoding
+ *  @param int $offset byte offset into string when var int stored
+ *  @return int the decoded integer
  */
 function vByteDecode(&$str, &$offset) 
 {
