@@ -304,9 +304,10 @@ class Fetcher implements CrawlConstants
                 if(isset($this->web_archive->dir_name)) {
                     crawlLog("Old name: ".$this->web_archive->dir_name);
                 }
-                $this->web_archive->page_exists_filter_bundle = NULL;
-                $this->web_archive = NULL;
-                $this->to_crawl = array();
+                if(is_object($this->web_archive)) {
+                    $this->web_archive->page_exists_filter_bundle = NULL;
+                    $this->web_archive = NULL;
+                }
                 $this->to_crawl_again = array();
                 $this->found_sites = array();
                 $this->found_duplicates = array();
