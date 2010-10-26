@@ -177,6 +177,20 @@ class ConfigureElement extends Element
                         value="<?php e($data['QUEUE_SERVER']); ?>" 
                         class="extrawidefield" />
                 </div>
+                <div class="topmargin"><label for="use-memcache"><b><?php 
+                    e(tl('configure_element_use_memcache'))?></b></label>
+                        <input type="checkbox" id="use-memcache" 
+                            name="USE_MEMCACHE" value="true" <?php 
+                            e($data['USE_MEMCACHE'] ? "checked='checked'" :
+                                "" ); ?> /></div>
+                <div id="memcache">
+                    <div class="topmargin"><label for="memcache-servers"
+                    ><b><?php e(tl('configure_element_memcache_servers'));
+                    ?></b></label></div>
+                <textarea class="shorttextarea" id="memcache-servers" 
+                    name="MEMCACHE_SERVERS"><?php e($data['MEMCACHE_SERVERS']);
+                ?></textarea>
+                </div>
             </fieldset>
             </div>
             <div class="topmargin"><fieldset><legend><?php 

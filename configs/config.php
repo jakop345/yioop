@@ -77,6 +77,7 @@ if(file_exists(WORK_DIRECTORY."/profile.php")) {
     define('SESSION_NAME', "yioopbiscuit");
     define('DEFAULT_LOCALE', "en-US");
     define('AUTH_KEY', 0);
+    define('USE_MEMCACHE', false);
 }
 
 if((DEBUG_LEVEL & ERROR_INFO) == ERROR_INFO) {
@@ -107,20 +108,19 @@ define('USER_AGENT',
  */
 define ('SESSION_NAME', "yioopbiscuit"); 
 
-/** Says whether or not to use Memcache. For Memcache to work you
- *  of course need a memcached daemon running somewhere
- */
-define('USE_MEMCACHE', true);
-
 /**
- * @global array addresses of memcached servers to use assumming memcached is
+ * @global array addresses of memcached servers to use assuming memcached is
  * available
  */
-$MEMCACHES = array(
-  array("host" => "localhost", "port" => "11211", 
-    "persistent" => true, "weight" => 1, "timeout" => 1, "retry" => 5
-  )
-);
+if(USE_MEMCACHE) {
+    $memcache_hosts = explode("|Z|", MEMCACHE_SERVERS);
+    foreach($memcache_hosts as $host)
+    $MEMCACHES[] = array("host" => $host, "port" => "11211", 
+        "persistent" => true, "weight" => 1, "timeout" => 1, "retry" => 5
+    );
+    unset($memcache_hosts);
+    unset($host);
+}
 
 /** maximum size of a log file before it is rotated */
 define("MAX_LOG_FILE_SIZE", 5000000); 

@@ -52,7 +52,8 @@ class ProfileModel extends Model
     var $profile_fields = array('USER_AGENT_SHORT', 
             'DEFAULT_LOCALE', 'DEBUG_LEVEL', 'DBMS','DB_URL', 
             'DB_NAME', 'DB_USER', 'DB_PASSWORD', 
-            'QUEUE_SERVER', 'AUTH_KEY', "ROBOT_DESCRIPTION", 'WEB_URI');
+            'QUEUE_SERVER', 'AUTH_KEY', "ROBOT_DESCRIPTION", 'WEB_URI',
+            'USE_MEMCACHE', 'MEMCACHE_SERVERS');
     /**
      *  {@inheritdoc}
      */

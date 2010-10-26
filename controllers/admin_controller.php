@@ -67,8 +67,8 @@ class AdminController extends Controller implements CrawlConstants
      * controller will respond to
      * @var array
      */
-    var $activities = array("signin", "manageAccount", 
-        "manageUsers", "manageCrawl", "manageRoles", 
+    var $activities = array("signin", "manageAccount", "manageUsers",
+        "manageRoles", "manageCrawl", "mixCrawls",
         "manageLocales", "crawlStatus", "configure");
 
     /**
@@ -906,16 +906,21 @@ class AdminController extends Controller implements CrawlConstants
     /**
      * Cleans a potentially tainted set of user input which are presented as
      * an array of lines. This is used to handle data from the crawl options
-     * textareas.
+     * textareas. It is also used
      *
      * @param array $arr the array of lines to be cleaned
+     * @param string $endline_string what string should be used to indicate
+     *      the end of a line
      * @return string a concatenated string of cleaned lines
      */
-    function convertArrayCleanLines($arr)
+    function convertArrayCleanLines($arr, $endline_string="\n")
     {
         $output = "";
+        $eol = "";
         foreach($arr as $line) {
-            $output .= trim($this->clean($line, 'string'))."\n";
+            $output .= $eol;
+            $output .= trim($this->clean($line, 'string'));
+            $eol = $endline_string;
         }
         return $output;
     }
@@ -939,7 +944,28 @@ class AdminController extends Controller implements CrawlConstants
         }
         return $urls;
     }
-    
+
+    /**
+     *
+     */
+    function mixCrawls()
+    {
+        $possible_arguments = array("changepassword");
+
+        $data["ELEMENT"] = "mixcrawlsElement";
+        $data['SCRIPT'] = "";
+
+        if(isset($_REQUEST['arg']) && 
+            in_array($_REQUEST['arg'], $possible_arguments)) {
+            switch($_REQUEST['arg'])
+            {
+            }
+        }
+        return $data;
+    }
+
+
+
     /**
      * Handles admin request related to the manage locale activity
      *
@@ -1184,7 +1210,8 @@ class AdminController extends Controller implements CrawlConstants
             case "profile":
                 foreach($this->profileModel->profile_fields as $field) {
                     if(isset($_POST[$field])) {
-                        if($field != "ROBOT_DESCRIPTION") {
+                        if($field != "ROBOT_DESCRIPTION" && 
+                            $field != "MEMCACHE_SERVERS") {
                             $clean_field = 
                                 $this->clean($_POST[$field], "string");
                         } else {
@@ -1192,6 +1219,12 @@ class AdminController extends Controller implements CrawlConstants
                         }
                         $data[$field] = $clean_field;
                         $profile[$field] = $data[$field];
+                        if($field == "MEMCACHE_SERVERS") {
+                            $mem_array = preg_split("/(\s)+/", $clean_field);
+                            $profile[$field] = 
+                                $this->convertArrayCleanLines(
+                                    $mem_array, "|Z|");
+                        }
                     }
                     if(!isset($data[$field])) {
                         $data[$field] = "";
@@ -1275,6 +1308,8 @@ class AdminController extends Controller implements CrawlConstants
                     $data = array_merge($data, 
                         $this->profileModel->getProfile(
                             $data['WORK_DIRECTORY']));
+                    $data['MEMCACHE_SERVERS'] = str_replace(
+                        "|Z|","\n", $data['MEMCACHE_SERVERS']);
                 } else {
                     $data['WORK_DIRECTORY'] = "";
                     $data['PROFILE'] = false;
@@ -1294,9 +1329,14 @@ class AdminController extends Controller implements CrawlConstants
             }
 
             if(!isset($data['ROBOT_DESCRIPTION']) || 
-                strlen($data['ROBOT_DESCRIPTION']) == "") {
+                strlen($data['ROBOT_DESCRIPTION']) == 0) {
                 $data['ROBOT_DESCRIPTION'] = 
                     tl('admin_controller_describe_robot');
+            }
+            if(!isset($data['MEMCACHE_SERVERS']) ||
+                strlen($data['MEMCACHE_SERVERS']) == 0) {
+                $data['MEMCACHE_SERVERS'] =
+                    "localhost";
             }
             $data['SCRIPT'] .= 
                 "elt('database-system').onchange = function () {" .
@@ -1304,6 +1344,12 @@ class AdminController extends Controller implements CrawlConstants
                 "self.logindbms[elt('database-system').value]);};" .
                 "setDisplay('login-dbms', ".
                 "logindbms[elt('database-system').value]);\n";
+            $data['SCRIPT'] .= 
+                "elt('use-memcache').onchange = function () {" .
+                "setDisplay('memcache',".
+                "(elt('use-memcache').checked) ? true : false);};" .
+                "setDisplay('memcache', ".
+                "(elt('use-memcache').checked) ? true : false);\n";
 
         }
         $data['SCRIPT'] .= 
