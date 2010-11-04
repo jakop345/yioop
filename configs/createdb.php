@@ -95,8 +95,21 @@ $db->execute("CREATE TABLE TRANSLATION_LOCALE (TRANSLATION_ID INTEGER, ".
    does not support comma separated inserts
  */
 $db->execute("INSERT INTO LOCALE VALUES (1, 'en-US', 'English', 'lr-tb')");
-$db->execute("INSERT INTO LOCALE VALUES (2, 'fr-FR', 'Français', 'lr-tb')");
-$db->execute("INSERT INTO LOCALE VALUES (3, 'vi-VN', 'Tiếng Việt', 'lr-tb')");
+$db->execute("INSERT INTO LOCALE VALUES (2, 'ar', 'العربية', 'rl-tb')");
+$db->execute("INSERT INTO LOCALE VALUES (3, 'de', 'Deutsch', 'lr-tb')");
+$db->execute("INSERT INTO LOCALE VALUES (4, 'es', 'Español', 'lr-tb')");
+$db->execute("INSERT INTO LOCALE VALUES (5, 'fr-FR', 'Français', 'lr-tb')");
+$db->execute("INSERT INTO LOCALE VALUES (6, 'he', 'עברית', 'rl-tb')");
+$db->execute("INSERT INTO LOCALE VALUES (7, 'in-ID', 'Bahasa', 'lr-tb')");
+$db->execute("INSERT INTO LOCALE VALUES (8, 'it', 'Italiano', 'lr-tb')");
+$db->execute("INSERT INTO LOCALE VALUES (9, 'ja', '日本語', 'lr-tb')");
+$db->execute("INSERT INTO LOCALE VALUES (10, 'ko', '한국어', 'lr-tb')");
+$db->execute("INSERT INTO LOCALE VALUES (11, 'pl', 'Polski', 'lr-tb')");
+$db->execute("INSERT INTO LOCALE VALUES (12, 'pt', 'Português', 'lr-tb')");
+$db->execute("INSERT INTO LOCALE VALUES (13, 'ru', 'Русский', 'lr-tb')");
+$db->execute("INSERT INTO LOCALE VALUES (14, 'th', 'ไทย', 'lr-tb')");
+$db->execute("INSERT INTO LOCALE VALUES (15, 'vi-VN', 'Tiếng Việt', 'lr-tb')");
+$db->execute("INSERT INTO LOCALE VALUES (16, 'zh-CN', '中文', 'lr-tb')");
 
 $db->execute("CREATE TABLE ROLE (ROLE_ID INTEGER PRIMARY KEY ".
     "$auto_increment, NAME VARCHAR(512))");
@@ -119,7 +132,7 @@ $db->execute(
 $db->execute("INSERT INTO ACTIVITY VALUES (1, 1, 'manageAccount')");
 $db->execute("INSERT INTO ACTIVITY VALUES (2, 2, 'manageUsers')");
 $db->execute("INSERT INTO ACTIVITY VALUES (3, 3, 'manageRoles')");
-$db->execute("INSERT INTO ACTIVITY VALUES (4, 4, 'manageCrawl')");
+$db->execute("INSERT INTO ACTIVITY VALUES (4, 4, 'manageCrawls')");
 $db->execute("INSERT INTO ACTIVITY VALUES (5, 5, 'mixCrawls')");
 $db->execute("INSERT INTO ACTIVITY VALUES (6, 6, 'manageLocales')");
 $db->execute("INSERT INTO ACTIVITY VALUES (7, 7, 'configure')");
@@ -132,13 +145,50 @@ $db->execute("INSERT INTO TRANSLATION VALUES (5, 'db_activity_mix_crawls')");
 $db->execute("INSERT INTO TRANSLATION VALUES (6,'db_activity_manage_locales')");
 $db->execute("INSERT INTO TRANSLATION VALUES (7, 'db_activity_configure')");
 
+
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (1, 1, 'Manage Account' )");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (2, 1, 'Manage Users')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (3, 1, 'Manage Roles')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (4, 1, 'Manage Crawl')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (5, 1, 'Crawl Mixer')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (4, 1, 'Manage Crawls')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (5, 1, 'Mix Crawls')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (6, 1, 'Manage Locales')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (7, 1, 'Configure')");
+
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (1, 5, 
+    'Modifier votre compte' )");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (2, 5, 
+    'Modifier les utilisateurs')");
+
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (1, 9, 'アカウント管理' )");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (2, 9, 'ユーザー管理')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (3, 9, '役割管理')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (4, 9, '検索管理')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (6, 9, 'ローケル管理')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (7, 9, '設定')");
+
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (1, 10, '사용자 계정 관리' )");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (2, 10, '사용자 관리')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (3, 10, '사용자 권한 관리')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (4, 10, '크롤 관리')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (6, 10, '로케일 관리')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (7, 10, '구성')");
+
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (1, 15, 
+    'Quản lý tài khoản' )");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (2, 15, 
+    'Quản lý tên sử dụng')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (3, 15, 
+    'Quản lý chức vụ')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (4, 15, 'Quản lý sự bò')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (6, 15, 
+    'Quản lý miền địa phương')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (7, 15, 
+    'Sắp xếp hoạt động dựa theo hoạch định')");
+
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (1, 16, 
+    '管理帳號')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (2, 16, 
+    '管理使用者')");
 
 
 $db->execute("CREATE TABLE USER_ROLE (USER_ID INTEGER, ROLE_ID INTEGER)");

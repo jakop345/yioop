@@ -54,7 +54,7 @@ class CrawlstatusView extends View
      * @param array $data   info about the current crawl status
      */ 
     public function renderView($data) {
-        $base_url = "?c=admin&a=manageCrawl&YIOOP_TOKEN=".
+        $base_url = "?c=admin&a=manageCrawls&YIOOP_TOKEN=".
             $data['YIOOP_TOKEN']."&arg=";
         ?>
 
@@ -66,7 +66,7 @@ class CrawlstatusView extends View
             <button class="buttonbox" type="button" 
                 onclick="javascript:document.location = '<?php 
                 e($base_url); ?>stop'" ><?php 
-                e(tl('managecrawl_element_stop_crawl'))?></button>
+                e(tl('managecrawls_element_stop_crawl'))?></button>
             <?php
         } else {
             e(tl('crawlstatus_view_no_description'));

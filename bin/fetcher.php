@@ -206,7 +206,17 @@ class Fetcher implements CrawlConstants
      * @var string
      */
     var $crawl_order;
-
+    /**
+     * Last time index was saved to disk
+     * @var int
+     */
+    var $last_filter_save_time;
+    /**
+     * Keeps track if we've added and not saved 
+     * anything to the page filter bundle
+     * @var bool
+     */
+    var $filter_dirty;
 
     /**
      * Sets up the field variables for that crawling can begin
@@ -239,6 +249,9 @@ class Fetcher implements CrawlConstants
         $this->sum_seen_site_link_length = 0;
         $this->num_seen_sites = 0;
 
+        $this->last_filter_save_time = 0;
+        $this->filter_dirty = false;
+        
         //we will get the correct crawl order from the queue_server
         $this->crawl_order = self::PAGE_IMPORTANCE;
     }
@@ -276,6 +289,14 @@ class Fetcher implements CrawlConstants
         $this->checkCrawlTime();
         
         while ($info[self::STATUS] != self::STOP_STATE) {
+
+            if(time() - $this->last_filter_save_time > FORCE_SAVE_TIME &&
+                isset($this->web_archive->page_exists_filter_bundle) &&
+                $this->filter_dirty == true){
+                $this->web_archive->page_exists_filter_bundle->forceSave();
+                $this->filter_dirty = false;
+                $this->last_filter_save_time = time();
+            }
 
             $fetcher_message_file = CRAWL_DIR."/schedules/fetcher_messages.txt";
             if(file_exists($fetcher_message_file)) {
@@ -609,6 +630,7 @@ class Fetcher implements CrawlConstants
                 $unseen_page_hashes) && !in_array($site[self::HASH], 
                 $seen_pages)) {
                 $this->web_archive->addPageFilter(self::HASH, $site);
+                $this->filter_dirty = true;
                 $deduplicated_pages[] = $site;
                 $seen_pages[] = $site[self::HASH];
             } else if(!isset($site[self::HASH])){
@@ -1158,7 +1180,10 @@ class Fetcher implements CrawlConstants
                     $summary[self::DESCRIPTION] =  $link_text;
                     $summary[self::TIMESTAMP] =  $site[self::TIMESTAMP];
                     $summary[self::ENCODING] = $site[self::ENCODING];
-                    $summary[self::HASH] =  crawlHash($link_id);
+                    $summary[self::HASH] =  false; /* 
+                        link id's will always be unique so no sense 
+                        deduplicating them
+                    */
                     $summary[self::TYPE] = "link";
                     $summary[self::HTTP_CODE] = "link";
                     $this->found_sites[self::SEEN_URLS][] = $summary;

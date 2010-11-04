@@ -152,7 +152,7 @@ define('MAX_WAITING_HOSTS', 1000);
  * urls will be stored in a single filter. Additional filters are 
  * read to and from disk.
  */
-define('URL_FILTER_SIZE', 10000000);
+define('URL_FILTER_SIZE', 20000000);
 
 /** number of fetchers that will be used in a given crawl */
 define('NUM_FETCHERS', 4); 
@@ -270,8 +270,9 @@ define ('MAX_FETCH_SIZE', 5000);
 /** fetcher must wait at least this long between multi-curl requests */
 define ('MINIMUM_FETCH_LOOP_TIME', 5); 
 
-/** Max time before dirty index saved in seconds*/
-define('INDEX_SAVE_TIME', 300);
+/** Max time before dirty index (queue_server) and 
+    filters (fetcher) will be force saved in seconds*/
+define('FORCE_SAVE_TIME', 600);
 
 /** default number of search results to display per page */
 define ('NUM_RESULTS_PER_PAGE', 10); 

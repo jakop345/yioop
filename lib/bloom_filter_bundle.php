@@ -168,7 +168,14 @@ class BloomFilterBundle
                 } else {
                     $tmp = & $arr[$j][$field_name];
                 }
-                if($tmp_filter->contains($tmp)) {
+                if($tmp !== false && $tmp_filter->contains($tmp)) {
+                /* 
+                    We delibrerately don't try to add anything that has
+                    the hash field set to false. This is our cue to 
+                    skip an element such as a link document which we
+                    know will almost always be unique and so be unnecessary
+                    to de-duplicate
+                 */
                     unset($arr[$j]);
                 }
             }

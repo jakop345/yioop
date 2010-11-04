@@ -58,7 +58,7 @@ class CrawloptionsElement extends Element
     ?>
         <div class="currentactivity">
         <div class="<?php e($data['leftorright']);?>">
-        <a href="?c=admin&amp;a=manageCrawl&amp;YIOOP_TOKEN=<?php 
+        <a href="?c=admin&amp;a=manageCrawls&amp;YIOOP_TOKEN=<?php 
             e($data['YIOOP_TOKEN']) ?>"
         ><?php e(tl('crawloptions_element_back_to_manage'))?></a>
         </div>
@@ -68,10 +68,10 @@ class CrawloptionsElement extends Element
         <input type="hidden" name="c" value="admin" />
         <input type="hidden" name="YIOOP_TOKEN" value="<?php 
             e($data['YIOOP_TOKEN']); ?>" />
-        <input type="hidden" name="a" value="manageCrawl" />
+        <input type="hidden" name="a" value="manageCrawls" />
         <input type="hidden" name="arg" value="options" />
         <input type="hidden" name="posted" value="posted" />
-        <div class="topmargin"><label for="crawl-order"><b><?php 
+        <div class="topmargin"><label for="load-options"><b><?php 
             e(tl('crawloptions_element_load_options'))?></b></label><?php
             $this->view->optionsHelper->render("load-options", "load_option", 
                 $data['available_options'], $data['options_default']);

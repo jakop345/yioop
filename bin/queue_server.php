@@ -240,7 +240,7 @@ class QueueServer implements CrawlConstants
             $count = $this->web_queue->to_crawl_queue->count;
 
             $this->processIndexData();
-            if(time() - $this->last_index_save_time > INDEX_SAVE_TIME){
+            if(time() - $this->last_index_save_time > FORCE_SAVE_TIME){
                 $this->indexSave();
             }
 

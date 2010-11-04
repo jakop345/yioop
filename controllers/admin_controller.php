@@ -68,7 +68,7 @@ class AdminController extends Controller implements CrawlConstants
      * @var array
      */
     var $activities = array("signin", "manageAccount", "manageUsers",
-        "manageRoles", "manageCrawl", "mixCrawls",
+        "manageRoles", "manageCrawls", "mixCrawls",
         "manageLocales", "crawlStatus", "configure");
 
     /**
@@ -664,12 +664,12 @@ class AdminController extends Controller implements CrawlConstants
      *      as well as status messages on performing a given sub activity
 
      */
-    function manageCrawl()
+    function manageCrawls()
     {
         $possible_arguments = 
             array("start", "resume", "delete", "stop", "index", "options");
 
-        $data["ELEMENT"] = "managecrawlElement";
+        $data["ELEMENT"] = "managecrawlsElement";
         $data['SCRIPT'] = "doUpdate();";
 
         if(isset($_REQUEST['arg']) && 
@@ -954,7 +954,14 @@ class AdminController extends Controller implements CrawlConstants
 
         $data["ELEMENT"] = "mixcrawlsElement";
         $data['SCRIPT'] = "";
-
+        $data['available_mixes'][] = tl('admin_controller_select_mix');
+        $data['mix_default'] = 0;
+        $crawls = $this->crawlModel->getCrawlList();
+        foreach($crawls as $crawl) {
+            $data['available_options'][$crawl['CRAWL_TIME']] =
+                tl('admin_controller_previous_crawl')." ".
+                $crawl['DESCRIPTION'];
+        }
         if(isset($_REQUEST['arg']) && 
             in_array($_REQUEST['arg'], $possible_arguments)) {
             switch($_REQUEST['arg'])

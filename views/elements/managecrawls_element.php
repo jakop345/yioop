@@ -42,7 +42,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @subpackage element
  */
 
-class ManagecrawlElement
+class ManagecrawlsElement
 {
 
     /**
@@ -54,30 +54,30 @@ class ManagecrawlElement
     public function render($data) 
     {?>
         <div class="currentactivity">
-        <h2><?php e(tl('managecrawl_element_create_crawl'))?></h2>
+        <h2><?php e(tl('managecrawls_element_create_crawl'))?></h2>
         <form id="crawlStartForm" method="get" action=''>
         <input type="hidden" name="c" value="admin" /> 
         <input type="hidden" name="YIOOP_TOKEN" value="<?php 
             e($data['YIOOP_TOKEN']); ?>" /> 
-        <input type="hidden" name="a" value="manageCrawl" />
+        <input type="hidden" name="a" value="manageCrawls" />
         <input type="hidden" name="arg" value="start" />
 
         <p><label for="description-name"><?php 
-            e(tl('managecrawl_element_description')); ?></label>: 
+            e(tl('managecrawls_element_description')); ?></label>: 
             <input type="text" id="description-name" name="description" 
                 value="<?php if(isset($data['DESCRIPTION'])) {
                     e($data['DESCRIPTION']); } ?>" maxlength="80" 
                     class="widefield"/>
             <button class="buttonbox" type="submit"><?php 
-                e(tl('managecrawl_element_start_new_crawl')); ?></button> 
-            <a href="?c=admin&amp;a=manageCrawl<?php
+                e(tl('managecrawls_element_start_new_crawl')); ?></button> 
+            <a href="?c=admin&amp;a=manageCrawls<?php
                 ?>&amp;arg=options&amp;YIOOP_TOKEN=<?php
                 e($data['YIOOP_TOKEN']) ?>"><?php 
-                e(tl('managecrawl_element_options')); ?></a>
+                e(tl('managecrawls_element_options')); ?></a>
         </p>
         </form>
         <div id="crawlstatus" >
-        <h2><?php e(tl('managecrawl_element_awaiting_status'))?></h2>
+        <h2><?php e(tl('managecrawls_element_awaiting_status'))?></h2>
         </div>
         <script type="text/javascript" >
         var updateId;
@@ -94,7 +94,7 @@ class ManagecrawlElement
              clearInterval(updateId );
              var crawlTag = elt('crawlstatus');
              crawlTag.innerHTML= "<h2 class='red'><?php 
-                e(tl('managecrawl_element_up_longer_update'))?></h2>";
+                e(tl('managecrawls_element_up_longer_update'))?></h2>";
         }
         function doUpdate()
         {
