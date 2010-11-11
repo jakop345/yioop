@@ -45,11 +45,12 @@ require_once BASE_DIR."/lib/crawl_constants.php";
 define("SCORE_PRECISION", 4);
 
 define("TITLE_LENGTH", 20);
-define("MAX_TITLE_LENGTH", 30);
-define("DESCRIPTION_LENGTH", 400);
-define("SNIPPET_LENGTH_LEFT", 60);
-define("SNIPPET_LENGTH_RIGHT", 50);
+define("MAX_TITLE_LENGTH", 20);
+define("DESCRIPTION_LENGTH", 200);
+define("SNIPPET_LENGTH_LEFT", 40);
+define("SNIPPET_LENGTH_RIGHT", 30);
 define("MIN_SNIPPET_LENGTH", 50);
+
 
 /**
  * 

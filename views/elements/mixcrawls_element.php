@@ -34,8 +34,8 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- * Element responsible for displaying info about starting, stopping, deleting, 
- * and using a crawl. It makes use of the CrawlStatusView
+ * Element responsible for displaying info to allow a user to create
+ * a crawl mix or edit an existing one
  *
  * @author Chris Pollett
  * @package seek_quarry
@@ -52,7 +52,10 @@ class MixcrawlsElement extends Element
      * @param array $data  form about about a crawl such as its description
      */
     public function render($data) 
-    {?>
+    {
+        $base_url = "?c=admin&a=mixCrawls&YIOOP_TOKEN=".
+            $data['YIOOP_TOKEN']."&arg=";
+        ?>
         <div class="currentactivity">
         <h2><?php e(tl('mixcrawls_element_make_mix'))?></h2>
         <form id="mixForm" method="get" action=''>
@@ -60,30 +63,68 @@ class MixcrawlsElement extends Element
         <input type="hidden" name="YIOOP_TOKEN" value="<?php 
             e($data['YIOOP_TOKEN']); ?>" /> 
         <input type="hidden" name="a" value="mixCrawls" />
-        <input type="hidden" name="arg" value="update" />
-        <div class="topmargin"><label for="load-options"><b><?php 
-            e(tl('mixcrawls_element_load_mixes'))?></b></label><?php
-            $this->view->optionsHelper->render("load-mixes", "LOAD_MIX", 
-                $data['available_mixes'], $data['mix_default']);
-        ?></div>
+        <input type="hidden" name="arg" value="createmix" />
+        <?php if(isset($data['available_mixes'])) { ?>
+        <?php } ?>
         <div class="topmargin"><label for="mix-name"><?php 
             e(tl('mixcrawls_element_mix_name')); ?></label> 
             <input type="text" id="mix-name" name="MIX_NAME" 
-                value="<?php if(isset($data['MIX_NAME'])) {
-                    e($data['MIX_NAME']); } ?>" maxlength="80" 
+                value="" maxlength="80" 
                     class="widefield"/>
-        </div>
-        <div class="topmargin"><label for="load-options"><b><?php 
-            e(tl('crawloptions_element_load_options'))?></b></label><?php
-            $this->view->optionsHelper->render("load-options", "load_option", 
-                $data['available_options'], $data['options_default']);
-        ?></div>
-        <div class="center slightpad"><button class="buttonbox" 
-            type="submit"><?php 
-                e(tl('mixcrawls_element_save_button')); ?></button></div>
+           <button class="buttonbox"  type="submit"><?php 
+                e(tl('mixcrawls_element_create_button')); ?></button></div>
         </form>
+        <?php if(isset($data['available_mixes']) && 
+            count($data['available_mixes']) > 0) { ?>
+        <h2><?php e(tl('mixcrawls_element_available_mixes'))?></h2>
+        <table class="mixestable">
+        <tr><th><?php e(tl('mixcrawls_view_name'));?></th>
+        <th><?php e(tl('mixcrawls_view_definition'));?></th>
+        <th colspan="3"><?php e(tl('mixcrawls_view_actions'));?></th></tr>
+        <?php
+        foreach($data['available_mixes'] as $mix) {
+        ?>
+            <tr><td><b><?php e($mix['MIX_NAME']); ?></b><br /><?php
+                e("<small>".date("d M Y H:i:s", $mix['MIX_TIMESTAMP']).
+                    "</small>"); ?></td>
+            <td><?php
+                if(isset($mix['COMPONENTS']) && count($mix['COMPONENTS'])  > 0){
+                    $plus = "";
+                    foreach($mix['COMPONENTS'] as $component) {
+                        e($plus.$component['WEIGHT']." * (".
+                            $data['available_crawls'][
+                            $component['CRAWL_TIMESTAMP']].")");
+                        $plus = "<br /> + ";
+                    }
+                } else {
+                    e(tl('mixcrawls_view_no_components'));
+                }
+            ?></td>
+            <td><a href="<?php e($base_url); ?>editmix&timestamp=<?php 
+                e($mix['MIX_TIMESTAMP']); ?>"><?php 
+                e(tl('mixcrawls_view_edit'));?></a></td>
+            <td>
+            <?php 
+            if( $mix['MIX_TIMESTAMP'] != $data['CURRENT_INDEX']) { ?>
+                <a href="<?php e($base_url); ?>index&timestamp=<?php 
+                    e($mix['MIX_TIMESTAMP']); ?>"><?php 
+                    e(tl('mixcrawls_set_index')); ?></a>
+            <?php 
+            } else { ?>
+                <?php e(tl('mixcrawl_search_index')); ?>
+            <?php
+            }
+            ?>
+            </td>
+            <td><a href="<?php e($base_url); ?>deletemix&timestamp=<?php 
+                e($mix['MIX_TIMESTAMP']); ?>"><?php 
+                e(tl('mixcrawls_view_delete'));?></a></td>
 
-
+            </tr>
+        <?php
+        }
+        ?></table>
+        <?php } ?>
         </div>
     <?php 
     }

@@ -210,6 +210,158 @@ class CrawlModel extends Model implements CrawlConstants
     }
 
     /**
+     * Deletes the crawl with the supplied timestamp if it exists. Also
+     * deletes any crawl mixes making use of this crawl
+     *
+     * @param 
+     */
+    function deleteCrawl($timestamp)
+    {
+        $this->db->unlinkRecursive(
+            CRAWL_DIR.'/cache/'.self::index_data_base_name . $timestamp, true);
+        $this->db->unlinkRecursive(
+            CRAWL_DIR.'/schedules/'.self::index_data_base_name .
+            $timestamp, true);
+        $this->db->unlinkRecursive(
+            CRAWL_DIR.'/schedules/' . self::schedule_data_base_name.$timestamp,
+            true);
+        $this->db->unlinkRecursive(
+            CRAWL_DIR.'/schedules/'.self::robot_data_base_name.
+            $timestamp, true);
+
+        $this->db->selectDB(DB_NAME);
+        $sql = "SELECT DISTINCT MIX_TIMESTAMP FROM MIX_COMPONENTS WHERE ".
+            " CRAWL_TIMESTAMP='$timestamp'";
+        $result = $this->db->execute($sql);
+        $rows = array();
+        while($rows[] =  $this->db->fetchArray($result)) ;
+
+        foreach($rows as $row) {
+            $this->deleteCrawlMix($row['MIX_TIMESTAMP']);
+        }
+    }
+
+    /**
+     * Gets a list of all mixes of available crawls
+     *
+     * @param bool $components if false then don't load the factors
+     *      that make up the crawl mix, just load the name of the mixes
+     *      and their timestamps; otherwise, if true loads everything
+     * @return array list of available crawls
+     */
+    function getMixList($components = false)
+    {
+        $this->db->selectDB(DB_NAME);
+        $sql = "SELECT MIX_TIMESTAMP, MIX_NAME FROM CRAWL_MIXES";
+        $result = $this->db->execute($sql);
+
+        $rows = array();
+        while($row = $this->db->fetchArray($result)) {
+            if($components) {
+                $mix = $this->getCrawlMix($row['MIX_TIMESTAMP'], true);
+                $row['COMPONENTS'] = $mix['COMPONENTS'];
+            }
+            $rows[] = $row;
+        }
+        return $rows;
+    }
+
+    /**
+     * Retrieves the weighting component of the requested crawl mix
+     *
+     * @param string timestamp of the requested crawl mix
+     * @param bool $just_components says whether to find the mix name or
+     *      just the components array.
+     * @return array the crawls and their weights that make up the
+     *      requested crawl mix.
+     */
+    function getCrawlMix($timestamp, $just_components = false)
+    {
+        $this->db->selectDB(DB_NAME);
+        if(!$just_components) {
+            $sql = "SELECT MIX_TIMESTAMP, MIX_NAME FROM CRAWL_MIXES WHERE ".
+                " MIX_TIMESTAMP='$timestamp'";
+            $result = $this->db->execute($sql);
+
+            $mix =  $this->db->fetchArray($result);
+        } else {
+            $mix = array();
+        }
+        $sql = "SELECT WEIGHT, CRAWL_TIMESTAMP FROM MIX_COMPONENTS WHERE ".
+            " MIX_TIMESTAMP='$timestamp'";
+        $result = $this->db->execute($sql);
+
+        $mix['COMPONENTS'] = array();
+        while($row =  $this->db->fetchArray($result)) {
+            $mix['COMPONENTS'][] = $row;
+        }
+        return $mix;
+    }
+
+    /**
+     *  Returns whether the supplied timestamp corresponds to a crawl mix
+     *
+     * @param string timestamp of the requested crawl mix
+     * @return bool true if it does; false otherwise
+     */
+    function isCrawlMix($timestamp)
+    {
+        $this->db->selectDB(DB_NAME);
+
+        $sql = "SELECT MIX_TIMESTAMP, MIX_NAME FROM CRAWL_MIXES WHERE ".
+            " MIX_TIMESTAMP='$timestamp'";
+        $result = $this->db->execute($sql);
+
+        if($mix =  $this->db->fetchArray($result)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Stores in DB the supplied crawl mix object
+     *
+     * @param array $mix an associative array repreenting the crawl mix object
+     */
+    function setCrawlMix($mix)
+    {
+        $this->db->selectDB(DB_NAME);
+        //although maybe slower, we first get rid of any old data
+        $timestamp = $mix['MIX_TIMESTAMP'];
+
+        $this->deleteCrawlMix($timestamp);
+
+        //next we store the new data
+        $sql = "INSERT INTO CRAWL_MIXES VALUES ('$timestamp', '".
+            $mix['MIX_NAME']."')";
+
+        $this->db->execute($sql);
+
+        foreach($mix['COMPONENTS'] as $component) {
+            $sql = "INSERT INTO MIX_COMPONENTS VALUES ('$timestamp', '".
+                $component['WEIGHT']."', '" .
+                $component['CRAWL_TIMESTAMP']."')";
+            $this->db->execute($sql);
+        }
+    }
+
+    /**
+     * Stores in DB the supplied crawl mix object
+     *
+     * @param array $mix an associative array repreenting the crawl mix object
+     */
+    function deleteCrawlMix($timestamp)
+    {
+        $this->db->selectDB(DB_NAME);
+        $sql = "DELETE FROM CRAWL_MIXES WHERE MIX_TIMESTAMP='$timestamp'";
+        $this->db->execute($sql);
+        $sql = "DELETE FROM MIX_COMPONENTS WHERE MIX_TIMESTAMP='$timestamp'";
+        $this->db->execute($sql);
+
+    }
+
+    /**
      * Returns the crawl parameters that were used during a given crawl
      *
      * @param string $timestamp timestamp of the crawl to load the crawl

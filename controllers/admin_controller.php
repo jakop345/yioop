@@ -760,18 +760,7 @@ class AdminController extends Controller implements CrawlConstants
                     if(isset($_REQUEST['timestamp'])) {
                          $timestamp = 
                             $this->clean($_REQUEST['timestamp'], "int");
-                         $this->crawlModel->db->unlinkRecursive(
-                            CRAWL_DIR.'/cache/'.self::index_data_base_name .
-                            $timestamp, true);
-                         $this->crawlModel->db->unlinkRecursive(
-                            CRAWL_DIR.'/schedules/'.self::index_data_base_name .
-                            $timestamp, true);
-                         $this->crawlModel->db->unlinkRecursive(
-                            CRAWL_DIR.'/schedules/' .
-                            self::schedule_data_base_name.$timestamp, true);
-                         $this->crawlModel->db->unlinkRecursive(
-                            CRAWL_DIR.'/schedules/'.self::robot_data_base_name.
-                            $timestamp, true);
+                         $this->crawlModel->deleteCrawl($timestamp);
                          
                          $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('admin_controller_delete_crawl_success').
@@ -950,24 +939,169 @@ class AdminController extends Controller implements CrawlConstants
      */
     function mixCrawls()
     {
-        $possible_arguments = array("changepassword");
+        $possible_arguments = array(
+            "createmix", "deletemix", "editmix", "index");
+
+        $data['SCRIPT'] = "weights = [";
+        $data['allowed_weights'] = array();
+        $comma = "";
+        for($j = .1; $j<= 1; $j *=10) {
+            for($i = 1; $i < 10; $i++) {
+                $val = $i*$j;
+                $data['allowed_weights']["$val"] =$val;
+                $data['SCRIPT'] .= $comma .$val;
+                $comma = ",";
+            }
+        }
+        $data['allowed_weights']["10"] = 10;
+        $data['SCRIPT'] .= ",10];";
+
 
         $data["ELEMENT"] = "mixcrawlsElement";
-        $data['SCRIPT'] = "";
-        $data['available_mixes'][] = tl('admin_controller_select_mix');
+
         $data['mix_default'] = 0;
         $crawls = $this->crawlModel->getCrawlList();
+        $data['available_crawls'][0] = tl('admin_controller_select_crawl');
         foreach($crawls as $crawl) {
-            $data['available_options'][$crawl['CRAWL_TIME']] =
-                tl('admin_controller_previous_crawl')." ".
+            $data['available_crawls'][$crawl['CRAWL_TIME']] =
                 $crawl['DESCRIPTION'];
         }
+        $mixes = $this->crawlModel->getMixList(true);
+        if(count($mixes) > 0 ) {
+            $data['available_mixes']= $mixes;
+            $mix_ids = array();
+            foreach($mixes as $mix) {
+                $mix_ids[] = $mix['MIX_TIMESTAMP'];
+            }
+        }
+
         if(isset($_REQUEST['arg']) && 
             in_array($_REQUEST['arg'], $possible_arguments)) {
             switch($_REQUEST['arg'])
             {
+                case "createmix":
+                    $mix['MIX_TIMESTAMP'] = time();
+                    if(isset($_REQUEST['MIX_NAME'])) {
+                        $mix['MIX_NAME'] = $this->clean($_REQUEST['MIX_NAME'],
+                            'string');
+                    } else {
+                        $mix['MIX_NAME'] = tl('admin_controller_unnamed');
+                    }
+                    $mix['COMPONENTS'] = array();
+                    $this->crawlModel->setCrawlMix($mix);
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('admin_controller_mix_created')."</h1>');";
+                case "editmix":
+                    $data["leftorright"] = 
+                        (getLocaleDirection() == 'ltr') ? "right": "left";
+                    $data["ELEMENT"] = "editmixElement";
+                    if(!isset($mix['MIX_TIMESTAMP']) && 
+                        (!isset($_REQUEST['timestamp']) || 
+                        !in_array($_REQUEST['timestamp'], $mix_ids))) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('admin_controller_mix_doesnt_exists').
+                            "</h1>')";
+                        return $data;
+                    }
+                    if(isset($_REQUEST['timestamp'])) {
+                        $mix = $this->crawlModel->getCrawlMix(
+                            $_REQUEST['timestamp']);
+                    }
+                    $data['MIX'] = $mix;
+                    $data['SCRIPT'] .= 'elt("add-crawls").onchange = '.
+                        'function () { var  ac = elt("add-crawls"); ' . 
+                        '   var sel = ac.selectedIndex; ' .
+                        '   var name = ac.options[sel].text; '.
+                        '   var ts = ac.options[sel].value; ' .
+                        '   ac.options[sel] = null;'."\n".
+                        '   var tr =document.createElement("tr");'.
+                        '   tr.id = ts;'.
+                        '   elt("mix-table").appendChild(tr);'.
+                        '   tr.innerHTML += '.
+                        '   "<td>"+drawSelect(ts)+"</td>'.
+                        '   <td>"+name+"</td><td><a href=\"'.
+                        '   javascript:removeCrawl(\'"+ts+"\',\'"+name+"\')\">'.
+                        tl('editcrawl_view_delete').'</a></td>"}'."\n";
+                    $data['SCRIPT'] .= 'function removeCrawl(ts, name) {'.
+                        '   ac = elt("add-crawls"); ac.length++;'.
+                        '   row = elt(ts); row.parentNode.removeChild(row);'.
+                        '   ac.options[ac.length -1].value = ts;'.
+                        '   ac.options[ac.length -1].text = name;}'."\n";
+                    $data['SCRIPT'] .= 'function drawSelect(ts) {'.
+                        '   select = "<select name=\'mix[COMPONENTS]["+ts+"]\''.
+                        '   >";'.
+                        '   for ( wt in weights) {' .
+                        '   if(wt == Math.floor(weights.length/2)) { '.
+                        '      val = weights[wt] + "\' selected=\'selected";}'.
+                        '   else {val = weights[wt];} '.
+                        '   select += "<option value=\'"+val+"\'>"'.
+                        '   + weights[wt]+"</option>";}' .
+                        '   select += "</select>";' .
+                        '   return select;}';
+                    if(isset($_REQUEST['update']) && $_REQUEST['update'] ==
+                        "update") {
+                        $mix = $_REQUEST['mix'];
+                        $mix['MIX_TIMESTAMP'] = 
+                            $this->clean($mix['MIX_TIMESTAMP'], "int");
+                        $mix['MIX_NAME'] =$this->clean($mix['MIX_NAME'],
+                            "string");
+                        $comp = array();
+                        if(isset($mix['COMPONENTS'])) {
+                            if($mix['COMPONENTS'] != NULL) {
+                                foreach($mix['COMPONENTS'] as $cs => $wt) {
+                                    $row = array();
+                                    $row['WEIGHT'] = $this->clean($wt, "float");
+                                    $row['CRAWL_TIMESTAMP'] =
+                                        $this->clean($cs, "float");
+                                    $comp[] =$row;
+                                }
+                                $mix['COMPONENTS'] = $comp;
+                            } else {
+                                $mix['COMPONENTS'] = array();
+                            }
+                            
+                        } else {
+                            $mix['COMPONENTS'] = $data['MIX']['COMPONENTS'];
+                        }
+                        $data['MIX'] = $mix;
+                        $this->crawlModel->setCrawlMix($mix);
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('admin_controller_mix_saved')."</h1>');";
+                    }
+                break;
+
+                case "index":
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('admin_controller_set_index')."</h1>')";
+
+                    $timestamp = $this->clean($_REQUEST['timestamp'], "int");
+                    $this->crawlModel->setCurrentIndexDatabaseName($timestamp);
+                break;
+
+                case "deletemix":
+                    if(!isset($_REQUEST['timestamp'])|| !isset($mix_ids) || 
+                        !in_array($_REQUEST['timestamp'], $mix_ids)) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('admin_controller_mix_doesnt_exists').
+                            "</h1>')";
+                        return $data;
+                    }
+                    $this->crawlModel->deleteCrawlMix($_REQUEST['timestamp']);
+                    $data['available_mixes'] = 
+                        $this->crawlModel->getMixList(true);
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('admin_controller_mix_deleted')."</h1>')";
+                break;
             }
         }
+
+        $crawl_time = $this->crawlModel->getCurrentIndexDatabaseName();
+        if(isset($crawl_time) ) {
+            $data['CURRENT_INDEX'] = (int)$crawl_time;
+        } else {
+            $data['CURRENT_INDEX'] = -1;
+        }
+
         return $data;
     }
 
@@ -1037,7 +1171,7 @@ class AdminController extends Controller implements CrawlConstants
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('admin_controller_locale_added')."</h1>')";
                 break;
-                
+
                 case "deletelocale":
 
                     if(!in_array($select_locale, $locale_ids)) {
@@ -1235,6 +1369,9 @@ class AdminController extends Controller implements CrawlConstants
                     }
                     if(!isset($data[$field])) {
                         $data[$field] = "";
+                        if($field == "USE_MEMCACHE") {
+                            $profile[$field] = false;
+                        }
                     }
                 }
                 $data['DEBUG_LEVEL'] = 0;

@@ -188,6 +188,16 @@ abstract class Controller
             }
         break;
 
+        case "float":
+            if(isset($value)) {
+                $clean_value = floatval($value);
+            } else if ($default != NULL) {
+                $clean_value = $default;
+            } else {
+                $clean_value = 0;
+            }
+        break;
+
         case "hash";
             if(isset($value)) {
                 if(strlen($value) == strlen(crawlHash("A")) && 

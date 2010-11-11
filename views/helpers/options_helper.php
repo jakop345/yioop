@@ -62,14 +62,14 @@ class OptionsHelper extends Helper
      *  in the select tag
      */
     public function render($id, $name, $options, $selected)
-    {
+    { 
     ?>
         <select id="<?php e($id);?>" name="<?php e($name);?>" >
         <?php
         foreach($options as $value => $text) {
         ?>
             <option value="<?php e($value); ?>" <?php 
-                if($value==$selected) { e('selected="selected"'); } 
+                if($value== $selected) { e('selected="selected"'); } 
              ?>><?php e($text); ?></option>
         <?php
         }

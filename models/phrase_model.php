@@ -360,8 +360,8 @@ class PhraseModel extends Model
 
         $pages = array();
         $generation = 0;
-        $to_retrieve = ceil(($limit+$num)/200) * 200;
-        $start_slice = floor(($limit)/200) * 200;
+        $to_retrieve = ceil(($limit+$num)/100) * 100;
+        $start_slice = floor(($limit)/100) * 100;
         if(USE_MEMCACHE) {
             $tmp = "";
             foreach($word_structs as $word_struct) {

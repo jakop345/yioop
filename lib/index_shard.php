@@ -415,7 +415,7 @@ class IndexShard extends PersistentStructure implements CrawlConstants
                     ($num_term_occurrences + 0.5);
                 $item[self::RELEVANCE] = $IDF * $pre_relevance;
                 $item[self::SCORE] = $item[self::DOC_RANK] + 
-                    0*$item[self::RELEVANCE];
+                    0.1*$item[self::RELEVANCE];
             }
             $results[$doc_id] = $item;
             $num_docs_so_far ++;

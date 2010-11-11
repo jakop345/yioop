@@ -113,7 +113,7 @@ class WordIterator extends IndexBundleIterator
      *  Number of documents returned for each block (at most)
      * @var int
      */
-    const RESULTS_PER_BLOCK = 2000;
+    const RESULTS_PER_BLOCK = 100;
 
     /**
      * Creates a word iterator with the given parameters.

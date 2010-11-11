@@ -197,6 +197,13 @@ $db->execute($sql);
 
 $db->execute("CREATE TABLE CURRENT_WEB_INDEX (CRAWL_TIME INT(11) )");
 
+$db->execute("CREATE TABLE CRAWL_MIXES (
+    MIX_TIMESTAMP INT(11) PRIMARY KEY, MIX_NAME VARCHAR(16) UNIQUE)");
+
+$db->execute("CREATE TABLE MIX_COMPONENTS (
+    MIX_TIMESTAMP INT(11), WEIGHT REAL, CRAWL_TIMESTAMP INT(11))");
+
+
 $db->disconnect();
 if(in_array(DBMS, array('sqlite','sqlite3' ))){
     chmod(CRAWL_DIR."/data/".DB_NAME.".db", 0666);
