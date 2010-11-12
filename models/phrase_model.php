@@ -96,7 +96,7 @@ class PhraseModel extends Model
         $pipe = "";
         foreach($disjunct_phrases as $disjunct) {
             $rewrite .= $pipe;
-            $pipe = " | ";
+            $pipe = ' | ';
             $disjunct_string = $disjunct;
             $base_weight = 1;
             $pattern = "/(\s)(index:(\S)+)/";
@@ -124,10 +124,12 @@ class PhraseModel extends Model
                 $disjunct_string = preg_replace($pattern,"", $disjunct_string);
             }
             if(isset($mix['COMPONENTS'])) {
+                $pipe2 = "";
                 foreach($mix['COMPONENTS'] as $component) {
-                    $rewrite .= $disjunct_string." w:".
+                    $rewrite .= $pipe2.$disjunct_string." w:".
                         ($component['WEIGHT']*$base_weight)." i:".
                         $component['CRAWL_TIMESTAMP'];
+                    $pipe2 = ' | ';
                 }
             }
         }
