@@ -220,7 +220,7 @@ class SearchController extends Controller implements CrawlConstants
 
         $this->phraseModel->index_name = $index_name;
         $this->crawlModel->index_name = $index_name;
-        
+
         switch($activity)
         {
             case "related":
@@ -252,9 +252,17 @@ class SearchController extends Controller implements CrawlConstants
 
             case "query":
             default:
-                if(trim($query) != "") { 
+                if(trim($query) != "") {
+                    $original_query = $query;
+                    if($this->crawlModel->isCrawlMix($index_name)) {
+                        $mix = $this->crawlModel->getCrawlMix($index_name);
+                        $query = 
+                            $this->phraseModel->rewriteMixQuery($query, $mix);
+                    }
+
                     $phrase_results = $this->phraseModel->getPhrasePageResults(
                         $query, $limit, $results_per_page);
+                    $query = $original_query;
                 }
                 $data['PAGING_QUERY'] = "index.php?q=".urlencode($query);
                 $data['QUERY'] = urlencode($this->clean($query,"string"));
@@ -333,9 +341,9 @@ class SearchController extends Controller implements CrawlConstants
         if($crawl_time == 0) {
             $crawl_time = $this->crawlModel->getCurrentIndexDatabaseName();
         }
-
         $this->phraseModel->index_name = $crawl_time;
         $this->crawlModel->index_name = $crawl_time;
+
         if($summary_offset == -1 || $generation == -1) {
             list($summary_offset, $generation) = 
                 $this->phraseModel->lookupSummaryOffsetGeneration($url);

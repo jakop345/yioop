@@ -82,6 +82,60 @@ class PhraseModel extends Model
 
 
     /**
+     * Rewrites a mix query so that it maps directly to a query about crawls
+     *
+     * @param string $query the original before a rewrite
+     * @param object $mix a mix object saying how the mix is built out of crawls
+     *
+     * @return string a rewritten query in terms of crawls
+     */
+    function rewriteMixQuery($query, $mix)
+    {
+        $disjunct_phrases = explode("|", $query); 
+        $rewrite = "";
+        $pipe = "";
+        foreach($disjunct_phrases as $disjunct) {
+            $rewrite .= $pipe;
+            $pipe = " | ";
+            $disjunct_string = $disjunct;
+            $base_weight = 1;
+            $pattern = "/(\s)(index:(\S)+)/";
+            preg_match_all($pattern, $query, $matches);
+            if(isset($matches[2][0])) {
+                $rewrite .= $disjunct;
+                continue;
+            }
+            $pattern = "/(\s)(i:(\S)+)/";
+            preg_match_all($pattern, $query, $matches);
+            if(isset($matches[2][0])) {
+                $rewrite .= $disjunct;
+                continue;
+            }
+            $pattern = "/(\s)(weight:(\S)+)/";
+            preg_match_all($pattern, $query, $matches);
+            if(isset($matches[2][0])) {
+                $base_weight = substr($matches[2][0],strlen("weight:"));
+                $disjunct_string = preg_replace($pattern,"", $disjunct_string);
+            }
+            $pattern = "/(\s)(w:(\S)+)/";
+            preg_match_all($pattern, $query, $matches);
+            if(isset($matches[2][0])) {
+                $base_weight = substr($matches[2][0],strlen("w:"));
+                $disjunct_string = preg_replace($pattern,"", $disjunct_string);
+            }
+            if(isset($mix['COMPONENTS'])) {
+                foreach($mix['COMPONENTS'] as $component) {
+                    $rewrite .= $disjunct_string." w:".
+                        ($component['WEIGHT']*$base_weight)." i:".
+                        $component['CRAWL_TIMESTAMP'];
+                }
+            }
+        }
+
+        return $rewrite;
+    }
+
+    /**
      * Given a query phrase, returns formatted document summaries of the 
      * documents that match the phrase.
      *
