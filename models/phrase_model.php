@@ -509,6 +509,7 @@ class PhraseModel extends Model
             $index_archive->setCurrentShard($generation, true);
             $weight = $word_struct["WEIGHT"];
             $num_word_keys = count($word_keys);
+            $word_iterators = array();
             if($num_word_keys < 1) {continue;}
 
             for($i = 0; $i < $num_word_keys; $i++) {
@@ -516,6 +517,7 @@ class PhraseModel extends Model
                     new WordIterator($word_keys[$i], $index_archive);
             }
             if($num_word_keys == 1) {
+            
                 $base_iterator = $word_iterators[0];
             } else {
                 $base_iterator = new IntersectIterator($word_iterators);
@@ -530,6 +532,7 @@ class PhraseModel extends Model
 
         }
         $num_iterators = count($iterators);
+
         if( $num_iterators < 1) {
             return NULL;
         } else if($num_iterators == 1) {

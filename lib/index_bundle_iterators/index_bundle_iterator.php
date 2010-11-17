@@ -128,8 +128,8 @@ abstract class IndexBundleIterator implements CrawlConstants
      */
     function getSummariesFromCurrentDocs($keys = NULL) 
     {
+        $index = & $this->getIndex();
 
-        $index = $this->getIndex();
         if($this->current_block_fresh == false) {
             $pages = $this->currentDocsWithWord();
             if(!is_array($pages)) {
@@ -158,7 +158,7 @@ abstract class IndexBundleIterator implements CrawlConstants
                 $out_pages[$doc_key] = $doc_info;
                 $out_pages[$doc_key][self::SUMMARY] = $page;
             }
-        };
+        }
         return $out_pages;
     }
 

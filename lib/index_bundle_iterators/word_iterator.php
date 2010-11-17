@@ -119,16 +119,16 @@ class WordIterator extends IndexBundleIterator
      * Creates a word iterator with the given parameters.
      *
      * @param string $word_key hash of word or phrase to iterate docs of 
-     * @param object &$index the IndexArchiveBundle to use
+     * @param object $index the IndexArchiveBundle to use
      * @param int $limit the first element to return from the list of docs
      *      iterated over
      * @param bool $raw whether the $word_key is our variant of base64 encoded
      */
-    function __construct($word_key, &$index, $raw = false)
+    function __construct($word_key, $index, $raw = false)
     {
         $this->word_key = $word_key;
         
-        $this->index = & $index;
+        $this->index =  $index;
         $this->current_block_fresh = false;
         $tmp = $index->getCurrentShard()->getWordInfo($word_key, $raw);
         if ($tmp === false) {

@@ -245,6 +245,7 @@ class Model implements CrawlConstants
      */
     function boldKeywords($text, $words)
     {
+        $words = array_unique($words);
         foreach($words as $word) {
             if($word != "") {
                 $pattern = '/('.$word.')/i';

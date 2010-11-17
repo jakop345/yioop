@@ -95,6 +95,7 @@ class UnionIterator extends IndexBundleIterator
     function __construct($index_bundle_iterators)
     {
         $this->index_bundle_iterators = $index_bundle_iterators;
+
         /*
             estimate number of results by sum of all iterator counts,
             then improve estimate as iterate
@@ -113,13 +114,13 @@ class UnionIterator extends IndexBundleIterator
      */
     function reset()
     {
-        foreach($this->index_bundle_iterators as $iterator) {
-            $iterator->reset();
+        for($i = 0; $i < $this->num_iterators; $i++) {
+            $this->index_bundle_iterators[$i]->reset();
         }
-
         $this->seen_docs = 0;
         $this->seen_docs_unfiltered = 0;
         $doc_block = $this->currentDocsWithWord();
+        
     }
 
     /**
