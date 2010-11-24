@@ -100,6 +100,7 @@ class IndexShardTest extends UnitTest
             $offset, $word_counts, $meta_ids);
         $this->assertEqual($this->test_objects['shard']->len_all_docs, 9, 
             "Len All Docs Correctly Counts Length of First Doc");
+
         $c_data = $this->test_objects['shard']->getWordSliceById(
             crawlHash('CCCCCCCC', true), 5);
         $this->assertTrue(isset($c_data["AAAAAAAA"]), 
@@ -118,7 +119,6 @@ class IndexShardTest extends UnitTest
             $offset, $word_counts, $meta_ids);
         $c_data = $this->test_objects['shard']->getWordSliceById(
             crawlHash('CCCCCCCC', true), 5);
-
         $this->assertTrue(isset($c_data["AAAAAAAA"]),
             "Work lookup first item of two works");
         $this->assertTrue(isset($c_data["HHHHHHHH"]), 
@@ -133,7 +133,9 @@ class IndexShardTest extends UnitTest
             "Doc lookup by meta word works");
         $this->assertEqual(count($c_data), 1,
             "Doc lookup by meta word works has correct count");
+
     }
+
 
     /**
      * Check if can store link documents into an index shard and retrieve them
@@ -185,7 +187,7 @@ class IndexShardTest extends UnitTest
         $this->assertEqual(count($c_data), 2,
             "Link Doc lookup by word works has correct count");
     }
-
+    
     /**
      * Check that appending two index shards works correctly
      */
@@ -360,7 +362,7 @@ class IndexShardTest extends UnitTest
         $c_data = $this->test_objects['shard']->getWordSliceById(
             crawlHash('info:http://somewhere.com/', true), 5);
         $this->assertTrue(isset(
-            $c_data[crawlHash($doc_urls[0], true)][CrawlConstants::DUPLICATE]),  
+            $c_data[crawlHash($doc_urls[0], true)][CrawlConstants::DUPLICATE]),
             "Duplicate data shows up as duplicate");
     }
 

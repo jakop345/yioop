@@ -241,7 +241,10 @@ class QueueServer implements CrawlConstants
 
             $this->processIndexData();
             if(time() - $this->last_index_save_time > FORCE_SAVE_TIME){
+                crawlLog("Periodic Index Save... \n");
+                $start_time = microtime();
                 $this->indexSave();
+                crawlLog("... Save time".(changeInMicrotime($start_time)));
             }
 
             $this->processRobotUrls();
@@ -590,6 +593,7 @@ class QueueServer implements CrawlConstants
 
         if(isset($seen_sites) && isset($sites[self::INVERTED_INDEX])) {
             $index_shard = & $sites[self::INVERTED_INDEX];
+            $index_shard->unpackWordDocs();
             $generation = 
                 $this->index_archive->initGenerationToAdd($index_shard);
 

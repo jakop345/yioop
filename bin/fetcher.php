@@ -1207,6 +1207,7 @@ class Fetcher implements CrawlConstants
 
         }
         $index_shard->markDuplicateDocs($this->found_duplicates);
+        $index_shard->packWordDocs();
 
         $this->found_duplicates = array();
 
