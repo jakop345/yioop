@@ -69,14 +69,24 @@ abstract class IndexBundleIterator implements CrawlConstants
      * @var array
      */
     var $pages;
-    
+
     /**
      * Says whether the value in $this->count_block is up to date
      * @var bool
      */
     var $current_block_fresh;
 
+    /**
+     * Number of documents returned for each block (at most)
+     * @var int
+     */
+    var $results_per_block = self::RESULTS_PER_BLOCK;
 
+    /**
+     *  Default number of documents returned for each block (at most)
+     * @var int
+     */
+    const RESULTS_PER_BLOCK = 100;
 
     /**
      * Returns the iterators to the first document block that it could iterate
@@ -86,13 +96,24 @@ abstract class IndexBundleIterator implements CrawlConstants
 
     /**
      * Forwards the iterator one group of docs
+     * @param $doc_index if set the next block must all have $doc_indexes larger
+     *      than this value
      */
-    abstract function advance();
+    abstract function advance($doc_index = null);
+
     /**
      * Returns the index associated with this iterator
      * @return object the index
      */
     abstract function &getIndex($key = NULL);
+
+    /**
+     * Gets the doc_offset for the next document that would be return by
+     * this iterator
+     *
+     * @return int the desired document offset
+     */
+    abstract function currentDocOffsetWithWord();
 
     /**
      * Hook function used by currentDocsWithWord to return the current block
@@ -164,11 +185,14 @@ abstract class IndexBundleIterator implements CrawlConstants
 
     /**
      * Get the current block of doc summaries for the word iterator and advances
-     * the current pointer to the next block
+     * the current pointer to the next blockof documents. If a doc index is
+     * the next block must be of docs after this doc_index
      *
+     * @param $doc_offset if set the next block must all have $doc_offsets 
+     *      equal to or larger than this value
      * @return array doc summaries matching the $this->restrict_phrases
      */
-    function nextDocsWithWord()
+    function nextDocsWithWord($doc_offset = null)
     {
         $doc_block = $this->getSummariesFromCurrentDocs();
         
@@ -176,7 +200,7 @@ abstract class IndexBundleIterator implements CrawlConstants
             return NULL;
         }
 
-        $this->advance();
+        $this->advance($doc_offset);
         
         return $doc_block;
 
@@ -198,5 +222,16 @@ abstract class IndexBundleIterator implements CrawlConstants
         $this->seen_docs += $this->count_block;
     }
 
+    /**
+     * Sets the value of the result_per_block field. This field controls
+     * the maximum number of results that can be returned in one go by
+     * currentDocsWithWord()
+     *
+     * @param int $num the maximum number of results that can be returned by
+     *      a block
+     */
+     function setResultsPerBlock($num) {
+        $this->results_per_block = $num;
+     }
 }
 ?>

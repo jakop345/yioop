@@ -379,7 +379,6 @@ class IndexArchiveBundle implements CrawlConstants
     {
         $words_array = array();
         if(!is_array($word_keys) || count($word_keys) < 1) { return NULL;}
-
         foreach($word_keys as $word_key) {
             $tmp = $this->getCurrentShard()->getWordInfo($word_key);
             if($tmp === false) {

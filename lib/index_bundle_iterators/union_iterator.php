@@ -102,8 +102,16 @@ class UnionIterator extends IndexBundleIterator
         */
         $this->num_iterators = count($index_bundle_iterators);
         $this->num_docs = 0;
+        $this->results_per_block = 0;
         for($i = 0; $i < $this->num_iterators; $i++) {
             $this->num_docs += $this->index_bundle_iterators[$i]->num_docs;
+            /* 
+                result_per_block is at most the sum of 
+                results_per_block of things we are iterating. Value
+                is already init'd in base class.
+             */
+            $this->results_per_block +=
+                $this->index_bundle_iterators[$i]->results_per_block;
         }
         $this->reset();
     }
@@ -195,8 +203,10 @@ class UnionIterator extends IndexBundleIterator
 
     /**
      * Forwards the iterator one group of docs
+     * @param $doc_offset if set the next block must all have $doc_offsets 
+     *      larger than or equal to this value
      */
-    function advance() 
+    function advance($doc_offset = null) 
     {
         $this->advanceSeenDocs();
 
@@ -205,7 +215,7 @@ class UnionIterator extends IndexBundleIterator
         $total_num_docs = 0;
         for($i = 0; $i < $this->num_iterators; $i++) {
             $total_num_docs += $this->index_bundle_iterators[$i]->num_docs;
-            $this->index_bundle_iterators[$i]->advance();
+            $this->index_bundle_iterators[$i]->advance($doc_index);
         }
         if($this->seen_docs_unfiltered > 0) {
             $this->num_docs = 
@@ -237,6 +247,39 @@ class UnionIterator extends IndexBundleIterator
         } else {
             return $this->index_bundle_iterators[0]->getIndex($key);
         }
+    }
+
+    /**
+     * This method is supposed to set
+     * the value of the result_per_block field. This field controls
+     * the maximum number of results that can be returned in one go by
+     * currentDocsWithWord(). This method cannot be consistently
+     * implemented for this iterator and expect it to behave nicely
+     * it this iterator is used together with intersect_iterator. So
+     * to prevent a user for doing this, calling this method results
+     * in a user defined error
+     *
+     * @param int $num the maximum number of results that can be returned by
+     *      a block
+     */
+     function setResultsPerBlock($num) {
+        trigger_error("Cannot set the results per block of
+            a union iterator", E_USER_ERROR);
+     }
+
+    /**
+     * This method is supposed to
+     * get the doc_offset for the next document that would be return by
+     * this iterator. As the union iterator as written returns a block
+     * of size at least the number of iterators in it, and this iterator
+     * is intended to be used when results_per_block is 1, we generate
+     * a user defined error.
+     *
+     * @return int the desired document offset
+     */
+    function currentDocOffsetWithWord() {
+        trigger_error("Cannot get the doc offset with word of
+            a union iterator", E_USER_ERROR);
     }
 }
 ?>

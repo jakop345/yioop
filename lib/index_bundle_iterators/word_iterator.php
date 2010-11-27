@@ -97,6 +97,12 @@ class WordIterator extends IndexBundleIterator
     var $current_offset;
 
     /**
+     * Starting Offset of word occurence in the IndexShard
+     * @var int
+     */
+    var $start_offset;
+
+    /**
      * Last Offset of word occurence in the IndexShard
      * @var int
      */
@@ -109,11 +115,8 @@ class WordIterator extends IndexBundleIterator
      */
     var $empty;
 
-    /**
-     *  Number of documents returned for each block (at most)
-     * @var int
-     */
-    const RESULTS_PER_BLOCK = 100;
+
+
 
     /**
      * Creates a word iterator with the given parameters.
@@ -127,15 +130,16 @@ class WordIterator extends IndexBundleIterator
     function __construct($word_key, $index, $raw = false)
     {
         $this->word_key = $word_key;
-        
         $this->index =  $index;
         $this->current_block_fresh = false;
+
         $tmp = $index->getCurrentShard()->getWordInfo($word_key, $raw);
         if ($tmp === false) {
             $this->empty = true;
         } else {
-            list($this->current_offset, $this->last_offset, $this->num_docs) 
+            list($this->start_offset, $this->last_offset, $this->num_docs) 
                 = $tmp;
+            $this->current_offset = $this->start_offset;
             $this->empty = false;
 
             $this->reset();
@@ -167,27 +171,51 @@ class WordIterator extends IndexBundleIterator
             return -1;
         }
         $this->next_offset = $this->current_offset;
-        $results = $this->index->getCurrentShard()->getWordSlice(
-            $this->next_offset, $this->last_offset, self::RESULTS_PER_BLOCK);
+        $results = $this->index->getCurrentShard()->getPostingsSlice(
+            $this->next_offset, $this->last_offset, $this->results_per_block);
         return $results;
     }
 
 
     /**
      * Forwards the iterator one group of docs
+     * @param $doc_offset if set the next block must all have $doc_offsets 
+     *      larger than or equal to this value
      */
-    function advance() 
+    function advance($doc_offset = null) 
     {
         $this->advanceSeenDocs();
         if($this->current_offset < $this->next_offset) {
             $this->current_offset = $this->next_offset;
+            if($doc_offset !== null) {
+                $this->current_offset = 
+                    $this->index->getCurrentShard(
+                        )->nextPostingOffsetDocOffset($this->next_offset, 
+                            $this->last_offset, $doc_offset);
+                $this->seen_docs = 
+                    ($this->current_offset - $this->start_offset)/
+                        IndexShard::POSTING_LEN;
+            }
         } else {
             $this->current_offset = $this->last_offset + 1;
         }
-        
-
     }
-    
+
+
+    /**
+     * Gets the doc_offset for the next document that would be return by
+     * this iterator
+     *
+     * @return int the desired document offset
+     */
+    function currentDocOffsetWithWord() {
+        if($this->current_offset > $this->last_offset) {
+            return -1;
+        }
+        return $this->index->getCurrentShard(
+                        )->docOffsetFromPostingOffset($this->current_offset);
+    }
+
     /**
      * Returns the index associated with this iterator
      * @return &object the index

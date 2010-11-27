@@ -276,7 +276,7 @@ class PhraseModel extends Model
         $index_archive_name = self::index_data_base_name . $index_name;
         $index_archive = new IndexArchiveBundle(
             CRAWL_DIR.'/cache/'.$index_archive_name);
-        $punct = "\.|\,|\:|\;|\"|\'|\`|\[|\]|\{|\}|\(|\)|\!|\|";
+        $punct = "\.|\,|\:|\;|\"|\'|\`|\[|\]|\{|\}|\(|\)|\!|\||\&";
         $phrase_string = mb_ereg_replace($punct, " ", $phrase_string);
         $phrase_string = preg_replace("/(\s)+/", " ", $phrase_string);
         /*
@@ -322,7 +322,7 @@ class PhraseModel extends Model
             $restrict_phrases = array_unique($restrict_phrases);
             $restrict_phrases = array_filter($restrict_phrases);
             $index_archive->setCurrentShard(0, true);
-            $words_array = $index_archive->getSelectiveWords($hashes, 10);
+            $words_array = $index_archive->getSelectiveWords($hashes, 5);
 
             if(is_array($words_array)) {
                 reset($words_array);

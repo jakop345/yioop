@@ -122,6 +122,8 @@ class PhraseFilterIterator extends IndexBundleIterator
         $this->restrict_phrases = $restrict_phrases;
         $this->disallow_phrases = $disallow_phrases;
         $this->num_docs = $this->index_bundle_iterator->num_docs;
+        $this->results_per_block = 
+            $this->index_bundle_iterator->results_per_block;
         $this->weight = $weight;
         $this->current_block_fresh = false;
         $this->reset();
@@ -249,8 +251,11 @@ class PhraseFilterIterator extends IndexBundleIterator
 
     /**
      * Forwards the iterator one group of docs
+     * @param $doc_offset if set the next block must all have $doc_offsets 
+     *      larger than or equal to this value
      */
-    function advance() 
+    function advance($doc_offset = null) 
+
     {
         $this->advanceSeenDocs();
 
@@ -267,7 +272,17 @@ class PhraseFilterIterator extends IndexBundleIterator
             $this->num_docs = 0;
         }
 
-        $this->index_bundle_iterator->advance();
+        $this->index_bundle_iterator->advance($doc_offset);
+    }
+
+    /**
+     * Gets the doc_offset for the next document that would be return by
+     * this iterator
+     *
+     * @return int the desired document offset
+     */
+    function currentDocOffsetWithWord() {
+        $this->index_bundle_iterator->currentDocOffsetWithWord();
     }
 
     /**

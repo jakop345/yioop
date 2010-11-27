@@ -200,10 +200,8 @@ function crawlCrypt($string, $salt = NULL)
  * precision
  *
  * @param string $start starting time with microseconds
- * @param string $end ending time with microseconds
+ * @param string $end ending time with microseconds, if null use current time
  * @return float time difference in seconds
- * @see SigninModel::changePassword()
- * @see SigninModel::checkValidSignin()
  */
 function changeInMicrotime( $start, $end=NULL ) 
 {

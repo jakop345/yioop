@@ -96,30 +96,6 @@ class IndexShard extends PersistentStructure implements CrawlConstants
      *
      * @var array
      */
-     var $firsts;
-
-    /**
-     *
-     * @var int
-     */
-     var $firsts_len;
-
-    /**
-     *
-     * @var array
-     */
-     var $seconds;
-
-    /**
-     *
-     * @var int
-     */
-     var $seconds_len;
-
-    /**
-     *
-     * @var array
-     */
     var $words;
 
     /**
@@ -129,6 +105,18 @@ class IndexShard extends PersistentStructure implements CrawlConstants
      * @var int
      */
      var $words_len;
+
+    /**
+     *
+     * @var array
+     */
+    var $prefixes;
+
+    /**
+     *
+     * @var int
+     */
+    var $prefixes_len;
 
     /**
      * This is supposed to hold the number of documents that have been stored
@@ -198,17 +186,17 @@ class IndexShard extends PersistentStructure implements CrawlConstants
     /**
      * Header Length of an IndexShard (sum of its non-variable length fields)
      */
-    const HEADER_LENGTH = 40;
+    const HEADER_LENGTH = 36;
 
     /**
      * Length of a Word entry in bytes in the shard
      */
-    const WORD_ITEM_LEN = 14;
+    const WORD_ITEM_LEN = 16;
 
     /**
-     * Length of a doc offset occurrence pair in a posting list
+     * Length of one posting ( a doc offset occurrence pair) in a posting list
      */
-    const DOC_OCCURRENCES_LEN = 4;
+    const POSTING_LEN = 4;
 
     /**
      * Makes an index shard with the given file name and generation offset
@@ -227,10 +215,6 @@ class IndexShard extends PersistentStructure implements CrawlConstants
         parent::__construct($fname, -1);
         $this->generation_offset = $generation_offset;
         $this->word_docs = "";
-        $this->firsts_len = 0;
-        $this->firsts = array();
-        $this->seconds_len = 0;
-        $this->seconds = array();
         $this->words_len = 0;
         $this->word_docs_len = 0;
         $this->words = array();
@@ -290,16 +274,13 @@ class IndexShard extends PersistentStructure implements CrawlConstants
         }
         foreach($word_counts as $word => $occurrences) {
             $word_id = crawlHash($word, true);
-            $first = $word_id[0];
-            $second = $word_id[1];
-            $rest_id = substr($word_id, 2);
             $occurrences = ($occurrences > 255 ) ? 255 : $occurrences & 255;
-            $store =  pack("N", ($this->docids_len << 4) + $occurrences);
-            if(!isset($this->words[$first][$second][$rest_id])) {
-                $this->words[$first][$second][$rest_id] = $store;
-            } else if($this->words[$first][$second][$rest_id] != 
+            $store =  $this->packPosting($this->docids_len >> 4, $occurrences);
+            if(!isset($this->words[$word_id])) {
+                $this->words[$word_id] = $store;
+            } else if($this->words[$word_id] != 
                 pack("N", self::DUPLICATE_FLAG)) {
-                $this->words[$first][$second][$rest_id] .= $store;
+                $this->words[$word_id] .= $store;
             }
             if($occurrences > 0) {
                 if($is_doc == true) {
@@ -308,7 +289,7 @@ class IndexShard extends PersistentStructure implements CrawlConstants
                     $link_doc_len += $occurrences;
                 }
             }
-            $this->word_docs_len += self::DOC_OCCURRENCES_LEN;
+            $this->word_docs_len += self::POSTING_LEN;
         }
 
         $this->len_all_docs += $doc_len;
@@ -333,7 +314,6 @@ class IndexShard extends PersistentStructure implements CrawlConstants
      */
     function getWordInfo($word_id, $raw = false)
     {
-
         if($raw == false) {
             //get rid of out modfied base64 encoding
             $hash = str_replace("_", "/", $word_id);
@@ -359,14 +339,14 @@ class IndexShard extends PersistentStructure implements CrawlConstants
      * the list stops if an offset larger than $last_offset is seen or
      * $len many doc's have been returned. Since $next_offset is passed by
      * reference the value of $next_offset will point to the next record in
-     * the list (if it exists) after thhe function is called.
+     * the list (if it exists) after the function is called.
      *
      * @param int &$next_offset where to start in word docs
      * @param int $last_offset offset at which to stop by
      * @param int $len number of documents desired
      * @return array desired list of doc's and their info
      */
-    function getWordSlice(&$next_offset, $last_offset, $len)
+    function getPostingsSlice(&$next_offset, $last_offset, $len)
     {
         if(!$this->read_only_from_disk && !$this->word_docs_packed) {
             $this->packWordDocs();
@@ -379,11 +359,8 @@ class IndexShard extends PersistentStructure implements CrawlConstants
         do {
             if($next_offset >= $this->word_docs_len) {break;}
             $item = array();
-            $doc_string = $this->getWordDocsSubstring($next_offset, 4);
-            $tmp = unpack("N", $doc_string);
-            $doc_int = $tmp[1];
-            $occurrences = $doc_int & 255;
-            $doc_index = ($doc_int >> 8);
+            $posting = $this->getWordDocsSubstring($next_offset, 4);
+            list($doc_index, $occurrences) = $this->unpackPosting($posting);
             $old_next_offset = $next_offset;
             $next_offset += 4;
             $doc_depth = log(10*(($doc_index +1) + 
@@ -444,26 +421,78 @@ class IndexShard extends PersistentStructure implements CrawlConstants
         return $results;
     }
 
+    /**
+     *
+     */
+     function nextPostingOffsetDocOffset($start_offset, $end_offset,
+        $doc_offset) {
+
+        $doc_index = $doc_offset >> 4;
+        $current = floor($start_offset/self::POSTING_LEN);
+        $end = floor($end_offset/self::POSTING_LEN);
+        $low = $current;
+        $high = $end;
+        $stride = 1;
+        $gallop_phase = true;
+
+        do {
+            $posting = $this->getWordDocsSubstring($current*self::POSTING_LEN, 
+                self::POSTING_LEN);
+            list($post_doc_index, ) = $this->unpackPosting($posting);
+            if($doc_index == $post_doc_index) {
+                return $current * self::POSTING_LEN;
+            } else if($doc_index < $post_doc_index) {
+                if($low == $current) {
+                    return $current * self::POSTING_LEN;
+                } else if($gallop_phase) {
+                    $gallop_phase = false;
+                }
+                $high = $current;
+                $current = (($low + $high) >> 1);
+            } else {
+                $low = $current;
+                if($gallop_phase) {
+                    $current += $stride;
+                    $stride <<= 1;
+                } else {
+                    if($current + 1 == $high) {
+                        $current++;
+                        $low = $current;
+                    }
+                    $current = (($low + $high) >> 1);
+                }
+            }
+
+        } while($current <= $end);
+
+        return false;
+     }
+
+    /**
+     *
+     */
+    function docOffsetFromPostingOffset($offset) {
+        $posting = $this->getWordDocsSubstring($offset, self::POSTING_LEN);
+        list($doc_index, ) = $this->unpackPosting($posting);
+        return ($doc_index << 4);
+    }
 
     /**
      * Returns $len many documents which contained the word corresponding to
-     * $word_id
+     * $word_id (only wordk for loaded shards)
      *
      * @param string $word_id key to look up documents for
      * @param int number of documents desired back (from start of word linked
      *      list).
      * @return array desired list of doc's and their info
      */
-    function getWordSliceById($word_id, $len)
+    function getPostingsSliceById($word_id, $len)
     {
         $results = array();
-        $first = $word_id[0];
-        $second = $word_id[1];
-        $rest_id = substr($word_id, 2);
-        if(isset($this->words[$first][$second][$rest_id])) {
+        if(isset($this->words[$word_id])) {
             list($first_offset, $last_offset,
                 $num_docs_or_links) = $this->getWordInfo($word_id, true);
-            $results = $this->getWordSlice($first_offset, $last_offset, $len);
+            $results = $this->getPostingsSlice($first_offset, $last_offset, $len);
         }
         return $results;
     }
@@ -476,7 +505,6 @@ class IndexShard extends PersistentStructure implements CrawlConstants
      */
     function appendIndexShard(&$index_shard)
     {
-
         if($this->word_docs_packed == true) {
             $this->unpackWordDocs();
         }
@@ -485,37 +513,32 @@ class IndexShard extends PersistentStructure implements CrawlConstants
         }
         $this->doc_infos .= $index_shard->doc_infos;
 
-        foreach($index_shard->words as $first => $rest) {
-        foreach($rest as $second => $second_rest) {
-        foreach($second_rest as $rest_id => $postings) {
+        foreach($index_shard->words as $word_id => $postings) {
             $postings_len = strlen($postings);
             // update doc offsets for newly added docs
-            for($i = 0; $i < $postings_len; $i +=4) {
-                $doc_occurrences_string = substr($postings, $i, 4);
-                $tmp = unpack("N", $doc_occurrences_string);
-                $num = $tmp[1];
+            for($i = 0; $i < $postings_len; $i += self::POSTING_LEN) {
+                $num = $this->unpackInt(substr($postings, $i, 4));
                 if($num != self::DUPLICATE_FLAG) {
                     $num += ($this->docids_len << 4);
-                    $doc_occurrences_string = pack("N", $num);
-                    charCopy($doc_occurrences_string, $postings, $i, 4);
+                    charCopy(pack("N", $num), $postings, $i, 4);
                 }
             }
             $dup = pack("N", self::DUPLICATE_FLAG);
-            if(!isset($this->words[$first][$second][$rest_id])) {
-                $this->words[$first][$second][$rest_id] = $postings;
+            if(!isset($this->words[$word_id])) {
+                $this->words[$word_id] = $postings;
                 $this->word_docs_len += $postings_len;
-            } else if($this->words[$first][$second][$rest_id] == $dup 
+            } else if($this->words[$word_id] == $dup 
                 || $postings == $dup) {
                 $old_word_docs_len = strlen(
-                    $this->words[$first][$second][$rest_id]);
-                $this->words[$first][$second][$rest_id] = $dup;
+                    $this->words[$word_id]);
+                $this->words[$word_id] = $dup;
                 $this->word_docs_len -= $old_word_docs_len;
                 $this->word_docs_len += strlen($dup);
             } else {
-                $this->words[$first][$second][$rest_id] .= $postings;
+                $this->words[$word_id] .= $postings;
                 $this->word_docs_len += $postings_len;
             }
-        }}}
+        }
 
         $this->docids_len += $index_shard->docids_len;
         $this->num_docs += $index_shard->num_docs;
@@ -575,11 +598,8 @@ class IndexShard extends PersistentStructure implements CrawlConstants
             $doc_key = crawlHash($duplicate, true);
             $this->doc_infos .= $doc_key . pack("N", self::DUPLICATE_FLAG).
                 pack("N", 0xFFFFFFFF);
-            $word_key = crawlHash("info:".$duplicate, true);
-            $first = $word_key[0];
-            $second =  $word_key[1];
-            $rest_id = substr($word_key, 2);
-            $this->words[$first][$second][$rest_id] = 
+            $word_id = crawlHash("info:".$duplicate, true);
+            $this->words[$word_id] = 
                 pack("N", $this->docids_len);
             $this->docids_len += 16;
         }
@@ -591,9 +611,8 @@ class IndexShard extends PersistentStructure implements CrawlConstants
      */
     public function save()
     {
-        $this->computeFirstsSeconds();
-        $header = pack("N", $this->firsts_len) .
-            pack("N", $this->seconds_len) .
+        $this->prepareWordsAndPrefixes();
+        $header =  pack("N", $this->prefixes_len) .
             pack("N", $this->words_len) .
             pack("N", $this->word_docs_len) .
             pack("N", $this->docids_len) . 
@@ -604,64 +623,65 @@ class IndexShard extends PersistentStructure implements CrawlConstants
             pack("N", $this->len_all_link_docs);
         $fh = fopen($this->filename, "wb");
         fwrite($fh, $header);
+        fwrite($fh, $this->prefixes);
         $this->packWordDocs($fh);
         fwrite($fh, $this->word_docs);
         fwrite($fh, $this->doc_infos);
         fclose($fh);
     }
 
-    function computeFirstsSeconds()
+    /**
+     *   
+     */
+    function prepareWordsAndPrefixes()
     {
-        $this->firsts_len = 0;
-        $this->seconds_len = 0;
-        $this->words_len = 0;
+        $this->words_len = count($this->words) * IndexShard::WORD_ITEM_LEN;
+        ksort($this->words, SORT_STRING);
+        $blank = pack("N", 0xFFFFFFFF).pack("N", 0xFFFFFFFF);
+        $tmp = array();
+        $offset = 0;
+        $num_words = 0;
+        $old_prefix = false;
+        $word_item_len = IndexShard::WORD_ITEM_LEN;
         foreach($this->words as $first => $rest) {
-            $this->firsts_len += 4;
-            $len = count($rest) << 2;
-            $this->firsts[$first] = $len;
-            foreach($rest as $second => $words) {
-                $third = count($this->words[$first][$second]) * 
-                    IndexShard::WORD_ITEM_LEN;
-                $this->seconds[$first][$second] = $third;
-                $this->words_len += $third;
+            $prefix = (ord($first[0]) << 8) + ord($first[1]);
+            if($old_prefix === $prefix) {
+                $num_words++;
+            } else {
+                if($old_prefix !== false) {
+                    $tmp[$old_prefix] = pack("N", $offset) .
+                        pack("N", $num_words);
+                    $offset += $num_words * $word_item_len;
+                }
+                $old_prefix = $prefix;
+                $num_words = 1;
             }
-            $this->seconds_len += $len;
         }
+        $tmp[$old_prefix] = pack("N", $offset) . pack("N", $num_words);
+        $num_prefixes = 2 << 16;
+        $this->prefixes = "";
+        for($i = 0; $i < $num_prefixes; $i++) {
+            if(isset($tmp[$i])) {
+                $this->prefixes .= $tmp[$i];
+            } else {
+                $this->prefixes .= $blank;
+            }
+        }
+        $this->prefixes_len = strlen($this->prefixes);
     }
 
     function packWordDocs($fh = null)
     {
-        if($fh == null) {
-            $this->computeFirstsSeconds();
-        }
-        $this->word_docs = "";
-        $this->word_docs_len = 0;
-        if($fh != null) {
-            array_walk($this->firsts, function (&$value, $key, &$fh) {
-                $out = pack("N", (ord($key) << 24) + $value);
-                fwrite($fh, $out);
-            }, $fh);
-
-            array_walk_recursive($this->seconds, function (&$value, $key, &$fh){
-                $out = pack("N", (ord($key) << 24) + $value);
-                fwrite($fh, $out);
-            }, $fh);
-        }
         $this->word_docs_len = 0;
         $this->word_docs = "";
-        foreach($this->words as $first => $seconds) {
-            foreach($seconds as $second => $rest) {
-                ksort($rest); // write out sorted, so can binary search on disk
-                foreach($rest as $rest_id => $postings) {
-                    $len = strlen($postings);
-                    $out = pack("N", $this->word_docs_len).pack("N", $len);
-                    $this->word_docs .= $postings;
-                    $this->word_docs_len += $len;
-                    $this->words[$first][$second][$rest_id] = $out;
-                    if($fh != null) {
-                        fwrite($fh, $rest_id . $out);
-                    }
-                }
+        foreach($this->words as $word_id => $postings) {
+            $len = strlen($postings);
+            $out = pack("N", $this->word_docs_len).pack("N", $len);
+            $this->word_docs .= $postings;
+            $this->word_docs_len += $len;
+            $this->words[$word_id] = $out;
+            if($fh != null) {
+                fwrite($fh, $word_id . $out);
             }
         }
         $this->word_docs_packed = true;
@@ -674,20 +694,34 @@ class IndexShard extends PersistentStructure implements CrawlConstants
      */
     function unpackWordDocs()
     {
-        foreach($this->words as $first => $seconds) {
-            foreach($seconds as $second => $rest) {
-                foreach($rest as $rest_id => $postings_info) {
-                    $offset = $this->unpackInt(substr($postings_info, 0, 4));
-                    $len = $this->unpackInt(substr($postings_info, 4, 4));
-                    $postings = substr($this->word_docs, $offset, $len);
-                    $this->words[$first][$second][$rest_id] = $postings;
-                }
-            }
+        foreach($this->words as $word_id => $postings_info) {
+            $offset = $this->unpackInt(substr($postings_info, 0, 4));
+            $len = $this->unpackInt(substr($postings_info, 4, 4));
+            $postings = substr($this->word_docs, $offset, $len);
+            $this->words[$word_id] = $postings;
         }
         unset($this->word_docs);
         $this->word_docs_packed = false;
     }
 
+    /**
+     *
+     */
+     function packPosting($doc_index, $occurrences)
+     {
+        return pack("N", ($doc_index << 8) + $occurrences);
+     }
+
+    /**
+     *
+     */
+     function unpackPosting($posting)
+     {
+        $doc_int = $this->unpackInt($posting);
+        $occurrences = $doc_int & 255;
+        $doc_index = ($doc_int >> 8);
+        return array($doc_index, $occurrences);
+     }
 
     /**
      * Returns the first offset, last offset, and number of documents the
@@ -704,57 +738,36 @@ class IndexShard extends PersistentStructure implements CrawlConstants
     {
         $this->getShardHeader();
         $word_item_len = self::WORD_ITEM_LEN;
-        $first = $word_id[0];
-        $second = $word_id[1];
-        if(!isset($this->firsts) || $this->firsts == null ||
-            count($this->firsts) == 0) {
-            /*  if firsts not read in yet assume seconds not as well
-                seconds is about 256k, so hope memcache is active
-             */
-            $firsts = $this->getShardSubstring(self::HEADER_LENGTH, 
-                $this->firsts_len);
-            $seconds = $this->getShardSubstring(self::HEADER_LENGTH +
-                $this->firsts_len, 
-                $this->seconds_len);
-            $this->unpackFirstSeconds($firsts, $seconds);
-            unset($firsts);
-            unset($seconds);
+        $prefix = (ord($word_id[0]) << 8) + ord($word_id[1]);
+        $prefix_info = $this->getShardSubstring(
+            self::HEADER_LENGTH + 8*$prefix, 8);
+        $blank = pack("N", 0xFFFFFFFF).pack("N", 0xFFFFFFFF);
+        if($prefix_info == $blank) {
+            return false;
         }
+        $offset = $this->unpackInt(substr($prefix_info, 0, 4));
 
-        $start = self::HEADER_LENGTH + $this->firsts_len +
-            $this->seconds_len;
-        $high = 0;
-        foreach($this->seconds as $first_let => $seconds) {
-            foreach($seconds as $second_let => $third_len) {
-                if($first_let == $first && $second_let == $second) {
-                    $high = floor($third_len/$word_item_len) - 1;
-                    break 2;
-                }
-                $start += $third_len;
-            }
-        }
+        $high = $this->unpackInt(substr($prefix_info, 4, 4)) - 1;
 
+        $start = self::HEADER_LENGTH + $this->prefixes_len  + $offset;
         $low = 0;
-
-        $check_loc = ($low + $high >> 1);
-
+        $check_loc = (($low + $high) >> 1);
         do {
             $old_check_loc = $check_loc;
             $word_string = $this->getShardSubstring($start + 
-                $word_item_len +$check_loc * $word_item_len, 
-                $word_item_len);
+                $check_loc * $word_item_len, $word_item_len);
             if($word_string == false) {return false;}
-            $word_string = $this->getShardSubstring($start 
-                +$check_loc * $word_item_len, 
-                $word_item_len);
-            $id = substr($word_string, 0, 6);
-            $cmp = strcmp($word_id, $first.$second.$id);
+            $id = substr($word_string, 0, 8);
+            $cmp = strcmp($word_id, $id);
             if($cmp === 0) {
-                return $this->getWordInfoFromString(substr($word_string, 6));
+                return $this->getWordInfoFromString(substr($word_string, 8));
             } else if ($cmp < 0) {
                 $high = $check_loc;
                 $check_loc = (($low + $check_loc) >> 1);
             } else {
+                if($check_loc + 1 == $high) {
+                    $check_loc++;
+                }
                 $low = $check_loc;
                 $check_loc = (($high + $check_loc) >> 1);
             }
@@ -775,18 +788,14 @@ class IndexShard extends PersistentStructure implements CrawlConstants
      */
     function getWordInfoLoaded($word_id)
     {
-        $first = $word_id[0];
-        $second = $word_id[1];
-        $rest_id = substr($word_id, 2);
-        if(!isset($this->words[$first][$second][$rest_id])) {
+        if(!isset($this->words[$word_id])) {
             return false;
         }
         if(!$this->word_docs_packed){
             $this->packWordDocs();
         }
-
         return $this->getWordInfoFromString(
-            $this->words[$first][$second][$rest_id]);
+            $this->words[$word_id]);
     }
 
     /**
@@ -800,7 +809,7 @@ class IndexShard extends PersistentStructure implements CrawlConstants
     {
         $first_offset = self::unpackInt(substr($str, 0, 4));
         $len = self::unpackInt(substr($str, 4, 4));
-        $last_offset = $first_offset + $len;
+        $last_offset = $first_offset + $len - self::POSTING_LEN;
         $count = $len >> 2;
 
         return array($first_offset, $last_offset, $count);
@@ -819,7 +828,7 @@ class IndexShard extends PersistentStructure implements CrawlConstants
     {
         if($this->read_only_from_disk) {
             $base_offset = self::HEADER_LENGTH + 
-                $this->firsts_len + $this->seconds_len + $this->words_len;
+                $this->prefixes_len + $this->words_len;
             return $this->getShardSubstring($base_offset + $offset, $len);
         }
         return substr($this->word_docs, $offset, $len);
@@ -837,8 +846,8 @@ class IndexShard extends PersistentStructure implements CrawlConstants
     function getDocInfoSubstring($offset, $len)
     {
         if($this->read_only_from_disk) {
-            $base_offset = self::HEADER_LENGTH + $this->words_len
-                + $this->firsts_len + $this->seconds_len + $this->word_docs_len;
+            $base_offset = self::HEADER_LENGTH + $this->prefixes_len +
+                $this->words_len + $this->word_docs_len;
             return $this->getShardSubstring($base_offset + $offset, $len);
         }
         return substr($this->doc_infos, $offset, $len);
@@ -912,26 +921,6 @@ class IndexShard extends PersistentStructure implements CrawlConstants
         self::headerToShardFields($header, $this);
     }
 
-    /**
-     *
-     */
-    function unpackFirstSeconds($firsts, $seconds)
-    {
-        $pre_firsts_array = str_split($firsts, 4);
-        array_walk($pre_firsts_array, 'IndexShard::makeFirsts', $this);
-
-        $total_offset = 0;
-        foreach($this->firsts as $first => $seconds_len) {
-            for($offset=0; $offset < $seconds_len; $offset += 4) {
-                $pre_out = self::unpackInt(
-                    substr($seconds,$total_offset +$offset,4));
-                $second = chr(($pre_out >> 24));
-                $third_len = 0x00FFFFFF & $pre_out;
-                $this->seconds[$first][$second] = $third_len;
-            }
-            $total_offset += $seconds_len;
-        }
-    }
     
     /**
      *  Load an IndexShard from a file
@@ -945,30 +934,16 @@ class IndexShard extends PersistentStructure implements CrawlConstants
         $fh = fopen($fname, "rb");
         $header = fread($fh, self::HEADER_LENGTH);
         self::headerToShardFields($header, $shard);
-        $firsts = fread($fh, $shard->firsts_len);
-        $seconds = fread($fh, $shard->seconds_len);
+        fread($fh, $shard->prefixes_len );
         $words = fread($fh, $shard->words_len);
         $shard->word_docs = fread($fh, $shard->word_docs_len);
         $shard->doc_infos = fread($fh, $shard->docids_len);
         fclose($fh);
-        $shard->unpackFirstSeconds($firsts, $seconds);
-        unset($firsts);
-        unset($seconds);
-        $total_offset = 0;
-        foreach($shard->seconds as $first => $seconds_info) {
-            foreach($seconds_info as $second => $third_len) {
-                for($offset = 0; $offset < $third_len; 
-                    $offset += self::WORD_ITEM_LEN) {
-                    $value = substr($words, 
-                        $total_offset + $offset, self::WORD_ITEM_LEN);
-                    $rest_id = substr($value, 0, 6);
-                    $info = substr($value, 6);
-                    $shard->words[$first][$second][$rest_id] = $info;
-                }
-                $total_offset += $third_len;
-            }
-        }
+
+        $pre_words_array = str_split($words, self::WORD_ITEM_LEN);
         unset($words);
+        array_walk($pre_words_array, 'IndexShard::makeWords', $shard);
+
         return $shard;
     }
 
@@ -983,16 +958,15 @@ class IndexShard extends PersistentStructure implements CrawlConstants
     {
         $header_array = str_split($header, 4);
         $header_data = array_map('IndexShard::unpackInt', $header_array);
-        $shard->firsts_len = $header_data[0];
-        $shard->seconds_len = $header_data[1];
-        $shard->words_len = $header_data[2];
-        $shard->word_docs_len = $header_data[3];
-        $shard->docids_len = $header_data[4];
-        $shard->generation_offset = $header_data[5];
-        $shard->num_docs = $header_data[6];
-        $shard->num_link_docs = $header_data[7];
-        $shard->len_all_docs = $header_data[8];
-        $shard->len_all_link_docs = $header_data[9];
+        $shard->prefixes_len = $header_data[0];
+        $shard->words_len = $header_data[1];
+        $shard->word_docs_len = $header_data[2];
+        $shard->docids_len = $header_data[3];
+        $shard->generation_offset = $header_data[4];
+        $shard->num_docs = $header_data[5];
+        $shard->num_link_docs = $header_data[6];
+        $shard->len_all_docs = $header_data[7];
+        $shard->len_all_link_docs = $header_data[8];
     }
     
     /**
@@ -1007,12 +981,18 @@ class IndexShard extends PersistentStructure implements CrawlConstants
         return $tmp[1];
     }
 
-    static function makeFirsts(&$value, $key, &$shard)
+
+    /**
+     * Callback function for load method. splits a word_key . word_info string
+     * into an entry in the passed shard $shard->words[word_key] = $word_info.
+     *
+     * @param string &value  the word_key . word_info string
+     * @param int $key index in array - we don't use
+     * @param object $shard IndexShard to add the entry to word table for
+     */
+    static function makeWords(&$value, $key, &$shard)
     {
-        $pre_out = self::unpackInt($value);
-        $first = chr($pre_out >> 24);
-        $seconds_len = (0x00FFFFFF & $pre_out);
-        $shard->firsts[$first] = $seconds_len;
+        $shard->words[substr($value, 0, 8)] = substr($value, 8, 8);
     }
 
 }

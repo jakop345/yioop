@@ -133,7 +133,7 @@ class PhraseParser
     static function extractPhrasesOfLengthOffset($string, 
         $phrase_len, $offset) 
     {
-        $punct = "\.|\,|\:|\;|\"|\'|\`|\[|\]|\{|\}|\(|\)|\!|\|";
+        $punct = "\.|\,|\:|\;|\"|\'|\`|\[|\]|\{|\}|\(|\)|\!|\||\&";
         $words = mb_split("[[:space:]]|".$punct, $string);
 
         $stems = array();

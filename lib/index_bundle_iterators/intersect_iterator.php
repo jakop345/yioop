@@ -67,12 +67,6 @@ class IntersectIterator extends IndexBundleIterator
     var $num_iterators;
 
     /**
-     * The number of documents in the current block before filtering
-     * by restricted words
-     * @var int
-     */
-    var $count_block_unfiltered;
-    /**
      * The number of documents in the current block after filtering
      * by restricted words
      * @var int
@@ -104,16 +98,20 @@ class IntersectIterator extends IndexBundleIterator
 
         $this->num_iterators = count($index_bundle_iterators);
         $this->num_docs = -1;
+        $this->results_per_block = 1;
         
         /*
              the most results we can return is the size of the least num_docs
-             of what we are itrerating over
+             of what we are iterating over. We are also setting up here
+             that we return at most one posting at a time from each
+             iterator
         */
         for($i = 0; $i < $this->num_iterators; $i++) {
             if( $this->num_docs < 0 ||
                 $this->index_bundle_iterators[$i]->num_docs < $this->num_docs) {
                 $this->num_docs = $this->index_bundle_iterators[$i]->num_docs;
             }
+            $this->index_bundle_iterators[$i]->setResultsPerBlock(1);
         }
         $this->reset();
     }
@@ -130,7 +128,6 @@ class IntersectIterator extends IndexBundleIterator
 
         $this->seen_docs = 0;
         $this->seen_docs_unfiltered = 0;
-        $doc_block = $this->currentDocsWithWord();
 
     }
 
@@ -143,132 +140,87 @@ class IntersectIterator extends IndexBundleIterator
     function findDocsWithWord()
     {
         $pages = array();
-        $high_ranks = array();
-        $last = $this->num_iterators - 1;
-        for($i = 0; $i < $this->num_iterators; $i++) {
-            $pages[$i] = 
-                $this->index_bundle_iterators[$i]->currentDocsWithWord();
-            if(!is_array($pages[$i]) || count($pages[$i]) == 0) {
-                $this->to_advance_index = $i;
-                return $pages[$i];
-            }
-            list($low_ranks[$i], $high_ranks[$i]) = 
-                $this->lowHighRanks($pages[$i], $i);
+
+        $status = $this->syncDocOffsetsAmongstIterators();
+        if($status == -1) {
+            return -1;
         }
-        uasort($low_ranks, "docRankOrderCallback");
-
-       $low_ranks = array_values($low_ranks);
-
-       $low_rank = $low_ranks[$last][self::DOC_RANK];
-
-       $this->to_advance_index = $low_ranks[0]["INDEX"];
-       $this->count_block_unfiltered = count($pages[$this->to_advance_index]);
-
-        $docs = array();
-        $looping = true;
-
-        while ($looping == true) {
-            for($i = 0; $i <= $last; $i++) {
-            list( ,$high_ranks[$i]) = 
-                $this->lowHighRanks($pages[$i], $i, false);
-            }
-            $broke = false;
-            $score = 0;
-            $high_rank = $high_ranks[0][self::DOC_RANK];
-            $high_key = $high_ranks[0]["KEY"];
-            $high_index = $high_ranks[0]["INDEX"];
-            $to_deletes = array();
-            for($i = 1; $i <= $last; $i++) {
-                if($high_ranks[$i][self::DOC_RANK] < $low_rank ) {
-                    $looping = false;
-                    break 2;
-                }
-                if($high_ranks[$i][self::DOC_RANK] > $high_rank ||
-                    ($high_ranks[$i][self::DOC_RANK] == $high_rank &&
-                        strcmp($high_ranks[$i]["KEY"], $high_key) > 0)
-                    ) {
-                    $broke = true;
-                    $high_rank = $high_ranks[$i][self::DOC_RANK];
-                    $high_index = $high_ranks[$i]["INDEX"];
-                    $high_key = $high_ranks[$i]["KEY"];
-                    $to_deletes[$high_index] = $high_key;
-                } 
-                $score += $high_ranks[$i][self::SCORE];
-            }
-            if($broke == false) {
-                $docs[$high_key] = $pages[$high_index][$high_key];
-                $docs[$high_key][self::SCORE] = $score;
-                $to_deletes[$high_index] = $high_key;
-            }
-
-            foreach($to_deletes as $index => $key) {
-                unset($pages[$index][$key]);
-                if(count($pages[$index]) == 0) {
-                    $looping = false;
-                }
-            }
-
-        }
+        $docs = $this->index_bundle_iterators[0]->currentDocsWithWord();
         $this->count_block = count($docs);
         $this->pages = $docs;
         return $docs;
     }
 
     /**
-     * Given a collection of documents, returns info about the low and high
-     * ranking documents. Namely, their ranks, keys, 
-     * index in word iterator array, and scores
      *
-     * @param array &$docs documents to get low high info from
-     * @param int $index which word iterator these docs came from
-     * @param boo $sort_flag whether to sort the docs (if true) or to assume
-     *      the docs are already sorted by rank
-     * @return array desired info
      */
-    function lowHighRanks(&$docs, $index, $sort_flag = true)
+    function syncDocOffsetsAmongstIterators()
     {
-        if($sort_flag == true) {
-            uasort($docs, "docRankOrderCallback");
-        }
-        reset($docs);
-        $high = array();
-        $high["KEY"] = key($docs);
-        $high[self::DOC_RANK] = $docs[$high["KEY"]][self::DOC_RANK];
-        $high[self::SCORE] = $docs[$high["KEY"]][self::SCORE];
-        $high["INDEX"] = $index;
-        end($docs);
-        $low = array();
-        $low["KEY"] = key($docs);
-        $low[self::DOC_RANK] =  $docs[$low["KEY"]][self::DOC_RANK];
-        $low[self::SCORE] =  $docs[$low["KEY"]][self::SCORE];
-        $low["INDEX"] = $index;
-        return array($low, $high);
+        $biggest_offset = 0;
+        $all_same = true;
+        do{
+            for($i = 0; $i < $this->num_iterators; $i++) {
+                $new_doc_offset = 
+                    $this->index_bundle_iterators[$i]->currentDocOffsetWithWord();
+                if($i == 0) {
+                    $biggest_offset = $new_doc_offset;
+                }
+                if($new_doc_offset == -1) {
+                    return -1;
+                }
+                if($new_doc_offset > $biggest_offset) {
+                    $biggest_offset = $new_doc_offset;
+                    $all_same = false;
+                }
+            }
+            if($all_same) {
+                return 1;
+            }
+            for($i = 0; $i < $this->num_iterators; $i++) {
+                $this->index_bundle_iterators[$i]->advance($biggest_offset);
+            }
+        } while(!$all_same);
     }
 
     /**
      * Forwards the iterator one group of docs
+     * @param $doc_offset if set the next block must all have $doc_offsets 
+     *      larger than or equal to this value
      */
-    function advance() 
+    function advance($doc_offset = null) 
     {
         $this->advanceSeenDocs();
 
-        	$this->seen_docs_unfiltered += $this->count_block_unfiltered;
+        $this->seen_docs_unfiltered = 0;
 
-        $min_num_docs = 10000000000;
+        //num_docs can change when advance() called so that's why we recompute
+        $total_num_docs = 0;
         for($i = 0; $i < $this->num_iterators; $i++) {
-            if($this->index_bundle_iterators[$i]->num_docs < $min_num_docs) {
-                $min_num_docs = $this->index_bundle_iterators[$i]->num_docs;
-            }
+             $this->seen_docs_unfiltered += 
+                $this->index_bundle_iterators[$i]->seen_docs;
+            $total_num_docs = $this->index_bundle_iterators[$i]->num_docs;
         }
         if($this->seen_docs_unfiltered > 0) {
             $this->num_docs = 
-                floor(($this->seen_docs * $min_num_docs) /
+                floor(($this->seen_docs * $total_num_docs) /
                 $this->seen_docs_unfiltered);
         } else {
             $this->num_docs = 0;
         }
-        $this->index_bundle_iterators[$this->to_advance_index]->advance();
+        
+        $this->index_bundle_iterators[0]->advance($doc_offset);
 
+    }
+
+    /**
+     * Gets the doc_offset for the next document that would be return by
+     * this iterator
+     *
+     * @return int the desired document offset
+     */
+    function currentDocOffsetWithWord() {
+        $this->syncDocOffsetsAmongstIterators();
+        $this->index_bundle_iterators[0]->currentDocOffsetWithWord();
     }
 
     /**
@@ -279,5 +231,23 @@ class IntersectIterator extends IndexBundleIterator
     {
         return $this->index_bundle_iterators[0]->getIndex($key = NULL);
     }
+
+    /**
+     * This method is supposed to set
+     * the value of the result_per_block field. This field controls
+     * the maximum number of results that can be returned in one go by
+     * currentDocsWithWord(). This method cannot be consistently
+     * implemented for this iterator and expect it to behave nicely
+     * it this iterator is used together with union_iterator. So
+     * to prevent a user for doing this, calling this method results
+     * in a user defined error
+     *
+     * @param int $num the maximum number of results that can be returned by
+     *      a block
+     */
+     function setResultsPerBlock($num) {
+        trigger_error("Cannot set the results per block of
+            an intersect iterator", E_USER_ERROR);
+     }
 }
 ?>

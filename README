@@ -58,7 +58,9 @@ Credits
 ------
 Source code due to Chris Pollett. Several people helped
 with localization: Mary Pollett, Youn Kim, Sugi Widjaja, 
-Chao-Hsin Shih, Sujata Dongre, Jonathan Ben-David 
+Chao-Hsin Shih, Sujata Dongre, Jonathan Ben-David.
+Thanks to Ravi Dhillon for finding and helping with the 
+fixes for Issue 15 and Commit 632e46.  
 
 Installation
 -------------

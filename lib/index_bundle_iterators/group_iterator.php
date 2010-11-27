@@ -102,6 +102,8 @@ class GroupIterator extends IndexBundleIterator
     {
         $this->index_bundle_iterator = $index_bundle_iterator;
         $this->num_docs = $this->index_bundle_iterator->num_docs;
+        $this->results_per_block = 
+            $this->index_bundle_iterator->results_per_block;
         $this->reset();
     }
 
@@ -303,8 +305,10 @@ class GroupIterator extends IndexBundleIterator
 
     /**
      * Forwards the iterator one group of docs
+     * @param $doc_offset if set the next block must all have $doc_offsets 
+     *      larger than or equal to this value
      */
-    function advance() 
+    function advance($doc_offset = null) 
     {
         $this->advanceSeenDocs();
 
@@ -323,9 +327,20 @@ class GroupIterator extends IndexBundleIterator
             $this->grouped_keys[$hash_url] = true;
         }
 
-        $this->index_bundle_iterator->advance();
+        $this->index_bundle_iterator->advance($doc_offset);
 
     }
+
+    /**
+     * Gets the doc_offset for the next document that would be return by
+     * this iterator
+     *
+     * @return int the desired document offset
+     */
+    function currentDocOffsetWithWord() {
+        $this->index_bundle_iterator->currentDocOffsetWithWord();
+    }
+
 
     /**
      * Returns the index associated with this iterator
