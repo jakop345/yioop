@@ -167,7 +167,6 @@ class GroupIterator extends IndexBundleIterator
                         }
                     }
                 } else {
-
                     $pre_out_pages[$hash_url][] = $doc_info;
                     if($doc_info['IS_PAGE'] == true) {
                         $pre_out_pages[$hash_url]['IS_PAGE'] = true;
@@ -190,9 +189,10 @@ class GroupIterator extends IndexBundleIterator
                     if(is_array($doc_array) && count($doc_array) == 1) {
                         $keys = array_keys($doc_array);
                         $key = $keys[0];
-                        if(!isset($doc_array[$key][self::DUPLICATE]) ) {
+                        if(!isset($doc_array[$key][self::DUPLICATE]) ) {;
                             $pre_out_pages[$hash_url][$key] = $doc_array[$key];
                             $pre_out_pages[$hash_url][$key]['IS_PAGE'] = true;
+                            $pre_out_pages[$hash_url][$key]['KEY'] = $key;
                         } else { 
                             /*
                                 Deduplication: 
@@ -218,7 +218,7 @@ class GroupIterator extends IndexBundleIterator
                 foreach($group_infos as $doc_info) {
                     $is_page = $doc_info['IS_PAGE'];
                     unset($doc_info['IS_PAGE']);
-                    if(!isset($out_pages[$hash_url])) {
+                    if(!isset($out_pages[$hash_url]) || $is_page) {
                         $out_pages[$hash_url] = $doc_info;
                         $out_pages[$hash_url][self::SUMMARY_OFFSET] = array();
                         if(isset($doc_info[self::SUMMARY_OFFSET]) ) {

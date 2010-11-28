@@ -356,13 +356,14 @@ class IndexShard extends PersistentStructure implements CrawlConstants
             ($last_offset - $next_offset) >> 2
             : 1; 
         $results = array();
+        $end = min($this->word_docs_len, $last_offset);
         do {
-            if($next_offset >= $this->word_docs_len) {break;}
+            if($next_offset > $end) {break;}
             $item = array();
             $posting = $this->getWordDocsSubstring($next_offset, 4);
             list($doc_index, $occurrences) = $this->unpackPosting($posting);
             $old_next_offset = $next_offset;
-            $next_offset += 4;
+            $next_offset += self::POSTING_LEN;
             $doc_depth = log(10*(($doc_index +1) + 
                 $this->generation_offset)*NUM_FETCHERS, 10);
             $item[self::DOC_RANK] = number_format(11 - 
@@ -370,8 +371,8 @@ class IndexShard extends PersistentStructure implements CrawlConstants
             $doc_loc = $doc_index << 4;
             $doc_info_string = $this->getDocInfoSubstring($doc_loc, 12);
             $doc_id = substr($doc_info_string, 0, 8);
-            $tmp = unpack("N", substr($doc_info_string, 8, 4));
-            $item[self::SUMMARY_OFFSET] = $tmp[1];
+            $item[self::SUMMARY_OFFSET] = $this->unpackInt(
+                substr($doc_info_string, 8, 4));
             $is_doc = false;
             $skip_stats = false;
             
@@ -379,7 +380,8 @@ class IndexShard extends PersistentStructure implements CrawlConstants
                 $item[self::SUMMARY_OFFSET] == self::NEEDS_OFFSET_FLAG) {
                 $skip_stats = true;
                 $item[self::DUPLICATE] = true;
-            } else if(($tmp[1] & self::COMPOSITE_ID_FLAG) !== 0) {
+            } else if(($item[self::SUMMARY_OFFSET] 
+                & self::COMPOSITE_ID_FLAG) !== 0) {
                 //handles link item case
                 $item[self::SUMMARY_OFFSET] ^= self::COMPOSITE_ID_FLAG;
                 $doc_loc += 12;
@@ -410,8 +412,9 @@ class IndexShard extends PersistentStructure implements CrawlConstants
                 $IDF = ($num_docs - $num_term_occurrences + 0.5) /
                     ($num_term_occurrences + 0.5);
                 $item[self::RELEVANCE] = $IDF * $pre_relevance;
+
                 $item[self::SCORE] = $item[self::DOC_RANK] + 
-                    0.1*$item[self::RELEVANCE];
+                    .1/ ($item[self::RELEVANCE] + .1);
             }
             $results[$doc_id] = $item;
             $num_docs_so_far ++;
@@ -869,7 +872,7 @@ class IndexShard extends PersistentStructure implements CrawlConstants
         
         do {
             $data = $this->readBlockShardAtOffset($block_offset);
-            if($data == false) {return $substring;}
+            if($data === false) {return $substring;}
             $block_offset += self::SHARD_BLOCK_SIZE;
             $substring .= substr($data, $start_loc);
             $start_loc = 0;

@@ -43,7 +43,7 @@ date_default_timezone_set('America/Los_Angeles');
 
 /*+++ The next block of code is machine edited, change at 
 your own risk, please use configure web page instead +++*/
-define('WORK_DIRECTORY', '');
+define('WORK_DIRECTORY', '/Applications/xampp/xamppfiles/htdocs/crawls');
 /*++++++*/
 
 if(file_exists(WORK_DIRECTORY."/profile.php")) {

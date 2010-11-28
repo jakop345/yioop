@@ -97,7 +97,7 @@ class IntersectIterator extends IndexBundleIterator
         $this->index_bundle_iterators = $index_bundle_iterators;
 
         $this->num_iterators = count($index_bundle_iterators);
-        $this->num_docs = -1;
+        $this->num_docs = 0;
         $this->results_per_block = 1;
         
         /*
@@ -107,10 +107,7 @@ class IntersectIterator extends IndexBundleIterator
              iterator
         */
         for($i = 0; $i < $this->num_iterators; $i++) {
-            if( $this->num_docs < 0 ||
-                $this->index_bundle_iterators[$i]->num_docs < $this->num_docs) {
-                $this->num_docs = $this->index_bundle_iterators[$i]->num_docs;
-            }
+            $this->num_docs += $this->index_bundle_iterators[$i]->num_docs;
             $this->index_bundle_iterators[$i]->setResultsPerBlock(1);
         }
         $this->reset();
@@ -157,19 +154,20 @@ class IntersectIterator extends IndexBundleIterator
     function syncDocOffsetsAmongstIterators()
     {
         $biggest_offset = 0;
-        $all_same = true;
         do{
+            $all_same = true;
             for($i = 0; $i < $this->num_iterators; $i++) {
-                $new_doc_offset = 
-                    $this->index_bundle_iterators[$i]->currentDocOffsetWithWord();
+                $new_doc_offset[$i] = 
+                    $this->index_bundle_iterators[
+                        $i]->currentDocOffsetWithWord();
                 if($i == 0) {
-                    $biggest_offset = $new_doc_offset;
+                    $biggest_offset = $new_doc_offset[$i];
                 }
-                if($new_doc_offset == -1) {
+                if($new_doc_offset[$i] == -1) {
                     return -1;
                 }
-                if($new_doc_offset > $biggest_offset) {
-                    $biggest_offset = $new_doc_offset;
+                if($new_doc_offset[$i] > $biggest_offset) {
+                    $biggest_offset = $new_doc_offset[$i];
                     $all_same = false;
                 }
             }
@@ -177,7 +175,9 @@ class IntersectIterator extends IndexBundleIterator
                 return 1;
             }
             for($i = 0; $i < $this->num_iterators; $i++) {
-                $this->index_bundle_iterators[$i]->advance($biggest_offset);
+                if($new_doc_offset[$i] < $biggest_offset) {
+                    $this->index_bundle_iterators[$i]->advance($biggest_offset);
+                }
             }
         } while(!$all_same);
     }
@@ -198,15 +198,13 @@ class IntersectIterator extends IndexBundleIterator
         for($i = 0; $i < $this->num_iterators; $i++) {
              $this->seen_docs_unfiltered += 
                 $this->index_bundle_iterators[$i]->seen_docs;
-            $total_num_docs = $this->index_bundle_iterators[$i]->num_docs;
+            $total_num_docs += $this->index_bundle_iterators[$i]->num_docs;
         }
         if($this->seen_docs_unfiltered > 0) {
             $this->num_docs = 
                 floor(($this->seen_docs * $total_num_docs) /
                 $this->seen_docs_unfiltered);
-        } else {
-            $this->num_docs = 0;
-        }
+        } 
         
         $this->index_bundle_iterators[0]->advance($doc_offset);
 

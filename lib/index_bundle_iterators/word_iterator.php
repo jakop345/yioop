@@ -171,6 +171,7 @@ class WordIterator extends IndexBundleIterator
             return -1;
         }
         $this->next_offset = $this->current_offset;
+        //the next call also updates next offset
         $results = $this->index->getCurrentShard()->getPostingsSlice(
             $this->next_offset, $this->last_offset, $this->results_per_block);
         return $results;
@@ -192,6 +193,10 @@ class WordIterator extends IndexBundleIterator
                     $this->index->getCurrentShard(
                         )->nextPostingOffsetDocOffset($this->next_offset, 
                             $this->last_offset, $doc_offset);
+                if($this->current_offset === false) {
+                    $this->current_offset = $this->last_offset + 1;
+                    return;
+                }
                 $this->seen_docs = 
                     ($this->current_offset - $this->start_offset)/
                         IndexShard::POSTING_LEN;
