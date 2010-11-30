@@ -169,7 +169,7 @@ class FetchUrl implements CrawlConstants
                     if(isset($encoding_parts[1])) {
                         $sites[$i][self::ENCODING] = 
                             mb_strtoupper(trim($encoding_parts[1])); 
-                                //hopefuly safe to trust encoding sent
+                                //hopefully safe to trust encoding sent
                     }
                 } else {
                     $sites[$i][self::ENCODING] = 

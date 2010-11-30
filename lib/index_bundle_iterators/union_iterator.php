@@ -132,6 +132,23 @@ class UnionIterator extends IndexBundleIterator
     }
 
     /**
+     * Computes a relevancy score for a posting offset with respect to this
+     * iterator
+     * @param int $posting_offset an offset into word_docs to compute the
+     *      relevance of
+     * @return float a relevancy score based on BM25F.
+     */
+    function computeRelevance($posting_offset)
+    {
+        $relevance = 0;
+        for($i = 0; $i < $this->num_iterators; $i++) {
+            $relevance += $this->index_bundle_iterators[$i]->computeRelevance(
+                $posting_offset);
+        }
+        return $relevance;
+    }
+
+    /**
      * Hook function used by currentDocsWithWord to return the current block
      * of docs if it is not cached
      *

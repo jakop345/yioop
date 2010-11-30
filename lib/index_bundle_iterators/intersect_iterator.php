@@ -119,13 +119,31 @@ class IntersectIterator extends IndexBundleIterator
      */
     function reset()
     {
-        foreach($this->index_bundle_iterators as $iterator) {
-            $iterator->reset();
+        for($i = 0; $i < $this->num_iterators; $i++) {
+            $this->index_bundle_iterators[$i]->setResultsPerBlock(1);
+            $this->index_bundle_iterators[$i]->reset();
         }
 
         $this->seen_docs = 0;
         $this->seen_docs_unfiltered = 0;
 
+    }
+
+    /**
+     * Computes a relevancy score for a posting offset with respect to this
+     * iterator
+     * @param int $posting_offset an offset into word_docs to compute the
+     *      relevance of
+     * @return float a relevancy score based on BM25F.
+     */
+    function computeRelevance($posting_offset)
+    {
+        $relevance = 0;
+        for($i = 0; $i < $this->num_iterators; $i++) {
+            $relevance += $this->index_bundle_iterators[$i]->computeRelevance(
+                $posting_offset);
+        }
+        return $relevance;
     }
 
     /**
@@ -142,8 +160,23 @@ class IntersectIterator extends IndexBundleIterator
         if($status == -1) {
             return -1;
         }
+        //next we finish computing BM25F
         $docs = $this->index_bundle_iterators[0]->currentDocsWithWord();
-        $this->count_block = count($docs);
+
+        if(is_array($docs) && count($docs) == 1) {
+            //we get intersect docs one at a time so should be only one
+            $keys = array_keys($docs);
+            $key = $keys[0];
+            for($i = 1; $i < $this->num_iterators; $i++) {
+                $i_docs = 
+                    $this->index_bundle_iterators[$i]->currentDocsWithWord();
+
+                $docs[$key][self::RELEVANCE] += $i_docs[$key][self::RELEVANCE];
+            }
+            $docs[$key][self::SCORE] = $docs[$key][self::DOC_RANK] + 
+                 $docs[$key][self::RELEVANCE];
+        }
+        $this->count_block = count($docs); 
         $this->pages = $docs;
         return $docs;
     }
@@ -161,13 +194,15 @@ class IntersectIterator extends IndexBundleIterator
                     $this->index_bundle_iterators[
                         $i]->currentDocOffsetWithWord();
                 if($i == 0) {
-                    $biggest_offset = $new_doc_offset[$i];
+                    $biggest_offset = $new_doc_offset[0];
                 }
                 if($new_doc_offset[$i] == -1) {
                     return -1;
                 }
                 if($new_doc_offset[$i] > $biggest_offset) {
                     $biggest_offset = $new_doc_offset[$i];
+                    $all_same = false;
+                } else if ($new_doc_offset[$i] < $biggest_offset) {
                     $all_same = false;
                 }
             }
@@ -176,6 +211,7 @@ class IntersectIterator extends IndexBundleIterator
             }
             for($i = 0; $i < $this->num_iterators; $i++) {
                 if($new_doc_offset[$i] < $biggest_offset) {
+
                     $this->index_bundle_iterators[$i]->advance($biggest_offset);
                 }
             }
@@ -205,7 +241,6 @@ class IntersectIterator extends IndexBundleIterator
                 floor(($this->seen_docs * $total_num_docs) /
                 $this->seen_docs_unfiltered);
         } 
-        
         $this->index_bundle_iterators[0]->advance($doc_offset);
 
     }

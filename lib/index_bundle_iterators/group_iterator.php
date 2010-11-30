@@ -90,6 +90,11 @@ class GroupIterator extends IndexBundleIterator
      */
     var $grouped_keys;
 
+    /**
+     * the minimum number of pages to group from a block;
+     * this trumps $this->index_bundle_iterator->results_per_block
+     */
+    const MIN_FIND_RESULTS_PER_BLOCK = 200;
 
     /**
      * Creates a group iterator with the given parameters.
@@ -102,8 +107,9 @@ class GroupIterator extends IndexBundleIterator
     {
         $this->index_bundle_iterator = $index_bundle_iterator;
         $this->num_docs = $this->index_bundle_iterator->num_docs;
-        $this->results_per_block = 
-            $this->index_bundle_iterator->results_per_block;
+        $this->results_per_block = max(
+            $this->index_bundle_iterator->results_per_block,
+            self::MIN_FIND_RESULTS_PER_BLOCK);
         $this->reset();
     }
 
@@ -121,6 +127,19 @@ class GroupIterator extends IndexBundleIterator
     }
 
     /**
+     * Computes a relevancy score for a posting offset with respect to this
+     * iterator
+     * @param int $posting_offset an offset into word_docs to compute the
+     *      relevance of
+     * @return float a relevancy score based on BM25F.
+     */
+    function computeRelevance($posting_offset)
+    {
+        return $this->index_bundle_iterator->computeRelevance(
+                $posting_offset);
+    }
+
+    /**
      * Hook function used by currentDocsWithWord to return the current block
      * of docs if it is not cached
      *
@@ -128,9 +147,26 @@ class GroupIterator extends IndexBundleIterator
      */
     function findDocsWithWord()
     {
-        $pages = 
-            $this->index_bundle_iterator->currentDocsWithWord();
-
+        $pages = array();
+        $count = 0;
+        $done = false;
+        do {
+            $new_pages = $this->index_bundle_iterator->currentDocsWithWord();
+            if(!is_array($new_pages)) {
+                $done = true;
+                if(count($pages) == 0) {
+                    $pages = -1;
+                }
+            } else {
+                $pages = array_merge($pages, $new_pages);
+                $count = count($pages);
+            }
+            if($count < $this->results_per_block && !$done) {
+                $this->index_bundle_iterator->advance();
+            } else {
+                $done = true;
+            }
+        } while(!$done);
         $this->count_block_unfiltered = count($pages);
         if(!is_array($pages)) {
             return $pages;
@@ -187,12 +223,17 @@ class GroupIterator extends IndexBundleIterator
                             $this->getIndex(), true);
                     $doc_array = $word_iterator->currentDocsWithWord();
                     if(is_array($doc_array) && count($doc_array) == 1) {
+                        $relevance = $this->computeRelevance(
+                            $word_iterator->current_offset);
                         $keys = array_keys($doc_array);
                         $key = $keys[0];
-                        if(!isset($doc_array[$key][self::DUPLICATE]) ) {;
-                            $pre_out_pages[$hash_url][$key] = $doc_array[$key];
-                            $pre_out_pages[$hash_url][$key]['IS_PAGE'] = true;
-                            $pre_out_pages[$hash_url][$key]['KEY'] = $key;
+                        if(!isset($doc_array[$key][self::DUPLICATE]) ) {
+                            $item = $doc_array[$key];
+                            $item[self::RELEVANCE] += $relevance;
+                            $item[self::SCORE] += $relevance;
+                            $item['IS_PAGE'] = true;
+                            $item['KEY'] = $key;
+                            array_unshift($pre_out_pages[$hash_url], $item);
                         } else { 
                             /*
                                 Deduplication: 
@@ -288,9 +329,15 @@ class GroupIterator extends IndexBundleIterator
                     list($key, $summary_offset) = $offset_array;
                     $index = & $this->getIndex($key);
                     $page = $index->getPage($summary_offset);
+                    if($page == array()) {continue;}
                     if(!isset($out_pages[$doc_key][self::SUMMARY])) {
                         $out_pages[$doc_key][self::SUMMARY] = $page;
                     } else if (isset($page[self::DESCRIPTION])) {
+                        if(!isset($out_pages[$doc_key][
+                            self::SUMMARY][self::DESCRIPTION])) {
+                            $out_pages[$doc_key][self::SUMMARY][
+                                self::DESCRIPTION] = "";
+                        }
                         $out_pages[$doc_key][self::SUMMARY][self::DESCRIPTION].=
                             " .. ".$page[self::DESCRIPTION];
                     }

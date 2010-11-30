@@ -89,6 +89,15 @@ abstract class IndexBundleIterator implements CrawlConstants
     const RESULTS_PER_BLOCK = 100;
 
     /**
+     * Computes a relevancy score for a posting offset with respect to this
+     * iterator
+     * @param int $posting_offset an offset into word_docs to compute the
+     *      relevance of
+     * @return float a relevancy score based on BM25F.
+     */
+    abstract function computeRelevance($posting_offset);
+
+    /**
      * Returns the iterators to the first document block that it could iterate
      * over
      */
@@ -127,8 +136,6 @@ abstract class IndexBundleIterator implements CrawlConstants
      * Gets the current block of doc ids and score associated with the
      * this iterators word
      *
-     * @param bool $with_summaries specifies whether or not to return the
-     *      summaries associated with the document
      * @return mixed doc ids and score if there are docs left, -1 otherwise
      */
     function currentDocsWithWord()

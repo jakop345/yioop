@@ -147,6 +147,21 @@ class WordIterator extends IndexBundleIterator
     }
 
     /**
+     * Computes a relevancy score for a posting offset with respect to this
+     * iterator
+     * @param int $posting_offset an offset into word_docs to compute the
+     *      relevance of
+     * @return float a relevancy score based on BM25F.
+     */
+    function computeRelevance($posting_offset)
+    {
+        $item = array();
+        $this->index->getCurrentShard()->makeItem($item, 
+            $this->start_offset, $posting_offset, $this->last_offset, 1);
+        return $item[self::RELEVANCE];
+    }
+
+    /**
      * Returns the iterators to the first document block that it could iterate
      * over
      *
@@ -173,6 +188,7 @@ class WordIterator extends IndexBundleIterator
         $this->next_offset = $this->current_offset;
         //the next call also updates next offset
         $results = $this->index->getCurrentShard()->getPostingsSlice(
+            $this->start_offset,
             $this->next_offset, $this->last_offset, $this->results_per_block);
         return $results;
     }

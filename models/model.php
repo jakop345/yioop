@@ -107,7 +107,6 @@ class Model implements CrawlConstants
     {
         if(isset($results['PAGES'])) {
             $pages = $results['PAGES'];
-
             $num_pages = count($pages);
         } else {
             $output['TOTAL_ROWS'] = 0;
@@ -116,7 +115,9 @@ class Model implements CrawlConstants
         }
         for($i = 0; $i < $num_pages; $i++) {
             $page = $pages[$i];
-
+            if(!isset($page[self::TITLE])) {
+                $page[self::TITLE] = "";
+            }
             $page[self::TITLE] = strip_tags($page[self::TITLE]);
 
             if(strlen($page[self::TITLE]) == 0 ) {
@@ -134,7 +135,7 @@ class Model implements CrawlConstants
                     substr(strip_tags($page[self::DESCRIPTION]), 0, $end_title).
                     $ellipsis;
                 //still no text revert to url
-                if(strlen($page[self::TITLE]) == 0) {
+                if(strlen($page[self::TITLE]) == 0 && isset($page[self::URL])) {
                     $page[self::TITLE] = $page[self::URL];
                 }
             }

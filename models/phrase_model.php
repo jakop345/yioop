@@ -71,7 +71,11 @@ class PhraseModel extends Model
      */
     var $index_name;
 
-
+    /**
+     * Number of pages to cache in one go in memcache
+     * Size chosen based on 1MB max object size for memcache
+     */
+     const NUM_CACHE_PAGES = 80;
     /**
      * {@inheritdoc}
      */
@@ -416,8 +420,10 @@ class PhraseModel extends Model
 
         $pages = array();
         $generation = 0;
-        $to_retrieve = ceil(($limit+$num)/100) * 100;
-        $start_slice = floor(($limit)/100) * 100;
+        $to_retrieve = ceil(($limit+$num)/self::NUM_CACHE_PAGES) * 
+            self::NUM_CACHE_PAGES;
+        $start_slice = floor(($limit)/self::NUM_CACHE_PAGES) *
+            self::NUM_CACHE_PAGES;
         if(USE_MEMCACHE) {
             $tmp = "";
             foreach($word_structs as $word_struct) {
@@ -448,7 +454,7 @@ class PhraseModel extends Model
              $pages = array_merge($pages, $gen_pages);
              $generation++;
         }
-        uasort($pages, "scoreOrderCallback");
+        usort($pages, "scoreOrderCallback");
 
         if($num_retrieved < $to_retrieve) {
             $results['TOTAL_ROWS'] = $num_retrieved;
@@ -463,10 +469,9 @@ class PhraseModel extends Model
         $results['PAGES'] = & $pages;
         $results['PAGES'] = array_slice($results['PAGES'], $start_slice);
         if(USE_MEMCACHE) {
-
             $MEMCACHE->set($summary_hash, $results);
         }
-        $results['PAGES'] = array_slice($results['PAGES'], $limit -$start_slice,
+        $results['PAGES'] = array_slice($results['PAGES'], $limit-$start_slice,
             $num);
 
         return $results;

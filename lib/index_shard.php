@@ -341,87 +341,105 @@ class IndexShard extends PersistentStructure implements CrawlConstants
      * reference the value of $next_offset will point to the next record in
      * the list (if it exists) after the function is called.
      *
+     * @param int $start_offset of the current posting list for query term
+     *      used in calculating BM25F.
      * @param int &$next_offset where to start in word docs
      * @param int $last_offset offset at which to stop by
      * @param int $len number of documents desired
      * @return array desired list of doc's and their info
      */
-    function getPostingsSlice(&$next_offset, $last_offset, $len)
+    function getPostingsSlice($start_offset, &$next_offset, $last_offset, $len)
     {
         if(!$this->read_only_from_disk && !$this->word_docs_packed) {
             $this->packWordDocs();
         }
         $num_docs_so_far = 0;
-        $num_doc_or_links =  ($next_offset > 0) ? 
-            ($last_offset - $next_offset) >> 2
-            : 1; 
         $results = array();
         $end = min($this->word_docs_len, $last_offset);
         do {
             if($next_offset > $end) {break;}
             $item = array();
-            $posting = $this->getWordDocsSubstring($next_offset, 4);
-            list($doc_index, $occurrences) = $this->unpackPosting($posting);
-            $old_next_offset = $next_offset;
-            $next_offset += self::POSTING_LEN;
-            $doc_depth = log(10*(($doc_index +1) + 
-                $this->generation_offset)*NUM_FETCHERS, 10);
-            $item[self::DOC_RANK] = number_format(11 - 
-                $doc_depth, PRECISION);
-            $doc_loc = $doc_index << 4;
-            $doc_info_string = $this->getDocInfoSubstring($doc_loc, 12);
-            $doc_id = substr($doc_info_string, 0, 8);
-            $item[self::SUMMARY_OFFSET] = $this->unpackInt(
-                substr($doc_info_string, 8, 4));
-            $is_doc = false;
-            $skip_stats = false;
-            
-            if($item[self::SUMMARY_OFFSET] == self::DUPLICATE_FLAG ||
-                $item[self::SUMMARY_OFFSET] == self::NEEDS_OFFSET_FLAG) {
-                $skip_stats = true;
-                $item[self::DUPLICATE] = true;
-            } else if(($item[self::SUMMARY_OFFSET] 
-                & self::COMPOSITE_ID_FLAG) !== 0) {
-                //handles link item case
-                $item[self::SUMMARY_OFFSET] ^= self::COMPOSITE_ID_FLAG;
-                $doc_loc += 12;
-                $doc_info_string = $this->getDocInfoSubstring($doc_loc, 16);
-                $doc_id .= ":". 
-                    substr($doc_info_string, 0, 8).":".
-                    substr($doc_info_string, 8, 8);
-                $average_doc_len = ($this->num_link_docs != 0) ? 
-                    $this->len_all_link_docs/$this->num_link_docs : 0;
-                $num_docs = $this->num_link_docs;
-            } else {
-                $is_doc = true;
-                $average_doc_len = $this->len_all_docs/$this->num_docs;
-                $num_docs = $this->num_docs;
-            }
-
-            if(!$skip_stats) {
-                $tmp = unpack("N",$this->getDocInfoSubstring($doc_loc + 12, 4));
-                $doc_len = $tmp[1];
-                $doc_ratio = ($average_doc_len > 0) ?
-                    $doc_len/$average_doc_len : 0;
-                $pre_relevance = number_format(
-                        3 * $occurrences/
-                        ($occurrences + .5 + 1.5* $doc_ratio), 
-                        PRECISION);
-                $num_term_occurrences = $num_doc_or_links *
-                    $num_docs/($this->num_docs + $this->num_link_docs);
-                $IDF = ($num_docs - $num_term_occurrences + 0.5) /
-                    ($num_term_occurrences + 0.5);
-                $item[self::RELEVANCE] = $IDF * $pre_relevance;
-
-                $item[self::SCORE] = $item[self::DOC_RANK] + 
-                    .1/ ($item[self::RELEVANCE] + .1);
-            }
+            $doc_id = 
+                $this->makeItem(
+                    &$item, $start_offset, $next_offset, $last_offset);
             $results[$doc_id] = $item;
             $num_docs_so_far ++;
-                        
+
+            $old_next_offset = $next_offset;
+            $next_offset += self::POSTING_LEN;
+
         } while ($next_offset<= $last_offset && $num_docs_so_far < $len
             && $next_offset > $old_next_offset);
         return $results;
+    }
+
+    /**
+     *
+     */
+    function makeItem(&$item, $start_offset, $current_offset, $last_offset,
+        $occurs = 0)
+    {
+        $num_doc_or_links =  ($last_offset - $start_offset) >> 2; 
+
+        $posting = $this->getWordDocsSubstring($current_offset, 4);
+        list($doc_index, $occurrences) = $this->unpackPosting($posting);
+        if($occurrences < $occurs) {
+            $occurrences = $occurs;
+        }
+        $doc_depth = log(10*(($doc_index +1) + 
+            $this->generation_offset)*NUM_FETCHERS, 10);
+        $item[self::DOC_RANK] = number_format(11 - 
+            $doc_depth, PRECISION);
+        $doc_loc = $doc_index << 4;
+        $doc_info_string = $this->getDocInfoSubstring($doc_loc, 12);
+        $doc_id = substr($doc_info_string, 0, 8);
+        $item[self::SUMMARY_OFFSET] = $this->unpackInt(
+            substr($doc_info_string, 8, 4));
+        $is_doc = false;
+        $skip_stats = false;
+        
+        if($item[self::SUMMARY_OFFSET] == self::DUPLICATE_FLAG ||
+            $item[self::SUMMARY_OFFSET] == self::NEEDS_OFFSET_FLAG) {
+            $skip_stats = true;
+            $item[self::DUPLICATE] = true;
+        } else if(($item[self::SUMMARY_OFFSET] 
+            & self::COMPOSITE_ID_FLAG) !== 0) {
+            //handles link item case
+            $item[self::SUMMARY_OFFSET] ^= self::COMPOSITE_ID_FLAG;
+            $doc_loc += 12;
+            $doc_info_string = $this->getDocInfoSubstring($doc_loc, 16);
+            $doc_id .= ":". 
+                substr($doc_info_string, 0, 8).":".
+                substr($doc_info_string, 8, 8);
+            $average_doc_len = ($this->num_link_docs != 0) ? 
+                $this->len_all_link_docs/$this->num_link_docs : 0;
+            $num_docs = $this->num_link_docs;
+        } else {
+            $is_doc = true;
+            $average_doc_len = $this->len_all_docs/$this->num_docs;
+            $num_docs = $this->num_docs;
+        }
+
+        if(!$skip_stats) {
+            $doc_len = $this->unpackInt(
+                $this->getDocInfoSubstring($doc_loc + 12, 4));
+            $doc_ratio = ($average_doc_len > 0) ?
+                $doc_len/$average_doc_len : 0;
+            $pre_relevance = number_format(
+                    3 * $occurrences/
+                    ($occurrences + .5 + 1.5* $doc_ratio), 
+                    PRECISION);
+            $num_term_occurrences = $num_doc_or_links *
+                $num_docs/($this->num_docs + $this->num_link_docs);
+            $IDF = ($num_docs - $num_term_occurrences + 0.5) /
+                ($num_term_occurrences + 0.5);
+            $item[self::RELEVANCE] = .05 * $IDF * $pre_relevance;
+
+            $item[self::SCORE] = $item[self::DOC_RANK] + 
+                + $item[self::RELEVANCE];
+        }
+        return $doc_id;
+
     }
 
     /**
@@ -495,7 +513,8 @@ class IndexShard extends PersistentStructure implements CrawlConstants
         if(isset($this->words[$word_id])) {
             list($first_offset, $last_offset,
                 $num_docs_or_links) = $this->getWordInfo($word_id, true);
-            $results = $this->getPostingsSlice($first_offset, $last_offset, $len);
+            $results = $this->getPostingsSlice($first_offset, 
+                $first_offset, $last_offset, $len);
         }
         return $results;
     }

@@ -116,7 +116,8 @@ class SearchView extends View implements CrawlConstants
             foreach($data['PAGES'] as $page) {?>
                 <div class='result'> 
                 <h2>
-                <a href="<?php if($page[self::TYPE] != "link") {
+                <a href="<?php if(isset($page[self::TYPE]) 
+                    && $page[self::TYPE] != "link") {
                         e($page[self::URL]); 
                     } else {
                         e(strip_tags($page[self::TITLE]));
@@ -126,23 +127,23 @@ class SearchView extends View implements CrawlConstants
                         e($page[self::TITLE]); ?>"  /> <?php
                  } else {
                     echo $page[self::TITLE];
-                    $this->filetypeHelper->render($page[self::TYPE]);
+                    if(isset($page[self::TYPE])) {
+                        $this->filetypeHelper->render($page[self::TYPE]);
+                    }
                 }
                 ?></a></h2>
                 <p><?php 
                 echo $page[self::DESCRIPTION]; ?></p>
-                <p class="echolink" ><?php 
-                    e(substr($page[self::URL],0, 200)." "); 
+                <p class="echolink" ><?php if(isset($page[self::URL])){
+                    e(substr($page[self::URL],0, 200)." ");} 
                     e(tl('search_view_rank', 
                         number_format($page[self::DOC_RANK], 2)));
                     $page["WEIGHT"] = (isset($page["WEIGHT"])) ?
                         $page["WEIGHT"] : 1;
                     e(tl('search_view_relevancy',
-                        number_format((1.25*floatval($page[self::SCORE])
-                        - floatval($page[self::DOC_RANK]))
-                        / $page["WEIGHT"] , 2) ));
-                    e(tl('search_view_score', 1.25* $page[self::SCORE]));
-                if($page[self::TYPE] != "link") {
+                        number_format($page[self::RELEVANCE], 2) ));
+                    e(tl('search_view_score', $page[self::SCORE]));
+                if(isset($page[self::TYPE]) && $page[self::TYPE] != "link") {
                 ?>
                     <a href="?YIOOP_TOKEN=<?php e($data['YIOOP_TOKEN']);
                         ?>&amp;c=search&amp;a=cache&amp;q=<?php 
