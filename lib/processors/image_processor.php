@@ -67,7 +67,7 @@ abstract class ImageProcessor implements CrawlConstants
     /**
      * Used to create a thumbnail from an image object
      *
-     * @param $image - image object with image
+     * @param object $image  image object with image
      *
      */
     static function createThumb($image)

@@ -107,12 +107,15 @@ class IndexShard extends PersistentStructure implements CrawlConstants
      var $words_len;
 
     /**
+     * An array representing offsets into the words dictionary of the index of 
+     * the first occurrence of a two byte prefix of a word_id. 
      *
      * @var array
      */
     var $prefixes;
 
     /**
+     * Length of the prefix index into the dictionary of the shard
      *
      * @var int
      */
@@ -168,6 +171,8 @@ class IndexShard extends PersistentStructure implements CrawlConstants
     var $read_only_from_disk;
 
     /**
+     * Keeps track of the packed/unpacked state of the word_docs list
+     *
      * @var bool
      */
     var $word_docs_packed;
@@ -374,7 +379,23 @@ class IndexShard extends PersistentStructure implements CrawlConstants
     }
 
     /**
+     * Stores in the supplied item document statistics (suumary offset, 
+     * relevance, doc rank, and score) for the the document
+     * pointed to by $current_offset, based on the the posting lists 
+     * starting and ending offset (hence num docs with word), and the
+     * number of occurrences of the word. Returns the doc_id of the document
      *
+     * @param array &$item a reference to an array to store statistic in
+     * @param int $starting_offset offset into word_docs for start of posting
+     *      list
+     * @param int $current_offset offset into word_docs for the document to
+     *      calculate statistics for
+     * @param int $last_offset offset into word_docs for end of posting
+     *      list
+     * @param int $occurs number of occurrences of the current word in 
+     *   the document
+     *
+     * @return string $doc_id of document pointed to by $current_offset
      */
     function makeItem(&$item, $start_offset, $current_offset, $last_offset,
         $occurs = 0)
@@ -443,7 +464,17 @@ class IndexShard extends PersistentStructure implements CrawlConstants
     }
 
     /**
+     * Finds the first posting offset between $start_offset and $end_offset
+     * of a posting that has a doc_offset bigger than or equal to $doc_offset
+     * This is implemented using a galloping search (double offset till
+     * get larger than binary search).
      *
+     *  @param int $start_offset first posting to consider
+     *  @param int $end_offset last posting before give up
+     *  @param int $doc_offset document offset we want to be greater than or 
+     *      equalt to
+     *
+     *  @return int offset to next posting
      */
      function nextPostingOffsetDocOffset($start_offset, $end_offset,
         $doc_offset) {
@@ -490,7 +521,11 @@ class IndexShard extends PersistentStructure implements CrawlConstants
      }
 
     /**
+     * Given an offset of a posting into the word_docs string, looks up
+     * the posting there and computes the doc_offset stored in it.
      *
+     *  @param int $offset byte/char offset into the word_docs string
+     *  @return int a document byte/char offset into the doc_infos string
      */
     function docOffsetFromPostingOffset($offset) {
         $posting = $this->getWordDocsSubstring($offset, self::POSTING_LEN);
@@ -653,7 +688,9 @@ class IndexShard extends PersistentStructure implements CrawlConstants
     }
 
     /**
-     *   
+     * Computes the prefix string index for the current words array.
+     * This index gives offsets of the first occurrences of the lead two char's
+     * of a word_id in the words array.
      */
     function prepareWordsAndPrefixes()
     {
@@ -692,6 +729,17 @@ class IndexShard extends PersistentStructure implements CrawlConstants
         $this->prefixes_len = strlen($this->prefixes);
     }
 
+    /**
+     * Posting lists are initially stored associated with a word as a key
+     * value pair. This function makes one long concatenated string out of
+     * them, word_docs, and changes the words dictionarys from pairs
+     * word_id, posting list to triples word_id, start_offset, end_offset where
+     * offsets are into this concatenated word_docs string. Finally, if
+     * a file handle is given it write the word dictionary out to the file as
+     * a long string.
+     *
+     * @param resource $fh a file handle to write the dictionary to, if desired
+     */
     function packWordDocs($fh = null)
     {
         $this->word_docs_len = 0;
@@ -710,9 +758,10 @@ class IndexShard extends PersistentStructure implements CrawlConstants
     }
 
     /**
-     *
-     * This method is memory expensive as briefly have two copies of what's
-     * in word_docs
+     * Takes the word docs string and splits it into posting lists which are
+     * assigned to particular words in the words dictionary array.
+     * This method is memory expensive as it briefly has essentially 
+     * two copies of what's in word_docs.
      */
     function unpackWordDocs()
     {
@@ -727,7 +776,13 @@ class IndexShard extends PersistentStructure implements CrawlConstants
     }
 
     /**
+     * Makes an packed integer string from a docindex and the number of
+     * occurences of a word in the document with that docindex.
      *
+     * @param int $doc_index index (i.e., a count of which document it
+     *      is rather than a byte offet) of a document in the document string
+     * @param int $occurrences number of times a word occurred in that doc
+     * @return string a packed integer containing these two pieces of info.
      */
      function packPosting($doc_index, $occurrences)
      {
@@ -735,7 +790,13 @@ class IndexShard extends PersistentStructure implements CrawlConstants
      }
 
     /**
+     * Given a packed integer string, uses the top three bytes to calculate
+     * a doc_index of a document in the shard, and uses the low order byte
+     * to computer a number of occurences of a word in that document.
      *
+     * @param string $posting a doc index occurence pair coded as packed integer
+     * @return array consistring of integer doc_index and an integer number of
+     *      occurences 
      */
      function unpackPosting($posting)
      {

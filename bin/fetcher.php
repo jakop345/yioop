@@ -838,6 +838,17 @@ class Fetcher implements CrawlConstants
                             preg_replace('/Crawl\-delay\:/i', "", $line));
                         $delay_flag = true;
                     }
+
+                }
+
+                if(stristr($line, "Sitemap")) {
+                    $tmp_url = UrlParser::canonicalLink(trim(
+                        preg_replace('/Sitemap\:/i', "", $line)), 
+                        $host_url);
+                    if(!UrlParser::checkRecursiveUrl($tmp_url) 
+                        && strlen($tmp_url) < MAX_URL_LENGTH) {
+                        $robot_site[self::LINKS][] = $tmp_url;
+                    }
                 }
             }
             
@@ -880,6 +891,12 @@ class Fetcher implements CrawlConstants
                     $this->found_sites[self::ROBOT_TXT][$host][
                         self::CRAWL_DELAY] = $site[self::CRAWL_DELAY];
                 }
+                if(isset($site[self::LINKS])) {
+                    $num_links = count($site[self::LINKS]);
+                    //robots pages might have sitemaps links on them
+                    $this->addToCrawlSites($site[self::LINKS], 
+                        $site[self::WEIGHT]);
+                }
             } else {
                 $this->found_sites[self::SEEN_URLS][] = $site;
                 if(isset($site[self::LINKS])) {
@@ -887,29 +904,8 @@ class Fetcher implements CrawlConstants
                         $this->found_sites[self::TO_CRAWL] = array();
                     }
                     $link_urls = array_keys($site[self::LINKS]);
-                    $num_links = count($link_urls);
 
-                    switch($this->crawl_order) {
-                        case self::BREADTH_FIRST:
-                            $weight= $site[self::WEIGHT] + 1;
-                        break;
-
-                        case self::PAGE_IMPORTANCE:
-                        default:
-                            if($num_links > 0 ) {
-                                $weight= $site[self::WEIGHT]/$num_links;
-                            } else {
-                                $weight= $site[self::WEIGHT];
-                            }
-                        break;
-                    }
-
-                    foreach($link_urls as $link_url) {
-                        if(strlen($link_url) > 0) {
-                            $this->found_sites[self::TO_CRAWL][] = 
-                                array($link_url, $weight);
-                        }
-                    }
+                    $this->addToCrawlSites($link_urls, $site[self::WEIGHT]);
 
                 }
             } //end else
@@ -932,6 +928,38 @@ class Fetcher implements CrawlConstants
 
         crawlLog("  Update Found Sites Time ".(changeInMicrotime($start_time)));
     
+    }
+
+    /**
+     * Used to add a set of links from a web page to the array of sites which
+     * need to be crawled. 
+     *
+     * @param array $link_urls an array of urls to be crawled
+     * @param $old_weight the weight of the web page the links came from
+     */
+    function addToCrawlSites($link_urls, $old_weight) 
+    {
+        $num_links = count($link_urls);
+        switch($this->crawl_order) {
+            case self::BREADTH_FIRST:
+                $weight= $old_weight + 1;
+            break;
+
+            case self::PAGE_IMPORTANCE:
+            default:
+                if($num_links > 0 ) {
+                    $weight= $old_weight/$num_links;
+                } else {
+                    $weight= $old_weight;
+                }
+            break;
+        }
+        foreach($link_urls as $link_url) {
+            if(strlen($link_url) > 0) {
+                $this->found_sites[self::TO_CRAWL][] = 
+                    array($link_url, $weight);
+            }
+        }
     }
 
     /**

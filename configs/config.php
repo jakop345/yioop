@@ -43,7 +43,7 @@ date_default_timezone_set('America/Los_Angeles');
 
 /*+++ The next block of code is machine edited, change at 
 your own risk, please use configure web page instead +++*/
-define('WORK_DIRECTORY', '');
+define('WORK_DIRECTORY', '/Applications/xampp/xamppfiles/htdocs/crawls');
 /*++++++*/
 
 if(file_exists(WORK_DIRECTORY."/profile.php")) {
@@ -209,28 +209,32 @@ define('NORMALIZE_FREQUENCY', 10000);
  * other extensions will be ignored
  */
 $INDEXED_FILE_TYPES =
-    array(  "html",
-            "htm", 
-            "jsp", 
+    array(  
+            "asp",
             "cgi",
-            "pl",
             "cfm",
-            "cfml", 
-            "shtml", 
-            "php", 
-            "txt", 
-            "csv", 
-            "tab", 
-            "tsv", 
-            "asp", 
-            "pdf", 
-            "doc", 
-            "rtf", 
-            "ppt",  
-            "jpg", 
-            "jpeg", 
-            "gif", 
-            "png");
+            "cfml",
+            "csv",
+            "doc",
+            "gif",
+            "html",
+            "htm",
+            "jsp",
+            "jpg",
+            "jpeg",
+            "pdf",
+            "php",
+            "pl",
+            "ppt",
+            "png",
+            "rtf",
+            "rss",
+            "shtml",
+            "svg",
+            "tab",
+            "tsv",
+            "txt",
+            "xml");
 
 /**
  * @global array associates mimetypes that can be processed by the search 
@@ -238,9 +242,12 @@ $INDEXED_FILE_TYPES =
  */
 $PAGE_PROCESSORS = array(   "text/html" => "HtmlProcessor", 
                             "text/asp" => "HtmlProcessor",
+                            "text/xml" => "XmlProcessor",
 
                             "application/xhtml+xml" => "HtmlProcessor",
 
+                            "application/rss+xml" => "RssProcessor",
+                            
                             "application/pdf" => "PdfProcessor",
 
                             "application/msword" => "DocProcessor",
@@ -253,7 +260,9 @@ $PAGE_PROCESSORS = array(   "text/html" => "HtmlProcessor",
 
                             "image/jpeg" => "JpgProcessor",
                             "image/gif" => "GifProcessor", 
-                            "image/png" => "PngProcessor"
+                            "image/png" => "PngProcessor",
+                            "image/bmp" => "BmpProcessor",
+                            "image/svg+xml"=> "SvgProcessor"
 );
 
 

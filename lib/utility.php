@@ -22,7 +22,7 @@
  *
  *  END LICENSE
  *
- * A library of string, log, hash, and time functions
+ * A library of string, log, hash, time, and conversion functions
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -217,6 +217,55 @@ function changeInMicrotime( $start, $end=NULL )
 
     return floatval( $change_in_seconds ) + $change_in_microseconds;
 } 
+
+
+/**
+ *  Converts a CSS unit string into its equivalent in pixels. This is
+ *  used by @see SvgProcessor.
+ *
+ *  @param string $value  a number followed by a legal CSS unit
+ *  @return int a number in pixels
+ */
+function convertPixels($value) 
+{
+    $len = strlen($value);
+    if($len < 2) return intval($value);
+    if($value[$len - 1] == "%") {
+        $num = floatval(substr($value, 0, $len - 1));
+        return ($num > 0) ? floor(8*min(100, $num)) : 0;
+    }
+    $num = floatval(substr($value, 0, $len - 2));
+    $unit = substr($value, $len - 2);
+    switch($unit)
+    {
+
+        case "cm":
+        case "pt":
+            return intval(28*$num);
+        break;
+        case "em":
+        case "pc":
+            return intval(6*$num);
+        break;
+        case "ex":
+            return intval(12*$num);
+        break;
+        case "in":
+            //assume screen 72 dpi as on mac
+            return intval(72*$num);
+        break;
+        case "mm":
+            return intval(2.8*$num);
+        break;
+        case "px":
+            return intval($num);
+        break;
+        default:
+            $num = $value;
+    }
+    return intval($num);
+}
+
 
 // callbacks for Model::traverseDirectory
 

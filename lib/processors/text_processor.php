@@ -130,6 +130,40 @@ class TextProcessor implements CrawlConstants
         }
         return $sites;
     }
+
+    /**
+     *
+     */
+    static function closeDanglingTags(&$page)
+    {
+        $l_pos = strrpos($page, "<");
+        $g_pos = strrpos($page, ">");
+        if($g_pos && $l_pos > $g_pos) {
+            $page = substr($page, 0, $l_pos);
+        }
+        // put all opened tags into an array
+        preg_match_all("#<([a-z]+)( .*)?(?!/)>#iU", $page, $result);
+        $openedtags = $result[1];
+
+        // put all closed tags into an array
+        preg_match_all("#</([a-z]+)>#iU", $page, $result);
+        $closedtags=$result[1];
+        $len_opened = count($openedtags);
+        // all tags are closed
+        if(count($closedtags) == $len_opened){
+            return;
+        }
+
+        $openedtags = array_reverse($openedtags);
+        // close tags
+        for($i=0;$i < $len_opened;$i++) {
+            if (!in_array($openedtags[$i],$closedtags)){
+              $page .= '</'.$openedtags[$i].'>';
+            } else {
+              unset($closedtags[array_search($openedtags[$i],$closedtags)]);
+            }
+        }
+    }
 }
 
 ?>

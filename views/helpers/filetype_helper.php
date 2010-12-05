@@ -68,29 +68,35 @@ class FiletypeHelper extends Helper
     {
         switch($mime_type)
         {
+            case "text/csv":
+                echo " [CSV]";
+            break;
+            case "application/msword":
+                echo " [DOC]";
+            break;
             case "application/pdf":
                 echo " [PDF]";
             break;
             case "application/vnd.ms-powerpoint":
                 echo " [PPT]";
             break;
-            case "application/vnd.ms-excel":
-                echo " [XLS]";
+            case "application/rss+xml":
+                echo " [RSS]";
             break;
             case "application/rtf":
                 echo " [RTF]";
             break;
-            case "application/msword":
-                echo " [DOC]";
+            case "text/tab-separated-values":
+                echo " [TAB]";
             break;
             case "text/plain":
                 echo " [TXT]";
             break;
-            case "text/csv":
-                echo " [CSV]";
+            case "application/vnd.ms-excel":
+                echo " [XLS]";
             break;
-            case "text/tab-separated-values":
-                echo " [TAB]";
+            case "text/xml":
+                echo " [XML]";
             break;
         }
     }

@@ -71,7 +71,6 @@ class HtmlProcessor extends TextProcessor
         $summary = NULL;
         if(is_string($page)) {
             $dom = self::dom($page);
-
             if($dom !==false && self::checkMetaRobots($dom)) {
                 $summary[self::TITLE] = self::title($dom);
                 $summary[self::DESCRIPTION] = self::description($dom); 
@@ -89,7 +88,9 @@ class HtmlProcessor extends TextProcessor
 
     }
 
-
+    static function processDom($dom, $url)
+    {
+    }
 
     /**
      * Return a document object based on a string containing the contents of 
@@ -282,7 +283,6 @@ class HtmlProcessor extends TextProcessor
 
        return $sites;
     }
-
 
 }
 
