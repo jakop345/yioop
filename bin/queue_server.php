@@ -164,7 +164,7 @@ class QueueServer implements CrawlConstants
      */
     var $last_index_save_time;
     /**
-     * flasg for whether the index has data to be written to disk
+     * flags for whether the index has data to be written to disk
      * @var int
      */
      var $index_dirty;

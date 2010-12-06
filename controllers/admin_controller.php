@@ -1358,6 +1358,10 @@ class AdminController extends Controller implements CrawlConstants
                         } else {
                             $clean_field = $_POST[$field];
                         }
+                        if($field == "QUEUE_SERVER" &&
+                            $clean_field[strlen($clean_field) -1] != "/") {
+                            $clean_field .= "/";
+                        }
                         $data[$field] = $clean_field;
                         $profile[$field] = $data[$field];
                         if($field == "MEMCACHE_SERVERS") {
