@@ -99,6 +99,10 @@ class ConfigureElement extends Element
             e($data['YIOOP_TOKEN']); ?>" />
         <input type="hidden" name="a" value="configure" />
         <input type="hidden" name="arg" value="profile" />
+        <h2><?php e(tl('configure_element_component_check'))?></h2>
+        <div  class="topmargin">
+        <?php e($data['SYSTEM_CHECK']); ?>
+        </div>
         <h2><?php e(tl('configure_element_profile_settings'))?></h2>
         <div class="topmargin"><b><label for="locale"><b><?php 
             e(tl('configure_element_default_language')); ?></b>

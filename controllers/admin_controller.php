@@ -1222,6 +1222,64 @@ class AdminController extends Controller implements CrawlConstants
     }
 
     /**
+     * Checks to see if the current machine has php configured in a way
+     * Yioop! can run.
+     *
+     * @return string a message indicatign which required and optional
+     *      components are missing; or "Passed" if nothing missing.
+     */
+     function systemCheck()
+     {
+        $required_items = array(
+            array("name" => "Multi-Curl", 
+                "check"=>"curl_multi_init", "type"=>"function"),
+            array("name" => "GD Graphics Library", 
+                "check"=>"imagecreate", "type"=>"function"),
+            array("name" => "SQLite3 Library", 
+                "check"=>"SQLite3", "type"=>"class"),
+        );
+        $optional_items = array(
+            array("name" => "Memcache", "check" => "Memcache",
+                "type"=> "class"),
+        );
+
+        $missing_required = "";
+        $comma = "";
+        foreach($required_items as $item) {
+            $check_function = $item["type"]."_exists";
+            if(!$check_function($item["check"])) {
+                $comma = ", ";
+                $missing_required .= $comma.$item["name"];
+            }
+        }
+
+        $out = tl('admin_controller_check_passed');
+        if($missing_required != "") {
+            $out = tl('admin_controller_missing_required', $missing_required);
+        }
+
+        $missing_optional = "";
+        $comma = "";
+        foreach($required_items as $item) {
+            $check_function = $item["type"]."_exists";
+            if(!$check_function($item["check"])) {
+                $comma = ", ";
+                $missing_optional .= $comma.$item["name"];
+            }
+        }
+        
+        if($missing_optional != "") {
+            if($missing_required != "") {
+                $out .= "<br />";
+            }
+            $out .= tl('admin_controller_missing_optional', $missing_optional);
+        }
+
+        return $out;
+
+     }
+
+    /**
      * Responsible for handling admin request related to the configure activity
      *
      * The configure activity allows a user to set the work directory for 
@@ -1237,6 +1295,7 @@ class AdminController extends Controller implements CrawlConstants
         $data = array();
         $profile = array();
 
+        $data['SYSTEM_CHECK'] = $this->systemCheck();
         $languages = $this->localeModel->getLocaleList();
         foreach($languages as $language) {
             $data['LANGUAGES'][$language['LOCALE_TAG']] = 
