@@ -136,6 +136,7 @@ interface CrawlConstants
     const DUPLICATE ='ao';
     const META_WORDS ='ap';
     const CACHE_PAGE_PARTITION = 'aq';
+    const GENERATION = 'ar';
 
     const NEEDS_OFFSET_FLAG = 0x7FFFFFFE;
     const DUPLICATE_FLAG = 0x7FFFFFFF;

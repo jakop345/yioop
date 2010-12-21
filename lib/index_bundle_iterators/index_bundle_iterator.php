@@ -90,12 +90,13 @@ abstract class IndexBundleIterator implements CrawlConstants
 
     /**
      * Computes a relevancy score for a posting offset with respect to this
-     * iterator
+     * iterator and generation
+     * @param int $generation the generation the posting offset is for
      * @param int $posting_offset an offset into word_docs to compute the
      *      relevance of
      * @return float a relevancy score based on BM25F.
      */
-    abstract function computeRelevance($posting_offset);
+    abstract function computeRelevance($generation, $posting_offset);
 
     /**
      * Returns the iterators to the first document block that it could iterate
@@ -105,10 +106,12 @@ abstract class IndexBundleIterator implements CrawlConstants
 
     /**
      * Forwards the iterator one group of docs
-     * @param $doc_index if set the next block must all have $doc_indexes larger
-     *      than this value
+     * @param array $gen_doc_offset a generation, doc_offset pair. If set,
+     *      the must be of greater than or equal generation, and if equal the
+     *      next block must all have $doc_offsets larger than or equal to 
+     *      this value
      */
-    abstract function advance($doc_index = null);
+    abstract function advance($gen_doc_offset = null);
 
     /**
      * Returns the index associated with this iterator
@@ -117,12 +120,13 @@ abstract class IndexBundleIterator implements CrawlConstants
     abstract function &getIndex($key = NULL);
 
     /**
-     * Gets the doc_offset for the next document that would be return by
-     * this iterator
+     * Gets the doc_offset and generation for the next document that 
+     * would be return by this iterator
      *
-     * @return int the desired document offset
+     * @return mixed an array with the desired document offset 
+     *  and generation; -1 on fail
      */
-    abstract function currentDocOffsetWithWord();
+    abstract function currentGenDocOffsetWithWord();
 
     /**
      * Hook function used by currentDocsWithWord to return the current block
@@ -131,7 +135,24 @@ abstract class IndexBundleIterator implements CrawlConstants
      * @return mixed doc ids and score if there are docs left, -1 otherwise
      */
      abstract function findDocsWithWord();
-     
+
+    /**
+     *
+     */
+     function genDocOffsetCmp($gen_doc1, $gen_doc2) {
+        $equal_generation = ($gen_doc1[0] == $gen_doc2[0]);
+        $equal_offset = ($gen_doc1[1] == $gen_doc2[1]);
+        $less_generation = ($gen_doc1[0] < $gen_doc2[0]);
+        $less_offset = ($gen_doc1[1] < $gen_doc2[1]);
+        if($equal_generation && $equal_offset) {
+            return 0;
+        } else if ($less_generation || ($equal_generation && $less_offset) ) {
+            return -1;
+        }
+        return 1;
+     }
+
+
     /**
      * Gets the current block of doc ids and score associated with the
      * this iterators word
@@ -181,7 +202,9 @@ abstract class IndexBundleIterator implements CrawlConstants
             } else {
                 $doc_info = $pages[$doc_key];
             }
-            if(isset($doc_info[self::SUMMARY_OFFSET])) {
+            if(isset($doc_info[self::SUMMARY_OFFSET]) &&
+                isset($doc_info[self::GENERATION])) {
+                $index->setCurrentShard($doc_info[self::GENERATION], true);
                 $page = $index->getPage($doc_info[self::SUMMARY_OFFSET]);
                 $out_pages[$doc_key] = $doc_info;
                 $out_pages[$doc_key][self::SUMMARY] = $page;

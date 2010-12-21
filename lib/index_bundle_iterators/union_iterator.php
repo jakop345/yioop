@@ -133,17 +133,18 @@ class UnionIterator extends IndexBundleIterator
 
     /**
      * Computes a relevancy score for a posting offset with respect to this
-     * iterator
+     * iterator and generation
+     * @param int $generation the generation the posting offset is for
      * @param int $posting_offset an offset into word_docs to compute the
      *      relevance of
      * @return float a relevancy score based on BM25F.
      */
-    function computeRelevance($posting_offset)
+    function computeRelevance($generation, $posting_offset)
     {
         $relevance = 0;
         for($i = 0; $i < $this->num_iterators; $i++) {
             $relevance += $this->index_bundle_iterators[$i]->computeRelevance(
-                $posting_offset);
+                $generation, $posting_offset);
         }
         return $relevance;
     }
@@ -220,10 +221,12 @@ class UnionIterator extends IndexBundleIterator
 
     /**
      * Forwards the iterator one group of docs
-     * @param $doc_offset if set the next block must all have $doc_offsets 
-     *      larger than or equal to this value
+     * @param array $gen_doc_offset a generation, doc_offset pair. If set,
+     *      the must be of greater than or equal generation, and if equal the
+     *      next block must all have $doc_offsets larger than or equal to 
+     *      this value
      */
-    function advance($doc_offset = null) 
+    function advance($gen_doc_offset = null) 
     {
         $this->advanceSeenDocs();
 
@@ -232,7 +235,7 @@ class UnionIterator extends IndexBundleIterator
         $total_num_docs = 0;
         for($i = 0; $i < $this->num_iterators; $i++) {
             $total_num_docs += $this->index_bundle_iterators[$i]->num_docs;
-            $this->index_bundle_iterators[$i]->advance($doc_index);
+            $this->index_bundle_iterators[$i]->advance($gen_doc_offset);
         }
         if($this->seen_docs_unfiltered > 0) {
             $this->num_docs = 
@@ -285,17 +288,18 @@ class UnionIterator extends IndexBundleIterator
      }
 
     /**
-     * This method is supposed to
-     * get the doc_offset for the next document that would be return by
+     * This method is supposed to get the doc_offset and generation
+     * for the next document that would be return by
      * this iterator. As the union iterator as written returns a block
      * of size at least the number of iterators in it, and this iterator
      * is intended to be used when results_per_block is 1, we generate
      * a user defined error.
      *
-     * @return int the desired document offset
+     * @return mixed the desired document offset and generation (actually, 
+     *  triggers error).
      */
-    function currentDocOffsetWithWord() {
-        trigger_error("Cannot get the doc offset with word of
+    function currentGenDocOffsetWithWord() {
+        trigger_error("Cannot get the doc offset and generation with word of
             a union iterator", E_USER_ERROR);
     }
 }

@@ -306,7 +306,11 @@ class QueueServer implements CrawlConstants
                     if(file_exists(CRAWL_DIR."/schedules/crawl_status.txt")) {
                         unlink(CRAWL_DIR."/schedules/crawl_status.txt");
                     }
-                    $this->indexSave();
+                    $this->index_archive->saveAndAddCurrentShardDictionary();
+                    $this->index_archive->dictionary->mergeAllTiers();
+                    $this->db->setWorldPermissionsRecursive(
+                        CRAWL_DIR.'/cache/'.
+                        self::index_data_base_name.$this->crawl_time);
                     crawlLog("Stopping crawl !!\n");
                     $info[self::STATUS] = self::WAITING_START_MESSAGE_STATE;
                 break;

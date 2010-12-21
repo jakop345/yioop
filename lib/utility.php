@@ -89,6 +89,34 @@ function vByteDecode(&$str, &$offset)
 }
 
 /**
+ * Unpacks an int from a 4 char string
+ *
+ * @param string $str where to extract int from
+ * @return int extracted integer
+ */
+function unpackInt($str)
+{
+    $tmp = unpack("N", $str);
+    return $tmp[1];
+}
+
+/**
+ * Converts a string to string where each char has been replaced by its 
+ * hexadecimal equivalent
+ *
+ * @param string $str what we want rewritten in hex
+ * @return string the hexified string
+ */
+function toHexString($str)
+{
+    $out = "";
+    for($i = 0; $i < strlen($str); $i++) {
+        $out .= dechex(ord($str[$i]))." ";
+    }
+    return $out;
+}
+
+/**
  *  Logs a message to a logfile or the screen
  *
  *  @param string $msg message to log

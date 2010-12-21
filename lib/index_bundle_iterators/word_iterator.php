@@ -44,27 +44,7 @@ require_once BASE_DIR.'/lib/index_bundle_iterators/index_bundle_iterator.php';
  * of these documents.
  *
  * A description of how words and the documents containing them are stored 
- * is given in the documentation of IndexArchiveBundle. To iterate over
- * all documents containng a word, its hash, work_key, is formed. Then using
- * the Bloom filter for that partition, it is determined if the word is stored
- * at all, and if it is, which generations it occurs in. Then the iterator
- * is set to point to the first block of the first generation the word appears
- * in that is greater than the limit of the WordIterator. Thereafter, 
- * nextDocsWithWord will advance $this->current_pointer by one per call.
- * $this->current_pointer keeps track of which block of documents containing
- * the word to return. If it is less than COMMON_WORD_THRESHOLD/BLOCK_SIZE and 
- * there are still more blocks, then the corresponding block_pointer of the word 
- * from the generation's partition info_block is used to look up the offset to
- * the doc block. If it is greater than this value then the linked list 
- * of doc blocks pointed to for the partition is followed to get the appropriate
- * block. This list is in the order that words were stored in the index so
- * LIST_OFFSET points to the last block stored, which in turn points to the
- * next to last block, etc. Finally, when all the blocks in the linked-list are
- * exhausted, the remaining docs for that generation for that word are stored 
- * in the info block for the word itself (this will always be less than 
- * BLOCK_SIZE many). Once all the docs for a word for a generation have been
- * iterated through, than iteration proceeds to the next generation containing
- * the word.
+ * is given in the documentation of IndexArchiveBundle. 
  *
  * @author Chris Pollett
  * @package seek_quarry
@@ -89,6 +69,30 @@ class WordIterator extends IndexBundleIterator
      * @var int
      */
     var $next_offset;
+
+    /**
+     * 
+     * @var array
+     */
+    var $dictionary_info;
+
+    /**
+     * 
+     * @var int
+     */
+    var $num_generations;
+
+    /**
+     * 
+     * @var int
+     */
+    var $generation_pointer;
+
+    /**
+     * The current byte offset in the IndexShard
+     * @var int
+     */
+    var $current_generation;
 
     /**
      * The current byte offset in the IndexShard
@@ -132,30 +136,41 @@ class WordIterator extends IndexBundleIterator
         $this->word_key = $word_key;
         $this->index =  $index;
         $this->current_block_fresh = false;
-
-        $tmp = $index->getCurrentShard()->getWordInfo($word_key, $raw);
-        if ($tmp === false) {
+        $this->dictionary_info = 
+            $index->dictionary->getWordInfo($word_key, $raw);
+        if ($this->dictionary_info === false) {
             $this->empty = true;
         } else {
-            list($this->start_offset, $this->last_offset, $this->num_docs) 
-                = $tmp;
-            $this->current_offset = $this->start_offset;
-            $this->empty = false;
+            $this->num_generations = count($this->dictionary_info);
+            if($this->num_generations == 0) 
+            {
+                $this->empty = true;
+            } else {
+                $this->num_docs = 0;
+                for($i = 0; $i < $this->num_generations; $i++) {
+                    list(, , , $num_docs) =
+                        $this->dictionary_info[$i];
+                        $this->num_docs += $num_docs;
+                }
+                $this->empty = false;
 
-            $this->reset();
+                $this->reset();
+            }
         }
     }
 
     /**
      * Computes a relevancy score for a posting offset with respect to this
-     * iterator
+     * iterator and generation
+     * @param int $generation the generation the posting offset is for
      * @param int $posting_offset an offset into word_docs to compute the
      *      relevance of
      * @return float a relevancy score based on BM25F.
      */
-    function computeRelevance($posting_offset)
+    function computeRelevance($generation, $posting_offset)
     {
         $item = array();
+        $this->index->setCurrentShard($generation, true);
         $this->index->getCurrentShard()->makeItem($item, 
             $this->start_offset, $posting_offset, $this->last_offset, 1);
         return $item[self::RELEVANCE];
@@ -168,6 +183,17 @@ class WordIterator extends IndexBundleIterator
      */
     function reset()
     {
+        if(!$this->empty) {// we shouldn't be called when empty - but to be safe
+            list($this->current_generation, $this->start_offset, 
+                $this->last_offset, ) 
+                = $this->dictionary_info[0];
+        } else {
+            $this->start_offset = 0;
+            $this->last_offset = -1;
+            $this->num_generations = -1;
+        }
+        $this->current_offset = $this->start_offset;
+        $this->generation_pointer = 0;
         $this->count_block = 0;
         $this->seen_docs = 0;
 
@@ -182,29 +208,47 @@ class WordIterator extends IndexBundleIterator
      */
     function findDocsWithWord()
     {
-        if($this->current_offset > $this->last_offset || $this->empty) {
+        if($this->empty || ($this->generation_pointer >= $this->num_generations) 
+            || ($this->generation_pointer == $this->num_generations -1 &&
+            $this->current_offset > $this->last_offset)) {
+
             return -1;
         }
         $this->next_offset = $this->current_offset;
+        $this->index->setCurrentShard($this->current_generation, true);
+
         //the next call also updates next offset
-        $results = $this->index->getCurrentShard()->getPostingsSlice(
+        $shard = $this->index->getCurrentShard();
+        $results = $shard->getPostingsSlice(
             $this->start_offset,
             $this->next_offset, $this->last_offset, $this->results_per_block);
+        $this->count_block = count($results); 
+
         return $results;
     }
 
 
     /**
      * Forwards the iterator one group of docs
-     * @param $doc_offset if set the next block must all have $doc_offsets 
-     *      larger than or equal to this value
+     * @param array $gen_doc_offset a generation, doc_offset pair. If set,
+     *      the must be of greater than or equal generation, and if equal the
+     *      next block must all have $doc_offsets larger than or equal to 
+     *      this value
      */
-    function advance($doc_offset = null) 
+    function advance($gen_doc_offset = null) 
     {
         $this->advanceSeenDocs();
         if($this->current_offset < $this->next_offset) {
             $this->current_offset = $this->next_offset;
-            if($doc_offset !== null) {
+            if($this->current_offset > $this->last_offset) {
+                $this->advanceGeneration();
+            }
+            if($gen_doc_offset !== null) {
+                while($this->curent_generation < $gen_doc_offset[0]) {
+                    $this->advanceGeneration();
+                }
+                $this->index->setCurrentShard($this->current_generation, true);
+
                 $this->current_offset = 
                     $this->index->getCurrentShard(
                         )->nextPostingOffsetDocOffset($this->next_offset, 
@@ -218,21 +262,39 @@ class WordIterator extends IndexBundleIterator
                         IndexShard::POSTING_LEN;
             }
         } else {
-            $this->current_offset = $this->last_offset + 1;
+            $this->advanceGeneration();
+        }
+    }
+
+    /**
+     *
+     */
+    function advanceGeneration()
+    {
+        if($this->generation_pointer < $this->num_generations) {
+            $this->generation_pointer++;
+        }
+        if($this->generation_pointer < $this->num_generations) {
+            list($this->current_generation, $this->start_offset, 
+                $this->last_offset, ) 
+                = $this->dictionary_info[$this->generation_pointer];
+            $this->current_offset = $this->start_offset;
         }
     }
 
 
     /**
-     * Gets the doc_offset for the next document that would be return by
-     * this iterator
+     * Gets the doc_offset and generation for the next document that 
+     * would be return by this iterator
      *
-     * @return int the desired document offset
+     * @return mixed an array with the desired document offset 
+     *  and generation; -1 on fail
      */
-    function currentDocOffsetWithWord() {
+    function currentGenDocOffsetWithWord() {
         if($this->current_offset > $this->last_offset) {
             return -1;
         }
+        $this->index->setCurrentShard($this->current_generation, true);
         return $this->index->getCurrentShard(
                         )->docOffsetFromPostingOffset($this->current_offset);
     }

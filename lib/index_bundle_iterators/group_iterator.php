@@ -128,14 +128,15 @@ class GroupIterator extends IndexBundleIterator
 
     /**
      * Computes a relevancy score for a posting offset with respect to this
-     * iterator
+     * iterator and generation
+     * @param int $generation the generation the posting offset is for
      * @param int $posting_offset an offset into word_docs to compute the
      *      relevance of
      * @return float a relevancy score based on BM25F.
      */
-    function computeRelevance($posting_offset)
+    function computeRelevance($generation, $posting_offset)
     {
-        return $this->index_bundle_iterator->computeRelevance(
+        return $this->index_bundle_iterator->computeRelevance($generation,
                 $posting_offset);
     }
 
@@ -222,9 +223,12 @@ class GroupIterator extends IndexBundleIterator
                          new WordIterator($hash_info_url, 
                             $this->getIndex(), true);
                     $doc_array = $word_iterator->currentDocsWithWord();
+
                     if(is_array($doc_array) && count($doc_array) == 1) {
-                        $relevance = $this->computeRelevance(
+                        $relevance =  $this->computeRelevance(
+                            $word_iterator->current_generation,
                             $word_iterator->current_offset);
+
                         $keys = array_keys($doc_array);
                         $key = $keys[0];
                         if(!isset($doc_array[$key][self::DUPLICATE]) ) {
@@ -262,9 +266,11 @@ class GroupIterator extends IndexBundleIterator
                     if(!isset($out_pages[$hash_url]) || $is_page) {
                         $out_pages[$hash_url] = $doc_info;
                         $out_pages[$hash_url][self::SUMMARY_OFFSET] = array();
-                        if(isset($doc_info[self::SUMMARY_OFFSET]) ) {
+                        if(isset($doc_info[self::SUMMARY_OFFSET]) && 
+                          isset($doc_info[self::GENERATION])) {
                             $out_pages[$hash_url][self::SUMMARY_OFFSET] = 
-                                array(array($doc_info["KEY"], 
+                                array(array($doc_info["KEY"],
+                                    $doc_info[self::GENERATION], 
                                     $doc_info[self::SUMMARY_OFFSET]));
                             unset($out_pages[$hash_url]["KEY"]);
                         }
@@ -272,16 +278,21 @@ class GroupIterator extends IndexBundleIterator
                         $fields = array_keys($out_pages[$hash_url]);
                         foreach($fields as $field) {
                             if(isset($doc_info[$field]) && 
-                                $field != self::SUMMARY_OFFSET) {
+                                $field != self::SUMMARY_OFFSET &&
+                                $field != self::GENERATION) {
                                 $out_pages[$hash_url][$field] += 
                                     $doc_info[$field];
                             } else if($field == self::SUMMARY_OFFSET &&
                                 $is_page == true) {
                                 array_unshift($out_pages[$hash_url][$field],
-                                    array($hash_url, $doc_info[$field]));
+                                    array($hash_url, 
+                                    $doc_info[self::GENERATION],
+                                    $doc_info[$field]));
                             } else if($field == self::SUMMARY_OFFSET) {
                                 $out_pages[$hash_url][$field][] = 
-                                    array($doc_info["KEY"], $doc_info[$field]);
+                                    array($doc_info["KEY"],
+                                        $doc_info[self::GENERATION],
+                                        $doc_info[$field]);
                             }
                         }
                     }
@@ -326,8 +337,9 @@ class GroupIterator extends IndexBundleIterator
                 is_array($doc_info[self::SUMMARY_OFFSET])) {
                 $out_pages[$doc_key] = $doc_info;
                 foreach($doc_info[self::SUMMARY_OFFSET] as $offset_array) {
-                    list($key, $summary_offset) = $offset_array;
+                    list($key, $generation, $summary_offset) = $offset_array;
                     $index = & $this->getIndex($key);
+                    $index->setCurrentShard($generation, true);
                     $page = $index->getPage($summary_offset);
                     if($page == array()) {continue;}
                     if(!isset($out_pages[$doc_key][self::SUMMARY])) {
@@ -352,10 +364,12 @@ class GroupIterator extends IndexBundleIterator
 
     /**
      * Forwards the iterator one group of docs
-     * @param $doc_offset if set the next block must all have $doc_offsets 
-     *      larger than or equal to this value
+     * @param array $gen_doc_offset a generation, doc_offset pair. If set,
+     *      the must be of greater than or equal generation, and if equal the
+     *      next block must all have $doc_offsets larger than or equal to 
+     *      this value
      */
-    function advance($doc_offset = null) 
+    function advance($gen_doc_offset = null) 
     {
         $this->advanceSeenDocs();
 
@@ -374,18 +388,19 @@ class GroupIterator extends IndexBundleIterator
             $this->grouped_keys[$hash_url] = true;
         }
 
-        $this->index_bundle_iterator->advance($doc_offset);
+        $this->index_bundle_iterator->advance($gen_doc_offset);
 
     }
 
     /**
-     * Gets the doc_offset for the next document that would be return by
-     * this iterator
+     * Gets the doc_offset and generation for the next document that 
+     * would be return by this iterator
      *
-     * @return int the desired document offset
+     * @return mixed an array with the desired document offset 
+     *  and generation; -1 on fail
      */
-    function currentDocOffsetWithWord() {
-        $this->index_bundle_iterator->currentDocOffsetWithWord();
+    function currentGenDocOffsetWithWord() {
+        $this->index_bundle_iterator->currentGenDocOffsetWithWord();
     }
 
 

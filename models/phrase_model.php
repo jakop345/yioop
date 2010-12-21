@@ -172,7 +172,6 @@ class PhraseModel extends Model
                 $word_structs[] = $word_struct;
             }
         }
-        
         $results = $this->getSummariesByHash($word_structs, 
             $low, $results_per_page);
         if(count($results) == 0) {
@@ -326,29 +325,24 @@ class PhraseModel extends Model
             $restrict_phrases = array_unique($restrict_phrases);
             $restrict_phrases = array_filter($restrict_phrases);
             $index_archive->setCurrentShard(0, true);
-            $words_array = $index_archive->getSelectiveWords($hashes, 5);
-
-            if(is_array($words_array)) {
-                reset($words_array);
-                $word_key = key($words_array);
-                $word_count = $words_array[$word_key];
-                foreach($words_array as $key => $count) {
-                    if($count > 3 * $word_count) {
-                        unset($words_array[$key]);
-                    }
+            if(count($hashes) > 5) {
+                $words_array = $index_archive->getSelectiveWords($hashes, 5);
+                if(is_array($words_array)) {
+                    $word_keys = array_keys($words_array);
+                } else {
+                    $word_keys = NULL;
+                    $word_struct = NULL;
                 }
-                $word_keys = array_keys($words_array);
+            } else {
+                $word_keys = $hashes;
+            }
+            if($word_keys !== NULL) {
                 $word_struct = array("KEYS" => $word_keys,
                     "RESTRICT_PHRASES" => $restrict_phrases, 
                     "DISALLOW_PHRASES" => $disallow_phrases,
                     "WEIGHT" => $weight,
                     "INDEX_ARCHIVE" => $index_archive
                 );
-                if($word_count <= 0 ) {
-                    $word_struct = NULL;
-                }
-            } else {
-                $word_struct = NULL;
             }
         }
         $format_words = array_merge($query_words, $base_words);
@@ -440,29 +434,29 @@ class PhraseModel extends Model
                 return $results;
             }
         }
+
+        $query_iterator = $this->getQueryIterator($word_structs);
         $num_retrieved = 0;
-        while($num_retrieved < $to_retrieve) {
-            $gen_pages = $this->getGenerationSummariesByHash(
-                $word_structs, $to_retrieve, $generation);
-             if(!is_array($gen_pages)) { break; }
-             $gen_num_rows = $gen_pages["GEN_NUM_ROWS"];
-             unset($gen_pages["GEN_NUM_ROWS"]);
-             $max_num_generations = $gen_pages["MAX_NUM_GENERATIONS"];
-             unset($gen_pages["MAX_NUM_GENERATIONS"]);
-             $gen_count = count($gen_pages);
-             $num_retrieved += $gen_count;
-             $pages = array_merge($pages, $gen_pages);
-             $generation++;
+        $pages = array();
+        while(is_array($next_docs = $query_iterator->nextDocsWithWord()) &&
+            $num_retrieved < $to_retrieve) {
+            foreach($next_docs as $doc_key => $doc_info) {
+                $summary = & $doc_info[CrawlConstants::SUMMARY];
+                unset($doc_info[CrawlConstants::SUMMARY]);
+                $pages[] = array_merge($doc_info, $summary);
+                $num_retrieved++;
+                if($num_retrieved >=  $to_retrieve) {
+                    break 2;
+                }
+            }
+
         }
         usort($pages, "scoreOrderCallback");
 
         if($num_retrieved < $to_retrieve) {
             $results['TOTAL_ROWS'] = $num_retrieved;
         } else {
-            $avg_docs_gen = ($generation > 1) ? 
-                ($num_retrieved - $gen_count + $gen_num_rows)/$generation :
-                $gen_num_rows;
-            $results['TOTAL_ROWS'] = ceil($avg_docs_gen * $max_num_generations);
+            $results['TOTAL_ROWS'] =  $query_iterator->num_docs;
             //this is only an approximation 
         }
         
@@ -479,8 +473,9 @@ class PhraseModel extends Model
 
 
     /**
-     * Gets doc summaries of documents containing given words and meeting the
-     * additional provided criteria in a given index shard generation
+     * Using the supplied $word_structs, contructs an iterator for getting 
+     * results to a query
+     *
      * @param array $word_structs an array of word_structs. Here a word_struct
      *      is an associative array with at least the following fields
      *      KEYS -- an array of word keys
@@ -488,30 +483,19 @@ class PhraseModel extends Model
      *      DISALLOW_PHRASES -- an array of words the document must not contain
      *      WEIGHT -- a weight to multiple scores returned from this iterator by
      *      INDEX_ARCHIVE -- an index_archive object to get results from
-     * @param int $num number of documents to return summaries of
-     * @param int $generation the index of the generation to get summaries from
-     * @return array document summaries
+     * @return &object an iterator for iterating through results to the 
+     *  query
      */
-    function getGenerationSummariesByHash($word_structs, 
-        $to_retrieve, $generation)
+    function getQueryIterator($word_structs)
     {
         $iterators = array();
-        $max_num_generations = 0;
         foreach($word_structs as $word_struct) {
             if(!is_array($word_struct)) { continue;}
             $word_keys = $word_struct["KEYS"];
             $restrict_phrases = $word_struct["RESTRICT_PHRASES"];
             $disallow_phrases = $word_struct["DISALLOW_PHRASES"];
             $index_archive = $word_struct["INDEX_ARCHIVE"];
-            if($index_archive->generation_info['ACTIVE'] > 
-                $max_num_generations) {
-                $max_num_generations = 
-                    $index_archive->generation_info['ACTIVE'];
-            }
-            if($generation > $index_archive->generation_info['ACTIVE']) {
-                continue;
-            }
-            $index_archive->setCurrentShard($generation, true);
+
             $weight = $word_struct["WEIGHT"];
             $num_word_keys = count($word_keys);
             $word_iterators = array();
@@ -522,7 +506,6 @@ class PhraseModel extends Model
                     new WordIterator($word_keys[$i], $index_archive);
             }
             if($num_word_keys == 1) {
-            
                 $base_iterator = $word_iterators[0];
             } else {
                 $base_iterator = new IntersectIterator($word_iterators);
@@ -547,28 +530,8 @@ class PhraseModel extends Model
         }
 
         $group_iterator = new GroupIterator($union_iterator);
-        $num_retrieved = 0;
-        $pages = array();
-        while(is_array($next_docs = $group_iterator->nextDocsWithWord()) &&
-            $num_retrieved < $to_retrieve) {
-             foreach($next_docs as $doc_key => $doc_info) {
-                 $summary = & $doc_info[CrawlConstants::SUMMARY];
-                 unset($doc_info[CrawlConstants::SUMMARY]);
-                 $pages[] = array_merge($doc_info, $summary);
-                 $num_retrieved++;
-                 if($num_retrieved >=  $to_retrieve) {
-                     break 2;
-                 }
-             }
-        }
-        if($num_retrieved < $to_retrieve) {
-            $pages["GEN_NUM_ROWS"] = $num_retrieved;
-        } else {
-            $pages["GEN_NUM_ROWS"] = $group_iterator->num_docs;
-        }
-        $pages["MAX_NUM_GENERATIONS"] = $max_num_generations + 1;
-          //add one since num generation starts at zero
-        return $pages;
+
+        return $group_iterator;
     }
 
 }

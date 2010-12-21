@@ -170,7 +170,7 @@ define('MIN_QUEUE_WEIGHT', 1/100000);
 define('NUM_ARCHIVE_PARTITIONS', 10);
 
 /** number of documents before next gen */
-define('NUM_DOCS_PER_GENERATION', 100000);
+define('NUM_DOCS_PER_GENERATION', 10000);
 
 /** precision to round floating points document scores */
 define('PRECISION', 10); 

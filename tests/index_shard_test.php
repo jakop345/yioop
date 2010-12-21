@@ -100,7 +100,6 @@ class IndexShardTest extends UnitTest
             $offset, $word_counts, $meta_ids);
         $this->assertEqual($this->test_objects['shard']->len_all_docs, 9, 
             "Len All Docs Correctly Counts Length of First Doc");
-
         $c_data = $this->test_objects['shard']->getPostingsSliceById(
             crawlHash('CCCCCCCC', true), 5);
         $this->assertTrue(isset($c_data["AAAAAAAA"]), 
@@ -388,10 +387,13 @@ class IndexShardTest extends UnitTest
             $offset, $word_counts, $meta_ids);
         $this->test_objects['shard']->save();
         $this->test_objects['shard2'] = IndexShard::load("shard.txt");
+
         $this->assertEqual($this->test_objects['shard2']->len_all_docs, 9, 
             "Len All Docs Correctly Counts Length of First Doc");
+
         $c_data = $this->test_objects['shard2']->getPostingsSliceById(
             crawlHash('BBBBBBBB', true), 5);
+
         $this->assertTrue(isset($c_data["AAAAAAAA"]), 
             "Doc lookup by word works");
         $c_data = $this->test_objects['shard2']->getPostingsSliceById(

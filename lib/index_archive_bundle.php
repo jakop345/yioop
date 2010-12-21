@@ -42,6 +42,10 @@ require_once 'web_archive_bundle.php';
  */
 require_once 'index_shard.php';
 /**
+ * Used to store word dictionary
+ */
+require_once 'index_dictionary.php';
+/**
  * Used to check if a page already stored in the WebArchiveBundle
  */
 require_once 'bloom_filter_bundle.php';
@@ -63,8 +67,16 @@ require_once 'crawl_constants.php';
  * The basic file structures for an IndexArchiveBundle are:
  * <ol> 
  * <li>A WebArchiveBundle for web page summaries.</li>
- * <li>A set of inverted index generations. These generations
- *  have name index0, index1,...
+ * <li>A IndexDictionary containing all the words stored in the bundle.
+ * Each word entry in the dictionary contains starting and ending
+ * offsets for documents containing that word for some particular IndexShard
+ * generation.</li>
+ * <li>A set of index shard generations. These generations
+ *  have names index0, index1,... A shard has word entries, word doc entries
+ *  and document entries. For more information see the index shard 
+ * documentation.
+ * </li>
+ * <li>
  * The file generations.txt keeps track of what is the current generation. 
  * A given generation can hold NUM_WORDS_PER_GENERATION words amongst all 
  * its partitions. After which the next generation begins. 
@@ -112,6 +124,16 @@ class IndexArchiveBundle implements CrawlConstants
      * @var object
      */
     var $summaries;
+
+    /**
+     * IndexDictionary for all shards in the IndexArchiveBundle
+     * This contains entries of the form (word, num_shards with word,
+     * posting list info 0th shard containing the word, 
+     * posting list info 1st shard containing the word, ...) 
+     * @var object
+     */
+    var $dictionary;
+
     /**
      * Index Shard for current generation inverted word index
      * @var object
@@ -160,6 +182,8 @@ class IndexArchiveBundle implements CrawlConstants
 
         $this->num_docs_per_generation = $num_docs_per_generation;
 
+        $this->dictionary = new IndexDictionary($this->dir_name."/dictionary");
+
     }
 
     /**
@@ -184,6 +208,7 @@ class IndexArchiveBundle implements CrawlConstants
 
     /**
      * Adds the provided mini inverted index data to the IndexArchiveBundle
+     * Expects initGenerationToAdd to be called before, so generation is correct
      *
      * @param object &$index_shard a mini inverted index of word_key=>doc data
      *      to add to this IndexArchiveBundle
@@ -202,7 +227,9 @@ class IndexArchiveBundle implements CrawlConstants
     /**
      * Determines based on its size, if index_shard should be added to
      * the active generation or in a new generation should be started.
-     * If so, a new generation is started.
+     * If so, a new generation is started, the old generation is saves, and
+     * the dictionary of the old shard is copied to the bundles dictionary
+     * and a log-merge performed if needed
      *
      * @param object &$index_shard a mini inverted index of word_key=>doc data
      * @return int the active generation after the check and possible change has
@@ -214,14 +241,15 @@ class IndexArchiveBundle implements CrawlConstants
         $add_num_docs = $index_shard->num_docs;
         if($current_num_docs + $add_num_docs > $this->num_docs_per_generation){
             $switch_time = microtime();
-            $this->forceSave();
+            $this->saveAndAddCurrentShardDictionary();
+            //Set up new shard
             $this->generation_info['ACTIVE']++;
             $this->generation_info['CURRENT'] = 
                 $this->generation_info['ACTIVE'];
             $current_index_shard_file = $this->dir_name."/index".
                 $this->generation_info['ACTIVE'];
             $this->current_shard = new IndexShard(
-                $current_index_shard_file, $this->generation_info['ACTIVE'] * 
+                $current_index_shard_file, $this->generation_info['ACTIVE'], 
                     $this->num_docs_per_generation);
             file_put_contents($this->dir_name."/generation.txt", 
                 serialize($this->generation_info));
@@ -229,6 +257,21 @@ class IndexArchiveBundle implements CrawlConstants
         }
 
         return $this->generation_info['ACTIVE'];
+    }
+
+    function saveAndAddCurrentShardDictionary()
+    {
+        // Save current shard dictionary to main dictionary
+        $this->forceSave();
+        $current_index_shard_file = $this->dir_name."/index".
+            $this->generation_info['ACTIVE'];
+        /* want to do the copying of dictionary as files to conserve memory
+           in case merge tiers after adding to dictionary
+        */
+        $this->current_shard = new IndexShard(
+            $current_index_shard_file, $this->generation_info['ACTIVE'],  
+                $this->num_docs_per_generation, true);
+        $this->dictionary->addShardDictionary($this->current_shard);
     }
 
     /**
@@ -245,7 +288,7 @@ class IndexArchiveBundle implements CrawlConstants
             $current_index_shard_file = $this->dir_name."/index".
                 $this->generation_info['CURRENT'];
             $this->current_shard = new IndexShard($current_index_shard_file,
-                $this->generation_info['CURRENT']*$num_docs_per_generation);
+                $this->generation_info['CURRENT'], $num_docs_per_generation);
         }
         return $this->current_shard;
      }
@@ -256,9 +299,9 @@ class IndexArchiveBundle implements CrawlConstants
      * getActiveShard() instead. The point of this method is to allow
      * for lazy reading of the file associated with the shard.
      *
-     * @return &object the currently being index shard
+     * @return object the currently being index shard
      */
-     public function &getCurrentShard()
+     public function getCurrentShard()
      {
         if(!isset($this->current_shard)) {
             if(!isset($this->generation_info['CURRENT'])) {
@@ -275,13 +318,15 @@ class IndexArchiveBundle implements CrawlConstants
                         $current_index_shard_file,
                         $this->generation_info['CURRENT']*
                         $this->num_docs_per_generation, true);
+                    $this->current_shard->getShardHeader();
+                    $this->current_shard->read_only_from_disk = true;
                 } else {
                     $this->current_shard = 
                         IndexShard::load($current_index_shard_file);
                 }
             } else {
                 $this->current_shard = new IndexShard($current_index_shard_file,
-                    $this->generation_info['CURRENT']*
+                    $this->generation_info['CURRENT'],
                     $this->num_docs_per_generation);
             }
         }
@@ -380,15 +425,19 @@ class IndexArchiveBundle implements CrawlConstants
         $words_array = array();
         if(!is_array($word_keys) || count($word_keys) < 1) { return NULL;}
         foreach($word_keys as $word_key) {
-            $tmp = $this->getCurrentShard()->getWordInfo($word_key);
+            $tmp = $this->dictionary->getWordInfo($word_key);
             if($tmp === false) {
                 $words_array[$word_key] = 0;
             } else {
-                $words_array[$word_key] = $tmp[2];
+                $count = 0;
+                foreach($tmp as $entry) {
+                    $count += $entry[3];
+                }
+                $words_array[$word_key] = $count;
             }
         }
 
-        uasort( $words_array, $comparison); 
+        uasort( $words_array, $comparison);
         
         return array_slice($words_array, 0, $num);
     }

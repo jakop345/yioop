@@ -46,7 +46,7 @@ require_once BASE_DIR.'/lib/index_bundle_iterators/index_bundle_iterator.php';
 
 /**
  * Used to iterate over the documents which occur in all of a set of
- * WordIterator results
+ * iterator results
  *
  * @author Chris Pollett
  * @package seek_quarry
@@ -131,17 +131,18 @@ class IntersectIterator extends IndexBundleIterator
 
     /**
      * Computes a relevancy score for a posting offset with respect to this
-     * iterator
+     * iterator and generation
+     * @param int $generation the generation the posting offset is for
      * @param int $posting_offset an offset into word_docs to compute the
      *      relevance of
      * @return float a relevancy score based on BM25F.
      */
-    function computeRelevance($posting_offset)
+    function computeRelevance($generation, $posting_offset)
     {
         $relevance = 0;
         for($i = 0; $i < $this->num_iterators; $i++) {
             $relevance += $this->index_bundle_iterators[$i]->computeRelevance(
-                $posting_offset);
+                $generation, $posting_offset);
         }
         return $relevance;
     }
@@ -156,7 +157,7 @@ class IntersectIterator extends IndexBundleIterator
     {
         $pages = array();
 
-        $status = $this->syncDocOffsetsAmongstIterators();
+        $status = $this->syncGenDocOffsetsAmongstIterators();
         if($status == -1) {
             return -1;
         }
@@ -170,8 +171,10 @@ class IntersectIterator extends IndexBundleIterator
             for($i = 1; $i < $this->num_iterators; $i++) {
                 $i_docs = 
                     $this->index_bundle_iterators[$i]->currentDocsWithWord();
-
-                $docs[$key][self::RELEVANCE] += $i_docs[$key][self::RELEVANCE];
+                if(isset($i_docs[$key])) {
+                    $docs[$key][self::RELEVANCE] += 
+                        $i_docs[$key][self::RELEVANCE];
+                }
             }
             $docs[$key][self::SCORE] = $docs[$key][self::DOC_RANK] + 
                  $docs[$key][self::RELEVANCE];
@@ -184,25 +187,28 @@ class IntersectIterator extends IndexBundleIterator
     /**
      *
      */
-    function syncDocOffsetsAmongstIterators()
+    function syncGenDocOffsetsAmongstIterators()
     {
-        $biggest_offset = 0;
+        $biggest_gen_offset = 0;
         do{
             $all_same = true;
             for($i = 0; $i < $this->num_iterators; $i++) {
-                $new_doc_offset[$i] = 
+                $new_gen_doc_offset[$i] = 
                     $this->index_bundle_iterators[
-                        $i]->currentDocOffsetWithWord();
-                if($i == 0) {
-                    $biggest_offset = $new_doc_offset[0];
-                }
-                if($new_doc_offset[$i] == -1) {
+                        $i]->currentGenDocOffsetWithWord();
+                if($new_gen_doc_offset[$i] == -1) {
                     return -1;
                 }
-                if($new_doc_offset[$i] > $biggest_offset) {
-                    $biggest_offset = $new_doc_offset[$i];
+                if($i == 0) {
+                    $biggest_gen_offset = $new_gen_doc_offset[0];
+                }
+                // 0 - generation, 1 - doc_offset
+                $gen_doc_cmp = $this->genDocOffsetCmp($new_gen_doc_offset[$i], 
+                    $biggest_gen_offset);
+                if($gen_doc_cmp > 0) {
+                    $biggest_gen_offset = $new_gen_doc_offset[$i];
                     $all_same = false;
-                } else if ($new_doc_offset[$i] < $biggest_offset) {
+                } else if ($gen_doc_cmp < 0) {
                     $all_same = false;
                 }
             }
@@ -210,9 +216,10 @@ class IntersectIterator extends IndexBundleIterator
                 return 1;
             }
             for($i = 0; $i < $this->num_iterators; $i++) {
-                if($new_doc_offset[$i] < $biggest_offset) {
-
-                    $this->index_bundle_iterators[$i]->advance($biggest_offset);
+                if($this->genDocOffsetCmp($new_gen_doc_offset[$i], 
+                    $biggest_gen_offset) < 0) {
+                    $this->index_bundle_iterators[$i]->advance(
+                        $biggest_gen_offset);
                 }
             }
         } while(!$all_same);
@@ -220,10 +227,12 @@ class IntersectIterator extends IndexBundleIterator
 
     /**
      * Forwards the iterator one group of docs
-     * @param $doc_offset if set the next block must all have $doc_offsets 
-     *      larger than or equal to this value
+     * @param array $gen_doc_offset a generation, doc_offset pair. If set,
+     *      the must be of greater than or equal generation, and if equal the
+     *      next block must all have $doc_offsets larger than or equal to 
+     *      this value
      */
-    function advance($doc_offset = null) 
+    function advance($gen_doc_offset = null) 
     {
         $this->advanceSeenDocs();
 
@@ -241,19 +250,20 @@ class IntersectIterator extends IndexBundleIterator
                 floor(($this->seen_docs * $total_num_docs) /
                 $this->seen_docs_unfiltered);
         } 
-        $this->index_bundle_iterators[0]->advance($doc_offset);
+        $this->index_bundle_iterators[0]->advance($gen_doc_offset);
 
     }
 
     /**
-     * Gets the doc_offset for the next document that would be return by
-     * this iterator
+     * Gets the doc_offset and generation for the next document that 
+     * would be return by this iterator
      *
-     * @return int the desired document offset
+     * @return mixed an array with the desired document offset 
+     *  and generation; -1 on fail
      */
-    function currentDocOffsetWithWord() {
-        $this->syncDocOffsetsAmongstIterators();
-        $this->index_bundle_iterators[0]->currentDocOffsetWithWord();
+    function currentGenDocOffsetWithWord() {
+        $this->syncGenDocOffsetsAmongstIterators();
+        $this->index_bundle_iterators[0]->currentGenDocOffsetWithWord();
     }
 
     /**

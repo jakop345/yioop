@@ -1237,6 +1237,8 @@ class AdminController extends Controller implements CrawlConstants
                 "check"=>"imagecreate", "type"=>"function"),
             array("name" => "SQLite3 Library", 
                 "check"=>"SQLite3", "type"=>"class"),
+            array("name" => "Multibyte Character Library", 
+                "check"=>"mb_internal_encoding", "type"=>"function"),
         );
         $optional_items = array(
             array("name" => "Memcache", "check" => "Memcache",
