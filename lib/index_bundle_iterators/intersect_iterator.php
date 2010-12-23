@@ -189,7 +189,7 @@ class IntersectIterator extends IndexBundleIterator
      */
     function syncGenDocOffsetsAmongstIterators()
     {
-        $biggest_gen_offset = 0;
+        $biggest_gen_offset = NULL;
         do{
             $all_same = true;
             for($i = 0; $i < $this->num_iterators; $i++) {

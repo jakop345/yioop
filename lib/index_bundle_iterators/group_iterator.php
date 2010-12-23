@@ -94,7 +94,7 @@ class GroupIterator extends IndexBundleIterator
      * the minimum number of pages to group from a block;
      * this trumps $this->index_bundle_iterator->results_per_block
      */
-    const MIN_FIND_RESULTS_PER_BLOCK = 200;
+    const MIN_FIND_RESULTS_PER_BLOCK = 400;
 
     /**
      * Creates a group iterator with the given parameters.
@@ -168,6 +168,7 @@ class GroupIterator extends IndexBundleIterator
                 $done = true;
             }
         } while(!$done);
+
         $this->count_block_unfiltered = count($pages);
         if(!is_array($pages)) {
             return $pages;
@@ -215,6 +216,7 @@ class GroupIterator extends IndexBundleIterator
                     $i++;
                 }
             }
+
              //get summary page for groups of link data if exists and don't have
             foreach($pre_out_pages as $hash_url => $data) {
                 if(!isset($data['IS_PAGE'])) {
@@ -223,7 +225,6 @@ class GroupIterator extends IndexBundleIterator
                          new WordIterator($hash_info_url, 
                             $this->getIndex(), true);
                     $doc_array = $word_iterator->currentDocsWithWord();
-
                     if(is_array($doc_array) && count($doc_array) == 1) {
                         $relevance =  $this->computeRelevance(
                             $word_iterator->current_generation,
@@ -231,14 +232,15 @@ class GroupIterator extends IndexBundleIterator
 
                         $keys = array_keys($doc_array);
                         $key = $keys[0];
-                        if(!isset($doc_array[$key][self::DUPLICATE]) ) {
+                        if(!isset($doc_array[$key][self::DUPLICATE]) &&
+                            strlen($key) == 8) {
                             $item = $doc_array[$key];
                             $item[self::RELEVANCE] += $relevance;
                             $item[self::SCORE] += $relevance;
                             $item['IS_PAGE'] = true;
                             $item['KEY'] = $key;
                             array_unshift($pre_out_pages[$hash_url], $item);
-                        } else { 
+                        } else if(isset($doc_array[$key][self::DUPLICATE])){ 
                             /*
                                 Deduplication: 
                                 a deduplicate info: page was written, so
@@ -264,7 +266,18 @@ class GroupIterator extends IndexBundleIterator
                     $is_page = $doc_info['IS_PAGE'];
                     unset($doc_info['IS_PAGE']);
                     if(!isset($out_pages[$hash_url]) || $is_page) {
-                        $out_pages[$hash_url] = $doc_info;
+                        if(isset($out_pages[$hash_url]) && $is_page) {
+                            $rank = $out_pages[$hash_url][self::DOC_RANK];
+                            $relevance = $out_pages[$hash_url][self::RELEVANCE];
+                            $out_pages[$hash_url] = $doc_info;
+                            $out_pages[$hash_url][self::DOC_RANK] += $rank;
+                            $out_pages[$hash_url][self::RELEVANCE] += 
+                                $relevance;
+                            $out_pages[$hash_url][self::SCORE] += 
+                                $rank + $relevance;
+                        } else {
+                            $out_pages[$hash_url] = $doc_info;
+                        }
                         $out_pages[$hash_url][self::SUMMARY_OFFSET] = array();
                         if(isset($doc_info[self::SUMMARY_OFFSET]) && 
                           isset($doc_info[self::GENERATION])) {

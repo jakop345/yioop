@@ -223,7 +223,6 @@ class WordIterator extends IndexBundleIterator
             $this->start_offset,
             $this->next_offset, $this->last_offset, $this->results_per_block);
         $this->count_block = count($results); 
-
         return $results;
     }
 
@@ -244,7 +243,7 @@ class WordIterator extends IndexBundleIterator
                 $this->advanceGeneration();
             }
             if($gen_doc_offset !== null) {
-                while($this->curent_generation < $gen_doc_offset[0]) {
+                while($this->current_generation < $gen_doc_offset[0]) {
                     $this->advanceGeneration();
                 }
                 $this->index->setCurrentShard($this->current_generation, true);
@@ -252,7 +251,7 @@ class WordIterator extends IndexBundleIterator
                 $this->current_offset = 
                     $this->index->getCurrentShard(
                         )->nextPostingOffsetDocOffset($this->next_offset, 
-                            $this->last_offset, $doc_offset);
+                            $this->last_offset, $gen_doc_offset[1]);
                 if($this->current_offset === false) {
                     $this->current_offset = $this->last_offset + 1;
                     return;
@@ -295,8 +294,8 @@ class WordIterator extends IndexBundleIterator
             return -1;
         }
         $this->index->setCurrentShard($this->current_generation, true);
-        return $this->index->getCurrentShard(
-                        )->docOffsetFromPostingOffset($this->current_offset);
+        return array($this->current_generation, $this->index->getCurrentShard(
+                        )->docOffsetFromPostingOffset($this->current_offset));
     }
 
     /**
