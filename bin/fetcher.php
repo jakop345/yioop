@@ -46,6 +46,9 @@ if(!PROFILE) {
     exit();
 }
 
+/** CRAWLING means don't try to use memcache*/
+define("NO_CACHE", true);
+
 /** get the database library based on the current database type */
 require_once BASE_DIR."/models/datasources/".DBMS."_manager.php"; 
 /** caches of web pages are stored in a 

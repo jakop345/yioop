@@ -45,6 +45,9 @@ require_once BASE_DIR.'/configs/config.php';
 
 if(!PROFILE || !DISPLAY_TESTS) {echo "BAD REQUEST"; exit();}
 
+/** NO_CACHE means don't try to use memcache*/
+define("NO_CACHE", true);
+
 
 /**  Draw head of the html page */
 ?>

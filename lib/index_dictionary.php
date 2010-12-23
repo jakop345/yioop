@@ -595,7 +595,8 @@ class IndexDictionary implements CrawlConstants
         $false = false;
         if(isset($this->blocks[$file_num][$bytes])) {
             return $this->blocks[$file_num][$bytes];
-        } else if (USE_MEMCACHE && ($this->blocks[$file_num][$bytes] = 
+        } else if (!defined("NO_CACHE") && USE_MEMCACHE && 
+            ($this->blocks[$file_num][$bytes] = 
             $MEMCACHE->get("Dict:$file_num:$bytes:".$this->dir_name)) != false){
             return $this->blocks[$file_num][$bytes];
         }
@@ -617,7 +618,7 @@ class IndexDictionary implements CrawlConstants
         }
         $this->blocks[$file_num][$bytes] = fread($this->fhs[$file_num], 
             self::DICT_BLOCK_SIZE);
-        if(USE_MEMCACHE) {
+        if(!defined("NO_CACHE") && USE_MEMCACHE) {
             $MEMCACHE->set("Dict:$file_num:$bytes:".$this->dir_name, 
                 $this->blocks[$file_num][$bytes]);
         }
