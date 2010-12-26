@@ -639,7 +639,7 @@ class Fetcher implements CrawlConstants
             } else if(!isset($site[self::HASH])){
                 $not_downloaded[] = $site;
             } else {
-                $duplicates[] = $site[self::URL];
+                $duplicates[] = array($site[self::URL], $site[self::HASH]);
                 crawlLog("Deduplicated:".$site[self::URL]);
             }
 
@@ -1142,6 +1142,11 @@ class Fetcher implements CrawlConstants
 
             $meta_ids = array();
 
+            /* 
+               The first meta id is a hash of the page contents --
+               will use for aggregating duplicates
+             */
+            $meta_ids[] = $site[self::HASH];
             /*
                 Handle the built-in meta words. For example
                 store the sites the doc_key belongs to, 

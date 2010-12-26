@@ -211,7 +211,6 @@ class WordIterator extends IndexBundleIterator
         if($this->empty || ($this->generation_pointer >= $this->num_generations) 
             || ($this->generation_pointer == $this->num_generations -1 &&
             $this->current_offset > $this->last_offset)) {
-
             return -1;
         }
         $this->next_offset = $this->current_offset;

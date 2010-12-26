@@ -61,21 +61,23 @@ require_once BASE_DIR."/lib/index_shard.php";
 class IndexShardTest extends UnitTest
 {
     /**
-     *
+     * Construct some index shard we can add documents to
      */
     public function setUp()
     {
         $this->test_objects['shard'] = new IndexShard("shard.txt", 0);
         $this->test_objects['shard2'] = new IndexShard("shard2.txt", 0);
+        $this->test_objects['shard3'] = new IndexShard("shard3.txt", 0);
     }
 
     /**
-     * 
+     * Deletes any index shard files we may have created
      */
     public function tearDown()
     {
         @unlink("shard.txt");
         @unlink("shard2.txt");
+        @unlink("shard3.txt");
     }
 
     /**
@@ -343,26 +345,88 @@ class IndexShardTest extends UnitTest
     }
 
     /**
-     * Check the code for calculating word document relaevance computes
-     * correct values
-     */
-    public function checkRelevanceCalculationTestCase()
-    {
-    }
-
-    /**
-     *
+     * Check that marking a document as a duplicate works
      */
     public function markDuplicatesTestCase()
     {
-        $doc_urls = array("http://somewhere.com/");
-
-        $this->test_objects['shard']->markDuplicateDocs($doc_urls);
+        $doc_url_hashes = array(array("http://somewhere.com/", "HASHHASH"));
+        $this->test_objects['shard']->markDuplicateDocs($doc_url_hashes);
         $c_data = $this->test_objects['shard']->getPostingsSliceById(
             crawlHash('info:http://somewhere.com/', true), 5);
         $this->assertTrue(isset(
-            $c_data[crawlHash($doc_urls[0], true)][CrawlConstants::DUPLICATE]),
+            $c_data[crawlHash($doc_url_hashes[0][0], true)][
+            CrawlConstants::DUPLICATE]),
             "Duplicate data shows up as duplicate");
+        $docid = "KKKKKKKK:GGGGGGGG:HHHHHHHH";
+        $offset = 20;
+        $word_counts = array(
+            'ZZZZZZZZ' => 9,
+            'DDDDDDDD' => 4,
+        );
+        $meta_ids = array(
+        );
+        $this->test_objects['shard2']->addDocumentWords($docid, 
+            $offset, $word_counts, $meta_ids);
+        $docid = "GGGGGGGG";
+        $offset = 6;
+        $word_counts = array(
+            'DDDDDDDD' => 3,
+            'IIIIIIII' => 4,
+            'JJJJJJJJ' => 5,
+        );
+
+        $meta_ids = array(
+            "KKKKKKKK"
+        );
+        $this->test_objects['shard2']->addDocumentWords($docid, 
+            $offset, $word_counts, $meta_ids);
+        $this->test_objects['shard']->appendIndexShard(
+            $this->test_objects['shard2']);
+
+        $c_data = $this->test_objects['shard']->getPostingsSliceById(
+            crawlHash('info:http://somewhere.com/', true), 5);
+        $this->assertTrue(isset(
+            $c_data[crawlHash('http://somewhere.com/', true)][
+            CrawlConstants::DUPLICATE]),
+            "Duplicate shows up as duplicate after append");
+
+        $word_counts = array(
+            'MMMMMMMM' => 1
+        );
+        $meta_ids = array(
+        );
+        $docid = "NNNNNNNN";
+        $this->test_objects['shard3']->addDocumentWords($docid, 
+            0, $word_counts, $meta_ids);
+        $doc_url_hashes = array(array("http://elsewhere.com/", "HHHHHASH"));
+
+        $this->test_objects['shard3']->markDuplicateDocs($doc_url_hashes);
+        $new_doc_offsets = array(
+            "NNNNNNNN" => 5,
+        );
+        $this->test_objects['shard3']->packWordDocs();
+
+        $this->test_objects['shard3']->changeDocumentOffsets($new_doc_offsets);
+        $c_data = $this->test_objects['shard3']->getPostingsSliceById(
+            crawlHash('info:http://elsewhere.com/', true), 5);
+        $this->assertTrue(isset(
+            $c_data[crawlHash('http://elsewhere.com/', true)][
+            CrawlConstants::DUPLICATE]),
+            "Duplicate shows up as duplicate after mark and change offset 2");
+        $this->test_objects['shard']->appendIndexShard(
+            $this->test_objects['shard3']);
+        $c_data = $this->test_objects['shard']->getPostingsSliceById(
+            crawlHash('info:http://somewhere.com/', true), 5);
+        $this->assertTrue(isset(
+            $c_data[crawlHash('http://somewhere.com/', true)][
+            CrawlConstants::DUPLICATE]),
+            "Duplicate shows up as duplicate after append and change offset 1");
+        $c_data = $this->test_objects['shard']->getPostingsSliceById(
+            crawlHash('info:http://elsewhere.com/', true), 5);
+        $this->assertTrue(isset(
+            $c_data[crawlHash('http://elsewhere.com/', true)][
+            CrawlConstants::DUPLICATE]),
+            "Duplicate shows up as duplicate after append and change offset 2");
     }
 
     /**

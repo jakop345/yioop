@@ -150,9 +150,16 @@ class FetchUrl implements CrawlConstants
                             '@<style[^>]*?>.*?</style>@si');
                     $dedup_string = preg_replace(
                         $strip_array, '', $sites[$i][$value]);
+                    $dedup_string_old = preg_replace(
+                        '/\W+/', '', $dedup_string);
+                    $dedup_string = strip_tags($dedup_string_old);
+                    if($dedup_string == "") {
+                        $dedup_string = $dedup_string_old;
+                    }
                     $dedup_string = preg_replace(
-                        '/\W+/', '', strip_tags($dedup_string));
-                    $sites[$i][$hash] = crawlHash($dedup_string);
+                        '/\W+/', '', $dedup_string);
+
+                    $sites[$i][$hash] = crawlHash($dedup_string, true);
 
                 }
 

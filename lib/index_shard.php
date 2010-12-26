@@ -335,8 +335,7 @@ class IndexShard extends PersistentStructure implements CrawlConstants
             $store =  $this->packPosting($this->docids_len >> 4, $occurrences);
             if(!isset($this->words[$word_id])) {
                 $this->words[$word_id] = $store;
-            } else if($this->words[$word_id] != 
-                pack("N", self::DUPLICATE_FLAG)) {
+            } else {
                 $this->words[$word_id] .= $store;
             }
             if($occurrences > 0) {
@@ -410,14 +409,12 @@ class IndexShard extends PersistentStructure implements CrawlConstants
         if(!$this->read_only_from_disk && !$this->word_docs_packed) {
             $this->packWordDocs();
         }
-
         $num_docs_so_far = 0;
         $results = array();
         $end = min($this->word_docs_len, $last_offset);
 
         do {
             if($next_offset > $end) {break;}
-            $item = array();
             $doc_id = 
                 $this->makeItem(
                     $item, $start_offset, $next_offset, $last_offset);
@@ -428,6 +425,7 @@ class IndexShard extends PersistentStructure implements CrawlConstants
             $next_offset += self::POSTING_LEN;
         } while ($next_offset<= $last_offset && $num_docs_so_far < $len
             && $next_offset > $old_next_offset);
+
         return $results;
     }
 
@@ -459,7 +457,6 @@ class IndexShard extends PersistentStructure implements CrawlConstants
             self::POSTING_LEN);
 
         list($doc_index, $occurrences) = $this->unpackPosting($posting);
-
         if($occurrences < $occurs) {
             $occurrences = $occurs;
         }
@@ -471,15 +468,19 @@ class IndexShard extends PersistentStructure implements CrawlConstants
         $doc_info_string = $this->getDocInfoSubstring($doc_loc, 12);
         $doc_id = substr($doc_info_string, 0, 8);
         $item[self::SUMMARY_OFFSET] = unpackInt(
-            substr($doc_info_string, 8, 4));
+            substr($doc_info_string, 8));
         $item[self::GENERATION] = $this->generation;
         $is_doc = false;
         $skip_stats = false;
         
         if($item[self::SUMMARY_OFFSET] == self::DUPLICATE_FLAG ||
             $item[self::SUMMARY_OFFSET] == self::NEEDS_OFFSET_FLAG) {
+
             $skip_stats = true;
             $item[self::DUPLICATE] = true;
+            $item[self::HASH] = $this->getDocInfoSubstring($doc_loc + 16, 8);
+            $item[self::RELEVANCE] = 0;
+            $item[self::SCORE] = $item[self::DOC_RANK];
         } else if(($item[self::SUMMARY_OFFSET] 
             & self::COMPOSITE_ID_FLAG) !== 0) {
             //handles link item case
@@ -636,23 +637,13 @@ class IndexShard extends PersistentStructure implements CrawlConstants
             // update doc offsets for newly added docs
             for($i = 0; $i < $postings_len; $i += self::POSTING_LEN) {
                 $num = unpackInt(substr($postings, $i, 4));
-                if($num != self::DUPLICATE_FLAG) {
-                    $num += ($this->docids_len << 4);
-                    charCopy(pack("N", $num), $postings, $i, 4);
-                }
+                $num += ($this->docids_len << 4);
+                charCopy(pack("N", $num), $postings, $i, 4);
             }
-            $dup = pack("N", self::DUPLICATE_FLAG);
             if(!isset($this->words[$word_id])) {
                 $this->words[$word_id] = $postings;
                 $this->word_docs_len += $postings_len;
-            } else if($this->words[$word_id] == $dup 
-                || $postings == $dup) {
-                $old_word_docs_len = strlen(
-                    $this->words[$word_id]);
-                $this->words[$word_id] = $dup;
-                $this->word_docs_len -= $old_word_docs_len;
-                $this->word_docs_len += strlen($dup);
-            } else {
+            } else  {
                 $this->words[$word_id] .= $postings;
                 $this->word_docs_len += $postings_len;
             }
@@ -682,23 +673,25 @@ class IndexShard extends PersistentStructure implements CrawlConstants
         for($i = 0 ; $i < $docids_len; $i += $row_len) {
             $row_len = 16;
             $id = substr($this->doc_infos, $i, 8);
-            $tmp = unpack("N", substr($this->doc_infos, $i + 8, 4));
-            $offset = $tmp[1];
-            if($offset == self::DUPLICATE_FLAG) {continue; }//ignore duplicates
+            $offset = unpackInt(substr($this->doc_infos, $i + 8, 4));
+            if($offset == self::DUPLICATE_FLAG) {
+                $row_len += 16; //ignore duplicates
                 //notice don't ignore NEEDS_OFFSET_FLAG
-            $comp_flag = 0;
-            if(($offset & self::COMPOSITE_ID_FLAG) !== 0) {
-                //handle link item case
-                $row_len += 16;
-                $comp_flag = self::COMPOSITE_ID_FLAG;
-                $id .= ":".substr($this->doc_infos, $i + 12, 8) . ":" .
-                    substr($this->doc_infos, $i + 20, 8);
-            }
-            $new_offset = (isset($docid_offsets[$id])) ? 
-                pack("N", ($docid_offsets[$id] | $comp_flag)) : 
-                pack("N", $offset);
+            } else {
+                $comp_flag = 0;
+                if(($offset & self::COMPOSITE_ID_FLAG) !== 0) {
+                    //handle link item case
+                    $row_len += 16;
+                    $comp_flag = self::COMPOSITE_ID_FLAG;
+                    $id .= ":".substr($this->doc_infos, $i + 12, 8) . ":" .
+                        substr($this->doc_infos, $i + 20, 8);
+                }
+                $new_offset = (isset($docid_offsets[$id])) ? 
+                    pack("N", ($docid_offsets[$id] | $comp_flag)) : 
+                    pack("N", $offset);
 
-            charCopy($new_offset, $this->doc_infos, $i + 8, 4);
+                charCopy($new_offset, $this->doc_infos, $i + 8, 4);
+            }
         }
     }
 
@@ -706,20 +699,28 @@ class IndexShard extends PersistentStructure implements CrawlConstants
      * Marks a set of urls as duplicates of urls previously seen
      * To do this the url's doc_id has associated with a summary
      * offset of value 0x7FFFFFFF (CrawlConstants::DUPLICATE_FLAG), and its 
-     * length is set to 0XFFFFFFFF
+     * length is set to 0XFFFFFFFF. A duplicate has a further 16 bytes
+     * consisting of the hash of the contents of the duplicated page, followed
+     * by  0x7FFFFFFFFFFFFFFF.
      *
-     * @param array $doc_urls urls to mark as duplicates.
+     * @param array $doc_url_hashes array of pairs (url, page hash) 
+     *      to mark as duplicates.
      */
-    function markDuplicateDocs($doc_urls)
+    function markDuplicateDocs($doc_urls_hashes)
     {
-        foreach($doc_urls as $duplicate) {
-            $doc_key = crawlHash($duplicate, true);
+        foreach($doc_urls_hashes as $url_hash) {
+            list($url, $hash) = $url_hash;
+            $doc_key = crawlHash($url, true);
             $this->doc_infos .= $doc_key . pack("N", self::DUPLICATE_FLAG).
                 pack("N", 0xFFFFFFFF);
-            $word_id = crawlHash("info:".$duplicate, true);
+            $this->doc_infos .= $hash . pack("N", self::DUPLICATE_FLAG).
+                pack("N", 0xFFFFFFFF);
+            $word_id = crawlHash("info:".$url, true);
             $this->words[$word_id] = 
-                pack("N", $this->docids_len);
-            $this->docids_len += 16;
+                 $this->packPosting($this->docids_len >> 4, 0);
+            $this->docids_len += 32;
+            $this->num_docs++;
+            $this->word_docs_len += self::POSTING_LEN;
         }
 
     }
