@@ -75,7 +75,7 @@ class PhraseModel extends Model
      * Number of pages to cache in one go in memcache
      * Size chosen based on 1MB max object size for memcache
      */
-     const NUM_CACHE_PAGES = 80;
+     const NUM_CACHE_PAGES = 50;
     /**
      * {@inheritdoc}
      */
