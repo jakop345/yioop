@@ -367,10 +367,9 @@ class Fetcher implements CrawlConstants
             }
 
             $site_pages = FetchUrl::getPages($sites, true);
-            
+
             list($deduplicated_pages, $schedule_again_pages, $duplicates) = 
                 $this->deduplicateAndReschedulePages($site_pages);
-
             $this->found_duplicates = array_merge($this->found_duplicates,
                 $duplicates);
             if($can_schedule_again == true) {
@@ -1053,7 +1052,7 @@ class Fetcher implements CrawlConstants
             $index_data[self::SEEN_URLS] = & 
                 $this->found_sites[self::SEEN_URLS];
             unset($this->found_sites[self::SEEN_URLS]);
-            $index_data[self::INVERTED_INDEX] = & 
+            $index_data[self::INVERTED_INDEX] =  // objects are assigned by ref
                 $this->found_sites[self::INVERTED_INDEX];
             unset($this->found_sites[self::INVERTED_INDEX]);
             $post_data['index_data'] = urlencode(base64_encode(
@@ -1247,7 +1246,7 @@ class Fetcher implements CrawlConstants
 
         $this->found_duplicates = array();
 
-        $this->found_sites[self::INVERTED_INDEX] = & $index_shard;
+        $this->found_sites[self::INVERTED_INDEX] = $index_shard;
 
         crawlLog("  Build mini inverted index time ".
             (changeInMicrotime($start_time)));

@@ -180,7 +180,8 @@ class GroupIterator extends IndexBundleIterator
         if($this->count_block_unfiltered > 0 ) {
             $i = $this->seen_docs;
             foreach($pages as $doc_key => $doc_info) {
-                if(!is_array($doc_info) ) {continue;}
+                if(!is_array($doc_info) || $doc_info[self::SUMMARY_OFFSET] == 
+                    self::NEEDS_OFFSET_FLAG) {continue;}
                 $doc_info['KEY'] = $doc_key;
                 if(isset($doc_info[self::DUPLICATE])) {
                     $hash_iterator = 
@@ -221,6 +222,7 @@ class GroupIterator extends IndexBundleIterator
                     $i++;
                 }
             }
+
              /*get summary page for groups of link data if exists and don't have
                also aggregate duplicates
              */

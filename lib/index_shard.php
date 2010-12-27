@@ -477,8 +477,11 @@ class IndexShard extends PersistentStructure implements CrawlConstants
             $item[self::SUMMARY_OFFSET] == self::NEEDS_OFFSET_FLAG) {
 
             $skip_stats = true;
-            $item[self::DUPLICATE] = true;
-            $item[self::HASH] = $this->getDocInfoSubstring($doc_loc + 16, 8);
+            if($item[self::SUMMARY_OFFSET] == self::DUPLICATE_FLAG) {
+                $item[self::DUPLICATE] = true;
+                $item[self::HASH] = 
+                    $this->getDocInfoSubstring($doc_loc + 16, 8);
+            }
             $item[self::RELEVANCE] = 0;
             $item[self::SCORE] = $item[self::DOC_RANK];
         } else if(($item[self::SUMMARY_OFFSET] 

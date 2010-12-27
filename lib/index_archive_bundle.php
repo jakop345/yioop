@@ -231,11 +231,11 @@ class IndexArchiveBundle implements CrawlConstants
      * the dictionary of the old shard is copied to the bundles dictionary
      * and a log-merge performed if needed
      *
-     * @param object &$index_shard a mini inverted index of word_key=>doc data
+     * @param object $index_shard a mini inverted index of word_key=>doc data
      * @return int the active generation after the check and possible change has
      *      been performed
      */
-    public function initGenerationToAdd(&$index_shard)
+    public function initGenerationToAdd($index_shard)
     {
         $current_num_docs = $this->getActiveShard()->num_docs;
         $add_num_docs = $index_shard->num_docs;
@@ -278,9 +278,9 @@ class IndexArchiveBundle implements CrawlConstants
      * Sets the current shard to be the active shard (the active shard is
      * what we call the last (highest indexed) shard in the bundle. Then
      * returns a reference to this shard
-     * @return &object last shard in the bundle
+     * @return object last shard in the bundle
      */
-     public function &getActiveShard()
+     public function getActiveShard()
      {
         if($this->setCurrentShard($this->generation_info['ACTIVE'])) {
             return $this->getCurrentShard();

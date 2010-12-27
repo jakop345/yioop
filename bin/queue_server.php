@@ -578,7 +578,7 @@ class QueueServer implements CrawlConstants
             $found_duplicates = array();
             foreach($sites[self::SEEN_URLS] as $site) {
                 if(!in_array($site, $seen_sites) &&
-                    isset($site[self::HASH_URL])) {
+                    isset($site[self::URL]) && isset($site[self::HASH])) {
                     $found_duplicates[] = 
                         array($site[self::URL], $site[self::HASH]);
                 }
@@ -607,8 +607,10 @@ class QueueServer implements CrawlConstants
         }
 
         if(isset($seen_sites) && isset($sites[self::INVERTED_INDEX])) {
-            $index_shard = & $sites[self::INVERTED_INDEX];
-            $index_shard->unpackWordDocs();
+            $index_shard =  $sites[self::INVERTED_INDEX];
+            if($index_shard->word_docs_packed) {
+                $index_shard->unpackWordDocs();
+            }
             $index_shard->markDuplicateDocs($found_duplicates);
             $generation = 
                 $this->index_archive->initGenerationToAdd($index_shard);
