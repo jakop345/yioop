@@ -72,6 +72,10 @@ class WebLayout extends Layout
             <meta charset="utf-8" />
             <link rel="shortcut icon"   href="favicon.ico" />
             <link rel="stylesheet" type="text/css" href="css/search.css" />
+            <linl rel="search" type="application/opensearchdescription+xml" 
+                href="<?php e(QUEUE_SERVER."yioopbar.xml");?>"
+                title="Content search" />
+
         </head>
         <body class="html-<?php e($data['BLOCK_PROGRESSION']);?> html-<?php 
             e($data['LOCALE_DIR']);?> html-<?php e($data['WRITING_MODE']);?>">

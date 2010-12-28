@@ -1306,6 +1306,9 @@ class AdminController extends Controller implements CrawlConstants
         } else {
             $out = "<span class='red'>$out</span>";
         }
+        if(file_exists(BASE_DIR."/configs/local_config.php")) {
+            $out .= "<br />".tl('admin_controller_using_local_config');
+        }
 
         return $out;
 

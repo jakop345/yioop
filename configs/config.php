@@ -41,10 +41,16 @@ define('QUERY_INFO', 2);
 define('ERROR_INFO', 4);
 date_default_timezone_set('America/Los_Angeles');
 
+if(file_exists(BASE_DIR."/configs/local_config.php")) {
+    require_once(BASE_DIR."/configs/local_config.php");
+}
+
+if(!defined('WORK_DIRECTORY')) {
 /*+++ The next block of code is machine edited, change at 
 your own risk, please use configure web page instead +++*/
-define('WORK_DIRECTORY', '/Applications/xampp/xamppfiles/htdocs/crawls');
+define('WORK_DIRECTORY', '');
 /*++++++*/
+}
 
 if(file_exists(WORK_DIRECTORY."/profile.php")) {
     require_once(WORK_DIRECTORY."/profile.php");
