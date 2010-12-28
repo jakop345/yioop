@@ -63,7 +63,7 @@ class WebLayout extends Layout
         ?>" dir="<?php e($data['LOCALE_DIR']);?>">
 
         <head>
-            <title>Yioop!</title>
+            <title><?php e(tl('web_layout_title')); ?></title>
 
             <meta name="Author" content="Christopher Pollett" />
 

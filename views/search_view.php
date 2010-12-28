@@ -80,7 +80,8 @@ class SearchView extends View implements CrawlConstants
         ?>
         <h1 class="logo"><a href="./?YIOOP_TOKEN=<?php 
             e($data['YIOOP_TOKEN'])?>"><img 
-            src="resources/yioop.png" alt="Yioop!" /></a></h1>
+            src="resources/yioop.png" alt="<?php e(tl('search_view_title')); ?>" 
+            /></a></h1>
         <div class="searchbox">
         <form id="searchForm" method="get" action=''>
         <p>
