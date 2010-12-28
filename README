@@ -25,16 +25,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Summary
 -------
-The Yioop search engine consists of three main
+The Yioop search engine consists of four main
 scripts: 
 
-fetcher.php -- used to download batches of urls provided
+fetcher.php - used to download batches of urls provided
     the queue_server. 
 queue_server.php - maintains a queue of urls that are
     going to be scheduled to be seen. It also keeps
     track of what has been seen and robots.txt info.
     Its last responsibility is to create the index_archive
     that is used by the search front end.
+
+arc_tool.php - an auxiliary script used to view the contents
+    of a web or index archive from the command line
 
 index.php -- a search engine web page. It is also used
     to handle message passing between the fetchers 

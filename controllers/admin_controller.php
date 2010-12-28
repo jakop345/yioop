@@ -935,7 +935,15 @@ class AdminController extends Controller implements CrawlConstants
     }
 
     /**
+     * Handles admin request related to the crawl mix activity
      *
+     * The crawl mix activity allows a user to create/edit crawl mixes:
+     * weighted combinations of search indexes
+     *
+     * @return array $data info about available crawl mixes and changes to them
+     *      as well as any messages about the success or failure of a 
+     *      sub activity.
+
      */
     function mixCrawls()
     {
@@ -1260,6 +1268,11 @@ class AdminController extends Controller implements CrawlConstants
 
         if(!is_writable(BASE_DIR."/configs/config.php")) {
             $out .= tl('admin_controller_no_write_config_php');
+            $br = "<br />";
+        }
+
+        if(defined(WORK_DIRECTORY) && !is_writable(WORK_DIRECTORY)) {
+            $out .= $br. tl('admin_controller_no_write_work_dir');
             $br = "<br />";
         }
 

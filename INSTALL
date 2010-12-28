@@ -70,6 +70,6 @@ button to stop it. The crawl should show up after a delay in the
 Previous Crawls table. Their you can choose to resume a crawl,
 delete it, or set it as the current index.
 
-(6) If you set a crawl as the current index. Then when you go
+(6) If you set a crawl as the current index, when you go
 back to your installations web page and type a query in the search bar,
 the query will be answered with the results from that crawl.
