@@ -69,11 +69,9 @@ class ConfigureElement extends Element
     {
     ?>
         <div class="currentactivity">
-        <form id="configureDirectoryForm" method="post" action=''>
-        <input type="hidden" name="c" value="admin" />
-        <input type="hidden" name="YIOOP_TOKEN" value="<?php 
-            e($data['YIOOP_TOKEN']); ?>" />
-        <input type="hidden" name="a" value="configure" />
+        <form id="configureDirectoryForm" method="post" 
+            action='?c=admin&amp;a=configure&amp;YIOOP_TOKEN=<?php 
+            e($data['YIOOP_TOKEN']); ?>' >
         <?php if(isset($data['lang'])) { ?>
             <input type="hidden" name="lang" value="<?php 
                 e($data['lang']); ?>" />

@@ -122,7 +122,7 @@ class AdminController extends Controller implements CrawlConstants
              }
         } else if($this->checkCSRFToken('YIOOP_TOKEN', "config")) {
             $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
-                tl('admin_controller_please_login')."</h1>')";
+                tl('admin_controller_login_to_config')."</h1>')";
         }
         $this->displayView($view, $data);
     }
@@ -1399,7 +1399,9 @@ class AdminController extends Controller implements CrawlConstants
                                 $data['SCRIPT'] .= 
                                     "doMessage('<h1 class=\"red\" >".
                              tl('admin_controller_configure_work_profile_made').
-                                    "</h1>');";
+                                    "</h1>');" .
+                                    "setTimeout('window.location.href= ".
+                                    "window.location.href', 3000);";
                             } else {
                                 $data['PROFILE'] = false;
                                 $data['SCRIPT'] .= 
