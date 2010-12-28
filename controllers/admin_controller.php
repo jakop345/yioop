@@ -1255,9 +1255,18 @@ class AdminController extends Controller implements CrawlConstants
             }
         }
 
-        $out = tl('admin_controller_check_passed');
+        $out = "";
+        $br = "";
+
+        if(!is_writable(BASE_DIR."/configs/config.php")) {
+            $out .= tl('admin_controller_no_write_config_php');
+            $br = "<br />";
+        }
+
         if($missing_required != "") {
-            $out = tl('admin_controller_missing_required', $missing_required);
+            $out .= $br.
+                tl('admin_controller_missing_required', $missing_required);
+            $br = "<br />";
         }
 
         $missing_optional = "";
@@ -1271,10 +1280,15 @@ class AdminController extends Controller implements CrawlConstants
         }
         
         if($missing_optional != "") {
-            if($missing_required != "") {
-                $out .= "<br />";
-            }
-            $out .= tl('admin_controller_missing_optional', $missing_optional);
+            $out .= $br. 
+                tl('admin_controller_missing_optional', $missing_optional);
+            $br = "<br />";
+        }
+
+        if($out == "") {
+            $out = tl('admin_controller_check_passed');
+        } else {
+            $out = "<span class='red'>$out</span>";
         }
 
         return $out;

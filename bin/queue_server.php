@@ -606,7 +606,7 @@ class QueueServer implements CrawlConstants
             }
         }
 
-        if(isset($seen_sites) && isset($sites[self::INVERTED_INDEX])) {
+        if(isset($sites[self::INVERTED_INDEX])) {
             $index_shard =  $sites[self::INVERTED_INDEX];
             if($index_shard->word_docs_packed) {
                 $index_shard->unpackWordDocs();
@@ -615,14 +615,16 @@ class QueueServer implements CrawlConstants
             $generation = 
                 $this->index_archive->initGenerationToAdd($index_shard);
 
-            $this->index_archive->addPages(
-                $generation, self::SUMMARY_OFFSET, $seen_sites,
-                $visited_urls_count);
-
             $summary_offsets = array();
-            foreach($seen_sites as $site) {
-                $summary_offsets[$site[self::HASH_URL]] = 
-                    $site[self::SUMMARY_OFFSET];
+            if(isset($seen_sites)) {
+                $this->index_archive->addPages(
+                    $generation, self::SUMMARY_OFFSET, $seen_sites,
+                    $visited_urls_count);
+
+                foreach($seen_sites as $site) {
+                    $summary_offsets[$site[self::HASH_URL]] = 
+                        $site[self::SUMMARY_OFFSET];
+                }
             }
             crawlLog("B (dedup + random) memory usage".memory_get_usage() .
                 " time: ".(changeInMicrotime($start_time)));

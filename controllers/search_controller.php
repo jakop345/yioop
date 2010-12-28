@@ -135,6 +135,9 @@ class SearchController extends Controller implements CrawlConstants
             $its = (isset($_REQUEST['its'])) ? $_REQUEST['its'] : 
                 $_SESSION['its'];
             $index_time_stamp = $this->clean($its, "int");
+            if(!$this->phraseModel->indexExists($index_time_stamp)) {
+                $index_time_stamp = 0; //use the default crawl index
+            }
         } else {
             $index_time_stamp = 0; //use the default crawl index
         }
@@ -216,6 +219,13 @@ class SearchController extends Controller implements CrawlConstants
     {
         if($index_name == 0) {
             $index_name = $this->crawlModel->getCurrentIndexDatabaseName();
+            if(!$this->phraseModel->indexExists($index_name)) {
+                $data['SCRIPT'] = 
+                        "doMessage('<h1 class=\"red\" >".
+                        tl('search_controller_no_index_set').
+                        "</h1>');";
+                return $data;
+            }
         }
 
         $this->phraseModel->index_name = $index_name;

@@ -116,14 +116,14 @@ class ArcTool implements CrawlConstants
         }
         
         if(!isset($argv[1])) {
-            usageMessageAndExit();
+            $this->usageMessageAndExit();
         }
 
         switch($argv[1])
         {
             case "info":
                 if(!isset($argv[2]) ) {
-                    $tis->usageMessageAndExit();
+                    $this->usageMessageAndExit();
                 }
                 $this->outputInfo($argv[2]);
             break;

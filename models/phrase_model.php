@@ -84,6 +84,16 @@ class PhraseModel extends Model
         parent::__construct($db_name);
     }
 
+    /**
+     * Returns whether there is a index with the provide timestamp
+     *
+     * @param int $index_timestamp timestamp of the index to check if in cache
+     * @return bool whether it exists or not
+     */
+    function indexExists($index_time_stamp)
+    {
+        return file_exists(CRAWL_DIR.'/cache/'.$index_time_stamp);
+    }
 
     /**
      * Rewrites a mix query so that it maps directly to a query about crawls

@@ -166,7 +166,8 @@ class SearchView extends View implements CrawlConstants
                         e($page[self::SUMMARY_OFFSET]); 
                         ?>&amp;its=<?php e($data['its']); ?>" ><?php 
                         e(tl('search_view_similar')); 
-                    ?></a>. <a href="?c=search&amp;q=<?php 
+                    ?></a>. <a href="?YIOOP_TOKEN=<?php e($data['YIOOP_TOKEN']);
+                        ?>&amp;c=search&amp;q=<?php 
                         e("link:".urlencode($page[self::URL])); ?>&amp;
                         its=<?php e($data['its']); ?>" ><?php 
                         e(tl('search_view_inlink')); 
