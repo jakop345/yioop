@@ -120,6 +120,9 @@ class AdminController extends Controller implements CrawlConstants
                     tl('admin_controller_login_failed')."</h1>')";
                 unset($_SESSION['USER_ID']);
              }
+        } else if($this->checkCSRFToken('YIOOP_TOKEN', "config")) {
+            $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
+                tl('admin_controller_please_login')."</h1>')";
         }
         $this->displayView($view, $data);
     }
