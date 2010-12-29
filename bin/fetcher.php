@@ -167,12 +167,6 @@ class Fetcher implements CrawlConstants
      */
     var $found_sites;
     /**
-     * Urls of duplicate sites that the fetcher hasn't sent to 
-     * the queue_server yet
-     * @var array
-     */
-    var $found_duplicates;
-    /**
      * Timestamp from the queue_server of the current schedule of sites to
      * download. This is sent back to the server once this schedule is completed
      * to help the queue server implement crawl-delay if needed.
@@ -209,17 +203,6 @@ class Fetcher implements CrawlConstants
      * @var string
      */
     var $crawl_order;
-    /**
-     * Last time index was saved to disk
-     * @var int
-     */
-    var $last_filter_save_time;
-    /**
-     * Keeps track if we've added and not saved 
-     * anything to the page filter bundle
-     * @var bool
-     */
-    var $filter_dirty;
 
     /**
      * Sets up the field variables for that crawling can begin
@@ -245,16 +228,12 @@ class Fetcher implements CrawlConstants
         $this->to_crawl = array();
         $this->to_crawl_again = array();
         $this->found_sites = array();
-        $this->found_duplicates = array();
 
         $this->sum_seen_title_length = 0;
         $this->sum_seen_description_length = 0;
         $this->sum_seen_site_link_length = 0;
         $this->num_seen_sites = 0;
-
-        $this->last_filter_save_time = 0;
-        $this->filter_dirty = false;
-        
+       
         //we will get the correct crawl order from the queue_server
         $this->crawl_order = self::PAGE_IMPORTANCE;
     }
@@ -293,13 +272,6 @@ class Fetcher implements CrawlConstants
         
         while ($info[self::STATUS] != self::STOP_STATE) {
 
-            if(time() - $this->last_filter_save_time > FORCE_SAVE_TIME &&
-                isset($this->web_archive->page_exists_filter_bundle) &&
-                $this->filter_dirty == true){
-                $this->web_archive->page_exists_filter_bundle->forceSave();
-                $this->filter_dirty = false;
-                $this->last_filter_save_time = time();
-            }
 
             $fetcher_message_file = CRAWL_DIR."/schedules/fetcher_messages.txt";
             if(file_exists($fetcher_message_file)) {
@@ -329,15 +301,14 @@ class Fetcher implements CrawlConstants
                     crawlLog("Old name: ".$this->web_archive->dir_name);
                 }
                 if(is_object($this->web_archive)) {
-                    $this->web_archive->page_exists_filter_bundle = NULL;
                     $this->web_archive = NULL;
                 }
                 $this->to_crawl_again = array();
                 $this->found_sites = array();
-                $this->found_duplicates = array();
+
                 gc_collect_cycles();
                 $this->web_archive = new WebArchiveBundle($tmp_base_name, 
-                    URL_FILTER_SIZE);
+                    false);
                 $this->crawl_time = $info[self::CRAWL_TIME];
                 $this->sum_seen_title_length = 0;
                 $this->sum_seen_description_length = 0;
@@ -368,10 +339,9 @@ class Fetcher implements CrawlConstants
 
             $site_pages = FetchUrl::getPages($sites, true);
 
-            list($deduplicated_pages, $schedule_again_pages, $duplicates) = 
-                $this->deduplicateAndReschedulePages($site_pages);
-            $this->found_duplicates = array_merge($this->found_duplicates,
-                $duplicates);
+            list($downloaded_pages, $schedule_again_pages) = 
+                $this->reschedulePages($site_pages);
+
             if($can_schedule_again == true) {
                 //only schedule to crawl again on fail sites without crawl-delay
                 foreach($schedule_again_pages as $schedule_again_page) {
@@ -387,7 +357,7 @@ class Fetcher implements CrawlConstants
 
             $start_time = microtime();
             $summarized_site_pages = 
-                $this->processFetchPages($deduplicated_pages);
+                $this->processFetchPages($downloaded_pages);
 
             crawlLog("Number summarize pages".count($summarized_site_pages));
 
@@ -597,56 +567,32 @@ class Fetcher implements CrawlConstants
     }
 
     /**
-     * Does page deduplication on an array of downloaded pages using a
-     * BloomFilterBundle of $this->web_archive. Deduplication based
-     * on summaries is also done on the queue server. Also, sorts out pages
+     * Sorts out pages
      * for which no content was downloaded so that they can be scheduled
      * to be crawled again.
      *
-     * @param array &$site_pages pages to deduplicate
-     * @return an array conisting of the deduclicated pages, the not_downloaded
-     *      sites, and the urls of duplicate pages.
+     * @param array &$site_pages pages to sort
+     * @return an array conisting of two array downloaded pages and 
+     *  not downloaded pages.
      */
-    function deduplicateAndReschedulePages(&$site_pages)
+    function reschedulePages(&$site_pages)
     {
         $start_time = microtime();
 
-        $deduplicated_pages = array();
+        $downloaded = array();
         $not_downloaded = array();
-        $duplicates = array();
-
-        /*
-            Time to Deduplicate!
-            $unseen_page_hashes array to check against all before this batch, 
-            $seen_pages to check against this batch
-        */
-        $unseen_page_hashes = 
-            $this->web_archive->differencePageKeysFilter($site_pages, 
-            self::HASH);
-        $seen_pages = array();
 
         foreach($site_pages as $site) {
-            if( isset($site[self::ROBOT_PATHS])) {
-                $deduplicated_pages[] = $site;
-            } else if (isset($site[self::HASH]) && in_array($site[self::HASH], 
-                $unseen_page_hashes) && !in_array($site[self::HASH], 
-                $seen_pages)) {
-                $this->web_archive->addPageFilter(self::HASH, $site);
-                $this->filter_dirty = true;
-                $deduplicated_pages[] = $site;
-                $seen_pages[] = $site[self::HASH];
-            } else if(!isset($site[self::HASH])){
+            if( isset($site[self::ROBOT_PATHS]) || isset($site[self::HASH])) {
+                $downloaded[] = $site;
+            }  else {
                 $not_downloaded[] = $site;
-            } else {
-                $duplicates[] = array($site[self::URL], $site[self::HASH]);
-                crawlLog("Deduplicated:".$site[self::URL]);
-            }
-
+            } 
         }
-        crawlLog("  Delete duplicated pages time".
+        crawlLog("  Sort downloaded/not downloaded".
             (changeInMicrotime($start_time)));
 
-        return array($deduplicated_pages, $not_downloaded, $duplicates);
+        return array($downloaded, $not_downloaded);
     }
 
     /**
@@ -1131,7 +1077,8 @@ class Fetcher implements CrawlConstants
         $index_shard = new IndexShard("fetcher_shard");
         for($i = 0; $i < $num_seen; $i++) {
             $site = $this->found_sites[self::SEEN_URLS][$i];
-            $doc_key = crawlHash($site[self::URL], true);
+            $doc_keys = crawlHash($site[self::URL], true) . 
+                $site[self::HASH];
             $word_counts = array();
             $phrase_string = 
                 mb_ereg_replace("[[:punct:]]", " ", $site[self::TITLE] .
@@ -1206,9 +1153,9 @@ class Fetcher implements CrawlConstants
                     $link_text = strip_tags($link_text);
                     $link_id = 
                         "url|".$url."|text|$link_text|ref|".$site[self::URL];
-                    $link_key =  crawlHash($link_id, true).":".
-                        crawlHash($url, true).":"
-                        .crawlHash("info:".$url, "true");
+                    $link_keys =  crawlHash($link_id, true) . 
+                        crawlHash($url, true) .
+                        crawlHash("info:".$url, "true");
                     $summary[self::URL] =  $link_id;
                     $summary[self::TITLE] = $url; 
                         // stripping html to be on the safe side
@@ -1227,7 +1174,7 @@ class Fetcher implements CrawlConstants
                         mb_ereg_replace("[[:punct:]]", " ", $link_text);
                     $link_word_counts = 
                         PhraseParser::extractPhrasesAndCount($link_text);
-                    $link_shard->addDocumentWords($link_key, 
+                    $link_shard->addDocumentWords($link_keys, 
                         self::NEEDS_OFFSET_FLAG, 
                         $link_word_counts, array());
 
@@ -1235,16 +1182,12 @@ class Fetcher implements CrawlConstants
                 }
 
             }
-            $index_shard->addDocumentWords($doc_key, self::NEEDS_OFFSET_FLAG, 
+            $index_shard->addDocumentWords($doc_keys, self::NEEDS_OFFSET_FLAG, 
                 $word_counts, $meta_ids);
 
             $index_shard->appendIndexShard($link_shard);
 
         }
-        $index_shard->markDuplicateDocs($this->found_duplicates);
-        $index_shard->packWordDocs();
-
-        $this->found_duplicates = array();
 
         $this->found_sites[self::INVERTED_INDEX] = $index_shard;
 

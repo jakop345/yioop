@@ -46,10 +46,6 @@ require_once 'index_shard.php';
  */
 require_once 'index_dictionary.php';
 /**
- * Used to check if a page already stored in the WebArchiveBundle
- */
-require_once 'bloom_filter_bundle.php';
-/**
  * Used for crawlLog and crawlHash
  */
 require_once 'utility.php';
@@ -144,15 +140,12 @@ class IndexArchiveBundle implements CrawlConstants
      * Makes or initializes an IndexArchiveBundle with the provided parameters
      *
      * @param string $dir_name folder name to store this bundle
-     * @param int $filter_size size of a Bloom filter for the word index
-     *      partition filters as wells as for the page_exists_filters in
-     *      the WebArchiveBundles
      * @param int $num_partitions_summaries number of WebArchive partitions
      *      to use in the summmaries WebArchiveBundle
      * @param string $description a text name/serialized info about this
      * IndexArchiveBundle 
      */
-    public function __construct($dir_name, $filter_size = -1, 
+    public function __construct($dir_name, $read_only_archive = true,
         $description = NULL, $num_docs_per_generation = NUM_DOCS_PER_GENERATION)
     {
 
@@ -175,7 +168,7 @@ class IndexArchiveBundle implements CrawlConstants
                 serialize($this->generation_info));
         }
         $this->summaries = new WebArchiveBundle($dir_name."/summaries",
-            $filter_size, -1, $description);
+            $read_only_archive, -1, $description);
         $this->summaries->initCountIfNotExists("VISITED_URLS_COUNT");
 
         $this->description = $this->summaries->description;
@@ -371,42 +364,11 @@ class IndexArchiveBundle implements CrawlConstants
         return $this->summaries->getPage($offset, $generation);
     }
 
-
-
     /**
-     * Adds the given summary to the summary exists filter bundle
-     *
-     * @param string $key_field field of page with hash of page content
-     * @param array $page summary of page
-     */
-    public function addPageFilter($key_field, $page)
-    {
-        $this->summaries->addPageFilter($key_field, $page);
-    }
-
-    /**
-     * Looks at the $field key of elements of pages and computes an array
-     * consisting of $field values which are not in
-     * the page_exists_filter_bundle of the summaries bundle
-     *
-     * @param array $pages set of page data to start from
-     * @param string $key_field field to check against filter bundle
-     * @return mixed false if filter empty; desired array otherwise
-     */
-    public function differenceContainsPages(&$page_array, $field_name = NULL)
-    {
-        return $this->summaries->differencePagesFilter(
-            $page_array, $field_name);
-    }
-
-    /**
-     * Forces the data in the page exists filter bundle of summaries 
-     * to be save to disk, forces the current shard to be saved, the current
-     * filter in the index filter bundle to be save
+     * Forces the current shard to be saved
      */
     public function forceSave()
     {
-        $this->summaries->forceSave();
         $this->getActiveShard()->save();
     }
 

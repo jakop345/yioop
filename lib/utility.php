@@ -101,6 +101,17 @@ function unpackInt($str)
 }
 
 /**
+ * Packs an int into a 4 char string
+ *
+ * @param int $my_int the integer to pack
+ * @return string the packed string
+ */
+function packInt($my_int)
+{
+    return pack("N", $my_int);
+}
+
+/**
  * Converts a string to string where each char has been replaced by its 
  * hexadecimal equivalent
  *

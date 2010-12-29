@@ -133,13 +133,11 @@ interface CrawlConstants
     const MEMORY_USAGE ='al';
     const DOC_ID ='am';
     const RELEVANCE ='an';
-    const DUPLICATE ='ao';
-    const META_WORDS ='ap';
-    const CACHE_PAGE_PARTITION = 'aq';
-    const GENERATION = 'ar';
+    const META_WORDS ='ao';
+    const CACHE_PAGE_PARTITION = 'ap';
+    const GENERATION = 'aq';
 
-    const NEEDS_OFFSET_FLAG = 0x7FFFFFFE;
-    const DUPLICATE_FLAG = 0x7FFFFFFF;
+    const NEEDS_OFFSET_FLAG = 0x7FFFFFFF;
 
 } 
 ?>

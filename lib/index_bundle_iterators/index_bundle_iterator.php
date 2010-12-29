@@ -177,7 +177,7 @@ abstract class IndexBundleIterator implements CrawlConstants
      */
     function getSummariesFromCurrentDocs($keys = NULL) 
     {
-        $index = & $this->getIndex();
+        $index = $this->getIndex(); //objects assgined by ref
 
         if($this->current_block_fresh == false) {
             $pages = $this->currentDocsWithWord();

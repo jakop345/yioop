@@ -309,8 +309,11 @@ class QueueServer implements CrawlConstants
                     if(file_exists(CRAWL_DIR."/schedules/crawl_status.txt")) {
                         unlink(CRAWL_DIR."/schedules/crawl_status.txt");
                     }
-                    $this->index_archive->saveAndAddCurrentShardDictionary();
-                    $this->index_archive->dictionary->mergeAllTiers();
+                    if(is_object($this->index_archive)) {
+                        $this->
+                            index_archive->saveAndAddCurrentShardDictionary();
+                        $this->index_archive->dictionary->mergeAllTiers();
+                    }
                     $this->db->setWorldPermissionsRecursive(
                         CRAWL_DIR.'/cache/'.
                         self::index_data_base_name.$this->crawl_time);
@@ -426,12 +429,12 @@ class QueueServer implements CrawlConstants
             $this->index_archive = new IndexArchiveBundle(
                 CRAWL_DIR.'/cache/'.
                     self::index_data_base_name.$this->crawl_time,
-                URL_FILTER_SIZE, serialize($info));
+                false, serialize($info));
         } else {
             $dir = CRAWL_DIR.'/cache/'.
                     self::index_data_base_name.$this->crawl_time;
             $this->index_archive = new IndexArchiveBundle($dir,
-                URL_FILTER_SIZE);
+                false);
             $archive_info = IndexArchiveBundle::getArchiveInfo($dir);
             $index_info = unserialize($archive_info['DESCRIPTION']);
 
@@ -571,25 +574,15 @@ class QueueServer implements CrawlConstants
         if(isset($sites[self::SEEN_URLS]) && 
             count($sites[self::SEEN_URLS]) > 0) {
             $seen_sites = $sites[self::SEEN_URLS];
-            $this->index_archive->differenceContainsPages(
-                $seen_sites, self::HASH);
             $seen_sites = array_values($seen_sites);
             $num_seen = count($seen_sites);
-            $found_duplicates = array();
-            foreach($sites[self::SEEN_URLS] as $site) {
-                if(!in_array($site, $seen_sites) &&
-                    isset($site[self::URL]) && isset($site[self::HASH])) {
-                    $found_duplicates[] = 
-                        array($site[self::URL], $site[self::HASH]);
-                }
-            }
+ 
         } else {
             $num_seen = 0;
         }
 
         $visited_urls_count = 0;
         for($i = 0; $i < $num_seen; $i++) {
-            $this->index_archive->addPageFilter(self::HASH, $seen_sites[$i]);
             $seen_sites[$i][self::MACHINE] = $machine;
             $seen_sites[$i][self::MACHINE_URI] = $machine_uri;
             $seen_sites[$i][self::HASH_URL] = 
@@ -598,9 +591,9 @@ class QueueServer implements CrawlConstants
             if(strcmp("url", $link_url_parts[0]) == 0 &&
                 strcmp("text", $link_url_parts[2]) == 0) {
                 $seen_sites[$i][self::HASH_URL] = 
-                    crawlHash($seen_sites[$i][self::URL], true).
-                    ":".crawlHash($link_url_parts[1],true).
-                    ":".crawlHash("info:".$link_url_parts[1], true);
+                    crawlHash($seen_sites[$i][self::URL], true)
+                    . crawlHash($link_url_parts[1],true)
+                    . crawlHash("info:".$link_url_parts[1], true);
             } else {
                 $visited_urls_count++;
             }
@@ -611,7 +604,6 @@ class QueueServer implements CrawlConstants
             if($index_shard->word_docs_packed) {
                 $index_shard->unpackWordDocs();
             }
-            $index_shard->markDuplicateDocs($found_duplicates);
             $generation = 
                 $this->index_archive->initGenerationToAdd($index_shard);
 
@@ -622,11 +614,17 @@ class QueueServer implements CrawlConstants
                     $visited_urls_count);
 
                 foreach($seen_sites as $site) {
-                    $summary_offsets[$site[self::HASH_URL]] = 
+                    if($site[self::HASH] !== false){ // so not link
+                        $hash = $site[self::HASH_URL].$site[self::HASH];
+                    } else {
+                        $hash = $site[self::HASH_URL];
+                    }
+                    $summary_offsets[$hash] = 
                         $site[self::SUMMARY_OFFSET];
                 }
             }
-            crawlLog("B (dedup + random) memory usage".memory_get_usage() .
+            crawlLog("B Init Shard, Store Summaries memory usage".
+                memory_get_usage() .
                 " time: ".(changeInMicrotime($start_time)));
             $start_time = microtime();
             // added summary offset info to inverted index data

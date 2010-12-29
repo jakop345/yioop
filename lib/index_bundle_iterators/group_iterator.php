@@ -173,41 +173,37 @@ class GroupIterator extends IndexBundleIterator
         if(!is_array($pages)) {
             return $pages;
         }
-
-        // next we group like documents
+        
+        /* next we group like documents by url and remember which urls we've
+           seen this block
+        */
         $this->current_block_hashes = array();
         $pre_out_pages = array();
+        $seen_hashes = array();
         if($this->count_block_unfiltered > 0 ) {
             $i = $this->seen_docs;
             foreach($pages as $doc_key => $doc_info) {
                 if(!is_array($doc_info) || $doc_info[self::SUMMARY_OFFSET] == 
                     self::NEEDS_OFFSET_FLAG) {continue;}
                 $doc_info['KEY'] = $doc_key;
-                if(isset($doc_info[self::DUPLICATE])) {
-                    $hash_iterator = 
-                         new WordIterator(crawlHash(
-                            $doc_info[self::HASH], true), 
-                            $this->getIndex(), true);
-                    $hash_array = $hash_iterator->currentDocsWithWord();
-                    $hash_keys = array_keys($hash_array);
-                    $hash_url = $hash_keys[0];
-                    $doc_info = $hash_array[$hash_url];
-                    $doc_info['KEY'] = $hash_url;
-                    $doc_info['IS_PAGE'] = true;
-                } else if(strlen($doc_key) == 8) {
-                    $hash_url = $doc_key;
-                    $doc_info['IS_PAGE'] = true;
+                if(strlen($doc_key) == 16) { 
+                    $hash_url = substr($doc_key, 0, 8);
+                    $doc_info[self::HASH] = substr($doc_key, 8);
+                    if(!isset($pre_out_pages[$hash_url])) {
+                        $pre_out_pages[$hash_url] = array();
+                    }
+                    array_unshift($pre_out_pages[$hash_url], $doc_info);
                 } else {
                     $doc_key_parts = array(
-                        substr($doc_key, 0, 8),substr($doc_key, 9, 8),
-                        substr($doc_key, 18, 8)
+                        substr($doc_key, 0, 8),substr($doc_key, 8, 8),
+                        substr($doc_key, 16, 8)
                     );
                     $hash_url = $doc_key_parts[1];
-                    $doc_info['IS_PAGE'] = false;
+                    $doc_info[self::HASH] = false;
+                    $pre_out_pages[$hash_url][] = $doc_info;
                 }
 
-                $pre_out_pages[$hash_url][] = $doc_info;
-                if($doc_info['IS_PAGE'] == true) {
+                if($doc_info[self::HASH] !== false) {
                     $pre_out_pages[$hash_url]['IS_PAGE'] = true;
                 } else {
                     $pre_out_pages[$hash_url]['HASH_INFO_URL'] =
@@ -224,9 +220,10 @@ class GroupIterator extends IndexBundleIterator
             }
 
              /*get summary page for groups of link data if exists and don't have
-               also aggregate duplicates
+               also aggregate by hash
              */
-            foreach($pre_out_pages as $hash_url => $data) {;
+            $seen_hashes = array();
+            foreach($pre_out_pages as $hash_url => $data) {
                 if(!isset($pre_out_pages[$hash_url]['IS_PAGE'])) {
                     $hash_info_url= $pre_out_pages[$hash_url]['HASH_INFO_URL'];
                     $word_iterator = 
@@ -238,57 +235,32 @@ class GroupIterator extends IndexBundleIterator
                         $relevance =  $this->computeRelevance(
                             $word_iterator->current_generation,
                             $word_iterator->current_offset);
-
                         $keys = array_keys($doc_array);
                         $key = $keys[0];
-                        if(!isset($doc_array[$key][self::DUPLICATE])) {
-                            $item = $doc_array[$key];
-                            $item[self::RELEVANCE] += $relevance;
-                            $item[self::SCORE] += $relevance;
-                            $item['IS_PAGE'] = true;
-                            $item['KEY'] = $key;
-                            array_unshift($pre_out_pages[$hash_url], $item);
-                        } else if(isset($doc_array[$key][self::DUPLICATE])){ 
-                            $hash_iterator = 
-                                 new WordIterator(crawlHash(
-                                    $doc_array[$key][self::HASH], true), 
-                                    $this->getIndex(), true);
-                            $hash_array = $hash_iterator->currentDocsWithWord();
-                            $hash_keys = array_keys($hash_array);
-                            $hash_key = $hash_keys[0];
-                            if(!isset($pre_out_pages[$hash_key])) {
-                                $pre_out_pages[$hash_key] =
-                                    $pre_out_pages[$hash_url];
-                            } else {
-                                $pre_out_pages[$hash_key] = array_merge(
-                                    $pre_out_pages[$hash_key], 
-                                    $pre_out_pages[$hash_url]);
-                            }
-                            if(!isset($pre_out_pages[$hash_key]['IS_PAGE'])) {
-                                $item = $hash_array[$hash_key];
-                                $item['IS_PAGE'] = true;
-                                $item['KEY'] = $hash_key;
-                                array_unshift($pre_out_pages[$hash_key], $item);
-                                $pre_out_pages[$hash_key]['IS_PAGE'] = true;
-                            }
-                            if(isset($pre_out_pages[$hash_key][
-                                'HASH_INFO_URL'])) {
-                                unset($pre_out_pages[$hash_key][
-                                    'HASH_INFO_URL']);
-                            }
-                            /*
-                                Deduplication: 
-                            */
-                            unset($pre_out_pages[$hash_url]);
-                            $this->grouped_keys[$hash_url] = true;
-                            //mark we have seen this group
-                        }
+                        $item = $doc_array[$key];
+                        $item[self::RELEVANCE] += $relevance;
+                        $item[self::SCORE] += $relevance;
+                        $item['KEY'] = substr($key, 0, 8);
+                        $item[self::HASH] = substr($key, 8, 8);
+                        array_unshift($pre_out_pages[$hash_url], $item); 
                     } 
                 } else {
-                    unset($pre_out_pages[$hash_url]['IS_PAGE']);
+                        unset($pre_out_pages[$hash_url]['IS_PAGE']);
                 }
                 if(isset($pre_out_pages[$hash_url]['HASH_INFO_URL'])) {
                     unset($pre_out_pages[$hash_url]['HASH_INFO_URL']);
+                }
+                if(isset($pre_out_pages[$hash_url][0][self::HASH])) {
+                    $hash = $pre_out_pages[$hash_url][0][self::HASH];
+                    if(isset($seen_hashes[$hash])) {
+                        $previous_url = $seen_hashes[$hash];
+                        $pre_out_pages[$previous_url] = 
+                            array_merge($pre_out_pages[$previous_url],
+                                $pre_out_pages[$hash_url]);
+                        unset($pre_out_pages[$hash_url]);
+                    } else {
+                        $seen_hashes[$hash] = $hash_url;
+                    }
                 }
             }
             $this->count_block = count($pre_out_pages);
@@ -296,8 +268,7 @@ class GroupIterator extends IndexBundleIterator
             $out_pages = array();
             foreach($pre_out_pages as $hash_url => $group_infos) {
                 foreach($group_infos as $doc_info) {
-                    $is_page = $doc_info['IS_PAGE'];
-                    unset($doc_info['IS_PAGE']);
+                    $is_page = ($doc_info[self::HASH] !== false) ? true : false;
                     if(!isset($out_pages[$hash_url]) || $is_page) {
                         if(isset($out_pages[$hash_url]) && $is_page) {
                             $rank = $out_pages[$hash_url][self::DOC_RANK];
@@ -328,12 +299,6 @@ class GroupIterator extends IndexBundleIterator
                                 $field != self::GENERATION) {
                                 $out_pages[$hash_url][$field] += 
                                     $doc_info[$field];
-                            } else if($field == self::SUMMARY_OFFSET &&
-                                $is_page == true) {
-                                array_unshift($out_pages[$hash_url][$field],
-                                    array($hash_url, 
-                                    $doc_info[self::GENERATION],
-                                    $doc_info[$field]));
                             } else if($field == self::SUMMARY_OFFSET) {
                                 $out_pages[$hash_url][$field][] = 
                                     array($doc_info["KEY"],

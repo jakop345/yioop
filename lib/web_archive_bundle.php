@@ -38,14 +38,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * web archive
  */
 require_once 'web_archive.php';
-/**
- * Bloom Filter used by BloomFilterBundle
- */
-require_once 'bloom_filter_file.php';
-/**
- * Used to check if a page already stored in the WebArchiveBundle
- */
-require_once 'bloom_filter_bundle.php';
+
 /**
  * Used to compress data stored in WebArchiveBundle
  */
@@ -74,22 +67,10 @@ class WebArchiveBundle
      */
     var $dir_name;
     /**
-     * Maximum allowed insert into each BloomFilterFile in the 
-     * page_exists_filter_bundle
-     * @var int
-     */
-    var $filter_size;
-    /**
      * Used to contain the WebArchive paritions of the bundle
      * @var array
      */
     var $partition = array();
-    /**
-     * BloomFilterBundle used to keep track of which pages are already in
-     * WebArchiveBundle
-     * @var object
-     */
-    var $page_exists_filter_bundle;
     /**
      * Total number of page objects stored by this WebArchiveBundle
      * @var int
@@ -117,8 +98,6 @@ class WebArchiveBundle
      * characteristics
      *
      * @param string $dir_name folder name of the bundle
-     * @param int $filter_size number of items that can be stored in
-     *      a given BloomFilterFile in the $page_exists_filter_bundle
      * @param int $num_docs_per_partition number of documents before the
      *      web archive is changed
      * @param string $description a short text name/description of this
@@ -126,22 +105,14 @@ class WebArchiveBundle
      * @param string $compressor the Compressor object used to 
      *      compress/uncompress data stored in the bundle
      */
-    function __construct($dir_name, $filter_size = -1, 
+    function __construct($dir_name, $read_only_archive = true,
         $num_docs_per_partition = NUM_DOCS_PER_GENERATION, $description = NULL, 
         $compressor = "GzipCompressor") 
     {
-        //filter size = -1 used by web server to not get all partitions created
-        
         $this->dir_name = $dir_name;
-        $this->filter_size = $filter_size;
         $this->num_docs_per_partition = $num_docs_per_partition;
         $this->compressor = $compressor;
         $this->write_partition = 0;
-
-        $read_only_archive = false;
-        if($filter_size == -1) {
-            $read_only_archive = true;
-        }
 
         if(!is_dir($this->dir_name)) {
             mkdir($this->dir_name);
@@ -184,15 +155,6 @@ class WebArchiveBundle
                 $this->dir_name."/description.txt", serialize($info));
         }
 
-        /* 
-           filter bundle to check if a downloaded page should be put in archive 
-           (for de-duplication)
-         */
-        if($this->filter_size > 0) {
-            $this->page_exists_filter_bundle = 
-                new BloomFilterBundle($dir_name."/PageExistsFilterBundle", 
-                    $filter_size);
-        }
     }
 
     /**
@@ -275,73 +237,6 @@ class WebArchiveBundle
             return array();
         }
     }
-
-    /**
-     * Adds the given page to the page exists filter bundle
-     *
-     * @param string $key_field field of page with hash of page content
-     * @param array &$page contents/summary of page
-     * @return bool whether the add succeeded
-     */
-    function addPageFilter($key_field, &$page)
-    {
-        if($this->filter_size > 0) {
-            $this->page_exists_filter_bundle->add($page[$key_field]);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * Looks at the $key_field key of elements of pages and computes an array
-     * consisting of $key_field values which are not in
-     * the page_exists_filter_bundle
-     *
-     * @param array $pages set of page data to start from
-     * @param string $key_field field to check against filter bundle
-     * @return mixed false if filter empty; desired array otherwise
-     */
-    function differencePageKeysFilter($pages, $key_field)
-    {
-        if($this->filter_size > 0) {
-            $page_array = array();
-            
-            foreach($pages as $page) {
-                $page_array[] = & $page[$key_field];
-            }
-            
-            $this->page_exists_filter_bundle->differenceFilter($page_array);
-            return $page_array;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * Looks at the field_name key of elements of page_array and removes any
-     * of these which are in the page_exists_filter_bundle
-     *
-     * @param array &$page_array array to element remove elements from 
-     * @param string $field_name field to check against filter bundle
-     */
-    function differencePagesFilter(&$page_array, $field_name = NULL)
-    {
-        $this->page_exists_filter_bundle->differenceFilter(
-            $page_array, $field_name);
-    }
-
-    /**
-     * Forces the data in the page exists filter bundle to be save to disk
-     */
-    function forceSave()
-    {
-        if($this->filter_size > 0) {
-           $this->page_exists_filter_bundle->forceSave();
-        }
-    }
-
-
 
     /**
      * Gets an object encapsulating the $index the WebArchive partition in

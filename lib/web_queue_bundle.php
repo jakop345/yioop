@@ -424,7 +424,7 @@ class WebQueueBundle implements Notifier
     /**
      * Gets the contents of the queue bundle as an array of ordered url,weight
      * pairs
-     * @return array a list of ordered url, wight pairs
+     * @return array a list of ordered url, weight pairs
      */
     function getContents()
     {

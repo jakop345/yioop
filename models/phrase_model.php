@@ -92,7 +92,7 @@ class PhraseModel extends Model
      */
     function indexExists($index_time_stamp)
     {
-        return file_exists(CRAWL_DIR.'/cache/'.$index_time_stamp);
+        return file_exists(CRAWL_DIR.'/cache/IndexData'.$index_time_stamp);
     }
 
     /**

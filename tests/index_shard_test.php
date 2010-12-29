@@ -86,6 +86,8 @@ class IndexShardTest extends UnitTest
     public function addDocumentsGetPostingsSliceByIdTestCase()
     {
         $docid = "AAAAAAAA";
+        $doc_hash = "BBBBBBBB";
+        $docid .= $doc_hash;
         $offset = 5;
         $word_counts = array(
             'BBBBBBBB' => 1,
@@ -104,10 +106,12 @@ class IndexShardTest extends UnitTest
             "Len All Docs Correctly Counts Length of First Doc");
         $c_data = $this->test_objects['shard']->getPostingsSliceById(
             crawlHash('CCCCCCCC', true), 5);
-        $this->assertTrue(isset($c_data["AAAAAAAA"]), 
+        $this->assertTrue(isset($c_data[$docid]), 
             "Doc lookup by word works");
         // add a second document and check
         $docid = "HHHHHHHH";
+        $doc_hash = "IIIIIIII";
+        $docid .= $doc_hash;
         $offset = 7;
         $word_counts = array(
             'CCCCCCCC' => 9,
@@ -120,9 +124,9 @@ class IndexShardTest extends UnitTest
             $offset, $word_counts, $meta_ids);
         $c_data = $this->test_objects['shard']->getPostingsSliceById(
             crawlHash('CCCCCCCC', true), 5);
-        $this->assertTrue(isset($c_data["AAAAAAAA"]),
+        $this->assertTrue(isset($c_data["AAAAAAAABBBBBBBB"]),
             "Work lookup first item of two works");
-        $this->assertTrue(isset($c_data["HHHHHHHH"]), 
+        $this->assertTrue(isset($c_data["HHHHHHHHIIIIIIII"]), 
             "Work lookup second item of two works");
         $this->assertEqual(count($c_data), 2, 
             "Exactly two items were found in two item case");
@@ -130,7 +134,7 @@ class IndexShardTest extends UnitTest
         //add a meta word lookup
         $c_data = $this->test_objects['shard']->getPostingsSliceById(
             crawlHash('EEEEEEEE', true), 5);
-        $this->assertTrue(isset($c_data["AAAAAAAA"]),
+        $this->assertTrue(isset($c_data["AAAAAAAABBBBBBBB"]),
             "Doc lookup by meta word works");
         $this->assertEqual(count($c_data), 1,
             "Doc lookup by meta word works has correct count");
@@ -143,7 +147,7 @@ class IndexShardTest extends UnitTest
      */
     public function addLinkGetPostingsSliceByIdTestCase()
     {
-        $docid = "AAAAAAAA:BBBBBBBB:CCCCCCCC"; //set up link doc
+        $docid = "AAAAAAAABBBBBBBBCCCCCCCC"; //set up link doc
         $offset = 5;
         $word_counts = array(
             'MMMMMMMM' => 1,
@@ -162,9 +166,11 @@ class IndexShardTest extends UnitTest
             "Len All Docs Correctly Counts Length of First Doc");
         $c_data = $this->test_objects['shard']->getPostingsSliceById(
             crawlHash('MMMMMMMM', true), 5);
-        $this->assertTrue(isset($c_data["AAAAAAAA:BBBBBBBB:CCCCCCCC"]), 
+        $this->assertTrue(isset($c_data["AAAAAAAABBBBBBBBCCCCCCCC"]), 
             "Link Doc lookup by word works");
         $docid = "AAAAAAAA";
+        $doc_hash = "BBBBBBBB";
+        $docid .= $doc_hash;
         $offset = 10;
         $word_counts = array(
             'BBBBBBBB' => 1,
@@ -181,9 +187,9 @@ class IndexShardTest extends UnitTest
             $offset, $word_counts, $meta_ids);
         $c_data = $this->test_objects['shard']->getPostingsSliceById(
             crawlHash('MMMMMMMM', true), 5);
-        $this->assertTrue(isset($c_data["AAAAAAAA:BBBBBBBB:CCCCCCCC"]), 
+        $this->assertTrue(isset($c_data["AAAAAAAABBBBBBBBCCCCCCCC"]), 
             "Link Doc lookup by word works 1st of two");
-        $this->assertTrue(isset($c_data["AAAAAAAA"]), 
+        $this->assertTrue(isset($c_data["AAAAAAAABBBBBBBB"]), 
             "Link Doc lookup by word works 2nd doc");
         $this->assertEqual(count($c_data), 2,
             "Link Doc lookup by word works has correct count");
@@ -194,7 +200,8 @@ class IndexShardTest extends UnitTest
      */
     public function appendIndexShardTestCase()
     {
-        $docid = "AAAAAAAA";
+        $docid = "AAAAAAAA"; //it actuallt shouldn't matter if have one or two 
+            // 8 byte doc_keys, both should be treated as documents
         $offset = 5;
         $word_counts = array(
             'BBBBBBBB' => 1,
@@ -209,7 +216,7 @@ class IndexShardTest extends UnitTest
         $this->test_objects['shard']->addDocumentWords($docid, 
             $offset, $word_counts, $meta_ids);
 
-        $docid = "KKKKKKKK:GGGGGGGG:HHHHHHHH";
+        $docid = "KKKKKKKKGGGGGGGGHHHHHHHH";
         $offset = 20;
         $word_counts = array(
             'ZZZZZZZZ' => 9,
@@ -246,7 +253,7 @@ class IndexShardTest extends UnitTest
             crawlHash('DDDDDDDD', true), 5);
         $this->assertTrue(isset($c_data["AAAAAAAA"]), 
             "Data from first shard present 3");
-        $this->assertTrue(isset($c_data["KKKKKKKK:GGGGGGGG:HHHHHHHH"]), 
+        $this->assertTrue(isset($c_data["KKKKKKKKGGGGGGGGHHHHHHHH"]), 
             "Data from second shard present 1");
         $this->assertTrue(isset($c_data["GGGGGGGG"]), 
             "Data from third shard present 1");
@@ -260,7 +267,7 @@ class IndexShardTest extends UnitTest
             "Data from first shard present 5");
         $c_data = $this->test_objects['shard']->getPostingsSliceById(
             crawlHash('ZZZZZZZZ', true), 5);
-        $this->assertTrue(isset($c_data["KKKKKKKK:GGGGGGGG:HHHHHHHH"]), 
+        $this->assertTrue(isset($c_data["KKKKKKKKGGGGGGGGHHHHHHHH"]), 
             "Data from second shard present 2");
         $c_data = $this->test_objects['shard']->getPostingsSliceById(
             crawlHash('IIIIIIII', true), 5);
@@ -291,7 +298,7 @@ class IndexShardTest extends UnitTest
         );
         $this->test_objects['shard']->addDocumentWords($docid, 
             $offset, $word_counts, $meta_ids);
-        $docid = "AAAAAAAA:EEEEEEEE:FFFFFFFF";
+        $docid = "AAAAAAAAEEEEEEEEFFFFFFFF";
         $offset = 0;
         $word_counts = array(
             'BBBBBBBB' => 1
@@ -300,7 +307,7 @@ class IndexShardTest extends UnitTest
         );
         $this->test_objects['shard']->addDocumentWords($docid, 
             $offset, $word_counts, $meta_ids);
-        $docid = "QQQQQQQQ:EEEEEEEE:FFFFFFFF";
+        $docid = "QQQQQQQQEEEEEEEEFFFFFFFF";
         $offset = 0;
         $word_counts = array(
             'BBBBBBBB' => 1
@@ -323,7 +330,7 @@ class IndexShardTest extends UnitTest
         $new_doc_offsets = array(
             "AAAAAAAA" => 5,
             "CCCCCCCC" => 6,
-            "QQQQQQQQ:EEEEEEEE:FFFFFFFF" => 9,
+            "QQQQQQQQEEEEEEEEFFFFFFFF" => 9,
             "DDDDDDDD" => 7,
         );
         $this->test_objects['shard']->changeDocumentOffsets($new_doc_offsets);
@@ -331,102 +338,18 @@ class IndexShardTest extends UnitTest
             crawlHash('BBBBBBBB', true), 5);
         $predicted_offsets = array(
             "AAAAAAAA" => 5,
-            "AAAAAAAA:EEEEEEEE:FFFFFFFF" => 0,
-            "QQQQQQQQ:EEEEEEEE:FFFFFFFF" => 9,
+            "AAAAAAAAEEEEEEEEFFFFFFFF" => 0,
+            "QQQQQQQQEEEEEEEEFFFFFFFF" => 9,
             "DDDDDDDD" => 7,
         );
         $i = 0;
         foreach($predicted_offsets as $key =>$offset) {
-            $this->assertTrue(isset($c_data[$key]),  "Summary key matches predicted $i");
+            $this->assertTrue(isset($c_data[$key]),  
+                "Summary key matches predicted $i");
             $this->assertEqual($c_data[$key][CrawlConstants::SUMMARY_OFFSET], 
                 $offset,  "Summary offset matches predicted $i");
             $i++;
         }
-    }
-
-    /**
-     * Check that marking a document as a duplicate works
-     */
-    public function markDuplicatesTestCase()
-    {
-        $doc_url_hashes = array(array("http://somewhere.com/", "HASHHASH"));
-        $this->test_objects['shard']->markDuplicateDocs($doc_url_hashes);
-        $c_data = $this->test_objects['shard']->getPostingsSliceById(
-            crawlHash('info:http://somewhere.com/', true), 5);
-        $this->assertTrue(isset(
-            $c_data[crawlHash($doc_url_hashes[0][0], true)][
-            CrawlConstants::DUPLICATE]),
-            "Duplicate data shows up as duplicate");
-        $docid = "KKKKKKKK:GGGGGGGG:HHHHHHHH";
-        $offset = 20;
-        $word_counts = array(
-            'ZZZZZZZZ' => 9,
-            'DDDDDDDD' => 4,
-        );
-        $meta_ids = array(
-        );
-        $this->test_objects['shard2']->addDocumentWords($docid, 
-            $offset, $word_counts, $meta_ids);
-        $docid = "GGGGGGGG";
-        $offset = 6;
-        $word_counts = array(
-            'DDDDDDDD' => 3,
-            'IIIIIIII' => 4,
-            'JJJJJJJJ' => 5,
-        );
-
-        $meta_ids = array(
-            "KKKKKKKK"
-        );
-        $this->test_objects['shard2']->addDocumentWords($docid, 
-            $offset, $word_counts, $meta_ids);
-        $this->test_objects['shard']->appendIndexShard(
-            $this->test_objects['shard2']);
-
-        $c_data = $this->test_objects['shard']->getPostingsSliceById(
-            crawlHash('info:http://somewhere.com/', true), 5);
-        $this->assertTrue(isset(
-            $c_data[crawlHash('http://somewhere.com/', true)][
-            CrawlConstants::DUPLICATE]),
-            "Duplicate shows up as duplicate after append");
-
-        $word_counts = array(
-            'MMMMMMMM' => 1
-        );
-        $meta_ids = array(
-        );
-        $docid = "NNNNNNNN";
-        $this->test_objects['shard3']->addDocumentWords($docid, 
-            0, $word_counts, $meta_ids);
-        $doc_url_hashes = array(array("http://elsewhere.com/", "HHHHHASH"));
-
-        $this->test_objects['shard3']->markDuplicateDocs($doc_url_hashes);
-        $new_doc_offsets = array(
-            "NNNNNNNN" => 5,
-        );
-        $this->test_objects['shard3']->packWordDocs();
-
-        $this->test_objects['shard3']->changeDocumentOffsets($new_doc_offsets);
-        $c_data = $this->test_objects['shard3']->getPostingsSliceById(
-            crawlHash('info:http://elsewhere.com/', true), 5);
-        $this->assertTrue(isset(
-            $c_data[crawlHash('http://elsewhere.com/', true)][
-            CrawlConstants::DUPLICATE]),
-            "Duplicate shows up as duplicate after mark and change offset 2");
-        $this->test_objects['shard']->appendIndexShard(
-            $this->test_objects['shard3']);
-        $c_data = $this->test_objects['shard']->getPostingsSliceById(
-            crawlHash('info:http://somewhere.com/', true), 5);
-        $this->assertTrue(isset(
-            $c_data[crawlHash('http://somewhere.com/', true)][
-            CrawlConstants::DUPLICATE]),
-            "Duplicate shows up as duplicate after append and change offset 1");
-        $c_data = $this->test_objects['shard']->getPostingsSliceById(
-            crawlHash('info:http://elsewhere.com/', true), 5);
-        $this->assertTrue(isset(
-            $c_data[crawlHash('http://elsewhere.com/', true)][
-            CrawlConstants::DUPLICATE]),
-            "Duplicate shows up as duplicate after append and change offset 2");
     }
 
     /**
