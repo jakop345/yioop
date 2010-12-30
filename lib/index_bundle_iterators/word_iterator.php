@@ -242,18 +242,21 @@ class WordIterator extends IndexBundleIterator
                 $this->advanceGeneration();
             }
             if($gen_doc_offset !== null) {
-                while($this->current_generation < $gen_doc_offset[0]) {
+                $last_current_generation = -1;
+                while($this->current_generation < $gen_doc_offset[0] &&  
+                      $last_current_generation != $this->current_generation) {
                     $this->advanceGeneration();
+                    $last_current_generation = $this->current_generation;
                 }
                 $this->index->setCurrentShard($this->current_generation, true);
 
-                $this->current_offset = 
+                $this->current_offset =
                     $this->index->getCurrentShard(
-                        )->nextPostingOffsetDocOffset($this->next_offset, 
+                        )->nextPostingOffsetDocOffset($this->next_offset,
                             $this->last_offset, $gen_doc_offset[1]);
                 if($this->current_offset === false) {
                     $this->current_offset = $this->last_offset + 1;
-                    return;
+                    $this->advanceGeneration();
                 }
                 $this->seen_docs = 
                     ($this->current_offset - $this->start_offset)/

@@ -254,12 +254,27 @@ class GroupIterator extends IndexBundleIterator
                     $hash = $pre_out_pages[$hash_url][0][self::HASH];
                     if(isset($seen_hashes[$hash])) {
                         $previous_url = $seen_hashes[$hash];
-                        $pre_out_pages[$previous_url] = 
-                            array_merge($pre_out_pages[$previous_url],
+                        if($pre_out_pages[$previous_url][0][
+                            self::HASH_URL_COUNT] >= 
+                            count($pre_out_pages[$hash_url])) {
+                            $pre_out_pages[$previous_url] = 
+                                array_merge($pre_out_pages[$previous_url],
                                 $pre_out_pages[$hash_url]);
-                        unset($pre_out_pages[$hash_url]);
+                            unset($pre_out_pages[$hash_url]);
+                        } else {
+                            $seen_hashes[$hash] = $hash_url;
+                            $pre_out_pages[$hash_url][0][self::HASH_URL_COUNT] =
+                                count($pre_out_pages[$hash_url]);
+                            $pre_out_pages[$hash_url] = 
+                                array_merge($pre_out_pages[$hash_url],
+                                    $pre_out_pages[$previous_url]
+                                );
+                            unset($pre_out_pages[$previous_url]);
+                        }
                     } else {
                         $seen_hashes[$hash] = $hash_url;
+                        $pre_out_pages[$hash_url][0][self::HASH_URL_COUNT] =
+                            count($pre_out_pages[$hash_url]);
                     }
                 }
             }

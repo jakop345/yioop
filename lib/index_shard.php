@@ -554,11 +554,11 @@ class IndexShard extends PersistentStructure implements CrawlConstants
         $high = $end;
         $stride = 1;
         $gallop_phase = true;
-
         do {
             $posting = $this->getWordDocsSubstring($current*self::POSTING_LEN, 
                 self::POSTING_LEN);
             list($post_doc_index, ) = $this->unpackPosting($posting);
+
             if($doc_index == $post_doc_index) {
                 return $current * self::POSTING_LEN;
             } else if($doc_index < $post_doc_index) {
@@ -574,6 +574,12 @@ class IndexShard extends PersistentStructure implements CrawlConstants
                 if($gallop_phase) {
                     $current += $stride;
                     $stride <<= 1;
+                    if($current > $end ) {
+                        $current = $end;
+                        $gallop_phase = false;
+                    }
+                } else if($current >= $end) {
+                    return false;
                 } else {
                     if($current + 1 == $high) {
                         $current++;
@@ -626,9 +632,9 @@ class IndexShard extends PersistentStructure implements CrawlConstants
      * Adds the contents of the supplied $index_shard to the current index
      * shard
      *
-     * @param object &$index_shard the shard to append to the current shard
+     * @param object $index_shard the shard to append to the current shard
      */
-    function appendIndexShard(&$index_shard)
+    function appendIndexShard($index_shard)
     {
         if($this->word_docs_packed == true) {
             $this->unpackWordDocs();
@@ -642,9 +648,9 @@ class IndexShard extends PersistentStructure implements CrawlConstants
             $postings_len = strlen($postings);
             // update doc offsets for newly added docs
             for($i = 0; $i < $postings_len; $i += self::POSTING_LEN) {
-                $num = unpackInt(substr($postings, $i, 4));
+                $num = unpackInt(substr($postings, $i, self::POSTING_LEN));
                 $num += ($this->docids_len << 4);
-                charCopy(pack("N", $num), $postings, $i, 4);
+                charCopy(pack("N", $num), $postings, $i, self::POSTING_LEN);
             }
             if(!isset($this->words[$word_id])) {
                 $this->words[$word_id] = $postings;
@@ -683,7 +689,7 @@ class IndexShard extends PersistentStructure implements CrawlConstants
                 substr($doc_info_string, 0, self::POSTING_LEN));
             list($doc_len, $num_keys) = 
                 $this->unpackPosting(substr($doc_info_string, 
-                    self::POSTING_LEN));
+                    self::POSTING_LEN, self::POSTING_LEN));
             $key_count = ($num_keys % 2 == 0) ? $num_keys + 2: $num_keys + 1;
             $row_len = self::DOC_KEY_LEN * ($key_count);
 
@@ -1095,9 +1101,9 @@ class IndexShard extends PersistentStructure implements CrawlConstants
      *  Split a header string into a shards field variable
      *
      *  @param string $header a string with packed shard header data
-     *  @param object &shard IndexShard to put data into
+     *  @param object shard IndexShard to put data into
      */
-    static function headerToShardFields($header, &$shard)
+    static function headerToShardFields($header, $shard)
     {
         $header_array = str_split($header, 4);
         $header_data = array_map('unpackInt', $header_array);
@@ -1121,7 +1127,7 @@ class IndexShard extends PersistentStructure implements CrawlConstants
      * @param int $key index in array - we don't use
      * @param object $shard IndexShard to add the entry to word table for
      */
-    static function makeWords(&$value, $key, &$shard)
+    static function makeWords(&$value, $key, $shard)
     {
         $shard->words[substr($value, 0, 8)] = substr($value, 8, 8);
     }

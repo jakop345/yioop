@@ -136,6 +136,7 @@ interface CrawlConstants
     const META_WORDS ='ao';
     const CACHE_PAGE_PARTITION = 'ap';
     const GENERATION = 'aq';
+    const HASH_URL_COUNT = 'ar';
 
     const NEEDS_OFFSET_FLAG = 0x7FFFFFFF;
 

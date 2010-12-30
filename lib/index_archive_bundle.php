@@ -203,10 +203,10 @@ class IndexArchiveBundle implements CrawlConstants
      * Adds the provided mini inverted index data to the IndexArchiveBundle
      * Expects initGenerationToAdd to be called before, so generation is correct
      *
-     * @param object &$index_shard a mini inverted index of word_key=>doc data
+     * @param object $index_shard a mini inverted index of word_key=>doc data
      *      to add to this IndexArchiveBundle
      */
-    public function addIndexData(&$index_shard)
+    public function addIndexData($index_shard)
     {
 
         crawlLog("**ADD INDEX DIAGNOSTIC INFO...");
