@@ -3,7 +3,7 @@
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009, 2010  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009, 2010, 2011  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage processor
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009, 2010
+ * @copyright 2009, 2010, 2011
  * @filesource
  */
 
@@ -88,7 +88,6 @@ class XmlProcessor extends TextProcessor
 
             $root_name = isset($dom->documentElement->nodeName) ?
                 $dom->documentElement->nodeName : "";
-            echo $root_name;
             unset($dom);
 
             switch ($root_name)

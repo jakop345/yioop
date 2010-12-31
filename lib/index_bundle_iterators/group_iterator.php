@@ -3,7 +3,7 @@
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009, 2010  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009, 2010, 2011  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage iterator
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009, 2010
+ * @copyright 2009, 2010, 2011
  * @filesource
  */
 
@@ -94,7 +94,7 @@ class GroupIterator extends IndexBundleIterator
      * the minimum number of pages to group from a block;
      * this trumps $this->index_bundle_iterator->results_per_block
      */
-    const MIN_FIND_RESULTS_PER_BLOCK = 1000;
+    const MIN_FIND_RESULTS_PER_BLOCK = 400;
 
     /**
      * Creates a group iterator with the given parameters.
