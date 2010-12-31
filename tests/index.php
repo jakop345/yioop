@@ -172,7 +172,7 @@ function runTest($name)
     $test = new $class_name();
     $results = $test->run();
     ?>
-    <table border="1" summary="Displays infor about this test case">
+    <table border="1" summary="Displays info about this test case">
     <?php
         foreach($results as $test_case_name => $data) {
             echo "<tr><th>$test_case_name</th>";

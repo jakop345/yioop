@@ -133,11 +133,19 @@ class WordIterator extends IndexBundleIterator
      */
     function __construct($word_key, $index, $raw = false)
     {
+        if($raw == false) {
+            //get rid of out modfied base64 encoding
+            $hash = str_replace("_", "/", $word_key);
+            $hash = str_replace("-", "+" , $hash);
+            $hash .= "=";
+            $word_key = base64_decode($hash);
+
+        }
         $this->word_key = $word_key;
         $this->index =  $index;
         $this->current_block_fresh = false;
         $this->dictionary_info = 
-            $index->dictionary->getWordInfo($word_key, $raw);
+            $index->dictionary->getWordInfo($word_key, true);
         if ($this->dictionary_info === false) {
             $this->empty = true;
         } else {

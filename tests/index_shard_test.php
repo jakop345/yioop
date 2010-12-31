@@ -288,7 +288,7 @@ class IndexShardTest extends UnitTest
      */
     public function changeDocumentOffsetTestCase()
     {
-        $docid = "AAAAAAAA";
+        $docid = "AAAAAAAASSSSSSSS";
         $offset = 0;
         $word_counts = array(
             'BBBBBBBB' => 1
@@ -302,6 +302,16 @@ class IndexShardTest extends UnitTest
         $offset = 0;
         $word_counts = array(
             'BBBBBBBB' => 1
+        );
+        $meta_ids = array(
+        );
+        $this->test_objects['shard']->addDocumentWords($docid, 
+            $offset, $word_counts, $meta_ids);
+        $docid = "CCCCCCCCFFFFFFFF";
+        $offset = 0;
+        $word_counts = array(
+            'BBBBBBBB' => 1,
+            'ZZZZZZZZ' => 1
         );
         $meta_ids = array(
         );
@@ -328,8 +338,8 @@ class IndexShardTest extends UnitTest
         $c_data = $this->test_objects['shard']->getPostingsSliceById(
             crawlHash('BBBBBBBB', true), 5);
         $new_doc_offsets = array(
-            "AAAAAAAA" => 5,
-            "CCCCCCCC" => 6,
+            "AAAAAAAASSSSSSSS" => 5,
+            "AAAAAAAAEEEEEEEEFFFFFFFF" => 10,
             "QQQQQQQQEEEEEEEEFFFFFFFF" => 9,
             "DDDDDDDD" => 7,
         );
@@ -337,8 +347,9 @@ class IndexShardTest extends UnitTest
         $c_data = $this->test_objects['shard']->getPostingsSliceById(
             crawlHash('BBBBBBBB', true), 5);
         $predicted_offsets = array(
-            "AAAAAAAA" => 5,
-            "AAAAAAAAEEEEEEEEFFFFFFFF" => 0,
+            "AAAAAAAASSSSSSSS" => 5,
+            "CCCCCCCCFFFFFFFF" => 0,
+            "AAAAAAAAEEEEEEEEFFFFFFFF" => 10,
             "QQQQQQQQEEEEEEEEFFFFFFFF" => 9,
             "DDDDDDDD" => 7,
         );
@@ -350,6 +361,12 @@ class IndexShardTest extends UnitTest
                 $offset,  "Summary offset matches predicted $i");
             $i++;
         }
+        $c_data = $this->test_objects['shard']->getPostingsSliceById(
+            crawlHash('ZZZZZZZZ', true), 5);
+            $this->assertEqual($c_data['CCCCCCCCFFFFFFFF']
+                [CrawlConstants::SUMMARY_OFFSET], 
+                0,  "Summary offset matches predicted second word");
+
     }
 
     /**
@@ -357,7 +374,7 @@ class IndexShardTest extends UnitTest
      */
     public function saveLoadTestCase()
     {
-        $docid = "AAAAAAAA";
+        $docid = "AAAAAAAABBBBBBBB";
         $offset = 5;
         $word_counts = array(
             'BBBBBBBB' => 1,
@@ -381,23 +398,23 @@ class IndexShardTest extends UnitTest
         $c_data = $this->test_objects['shard2']->getPostingsSliceById(
             crawlHash('BBBBBBBB', true), 5);
 
-        $this->assertTrue(isset($c_data["AAAAAAAA"]), 
+        $this->assertTrue(isset($c_data["AAAAAAAABBBBBBBB"]), 
             "Doc lookup by word works");
         $c_data = $this->test_objects['shard2']->getPostingsSliceById(
             crawlHash('CCCCCCCC', true), 5);
-        $this->assertTrue(isset($c_data["AAAAAAAA"]), 
+        $this->assertTrue(isset($c_data["AAAAAAAABBBBBBBB"]), 
             "Doc lookup 2 by word works");
         $c_data = $this->test_objects['shard2']->getPostingsSliceById(
             crawlHash('DDDDDDDD', true), 5);
-        $this->assertTrue(isset($c_data["AAAAAAAA"]), 
+        $this->assertTrue(isset($c_data["AAAAAAAABBBBBBBB"]), 
             "Doc lookup 2 by word works");
         $c_data = $this->test_objects['shard2']->getPostingsSliceById(
             crawlHash('EEEEEEEE', true), 5);
-        $this->assertTrue(isset($c_data["AAAAAAAA"]), 
+        $this->assertTrue(isset($c_data["AAAAAAAABBBBBBBB"]), 
             "Doc lookup 2 by word works");
         $c_data = $this->test_objects['shard2']->getPostingsSliceById(
             crawlHash('FFFFFFFF', true), 5);
-        $this->assertTrue(isset($c_data["AAAAAAAA"]), 
+        $this->assertTrue(isset($c_data["AAAAAAAABBBBBBBB"]), 
             "Doc lookup 2 by word works");
     }
 }

@@ -1077,6 +1077,7 @@ class Fetcher implements CrawlConstants
         $index_shard = new IndexShard("fetcher_shard");
         for($i = 0; $i < $num_seen; $i++) {
             $site = $this->found_sites[self::SEEN_URLS][$i];
+            if(!isset($site[self::HASH])) {continue; }
             $doc_keys = crawlHash($site[self::URL], true) . 
                 $site[self::HASH];
             $word_counts = array();
@@ -1088,11 +1089,6 @@ class Fetcher implements CrawlConstants
 
             $meta_ids = array();
 
-            /* 
-               The first meta id is a hash of the page contents --
-               will use for aggregating duplicates
-             */
-            $meta_ids[] = $site[self::HASH];
             /*
                 Handle the built-in meta words. For example
                 store the sites the doc_key belongs to, 

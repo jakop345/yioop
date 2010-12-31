@@ -106,11 +106,6 @@ class IndexDictionary implements CrawlConstants
      const SEGMENT_SIZE = 16777216;
 
     /**
-     * Length of a word id in bytes
-     */
-    const WORD_ID_LEN = 8;
-
-    /**
      * Size in bytes of one block in IndexDictionary
      */
     const DICT_BLOCK_SIZE = 4096;
@@ -370,8 +365,8 @@ class IndexDictionary implements CrawlConstants
      */
     function recordCmp($record_a, $record_b) 
     {
-        return strcmp(substr($record_a, 0, self::WORD_ID_LEN), 
-            substr($record_b, 0,  self::WORD_ID_LEN));
+        return strcmp(substr($record_a, 0, IndexShard::WORD_KEY_LEN), 
+            substr($record_b, 0,  IndexShard::WORD_KEY_LEN));
     }
 
     /**
@@ -492,7 +487,7 @@ class IndexDictionary implements CrawlConstants
                 $check_loc * $word_item_len, $word_item_len);
 
             if($word_string == false) {return false;}
-            $id = substr($word_string, 0, self::WORD_ID_LEN);
+            $id = substr($word_string, 0, IndexShard::WORD_KEY_LEN);
             $cmp = strcmp($word_id, $id);
             if($cmp === 0) {
                 $found = true;
@@ -520,7 +515,7 @@ class IndexDictionary implements CrawlConstants
             $word_string = $this->getDictSubstring($file_num, $start + 
                 $test_loc * $word_item_len, $word_item_len);
             if($word_string == "" ) break;
-            $id = substr($word_string, 0, self::WORD_ID_LEN);
+            $id = substr($word_string, 0, IndexShard::WORD_KEY_LEN);
             if(strcmp($word_id, $id) != 0 ) break;
             $start_loc = $test_loc;
             $test_loc -= 1;
@@ -533,7 +528,7 @@ class IndexDictionary implements CrawlConstants
             $word_string = $this->getDictSubstring($file_num, $start + 
                 $test_loc * $word_item_len, $word_item_len);
             if($word_string == "" ) break;
-            $id = substr($word_string, 0, self::WORD_ID_LEN);
+            $id = substr($word_string, 0, IndexShard::WORD_KEY_LEN);
             if(strcmp($word_id, $id) != 0 ) break;
             $end_loc = $test_loc;
             $test_loc += 1;
@@ -545,7 +540,7 @@ class IndexDictionary implements CrawlConstants
             $word_string = $this->getDictSubstring($file_num, $start + 
                 $i * $word_item_len, $word_item_len);
             $tmp = IndexShard::getWordInfoFromString(
-                substr($word_string, 8), true);
+                substr($word_string, IndexShard::WORD_KEY_LEN), true);
             array_unshift($info, $tmp);
         }
 
