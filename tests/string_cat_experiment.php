@@ -94,6 +94,7 @@ for($i = 10; $i< 10000000; $i *= 10) {
  * @return float time difference in seconds
  * @see SigninModel::changePassword()
  * @see SigninModel::checkValidSignin()
+ * @ignore
  */
 function changeInMicrotime( $start, $end=NULL )
 {

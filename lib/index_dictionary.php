@@ -253,7 +253,7 @@ class IndexDictionary implements CrawlConstants
      * For a fixed prefix directory merges the $tier pair of files
      * of dictinary words. The output is stored in $out_slot.
      *
-     * @oaram int $prefix which prefix directory to perform the merge of files
+     * @param int $prefix which prefix directory to perform the merge of files
      * @param int $tier tier level to perform the merge of files at
      * @param string either "A" or "B", the suffix but not extension of the
      *      file one tier up to create with the merged results.
@@ -361,7 +361,8 @@ class IndexDictionary implements CrawlConstants
      *
      * @param string $record_a
      * @param string $record_b
-     * @return
+     * @return int less than 0 if $record_a less than $record_b; 
+     *      greater than 0 if $record_b is less than $record_a; 0 otherwise
      */
     function recordCmp($record_a, $record_b) 
     {

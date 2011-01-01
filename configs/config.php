@@ -42,6 +42,8 @@ define('ERROR_INFO', 4);
 date_default_timezone_set('America/Los_Angeles');
 
 if(file_exists(BASE_DIR."/configs/local_config.php")) {
+    /** Include any locally specified defines (could use as an alternative
+        way to set work directory) */
     require_once(BASE_DIR."/configs/local_config.php");
 }
 
@@ -59,6 +61,7 @@ if(file_exists(WORK_DIRECTORY."/profile.php")) {
     if(is_dir(WORK_DIRECTORY."/locale")) {
         define('LOCALE_DIR', WORK_DIRECTORY."/locale");
     } else {
+        /** @ignore */
         define('LOCALE_DIR', BASE_DIR."/locale");
     }
     define('LOG_DIR', WORK_DIRECTORY."/log");
@@ -68,6 +71,7 @@ if(file_exists(WORK_DIRECTORY."/profile.php")) {
         exit();
     }
     error_reporting(-1);
+    /** @ignore */
     define('PROFILE', false);
     define('DBMS', 'sqlite3');
     define('DEBUG_LEVEL', "NO_DEBUG_INFO");
@@ -75,11 +79,15 @@ if(file_exists(WORK_DIRECTORY."/profile.php")) {
     define('DB_USER', '');
     define('DB_PASSWORD', '');
     define('DB_URL', '');
+    /** @ignore */
     define('CRAWL_DIR', BASE_DIR);
+    /** @ignore */
     define('LOCALE_DIR', BASE_DIR."/locale");
+    /** @ignore */
     define('LOG_DIR', BASE_DIR."/log");
     define('QUEUE_SERVER', "http://localhost/");
     define('USER_AGENT_SHORT', "NeedsNameBot");
+    /** @ignore */
     define('SESSION_NAME', "yioopbiscuit");
     define('DEFAULT_LOCALE', "en-US");
     define('AUTH_KEY', 0);

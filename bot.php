@@ -34,7 +34,9 @@
  * @filesource
  */
 
-/** Calculate base directory of script */
+/** Calculate base directory of script 
+ * @ignore
+ */
 define("BASE_DIR", substr($_SERVER['DOCUMENT_ROOT'].$_SERVER['PWD'].
     $_SERVER["SCRIPT_NAME"], 0, 
     -strlen("bot.php")));

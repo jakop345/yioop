@@ -31,7 +31,9 @@
  * @filesource
  */
 
-/** Calculate base directory of script */
+/** Calculate base directory of script
+ * @ignore
+ */
 define("BASE_DIR", substr(
     dirname(realpath($_SERVER['PHP_SELF'])), 0, 
     -strlen("/bin")));
@@ -46,7 +48,9 @@ if(!PROFILE) {
     exit();
 }
 
-/** CRAWLING means don't try to use memcache*/
+/** CRAWLING means don't try to use memcache 
+ * @ignore
+ */
 define("NO_CACHE", true);
 
 /** get the database library based on the current database type */

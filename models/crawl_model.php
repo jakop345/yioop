@@ -213,7 +213,7 @@ class CrawlModel extends Model implements CrawlConstants
      * Deletes the crawl with the supplied timestamp if it exists. Also
      * deletes any crawl mixes making use of this crawl
      *
-     * @param 
+     * @param string $timestamp a Unix timestamp
      */
     function deleteCrawl($timestamp)
     {

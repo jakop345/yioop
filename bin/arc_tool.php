@@ -31,7 +31,7 @@
  * @filesource
  */
 
-/** Calculate base directory of script */
+/** Calculate base directory of script @ignore*/
 define("BASE_DIR", substr(
     dirname(realpath($_SERVER['PHP_SELF'])), 0, 
     -strlen("/bin")));

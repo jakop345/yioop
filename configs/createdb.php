@@ -40,9 +40,8 @@ if(isset($_SERVER['DOCUMENT_ROOT']) && strlen($_SERVER['DOCUMENT_ROOT']) > 0) {
     exit();
 }
 
-/**
- *
- *
+/** Calculate base directory of script 
+ * @ignore 
  */
 define("BASE_DIR", substr(
     dirname(realpath($_SERVER['PHP_SELF'])), 0, 

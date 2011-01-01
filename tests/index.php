@@ -34,7 +34,9 @@
  * @filesource
  */
 
-/** Calculate base directory of script */
+/** Calculate base directory of script 
+ * @ignore 
+ */
 define("BASE_DIR", substr($_SERVER['SCRIPT_FILENAME'], 0, 
     -strlen("tests/index.php")));
 
@@ -45,7 +47,10 @@ require_once BASE_DIR.'/configs/config.php';
 
 if(!PROFILE || !DISPLAY_TESTS) {echo "BAD REQUEST"; exit();}
 
-/** NO_CACHE means don't try to use memcache*/
+/** 
+ * NO_CACHE means don't try to use memcache 
+ * @ignore
+ */
 define("NO_CACHE", true);
 
 
@@ -83,7 +88,8 @@ define("NO_CACHE", true);
  */
 require_once BASE_DIR."/lib/unit_test.php";
 /**
- *  Do not send output to log files
+ * Do not send output to log files 
+ * @ignore
  */
 define("LOG_TO_FILES", false);
 

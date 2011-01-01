@@ -35,7 +35,9 @@
  * @filesource
  */
 
-/** Calculate base directory of script */
+/** Calculate base directory of script 
+ *  @ignore
+ */
 define("BASE_DIR", substr($_SERVER['SCRIPT_FILENAME'], 0,-strlen("index.php")));
 
 /**

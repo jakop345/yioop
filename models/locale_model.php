@@ -518,7 +518,7 @@ class LocaleModel extends Model
         $n[] = <<<EOT
 ; ***** BEGIN LICENSE BLOCK ***** 
 ;  SeekQuarry/Yioop Open Source Pure PHP Search Engine, Crawler, and Indexer
-;  Copyright (C) 2009, 2010  Chris Pollett chris@pollett.org
+;  Copyright (C) 2009, 2010, 2011  Chris Pollett chris@pollett.org
 ;
 ;  This program is free software: you can redistribute it and/or modify
 ;  it under the terms of the GNU General Public License as published by
