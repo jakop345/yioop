@@ -335,17 +335,25 @@ class PhraseModel extends Model
             $restrict_phrases = array_unique($restrict_phrases);
             $restrict_phrases = array_filter($restrict_phrases);
             $index_archive->setCurrentShard(0, true);
-            if(count($hashes) > 5) {
-                $words_array = $index_archive->getSelectiveWords($hashes, 5);
-                if(is_array($words_array)) {
-                    $word_keys = array_keys($words_array);
-                } else {
-                    $word_keys = NULL;
-                    $word_struct = NULL;
+            $words_array = $index_archive->getSelectiveWords($hashes, 5);
+            if(is_array($words_array)) {
+                $counts = array_values($words_array);
+                $min_count = min($counts);
+                $threshold = 3*$min_count;
+                $word_keys = array();
+                foreach($words_array as $key => $count) {
+                    if($count < $threshold) {
+                        $word_keys[] = $key;
+                    }
                 }
+                $word_keys = array_keys($words_array);
+
             } else {
-                $word_keys = $hashes;
+                $word_keys = NULL;
+                $word_struct = NULL;
             }
+
+
             if($word_keys !== NULL) {
                 $word_struct = array("KEYS" => $word_keys,
                     "RESTRICT_PHRASES" => $restrict_phrases, 
