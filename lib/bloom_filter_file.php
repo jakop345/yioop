@@ -141,11 +141,9 @@ class BloomFilterFile extends PersistentStructure
         $seed = array();
         for($i = 0; $i < 16; $i += 4) {
             $hash = substr($md5, $i, 4);
-            $int_array = unpack("N", $hash);
-            $seed[] = $int_array[1];
+            $seed[] = unpackInt($hash);
         }
 
-        //$pos_array = array_fill(0, $num_keys, 0);
         $pos_array = array();
         $offset = $num_keys >> 2;
         $size = $this->filter_size - 1;
