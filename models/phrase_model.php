@@ -463,12 +463,10 @@ class PhraseModel extends Model
                 unset($doc_info[CrawlConstants::SUMMARY]);
                 $pages[] = array_merge($doc_info, $summary);
                 $num_retrieved++;
-                if($num_retrieved >=  $to_retrieve) {
-                    break 2;
-                }
             }
 
         }
+
         usort($pages, "scoreOrderCallback");
 
         if($num_retrieved < $to_retrieve) {

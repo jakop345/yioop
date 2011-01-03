@@ -91,6 +91,12 @@ class GroupIterator extends IndexBundleIterator
     var $grouped_keys;
 
     /**
+     * 
+     * @var array
+     */
+    var $grouped_hashes;
+
+    /**
      * the minimum number of pages to group from a block;
      * this trumps $this->index_bundle_iterator->results_per_block
      */
@@ -121,6 +127,7 @@ class GroupIterator extends IndexBundleIterator
     {
         $this->index_bundle_iterator->reset();
         $this->grouped_keys = array();
+         $this->grouped_hashes = array();
             // -1 == never save, so file name not used using time to be safer
         $this->seen_docs = 0;
         $this->seen_docs_unfiltered = 0;
@@ -179,7 +186,7 @@ class GroupIterator extends IndexBundleIterator
         */
         $this->current_block_hashes = array();
         $pre_out_pages = array();
-        $seen_hashes = array();
+        $this->current_seen_hashes = array();
         if($this->count_block_unfiltered > 0 ) {
             $i = $this->seen_docs;
             foreach($pages as $doc_key => $doc_info) {
@@ -215,14 +222,15 @@ class GroupIterator extends IndexBundleIterator
                         new urls found in this block
                     */
                     $this->current_block_hashes[] = $hash_url;
-                    $i++;
+                } else {
+                    unset($pre_out_pages[$hash_url]);
                 }
             }
 
              /*get summary page for groups of link data if exists and don't have
                also aggregate by hash
              */
-            $seen_hashes = array();
+            $this->current_seen_hashes = array();
             foreach($pre_out_pages as $hash_url => $data) {
                 if(!isset($pre_out_pages[$hash_url]['IS_PAGE'])) {
                     $hash_info_url= $pre_out_pages[$hash_url]['HASH_INFO_URL'];
@@ -249,23 +257,26 @@ class GroupIterator extends IndexBundleIterator
                 }
                 if(isset($pre_out_pages[$hash_url]['HASH_INFO_URL'])) {
                     unset($pre_out_pages[$hash_url]['HASH_INFO_URL']);
-                }
+                } 
                 if(isset($pre_out_pages[$hash_url][0][self::HASH])) {
                     $hash = $pre_out_pages[$hash_url][0][self::HASH];
-                    if(isset($seen_hashes[$hash])) {
-                        $previous_url = $seen_hashes[$hash];
+                    if(isset($this->grouped_hashes[$hash])) {
+                        unset($pre_out_pages[$hash_url]);
+                    } else if(isset($this->current_seen_hashes[$hash])) {
+                        $previous_url = $this->current_seen_hashes[$hash];
                         if($pre_out_pages[$previous_url][0][
                             self::HASH_URL_COUNT] >= 
                             count($pre_out_pages[$hash_url])) {
                             unset($pre_out_pages[$hash_url]);
                         } else {
-                            $seen_hashes[$hash] = $hash_url;
+                            $this->current_seen_hashes[$hash] = $hash_url;
                             $pre_out_pages[$hash_url][0][self::HASH_URL_COUNT] =
                                 count($pre_out_pages[$hash_url]);
                             unset($pre_out_pages[$previous_url]);
                         }
                     } else {
-                        $seen_hashes[$hash] = $hash_url;
+                        $i++;
+                        $this->current_seen_hashes[$hash] = $hash_url;
                         $pre_out_pages[$hash_url][0][self::HASH_URL_COUNT] =
                             count($pre_out_pages[$hash_url]);
                     }
@@ -273,6 +284,9 @@ class GroupIterator extends IndexBundleIterator
             }
             $this->count_block = count($pre_out_pages);
 
+            /*
+                Calculate grouped values for each field of the groups we found
+             */
             $out_pages = array();
             foreach($pre_out_pages as $hash_url => $group_infos) {
                 foreach($group_infos as $doc_info) {
@@ -393,12 +407,17 @@ class GroupIterator extends IndexBundleIterator
     {
         $this->advanceSeenDocs();
 
-        	$this->seen_docs_unfiltered += $this->count_block_unfiltered;
+        $this->seen_docs_unfiltered += $this->count_block_unfiltered;
 
         if($this->seen_docs_unfiltered > 0) {
-            $this->num_docs = 
-                floor(($this->seen_docs*$this->index_bundle_iterator->num_docs)/
-                $this->seen_docs_unfiltered);
+            if($this->count_block_unfiltered < $this->results_per_block) {
+                $this->num_docs = $this->seen_docs;
+            } else {
+                $this->num_docs = 
+                    floor(
+                    ($this->seen_docs*$this->index_bundle_iterator->num_docs)/
+                    $this->seen_docs_unfiltered);
+            }
         } else {
             $this->num_docs = 0;
         }
@@ -406,6 +425,10 @@ class GroupIterator extends IndexBundleIterator
         
         foreach($this->current_block_hashes as $hash_url) {
             $this->grouped_keys[$hash_url] = true;
+        }
+
+        foreach($this->current_seen_hashes as $hash) {
+            $this->grouped_hashes[$hash] = true;
         }
 
         $this->index_bundle_iterator->advance($gen_doc_offset);
