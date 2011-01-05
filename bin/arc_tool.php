@@ -343,7 +343,7 @@ class ArcTool implements CrawlConstants
         echo "php arc_tool.php info bundle_name //return info about ".
             "documents stored in archive.\n";
         echo "php arc_tool.php list bundle_name start num //outputs".
-            " items start through num.from bundle_name\n";
+            " items start through num from bundle_name\n";
         exit();
     }
 }

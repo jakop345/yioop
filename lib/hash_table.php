@@ -304,8 +304,7 @@ class HashTable extends StringArray
     function hash($key)
     {
         $hash = substr(md5($key, true), 0, 4);
-        $int_array = unpack("N", $hash);
-        $seed = $int_array[1];
+        $seed = unpackInt($hash);
 
         mt_srand($seed);
         $index = mt_rand(0, $this->num_values -1);

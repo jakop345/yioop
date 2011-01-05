@@ -466,13 +466,10 @@ class Fetcher implements CrawlConstants
             $this->to_crawl = array();
             while($tok !== false) {
                 $string = base64_decode($tok);
-                $tmp = unpack("f", substr($string, 0 , 4));
-                $weight = $tmp[1];
-                $tmp = unpack("N", substr($string, 4 , 4));
-                $delay = $tmp[1];
+                $weight = unpackFloat(substr($string, 0 , 4));
+                $delay = unpackInt(substr($string, 4 , 4));
                 $url = substr($string, 8);
                 $this->to_crawl[] = array($url, $weight, $delay);
-                
                 $tok = strtok("\n");
             }
         }
@@ -1083,7 +1080,7 @@ class Fetcher implements CrawlConstants
             $site = $this->found_sites[self::SEEN_URLS][$i];
             if(!isset($site[self::HASH])) {continue; }
             $doc_keys = crawlHash($site[self::URL], true) . 
-                $site[self::HASH];
+                $site[self::HASH]. crawlHash("link:".$site[self::URL], true);
             $word_counts = array();
             $phrase_string = 
                 mb_ereg_replace("[[:punct:]]", " ", $site[self::TITLE] .
@@ -1153,8 +1150,8 @@ class Fetcher implements CrawlConstants
                     $link_text = strip_tags($link_text);
                     $link_id = 
                         "url|".$url."|text|$link_text|ref|".$site[self::URL];
-                    $link_keys =  crawlHash($link_id, true) . 
-                        crawlHash($url, true) .
+                    $link_keys = crawlHash($url, true) .
+                        crawlHash($link_id, true) . 
                         crawlHash("info:".$url, "true");
                     $summary[self::URL] =  $link_id;
                     $summary[self::TITLE] = $url; 
@@ -1162,10 +1159,7 @@ class Fetcher implements CrawlConstants
                     $summary[self::DESCRIPTION] =  $link_text;
                     $summary[self::TIMESTAMP] =  $site[self::TIMESTAMP];
                     $summary[self::ENCODING] = $site[self::ENCODING];
-                    $summary[self::HASH] =  false; /* 
-                        link id's will always be unique so no sense 
-                        deduplicating them
-                    */
+                    $summary[self::HASH] =  $link_id;
                     $summary[self::TYPE] = "link";
                     $summary[self::HTTP_CODE] = "link";
                     $this->found_sites[self::SEEN_URLS][] = $summary;
@@ -1183,7 +1177,7 @@ class Fetcher implements CrawlConstants
 
             }
             $index_shard->addDocumentWords($doc_keys, self::NEEDS_OFFSET_FLAG, 
-                $word_counts, $meta_ids);
+                $word_counts, $meta_ids, true);
 
             $index_shard->appendIndexShard($link_shard);
 

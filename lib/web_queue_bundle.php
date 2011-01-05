@@ -194,10 +194,10 @@ class WebQueueBundle implements Notifier
         */
         // set up the priority queue... stores (hash(url), weight) pairs.
         $this->to_crawl_queue = new PriorityQueue($dir_name."/queue.dat", 
-            $num_urls_ram, 8, $min_or_max, $this);
+            $num_urls_ram, 8, $min_or_max, $this, 0);
 
-        /* set up the hash table... stores (hash(url), offset into url archive, i
-          ndex in priority queue) triples.
+        /* set up the hash table... stores (hash(url), offset into url archive, 
+          index in priority queue) triples.
          */
 
         /*to ensure we can always insert into table, because of how deletions 
@@ -280,7 +280,7 @@ class WebQueueBundle implements Notifier
             if(isset($objects[$i]['offset'])) {
                 $offset = $objects[$i]['offset'];
 
-                $data = pack('N', $offset).pack("N", 0);
+                $data = packInt($offset).packInt(0);
 
                 if($this->insertHashTable(crawlHash($url, true), $data)) {
                     /* 
@@ -290,10 +290,10 @@ class WebQueueBundle implements Notifier
                     $loc = $this->to_crawl_queue->insert(
                         crawlHash($url, true), $weight);
                 } else {
-                    echo "Error inserting $url into hash table !!";
+                    crawlLog("Error inserting $url into hash table !!");
                 }
             } else {
-                echo "Error inserting $url into web archive !!";
+                crawlLog("Error inserting $url into web archive !!");
             }
         }
         
@@ -332,12 +332,11 @@ class WebQueueBundle implements Notifier
         $data = $this->lookupHashTable($hash_url);
         if($data !== false)
         {
-            $queue_index_array = unpack('N', substr($data, 4 , 4));
-            $queue_index = $queue_index_array[1];
-    
+            $queue_index = unpackInt(substr($data, 4 , 4));
+
             $this->to_crawl_queue->adjustWeight($queue_index, $delta);
         } else {
-          echo "Can't adjust weight. Not in queue $url\n";
+          crawlLog("Can't adjust weight. Not in queue $url");
         }
     }
 
@@ -361,12 +360,11 @@ class WebQueueBundle implements Notifier
         $data = $this->lookupHashTable($hash_url);
 
         if(!$data) {
-            echo "Not in queue $url\n";
+            crawlLog("Not in queue $url");
             return;
         }
 
-        $queue_index_array = unpack('N', substr($data, 4 , 4));
-        $queue_index = $queue_index_array[1];
+        $queue_index = unpackInt(substr($data, 4 , 4));
 
         $this->to_crawl_queue->poll($queue_index);
 
@@ -384,7 +382,7 @@ class WebQueueBundle implements Notifier
     {
         $tmp = $this->to_crawl_queue->peek($i);
         if(!$tmp) {
-            echo "web queue peek error on index $i\n";
+            crawlLog("web queue peek error on index $i");
             return false;
         }
 
@@ -392,12 +390,11 @@ class WebQueueBundle implements Notifier
 
         $data = $this->lookupHashTable($hash_url);
         if($data === false ) {
-            echo "web queue hash lookup error $hash_url \n";
+            crawlLog("web queue hash lookup error $hash_url");
             return false;
         }
 
-        $offset_array = unpack('N', substr($data, 0 , 4));
-        $offset = $offset_array[1];
+        $offset = unpackInt(substr($data, 0 , 4));
         $url_obj = $this->to_crawl_archive->getObjects($offset, 1, true, $fh);
 
         if(isset($url_obj[0][1][0])) {
@@ -712,15 +709,14 @@ class WebQueueBundle implements Notifier
             if(isset($objects[0]['offset'])) {
                 $offset = $objects[0]['offset'];
             } else {
-                echo "Error inserting $url into rebuild url archive file \n";
+                crawlLog("Error inserting $url into rebuild url archive file");
                 continue;
             }
             
             $hash_url = crawlHash($url, true);
             $data = $this->lookupHashTable($hash_url);
-            $queue_index_array = unpack('N', substr($data, 4 , 4));
-            $queue_index = $queue_index_array[1];
-            $data = pack('N', $offset).pack("N", $queue_index);
+            $queue_index = unpackInt(substr($data, 4 , 4));
+            $data = packInt($offset).packInt($queue_index);
 
             $this->insertHashTable(crawlHash($url, true), $data);
         }
@@ -735,8 +731,9 @@ class WebQueueBundle implements Notifier
     }
 
     /**
-     *
-     *
+     * Delete the Bloom filters used to store robots.txt file info.
+     * This is called roughly once a days so that robots files will be
+     * reloaded and so the policies used won't be too old.
      */
     function emptyRobotFilters()
     {
@@ -778,12 +775,12 @@ class WebQueueBundle implements Notifier
         $value = $this->lookupHashTable($hash_url);
         if($value !== false) {
             $packed_offset = substr($value, 0 , 4);
-            $data = $packed_offset.pack("N", $index);
+            $data = $packed_offset.packInt($index);
 
             $this->insertHashTable($hash_url, $data);
         } else {
-            echo "NOTIFY LOOKUP FAILED. INDEX WAS $index. DATA WAS ".
-                bin2hex($data[0])."\n";
+            crawlLog("NOTIFY LOOKUP FAILED. INDEX WAS $index. DATA WAS ".
+                bin2hex($data[0]));
           
         }
     }

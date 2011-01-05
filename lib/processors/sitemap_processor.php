@@ -133,7 +133,6 @@ class SitemapProcessor extends TextProcessor
 
         foreach($paths as $path) {
             $nodes = $xpath->evaluate($path);
-            echo "hi".$nodes->length;
             foreach($nodes as $node) {
                 $url = UrlParser::canonicalLink(
                     $node->textContent, $site);

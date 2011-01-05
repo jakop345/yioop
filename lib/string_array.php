@@ -114,8 +114,7 @@ class StringArray extends PersistentStructure
     public static function load($fname)
     {
         $fh = fopen($fname, "rb");
-        $tmp = unpack("N", fread($fh, 4));
-        $array_size = $tmp[1];
+        $array_size = unpackInt(fread($fh, 4));
         $array = fread($fh, $array_size);
         $object = unserialize(fread($fh, 
             filesize($fname) -4 - $array_size));
@@ -131,7 +130,7 @@ class StringArray extends PersistentStructure
     {
         $fh = fopen($this->filename, "wb");
         $tmp = & $this->string_array;
-        fwrite($fh, pack("N", $this->string_array_size));
+        fwrite($fh, packInt($this->string_array_size));
         fwrite($fh, $this->string_array);
         unset($this->string_array);
         fwrite($fh, serialize($this));
