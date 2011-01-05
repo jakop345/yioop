@@ -227,7 +227,7 @@ class IndexShard extends PersistentStructure implements CrawlConstants
      * Used to keep track of whether a record in document infos is for a
      * document or for a link
      */
-    const COMPOSITE_ID_FLAG =  0x80000000;
+    const LINK_FLAG =  0x800000;
 
     /**
      * Size in bytes of one block in IndexShard
@@ -315,12 +315,12 @@ class IndexShard extends PersistentStructure implements CrawlConstants
      * @return bool success or failure of performing the add
      */
     function addDocumentWords($doc_keys, $summary_offset, $word_counts,
-        $meta_ids)
+        $meta_ids, $is_doc = false)
     {
         if($this->word_docs_packed == true) {
             $this->unpackWordDocs();
         }
-        $is_doc = false;
+
         $doc_len = 0;
         $link_doc_len = 0;
         $len_key = strlen($doc_keys);
@@ -336,12 +336,10 @@ class IndexShard extends PersistentStructure implements CrawlConstants
         $added_len = strlen($summary_offset_string);
         $this->doc_infos .= $summary_offset_string;
 
-        if($num_keys <= 2) { 
+        if($is_doc) { 
             $this->num_docs++;
-            $is_doc = true;
         } else { //link item
             $this->num_link_docs++;
-            $is_doc = false;
         }
         foreach($meta_ids as $meta_id) {
             $word_counts[$meta_id] = 0;
@@ -369,7 +367,7 @@ class IndexShard extends PersistentStructure implements CrawlConstants
         $this->len_all_docs += $doc_len;
         $this->len_all_link_docs += $link_doc_len;
         $len_num_keys = ($is_doc) ? $this->packPosting($doc_len, $num_keys) :
-            $this->packPosting($link_doc_len, $num_keys);
+            $this->packPosting((self::LINK_FLAG | $link_doc_len), $num_keys);
         $this->doc_infos .=  $len_num_keys;
         $added_len += strlen($len_num_keys);
         $this->doc_infos .= $doc_keys;
@@ -494,7 +492,9 @@ class IndexShard extends PersistentStructure implements CrawlConstants
         list($doc_len, $num_keys) = 
             $this->unpackPosting(substr($doc_info_string, 4));
         $item[self::GENERATION] = $this->generation;
-        $is_doc = ($num_keys <= 2) ? true :false;
+        $is_doc = (($doc_len & self::LINK_FLAG) == 0) ? true : false;
+        if(!$is_doc) {$doc_len -= self::LINK_FLAG; }
+        $item[self::IS_DOC] = $is_doc;
         $skip_stats = false;
         
         if($item[self::SUMMARY_OFFSET] == self::NEEDS_OFFSET_FLAG) {
@@ -760,7 +760,7 @@ class IndexShard extends PersistentStructure implements CrawlConstants
                 $num_words++;
             } else {
                 if($old_prefix !== false) {
-                    $tmp[$old_prefix] = pack("N", $offset) .
+                    $tmp[$old_prefix] = packInt($offset) .
                         pack("N", $num_words);
                     $offset += $num_words * $word_item_len;
                 }
@@ -768,7 +768,7 @@ class IndexShard extends PersistentStructure implements CrawlConstants
                 $num_words = 1;
             }
         }
-        $tmp[$old_prefix] = pack("N", $offset) . pack("N", $num_words);
+        $tmp[$old_prefix] = packInt($offset) . packInt($num_words);
         $num_prefixes = 2 << 16;
         $this->prefixes = "";
         for($i = 0; $i < $num_prefixes; $i++) {

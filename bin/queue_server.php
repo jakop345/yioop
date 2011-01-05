@@ -38,7 +38,7 @@ define("BASE_DIR", substr(
     dirname(realpath($_SERVER['PHP_SELF'])), 0, 
     -strlen("/bin")));
 
-ini_set("memory_limit","950M"); //so have enough memory to crawl big pages
+ini_set("memory_limit","1100M"); //so have enough memory to crawl big pages
 
 /** Load in global configuration settings */
 require_once BASE_DIR.'/configs/config.php';
@@ -595,16 +595,18 @@ class QueueServer implements CrawlConstants
             if(strcmp("url", $link_url_parts[0]) == 0 &&
                 strcmp("text", $link_url_parts[2]) == 0) {
                 $seen_sites[$i][self::HASH_URL] = 
-                    crawlHash($seen_sites[$i][self::URL], true)
-                    . crawlHash($link_url_parts[1],true)
+                    crawlHash($link_url_parts[1],true)
+                    . crawlHash($seen_sites[$i][self::URL], true)
                     . crawlHash("info:".$link_url_parts[1], true);
+                $seen_sites[$i][self::IS_DOC] = false;
             } else {
+                $seen_sites[$i][self::IS_DOC] = true;
                 $visited_urls_count++;
             }
         }
 
         if(isset($sites[self::INVERTED_INDEX])) {
-            $index_shard =  $sites[self::INVERTED_INDEX];
+            $index_shard =  & $sites[self::INVERTED_INDEX];
             if($index_shard->word_docs_packed) {
                 $index_shard->unpackWordDocs();
             }
@@ -618,8 +620,10 @@ class QueueServer implements CrawlConstants
                     $visited_urls_count);
 
                 foreach($seen_sites as $site) {
-                    if($site[self::HASH] !== false){ // so not link
-                        $hash = $site[self::HASH_URL].$site[self::HASH];
+                    if($site[self::IS_DOC]){ // so not link
+                        $hash = $site[self::HASH_URL]. 
+                            $site[self::HASH] . 
+                            crawlHash("link:".$site[self::URL], true);
                     } else {
                         $hash = $site[self::HASH_URL];
                     }
@@ -1153,7 +1157,7 @@ class QueueServer implements CrawlConstants
             foreach($sites[self::SITES] as $site) {
                 list($url, $weight, $delay) = $site;
                 $out_string = base64_encode(
-                    pack("f", $weight).pack("N", $delay).$url)."\n";
+                    packFloat($weight).packInt($delay).$url)."\n";
                 fwrite($fh, $out_string);
             }
             fclose($fh);

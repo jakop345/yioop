@@ -112,6 +112,29 @@ function packInt($my_int)
 }
 
 /**
+ * Unpacks a float from a 4 char string
+ *
+ * @param string $str where to extract int from
+ * @return float extracted float
+ */
+function unpackFloat($str)
+{
+    $tmp = unpack("f", $str);
+    return $tmp[1];
+}
+
+/**
+ * Packs an float into a 4 char string
+ *
+ * @param float $my_floatt the float to pack
+ * @return string the packed string
+ */
+function packFloat($my_float)
+{
+    return pack("f", $my_float);
+}
+
+/**
  * Converts a string to string where each char has been replaced by its 
  * hexadecimal equivalent
  *

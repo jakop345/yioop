@@ -136,7 +136,11 @@ interface CrawlConstants
     const META_WORDS ='ao';
     const CACHE_PAGE_PARTITION = 'ap';
     const GENERATION = 'aq';
-    const HASH_URL_COUNT = 'ar';
+    const HASH_SUM_SCORE = 'ar';
+    const HASH_URL_COUNT = 'as';
+    const IS_DOC = 'at';
+    const BOOST = 'av';
+
 
     const NEEDS_OFFSET_FLAG = 0x7FFFFFFF;
 
