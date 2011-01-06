@@ -376,9 +376,23 @@ class GroupIterator extends IndexBundleIterator
                 /*
                     An attempt to approximate the total number of inlinks
                     to a document which will have the terms in question.
+
+                    A result after grouping consists of a document and inlinks
+                    which contain the terms of the base iterator.
+
+                    $hash_count/($num_docs_seen *$num_inlinks)
+                    approximates the probability that an inlink for 
+                    a particular document happens to 
+                    contain the terms of the iterator. After $num_docs_seen
+                    many documents, there are $num_inlinks - $hash_count
+                    many inlinks which might appear in the remainder of
+                    the iterators document list, giving a value
+                    for the $num_inlinks_not_seen as per the equation below:
                  */
-                $total_inlinks_for_doc = min($num_inlinks, 
-                    $hash_count * $this->num_docs/$num_docs_seen);
+                $num_inlinks_not_seen = 
+                    ($num_inlinks - $hash_count)*$hash_count/
+                    ($num_docs_seen * $num_inlinks);
+                $total_inlinks_for_doc = $hash_count + $num_inlinks_not_seen;
 
                 /*
                      we score[x] of the xth inlink for this document
