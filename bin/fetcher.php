@@ -38,7 +38,7 @@ define("BASE_DIR", substr(
     dirname(realpath($_SERVER['PHP_SELF'])), 0, 
     -strlen("/bin")));
 
-ini_set("memory_limit","800M"); //so have enough memory to crawl big pages
+ini_set("memory_limit","850M"); //so have enough memory to crawl big pages
 
 /** Load in global configuration settings */
 require_once BASE_DIR.'/configs/config.php';
@@ -677,6 +677,8 @@ class Fetcher implements CrawlConstants
 
 
                 $stored_site_pages[$i][self::URL] = $site[self::URL];
+                $stored_site_pages[$i][self::IP_ADDRESSES] = 
+                    $site[self::IP_ADDRESSES];
                 $stored_site_pages[$i][self::TIMESTAMP] = 
                     $site[self::TIMESTAMP];
                 $stored_site_pages[$i][self::TYPE] = $site[self::TYPE];
@@ -693,6 +695,8 @@ class Fetcher implements CrawlConstants
 
                 $summarized_site_pages[$i][self::URL] = 
                     strip_tags($site[self::URL]);
+                $summarized_site_pages[$i][self::IP_ADDRESSES] = 
+                    $site[self::IP_ADDRESSES];
                 $summarized_site_pages[$i][self::TITLE] = strip_tags(
                     $site[self::DOC_INFO][self::TITLE]); 
                     // stripping html to be on the safe side

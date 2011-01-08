@@ -63,7 +63,7 @@ class GzipCompressor implements Compressor
      */
     function compress($str)
     {
-        return gzcompress($str, 9);
+        return gzencode($str, 9);
     }
 
     /**
@@ -75,8 +75,51 @@ class GzipCompressor implements Compressor
      */
      function uncompress($str)
     {
-        return gzuncompress($str);
+        return gzinflate(substr($str, 10)); // 10 bytes to skip gzip header
     }
 
+    /**
+     * Used to compress an int as a fixed length string in the format of
+     * the compression algorithm underlying the compressor. For gzip 
+     * we use RFC 1952 http://www.gzip.org/zlib/rfc-gzip.html and we
+     * store the int over the modified timestamp in the header of a compressed
+     * empty string. Hence, this will always be of fixed length 20.
+     *
+     * @param int $my_int the integer to compress as a fixed length string
+     * @return string the fixed length string containing the packed int
+     */
+    function compressInt($my_int) {
+        return "\x1f\x8b\x08\x00".packInt($my_int) .
+            "\x00\x03\x03\x00\x00\x00\x00\x00\x00\x00\x00\x00";
+    }
+
+    /**
+     * Used to uncompress an int from a fixed length string in the format of
+     * the compression algorithm underlying the compressor. For gzip 
+     * we use RFC 1952 http://www.gzip.org/zlib/rfc-gzip.html and we
+     * store the int over the modified timestamp in the header of a compressed
+     * empty string. This has length 4 bytes starting at byte 4 of the
+     * gzip header.
+     *
+     * @param string $my_compressed_int the fixed length string containing 
+     *      the packed int to extract
+     * @return int the integer contained in that string
+     */
+    function uncompressInt($my_compressed_int) {
+        return unpackInt(substr($my_compressed_int,4,4));
+    }
+
+    /**
+     * Computes the length of an int when packed using the underlying
+     * compression algorithm as a fixed length string. For gzip 
+     * we use RFC 1952 http://www.gzip.org/zlib/rfc-gzip.html and we
+     * store the int over the modified timestamp in the header of a compressed
+     * empty string. Hence, this will always be of fixed length 20.
+     *
+     * @return int length of int as a fixed length compressed string
+     */
+    function compressedIntLen() {
+        return 20;
+    }
 } 
 ?>

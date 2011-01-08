@@ -62,5 +62,31 @@ interface Compressor
      * @return string result of uncompressing
      */
     function uncompress($str);
+
+    /**
+     * Used to compress an int as a fixed length string in the format of
+     * the compression algorithm underlying the compressor.
+     *
+     * @param int $my_int the integer to compress as a fixed length string
+     * @return string the fixed length string containing the packed int
+     */
+    function compressInt($my_int);
+
+    /**
+     * Used to uncompress an int from a fixed length string in the format of
+     * the compression algorithm underlying the compressor.
+     *
+     * @param string $my_compressed_int the fixed length string containing 
+     *      the packed int to extract
+     * @return int the integer contained in that string
+     */
+    function uncompressInt($my_compressed_int);
+
+    /**
+     * Computes the length of an int when packed using the underlying
+     * compression algorithm as a fixed length string
+     * @return int length of int as a fixed length compressed string
+     */
+    function compressedIntLen();
 } 
 ?>

@@ -395,7 +395,9 @@ class WebQueueBundle implements Notifier
         }
 
         $offset = unpackInt(substr($data, 0 , 4));
+
         $url_obj = $this->to_crawl_archive->getObjects($offset, 1, true, $fh);
+
 
         if(isset($url_obj[0][1][0])) {
             $url = $url_obj[0][1][0];

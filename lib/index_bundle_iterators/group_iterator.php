@@ -74,7 +74,9 @@ class GroupIterator extends IndexBundleIterator
     var $count_block;
 
     /**
-     *
+     * hashes of document web pages seen in results returned from the
+     * most recent call to findDocsWithWord
+     * @var array
      */
     var $current_block_hashes;
 
@@ -91,7 +93,8 @@ class GroupIterator extends IndexBundleIterator
     var $grouped_keys;
 
     /**
-     * 
+     * hashed of document web pages used to keep track of track of 
+     *  groups seen so far
      * @var array
      */
     var $grouped_hashes;

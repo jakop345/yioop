@@ -39,6 +39,11 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 require_once "compressor.php";
 
 /**
+ * Loads utility class for packInt/unpackInt 
+ */
+require_once "utility.php";
+
+/**
  *  Implementation of a trivial Compressor. 
  *
  *  NonCompressor's compress and uncompress filter return the string unchanged
@@ -79,5 +84,41 @@ class NonCompressor implements Compressor
         return $str;
     }
 
+    /**
+     * Used to compress an int as a fixed length string in the format of
+     * the compression algorithm underlying the compressor. Since this
+     * compressor doesn't compress we just use pack
+     *
+     * @param int $my_int the integer to compress as a fixed length string
+     * @return string the fixed length string containing the packed int
+     */
+    function compressInt($my_int) {
+        return packInt($my_int);
+    }
+
+    /**
+     * Used to uncompress an int from a fixed length string in the format of
+     * the compression algorithm underlying the compressor. Since this
+     * compressor doesn't compress we just use unpack
+     *
+     * @param string $my_compressed_int the fixed length string containing 
+     *      the packed int to extract
+     * @return int the integer contained in that string
+
+     */
+    function uncompressInt($my_compressed_int) {
+        return unpackInt($my_compressed_int);
+    }
+
+    /**
+     * Computes the length of an int when packed using the underlying
+     * compression algorithm as a fixed length string. The pack function
+     * stores ints as 4 byte strings
+     *
+     * @return int length of int as a fixed length compressed string
+     */
+    function compressedIntLen() {
+        return 4;
+    }
 }
 ?>
