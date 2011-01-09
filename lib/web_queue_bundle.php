@@ -50,10 +50,12 @@ require_once 'priority_queue.php';
  * a web archive for that urls id actual complete url
  */
 require_once 'hash_table.php';
+
 /**
  * Urls are stored in a web archive using a filter that does no compression
  */
-require_once 'non_compressor.php';
+require_once BASE_DIR.'/lib/compressors/non_compressor.php';
+
 /**
  *  Used to store to crawl urls
  */
@@ -395,7 +397,9 @@ class WebQueueBundle implements Notifier
         }
 
         $offset = unpackInt(substr($data, 0 , 4));
+
         $url_obj = $this->to_crawl_archive->getObjects($offset, 1, true, $fh);
+
 
         if(isset($url_obj[0][1][0])) {
             $url = $url_obj[0][1][0];

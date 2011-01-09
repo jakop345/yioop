@@ -136,7 +136,7 @@ class SearchView extends View implements CrawlConstants
                 <p><?php 
                 echo $page[self::DESCRIPTION]; ?></p>
                 <p class="echolink" ><?php if(isset($page[self::URL])){
-                    e(substr($page[self::URL],0, 200)." ");} 
+                    e(substr($page[self::URL],0, 200)." ");}
                     e(tl('search_view_rank', 
                         number_format($page[self::DOC_RANK], 2)));
                     $page["WEIGHT"] = (isset($page["WEIGHT"])) ?
@@ -172,7 +172,15 @@ class SearchView extends View implements CrawlConstants
                         e("link:".urlencode($page[self::URL])); ?>&amp;
                         its=<?php e($data['its']); ?>" ><?php 
                         e(tl('search_view_inlink')); 
-                    ?></a>.</p>
+                    ?></a>. <?php if(isset($page[self::IP_ADDRESSES])){
+                      foreach($page[self::IP_ADDRESSES] as $address) {?> 
+                          <a href="?YIOOP_TOKEN=<?php e($data['YIOOP_TOKEN']);
+                            ?>&amp;c=search&amp;q=<?php
+                            e('ip:'.$address);?>&amp;
+                            its=<?php e($data['its']); ?>" >IP:<?php 
+                            e("$address");?></a>. <?php 
+                      } 
+                   }?></p>
                 <?php
                 } ?>
                 </div>

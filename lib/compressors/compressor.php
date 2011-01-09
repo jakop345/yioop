@@ -34,50 +34,59 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- * Loads the base class if needed 
- */
-require_once "compressor.php";
-
-/**
- *  Implementation of a trivial Compressor. 
+ * A Compressor is used to apply a filter to objects before they are stored 
+ * into a WebArchive. The filter is assumed to be invertible, and the typical 
+ * intention is the filter carries out some kind of string compression.
  *
- *  NonCompressor's compress and uncompress filter return the string unchanged
- * 
  * @author Chris Pollett
  * @package seek_quarry
  * @subpackage library
- */
-class NonCompressor implements Compressor
+ */ 
+ 
+interface Compressor
 {
-
-    /** Constructor does nothing
-     */
-     
-    function __construct() {}
-
     /**
-     * Applies the Compressor compress filter to a string before it is inserted 
-     * into a WebArchive. In this case, the filter does nothing.
+     * Applies the Compressor compress filter to a string before it is 
+     * inserted into a WebArchive.
      *
      * @param string $str  string to apply filter to
      * @return string  the result of applying the filter
      */
-    function compress($str)
-    {
-        return $str;
-    }
-
+    function compress($str);
+    
     /**
      * Used to unapply the compress filter as when data is read out of a 
-     * WebArchive. In this case, the unapplying filter does nothing.
+     * WebArchive.
      *
      * @param string $str  data read from a string archive
      * @return string result of uncompressing
      */
-    function uncompress($str)
-    {
-        return $str;
-    }
+    function uncompress($str);
 
-}
+    /**
+     * Used to compress an int as a fixed length string in the format of
+     * the compression algorithm underlying the compressor.
+     *
+     * @param int $my_int the integer to compress as a fixed length string
+     * @return string the fixed length string containing the packed int
+     */
+    function compressInt($my_int);
+
+    /**
+     * Used to uncompress an int from a fixed length string in the format of
+     * the compression algorithm underlying the compressor.
+     *
+     * @param string $my_compressed_int the fixed length string containing 
+     *      the packed int to extract
+     * @return int the integer contained in that string
+     */
+    function uncompressInt($my_compressed_int);
+
+    /**
+     * Computes the length of an int when packed using the underlying
+     * compression algorithm as a fixed length string
+     * @return int length of int as a fixed length compressed string
+     */
+    function compressedIntLen();
+} 
 ?>

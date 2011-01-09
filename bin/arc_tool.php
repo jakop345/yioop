@@ -239,6 +239,8 @@ class ArcTool implements CrawlConstants
     {
         $fields_to_print = array(
             self::URL => "URL",
+            self::IP_ADDRESSES => "IP ADDRESSES",
+            self::TIMESTAMP => "DATE",
             self::HTTP_CODE => "HTTP RESPONSE CODE",
             self::TYPE => "MIMETYPE",
             self::ENCODING => "CHARACTER ENCODING",
@@ -286,10 +288,20 @@ class ArcTool implements CrawlConstants
                     foreach($objects as $object) {
                         if($cnt >= $first) {
                             $out = "";
+                            if(isset($object[1][self::TIMESTAMP])) {
+                                $object[1][self::TIMESTAMP] = 
+                                    date("r", $object[1][self::TIMESTAMP]);
+                            }
                             foreach($fields_to_print as $key => $name) {
                                 if(isset($object[1][$key])) {
                                     $out .= "[$name]\n";
-                                    $out .= $object[1][$key]."\n";
+                                    if($key != self::IP_ADDRESSES) {
+                                        $out .= $object[1][$key]."\n";
+                                    } else {
+                                        foreach($object[1][$key] as $address) {
+                                            $out .= $address."\n";
+                                        }
+                                    }
                                 }
                             }
                             $out .= "==========\n\n";

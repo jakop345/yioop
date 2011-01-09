@@ -74,6 +74,18 @@ class WebArchive
     var $count;
 
     /**
+     * version number of the current archive
+     * @var float
+     */
+    var $version;
+
+    /**
+     * Version number to use in the WebArchive header if constructing a new
+     * archive
+     */
+    const WEB_ARCHIVE_VERSION = 1.0;
+
+    /**
      * Makes or initializes a WebArchive object using the supplied parameters
      *
      * @param string $fname filename to use to store archive to disk
@@ -112,11 +124,11 @@ class WebArchive
         $fh =  fopen($this->filename, "r");
         $len = $this->seekEndObjects($fh);
         $info_string = fread($fh, $len);
-        $info_block = unserialize($info_string);
+        $info_block = unserialize($this->compressor->uncompress($info_string));
         $this->count = $info_block["count"];
+        $this->version = $info_block["version"];
         if(isset($info_block["data"])) {
-            return unserialize(
-                $this->compressor->uncompress($info_block["data"]));
+            return $info_block["data"];
         } else {
             return NULL;
         }
@@ -127,7 +139,8 @@ class WebArchive
      * the end of the web archive
      * The info block is meta data for the archive stored at the end of
      * the WebArchive file. The particular meta is up to who is using
-     * the web archive.
+     * the web archive; however, count and archive version number are always
+     * stored
      *
      * @param resource $fh resource for the web archive file. If null
      *      the web archive is open first and close when the data is written
@@ -135,6 +148,7 @@ class WebArchive
      */
     function writeInfoBlock($fh = NULL, &$data = NULL)
     {
+        $compressed_int_len = $this->compressor->compressedIntLen();
         $open_flag = false;
         if($fh == NULL) {
             $open_flag = true;
@@ -142,18 +156,19 @@ class WebArchive
             $this->seekEndObjects($fh);
         }
         $info_block = array();
-
+        $info_block["version"] = self::WEB_ARCHIVE_VERSION;
         $info_block["count"] = $this->count;
         if($data != NULL) {
-            $info_block['data'] = $this->compressor->compress(serialize($data));
+            $info_block['data'] = & $data;
         }
-        $info_string = serialize($info_block);
-        $len = strlen($info_string) + 4;
+        $info_string = 
+            $this->compressor->compress(serialize($info_block));
+        $len = strlen($info_string) + $compressed_int_len;
 
         $offset = ftell($fh);
         ftruncate($fh, $offset);
 
-        $out = $info_string.pack("N", $len);
+        $out = $info_string.$this->compressor->compressInt($len);
         fwrite($fh, $out, $len);
 
         if($open_flag) {
@@ -164,19 +179,21 @@ class WebArchive
     /**
      * Seeks in the WebArchive file to the end of the last Object.
      *
-     * The last 4 bytes of a WebArchive say the length of an info block in bytes
+     * The last $compressed_int_len bytes of a WebArchive say the length 
+     * of an info block in bytes
      *
      * @param resource $fh resource for the WebArchive file
      * @return int offset length of info block
      */
     function seekEndObjects($fh)
     {
-        fseek($fh, - 4, SEEK_END);
-        $len_block_arr = unpack("N", fread($fh, 4));
-        $len_block = $len_block_arr[1];
+        $compressed_int_len = $this->compressor->compressedIntLen();
+        fseek($fh, - $compressed_int_len, SEEK_END);
+        $len_block = $this->compressor->uncompressInt(
+            fread($fh, $compressed_int_len));
         fseek($fh, - ($len_block), SEEK_END);
 
-        return $len_block - 4;
+        return $len_block - $compressed_int_len;
     }
 
     /**
@@ -214,14 +231,15 @@ class WebArchive
             $new_objects = & $objects;
         }
         $num_objects = count($new_objects);
+        $compressed_int_len = $this->compressor->compressedIntLen();
         for($i = 0; $i < $num_objects; $i++) {
             $new_objects[$i][$offset_field] = $offset;
 
             $file = serialize($new_objects[$i]);
             $compressed_file = $this->compressor->compress($file);
             $len = strlen($compressed_file);
-            $out .= $len."\n".$compressed_file;
-            $offset += strlen($len) + 1 + $len;
+            $out .= $this->compressor->compressInt($len).$compressed_file;
+            $offset += $len + $compressed_int_len;
         }
         
         $this->count += $num_objects;
@@ -271,7 +289,7 @@ class WebArchive
      * archive (saving the time to open it).
      *
      * @param int $offset a valid byte offset into a web archive
-     * @param int $num number of objects tot return
+     * @param int $num number of objects to return
      * @param bool $next_flag whether to advance the archive iterator
      * @param resource $fh either NULL or a file resource to the archive
      * @return array the $num objects beginning at $offset
@@ -286,22 +304,24 @@ class WebArchive
         }
 
         $objects = array();
+        $compressed_int_len = $this->compressor->compressedIntLen();
         if(fseek($fh, $offset) == 0) {
 
             for($i = 0; $i < $num; $i++) {
                 if(feof($fh)) {break; }
 
                 $object = NULL;
-                $line = fgets($fh);
+                $compressed_len = 
+                    fread($fh, $compressed_int_len);
 
-                $line_length = strlen($line);
-                $len = intval($line);
+                $len = $this->compressor->uncompressInt($compressed_len);
+
                 if($len > 0) {
                     $compressed_file = fread($fh, $len);
                     $file = $this->compressor->uncompress($compressed_file);
                     $object = @unserialize($file);
 
-                    $offset += $line_length + $len;
+                    $offset += $compressed_int_len + $len;
                     $objects[] = array($offset, $object);
                 } else {
                     crawlLog("Web archive saw blank line ".

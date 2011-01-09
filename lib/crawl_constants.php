@@ -140,7 +140,8 @@ interface CrawlConstants
     const HASH_URL_COUNT = 'as';
     const IS_DOC = 'at';
     const BOOST = 'av';
-
+    const IP_ADDRESSES = 'au';
+    const JUST_METAS = 'aw';
 
     const NEEDS_OFFSET_FLAG = 0x7FFFFFFF;
 

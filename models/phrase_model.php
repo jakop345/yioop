@@ -257,7 +257,7 @@ class PhraseModel extends Model
         $phrase_string = $phrase;
         $meta_words = array('link\:', 'site\:', 
             'filetype\:', 'info\:', '\-', 
-            'index:', 'i:', 'weight:', 'w:', 'u:');
+            'index\:', 'i\:', 'ip\:', 'weight\:', 'w\:', 'u\:');
         $index_name = $this->index_name;
         $weight = 1;
         $found_metas = array();
@@ -266,7 +266,7 @@ class PhraseModel extends Model
             $pattern = "/(\s)($meta_word(\S)+)/";
             preg_match_all($pattern, $phrase, $matches);
             if(in_array($meta_word, array('link\:', 'site\:', 
-            'filetype\:', 'info\:', 'u:') )) {
+            'filetype\:', 'ip\:', 'info\:', 'u\:') )) {
                 $found_metas = array_merge($found_metas, $matches[2]);
             } else if($meta_word == '\-') {
                 if(count($matches[0]) > 0) {

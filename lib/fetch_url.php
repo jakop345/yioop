@@ -80,9 +80,11 @@ class FetchUrl implements CrawlConstants
         //Set-up requests
         for($i = 0; $i < count($sites); $i++) {
             $sites[$i][0] = curl_init();
-
+            $ip_holder[$i] = fopen(CRAWL_DIR."/tmp$i.txt", 'w+');
             curl_setopt($sites[$i][0], CURLOPT_USERAGENT, USER_AGENT);
             curl_setopt($sites[$i][0], CURLOPT_URL, $sites[$i][$key]);
+            curl_setopt($sites[$i][0], CURLOPT_VERBOSE, true);
+            curl_setopt($sites[$i][0], CURLOPT_STDERR, $ip_holder[$i]);
             curl_setopt($sites[$i][0], CURLOPT_FOLLOWLOCATION, true);
             curl_setopt($sites[$i][0], CURLOPT_MAXREDIRS, 5);
             curl_setopt($sites[$i][0], CURLOPT_AUTOREFERER, true);
@@ -123,6 +125,8 @@ class FetchUrl implements CrawlConstants
 
         //Process returned pages
         for($i = 0; $i < count($sites); $i++) {
+            $ip_addresses = self::getCurlIp($ip_holder[$i]);
+            fclose($ip_holder[$i]);
             if($sites[$i][0]) { 
 
                 // Get Data and Message Code
@@ -132,7 +136,11 @@ class FetchUrl implements CrawlConstants
                 if(!$sites[$i][self::HTTP_CODE]) {
                     $sites[$i][self::HTTP_CODE] = curl_error($sites[$i][0]);
                 }
-
+                if($ip_addresses) {
+                    $sites[$i][self::IP_ADDRESSES] = $ip_addresses;
+                } else {
+                    $sites[$i][self::IP_ADDRESSES] = array("0.0.0.0");
+                }
                 /* 
                    Store Data into our $sites array, create a hash for 
                    deduplication purposes
@@ -198,6 +206,26 @@ class FetchUrl implements CrawlConstants
 
         return $sites;
     }
+
+    /**
+     * Computes the IP address from a file pointer assumed to be pointing 
+     * at STDERR output from a curl request
+     *
+     * @param resource $fp a file pointer to STDERR of a curl request
+     * @return string IPv4 address as a string of dot separated quads.
+     */
+    static function getCurlIp($fp) 
+    {
+        rewind($fp);
+        $str = fread($fp, 8192);
+        if (preg_match_all('/\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/', 
+            $str, $matches)) {
+            return array_unique($matches[0]);
+        } else {
+            return false;
+        }
+    }
+
 
     /**
      *  Make a curl request for the provide url

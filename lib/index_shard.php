@@ -1136,7 +1136,9 @@ class IndexShard extends PersistentStructure implements CrawlConstants
      */
     static function makeWords(&$value, $key, $shard)
     {
-        $shard->words[substr($value, 0, 8)] = substr($value, 8, 8);
+        $shard->words[substr($value, 0, self::WORD_KEY_LEN)] = 
+            substr($value, self::WORD_KEY_LEN, 
+                self::WORD_ITEM_LEN - self::WORD_KEY_LEN);
     }
 
 }

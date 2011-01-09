@@ -61,7 +61,7 @@ class SitemapProcessor extends TextProcessor
      *  @param string $url   the url where the page contents came from,
      *     used to canonicalize relative links
      *
-     *  @return array  a summary of the contents of the page
+     *  @return array a summary of the contents of the page
      *
      */
     public static function process($page, $url)
@@ -74,7 +74,7 @@ class SitemapProcessor extends TextProcessor
                 $summary[self::TITLE] = $url;
                 $summary[self::DESCRIPTION] = "Sitemap of ".$url; 
                 $summary[self::LINKS] = self::links($dom, $url);
-
+                $summary[self::JUST_METAS] = true;
                 if(strlen($summary[self::DESCRIPTION] . $summary[self::TITLE])
                     == 0 && count($summary[self::LINKS]) == 0) {
                     //maybe not a sitemap? treat as text still try to get urls

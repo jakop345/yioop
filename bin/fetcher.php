@@ -38,7 +38,7 @@ define("BASE_DIR", substr(
     dirname(realpath($_SERVER['PHP_SELF'])), 0, 
     -strlen("/bin")));
 
-ini_set("memory_limit","800M"); //so have enough memory to crawl big pages
+ini_set("memory_limit","850M"); //so have enough memory to crawl big pages
 
 /** Load in global configuration settings */
 require_once BASE_DIR.'/configs/config.php';
@@ -677,6 +677,8 @@ class Fetcher implements CrawlConstants
 
 
                 $stored_site_pages[$i][self::URL] = $site[self::URL];
+                $stored_site_pages[$i][self::IP_ADDRESSES] = 
+                    $site[self::IP_ADDRESSES];
                 $stored_site_pages[$i][self::TIMESTAMP] = 
                     $site[self::TIMESTAMP];
                 $stored_site_pages[$i][self::TYPE] = $site[self::TYPE];
@@ -693,11 +695,16 @@ class Fetcher implements CrawlConstants
 
                 $summarized_site_pages[$i][self::URL] = 
                     strip_tags($site[self::URL]);
+                $summarized_site_pages[$i][self::IP_ADDRESSES] = 
+                    $site[self::IP_ADDRESSES];
                 $summarized_site_pages[$i][self::TITLE] = strip_tags(
                     $site[self::DOC_INFO][self::TITLE]); 
                     // stripping html to be on the safe side
                 $summarized_site_pages[$i][self::DESCRIPTION] = 
                     strip_tags($site[self::DOC_INFO][self::DESCRIPTION]);
+                if(isset($site[self::DOC_INFO][self::JUST_METAS])) {
+                    $summarized_site_pages[$i][self::JUST_METAS] = true;
+                }
                 $summarized_site_pages[$i][self::TIMESTAMP] = 
                     $site[self::TIMESTAMP];
                 $summarized_site_pages[$i][self::ENCODING] = $encoding;
@@ -1082,12 +1089,17 @@ class Fetcher implements CrawlConstants
             $doc_keys = crawlHash($site[self::URL], true) . 
                 $site[self::HASH]. crawlHash("link:".$site[self::URL], true);
             $word_counts = array();
-            $phrase_string = 
-                mb_ereg_replace("[[:punct:]]", " ", $site[self::TITLE] .
-                   " ". $site[self::DESCRIPTION]); 
-            $word_counts = 
-                PhraseParser::extractPhrasesAndCount($phrase_string); 
-
+            /* 
+                self::JUST_METAS check to avoid getting sitemaps in results for 
+                popular words
+             */
+            if(!isset($site[self::JUST_METAS])) {
+                $phrase_string = 
+                    mb_ereg_replace("[[:punct:]]", " ", $site[self::TITLE] .
+                       " ". $site[self::DESCRIPTION]); 
+                $word_counts = 
+                    PhraseParser::extractPhrasesAndCount($phrase_string); 
+            }
             $meta_ids = array();
 
             /*
@@ -1104,6 +1116,9 @@ class Fetcher implements CrawlConstants
                 }
             }
             $meta_ids[] = 'info:'.$site[self::URL];
+            foreach($site[self::IP_ADDRESSES] as $address) {
+                $meta_ids[] = 'ip:'.$address;
+            }
             // store the filetype info
             $url_type = UrlParser::getDocumentType($site[self::URL]);
             if(strlen($url_type) > 0) {

@@ -39,6 +39,11 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 require_once "persistent_structure.php";
 
 /**
+ * Fot packInt/unpackInt
+ */
+require_once "utility.php";
+
+/**
  * Code used to manage a bloom filter in-memory and in file.
  * A Bloom filter is used to store a set of objects.
  * It can support inserts into the set and it can also be
