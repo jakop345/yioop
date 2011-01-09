@@ -381,7 +381,7 @@ class SearchController extends Controller implements CrawlConstants
 
         $meta_words = array('link\:', 'site\:', 
             'filetype\:', 'info\:', '\-', 
-            'index:', 'i:', 'weight:', 'w:');
+            'index:', 'ip:', 'i:', 'weight:', 'w:', 'u:');
         foreach($meta_words as $meta_word) {
             $pattern = "/(\s)($meta_word(\S)+)/";
             $query = preg_replace($pattern, "", $query);

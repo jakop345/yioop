@@ -37,12 +37,12 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * A WebArchiveBundle is a collection of WebArchive's, so load definition of
  * web archive
  */
-require_once 'web_archive.php';
+require_once BASE_DIR.'/lib/web_archive.php';
 
 /**
  * Used to compress data stored in WebArchiveBundle
  */
-require_once 'gzip_compressor.php';
+require_once BASE_DIR.'/lib/compressors/gzip_compressor.php';
 
 
  

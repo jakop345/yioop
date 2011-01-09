@@ -50,10 +50,12 @@ require_once 'priority_queue.php';
  * a web archive for that urls id actual complete url
  */
 require_once 'hash_table.php';
+
 /**
  * Urls are stored in a web archive using a filter that does no compression
  */
-require_once 'non_compressor.php';
+require_once BASE_DIR.'/lib/compressors/non_compressor.php';
+
 /**
  *  Used to store to crawl urls
  */
