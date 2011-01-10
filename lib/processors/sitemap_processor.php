@@ -137,7 +137,9 @@ class SitemapProcessor extends TextProcessor
                 $url = UrlParser::canonicalLink(
                     $node->textContent, $site);
                 if($url === NULL || $url === "" ||
-                    UrlParser::checkRecursiveUrl($url)) {
+                    UrlParser::checkRecursiveUrl($url) ||
+                    UrlParser::getDocumentType($url) == "gz") { 
+                    //at this point we can't handle gzip'd sitemaps
                     continue;
                 }
                 $sites[$url] = "From sitemap of ".$site;
