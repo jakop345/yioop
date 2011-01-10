@@ -74,12 +74,12 @@ class SitemapProcessor extends TextProcessor
                 $summary[self::TITLE] = $url;
                 $summary[self::DESCRIPTION] = "Sitemap of ".$url; 
                 $summary[self::LINKS] = self::links($dom, $url);
-                $summary[self::JUST_METAS] = true;
                 if(strlen($summary[self::DESCRIPTION] . $summary[self::TITLE])
                     == 0 && count($summary[self::LINKS]) == 0) {
                     //maybe not a sitemap? treat as text still try to get urls
                     $summary = parent::process($page, $url);
                 }
+                $summary[self::JUST_METAS] = true;
             }
         }
 
