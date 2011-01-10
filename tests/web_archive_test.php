@@ -43,7 +43,7 @@ require_once BASE_DIR."/lib/web_archive.php";
  *  A compressor determines how objects are written into a web_archive.
  *  This require loads a gzip-based compressor.
  */
-require_once BASE_DIR."/lib/gzip_compressor.php"; 
+require_once BASE_DIR."/lib/compressors/gzip_compressor.php"; 
 
 /**
  * UnitTest for the WebArchive class. A web archive is used to store 

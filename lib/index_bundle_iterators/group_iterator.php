@@ -186,6 +186,7 @@ class GroupIterator extends IndexBundleIterator
             $pages = $this->computeBoostAndOutPages($pre_out_pages);
         }
         $this->pages = $pages;
+
         return $pages;
 
     }

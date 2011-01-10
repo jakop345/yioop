@@ -230,6 +230,7 @@ class WordIterator extends IndexBundleIterator
             $this->start_offset,
             $this->next_offset, $this->last_offset, $this->results_per_block);
         $this->count_block = count($results); 
+
         return $results;
     }
 
@@ -255,7 +256,9 @@ class WordIterator extends IndexBundleIterator
                       $last_current_generation != $this->current_generation) {
                     $this->advanceGeneration();
                     $last_current_generation = $this->current_generation;
+                    $this->next_offset = $this->current_offset;
                 }
+
                 $this->index->setCurrentShard($this->current_generation, true);
 
                 $this->current_offset =
@@ -276,7 +279,8 @@ class WordIterator extends IndexBundleIterator
     }
 
     /**
-     *
+     * Switches which index shard is being used to return occurences of
+     * the nord to the next shard containing the word
      */
     function advanceGeneration()
     {

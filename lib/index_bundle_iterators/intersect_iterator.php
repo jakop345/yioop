@@ -33,11 +33,6 @@
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
-/** 
- *Loads BloomFilterFile to remember things we've already grouped
- */
-require_once BASE_DIR.'/lib/bloom_filter_file.php';
-
 
 /** 
  *Loads base class for iterating
@@ -185,13 +180,15 @@ class IntersectIterator extends IndexBundleIterator
     }
 
     /**
-     *
+     * Finds the next generation and doc offet amongst all the iterators
+     * that contains the word. It assumes that the (generation, doc offset)
+     * pairs are ordered in an increasing fashion for the underlying iterators
      */
     function syncGenDocOffsetsAmongstIterators()
     {
         $biggest_gen_offset = NULL;
         do{
-            $all_same = true;
+            $all_same = true; 
             for($i = 0; $i < $this->num_iterators; $i++) {
                 $new_gen_doc_offset[$i] = 
                     $this->index_bundle_iterators[

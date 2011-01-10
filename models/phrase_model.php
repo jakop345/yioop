@@ -339,15 +339,13 @@ class PhraseModel extends Model
             if(is_array($words_array)) {
                 $counts = array_values($words_array);
                 $min_count = min($counts);
-                $threshold = 3*$min_count;
+                $threshold = 4000*$min_count;
                 $word_keys = array();
                 foreach($words_array as $key => $count) {
                     if($count < $threshold) {
                         $word_keys[] = $key;
                     }
                 }
-                $word_keys = array_keys($words_array);
-
             } else {
                 $word_keys = NULL;
                 $word_struct = NULL;
