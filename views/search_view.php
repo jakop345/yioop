@@ -145,43 +145,60 @@ class SearchView extends View implements CrawlConstants
                         number_format($page[self::RELEVANCE], 2) ));
                     e(tl('search_view_score', $page[self::SCORE]));
                 if(isset($page[self::TYPE]) && $page[self::TYPE] != "link") {
-                ?>
-                    <a href="?YIOOP_TOKEN=<?php e($data['YIOOP_TOKEN']);
-                        ?>&amp;c=search&amp;a=cache&amp;q=<?php 
-                        e($data['QUERY']); ?>&amp;arg=<?php 
-                        e(urlencode($page[self::URL])); 
-                        ?>&amp;so=<?php  e($page[self::SUMMARY_OFFSET]); 
-                        ?>&amp;g=<?php  e($page[self::CACHE_PAGE_PARTITION]);
-                        ?>&amp;its=<?php e($data['its']); ?>" >
-                    <?php
-                    if($page[self::TYPE] == "text/html" || 
-                        stristr($page[self::TYPE], "image")) {
-                        e(tl('search_view_cache'));
+                    if(CACHE_LINK) {
+                    ?>
+                        <a href="?YIOOP_TOKEN=<?php e($data['YIOOP_TOKEN']);
+                            ?>&amp;c=search&amp;a=cache&amp;q=<?php 
+                            e($data['QUERY']); ?>&amp;arg=<?php 
+                            e(urlencode($page[self::URL])); 
+                            ?>&amp;so=<?php  e($page[self::SUMMARY_OFFSET]); 
+                            ?>&amp;g=<?php e($page[self::CACHE_PAGE_PARTITION]);
+                            ?>&amp;its=<?php e($data['its']); ?>" >
+                        <?php
+                        if($page[self::TYPE] == "text/html" || 
+                            stristr($page[self::TYPE], "image")) {
+                            e(tl('search_view_cache'));
 
-                    } else {
-                        e(tl('search_view_as_text'));
+                        } else {
+                            e(tl('search_view_as_text'));
+                        }
+                        ?></a>.
+                    <?php 
                     }
-                    ?></a>. <a href="?YIOOP_TOKEN=<?php e($data['YIOOP_TOKEN']);
+                    if(SIMILAR_LINK) { 
+                    ?> 
+                    <a href="?YIOOP_TOKEN=<?php e($data['YIOOP_TOKEN']);
                         ?>&amp;c=search&amp;a=related&amp;arg=<?php 
                         e(urlencode($page[self::URL])); ?>&amp;so=<?php 
                         e($page[self::SUMMARY_OFFSET]); 
                         ?>&amp;its=<?php e($data['its']); ?>" ><?php 
                         e(tl('search_view_similar')); 
-                    ?></a>. <a href="?YIOOP_TOKEN=<?php e($data['YIOOP_TOKEN']);
+                    ?></a>.
+                    <?php 
+                    }
+                    if(IN_LINK) { 
+                    ?>
+                        <a href="?YIOOP_TOKEN=<?php e($data['YIOOP_TOKEN']);
                         ?>&amp;c=search&amp;q=<?php 
                         e("link:".urlencode($page[self::URL])); ?>&amp;
                         its=<?php e($data['its']); ?>" ><?php 
                         e(tl('search_view_inlink')); 
-                    ?></a>. <?php if(isset($page[self::IP_ADDRESSES])){
-                      foreach($page[self::IP_ADDRESSES] as $address) {?> 
-                          <a href="?YIOOP_TOKEN=<?php e($data['YIOOP_TOKEN']);
-                            ?>&amp;c=search&amp;q=<?php
-                            e('ip:'.$address);?>&amp;
-                            its=<?php e($data['its']); ?>" >IP:<?php 
-                            e("$address");?></a>. <?php 
-                      } 
-                   }?></p>
+                    ?></a>.
+                    <?php 
+                    }
+                    if(IP_LINK) { 
+                    ?>
+                    <?php if(isset($page[self::IP_ADDRESSES])){
+                          foreach($page[self::IP_ADDRESSES] as $address) {?> 
+                            <a href="?YIOOP_TOKEN=<?php e($data['YIOOP_TOKEN']);
+                                ?>&amp;c=search&amp;q=<?php
+                                e('ip:'.$address);?>&amp;
+                                its=<?php e($data['its']); ?>" >IP:<?php 
+                                e("$address");?></a>. <?php 
+                          } 
+                        }?></p>
                 <?php
+                    }
                 } ?>
                 </div>
 

@@ -195,6 +195,32 @@ class ConfigureElement extends Element
                 </div>
             </fieldset>
             </div>
+            <div class="topmargin">
+            <fieldset class="extrawidefield"><legend><?php 
+                e(tl('configure_element_search_results'))?></legend>
+                <label for="cache-link"><input id='cache-link' type="checkbox" 
+                    name="CACHE_LINK" value="true" 
+                    <?php if(isset($data['CACHE_LINK']) && $data['CACHE_LINK']){
+                        e("checked='checked'");}?> 
+                    /><?php e(tl('configure_element_cache_link')); ?></label>
+              <label for="similar-link"><input id='similar-link' type="checkbox"
+                    name="SIMILAR_LINK" value="true" 
+                    <?php if(isset($data['SIMILAR_LINK']) && 
+                        $data['SIMILAR_LINK']){
+                        e("checked='checked'");}?> 
+                    /><?php e(tl('configure_element_similar_link')); ?></label>
+                <label for="in-link"><input id='in-link' type="checkbox" 
+                    name="IN_LINK" value="true" 
+                    <?php if(isset($data['IN_LINK']) && $data['IN_LINK']){
+                        e("checked='checked'");}?> 
+                    /><?php e(tl('configure_element_in_link')); ?></label>
+                <label for="ip-link"><input id='ip-link' type="checkbox" 
+                    name="IP_LINK" value="true" 
+                    <?php if(isset($data['IP_LINK']) && $data['IP_LINK']){
+                        e("checked='checked'");}?> 
+                    /><?php e(tl('configure_element_ip_link')); ?></label>
+            </fieldset>
+            </div>
             <div class="topmargin"><fieldset><legend><?php 
                 e(tl('configure_element_crawl_robot'))?></legend>
                 <div><b><label for="crawl-robot-name"><?php 
