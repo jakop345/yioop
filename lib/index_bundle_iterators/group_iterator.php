@@ -110,7 +110,6 @@ class GroupIterator extends IndexBundleIterator
      *
      * @param object $index_bundle_iterator to use as a source of documents
      *      to iterate over
-
      */
     function __construct($index_bundle_iterator)
     {

@@ -73,6 +73,7 @@ class RssProcessor extends TextProcessor
             $dom = self::dom($page);
 
             if($dom !==false) {
+                $summary[self::LANG] = self::lang($dom);
                 $summary[self::TITLE] = self::title($dom);
                 $summary[self::DESCRIPTION] = self::description($dom); 
                 $summary[self::LINKS] = self::links($dom, $url);
@@ -84,12 +85,28 @@ class RssProcessor extends TextProcessor
                 }
             }
         }
-
         return $summary;
 
     }
 
+    /**
+     *  Determines the language of the rss document by looking at the channel
+     *  language tag
+     *
+     *  @param object $dom - a document object to check the language of
+     * 
+     *  @return string language tag for guessed language
 
+     */
+    static function lang($dom)
+    {
+        $xpath = new DOMXPath($dom);
+        $languages = $xpath->evaluate("/rss/channel/language");
+        if($languages && is_object($languages)) {
+            return $languages->item(0)->textContent;
+        }
+        return NULL;
+    }
 
     /**
      * Return a document object based on a string containing the contents of 

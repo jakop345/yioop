@@ -175,13 +175,18 @@ class CrawlModel extends Model implements CrawlConstants
 
     /**
      * Gets a list of all index archives of crawls that have been conducted
+     * 
+     * @param bool $return_arc_bundles whether index bundles used for indexing
+     *      arc or other archive bundles should be included in the lsit
+     * @param bool $return_recrawls whether index archive bundles generated as
+     *      a result of recrawling should be included in the result
      *
      * @return array Available IndexArchiveBundle directories and 
-     * their meta information this meta information includes the time of the 
-     * crawl, its description, the number of pages downloaded, and the number 
-     * of partitions used in storing the inverted index
+     *      their meta information this meta information includes the time of 
+     *      the crawl, its description, the number of pages downloaded, and the 
+     *      number of partitions used in storing the inverted index
      */
-    function getCrawlList()
+    function getCrawlList($return_arc_bundles = false, $return_recrawls = false)
     {
         $list = array();
         $dirs = glob(CRAWL_DIR.'/cache/*', GLOB_ONLYDIR);
@@ -194,7 +199,23 @@ class CrawlModel extends Model implements CrawlConstants
                     substr($pre_timestamp, strlen(self::index_data_base_name));
                 $info = IndexArchiveBundle::getArchiveInfo($dir);
                 $index_info = unserialize($info['DESCRIPTION']);
-                $crawl['DESCRIPTION'] = $index_info['DESCRIPTION'];
+                $crawl['DESCRIPTION'] = "";
+                if(!$return_arc_bundles && isset($index_info['ARCFILE'])) {
+                    continue;
+                } else if ($return_arc_bundles
+                    && isset($index_info['ARCFILE'])) {
+                    $crawl['DESCRIPTION'] = "ARCFILE::";
+                }
+                if(!$return_recrawls && 
+                    isset($index_info[self::CRAWL_TYPE]) && 
+                    $index_info[self::CRAWL_TYPE] == self::ARCHIVE_CRAWL) {
+                    continue;
+                } else if($return_recrawls  && 
+                    isset($index_info[self::CRAWL_TYPE]) && 
+                    $index_info[self::CRAWL_TYPE] == self::ARCHIVE_CRAWL) {
+                    $crawl['DESCRIPTION'] = "RECRAWL::";
+                }
+                $crawl['DESCRIPTION'] .= $index_info['DESCRIPTION'];
                 $crawl['VISITED_URLS_COUNT'] = 
                     isset($info['VISITED_URLS_COUNT']) ?
                     $info['VISITED_URLS_COUNT'] : 0;
@@ -299,7 +320,7 @@ class CrawlModel extends Model implements CrawlConstants
     }
 
     /**
-     *  Returns whether the supplied timestamp corresponds to a crawl mix
+     * Returns whether the supplied timestamp corresponds to a crawl mix
      *
      * @param string timestamp of the requested crawl mix
      * @return bool true if it does; false otherwise
@@ -378,6 +399,12 @@ class CrawlModel extends Model implements CrawlConstants
             $index_info = unserialize($info['DESCRIPTION']);
             $seed_info['general']["restrict_sites_by_url"] = 
                 $index_info[self::RESTRICT_SITES_BY_URL];
+            $seed_info['general']["crawl_type"] = 
+                (isset($index_info[self::CRAWL_TYPE])) ?
+                $index_info[self::CRAWL_TYPE] : self::WEB_CRAWL;
+            $seed_info['general']["crawl_index"] = 
+                (isset($index_info[self::CRAWL_INDEX])) ?
+                $index_info[self::CRAWL_INDEX] : '';
             $seed_info['general']["crawl_order"] = 
                 $index_info[self::CRAWL_ORDER];
             $site_types = array(
@@ -431,6 +458,9 @@ class CrawlModel extends Model implements CrawlConstants
      */
     function setSeedInfo($info)
     {
+        if(!isset($info['general']['crawl_index'])) {
+            $info['general']['crawl_index']='12345678';
+        }
         $n = array();
         $n[] = <<<EOT
 ; ***** BEGIN LICENSE BLOCK ***** 
@@ -458,6 +488,8 @@ class CrawlModel extends Model implements CrawlConstants
 EOT;
         $n[] = '[general]';
         $n[] = "crawl_order = '".$info['general']['crawl_order']."';";
+        $n[] = "crawl_type = '".$info['general']['crawl_type']."';";
+        $n[] = "crawl_index = '".$info['general']['crawl_index']."';";
         $bool_string = 
             ($info['general']['restrict_sites_by_url']) ? "true" : "false";
         $n[] = "restrict_sites_by_url = $bool_string;";

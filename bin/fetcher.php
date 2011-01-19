@@ -60,13 +60,17 @@ require_once BASE_DIR."/models/datasources/".DBMS."_manager.php";
  */
 require_once BASE_DIR."/lib/web_archive_bundle.php"; 
 
+/** get available archive iterators */
+foreach(glob(BASE_DIR."/lib/archive_bundle_iterators/*_bundle_iterator.php") 
+    as $filename) { 
+    require_once $filename;
+}
+
 /** get processors for different file types */
 foreach(glob(BASE_DIR."/lib/processors/*_processor.php") as $filename) { 
     require_once $filename;
 }
 
-/** To support English language stemming of words (jumps, jumping --> jump)*/
-require_once BASE_DIR."/lib/porter_stemmer.php";
 /** Used to manipulate urls*/
 require_once BASE_DIR."/lib/url_parser.php";
 /** Used to extract summaries from web pages*/
@@ -209,6 +213,21 @@ class Fetcher implements CrawlConstants
     var $crawl_order;
 
     /**
+     * Indicates the kind of crawl being performed: self::WEB_CRAWL indicates
+     * a new crawl of the web; self::ARCHIVE_CRAWL indicates a crawl of an 
+     * existing web archive
+     * @var string
+     */
+    var $crawl_type;
+
+    /**
+     * If the crawl_type is self::ARCHIVE_CRAWL, then crawl_index is the 
+     * timestamp of the existing archive to crawl
+     * @var string
+     */
+    var $crawl_index;
+
+    /**
      * Sets up the field variables for that crawling can begin
      *
      * @param array $indexed_file_types file extensions to index
@@ -228,6 +247,9 @@ class Fetcher implements CrawlConstants
         $this->web_archive = NULL;
         $this->crawl_time = NULL;
         $this->schedule_time = NULL;
+
+        $this->crawl_type = self::WEB_CRAWL;
+        $this->crawl_index = NULL;
 
         $this->to_crawl = array();
         $this->to_crawl_again = array();
@@ -275,8 +297,6 @@ class Fetcher implements CrawlConstants
         $this->checkCrawlTime();
         
         while ($info[self::STATUS] != self::STOP_STATE) {
-
-
             $fetcher_message_file = CRAWL_DIR."/schedules/fetcher_messages.txt";
             if(file_exists($fetcher_message_file)) {
                 $info = unserialize(file_get_contents($fetcher_message_file));
@@ -286,6 +306,7 @@ class Fetcher implements CrawlConstants
             }
 
             $info = $this->checkScheduler();
+
             if(!isset($info[self::STATUS])) {
                 $info[self::STATUS] = self::CONTINUE_STATE;
             }
@@ -328,38 +349,19 @@ class Fetcher implements CrawlConstants
                 $this->deleteOldCrawls($info[self::SAVED_CRAWL_TIMES]);
             }
 
-            $start_time = microtime();
-            $can_schedule_again = false;
-            if(count($this->to_crawl) > 0)  {
-                $can_schedule_again = true;
-            }
-            $sites = $this->getFetchSites();
-            if(!$sites) {
-                crawlLog("No seeds to fetch...");
-                sleep(max(0, ceil(
-                    MINIMUM_FETCH_LOOP_TIME - changeInMicrotime($start_time))));
-                continue;
-            }
+            switch($this->crawl_type)
+            {
+                case self::WEB_CRAWL:
+                    $downloaded_pages =  $this->downloadPagesWebCrawl();
+                break;
 
-            $site_pages = FetchUrl::getPages($sites, true);
-
-            list($downloaded_pages, $schedule_again_pages) = 
-                $this->reschedulePages($site_pages);
-
-            if($can_schedule_again == true) {
-                //only schedule to crawl again on fail sites without crawl-delay
-                foreach($schedule_again_pages as $schedule_again_page) {
-                    if($schedule_again_page[self::CRAWL_DELAY] == 0) {
-                        $this->to_crawl_again[] = 
-                            array($schedule_again_page[self::URL], 
-                                $schedule_again_page[self::WEIGHT],
-                                $schedule_again_page[self::CRAWL_DELAY]
-                            );
-                    }
-                }
+                case self::ARCHIVE_CRAWL:
+                    $downloaded_pages =  $this->downloadPagesArchiveCrawl();
+                break;
             }
 
             $start_time = microtime();
+
             $summarized_site_pages = 
                 $this->processFetchPages($downloaded_pages);
 
@@ -373,7 +375,93 @@ class Fetcher implements CrawlConstants
 
         crawlLog("Fetcher shutting down!!");
     }
-    
+
+    /**
+     * Get a list of urls from the current fetch batch provided by the queue 
+     * server. Then downloads these pages. Finally, reschedules, if 
+     * possible, pages that did not successfully get downloaded.
+     *
+     * @return array an associative array of web pages and meta data 
+     *  fetched from the internet
+     */
+    function downloadPagesWebCrawl()
+    {
+        $start_time = microtime();
+        $can_schedule_again = false;
+        if(count($this->to_crawl) > 0)  {
+            $can_schedule_again = true;
+        }
+        $sites = $this->getFetchSites();
+
+        if(!$sites) {
+            crawlLog("No seeds to fetch...");
+            sleep(max(0, ceil(
+                MINIMUM_FETCH_LOOP_TIME - changeInMicrotime($start_time))));
+            return array();
+        }
+
+        $site_pages = FetchUrl::getPages($sites, true);
+
+        list($downloaded_pages, $schedule_again_pages) = 
+            $this->reschedulePages($site_pages);
+
+        if($can_schedule_again == true) {
+            //only schedule to crawl again on fail sites without crawl-delay
+            foreach($schedule_again_pages as $schedule_again_page) {
+                if($schedule_again_page[self::CRAWL_DELAY] == 0) {
+                    $this->to_crawl_again[] = 
+                        array($schedule_again_page[self::URL], 
+                            $schedule_again_page[self::WEIGHT],
+                            $schedule_again_page[self::CRAWL_DELAY]
+                        );
+                }
+            }
+        }
+
+        return $downloaded_pages;
+    }
+
+    /**
+     * Extracts NUM_MULTI_CURL_PAGES from the cureen Archive Bundle that is 
+     * being recrawled.
+     *
+     * @return array an associative array of web pages and meta data from
+     *      the archive bundle being iterated over
+     */
+    function downloadPagesArchiveCrawl()
+    {
+        $base_name = CRAWL_DIR.'/cache/'.self::archive_base_name.
+            $this->crawl_index;
+        $pages = array();
+        if(!isset($this->archive_iterator->iterate_timestamp) || 
+            $this->archive_iterator->iterate_timestamp != $this->crawl_index ||
+            $this->archive_iterator->result_timestamp != $this->crawl_time) {
+            if(!file_exists($base_name)){
+                crawlLog("Recrawl archive with timestamp" .
+                    " {$this->crawl_index} does not exist!");
+                return $pages;
+            } else {
+                if(file_exists("$base_name/arc_type.txt")) {
+                    $arctype = trim(file_get_contents(
+                        "$base_name/arc_type.txt"));
+                } else {
+                    $arctype = "WebArchiveBundle";
+                }
+                $iterator_name = $arctype."Iterator";
+                $this->archive_iterator = 
+                    new $iterator_name($this->crawl_index, $this->crawl_time);
+                if($this->archive_iterator == NULL) {
+                    crawlLog("Error creating archive iterator!!");
+                    return $pages;
+                }
+            }
+        }
+        if(!$this->archive_iterator->end_of_iterator) {
+            $pages = $this->archive_iterator->nextPages(NUM_MULTI_CURL_PAGES);
+        } 
+        return $pages;
+    }
+
     /**
      * Deletes any crawl web archive bundles not in the provided array of crawls
      *
@@ -437,8 +525,9 @@ class Fetcher implements CrawlConstants
     function checkScheduler() 
     {
         $info = array();
-        
-        if(count($this->to_crawl) > 0 || count($this->to_crawl_again) > 0) {
+        if((count($this->to_crawl) > 0 || count($this->to_crawl_again) > 0) &&
+           (!isset($this->archive_iterator->end_of_iterator) || 
+            !$this->archive_iterator->end_of_iterator)) {
             $info[self::STATUS]  = self::CONTINUE_STATE;
             return; 
         }
@@ -456,6 +545,12 @@ class Fetcher implements CrawlConstants
         $tok = strtok($info_string, "\n");
         $info = unserialize(base64_decode($tok));
 
+        if(isset($info[self::CRAWL_TYPE])) {
+            $this->crawl_type = $info[self::CRAWL_TYPE];
+        }
+        if(isset($info[self::CRAWL_INDEX])) {
+            $this->crawl_index = $info[self::CRAWL_INDEX];
+        }
         if(isset($info[self::CRAWL_ORDER])) {
             $this->crawl_order = $info[self::CRAWL_ORDER];
         }
@@ -618,7 +713,7 @@ class Fetcher implements CrawlConstants
         $num_items = $this->web_archive->count;
 
         $i = 0;
-        
+
         foreach($site_pages as $site) {
             $response_code = $site[self::HTTP_CODE]; 
 
@@ -647,6 +742,13 @@ class Fetcher implements CrawlConstants
 
             if(isset($PAGE_PROCESSORS[$type])) { 
                 $page_processor = $PAGE_PROCESSORS[$type];
+                if($page_processor == "TextProcessor" ||
+                    get_parent_class($page_processor) == "TextProcessor") {
+                    $text_data =true;
+                } else {
+                    $text_data =false;
+                }
+                    
             } else {
                 continue;
             }
@@ -655,6 +757,12 @@ class Fetcher implements CrawlConstants
 
             $doc_info = $processor->process($site[self::PAGE], 
                 $site[self::URL]);
+
+            $stored_fields = array(self::URL, self::HEADER, self::PAGE);
+            $summary_fields = array(self::IP_ADDRESSES, self::WEIGHT,
+                self::TIMESTAMP, self::TYPE, self::ENCODING, self::HTTP_CODE,
+                self::HASH, self::SERVER, self::SERVER_VERSION,
+                self::OPERATING_SYSTEM, self::MODIFIED);
 
             if($doc_info) {
                 $site[self::DOC_INFO] =  $doc_info;
@@ -666,37 +774,31 @@ class Fetcher implements CrawlConstants
 
                 }
 
-                if($site[self::TYPE] != "text/html" ) {
+                if($text_data) {
                     if(isset($doc_info[self::PAGE])) {
                         $site[self::PAGE] = $doc_info[self::PAGE];
                     } else {
                         $site[self::PAGE] = NULL;
                     }
-
+                }
+                if(!isset($site[self::ENCODING])) {
+                    $site[self::ENCODING] = "UTF-8";
                 }
 
-
-                $stored_site_pages[$i][self::URL] = $site[self::URL];
-                $stored_site_pages[$i][self::IP_ADDRESSES] = 
-                    $site[self::IP_ADDRESSES];
-                $stored_site_pages[$i][self::TIMESTAMP] = 
-                    $site[self::TIMESTAMP];
-                $stored_site_pages[$i][self::TYPE] = $site[self::TYPE];
-                if(isset($site[self::ENCODING])) {
-                    $encoding = $site[self::ENCODING];
-                } else {
-                    $encoding = "UTF-8";
+                foreach($summary_fields as $field) {
+                    if(isset($site[$field])) {
+                        $stored_site_pages[$i][$field] = $site[$field];
+                        $summarized_site_pages[$i][$field] = $site[$field];
+                    }
                 }
-                $stored_site_pages[$i][self::ENCODING] = $encoding;
-                $stored_site_pages[$i][self::HTTP_CODE] = 
-                    $site[self::HTTP_CODE];
-                $stored_site_pages[$i][self::HASH] = $site[self::HASH];
-                $stored_site_pages[$i][self::PAGE] = $site[self::PAGE];
+                foreach($stored_fields as $field) {
+                    if(isset($site[$field])) {
+                        $stored_site_pages[$i][$field] = $site[$field];
+                    }
+                }
 
                 $summarized_site_pages[$i][self::URL] = 
                     strip_tags($site[self::URL]);
-                $summarized_site_pages[$i][self::IP_ADDRESSES] = 
-                    $site[self::IP_ADDRESSES];
                 $summarized_site_pages[$i][self::TITLE] = strip_tags(
                     $site[self::DOC_INFO][self::TITLE]); 
                     // stripping html to be on the safe side
@@ -705,15 +807,10 @@ class Fetcher implements CrawlConstants
                 if(isset($site[self::DOC_INFO][self::JUST_METAS])) {
                     $summarized_site_pages[$i][self::JUST_METAS] = true;
                 }
-                $summarized_site_pages[$i][self::TIMESTAMP] = 
-                    $site[self::TIMESTAMP];
-                $summarized_site_pages[$i][self::ENCODING] = $encoding;
-                $summarized_site_pages[$i][self::HASH] = $site[self::HASH];
-                $summarized_site_pages[$i][self::TYPE] = $site[self::TYPE];
-                $summarized_site_pages[$i][self::HTTP_CODE] = 
-                    $site[self::HTTP_CODE];
-                $summarized_site_pages[$i][self::WEIGHT] = $site[self::WEIGHT];
-
+                if(isset($site[self::DOC_INFO][self::LANG])) {
+                    $summarized_site_pages[$i][self::LANG] = 
+                        $site[self::DOC_INFO][self::LANG];
+                }
                 if(isset($site[self::DOC_INFO][self::LINKS])) {
                     $summarized_site_pages[$i][self::LINKS] = 
                         $site[self::DOC_INFO][self::LINKS];
@@ -847,7 +944,8 @@ class Fetcher implements CrawlConstants
                     $this->found_sites[self::ROBOT_TXT][$host][
                         self::CRAWL_DELAY] = $site[self::CRAWL_DELAY];
                 }
-                if(isset($site[self::LINKS])) {
+                if(isset($site[self::LINKS]) 
+                    && $this->crawl_type == self::WEB_CRAWL) {
                     $num_links = count($site[self::LINKS]);
                     //robots pages might have sitemaps links on them
                     $this->addToCrawlSites($site[self::LINKS], 
@@ -855,7 +953,8 @@ class Fetcher implements CrawlConstants
                 }
             } else {
                 $this->found_sites[self::SEEN_URLS][] = $site;
-                if(isset($site[self::LINKS])) {
+                if(isset($site[self::LINKS])
+                    && $this->crawl_type == self::WEB_CRAWL) {
                     if(!isset($this->found_sites[self::TO_CRAWL])) {
                         $this->found_sites[self::TO_CRAWL] = array();
                     }
@@ -878,7 +977,9 @@ class Fetcher implements CrawlConstants
         if((count($this->to_crawl) <= 0 && count($this->to_crawl_again) <= 0) ||
             ( isset($this->found_sites[self::SEEN_URLS]) && 
             count($this->found_sites[self::SEEN_URLS]) > 
-            SEEN_URLS_BEFORE_UPDATE_SCHEDULER)) {
+            SEEN_URLS_BEFORE_UPDATE_SCHEDULER) || 
+            ($this->crawl_type == self::ARCHIVE_CRAWL && 
+            $this->archive_iterator->end_of_iterator)) {
             $this->updateScheduler();
         }
 
@@ -1095,11 +1196,18 @@ class Fetcher implements CrawlConstants
              */
             if(!isset($site[self::JUST_METAS])) {
                 $phrase_string = 
-                    mb_ereg_replace("[[:punct:]]", " ", $site[self::TITLE] .
-                       " ". $site[self::DESCRIPTION]); 
+                    mb_ereg_replace(PUNCT, " ", $site[self::TITLE] .
+                       " ". $site[self::DESCRIPTION]);
+                if(isset($site[self::LANG])) {
+                    $lang = $site[self::LANG];
+                } else {
+                    $lang = NULL;
+                }
                 $word_counts = 
-                    PhraseParser::extractPhrasesAndCount($phrase_string); 
+                    PhraseParser::extractPhrasesAndCount($phrase_string,
+                        MAX_PHRASE_LEN, $lang);
             }
+
             $meta_ids = array();
 
             /*
@@ -1124,7 +1232,35 @@ class Fetcher implements CrawlConstants
             if(strlen($url_type) > 0) {
                 $meta_ids[] = 'filetype:'.$url_type;
             }
-
+            if(isset($site[self::SERVER])) {
+                $meta_ids[] = 'server:'.strtolower($site[self::SERVER]);
+            }
+            if(isset($site[self::SERVER_VERSION])) {
+                $meta_ids[] = 'version:'.
+                    $site[self::SERVER_VERSION];
+            }
+            if(isset($site[self::OPERATING_SYSTEM])) {
+                $meta_ids[] = 'os:'.strtolower($site[self::OPERATING_SYSTEM]);
+            }
+            if(isset($site[self::MODIFIED])) {
+                $modified = $site[self::MODIFIED];
+                $meta_ids[] = 'modified:'.date('Y', $modified);
+                $meta_ids[] = 'modified:'.date('Y-m', $modified);
+                $meta_ids[] = 'modified:'.date('Y-m-d', $modified);
+            }
+            if(isset($site[self::TIMESTAMP])) {
+                $date = $site[self::TIMESTAMP];
+                $meta_ids[] = 'date:'.date('Y', $date);
+                $meta_ids[] = 'date:'.date('Y-m', $date);
+                $meta_ids[] = 'date:'.date('Y-m-d', $date);
+            }
+            if(isset($site[self::LANG])) {
+                $lang_parts = explode("-", $site[self::LANG]);
+                $meta_ids[] = 'lang:'.$lang_parts[0];
+                if(isset($lang_parts[1])){
+                    $meta_ids[] = 'lang:'.$site[self::LANG];
+                }
+            }
             // handles user added meta words
             if(isset($this->meta_words)) {
                 $matches = array();
@@ -1151,7 +1287,8 @@ class Fetcher implements CrawlConstants
             //store inlinks so they can be searched by
             $num_links = count($site[self::LINKS]);
             if($num_links > 0) {
-                $link_weight = $site[self::WEIGHT]/$num_links;
+                $weight = (isset($site[self::WEIGHT])) ? $site[self::WEIGHT] :1;
+                $link_weight = $weight/$num_links;
             } else {
                 $link_weight = 0;
             }

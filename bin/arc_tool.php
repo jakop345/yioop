@@ -268,15 +268,15 @@ class ArcTool implements CrawlConstants
         $generation = 0;
         while($seen < $total && $generation < $num_generations) {
             $partition = $archive->getPartition($generation, false);
-            if($archive->count < $start && $seen < $start) {
+            if($partition->count < $start && $seen < $start) {
                 $generation++;
-                $seen += $this->count;
+                $seen += $partition->count;
                 continue;
             }
             $seen_generation = 0;
-            while($seen < $total && $seen_generation < $archive->count) {
+            while($seen < $total && $seen_generation < $partition->count) {
                 $num_to_get = min($total - $seen,  
-                    $archive->count - $seen_generation, 
+                    $partition->count - $seen_generation, 
                     self::MAX_BUFFER_DOCS);
                 $objects = $partition->nextObjects($num_to_get);
                 $seen += $num_to_get;

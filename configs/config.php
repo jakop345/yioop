@@ -162,7 +162,6 @@ define('MAXIMUM_CRAWL_DELAY', 64);
 /** maximum number of active crawl-delayed hosts */
 define('MAX_WAITING_HOSTS', 1000); 
 
-
  
 /** 
  * bloom filters are used to keep track of which urls are visited, 
@@ -262,6 +261,7 @@ $PAGE_PROCESSORS = array(   "text/html" => "HtmlProcessor",
                             "text/asp" => "HtmlProcessor",
                             "text/xml" => "XmlProcessor",
 
+                            "application/xml" => "XmlProcessor",
                             "application/xhtml+xml" => "HtmlProcessor",
 
                             "application/rss+xml" => "RssProcessor",
@@ -283,7 +283,8 @@ $PAGE_PROCESSORS = array(   "text/html" => "HtmlProcessor",
                             "image/svg+xml"=> "SvgProcessor"
 );
 
-
+/** Characters we view as not part of words, not same as POSIX [:punct:]*/
+define ('PUNCT', "\.|\,|\:|\;|\"|\'|\`|\[|\]|\{|\}|\(|\)|\!|\||\&");
 
 /**
  * How many non robot urls the fetcher successfully downloads before

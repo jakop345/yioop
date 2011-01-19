@@ -143,7 +143,7 @@ class IndexArchiveBundle implements CrawlConstants
      * @param int $num_partitions_summaries number of WebArchive partitions
      *      to use in the summmaries WebArchiveBundle
      * @param string $description a text name/serialized info about this
-     * IndexArchiveBundle 
+     *      IndexArchiveBundle 
      */
     public function __construct($dir_name, $read_only_archive = true,
         $description = NULL, $num_docs_per_generation = NUM_DOCS_PER_GENERATION)
@@ -406,18 +406,34 @@ class IndexArchiveBundle implements CrawlConstants
 
 
     /**
-     * Gets the description, count of summaries, and number of partions of the
-     * summaries store in the supplied directory
+     * Gets the description, count of summaries, and number of partitions of the
+     * summaries store in the supplied directory. If the file arctype.txt
+     * exist, this is view as a dummy index archive for the sole purpose of
+     * allowing conversions of downloaded data such as arc files into
+     * Yioop! format.
      *
      * @param string path to a directory containing a summaries WebArchiveBundle
      * @return array summary of the given archive
      */
     public static function getArchiveInfo($dir_name)
     {
+        if(file_exists($dir_name."/arc_description.txt")) {
+            $crawl = array();
+            $info = array();
+            $crawl['DESCRIPTION'] = substr(
+                file_get_contents($dir_name."/arc_description.txt"), 0, 256);
+            $crawl['ARCFILE'] = true;
+            $info['VISITED_URLS_COUNT'] = 0;
+            $info['COUNT'] = 0;
+            $info['NUM_DOCS_PER_PARTITION'] = 0;
+            $info['WRITE_PARTITION'] = 0;
+            $info['DESCRIPTION'] = serialize($crawl);
+
+            return $info;
+        }
         return WebArchiveBundle::getArchiveInfo($dir_name."/summaries");
     }
 
 
 }
 ?>
-

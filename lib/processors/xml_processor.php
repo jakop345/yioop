@@ -89,7 +89,6 @@ class XmlProcessor extends TextProcessor
             $root_name = isset($dom->documentElement->nodeName) ?
                 $dom->documentElement->nodeName : "";
             unset($dom);
-
             switch ($root_name)
             {
                 case "rss":

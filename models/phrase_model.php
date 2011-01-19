@@ -255,9 +255,10 @@ class PhraseModel extends Model
     {
         $phrase = " ".$phrase;
         $phrase_string = $phrase;
-        $meta_words = array('link\:', 'site\:', 
-            'filetype\:', 'info\:', '\-', 
-            'index\:', 'i\:', 'ip\:', 'weight\:', 'w\:', 'u\:');
+        $meta_words = array('link\:', 'site\:', 'version\:', 'modified\:',
+            'filetype\:', 'info\:', '\-', 'os\:', 'server\:', 'date\:',
+            'index\:', 'i\:', 'ip\:', 'weight\:', 'w\:', 'u\:',
+            'lang\:');
         $index_name = $this->index_name;
         $weight = 1;
         $found_metas = array();
@@ -265,7 +266,8 @@ class PhraseModel extends Model
         foreach($meta_words as $meta_word) {
             $pattern = "/(\s)($meta_word(\S)+)/";
             preg_match_all($pattern, $phrase, $matches);
-            if(in_array($meta_word, array('link\:', 'site\:', 
+            if(in_array($meta_word, array('link\:', 'site\:', 'os\:', 
+            'server\:', 'version\:', 'modified\:', 'date\:', 'lang\:',
             'filetype\:', 'ip\:', 'info\:', 'u\:') )) {
                 $found_metas = array_merge($found_metas, $matches[2]);
             } else if($meta_word == '\-') {
@@ -289,8 +291,8 @@ class PhraseModel extends Model
         $index_archive_name = self::index_data_base_name . $index_name;
         $index_archive = new IndexArchiveBundle(
             CRAWL_DIR.'/cache/'.$index_archive_name);
-        $punct = "\.|\,|\:|\;|\"|\'|\`|\[|\]|\{|\}|\(|\)|\!|\||\&";
-        $phrase_string = mb_ereg_replace($punct, " ", $phrase_string);
+
+        $phrase_string = mb_ereg_replace(PUNCT, " ", $phrase_string);
         $phrase_string = preg_replace("/(\s)+/", " ", $phrase_string);
         /*
             we search using the stemmed words, but we format snippets in the 
@@ -298,7 +300,8 @@ class PhraseModel extends Model
          */
         $query_words = explode(" ", $phrase_string); //not stemmed
         $base_words = 
-            array_keys(PhraseParser::extractPhrasesAndCount($phrase_string)); 
+            array_keys(PhraseParser::extractPhrasesAndCount($phrase_string,
+            MAX_PHRASE_LEN, getLocaleTag())); 
             //stemmed
         $words = array_merge($base_words, $found_metas);
         if(isset($words) && count($words) == 1) {
@@ -372,7 +375,7 @@ class PhraseModel extends Model
      * pretty weak. For now we pick the $num many words which appear in the 
      * fewest documents.
      *
-     * @param string $craw_item a page summary
+     * @param string $crawl_item a page summary
      * @param int $num number of key phrase to return
      * @return array  an array of most selective key phrases
      */
@@ -454,7 +457,8 @@ class PhraseModel extends Model
         $query_iterator = $this->getQueryIterator($word_structs);
         $num_retrieved = 0;
         $pages = array();
-        while(is_array($next_docs = $query_iterator->nextDocsWithWord()) &&
+        while(is_object($query_iterator) && 
+            is_array($next_docs = $query_iterator->nextDocsWithWord()) &&
             $num_retrieved < $to_retrieve) {
             foreach($next_docs as $doc_key => $doc_info) {
                 $summary = & $doc_info[CrawlConstants::SUMMARY];

@@ -46,7 +46,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @subpackage library
  */
 
-class PorterStemmer
+class EnStemmer
 {
 
     /**
