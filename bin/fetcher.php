@@ -221,6 +221,14 @@ class Fetcher implements CrawlConstants
     var $crawl_type;
 
     /**
+     * Keeps track of whether during the recrawl we should notify the 
+     * queue_server scheduler about our progress in mini-indexing documents
+     * in the archive
+     * @var bool
+     */
+    var $recrawl_check_scheduler;
+
+    /**
      * If the crawl_type is self::ARCHIVE_CRAWL, then crawl_index is the 
      * timestamp of the existing archive to crawl
      * @var string
@@ -250,6 +258,7 @@ class Fetcher implements CrawlConstants
 
         $this->crawl_type = self::WEB_CRAWL;
         $this->crawl_index = NULL;
+        $this->recrawl_check_scheduler = false;
 
         $this->to_crawl = array();
         $this->to_crawl_again = array();
@@ -526,12 +535,12 @@ class Fetcher implements CrawlConstants
     {
         $info = array();
         if((count($this->to_crawl) > 0 || count($this->to_crawl_again) > 0) &&
-           (!isset($this->archive_iterator->end_of_iterator) || 
-            !$this->archive_iterator->end_of_iterator)) {
+           (!$this->recrawl_check_scheduler)) {
             $info[self::STATUS]  = self::CONTINUE_STATE;
             return; 
         }
 
+        $this->recrawl_check_scheduler = false;
         $queue_server = $this->queue_server;
 
         $start_time = microtime();
@@ -1189,6 +1198,9 @@ class Fetcher implements CrawlConstants
             if(!isset($site[self::HASH])) {continue; }
             $doc_keys = crawlHash($site[self::URL], true) . 
                 $site[self::HASH]. crawlHash("link:".$site[self::URL], true);
+
+            $meta_ids = $this->calculateMetas($site);
+
             $word_counts = array();
             /* 
                 self::JUST_METAS check to avoid getting sitemaps in results for 
@@ -1206,80 +1218,6 @@ class Fetcher implements CrawlConstants
                 $word_counts = 
                     PhraseParser::extractPhrasesAndCount($phrase_string,
                         MAX_PHRASE_LEN, $lang);
-            }
-
-            $meta_ids = array();
-
-            /*
-                Handle the built-in meta words. For example
-                store the sites the doc_key belongs to, 
-                so you can search by site
-            */
-            $url_sites = UrlParser::getHostPaths($site[self::URL]);
-            $url_sites = array_merge($url_sites, 
-                UrlParser::getHostSubdomains($site[self::URL]));
-            foreach($url_sites as $url_site) {
-                if(strlen($url_site) > 0) {
-                    $meta_ids[] = 'site:'.$url_site;
-                }
-            }
-            $meta_ids[] = 'info:'.$site[self::URL];
-            foreach($site[self::IP_ADDRESSES] as $address) {
-                $meta_ids[] = 'ip:'.$address;
-            }
-            // store the filetype info
-            $url_type = UrlParser::getDocumentType($site[self::URL]);
-            if(strlen($url_type) > 0) {
-                $meta_ids[] = 'filetype:'.$url_type;
-            }
-            if(isset($site[self::SERVER])) {
-                $meta_ids[] = 'server:'.strtolower($site[self::SERVER]);
-            }
-            if(isset($site[self::SERVER_VERSION])) {
-                $meta_ids[] = 'version:'.
-                    $site[self::SERVER_VERSION];
-            }
-            if(isset($site[self::OPERATING_SYSTEM])) {
-                $meta_ids[] = 'os:'.strtolower($site[self::OPERATING_SYSTEM]);
-            }
-            if(isset($site[self::MODIFIED])) {
-                $modified = $site[self::MODIFIED];
-                $meta_ids[] = 'modified:'.date('Y', $modified);
-                $meta_ids[] = 'modified:'.date('Y-m', $modified);
-                $meta_ids[] = 'modified:'.date('Y-m-d', $modified);
-            }
-            if(isset($site[self::TIMESTAMP])) {
-                $date = $site[self::TIMESTAMP];
-                $meta_ids[] = 'date:'.date('Y', $date);
-                $meta_ids[] = 'date:'.date('Y-m', $date);
-                $meta_ids[] = 'date:'.date('Y-m-d', $date);
-            }
-            if(isset($site[self::LANG])) {
-                $lang_parts = explode("-", $site[self::LANG]);
-                $meta_ids[] = 'lang:'.$lang_parts[0];
-                if(isset($lang_parts[1])){
-                    $meta_ids[] = 'lang:'.$site[self::LANG];
-                }
-            }
-            // handles user added meta words
-            if(isset($this->meta_words)) {
-                $matches = array();
-                $url = $site[self::URL];
-                foreach($this->meta_words as $word => $url_pattern) {
-                    $meta_word = 'u:'.$word;
-                    if(strlen(stristr($url_pattern, "@")) > 0) {
-                        continue; // we are using "@" as delimiter, so bail
-                    }
-                    preg_match_all("@".$url_pattern."@", $url, $matches);
-                    if(isset($matches[0][0]) && strlen($matches[0][0]) > 0){
-                        unset($matches[0]);
-                        foreach($matches as $match) {
-                            $meta_word .= ":".$match[0];
-                            $meta_ids[] = $meta_word;
-                        }
-
-                    }
-                }
             }
 
             $link_phrase_string = "";
@@ -1337,8 +1275,102 @@ class Fetcher implements CrawlConstants
 
         $this->found_sites[self::INVERTED_INDEX] = $index_shard;
 
+        if($this->crawl_type == self::ARCHIVE_CRAWL) {
+            $this->recrawl_check_scheduler = true;
+        }
+
         crawlLog("  Build mini inverted index time ".
             (changeInMicrotime($start_time)));
+    }
+}
+
+    /**
+     * Calculates the meta words to be associated with a given downloaded 
+     * document. These words will be associated with the document in the
+     * index for (server:apache) even if the document itself did not contain
+     * them.
+     *
+     * @param array &$site associated array containing info about a downloaded
+     *      (or read from archive) document.
+     * @return array of meta words to be associate with this document
+     */
+    function calculateMetas(&$site)
+    {
+        $meta_ids = array();
+
+        /*
+            Handle the built-in meta words. For example
+            store the sites the doc_key belongs to, 
+            so you can search by site
+        */
+        $url_sites = UrlParser::getHostPaths($site[self::URL]);
+        $url_sites = array_merge($url_sites, 
+            UrlParser::getHostSubdomains($site[self::URL]));
+        foreach($url_sites as $url_site) {
+            if(strlen($url_site) > 0) {
+                $meta_ids[] = 'site:'.$url_site;
+            }
+        }
+        $meta_ids[] = 'info:'.$site[self::URL];
+        foreach($site[self::IP_ADDRESSES] as $address) {
+            $meta_ids[] = 'ip:'.$address;
+        }
+        // store the filetype info
+        $url_type = UrlParser::getDocumentType($site[self::URL]);
+        if(strlen($url_type) > 0) {
+            $meta_ids[] = 'filetype:'.$url_type;
+        }
+        if(isset($site[self::SERVER])) {
+            $meta_ids[] = 'server:'.strtolower($site[self::SERVER]);
+        }
+        if(isset($site[self::SERVER_VERSION])) {
+            $meta_ids[] = 'version:'.
+                $site[self::SERVER_VERSION];
+        }
+        if(isset($site[self::OPERATING_SYSTEM])) {
+            $meta_ids[] = 'os:'.strtolower($site[self::OPERATING_SYSTEM]);
+        }
+        if(isset($site[self::MODIFIED])) {
+            $modified = $site[self::MODIFIED];
+            $meta_ids[] = 'modified:'.date('Y', $modified);
+            $meta_ids[] = 'modified:'.date('Y-m', $modified);
+            $meta_ids[] = 'modified:'.date('Y-m-d', $modified);
+        }
+        if(isset($site[self::TIMESTAMP])) {
+            $date = $site[self::TIMESTAMP];
+            $meta_ids[] = 'date:'.date('Y', $date);
+            $meta_ids[] = 'date:'.date('Y-m', $date);
+            $meta_ids[] = 'date:'.date('Y-m-d', $date);
+        }
+        if(isset($site[self::LANG])) {
+            $lang_parts = explode("-", $site[self::LANG]);
+            $meta_ids[] = 'lang:'.$lang_parts[0];
+            if(isset($lang_parts[1])){
+                $meta_ids[] = 'lang:'.$site[self::LANG];
+            }
+        }
+        // handles user added meta words
+        if(isset($this->meta_words)) {
+            $matches = array();
+            $url = $site[self::URL];
+            foreach($this->meta_words as $word => $url_pattern) {
+                $meta_word = 'u:'.$word;
+                if(strlen(stristr($url_pattern, "@")) > 0) {
+                    continue; // we are using "@" as delimiter, so bail
+                }
+                preg_match_all("@".$url_pattern."@", $url, $matches);
+                if(isset($matches[0][0]) && strlen($matches[0][0]) > 0){
+                    unset($matches[0]);
+                    foreach($matches as $match) {
+                        $meta_word .= ":".$match[0];
+                        $meta_ids[] = $meta_word;
+                    }
+
+                }
+            }
+        }
+
+        return $meta_ids;
     }
 }
 

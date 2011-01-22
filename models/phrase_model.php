@@ -446,8 +446,22 @@ class PhraseModel extends Model
                     $word_struct["WEIGHT"] .
                     $word_struct["INDEX_ARCHIVE"]->dir_name;
             }
-            $summary_hash = crawlHash($tmp.":".$to_retrieve);
-            if(($results = $MEMCACHE->get($summary_hash)) !== false) {
+            
+            $cache_success = true;
+            $results = array();
+            $results['PAGES'] = array();
+            for($i=$start_slice; $i< $to_retrieve; $i+=self::NUM_CACHE_PAGES){
+                $summary_hash = crawlHash($tmp.":".$i);
+                $slice = $MEMCACHE->get($summary_hash);
+                if($slice === false) {
+                    $cache_success = false;
+                    break;
+                }
+                $results['PAGES'] = array_merge($results['PAGES'], 
+                    $slice['PAGES']);
+                $results['TOTAL_ROWS'] = $slice['TOTAL_ROWS'];
+            }
+            if($cache_success) {
                 $results['PAGES'] = 
                     array_slice($results['PAGES'], $limit - $start_slice, $num);
                 return $results;
@@ -478,13 +492,27 @@ class PhraseModel extends Model
             //this is only an approximation 
         }
         
+
+
+        $result_count = count($pages);
+        if(USE_MEMCACHE) {
+            for($i = 0; $i < $result_count; $i++){
+                unset($pages[$i][self::LINKS]);
+            }
+            for($i = 0;$i < $to_retrieve;$i+=self::NUM_CACHE_PAGES){
+                $summary_hash = crawlHash($tmp.":".$i);
+                $slice['PAGES'] = array_slice($pages, $i, 
+                    self::NUM_CACHE_PAGES);
+                $slice['TOTAL_ROWS'] = $results['TOTAL_ROWS'];
+                $MEMCACHE->set($summary_hash, $slice);
+            }
+
+        }
         $results['PAGES'] = & $pages;
         $results['PAGES'] = array_slice($results['PAGES'], $start_slice);
-        if(USE_MEMCACHE) {
-            $MEMCACHE->set($summary_hash, $results);
-        }
         $results['PAGES'] = array_slice($results['PAGES'], $limit-$start_slice,
             $num);
+
 
         return $results;
     }

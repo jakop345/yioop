@@ -326,6 +326,9 @@ class QueueServer implements CrawlConstants
 
     }
 
+    /**
+     *
+     */
     function processRecrawlRobotUrls()
     {
         crawlLog("Checking for robots.txt files to process...");
@@ -337,6 +340,9 @@ class QueueServer implements CrawlConstants
         crawlLog("done. ");
     }
 
+    /**
+     *
+     */
     function processRecrawlRobotArchive($file)
     {
         crawlLog("Deleting unneeded robot schedule files");
@@ -368,6 +374,7 @@ class QueueServer implements CrawlConstants
         }
         return $sites;
     }
+
     /**
      *
      */

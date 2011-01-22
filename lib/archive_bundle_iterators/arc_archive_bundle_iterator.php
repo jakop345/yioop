@@ -107,12 +107,14 @@ class ArcArchiveBundleIterator implements CrawlConstants
             $this->end_of_iterator = $info['end_of_iterator'];
             $this->current_partition_num = $info['current_partition_num'];
             $this->current_offset = $info['current_offset'];
+            $this->fh=gzopen(
+                $this->partitions[$this->current_partition_num], "rb");
+            gzseek($this->fh, $this->current_offset);
         } else {
             $this->reset();
         }
 
-        $this->fh=gzopen($this->partitions[$this->current_partition_num], "rb");
-        gzseek($this->fh, $this->current_offset);
+
 
     }
 
@@ -121,16 +123,20 @@ class ArcArchiveBundleIterator implements CrawlConstants
      */
     function reset()
     {
-        $this->current_partition_num = 0;
+        $this->current_partition_num = -1;
         $this->end_of_iterator = false;
         $this->current_offset = 0;
+        $this->fh = NULL;
         $archive_name = CRAWL_DIR.'/cache/'.self::archive_base_name.
             $this->result_timestamp;
         @unlink("$archive_name/iterate_status.txt");
     }
 
     /**
-     * Gets the next $num many docs from the iterator
+     * Gets the next at most $num many docs from the iterator. It might return
+     * less than $num many documents if the partition changes or the end of the
+     * bundle is reached.
+     *
      * @param int $num number of docs to get
      * @return array associative arrays for $num pages
      */
@@ -184,7 +190,9 @@ class ArcArchiveBundleIterator implements CrawlConstants
             $length = $info_parts[$num_parts - 1];
 
             if(!$object = gzread($this->fh, $length + 1)) return NULL;
-        } while(substr($page_info, 0, 3) == 'dns'); //ignore dns entries in arc
+        } while(substr($page_info, 0, 3) == 'dns' ||
+            substr($page_info, 0, 8) == 'filedesc'); 
+                //ignore dns entries in arc and ignore first record
         $site = array();
         $site[self::URL] = $info_parts[0];
         $site[self::IP_ADDRESSES] = array($info_parts[1]);

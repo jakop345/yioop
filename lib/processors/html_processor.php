@@ -144,7 +144,11 @@ class HtmlProcessor extends TextProcessor
     {
         $xpath = new DOMXPath($dom);
         $html = $xpath->evaluate("/html");
-        $lang = $html->item(0)->getAttribute('lang');
+        if(is_object($html->item(0))) { 
+            $lang = $html->item(0)->getAttribute('lang');
+        } else {
+            $lang = NULL;
+        }
         return $lang;
     }
 
