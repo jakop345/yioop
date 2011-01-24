@@ -1255,7 +1255,7 @@ class Fetcher implements CrawlConstants
                     $this->found_sites[self::SEEN_URLS][] = $summary;
 
                     $link_text = 
-                        mb_ereg_replace("[[:punct:]]", " ", $link_text);
+                        mb_ereg_replace(PUNCT, " ", $link_text);
                     $link_word_counts = 
                         PhraseParser::extractPhrasesAndCount($link_text);
                     $link_shard->addDocumentWords($link_keys, 
@@ -1282,7 +1282,6 @@ class Fetcher implements CrawlConstants
         crawlLog("  Build mini inverted index time ".
             (changeInMicrotime($start_time)));
     }
-}
 
     /**
      * Calculates the meta words to be associated with a given downloaded 

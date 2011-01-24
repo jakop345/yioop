@@ -71,10 +71,11 @@ class HtmlProcessor extends TextProcessor
         $summary = NULL;
         if(is_string($page)) {
             $dom = self::dom($page);
-            if($dom !==false && self::checkMetaRobots($dom)) {
-                $summary[self::LANG] = self::lang($dom);
+            if($dom !== false && self::checkMetaRobots($dom)) {
                 $summary[self::TITLE] = self::title($dom);
-                $summary[self::DESCRIPTION] = self::description($dom); 
+                $summary[self::DESCRIPTION] = self::description($dom);
+                $summary[self::LANG] = self::lang($dom, 
+                    $summary[self::DESCRIPTION]);
                 $summary[self::LINKS] = self::links($dom, $url);
                 $summary[self::PAGE] = $page;
                 if(strlen($summary[self::DESCRIPTION] . $summary[self::TITLE])
@@ -133,19 +134,37 @@ class HtmlProcessor extends TextProcessor
 
     /**
      *  Determines the language of the html document by looking at the root
-     *  language attribute
+     *  language attribute. If that fails $sample_text is used to try to guess
+     *  the language
      *
-     *  @param object $dom - a document object to check the language of
-     * 
+     *  @param object $dom  a document object to check the language of
+     *  @param string $sample_text sample text to try guess the language from
+     *
      *  @return string language tag for guessed language
-
      */
-    static function lang($dom)
+    static function lang($dom, $sample_text = NULL)
     {
         $xpath = new DOMXPath($dom);
         $html = $xpath->evaluate("/html");
+        $lang = NULL;
         if(is_object($html->item(0))) { 
             $lang = $html->item(0)->getAttribute('lang');
+        } 
+        if($lang == NULL && $sample_text != NULL){
+            $words = mb_split("[[:space:]]|".PUNCT, $sample_text);
+            $num_words = count($words);
+            $ascii_count = 0;
+            foreach($words as $word) {
+                if(strlen($word) == mb_strlen($word)) {
+                    $ascii_count++;
+                }
+            }
+            // crude, but let's guess ASCII == english
+            if($ascii_count/$num_words > 0.9) {
+                $lang = 'en';
+            } else {
+                $lang = NULL;
+            }
         } else {
             $lang = NULL;
         }

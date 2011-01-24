@@ -254,7 +254,7 @@ class FetchUrl implements CrawlConstants
             $line = trim($line);
             if(stristr($line, 'Server:')) {
                 $server_parts = explode("Server:", $line);
-                $server_name_parts = explode("/", $server_parts[1]);
+                $server_name_parts = @explode("/", $server_parts[1]);
                 $site[CrawlConstants::SERVER] = @trim($server_name_parts[0]);
                 if(isset($server_name_parts[1])) {
                     $version_parts = explode("(", $server_name_parts[1]);

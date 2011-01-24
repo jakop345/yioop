@@ -66,11 +66,45 @@ class TextProcessor implements CrawlConstants
         if(is_string($page)) {
             $summary[self::TITLE] = "";
             $summary[self::DESCRIPTION] = mb_substr($page, 0, 400);
+            $summary[self::LANG] = self::calculateLang(
+                $summary[self::DESCRIPTION]);
             $summary[self::LINKS] = self::extractHttpHttpsUrls($page);
             $summary[self::PAGE] = "<html><body><pre>".
                 strip_tags($page)."</pre></body></html>";
         }
         return $summary;
+    }
+
+
+    /**
+     *  Tries to determine the language of the document by looking at the
+     *  $sample_text provided
+     *  the language
+     *  @param string $sample_text sample text to try guess the language from
+     *
+     *  @return string language tag for guessed language
+     */
+    static function calculateLang($sample_text = NULL)
+    {
+        if($sample_text != NULL){
+            $words = mb_split("[[:space:]]|".PUNCT, $sample_text);
+            $num_words = count($words);
+            $ascii_count = 0;
+            foreach($words as $word) {
+                if(strlen($word) == mb_strlen($word)) {
+                    $ascii_count++;
+                }
+            }
+            // crude, but let's guess ASCII == english
+            if($ascii_count/$num_words > 0.9) {
+                $lang = 'en';
+            } else {
+                $lang = NULL;
+            }
+        } else {
+            $lang = NULL;
+        }
+        return $lang;
     }
 
     /**
