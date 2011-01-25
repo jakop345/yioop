@@ -114,7 +114,7 @@ class RssProcessor extends TextProcessor
                 }
             }
             // crude, but let's guess ASCII == english
-            if($ascii_count/$num_words > 0.9) {
+            if($ascii_count/$num_words > EN_RATIO) {
                 $lang = 'en';
             } else {
                 $lang = NULL;

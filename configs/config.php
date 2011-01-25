@@ -286,6 +286,10 @@ $PAGE_PROCESSORS = array(   "text/html" => "HtmlProcessor",
 /** Characters we view as not part of words, not same as POSIX [:punct:]*/
 define ('PUNCT', "\.|\,|\:|\;|\"|\'|\`|\[|\]|\{|\}|\(|\)|\!|\||\&");
 
+/** Percentage ASCII text before guess we dealing with english*/
+define ('EN_RATIO', 0.9);
+
+
 /**
  * How many non robot urls the fetcher successfully downloads before
  * between times data sent back to queue server

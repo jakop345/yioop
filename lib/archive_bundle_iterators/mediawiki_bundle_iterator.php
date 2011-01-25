@@ -94,7 +94,7 @@ class MediaWikiArchiveBundleIterator implements CrawlConstants
      */
     var $header;
     /**
-     *  File handle for current arc file
+     *  File handle for current mediawiki file
      *  @var resource
      */
     var $fh;
@@ -227,14 +227,17 @@ class MediaWikiArchiveBundleIterator implements CrawlConstants
      *
      * @param object $dom DOMDocument to get the text from
      * @param $path xpath expression to find node with text
+     *
+     * @return string text content of the given node if it exists
      */
     function getTextContent($dom, $path)
     {
         $xpath = new DOMXPath($dom);
         $objects = $xpath->evaluate($path);
-        if($objects  && is_object($objects)) {
+        if($objects  && is_object($objects) && $objects->item(0) != NULL ) {
             return $objects->item(0)->textContent;
         }
+        return "";
     }
 
     /**
