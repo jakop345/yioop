@@ -1522,7 +1522,8 @@ class AdminController extends Controller implements CrawlConstants
                     if(!isset($data[$field])) {
                         $data[$field] = "";
                         if(in_array($field, array('USE_MEMCACHE', 'IP_LINK',
-                            'CACHE_LINK', 'SIMILAR_LINK', 'IN_LINK'))) {
+                            'CACHE_LINK', 'SIMILAR_LINK', 'IN_LINK',
+                            'SIGNIN_LINK'))) {
                             $profile[$field] = false;
                         }
                     }

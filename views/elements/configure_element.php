@@ -196,8 +196,13 @@ class ConfigureElement extends Element
             </fieldset>
             </div>
             <div class="topmargin">
-            <fieldset class="extrawidefield"><legend><?php 
+            <fieldset><legend><?php 
                 e(tl('configure_element_search_results'))?></legend>
+                <label for="signin-link"><input id='signin-link' type="checkbox" 
+                    name="SIGNIN_LINK" value="true" 
+                    <?php if(isset($data['SIGNIN_LINK']) && 
+                        $data['SIGNIN_LINK']){ e("checked='checked'");}?> 
+                    /><?php e(tl('configure_element_signin_link')); ?></label>
                 <label for="cache-link"><input id='cache-link' type="checkbox" 
                     name="CACHE_LINK" value="true" 
                     <?php if(isset($data['CACHE_LINK']) && $data['CACHE_LINK']){

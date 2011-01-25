@@ -73,7 +73,7 @@ class SearchView extends View implements CrawlConstants
      */
     public function renderView($data) 
     {
-        $this->signinElement->render($data); 
+        $this->signinElement->render($data);
         if(!isset($data['PAGES'])) {
             e('<div class="landing">');
         }

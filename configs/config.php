@@ -96,6 +96,7 @@ if(file_exists(WORK_DIRECTORY."/profile.php")) {
     define('SIMILAR_LINK', true);
     define('IN_LINK', true);
     define('IP_LINK', true);
+    define('SIGNIN_LINK', true);
 }
 
 if((DEBUG_LEVEL & ERROR_INFO) == ERROR_INFO) {
