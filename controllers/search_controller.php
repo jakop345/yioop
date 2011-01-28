@@ -171,15 +171,7 @@ class SearchController extends Controller implements CrawlConstants
                     list(,$query_activity,) = $this->extractActivityQuery();
                     if($query_activity != "query") {$highlight = false;}
                 }
-                $summary_offset = NULL;
-                if(isset($_REQUEST['so'])) {
-                    $summary_offset = $this->clean($_REQUEST['so'], "int");
-                }
-                $generation = -1;
-                if(isset($_REQUEST['g'])) {
-                    $generation = $this->clean($_REQUEST['g'], "int");
-                }
-                $this->cacheRequest($query, $arg, $summary_offset, $generation,
+                $this->cacheRequest($query, $arg,
                     $highlight, $index_time_stamp);
             }
         }
@@ -234,20 +226,12 @@ class SearchController extends Controller implements CrawlConstants
         switch($activity)
         {
             case "related":
-            $data['QUERY'] = "related:$arg";
+                $data['QUERY'] = "related:$arg";
                 $url = $arg;
-                $summary_offset = NULL;
-                if(isset($_REQUEST['so'])) {
-                    $summary_offset = $this->clean($_REQUEST['so'], "int");
-                }
-                $generation = -1;
-                if(isset($_REQUEST['g'])) {
-                    $generation = $this->clean($_REQUEST['g'], "int");
-                }
-                if($summary_offset === NULL || $generation == -1) {
-                    list($summary_offset, $generation) =  
+
+                list($summary_offset, $generation, ) =  
                         $this->phraseModel->lookupSummaryOffsetGeneration($url);
-                }
+
                 $crawl_item = $this->crawlModel->getCrawlItem($summary_offset, 
                     $generation);
 
@@ -257,7 +241,7 @@ class SearchController extends Controller implements CrawlConstants
                 $phrase_results = $this->phraseModel->getPhrasePageResults(
                     $top_query, $limit, $results_per_page, false);
                 $data['PAGING_QUERY'] = "index.php?c=search&a=related&arg=".
-                    urlencode($url)."&so=$summary_offset";
+                    urlencode($url);
             break;
 
             case "query":
@@ -344,8 +328,7 @@ class SearchController extends Controller implements CrawlConstants
      * @param int $crawl_time the timestamp of the crawl to look up the cached
      *      page in
      */
-    function cacheRequest($query, $url, $summary_offset = -1, $generation = -1,
-        $highlight=true, $crawl_time = 0)
+    function cacheRequest($query, $url, $highlight=true, $crawl_time = 0)
     {
 
         if($crawl_time == 0) {
@@ -354,10 +337,8 @@ class SearchController extends Controller implements CrawlConstants
         $this->phraseModel->index_name = $crawl_time;
         $this->crawlModel->index_name = $crawl_time;
 
-        if($summary_offset == -1 || $generation == -1) {
-            list($summary_offset, $generation) = 
-                $this->phraseModel->lookupSummaryOffsetGeneration($url);
-        }
+        list($summary_offset, $generation, $cache_partition) = 
+            $this->phraseModel->lookupSummaryOffsetGeneration($url);
 
         $data = array();
         if(!$crawl_item = $this->crawlModel->getCrawlItem($summary_offset, 
@@ -366,13 +347,12 @@ class SearchController extends Controller implements CrawlConstants
             $this->displayView("nocache", $data);
             exit();
         }
-
         $machine = $crawl_item[self::MACHINE];
         $machine_uri = $crawl_item[self::MACHINE_URI];
         $page = $crawl_item[self::HASH];
         $offset = $crawl_item[self::OFFSET];
         $cache_item = $this->crawlModel->getCacheFile($machine, 
-            $machine_uri, $generation, $offset,  $crawl_time);
+            $machine_uri, $cache_partition, $offset,  $crawl_time);
         $cache_file = $cache_item[self::PAGE];
 
         if(!stristr($cache_item[self::TYPE], "image")) {
@@ -423,6 +403,9 @@ class SearchController extends Controller implements CrawlConstants
         $first_child = $body->firstChild;
         $preNode = $dom->createElement('pre');
         $preNode = $body->insertBefore($preNode, $first_child);
+        $preNode->setAttributeNS("","style", "border-color: black; ".
+            "border-style:solid; border-width:3px; ".
+            "padding: 5px; background-color: white");
         $divNode = $dom->createElement('div');
         $divNode = $body->insertBefore($divNode, $preNode);
         $divNode->setAttributeNS("","style", "border-color: black; ".

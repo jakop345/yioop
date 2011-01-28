@@ -223,23 +223,27 @@ class PhraseModel extends Model
         $pages = array();
         $summary_offset = NULL;
         $num_generations = $index_archive->generation_info['ACTIVE'];
-        for($i = 0; $i <= $num_generations && $num_retrieved < 1; $i++) {
-            $index_archive->setCurrentShard($i);
-            $word_iterator = 
-                new WordIterator(crawlHash("info:$url"), $index_archive);
-            while(is_array($next_docs = $word_iterator->nextDocsWithWord()) &&
-                $num_retrieved < 1) {
-                 foreach($next_docs as $doc_key => $doc_info) {
-                     $summary_offset = & 
-                        $doc_info[CrawlConstants::SUMMARY_OFFSET];
-                     $num_retrieved++;
-                     if($num_retrieved >=  1) {
-                         break 3;
-                     }
+        $word_iterator = 
+            new WordIterator(crawlHash("info:$url"), $index_archive);
+        if(is_array($next_docs = $word_iterator->nextDocsWithWord())) {
+             foreach($next_docs as $doc_key => $doc_info) {
+                 $summary_offset =  
+                    $doc_info[CrawlConstants::SUMMARY_OFFSET];
+                 $generation = $doc_info[CrawlConstants::GENERATION];
+                 $cache_partition = $doc_info[CrawlConstants::SUMMARY][
+                    CrawlConstants::CACHE_PAGE_PARTITION];
+                 $num_retrieved++;
+                 if($num_retrieved >=  1) {
+                     break;
                  }
-            }
+             }
+             if($num_retrieved == 0) {
+                return false;
+             } 
+        } else {
+            return false;
         }
-        return array($summary_offset, $i);
+        return array($summary_offset, $generation, $cache_partition);
     }
 
     /**
