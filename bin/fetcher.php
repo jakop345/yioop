@@ -1257,7 +1257,8 @@ class Fetcher implements CrawlConstants
                     $link_text = 
                         mb_ereg_replace(PUNCT, " ", $link_text);
                     $link_word_counts = 
-                        PhraseParser::extractPhrasesAndCount($link_text);
+                        PhraseParser::extractPhrasesAndCount($link_text,
+                            MAX_PHRASE_LEN, $lang);
                     $link_shard->addDocumentWords($link_keys, 
                         self::NEEDS_OFFSET_FLAG, 
                         $link_word_counts, array());
