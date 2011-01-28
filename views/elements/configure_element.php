@@ -165,36 +165,6 @@ class ConfigureElement extends Element
                 </div>
             </fieldset>
             </div>
-            <div class="topmargin"><fieldset><legend><?php 
-                e(tl('configure_element_queue_server'))?></legend>
-                <div ><b><label for="queue-fetcher-salt"><?php 
-                    e(tl('configure_element_queue_server_key'))?></label></b> 
-                    <input type="text" id="queue-fetcher-salt" name="AUTH_KEY" 
-                        value="<?php e($data['AUTH_KEY']); ?>" 
-                        class="widefield" />
-                </div>
-                <div class="topmargin"><b><label for="queue-server-url"><?php 
-                    e(tl('configure_element_queue_server_url'))?></label></b> 
-                    <input type="text" id="queue-server-url" name="QUEUE_SERVER"
-                        value="<?php e($data['QUEUE_SERVER']); ?>" 
-                        class="extrawidefield" />
-                </div>
-                <div class="topmargin"><label for="use-memcache"><b><?php 
-                    e(tl('configure_element_use_memcache'))?></b></label>
-                        <input type="checkbox" id="use-memcache" 
-                            name="USE_MEMCACHE" value="true" <?php 
-                            e($data['USE_MEMCACHE'] ? "checked='checked'" :
-                                "" ); ?> /></div>
-                <div id="memcache">
-                    <div class="topmargin"><label for="memcache-servers"
-                    ><b><?php e(tl('configure_element_memcache_servers'));
-                    ?></b></label></div>
-                <textarea class="shorttextarea" id="memcache-servers" 
-                    name="MEMCACHE_SERVERS"><?php e($data['MEMCACHE_SERVERS']);
-                ?></textarea>
-                </div>
-            </fieldset>
-            </div>
             <div class="topmargin">
             <fieldset><legend><?php 
                 e(tl('configure_element_search_results'))?></legend>
@@ -224,6 +194,36 @@ class ConfigureElement extends Element
                     <?php if(isset($data['IP_LINK']) && $data['IP_LINK']){
                         e("checked='checked'");}?> 
                     /><?php e(tl('configure_element_ip_link')); ?></label>
+            </fieldset>
+            </div>
+            <div class="topmargin"><fieldset><legend><?php 
+                e(tl('configure_element_queue_server'))?></legend>
+                <div ><b><label for="queue-fetcher-salt"><?php 
+                    e(tl('configure_element_queue_server_key'))?></label></b> 
+                    <input type="text" id="queue-fetcher-salt" name="AUTH_KEY" 
+                        value="<?php e($data['AUTH_KEY']); ?>" 
+                        class="widefield" />
+                </div>
+                <div class="topmargin"><b><label for="queue-server-url"><?php 
+                    e(tl('configure_element_queue_server_url'))?></label></b> 
+                    <input type="text" id="queue-server-url" name="QUEUE_SERVER"
+                        value="<?php e($data['QUEUE_SERVER']); ?>" 
+                        class="extrawidefield" />
+                </div>
+                <div class="topmargin"><label for="use-memcache"><b><?php 
+                    e(tl('configure_element_use_memcache'))?></b></label>
+                        <input type="checkbox" id="use-memcache" 
+                            name="USE_MEMCACHE" value="true" <?php 
+                            e($data['USE_MEMCACHE'] ? "checked='checked'" :
+                                "" ); ?> /></div>
+                <div id="memcache">
+                    <div class="topmargin"><label for="memcache-servers"
+                    ><b><?php e(tl('configure_element_memcache_servers'));
+                    ?></b></label></div>
+                <textarea class="shorttextarea" id="memcache-servers" 
+                    name="MEMCACHE_SERVERS"><?php e($data['MEMCACHE_SERVERS']);
+                ?></textarea>
+                </div>
             </fieldset>
             </div>
             <div class="topmargin"><fieldset><legend><?php 
