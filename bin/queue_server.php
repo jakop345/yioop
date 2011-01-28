@@ -117,6 +117,20 @@ class QueueServer implements CrawlConstants
      */
     var $crawl_order;
     /**
+     * Indicates the kind of crawl being performed: self::WEB_CRAWL indicates
+     * a new crawl of the web; self::ARCHIVE_CRAWL indicates a crawl of an 
+     * existing web archive
+     * @var string
+     */
+    var $crawl_type;
+
+    /**
+     * If the crawl_type is self::ARCHIVE_CRAWL, then crawl_index is the 
+     * timestamp of the existing archive to crawl
+     * @var string
+     */
+    var $crawl_index;
+    /**
      * Says whether the $allowed_sites array is being used or not
      * @var bool
      */
@@ -244,7 +258,6 @@ class QueueServer implements CrawlConstants
             //check for orphaned queue bundles
             $this->deleteOrphanedBundles();
 
-            $count = $this->web_queue->to_crawl_queue->count;
 
             $this->processIndexData();
             if(time() - $this->last_index_save_time > FORCE_SAVE_TIME){
@@ -254,34 +267,124 @@ class QueueServer implements CrawlConstants
                 crawlLog("... Save time".(changeInMicrotime($start_time)));
             }
 
-            $this->processRobotUrls();
+            switch($this->crawl_type)
+            {
+                case self::WEB_CRAWL:
+                    $this->processRobotUrls();
 
-            if($count < NUM_URLS_QUEUE_RAM - 
-                SEEN_URLS_BEFORE_UPDATE_SCHEDULER * MAX_LINKS_PER_PAGE) {
-                $info = $this->processQueueUrls();
+                    $count = $this->web_queue->to_crawl_queue->count;
+
+                    if($count < NUM_URLS_QUEUE_RAM - 
+                        SEEN_URLS_BEFORE_UPDATE_SCHEDULER * MAX_LINKS_PER_PAGE) {
+                        $info = $this->processQueueUrls();
+                    }
+
+                    if($count > 0) {
+                        $top = $this->web_queue->peekQueue();
+                        if($top[1] < MIN_QUEUE_WEIGHT) { 
+                            crawlLog("Normalizing Weights!!\n");
+                            $this->web_queue->normalize(); 
+                            /* this will undercount the weights of URLS 
+                               from fetcher data that have not completed
+                             */
+                         }
+
+                        if(!file_exists(CRAWL_DIR."/schedules/schedule.txt")) {
+                            $this->produceFetchBatch();
+                        }
+                    }
+                break;
+                case self::ARCHIVE_CRAWL:
+                    $this->processRecrawlRobotUrls();
+                    if(!file_exists(CRAWL_DIR."/schedules/schedule.txt")) {
+                        $this->writeArchiveCrawlInfo();
+                    }
+                break;
             }
-
-            if($count > 0) {
-                $top = $this->web_queue->peekQueue();
-                if($top[1] < MIN_QUEUE_WEIGHT) { 
-                    crawlLog("Normalizing Weights!!\n");
-                    $this->web_queue->normalize(); 
-                    /* this will undercount the weights of URLS 
-                       from fetcher data that have not completed
-                     */
-                 }
-
-                if(!file_exists(CRAWL_DIR."/schedules/schedule.txt")) {
-                    $this->produceFetchBatch();
-                }
-            }
-
             crawlLog("Taking five second sleep...");
             sleep(5);
         }
 
         crawlLog("Queue Server shutting down!!");
     }
+
+    /**
+     *
+     */
+    function writeArchiveCrawlInfo()
+    {
+        $schedule_time = time();
+        $first_line = $this->calculateScheduleMetaInfo($schedule_time);
+        $fh = fopen(CRAWL_DIR."/schedules/schedule.txt", "wb");
+        fwrite($fh, $first_line);
+        fclose($fh);
+
+        $schedule_dir = 
+            CRAWL_DIR."/schedules/".
+                self::schedule_data_base_name.$this->crawl_time;
+        $this->processDataFile($schedule_dir, "processRecrawlDataArchive");
+
+    }
+
+    /**
+     *
+     */
+    function processRecrawlRobotUrls()
+    {
+        crawlLog("Checking for robots.txt files to process...");
+        $robot_dir = 
+            CRAWL_DIR."/schedules/".
+                self::robot_data_base_name.$this->crawl_time;
+
+        $this->processDataFile($robot_dir, "processRecrawlRobotArchive");
+        crawlLog("done. ");
+    }
+
+    /**
+     *
+     */
+    function processRecrawlRobotArchive($file)
+    {
+        crawlLog("Deleting unneeded robot schedule files");
+
+        unlink($file);
+    }
+
+    /**
+     * 
+     */
+    function &getDataArchiveFileData($file)
+    {
+        crawlLog("Processing File: $file");
+
+        $fh = fopen($file, "rb");
+        $machine_string = fgets($fh);
+        $len = strlen($machine_string);
+        if($len > 0) {
+            $machine_info = unserialize(base64_decode($machine_string));
+        }
+        $sites = unserialize(gzuncompress(base64_decode(
+            urldecode(fread($fh, filesize($file) - $len))
+            )));
+        fclose($fh);
+
+        if(isset($machine_info[self::MACHINE])) {
+            $this->most_recent_fetcher = & $machine_info[self::MACHINE];
+            unset($machine_info);
+        }
+        return $sites;
+    }
+
+    /**
+     *
+     */
+    function processRecrawlDataArchive($file)
+    {
+        $sites = & $this->getDataArchiveFileData($file);
+        unlink($file);
+        $this->writeCrawlStatus($sites);
+    }
+
 
     /**
      * Handles messages passed via files to the QueueServer.
@@ -307,6 +410,12 @@ class QueueServer implements CrawlConstants
                     $this->startCrawl($info);
                     crawlLog(
                         "Starting new crawl. Timestamp:".$this->crawl_time);
+                    if($this->crawl_type == self::WEB_CRAWL) {
+                        crawlLog("Performing a web crawl!");
+                    } else {
+                        crawlLog("Performing an archive crawl of ".
+                            "archive with timestamp ".$this->crawl_index);
+                    }
                 break;
 
                 case "STOP_CRAWL":
@@ -367,10 +476,10 @@ class QueueServer implements CrawlConstants
      */
     function indexSave()
     {
+        $this->last_index_save_time = time();
         if(isset($this->index_archive) && $this->index_dirty) {
             $this->index_archive->forceSave();
             $this->index_dirty = false;
-            $this->last_index_save_time = time();
             // chmod so apache can also write to these directories
             $this->db->setWorldPermissionsRecursive(
                 CRAWL_DIR.'/cache/'.
@@ -392,6 +501,8 @@ class QueueServer implements CrawlConstants
 
         $read_from_info = array(
             "crawl_order" => self::CRAWL_ORDER,
+            "crawl_type" => self::CRAWL_TYPE,
+            "crawl_index" => self::CRAWL_INDEX,
             "restrict_sites_by_url" => self::RESTRICT_SITES_BY_URL,
             "allowed_sites" => self::ALLOWED_SITES,
             "disallowed_sites" => self::DISALLOWED_SITES,
@@ -423,10 +534,13 @@ class QueueServer implements CrawlConstants
         $this->index_archive = NULL;
 
         gc_collect_cycles(); // garbage collect old crawls
-        $this->web_queue = new WebQueueBundle(
-            CRAWL_DIR.'/cache/'.self::queue_base_name.
-            $this->crawl_time, URL_FILTER_SIZE, 
-                NUM_URLS_QUEUE_RAM, $min_or_max);
+
+        if($this->crawl_type == self::WEB_CRAWL) {
+            $this->web_queue = new WebQueueBundle(
+                CRAWL_DIR.'/cache/'.self::queue_base_name.
+                $this->crawl_time, URL_FILTER_SIZE, 
+                    NUM_URLS_QUEUE_RAM, $min_or_max);
+        }
 
         if(!file_exists(
             CRAWL_DIR.'/cache/'.self::index_data_base_name.$this->crawl_time)) {
@@ -454,8 +568,10 @@ class QueueServer implements CrawlConstants
         }
 
         // chmod so web server can also write to these directories
-        $this->db->setWorldPermissionsRecursive(
-            CRAWL_DIR.'/cache/'.self::queue_base_name.$this->crawl_time);
+        if($this->crawl_type == self::WEB_CRAWL) {
+            $this->db->setWorldPermissionsRecursive(
+                CRAWL_DIR.'/cache/'.self::queue_base_name.$this->crawl_time);
+        }
         $this->db->setWorldPermissionsRecursive(
             CRAWL_DIR.'/cache/'.self::index_data_base_name.$this->crawl_time);
         // initialize, store the description of this crawl in the index archive
@@ -793,23 +909,7 @@ class QueueServer implements CrawlConstants
      */
     function processDataArchive($file)
     {
-        crawlLog("Processing File: $file");
-
-        $fh = fopen($file, "rb");
-        $machine_string = fgets($fh);
-        $len = strlen($machine_string);
-        if($len > 0) {
-            $machine_info = unserialize(base64_decode($machine_string));
-        }
-        $sites = unserialize(gzuncompress(base64_decode(
-            urldecode(fread($fh, filesize($file) - $len))
-            )));
-        fclose($fh);
-
-        if(isset($machine_info[self::MACHINE])) {
-            $this->most_recent_fetcher = & $machine_info[self::MACHINE];
-            unset($machine_info);
-        }
+        $sites = & $this->getDataArchiveFileData($file);
 
         crawlLog("...Updating Delayed Hosts Array ...");
         $start_time = microtime();
@@ -905,6 +1005,15 @@ class QueueServer implements CrawlConstants
 
         unlink($file);
 
+
+        $this->writeCrawlStatus($sites);
+    }
+
+    /**
+     *
+     */
+    function writeCrawlStatus(&$sites)
+    {
         $crawl_status = array();
         $stat_file = CRAWL_DIR."/schedules/crawl_status.txt";
         if(file_exists($stat_file) ) {
@@ -939,7 +1048,6 @@ class QueueServer implements CrawlConstants
                 crawlLog("URL: $url");
             }
         }
-
     }
 
     /**
@@ -952,6 +1060,24 @@ class QueueServer implements CrawlConstants
         $this->web_queue->differenceSeenUrls($sites, 0);
     }
 
+    /**
+     *
+     */
+    function calculateScheduleMetaInfo($schedule_time)
+    {
+        $sites = array();
+        $sites[self::CRAWL_TIME] = $this->crawl_time;
+        $sites[self::SCHEDULE_TIME] = $schedule_time;
+        $sites[self::SAVED_CRAWL_TIMES] =  $this->getCrawlTimes(); 
+            // fetcher should delete any crawl time not listed here
+        $sites[self::CRAWL_ORDER] = $this->crawl_order;
+        $sites[self::CRAWL_TYPE] = $this->crawl_type;
+        $sites[self::CRAWL_INDEX] = $this->crawl_index;
+        $sites[self::META_WORDS] = $this->meta_words;
+        $sites[self::SITES] = array();
+
+        return base64_encode(serialize($sites))."\n";
+    }
 
     /**
      * Produces a schedule.txt file of url data for a fetcher to crawl next.
@@ -976,16 +1102,10 @@ class QueueServer implements CrawlConstants
 
         $count = $this->web_queue->to_crawl_queue->count;
 
-        $sites = array();
-        $sites[self::CRAWL_TIME] = $this->crawl_time;
-        $sites[self::SCHEDULE_TIME] = time();
-        $sites[self::SAVED_CRAWL_TIMES] =  $this->getCrawlTimes(); 
-            // fetcher should delete any crawl time not listed here
-        $sites[self::CRAWL_ORDER] = $this->crawl_order;
-        $sites[self::SITES] = array();
-        $sites[self::META_WORDS] = $this->meta_words;
-        $first_line = base64_encode(serialize($sites))."\n";
+        $schedule_time = time();
+        $first_line = $this->calculateScheduleMetaInfo($schedule_time);
 
+        $sites = array();
 
         $delete_urls = array();
         $crawl_delay_hosts = array();
@@ -1017,10 +1137,10 @@ class QueueServer implements CrawlConstants
                 } else {
 
                     $next_slot = $this->getEarliestSlot($current_crawl_index, 
-                        $sites[self::SITES]);
+                        $sites);
                     
                     if($next_slot < MAX_FETCH_SIZE) {
-                        $sites[self::SITES][$next_slot] = 
+                        $sites[$next_slot] = 
                             array($url, $weight, 0);
                         $delete_urls[$i] = $url;
                         /* note don't add to seen url filter 
@@ -1069,11 +1189,11 @@ class QueueServer implements CrawlConstants
                         && $num_waiting < MAX_WAITING_HOSTS)
                         || (isset($this->waiting_hosts[crawlHash($host_url)]) &&
                             $this->waiting_hosts[crawlHash($host_url) ] == 
-                            $sites[self::SCHEDULE_TIME])) {
+                            $schedule_time)) {
 
                         $this->waiting_hosts[crawlHash($host_url)] = 
-                            $sites[self::SCHEDULE_TIME];
-                        $this->waiting_hosts[$sites[self::SCHEDULE_TIME]][] = 
+                           $schedule_time;
+                        $this->waiting_hosts[$schedule_time][] = 
                             crawlHash($host_url);
                         $request_batches_per_delay = 
                             ceil($delay/$time_per_request_guess); 
@@ -1089,9 +1209,9 @@ class QueueServer implements CrawlConstants
                         
                         if(($next_slot = 
                             $this->getEarliestSlot( $next_earliest_slot, 
-                                $sites[self::SITES])) < MAX_FETCH_SIZE) {
+                                $sites)) < MAX_FETCH_SIZE) {
                             $crawl_delay_hosts[$host_url] = $next_slot;
-                            $sites[self::SITES][$next_slot] = 
+                            $sites[$next_slot] = 
                                 array($url, $weight, $delay);
                             $delete_urls[$i] = $url;
                             $this->web_queue->addSeenUrlFilter($url); 
@@ -1104,9 +1224,9 @@ class QueueServer implements CrawlConstants
                     }
                 } else { // add a url no crawl delay
                     $next_slot = $this->getEarliestSlot(
-                        $current_crawl_index, $sites[self::SITES]);
+                        $current_crawl_index, $sites);
                     if($next_slot < MAX_FETCH_SIZE) {
-                        $sites[self::SITES][$next_slot] = 
+                        $sites[$next_slot] = 
                             array($url, $weight, 0);
                         $delete_urls[$i] = $url;
                         $this->web_queue->addSeenUrlFilter($url); 
@@ -1133,28 +1253,28 @@ class QueueServer implements CrawlConstants
             $this->web_queue->removeQueue($delete_url);
         }
 
-        if(isset($sites[self::SITES]) && count($sites[self::SITES]) > 0 ) {
+        if(isset($sites) && count($sites) > 0 ) {
             $dummy_slot = array(self::DUMMY, 0.0, 0);
             /* dummy's are used for crawl delays of sites with longer delays
                when we don't have much else to crawl
              */
             $cnt = 0;
             for($j = 0; $j < MAX_FETCH_SIZE; $j++) {
-                if(isset( $sites[self::SITES][$j])) {
+                if(isset( $sites[$j])) {
                     $cnt++;
                     if($cnt == $fetch_size) {break; }
                 } else {
                     if($j % NUM_MULTI_CURL_PAGES == 0) {
-                        $sites[self::SITES][$j] = $dummy_slot;
+                        $sites[$j] = $dummy_slot;
                     }
                 }
             }
-            ksort($sites[self::SITES]);
+            ksort($sites);
 
             //write schedule to disk
             $fh = fopen(CRAWL_DIR."/schedules/schedule.txt", "wb");
             fwrite($fh, $first_line);
-            foreach($sites[self::SITES] as $site) {
+            foreach($sites as $site) {
                 list($url, $weight, $delay) = $site;
                 $out_string = base64_encode(
                     packFloat($weight).packInt($delay).$url)."\n";
@@ -1231,7 +1351,7 @@ class QueueServer implements CrawlConstants
     }
 
     /**
-     * Checks if the url belongs to one of the sites list in site_array
+     * Checks if the url belongs to one of the sites listed in site_array
      * Sites can be either given in the form domain:host or
      * in the form of a url in which case it is check that the site url
      * is a substring of the passed url.

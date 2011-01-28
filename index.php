@@ -48,7 +48,6 @@ ini_set("memory_limit","500M");
 header("X-FRAME-OPTIONS: DENY"); //prevent click jacking
 session_name(SESSION_NAME); 
 session_start();
-
 /**
  * Sets up DB to be used
  */

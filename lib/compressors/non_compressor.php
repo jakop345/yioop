@@ -120,5 +120,14 @@ class NonCompressor implements Compressor
     function compressedIntLen() {
         return 4;
     }
+
+    /**
+     * File extension that should be associated with this compressor
+     * @return string name of dos file extension
+     */
+    static function fileExtension()
+    {
+        return ".txt";
+    }
 }
 ?>

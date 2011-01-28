@@ -367,39 +367,42 @@ class SearchController extends Controller implements CrawlConstants
             exit();
         }
 
-
         $machine = $crawl_item[self::MACHINE];
         $machine_uri = $crawl_item[self::MACHINE_URI];
         $page = $crawl_item[self::HASH];
         $offset = $crawl_item[self::OFFSET];
         $cache_item = $this->crawlModel->getCacheFile($machine, 
             $machine_uri, $generation, $offset,  $crawl_time);
-
         $cache_file = $cache_item[self::PAGE];
 
-        $request = $cache_item['REQUEST'];
+        if(!stristr($cache_item[self::TYPE], "image")) {
 
-        $meta_words = array('link\:', 'site\:', 
-            'filetype\:', 'info\:', '\-', 
-            'index:', 'ip:', 'i:', 'weight:', 'w:', 'u:');
-        foreach($meta_words as $meta_word) {
-            $pattern = "/(\s)($meta_word(\S)+)/";
-            $query = preg_replace($pattern, "", $query);
-        }
-        $query = str_replace("'", " ", $query);
-        $query = str_replace('"', " ", $query);
-        $query = str_replace('\\', " ", $query);
-        $query = str_replace('|', " ", $query);
-        $query = $this->clean($query, "string");
+            $meta_words = array('link\:', 'site\:', 'version\:', 'modified\:',
+                'filetype\:', 'info\:', '\-', 'os\:', 'server\:', 'date\:',
+                'lang\:',
+                'index:', 'ip:', 'i:', 'weight:', 'w:', 'u:');
+            foreach($meta_words as $meta_word) {
+                $pattern = "/(\s)($meta_word(\S)+)/";
+                $query = preg_replace($pattern, "", $query);
+            }
+            $query = str_replace("'", " ", $query);
+            $query = str_replace('"', " ", $query);
+            $query = str_replace('\\', " ", $query);
+            $query = str_replace('|', " ", $query);
+            $query = $this->clean($query, "string");
 
-        $page_url = $url;
-
-        $phrase_string = mb_ereg_replace("[[:punct:]]", " ", $query); 
-        $words = mb_split(" ",$phrase_string);
-        if(!$highlight) {
+            $phrase_string = mb_ereg_replace("[[:punct:]]", " ", $query); 
+            $words = mb_split(" ",$phrase_string);
+            if(!$highlight) {
+                $words = array();
+            }
+        } else {
+            $type = $cache_item[self::TYPE];
+            $cache_file = "<html><head><title>Yioop! Cache</title></head>".
+                "<body><object data='data:$type;base64,".
+                base64_encode($cache_file)."' type='$type' /></body></html>";
             $words = array();
         }
-
         $date = date ("F d Y H:i:s", $cache_item[self::TIMESTAMP]);
 
         $dom = new DOMDocument();
@@ -418,17 +421,22 @@ class SearchController extends Controller implements CrawlConstants
             $body =  $dom->getElementsByTagName('body')->item(0);
         }
         $first_child = $body->firstChild;
-
+        $preNode = $dom->createElement('pre');
+        $preNode = $body->insertBefore($preNode, $first_child);
         $divNode = $dom->createElement('div');
-        $divNode = $body->insertBefore($divNode, $first_child);
+        $divNode = $body->insertBefore($divNode, $preNode);
         $divNode->setAttributeNS("","style", "border-color: black; ".
             "border-style:solid; border-width:3px; ".
             "padding: 5px; background-color: white");
 
         $textNode = $dom->createTextNode(tl('search_controller_cached_version', 
-            "$page_url", $date));
-        $textNode = $divNode->appendChild($textNode);
+            "$url", $date));
+        $divNode->appendChild($textNode);
+        if(isset($cache_item[self::HEADER])) {
 
+            $textNode = $dom->createTextNode($cache_item[self::HEADER]);
+            $preNode->appendChild($textNode);
+        }
         $body = $this->markChildren($body, $words, $dom);
 
         $newDoc = $dom->saveHTML();

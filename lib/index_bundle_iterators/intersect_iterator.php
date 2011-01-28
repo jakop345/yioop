@@ -96,9 +96,9 @@ class IntersectIterator extends IndexBundleIterator
         $this->results_per_block = 1;
         
         /*
-             the most results we can return is the size of the least num_docs
-             of what we are iterating over. We are also setting up here
-             that we return at most one posting at a time from each
+             We take an initial guess of the num_docs we returns as the sum
+             of the num_docs of the underlying iterators. We are also setting 
+             up here that we return at most one posting at a time from each
              iterator
         */
         for($i = 0; $i < $this->num_iterators; $i++) {

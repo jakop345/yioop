@@ -253,14 +253,17 @@ class WebArchiveBundle
         if(!isset($this->partition[$index])) { 
             //this might not have been open yet
             $create_flag = false;
-            if(!file_exists($this->dir_name."/web_archive_".$index)) {
+            $compressor = $this->compressor;
+            $archive_name = $this->dir_name."/web_archive_".$index
+                . $compressor::fileExtension();
+            if(!file_exists($archive_name)) {
                 $create_flag = true;
             }
             $this->partition[$index] = 
-                new WebArchive($this->dir_name."/web_archive_".$index, 
-                    new $this->compressor(), $fast_construct);
+                new WebArchive($archive_name, 
+                    new $compressor(), $fast_construct);
             if($create_flag) {
-                chmod($this->dir_name."/web_archive_".$index, 0777);
+                chmod($archive_name, 0777);
             }
         }
         return $this->partition[$index];

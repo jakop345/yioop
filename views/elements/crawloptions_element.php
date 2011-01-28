@@ -63,7 +63,6 @@ class CrawloptionsElement extends Element
         ><?php e(tl('crawloptions_element_back_to_manage'))?></a>
         </div>
         <h2><?php e(tl('crawloptions_element_edit_crawl_options'))?></h2>
-
         <form id="crawloptionsForm" method="post" action=''>
         <input type="hidden" name="c" value="admin" />
         <input type="hidden" name="YIOOP_TOKEN" value="<?php 
@@ -71,6 +70,20 @@ class CrawloptionsElement extends Element
         <input type="hidden" name="a" value="manageCrawls" />
         <input type="hidden" name="arg" value="options" />
         <input type="hidden" name="posted" value="posted" />
+        <input type="hidden" id='crawl-type' name="crawl_type" value="<?php 
+            e($data['crawl_type'])?>" />
+        <ul class='tabmenu-list'>
+        <li><a href="javascript:switchTab('webcrawltab', 'archivetab');" 
+            id='webcrawltabitem'
+            class="<?php e($data['web_crawl_active']); ?>"><?php 
+            e(tl('crawloptions_element_web_crawl'))?></a></li>
+        <li><a href="javascript:switchTab('archivetab', 'webcrawltab');"
+            id='archivetabitem'
+            class="<?php e($data['archive_crawl_active']); ?>"><?php 
+            e(tl('crawloptions_element_archive_crawl'))?></a></li>
+        </ul>
+        <div class='tabmenu-content'>
+        <div id='webcrawltab'>
         <div class="topmargin"><label for="load-options"><b><?php 
             e(tl('crawloptions_element_load_options'))?></b></label><?php
             $this->view->optionsHelper->render("load-options", "load_option", 
@@ -105,6 +118,15 @@ class CrawloptionsElement extends Element
         <textarea class="talltextarea"  name="seed_sites" ><?php 
             e($data['seed_sites']);
         ?></textarea>
+        </div>
+        <div id='archivetab'>
+        <div class="topmargin"><label for="load-options"><b><?php 
+            e(tl('crawloptions_element_reindex_crawl'))?></b></label><?php
+            $this->view->optionsHelper->render("crawl-indexes", "crawl_indexes", 
+                $data['available_crawl_indexes'], $data['crawl_index']);
+        ?></div>
+        </div>
+        </div>
         <div class="topmargin"><b><?php 
             e(tl('crawloptions_element_meta_words'))?></b></div>
         <table class="metawordstable">
@@ -145,7 +167,23 @@ class CrawloptionsElement extends Element
             ?></button></div>
         </form>
         </div>
+        <script type="text/javascript">
 
+        function switchTab(newtab, oldtab)
+        {
+            setDisplay(newtab, true);
+            setDisplay(oldtab, false);
+            ntab = elt(newtab+"item");
+            ntab.className = 'active';
+            otab = elt(oldtab+"item");
+            otab.className = '';
+            ctype = elt('crawl-type');
+            ctype.value = (newtab == 'webcrawltab') 
+                ? '<?php e(CrawlConstants::WEB_CRAWL); ?>' : 
+                '<?php e(CrawlConstants::ARCHIVE_CRAWL); ?>';
+        }
+
+        </script>
     <?php
     }
 }

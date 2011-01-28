@@ -110,7 +110,6 @@ class GroupIterator extends IndexBundleIterator
      *
      * @param object $index_bundle_iterator to use as a source of documents
      *      to iterate over
-
      */
     function __construct($index_bundle_iterator)
     {
@@ -203,7 +202,6 @@ class GroupIterator extends IndexBundleIterator
         $done = false;
         do {
             $new_pages = $this->index_bundle_iterator->currentDocsWithWord();
-
             if(!is_array($new_pages)) {
                 $done = true;
                 if(count($pages) == 0) {
@@ -219,6 +217,7 @@ class GroupIterator extends IndexBundleIterator
                 $done = true;
             }
         } while(!$done);
+
         return $pages;
     }
 

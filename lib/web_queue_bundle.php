@@ -213,11 +213,13 @@ class WebQueueBundle implements Notifier
         /* set up url archive, used to store the full text of the urls which 
            are on the priority queue
          */
-        if(file_exists($dir_name."/url_archive")) {
-            unlink($dir_name."/url_archive");
+        $url_archive_name = $dir_name."/url_archive". 
+            NonCompressor::fileExtension();
+        if(file_exists($url_archive_name)) {
+            unlink($url_archive_name);
         }
         $this->to_crawl_archive = new WebArchive(
-            $dir_name."/url_archive", new NonCompressor());
+            $url_archive_name, new NonCompressor());
 
         //filter bundle to check if we have already visited a URL
         $this->url_exists_filter_bundle = new BloomFilterBundle(
@@ -702,8 +704,12 @@ class WebQueueBundle implements Notifier
         $dir_name = $this->dir_name;
 
         $count = $this->to_crawl_queue->count;
+        $tmp_archive_name = $dir_name."/tmp_archive" .
+            NonCompressor::fileExtension();
+        $url_archive_name = $dir_name."/url_archive" .
+            NonCompressor::fileExtension();
         $tmp_archive = 
-            new WebArchive($dir_name."/tmp_archive", new NonCompressor());
+            new WebArchive($tmp_archive_name, new NonCompressor());
         
         for($i = 1; $i <= $count; $i++) {
 
@@ -727,9 +733,9 @@ class WebQueueBundle implements Notifier
         
         $this->to_crawl_archive = NULL;
         gc_collect_cycles();
-        unlink($dir_name."/url_archive");
-        rename($dir_name."/tmp_archive", $dir_name."/url_archive"); 
-        $tmp_archive->filename = $dir_name."/url_archive";
+        unlink($url_archive_name);
+        rename($tmp_archive_name, $url_archive_name); 
+        $tmp_archive->filename = $$url_archive_name;
         $this->to_crawl_archive =  $tmp_archive; 
 
     }

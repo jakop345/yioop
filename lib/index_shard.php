@@ -1037,7 +1037,8 @@ class IndexShard extends PersistentStructure implements CrawlConstants
         $false = false;
         if(isset($this->blocks[$bytes])) {
             return $this->blocks[$bytes];
-        } else if (!defined("NO_CACHE") && USE_MEMCACHE && ($this->blocks[$bytes] = 
+        } else if (!defined("NO_CACHE") && USE_MEMCACHE && 
+            ($this->blocks[$bytes] = 
             $MEMCACHE->get("Block$bytes:".$this->filename)) != false) {
             return $this->blocks[$bytes];
         }

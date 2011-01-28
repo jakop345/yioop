@@ -111,7 +111,7 @@ class SettingsController extends Controller
             $data['PER_PAGE_SELECTED'] = NUM_RESULTS_PER_PAGE;
         }
 
-        $crawls = $this->crawlModel->getCrawlList();
+        $crawls = $this->crawlModel->getCrawlList(false, true);
         $data['CRAWLS'] = array();
         foreach($crawls as $crawl) {
             $data['CRAWLS'][$crawl['CRAWL_TIME']] = $crawl['DESCRIPTION'].

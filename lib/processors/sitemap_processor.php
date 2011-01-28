@@ -80,6 +80,9 @@ class SitemapProcessor extends TextProcessor
                     $summary = parent::process($page, $url);
                 }
                 $summary[self::JUST_METAS] = true;
+            } else {
+                $summary = parent::process($page, $url);
+                $summary[self::JUST_METAS] = true;
             }
         }
 

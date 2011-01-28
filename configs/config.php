@@ -92,6 +92,11 @@ if(file_exists(WORK_DIRECTORY."/profile.php")) {
     define('DEFAULT_LOCALE', "en-US");
     define('AUTH_KEY', 0);
     define('USE_MEMCACHE', false);
+    define('CACHE_LINK', true);
+    define('SIMILAR_LINK', true);
+    define('IN_LINK', true);
+    define('IP_LINK', true);
+    define('SIGNIN_LINK', true);
 }
 
 if((DEBUG_LEVEL & ERROR_INFO) == ERROR_INFO) {
@@ -157,7 +162,6 @@ define('MAXIMUM_CRAWL_DELAY', 64);
 
 /** maximum number of active crawl-delayed hosts */
 define('MAX_WAITING_HOSTS', 1000); 
-
 
  
 /** 
@@ -258,6 +262,7 @@ $PAGE_PROCESSORS = array(   "text/html" => "HtmlProcessor",
                             "text/asp" => "HtmlProcessor",
                             "text/xml" => "XmlProcessor",
 
+                            "application/xml" => "XmlProcessor",
                             "application/xhtml+xml" => "HtmlProcessor",
 
                             "application/rss+xml" => "RssProcessor",
@@ -279,6 +284,11 @@ $PAGE_PROCESSORS = array(   "text/html" => "HtmlProcessor",
                             "image/svg+xml"=> "SvgProcessor"
 );
 
+/** Characters we view as not part of words, not same as POSIX [:punct:]*/
+define ('PUNCT', "\.|\,|\:|\;|\"|\'|\`|\[|\]|\{|\}|\(|\)|\!|\||\&");
+
+/** Percentage ASCII text before guess we dealing with english*/
+define ('EN_RATIO', 0.9);
 
 
 /**

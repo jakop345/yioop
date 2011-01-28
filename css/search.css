@@ -614,6 +614,44 @@ p
 }
 
 
+.tabmenu-list
+{
+    border-bottom: 2px solid black;
+    padding: 0px;
+    margin-bottom: 0px;
+    z-index: 1;
+}
+.tabmenu-list li
+{
+    display: inline;
+    list-style-type: none;
+}
+
+.tabmenu-list a
+{
+    border: 1px solid black;
+    border-bottom: 0px;
+    padding: 5px 5px 0px 5px;
+    background-color:#EEE;
+    overflow: hidden;
+    margin: 0;
+    text-decoration: none;
+}
+
+.tabmenu-list a.active
+{
+    background-color:white;
+    border-bottom: 3px solid white;
+}
+
+.tabmenu-content
+{
+    border: 1px solid black;
+    border-top: none;
+    padding: 10px;
+    z-index: 2;
+}
+
 .crawlstable, .mixestable, .crawlstable th, .mixestable th, 
 .crawlstable td, .mixestable td
 {

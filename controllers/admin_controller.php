@@ -250,7 +250,7 @@ class AdminController extends Controller implements CrawlConstants
                 $data = array_merge($data, $crawl_status);
             }
         }
-        $data['RECENT_CRAWLS'] = $this->crawlModel->getCrawlList();
+        $data['RECENT_CRAWLS'] = $this->crawlModel->getCrawlList(false, true);
         if(isset($data['CRAWL_TIME'])) { 
             //erase from previous crawl list any active crawl
             $num_crawls = count($data['RECENT_CRAWLS']);
@@ -687,6 +687,12 @@ class AdminController extends Controller implements CrawlConstants
                     $info[self::STATUS] = "NEW_CRAWL";
                     $info[self::CRAWL_TIME] = time();
                     $seed_info = $this->crawlModel->getSeedInfo();
+                    $info[self::CRAWL_TYPE] =
+                        $seed_info['general']['crawl_type'];
+                    $info[self::CRAWL_INDEX] = 
+                        (isset($seed_info['general']['crawl_index'])) ?
+                        $seed_info['general']['crawl_index'] :
+                        '';
                     $info[self::TO_CRAWL] = 
                         $seed_info['seed_sites']['url'];
                     $info[self::CRAWL_ORDER] = 
@@ -789,15 +795,22 @@ class AdminController extends Controller implements CrawlConstants
                         (getLocaleDirection() == 'ltr') ? "right": "left";
                     $data["ELEMENT"] = "crawloptionsElement";
                     $crawls = $this->crawlModel->getCrawlList();
+                    $indexes = $this->crawlModel->getCrawlList(true, true);
                     $update_flag = false;
                     $data['available_options'] = array(
                         tl('admin_controller_use_below'),
                         tl('admin_controller_use_defaults'));
+                    $data['available_crawl_indexes'] = array();
                     $data['options_default'] = tl('admin_controller_use_below');
                     foreach($crawls as $crawl) {
                         $data['available_options'][$crawl['CRAWL_TIME']] =
                             tl('admin_controller_previous_crawl')." ".
                             $crawl['DESCRIPTION'];
+
+                    }
+                    foreach($indexes as $crawl) {
+                        $data['available_crawl_indexes'][$crawl['CRAWL_TIME']]
+                            = $crawl['DESCRIPTION'];
                     }
                     $no_further_changes = false;
                     if(isset($_REQUEST['load_option']) && 
@@ -816,6 +829,34 @@ class AdminController extends Controller implements CrawlConstants
                     } else {
                         $seed_info = $this->crawlModel->getSeedInfo();
                     }
+                    if(!$no_further_changes && isset($_REQUEST['crawl_indexes'])
+                        && in_array($_REQUEST['crawl_indexes'], 
+                        array_keys($data['available_crawl_indexes']))) {
+                        $seed_info['general']['crawl_index'] = 
+                            $_REQUEST['crawl_indexes'];
+                        $update_flag = true;
+                    }
+                    $data['crawl_index'] = 
+                        (isset($seed_info['general']['crawl_index'])) ?
+                        $seed_info['general']['crawl_index'] : '';
+                    $data['available_crawl_types'] = array(self::WEB_CRAWL,
+                        self::ARCHIVE_CRAWL);
+                    if(!$no_further_changes && isset($_REQUEST['crawl_type']) 
+                        &&  in_array($_REQUEST['crawl_type'], 
+                            $data['available_crawl_types'])) {
+                        $seed_info['general']['crawl_type'] = 
+                            $_REQUEST['crawl_type'];
+                        $update_flag = true;
+                    }
+                    $data['crawl_type'] = $seed_info['general']['crawl_type'];
+                    if($data['crawl_type'] == self::WEB_CRAWL) {
+                        $data['web_crawl_active'] = "active";
+                        $data['archive_crawl_active'] = "";
+                    } else {
+                        $data['archive_crawl_active'] = "active";
+                        $data['web_crawl_active'] = "";
+                    }
+
                     $data['available_crawl_orders'] = array(
                         self::BREADTH_FIRST => 
                             tl('admin_controller_breadth_first'), 
@@ -879,7 +920,13 @@ class AdminController extends Controller implements CrawlConstants
                         " elt('load-options').onchange = ".
                         "function() { if(elt('load-options').selectedIndex !=".
                         " 0) { elt('crawloptionsForm').submit();  }};";
-
+                    if($data['crawl_type'] == CrawlConstants::WEB_CRAWL) {
+                        $data['SCRIPT'] .=
+                            "switchTab('webcrawltab', 'archivetab');";
+                    } else {
+                        $data['SCRIPT'] .=
+                            "switchTab('archivetab', 'webcrawltab');";
+                    }
                     if($update_flag) {
                         $this->crawlModel->setSeedInfo($seed_info);
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
@@ -1474,7 +1521,9 @@ class AdminController extends Controller implements CrawlConstants
                     }
                     if(!isset($data[$field])) {
                         $data[$field] = "";
-                        if($field == "USE_MEMCACHE") {
+                        if(in_array($field, array('USE_MEMCACHE', 'IP_LINK',
+                            'CACHE_LINK', 'SIMILAR_LINK', 'IN_LINK',
+                            'SIGNIN_LINK'))) {
                             $profile[$field] = false;
                         }
                     }

@@ -75,8 +75,9 @@ class RssProcessor extends TextProcessor
             if($dom !==false) {
                 $summary[self::TITLE] = self::title($dom);
                 $summary[self::DESCRIPTION] = self::description($dom); 
+                $summary[self::LANG] = self::lang($dom, 
+                    $summary[self::DESCRIPTION]);
                 $summary[self::LINKS] = self::links($dom, $url);
-
                 if(strlen($summary[self::DESCRIPTION] . $summary[self::TITLE])
                     == 0 && count($summary[self::LINKS]) == 0) {
                     //maybe not rss? treat as text still try to get urls
@@ -84,12 +85,45 @@ class RssProcessor extends TextProcessor
                 }
             }
         }
-
         return $summary;
 
     }
 
-
+    /**
+     *  Determines the language of the rss document by looking at the channel
+     *  language tag
+     *
+     *  @param object $dom - a document object to check the language of
+     *  @param string $sample_text sample text to try guess the language from
+     *
+     *  @return string language tag for guessed language
+     */
+    static function lang($dom, $sample_text = NULL)
+    {
+        $xpath = new DOMXPath($dom);
+        $languages = $xpath->evaluate("/rss/channel/language");
+        if($languages && is_object($languages)) {
+            return $languages->item(0)->textContent;
+        } else if($sample_text != NULL){
+            $words = mb_split("[[:space:]]|".PUNCT, $sample_text);
+            $num_words = count($words);
+            $ascii_count = 0;
+            foreach($words as $word) {
+                if(strlen($word) == mb_strlen($word)) {
+                    $ascii_count++;
+                }
+            }
+            // crude, but let's guess ASCII == english
+            if($ascii_count/$num_words > EN_RATIO) {
+                $lang = 'en';
+            } else {
+                $lang = NULL;
+            }
+        } else {
+            $lang = NULL;
+        }
+        return $lang;
+    }
 
     /**
      * Return a document object based on a string containing the contents of 

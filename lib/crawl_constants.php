@@ -142,6 +142,16 @@ interface CrawlConstants
     const BOOST = 'av';
     const IP_ADDRESSES = 'au';
     const JUST_METAS = 'aw';
+    const WEB_CRAWL = 'ax';
+    const ARCHIVE_CRAWL = 'ay';
+    const CRAWL_TYPE = 'az';
+    const CRAWL_INDEX = 'ba';
+    const HEADER = 'bb';
+    const SERVER = 'bc';
+    const SERVER_VERSION = 'bd';
+    const OPERATING_SYSTEM = 'be';
+    const MODIFIED = 'bf';
+    const LANG = 'bg';
 
     const NEEDS_OFFSET_FLAG = 0x7FFFFFFF;
 

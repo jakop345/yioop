@@ -88,5 +88,11 @@ interface Compressor
      * @return int length of int as a fixed length compressed string
      */
     function compressedIntLen();
+
+    /**
+     * File extension that should be associated with this compressor
+     * @return string name of dos file extension
+     */
+    static function fileExtension();
 } 
 ?>

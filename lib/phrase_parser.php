@@ -34,9 +34,12 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- *  Load the stem word function, if necessary
+ *  Load the stem word functions, if necessary
  */
-require_once BASE_DIR."/lib/porter_stemmer.php";
+foreach(glob(BASE_DIR."/lib/stemmers/*_stemmer.php") 
+    as $filename) { 
+    require_once $filename;
+}
  
 /**
  * Reads in constants used as enums used for storing web sites
@@ -54,19 +57,28 @@ require_once BASE_DIR."/lib/crawl_constants.php";
  */
 class PhraseParser 
 {
+    /** 
+     * Language tags and their corresponding stemmer
+     * @var array
+     */
+     static $STEMMERS = array(
+        'en' => "EnStemmer",
+        'en-US' => "EnStemmer",
+        'en-GB' => "EnStemmer",
+        'en-CA' => "EnStemmer",
+     );
     /**
      * Converts a summary of a web page into a string of space separated words
      *
-     * @param array $page associateive array of page summary data. Contains
+     * @param array $page associative array of page summary data. Contains
      *      title, description, and links fields
      * @return string the concatenated words extracted from the page summary
      */
     static function extractWordStringPageSummary($page)
     {
-        $punct = "\.|\,|\:|\;|\"|\'|\`|\[|\]|\{|\}|\(|\)|\!|\|";
-        $title_phrase_string = mb_ereg_replace($punct, " ", 
+        $title_phrase_string = mb_ereg_replace(PUNCT, " ", 
             $page[CrawlConstants::TITLE]);
-        $description_phrase_string = mb_ereg_replace($punct, " ", 
+        $description_phrase_string = mb_ereg_replace(PUNCT, " ", 
             $page[CrawlConstants::DESCRIPTION]);
 
         $page_string = $title_phrase_string . " " . $description_phrase_string;
@@ -81,17 +93,18 @@ class PhraseParser
      *
      * @param string $string subject to extract phrases from
      * @param int $len longest length of phrases to consider
+     * @param string $lang locale tag for stemming
      * @return array pairs of the form (phrase, number of occurrences)
      */
     static function extractPhrasesAndCount($string, 
-        $len =  MAX_PHRASE_LEN) 
+        $len =  MAX_PHRASE_LEN, $lang = NULL) 
     {
-
         $phrases = array();
 
         for($i = 0; $i < $len; $i++) {
             $phrases = 
-                array_merge($phrases,self::extractPhrasesOfLength($string, $i));
+                array_merge($phrases,
+                    self::extractPhrasesOfLength($string, $i, $lang));
         }
 
         $phrase_counts = array_count_values($phrases);
@@ -105,15 +118,17 @@ class PhraseParser
      *
      * @param string $string subject to extract phrases from
      * @param int $len length of phrases to consider
+     * @param string $lang locale tag for stemming
      * @return array pairs of the form (phrase, number of occurrences)
      */
-    static function extractPhrasesOfLength($string, $phrase_len) 
+    static function extractPhrasesOfLength($string, $phrase_len, $lang = NULL) 
     {
         $phrases = array();
        
         for($i = 0; $i < $phrase_len; $i++) {
             $phrases = array_merge($phrases, 
-                self::extractPhrasesOfLengthOffset($string, $phrase_len, $i));
+                self::extractPhrasesOfLengthOffset($string, 
+                    $phrase_len, $i, $lang));
         }
 
         return $phrases;
@@ -128,17 +143,21 @@ class PhraseParser
      * @param string $string subject to extract phrases from
      * @param int $len length of phrases to consider
      * @param int $offset the first word to begin with
+     * @param string $lang locale tag for stemming
      * @return array pairs of the form (phrase, number of occurrences)
      */
     static function extractPhrasesOfLengthOffset($string, 
-        $phrase_len, $offset) 
+        $phrase_len, $offset, $lang = NULL) 
     {
-        $punct = "\.|\,|\:|\;|\"|\'|\`|\[|\]|\{|\}|\(|\)|\!|\||\&";
-        $words = mb_split("[[:space:]]|".$punct, $string);
+        $words = mb_split("[[:space:]]|".PUNCT, $string);
 
         $stems = array();
 
-
+        if(isset(self::$STEMMERS[$lang])) {
+            $stemmer = self::$STEMMERS[$lang];
+        } else {
+            $stemmer = NULL;
+        }
         for($i = $offset; $i < count($words); $i++) {
             if($words[$i] == "") {continue;}
 
@@ -149,8 +168,9 @@ class PhraseParser
             }
             $pre_stem = mb_strtolower($words[$i]);
 
-            if(strlen($pre_stem) == mb_strlen($pre_stem)) {
-                $stem = PorterStemmer::stem($pre_stem);
+
+            if($stemmer != NULL) {
+                $stem = $stemmer::stem($pre_stem);
             } else {
                 $stem = $pre_stem;
             }

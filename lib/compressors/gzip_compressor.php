@@ -93,7 +93,8 @@ class GzipCompressor implements Compressor
      * @param int $my_int the integer to compress as a fixed length string
      * @return string the fixed length string containing the packed int
      */
-    function compressInt($my_int) {
+    function compressInt($my_int) 
+    {
         return "\x1f\x8b\x08\x00".packInt($my_int) .
             "\x00\x03\x03\x00\x00\x00\x00\x00\x00\x00\x00\x00";
     }
@@ -110,7 +111,8 @@ class GzipCompressor implements Compressor
      *      the packed int to extract
      * @return int the integer contained in that string
      */
-    function uncompressInt($my_compressed_int) {
+    function uncompressInt($my_compressed_int) 
+    {
         return unpackInt(substr($my_compressed_int,4,4));
     }
 
@@ -123,8 +125,18 @@ class GzipCompressor implements Compressor
      *
      * @return int length of int as a fixed length compressed string
      */
-    function compressedIntLen() {
+    function compressedIntLen() 
+    {
         return 20;
+    }
+
+    /**
+     * File extension that should be associated with this compressor
+     * @return string name of dos file extension
+     */
+    static function fileExtension()
+    {
+        return ".txt.gz";
     }
 } 
 ?>
