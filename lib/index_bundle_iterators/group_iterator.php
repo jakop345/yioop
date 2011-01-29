@@ -178,7 +178,6 @@ class GroupIterator extends IndexBundleIterator
            */
            $this->groupByHashAndAggregate($pre_out_pages);
            $this->count_block = count($pre_out_pages);
-
             /*
                 Calculate aggregate values for each field of the groups we found
              */
@@ -261,7 +260,6 @@ class GroupIterator extends IndexBundleIterator
                 unset($pre_out_pages[$hash_url]);
             }
         }
-
         return $pre_out_pages;
     }
 
@@ -397,8 +395,8 @@ class GroupIterator extends IndexBundleIterator
                 $total_inlinks_for_doc = $hash_count + $num_inlinks_not_seen;
 
                 /*
-                     we score[x] of the xth inlink for this document
-                     is approximately score[x] = score[1]x^{-alpha}
+                     we estimate score[x] of the xth inlink for this document
+                     as approximately score[x] = score[1]x^{-alpha}
                      If n = $total_inlinks_for_doc, then by integrating this
                      from k = self::HASH_URL_COUNT to n, we get an 
                      approximation for the score we haven't seen (which
@@ -414,7 +412,8 @@ class GroupIterator extends IndexBundleIterator
                 /*
                   although relevance is  a log based quantity we want to
                   further penalize docs with a high rank but low relevance for
-                  the underlying iterator, so we weighted higher order average
+                  the underlying iterator, so we take a weighted higher order 
+                  average
                  */
                 $out_pages[$hash_url][self::SCORE] = 
                     ($out_pages[$hash_url][self::HASH_SUM_SCORE] + $boost) *

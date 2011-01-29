@@ -299,7 +299,7 @@ class WebArchive
 
         $open_flag = false;
         if($fh == NULL) {
-            $fh =  fopen($this->filename, "r");
+            $fh =  $this->open();
             $open_flag = true;
         }
 
@@ -335,7 +335,7 @@ class WebArchive
         }
 
         if($open_flag) {
-            fclose($fh);
+            $this->close($fh);
         }
         
         return $objects;

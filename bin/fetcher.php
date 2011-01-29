@@ -1199,6 +1199,9 @@ class Fetcher implements CrawlConstants
             $doc_keys = crawlHash($site[self::URL], true) . 
                 $site[self::HASH]. crawlHash("link:".$site[self::URL], true);
 
+            $is_image = (stripos($site[self::TYPE], "image") !== false) ? 
+                true : false;
+
             $meta_ids = $this->calculateMetas($site);
 
             $word_counts = array();
@@ -1268,7 +1271,7 @@ class Fetcher implements CrawlConstants
 
             }
             $index_shard->addDocumentWords($doc_keys, self::NEEDS_OFFSET_FLAG, 
-                $word_counts, $meta_ids, true);
+                $word_counts, $meta_ids, true, $is_image);
 
             $index_shard->appendIndexShard($link_shard);
 
