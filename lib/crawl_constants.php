@@ -152,6 +152,7 @@ interface CrawlConstants
     const OPERATING_SYSTEM = 'be';
     const MODIFIED = 'bf';
     const LANG = 'bg';
+    const IS_IMAGE = 'bh';
 
     const NEEDS_OFFSET_FLAG = 0x7FFFFFFF;
 

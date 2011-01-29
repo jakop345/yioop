@@ -358,7 +358,6 @@ class PhraseModel extends Model
                 $word_struct = NULL;
             }
 
-
             if($word_keys !== NULL) {
                 $word_struct = array("KEYS" => $word_keys,
                     "RESTRICT_PHRASES" => $restrict_phrases, 

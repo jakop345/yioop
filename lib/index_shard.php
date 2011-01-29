@@ -228,6 +228,11 @@ class IndexShard extends PersistentStructure implements CrawlConstants
      * document or for a link
      */
     const LINK_FLAG =  0x800000;
+    /**
+     * Used to keep track of whether a record in document infos is for a
+     * document of mimetype image or not
+     */
+    const IMAGE_FLAG =  0x400000;
 
     /**
      * Size in bytes of one block in IndexShard
@@ -312,10 +317,12 @@ class IndexShard extends PersistentStructure implements CrawlConstants
      *      for each word in the document
      * @param array $meta_ids meta words to be associated with the document
      *      an example meta word would be filetype:pdf for a PDF document.
+     * @param array $is_doc flag used to indicate if what is being sored is
+     *      a document or a link to a document
      * @return bool success or failure of performing the add
      */
     function addDocumentWords($doc_keys, $summary_offset, $word_counts,
-        $meta_ids, $is_doc = false)
+        $meta_ids, $is_doc = false, $is_image = false)
     {
         if($this->word_docs_packed == true) {
             $this->unpackWordDocs();
@@ -366,8 +373,11 @@ class IndexShard extends PersistentStructure implements CrawlConstants
 
         $this->len_all_docs += $doc_len;
         $this->len_all_link_docs += $link_doc_len;
-        $len_num_keys = ($is_doc) ? $this->packPosting($doc_len, $num_keys) :
-            $this->packPosting((self::LINK_FLAG | $link_doc_len), $num_keys);
+        $flags = ($is_doc) ? 0 : self::LINK_FLAG;
+        $flags +=  (($is_image) ? self::IMAGE_FLAG : 0);
+
+        $len_num_keys = $this->packPosting(($flags + $doc_len), $num_keys);
+
         $this->doc_infos .=  $len_num_keys;
         $added_len += strlen($len_num_keys);
         $this->doc_infos .= $doc_keys;
@@ -495,6 +505,9 @@ class IndexShard extends PersistentStructure implements CrawlConstants
         $is_doc = (($doc_len & self::LINK_FLAG) == 0) ? true : false;
         if(!$is_doc) {$doc_len -= self::LINK_FLAG; }
         $item[self::IS_DOC] = $is_doc;
+        $is_image = (($doc_len & self::IMAGE_FLAG) == 0) ? false : true;
+        if($is_image) {$doc_len -= self::IMAGE_FLAG; }
+        $item[self::IS_IMAGE] = $is_image;
         $skip_stats = false;
         
         if($item[self::SUMMARY_OFFSET] == self::NEEDS_OFFSET_FLAG) {
