@@ -535,7 +535,8 @@ class QueueServer implements CrawlConstants
 
         gc_collect_cycles(); // garbage collect old crawls
 
-        if($this->crawl_type == self::WEB_CRAWL) {
+        if($this->crawl_type == self::WEB_CRAWL || 
+            !isset($this->crawl_type)) {
             $this->web_queue = new WebQueueBundle(
                 CRAWL_DIR.'/cache/'.self::queue_base_name.
                 $this->crawl_time, URL_FILTER_SIZE, 
