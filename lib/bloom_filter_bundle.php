@@ -146,10 +146,10 @@ class BloomFilterBundle
      * the filter bundle or whose $elt[$field_name] is in the bundle.
      *
      * @param array &$arr the array to remove elements from
-     * @param string $field_name if not NULL the field name of $arr to use to
-     *      do filtering
+     * @param array $field_names if not NULL an array of field names of $arr 
+     *      to use to do filtering
      */
-    function differenceFilter(&$arr, $field_name = NULL)
+    function differenceFilter(&$arr, $field_names = NULL)
     {
 
         $num_filters = $this->num_filters;
@@ -163,20 +163,26 @@ class BloomFilterBundle
             }
 
             for($j = 0; $j < $count; $j++) {
-                if($field_name === NULL) {
+                if($field_names === NULL) {
                     $tmp = & $arr[$j];
-                } else {
-                    $tmp = & $arr[$j][$field_name];
-                }
-                if($tmp !== false && $tmp_filter->contains($tmp)) {
-                /* 
-                    We delibrerately don't try to add anything that has
-                    the hash field set to false. This is our cue to 
-                    skip an element such as a link document which we
-                    know will almost always be unique and so be unnecessary
-                    to de-duplicate
-                 */
-                    unset($arr[$j]);
+                    if($tmp !== false && $tmp_filter->contains($tmp)) {
+                    /* 
+                        We deliberately don't try to add anything that has
+                        the hash field set to false. This is our cue to 
+                        skip an element such as a link document which we
+                        know will almost always be unique and so be unnecessary
+                        to de-duplicate
+                     */
+                        unset($arr[$j]);
+                    }
+                } else { //now do the same strategy for the aray of fields case
+                    foreach($field_names as $field_name) {
+                        $tmp = & $arr[$j][$field_name];
+                        if($tmp !== false && $tmp_filter->contains($tmp)) {
+                            unset($arr[$j]);
+                            break;
+                        }
+                    }
                 }
             }
         }

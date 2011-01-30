@@ -958,7 +958,7 @@ class Fetcher implements CrawlConstants
                     $num_links = count($site[self::LINKS]);
                     //robots pages might have sitemaps links on them
                     $this->addToCrawlSites($site[self::LINKS], 
-                        $site[self::WEIGHT]);
+                        $site[self::WEIGHT], $site[self::HASH]);
                 }
             } else {
                 $this->found_sites[self::SEEN_URLS][] = $site;
@@ -969,7 +969,8 @@ class Fetcher implements CrawlConstants
                     }
                     $link_urls = array_keys($site[self::LINKS]);
 
-                    $this->addToCrawlSites($link_urls, $site[self::WEIGHT]);
+                    $this->addToCrawlSites($link_urls, $site[self::WEIGHT],
+                        $site[self::HASH]);
 
                 }
             } //end else
@@ -1001,9 +1002,11 @@ class Fetcher implements CrawlConstants
      * need to be crawled. 
      *
      * @param array $link_urls an array of urls to be crawled
-     * @param $old_weight the weight of the web page the links came from
+     * @param int $old_weight the weight of the web page the links came from
+     * @param string $site_hash a hash of the web_page on which the link was 
+     *      found, for use in deduplication
      */
-    function addToCrawlSites($link_urls, $old_weight) 
+    function addToCrawlSites($link_urls, $old_weight, $site_hash) 
     {
         $num_links = count($link_urls);
         switch($this->crawl_order) {
@@ -1020,10 +1023,11 @@ class Fetcher implements CrawlConstants
                 }
             break;
         }
-        foreach($link_urls as $link_url) {
-            if(strlen($link_url) > 0) {
+        $count = count($link_urls);
+        for($i = 0; $i < $count; $i++) {
+            if(strlen($link_urls[$i]) > 0) {
                 $this->found_sites[self::TO_CRAWL][] = 
-                    array($link_url, $weight);
+                    array($link_urls[$i], $weight, $site_hash.$i);
             }
         }
     }

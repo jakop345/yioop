@@ -483,13 +483,14 @@ class WebQueueBundle implements Notifier
     /**
      * Removes all url objects from $url_array which have been seen
      * @param array &$url_array objects to check if have been seen
-     * @param string $field_name component of a url_array element which 
+     * @param array $field_names an array of components of a url_array element 
+     * which 
      *      contains a url to check if seen
      */
-    function differenceSeenUrls(&$url_array, $field_name = NULL)
+    function differenceSeenUrls(&$url_array, $field_names = NULL)
     {
         $this->url_exists_filter_bundle->differenceFilter(
-            $url_array, $field_name);
+            $url_array, $field_names);
     }
 
     /**

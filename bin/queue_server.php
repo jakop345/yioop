@@ -777,6 +777,7 @@ class QueueServer implements CrawlConstants
      */
     function processRobotUrls()
     {
+        if(!isset($this->web_queue) ) {return;}
         crawlLog("Checking age of robot data in queue server ");
 
         if($this->web_queue->getRobotTxtAge() > CACHE_ROBOT_TXT_TIME) {
@@ -958,9 +959,11 @@ class QueueServer implements CrawlConstants
             $added_urls = array();
             $added_pairs = array();
             $contains_host = array();
-            foreach($to_crawl_sites as $pair) {
-                $url = & $pair[0];
-                $weight = $pair[1];
+            foreach($to_crawl_sites as $triple) {
+                $url = & $triple[0];
+                $weight = $triple[1];
+                $this->web_queue->addSeenUrlFilter($triple[2]);
+                unset($triple[2]); // so triple is now a pair
                 $host_url = UrlParser::getHost($url);
                 $host_with_robots = $host_url."/robots.txt";
                 $robots_in_queue = 
@@ -985,7 +988,7 @@ class QueueServer implements CrawlConstants
                     }
 
                     if(!isset($added_urls[$url])) {
-                        $added_pairs[] = $pair;
+                        $added_pairs[] = $triple; // see comment above
                         $added_urls[$url] = true;
                     }
 
@@ -1057,7 +1060,7 @@ class QueueServer implements CrawlConstants
      */
     function deleteSeenUrls(&$sites)
     {
-        $this->web_queue->differenceSeenUrls($sites, 0);
+        $this->web_queue->differenceSeenUrls($sites, array(0, 2));
     }
 
     /**
@@ -1229,7 +1232,7 @@ class QueueServer implements CrawlConstants
                         $sites[$next_slot] = 
                             array($url, $weight, 0);
                         $delete_urls[$i] = $url;
-                        $this->web_queue->addSeenUrlFilter($url); 
+                        $this->web_queue->addSeenUrlFilter($url);
                             /* we might miss some sites by marking them 
                                seen after only scheduling them
                              */
