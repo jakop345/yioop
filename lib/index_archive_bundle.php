@@ -281,7 +281,8 @@ class IndexArchiveBundle implements CrawlConstants
             $current_index_shard_file = $this->dir_name."/index".
                 $this->generation_info['CURRENT'];
             $this->current_shard = new IndexShard($current_index_shard_file,
-                $this->generation_info['CURRENT'], $num_docs_per_generation);
+                $this->generation_info['CURRENT'], 
+                $this->num_docs_per_generation);
         }
         return $this->current_shard;
      }
