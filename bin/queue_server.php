@@ -679,11 +679,20 @@ class QueueServer implements CrawlConstants
         $machine_string = fgets($fh);
         $len = strlen($machine_string);
         $machine_info = unserialize(base64_decode($machine_string));
-        $sites = unserialize(gzuncompress(base64_decode(
+        $pre_sites = base64_decode(
             urldecode(fread($fh, filesize($file) - $len))
-            )));
+            );
         fclose($fh);
-        
+        $len_urls = unpackInt(substr($pre_sites, 0, 4));
+
+        $sites[self::SEEN_URLS] = unserialize(gzuncompress(
+            substr($pre_sites, 4, $len_urls)));
+        $pre_sites = substr($pre_sites, 4 + $len_urls);
+
+        $sites[self::INVERTED_INDEX] = IndexShard::load("fetcher_shard", 
+            $pre_sites);
+        unset($pre_sites);
+
         crawlLog("A memory usage".memory_get_usage() .
           " time: ".(changeInMicrotime($start_time)));
         $start_time = microtime();

@@ -168,7 +168,6 @@ class PhraseFilterIterator extends IndexBundleIterator
         if(!is_array($pages)) {
             return $pages;
         }
-
         $out_pages = array();
         if(count($pages) > 0 ) {
             foreach($pages as $doc_key => $doc_info) {

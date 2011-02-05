@@ -196,6 +196,9 @@ define('PRECISION', 10);
 /** maximum number of links to consider on any given page */
 define('MAX_LINKS_PER_PAGE', 50); 
 
+/** maximum number of links to consider from a sitemap page */
+define('MAX_LINKS_PER_SITEMAP', 200); 
+
 /**  maximum number of words from links to consider on any given page */
 define('MAX_LINKS_WORD_TEXT', 100);
 

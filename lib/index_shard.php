@@ -726,10 +726,16 @@ class IndexShard extends PersistentStructure implements CrawlConstants
 
 
     /**
-     *  Save the IndexShard to its filename 
+     *  Save the IndexShard to its filename
+     * 
+     *  @param bool $to_string whether output should be written to a string
+     *      rather than the default file location
+     *  @return string serialized shard if output was to string else empty 
+     *      string
      */
-    public function save()
+    public function save($to_string = false)
     {
+        $out = "";
         if($this->word_docs_packed == true){
             $this->unpackWordDocs();
         }
@@ -744,13 +750,21 @@ class IndexShard extends PersistentStructure implements CrawlConstants
             pack("N", $this->num_link_docs) .
             pack("N", $this->len_all_docs) .
             pack("N", $this->len_all_link_docs);
-        $fh = fopen($this->filename, "wb");
-        fwrite($fh, $header);
-        fwrite($fh, $this->prefixes);
-        $this->packWordDocs($fh);
-        fwrite($fh, $this->word_docs);
-        fwrite($fh, $this->doc_infos);
-        fclose($fh);
+        if($to_string) {
+            $out = $header;
+            $out .= $this->packWordDocs(NULL, true);
+            $out .= $this->word_docs;
+            $out .= $this->doc_infos;
+        } else {
+            $fh = fopen($this->filename, "wb");
+            fwrite($fh, $header);
+            fwrite($fh, $this->prefixes);
+            $this->packWordDocs($fh);
+            fwrite($fh, $this->word_docs);
+            fwrite($fh, $this->doc_infos);
+            fclose($fh);
+        }
+        return $out;
     }
 
     /**
@@ -804,11 +818,16 @@ class IndexShard extends PersistentStructure implements CrawlConstants
      * a long string.
      *
      * @param resource $fh a file handle to write the dictionary to, if desired
+     * @param bool $to_string whether to return a string containing the packed 
+     *      data
+     * @return string the packed data as a string if $to_string true else the
+     *  empty string;
      */
-    function packWordDocs($fh = null)
+    function packWordDocs($fh = null, $to_string = false)
     {
         $this->word_docs_len = 0;
         $this->word_docs = "";
+        $total_out = "";
         foreach($this->words as $word_id => $postings) {
             $len = strlen($postings);
             /* 
@@ -824,8 +843,12 @@ class IndexShard extends PersistentStructure implements CrawlConstants
             if($fh != null) {
                 fwrite($fh, $word_id . $out);
             }
+            if($to_string) {
+                $total_out .= $word_id . $out;
+            }
         }
         $this->word_docs_packed = true;
+        return $total_out;
     }
 
     /**
@@ -1093,22 +1116,38 @@ class IndexShard extends PersistentStructure implements CrawlConstants
 
     
     /**
-     *  Load an IndexShard from a file
+     *  Load an IndexShard from a file or string
      *
-     *  @param string the name of the file to load the IndexShard from
+     *  @param string $fname the name of the file to the IndexShard from/to
+     *  @param string &$data stringified shard data to load shard from. If NULL
+     *      then the data is loaded from the $fname if possible
      *  @return object the IndexShard loaded
      */
-    public static function load($fname)
+    public static function load($fname, &$data = NULL)
     {
         $shard = new IndexShard($fname);
-        $fh = fopen($fname, "rb");
-        $header = fread($fh, self::HEADER_LENGTH);
+        if($data === NULL) {
+            $fh = fopen($fname, "rb");
+            $header = fread($fh, self::HEADER_LENGTH);
+        } else {
+            $header = substr($data, 0, self::HEADER_LENGTH);
+            $pos = self::HEADER_LENGTH;
+        }
         self::headerToShardFields($header, $shard);
-        fread($fh, $shard->prefixes_len );
-        $words = fread($fh, $shard->words_len);
-        $shard->word_docs = fread($fh, $shard->word_docs_len);
-        $shard->doc_infos = fread($fh, $shard->docids_len);
-        fclose($fh);
+
+        if($data === NULL) {
+            fread($fh, $shard->prefixes_len );
+            $words = fread($fh, $shard->words_len);
+            $shard->word_docs = fread($fh, $shard->word_docs_len);
+            $shard->doc_infos = fread($fh, $shard->docids_len);
+            fclose($fh);
+        } else {
+            $words = substr($data, $pos, $shard->words_len);
+            $pos += $shard->words_len;
+            $shard->word_docs = substr($data, $pos, $shard->word_docs_len);
+            $pos += $shard->word_docs_len;
+            $shard->doc_infos = substr($data, $pos, $shard->docids_len);
+        }
 
         $pre_words_array = str_split($words, self::WORD_ITEM_LEN);
         unset($words);

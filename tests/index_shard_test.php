@@ -389,7 +389,7 @@ class IndexShardTest extends UnitTest
             "EEEEEEEE",
             "FFFFFFFF"
         );
-
+        //test saving and loading to a file
         $this->test_objects['shard']->addDocumentWords($docid, 
             $offset, $word_counts, $meta_ids, true);
         $this->test_objects['shard']->save();
@@ -418,6 +418,33 @@ class IndexShardTest extends UnitTest
             crawlHash('FFFFFFFF', true), 5);
         $this->assertTrue(isset($c_data["AAAAAAAABBBBBBBBCCCCCCCC"]), 
             "Doc lookup 2 by word works");
+        // test saving and loading from a string
+        $out_string = $this->test_objects['shard']->save(true);
+
+        $this->test_objects['shard2'] = IndexShard::load("shard.txt",
+            $out_string);
+
+        $c_data = $this->test_objects['shard2']->getPostingsSliceById(
+            crawlHash('BBBBBBBB', true), 5);
+
+        $this->assertTrue(isset($c_data["AAAAAAAABBBBBBBBCCCCCCCC"]), 
+            "String Load Doc lookup by word works");
+        $c_data = $this->test_objects['shard2']->getPostingsSliceById(
+            crawlHash('CCCCCCCC', true), 5);
+        $this->assertTrue(isset($c_data["AAAAAAAABBBBBBBBCCCCCCCC"]), 
+            "String Load Doc lookup 2 by word works");
+        $c_data = $this->test_objects['shard2']->getPostingsSliceById(
+            crawlHash('DDDDDDDD', true), 5);
+        $this->assertTrue(isset($c_data["AAAAAAAABBBBBBBBCCCCCCCC"]), 
+            "String Load Doc lookup 2 by word works");
+        $c_data = $this->test_objects['shard2']->getPostingsSliceById(
+            crawlHash('EEEEEEEE', true), 5);
+        $this->assertTrue(isset($c_data["AAAAAAAABBBBBBBBCCCCCCCC"]), 
+            "String Load Doc lookup 2 by word works");
+        $c_data = $this->test_objects['shard2']->getPostingsSliceById(
+            crawlHash('FFFFFFFF', true), 5);
+        $this->assertTrue(isset($c_data["AAAAAAAABBBBBBBBCCCCCCCC"]), 
+            "String Load Doc lookup 2 by word works");
     }
 }
 ?>

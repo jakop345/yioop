@@ -102,7 +102,8 @@ class RssProcessor extends TextProcessor
     {
         $xpath = new DOMXPath($dom);
         $languages = $xpath->evaluate("/rss/channel/language");
-        if($languages && is_object($languages)) {
+        if($languages && is_object($languages) && 
+            is_object($languages->item(0))) {
             return $languages->item(0)->textContent;
         } else if($sample_text != NULL){
             $words = mb_split("[[:space:]]|".PUNCT, $sample_text);

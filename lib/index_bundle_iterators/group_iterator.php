@@ -158,6 +158,7 @@ class GroupIterator extends IndexBundleIterator
     function findDocsWithWord()
     {
         // first get a block of documents on which grouping can be done
+
         $pages =  $this->getPagesToGroup();
         $this->count_block_unfiltered = count($pages);
         if(!is_array($pages)) {
@@ -172,7 +173,6 @@ class GroupIterator extends IndexBundleIterator
                seen this block
             */
             $pre_out_pages = $this->groupByHashUrl($pages);
-
            /*get doc page for groups of link data if exists and don't have
              also aggregate by hash
            */
@@ -273,9 +273,10 @@ class GroupIterator extends IndexBundleIterator
      *
      * @param array &$pre_out_pages documents previously grouped by hash of url
      */
-     function groupByHashAndAggregate(&$pre_out_pages)
-     {
-         foreach($pre_out_pages as $hash_url => $data) {
+    function groupByHashAndAggregate(&$pre_out_pages)
+    {
+        
+        foreach($pre_out_pages as $hash_url => $data) {
             if(!$pre_out_pages[$hash_url][0][self::IS_DOC]) {
                 $hash_info_url= 
                     $pre_out_pages[$hash_url][0][self::INLINKS];
@@ -324,7 +325,7 @@ class GroupIterator extends IndexBundleIterator
             }
         }
 
-     }
+    }
 
     /**
      * For a collection of grouped pages generates a grouped summary for each
@@ -352,7 +353,7 @@ class GroupIterator extends IndexBundleIterator
             $out_pages[$hash_url][self::SUMMARY_OFFSET] = array();
             unset($out_pages[$hash_url][self::GENERATION]);
             for($i = 0; $i <
-                $pre_out_pages[$hash_url][0][self::HASH_URL_COUNT]; $i ++) {
+                $pre_out_pages[$hash_url][0][self::HASH_URL_COUNT]; $i++) {
                 $doc_info = $group_infos[$i];
                 $out_pages[$hash_url][self::SUMMARY_OFFSET][] = 
                     array($doc_info["KEY"], $doc_info[self::GENERATION],

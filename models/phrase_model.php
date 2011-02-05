@@ -259,10 +259,10 @@ class PhraseModel extends Model
     {
         $phrase = " ".$phrase;
         $phrase_string = $phrase;
-        $meta_words = array('link\:', 'site\:', 'version\:', 'modified\:',
-            'filetype\:', 'info\:', '\-', 'os\:', 'server\:', 'date\:',
-            'index\:', 'i\:', 'ip\:', 'weight\:', 'w\:', 'u\:',
-            'lang\:');
+        $meta_words = array('link:', 'site:', 'version:', 'modified:',
+            'filetype:', 'info:', '\-', 'os:', 'server:', 'date:',
+            'index:', 'i:', 'ip:', 'weight:', 'w:', 'u:',
+            'lang:');
         $index_name = $this->index_name;
         $weight = 1;
         $found_metas = array();
@@ -270,21 +270,22 @@ class PhraseModel extends Model
         foreach($meta_words as $meta_word) {
             $pattern = "/(\s)($meta_word(\S)+)/";
             preg_match_all($pattern, $phrase, $matches);
-            if(in_array($meta_word, array('link\:', 'site\:', 'os\:', 
-            'server\:', 'version\:', 'modified\:', 'date\:', 'lang\:',
-            'filetype\:', 'ip\:', 'info\:', 'u\:') )) {
-                $found_metas = array_merge($found_metas, $matches[2]);
+            if(!in_array($meta_word, array('i:', 'index:', 'w:', 
+            'weight:', '\-') )) {
+                $matches = array_map("mb_strtolower", $matches[2]);
+                $found_metas = array_merge($found_metas, $matches);
             } else if($meta_word == '\-') {
                 if(count($matches[0]) > 0) {
                     $disallow_phrases = 
                         array_merge($disallow_phrases, 
-                            array(substr($matches[2][0],2)));
+                            array(substr($matches[2][0],1)));
                 }
-            } else if ($meta_word == "i:" || $meta_word == "index:") {
+            } else if ($meta_word == 'i:' || $meta_word == 'index:') {
                 if(isset($matches[2][0])) {
                     $index_name = substr($matches[2][0],strlen($meta_word));
                 }
-            } else if ($meta_word == "w:" || $meta_word == "weight:") {
+            } else if ($meta_word == 'w:' || $meta_word == 'weight:') {
+
                 if(isset($matches[2][0])) {
                     $weight = substr($matches[2][0],strlen($meta_word));
                 }
@@ -308,7 +309,8 @@ class PhraseModel extends Model
             MAX_PHRASE_LEN, getLocaleTag()));
             //stemmed
         $words = array_merge($base_words, $found_metas);
-        if(isset($words) && count($words) == 1) {
+        if(isset($words) && count($words) == 1 && 
+            count($disallow_phrases) < 1) {
             $phrase_string = $words[0];
             $phrase_hash = crawlHash($phrase_string);
             $word_struct = array("KEYS" => array($phrase_hash),
@@ -344,15 +346,7 @@ class PhraseModel extends Model
             $index_archive->setCurrentShard(0, true);
             $words_array = $index_archive->getSelectiveWords($hashes, 5);
             if(is_array($words_array)) {
-                $counts = array_values($words_array);
-                $min_count = min($counts);
-                $threshold = 5*$min_count;
-                $word_keys = array();
-                foreach($words_array as $key => $count) {
-                    if($count < $threshold) {
-                        $word_keys[] = $key;
-                    }
-                }
+                $word_keys = array_keys($words_array);
             } else {
                 $word_keys = NULL;
                 $word_struct = NULL;

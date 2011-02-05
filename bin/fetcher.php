@@ -1116,16 +1116,18 @@ class Fetcher implements CrawlConstants
             $this->buildMiniInvertedIndex();
         }
         if(isset($this->found_sites[self::INVERTED_INDEX])) {
-            $index_data = array();
-            $index_data[self::SEEN_URLS] = & 
-                $this->found_sites[self::SEEN_URLS];
+
+            $compress_urls = gzcompress(serialize( 
+                $this->found_sites[self::SEEN_URLS]));
             unset($this->found_sites[self::SEEN_URLS]);
-            $index_data[self::INVERTED_INDEX] =  // objects are assigned by ref
-                $this->found_sites[self::INVERTED_INDEX];
-            unset($this->found_sites[self::INVERTED_INDEX]);
+            $len_urls =  strlen($compress_urls);
+
             $post_data['index_data'] = urlencode(base64_encode(
-                gzcompress(serialize($index_data))));
-            unset($index_data);
+                packInt($len_urls).
+                $compress_urls. $this->found_sites[self::INVERTED_INDEX]
+                )); // don't compress index data
+            unset($compress_urls);
+            unset($this->found_sites[self::INVERTED_INDEX]);
             $bytes_to_send += strlen($post_data['index_data']);
         }
 
@@ -1213,15 +1215,15 @@ class Fetcher implements CrawlConstants
                 self::JUST_METAS check to avoid getting sitemaps in results for 
                 popular words
              */
+            $lang = NULL;
             if(!isset($site[self::JUST_METAS])) {
                 $phrase_string = 
                     mb_ereg_replace(PUNCT, " ", $site[self::TITLE] .
                        " ". $site[self::DESCRIPTION]);
                 if(isset($site[self::LANG])) {
                     $lang = $site[self::LANG];
-                } else {
-                    $lang = NULL;
                 }
+                
                 $word_counts = 
                     PhraseParser::extractPhrasesAndCount($phrase_string,
                         MAX_PHRASE_LEN, $lang);
@@ -1281,7 +1283,7 @@ class Fetcher implements CrawlConstants
 
         }
 
-        $this->found_sites[self::INVERTED_INDEX] = $index_shard;
+        $this->found_sites[self::INVERTED_INDEX] = $index_shard->save(true);
 
         if($this->crawl_type == self::ARCHIVE_CRAWL) {
             $this->recrawl_check_scheduler = true;
