@@ -63,6 +63,7 @@ class TextProcessor implements CrawlConstants
      */
     static function process($page, $url)
     {
+        $summary = NULL;
         if(is_string($page)) {
             $summary[self::TITLE] = "";
             $summary[self::DESCRIPTION] = mb_substr($page, 0, 400);

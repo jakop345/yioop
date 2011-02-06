@@ -235,6 +235,14 @@ class ConfigureElement extends Element
                         value="<?php e($data['USER_AGENT_SHORT']); ?>" 
                         class="extrawidefield" />
                 </div>
+                <div class="topmargin"><b><label 
+                    for="crawl-robot-instance"><?php
+                    e(tl('configure_element_robot_instance'))?></label></b> 
+                    <input type="text" id="crawl-robot-instance" 
+                        name="ROBOT_INSTANCE"
+                        value="<?php e($data['ROBOT_INSTANCE']); ?>" 
+                        class="extrawidefield" />
+                </div>
                 <div class="topmargin"><label for="robot-description"><b><?php 
                     e(tl('configure_element_robot_description')); 
                     ?></b></label></div>

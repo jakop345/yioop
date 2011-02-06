@@ -82,6 +82,17 @@ class FetchController extends Controller implements CrawlConstants
         if(!$this->checkRequest()) {return; }
 
         $activity = $_REQUEST['a'];
+        $robot_table_name = CRAWL_DIR."/robot_table.txt";
+        $robot_table = array();
+        if(file_exists($robot_table_name)) {
+            $robot_table = unserialize(file_get_contents($robot_table_name));
+        }
+        if(isset($_REQUEST['robot_instance'])) {
+            $robot_table[$this->clean($_REQUEST['robot_instance'], "string")] = 
+                array($_SERVER['REMOTE_ADDR'], $_REQUEST['machine_uri'],
+                time());
+            file_put_contents($robot_table_name, serialize($robot_table));
+        }
         if(in_array($activity, $this->activities)) {$this->$activity();}
     }
 
@@ -208,18 +219,10 @@ class FetchController extends Controller implements CrawlConstants
             mkdir($dir);
             chmod($dir, 0777);
         }
-        $machine_data = array();
-        $machine_data[self::MACHINE] = $_SERVER['REMOTE_ADDR'];
-        $machine_data[self::MACHINE_URI] = $_REQUEST['machine_uri'];
-        $machine_string = base64_encode(serialize($machine_data))."\n";
 
         $data_hash = crawlHash($data_string);
-        $fh = fopen($dir."/At".$time."From".$address.
-            "WithHash$data_hash.txt", "wb");
-        fwrite($fh, $machine_string);
-        fwrite($fh, $data_string);
-        fclose($fh);
-
+        $fh = file_put_contents($dir."/At".$time."From".$address.
+            "WithHash$data_hash.txt", $data_string);
     }
 
     /**

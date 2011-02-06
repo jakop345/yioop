@@ -134,6 +134,7 @@ class SitemapProcessor extends TextProcessor
             "/s:sitemapindex/s:sitemap/s:loc"
         );
 
+        $i = 0;
         foreach($paths as $path) {
             $nodes = $xpath->evaluate($path);
             foreach($nodes as $node) {
@@ -146,6 +147,10 @@ class SitemapProcessor extends TextProcessor
                     continue;
                 }
                 $sites[$url] = "From sitemap of ".$site;
+                $i++;
+                if($i > MAX_LINKS_PER_SITEMAP) {
+                    break 2;
+                }
             }
 
         }

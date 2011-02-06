@@ -158,19 +158,19 @@ class GroupIterator extends IndexBundleIterator
     function findDocsWithWord()
     {
         // first get a block of documents on which grouping can be done
+
         $pages =  $this->getPagesToGroup();
         $this->count_block_unfiltered = count($pages);
         if(!is_array($pages)) {
             return $pages;
         }
-
         $this->current_block_hashes = array();
-
         $this->current_seen_hashes = array();
         if($this->count_block_unfiltered > 0 ) {
             /* next we group like documents by url and remember which urls we've
                seen this block
             */
+
             $pre_out_pages = $this->groupByHashUrl($pages);
 
            /*get doc page for groups of link data if exists and don't have
@@ -181,6 +181,7 @@ class GroupIterator extends IndexBundleIterator
             /*
                 Calculate aggregate values for each field of the groups we found
              */
+
             $pages = $this->computeBoostAndOutPages($pre_out_pages);
         }
         $this->pages = $pages;
@@ -273,9 +274,10 @@ class GroupIterator extends IndexBundleIterator
      *
      * @param array &$pre_out_pages documents previously grouped by hash of url
      */
-     function groupByHashAndAggregate(&$pre_out_pages)
-     {
-         foreach($pre_out_pages as $hash_url => $data) {
+    function groupByHashAndAggregate(&$pre_out_pages)
+    {
+        
+        foreach($pre_out_pages as $hash_url => $data) {
             if(!$pre_out_pages[$hash_url][0][self::IS_DOC]) {
                 $hash_info_url= 
                     $pre_out_pages[$hash_url][0][self::INLINKS];
@@ -324,7 +326,7 @@ class GroupIterator extends IndexBundleIterator
             }
         }
 
-     }
+    }
 
     /**
      * For a collection of grouped pages generates a grouped summary for each
@@ -347,12 +349,22 @@ class GroupIterator extends IndexBundleIterator
     function computeBoostAndOutPages(&$pre_out_pages)
     {
         $out_pages = array();
+        $index = $this->getIndex();
+        if($this->count_block_unfiltered >=$this->results_per_block) {
+            $hash_inlinks = array();
+            foreach($pre_out_pages as $hash_url => $group_infos) {
+                $hash_inlinks[$hash_url] = 
+                    $pre_out_pages[$hash_url][0][self::INLINKS];
+            }
+            $num_docs_array = &
+                $index->dictionary->getNumDocsArray($hash_inlinks);
+        }
         foreach($pre_out_pages as $hash_url => $group_infos) {
             $out_pages[$hash_url] = $pre_out_pages[$hash_url][0];
             $out_pages[$hash_url][self::SUMMARY_OFFSET] = array();
             unset($out_pages[$hash_url][self::GENERATION]);
             for($i = 0; $i <
-                $pre_out_pages[$hash_url][0][self::HASH_URL_COUNT]; $i ++) {
+                $pre_out_pages[$hash_url][0][self::HASH_URL_COUNT]; $i++) {
                 $doc_info = $group_infos[$i];
                 $out_pages[$hash_url][self::SUMMARY_OFFSET][] = 
                     array($doc_info["KEY"], $doc_info[self::GENERATION],
@@ -364,10 +376,7 @@ class GroupIterator extends IndexBundleIterator
                    doc for this word search by links we haven't
                    reached in our grouping
                 */
-                $word_iterator = new WordIterator(
-                    $out_pages[$hash_url][self::INLINKS], 
-                    $this->getIndex(), true);
-                $num_inlinks = $word_iterator->num_docs + 0.1;
+                $num_inlinks = $num_docs_array[$hash_url] + 0.1;
                 $num_docs_seen = $this->seen_docs_unfiltered + 
                     $this->count_block_unfiltered;
 

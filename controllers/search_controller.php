@@ -347,8 +347,18 @@ class SearchController extends Controller implements CrawlConstants
             $this->displayView("nocache", $data);
             exit();
         }
-        $machine = $crawl_item[self::MACHINE];
-        $machine_uri = $crawl_item[self::MACHINE_URI];
+        $robot_instance = $crawl_item[self::ROBOT_INSTANCE];
+        $robot_table_name = CRAWL_DIR."/robot_table.txt";
+        $robot_table = array();
+        if(file_exists($robot_table_name)) {
+            $robot_table = unserialize(file_get_contents($robot_table_name));
+        }
+        if(!isset($robot_table[$robot_instance])) {
+            $this->displayView("nocache", $data);
+            exit();
+        }
+        $machine = $robot_table[$robot_instance][0];
+        $machine_uri = $robot_table[$robot_instance][1];
         $page = $crawl_item[self::HASH];
         $offset = $crawl_item[self::OFFSET];
         $cache_item = $this->crawlModel->getCacheFile($machine, 

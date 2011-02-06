@@ -456,7 +456,7 @@ class IndexDictionary implements CrawlConstants
      */
     function getWordInfo($word_id, $raw = false) {
         if($raw == false) {
-            //get rid of out modfied base64 encoding
+            //get rid of out modified base64 encoding
             $hash = str_replace("_", "/", $word_id);
             $hash = str_replace("-", "+" , $hash);
             $hash .= "=";
@@ -465,7 +465,7 @@ class IndexDictionary implements CrawlConstants
 
         $word_item_len = IndexShard::WORD_ITEM_LEN;
         $file_num = ord($word_id[0]);
-        $prefix = ord($word_id[1]);;
+        $prefix = ord($word_id[1]);
         $prefix_info = $this->getDictSubstring($file_num,
             self::PREFIX_ITEM_SIZE*$prefix, self::PREFIX_ITEM_SIZE);
         if($prefix_info == IndexShard::BLANK) {
@@ -547,6 +547,36 @@ class IndexDictionary implements CrawlConstants
 
         return $info;
     }
+
+    /**
+     *  Given an array of $key => $word_id associations returns an array of
+     *  $key => $num_docs of that $word_id
+     *
+     *  @param array &$key_words associative array of $key => $word_id's
+     *  @return &array $key => $num_docs associations
+     */
+     function &getNumDocsArray(&$key_words)
+     {
+        $file_key_words = array();
+        foreach($key_words as $key => $word_id) {
+            $file_key_words[ord($word_id[0])][$key] = $word_id;
+        }
+        $num_docs_array = array();
+        foreach($file_key_words as $file_num => $k_words) {
+            foreach($k_words as $key => $word_id) {
+                $info = $this->getWordInfo($word_id, true);
+                $num_generations = count($info);
+                $num_docs = 0;
+                for($i = 0; $i < $num_generations; $i++) {
+                    list(, , , $num_docs) =
+                        $info[$i];
+                        $num_docs += $num_docs;
+                }
+                $num_docs_array[$key] = $num_docs;
+            }
+        }
+        return $num_docs_array;
+     }
 
     /**
      *  Gets from disk $len many bytes beginning at $offset from the
