@@ -54,7 +54,8 @@ class ProfileModel extends Model
             'DB_NAME', 'DB_USER', 'DB_PASSWORD', 
             'QUEUE_SERVER', 'AUTH_KEY', "ROBOT_DESCRIPTION", 'WEB_URI',
             'USE_MEMCACHE', 'MEMCACHE_SERVERS', 'CACHE_LINK', 
-            'SIMILAR_LINK', 'IN_LINK', 'IP_LINK', 'SIGNIN_LINK');
+            'SIMILAR_LINK', 'IN_LINK', 'IP_LINK', 'SIGNIN_LINK',
+            'ROBOT_INSTANCE');
     /**
      *  {@inheritdoc}
      */

@@ -164,15 +164,15 @@ class GroupIterator extends IndexBundleIterator
         if(!is_array($pages)) {
             return $pages;
         }
-
         $this->current_block_hashes = array();
-
         $this->current_seen_hashes = array();
         if($this->count_block_unfiltered > 0 ) {
             /* next we group like documents by url and remember which urls we've
                seen this block
             */
+
             $pre_out_pages = $this->groupByHashUrl($pages);
+
            /*get doc page for groups of link data if exists and don't have
              also aggregate by hash
            */
@@ -181,6 +181,7 @@ class GroupIterator extends IndexBundleIterator
             /*
                 Calculate aggregate values for each field of the groups we found
              */
+
             $pages = $this->computeBoostAndOutPages($pre_out_pages);
         }
         $this->pages = $pages;
@@ -348,6 +349,16 @@ class GroupIterator extends IndexBundleIterator
     function computeBoostAndOutPages(&$pre_out_pages)
     {
         $out_pages = array();
+        $index = $this->getIndex();
+        if($this->count_block_unfiltered >=$this->results_per_block) {
+            $hash_inlinks = array();
+            foreach($pre_out_pages as $hash_url => $group_infos) {
+                $hash_inlinks[$hash_url] = 
+                    $pre_out_pages[$hash_url][0][self::INLINKS];
+            }
+            $num_docs_array = &
+                $index->dictionary->getNumDocsArray($hash_inlinks);
+        }
         foreach($pre_out_pages as $hash_url => $group_infos) {
             $out_pages[$hash_url] = $pre_out_pages[$hash_url][0];
             $out_pages[$hash_url][self::SUMMARY_OFFSET] = array();
@@ -365,10 +376,7 @@ class GroupIterator extends IndexBundleIterator
                    doc for this word search by links we haven't
                    reached in our grouping
                 */
-                $word_iterator = new WordIterator(
-                    $out_pages[$hash_url][self::INLINKS], 
-                    $this->getIndex(), true);
-                $num_inlinks = $word_iterator->num_docs + 0.1;
+                $num_inlinks = $num_docs_array[$hash_url] + 0.1;
                 $num_docs_seen = $this->seen_docs_unfiltered + 
                     $this->count_block_unfiltered;
 

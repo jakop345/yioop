@@ -357,20 +357,20 @@ class QueueServer implements CrawlConstants
     {
         crawlLog("Processing File: $file");
 
-        $fh = fopen($file, "rb");
-        $machine_string = fgets($fh);
-        $len = strlen($machine_string);
-        if($len > 0) {
-            $machine_info = unserialize(base64_decode($machine_string));
-        }
         $sites = unserialize(gzuncompress(base64_decode(
-            urldecode(fread($fh, filesize($file) - $len))
-            )));
-        fclose($fh);
+            urldecode(file_get_contents($file) ))
+            ));
 
-        if(isset($machine_info[self::MACHINE])) {
-            $this->most_recent_fetcher = & $machine_info[self::MACHINE];
-            unset($machine_info);
+        $robot_table_name = CRAWL_DIR."/robot_table.txt";
+        if(file_exists($robot_table_name)) {
+            $robot_table = unserialize(file_get_contents($robot_table_name));
+            $recent = 0 ;
+            foreach($robot_table as $robot_name => $robot_data) {
+                if($robot_data[2] > $recent) {
+                    $this->most_recent_fetcher =  $robot_name;
+                    $recent = $robot_data[2];
+                }
+            }
         }
         return $sites;
     }
@@ -675,14 +675,10 @@ class QueueServer implements CrawlConstants
 
         $start_time = microtime();
 
-        $fh = fopen($file, "rb");
         $machine_string = fgets($fh);
-        $len = strlen($machine_string);
-        $machine_info = unserialize(base64_decode($machine_string));
         $pre_sites = base64_decode(
-            urldecode(fread($fh, filesize($file) - $len))
-            );
-        fclose($fh);
+            urldecode(file_get_contents($file)));
+
         $len_urls = unpackInt(substr($pre_sites, 0, 4));
 
         $sites[self::SEEN_URLS] = unserialize(gzuncompress(
@@ -697,9 +693,6 @@ class QueueServer implements CrawlConstants
           " time: ".(changeInMicrotime($start_time)));
         $start_time = microtime();
 
-        $machine = $machine_info[self::MACHINE];
-        $machine_uri = $machine_info[self::MACHINE_URI];
-
         //do deduplication of summaries
         if(isset($sites[self::SEEN_URLS]) && 
             count($sites[self::SEEN_URLS]) > 0) {
@@ -713,8 +706,6 @@ class QueueServer implements CrawlConstants
 
         $visited_urls_count = 0;
         for($i = 0; $i < $num_seen; $i++) {
-            $seen_sites[$i][self::MACHINE] = $machine;
-            $seen_sites[$i][self::MACHINE_URI] = $machine_uri;
             $seen_sites[$i][self::HASH_URL] = 
                 crawlHash($seen_sites[$i][self::URL], true);
             $link_url_parts = explode("|", $seen_sites[$i][self::URL]);
@@ -817,15 +808,9 @@ class QueueServer implements CrawlConstants
         crawlLog("Processing Robots data in $file");
         $start_time = microtime();
 
-        $fh = fopen($file, "rb");
-        $machine_string = fgets($fh);
-        $len = strlen($machine_string);
-        unset($machine_string);
         $sites = unserialize(gzuncompress(base64_decode(
-            urldecode(fread($fh, filesize($file) - $len))
-            )));
-        fclose($fh);
-
+            urldecode(file_get_contents($file)))
+            ));
         if(isset($sites)) {
             foreach($sites as $robot_host => $robot_info) {
                 $this->web_queue->addGotRobotTxtFilter($robot_host);

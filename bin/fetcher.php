@@ -31,7 +31,8 @@
  * @filesource
  */
 
-/** Calculate base directory of script
+/** 
+ * Calculate base directory of script
  * @ignore
  */
 define("BASE_DIR", substr(
@@ -513,7 +514,8 @@ class Fetcher implements CrawlConstants
            if it has bail
         */
         $request =  
-            $queue_server."?c=fetch&a=crawlTime&time=$time&session=$session";
+            $queue_server."?c=fetch&a=crawlTime&time=$time&session=$session".
+            "&robot_instance=".ROBOT_INSTANCE."&machine_uri=".WEB_URI;
 
         $info_string = FetchUrl::getPage($request);
         $info = @unserialize(trim($info_string));
@@ -548,7 +550,8 @@ class Fetcher implements CrawlConstants
         $session = md5($time . AUTH_KEY);
 
         $request =  
-            $queue_server."?c=fetch&a=schedule&time=$time&session=$session";
+            $queue_server."?c=fetch&a=schedule&time=$time&session=$session".
+            "&robot_instance=".ROBOT_INSTANCE."&machine_uri=".WEB_URI;
 
         $info_string = trim(FetchUrl::getPage($request));
         $tok = strtok($info_string, "\n");
@@ -771,10 +774,11 @@ class Fetcher implements CrawlConstants
             $summary_fields = array(self::IP_ADDRESSES, self::WEIGHT,
                 self::TIMESTAMP, self::TYPE, self::ENCODING, self::HTTP_CODE,
                 self::HASH, self::SERVER, self::SERVER_VERSION,
-                self::OPERATING_SYSTEM, self::MODIFIED);
+                self::OPERATING_SYSTEM, self::MODIFIED, self::ROBOT_INSTANCE);
 
             if($doc_info) {
                 $site[self::DOC_INFO] =  $doc_info;
+                $site[self::ROBOT_INSTANCE] = ROBOT_INSTANCE;
 
                 if(!is_dir(CRAWL_DIR."/cache")) {
                     mkdir(CRAWL_DIR."/cache");
@@ -1060,7 +1064,8 @@ class Fetcher implements CrawlConstants
          */
         $bytes_to_send = 0;
         $post_data = array('c'=>'fetch', 'a'=>'update', 
-            'crawl_time' => $this->crawl_time, 'machine_uri' => WEB_URI);
+            'crawl_time' => $this->crawl_time, 'machine_uri' => WEB_URI,
+            'robot_instance' => ROBOT_INSTANCE);
 
         //handle robots.txt data
         if(isset($this->found_sites[self::ROBOT_TXT])) {
