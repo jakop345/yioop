@@ -73,7 +73,6 @@ class HtmlProcessor extends TextProcessor
         if(is_string($page)) {
 
             $page = preg_replace('@<script[^>]*?>.*?</script>@si', ' ', $page);
-        echo "hello".$page;
             $dom = self::dom($page);
             if($dom !== false && self::checkMetaRobots($dom)) {
                 $summary[self::TITLE] = self::title($dom);
