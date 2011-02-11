@@ -503,7 +503,11 @@ class IndexShard extends PersistentStructure implements CrawlConstants
             $this->unpackPosting(substr($doc_info_string, 4));
         $item[self::GENERATION] = $this->generation;
         $is_doc = (($doc_len & self::LINK_FLAG) == 0) ? true : false;
-        if(!$is_doc) {$doc_len -= self::LINK_FLAG; }
+        if(!$is_doc) {
+            $doc_len -= self::LINK_FLAG;
+            $item[self::DOC_RANK] *= 0.015; 
+                //scale doc rank of links by 1/(avg num of links/page)
+        }
         $item[self::IS_DOC] = $is_doc;
         $is_image = (($doc_len & self::IMAGE_FLAG) == 0) ? false : true;
         if($is_image) {$doc_len -= self::IMAGE_FLAG; }
