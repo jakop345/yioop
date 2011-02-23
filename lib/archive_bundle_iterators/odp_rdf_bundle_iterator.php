@@ -135,6 +135,18 @@ class OdpRdfArchiveBundleIterator implements CrawlConstants
     }
 
     /**
+     * Estimates the important of the site according to the weighting of
+     * the particular archive iterator
+     * @param $site an associative array containing info about a web page
+     * @return int a 4-bit number based on the topic path of the odp entry
+     *      (@see processTopic @see processExternalPage)
+     */
+    function weight(&$site)
+    {
+        return min($site[self::WEIGHT], 15);
+    }
+
+    /**
      * Used to extract data between two tags for the first tag found
      * amongst the array of tags $tags. After operation $this->buffer has
      * contents after the close tag.
@@ -345,7 +357,6 @@ class OdpRdfArchiveBundleIterator implements CrawlConstants
         $site[self::SERVER] = "unknown";
         $site[self::SERVER_VERSION] = "unknown";
         $site[self::OPERATING_SYSTEM] = "unknown";
-        $site[self::WEIGHT] = 1;
         $this->$processMethod($dom, $site);
  
         $site[self::HASH] = FetchUrl::computePageHash($site[self::PAGE]);
@@ -366,6 +377,7 @@ class OdpRdfArchiveBundleIterator implements CrawlConstants
         $topic_path = $this->getAttributeValue($dom, "/Topic", "id");
         $site[self::URL] = $this->header['base_address'].$topic_path;
 
+        $site[self::WEIGHT] = max(15 - substr_count($topic_path, "/"), 1);
         $title = str_replace("/", " ", $topic_path);
         $links = $this->computeTopicLinks($topic_path);
 
@@ -404,6 +416,7 @@ class OdpRdfArchiveBundleIterator implements CrawlConstants
             "/ExternalPage", "about");
 
         $topic_path = $this->getTextContent($dom, "/ExternalPage/topic");
+        $site[self::WEIGHT] = max(14 - substr_count($topic_path, "/"), 1);
 
         $links = $this->computeTopicLinks($topic_path);
         $title = $this->getTextContent($dom, "/ExternalPage/Title");

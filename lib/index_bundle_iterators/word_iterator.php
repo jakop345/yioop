@@ -178,8 +178,10 @@ class WordIterator extends IndexBundleIterator
     {
         $item = array();
         $this->index->setCurrentShard($generation, true);
+        $num_docs_or_links = 
+            IndexShard::numDocsOrLinks($this->start_offset, $this->last_offset);
         $this->index->getCurrentShard()->makeItem($item, 
-            $this->start_offset, $posting_offset, $this->last_offset, 1);
+            $posting_offset, $num_docs_or_links, 1);
         return $item[self::RELEVANCE];
     }
 
@@ -228,8 +230,7 @@ class WordIterator extends IndexBundleIterator
         $results = $shard->getPostingsSlice(
             $this->start_offset,
             $this->next_offset, $this->last_offset, $this->results_per_block);
-        $this->count_block = count($results); 
-
+        $this->count_block = count($results);
         return $results;
     }
 
@@ -317,7 +318,7 @@ class WordIterator extends IndexBundleIterator
      * Returns the index associated with this iterator
      * @return &object the index
      */
-    function &getIndex($key = NULL)
+    function getIndex($key = NULL)
     {
         return $this->index;
     }

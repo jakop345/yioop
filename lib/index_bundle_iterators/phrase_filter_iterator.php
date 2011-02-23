@@ -303,7 +303,7 @@ class PhraseFilterIterator extends IndexBundleIterator
      * Returns the index associated with this iterator
      * @return &object the index
      */
-    function &getIndex($key = NULL)
+    function getIndex($key = NULL)
     {
         return $this->index_bundle_iterator->getIndex($key = NULL);
     }

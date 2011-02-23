@@ -73,6 +73,7 @@ class HtmlProcessor extends TextProcessor
         if(is_string($page)) {
 
             $page = preg_replace('@<script[^>]*?>.*?</script>@si', ' ', $page);
+            $page = preg_replace('/>/', '> ', $page);
             $dom = self::dom($page);
             if($dom !== false && self::checkMetaRobots($dom)) {
                 $summary[self::TITLE] = self::title($dom);
@@ -147,12 +148,16 @@ class HtmlProcessor extends TextProcessor
      */
     static function lang($dom, $sample_text = NULL)
     {
-        $xpath = new DOMXPath($dom);
-        $html = $xpath->evaluate("/html");
+
+        $htmls = $dom->getElementsByTagName("html");
         $lang = NULL;
-        if(is_object($html->item(0))) { 
-            $lang = $html->item(0)->getAttribute('lang');
-        } 
+        foreach($htmls as $html) {
+            $lang = $html->getAttribute('lang');
+            if($lang != NULL) {
+                return $lang;
+            }
+        }
+
         if($lang == NULL && $sample_text != NULL){
             $words = mb_split("[[:space:]]|".PUNCT, $sample_text);
             $num_words = count($words);

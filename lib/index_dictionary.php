@@ -451,10 +451,16 @@ class IndexDictionary implements CrawlConstants
      *
      * @param string $word_id id of the word one wants to look up
      * @param bool $raw whether the id is our version of base64 encoded or not
-     * @return array an array of entries of the form 
-     *      generation, first offset, last offset, count
+     * @param bool $extract whether to extract an array of entries or to just
+     *      return the word info as a string
+     * @param int $num_entries if not -1 then the number of word records to
+     *      return after the first entry of looked up word
+     * @return mixed an array of entries of the form 
+     *      generation, first offset, last offset, count or
+     *      just a string of the word_info data if $extract is false 
      */
-    function getWordInfo($word_id, $raw = false) {
+    function getWordInfo($word_id, $raw = false, $extract = true,
+        $num_entries = -1) {
         if($raw == false) {
             //get rid of out modified base64 encoding
             $hash = str_replace("_", "/", $word_id);
@@ -464,6 +470,7 @@ class IndexDictionary implements CrawlConstants
         }
 
         $word_item_len = IndexShard::WORD_ITEM_LEN;
+        $word_data_len = IndexShard::WORD_ITEM_LEN- IndexShard::WORD_KEY_LEN;
         $file_num = ord($word_id[0]);
         $prefix = ord($word_id[1]);
         $prefix_info = $this->getDictSubstring($file_num,
@@ -522,27 +529,38 @@ class IndexDictionary implements CrawlConstants
             $test_loc -= 1;
         } while ($test_loc >=$low);
 
-        //find last record with word id (linear search but probably not many)
-        $test_loc = $check_loc;
-        $end_loc = $check_loc;
-        do {
-            $word_string = $this->getDictSubstring($file_num, $start + 
-                $test_loc * $word_item_len, $word_item_len);
-            if($word_string == "" ) break;
-            $id = substr($word_string, 0, IndexShard::WORD_KEY_LEN);
-            if(strcmp($word_id, $id) != 0 ) break;
-            $end_loc = $test_loc;
-            $test_loc += 1;
-        } while ($test_loc <= $high);
-
+        if($num_entries < 1) {
+            //find last record with word id (linear search but probably not many)
+            $test_loc = $check_loc;
+            $end_loc = $check_loc;
+            do {
+                $word_string = $this->getDictSubstring($file_num, $start + 
+                    $test_loc * $word_item_len, $word_item_len);
+                if($word_string == "" ) break;
+                $id = substr($word_string, 0, IndexShard::WORD_KEY_LEN);
+                if(strcmp($word_id, $id) != 0 ) break;
+                $end_loc = $test_loc;
+                $test_loc += 1;
+            } while ($test_loc <= $high);
+        } else {
+            $end_loc = $start_loc + ($num_entries - 1);
+        }
         //now extract the info from the range of results we got
-        $info = array();
+        if($extract) {
+            $info = array();
+        } else {
+            $info = "";
+        }
+
         for($i = $start_loc; $i <=$end_loc; $i++) {
-            $word_string = $this->getDictSubstring($file_num, $start + 
-                $i * $word_item_len, $word_item_len);
-            $tmp = IndexShard::getWordInfoFromString(
-                substr($word_string, IndexShard::WORD_KEY_LEN), true);
-            array_unshift($info, $tmp);
+            $word_string = substr($this->getDictSubstring($file_num, $start + 
+                $i * $word_item_len, $word_item_len), IndexShard::WORD_KEY_LEN);
+            if($extract) {
+                $tmp = IndexShard::getWordInfoFromString($word_string, true);
+                array_unshift($info, $tmp);
+            } else {
+                $info .= $word_string;
+            }
         }
 
         return $info;
@@ -553,9 +571,9 @@ class IndexDictionary implements CrawlConstants
      *  $key => $num_docs of that $word_id
      *
      *  @param array &$key_words associative array of $key => $word_id's
-     *  @return &array $key => $num_docs associations
+     *  @return array $key => $num_docs associations
      */
-     function &getNumDocsArray(&$key_words)
+     function getNumDocsArray(&$key_words)
      {
         $file_key_words = array();
         foreach($key_words as $key => $word_id) {
@@ -578,6 +596,53 @@ class IndexDictionary implements CrawlConstants
         return $num_docs_array;
      }
 
+    function getInfoItem($hash_info_url)
+    {
+        $word_key_len = IndexShard::WORD_KEY_LEN;
+        $word_data_len = IndexShard::WORD_ITEM_LEN - $word_key_len;
+        $posting_len = IndexShard::POSTING_LEN;
+        $hash_info_data = $this->getWordInfo($hash_info_url, true, false,
+            3);
+        if($hash_info_data === false) return false;
+
+        $word_string = substr($hash_info_data, 0, 
+            $word_data_len);
+        $item = array();
+        list($item[self::GENERATION], , , ) = 
+            IndexShard::getWordInfoFromString($word_string, true);
+        $pre_offset = substr($hash_info_data, 
+            $word_data_len, $posting_len);
+        $pre_offset[0] = chr(ord($pre_offset[0]) - 0x80);
+        $item[self::SUMMARY_OFFSET] = unpackInt($pre_offset);
+
+        $item[self::HASH] = substr($hash_info_data, 
+            $word_data_len + $posting_len, 
+            $word_key_len);
+        // don't delete 0x80 for doc_len as is_doc flag already kills it
+        $pre_doc_len = substr($hash_info_data, 
+                2 * $word_data_len, $posting_len);
+        $pre_doc_len[0] = chr(ord($pre_doc_len[0]) - 0x80);
+        list($item[self::DOC_LEN], ) = 
+            IndexShard::unpackPosting($pre_doc_len);
+        /* 
+           for archive crawls we store rank as the 4 bits after the high order 
+           bit
+        */
+        $rank_mask = (0x0f) << 19;
+        $pre_rank = ($item[self::DOC_LEN] & $rank_mask);
+        if( $pre_rank > 0) {
+            $item[self::DOC_RANK] = $pre_rank >> 19;
+            $item[self::DOC_LEN] -= $pre_rank;
+        }
+
+        $item[self::INLINKS] = substr($hash_info_data, 
+            2 * $word_data_len  + $posting_len, 
+            $word_key_len);
+        $item[self::IS_DOC] = true;
+
+        return $item;
+    }
+
     /**
      *  Gets from disk $len many bytes beginning at $offset from the
      *  $file_num prefix file in the index dictionary
@@ -586,7 +651,7 @@ class IndexDictionary implements CrawlConstants
      *      a file at the max_tier level)
      * @param int $offset byte offset to start reading from
      * @param int $len number of bytes to read
-     * @return string data fromthat location  in the shard
+     * @return string data from that location  in the shard
      */
     function getDictSubstring($file_num, $offset, $len)
     {
