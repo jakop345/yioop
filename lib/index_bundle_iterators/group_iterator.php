@@ -281,25 +281,20 @@ class GroupIterator extends IndexBundleIterator
             if(!$pre_out_pages[$hash_url][0][self::IS_DOC]) {
                 $hash_info_url= 
                     $pre_out_pages[$hash_url][0][self::INLINKS];
-                $word_iterator = 
-                     new WordIterator($hash_info_url, 
-                        $this->getIndex(), true);
-                $doc_array = $word_iterator->currentDocsWithWord();
+                $index = $this->getIndex($pre_out_pages[$hash_url][0]['KEY']);
+                $item = $index->dictionary->getInfoItem($hash_info_url);
+                if($item !== false) { 
+                    $item[self::RELEVANCE] = 0.15 *
+                        $pre_out_pages[$hash_url][0][self::RELEVANCE];
+                    if(isset($item[self::DOC_RANK])) {
+                        $item[self::DOC_RANK] = 0.15 *
+                            $pre_out_pages[$hash_url][0][self::DOC_RANK];
+                    }
+                    $item[self::SCORE] = $item[self::RELEVANCE] + 
+                        $item[self::DOC_RANK];
+                    $item['KEY'] = $hash_url.$item[self::HASH].
+                        $item[self::INLINKS];
 
-                if(is_array($doc_array) && count($doc_array) == 1) {
-                    $relevance =  $this->computeRelevance(
-                        $word_iterator->current_generation,
-                        $word_iterator->current_offset);
-                    $keys = array_keys($doc_array);
-                    $key = $keys[0];
-                    $item = $doc_array[$key];
-                    $item[self::RELEVANCE] = $relevance;
-                    $item[self::SCORE] += $relevance;
-                    $item['KEY'] = $key;
-                    $item[self::HASH] = substr($key, 
-                        IndexShard::DOC_KEY_LEN, IndexShard::DOC_KEY_LEN);
-                    $item[self::INLINKS] = substr($key, 
-                        2*IndexShard::DOC_KEY_LEN, IndexShard::DOC_KEY_LEN);
                     array_unshift($pre_out_pages[$hash_url], $item); 
                 } 
             }
@@ -349,15 +344,22 @@ class GroupIterator extends IndexBundleIterator
     function computeBoostAndOutPages(&$pre_out_pages)
     {
         $out_pages = array();
-        $index = $this->getIndex();
         if($this->count_block_unfiltered >=$this->results_per_block) {
             $hash_inlinks = array();
+            $indexes = array();
             foreach($pre_out_pages as $hash_url => $group_infos) {
-                $hash_inlinks[$hash_url] = 
+                $key = $group_infos[0]["KEY"];
+                $tmp_index =  $this->getIndex($key);
+                $indexes[$tmp_index->dir_name] = $tmp_index;
+                $hash_inlinks[$tmp_index->dir_name][$hash_url] = 
                     $pre_out_pages[$hash_url][0][self::INLINKS];
             }
-            $num_docs_array = &
-                $index->dictionary->getNumDocsArray($hash_inlinks);
+            $num_docs_array = array();
+
+            foreach($hash_inlinks as $name => $inlinks) {
+                $num_docs_array = array_merge($num_docs_array, 
+                    $indexes[$name]->dictionary->getNumDocsArray($inlinks));
+            }
         }
         foreach($pre_out_pages as $hash_url => $group_infos) {
             $out_pages[$hash_url] = $pre_out_pages[$hash_url][0];
@@ -502,7 +504,7 @@ class GroupIterator extends IndexBundleIterator
                 $out_pages[$doc_key] = $doc_info;
                 foreach($doc_info[self::SUMMARY_OFFSET] as $offset_array) {
                     list($key, $generation, $summary_offset) = $offset_array;
-                    $index = & $this->getIndex($key);
+                    $index = $this->getIndex($key);
                     $index->setCurrentShard($generation, true);
                     $page = $index->getPage($summary_offset);
                     if($page == array()) {continue;}
@@ -579,9 +581,9 @@ class GroupIterator extends IndexBundleIterator
 
     /**
      * Returns the index associated with this iterator
-     * @return &object the index
+     * @return object the index
      */
-    function &getIndex($key = NULL)
+    function getIndex($key = NULL)
     {
         return $this->index_bundle_iterator->getIndex($key);
     }

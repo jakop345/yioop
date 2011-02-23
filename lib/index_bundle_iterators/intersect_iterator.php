@@ -277,7 +277,7 @@ class IntersectIterator extends IndexBundleIterator
      * Returns the index associated with this iterator
      * @return object the index
      */
-    function &getIndex($key = NULL)
+    function getIndex($key = NULL)
     {
         return $this->index_bundle_iterators[0]->getIndex($key = NULL);
     }

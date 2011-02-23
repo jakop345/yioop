@@ -228,11 +228,6 @@ class IndexShard extends PersistentStructure implements CrawlConstants
      * document or for a link
      */
     const LINK_FLAG =  0x800000;
-    /**
-     * Used to keep track of whether a record in document infos is for a
-     * document of mimetype image or not
-     */
-    const IMAGE_FLAG =  0x400000;
 
     /**
      * Size in bytes of one block in IndexShard
@@ -268,6 +263,16 @@ class IndexShard extends PersistentStructure implements CrawlConstants
      *  Represents an empty prefix item
      */
     const BLANK = "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF";
+
+    /**
+     *
+     */
+    const HALF_BLANK = "\xFF\xFF\xFF\xFF";
+
+    /**
+     *  Represents an empty prefix item
+     */
+    const STORE_FLAG = "\x80";
 
     /**
      * Makes an index shard with the given file name and generation offset
@@ -317,12 +322,14 @@ class IndexShard extends PersistentStructure implements CrawlConstants
      *      for each word in the document
      * @param array $meta_ids meta words to be associated with the document
      *      an example meta word would be filetype:pdf for a PDF document.
-     * @param array $is_doc flag used to indicate if what is being sored is
+     * @param bool $is_doc flag used to indicate if what is being sored is
      *      a document or a link to a document
+     * @param mixed $rank either false if not used, or a 4 bit estimate of the
+     *      rank of this document item
      * @return bool success or failure of performing the add
      */
     function addDocumentWords($doc_keys, $summary_offset, $word_counts,
-        $meta_ids, $is_doc = false, $is_image = false)
+        $meta_ids = array(), $is_doc = false, $rank = false)
     {
         if($this->word_docs_packed == true) {
             $this->unpackWordDocs();
@@ -374,7 +381,11 @@ class IndexShard extends PersistentStructure implements CrawlConstants
         $this->len_all_docs += $doc_len;
         $this->len_all_link_docs += $link_doc_len;
         $flags = ($is_doc) ? 0 : self::LINK_FLAG;
-        $flags +=  (($is_image) ? self::IMAGE_FLAG : 0);
+        if($rank !== false) {
+            $rank &= 0x0f;
+            $rank <<= 19;
+            $flags += $rank;
+        }
 
         $len_num_keys = $this->packPosting(($flags + $doc_len), $num_keys);
 
@@ -444,9 +455,11 @@ class IndexShard extends PersistentStructure implements CrawlConstants
 
         do {
             if($next_offset > $end) {break;}
+            $num_doc_or_links =  
+                self::numDocsOrLinks($start_offset, $last_offset);
             $doc_id = 
                 $this->makeItem(
-                    $item, $start_offset, $next_offset, $last_offset);
+                    $item, $next_offset, $num_doc_or_links);
             $results[$doc_id] = $item;
             $num_docs_so_far ++;
 
@@ -458,40 +471,41 @@ class IndexShard extends PersistentStructure implements CrawlConstants
         return $results;
     }
 
+    static function numDocsOrLinks($start_offset, $last_offset)
+    {
+        return floor(($last_offset - $start_offset) / self::POSTING_LEN);
+    }
+
     /**
      * Stores in the supplied item document statistics (suumary offset, 
      * relevance, doc rank, and score) for the the document
      * pointed to by $current_offset, based on the the posting lists 
-     * starting and ending offset (hence num docs with word), and the
-     * number of occurrences of the word. Returns the doc_id of the document
+     * num docs with word, and the number of occurrences of the word in the doc.
+     * Returns the doc_id of the document
      *
      * @param array &$item a reference to an array to store statistic in
-     * @param int $starting_offset offset into word_docs for start of posting
-     *      list
      * @param int $current_offset offset into word_docs for the document to
      *      calculate statistics for
-     * @param int $last_offset offset into word_docs for end of posting
-     *      list
+     * @param int $num_doc_or_links number of documents or links doc appears in
      * @param int $occurs number of occurrences of the current word in 
      *   the document
      *
      * @return string $doc_id of document pointed to by $current_offset
      */
-    function makeItem(&$item, $start_offset, $current_offset, $last_offset,
+    function makeItem(&$item, $current_offset, $num_doc_or_links,
         $occurs = 0)
     {
-        $num_doc_or_links =  floor(($last_offset - $start_offset) /
-            self::POSTING_LEN); 
         $posting = $this->getWordDocsSubstring($current_offset, 
             self::POSTING_LEN);
 
         list($doc_index, $occurrences) = $this->unpackPosting($posting);
+
         if($occurrences < $occurs) {
             $occurrences = $occurs;
         }
 
         $doc_depth = log(10*(($doc_index +1) + 
-            $this->num_docs_per_generation*$this->generation)*NUM_FETCHERS, 10);
+            $this->num_docs_per_generation*$this->generation), 10);
         $item[self::DOC_RANK] = number_format(11 - 
             $doc_depth, PRECISION);
         $doc_loc = $doc_index << 4;
@@ -502,6 +516,7 @@ class IndexShard extends PersistentStructure implements CrawlConstants
         list($doc_len, $num_keys) = 
             $this->unpackPosting(substr($doc_info_string, 4));
         $item[self::GENERATION] = $this->generation;
+
         $is_doc = (($doc_len & self::LINK_FLAG) == 0) ? true : false;
         if(!$is_doc) {
             $doc_len -= self::LINK_FLAG;
@@ -509,9 +524,17 @@ class IndexShard extends PersistentStructure implements CrawlConstants
                 //scale doc rank of links by 1/(avg num of links/page)
         }
         $item[self::IS_DOC] = $is_doc;
-        $is_image = (($doc_len & self::IMAGE_FLAG) == 0) ? false : true;
-        if($is_image) {$doc_len -= self::IMAGE_FLAG; }
-        $item[self::IS_IMAGE] = $is_image;
+        /* 
+           for archive crawls we store rank as the 4 bits after the high order 
+           bit
+        */
+        $rank_mask = (0x0f) << 19;
+        $pre_rank = ($doc_len & $rank_mask);
+        if( $pre_rank > 0) {
+            $item[self::DOC_RANK] = $pre_rank >> 19;
+            $doc_len -= $pre_rank;
+        }
+
         $skip_stats = false;
         
         if($item[self::SUMMARY_OFFSET] == self::NEEDS_OFFSET_FLAG) {
@@ -526,32 +549,46 @@ class IndexShard extends PersistentStructure implements CrawlConstants
                 $this->len_all_link_docs/$this->num_link_docs : 0;
             $num_docs = $this->num_link_docs;
         }
-        $doc_id = $this->getDocInfoSubstring(
-            $doc_loc + self::DOC_KEY_LEN, $num_keys * self::DOC_KEY_LEN);
-
-        if(!$skip_stats) {
-            $doc_ratio = ($average_doc_len > 0) ?
-                $doc_len/$average_doc_len : 0;
-            $pre_relevance = number_format(
-                    3 * $occurrences/
-                    ($occurrences + .5 + 1.5* $doc_ratio), 
-                    PRECISION);
-
-            $num_term_occurrences = $num_doc_or_links *
-                $num_docs/($this->num_docs + $this->num_link_docs);
-
-            $IDF = log(($num_docs - $num_term_occurrences + 0.5) /
-                ($num_term_occurrences + 0.5));
-
-            $item[self::RELEVANCE] = .5* $IDF * $pre_relevance;
-
-            $item[self::SCORE] = $item[self::DOC_RANK] + 
-                + $item[self::RELEVANCE];
+        if(!isset($item['KEY'])) {
+            $doc_id = $this->getDocInfoSubstring(
+                $doc_loc + self::DOC_KEY_LEN, $num_keys * self::DOC_KEY_LEN);
+        } else {
+            $doc_id = $item['KEY'];
         }
-
+        if(!$skip_stats) {
+            self::docStats($item, $occurrences, $doc_len, $num_doc_or_links, 
+                $average_doc_len, $num_docs, 
+                $this->num_docs + $this->num_link_docs);
+        }
         return $doc_id;
 
     }
+
+    /**
+     *
+     */
+    static function docStats(&$item, $occurrences, $doc_len, $num_doc_or_links, 
+        $average_doc_len, $num_docs, $total_docs_or_links)
+    {
+
+        $doc_ratio = ($average_doc_len > 0) ?
+            $doc_len/$average_doc_len : 0;
+        $pre_relevance = number_format(
+                3 * $occurrences/
+                ($occurrences + .5 + 1.5* $doc_ratio), 
+                PRECISION);
+
+        $num_term_occurrences = $num_doc_or_links *
+            $num_docs/($total_docs_or_links);
+
+        $IDF = log(($num_docs - $num_term_occurrences + 0.5) /
+            ($num_term_occurrences + 0.5));
+
+        $item[self::RELEVANCE] = 0.5* $IDF * $pre_relevance;
+
+        $item[self::SCORE] = $item[self::DOC_RANK] + 
+            + $item[self::RELEVANCE];
+    } 
 
     /**
      * Finds the first posting offset between $start_offset and $end_offset
@@ -670,16 +707,22 @@ class IndexShard extends PersistentStructure implements CrawlConstants
         foreach($index_shard->words as $word_id => $postings) {
             $postings_len = strlen($postings);
             // update doc offsets for newly added docs
-            for($i = 0; $i < $postings_len; $i += self::POSTING_LEN) {
-                $num = unpackInt(substr($postings, $i, self::POSTING_LEN));
-                $num += ($this->docids_len << 4);
-                charCopy(packInt($num), $postings, $i, self::POSTING_LEN);
+            $add_len_flag = false;
+            if($postings_len != 2* self::DOC_KEY_LEN || 
+                substr($postings, 0, self::POSTING_LEN) != self::HALF_BLANK) {
+                for($i = 0; $i < $postings_len; $i += self::POSTING_LEN) {
+                    $num = unpackInt(substr($postings, $i, self::POSTING_LEN));
+                    $num += ($this->docids_len << 4);
+                    charCopy(packInt($num), $postings, $i, self::POSTING_LEN);
+                }
+                $add_len_flag = true;
             }
             if(!isset($this->words[$word_id])) {
                 $this->words[$word_id] = $postings;
-                $this->word_docs_len += $postings_len;
             } else  {
                 $this->words[$word_id] .= $postings;
+            }
+            if($add_len_flag) {
                 $this->word_docs_len += $postings_len;
             }
         }
@@ -697,12 +740,20 @@ class IndexShard extends PersistentStructure implements CrawlConstants
      * shard before sending them to a queue_server. It is on the queue_server
      * however where documents are stored in the IndexArchiveBundle and
      * summary offsets are obtained. Thus, the shard needs to be updated at
-     * that point.
+     * that point. This function should be called when shard unpacked.
      *
-     * @param array $docid_offsets a set of doc_id offset pairs.
+     * @param array $docid_offsets a set of doc_id  associated with a pair
+     *      new_doc_offset, dict_word. If dict_word is present information
+     *      about this document is also stored as word data in the shards
+     *      word list, this is used to improve the speed of doing info:url
+     *      look ups.
      */
     function changeDocumentOffsets($docid_offsets)
     {
+        if($this->word_docs_packed == true) {
+            $this->unpackWordDocs();
+        }
+
         $docids_len = $this->docids_len;
 
         for($i = 0 ; $i < $docids_len; $i += $row_len) {
@@ -710,21 +761,43 @@ class IndexShard extends PersistentStructure implements CrawlConstants
                 self::DOC_KEY_LEN);
             $offset = unpackInt(
                 substr($doc_info_string, 0, self::POSTING_LEN));
+            $doc_len_info = substr($doc_info_string, 
+                    self::POSTING_LEN, self::POSTING_LEN);
             list($doc_len, $num_keys) = 
-                $this->unpackPosting(substr($doc_info_string, 
-                    self::POSTING_LEN, self::POSTING_LEN));
+                $this->unpackPosting($doc_len_info);
             $key_count = ($num_keys % 2 == 0) ? $num_keys + 2: $num_keys + 1;
             $row_len = self::DOC_KEY_LEN * ($key_count);
 
             $id = substr($this->doc_infos, $i + self::DOC_KEY_LEN, 
                 $num_keys * self::DOC_KEY_LEN);
 
-            $new_offset = (isset($docid_offsets[$id])) ? 
-                packInt($docid_offsets[$id]) : 
+            $new_offset = (isset($docid_offsets[$id][0])) ? 
+                packInt($docid_offsets[$id][0]) : 
                 packInt($offset);
 
             charCopy($new_offset, $this->doc_infos, $i, self::POSTING_LEN);
 
+            /*
+             * encodes doc data into the shard's word dictionary except for
+             * the first key which is the hash_url itself (should be obtainable
+             * by other means).
+             */
+            if(isset($docid_offsets[$id][1])) {
+                $len_id = strlen($id);
+                $dict_word = crawlHash($docid_offsets[$id][1], true);
+                $len_dict_word = strlen($dict_word);
+                $last_char = ord($dict_word[$len_dict_word - 1]);
+                $fill_array = array($new_offset, $doc_len_info);
+                for( $j = $len_dict_word, $k = 1; $j < $len_id; 
+                    $j += $len_dict_word, $k++) {
+                    $dict_word = substr($dict_word, 0, $len_dict_word -1).
+                        chr($last_char + $k);
+                    $fill = (isset($fill_array[$k-1])) ? $fill_array[$k-1] :
+                        self::HALF_BLANK;
+                    $this->words[$dict_word] = self::HALF_BLANK. $fill .
+                        substr($id, $j, $len_dict_word);
+                }
+            }
         }
     }
 
@@ -835,15 +908,21 @@ class IndexShard extends PersistentStructure implements CrawlConstants
         foreach($this->words as $word_id => $postings) {
             $len = strlen($postings);
             /* 
-                we back generation info to make it easier to build the global
+                we pack generation info to make it easier to build the global
                 dictionary
             */
-            $out = packInt($this->generation)
-                . packInt($this->word_docs_len)
-                . packInt($len);
-            $this->word_docs .= $postings;
-            $this->word_docs_len += $len;
-            $this->words[$word_id] = $out;
+            if($len != 2* self::DOC_KEY_LEN || 
+                substr($postings, 0, self::POSTING_LEN) != self::HALF_BLANK) {
+                $out = packInt($this->generation)
+                    . packInt($this->word_docs_len)
+                    . packInt($len);
+                $this->word_docs .= $postings;
+                $this->word_docs_len += $len;
+                $this->words[$word_id] = $out;
+            } else {
+                $out = substr($postings, self::POSTING_LEN);
+                $out[0] = chr((0x80 | ord($out[0])));
+            }
             if($fh != null) {
                 fwrite($fh, $word_id . $out);
             }
@@ -864,11 +943,18 @@ class IndexShard extends PersistentStructure implements CrawlConstants
     function unpackWordDocs()
     {
         foreach($this->words as $word_id => $postings_info) {
-            //we are ignoring the first two bytes which contains generation info
-            $offset = unpackInt(substr($postings_info, 4, 4));
-            $len = unpackInt(substr($postings_info, 8, 4));
-            $postings = substr($this->word_docs, $offset, $len);
-            $this->words[$word_id] = $postings;
+            /* we are ignoring the first four bytes which contains 
+               generation info
+             */
+            if((ord($postings_info[0]) & 0x80) > 0 ) {
+                $postings_info[0] = chr(ord($postings_info[0]) - 0x80);
+                $postings_info = self::HALF_BLANK . $postings_info;
+            } else {
+                $offset = unpackInt(substr($postings_info, 4, 4));
+                $len = unpackInt(substr($postings_info, 8, 4));
+                $postings = substr($this->word_docs, $offset, $len);
+                $this->words[$word_id] = $postings;
+            }
         }
         unset($this->word_docs);
         $this->word_docs_packed = false;
@@ -876,14 +962,14 @@ class IndexShard extends PersistentStructure implements CrawlConstants
 
     /**
      * Makes an packed integer string from a docindex and the number of
-     * occurences of a word in the document with that docindex.
+     * occurrences of a word in the document with that docindex.
      *
      * @param int $doc_index index (i.e., a count of which document it
      *      is rather than a byte offet) of a document in the document string
      * @param int $occurrences number of times a word occurred in that doc
      * @return string a packed integer containing these two pieces of info.
      */
-     function packPosting($doc_index, $occurrences)
+     static function packPosting($doc_index, $occurrences)
      {
         return packInt(($doc_index << 8) + $occurrences);
      }
@@ -897,7 +983,7 @@ class IndexShard extends PersistentStructure implements CrawlConstants
      * @return array consistring of integer doc_index and an integer number of
      *      occurences 
      */
-     function unpackPosting($posting)
+     static function unpackPosting($posting)
      {
         $doc_int = unpackInt($posting);
         $occurrences = $doc_int & 255;

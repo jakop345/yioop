@@ -675,7 +675,6 @@ class QueueServer implements CrawlConstants
 
         $start_time = microtime();
 
-        $machine_string = fgets($fh);
         $pre_sites = base64_decode(
             urldecode(file_get_contents($file)));
 
@@ -741,11 +740,13 @@ class QueueServer implements CrawlConstants
                         $hash = $site[self::HASH_URL]. 
                             $site[self::HASH] . 
                             crawlHash("link:".$site[self::URL], true);
+                        $dict_word = "info:".$site[self::URL];
                     } else {
                         $hash = $site[self::HASH_URL];
+                        $dict_word =  NULL;
                     }
-                    $summary_offsets[$hash] = 
-                        $site[self::SUMMARY_OFFSET];
+                    $summary_offsets[$hash] = array(
+                        $site[self::SUMMARY_OFFSET], $dict_word);
                 }
             }
             crawlLog("B Init Shard, Store Summaries memory usage".

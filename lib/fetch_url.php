@@ -236,16 +236,25 @@ class FetchUrl implements CrawlConstants
     public static function parseHeaderPage(&$header_and_page, 
         $value=CrawlConstants::PAGE)
     {
-        $CRLFCRLF = strpos($header_and_page, "\x0D\x0A\x0D\x0A");
-        $LFLF = strpos($header_and_page, "\x0A\x0A");
-
-        $header_offset = ($CRLFCRLF > 0) ? $CRLFCRLF : $LFLF;
+        $new_offset = 0;
+        // header will include all redirect headers
+        do {
+            $CRLFCRLF = strpos($header_and_page, "\x0D\x0A\x0D\x0A", 
+                $new_offset);
+            $LFLF = strpos($header_and_page, "\x0A\x0A", $new_offset);
             //either two CRLF (what spec says) or two LF's to be safe
+            $old_offset = $new_offset;
+            $header_offset = ($CRLFCRLF > 0) ? $CRLFCRLF : $LFLF;
+            $new_offset = ($CRLFCRLF > 0) ? $header_offset + 4 
+                : $header_offset + 2;
+            $redirect_pos = strpos($header_and_page, 'Location:', $old_offset);
+        } while($redirect_pos !== false && $redirect_pos < $new_offset);
+
         $site = array();
         $site[CrawlConstants::HEADER] = 
             substr($header_and_page, 0, $header_offset);
-
         $site[$value] = ltrim(substr($header_and_page, $header_offset));
+
         $lines = explode("\n", $site[CrawlConstants::HEADER]);
         $first_line = array_shift($lines);
         $response = preg_split("/(\s+)/", $first_line);

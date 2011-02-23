@@ -262,7 +262,7 @@ class PhraseModel extends Model
         $meta_words = array('link:', 'site:', 'version:', 'modified:',
             'filetype:', 'info:', '\-', 'os:', 'server:', 'date:',
             'index:', 'i:', 'ip:', 'weight:', 'w:', 'u:',
-            'lang:');
+            'lang:', 'media:');
         $index_name = $this->index_name;
         $weight = 1;
         $found_metas = array();

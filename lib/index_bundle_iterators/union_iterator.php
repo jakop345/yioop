@@ -248,9 +248,9 @@ class UnionIterator extends IndexBundleIterator
 
     /**
      * Returns the index associated with this iterator
-     * @return &object the index
+     * @return object the index
      */
-    function &getIndex($key = NULL)
+    function getIndex($key = NULL)
     {
         if($key != NULL) {
             if($this->current_block_fresh == false) {
