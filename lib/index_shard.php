@@ -902,6 +902,9 @@ class IndexShard extends PersistentStructure implements CrawlConstants
      */
     function packWordDocs($fh = null, $to_string = false)
     {
+        if($this->word_docs_packed) {
+            return;
+        }
         $this->word_docs_len = 0;
         $this->word_docs = "";
         $total_out = "";
@@ -922,6 +925,7 @@ class IndexShard extends PersistentStructure implements CrawlConstants
             } else {
                 $out = substr($postings, self::POSTING_LEN);
                 $out[0] = chr((0x80 | ord($out[0])));
+                $this->words[$word_id] = $out;
             }
             if($fh != null) {
                 fwrite($fh, $word_id . $out);
@@ -942,6 +946,9 @@ class IndexShard extends PersistentStructure implements CrawlConstants
      */
     function unpackWordDocs()
     {
+        if(!$this->word_docs_packed) {
+            return;
+        }
         foreach($this->words as $word_id => $postings_info) {
             /* we are ignoring the first four bytes which contains 
                generation info
@@ -949,6 +956,7 @@ class IndexShard extends PersistentStructure implements CrawlConstants
             if((ord($postings_info[0]) & 0x80) > 0 ) {
                 $postings_info[0] = chr(ord($postings_info[0]) - 0x80);
                 $postings_info = self::HALF_BLANK . $postings_info;
+                $this->words[$word_id] = $postings_info;
             } else {
                 $offset = unpackInt(substr($postings_info, 4, 4));
                 $len = unpackInt(substr($postings_info, 8, 4));
@@ -965,7 +973,7 @@ class IndexShard extends PersistentStructure implements CrawlConstants
      * occurrences of a word in the document with that docindex.
      *
      * @param int $doc_index index (i.e., a count of which document it
-     *      is rather than a byte offet) of a document in the document string
+     *      is rather than a byte offset) of a document in the document string
      * @param int $occurrences number of times a word occurred in that doc
      * @return string a packed integer containing these two pieces of info.
      */

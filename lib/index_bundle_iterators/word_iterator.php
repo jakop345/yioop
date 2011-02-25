@@ -146,6 +146,7 @@ class WordIterator extends IndexBundleIterator
         $this->current_block_fresh = false;
         $this->dictionary_info = 
             $index->dictionary->getWordInfo($word_key, true);
+
         if ($this->dictionary_info === false) {
             $this->empty = true;
         } else {

@@ -369,7 +369,14 @@ class IndexShardTest extends UnitTest
             $this->assertEqual($c_data['CCCCCCCCFFFFFFFF']
                 [CrawlConstants::SUMMARY_OFFSET], 
                 0,  "Summary offset matches predicted second word");
+        $out_string = $this->test_objects['shard']->save(true);
 
+        $this->test_objects['shard2'] = IndexShard::load("shard.txt",
+            $out_string);
+        $this->test_objects['shard']->prefixes = NULL;
+        $this->test_objects['shard']->unpackWordDocs();
+        $this->test_objects['shard']->packWordDocs(null, true);
+        $this->test_objects['shard']->prefixes = NULL;
     }
 
     /**
@@ -445,6 +452,7 @@ class IndexShardTest extends UnitTest
             crawlHash('FFFFFFFF', true), 5);
         $this->assertTrue(isset($c_data["AAAAAAAABBBBBBBBCCCCCCCC"]), 
             "String Load Doc lookup 2 by word works");
+
     }
 }
 ?>

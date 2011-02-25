@@ -327,7 +327,9 @@ class QueueServer implements CrawlConstants
     }
 
     /**
-     *
+     * Even during a recrawl teh fetcher may send robot data to the
+     * queue_server. This function prints a log message and calls another
+     * function to delete this useless robot file.
      */
     function processRecrawlRobotUrls()
     {
@@ -341,7 +343,10 @@ class QueueServer implements CrawlConstants
     }
 
     /**
+     * Even during a recrawl teh fetcher may send robot data to the
+     * queue_server. This function delete the passed robot file.
      *
+     * @param string $file robot file to delete
      */
     function processRecrawlRobotArchive($file)
     {
