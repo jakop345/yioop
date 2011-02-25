@@ -286,7 +286,7 @@ class GroupIterator extends IndexBundleIterator
                 if($item !== false) { 
                     $item[self::RELEVANCE] = 0.15 *
                         $pre_out_pages[$hash_url][0][self::RELEVANCE];
-                    if(isset($item[self::DOC_RANK])) {
+                    if(!isset($item[self::DOC_RANK])) {
                         $item[self::DOC_RANK] = 0.15 *
                             $pre_out_pages[$hash_url][0][self::DOC_RANK];
                     }

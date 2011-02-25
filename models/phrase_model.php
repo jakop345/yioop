@@ -474,8 +474,10 @@ class PhraseModel extends Model
             foreach($next_docs as $doc_key => $doc_info) {
                 $summary = & $doc_info[CrawlConstants::SUMMARY];
                 unset($doc_info[CrawlConstants::SUMMARY]);
-                $pages[] = array_merge($doc_info, $summary);
-                $num_retrieved++;
+                if(is_array($summary)) {
+                    $pages[] = array_merge($doc_info, $summary);
+                    $num_retrieved++;
+                }
             }
 
         }
