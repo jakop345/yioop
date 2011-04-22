@@ -471,6 +471,9 @@ class IndexShard extends PersistentStructure implements CrawlConstants
         return $results;
     }
 
+    /**
+     *
+     */
     static function numDocsOrLinks($start_offset, $last_offset)
     {
         return floor(($last_offset - $start_offset) / self::POSTING_LEN);
@@ -520,7 +523,7 @@ class IndexShard extends PersistentStructure implements CrawlConstants
         $is_doc = (($doc_len & self::LINK_FLAG) == 0) ? true : false;
         if(!$is_doc) {
             $doc_len -= self::LINK_FLAG;
-            $item[self::DOC_RANK] *= 0.015; 
+            $item[self::DOC_RANK] *= .03; 
                 //scale doc rank of links by 1/(avg num of links/page)
         }
         $item[self::IS_DOC] = $is_doc;
@@ -923,7 +926,8 @@ class IndexShard extends PersistentStructure implements CrawlConstants
                 $this->word_docs_len += $len;
                 $this->words[$word_id] = $out;
             } else {
-                $out = substr($postings, self::POSTING_LEN);
+                $out = substr($postings, 
+                    self::POSTING_LEN, self::WORD_ITEM_LEN);
                 $out[0] = chr((0x80 | ord($out[0])));
                 $this->words[$word_id] = $out;
             }

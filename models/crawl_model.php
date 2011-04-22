@@ -280,7 +280,7 @@ class CrawlModel extends Model implements CrawlConstants
         while($row = $this->db->fetchArray($result)) {
             if($components) {
                 $mix = $this->getCrawlMix($row['MIX_TIMESTAMP'], true);
-                $row['COMPONENTS'] = $mix['COMPONENTS'];
+                $row['GROUPS'] = $mix['GROUPS'];
             }
             $rows[] = $row;
         }
@@ -308,13 +308,27 @@ class CrawlModel extends Model implements CrawlConstants
         } else {
             $mix = array();
         }
-        $sql = "SELECT WEIGHT, CRAWL_TIMESTAMP FROM MIX_COMPONENTS WHERE ".
+        $sql = "SELECT GROUP_ID, RESULT_BOUND".
+            " FROM MIX_GROUPS WHERE ".
             " MIX_TIMESTAMP='$timestamp'";
         $result = $this->db->execute($sql);
+        $mix['GROUPS'] = array();
+        while($row = $this->db->fetchArray($result)) {
+            $mix['GROUPS'][$row['GROUP_ID']]['RESULT_BOUND'] = 
+                $row['RESULT_BOUND'];
+        }
+        foreach($mix['GROUPS'] as $group_id => $data) {
+            $sql = "SELECT CRAWL_TIMESTAMP, WEIGHT, KEYWORDS ".
+                " FROM MIX_COMPONENTS WHERE ".
+                " MIX_TIMESTAMP='$timestamp' AND GROUP_ID='$group_id'";
+            $result = $this->db->execute($sql);
 
-        $mix['COMPONENTS'] = array();
-        while($row =  $this->db->fetchArray($result)) {
-            $mix['COMPONENTS'][] = $row;
+            $mix['COMPONENTS'] = array();
+            $count = 0;
+            while($row =  $this->db->fetchArray($result)) {
+                $mix['GROUPS'][$group_id]['COMPONENTS'][$count] =$row;
+                $count++;
+            }
         }
         return $mix;
     }
@@ -356,14 +370,22 @@ class CrawlModel extends Model implements CrawlConstants
         //next we store the new data
         $sql = "INSERT INTO CRAWL_MIXES VALUES ('$timestamp', '".
             $mix['MIX_NAME']."')";
-
         $this->db->execute($sql);
 
-        foreach($mix['COMPONENTS'] as $component) {
-            $sql = "INSERT INTO MIX_COMPONENTS VALUES ('$timestamp', '".
-                $component['WEIGHT']."', '" .
-                $component['CRAWL_TIMESTAMP']."')";
+        $gid = 0;
+        foreach($mix['GROUPS'] as $group_id => $group_data) {
+
+            $sql = "INSERT INTO MIX_GROUPS VALUES ('$timestamp', '$gid', ".
+                "'".$group_data['RESULT_BOUND']."')";
             $this->db->execute($sql);
+            foreach($group_data['COMPONENTS'] as $component) {
+                $sql = "INSERT INTO MIX_COMPONENTS VALUES ('$timestamp', '".
+                    $gid."', '".$component['CRAWL_TIMESTAMP']."', '".
+                    $component['WEIGHT']."', '" .
+                    $component['KEYWORDS']."')";
+                $this->db->execute($sql);
+            }
+            $gid++;
         }
     }
 
@@ -376,6 +398,8 @@ class CrawlModel extends Model implements CrawlConstants
     {
         $this->db->selectDB(DB_NAME);
         $sql = "DELETE FROM CRAWL_MIXES WHERE MIX_TIMESTAMP='$timestamp'";
+        $this->db->execute($sql);
+        $sql = "DELETE FROM MIX_GROUPS WHERE MIX_TIMESTAMP='$timestamp'";
         $this->db->execute($sql);
         $sql = "DELETE FROM MIX_COMPONENTS WHERE MIX_TIMESTAMP='$timestamp'";
         $this->db->execute($sql);

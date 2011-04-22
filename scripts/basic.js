@@ -31,9 +31,9 @@
  */
 
 /*
-    Display a two second message in the message div at the top of the web page
-
-    String msg  string to display
+ *  Display a two second message in the message div at the top of the web page
+ *
+ *  @param String msg  string to display
  */
 function doMessage(msg)
 {
@@ -43,8 +43,8 @@ function doMessage(msg)
 }
 
 /*
-    Undisplays the message display in the message div and clears associated 
-    message display timer
+ *  Undisplays the message display in the message div and clears associated 
+ *  message display timer
  */
 function undoMessage()
 {
@@ -54,10 +54,10 @@ function undoMessage()
 }
 
 /*
-    Function to set up a request object even in  older IE's
-
-    return Object the request object
-*/
+ *  Function to set up a request object even in  older IE's
+ *
+ *  @return Object the request object
+ */
 function makeRequest()
 {
     try {
@@ -87,11 +87,11 @@ function makeRequest()
 }
 
 /*
-    Make an AJAX request for a url and put the results as inner HTML of a tag
-
-    Object tag  a DOM element to put the results of the AJAX request
-    String url  web page to fetch using AJAX
-*/
+ *  Make an AJAX request for a url and put the results as inner HTML of a tag
+ *
+ *  @param Object tag  a DOM element to put the results of the AJAX request
+ *  @param String url  web page to fetch using AJAX
+ */
 function getPage(tag, url)
 {
     var request = makeRequest();
@@ -112,21 +112,21 @@ function getPage(tag, url)
 }
 
 /*
-    Shorthand for document.getElementById()
-
-    String id  the id of the DOM element one wants
-*/
+ *  Shorthand for document.getElementById()
+ *
+ *  @param String id  the id of the DOM element one wants
+ */
 function elt(id) 
 {
     return document.getElementById(id);
 }
 
 /*
-    Sets whether an elt is styled as display:none or block
-
-    String id  the id of the DOM element one wants
-    Boolean value  true means display block; false display none
-*/
+ *  Sets whether an elt is styled as display:none or block
+ *
+ *  @param String id  the id of the DOM element one wants
+ *  @param Boolean value  true means display block; false display none
+ */
 function setDisplay(id, value) 
 {
     obj = elt(id);

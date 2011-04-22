@@ -309,7 +309,8 @@ class QueueServer implements CrawlConstants
     }
 
     /**
-     *
+     * Used to write info about the current recrawl to file as well as to
+     * process any recrawl data files received 
      */
     function writeArchiveCrawlInfo()
     {
@@ -343,7 +344,7 @@ class QueueServer implements CrawlConstants
     }
 
     /**
-     * Even during a recrawl teh fetcher may send robot data to the
+     * Even during a recrawl the fetcher may send robot data to the
      * queue_server. This function delete the passed robot file.
      *
      * @param string $file robot file to delete
@@ -356,7 +357,13 @@ class QueueServer implements CrawlConstants
     }
 
     /**
-     * 
+     * Used to get a data archive file (either during a normal crawl or a 
+     * recrawl). After uncompressing this file (which comes via the web server
+     * through fetch_controller, from the fetcher), it sets which fetcher
+     * sent it and also returns the sites contained in it.
+     *
+     * @param string $file name of archive data file
+     * @return array sites contained in the file from the fetcher
      */
     function &getDataArchiveFileData($file)
     {
@@ -381,7 +388,9 @@ class QueueServer implements CrawlConstants
     }
 
     /**
-     *
+     * Processes fetcher data file information during a recrawl
+     * 
+     * @param String $file a file which contains the info to process
      */
     function processRecrawlDataArchive($file)
     {
@@ -1014,7 +1023,10 @@ class QueueServer implements CrawlConstants
     }
 
     /**
+     * Writes status information about the current crawl so that the webserver
+     * app can use it for its display. 
      *
+     * @param array $sites contains the most recently crawled sites
      */
     function writeCrawlStatus(&$sites)
     {
@@ -1065,7 +1077,11 @@ class QueueServer implements CrawlConstants
     }
 
     /**
+     * Used to create an encode a string representing with meta info for
+     * a fetcher schedule.
      *
+     * @param int $schedule_time timestamp of the schedule
+     * @return string base64 encoded meta info
      */
     function calculateScheduleMetaInfo($schedule_time)
     {

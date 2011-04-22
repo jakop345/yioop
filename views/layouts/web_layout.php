@@ -72,7 +72,7 @@ class WebLayout extends Layout
             <meta charset="utf-8" />
             <link rel="shortcut icon"   href="favicon.ico" />
             <link rel="stylesheet" type="text/css" href="css/search.css" />
-            <linl rel="search" type="application/opensearchdescription+xml" 
+            <link rel="search" type="application/opensearchdescription+xml" 
                 href="<?php e(QUEUE_SERVER."yioopbar.xml");?>"
                 title="Content search" />
 
@@ -100,6 +100,14 @@ class WebLayout extends Layout
                 <?php }
             ?>
             <script type="text/javascript" src="./scripts/basic.js" ></script>
+            <?php
+            if(isset($data['INCLUDE_SCRIPTS'])) {
+                foreach($data['INCLUDE_SCRIPTS'] as $script_name) {
+                    e('<script type="text/javascript" src="./scripts/'.
+                        $script_name.'.js" ></script>');
+                }
+            }
+            ?>
             <script type="text/javascript" >
             <?php
             if(isset($data['SCRIPT'])) {
@@ -107,6 +115,7 @@ class WebLayout extends Layout
             }
             ?>
             </script>
+
         </body>
     </html>
     <?php

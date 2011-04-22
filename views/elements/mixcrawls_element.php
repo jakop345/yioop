@@ -88,13 +88,22 @@ class MixcrawlsElement extends Element
                 e("<small>".date("d M Y H:i:s", $mix['MIX_TIMESTAMP']).
                     "</small>"); ?></td>
             <td><?php
-                if(isset($mix['COMPONENTS']) && count($mix['COMPONENTS'])  > 0){
-                    $plus = "";
-                    foreach($mix['COMPONENTS'] as $component) {
-                        e($plus.$component['WEIGHT']." * (".
-                            $data['available_crawls'][
-                            $component['CRAWL_TIMESTAMP']].")");
-                        $plus = "<br /> + ";
+                if(isset($mix['GROUPS']) && count($mix['GROUPS'])  > 0){
+                    foreach($mix['GROUPS'] as $group_id => $group_data) {
+                        if(!isset($group_data['RESULT_BOUND']) ||
+                           !isset($group_data['COMPONENTS']) ||
+                           count($group_data['COMPONENTS']) == 0) continue;
+                        e(" #".$group_data['RESULT_BOUND']."[");
+                        $plus = "";
+                        foreach($group_data['COMPONENTS'] as $component){
+                            $crawl_timestamp = $component['CRAWL_TIMESTAMP'];
+                            e($plus.$component['WEIGHT']." * (".
+                                $data['available_crawls'][
+                                $crawl_timestamp]." + K:".
+                                $component['KEYWORDS'].")");
+                            $plus = "<br /> + ";
+                        }
+                        e("]<br />");
                     }
                 } else {
                     e(tl('mixcrawls_view_no_components'));
