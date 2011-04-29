@@ -66,7 +66,6 @@ class EditmixElement extends Element
         <input type="hidden" name="a" value="mixCrawls" />
         <input type="hidden" name="arg" value="editmix" />
         <input type="hidden" name="update" value="update" />
-        <input type="hidden" name="mix[COMPONENTS]" value="" />
         <input type="hidden" name="mix[MIX_TIMESTAMP]" 
             value="<?php e($data['MIX']['MIX_TIMESTAMP']);?>" />
         <div class="topmargin"><label for="mix-name"><?php 
@@ -77,33 +76,12 @@ class EditmixElement extends Element
                     class="widefield"/>
         </div>
         <h3><?php e(tl('mixcrawls_element_mix_components'))?></h3>
-         <table id="mix-table" class="mixestable">
-        <tr><th><?php e(tl('editcrawl_view_weight'));?></th>
-        <th><?php e(tl('editcrawl_view_name'));?></th>
-        <th><?php e(tl('editcrawl_view_actions'));?></th></tr>
-         <?php
-         foreach($data['MIX']['COMPONENTS'] as $component) {
-             $crawl_name = $data['available_crawls'][
-                $component['CRAWL_TIMESTAMP']];
-             e("<tr id='".$component['CRAWL_TIMESTAMP']
-                ."'><td>");
-            $this->view->optionsHelper->render(
-                "crawl-weight", "mix[COMPONENTS][".
-                $component['CRAWL_TIMESTAMP']."]", 
-                $data['allowed_weights'], $component['WEIGHT']);
-             e("</td><td>".$crawl_name."</td>");
-             e("<td><a href='javascript:removeCrawl(".
-                $component['CRAWL_TIMESTAMP'].",\"".$crawl_name. "\" )' >".
-                tl('editcrawl_view_delete')."</a></td></tr>");
-             unset($data['available_crawls'][$component['CRAWL_TIMESTAMP']]);
-         }
-         ?>
-         </table>
-        <div class="topmargin"><label for="add-crawls"><?php 
-            e(tl('crawloptions_element_add_crawls'))?></label><?php
-            $this->view->optionsHelper->render("add-crawls", "add_crawls", 
-                $data['available_crawls'], 0);
-        ?></div>
+        <div>
+        [<a href='javascript:addGroup(1)'><?php 
+                e(tl('mixcrawls_element_add_group')); ?></a>]
+        </div>
+        <div id="mix-tables" >
+        </div>
         <div class="center slightpad"><button class="buttonbox" 
             type="submit"><?php 
                 e(tl('mixcrawls_element_save_button')); ?></button></div>

@@ -470,8 +470,9 @@ class IndexDictionary implements CrawlConstants
         }
 
         $word_item_len = IndexShard::WORD_ITEM_LEN;
-        $word_data_len = IndexShard::WORD_ITEM_LEN- IndexShard::WORD_KEY_LEN;
+        $word_data_len = IndexShard::WORD_ITEM_LEN - IndexShard::WORD_KEY_LEN;
         $file_num = ord($word_id[0]);
+
         $prefix = ord($word_id[1]);
         $prefix_info = $this->getDictSubstring($file_num,
             self::PREFIX_ITEM_SIZE*$prefix, self::PREFIX_ITEM_SIZE);
@@ -480,7 +481,6 @@ class IndexDictionary implements CrawlConstants
         }
 
         $offset = unpackInt(substr($prefix_info, 0, 4));
-
         $high = unpackInt(substr($prefix_info, 4, 4)) - 1;
 
         $start = self::PREFIX_HEADER_SIZE  + $offset;
