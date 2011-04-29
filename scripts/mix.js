@@ -29,7 +29,7 @@
  * @copyright 2009, 2010, 2011
  * @filesource
  */
-/
+
 /**
  * Contains javascripts used to edit Crawl Mixes
  * A crawl mix consists of a sequence of groups. Each group

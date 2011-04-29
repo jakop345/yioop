@@ -281,6 +281,7 @@ class PhraseModel extends Model
             $results = NULL;
         }
         if($results == NULL) {
+            $total_rows = 0;
             $results['TOTAL_ROWS'] = 0;
         }
         if(isset($total_rows)) {
