@@ -83,7 +83,8 @@ class SearchView extends View implements CrawlConstants
             src="resources/yioop.png" alt="<?php e(tl('search_view_title')); ?>" 
             /></a></h1>
         <div class="searchbox">
-        <form id="searchForm" method="get" action=''>
+
+        <form id="searchForm" method="get" action='?'>
         <p>
         <input type="hidden" name="YIOOP_TOKEN" value="<?php 
             e($data['YIOOP_TOKEN']); ?>" />
@@ -98,13 +99,7 @@ class SearchView extends View implements CrawlConstants
         </form>
         </div>
         <?php
-        if(!isset($data['PAGES'])) {
-            ?>
-            <div class="landing-footer">
-                <a href="http://www.seekquarry.com/"><?php
-                e(tl('search_view_developed_seek_quarry')); ?></a></div>
-            </div><?php
-        } else {
+        if(isset($data['PAGES'])) {
             ?>
             <h2><?php e(tl('search_view_query_results')); ?> (<?php 
                 e(tl('search_view_calculated', $data['ELAPSED_TIME']));?> <?php
@@ -167,8 +162,8 @@ class SearchView extends View implements CrawlConstants
                     ?> 
                     <a href="?YIOOP_TOKEN=<?php e($data['YIOOP_TOKEN']);
                         ?>&amp;c=search&amp;a=related&amp;arg=<?php 
-                        e(urlencode($page[self::URL])); ?>&amp;
-                        its=<?php e($data['its']); ?>" ><?php 
+                        e(urlencode($page[self::URL])); ?>&amp;<?php
+                        ?>its=<?php e($data['its']); ?>" ><?php 
                         e(tl('search_view_similar')); 
                     ?></a>.
                     <?php 
@@ -177,8 +172,8 @@ class SearchView extends View implements CrawlConstants
                     ?>
                         <a href="?YIOOP_TOKEN=<?php e($data['YIOOP_TOKEN']);
                         ?>&amp;c=search&amp;q=<?php 
-                        e("link:".urlencode($page[self::URL])); ?>&amp;
-                        its=<?php e($data['its']); ?>" ><?php 
+                        e(urlencode("link:".$page[self::URL])); ?>&amp;<?php
+                        ?>its=<?php e($data['its']); ?>" ><?php 
                         e(tl('search_view_inlink')); 
                     ?></a>.
                     <?php 
@@ -189,8 +184,8 @@ class SearchView extends View implements CrawlConstants
                           foreach($page[self::IP_ADDRESSES] as $address) {?> 
                             <a href="?YIOOP_TOKEN=<?php e($data['YIOOP_TOKEN']);
                                 ?>&amp;c=search&amp;q=<?php
-                                e('ip:'.$address);?>&amp;
-                                its=<?php e($data['its']); ?>" >IP:<?php 
+                                e(urlencode('ip:'.$address));?>&amp;<?php
+                                ?>its=<?php e($data['its']); ?>" >IP:<?php 
                                 e("$address");?></a>. <?php 
                           } 
                         }?></p>
@@ -205,6 +200,16 @@ class SearchView extends View implements CrawlConstants
                 $data['PAGING_QUERY'], $data['LIMIT'], 
                 $data['RESULTS_PER_PAGE'], $data['TOTAL_ROWS']);
         }
+        ?><div class="landing-footer">
+            <div><b><?php e($data['INDEX_INFO']);?></b></div>
+            <div><a href="http://www.seekquarry.com/"><?php
+            e(tl('search_view_developed_seek_quarry')); ?></a></div>
+
+        </div><?php
+        if(!isset($data['PAGES'])) {
+            e("</div>");
+        }
+
     }
 }
 ?>

@@ -333,10 +333,39 @@ class CrawlModel extends Model implements CrawlConstants
         return $mix;
     }
 
+    function getInfoTimestamp($timestamp, $is_mix = NULL)
+    {
+        if($is_mix === NULL) {
+            $is_mix = $this->isCrawlMix($timestamp);
+        }
+        $info = array();
+        if($is_mix) {
+            $this->db->selectDB(DB_NAME);
+
+            $sql = "SELECT MIX_TIMESTAMP, MIX_NAME FROM CRAWL_MIXES WHERE ".
+                " MIX_TIMESTAMP='$timestamp'";
+            $result = $this->db->execute($sql);
+            $mix =  $this->db->fetchArray($result);
+            $info['TIMESTAMP'] = $timestamp;
+            $info['DESCRIPTION'] = $mix['MIX_NAME'];
+            $info['IS_MIX'] = true;
+        } else {
+            $dir = CRAWL_DIR.'/cache/'.self::index_data_base_name.$timestamp;
+            if(file_exists($dir)) {
+                $info = IndexArchiveBundle::getArchiveInfo($dir);
+                $tmp = unserialize($info['DESCRIPTION']);
+                $info['DESCRIPTION'] = $tmp['DESCRIPTION'];
+            }
+        }
+
+        return $info;
+    }
+
     /**
      * Returns whether the supplied timestamp corresponds to a crawl mix
      *
      * @param string timestamp of the requested crawl mix
+
      * @return bool true if it does; false otherwise
      */
     function isCrawlMix($timestamp)
