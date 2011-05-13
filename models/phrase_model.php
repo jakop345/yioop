@@ -192,6 +192,7 @@ class PhraseModel extends Model
         $presentation_parts = preg_split('/#(\d)+#/', 
             $input_phrase, -1, PREG_SPLIT_DELIM_CAPTURE);
         $count = 0;
+
         $presentation_parts = array_chunk($presentation_parts, 2);
 
         $num_parts = count($presentation_parts);
@@ -215,9 +216,16 @@ class PhraseModel extends Model
         }
 
         $results_high = $low + $results_per_page;
+        $num_last_parts = count($query_parts[$last_part]);
+        if($query_parts[$last_part][$num_last_parts - 1][0] + 
+            $query_parts[$last_part][$num_last_parts - 1][1] < $low) {
+            $query_parts[$last_part][$num_last_parts - 1][1] = $results_high;
+        }
+
         $num_phrases = count($query_parts);
 
         foreach($query_parts as $phrase => $pre_result_bounds) {
+
             $phrase_high = $pre_result_bounds[0][1];
             $result_bounds = array();
             $start_flag = false;
@@ -227,6 +235,7 @@ class PhraseModel extends Model
                 if($bound[0] > $results_high) break;
                 //rest of presentation after what we'll return so break
                 $phrase_high =  $bound[0] + $bound[1];
+
                 if($phrase_high < $low) continue;
                 // this part of presentation is before what we'll return so skip
                 $result_bounds[] = $bound;
@@ -247,6 +256,7 @@ class PhraseModel extends Model
             foreach($disjunct_phrases as $disjunct) {
                 list($word_struct, $format_words) = 
                     $this->parseWordStructConjunctiveQuery($disjunct);
+
                 if($word_struct != NULL) {
                     $word_structs[] = $word_struct;
                 }
@@ -297,6 +307,8 @@ class PhraseModel extends Model
         } else {
             $format_words = NULL;
         }
+
+        $results["PAGES"] = array_values($results["PAGES"]);
 
         $output = $this->formatPageResults($results, $format_words);
 
