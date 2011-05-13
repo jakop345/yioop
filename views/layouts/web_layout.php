@@ -69,6 +69,8 @@ class WebLayout extends Layout
 
             <meta name="description" content="<?php 
                 e(tl('web_layout_description')); ?>" />
+            <meta name = "viewport" content = "width = device-width
+            initial-scale = .25">
             <meta charset="utf-8" />
             <link rel="shortcut icon"   href="favicon.ico" />
             <link rel="stylesheet" type="text/css" href="css/search.css" />
