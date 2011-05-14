@@ -146,7 +146,7 @@ class SearchView extends View implements CrawlConstants
                             ?>&amp;c=search&amp;a=cache&amp;q=<?php 
                             e($data['QUERY']); ?>&amp;arg=<?php 
                             e(urlencode($page[self::URL])); 
-                            ?>&amp;its=<?php e($data['its']); ?>" >
+                            ?>&amp;its=<?php e($page[self::CRAWL_TIME]); ?>" >
                         <?php
                         if($page[self::TYPE] == "text/html" || 
                             stristr($page[self::TYPE], "image")) {
@@ -163,7 +163,7 @@ class SearchView extends View implements CrawlConstants
                     <a href="?YIOOP_TOKEN=<?php e($data['YIOOP_TOKEN']);
                         ?>&amp;c=search&amp;a=related&amp;arg=<?php 
                         e(urlencode($page[self::URL])); ?>&amp;<?php
-                        ?>its=<?php e($data['its']); ?>" ><?php 
+                        ?>its=<?php e($page[self::CRAWL_TIME]); ?>" ><?php 
                         e(tl('search_view_similar')); 
                     ?></a>.
                     <?php 
@@ -173,7 +173,7 @@ class SearchView extends View implements CrawlConstants
                         <a href="?YIOOP_TOKEN=<?php e($data['YIOOP_TOKEN']);
                         ?>&amp;c=search&amp;q=<?php 
                         e(urlencode("link:".$page[self::URL])); ?>&amp;<?php
-                        ?>its=<?php e($data['its']); ?>" ><?php 
+                        ?>its=<?php e($page[self::CRAWL_TIME]); ?>" ><?php 
                         e(tl('search_view_inlink')); 
                     ?></a>.
                     <?php 
