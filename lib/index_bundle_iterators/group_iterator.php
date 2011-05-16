@@ -217,6 +217,7 @@ class GroupIterator extends IndexBundleIterator
                 $done = true;
             }
         } while(!$done);
+
         return $pages;
     }
 

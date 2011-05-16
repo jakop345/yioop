@@ -286,6 +286,7 @@ class PhraseModel extends Model
 
         if(isset($results['PAGES'])){
             ksort($results['PAGES']);
+            $results["PAGES"] = array_values($results["PAGES"]);
         }
         if(count($results) == 0) {
             $results = NULL;
@@ -308,7 +309,7 @@ class PhraseModel extends Model
             $format_words = NULL;
         }
 
-        $results["PAGES"] = array_values($results["PAGES"]);
+
 
         $output = $this->formatPageResults($results, $format_words);
 

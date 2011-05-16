@@ -188,6 +188,7 @@ class IntersectIterator extends IndexBundleIterator
     {
         $biggest_gen_offset = $this->index_bundle_iterators[
                         0]->currentGenDocOffsetWithWord();
+        $old_biggest_gen_offset = $biggest_gen_offset;
 
         for($i = 0; $i < $this->num_iterators; $i++) {
             $old_gen_doc_offset[$i] = NULL;
@@ -200,7 +201,7 @@ class IntersectIterator extends IndexBundleIterator
                     $this->index_bundle_iterators[
                         $i]->currentGenDocOffsetWithWord();
                 if($new_gen_doc_offset[$i] == $old_gen_doc_offset[$i] && 
-                    $new_gen_doc_offset[$i] != $biggest_gen_offset) {
+                    $new_gen_doc_offset[$i] != $old_biggest_gen_offset) {
                     return -1;
                 }
 
@@ -217,6 +218,7 @@ class IntersectIterator extends IndexBundleIterator
                     $all_same = false;
                 }
             }
+            $old_biggest_gen_offset = $biggest_gen_offset;
             if($all_same) {
                 return 1;
             }
