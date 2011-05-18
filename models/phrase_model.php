@@ -309,8 +309,6 @@ class PhraseModel extends Model
             $format_words = NULL;
         }
 
-
-
         $output = $this->formatPageResults($results, $format_words);
 
         return $output;
@@ -648,6 +646,7 @@ class PhraseModel extends Model
     function getQueryIterator($word_structs)
     {
         $iterators = array();
+        $total_iterators = 0;
         foreach($word_structs as $word_struct) {
             if(!is_array($word_struct)) { continue;}
             $word_keys = $word_struct["KEYS"];
@@ -657,6 +656,7 @@ class PhraseModel extends Model
 
             $weight = $word_struct["WEIGHT"];
             $num_word_keys = count($word_keys);
+            $total_iterators += $num_word_keys;
             $word_iterators = array();
             if($num_word_keys < 1) {continue;}
 
@@ -688,7 +688,7 @@ class PhraseModel extends Model
             $union_iterator = new UnionIterator($iterators);
         }
 
-        $group_iterator = new GroupIterator($union_iterator);
+        $group_iterator = new GroupIterator($union_iterator, $total_iterators);
 
         return $group_iterator;
     }

@@ -48,7 +48,7 @@ require_once BASE_DIR.'/lib/index_bundle_iterators/index_bundle_iterator.php';
  *
  * @author Chris Pollett
  * @package seek_quarry
- * @subpackage library
+ * @subpackage iterator
  * @see IndexArchiveBundle
  */
 class WordIterator extends IndexBundleIterator

@@ -586,9 +586,7 @@ class IndexDictionary implements CrawlConstants
                 $num_generations = count($info);
                 $num_docs = 0;
                 for($i = 0; $i < $num_generations; $i++) {
-                    list(, , , $num_docs) =
-                        $info[$i];
-                        $num_docs += $num_docs;
+                    $num_docs += $info[$i][3];
                 }
                 $num_docs_array[$key] = $num_docs;
             }

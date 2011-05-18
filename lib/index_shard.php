@@ -523,7 +523,7 @@ class IndexShard extends PersistentStructure implements CrawlConstants
         $is_doc = (($doc_len & self::LINK_FLAG) == 0) ? true : false;
         if(!$is_doc) {
             $doc_len -= self::LINK_FLAG;
-            $item[self::DOC_RANK] *= .03; 
+            $item[self::DOC_RANK] *= 0.03; 
                 //scale doc rank of links by 1/(avg num of links/page)
         }
         $item[self::IS_DOC] = $is_doc;
@@ -587,7 +587,7 @@ class IndexShard extends PersistentStructure implements CrawlConstants
         $IDF = log(($num_docs - $num_term_occurrences + 0.5) /
             ($num_term_occurrences + 0.5));
 
-        $item[self::RELEVANCE] = 0.5* $IDF * $pre_relevance;
+        $item[self::RELEVANCE] = 0.5 * $IDF * $pre_relevance;
 
         $item[self::SCORE] = $item[self::DOC_RANK] + 
             + $item[self::RELEVANCE];

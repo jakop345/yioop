@@ -111,13 +111,15 @@ class GroupIterator extends IndexBundleIterator
      * @param object $index_bundle_iterator to use as a source of documents
      *      to iterate over
      */
-    function __construct($index_bundle_iterator)
+    function __construct($index_bundle_iterator, $num_iterators = 1)
     {
         $this->index_bundle_iterator = $index_bundle_iterator;
         $this->num_docs = $this->index_bundle_iterator->num_docs;
         $this->results_per_block = max(
             $this->index_bundle_iterator->results_per_block,
             self::MIN_FIND_RESULTS_PER_BLOCK);
+
+        $this->results_per_block /=  ceil($num_iterators/2);
         $this->reset();
     }
 
@@ -380,6 +382,7 @@ class GroupIterator extends IndexBundleIterator
                    reached in our grouping
                 */
                 $num_inlinks = $num_docs_array[$hash_url] + 0.1;
+
                 $num_docs_seen = $this->seen_docs_unfiltered + 
                     $this->count_block_unfiltered;
 
@@ -401,11 +404,12 @@ class GroupIterator extends IndexBundleIterator
                     the iterators document list, giving a value
                     for the $num_inlinks_not_seen as per the equation below:
                  */
-                $num_inlinks_not_seen = 
-                    ($num_inlinks - $hash_count)*$hash_count/
-                    ($num_docs_seen * $num_inlinks);
-                $total_inlinks_for_doc = $hash_count + $num_inlinks_not_seen;
 
+                $num_inlinks_not_seen = 
+                    ($num_inlinks - $hash_count) *
+                    $hash_count/(sqrt($num_inlinks) * $num_docs_seen);
+                $total_inlinks_for_doc = $num_inlinks_not_seen + $hash_count;
+            //    echo "$num_inlinks_not_seen  \n";
                 /*
                      we estimate score[x] of the xth inlink for this document
                      as approximately score[x] = score[1]x^{-alpha}
