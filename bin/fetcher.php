@@ -1316,6 +1316,10 @@ class Fetcher implements CrawlConstants
                         $link_word_counts, $link_meta_ids, false, $link_rank);
 
                     $meta_ids[] = 'link:'.$url;
+                    if(UrlParser::getHost($url) != 
+                        UrlParser::getHost($site[self::URL])){
+                        $meta_ids[] = 'elink:'.$url;
+                    }
                 }
 
             }

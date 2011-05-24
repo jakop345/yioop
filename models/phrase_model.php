@@ -544,9 +544,9 @@ class PhraseModel extends Model
         $start_slice = floor(($limit)/self::NUM_CACHE_PAGES) *
             self::NUM_CACHE_PAGES;
         if(USE_MEMCACHE) {
-            $tmp = "";
+            $mem_tmp = "";
             foreach($word_structs as $word_struct) {
-                $tmp .= serialize($word_struct["KEYS"]).
+                $mem_tmp .= serialize($word_struct["KEYS"]).
                     serialize($word_struct["RESTRICT_PHRASES"]) .
                     serialize($word_struct["DISALLOW_PHRASES"]) .
                     $word_struct["WEIGHT"] .
@@ -557,7 +557,7 @@ class PhraseModel extends Model
             $results = array();
             $results['PAGES'] = array();
             for($i=$start_slice; $i< $to_retrieve; $i+=self::NUM_CACHE_PAGES){
-                $summary_hash = crawlHash($tmp.":".$i);
+                $summary_hash = crawlHash($mem_tmp.":".$i);
                 $slice = $MEMCACHE->get($summary_hash);
                 if($slice === false) {
                     $cache_success = false;
@@ -611,7 +611,7 @@ class PhraseModel extends Model
                 unset($pages[$i][self::LINKS]);
             }
             for($i = 0;$i < $to_retrieve;$i+=self::NUM_CACHE_PAGES){
-                $summary_hash = crawlHash($tmp.":".$i);
+                $summary_hash = crawlHash($mem_tmp.":".$i);
                 $slice['PAGES'] = array_slice($pages, $i, 
                     self::NUM_CACHE_PAGES);
                 $slice['TOTAL_ROWS'] = $results['TOTAL_ROWS'];

@@ -347,23 +347,22 @@ class GroupIterator extends IndexBundleIterator
     function computeBoostAndOutPages(&$pre_out_pages)
     {
         $out_pages = array();
-        if($this->count_block_unfiltered >=$this->results_per_block) {
-            $hash_inlinks = array();
-            $indexes = array();
-            foreach($pre_out_pages as $hash_url => $group_infos) {
-                $key = $group_infos[0]["KEY"];
-                $tmp_index =  $this->getIndex($key);
-                $indexes[$tmp_index->dir_name] = $tmp_index;
-                $hash_inlinks[$tmp_index->dir_name][$hash_url] = 
-                    $pre_out_pages[$hash_url][0][self::INLINKS];
-            }
-            $num_docs_array = array();
-
-            foreach($hash_inlinks as $name => $inlinks) {
-                $num_docs_array = array_merge($num_docs_array, 
-                    $indexes[$name]->dictionary->getNumDocsArray($inlinks));
-            }
+        $hash_inlinks = array();
+        $indexes = array();
+        foreach($pre_out_pages as $hash_url => $group_infos) {
+            $key = $group_infos[0]["KEY"];
+            $tmp_index =  $this->getIndex($key);
+            $indexes[$tmp_index->dir_name] = $tmp_index;
+            $hash_inlinks[$tmp_index->dir_name][$hash_url] = 
+                $pre_out_pages[$hash_url][0][self::INLINKS];
         }
+        $num_docs_array = array();
+
+        foreach($hash_inlinks as $name => $inlinks) {
+            $num_docs_array = array_merge($num_docs_array, 
+                $indexes[$name]->dictionary->getNumDocsArray($inlinks));
+        }
+
         foreach($pre_out_pages as $hash_url => $group_infos) {
             $out_pages[$hash_url] = $pre_out_pages[$hash_url][0];
             $out_pages[$hash_url][self::SUMMARY_OFFSET] = array();
@@ -376,12 +375,13 @@ class GroupIterator extends IndexBundleIterator
                         $doc_info[self::SUMMARY_OFFSET]);
             }
 
+            $num_inlinks = $num_docs_array[$hash_url] + 0.1;
             if($this->count_block_unfiltered >=$this->results_per_block) {
                 /* approximate the scores contributed to this
                    doc for this word search by links we haven't
                    reached in our grouping
                 */
-                $num_inlinks = $num_docs_array[$hash_url] + 0.1;
+                
 
                 $num_docs_seen = $this->seen_docs_unfiltered + 
                     $this->count_block_unfiltered;
@@ -395,21 +395,27 @@ class GroupIterator extends IndexBundleIterator
                     A result after grouping consists of a document and inlinks
                     which contain the terms of the base iterator.
 
-                    $hash_count/($num_docs_seen *$num_inlinks)
+                    $hash_count/($num_docs_seen *sqrt($num_inlinks))
                     approximates the probability that an inlink for 
                     a particular document happens to 
-                    contain the terms of the iterator. After $num_docs_seen
+                    contain the terms of the iterator. The last
+                    1/sqrt($num_inlinks) is a fudge factor to
+                    the number of inlinks that contain the term. 
+                    After $num_docs_seen
                     many documents, there are $num_inlinks - $hash_count
                     many inlinks which might appear in the remainder of
                     the iterators document list, giving a value
                     for the $num_inlinks_not_seen as per the equation below:
                  */
 
+                $docs_inlinks_ratio = $num_inlinks/$this->num_docs;
+                $group_ratio = $hash_count/$num_docs_seen;
+                $min_ratio = min($docs_inlinks_ratio, $group_ratio);
                 $num_inlinks_not_seen = 
-                    ($num_inlinks - $hash_count) *
-                    $hash_count/(sqrt($num_inlinks) * $num_docs_seen);
+                    ($num_inlinks - $hash_count) * $min_ratio * 
+                     1/sqrt($num_inlinks);
                 $total_inlinks_for_doc = $num_inlinks_not_seen + $hash_count;
-            //    echo "$num_inlinks_not_seen  \n";
+
                 /*
                      we estimate score[x] of the xth inlink for this document
                      as approximately score[x] = score[1]x^{-alpha}
@@ -436,8 +442,8 @@ class GroupIterator extends IndexBundleIterator
                     (1 + $out_pages[$hash_url][self::RELEVANCE])/2;
             } else {
                 $out_pages[$hash_url][self::SCORE] = 
-                    $out_pages[$hash_url][self::HASH_SUM_SCORE] *
-                    (1 + $out_pages[$hash_url][self::RELEVANCE])/2;
+                    $out_pages[$hash_url][self::HASH_SUM_SCORE] * 
+                    (1 + 0.001*$out_pages[$hash_url][self::RELEVANCE]*$num_inlinks)/2;
             }
 
         }
