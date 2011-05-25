@@ -84,6 +84,8 @@ class SearchController extends Controller implements CrawlConstants
      * appropriate method to handle the given activity.Finally, it draw the 
      * search screen.
      */
+	var $components = array();
+	
     function processRequest() 
     {
         $data = array();

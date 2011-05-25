@@ -149,7 +149,6 @@ class CrawlModel extends Model implements CrawlConstants
         $this->db->selectDB(DB_NAME);
         $sql = "SELECT CRAWL_TIME FROM CURRENT_WEB_INDEX";
         $result = $this->db->execute($sql);
-
         $row =  $this->db->fetchArray($result);
         
         return $row['CRAWL_TIME'];
@@ -277,12 +276,14 @@ class CrawlModel extends Model implements CrawlConstants
         $result = $this->db->execute($sql);
 
         $rows = array();
-        while($row = $this->db->fetchArray($result)) {
-            if($components) {
-                $mix = $this->getCrawlMix($row['MIX_TIMESTAMP'], true);
-                $row['COMPONENTS'] = $mix['COMPONENTS'];
+        if($result){
+            while($row = $this->db->fetchArray($result)) {
+                if($components) {
+                    $mix = $this->getCrawlMix($row['MIX_TIMESTAMP'], true);
+                    $row['COMPONENTS'] = $mix['COMPONENTS'];
+                }
+                $rows[] = $row;
             }
-            $rows[] = $row;
         }
         return $rows;
     }
@@ -303,7 +304,6 @@ class CrawlModel extends Model implements CrawlConstants
             $sql = "SELECT MIX_TIMESTAMP, MIX_NAME FROM CRAWL_MIXES WHERE ".
                 " MIX_TIMESTAMP='$timestamp'";
             $result = $this->db->execute($sql);
-
             $mix =  $this->db->fetchArray($result);
         } else {
             $mix = array();
@@ -332,11 +332,12 @@ class CrawlModel extends Model implements CrawlConstants
         $sql = "SELECT MIX_TIMESTAMP, MIX_NAME FROM CRAWL_MIXES WHERE ".
             " MIX_TIMESTAMP='$timestamp'";
         $result = $this->db->execute($sql);
-
-        if($mix =  $this->db->fetchArray($result)) {
-            return true;
-        } else {
-            return false;
+        if($result) {
+            if($mix =  $this->db->fetchArray($result)) {
+                return true;
+            } else {
+                return false;
+            }
         }
     }
 
@@ -424,6 +425,10 @@ class CrawlModel extends Model implements CrawlConstants
             if(isset($index_info[self::META_WORDS]) ) {
                 $seed_info['meta_words'] = $index_info[self::META_WORDS];
             }
+			// Added by Priya Gangaraju
+            if(isset($index_info[self::POST_PROCESSORS])) {
+                $seed_info['post_processors'] = $index_info[self::POST_PROCESSORS];
+			}
         }
         return $seed_info;
     }
@@ -510,6 +515,14 @@ EOT;
             }
             $n[]="";
         }
+        //Added by Priya Gangaraju
+		//for adding post processors
+        $n[] = "[post_processors]";
+        if(isset($info["post_processors"])) {
+            foreach($info["post_processors"]['processors'] as $post_processor) {
+                $n[] = "processors[] = '$post_processor';";
+            }
+        }//
 
         $out = implode("\n", $n);
         file_put_contents(WORK_DIRECTORY."/crawl.ini", $out);

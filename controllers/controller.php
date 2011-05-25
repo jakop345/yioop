@@ -66,6 +66,8 @@ abstract class Controller
      *  Loads all of the models listed in the models field array.
      *  Loads each view the controlle might use listed in the views field array
      */
+	 var $components = array();
+
     public function __construct() 
     {
         require_once BASE_DIR."/models/model.php";
@@ -88,7 +90,16 @@ abstract class Controller
 
             $this->$view_instance_name = new $view_name();
         }
-    }
+		
+		foreach($this->components as $component) 
+		{
+            require_once BASE_DIR."/lib/components/".$component."_component.php";
+			$component_name = ucfirst($component)."Component";
+			$component_instance_name = lcfirst($component_name);
+			$this->$component_instance_name = new $component_name();
+		}
+		
+	}
 
     /**
      *  This function should be overriden to web handle requests

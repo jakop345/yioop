@@ -154,6 +154,11 @@ interface CrawlConstants
     const LANG = 'bg';
     const IS_IMAGE = 'bh';
     const ROBOT_INSTANCE = 'bi';
+	
+	//Added by Priya Gangaraju
+	const SUBDOCS = 'bj';
+	const SUBDOCTYPE = 'bk';
+	const POST_PROCESSORS = 'bl';//
 
     const NEEDS_OFFSET_FLAG = 0x7FFFFFFF;
 

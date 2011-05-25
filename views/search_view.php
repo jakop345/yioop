@@ -51,7 +51,7 @@ class SearchView extends View implements CrawlConstants
     /** Names of helper objects that the view uses to help draw itself 
      *  @var array
      */
-    var $helpers = array("pagination", "filetype");
+    var $helpers = array("pagination", "filetype", "displayresults");
     /** Names of element objects that the view uses to display itself 
      *  @var array
      */
@@ -134,7 +134,7 @@ class SearchView extends View implements CrawlConstants
                 }
                 ?></a></h2>
                 <p><?php 
-                echo $page[self::DESCRIPTION]; ?></p>
+                echo $this->displayresultsHelper->render($page[self::DESCRIPTION]); ?></p>
                 <p class="echolink" ><?php if(isset($page[self::URL])){
                     e(substr($page[self::URL],0, 200)." ");}
                     e(tl('search_view_rank', 

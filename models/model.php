@@ -46,7 +46,9 @@ define("SCORE_PRECISION", 4);
 
 define("TITLE_LENGTH", 20);
 define("MAX_TITLE_LENGTH", 20);
-define("DESCRIPTION_LENGTH", 200);
+
+//Modified from 200 to 1000; by Priya Gangaraju
+define("DESCRIPTION_LENGTH", 2000);
 define("SNIPPET_LENGTH_LEFT", 40);
 define("SNIPPET_LENGTH_RIGHT", 30);
 define("MIN_SNIPPET_LENGTH", 50);

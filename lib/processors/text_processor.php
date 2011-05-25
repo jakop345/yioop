@@ -61,7 +61,20 @@ class TextProcessor implements CrawlConstants
      * @return array a summary of (title, description,links, and content) of 
      *      the information in $page
      */
-    static function process($page, $url)
+	 var $components = array();
+	 
+	 public function __construct(){
+	 
+		foreach($this->components as $component) 
+		{
+            require_once BASE_DIR."/lib/components/".$component."_component.php";
+			$component_name = ucfirst($component)."Component";
+			$component_instance_name = lcfirst($component_name);
+			$this->$component_instance_name = new $component_name();
+		}
+	 
+	 } 
+    public function process($page, $url)
     {
         $summary = NULL;
         if(is_string($page)) {

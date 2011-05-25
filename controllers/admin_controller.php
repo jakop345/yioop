@@ -47,6 +47,8 @@ require_once BASE_DIR."/lib/crawl_constants.php";
  * @package seek_quarry
  * @subpackage controller
  */
+ 
+require_once BASE_DIR."/lib/components/recipe_component.php";
 class AdminController extends Controller implements CrawlConstants
 {
     /**
@@ -71,6 +73,8 @@ class AdminController extends Controller implements CrawlConstants
         "manageRoles", "manageCrawls", "mixCrawls",
         "manageLocales", "crawlStatus", "configure");
 
+    var $components = array("recipe");
+    
     /**
      * This is the main entry point for handling requests to administer the
      * Yioop/SeekQuarry site
@@ -705,7 +709,11 @@ class AdminController extends Controller implements CrawlConstants
                         $seed_info['disallowed_sites']['url'];
                     $info[self::META_WORDS] = 
                         $seed_info['meta_words'];
-
+                    //if(isset($seed_info['post_processors']['processors'])){
+                        $info[self::POST_PROCESSORS] =
+                            $seed_info['post_processors']['processors'];
+                    //}
+                        
                     if(isset($_REQUEST['description'])) {
                         $description = 
                             $this->clean($_REQUEST['description'], "string");
@@ -915,6 +923,31 @@ class AdminController extends Controller implements CrawlConstants
                     } else if(isset($seed_info['meta_words'])){
                             $data['META_WORDS'] = $seed_info['meta_words'];
                     }
+                    
+                    //Added by Priya Gangaraju
+                    $data['POST_PROCESSORS'] = array();
+                    $included_processors = array();
+                    if(!$no_further_changes) {
+                        if(isset($_REQUEST["POST_PROCESSORS"])) {
+                            $seed_info['post_processors']['processors'] =
+                                $_REQUEST["POST_PROCESSORS"];
+                        } else {
+                            $seed_info['post_processors']['processors'] =
+                                array();
+                        }
+                        $update_flag = true;
+                        if(isset($seed_info['post_processors']['processors'])) {
+                            $included_processors = 
+                                $seed_info['post_processors']['processors'];
+                        }
+                    }
+                    foreach($this->components as $component) {
+                        $processor_name = ucfirst($component);
+                        $data['POST_PROCESSORS'][$processor_name] = 
+                            (in_array($processor_name,$included_processors)) ? 
+                            "checked='checked'" : "";
+                    }//
+             
                     $data['SCRIPT'] = "setDisplay('toggle', ".
                         "'{$data['restrict_sites_by_url']}');".
                         " elt('load-options').onchange = ".

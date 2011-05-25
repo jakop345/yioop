@@ -162,6 +162,38 @@ class CrawloptionsElement extends Element
                    name="META_WORDS[<?php e($i); ?>]['URL_PATTERN']" /></td>
             </tr>
             </table>
+            
+            <!-- Added by Priya Gangaraju -->
+            <?php if(isset($data['POST_PROCESSORS'])) {
+            ?>
+                <table border = "1">
+                    <tr><th><?php e(tl('crawloptions_element_processor'));?></th>
+                    <th><?php 
+                        e(tl('crawloptions_element_url_include')); ?></th></tr>
+                    <div class="topmargin"><b>
+                    <?php e(tl("crawloptions_element_post_processors"));?>
+                        </b></div>
+                    <?php
+                    $k = 0;
+                    foreach($data['POST_PROCESSORS'] as 
+                        $processor => $checkedValue) {
+                    ?>
+                    <tr><td><?php e($processor. "Processor"); ?></td>
+                    <td align = "center"><input type="checkbox" 
+                        name="POST_PROCESSORS[<?php e($k); ?>]" 
+						value = "<?php e($processor) ?>"
+						<?php e($checkedValue); ?>   
+						</td></tr>
+                <?php 
+                    $k++;
+                }
+                ?>
+            </table>
+            <?php
+            }
+            ?> <!-- -->
+            
+            
         <div class="center slightpad"><button class="buttonbox" 
             type="submit"><?php e(tl('crawloptions_element_save_options')); 
             ?></button></div>

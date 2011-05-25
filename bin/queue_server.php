@@ -195,6 +195,13 @@ class QueueServer implements CrawlConstants
      * As part of the creation process, a database manager is initialized so
      * the queue_server can make use of its file/folder manipulation functions.
      */
+    //Added by Priya Gangaraju
+     var $components = array("recipe");
+    /**
+     * This is a list of components which do post processing after the crawl
+     * Post processing function of the component is called if it is selected 
+     * in the crawl options page.
+    */
     function __construct($indexed_file_types) 
     {
         $db_class = ucfirst(DBMS)."Manager";
@@ -210,6 +217,16 @@ class QueueServer implements CrawlConstants
         $this->meta_words = array();
         $this->last_index_save_time = 0;
         $this->index_dirty = false;
+        
+        //Added by Priya Gangaraju.
+        //create an instance of all the components.
+        foreach($this->components as $component) 
+        {
+            require_once BASE_DIR."/lib/components/".$component."_component.php";
+            $component_name = ucfirst($component)."Component";
+            $component_instance_name = lcfirst($component_name);
+            $this->$component_instance_name = new $component_name();
+        }
     }
 
     /**
@@ -402,8 +419,8 @@ class QueueServer implements CrawlConstants
         if(file_exists(CRAWL_DIR."/schedules/queue_server_messages.txt")) {
             $info = unserialize(file_get_contents(
                 CRAWL_DIR."/schedules/queue_server_messages.txt"));
-
-            unlink(CRAWL_DIR."/schedules/queue_server_messages.txt");
+                unlink(CRAWL_DIR."/schedules/queue_server_messages.txt");
+                
             switch($info[self::STATUS])
             {
                 case "NEW_CRAWL":
@@ -432,6 +449,18 @@ class QueueServer implements CrawlConstants
                         self::index_data_base_name.$this->crawl_time);
                     crawlLog("Stopping crawl !!\n");
                     $info[self::STATUS] = self::WAITING_START_MESSAGE_STATE;
+                    
+                    //Added by Priya Gangaraju. 
+                    //Calling post processing function if the processor is selected in the crawl options page.
+                    /*if($post_processors_flag) {
+                        crawlLog("Post Processing");
+                        //foreach($info[self::POST_PROCESSORS] as $component) {
+                    	foreach($this->components as $component) {
+                            $component_instance_name = 
+                                lcfirst($component)."Component";
+                            $this->$component_instance_name->postProcessing($this->crawl_time);
+                        }
+                    //}*/
                 break;
 
                 case "RESUME_CRAWL":
@@ -675,7 +704,7 @@ class QueueServer implements CrawlConstants
 
         $start_time = microtime();
 
-        $machine_string = fgets($fh);
+        //$machine_string = fgets($fh);
         $pre_sites = base64_decode(
             urldecode(file_get_contents($file)));
 

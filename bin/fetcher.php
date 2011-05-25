@@ -718,7 +718,7 @@ class Fetcher implements CrawlConstants
         $PAGE_PROCESSORS = $this->page_processors;
 
         $start_time = microtime();
-
+     
         $stored_site_pages = array();
         $summarized_site_pages = array();
 
@@ -833,6 +833,53 @@ class Fetcher implements CrawlConstants
                     $summarized_site_pages[$i][self::THUMB] = 
                         $site[self::DOC_INFO][self::THUMB];
                 }
+                //Added by Priya Gangaraju
+                if(isset($site[self::DOC_INFO][self::SUBDOCS])) {
+                    
+                    $subdocs = $site[self::DOC_INFO][self::SUBDOCS];
+                    foreach($subdocs as $subdoc){
+                        $i++;
+                        
+                        foreach($summary_fields as $field) {
+                            if(isset($site[$field])) {
+                                $stored_site_pages[$i][$field] = $site[$field];
+                                $summarized_site_pages[$i][$field] = $site[$field];
+                            }
+                        }
+                        foreach($stored_fields as $field) {
+                            if(isset($site[$field])) {
+                                $stored_site_pages[$i][$field] = $site[$field];
+                            }
+                        }
+                        
+                        $summarized_site_pages[$i][self::URL] = 
+                            strip_tags($site[self::URL]);
+                                                
+                        $summarized_site_pages[$i][self::TITLE] = 
+                            strip_tags($subdoc[self::TITLE]); 
+ 
+                        $summarized_site_pages[$i][self::DESCRIPTION] = 
+                            strip_tags($subdoc[self::DESCRIPTION]);
+                                        
+                        if(isset($site[self::JUST_METAS])) {
+                            $summarized_site_pages[$i][self::JUST_METAS] = true;
+                        }
+                        
+                        if(isset($subdoc[self::LANG])) {
+                            $summarized_site_pages[$i][self::LANG] = 
+                                $subdoc[self::LANG];
+                        }
+                        
+                        $summarized_site_pages[$i][self::LINKS] = 
+                            $subdoc[self::LINKS];
+                                            
+                        if(isset($subdoc[self::SUBDOCTYPE])) {
+                            $summarized_site_pages[$i][self::SUBDOCTYPE] =
+                                $subdoc[self::SUBDOCTYPE];
+                        }
+                    }
+                    
+                }//
                 $i++;
             }
         } // end for
@@ -1281,7 +1328,7 @@ class Fetcher implements CrawlConstants
                 }
 
             }
-            $index_shard->addDocumentWords($doc_keys, self::NEEDS_OFFSET_FLAG, 
+                $index_shard->addDocumentWords($doc_keys, self::NEEDS_OFFSET_FLAG, 
                 $word_counts, $meta_ids, true, $is_image);
 
             $index_shard->appendIndexShard($link_shard);
@@ -1293,7 +1340,6 @@ class Fetcher implements CrawlConstants
         if($this->crawl_type == self::ARCHIVE_CRAWL) {
             $this->recrawl_check_scheduler = true;
         }
-
         crawlLog("  Build mini inverted index time ".
             (changeInMicrotime($start_time)));
     }
@@ -1363,6 +1409,13 @@ class Fetcher implements CrawlConstants
                 $meta_ids[] = 'lang:'.$site[self::LANG];
             }
         }
+        
+        //Added by Priya Gangaraju
+        if(isset($site[self::SUBDOCTYPE])){
+            $meta_ids[] = $site[self::SUBDOCTYPE].':all';
+            crawlLog("Added meta : ".$site[self::SUBDOCTYPE].":all");
+        }
+        
         // handles user added meta words
         if(isset($this->meta_words)) {
             $matches = array();

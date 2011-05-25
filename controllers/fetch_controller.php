@@ -72,6 +72,8 @@ class FetchController extends Controller implements CrawlConstants
      * activity for processing.
      *
      */
+	var $components = array();
+	
     function processRequest() 
     {
         $data = array();

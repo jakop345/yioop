@@ -262,7 +262,7 @@ class PhraseModel extends Model
         $meta_words = array('link:', 'site:', 'version:', 'modified:',
             'filetype:', 'info:', '\-', 'os:', 'server:', 'date:',
             'index:', 'i:', 'ip:', 'weight:', 'w:', 'u:',
-            'lang:');
+            'lang:', 'recipe:','ingredient:');
         $index_name = $this->index_name;
         $weight = 1;
         $found_metas = array();
@@ -304,10 +304,11 @@ class PhraseModel extends Model
             results by bolding either
          */
         $query_words = explode(" ", $phrase_string); //not stemmed
+
+        // modified from getLocaletag ()to $this->getLocaleTag() by Priya Gangaraju
         $base_words = 
             array_keys(PhraseParser::extractPhrasesAndCount($phrase_string,
-            MAX_PHRASE_LEN, getLocaleTag()));
-            //stemmed
+            MAX_PHRASE_LEN, $this->getLocaleTag())); //stemmed
         $words = array_merge($base_words, $found_metas);
         if(isset($words) && count($words) == 1 && 
             count($disallow_phrases) < 1) {
@@ -577,6 +578,12 @@ class PhraseModel extends Model
         return $group_iterator;
     }
 
+    // Added by Priya Gangaraju
+    function getLocaleTag()
+    {
+        return "en_US";
+    }
+    
 }
 
 ?>

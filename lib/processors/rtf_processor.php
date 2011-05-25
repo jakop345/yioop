@@ -58,7 +58,9 @@ class RtfProcessor extends TextProcessor
      * @return array a summary of (title, description,links, and content) of 
      *      the information in $page
      */
-    public static function process($page, $url)
+	 var $components = array();
+	 
+    public function process($page, $url)
     {
         $text = "";
         if(is_string($page)) {

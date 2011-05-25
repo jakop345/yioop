@@ -53,6 +53,11 @@ require_once BASE_DIR."/lib/url_parser.php";
 class HtmlProcessor extends TextProcessor
 {
     const MAX_DESCRIPTION_LEN = 2000;
+    
+    /**
+    *list of components being used
+    */
+    var $components = array("recipe");
 
 
     /**
@@ -66,9 +71,11 @@ class HtmlProcessor extends TextProcessor
      *  @return array  a summary of the contents of the page
      *
      */
-    public static function process($page, $url)
+    public function process($page, $url)
     {
         $summary = NULL;
+        //Added Priya Gangaraju
+        $subdoc = NULL;
 
         if(is_string($page)) {
 
@@ -76,11 +83,30 @@ class HtmlProcessor extends TextProcessor
             $dom = self::dom($page);
             if($dom !== false && self::checkMetaRobots($dom)) {
                 $summary[self::TITLE] = self::title($dom);
-                $summary[self::DESCRIPTION] = self::description($dom);
+                $summary[self::DESCRIPTION] = self::description($dom); 
                 $summary[self::LANG] = self::lang($dom, 
                     $summary[self::DESCRIPTION]);
                 $summary[self::LINKS] = self::links($dom, $url);
                 $summary[self::PAGE] = $page;
+                
+                //Added by Priya Gangaraju
+                $summary[self::SUBDOCS] = array();
+                foreach($this->components as $component) {
+                    $component_instance_name = lcfirst($component)."Component";
+                    $subdocs_description = $this->$component_instance_name->description($dom);
+                    if(is_array($subdocs_description) && count($subdocs_description) != 0) {
+                        foreach($subdocs_description as $subdoc_description){
+                            $subdoc[self::TITLE] = $subdoc_description["title"];
+                            $subdoc[self::DESCRIPTION] = $subdoc_description["ingredients"];
+                            $subdoc[self::LANG] = $summary[self::LANG];
+                            $subdoc[self::LINKS] = $summary[self::LINKS];
+                            $subdoc[self::PAGE] = $page;
+                            $subdoc[self::SUBDOCTYPE] = lcfirst($component);
+                            $summary[self::SUBDOCS][] = $subdoc;
+                        }
+                    }
+                }//
+                
                 if(strlen($summary[self::DESCRIPTION] . $summary[self::TITLE])
                     == 0 && count($summary[self::LINKS]) == 0) {
                     //maybe not html? treat as text still try to get urls
