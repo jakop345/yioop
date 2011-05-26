@@ -1,5 +1,5 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
@@ -21,7 +21,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *  END LICENSE
- * 
+ *
  * Main web interface entry point for Yioop!
  * search site. Used to both get and display
  * search results. Also used for inter-machine
@@ -35,7 +35,7 @@
  * @filesource
  */
 
-/** Calculate base directory of script 
+/** Calculate base directory of script
  *  @ignore
  */
 define("BASE_DIR", substr($_SERVER['SCRIPT_FILENAME'], 0,-strlen("index.php")));
@@ -46,12 +46,12 @@ define("BASE_DIR", substr($_SERVER['SCRIPT_FILENAME'], 0,-strlen("index.php")));
 require_once(BASE_DIR.'configs/config.php');
 ini_set("memory_limit","500M");
 header("X-FRAME-OPTIONS: DENY"); //prevent click jacking
-session_name(SESSION_NAME); 
+session_name(SESSION_NAME);
 session_start();
 /**
  * Sets up DB to be used
  */
-require_once(BASE_DIR."/models/datasources/".DBMS."_manager.php"); 
+require_once(BASE_DIR."/models/datasources/".DBMS."_manager.php");
 
 if(USE_MEMCACHE) {
     $MEMCACHE = new Memcache();
@@ -76,10 +76,10 @@ if ( false === function_exists('lcfirst') ) {
      */
     function lcfirst( $str )
     { return (string)(strtolower(substr($str,0,1)).substr($str,1));}
-} 
+}
 
-$available_controllers = array("search", "fetch", "cache", 
-    "settings", "admin", "archive");
+$available_controllers = array("search", "fetch", "cache",
+    "settings", "admin", "archive","toolbar");
 
 //the request variable c is used to determine the controller
 if(!isset($_REQUEST['c'])) {
@@ -98,7 +98,7 @@ if(!PROFILE ) {
     $controller_name = "admin";
 }
 
-//the request variable l is used to determine the locale 
+//the request variable l is used to determine the locale
 if(isset($_SESSION['l']) ||isset($_REQUEST['l'])) {
     $l = (isset($_REQUEST['l'])) ? $_REQUEST['l'] : $_SESSION['l'];
     if(strlen($l) < 10) {
@@ -125,9 +125,9 @@ setLocaleObject($locale_tag);
 
 
 /**
- * Loads controller responsible for calculating 
+ * Loads controller responsible for calculating
  * the data needed to render the scene
- * 
+ *
  */
 require_once(BASE_DIR."/controllers/".$controller_name."_controller.php");
 $controller_class = ucfirst($controller_name)."Controller";
@@ -139,7 +139,7 @@ $controller->processRequest();
  * Verifies that the supplied controller string is a controller for the
  * SeekQuarry app
  *
- * @param string $controller_name  name of controller 
+ * @param string $controller_name  name of controller
  *      (this usually come from the query string)
  * @return bool  whether it is a valid controller
  */
@@ -186,7 +186,7 @@ function tl()
 /**
  * Sets the language to be used for locale settings
  *
- * @param string $locale_tag the tag of the language to use to determine 
+ * @param string $locale_tag the tag of the language to use to determine
  *      locale settings
  */
 function setLocaleObject($locale_tag)
@@ -197,10 +197,10 @@ function setLocaleObject($locale_tag)
 }
 
 /**
- * Gets the language tag (for instance, en_US for American English) of the 
+ * Gets the language tag (for instance, en_US for American English) of the
  * locale that is currently being used.
  *
- * @return string  the tag of the language currently being used for locale 
+ * @return string  the tag of the language currently being used for locale
  *      settings
  */
 function getLocaleTag()
@@ -210,9 +210,9 @@ function getLocaleTag()
 }
 
 /**
- * Returns the current language directions. 
+ * Returns the current language directions.
  *
- * @return string ltr or rtl depending on if the language is left-to-right 
+ * @return string ltr or rtl depending on if the language is left-to-right
  * or right-to-left
  */
 function getLocaleDirection()
@@ -222,9 +222,9 @@ function getLocaleDirection()
 }
 
 /**
- * Returns the current locales method of writing blocks (things like divs or 
- * paragraphs).A language like English puts blocks one after another from the 
- * top of the page to the bottom. Other languages like classical Chinese list 
+ * Returns the current locales method of writing blocks (things like divs or
+ * paragraphs).A language like English puts blocks one after another from the
+ * top of the page to the bottom. Other languages like classical Chinese list
  * them from right to left.
  *
  *  @return string  tb lr rl depending on the current locales block progression
@@ -237,8 +237,8 @@ function getBlockProgression()
 }
 
 /**
- * Returns the writing mode of the current locale. This is a combination of the 
- * locale direction and the block progression. For instance, for English the 
+ * Returns the writing mode of the current locale. This is a combination of the
+ * locale direction and the block progression. For instance, for English the
  * writing mode is lr-tb (left-to-right top-to-bottom).
  *
  *  @return string   the locales writing mode

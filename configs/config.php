@@ -50,7 +50,7 @@ if(file_exists(BASE_DIR."/configs/local_config.php")) {
 if(!defined('WORK_DIRECTORY')) {
 /*+++ The next block of code is machine edited, change at 
 your own risk, please use configure web page instead +++*/
-define('WORK_DIRECTORY', '');
+define('WORK_DIRECTORY', 'c:/xampp/xampp/htdocs/yioop_data');
 /*++++++*/
 }
 
