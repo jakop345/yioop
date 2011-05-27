@@ -114,7 +114,7 @@ function getword(event){
  */
 
 function sendCaptureTest(){
-    var yioopurl = "http://localhost/yioop/";
+    var yioopurl = "http://www.yioop.com/";
     var file = Components.classes["@mozilla.org/file/directory_service;1"]
         .getService(Components.interfaces.nsIProperties)
         .get("ProfD", Components.interfaces.nsIFile);
