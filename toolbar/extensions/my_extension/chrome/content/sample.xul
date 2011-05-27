@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+
+<?xml-stylesheet href="chrome://sample/skin/test.css"
+                 type="text/css"?>
+<overlay id="sample" 
+        xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" >
+
+<script type="application/x-javascript"
+    src="chrome://sample/content/sample.js" />
+ 
+<script>
+	document.addEventListener("load", function() { linkclick(); }, true);    
+</script>        
+ 
+<window id="main-window">
+
+<toolbox id="navigator-toolbox">       
+        
+<toolbar id="tool-toolbar" toolbarname="Smartsearch Toolbar" accesskey="T"
+    class="chromeclass-toolbar" context="toolbar-context-menu"
+    hidden="false" persist="hidden">
+        
+<toolbarbutton id="toolbar-button" label="SmartSearch" value="3"/>
+</toolbar>
+</toolbox>
+</window>
+</overlay>
