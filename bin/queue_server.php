@@ -75,6 +75,8 @@ require_once BASE_DIR."/lib/fetch_url.php";
 /** Loads common constants for web crawling*/
 require_once BASE_DIR."/lib/crawl_constants.php";
 
+require_once BASE_DIR."/lib/phrase_parser.php";
+
 /*
  *  We'll set up multi-byte string handling to use UTF-8
  */
@@ -279,7 +281,9 @@ class QueueServer implements CrawlConstants
             
             //check for orphaned queue bundles
             $this->deleteOrphanedBundles();
-
+			
+			//check for toolbardata
+			$this->processToolbarData();
 
             $this->processIndexData();
             if(time() - $this->last_index_save_time > FORCE_SAVE_TIME){
@@ -711,6 +715,119 @@ class QueueServer implements CrawlConstants
     }
 
     /**
+     * Sets up the directory to look for a file of unprocessed
+     * index archive data from toolbar then calls the function
+     * processDataFile to process the oldest file found
+     */
+    function processToolbarData()
+   {
+       echo " In the function processToolbarData";
+       crawlLog("Checking for toolbar data files to process...");
+
+       $index_dir =  CRAWL_DIR."/schedules/".
+           "ToolbarData";
+       $this->processDataFile($index_dir, "processToolbarDataInvertedIndex");
+       crawlLog("done.");
+	   echo " End of the function processToolbarData";
+   }
+   
+   /**
+    * Builds the MiniInvertedIndex for the files recived from
+    * extension toolbar then adds it to the INVERTED INDEX.
+	* 
+	* @param string $file gets the toolbar file contents to process
+	* toolbarshard.   
+    */
+    function processToolbarDataInvertedIndex($file)
+    {
+        echo " In the function processToolbarDataInvertedIndex";
+        static $first = true;
+        crawlLog(
+            "Start processing toolbar data memory usage".
+            memory_get_usage() . "...");
+        crawlLog("Processing toolbar data in $file...");
+
+        $start_time = microtime();
+        $rowdelimiter = ",";
+        $delimiter = "|:|";
+        $filecontent = file_get_contents($file);
+
+        $rows = explode($rowdelimiter, $filecontent);
+
+        foreach ($rows as $newrow) {
+            $tok = explode($delimiter, $newrow);
+            $site[self::LINKS][$tok[2]]= $tok[0];
+            $site[self::TIMESTAMP]= $tok[3];
+            $site[self::ENCODING]= $tok[4];
+        }
+
+        $toolbar_shard = new IndexShard("toolbar_shard");
+        $seen_sites = array();
+        foreach($site[self::LINKS] as $url => $link_text) {
+            if(strlen($url) > 0) {
+                $summary = array();
+
+                $had_links = true;
+
+                $link_text = strip_tags($link_text);
+                $link_id =
+                    "url|".$url."|text|$link_text|ref|".$site[self::URL];
+
+                $link_keys = crawlHash($url, true) .
+                      crawlHash($link_id, true) .
+                      crawlHash("info:".$url, "true");
+
+                $summary[self::HASH_URL] =  $link_keys;
+		        $summary[self::URL] =  $link_id;
+                $summary[self::TITLE] = $url;
+                   // stripping html to be on the safe side
+                $summary[self::DESCRIPTION] =  $link_text;
+                $summary[self::TIMESTAMP] =  $site[self::TIMESTAMP];
+                $summary[self::ENCODING] = $site[self::ENCODING];
+                $summary[self::HASH] =  $link_id;
+                $summary[self::TYPE] = "link";
+                $summary[self::HTTP_CODE] = "link";
+                $seen_sites[] = $summary;
+
+                $link_text =
+                    mb_ereg_replace(PUNCT, " ", $link_text);
+
+                $link_word_counts =
+                    PhraseParser::extractPhrasesAndCount($link_text,
+                    MAX_PHRASE_LEN, $lang);
+
+                $toolbar_shard->addDocumentWords($link_keys,
+                    self::NEEDS_OFFSET_FLAG,
+                    $link_word_counts, array());
+            }
+        }
+
+        $visited_urls_count = 0;
+        $generation =
+             $this->index_archive->initGenerationToAdd($toolbar_shard);
+
+        $summary_offsets = array();
+        if(isset($seen_sites)) {
+            $this->index_archive->addPages(
+                $generation, self::SUMMARY_OFFSET, $seen_sites,
+                $visited_urls_count);
+
+            foreach($seen_sites as $site) {
+                $hash = $site[self::HASH_URL];
+                $dict_word =  NULL;
+                $summary_offsets[$hash] =
+                    array($site[self::SUMMARY_OFFSET], $dict_word);
+            }
+        }
+        $toolbar_shard->changeDocumentOffsets($summary_offsets);
+        $this->index_archive->addIndexData($toolbar_shard);
+        $this->index_dirty = true;
+		unlink($file);
+
+    }
+
+
+    /**
      * Adds the summary and index data in $file to summary bundle and word index
      *
      * @param string $file containing web pages summaries and a mini-inverted
@@ -817,6 +934,7 @@ class QueueServer implements CrawlConstants
         }
         crawlLog("D (add index shard) memory usage".memory_get_usage(). 
             " time: ".(changeInMicrotime($start_time)));
+
 
         crawlLog("Done Processing File: $file");
 
