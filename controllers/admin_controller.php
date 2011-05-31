@@ -709,10 +709,9 @@ class AdminController extends Controller implements CrawlConstants
                         $seed_info['disallowed_sites']['url'];
                     $info[self::META_WORDS] = 
                         $seed_info['meta_words'];
-                    //if(isset($seed_info['post_processors']['processors'])){
-                        $info[self::POST_PROCESSORS] =
-                            $seed_info['post_processors']['processors'];
-                    //}
+                    //Added by Priya Gangaraju
+                    $info[self::POST_PROCESSORS] =
+                        $seed_info['post_processors']['processors'];
                         
                     if(isset($_REQUEST['description'])) {
                         $description = 
@@ -927,20 +926,17 @@ class AdminController extends Controller implements CrawlConstants
                     //Added by Priya Gangaraju
                     $data['POST_PROCESSORS'] = array();
                     $included_processors = array();
-                    if(!$no_further_changes) {
-                        if(isset($_REQUEST["POST_PROCESSORS"])) {
-                            $seed_info['post_processors']['processors'] =
-                                $_REQUEST["POST_PROCESSORS"];
-                        } else {
-                            $seed_info['post_processors']['processors'] =
-                                array();
-                        }
-                        $update_flag = true;
-                        if(isset($seed_info['post_processors']['processors'])) {
-                            $included_processors = 
-                                $seed_info['post_processors']['processors'];
-                        }
-                    }
+                    if(!$no_further_changes && isset($_REQUEST["posted"])) {
+                        $seed_info['post_processors']['processors'] =
+                            (isset($_REQUEST["POST_PROCESSORS"])) ?
+                            $_REQUEST["POST_PROCESSORS"] : array();
+                        $update_flag = true;  
+                    } 
+                    $included_processors = 
+                        (isset($seed_info['post_processors']['processors'])) ?
+                            $seed_info['post_processors']['processors'] 
+                            : array();
+
                     foreach($this->components as $component) {
                         $processor_name = ucfirst($component);
                         $data['POST_PROCESSORS'][$processor_name] = 
@@ -1033,29 +1029,19 @@ class AdminController extends Controller implements CrawlConstants
         $possible_arguments = array(
             "createmix", "deletemix", "editmix", "index");
 
-        $data['SCRIPT'] = "weights = [";
-        $data['allowed_weights'] = array();
-        $comma = "";
-        for($j = .1; $j<= 1; $j *=10) {
-            for($i = 1; $i < 10; $i++) {
-                $val = $i*$j;
-                $data['allowed_weights']["$val"] =$val;
-                $data['SCRIPT'] .= $comma .$val;
-                $comma = ",";
-            }
-        }
-        $data['allowed_weights']["10"] = 10;
-        $data['SCRIPT'] .= ",10];";
-
-
         $data["ELEMENT"] = "mixcrawlsElement";
 
         $data['mix_default'] = 0;
         $crawls = $this->crawlModel->getCrawlList();
         $data['available_crawls'][0] = tl('admin_controller_select_crawl');
+        $data['SCRIPT'] = "c = [];c[0]='".
+            tl('admin_controller_select_crawl')."';";
         foreach($crawls as $crawl) {
+        
             $data['available_crawls'][$crawl['CRAWL_TIME']] =
                 $crawl['DESCRIPTION'];
+            $data['SCRIPT'] .= 'c['.$crawl['CRAWL_TIME'].']="'.
+                $crawl['DESCRIPTION'].'";';
         }
         $mixes = $this->crawlModel->getMixList(true);
         if(count($mixes) > 0 ) {
@@ -1066,6 +1052,7 @@ class AdminController extends Controller implements CrawlConstants
             }
         }
 
+        $mix = array();
         if(isset($_REQUEST['arg']) && 
             in_array($_REQUEST['arg'], $possible_arguments)) {
             switch($_REQUEST['arg'])
@@ -1078,87 +1065,14 @@ class AdminController extends Controller implements CrawlConstants
                     } else {
                         $mix['MIX_NAME'] = tl('admin_controller_unnamed');
                     }
-                    $mix['COMPONENTS'] = array();
+                    $mix['GROUPS'] = array();
                     $this->crawlModel->setCrawlMix($mix);
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('admin_controller_mix_created')."</h1>');";
+
                 case "editmix":
-                    $data["leftorright"] = 
-                        (getLocaleDirection() == 'ltr') ? "right": "left";
-                    $data["ELEMENT"] = "editmixElement";
-                    if(!isset($mix['MIX_TIMESTAMP']) && 
-                        (!isset($_REQUEST['timestamp']) || 
-                        !in_array($_REQUEST['timestamp'], $mix_ids))) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('admin_controller_mix_doesnt_exists').
-                            "</h1>')";
-                        return $data;
-                    }
-                    if(isset($_REQUEST['timestamp'])) {
-                        $mix = $this->crawlModel->getCrawlMix(
-                            $_REQUEST['timestamp']);
-                    }
-                    $data['MIX'] = $mix;
-                    $data['SCRIPT'] .= 'elt("add-crawls").onchange = '.
-                        'function () { var  ac = elt("add-crawls"); ' . 
-                        '   var sel = ac.selectedIndex; ' .
-                        '   var name = ac.options[sel].text; '.
-                        '   var ts = ac.options[sel].value; ' .
-                        '   ac.options[sel] = null;'."\n".
-                        '   var tr =document.createElement("tr");'.
-                        '   tr.id = ts;'.
-                        '   elt("mix-table").appendChild(tr);'.
-                        '   tr.innerHTML += '.
-                        '   "<td>"+drawSelect(ts)+"</td>'.
-                        '   <td>"+name+"</td><td><a href=\"'.
-                        '   javascript:removeCrawl(\'"+ts+"\',\'"+name+"\')\">'.
-                        tl('editcrawl_view_delete').'</a></td>"}'."\n";
-                    $data['SCRIPT'] .= 'function removeCrawl(ts, name) {'.
-                        '   ac = elt("add-crawls"); ac.length++;'.
-                        '   row = elt(ts); row.parentNode.removeChild(row);'.
-                        '   ac.options[ac.length -1].value = ts;'.
-                        '   ac.options[ac.length -1].text = name;}'."\n";
-                    $data['SCRIPT'] .= 'function drawSelect(ts) {'.
-                        '   select = "<select name=\'mix[COMPONENTS]["+ts+"]\''.
-                        '   >";'.
-                        '   for ( wt in weights) {' .
-                        '   if(wt == Math.floor(weights.length/2)) { '.
-                        '      val = weights[wt] + "\' selected=\'selected";}'.
-                        '   else {val = weights[wt];} '.
-                        '   select += "<option value=\'"+val+"\'>"'.
-                        '   + weights[wt]+"</option>";}' .
-                        '   select += "</select>";' .
-                        '   return select;}';
-                    if(isset($_REQUEST['update']) && $_REQUEST['update'] ==
-                        "update") {
-                        $mix = $_REQUEST['mix'];
-                        $mix['MIX_TIMESTAMP'] = 
-                            $this->clean($mix['MIX_TIMESTAMP'], "int");
-                        $mix['MIX_NAME'] =$this->clean($mix['MIX_NAME'],
-                            "string");
-                        $comp = array();
-                        if(isset($mix['COMPONENTS'])) {
-                            if($mix['COMPONENTS'] != NULL) {
-                                foreach($mix['COMPONENTS'] as $cs => $wt) {
-                                    $row = array();
-                                    $row['WEIGHT'] = $this->clean($wt, "float");
-                                    $row['CRAWL_TIMESTAMP'] =
-                                        $this->clean($cs, "float");
-                                    $comp[] =$row;
-                                }
-                                $mix['COMPONENTS'] = $comp;
-                            } else {
-                                $mix['COMPONENTS'] = array();
-                            }
-                            
-                        } else {
-                            $mix['COMPONENTS'] = $data['MIX']['COMPONENTS'];
-                        }
-                        $data['MIX'] = $mix;
-                        $this->crawlModel->setCrawlMix($mix);
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('admin_controller_mix_saved')."</h1>');";
-                    }
+                    //$data passed by reference
+                    $this->editMix($data, $mix_ids, $mix);
                 break;
 
                 case "index":
@@ -1196,6 +1110,116 @@ class AdminController extends Controller implements CrawlConstants
         return $data;
     }
 
+    /**
+     *
+     */
+    function editMix(&$data, &$mix_ids, $mix)
+    {
+        $data["leftorright"] = 
+            (getLocaleDirection() == 'ltr') ? "right": "left";
+        $data["ELEMENT"] = "editmixElement";
+
+        if(isset($_REQUEST['timestamp'])) {
+            $mix = $this->crawlModel->getCrawlMix(
+                $_REQUEST['timestamp']);
+        }
+        $data['MIX'] = $mix;
+        $data['INCLUDE_SCRIPTS'] = array("mix");
+
+        //set up an array of translation for javascript-land
+        $data['SCRIPT'] .= "tl = {".
+            'editmix_element_add_crawls:"'.tl('editmix_element_add_crawls').'",'.
+            'editmix_element_num_results:"'.
+                tl('editmix_element_num_results').'",'.
+            'editmix_element_del_grp:"'.tl('editmix_element_del_grp').'",'.
+            'editmix_element_weight:"'.tl('editmix_element_weight').'",'.
+            'editmix_element_name:"'.tl('editmix_element_name').'",'.
+            'editmix_add_keywords:"'.tl('editmix_add_keywords').'",'.
+            'editmix_element_actions:"'.tl('editmix_element_actions').'",'.
+            'editmix_add_query:"'.tl('editmix_add_query').'",'.
+            'editmix_element_delete:"'.tl('editmix_element_delete').'"'.
+            '};';
+        //clean and save the crawl mix sent from the browser
+        if(isset($_REQUEST['update']) && $_REQUEST['update'] ==
+            "update") {
+            $mix = $_REQUEST['mix'];
+            $mix['MIX_TIMESTAMP'] = 
+                $this->clean($mix['MIX_TIMESTAMP'], "int");
+            $mix['MIX_NAME'] =$this->clean($mix['MIX_NAME'],
+                "string");
+            $comp = array();
+            if(isset($mix['GROUPS'])) {
+
+                if($mix['GROUPS'] != NULL) {
+                    foreach($mix['GROUPS'] as $group_id => $group_data) {
+                        if(isset($group_data['RESULT_BOUND'])) {
+                            $mix['GROUPS'][$group_id]['RESULT_BOUND'] = 
+                                $this->clean($group_data['RESULT_BOUND'], 
+                                    "int");
+                        } else {
+                            $mix['GROUPS']['RESULT_BOUND'] = 0;
+                        }
+                        if(isset($group_data['COMPONENTS'])) {
+                            $comp = array();
+                            foreach($group_data['COMPONENTS'] as $component) {
+                                $row = array();
+                                $row['CRAWL_TIMESTAMP'] = 
+                                    $this->clean($component['CRAWL_TIMESTAMP'],
+                                    "int");
+                                $row['WEIGHT'] = $this->clean(
+                                    $component['WEIGHT'], "float");
+                                $row['KEYWORDS'] = $this->clean(
+                                    $component['KEYWORDS'], 
+                                    "string");
+                                $comp[] =$row;
+                            }
+                            $mix['GROUPS'][$group_id]['COMPONENTS'] = $comp;
+                        } else {
+                            $mix['GROUPS'][$group_id]['COMPONENTS'] = array();
+                        }
+                    }
+                } else {
+                    $mix['COMPONENTS'] = array();
+                }
+                
+            } else {
+                $mix['GROUPS'] = $data['MIX']['GROUPS'];
+            }
+
+            $data['MIX'] = $mix;
+            $this->crawlModel->setCrawlMix($mix);
+            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                tl('admin_controller_mix_saved')."</h1>');";
+        }
+
+        $data['SCRIPT'] .= 'groups = [';
+        $not_first = "";
+        foreach($mix['GROUPS'] as $group_id => $group_data) {
+            $data['SCRIPT'] .= $not_first.'{';
+            $not_first= ",";
+            if(isset($group_data['RESULT_BOUND'])) {
+                $data['SCRIPT'] .= "num_results:".$group_data['RESULT_BOUND'];
+            } else {
+                $data['SCRIPT'] .= "num_results:1 ";
+            }
+            $data['SCRIPT'] .= ", components:[";
+            if(isset($group_data['COMPONENTS'])) {
+                $comma = "";
+                foreach($group_data['COMPONENTS'] as $component) {
+                    $crawl_ts = $component['CRAWL_TIMESTAMP'];
+                    $crawl_name = $data['available_crawls'][$crawl_ts];
+                    $data['SCRIPT'] .= $comma." [$crawl_ts, '$crawl_name', ".
+                        $component['WEIGHT'].", ";
+                    $comma = ",";
+                    $keywords = (isset($component['KEYWORDS'])) ?
+                        $component['KEYWORDS'] : "";
+                    $data['SCRIPT'] .= "'$keywords'] ";
+                }
+            }
+            $data['SCRIPT'] .= "] }";
+        }
+        $data['SCRIPT'] .= ']; drawGroups();';
+    }
 
 
     /**

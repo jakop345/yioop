@@ -169,6 +169,18 @@ class MediaWikiArchiveBundleIterator implements CrawlConstants
     }
 
     /**
+     * Estimates the important of the site according to the weighting of
+     * the particular archive iterator
+     * @param $site an associative array containing info about a web page
+     * @return int a 4-bit number based on the log_2 size - 10 of the wiki
+     *      entry (@see readPage).
+     */
+    function weight(&$site)
+    {
+        return min($site[self::WEIGHT], 15);
+    }
+
+    /**
      * Reads the siteinfo tag of the mediawiki xml file and extract data that
      * will be used in constructing page summaries.
      */
@@ -336,6 +348,7 @@ class MediaWikiArchiveBundleIterator implements CrawlConstants
         $site = array();
 
         $pre_url = $this->getTextContent($dom, "/page/title");
+        $pre_url = str_replace(" ", "_", $pre_url);
         $site[self::URL] = $this->header['base_address'].$pre_url;
         $site[self::IP_ADDRESSES] = array($this->header['ip_address']);
         $pre_timestamp = $this->getTextContent($dom, 
@@ -360,7 +373,8 @@ class MediaWikiArchiveBundleIterator implements CrawlConstants
         $site[self::PAGE] .= "\n</body>\n</html>";
  
         $site[self::HASH] = FetchUrl::computePageHash($site[self::PAGE]);
-        $site[self::WEIGHT] = 1;
+        $site[self::WEIGHT] = ceil(max(
+            log(strlen($site[self::PAGE]) + 1, 2) - 10, 1));
         return $site;
     }
 

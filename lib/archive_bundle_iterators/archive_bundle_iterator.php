@@ -69,6 +69,14 @@ abstract class ArchiveBundleIterator implements CrawlConstants
      var $end_of_iterator;
 
     /**
+     * Estimates the important of the site according to the weighting of
+     * the particular archive iterator
+     * @param $site an associative array containing info about a web page
+     * @return mixed a 4-bit number or false if iterator doesn't uses default
+     *      ranking method
+     */
+    abstract function weight(&$site);
+    /**
      * Gets the next $num many docs from the iterator
      * @param int $num number of docs to get
      * @return array associative arrays for $num pages

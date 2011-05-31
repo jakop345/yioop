@@ -152,13 +152,12 @@ interface CrawlConstants
     const OPERATING_SYSTEM = 'be';
     const MODIFIED = 'bf';
     const LANG = 'bg';
-    const IS_IMAGE = 'bh';
-    const ROBOT_INSTANCE = 'bi';
-	
-	//Added by Priya Gangaraju
-	const SUBDOCS = 'bj';
-	const SUBDOCTYPE = 'bk';
-	const POST_PROCESSORS = 'bl';//
+    const ROBOT_INSTANCE = 'bh';
+    const DOC_LEN = 'bi';
+    //Added by Priya Gangaraju
+    const SUBDOCS = 'bj';
+    const SUBDOCTYPE = 'bk';
+    const POST_PROCESSORS = 'bl';//
 
     const NEEDS_OFFSET_FLAG = 0x7FFFFFFF;
 

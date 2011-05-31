@@ -149,6 +149,7 @@ class CrawlModel extends Model implements CrawlConstants
         $this->db->selectDB(DB_NAME);
         $sql = "SELECT CRAWL_TIME FROM CURRENT_WEB_INDEX";
         $result = $this->db->execute($sql);
+
         $row =  $this->db->fetchArray($result);
         
         return $row['CRAWL_TIME'];
@@ -276,17 +277,16 @@ class CrawlModel extends Model implements CrawlConstants
         $result = $this->db->execute($sql);
 
         $rows = array();
-        if($result){
-            while($row = $this->db->fetchArray($result)) {
-                if($components) {
-                    $mix = $this->getCrawlMix($row['MIX_TIMESTAMP'], true);
-                    $row['COMPONENTS'] = $mix['COMPONENTS'];
-                }
-                $rows[] = $row;
+        while($row = $this->db->fetchArray($result)) {
+            if($components) {
+                $mix = $this->getCrawlMix($row['MIX_TIMESTAMP'], true);
+                $row['GROUPS'] = $mix['GROUPS'];
             }
+            $rows[] = $row;
         }
         return $rows;
     }
+
 
     /**
      * Retrieves the weighting component of the requested crawl mix
@@ -308,21 +308,64 @@ class CrawlModel extends Model implements CrawlConstants
         } else {
             $mix = array();
         }
-        $sql = "SELECT WEIGHT, CRAWL_TIMESTAMP FROM MIX_COMPONENTS WHERE ".
+        $sql = "SELECT GROUP_ID, RESULT_BOUND".
+            " FROM MIX_GROUPS WHERE ".
             " MIX_TIMESTAMP='$timestamp'";
         $result = $this->db->execute($sql);
+        $mix['GROUPS'] = array();
+        while($row = $this->db->fetchArray($result)) {
+            $mix['GROUPS'][$row['GROUP_ID']]['RESULT_BOUND'] = 
+                $row['RESULT_BOUND'];
+        }
+        foreach($mix['GROUPS'] as $group_id => $data) {
+            $sql = "SELECT CRAWL_TIMESTAMP, WEIGHT, KEYWORDS ".
+                " FROM MIX_COMPONENTS WHERE ".
+                " MIX_TIMESTAMP='$timestamp' AND GROUP_ID='$group_id'";
+            $result = $this->db->execute($sql);
 
-        $mix['COMPONENTS'] = array();
-        while($row =  $this->db->fetchArray($result)) {
-            $mix['COMPONENTS'][] = $row;
+            $mix['COMPONENTS'] = array();
+            $count = 0;
+            while($row =  $this->db->fetchArray($result)) {
+                $mix['GROUPS'][$group_id]['COMPONENTS'][$count] =$row;
+                $count++;
+            }
         }
         return $mix;
+    }
+
+    function getInfoTimestamp($timestamp, $is_mix = NULL)
+    {
+        if($is_mix === NULL) {
+            $is_mix = $this->isCrawlMix($timestamp);
+        }
+        $info = array();
+        if($is_mix) {
+            $this->db->selectDB(DB_NAME);
+
+            $sql = "SELECT MIX_TIMESTAMP, MIX_NAME FROM CRAWL_MIXES WHERE ".
+                " MIX_TIMESTAMP='$timestamp'";
+            $result = $this->db->execute($sql);
+            $mix =  $this->db->fetchArray($result);
+            $info['TIMESTAMP'] = $timestamp;
+            $info['DESCRIPTION'] = $mix['MIX_NAME'];
+            $info['IS_MIX'] = true;
+        } else {
+            $dir = CRAWL_DIR.'/cache/'.self::index_data_base_name.$timestamp;
+            if(file_exists($dir)) {
+                $info = IndexArchiveBundle::getArchiveInfo($dir);
+                $tmp = unserialize($info['DESCRIPTION']);
+                $info['DESCRIPTION'] = $tmp['DESCRIPTION'];
+            }
+        }
+
+        return $info;
     }
 
     /**
      * Returns whether the supplied timestamp corresponds to a crawl mix
      *
      * @param string timestamp of the requested crawl mix
+
      * @return bool true if it does; false otherwise
      */
     function isCrawlMix($timestamp)
@@ -357,14 +400,22 @@ class CrawlModel extends Model implements CrawlConstants
         //next we store the new data
         $sql = "INSERT INTO CRAWL_MIXES VALUES ('$timestamp', '".
             $mix['MIX_NAME']."')";
-
         $this->db->execute($sql);
 
-        foreach($mix['COMPONENTS'] as $component) {
-            $sql = "INSERT INTO MIX_COMPONENTS VALUES ('$timestamp', '".
-                $component['WEIGHT']."', '" .
-                $component['CRAWL_TIMESTAMP']."')";
+        $gid = 0;
+        foreach($mix['GROUPS'] as $group_id => $group_data) {
+
+            $sql = "INSERT INTO MIX_GROUPS VALUES ('$timestamp', '$gid', ".
+                "'".$group_data['RESULT_BOUND']."')";
             $this->db->execute($sql);
+            foreach($group_data['COMPONENTS'] as $component) {
+                $sql = "INSERT INTO MIX_COMPONENTS VALUES ('$timestamp', '".
+                    $gid."', '".$component['CRAWL_TIMESTAMP']."', '".
+                    $component['WEIGHT']."', '" .
+                    $component['KEYWORDS']."')";
+                $this->db->execute($sql);
+            }
+            $gid++;
         }
     }
 
@@ -377,6 +428,8 @@ class CrawlModel extends Model implements CrawlConstants
     {
         $this->db->selectDB(DB_NAME);
         $sql = "DELETE FROM CRAWL_MIXES WHERE MIX_TIMESTAMP='$timestamp'";
+        $this->db->execute($sql);
+        $sql = "DELETE FROM MIX_GROUPS WHERE MIX_TIMESTAMP='$timestamp'";
         $this->db->execute($sql);
         $sql = "DELETE FROM MIX_COMPONENTS WHERE MIX_TIMESTAMP='$timestamp'";
         $this->db->execute($sql);
@@ -425,10 +478,10 @@ class CrawlModel extends Model implements CrawlConstants
             if(isset($index_info[self::META_WORDS]) ) {
                 $seed_info['meta_words'] = $index_info[self::META_WORDS];
             }
-			// Added by Priya Gangaraju
+            // Added by Priya Gangaraju
             if(isset($index_info[self::POST_PROCESSORS])) {
                 $seed_info['post_processors'] = $index_info[self::POST_PROCESSORS];
-			}
+            }
         }
         return $seed_info;
     }
@@ -516,7 +569,7 @@ EOT;
             $n[]="";
         }
         //Added by Priya Gangaraju
-		//for adding post processors
+        //for adding post processors
         $n[] = "[post_processors]";
         if(isset($info["post_processors"])) {
             foreach($info["post_processors"]['processors'] as $post_processor) {

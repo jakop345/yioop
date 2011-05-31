@@ -117,7 +117,7 @@ abstract class IndexBundleIterator implements CrawlConstants
      * Returns the index associated with this iterator
      * @return object the index
      */
-    abstract function &getIndex($key = NULL);
+    abstract function getIndex($key = NULL);
 
     /**
      * Gets the doc_offset and generation for the next document that 

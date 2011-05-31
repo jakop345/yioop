@@ -107,47 +107,60 @@ class PhraseModel extends Model
     {
         $disjunct_phrases = explode("|", $query); 
         $rewrite = "";
-        $pipe = "";
-        foreach($disjunct_phrases as $disjunct) {
-            $rewrite .= $pipe;
-            $pipe = ' | ';
-            $disjunct_string = $disjunct;
-            $base_weight = 1;
-            $pattern = "/(\s)(index:(\S)+)/";
-            preg_match_all($pattern, $query, $matches);
-            if(isset($matches[2][0])) {
-                $rewrite .= $disjunct;
-                continue;
-            }
-            $pattern = "/(\s)(i:(\S)+)/";
-            preg_match_all($pattern, $query, $matches);
-            if(isset($matches[2][0])) {
-                $rewrite .= $disjunct;
-                continue;
-            }
-            $pattern = "/(\s)(weight:(\S)+)/";
-            preg_match_all($pattern, $query, $matches);
-            if(isset($matches[2][0])) {
-                $base_weight = substr($matches[2][0],strlen("weight:"));
-                $disjunct_string = preg_replace($pattern,"", $disjunct_string);
-            }
-            $pattern = "/(\s)(w:(\S)+)/";
-            preg_match_all($pattern, $query, $matches);
-            if(isset($matches[2][0])) {
-                $base_weight = substr($matches[2][0],strlen("w:"));
-                $disjunct_string = preg_replace($pattern,"", $disjunct_string);
-            }
-            if(isset($mix['COMPONENTS'])) {
-                $pipe2 = "";
-                foreach($mix['COMPONENTS'] as $component) {
-                    $rewrite .= $pipe2.$disjunct_string." w:".
-                        ($component['WEIGHT']*$base_weight)." i:".
-                        $component['CRAWL_TIMESTAMP'];
-                    $pipe2 = ' | ';
+        if(isset($mix['GROUPS'])) {
+            foreach($mix['GROUPS'] as $group) {
+                $pipe = "";
+                foreach($disjunct_phrases as $disjunct) {
+                    $rewrite .= $pipe;
+                    $pipe = ' | ';
+                    $disjunct_string = $disjunct;
+                    $base_weight = 1;
+                    $pattern = "/(\s)(index:(\S)+)/";
+                    preg_match_all($pattern, $query, $matches);
+                    if(isset($matches[2][0])) {
+                        $rewrite .= $disjunct;
+                        continue;
+                    }
+                    $pattern = "/(\s)(i:(\S)+)/";
+                    preg_match_all($pattern, $query, $matches);
+                    if(isset($matches[2][0])) {
+                        $rewrite .= $disjunct;
+                        continue;
+                    }
+                    $pattern = "/(\s)(weight:(\S)+)/";
+                    preg_match_all($pattern, $query, $matches);
+                    if(isset($matches[2][0])) {
+                        $base_weight = substr($matches[2][0],strlen("weight:"));
+                        $disjunct_string = 
+                            preg_replace($pattern,"", $disjunct_string);
+                    }
+                    $pattern = "/(\s)(w:(\S)+)/";
+                    preg_match_all($pattern, $query, $matches);
+                    if(isset($matches[2][0])) {
+                        $base_weight = substr($matches[2][0],strlen("w:"));
+                        $disjunct_string = 
+                            preg_replace($pattern,"", $disjunct_string);
+                    }
+                    $pipe2 = "";
+                    if(isset($group['COMPONENTS'])) {
+                        foreach($group['COMPONENTS'] as $component) {
+                            if(isset($component['KEYWORDS'])) {
+                                $disjunct_string .= " ".$component['KEYWORDS'];
+                            }
+                            $rewrite .= $pipe2.$disjunct_string." w:".
+                                ($component['WEIGHT']*$base_weight)." i:".
+                                $component['CRAWL_TIMESTAMP'];
+                            $pipe2 = ' | ';
+                        }
+                    }
+
                 }
+                $num_results = (isset($group['RESULT_BOUND']) &&
+                    $group['RESULT_BOUND'] > 1) ? 
+                    $group['RESULT_BOUND'] : 1;
+                $rewrite .= " #$num_results# ";
             }
         }
-
         return $rewrite;
     }
 
@@ -163,34 +176,131 @@ class PhraseModel extends Model
      * @return array an array of summary data
      */
     function getPhrasePageResults(
-        $phrase, $low = 0, $results_per_page = NUM_RESULTS_PER_PAGE, 
+        $input_phrase, $low = 0, $results_per_page = NUM_RESULTS_PER_PAGE, 
         $format = true)
     {
-
         $results = NULL;
         $word_structs = array();
         /* 
             this is a quick and dirty parsing and will usually work,
-            exceptions would be | in quotes or if someone tried
-            to escape |. 
+            exceptions would be # or | in quotes or if someone tried
+            to escape |.
+
+            First we split into presentation elements then we split by
+            disjuncts
         */
-        $disjunct_phrases = explode("|", $phrase); 
-        foreach($disjunct_phrases as $disjunct) {
-            list($word_struct, $format_words) = 
-                $this->parseWordStructConjunctiveQuery($disjunct);
-            if($word_struct != NULL) {
-                $word_structs[] = $word_struct;
+        $presentation_parts = preg_split('/#(\d)+#/', 
+            $input_phrase, -1, PREG_SPLIT_DELIM_CAPTURE);
+        $count = 0;
+
+        $presentation_parts = array_chunk($presentation_parts, 2);
+
+        $num_parts = count($presentation_parts);
+
+        $query_parts = array();
+        $last_part = NULL;
+        for($i = 0;  $i < $num_parts ; $i++) {
+           if(isset($presentation_parts[$i][0])  &&
+                ($trimmed = trim($presentation_parts[$i][0])) != "" ) {
+                $to_return = (isset($presentation_parts[$i][1])) ? 
+                    $presentation_parts[$i][1]: 1;
+                $query_parts[$trimmed][] = 
+                    array($count, $to_return);
+                $last_part = $trimmed;
+                if(isset($presentation_parts[$i][1])) {
+                    $count += $presentation_parts[$i][1];
+                } else {
+                    $count ++;
+                }
+           }
+        }
+
+        $results_high = $low + $results_per_page;
+        $num_last_parts = count($query_parts[$last_part]);
+        if($query_parts[$last_part][$num_last_parts - 1][0] + 
+            $query_parts[$last_part][$num_last_parts - 1][1] < $low) {
+            $query_parts[$last_part][$num_last_parts - 1][1] = $results_high;
+        }
+
+        $num_phrases = count($query_parts);
+
+        foreach($query_parts as $phrase => $pre_result_bounds) {
+
+            $phrase_high = $pre_result_bounds[0][1];
+            $result_bounds = array();
+            $start_flag = false;
+            $num_bounds = 0;
+
+            foreach($pre_result_bounds as $bound) {
+                if($bound[0] > $results_high) break;
+                //rest of presentation after what we'll return so break
+                $phrase_high =  $bound[0] + $bound[1];
+
+                if($phrase_high < $low) continue;
+                // this part of presentation is before what we'll return so skip
+                $result_bounds[] = $bound;
+                $num_bounds++;
+            }
+            if($num_bounds == 0) continue;
+            if($phrase == $last_part &&
+                $result_bounds[$num_bounds - 1][0] + 
+                $result_bounds[$num_bounds - 1][1] < $results_high) {
+                $result_bounds[$num_bounds - 1][1] = $results_high - 
+                    $result_bounds[$num_bounds - 1][0];
+            }
+
+            $phrase_num = max(min($phrase_high, $results_high), $results_high) - 
+                $low;
+            $disjunct_phrases = explode("|", $phrase);
+            $word_structs = array();
+            foreach($disjunct_phrases as $disjunct) {
+                list($word_struct, $format_words) = 
+                    $this->parseWordStructConjunctiveQuery($disjunct);
+
+                if($word_struct != NULL) {
+                    $word_structs[] = $word_struct;
+                }
+            }
+            $out_results = $this->getSummariesByHash($word_structs, 
+                $low, $phrase_num);
+
+            if(isset($out_results['PAGES']) && 
+                count($out_results['PAGES']) != 0) {
+                $out_count = 0;
+                foreach($result_bounds as $bound) {
+                    for($i = $bound[0]; 
+                        $i < min($bound[0] + $bound[1], $results_high);
+                        $i++) {
+                         if(isset($out_results['PAGES'][$out_count])) {
+                            $results['PAGES'][$i] = 
+                                $out_results['PAGES'][$out_count];
+                            $out_count++;
+                         }
+                    }
+                }
+                if($phrase == $last_part && isset($out_results['TOTAL_ROWS'])){
+                    $total_rows = $out_results['TOTAL_ROWS'];
+                }
             }
         }
-        $results = $this->getSummariesByHash($word_structs, 
-            $low, $results_per_page);
+
+        if(isset($results['PAGES'])){
+            ksort($results['PAGES']);
+            $results["PAGES"] = array_values($results["PAGES"]);
+        }
         if(count($results) == 0) {
             $results = NULL;
         }
         if($results == NULL) {
+            $total_rows = 0;
             $results['TOTAL_ROWS'] = 0;
         }
-      
+        if(isset($total_rows)) {
+            $results['TOTAL_ROWS'] = $total_rows;
+        } else {
+            $results['TOTAL_ROWS'] = count($results['PAGES']);
+        }
+        
         if($format) {
             if(count($format_words) == 0 ){
                 $format_words = NULL;
@@ -198,9 +308,19 @@ class PhraseModel extends Model
         } else {
             $format_words = NULL;
         }
-
-
-        $output = $this->formatPageResults($results, $format_words);
+        //Added by Priya Gangaraju
+        //set the description length to 2000 for query
+        //of types recipe : or ingredient 
+        $description_length = 200;
+        $meta_words = array("ingredient:", "recipe:");
+        foreach($meta_words as $meta_word){
+            $pattern = "/$meta_word/";
+            if(preg_match($pattern, $input_phrase)) {
+                $description_length = 2000;
+            }
+        }//
+        $output = $this->formatPageResults($results, $format_words, 
+            $description_length);
 
         return $output;
 
@@ -262,7 +382,7 @@ class PhraseModel extends Model
         $meta_words = array('link:', 'site:', 'version:', 'modified:',
             'filetype:', 'info:', '\-', 'os:', 'server:', 'date:',
             'index:', 'i:', 'ip:', 'weight:', 'w:', 'u:',
-            'lang:', 'recipe:','ingredient:');
+            'lang:', 'media:', 'recipe:', 'ingredient:');
         $index_name = $this->index_name;
         $weight = 1;
         $found_metas = array();
@@ -436,9 +556,9 @@ class PhraseModel extends Model
         $start_slice = floor(($limit)/self::NUM_CACHE_PAGES) *
             self::NUM_CACHE_PAGES;
         if(USE_MEMCACHE) {
-            $tmp = "";
+            $mem_tmp = "";
             foreach($word_structs as $word_struct) {
-                $tmp .= serialize($word_struct["KEYS"]).
+                $mem_tmp .= serialize($word_struct["KEYS"]).
                     serialize($word_struct["RESTRICT_PHRASES"]) .
                     serialize($word_struct["DISALLOW_PHRASES"]) .
                     $word_struct["WEIGHT"] .
@@ -449,7 +569,7 @@ class PhraseModel extends Model
             $results = array();
             $results['PAGES'] = array();
             for($i=$start_slice; $i< $to_retrieve; $i+=self::NUM_CACHE_PAGES){
-                $summary_hash = crawlHash($tmp.":".$i);
+                $summary_hash = crawlHash($mem_tmp.":".$i);
                 $slice = $MEMCACHE->get($summary_hash);
                 if($slice === false) {
                     $cache_success = false;
@@ -474,9 +594,14 @@ class PhraseModel extends Model
             $num_retrieved < $to_retrieve) {
             foreach($next_docs as $doc_key => $doc_info) {
                 $summary = & $doc_info[CrawlConstants::SUMMARY];
+                $tmp = unserialize($query_iterator->getIndex(
+                    $doc_key)->description);
+                $doc_info[self::CRAWL_TIME] = $tmp[self::CRAWL_TIME];
                 unset($doc_info[CrawlConstants::SUMMARY]);
-                $pages[] = array_merge($doc_info, $summary);
-                $num_retrieved++;
+                if(is_array($summary)) {
+                    $pages[] = array_merge($doc_info, $summary);
+                    $num_retrieved++;
+                }
             }
 
         }
@@ -498,7 +623,7 @@ class PhraseModel extends Model
                 unset($pages[$i][self::LINKS]);
             }
             for($i = 0;$i < $to_retrieve;$i+=self::NUM_CACHE_PAGES){
-                $summary_hash = crawlHash($tmp.":".$i);
+                $summary_hash = crawlHash($mem_tmp.":".$i);
                 $slice['PAGES'] = array_slice($pages, $i, 
                     self::NUM_CACHE_PAGES);
                 $slice['TOTAL_ROWS'] = $results['TOTAL_ROWS'];
@@ -508,8 +633,8 @@ class PhraseModel extends Model
         }
         $results['PAGES'] = & $pages;
         $results['PAGES'] = array_slice($results['PAGES'], $start_slice);
-        $results['PAGES'] = array_slice($results['PAGES'], $limit-$start_slice,
-            $num);
+        $results['PAGES'] = array_slice($results['PAGES'], $limit - 
+            $start_slice, $num);
 
 
         return $results;
@@ -533,6 +658,7 @@ class PhraseModel extends Model
     function getQueryIterator($word_structs)
     {
         $iterators = array();
+        $total_iterators = 0;
         foreach($word_structs as $word_struct) {
             if(!is_array($word_struct)) { continue;}
             $word_keys = $word_struct["KEYS"];
@@ -542,6 +668,7 @@ class PhraseModel extends Model
 
             $weight = $word_struct["WEIGHT"];
             $num_word_keys = count($word_keys);
+            $total_iterators += $num_word_keys;
             $word_iterators = array();
             if($num_word_keys < 1) {continue;}
 
@@ -573,7 +700,7 @@ class PhraseModel extends Model
             $union_iterator = new UnionIterator($iterators);
         }
 
-        $group_iterator = new GroupIterator($union_iterator);
+        $group_iterator = new GroupIterator($union_iterator, $total_iterators);
 
         return $group_iterator;
     }

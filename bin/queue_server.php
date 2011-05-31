@@ -196,12 +196,17 @@ class QueueServer implements CrawlConstants
      * the queue_server can make use of its file/folder manipulation functions.
      */
     //Added by Priya Gangaraju
-     var $components = array("recipe");
+    var $components = array("recipe");
     /**
      * This is a list of components which do post processing after the crawl
      * Post processing function of the component is called if it is selected 
      * in the crawl options page.
-    */
+     */
+    var $post_processors;
+    /**
+     * holds the post processors selected in the crawl options page
+     */
+
     function __construct($indexed_file_types) 
     {
         $db_class = ucfirst(DBMS)."Manager";
@@ -326,7 +331,8 @@ class QueueServer implements CrawlConstants
     }
 
     /**
-     *
+     * Used to write info about the current recrawl to file as well as to
+     * process any recrawl data files received 
      */
     function writeArchiveCrawlInfo()
     {
@@ -344,7 +350,9 @@ class QueueServer implements CrawlConstants
     }
 
     /**
-     *
+     * Even during a recrawl teh fetcher may send robot data to the
+     * queue_server. This function prints a log message and calls another
+     * function to delete this useless robot file.
      */
     function processRecrawlRobotUrls()
     {
@@ -358,7 +366,10 @@ class QueueServer implements CrawlConstants
     }
 
     /**
+     * Even during a recrawl the fetcher may send robot data to the
+     * queue_server. This function delete the passed robot file.
      *
+     * @param string $file robot file to delete
      */
     function processRecrawlRobotArchive($file)
     {
@@ -368,7 +379,13 @@ class QueueServer implements CrawlConstants
     }
 
     /**
-     * 
+     * Used to get a data archive file (either during a normal crawl or a 
+     * recrawl). After uncompressing this file (which comes via the web server
+     * through fetch_controller, from the fetcher), it sets which fetcher
+     * sent it and also returns the sites contained in it.
+     *
+     * @param string $file name of archive data file
+     * @return array sites contained in the file from the fetcher
      */
     function &getDataArchiveFileData($file)
     {
@@ -393,7 +410,9 @@ class QueueServer implements CrawlConstants
     }
 
     /**
-     *
+     * Processes fetcher data file information during a recrawl
+     * 
+     * @param String $file a file which contains the info to process
      */
     function processRecrawlDataArchive($file)
     {
@@ -449,18 +468,18 @@ class QueueServer implements CrawlConstants
                         self::index_data_base_name.$this->crawl_time);
                     crawlLog("Stopping crawl !!\n");
                     $info[self::STATUS] = self::WAITING_START_MESSAGE_STATE;
-                    
                     //Added by Priya Gangaraju. 
-                    //Calling post processing function if the processor is selected in the crawl options page.
-                    /*if($post_processors_flag) {
+                    //Calling post processing function if the processor is 
+                    //selected in the crawl options page.
+                    if(isset($this->post_processors)) {
                         crawlLog("Post Processing");
-                        //foreach($info[self::POST_PROCESSORS] as $component) {
-                    	foreach($this->components as $component) {
+                        foreach($this->post_processors as $component) {
                             $component_instance_name = 
                                 lcfirst($component)."Component";
-                            $this->$component_instance_name->postProcessing($this->crawl_time);
+                            $this->$component_instance_name->
+                                postProcessing($this->crawl_time);
                         }
-                    //}*/
+                    }
                 break;
 
                 case "RESUME_CRAWL":
@@ -546,6 +565,9 @@ class QueueServer implements CrawlConstants
         }
         if(isset($info[self::META_WORDS])) {
             $this->meta_words = $info[self::META_WORDS];
+        }
+        if(isset($info[self::POST_PROCESSORS])) {
+            $this->post_processors = $info[self::POST_PROCESSORS];
         }
 
         switch($this->crawl_order) 
@@ -704,7 +726,6 @@ class QueueServer implements CrawlConstants
 
         $start_time = microtime();
 
-        //$machine_string = fgets($fh);
         $pre_sites = base64_decode(
             urldecode(file_get_contents($file)));
 
@@ -770,11 +791,13 @@ class QueueServer implements CrawlConstants
                         $hash = $site[self::HASH_URL]. 
                             $site[self::HASH] . 
                             crawlHash("link:".$site[self::URL], true);
+                        $dict_word = "info:".$site[self::URL];
                     } else {
                         $hash = $site[self::HASH_URL];
+                        $dict_word =  NULL;
                     }
-                    $summary_offsets[$hash] = 
-                        $site[self::SUMMARY_OFFSET];
+                    $summary_offsets[$hash] = array(
+                        $site[self::SUMMARY_OFFSET], $dict_word);
                 }
             }
             crawlLog("B Init Shard, Store Summaries memory usage".
@@ -1037,7 +1060,10 @@ class QueueServer implements CrawlConstants
     }
 
     /**
+     * Writes status information about the current crawl so that the webserver
+     * app can use it for its display. 
      *
+     * @param array $sites contains the most recently crawled sites
      */
     function writeCrawlStatus(&$sites)
     {
@@ -1088,7 +1114,11 @@ class QueueServer implements CrawlConstants
     }
 
     /**
+     * Used to create an encode a string representing with meta info for
+     * a fetcher schedule.
      *
+     * @param int $schedule_time timestamp of the schedule
+     * @return string base64 encoded meta info
      */
     function calculateScheduleMetaInfo($schedule_time)
     {

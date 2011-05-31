@@ -222,6 +222,13 @@ class Fetcher implements CrawlConstants
     var $crawl_type;
 
     /**
+     * If self::ARCHIVE_CRAWL is being down, then this field holds the iterator
+     * object used to iterate over the archive
+     * @var object
+     */
+    var $archive_iterator;
+
+    /**
      * Keeps track of whether during the recrawl we should notify the 
      * queue_server scheduler about our progress in mini-indexing documents
      * in the archive
@@ -317,7 +324,15 @@ class Fetcher implements CrawlConstants
 
             $info = $this->checkScheduler();
 
+            if($info === false) {
+                crawlLog("Cannot connect to queue server...".
+                    " will try again in 5 seconds.");
+                sleep(5);
+                continue;
+            }
+
             if(!isset($info[self::STATUS])) {
+                if($info === true) {$info = array();}
                 $info[self::STATUS] = self::CONTINUE_STATE;
             }
 
@@ -531,7 +546,10 @@ class Fetcher implements CrawlConstants
      * Get status, current crawl, crawl order, and new site information from 
      * the queue_server.
      *
-     * @return array containing this info
+     * @return mixed array or bool. If we are doing
+     *      a web crawl and we still have pages to crawl then true, if the
+     *      schedulaer page fails to download then false, otherwise, returns
+     *      an array of info from the scheduler.
      */
     function checkScheduler() 
     {
@@ -539,7 +557,7 @@ class Fetcher implements CrawlConstants
         if((count($this->to_crawl) > 0 || count($this->to_crawl_again) > 0) &&
            (!$this->recrawl_check_scheduler)) {
             $info[self::STATUS]  = self::CONTINUE_STATE;
-            return; 
+            return true; 
         }
 
         $this->recrawl_check_scheduler = false;
@@ -553,7 +571,11 @@ class Fetcher implements CrawlConstants
             $queue_server."?c=fetch&a=schedule&time=$time&session=$session".
             "&robot_instance=".ROBOT_INSTANCE."&machine_uri=".WEB_URI;
 
-        $info_string = trim(FetchUrl::getPage($request));
+        $info_string = FetchUrl::getPage($request);
+        if($info_string === false) {
+            return false;
+        }
+        $info_string = trim($info_string);
         $tok = strtok($info_string, "\n");
         $info = unserialize(base64_decode($tok));
 
@@ -1242,6 +1264,8 @@ class Fetcher implements CrawlConstants
      */
     function buildMiniInvertedIndex()
     {
+        global $IMAGE_TYPES;
+
         $start_time = microtime();
 
         $num_seen = count($this->found_sites[self::SEEN_URLS]);
@@ -1257,8 +1281,11 @@ class Fetcher implements CrawlConstants
             $doc_keys = crawlHash($site[self::URL], true) . 
                 $site[self::HASH]. crawlHash("link:".$site[self::URL], true);
 
-            $is_image = (stripos($site[self::TYPE], "image") !== false) ? 
-                true : false;
+            $doc_rank = false;
+            if($this->crawl_type == self::ARCHIVE_CRAWL && 
+                isset($this->archive_iterator)) {
+                $doc_rank = $this->archive_iterator->weight($site);
+            }
 
             $meta_ids = $this->calculateMetas($site);
 
@@ -1288,13 +1315,19 @@ class Fetcher implements CrawlConstants
             if($num_links > 0) {
                 $weight = (isset($site[self::WEIGHT])) ? $site[self::WEIGHT] :1;
                 $link_weight = $weight/$num_links;
+                $link_rank = false;
+                if($doc_rank !== false) {
+                    $link_rank = max($doc_rank -1, 1);
+                }
             } else {
                 $link_weight = 0;
+                $link_rank = false;
             }
             $had_links = false;
 
             $link_shard = new IndexShard("link_shard");
             foreach($site[self::LINKS] as $url => $link_text) {
+                $link_meta_ids = array();
                 if(strlen($url) > 0) {
                     $summary = array();
                     $had_links = true;
@@ -1314,7 +1347,12 @@ class Fetcher implements CrawlConstants
                     $summary[self::TYPE] = "link";
                     $summary[self::HTTP_CODE] = "link";
                     $this->found_sites[self::SEEN_URLS][] = $summary;
-
+                    $link_type = UrlParser::getDocumentType($url);
+                    if(in_array($link_type, $IMAGE_TYPES)) {
+                        $link_meta_ids[] = "media:image";
+                    } else {
+                        $link_meta_ids[] = "media:text";
+                    }
                     $link_text = 
                         mb_ereg_replace(PUNCT, " ", $link_text);
                     $link_word_counts = 
@@ -1322,14 +1360,19 @@ class Fetcher implements CrawlConstants
                             MAX_PHRASE_LEN, $lang);
                     $link_shard->addDocumentWords($link_keys, 
                         self::NEEDS_OFFSET_FLAG, 
-                        $link_word_counts, array());
+                        $link_word_counts, $link_meta_ids, false, $link_rank);
 
                     $meta_ids[] = 'link:'.$url;
+                    if(UrlParser::getHost($url) != 
+                        UrlParser::getHost($site[self::URL])){
+                        $meta_ids[] = 'elink:'.$url;
+                    }
                 }
 
             }
-                $index_shard->addDocumentWords($doc_keys, self::NEEDS_OFFSET_FLAG, 
-                $word_counts, $meta_ids, true, $is_image);
+
+            $index_shard->addDocumentWords($doc_keys, self::NEEDS_OFFSET_FLAG, 
+                $word_counts, $meta_ids, true, $doc_rank);
 
             $index_shard->appendIndexShard($link_shard);
 
@@ -1375,6 +1418,9 @@ class Fetcher implements CrawlConstants
         foreach($site[self::IP_ADDRESSES] as $address) {
             $meta_ids[] = 'ip:'.$address;
         }
+        $meta_ids[] = (stripos($site[self::TYPE], "image") !== false) ? 
+            'media:image' : 'media:text';
+
         // store the filetype info
         $url_type = UrlParser::getDocumentType($site[self::URL]);
         if(strlen($url_type) > 0) {
@@ -1413,7 +1459,6 @@ class Fetcher implements CrawlConstants
         //Added by Priya Gangaraju
         if(isset($site[self::SUBDOCTYPE])){
             $meta_ids[] = $site[self::SUBDOCTYPE].':all';
-            crawlLog("Added meta : ".$site[self::SUBDOCTYPE].":all");
         }
         
         // handles user added meta words

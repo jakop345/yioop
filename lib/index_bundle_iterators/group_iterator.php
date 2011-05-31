@@ -103,7 +103,7 @@ class GroupIterator extends IndexBundleIterator
      * the minimum number of pages to group from a block;
      * this trumps $this->index_bundle_iterator->results_per_block
      */
-    const MIN_FIND_RESULTS_PER_BLOCK = 400;
+    const MIN_FIND_RESULTS_PER_BLOCK = 200;
 
     /**
      * Creates a group iterator with the given parameters.
@@ -111,13 +111,15 @@ class GroupIterator extends IndexBundleIterator
      * @param object $index_bundle_iterator to use as a source of documents
      *      to iterate over
      */
-    function __construct($index_bundle_iterator)
+    function __construct($index_bundle_iterator, $num_iterators = 1)
     {
         $this->index_bundle_iterator = $index_bundle_iterator;
         $this->num_docs = $this->index_bundle_iterator->num_docs;
         $this->results_per_block = max(
             $this->index_bundle_iterator->results_per_block,
             self::MIN_FIND_RESULTS_PER_BLOCK);
+
+        $this->results_per_block /=  ceil($num_iterators/2);
         $this->reset();
     }
 
@@ -217,6 +219,7 @@ class GroupIterator extends IndexBundleIterator
                 $done = true;
             }
         } while(!$done);
+
         return $pages;
     }
 
@@ -281,25 +284,20 @@ class GroupIterator extends IndexBundleIterator
             if(!$pre_out_pages[$hash_url][0][self::IS_DOC]) {
                 $hash_info_url= 
                     $pre_out_pages[$hash_url][0][self::INLINKS];
-                $word_iterator = 
-                     new WordIterator($hash_info_url, 
-                        $this->getIndex(), true);
-                $doc_array = $word_iterator->currentDocsWithWord();
+                $index = $this->getIndex($pre_out_pages[$hash_url][0]['KEY']);
+                $item = $index->dictionary->getInfoItem($hash_info_url);
+                if($item !== false) { 
+                    $item[self::RELEVANCE] = 0.15 *
+                        $pre_out_pages[$hash_url][0][self::RELEVANCE];
+                    if(!isset($item[self::DOC_RANK])) {
+                        $item[self::DOC_RANK] = 0.15 *
+                            $pre_out_pages[$hash_url][0][self::DOC_RANK];
+                    }
+                    $item[self::SCORE] = $item[self::RELEVANCE] + 
+                        $item[self::DOC_RANK];
+                    $item['KEY'] = $hash_url.$item[self::HASH].
+                        $item[self::INLINKS];
 
-                if(is_array($doc_array) && count($doc_array) == 1) {
-                    $relevance =  $this->computeRelevance(
-                        $word_iterator->current_generation,
-                        $word_iterator->current_offset);
-                    $keys = array_keys($doc_array);
-                    $key = $keys[0];
-                    $item = $doc_array[$key];
-                    $item[self::RELEVANCE] = $relevance;
-                    $item[self::SCORE] += $relevance;
-                    $item['KEY'] = $key;
-                    $item[self::HASH] = substr($key, 
-                        IndexShard::DOC_KEY_LEN, IndexShard::DOC_KEY_LEN);
-                    $item[self::INLINKS] = substr($key, 
-                        2*IndexShard::DOC_KEY_LEN, IndexShard::DOC_KEY_LEN);
                     array_unshift($pre_out_pages[$hash_url], $item); 
                 } 
             }
@@ -349,16 +347,22 @@ class GroupIterator extends IndexBundleIterator
     function computeBoostAndOutPages(&$pre_out_pages)
     {
         $out_pages = array();
-        $index = $this->getIndex();
-        if($this->count_block_unfiltered >=$this->results_per_block) {
-            $hash_inlinks = array();
-            foreach($pre_out_pages as $hash_url => $group_infos) {
-                $hash_inlinks[$hash_url] = 
-                    $pre_out_pages[$hash_url][0][self::INLINKS];
-            }
-            $num_docs_array = &
-                $index->dictionary->getNumDocsArray($hash_inlinks);
+        $hash_inlinks = array();
+        $indexes = array();
+        foreach($pre_out_pages as $hash_url => $group_infos) {
+            $key = $group_infos[0]["KEY"];
+            $tmp_index =  $this->getIndex($key);
+            $indexes[$tmp_index->dir_name] = $tmp_index;
+            $hash_inlinks[$tmp_index->dir_name][$hash_url] = 
+                $pre_out_pages[$hash_url][0][self::INLINKS];
         }
+        $num_docs_array = array();
+
+        foreach($hash_inlinks as $name => $inlinks) {
+            $num_docs_array = array_merge($num_docs_array, 
+                $indexes[$name]->dictionary->getNumDocsArray($inlinks));
+        }
+
         foreach($pre_out_pages as $hash_url => $group_infos) {
             $out_pages[$hash_url] = $pre_out_pages[$hash_url][0];
             $out_pages[$hash_url][self::SUMMARY_OFFSET] = array();
@@ -371,12 +375,14 @@ class GroupIterator extends IndexBundleIterator
                         $doc_info[self::SUMMARY_OFFSET]);
             }
 
+            $num_inlinks = $num_docs_array[$hash_url] + 0.1;
             if($this->count_block_unfiltered >=$this->results_per_block) {
                 /* approximate the scores contributed to this
                    doc for this word search by links we haven't
                    reached in our grouping
                 */
-                $num_inlinks = $num_docs_array[$hash_url] + 0.1;
+                
+
                 $num_docs_seen = $this->seen_docs_unfiltered + 
                     $this->count_block_unfiltered;
 
@@ -389,19 +395,26 @@ class GroupIterator extends IndexBundleIterator
                     A result after grouping consists of a document and inlinks
                     which contain the terms of the base iterator.
 
-                    $hash_count/($num_docs_seen *$num_inlinks)
+                    $hash_count/($num_docs_seen *sqrt($num_inlinks))
                     approximates the probability that an inlink for 
                     a particular document happens to 
-                    contain the terms of the iterator. After $num_docs_seen
+                    contain the terms of the iterator. The last
+                    1/sqrt($num_inlinks) is a fudge factor to
+                    the number of inlinks that contain the term. 
+                    After $num_docs_seen
                     many documents, there are $num_inlinks - $hash_count
                     many inlinks which might appear in the remainder of
                     the iterators document list, giving a value
                     for the $num_inlinks_not_seen as per the equation below:
                  */
+
+                $docs_inlinks_ratio = $num_inlinks/$this->num_docs;
+                $group_ratio = $hash_count/$num_docs_seen;
+                $min_ratio = min($docs_inlinks_ratio, $group_ratio);
                 $num_inlinks_not_seen = 
-                    ($num_inlinks - $hash_count)*$hash_count/
-                    ($num_docs_seen * $num_inlinks);
-                $total_inlinks_for_doc = $hash_count + $num_inlinks_not_seen;
+                    ($num_inlinks - $hash_count) * $min_ratio * 
+                     1/sqrt($num_inlinks);
+                $total_inlinks_for_doc = $num_inlinks_not_seen + $hash_count;
 
                 /*
                      we estimate score[x] of the xth inlink for this document
@@ -429,8 +442,8 @@ class GroupIterator extends IndexBundleIterator
                     (1 + $out_pages[$hash_url][self::RELEVANCE])/2;
             } else {
                 $out_pages[$hash_url][self::SCORE] = 
-                    $out_pages[$hash_url][self::HASH_SUM_SCORE] *
-                    (1 + $out_pages[$hash_url][self::RELEVANCE])/2;
+                    $out_pages[$hash_url][self::HASH_SUM_SCORE] * 
+                    (1 + 0.001*$out_pages[$hash_url][self::RELEVANCE]*$num_inlinks)/2;
             }
 
         }
@@ -502,7 +515,7 @@ class GroupIterator extends IndexBundleIterator
                 $out_pages[$doc_key] = $doc_info;
                 foreach($doc_info[self::SUMMARY_OFFSET] as $offset_array) {
                     list($key, $generation, $summary_offset) = $offset_array;
-                    $index = & $this->getIndex($key);
+                    $index = $this->getIndex($key);
                     $index->setCurrentShard($generation, true);
                     $page = $index->getPage($summary_offset);
                     if($page == array()) {continue;}
@@ -579,9 +592,9 @@ class GroupIterator extends IndexBundleIterator
 
     /**
      * Returns the index associated with this iterator
-     * @return &object the index
+     * @return object the index
      */
-    function &getIndex($key = NULL)
+    function getIndex($key = NULL)
     {
         return $this->index_bundle_iterator->getIndex($key);
     }

@@ -137,11 +137,22 @@ class SearchController extends Controller implements CrawlConstants
             $its = (isset($_REQUEST['its'])) ? $_REQUEST['its'] : 
                 $_SESSION['its'];
             $index_time_stamp = $this->clean($its, "int");
-            if(!$this->phraseModel->indexExists($index_time_stamp)) {
-                $index_time_stamp = 0; //use the default crawl index
+            if(!$this->phraseModel->indexExists($index_time_stamp)
+              && !$this->crawlModel->isCrawlMix($index_time_stamp)) {
+                $index_time_stamp = 
+                    $this->crawlModel->getCurrentIndexDatabaseName(); 
+                    //use the default crawl index
             }
         } else {
-            $index_time_stamp = 0; //use the default crawl index
+            $index_time_stamp = 
+                $this->crawlModel->getCurrentIndexDatabaseName(); 
+                //use the default crawl index
+        }
+        $index_info = NULL;
+        if($this->phraseModel->indexExists($index_time_stamp) || 
+           $this->crawlModel->isCrawlMix($index_time_stamp)) {
+            $index_info = 
+                $this->crawlModel->getInfoTimestamp($index_time_stamp);
         }
         if(isset($_REQUEST['q']) && strlen($_REQUEST['q']) > 0 
             || $activity != "query") {
@@ -179,6 +190,19 @@ class SearchController extends Controller implements CrawlConstants
         }
 
         $data['its'] = (isset($index_time_stamp)) ? $index_time_stamp : 0;
+        if($index_info !== NULL) {
+            if(isset($index_info['IS_MIX'])) {
+                $data['INDEX_INFO'] = tl('search_controller_mix_info',
+                    $index_info['DESCRIPTION']);
+            } else {
+                $data['INDEX_INFO'] = tl('search_controller_crawl_info',
+                    $index_info['DESCRIPTION'], 
+                    $index_info['VISITED_URLS_COUNT'],
+                    $index_info['COUNT']);
+            }
+        } else {
+            $data['INDEX_INFO'] = "";
+        }
 
         $data['YIOOP_TOKEN'] = $this->generateCSRFToken($user);
 
@@ -211,19 +235,24 @@ class SearchController extends Controller implements CrawlConstants
     function processQuery($query, $activity, $arg, $results_per_page, 
         $limit = 0, $index_name = 0) 
     {
+        $no_index_given = false;
         if($index_name == 0) {
             $index_name = $this->crawlModel->getCurrentIndexDatabaseName();
-            if(!$this->phraseModel->indexExists($index_name)) {
+            $no_index_given = true;
+        }
+        $is_mix = $this->crawlModel->isCrawlMix($index_name);
+        if($no_index_given && (!$this->phraseModel->indexExists($index_name)
+                && !$is_mix)) {
                 $data['SCRIPT'] = 
                         "doMessage('<h1 class=\"red\" >".
                         tl('search_controller_no_index_set').
                         "</h1>');";
                 return $data;
-            }
         }
 
         $this->phraseModel->index_name = $index_name;
         $this->crawlModel->index_name = $index_name;
+
 
         switch($activity)
         {
@@ -250,7 +279,7 @@ class SearchController extends Controller implements CrawlConstants
             default:
                 if(trim($query) != "") {
                     $original_query = $query;
-                    if($this->crawlModel->isCrawlMix($index_name)) {
+                    if($is_mix) {
                         $mix = $this->crawlModel->getCrawlMix($index_name);
                         $query = 
                             $this->phraseModel->rewriteMixQuery($query, $mix);
@@ -265,14 +294,12 @@ class SearchController extends Controller implements CrawlConstants
 
             break;
         }
-
         $data['PAGES'] = (isset($phrase_results['PAGES'])) ?
              $phrase_results['PAGES']: array();
         $data['TOTAL_ROWS'] = (isset($phrase_results['TOTAL_ROWS'])) ? 
             $phrase_results['TOTAL_ROWS'] : 0;
         $data['LIMIT'] = $limit;
         $data['RESULTS_PER_PAGE'] = $results_per_page;
-
 
         return $data;
 

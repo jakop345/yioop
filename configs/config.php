@@ -172,9 +172,6 @@ define('MAX_WAITING_HOSTS', 1000);
  */
 define('URL_FILTER_SIZE', 20000000);
 
-/** number of fetchers that will be used in a given crawl */
-define('NUM_FETCHERS', 4); 
-
 /**
  * maximum number of urls that will be held in ram
  * (as opposed to in files) in the priority queue
@@ -256,6 +253,11 @@ $INDEXED_FILE_TYPES =
             "tsv",
             "txt",
             "xml");
+
+/**
+ * @global array filetypes which should be considered images
+ */
+$IMAGE_TYPES = array("gif","jpg", "bmp", "png", "jpeg", "svg");
 
 /**
  * @global array associates mimetypes that can be processed by the search 

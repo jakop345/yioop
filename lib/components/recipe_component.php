@@ -25,6 +25,7 @@
  *
  * @author Priya Gangaraju priya.gangaraju@gmail.com
  * @package seek_quarry
+ * @subpackage component
   * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
  * @copyright 2011
@@ -39,6 +40,16 @@ require_once BASE_DIR."/lib/crawl_constants.php";
 require_once BASE_DIR."/lib/components/Kruskal_clustering.php";
 require_once BASE_DIR."/lib/index_shard.php";
 
+/**
+ * This class handles recipe processing.
+ * It extracts ingredients from the recipe pages while crawling.
+ * It clusters the recipes usinf Kruskal's minimum spanning tree
+ * algorithm after crawl is stopped.
+ * @author Priya Gangaraju
+ * @package seek_quarry
+ * @subpackage component
+ */
+
 class RecipeComponent extends Component implements CrawlConstants 
 {
 
@@ -46,7 +57,7 @@ class RecipeComponent extends Component implements CrawlConstants
     /**
      * extracts title and description from a recipe page.
      *
-     * @param object $dom   a document object to extract a description from.
+     * @param object $dom a document object to extract a description from.
      * @return string a description of the page
      */
     function description($dom) {
@@ -114,14 +125,14 @@ class RecipeComponent extends Component implements CrawlConstants
         $limit = 0;
         $results_per_page = 100;
         $raw_recipes = $this->phraseModel->getPhrasePageResults(
-                    "recipe:all",$limit, $results_per_page, false);
+                    "recipe:all",$limit, $results_per_page, false,2000);
         $total_count = $raw_recipes['TOTAL_ROWS'];
         if($total_count != 0){
             $k=0;
             $raw_recipes = array();
             while($k < $total_count) {
                 $paginated_recipes = $this->phraseModel->getPhrasePageResults(
-                        "recipe:all",$limit, $results_per_page, false);
+                        "recipe:all",$limit, $results_per_page, false,2000);
                 $k = $k + count($paginated_recipes['PAGES']);
                 $raw_recipes = array_merge(
                                 $raw_recipes,$paginated_recipes['PAGES']);

@@ -119,6 +119,18 @@ class ArcArchiveBundleIterator implements CrawlConstants
     }
 
     /**
+     * Estimates the important of the site according to the weighting of
+     * the particular archive iterator
+     * @param $site an associative array containing info about a web page
+     * @return bool false we assume arc files were crawled according to 
+     *      OPIC and so we use the default doc_depth to estimate page importance
+     */
+    function weight(&$site) 
+    {
+        return false;
+    }
+
+    /**
      * Resets the iterator to the start of the archive bundle
      */
     function reset()

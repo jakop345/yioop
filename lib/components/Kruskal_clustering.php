@@ -1,7 +1,39 @@
 <?php
+/** 
+ *  SeekQuarry/Yioop --
+ *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ *
+ *  Copyright (C) 2011  Priya Gangaraju priya.gangaraju@gmail.com
+ *
+ *  LICENSE:
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *  END LICENSE
+ *
+ * @author Priya Gangaraju priya.gangaraju@gmail.com
+ * @package seek_quarry
+ * @subpackage component
+  * @license http://www.gnu.org/licenses/ GPL3
+ * @link http://www.seekquarry.com/
+ * @copyright 2011
+ * @filesource
+ */
+
 /**
  * class to define vertex
- **/
+ */
 class Vertex
 {
     private $label;
@@ -26,7 +58,7 @@ class Vertex
 }    
 /**
  * class to define edge
- **/    
+ */
 class Edge
 {
     private $start_vertex;
@@ -55,8 +87,9 @@ class Edge
 /**
  * class to define Minimum Spanning tree. constructMST constructs 
  * the minimum spanning tree using heap. formCluster forms clusters by 
- * deleting the most expensive edge. BreadthFisrtSearch is used to traverse the MST.
-**/ 
+ * deleting the most expensive edge. BreadthFirstSearch is used to 
+ * traverse the MST.
+ */ 
 class Tree 
 {
     private $cluster_heap;
@@ -68,11 +101,11 @@ class Tree
         $this->vertices = array();
     } 
 
- /**
+   /**
     * constructs the adjacency matrix for the MST.
     *
     * @param object array $edges vertices and edge weights of MST
-    **/
+    */
     function constructMST($edges){
         foreach($edges as $edge){
             $this->cluster_heap->insert($edge);
@@ -90,14 +123,14 @@ class Tree
         
     }
 
-  /**
+   /**
     * forms the clusters by removing maximum weighted edges.
     * performs breadth-first search to cluster the recipes.
     *
     * @param int $k queue size
     * @param int $size number of recipes.
     * @return array $cluster clusters of recipes.
-    **/
+    */
     function formCluster($k,$size){
         $this->cluster_heap->top();
         $nodeQueue = new Queue($k);
@@ -134,12 +167,12 @@ class Tree
     return $cluster;
     }
     
- /**
+   /**
     * gets the next vertex  from the adjacency matrix for a given vertex
     *
     * @param string $vertex vertex 
     * @return adjacent vertex if it has otherwise -1.
-    **/
+    */
     function getNextVertex($vertex){
         foreach($this->adjMatrix[$vertex] as $vert=>$value){
             if($value != -1 && ($this->vertices[$value]->isVisited() == false)){
@@ -150,14 +183,14 @@ class Tree
         return -1;
     }
     
- /**
+   /**
     * finds the common ingredient for each of the clusters.
     *
     * @param array $clusters clusters of recipes.
     * @param array $ingredients array of ingredients of recipes.
     * @return array $new_clusters clusters with common ingredient appended.
-    **/
-    function displayClusters($clusters,$ingredients){
+    */
+    function findCommonIngredient($clusters,$ingredients){
         $k =1;
         $new_clusters = array();
         $basic_ingredients = array("onion","oil","cheese","pepper","sauce",
@@ -173,13 +206,8 @@ class Tree
             $recipes_count = 0;
             $cluster_recipe_ingredients = array();
             $common_ingredients = array();
-            print("Cluster ".$k."=");
             for($i=0; $i<count($cluster); $i++){
                 $recipe_name = $cluster[$i];
-                if($i != count($cluster)-1)
-                    print($cluster[$i].",");
-                else
-                    print($cluster[$i]."\n");
                 $main_ingredients = 
                     array_diff($ingredients[$recipe_name],$basic_ingredients);
                 $cluster_recipe_ingredients = array_merge(
@@ -194,7 +222,6 @@ class Tree
                 }
             }
             $cluster_ingredient = $common_ingredients[0];
-            print("\n cluster ingredient : $cluster_ingredient");
             $cluster["ingredient"] = $cluster_ingredient;
             $new_clusters[] = $cluster;
             $k++;
@@ -204,8 +231,8 @@ class Tree
     }
 }
 /**
-* heap to maintain the MST
-**/
+ * heap to maintain the MST
+ */
 class Cluster extends SplHeap
 {
 
@@ -217,8 +244,8 @@ class Cluster extends SplHeap
     }
 }
 /**
-* heap to maintain the tree
-**/
+ * heap to maintain the tree
+ */
 class Tree_cluster extends SplHeap
 {
 
@@ -231,8 +258,8 @@ class Tree_cluster extends SplHeap
 }
 
 /**
-* queue for the BFS traversal
-**/
+ * queue for the BFS traversal
+ */
 class Queue
 {
     private $size;
@@ -268,11 +295,11 @@ class Queue
     
 }
 /**
-* creates tree from the input and apply kruskal's algorithm to find MST.
-*
-* @param object array $edges recipes with distances between them.
-* @return object arrat $min_edges MST 
-**/
+ * creates tree from the input and apply kruskal's algorithm to find MST.
+ *
+ * @param object array $edges recipes with distances between them.
+ * @return object arrat $min_edges MST 
+ */
 function construct_tree($edges) {
     $vertices = array();
     $tree_heap = new Tree_cluster();
@@ -320,20 +347,21 @@ function construct_tree($edges) {
 }
 
 /** 
-* clusters the recipes by applying Kruskal's algorithm
-* @param array $edges recipes and distances between them.
-*
-* @param int $count number of recipes.
-* @param array $distinct_ingredients recipe names with ingredients.
-* @return clusters of recipes.
-**/          
+ * clusters the recipes by applying Kruskal's algorithm
+ * @param array $edges recipes and distances between them.
+ *
+ * @param int $count number of recipes.
+ * @param array $distinct_ingredients recipe names with ingredients.
+ * @return clusters of recipes.
+ */
 function kruskalClustering($edges,$count,$distinct_ingredients) {
    
     $mst_edges = construct_tree($edges);
     $mst = new Tree();
     $mst->constructMST($mst_edges);
     $clusters = $mst->formCluster(count($mst_edges),$count);
-    return($mst->displayClusters($clusters,$distinct_ingredients));
+    $new_clusters = $mst->findCommonIngredient($clusters,$distinct_ingredients);
+    return $new_clusters;
 }
 
 ?>

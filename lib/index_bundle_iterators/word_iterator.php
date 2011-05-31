@@ -48,7 +48,7 @@ require_once BASE_DIR.'/lib/index_bundle_iterators/index_bundle_iterator.php';
  *
  * @author Chris Pollett
  * @package seek_quarry
- * @subpackage library
+ * @subpackage iterator
  * @see IndexArchiveBundle
  */
 class WordIterator extends IndexBundleIterator
@@ -146,6 +146,7 @@ class WordIterator extends IndexBundleIterator
         $this->current_block_fresh = false;
         $this->dictionary_info = 
             $index->dictionary->getWordInfo($word_key, true);
+
         if ($this->dictionary_info === false) {
             $this->empty = true;
         } else {
@@ -178,8 +179,10 @@ class WordIterator extends IndexBundleIterator
     {
         $item = array();
         $this->index->setCurrentShard($generation, true);
+        $num_docs_or_links = 
+            IndexShard::numDocsOrLinks($this->start_offset, $this->last_offset);
         $this->index->getCurrentShard()->makeItem($item, 
-            $this->start_offset, $posting_offset, $this->last_offset, 1);
+            $posting_offset, $num_docs_or_links, 1);
         return $item[self::RELEVANCE];
     }
 
@@ -228,8 +231,7 @@ class WordIterator extends IndexBundleIterator
         $results = $shard->getPostingsSlice(
             $this->start_offset,
             $this->next_offset, $this->last_offset, $this->results_per_block);
-        $this->count_block = count($results); 
-
+        $this->count_block = count($results);
         return $results;
     }
 
@@ -248,10 +250,12 @@ class WordIterator extends IndexBundleIterator
             $this->current_offset = $this->next_offset;
         } else {
             $this->advanceGeneration();
+            $this->next_offset = $this->current_offset;
         }
         
         if($this->current_offset > $this->last_offset) {
             $this->advanceGeneration();
+            $this->next_offset = $this->current_offset;
         }
         if($gen_doc_offset !== null) {
             $last_current_generation = -1;
@@ -261,16 +265,16 @@ class WordIterator extends IndexBundleIterator
                 $last_current_generation = $this->current_generation;
                 $this->next_offset = $this->current_offset;
             }
-
             $this->index->setCurrentShard($this->current_generation, true);
-
-            $this->current_offset =
-                $this->index->getCurrentShard(
-                    )->nextPostingOffsetDocOffset($this->next_offset,
-                        $this->last_offset, $gen_doc_offset[1]);
-            if($this->current_offset === false) {
-                $this->current_offset = $this->last_offset + 1;
-                $this->advanceGeneration();
+            if($this->current_generation == $gen_doc_offset[0]) {
+                $this->current_offset =
+                    $this->index->getCurrentShard(
+                        )->nextPostingOffsetDocOffset($this->next_offset,
+                            $this->last_offset, $gen_doc_offset[1]);
+                if($this->current_offset === false) {
+                    $this->advanceGeneration();
+                    $this->next_offset = $this->current_offset;
+                }
             }
             $this->seen_docs = 
                 ($this->current_offset - $this->start_offset)/
@@ -317,7 +321,7 @@ class WordIterator extends IndexBundleIterator
      * Returns the index associated with this iterator
      * @return &object the index
      */
-    function &getIndex($key = NULL)
+    function getIndex($key = NULL)
     {
         return $this->index;
     }

@@ -252,6 +252,10 @@ class IndexArchiveBundle implements CrawlConstants
         return $this->generation_info['ACTIVE'];
     }
 
+    /**
+     * Saves the active index shard to disk, then adds the words from this
+     * shard to the dictionary
+     */
     function saveAndAddCurrentShardDictionary()
     {
         // Save current shard dictionary to main dictionary
