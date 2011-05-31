@@ -167,23 +167,25 @@ class CrawloptionsElement extends Element
             <?php if(isset($data['POST_PROCESSORS'])) {
             ?>
                 <table border = "1">
-                    <tr><th><?php e(tl('crawloptions_element_processor'));?></th>
+                    <tr><th><?php e(tl('crawloptions_element_processor'));
+                                      ?></th>
                     <th><?php 
-                        e(tl('crawloptions_element_url_include')); ?></th></tr>
+                        e(tl('crawloptions_element_post_processors_include'));
+                            ?></th></tr>
                     <div class="topmargin"><b>
                     <?php e(tl("crawloptions_element_post_processors"));?>
                         </b></div>
                     <?php
                     $k = 0;
                     foreach($data['POST_PROCESSORS'] as 
-                        $processor => $checkedValue) {
+                        $processor => $toggleState) {
                     ?>
                     <tr><td><?php e($processor. "Processor"); ?></td>
                     <td align = "center"><input type="checkbox" 
                         name="POST_PROCESSORS[<?php e($k); ?>]" 
-						value = "<?php e($processor) ?>"
-						<?php e($checkedValue); ?>   
-						</td></tr>
+                        value = "<?php e($processor) ?>"
+                        <?php e($toggleState); ?>
+                        </td></tr>
                 <?php 
                     $k++;
                 }

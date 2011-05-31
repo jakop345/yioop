@@ -281,9 +281,9 @@ class QueueServer implements CrawlConstants
             
             //check for orphaned queue bundles
             $this->deleteOrphanedBundles();
-			
-			//check for toolbardata
-			$this->processToolbarData();
+            
+            //check for toolbardata
+            $this->processToolbarData();
 
             $this->processIndexData();
             if(time() - $this->last_index_save_time > FORCE_SAVE_TIME){
@@ -728,15 +728,15 @@ class QueueServer implements CrawlConstants
            "ToolbarData";
        $this->processDataFile($index_dir, "processToolbarDataInvertedIndex");
        crawlLog("done.");
-	   echo " End of the function processToolbarData";
+       echo " End of the function processToolbarData";
    }
    
    /**
     * Builds the MiniInvertedIndex for the files recived from
     * extension toolbar then adds it to the INVERTED INDEX.
-	* 
-	* @param string $file gets the toolbar file contents to process
-	* toolbarshard.   
+    * 
+    * @param string $file gets the toolbar file contents to process
+    * toolbarshard.   
     */
     function processToolbarDataInvertedIndex($file)
     {
@@ -778,7 +778,7 @@ class QueueServer implements CrawlConstants
                       crawlHash("info:".$url, "true");
 
                 $summary[self::HASH_URL] =  $link_keys;
-		        $summary[self::URL] =  $link_id;
+                $summary[self::URL] =  $link_id;
                 $summary[self::TITLE] = $url;
                    // stripping html to be on the safe side
                 $summary[self::DESCRIPTION] =  $link_text;
@@ -822,7 +822,7 @@ class QueueServer implements CrawlConstants
         $toolbar_shard->changeDocumentOffsets($summary_offsets);
         $this->index_archive->addIndexData($toolbar_shard);
         $this->index_dirty = true;
-		unlink($file);
+        unlink($file);
 
     }
 

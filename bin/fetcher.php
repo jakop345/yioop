@@ -865,7 +865,8 @@ class Fetcher implements CrawlConstants
                         foreach($summary_fields as $field) {
                             if(isset($site[$field])) {
                                 $stored_site_pages[$i][$field] = $site[$field];
-                                $summarized_site_pages[$i][$field] = $site[$field];
+                                $summarized_site_pages[$i][$field] = 
+                                    $site[$field];
                             }
                         }
                         foreach($stored_fields as $field) {

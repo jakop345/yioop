@@ -425,7 +425,8 @@ class PhraseModel extends Model
          */
         $query_words = explode(" ", $phrase_string); //not stemmed
 
-        // modified from getLocaletag ()to $this->getLocaleTag() by Priya Gangaraju
+        // modified from getLocaletag ()to $this->getLocaleTag() 
+        // by Priya Gangaraju
         $base_words = 
             array_keys(PhraseParser::extractPhrasesAndCount($phrase_string,
             MAX_PHRASE_LEN, $this->getLocaleTag())); //stemmed
