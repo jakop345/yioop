@@ -1,0 +1,5 @@
+content     yiooptoolbar    chrome/content/
+overlay chrome://browser/content/browser.xul chrome://yiooptoolbar/content/main.xul
+skin yioop_toolbar classic/1.0 chrome/skin/
+
+
