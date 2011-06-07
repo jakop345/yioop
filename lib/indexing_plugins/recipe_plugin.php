@@ -73,7 +73,7 @@ require_once BASE_DIR."/lib/crawl_constants.php";
  * http://www.bettycrocker.com/
  *
  * 
- * @author Priya Gangaraju
+ * @author Priya Gangaraju, Chris Pollett (reorganize add documentation)
  * @package seek_quarry
  * @subpackage component
  */
@@ -87,37 +87,23 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
      */
     var $models = array("phrase", "locale", "crawl");
 
-
     /**
-     * Which mime type page processors this plugin should do additional
-     * processing for
+     * This method is called by a PageProcessor in its handle() method
+     * just after it has processed a web page. This method allows
+     * an indexing plugin to do additional processing on the page
+     * such as adding sub-documents, before the page summary is
+     * handed back to the fetcher. For the recipe plugin a sub-document
+     * will be the title of the recipe. The description will consists
+     * of the ingredients of the recipe. Ingredients will be separated by
+     * ||
      *
-     * @return array an array of page processors
-     */
-    static function getProcessors()
-    {
-        return array("HtmlProcessor");
-    }
-
-    /**
-     * Returns an array of additional meta words which have been added by
-     * this plugin
+     *  @param string $page web-page contents
+     *  @param string $url the url where the page contents came from,
+     *     used to canonicalize relative links
      *
-     * @return array meta words and maximum description length of results
-     *      allowed for that meta word (in this case 2000 as want
-     *      to allow sufficient descriptions of whole recipes)
-     */
-    static function getAdditionalMetaWords()
-    {
-        return array("recipe:" => 2000, "ingredient:" => 2000);
-    }
-
-    /**
-     * Extracts title and description from a recipe page. This is
-     * called by the PageProcessor (or subclass) handle($page, $url) method
-     *
-     * @param object $dom a document object to extract a description from.
-     * @return string a description of the page
+     *  @return array consisting of a sequence of subdoc arrays found
+     *      on the given page. Each subdoc array has a self::TITLE and
+     *      a self::DESCRIPTION
      */
     function pageProcessing($page, $url) 
     {
@@ -143,7 +129,7 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
                /html//div[@class = 
                 'pod about-recipe clrfix']/p |
                /html//h1[@class = 'recipeTitle']");
-            for($i=0; $i<$recipes_count;$i++) {
+            for($i=0; $i < $recipes_count; $i++) {
                 $ingredients = $xpath->evaluate("/html//div[@class = 
                     'ingredients']/ul/li |
                     /html//div[@class = 'body-text']
@@ -208,8 +194,8 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
                     $raw_recipes[] = array_merge($doc_info, $summary);
                 }
             }
-
         }
+
         // only cluster if would make more than one cluster
         if(count($raw_recipes) * CLUSTER_RATIO > 1 ) {
             $recipes = array();
@@ -387,13 +373,11 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
         }
     }
 
-
-    
     /**
      *  Extracts the main ingredient from the ingredient.
      *
-     * @param string $text ingredient.
-     * @return string $name main ingredient
+     *  @param string $text ingredient.
+     *  @return string $name main ingredient
      */
     function getIngredientName($text) 
     {
@@ -465,7 +449,32 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
         $name = preg_replace('/[^a-zA-Z]/', "", $name);
         return $name;
     }
-    
+
+    /**
+     * Which mime type page processors this plugin should do additional
+     * processing for
+     *
+     * @return array an array of page processors
+     */
+    static function getProcessors()
+    {
+        return array("HtmlProcessor");
+    }
+
+    /**
+     * Returns an array of additional meta words which have been added by
+     * this plugin
+     *
+     * @return array meta words and maximum description length of results
+     *      allowed for that meta word (in this case 2000 as want
+     *      to allow sufficient descriptions of whole recipes)
+     */
+    static function getAdditionalMetaWords()
+    {
+        
+        return array("recipe:" => HtmlProcessor::MAX_DESCRIPTION_LEN, 
+            "ingredient:" => HtmlProcessor::MAX_DESCRIPTION_LEN);
+    }
 }
 /**
  * Gets the language tag (for instance, en_US for American English) of the
@@ -648,8 +657,8 @@ class Tree
     {
         $k =1;
         $new_clusters = array();
-        $basic_ingredients = array("onion","oil","cheese","pepper","sauce",
-            "salt","milk","butter",'flour','cake','garlic','cream','soda',
+        $basic_ingredients = array("onion", "oil", "cheese", "pepper", "sauce",
+            "salt", "milk", "butter", 'flour', 'cake', 'garlic','cream','soda',
             'honey','powder','sauce','water','vanilla','pepper','bread',
             'sugar','vanillaextract','celery','seasoning','syrup','skewers',
             'egg','muffin','ginger','basil','oregano','cinammon','cumin',

@@ -149,7 +149,11 @@ class Fetcher implements CrawlConstants
     var $page_processors;
 
     /**
-     *
+     * An associative array of (page processor => array of
+     * indexing plugin name associated with the page processor). It is used
+     * to determine after a page is processed which plugins'
+     * pageProcessing($page, $url) method should be called
+     * @var array
      */
     var $plugin_processors;
 
@@ -892,6 +896,15 @@ class Fetcher implements CrawlConstants
         return $summarized_site_pages;
     }
 
+    /**
+     * Copies fields from the array of site data to the $i indexed 
+     * element of the $summarized_site_pages and $stored_site_pages array
+     *
+     * @param int &$i index to copy to
+     * @param array &$site web page info to copy
+     * @param array &$summarized_site_pages array of summaries of web pages
+     * @param array &$stored_site_pages array of cache info of web pages
+     */
     function copySiteFields(&$i, &$site,
         &$summarized_site_pages, &$stored_site_pages)
     {
@@ -915,7 +928,17 @@ class Fetcher implements CrawlConstants
     }
 
     /**
+     * The pageProcessing method of an IndexingPlugin generates 
+     * a self::SUBDOCS array of additional "micro-documents" that
+     * might have been in the page. This methods adds these
+     * documents to the summaried_size_pages and stored_site_pages
+     * arrays constructed during the execution of processFetchPages()
      *
+     * @param int &$i index to begin adding subdocs at
+     * @param array &$site web page that subdocs were from and from 
+     *      which some subdoc summary info is copied
+     * @param array &$summarized_site_pages array of summaries of web pages
+     * @param array &$stored_site_pages array of cache info of web pages
      */
     function processSubdocs(&$i, &$site,
         &$summarized_site_pages, &$stored_site_pages)

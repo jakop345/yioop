@@ -58,8 +58,8 @@ class HtmlProcessor extends TextProcessor
      *  Used to extract the title, description and links from
      *  a string consisting of webpage data.
      *
-     *  @param string $page   web-page contents
-     *  @param string $url   the url where the page contents came from,
+     *  @param string $page web-page contents
+     *  @param string $url the url where the page contents came from,
      *     used to canonicalize relative links
      *
      *  @return array  a summary of the contents of the page

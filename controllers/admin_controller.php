@@ -706,7 +706,6 @@ class AdminController extends Controller implements CrawlConstants
                         $seed_info['disallowed_sites']['url'];
                     $info[self::META_WORDS] = 
                         $seed_info['meta_words'];
-                    //Added by Priya Gangaraju
                     if(isset($seed_info['indexing_plugins']['plugins'])) {
                         $info[self::INDEXING_PLUGINS] =
                             $seed_info['indexing_plugins']['plugins'];
@@ -920,15 +919,13 @@ class AdminController extends Controller implements CrawlConstants
                     } else if(isset($seed_info['meta_words'])){
                             $data['META_WORDS'] = $seed_info['meta_words'];
                     }
-                    
-                    //Added by Priya Gangaraju
                     $data['INDEXING_PLUGINS'] = array();
                     $included_plugins = array();
                     if(!$no_further_changes && isset($_REQUEST["posted"])) {
                         $seed_info['indexing_plugins']['plugins'] =
                             (isset($_REQUEST["INDEXING_PLUGINS"])) ?
                             $_REQUEST["INDEXING_PLUGINS"] : array();
-                        $update_flag = true;  
+                        $update_flag = true;
                     } 
                     $included_plugins = 
                         (isset($seed_info['indexing_plugins']['plugins'])) ?
@@ -940,7 +937,7 @@ class AdminController extends Controller implements CrawlConstants
                         $data['INDEXING_PLUGINS'][$plugin_name] = 
                             (in_array($plugin_name, $included_plugins)) ? 
                             "checked='checked'" : "";
-                    }//
+                    }
 
                     $data['SCRIPT'] = "setDisplay('toggle', ".
                         "'{$data['restrict_sites_by_url']}');".
