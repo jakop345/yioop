@@ -48,7 +48,6 @@ require_once BASE_DIR."/lib/crawl_constants.php";
  * @subpackage controller
  */
  
-require_once BASE_DIR."/lib/components/recipe_component.php";
 class AdminController extends Controller implements CrawlConstants
 {
     /**
@@ -73,15 +72,13 @@ class AdminController extends Controller implements CrawlConstants
         "manageRoles", "manageCrawls", "mixCrawls",
         "manageLocales", "crawlStatus", "configure");
 
-    var $components = array("recipe");
-    
     /**
      * This is the main entry point for handling requests to administer the
      * Yioop/SeekQuarry site
      *
      * ProcessRequest determines the type of request (signin , manageAccount, 
      * etc) is being made.  It then calls the appropriate method to handle the 
-     * given activity.Finally, it draws the relevant admin screen
+     * given activity. Finally, it draws the relevant admin screen
      */
     function processRequest() 
     {
@@ -710,9 +707,10 @@ class AdminController extends Controller implements CrawlConstants
                     $info[self::META_WORDS] = 
                         $seed_info['meta_words'];
                     //Added by Priya Gangaraju
-                    $info[self::POST_PROCESSORS] =
-                        $seed_info['post_processors']['processors'];
-                        
+                    if(isset($seed_info['indexing_plugins']['plugins'])) {
+                        $info[self::INDEXING_PLUGINS] =
+                            $seed_info['indexing_plugins']['plugins'];
+                    }
                     if(isset($_REQUEST['description'])) {
                         $description = 
                             $this->clean($_REQUEST['description'], "string");
@@ -924,26 +922,26 @@ class AdminController extends Controller implements CrawlConstants
                     }
                     
                     //Added by Priya Gangaraju
-                    $data['POST_PROCESSORS'] = array();
-                    $included_processors = array();
+                    $data['INDEXING_PLUGINS'] = array();
+                    $included_plugins = array();
                     if(!$no_further_changes && isset($_REQUEST["posted"])) {
-                        $seed_info['post_processors']['processors'] =
-                            (isset($_REQUEST["POST_PROCESSORS"])) ?
-                            $_REQUEST["POST_PROCESSORS"] : array();
+                        $seed_info['indexing_plugins']['plugins'] =
+                            (isset($_REQUEST["INDEXING_PLUGINS"])) ?
+                            $_REQUEST["INDEXING_PLUGINS"] : array();
                         $update_flag = true;  
                     } 
-                    $included_processors = 
-                        (isset($seed_info['post_processors']['processors'])) ?
-                            $seed_info['post_processors']['processors'] 
+                    $included_plugins = 
+                        (isset($seed_info['indexing_plugins']['plugins'])) ?
+                            $seed_info['indexing_plugins']['plugins'] 
                             : array();
 
-                    foreach($this->components as $component) {
-                        $processor_name = ucfirst($component);
-                        $data['POST_PROCESSORS'][$processor_name] = 
-                            (in_array($processor_name,$included_processors)) ? 
+                    foreach($this->indexing_plugins as $plugin) {
+                        $plugin_name = ucfirst($plugin);
+                        $data['INDEXING_PLUGINS'][$plugin_name] = 
+                            (in_array($plugin_name, $included_plugins)) ? 
                             "checked='checked'" : "";
                     }//
-             
+
                     $data['SCRIPT'] = "setDisplay('toggle', ".
                         "'{$data['restrict_sites_by_url']}');".
                         " elt('load-options').onchange = ".

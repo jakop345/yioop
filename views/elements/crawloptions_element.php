@@ -63,7 +63,7 @@ class CrawloptionsElement extends Element
         ><?php e(tl('crawloptions_element_back_to_manage'))?></a>
         </div>
         <h2><?php e(tl('crawloptions_element_edit_crawl_options'))?></h2>
-        <form id="crawloptionsForm" method="post" action=''>
+        <form id="crawloptionsForm" method="post" action='?'>
         <input type="hidden" name="c" value="admin" />
         <input type="hidden" name="YIOOP_TOKEN" value="<?php 
             e($data['YIOOP_TOKEN']); ?>" />
@@ -115,14 +115,14 @@ class CrawloptionsElement extends Element
         ?></textarea>
         <div class="topmargin"><label for="seed-sites"><b><?php 
             e(tl('crawloptions_element_seed_sites'))?></b></label></div>
-        <textarea class="talltextarea"  name="seed_sites" ><?php 
+        <textarea class="talltextarea" id="seed-sites" name="seed_sites" ><?php 
             e($data['seed_sites']);
         ?></textarea>
         </div>
         <div id='archivetab'>
         <div class="topmargin"><label for="load-options"><b><?php 
             e(tl('crawloptions_element_reindex_crawl'))?></b></label><?php
-            $this->view->optionsHelper->render("crawl-indexes", "crawl_indexes", 
+            $this->view->optionsHelper->render("crawl-indexes", "crawl_indexes",
                 $data['available_crawl_indexes'], $data['crawl_index']);
         ?></div>
         </div>
@@ -164,33 +164,32 @@ class CrawloptionsElement extends Element
             </table>
             
             <!-- Added by Priya Gangaraju -->
-            <?php if(isset($data['POST_PROCESSORS'])) {
+            <?php if(isset($data['INDEXING_PLUGINS'])) {
             ?>
-                <table border = "1">
-                    <tr><th><?php e(tl('crawloptions_element_processor'));
+                <div class="topmargin"><b><?php 
+                    e(tl("crawloptions_element_indexing_plugins"));?></b></div>
+                <table class="indexingplugintable">
+                    <tr><th><?php e(tl('crawloptions_element_plugin'));
                                       ?></th>
                     <th><?php 
-                        e(tl('crawloptions_element_post_processors_include'));
+                        e(tl('crawloptions_element_plugin_include'));
                             ?></th></tr>
-                    <div class="topmargin"><b>
-                    <?php e(tl("crawloptions_element_post_processors"));?>
-                        </b></div>
                     <?php
                     $k = 0;
-                    foreach($data['POST_PROCESSORS'] as 
-                        $processor => $toggleState) {
+                    foreach($data['INDEXING_PLUGINS'] as 
+                        $plugin => $toggleState) {
                     ?>
-                    <tr><td><?php e($processor. "Processor"); ?></td>
-                    <td align = "center"><input type="checkbox" 
-                        name="POST_PROCESSORS[<?php e($k); ?>]" 
-                        value = "<?php e($processor) ?>"
+                    <tr><td><?php e($plugin. "Plugin"); ?></td>
+                    <td class="check"><input type="checkbox" 
+                        name="INDEXING_PLUGINS[<?php e($k); ?>]" 
+                        value = "<?php e($plugin) ?>"
                         <?php e($toggleState); ?>
-                        </td></tr>
+                        /></td></tr>
                 <?php 
                     $k++;
                 }
                 ?>
-            </table>
+                </table>
             <?php
             }
             ?> <!-- -->

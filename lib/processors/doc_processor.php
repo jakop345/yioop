@@ -34,9 +34,8 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- * Load the base class
+ * Load the parent class
  */
-
 require_once BASE_DIR."/lib/processors/text_processor.php";
 
 /**
@@ -60,8 +59,6 @@ class DocProcessor extends TextProcessor
      *  @return array  a summary of the contents of the page
      *
      */
-	var $components = array();
-	 
     public function process($page, $url)
     {
         $text = "";

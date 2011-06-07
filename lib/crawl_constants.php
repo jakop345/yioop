@@ -157,7 +157,7 @@ interface CrawlConstants
     //Added by Priya Gangaraju
     const SUBDOCS = 'bj';
     const SUBDOCTYPE = 'bk';
-    const POST_PROCESSORS = 'bl';//
+    const INDEXING_PLUGINS = 'bl';//
 
     const NEEDS_OFFSET_FLAG = 0x7FFFFFFF;
 

@@ -64,8 +64,6 @@ class SitemapProcessor extends TextProcessor
      *  @return array a summary of the contents of the page
      *
      */
-	var $components = array();
-	
     public function process($page, $url)
     {
         $summary = NULL;

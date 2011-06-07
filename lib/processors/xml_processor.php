@@ -77,10 +77,8 @@ class XmlProcessor extends TextProcessor
      *
      *  @return array  a summary of the contents of the page
      *
-     */
-	var $components = array();
-	 
-    public function process($page, $url)
+     */ 
+    function process($page, $url)
     {
         $summary = NULL;
         if(is_string($page)) {
@@ -91,30 +89,17 @@ class XmlProcessor extends TextProcessor
             $root_name = isset($dom->documentElement->nodeName) ?
                 $dom->documentElement->nodeName : "";
             unset($dom);
-            switch ($root_name)
-            {
-                case "rss":
-					$rss_processor = new RssProcessor();
-                    $summary = $rss_processor->process($page, $url);
-                break;
-                case "html":
-					$html_processor = new HtmlProcessor();
-                    $summary = $html_processor->process($page, $url);
-                break;
-                case "sitemapindex":
-					$sitemap_processor = new SitemapProcessor();
-                    $summary = $sitemap_processor->process($page, $url);
-                break;
-                case "urlset":
-                    $sitemap_processor = new SitemapProcessor();
-                    $summary = $sitemap_processor->process($page, $url);
-                break;
-                case "svg":
-					$svg_processor = new SvgProcessor();
-                    $summary = $svg_processor->process($page, $url);
-                break;
-                default:
-                    $summary = parent::process($page, $url);
+            $XML_PROCESSORS = array(
+                "rss" => "RssProcessor", "html" => "HtmlProcessor",
+                "sitemapindex" => "SitemapProcessor", 
+                "urlset" => "SitemapProcessor", "svg" => "SvgProcessor"
+            );
+            if(isset($XML_PROCESSORS[$root_name])) {
+                $processor_name = $XML_PROCESSORS[$root_name];
+                $processor = new $processor_name($this->indexing_plugins);
+                $summary = $processor->process($page, $url);
+            } else {
+                $summary = parent::process($page, $url);
             }
         }
 

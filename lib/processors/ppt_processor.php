@@ -74,9 +74,7 @@ class PptProcessor extends TextProcessor
      * @return array a summary of (title, description,links, and content) of 
      *      the information in $page
      */
-	var $components = array();
-	
-    public function process($page, $url)
+    function process($page, $url)
     {
         $text = "";
         if(is_string($page)) {

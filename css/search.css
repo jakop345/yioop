@@ -680,6 +680,7 @@ p
 }
 .metawordstable th
 {
+    text-align: center;
     padding: .04in;
 }
 .metawordstable td.input-word
@@ -701,6 +702,29 @@ p
     margin:.05in;
     width: 97%;
 }
+
+.indexingplugintable
+{
+   width:100%;
+}
+.indexingplugintable, .indexingplugintable th, .indexingplugintable td
+{
+    border: 1px ridge black;
+    text-align: center;
+}
+.indexingplugintable th
+{
+    padding: .04in;
+}
+
+.indexingplugintable td.check
+{
+    text-align: center;
+    width: 75%;
+    padding: .1in;
+}
+
+
 #query-statistics
 {
     margin-top: .2in;

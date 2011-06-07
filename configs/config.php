@@ -50,7 +50,7 @@ if(file_exists(BASE_DIR."/configs/local_config.php")) {
 if(!defined('WORK_DIRECTORY')) {
 /*+++ The next block of code is machine edited, change at 
 your own risk, please use configure web page instead +++*/
-define('WORK_DIRECTORY', 'c:/xampp/htdocs/yioop_data_v0.68');
+define('WORK_DIRECTORY', '');
 /*++++++*/
 }
 
@@ -288,6 +288,8 @@ $PAGE_PROCESSORS = array(   "text/html" => "HtmlProcessor",
                             "image/bmp" => "BmpProcessor",
                             "image/svg+xml"=> "SvgProcessor"
 );
+
+$INDEXING_PLUGINS = array("recipe");
 
 /** Characters we view as not part of words, not same as POSIX [:punct:]*/
 define ('PUNCT', "\.|\,|\:|\;|\"|\'|\`|\[|\]|\{|\}|\(|\)|\!|\||\&");

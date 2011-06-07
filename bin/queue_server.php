@@ -77,6 +77,11 @@ require_once BASE_DIR."/lib/crawl_constants.php";
 
 require_once BASE_DIR."/lib/phrase_parser.php";
 
+/** get any indexing plugins */
+foreach(glob(BASE_DIR."/lib/indexing_plugins/*_plugin.php") as $filename) { 
+    require_once $filename;
+}
+
 /*
  *  We'll set up multi-byte string handling to use UTF-8
  */
@@ -191,20 +196,15 @@ class QueueServer implements CrawlConstants
      * @var int
      */
      var $index_dirty;
+
     /**
-     * Makes a queue_server object with the supplied indexed_file_types
-     *
-     * As part of the creation process, a database manager is initialized so
-     * the queue_server can make use of its file/folder manipulation functions.
+     * This is a list of indexing_plugins which might do
+     * post processing after the crawl. The plugins postProcessing function
+     * is called if it is selected in the crawl options page.
+     * @var array
      */
-    //Added by Priya Gangaraju
-    var $components = array("recipe");
-    /**
-     * This is a list of components which do post processing after the crawl
-     * Post processing function of the component is called if it is selected 
-     * in the crawl options page.
-     */
-    var $post_processors;
+    var $indexing_plugins;
+
     /**
      * holds the post processors selected in the crawl options page
      */
@@ -224,16 +224,6 @@ class QueueServer implements CrawlConstants
         $this->meta_words = array();
         $this->last_index_save_time = 0;
         $this->index_dirty = false;
-        
-        //Added by Priya Gangaraju.
-        //create an instance of all the components.
-        foreach($this->components as $component) 
-        {
-            require_once BASE_DIR."/lib/components/".$component."_component.php";
-            $component_name = ucfirst($component)."Component";
-            $component_instance_name = lcfirst($component_name);
-            $this->$component_instance_name = new $component_name();
-        }
     }
 
     /**
@@ -475,13 +465,20 @@ class QueueServer implements CrawlConstants
                     //Added by Priya Gangaraju. 
                     //Calling post processing function if the processor is 
                     //selected in the crawl options page.
-                    if(isset($this->post_processors)) {
-                        crawlLog("Post Processing");
-                        foreach($this->post_processors as $component) {
-                            $component_instance_name = 
-                                lcfirst($component)."Component";
-                            $this->$component_instance_name->
-                                postProcessing($this->crawl_time);
+                    if(isset($this->indexing_plugins)) {
+                        crawlLog("Post Processing....");
+                        foreach($this->indexing_plugins as $plugin) {
+                            $plugin_instance_name = 
+                                lcfirst($plugin)."Plugin";
+                            $plugin_name = $plugin."Plugin";
+                            $this->$plugin_instance_name = 
+                                new $plugin_name();
+                            if($this->$plugin_instance_name) {
+                                crawlLog(
+                                    "... executing $plugin_instance_name");
+                                $this->$plugin_instance_name->
+                                    postProcessing($this->crawl_time);
+                            }
                         }
                     }
                 break;
@@ -558,6 +555,8 @@ class QueueServer implements CrawlConstants
             "restrict_sites_by_url" => self::RESTRICT_SITES_BY_URL,
             "allowed_sites" => self::ALLOWED_SITES,
             "disallowed_sites" => self::DISALLOWED_SITES,
+            "meta_words" => self::META_WORDS,
+            "indexing_plugins" => self::INDEXING_PLUGINS,
         );
         $try_to_set_from_old_index = array();
         foreach($read_from_info as $index_field => $info_field) {
@@ -566,12 +565,6 @@ class QueueServer implements CrawlConstants
             } else {
                 array_push($try_to_set_from_old_index,  $index_field);
             }
-        }
-        if(isset($info[self::META_WORDS])) {
-            $this->meta_words = $info[self::META_WORDS];
-        }
-        if(isset($info[self::POST_PROCESSORS])) {
-            $this->post_processors = $info[self::POST_PROCESSORS];
         }
 
         switch($this->crawl_order) 
@@ -617,9 +610,6 @@ class QueueServer implements CrawlConstants
                     $this->$index_field = 
                         $index_info[$read_from_info[$index_field]];
                 }
-            }
-            if(isset($index_info[self::META_WORDS])) {
-                $this->meta_words = $index_info[self::META_WORDS];
             }
         }
 
@@ -720,7 +710,7 @@ class QueueServer implements CrawlConstants
      * processDataFile to process the oldest file found
      */
     function processToolbarData()
-   {
+    {
        echo " In the function processToolbarData";
        crawlLog("Checking for toolbar data files to process...");
 
@@ -729,7 +719,7 @@ class QueueServer implements CrawlConstants
        $this->processDataFile($index_dir, "processToolbarDataInvertedIndex");
        crawlLog("done.");
        echo " End of the function processToolbarData";
-   }
+    }
    
    /**
     * Builds the MiniInvertedIndex for the files recived from
@@ -1249,6 +1239,7 @@ class QueueServer implements CrawlConstants
         $sites[self::CRAWL_TYPE] = $this->crawl_type;
         $sites[self::CRAWL_INDEX] = $this->crawl_index;
         $sites[self::META_WORDS] = $this->meta_words;
+        $sites[self::INDEXING_PLUGINS] =  $this->indexing_plugins;
         $sites[self::SITES] = array();
 
         return base64_encode(serialize($sites))."\n";

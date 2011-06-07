@@ -63,13 +63,14 @@ abstract class Controller
     var $views = array();
 
     /**
-     *  Loads all of the models listed in the models field array.
-     *  Loads each view the controlle might use listed in the views field array
+     * Says which post processing indexing plugins are available
+     * @var array
      */
-	 var $components = array();
+    var $indexing_plugins = array();
 
-    public function __construct() 
+    public function __construct($indexing_plugins = array()) 
     {
+
         require_once BASE_DIR."/models/model.php";
 
         foreach($this->models as $model) {
@@ -90,16 +91,16 @@ abstract class Controller
 
             $this->$view_instance_name = new $view_name();
         }
-		
-		foreach($this->components as $component) 
-		{
-            require_once BASE_DIR."/lib/components/".$component."_component.php";
-			$component_name = ucfirst($component)."Component";
-			$component_instance_name = lcfirst($component_name);
-			$this->$component_instance_name = new $component_name();
-		}
-		
-	}
+        $this->indexing_plugins = $indexing_plugins;
+        foreach($this->indexing_plugins as $plugin) {
+            require_once BASE_DIR .
+                "/lib/indexing_plugins/".$plugin."_plugin.php";
+            $plugin_name = ucfirst($plugin)."Plugin";
+            $plugin_instance_name = lcfirst($plugin_name);
+            $this->$plugin_instance_name = new $plugin_name();
+        }
+
+    }
 
     /**
      *  This function should be overriden to web handle requests

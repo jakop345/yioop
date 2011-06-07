@@ -84,8 +84,6 @@ class SearchController extends Controller implements CrawlConstants
      * appropriate method to handle the given activity.Finally, it draw the 
      * search screen.
      */
-	var $components = array();
-	
     function processRequest() 
     {
         $data = array();
@@ -251,6 +249,15 @@ class SearchController extends Controller implements CrawlConstants
         }
 
         $this->phraseModel->index_name = $index_name;
+        $this->phraseModel->additional_meta_words = array();
+        foreach($this->indexing_plugins as $plugin) {
+            $plugin_name = ucfirst($plugin)."Plugin";
+            $tmp_meta_words = $plugin_name::getAdditionalMetaWords();
+            $this->phraseModel->additional_meta_words = 
+                array_merge($this->phraseModel->additional_meta_words, 
+                    $tmp_meta_words);
+        }
+
         $this->crawlModel->index_name = $index_name;
 
 

@@ -66,6 +66,11 @@ define("MIN_SNIPPET_LENGTH", 50);
 class Model implements CrawlConstants
 {
 
+    /**
+     * Default maximum character length of a search summary
+     */
+    const DEFAULT_DESCRIPTION_LENGTH = 200;
+
     /** Reference to a DatasourceManager
      *  @var object
      */
@@ -104,7 +109,8 @@ class Model implements CrawlConstants
      * @param int $description_length length of the description
      * @return array summaries which have been snippified and bold faced
      */
-    function formatPageResults($results, $words = NULL, $description_length)
+    function formatPageResults($results, $words = NULL, $description_length =
+        self::DEFAULT_DESCRIPTION_LENGTH)
     {
             if(isset($results['PAGES'])) {
             $pages = $results['PAGES'];

@@ -1,5 +1,0 @@
-content     sample    chrome/content/
-overlay chrome://browser/content/browser.xul chrome://sample/content/sample.xul
-skin sample classic/1.0 chrome/skin/
-
-

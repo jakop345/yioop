@@ -37,7 +37,9 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * logging is done during crawl not through web, 
  * so it will not be used in the phrase model 
  */
-define("LOG_TO_FILES", false); 
+if(!defined("POST_PROCESSING")) {
+    define("LOG_TO_FILES", false);
+} 
 /** For crawlHash function */
 require_once BASE_DIR."/lib/utility.php"; 
 /** 
@@ -71,6 +73,13 @@ class PhraseModel extends Model
      */
     var $index_name;
 
+    /** an associative array of additional meta words and 
+     * the max description length of results if such a meta word is used
+     * this array is typically set in index.php
+     *
+     *  @var array
+     */
+    var $additional_meta_words;
     /**
      * Number of pages to cache in one go in memcache
      * Size chosen based on 1MB max object size for memcache
@@ -308,17 +317,18 @@ class PhraseModel extends Model
         } else {
             $format_words = NULL;
         }
-        //Added by Priya Gangaraju
-        //set the description length to 2000 for query
-        //of types recipe : or ingredient 
-        $description_length = 200;
-        $meta_words = array("ingredient:", "recipe:");
-        foreach($meta_words as $meta_word){
-            $pattern = "/$meta_word/";
-            if(preg_match($pattern, $input_phrase)) {
-                $description_length = 2000;
+
+        $description_length = self::DEFAULT_DESCRIPTION_LENGTH;
+        if(isset($this->additional_meta_words) && 
+            is_array($this->additional_meta_words)) {
+            foreach($this->additional_meta_words as $meta_word => $length){
+                $pattern = "/$meta_word/";
+                if(preg_match($pattern, $input_phrase)) {
+                    $description_length = $length;
+                    break; // only match the first found
+                }
             }
-        }//
+        }
         $output = $this->formatPageResults($results, $format_words, 
             $description_length);
 
@@ -382,7 +392,11 @@ class PhraseModel extends Model
         $meta_words = array('link:', 'site:', 'version:', 'modified:',
             'filetype:', 'info:', '\-', 'os:', 'server:', 'date:',
             'index:', 'i:', 'ip:', 'weight:', 'w:', 'u:',
-            'lang:', 'media:', 'recipe:', 'ingredient:');
+            'lang:', 'media:');
+        if(isset($this->additional_meta_words)) {
+            $meta_words = array_merge($meta_words, array_keys(
+                $this->additional_meta_words));
+        }
         $index_name = $this->index_name;
         $weight = 1;
         $found_metas = array();
@@ -412,7 +426,6 @@ class PhraseModel extends Model
             }
             $phrase_string = preg_replace($pattern,"", $phrase_string);
         }
-
         $index_archive_name = self::index_data_base_name . $index_name;
         $index_archive = new IndexArchiveBundle(
             CRAWL_DIR.'/cache/'.$index_archive_name);
@@ -425,11 +438,9 @@ class PhraseModel extends Model
          */
         $query_words = explode(" ", $phrase_string); //not stemmed
 
-        // modified from getLocaletag ()to $this->getLocaleTag() 
-        // by Priya Gangaraju
         $base_words = 
             array_keys(PhraseParser::extractPhrasesAndCount($phrase_string,
-            MAX_PHRASE_LEN, $this->getLocaleTag())); //stemmed
+            MAX_PHRASE_LEN, getLocaleTag())); //stemmed
         $words = array_merge($base_words, $found_metas);
         if(isset($words) && count($words) == 1 && 
             count($disallow_phrases) < 1) {
@@ -706,12 +717,6 @@ class PhraseModel extends Model
         return $group_iterator;
     }
 
-    // Added by Priya Gangaraju
-    function getLocaleTag()
-    {
-        return "en_US";
-    }
-    
 }
 
 ?>

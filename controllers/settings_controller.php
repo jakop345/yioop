@@ -67,7 +67,6 @@ class SettingsController extends Controller
      *  the number of results per page and language options into a sesssion
      *
      */
-	 var $components = array();
     function processRequest() 
     {
         $data = array();

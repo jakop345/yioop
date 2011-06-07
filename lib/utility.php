@@ -35,6 +35,21 @@
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
+$MOD9_PACK_POSSIBILITIES = array(
+    0, 24, 12, 7, 6, 5, 4, 3, 3, 3, 2, 2, 2, 2,
+    2,  1,  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
+
+$MOD9_NUM_ELTS_CODES = array( 
+    24 => 63, 12 => 62, 7 => 60, 6 => 56, 5 => 52, 4 => 48, 3 => 32,
+    2 => 16, 1 => 0);
+
+$MOD9_NUM_BITS_CODES = array( 63 => 1, 62 => 2, 60 => 3, 56 => 4, 52 => 5,
+    48 => 6, 32 => 9, 16 => 14, 0 => 28);
+
+$MOD9_NUM_ELTS_DECODES = array( 
+    63 => 24, 62 => 12, 60=> 7, 56 => 6, 52 => 5, 48 => 4, 32 => 3,
+    16 => 2, 0 => 1);
+
 /**
  * Copies from $source string beginning at position $start, $length many
  * bytes to destination string
@@ -87,6 +102,138 @@ function vByteDecode(&$str, &$offset)
 
     return $pos_int;
 }
+
+
+function deltaList($list)
+{
+    $last = 0;
+    $delta_list = array();
+    foreach($list as $elt) {
+        $delta_list[] = $elt - $last;
+        $last = $elt;
+    }
+    return $delta_list;
+}
+
+function deDeltaList($delta_list)
+{
+    $last = 0;
+    $list = array();
+    foreach($delta_list as $delta) {
+        $last += $delta;
+        $list[] = $last;
+    }
+    return $list;
+}
+
+function encodeModified9($list)
+{
+    global $MOD9_PACK_POSSIBILITIES;
+    $cnt = 0;
+    $cur_size = 1;
+    $cur_len = 1;
+    $pack_list = array();
+    $list_string = "";
+    $continue_bits = 3;
+    foreach($list as $elt) {
+        $old_len = $cur_len;
+        while( $elt > $cur_size )
+        {
+            $cur_len++;
+            $cur_size = (1 << $cur_len) - 1;
+
+        }
+
+        if( $cnt < $pack_possibilities[$cur_len] ) {
+            $pack_list[] = $elt;
+            $cnt++;
+        } else {
+            $list_string .= packListModified9($continue_bits, 
+                $MOD9_PACK_POSSIBILITIES[$old_len], $pack_list);
+            $continue_bits = 2;
+            $pack_list = array($elt);
+            $cur_size = 1;
+            $cur_len = 1;
+            $cnt = 1;
+            while( $elt > $cur_size )
+            {
+                $cur_size <<= 1;
+                $cur_len++;
+            }
+        }
+    }
+    $continue_bits = ($continue_bits == 3) ? 0 : 1;
+    $list_string .= packListModified9($continue_bits, 
+        $MOD9_PACK_POSSIBILITIES[$cur_len], $pack_list);
+
+
+    return $list_string;
+}
+
+function packListModified9($continue_bits, $cnt, $pack_list)
+{
+    global $MOD9_NUM_ELTS_CODES, $MOD9_NUM_BIT_CODES;
+
+
+    $out_int = 0;
+    $code = $MOD9_NUM_ELTS_CODES[$cnt];
+    $num_bits = $num_bits_codes[$code];
+    foreach($pack_list as $elt) {
+        $out_int <<= $num_bits;
+        $out_int += $elt;
+    }
+    $out_string = packInt($out_int);
+    echo $code." ".$num_bits." ".($continue_bits << 6)."a\n";
+    $out_string[0] = chr(($continue_bits << 6) + $code + ord($out_string[0]));
+    return $out_string;
+}
+
+function decodeModified9($input_string, $offset = 0)
+{
+    $flag_mask = 192;
+    $continue_threshold = 128;
+    $first_time = true;
+    $decode_list = array();
+    do {
+        $int_string = substr($input_string, $offset, 4);
+        $ord_first = ord($int_string[0]);
+        $flag_bits = $ord_first & $flag_mask;
+        if($first_time) {
+            if($flag_bits != 0 && $flag_bits != $flag_mask) {
+                return false;
+            }
+            $first_time = false;
+        }
+        $int_string[0] = chr($ord_first - $flag_bits);
+        $decode_list = array_merge($decode_list, 
+            unpackListModified9($int_string));
+        $offset += 4;
+    } while($flag_bits >= $continue_threshold);
+
+   return $decode_list;
+}
+
+function unpackListModified9($int_string) {
+    global $MOD9_NUM_BITS_CODES, $MOD9_NUM_ELTS_DECODES;
+
+    $first_char = ord($int_string[0]);
+    foreach($MOD9_NUM_BITS_CODES as $code => $num_bits) {
+        if(($first_char & $code) == $code) break;
+    }
+    $mask = (2 << ($num_bits - 1)) - 1;
+    $num_elts = $MOD9_NUM_ELTS_DECODES[$code];
+    $int_string[0] = chr($first_char - $code);
+    $encoded_list = unpackInt($int_string);
+    $decoded_list = array();
+    for($i = 0; $i < $num_elts; $i++) {
+        if(($pre_elt = $encoded_list & $mask) == 0) break;
+        array_unshift($decoded_list, $pre_elt);
+        $encoded_list >>= $num_bits;
+    }
+
+    return $decoded_list;
+}
+
 
 /**
  * Unpacks an int from a 4 char string
@@ -146,6 +293,22 @@ function toHexString($str)
     $out = "";
     for($i = 0; $i < strlen($str); $i++) {
         $out .= dechex(ord($str[$i]))." ";
+    }
+    return $out;
+}
+
+/**
+ * Converts a string to string where each char has been replaced by its 
+ * binary equivalent
+ *
+ * @param string $str what we want rewritten in hex
+ * @return string the binary string
+ */
+function toBinString($str)
+{
+    $out = "";
+    for($i = 0; $i < strlen($str); $i++) {
+        $out .= substr(decbin(256+ord($str[$i])), 1)." ";
     }
     return $out;
 }

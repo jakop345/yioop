@@ -73,7 +73,6 @@ class ArchiveController extends Controller implements CrawlConstants
      *
      * For this controller the only activity is to handle a cache request
      */
-	 var $components = array();
     function processRequest() 
     {
 

@@ -34,11 +34,10 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- * Used by subclasses, so have succinct access (i.e., can use self:: rather 
- * than CrawlConstants::) to constants like:
- * CrawlConstants::TITLE, CrawlConstants::DESCRIPTION, etc.
+ * Load the base class
  */
-require_once BASE_DIR."/lib/crawl_constants.php";
+require_once BASE_DIR."/lib/processors/page_processor.php";
+
 
 /**
  * Base abstract class common to all processors used to create crawl summary 
@@ -48,9 +47,10 @@ require_once BASE_DIR."/lib/crawl_constants.php";
  * @package seek_quarry
  * @subpackage processor
  */
-abstract class ImageProcessor implements CrawlConstants
+class ImageProcessor extends PageProcessor
 {
 
+    
     /**
      * Extract summary data from the image provided in $page together the url 
      *      in $url where it was downloaded from
@@ -62,7 +62,7 @@ abstract class ImageProcessor implements CrawlConstants
      * @return array summary information including a thumbnail and a 
      *      description (where the description is just the url)
      */
-    static function process($page, $url) { return NULL;} 
+    function process($page, $url) { return NULL;} 
 
     /**
      * Used to create a thumbnail from an image object

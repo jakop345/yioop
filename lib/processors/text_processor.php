@@ -34,20 +34,19 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- * Loads in the common constant used by all classes related to crawling
+ * Load the base class
  */
-require_once BASE_DIR."/lib/crawl_constants.php";
-
+require_once BASE_DIR."/lib/processors/page_processor.php";
 
 /**
- * Base class common to all processors used to create crawl summary information 
- * that involves basically text data
+ * Parent class common to all processors used to create crawl summary 
+ * information  that involves basically text data
  *
  * @author Chris Pollett
  * @package seek_quarry
  * @subpackage processor
  */
-class TextProcessor implements CrawlConstants
+class TextProcessor extends PageProcessor
 {
 
     /**
@@ -61,20 +60,7 @@ class TextProcessor implements CrawlConstants
      * @return array a summary of (title, description,links, and content) of 
      *      the information in $page
      */
-	 var $components = array();
-	 
-	 public function __construct(){
-	 
-		foreach($this->components as $component) 
-		{
-            require_once BASE_DIR."/lib/components/".$component."_component.php";
-			$component_name = ucfirst($component)."Component";
-			$component_instance_name = lcfirst($component_name);
-			$this->$component_instance_name = new $component_name();
-		}
-	 
-	 } 
-    public function process($page, $url)
+    function process($page, $url)
     {
         $summary = NULL;
         if(is_string($page)) {

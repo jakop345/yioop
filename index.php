@@ -131,7 +131,7 @@ setLocaleObject($locale_tag);
  */
 require_once(BASE_DIR."/controllers/".$controller_name."_controller.php");
 $controller_class = ucfirst($controller_name)."Controller";
-$controller = new $controller_class();
+$controller = new $controller_class($INDEXING_PLUGINS);
 
 $controller->processRequest();
 
