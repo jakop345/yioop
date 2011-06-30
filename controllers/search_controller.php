@@ -1292,6 +1292,8 @@ class SearchController extends Controller implements CrawlConstants
         $scriptNode = $body->insertBefore($scriptNode, $summaryNode);
         $textNode = $dom->createTextNode("var summaryShow = 'none';");
         $scriptNode->appendChild($textNode);
+        $textNode2 = $dom->createTextNode("var historyShow = 'none';");
+        $scriptNode->appendChild($textNode2);
 
         $aDivNode = $dom->createElement('div');
         $aDivNode = $body->insertBefore($aDivNode, $summaryNode);
@@ -1301,6 +1303,8 @@ class SearchController extends Controller implements CrawlConstants
         $divNode = $dom->createElement('div');
 
         $divNode = $body->insertBefore($divNode, $aDivNode);
+        $divNode->setAttributeNS("","style","position:relative");
+        $divNode->setAttributeNS("","style","zIndex:1");
         $divNode->setAttributeNS("","style", "border-color: black; ".
             "border-style:solid; border-width:3px;margin-bottom:10px;".
             "padding: 5px; background-color: white; text-align:$text_align;");
@@ -1308,6 +1312,12 @@ class SearchController extends Controller implements CrawlConstants
         $textNode = $dom->createTextNode(tl('search_controller_cached_version', 
             "Z@url@Z", $date));
         $divNode->appendChild($textNode);
+
+        //Link for accessing history feature
+        $historyLink = $dom->createElement('a');
+        $historyLabel = $dom->createTextNode(tl('search_controller_history'));
+        $historyLink->appendChild($historyLabel);
+        $divNode->appendChild($historyLink);
 
         //Display links for all cached versions
         $time_array = array();
@@ -1349,6 +1359,52 @@ class SearchController extends Controller implements CrawlConstants
         }
         $month_json = json_encode($months);
         $year_json = json_encode($years);
+
+        //Display current year, current month and their respective links
+        $current = date("F d Y g:ia",$crawl_time);
+        $current_components = explode(" ",$current);
+        $current_year = json_encode($current_components[2]);
+        $current_month = json_encode($current_components[0]);
+
+        $historyLink->setAttributeNS('','onclick','javascript:'.
+            "var m_id = document.getElementById('#month');".
+            "var y_id = document.getElementById('#year');".
+            "var cur_year = $current_year;".
+            "var cur_month = $current_month;".
+            "cur_div = 
+                document.getElementById('#'+cur_year+cur_month);".
+            "for(i=0;i<y_id.length;i++){
+                if(y_id.options[i].value==cur_year){
+                    y_id.options[i].defaultSelected=true;
+                }
+             }".
+            "document.getElementById('#month').options.length=0;".
+            "var monthjs = $month_json;".
+            "var curyearid = document.getElementById('#year');".
+            "var temp = curyearid.options[curyearid.selectedIndex].value;".
+            "for(j=0;j<monthjs.length;j++){
+                var id=document.getElementById('#'+temp+monthjs[j]);
+                if(id !== null){
+                    var opt = document.createElement('option');
+                    opt.text = monthjs[j];
+                    var m = document.getElementById('#month');
+                    m.add(opt,null);
+                }
+             }".
+            "for(i=0;i<m_id.length;i++){
+                if(m_id.options[i].value==cur_month){
+                    m_id.options[i].defaultSelected=true;
+                }
+             }".
+            "select=document.getElementById('#d1');".
+            "if(select.style.display=='none'){".
+            "select.style.display='block';".
+            "}else{select.style.display='none';}".
+            "if(cur_div.style.display=='none'){".
+            "cur_div.style.display='block';}".
+            "else{cur_div.style.display='none'}");
+        $historyLink->setAttributeNS('','style',"text-decoration: underline; ".
+            "cursor: pointer");
 
         //UI for selecting year and month
         $d1 = $dom->createElement('div');
@@ -1451,38 +1507,14 @@ class SearchController extends Controller implements CrawlConstants
             "ldiv.style.display = 'block';}");
 
         $aNode = $dom->createElement("a");
-        $aTextNode = $dom->createTextNode('View Links to All Cached Versions,
-            Extracted Headers, and Summaries');
+        $aTextNode = 
+            $dom->createTextNode(tl('search_controller_header_summaries'));
         $aNode->setAttributeNS("","onclick", "javascript:".
-            "var m_id = document.getElementById('#month');".
-            "var y_id = document.getElementById('#year');".
-            "var cur_year = y_id.options[y_id.selectedIndex].value;".
-            "var cur_month = m_id.options[m_id.selectedIndex].value;".
-            "cur_div = document.getElementById('#'+cur_year+cur_month);".
             "summaryShow=(summaryShow!='block')?'block':'none';".
             "elt=document.getElementById('summary-page-id');".
-            "elt.style.display=summaryShow;".
-            "document.getElementById('#month').options.length=0;".
-            "var monthjs=$month_json;".
-            "var curyearid = document.getElementById('#year');".
-            "var temp = curyearid.options[curyearid.selectedIndex].value;".
-            "for(j=0;j<monthjs.length;j++){
-                var id=document.getElementById('#'+temp+monthjs[j]);
-                if(id !== null){
-                    var opt = document.createElement('option');
-                    opt.text = monthjs[j];
-                    var m = document.getElementById('#month');
-                    m.add(opt,null);
-                }
-             }".
-            "select=document.getElementById('#d1');".
-            "if(select.style.display=='none'){".
-            "select.style.display='block';".
-            "}else{select.style.display='none';}".
-            "if(cur_div.style.display=='none'){".
-            "cur_div.style.display='block';}".
-            "else{cur_div.style.display='none'}");
-        $aNode->setAttributeNS("","style","zIndex:1");
+            "elt.style.display=summaryShow;");
+        $aNode->setAttributeNS("","style","position:relative");
+        $aNode->setAttributeNS("","style","zIndex:2");
         $aNode->setAttributeNS("","style", "text-decoration: underline; ".
             "cursor: pointer");
 
@@ -1490,7 +1522,7 @@ class SearchController extends Controller implements CrawlConstants
 
         $aNode = $aDivNode->appendChild($aNode);
 
-        $d1 = $aDivNode->appendChild($d1);
+        $d1 = $divNode->appendChild($d1);
 
         /*create divs for all year.month pairs and populate with links
          */
