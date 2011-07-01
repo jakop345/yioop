@@ -79,7 +79,7 @@ if ( false === function_exists('lcfirst') ) {
 }
 
 $available_controllers = array("search", "fetch", "cache",
-    "settings", "admin", "archive","toolbar");
+    "settings", "admin", "archive", "traffic");
 
 //the request variable c is used to determine the controller
 if(!isset($_REQUEST['c'])) {

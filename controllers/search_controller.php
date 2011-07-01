@@ -405,7 +405,7 @@ class SearchController extends Controller implements CrawlConstants
 
             $meta_words = array('link\:', 'site\:', 'version\:', 'modified\:',
                 'filetype\:', 'info\:', '\-', 'os\:', 'server\:', 'date\:',
-                'lang\:',
+                'lang\:', 'elink\:',
                 'index:', 'ip:', 'i:', 'weight:', 'w:', 'u:');
             foreach($meta_words as $meta_word) {
                 $pattern = "/(\s)($meta_word(\S)+)/";
@@ -447,8 +447,25 @@ class SearchController extends Controller implements CrawlConstants
             $body =  $dom->getElementsByTagName('body')->item(0);
         }
         $first_child = $body->firstChild;
+        $summaryNode = $dom->createElement('pre');
+        $summaryNode = $body->insertBefore($summaryNode, $first_child);
+        $summaryNode->setAttributeNS("","style", "border-color: black; ".
+            "border-style:solid; border-width:3px; ".
+            "padding: 5px; background-color: white; display:none;");
+        $summaryNode->setAttributeNS("","id", "summary-page-id");
+        $cache_string = wordwrap($crawl_item[self::TITLE], 80, "\n")."\n\n" .
+            wordwrap($crawl_item[self::DESCRIPTION], 80, "\n")."\n\n".
+            wordwrap(print_r($crawl_item[self::LINKS], true), 80, "\n");
+        $textNode = $dom->createTextNode($cache_string);
+        $summaryNode->appendChild($textNode);
+
+        $scriptNode = $dom->createElement('script');
+        $scriptNode = $body->insertBefore($scriptNode, $summaryNode);
+        $textNode = $dom->createTextNode("var summaryShow = 'none';");
+        $scriptNode->appendChild($textNode);
+
         $preNode = $dom->createElement('pre');
-        $preNode = $body->insertBefore($preNode, $first_child);
+        $preNode = $body->insertBefore($preNode, $summaryNode);
         $preNode->setAttributeNS("","style", "border-color: black; ".
             "border-style:solid; border-width:3px; ".
             "padding: 5px; background-color: white");
@@ -461,11 +478,29 @@ class SearchController extends Controller implements CrawlConstants
         $textNode = $dom->createTextNode(tl('search_controller_cached_version', 
             "$url", $date));
         $divNode->appendChild($textNode);
-        if(isset($cache_item[self::HEADER])) {
 
-            $textNode = $dom->createTextNode($cache_item[self::HEADER]);
-            $preNode->appendChild($textNode);
+        if(isset($cache_item[self::HEADER])) {
+            $textNode = $dom->createTextNode($cache_item[self::HEADER]."\n");
+        } else {
+            $textNode = $dom->createTextNode("");
         }
+
+        $preNode->appendChild($textNode);
+
+        $aNode = $dom->createElement("a");
+        $aTextNode = $dom->createTextNode(
+            tl('search_controller_summary_data'));
+        $aNode->setAttributeNS("","onclick", "javascript:".
+            "summaryShow=(summaryShow!='block')?'block':'none';".
+            "elt=document.getElementById('summary-page-id');".
+            "elt.style.display=summaryShow;");
+        $aNode->setAttributeNS("","style", "text-decoration: underline; ".
+            "cursor: pointer");
+
+        $aNode->appendChild($aTextNode);
+
+        $aNode = $preNode->appendChild($aNode);
+
         $body = $this->markChildren($body, $words, $dom);
 
         $newDoc = $dom->saveHTML();

@@ -392,7 +392,7 @@ class PhraseModel extends Model
         $meta_words = array('link:', 'site:', 'version:', 'modified:',
             'filetype:', 'info:', '\-', 'os:', 'server:', 'date:',
             'index:', 'i:', 'ip:', 'weight:', 'w:', 'u:',
-            'lang:', 'media:');
+            'lang:', 'media:', 'elink:');
         if(isset($this->additional_meta_words)) {
             $meta_words = array_merge($meta_words, array_keys(
                 $this->additional_meta_words));
@@ -406,7 +406,7 @@ class PhraseModel extends Model
             preg_match_all($pattern, $phrase, $matches);
             if(!in_array($meta_word, array('i:', 'index:', 'w:', 
             'weight:', '\-') )) {
-                $matches = array_map("mb_strtolower", $matches[2]);
+                $matches = $matches[2];
                 $found_metas = array_merge($found_metas, $matches);
             } else if($meta_word == '\-') {
                 if(count($matches[0]) > 0) {

@@ -36,7 +36,7 @@ function deleteRows(){
  
 function uploadAsyc(url, record){ 
     // url is the script and data is a string of parameters
-    params = "c=toolbar&a=toolbarTraffic&b=" + record;
+    params = "c=traffic&a=toolbarTraffic&b=" + record;
     var xhr = createXHR();
     xhr.onreadystatechange=function(){
         if(xhr.readyState == 4)
@@ -102,41 +102,41 @@ function getword(event){
  * then calls the uploadAsync function to send toolbar data to Yioop!
  */
 
-function sendCaptureTest(){
+function sendCaptureTest() {
     var yioopurl = "http://www.yioop.com/";
     var file = Components.classes["@mozilla.org/file/directory_service;1"]
         .getService(Components.interfaces.nsIProperties)
         .get("ProfD", Components.interfaces.nsIFile);
     file.append("user_searchcapture.sqlite");
-            
+
     var storageService = Components.classes["@mozilla.org/storage/service;1"]
         .getService(Components.interfaces.mozIStorageService);
     var mDBConn = storageService.openDatabase(file); 
     // Will also create the file if it does not exist
- 
+
     var colnew = new Array();
     var statement = mDBConn.createStatement("SELECT * FROM search_capture");
-        
+
     statement.executeAsync({
         handleResult: function(aResultSet) {
-        var i = 0; 
-        let row = aResultSet.getNextRow();
- 
-    for (var row = aResultSet.getNextRow(); row; row = aResultSet.getNextRow()){
-        colnew[i] = row.getResultByName("word") + "|:|" 
-        + row.getResultByName("searchurl") + "|:|" 
-        + row.getResultByName("searchurl1")+ "|:|" 
-        + row.getResultByName("timestamp") +  "|:|" 
-        + row.getResultByName("language") + "\n";
-        ++i;
-    }
-        if(colnew.length >= 10){ 
-            uploadAsyc(yioopurl, colnew);
-        }
-       },  
+            var i = 0;
+            let row = aResultSet.getNextRow();
+            for (var row = aResultSet.getNextRow(); row; 
+                row = aResultSet.getNextRow()){
+                colnew[i] = row.getResultByName("word") + "|:|" 
+                + row.getResultByName("searchurl") + "|:|" 
+                + row.getResultByName("searchurl1")+ "|:|" 
+                + row.getResultByName("timestamp") +  "|:|" 
+                + row.getResultByName("language") + "\n";
+                ++i;
+            }
+            if(colnew.length >= 10){ 
+                uploadAsyc(yioopurl, colnew);
+            }
+        },
         handleError: function(aError) {
             alert("Error: " + aError.message);
-            },
+        },
 
         handleCompletion: function(aReason) {
             if (aReason != Components.interfaces

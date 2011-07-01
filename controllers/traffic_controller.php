@@ -39,16 +39,14 @@ require_once BASE_DIR."/controllers/controller.php";
 require_once BASE_DIR."/lib/crawl_constants.php";
 
 /**
- * This class handles data coming to a queue_server from a fetcher
- * Basically, it receives the data from the fetcher and saves it into
- * various files for later processing by the queue server.
- * This class can also be used by a fetcher to get status information.
+ * This class handles data coming to a queue_server from a external sources
+ * such as a browser extension or by clicking on search result links.
  *
- * @author Chris Pollett
+ * @author Chris Pollett, Vijaya Pamidi
  * @package seek_quarry
  * @subpackage controller
  */
-class ToolbarController extends Controller implements CrawlConstants
+class TrafficController extends Controller implements CrawlConstants
 {
     /**
      * No models used by this controller

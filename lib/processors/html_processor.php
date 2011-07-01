@@ -231,7 +231,7 @@ class HtmlProcessor extends TextProcessor
         $page_parts = array("/html//h1", "/html//h2", "/html//h3",
             "/html//h4", "/html//h5", "/html//h6", "/html//p[1]",
             "/html//div[1]", "/html//p[2]", "/html//div[2]", 
-            "/html//td");
+            "/html//td", "/html//li", "/html//a");
         foreach($page_parts as $part) {
             $doc_nodes = $xpath->evaluate($part);
             foreach($doc_nodes as $node) {

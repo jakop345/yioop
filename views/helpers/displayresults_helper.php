@@ -51,10 +51,7 @@ require_once BASE_DIR."/views/helpers/helper.php";
  
 class DisplayresultsHelper extends Helper
 {
-
-    
     public function render($data)
-    
     {
         $recipe = explode("||", $data);
         $count = count($recipe);
@@ -65,9 +62,9 @@ class DisplayresultsHelper extends Helper
                 
             }
         }
-        else
+        else {
             echo $data;
-
+        }
     }
 }
 ?>

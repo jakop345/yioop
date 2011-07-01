@@ -128,7 +128,6 @@ class SearchView extends View implements CrawlConstants
                     }
                 }
                 ?></a></h2>
-                <!-- Modified by Priya Gangaraju -->
                 <p><?php 
                 echo $this->displayresultsHelper->
                     render($page[self::DESCRIPTION]); ?></p>
@@ -136,10 +135,10 @@ class SearchView extends View implements CrawlConstants
                     e(substr($page[self::URL],0, 200)." ");}
                     e(tl('search_view_rank', 
                         number_format($page[self::DOC_RANK], 2)));
-                    $page["WEIGHT"] = (isset($page["WEIGHT"])) ?
-                        $page["WEIGHT"] : 1;
                     e(tl('search_view_relevancy',
                         number_format($page[self::RELEVANCE], 2) ));
+                    e(tl('search_view_proximity',
+                        number_format($page[self::PROXIMITY], 2) )." ");
                     e(tl('search_view_score', $page[self::SCORE]));
                 if(isset($page[self::TYPE]) && $page[self::TYPE] != "link") {
                     if(CACHE_LINK) {

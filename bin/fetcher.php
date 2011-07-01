@@ -448,7 +448,8 @@ class Fetcher implements CrawlConstants
         if($can_schedule_again == true) {
             //only schedule to crawl again on fail sites without crawl-delay
             foreach($schedule_again_pages as $schedule_again_page) {
-                if($schedule_again_page[self::CRAWL_DELAY] == 0) {
+                if(isset($schedule_again_page[self::CRAWL_DELAY]) && 
+                    $schedule_again_page[self::CRAWL_DELAY] == 0) {
                     $this->to_crawl_again[] = 
                         array($schedule_again_page[self::URL], 
                             $schedule_again_page[self::WEIGHT],
@@ -1210,24 +1211,12 @@ class Fetcher implements CrawlConstants
         if(isset($this->found_sites[self::SEEN_URLS]) && 
             count($this->found_sites[self::SEEN_URLS]) > 0 ) {
             $hash_seen_urls = array();
-            $recent_urls = array();
-            $cnt = 0;
             foreach($this->found_sites[self::SEEN_URLS] as $site) {
                 $hash_seen_urls[] =
                     crawlHash($site[self::URL], true);
-                if(strpos($site[self::URL], "url|") !== 0) {
-                    array_push($recent_urls, $site[self::URL]);
-                    if($cnt >= NUM_RECENT_URLS_TO_DISPLAY)
-                    {
-                        array_shift($recent_urls);
-                    }
-                    $cnt++;
-                }
             }
             $schedule_data[self::HASH_SEEN_URLS] = & $hash_seen_urls;
             unset($hash_seen_urls);
-            $schedule_data[self::RECENT_URLS] = & $recent_urls;
-            unset($recent_urls);
         }
         if(!empty($schedule_data)) {
             if(isset($schedule_time)) {
@@ -1334,7 +1323,8 @@ class Fetcher implements CrawlConstants
             $site = $this->found_sites[self::SEEN_URLS][$i];
             if(!isset($site[self::HASH])) {continue; }
             $doc_keys = crawlHash($site[self::URL], true) . 
-                $site[self::HASH]. crawlHash("link:".$site[self::URL], true);
+                $site[self::HASH]."d". substr(crawlHash(
+                UrlParser::getHost($site[self::URL])."/",true), 1);
 
             $doc_rank = false;
             if($this->crawl_type == self::ARCHIVE_CRAWL && 
@@ -1344,7 +1334,7 @@ class Fetcher implements CrawlConstants
 
             $meta_ids = $this->calculateMetas($site);
 
-            $word_counts = array();
+            $word_lists = array();
             /* 
                 self::JUST_METAS check to avoid getting sitemaps in results for 
                 popular words
@@ -1358,8 +1348,8 @@ class Fetcher implements CrawlConstants
                     $lang = $site[self::LANG];
                 }
                 
-                $word_counts = 
-                    PhraseParser::extractPhrasesAndCount($phrase_string,
+                $word_lists = 
+                    PhraseParser::extractPhrasesInLists($phrase_string,
                         MAX_PHRASE_LEN, $lang);
             }
 
@@ -1372,7 +1362,7 @@ class Fetcher implements CrawlConstants
                 $link_weight = $weight/$num_links;
                 $link_rank = false;
                 if($doc_rank !== false) {
-                    $link_rank = max($doc_rank -1, 1);
+                    $link_rank = max($doc_rank - 1, 1);
                 }
             } else {
                 $link_weight = 0;
@@ -1385,13 +1375,20 @@ class Fetcher implements CrawlConstants
                 $link_meta_ids = array();
                 if(strlen($url) > 0) {
                     $summary = array();
+                    $elink_flag = (UrlParser::getHost($url) != 
+                        UrlParser::getHost($site[self::URL])) ? true : false;
                     $had_links = true;
                     $link_text = strip_tags($link_text);
+                    $ref = ($elink_flag) ? "eref" : "iref";
                     $link_id = 
-                        "url|".$url."|text|$link_text|ref|".$site[self::URL];
+                        "url|".$url."|text|$link_text|$ref|".$site[self::URL];
+                    $elink_flag_string = ($elink_flag) ? "e" :
+                        "i";
                     $link_keys = crawlHash($url, true) .
                         crawlHash($link_id, true) . 
-                        crawlHash("info:".$url, "true");
+                        $elink_flag_string.
+                        substr(crawlHash(
+                            UrlParser::getHost($site[self::URL])."/", true), 1);
                     $summary[self::URL] =  $link_id;
                     $summary[self::TITLE] = $url; 
                         // stripping html to be on the safe side
@@ -1410,24 +1407,22 @@ class Fetcher implements CrawlConstants
                     }
                     $link_text = 
                         mb_ereg_replace(PUNCT, " ", $link_text);
-                    $link_word_counts = 
-                        PhraseParser::extractPhrasesAndCount($link_text,
+                    $link_word_lists = 
+                        PhraseParser::extractPhrasesInLists($link_text,
                             MAX_PHRASE_LEN, $lang);
                     $link_shard->addDocumentWords($link_keys, 
                         self::NEEDS_OFFSET_FLAG, 
-                        $link_word_counts, $link_meta_ids, false, $link_rank);
+                        $link_word_lists, $link_meta_ids, false, $link_rank);
 
                     $meta_ids[] = 'link:'.$url;
-                    if(UrlParser::getHost($url) != 
-                        UrlParser::getHost($site[self::URL])){
-                        $meta_ids[] = 'elink:'.$url;
-                    }
+                    $meta_ids[] = 'link:'.crawlHash($url);
+
                 }
 
             }
 
             $index_shard->addDocumentWords($doc_keys, self::NEEDS_OFFSET_FLAG, 
-                $word_counts, $meta_ids, true, $doc_rank);
+                $word_lists, $meta_ids, true, $doc_rank);
 
             $index_shard->appendIndexShard($link_shard);
 
@@ -1470,6 +1465,8 @@ class Fetcher implements CrawlConstants
             }
         }
         $meta_ids[] = 'info:'.$site[self::URL];
+        $meta_ids[] = 'info:'.crawlHash($site[self::URL]);
+
         foreach($site[self::IP_ADDRESSES] as $address) {
             $meta_ids[] = 'ip:'.$address;
         }

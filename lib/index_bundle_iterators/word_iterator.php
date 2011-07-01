@@ -231,6 +231,7 @@ class WordIterator extends IndexBundleIterator
         $results = $shard->getPostingsSlice(
             $this->start_offset,
             $this->next_offset, $this->last_offset, $this->results_per_block);
+
         $this->count_block = count($results);
         return $results;
     }

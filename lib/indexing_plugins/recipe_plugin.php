@@ -45,6 +45,8 @@ define("POST_PROCESSING", true);
  */
 define("CLUSTER_RATIO", 0.1);
 
+/** Loads processor used for */
+require_once BASE_DIR."/lib/processors/html_processor.php";
 /** Base indexing plugin class*/
 require_once BASE_DIR."/lib/indexing_plugins/indexing_plugin.php";
 /** Used to create index shards to add ingredient: entries
@@ -73,7 +75,7 @@ require_once BASE_DIR."/lib/crawl_constants.php";
  * http://www.bettycrocker.com/
  *
  * 
- * @author Priya Gangaraju, Chris Pollett (reorganize add documentation)
+ * @author Priya Gangaraju, Chris Pollett (reorganized and added documentation)
  * @package seek_quarry
  * @subpackage component
  */
@@ -272,8 +274,8 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
                     $recipe2_vector = array_fill_keys($vector_array, 0);
                     foreach($recipe1 as $ingredient){
                         if($ingredient != "" && 
-                            !in_array($ingredient,$basic_ingredients)) {
-                                if(strstr($recipe1_title,$ingredient)) {
+                            !in_array($ingredient, $basic_ingredients)) {
+                                if(strstr($recipe1_title, $ingredient)) {
                                     $recipe1_main_ingredient = $ingredient;
                                 }
                         }
@@ -281,8 +283,8 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
                     }
                     foreach($recipe2 as $ingredient) {
                         if($ingredient != ""&& !
-                            in_array($ingredient,$basic_ingredients)) {
-                                if(strstr($recipe2_title,$ingredient))  {
+                            in_array($ingredient, $basic_ingredients)) {
+                                if(strstr($recipe2_title, $ingredient))  {
                                     $recipe2_main_ingredient = $ingredient;
                                 }
                         }
@@ -346,7 +348,7 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
                 }
             
             }
-            
+
             $dir = CRAWL_DIR."/cache/".self::index_data_base_name.$index_name;
             $index_archive = new IndexArchiveBundle($dir, false);
             $generation = $index_archive->initGenerationToAdd($index_shard);
@@ -359,7 +361,8 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
                 $recipe = $site[self::TITLE];
                 $hash = crawlHash($site[self::URL], true). 
                     $site[self::HASH] . 
-                    crawlHash("link:".$site[self::URL], true);
+                    "r". substr(crawlHash( // r is for recipe
+                    UrlParser::getHost($site[self::URL])."/",true), 1);
                 $summary_offsets[$hash] = 
                     array($site[self::SUMMARY_OFFSET], null);
             }
@@ -530,15 +533,18 @@ class Edge
         $this->cost = $cost;
     }
     
-    function getStartVertex(){ 
+    function getStartVertex()
+    { 
         return $this->start_vertex;
     }
     
-    function getEndVertex(){ 
+    function getEndVertex()
+    {
         return $this->end_vertex;
     }
     
-    function getCost(){
+    function getCost()
+    {
         return $this->cost;
     }
 }
@@ -753,6 +759,7 @@ class Queue
             $this->front = 0;
         return $temp;
     }
+
     function isEmpty(){
         if(($this->rear + 1)== $this->front || 
             ($this->front + $this->size - 1) == $this->rear)
@@ -796,8 +803,7 @@ function construct_tree($edges) {
             if($vertices[$vertex1] < $vertices[$vertex2]){
                     $m = $vertices[$vertex2];
                     $n = $vertices[$vertex1];
-            }
-            else{
+            } else {
                 $m = $vertices[$vertex1];
                 $n = $vertices[$vertex2];
             }

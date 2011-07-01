@@ -151,8 +151,8 @@ class IntersectIterator extends IndexBundleIterator
     function findDocsWithWord()
     {
         $pages = array();
-
         $status = $this->syncGenDocOffsetsAmongstIterators();
+
         if($status == -1) {
             return -1;
         }
@@ -163,20 +163,71 @@ class IntersectIterator extends IndexBundleIterator
             //we get intersect docs one at a time so should be only one
             $keys = array_keys($docs);
             $key = $keys[0];
+            $position_lists = array();
+            $len_lists = array();
+            $position_lists[0] = $docs[$key][self::POSITION_LIST];
+            $len_lists[0] = count($docs[$key][self::POSITION_LIST]);
             for($i = 1; $i < $this->num_iterators; $i++) {
                 $i_docs = 
                     $this->index_bundle_iterators[$i]->currentDocsWithWord();
+                $position_lists[$i] = $i_docs[$key][self::POSITION_LIST];
+                $len_lists[$i] = count($position_lists[$i]);
                 if(isset($i_docs[$key])) {
                     $docs[$key][self::RELEVANCE] += 
                         $i_docs[$key][self::RELEVANCE];
                 }
             }
-            $docs[$key][self::SCORE] = $docs[$key][self::DOC_RANK] + 
-                 $docs[$key][self::RELEVANCE];
+            $docs[$key][self::PROXIMITY] = 
+                $this->computeProximity($position_lists, $len_lists);
+
+            $docs[$key][self::SCORE] = $docs[$key][self::DOC_RANK] *
+                 $docs[$key][self::RELEVANCE] * $docs[$key][self::PROXIMITY];
         }
         $this->count_block = count($docs); 
         $this->pages = $docs;
         return $docs;
+    }
+
+    /**
+     * Given the position_lists of a collection of terms computes
+     * a score for how close those words were in the given document
+     *
+     *  @param array $position_lists a 2D array item number => position_list
+     *      (locations in doc where item occurred) for that item. 
+     *  @param array $len_lists length for each item of its position list
+     *  @return sum of smallest abs of position differences between terms
+     */
+    function computeProximity($position_lists, $len_lists)
+    {
+        $num_iterators = $this->num_iterators;
+        if($num_iterators < 1) return 1;
+
+        $counters = array_fill(0, $num_iterators, 0);
+
+        $min_diff = 5000000;
+        do {
+            $min_counter = ($counters[0] < $len_lists[0] - 1) ? 0 : -1;
+            $o_position = $position_lists[0][$counters[0]];
+            $total_diff = 0;
+            $positions = array($o_position);
+            for($i = 1; $i < $num_iterators; $i++) {
+                $positions[$i] = $position_lists[$i][$counters[$i]];
+                if($positions[$i] < $o_position && 
+                    $counters[$i] < $len_lists[$i] - 1) {
+                    $min_counter = $i;
+                }
+            }
+            sort($positions);
+            for($i = 1; $i < $num_iterators; $i++) {
+                $total_diff += abs($positions[$i] - $positions[$i-1]);
+            }
+            if($total_diff < $min_diff) {
+                $min_diff = $total_diff;
+            }
+            if($min_counter >=0) $counters[$min_counter]++;
+        } while($min_counter >= 0);
+
+        return ($num_iterators - 1)/$min_diff;
     }
 
     /**

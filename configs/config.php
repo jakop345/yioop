@@ -291,6 +291,23 @@ $PAGE_PROCESSORS = array(   "text/html" => "HtmlProcessor",
 
 $INDEXING_PLUGINS = array("recipe");
 
+$MOD9_PACK_POSSIBILITIES = array(
+    0, 24, 12, 7, 6, 5, 4, 3, 3, 3, 2, 2, 2, 2,
+    2,  1,  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1);
+
+$MOD9_NUM_ELTS_CODES = array( 
+    24 => 63, 12 => 62, 7 => 60, 6 => 56, 5 => 52, 4 => 48, 3 => 32,
+    2 => 16, 1 => 0);
+
+$MOD9_NUM_BITS_CODES = array( 63 => 1, 62 => 2, 60 => 3, 56 => 4, 52 => 5,
+    48 => 6, 32 => 9, 16 => 14, 0 => 28);
+
+$MOD9_NUM_ELTS_DECODES = array( 
+    63 => 24, 62 => 12, 60=> 7, 56 => 6, 52 => 5, 48 => 4, 32 => 3,
+    16 => 2, 0 => 1);
+
+
 /** Characters we view as not part of words, not same as POSIX [:punct:]*/
 define ('PUNCT', "\.|\,|\:|\;|\"|\'|\`|\[|\]|\{|\}|\(|\)|\!|\||\&");
 
