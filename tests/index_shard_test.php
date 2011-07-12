@@ -125,8 +125,10 @@ class IndexShardTest extends UnitTest
         $meta_ids = array(
             "YYYYYYYY"
         );
+
         $this->test_objects['shard']->addDocumentWords($docid, 
             $offset, $word_counts, $meta_ids, true);
+
         $c_data = $this->test_objects['shard']->getPostingsSliceById(
             crawlHash('CCCCCCCC', true), 5);
 
@@ -374,14 +376,7 @@ class IndexShardTest extends UnitTest
             $this->assertEqual($c_data['CCCCCCCCFFFFFFFF']
                 [CrawlConstants::SUMMARY_OFFSET], 
                 0,  "Summary offset matches predicted second word");
-        $out_string = $this->test_objects['shard']->save(true);
 
-        $this->test_objects['shard2'] = IndexShard::load("shard.txt",
-            $out_string);
-        $this->test_objects['shard']->prefixes = NULL;
-        $this->test_objects['shard']->unpackWordDocs();
-        $this->test_objects['shard']->packWordDocs(null, true);
-        $this->test_objects['shard']->prefixes = NULL;
     }
 
     /**
@@ -389,6 +384,7 @@ class IndexShardTest extends UnitTest
      */
     public function saveLoadTestCase()
     {
+
         $docid = "AAAAAAAABBBBBBBBCCCCCCCC";
         $offset = 5;
         $word_counts = array(
@@ -433,11 +429,11 @@ class IndexShardTest extends UnitTest
         $this->assertTrue(isset($c_data["AAAAAAAABBBBBBBBCCCCCCCC"]), 
             "Doc lookup 2 by word works");
         // test saving and loading from a string
+
         $out_string = $this->test_objects['shard']->save(true);
 
         $this->test_objects['shard2'] = IndexShard::load("shard.txt",
             $out_string);
-
         $c_data = $this->test_objects['shard2']->getPostingsSliceById(
             crawlHash('BBBBBBBB', true), 5);
         $this->assertTrue(isset($c_data["AAAAAAAABBBBBBBBCCCCCCCC"]), 

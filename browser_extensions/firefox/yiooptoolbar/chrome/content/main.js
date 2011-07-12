@@ -80,7 +80,7 @@ function getword(event){
         "timestamp TEXT, language TEXT)");
            
     var stmt = mDBConn.createStatement("INSERT INTO search_capture " +
-        "(word,searchurl,searchurl1,timestamp,language) " +
+        "(word, searchurl, searchurl1, timestamp, language) " +
         "VALUES(:word1,:url1,:url2,:time1,:lang1)");
            
     var params = stmt.newBindingParamsArray();

@@ -79,8 +79,11 @@ class TrafficController extends Controller implements CrawlConstants
            from a legitimate machine
          */
 
-
+        $result = $this->signinModel->checkValidSignin(
+        $this->clean($_POST['u'], "string"), 
+        $this->clean($_POST['p'], "string") );
         $activity = $_REQUEST['a'];
+
         //echo "OK";
         if(in_array($activity, $this->activities)) {$this->$activity();}
 

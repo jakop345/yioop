@@ -40,14 +40,18 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  *
  * @param string $source  string to copy from
  * @param string &$destination string to copy to
- * @param $start starting offset
- * @param $length number of bytes to copy
+ * @param int $start starting offset
+ * @param int $length number of bytes to copy
  */
 function charCopy($source, &$destination, $start, $length) 
 {
-    $end = $start + $length;
-    for($j = $start, $k = 0; $j < $end; $j++, $k++) {
-        $destination[$j] = $source[$k];
+    $endk = $length - 1;
+    $end = $start + $endk;
+    for($j = $end, $k = $endk; $j >= $start; $j--, $k--) {
+        $destination[$j] = "" . $source[$k]; 
+        /* for some reason, the "" makes this faster if source and destination
+           are the same in PHP
+         */
     }
 }
 
@@ -231,6 +235,7 @@ function decodeModified9($input_string, &$offset)
     $continue_threshold = 128;
     $first_time = true;
     $decode_list = array();
+    if(($len = strlen($input_string) ) < 4) return array();
     do {
         $int_string = substr($input_string, $offset, 4);
         $ord_first = ord($int_string[0]);
@@ -245,6 +250,7 @@ function decodeModified9($input_string, &$offset)
         $decode_list = array_merge($decode_list, 
             unpackListModified9($int_string));
         $offset += 4;
+        $len -= 4;
     } while($flag_bits >= $continue_threshold);
 
    return $decode_list;
@@ -267,6 +273,7 @@ function unpackListModified9($int_string)
     $mask = (2 << ($num_bits - 1)) - 1;
     $num_elts = $MOD9_NUM_ELTS_DECODES[$code];
     $int_string[0] = chr($first_char - $code);
+
     $encoded_list = unpackInt($int_string);
     $decoded_list = array();
     for($i = 0; $i < $num_elts; $i++) {

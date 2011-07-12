@@ -185,7 +185,7 @@ define('MIN_QUEUE_WEIGHT', 1/100000);
 define('NUM_ARCHIVE_PARTITIONS', 10);
 
 /** number of documents before next gen */
-define('NUM_DOCS_PER_GENERATION', 50000);
+define('NUM_DOCS_PER_GENERATION', 75000);
 
 /** precision to round floating points document scores */
 define('PRECISION', 10); 
@@ -329,7 +329,7 @@ define ('MINIMUM_FETCH_LOOP_TIME', 5);
 
 /** Max time before dirty index (queue_server) and 
     filters (fetcher) will be force saved in seconds*/
-define('FORCE_SAVE_TIME', 600);
+define('FORCE_SAVE_TIME', 1200);
 
 /** default number of search results to display per page */
 define ('NUM_RESULTS_PER_PAGE', 10); 

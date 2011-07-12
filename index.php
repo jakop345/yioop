@@ -153,7 +153,7 @@ function checkAllowedController($controller_name)
 /**
  * shorthand for echo
  *
- * @param string $text   string to send to the current output
+ * @param string $text string to send to the current output
  */
 function e($text)
 {

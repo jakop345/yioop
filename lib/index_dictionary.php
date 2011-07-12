@@ -591,6 +591,9 @@ class IndexDictionary implements CrawlConstants
         return $num_docs_array;
      }
 
+    /**
+     *
+     */
     function getInfoItem($hash_info_url)
     {
 

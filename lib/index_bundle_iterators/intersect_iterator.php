@@ -170,16 +170,23 @@ class IntersectIterator extends IndexBundleIterator
             for($i = 1; $i < $this->num_iterators; $i++) {
                 $i_docs = 
                     $this->index_bundle_iterators[$i]->currentDocsWithWord();
-                $position_lists[$i] = $i_docs[$key][self::POSITION_LIST];
-                $len_lists[$i] = count($position_lists[$i]);
+                if(isset($i_docs[$key][self::POSITION_LIST]) &&
+                   ($ct = count($i_docs[$key][self::POSITION_LIST]) > 0 )) {
+                    $position_lists[] = $i_docs[$key][self::POSITION_LIST];
+                    $len_lists[] = $ct;
+                }
+
                 if(isset($i_docs[$key])) {
                     $docs[$key][self::RELEVANCE] += 
                         $i_docs[$key][self::RELEVANCE];
                 }
             }
-            $docs[$key][self::PROXIMITY] = 
-                $this->computeProximity($position_lists, $len_lists);
-
+            if(count($position_lists) > 1) {
+                $docs[$key][self::PROXIMITY] = 
+                    $this->computeProximity($position_lists, $len_lists);
+            } else {
+                 $docs[$key][self::PROXIMITY] = 1;
+            }
             $docs[$key][self::SCORE] = $docs[$key][self::DOC_RANK] *
                  $docs[$key][self::RELEVANCE] * $docs[$key][self::PROXIMITY];
         }

@@ -1370,7 +1370,6 @@ class Fetcher implements CrawlConstants
             }
             $had_links = false;
 
-            $link_shard = new IndexShard("link_shard");
             foreach($site[self::LINKS] as $url => $link_text) {
                 $link_meta_ids = array();
                 if(strlen($url) > 0) {
@@ -1410,7 +1409,7 @@ class Fetcher implements CrawlConstants
                     $link_word_lists = 
                         PhraseParser::extractPhrasesInLists($link_text,
                             MAX_PHRASE_LEN, $lang);
-                    $link_shard->addDocumentWords($link_keys, 
+                    $index_shard->addDocumentWords($link_keys, 
                         self::NEEDS_OFFSET_FLAG, 
                         $link_word_lists, $link_meta_ids, false, $link_rank);
 
@@ -1423,8 +1422,6 @@ class Fetcher implements CrawlConstants
 
             $index_shard->addDocumentWords($doc_keys, self::NEEDS_OFFSET_FLAG, 
                 $word_lists, $meta_ids, true, $doc_rank);
-
-            $index_shard->appendIndexShard($link_shard);
 
         }
 

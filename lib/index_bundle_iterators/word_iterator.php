@@ -71,25 +71,26 @@ class WordIterator extends IndexBundleIterator
     var $next_offset;
 
     /**
-     * 
+     * An array of shard generation and posting list offsets, lengths, and
+     * numbers of documents
      * @var array
      */
     var $dictionary_info;
 
     /**
-     * 
+     * The total number of shards that have data for this word
      * @var int
      */
     var $num_generations;
 
     /**
-     * 
+     * Index into dictionary_info corresponding to the current shard
      * @var int
      */
     var $generation_pointer;
 
     /**
-     * The current byte offset in the IndexShard
+     * Numeric number of current shard
      * @var int
      */
     var $current_generation;
@@ -142,6 +143,7 @@ class WordIterator extends IndexBundleIterator
 
         }
         $this->word_key = $word_key;
+
         $this->index =  $index;
         $this->current_block_fresh = false;
         $this->dictionary_info = 

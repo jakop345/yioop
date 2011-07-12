@@ -448,9 +448,21 @@ class QueueServer implements CrawlConstants
                         crawlLog("Performing an archive crawl of ".
                             "archive with timestamp ".$this->crawl_index);
                     }
+                    $crawl_status = array();
+                    $crawl_status['MOST_RECENT_FETCHER'] = "";
+                    $crawl_status['MOST_RECENT_URLS_SEEN'] = array();
+                    $crawl_status['CRAWL_TIME'] = $this->crawl_time;
+                    $crawl_status['COUNT'] = 0;
+                    $crawl_status['DESCRIPTION'] = "BEGIN_CRAWL";
+                    file_put_contents(
+                        CRAWL_DIR."/schedules/crawl_status.txt", 
+                        serialize($crawl_status));
+                    chmod(
+                        CRAWL_DIR."/schedules/crawl_status.txt", 0777);
                 break;
 
                 case "STOP_CRAWL":
+                    crawlLog("Stopping crawl !! This involves multiple steps!");
                     $crawl_status = array();
                     $crawl_status['MOST_RECENT_FETCHER'] = "";
                     $crawl_status['MOST_RECENT_URLS_SEEN'] = array();
@@ -468,7 +480,7 @@ class QueueServer implements CrawlConstants
                     $this->db->setWorldPermissionsRecursive(
                         CRAWL_DIR.'/cache/'.
                         self::index_data_base_name.$this->crawl_time);
-                    crawlLog("Stopping crawl !!\n");
+
                     $info[self::STATUS] = self::WAITING_START_MESSAGE_STATE;
                     //Added by Priya Gangaraju. 
                     //Calling post processing function if the processor is 
@@ -496,6 +508,7 @@ class QueueServer implements CrawlConstants
                     if(file_exists(CRAWL_DIR."/schedules/crawl_status.txt")) {
                         unlink(CRAWL_DIR."/schedules/crawl_status.txt");
                     }
+                    crawlLog("Crawl has been succesfully stopped!!");
                 break;
 
                 case "RESUME_CRAWL":
@@ -944,6 +957,7 @@ class QueueServer implements CrawlConstants
             $start_time = microtime();
 
             $this->index_archive->addIndexData($index_shard);
+            crawlLog("WORD_DOC_LEN ".$this->index_archive->getActiveShard()->word_docs_len);
             $this->index_dirty = true;
         }
         crawlLog("D (add index shard) memory usage".memory_get_usage(). 
