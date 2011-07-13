@@ -124,6 +124,8 @@ class IndexShard extends PersistentStructure implements CrawlConstants
      * where the posting list for that word begins,
      * and a length of this posting list. In the unpacked state
      * each entry is a string of all the posting items for that word
+     * Periodically data in this words array is flattened to the word_postings
+     * string which is a more memory efficient was of storing data in PHP
      * @var array
      */
     var $words;
@@ -224,17 +226,22 @@ class IndexShard extends PersistentStructure implements CrawlConstants
     var $file_len;
 
     /**
-     *
+     * Number of document inserts since the last time word data was flattened
+     * to the word_postings string.
      */
      var $last_flattened_words_count;
 
     /**
-     *
+     * Used to hold word_id, posting_len, posting triples as a memory efficient
+     * string
+     * @var string
      */
     var $word_postings;
      
     /**
-     * 
+     * Fraction of NUM_DOCS_PER_GENERATION document inserts before data
+     * from the words array is flattened to word_postings. (It will
+     * also be flattened during periodic index saves)
      */
     const FLATTEN_MERGE_RATIO = 0.25;
 
@@ -281,7 +288,7 @@ class IndexShard extends PersistentStructure implements CrawlConstants
     const BLANK = "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF";
 
     /**
-     *
+     * Flag used to indicate that a word item should not be packed or unpacked
      */
     const HALF_BLANK = "\xFF\xFF\xFF\xFF";
 
@@ -898,7 +905,8 @@ class IndexShard extends PersistentStructure implements CrawlConstants
     }
 
     /**
-     *
+     * Used to flatten the words associative array to a more memory 
+     * efficient word_postings string.
      */
     function mergeWordPostingsToString()
     {
@@ -1191,9 +1199,6 @@ class IndexShard extends PersistentStructure implements CrawlConstants
             $word_id = substr($this->word_postings, $pos, $key_len);
             $len = unpackInt(substr($this->word_postings, 
                 $pos + $key_len, $posting_len));
-if($len > 100000000) {
-    echo "OOOOOOOOOOO NOOOOOOOOOOOOOOO!!!!!!!";
-}
             $postings = substr($this->word_postings, 
                 $pos + $key_len + $posting_len, $len);
             $pos += $key_len + $posting_len + $len;
@@ -1223,7 +1228,11 @@ if($len > 100000000) {
     }
 
     /**
+     * Used to convert the word_postings string into a word_docs string
+     * or if a file handle is provided write out the word_docs sequence
+     * of postings to the provided file handle.
      *
+     * @param resource $fh a filehandle to write to
      */
     function outputPostingLists($fh = NULL)
     {
@@ -1247,7 +1256,7 @@ if($len > 100000000) {
             if($len != 2* self::DOC_KEY_LEN || 
                 substr($postings, 0, self::POSTING_LEN) != self::HALF_BLANK) {
                 if($fh != NULL) {
-                    if($tmp_len < 100000) {
+                    if($tmp_len < self::SHARD_BLOCK_SIZE) {
                         $tmp_string .= $postings;
                         $tmp_len += $len;
                     } else {
