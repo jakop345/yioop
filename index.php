@@ -222,6 +222,21 @@ function getLocaleDirection()
 }
 
 /**
+ * Returns the query statistics info for the current llocalt.
+ *
+ * @return array consisting of queries and elapses times for locale computations
+ */
+function getLocaleQueryStatistics()
+{
+    global $locale;
+    $query_info = array();
+    $query_info['QUERY_LOG'] = $locale->db->query_log;
+    $query_info['TOTAL_ELAPSED_TIME'] = $locale->db->total_time;
+    return $query_info;
+}
+
+
+/**
  * Returns the current locales method of writing blocks (things like divs or
  * paragraphs).A language like English puts blocks one after another from the
  * top of the page to the bottom. Other languages like classical Chinese list

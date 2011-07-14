@@ -80,6 +80,13 @@ class PhraseModel extends Model
      *  @var array
      */
     var $additional_meta_words;
+
+    /**
+     * Used to hold query statistics about the current query
+     * @var array
+     */
+    var $query_info;
+
     /**
      * Number of pages to cache in one go in memcache
      * Size chosen based on 1MB max object size for memcache
@@ -188,6 +195,17 @@ class PhraseModel extends Model
         $input_phrase, $low = 0, $results_per_page = NUM_RESULTS_PER_PAGE, 
         $format = true)
     {
+        if(QUERY_STATISTICS) {
+            $indent= "&nbsp;&nbsp;";
+            $in2 = $indent . $indent; 
+            $in3 = $in2 . $indent;
+            $prs_cnt = 0;
+            $dis_cnt = 0;
+            $this->query_info = array();
+            $this->query_info['QUERY'] = 
+                "<b>PHRASE QUERY</b>: ".$input_phrase."<br />";
+            $start_time = microtime();
+        }
         $results = NULL;
         $word_structs = array();
         /* 
@@ -262,13 +280,34 @@ class PhraseModel extends Model
                 $low;
             $disjunct_phrases = explode("|", $phrase);
             $word_structs = array();
+            if(QUERY_STATISTICS) {
+                $this->query_info['QUERY'] .= $indent . 
+                    "<b>Presentation $prs_cnt:</b><br />";
+                $this->query_info['QUERY'] .= "$in2<i>Low</i>:".
+                    $result_bounds[0][0]."<br />";
+                $this->query_info['QUERY'] .= $in2 . 
+                    "<i>High</i>: ".$result_bounds[0][1]."<br />";
+                $prs_cnt++;
+            }
+
             foreach($disjunct_phrases as $disjunct) {
+                if(QUERY_STATISTICS) {
+
+                    $this->query_info['QUERY'] .= "$in2<b>Disjunct $dis_cnt:"
+                        . "</b><br />";
+                    $dis_cnt++;
+                }
                 list($word_struct, $format_words) = 
                     $this->parseWordStructConjunctiveQuery($disjunct);
-
                 if($word_struct != NULL) {
                     $word_structs[] = $word_struct;
                 }
+            }
+            if(QUERY_STATISTICS) { 
+                $this->query_info['QUERY'] .= 
+                    "$in2<b>Presentation Parse time</b>: " .
+                    changeInMicrotime($start_time)."<br />";
+                $summaries_time = microtime();
             }
             $out_results = $this->getSummariesByHash($word_structs, 
                 $low, $phrase_num);
@@ -290,6 +329,11 @@ class PhraseModel extends Model
                 if($phrase == $last_part && isset($out_results['TOTAL_ROWS'])){
                     $total_rows = $out_results['TOTAL_ROWS'];
                 }
+            }
+            if(QUERY_STATISTICS) { 
+                $this->query_info['QUERY'] .= "$in2<b>Get Summaries time</b>: ".
+                    changeInMicrotime($summaries_time)."<br />";
+                $format_time = microtime();
             }
         }
 
@@ -332,6 +376,13 @@ class PhraseModel extends Model
         $output = $this->formatPageResults($results, $format_words, 
             $description_length);
 
+        if(QUERY_STATISTICS) { 
+            $this->query_info['QUERY'] .= "<b>Format time</b>: ".
+                changeInMicrotime($format_time)."<br />";
+            $this->query_info['ELAPSED_TIME'] = changeInMicrotime($start_time);
+            $this->db->total_time += $this->query_info['ELAPSED_TIME'];
+            $this->db->query_log[] = $this->query_info;
+        }
         return $output;
 
     }
@@ -387,6 +438,10 @@ class PhraseModel extends Model
      */
     function parseWordStructConjunctiveQuery($phrase)
     {
+        $indent= "&nbsp;&nbsp;";
+        $in2 = $indent . $indent;
+        $in3 = $in2 . $indent;
+        $in4 = $in2. $in2;
         $phrase = " ".$phrase;
         $phrase_string = $phrase;
         $meta_words = array('link:', 'site:', 'version:', 'modified:',
@@ -442,6 +497,20 @@ class PhraseModel extends Model
             array_keys(PhraseParser::extractPhrasesAndCount($phrase_string,
             MAX_PHRASE_LEN, getLocaleTag())); //stemmed
         $words = array_merge($base_words, $found_metas);
+        if(QUERY_STATISTICS) {
+            $this->query_info['QUERY'] .= "$in3<i>Index</i>: ".
+                $index_archive_name."<br />";
+            $this->query_info['QUERY'] .= "$in3<i>LocaleTag</i>: ".
+                getLocaleTag()."<br />";
+            $this->query_info['QUERY'] .= "$in3<i>Stemmed Words</i>:<br />";
+            foreach($base_words as $word){
+                $this->query_info['QUERY'] .= "$in4$word<br />";
+            }
+            $this->query_info['QUERY'] .= "$in3<i>Meta Words</i>:<br />";
+            foreach($found_metas as $word){
+                $this->query_info['QUERY'] .= "$in4$word<br />";
+            }
+        }
         if(isset($words) && count($words) == 1 && 
             count($disallow_phrases) < 1) {
             $phrase_string = $words[0];

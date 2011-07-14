@@ -146,12 +146,17 @@ body.html-tb-lr
     border-right: 1px solid #000;
 }
 
+.landing-spacer 
+{
+    height:5in;
+}
 .html-ltr .landing
 {
     position:absolute;
     top:1.5in;
     left:12%;
     min-width:6in;
+    clear: both;
 }
 
 .html-rtl .landing
@@ -251,6 +256,7 @@ body.html-tb-lr
     background-color: #ddddff;
     border-width: 2px;
     border-style: dashed;
+
 }
 
 .searchbox p

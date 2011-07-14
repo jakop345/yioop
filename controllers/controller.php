@@ -130,11 +130,19 @@ abstract class Controller
                 $model_name = ucfirst($model)."Model";
                 $model_instance_name = lcfirst($model_name);
                 $data['QUERY_STATISTICS'] = array_merge(
-                    $data['QUERY_STATISTICS'], 
-                    $this->$model_instance_name->db->query_log);
+                    $this->$model_instance_name->db->query_log,
+                    $data['QUERY_STATISTICS'] 
+                    );
                 $data['TOTAL_ELAPSED_TIME'] += 
                     $this->$model_instance_name->db->total_time;
             }
+            $locale_info = getLocaleQueryStatistics();
+            $data['QUERY_STATISTICS'] = array_merge(
+                    $locale_info['QUERY_LOG'],
+                    $data['QUERY_STATISTICS'] 
+                    );
+            $data['TOTAL_ELAPSED_TIME'] += 
+                    $locale_info['TOTAL_ELAPSED_TIME'];
         }
         $this->$view_instance_name->render($data); 
     }

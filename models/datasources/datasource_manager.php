@@ -111,8 +111,8 @@ abstract class DatasourceManager
         }
         $result =$this->exec($sql);
         if(QUERY_STATISTICS) {
-            $query_info['ELASPED_TIME'] = changeInMicrotime($start_time);
-            $this->total_time += $query_info['ELASPED_TIME'];
+            $query_info['ELAPSED_TIME'] = changeInMicrotime($start_time);
+            $this->total_time += $query_info['ELAPSED_TIME'];
             $this->query_log[] = $query_info;
         }
         return $result;

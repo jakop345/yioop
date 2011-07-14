@@ -208,7 +208,7 @@ class SearchView extends View implements CrawlConstants
 
         </div><?php
         if(!isset($data['PAGES'])) {
-            e("</div>");
+            e("</div><div class='landing-spacer'></div>");
         }
 
     }
