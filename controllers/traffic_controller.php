@@ -103,11 +103,8 @@ class TrafficController extends Controller implements CrawlConstants
 
         $dir = CRAWL_DIR."/schedules/"."ToolbarData";
 
-        //echo "$dir";
-
         $address = str_replace(".", "-", $_SERVER['REMOTE_ADDR']);
         $address = str_replace(":", "_", $address);
-        //$time = time();
         $day = floor($time/86400);
 
         if(!file_exists($dir)) {
@@ -127,7 +124,7 @@ class TrafficController extends Controller implements CrawlConstants
         $fh = fopen($fname, "a+");
         fwrite($fh, $toolbar_data);
         fclose($fh);
-        //echo "OK TEST";
+
         return true;
 
     }

@@ -139,15 +139,19 @@ abstract class IndexBundleIterator implements CrawlConstants
     /**
      *
      */
-     function genDocOffsetCmp($gen_doc1, $gen_doc2) {
-        $equal_generation = ($gen_doc1[0] == $gen_doc2[0]);
-        $equal_offset = ($gen_doc1[1] == $gen_doc2[1]);
-        $less_generation = ($gen_doc1[0] < $gen_doc2[0]);
-        $less_offset = ($gen_doc1[1] < $gen_doc2[1]);
-        if($equal_generation && $equal_offset) {
-            return 0;
-        } else if ($less_generation || ($equal_generation && $less_offset) ) {
+     function genDocOffsetCmp($gen_doc1, $gen_doc2) 
+     {
+        //less generation
+        if($gen_doc1[0] < $gen_doc2[0]) {
             return -1;
+        }
+        //equal generation
+        if($gen_doc1[0] == $gen_doc2[0]) {
+            if($gen_doc1[1] == $gen_doc2[1]) {
+                return 0; //equal offset
+            } else if ($gen_doc1[1] < $gen_doc2[1]) {
+                return -1; // less offset
+            }
         }
         return 1;
      }

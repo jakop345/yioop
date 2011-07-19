@@ -145,7 +145,7 @@ class IndexArchiveBundle implements CrawlConstants
      * @param string $description a text name/serialized info about this
      *      IndexArchiveBundle 
      */
-    public function __construct($dir_name, $read_only_archive = true,
+    function __construct($dir_name, $read_only_archive = true,
         $description = NULL, $num_docs_per_generation = NUM_DOCS_PER_GENERATION)
     {
 
@@ -191,7 +191,7 @@ class IndexArchiveBundle implements CrawlConstants
      *      (visited urls is a smaller number than the total count of objects
      *      stored in the index).
      */
-    public function addPages($generation, $offset_field, &$pages, 
+    function addPages($generation, $offset_field, &$pages, 
         $visited_urls_count)
     {
         $this->summaries->setWritePartition($generation);
@@ -206,7 +206,7 @@ class IndexArchiveBundle implements CrawlConstants
      * @param object $index_shard a mini inverted index of word_key=>doc data
      *      to add to this IndexArchiveBundle
      */
-    public function addIndexData($index_shard)
+    function addIndexData($index_shard)
     {
 
         crawlLog("**ADD INDEX DIAGNOSTIC INFO...");
@@ -220,7 +220,7 @@ class IndexArchiveBundle implements CrawlConstants
     /**
      * Determines based on its size, if index_shard should be added to
      * the active generation or in a new generation should be started.
-     * If so, a new generation is started, the old generation is saves, and
+     * If so, a new generation is started, the old generation is saved, and
      * the dictionary of the old shard is copied to the bundles dictionary
      * and a log-merge performed if needed
      *
@@ -228,7 +228,7 @@ class IndexArchiveBundle implements CrawlConstants
      * @return int the active generation after the check and possible change has
      *      been performed
      */
-    public function initGenerationToAdd($index_shard)
+    function initGenerationToAdd($index_shard)
     {
         $current_num_docs = $this->getActiveShard()->num_docs;
         $add_num_docs = $index_shard->num_docs;
@@ -277,7 +277,7 @@ class IndexArchiveBundle implements CrawlConstants
      * returns a reference to this shard
      * @return object last shard in the bundle
      */
-     public function getActiveShard()
+     function getActiveShard()
      {
         if($this->setCurrentShard($this->generation_info['ACTIVE'])) {
             return $this->getCurrentShard();
@@ -299,7 +299,7 @@ class IndexArchiveBundle implements CrawlConstants
      *
      * @return object the currently being index shard
      */
-     public function getCurrentShard()
+     function getCurrentShard()
      {
         if(!isset($this->current_shard)) {
             if(!isset($this->generation_info['CURRENT'])) {
@@ -314,7 +314,7 @@ class IndexArchiveBundle implements CrawlConstants
                     $this->generation_info['DISK_BASED'] == true) {
                     $this->current_shard =new IndexShard(
                         $current_index_shard_file,
-                        $this->generation_info['CURRENT']*
+                        $this->generation_info['CURRENT'],
                         $this->num_docs_per_generation, true);
                     $this->current_shard->getShardHeader();
                     $this->current_shard->read_only_from_disk = true;
@@ -338,7 +338,7 @@ class IndexArchiveBundle implements CrawlConstants
      * @param $disk_based whether to read the whole shard in before using or
      *      leave it on disk except for pages need and use memcache
      */
-     public function setCurrentShard($i, $disk_based = false)
+     function setCurrentShard($i, $disk_based = false)
      {
         $this->generation_info['DISK_BASED'] = $disk_based;
         if(isset($this->generation_info['CURRENT']) && 
@@ -361,7 +361,7 @@ class IndexArchiveBundle implements CrawlConstants
      *      defaults to the same number as the current shard
      * @return array desired page
      */
-    public function getPage($offset, $generation = -1)
+    function getPage($offset, $generation = -1)
     {
         if($generation == -1 ) {
             $generation = $this->generation_info['CURRENT'];
@@ -372,7 +372,7 @@ class IndexArchiveBundle implements CrawlConstants
     /**
      * Forces the current shard to be saved
      */
-    public function forceSave()
+    function forceSave()
     {
         $this->getActiveShard()->save();
     }
@@ -386,7 +386,7 @@ class IndexArchiveBundle implements CrawlConstants
      * @param string $comparison callback function name for how to compare words
      * @return array the $num most documents or $num least document words
      */
-    public function getSelectiveWords($word_keys, $num, $comparison="lessThan") 
+    function getSelectiveWords($word_keys, $num, $comparison="lessThan") 
         //lessThan is in utility.php
     {
         $words_array = array();
@@ -411,6 +411,45 @@ class IndexArchiveBundle implements CrawlConstants
 
 
     /**
+     *
+     */
+    function setMemcache($dict = true, $shards = false)
+    {
+        if($dict) {
+            $this->dictionary->setMemcache();
+        }
+        if($shards) {
+            $this->setCurrentShard(0, true);
+            $this->getCurrentShard();
+            $old_current_index =  $this->generation_info['CURRENT'];
+            $active_index = $this->generation_info['ACTIVE'];
+            for($i = 0; $i <= $active_index; $i++) {
+                $mem_shard = $this->setCurrentShard($i, true);
+                $this->getCurrentShard()->setMemcachePostingsDocs();
+            }
+            $this->setCurrentShard($old_current_index, true);
+        }
+    }
+
+    /**
+     *
+     */
+    function removeMemcache()
+    {
+        $this->dictionary->removeMemcache();
+        $this->setCurrentShard(0, true);
+        $this->getCurrentShard();
+        $old_current_index =  $this->generation_info['CURRENT'];
+        $active_index = $this->generation_info['ACTIVE'];
+        for($i = 0; $i <= $active_index; $i++) {
+            $mem_shard = $this->setCurrentShard($i, true);
+            $this->getCurrentShard()->removeMemcachePostingsDocs();
+        }
+        $this->setCurrentShard($old_current_index, true);
+
+    }
+
+    /**
      * Gets the description, count of summaries, and number of partitions of the
      * summaries store in the supplied directory. If the file arctype.txt
      * exist, this is view as a dummy index archive for the sole purpose of
@@ -420,7 +459,7 @@ class IndexArchiveBundle implements CrawlConstants
      * @param string path to a directory containing a summaries WebArchiveBundle
      * @return array summary of the given archive
      */
-    public static function getArchiveInfo($dir_name)
+    static function getArchiveInfo($dir_name)
     {
         if(file_exists($dir_name."/arc_description.txt")) {
             $crawl = array();
@@ -439,6 +478,6 @@ class IndexArchiveBundle implements CrawlConstants
         return WebArchiveBundle::getArchiveInfo($dir_name."/summaries");
     }
 
-
+    
 }
 ?>

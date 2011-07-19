@@ -111,6 +111,7 @@ class SettingsView extends View
     e(tl('setting_install_search_plugin'));
 ?></a>.</div>
 </div>
+<div class='landing-spacer'></div>
 <?php
     }
 }

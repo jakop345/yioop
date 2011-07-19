@@ -134,8 +134,7 @@ define ('SESSION_NAME', "yioopbiscuit");
 if(USE_MEMCACHE) {
     $memcache_hosts = explode("|Z|", MEMCACHE_SERVERS);
     foreach($memcache_hosts as $host)
-    $MEMCACHES[] = array("host" => $host, "port" => "11211", 
-        "persistent" => true, "weight" => 1, "timeout" => 1, "retry" => 5
+    $MEMCACHES[] = array("host" => $host, "port" => "11211"
     );
     unset($memcache_hosts);
     unset($host);

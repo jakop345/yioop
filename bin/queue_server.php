@@ -88,6 +88,18 @@ foreach(glob(BASE_DIR."/lib/indexing_plugins/*_plugin.php") as $filename) {
 mb_internal_encoding("UTF-8");
 mb_regex_encoding("UTF-8");
 
+/*
+ * If Memcache is available queueserver can be used to load 
+ * index dictionaries and shards into memcache. Note in only
+ * this situation is NO_CACHE ignored
+ */
+if(USE_MEMCACHE) {
+    $MEMCACHE = new Memcache();
+    foreach($MEMCACHES as $mc) {
+        $MEMCACHE->addServer($mc['host'], $mc['port']);
+    }
+    unset($mc);
+}
 
 /**
  * Command line program responsible for managing Yioop crawls.
@@ -482,7 +494,6 @@ class QueueServer implements CrawlConstants
                         self::index_data_base_name.$this->crawl_time);
 
                     $info[self::STATUS] = self::WAITING_START_MESSAGE_STATE;
-                    //Added by Priya Gangaraju. 
                     //Calling post processing function if the processor is 
                     //selected in the crawl options page.
                     if(isset($this->indexing_plugins)) {
@@ -1606,6 +1617,8 @@ class QueueServer implements CrawlConstants
 
         return $list;
     }
+
+
 }
 
 /*
