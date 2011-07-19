@@ -463,10 +463,7 @@ class IndexDictionary implements CrawlConstants
         $num_entries = -1) {
         if($raw == false) {
             //get rid of out modified base64 encoding
-            $hash = str_replace("_", "/", $word_id);
-            $hash = str_replace("-", "+" , $hash);
-            $hash .= "=";
-            $word_id = base64_decode($hash);
+            $word_id = unbase64Hash($word_id);
         }
 
         $word_item_len = IndexShard::WORD_ITEM_LEN;
@@ -586,9 +583,7 @@ class IndexDictionary implements CrawlConstants
                 $num_generations = count($info);
                 $num_docs = 0;
                 for($i = 0; $i < $num_generations; $i++) {
-                    list(, , , $num_docs) =
-                        $info[$i];
-                        $num_docs += $num_docs;
+                    $num_docs += $info[$i][3];
                 }
                 $num_docs_array[$key] = $num_docs;
             }
@@ -596,13 +591,19 @@ class IndexDictionary implements CrawlConstants
         return $num_docs_array;
      }
 
+    /**
+     *
+     */
     function getInfoItem($hash_info_url)
     {
+
         $word_key_len = IndexShard::WORD_KEY_LEN;
         $word_data_len = IndexShard::WORD_ITEM_LEN - $word_key_len;
         $posting_len = IndexShard::POSTING_LEN;
+
         $hash_info_data = $this->getWordInfo($hash_info_url, true, false,
             3);
+
         if($hash_info_data === false) return false;
 
         $word_string = substr($hash_info_data, 0, 
@@ -610,8 +611,10 @@ class IndexDictionary implements CrawlConstants
         $item = array();
         list($item[self::GENERATION], , , ) = 
             IndexShard::getWordInfoFromString($word_string, true);
+
         $pre_offset = substr($hash_info_data, 
             $word_data_len, $posting_len);
+
         $pre_offset[0] = chr(ord($pre_offset[0]) - 0x80);
         $item[self::SUMMARY_OFFSET] = unpackInt($pre_offset);
 
@@ -621,9 +624,13 @@ class IndexDictionary implements CrawlConstants
         // don't delete 0x80 for doc_len as is_doc flag already kills it
         $pre_doc_len = substr($hash_info_data, 
                 2 * $word_data_len, $posting_len);
-        $pre_doc_len[0] = chr(ord($pre_doc_len[0]) - 0x80);
-        list($item[self::DOC_LEN], ) = 
-            IndexShard::unpackPosting($pre_doc_len);
+        if(strlen($pre_doc_len) > 0) {
+            $pre_doc_len[0] = chr(ord($pre_doc_len[0]) - 0x80);
+            list($item[self::DOC_LEN], ) = 
+                IndexShard::unpackDoclenNum($pre_doc_len);
+        } else {
+            $item[self::DOC_LEN] = 0;
+        }
         /* 
            for archive crawls we store rank as the 4 bits after the high order 
            bit

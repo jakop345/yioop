@@ -100,10 +100,15 @@ class GroupIterator extends IndexBundleIterator
     var $grouped_hashes;
 
     /**
+     * @var array
+     */
+    var $domain_factors;
+
+    /**
      * the minimum number of pages to group from a block;
      * this trumps $this->index_bundle_iterator->results_per_block
      */
-    const MIN_FIND_RESULTS_PER_BLOCK = 400;
+    const MIN_FIND_RESULTS_PER_BLOCK = 200;
 
     /**
      * Creates a group iterator with the given parameters.
@@ -111,13 +116,15 @@ class GroupIterator extends IndexBundleIterator
      * @param object $index_bundle_iterator to use as a source of documents
      *      to iterate over
      */
-    function __construct($index_bundle_iterator)
+    function __construct($index_bundle_iterator, $num_iterators = 1)
     {
         $this->index_bundle_iterator = $index_bundle_iterator;
         $this->num_docs = $this->index_bundle_iterator->num_docs;
         $this->results_per_block = max(
             $this->index_bundle_iterator->results_per_block,
             self::MIN_FIND_RESULTS_PER_BLOCK);
+
+        $this->results_per_block /=  ceil($num_iterators/2);
         $this->reset();
     }
 
@@ -146,7 +153,7 @@ class GroupIterator extends IndexBundleIterator
     function computeRelevance($generation, $posting_offset)
     {
         return $this->index_bundle_iterator->computeRelevance($generation,
-                $posting_offset);
+            $posting_offset);
     }
 
     /**
@@ -160,6 +167,7 @@ class GroupIterator extends IndexBundleIterator
         // first get a block of documents on which grouping can be done
 
         $pages =  $this->getPagesToGroup();
+
         $this->count_block_unfiltered = count($pages);
         if(!is_array($pages)) {
             return $pages;
@@ -200,6 +208,7 @@ class GroupIterator extends IndexBundleIterator
         $pages = array();
         $count = 0;
         $done = false;
+
         do {
             $new_pages = $this->index_bundle_iterator->currentDocsWithWord();
             if(!is_array($new_pages)) {
@@ -217,6 +226,7 @@ class GroupIterator extends IndexBundleIterator
                 $done = true;
             }
         } while(!$done);
+
         return $pages;
     }
 
@@ -236,13 +246,15 @@ class GroupIterator extends IndexBundleIterator
         $pre_out_pages = array();
         foreach($pages as $doc_key => $doc_info) {
             if(!is_array($doc_info) || $doc_info[self::SUMMARY_OFFSET] == 
-                self::NEEDS_OFFSET_FLAG) {continue;}
+                self::NEEDS_OFFSET_FLAG) { continue;}
             $doc_info['KEY'] = $doc_key;
             $hash_url = substr($doc_key, 0, IndexShard::DOC_KEY_LEN);
             $doc_info[self::HASH] = substr($doc_key, 
                 IndexShard::DOC_KEY_LEN, IndexShard::DOC_KEY_LEN);
+            // inlinks is the domain of the inlink
             $doc_info[self::INLINKS] = substr($doc_key, 
-                2*IndexShard::DOC_KEY_LEN, IndexShard::DOC_KEY_LEN);
+                2 * IndexShard::DOC_KEY_LEN, IndexShard::DOC_KEY_LEN);
+            // initial aggregate domain score vector for given domain
             if($doc_info[self::IS_DOC]) { 
                 if(!isset($pre_out_pages[$hash_url])) {
                     $pre_out_pages[$hash_url] = array();
@@ -261,6 +273,7 @@ class GroupIterator extends IndexBundleIterator
                 unset($pre_out_pages[$hash_url]);
             }
         }
+
         return $pre_out_pages;
     }
 
@@ -276,30 +289,32 @@ class GroupIterator extends IndexBundleIterator
      */
     function groupByHashAndAggregate(&$pre_out_pages)
     {
-        
+        $domain_vector = array();
         foreach($pre_out_pages as $hash_url => $data) {
             if(!$pre_out_pages[$hash_url][0][self::IS_DOC]) {
                 $hash_info_url= 
-                    $pre_out_pages[$hash_url][0][self::INLINKS];
+                    crawlHash("info:".base64Hash($hash_url), true);
                 $index = $this->getIndex($pre_out_pages[$hash_url][0]['KEY']);
                 $item = $index->dictionary->getInfoItem($hash_info_url);
-                if($item !== false) { 
+                if($item !== false) {
+                    $item[self::PROXIMITY] = 1;
+                    $item[self::POSITION_LIST] = array(0);
                     $item[self::RELEVANCE] = 0.15 *
                         $pre_out_pages[$hash_url][0][self::RELEVANCE];
                     if(!isset($item[self::DOC_RANK])) {
                         $item[self::DOC_RANK] = 0.15 *
                             $pre_out_pages[$hash_url][0][self::DOC_RANK];
                     }
-                    $item[self::SCORE] = $item[self::RELEVANCE] + 
+                    $item[self::SCORE] = $item[self::RELEVANCE] * 
                         $item[self::DOC_RANK];
                     $item['KEY'] = $hash_url.$item[self::HASH].
                         $item[self::INLINKS];
+                    array_unshift($pre_out_pages[$hash_url], $item);
 
-                    array_unshift($pre_out_pages[$hash_url], $item); 
-                } 
+                }
             }
 
-            $this->aggregateScores($pre_out_pages[$hash_url]);
+            $this->aggregateScores($hash_url, $pre_out_pages[$hash_url]);
 
             if(isset($pre_out_pages[$hash_url][0][self::HASH])) {
                 $hash = $pre_out_pages[$hash_url][0][self::HASH];
@@ -320,7 +335,6 @@ class GroupIterator extends IndexBundleIterator
                 }
             }
         }
-
     }
 
     /**
@@ -344,23 +358,28 @@ class GroupIterator extends IndexBundleIterator
     function computeBoostAndOutPages(&$pre_out_pages)
     {
         $out_pages = array();
-        if($this->count_block_unfiltered >=$this->results_per_block) {
-            $hash_inlinks = array();
-            $indexes = array();
-            foreach($pre_out_pages as $hash_url => $group_infos) {
-                $key = $group_infos[0]["KEY"];
-                $tmp_index =  $this->getIndex($key);
-                $indexes[$tmp_index->dir_name] = $tmp_index;
-                $hash_inlinks[$tmp_index->dir_name][$hash_url] = 
-                    $pre_out_pages[$hash_url][0][self::INLINKS];
-            }
-            $num_docs_array = array();
+        $hash_inlinks = array();
+        $indexes = array();
+        $one_word_flag = isset($this->index_bundle_iterator->word_key);
+        
+        foreach($pre_out_pages as $hash_url => $group_infos) {
+            $key = $group_infos[0]["KEY"];
+            $tmp_index =  $this->getIndex($key);
+            $indexes[$tmp_index->dir_name] = $tmp_index;
+            $hash_inlinks[$tmp_index->dir_name][$hash_url] = 
+                $pre_out_pages[$hash_url][0][self::INLINKS];
 
-            foreach($hash_inlinks as $name => $inlinks) {
-                $num_docs_array = array_merge($num_docs_array, 
-                    $indexes[$name]->dictionary->getNumDocsArray($inlinks));
-            }
+            $hash_inlinks[$tmp_index->dir_name][$hash_url] =
+                crawlHash("link:".base64Hash($hash_url), true);
+
         }
+        $num_docs_array = array();
+
+        foreach($hash_inlinks as $name => $inlinks) {
+            $num_docs_array = array_merge($num_docs_array, 
+                $indexes[$name]->dictionary->getNumDocsArray($inlinks));
+        }
+
         foreach($pre_out_pages as $hash_url => $group_infos) {
             $out_pages[$hash_url] = $pre_out_pages[$hash_url][0];
             $out_pages[$hash_url][self::SUMMARY_OFFSET] = array();
@@ -372,67 +391,86 @@ class GroupIterator extends IndexBundleIterator
                     array($doc_info["KEY"], $doc_info[self::GENERATION],
                         $doc_info[self::SUMMARY_OFFSET]);
             }
+            $num_inlinks = $num_docs_array[$hash_url] + 0.1;
 
-            if($this->count_block_unfiltered >=$this->results_per_block) {
-                /* approximate the scores contributed to this
-                   doc for this word search by links we haven't
-                   reached in our grouping
-                */
-                $num_inlinks = $num_docs_array[$hash_url] + 0.1;
-                $num_docs_seen = $this->seen_docs_unfiltered + 
-                    $this->count_block_unfiltered;
+            /* approximate the scores contributed to this
+               doc for this word search by links we haven't
+               reached in our grouping
+            */
 
-                $hash_count = $out_pages[$hash_url][self::HASH_URL_COUNT];
+            $num_docs_seen = $this->seen_docs_unfiltered + 
+                $this->count_block_unfiltered;
 
-                /*
-                    An attempt to approximate the total number of inlinks
-                    to a document which will have the terms in question.
+            $hash_count = $out_pages[$hash_url][self::HASH_URL_COUNT];
 
-                    A result after grouping consists of a document and inlinks
-                    which contain the terms of the base iterator.
+            /*
+                An attempt to approximate the total number of inlinks
+                to a document which will have the terms in question.
 
-                    $hash_count/($num_docs_seen *$num_inlinks)
-                    approximates the probability that an inlink for 
-                    a particular document happens to 
-                    contain the terms of the iterator. After $num_docs_seen
-                    many documents, there are $num_inlinks - $hash_count
-                    many inlinks which might appear in the remainder of
-                    the iterators document list, giving a value
-                    for the $num_inlinks_not_seen as per the equation below:
-                 */
-                $num_inlinks_not_seen = 
-                    ($num_inlinks - $hash_count)*$hash_count/
-                    ($num_docs_seen * $num_inlinks);
-                $total_inlinks_for_doc = $hash_count + $num_inlinks_not_seen;
+                A result after grouping consists of a document and inlinks
+                which contain the terms of the base iterator.
+                
+                $hash_count/($num_docs_seen *sqrt($num_inlinks))
+                
+                approximates the probability that an inlink for 
+                a particular document happens to 
+                contain the terms of the iterator. The last
+                1/sqrt($num_inlinks) is a fudge factor to
+                the number of inlinks that contain the term. 
+                After $num_docs_seen
+                many documents, there are $num_inlinks - $hash_count
+                many inlinks which might appear in the remainder of
+                the iterators document list, giving a value
+                for the $num_inlinks_not_seen as per the equation below:
+             */
 
-                /*
-                     we estimate score[x] of the xth inlink for this document
-                     as approximately score[x] = score[1]x^{-alpha}
-                     If n = $total_inlinks_for_doc, then by integrating this
-                     from k = self::HASH_URL_COUNT to n, we get an 
-                     approximation for the score we haven't seen (which
-                     we call the boost). 
-                     boost = score[1](n^{1-alpha} - k^{1-alpha})/(1-alpha)
-                     let exponent = 1-alpha
-                */
-                $max_score = $out_pages[$hash_url][self::MAX];
-                $exponent = 1 - ((log($max_score) -
-                    log($out_pages[$hash_url][self::MIN]))/ log($num_inlinks));
-                $boost = $max_score*(pow($total_inlinks_for_doc, $exponent) -
-                    pow($hash_count, $exponent))/$exponent;
-                /*
-                  although relevance is  a log based quantity we want to
-                  further penalize docs with a high rank but low relevance for
-                  the underlying iterator, so we take a weighted higher order 
-                  average
-                 */
+            $docs_inlinks_ratio = $num_inlinks/$this->num_docs;
+            $group_ratio = $hash_count/$num_docs_seen;
+            $min_ratio = min($docs_inlinks_ratio, $group_ratio);
+
+            $num_inlinks_not_seen = 
+                 ($num_inlinks - $hash_count) * $min_ratio ;
+
+            $total_inlinks_for_doc = 
+                $num_inlinks_not_seen + $hash_count;
+            /*
+                 we estimate score[x] of the xth inlink for this document
+                 as approximately score[x] = Ae^{-alpha * ln x}.
+                 i.e., we try to fit the zipfian distribution to the scores
+                 so far and we suck up the 1/zeta from this distrbution
+                 as part of A. Here alpha can be calculated using
+                 max/min = e^{-alpha(ln 1 - ln hash_count)}
+                 as 
+                 ln(max_seen_score/min_seen_score)/ln(hash_count)
+                 and A can be calculated as
+                 max_seen_score*e^(-alpha *ln 1) = max_seen_score
+                 If n = $total_inlinks_for_doc, then by integrating this
+                 from k = self::HASH_URL_COUNT to n, we get an 
+                 approximation for the score we haven't seen (which
+                 we call the boost). 
+                 boost = (A/(1-alpha)) *
+                    (e^{(1- alpha)* ln n}- e^{(1- alpha)* ln k})
+            */
+            $max_rank = $out_pages[$hash_url][self::MAX];
+            $min_rank = $out_pages[$hash_url][self::MIN];
+            if($hash_count > 1 && $min_rank < $max_rank ) {
+                $alpha  = log($max_rank/$min_rank)/log($hash_count);
+                $oneminus = 1 - $alpha;
+                if($oneminus > 0) {
+                    $boost = ($max_rank/$oneminus)*
+                        ( pow($total_inlinks_for_doc, $oneminus)
+                            - pow($hash_count, $oneminus) );
+                } else {
+                    $boost = 0;
+                }
+
                 $out_pages[$hash_url][self::SCORE] = 
-                    ($out_pages[$hash_url][self::HASH_SUM_SCORE] + $boost) *
-                    (1 + $out_pages[$hash_url][self::RELEVANCE])/2;
+                    ($out_pages[$hash_url][self::HASH_SUM_SCORE] + 
+                        $boost *$out_pages[$hash_url][self::RELEVANCE]
+                        );
             } else {
                 $out_pages[$hash_url][self::SCORE] = 
-                    $out_pages[$hash_url][self::HASH_SUM_SCORE] *
-                    (1 + $out_pages[$hash_url][self::RELEVANCE])/2;
+                    $out_pages[$hash_url][self::HASH_SUM_SCORE]; 
             }
 
         }
@@ -445,30 +483,50 @@ class GroupIterator extends IndexBundleIterator
      * with the min score, max score, as well as the sum of the score,
      * sum of the ranks, sum of the relevance score, and count. Stores this
      * information in the first element of the array of pages.
+     *
+     *  @param array &$pre_hash_page pages to compute scores for
      */
-    function aggregateScores(&$pre_hash_page)
+    function aggregateScores($hash_url, &$pre_hash_page)
     {
         $sum_score = 0;
         $sum_rank = 0;
         $sum_relevance = 0;
+        $sum_proximity = 0;
         $min = 1000000; //no score will be this big
         $max = -1;
+        $domain_weights = array();
         foreach($pre_hash_page as $hash_page) {
             if(isset($hash_page[self::SCORE])) {
-                $current_score = $hash_page[self::SCORE];
-                $min = ($current_score < $min ) ? $current_score : $min;
-                $max = ($max < $current_score ) ? $current_score : $max;
-                $sum_score += $current_score;
-                $sum_rank += $hash_page[self::DOC_RANK];
-                $sum_relevance += $hash_page[self::RELEVANCE];
+                $current_rank = $hash_page[self::DOC_RANK];
+                $hash_host = $hash_page[self::INLINKS];
+                if(!isset($domain_weights[$hash_host])) {
+                    $domain_weights[$hash_host] = 1;
+                }
+                $relevance_boost = 1;
+                if(substr($hash_url, 1) == substr($hash_host, 1)) {
+                    $relevance_boost = 2;
+                }
+                $min = ($current_rank < $min ) ? $current_rank : $min;
+                $max = ($max < $current_rank ) ? $current_rank : $max;
+                $sum_score += $hash_page[self::DOC_RANK] 
+                    * $relevance_boost * pow(1.3,$hash_page[self::RELEVANCE]) *
+                    $hash_page[self::PROXIMITY] * $domain_weights[$hash_host];
+                $sum_rank += $hash_page[self::DOC_RANK] 
+                    * $domain_weights[$hash_host];
+                $sum_relevance += $relevance_boost *$hash_page[self::RELEVANCE];
+                $sum_proximity += $hash_page[self::PROXIMITY];
+                $domain_weights[$hash_host] *=  0.5;
             }
         }
+        
         $pre_hash_page[0][self::MIN] = $min;
         $pre_hash_page[0][self::MAX] = $max;
         $pre_hash_page[0][self::HASH_SUM_SCORE] = $sum_score;
+
         $pre_hash_page[0][self::DOC_RANK] = $sum_rank;
-        $pre_hash_page[0][self::RELEVANCE] = $sum_relevance;
         $pre_hash_page[0][self::HASH_URL_COUNT] = count($pre_hash_page);
+        $pre_hash_page[0][self::RELEVANCE] = $sum_relevance;
+        $pre_hash_page[0][self::PROXIMITY] = $sum_proximity;
     }
 
     /**

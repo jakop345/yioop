@@ -61,7 +61,7 @@ class PersistentStructure
      *  @var int
      */
     var $unsaved_operations;
-    /** Number of operation between saves. If == -1 never save
+    /** Number of operation between saves. If == -1 never save using checkSave
      *  @var int
      */
     var $save_frequency;

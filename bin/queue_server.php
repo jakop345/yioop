@@ -38,7 +38,7 @@ define("BASE_DIR", substr(
     dirname(realpath($_SERVER['PHP_SELF'])), 0, 
     -strlen("/bin")));
 
-ini_set("memory_limit","1100M"); //so have enough memory to crawl big pages
+ini_set("memory_limit","1200M"); //so have enough memory to crawl big pages
 
 /** Load in global configuration settings */
 require_once BASE_DIR.'/configs/config.php';
@@ -74,6 +74,13 @@ require_once BASE_DIR."/lib/crawl_daemon.php";
 require_once BASE_DIR."/lib/fetch_url.php";
 /** Loads common constants for web crawling*/
 require_once BASE_DIR."/lib/crawl_constants.php";
+
+require_once BASE_DIR."/lib/phrase_parser.php";
+
+/** get any indexing plugins */
+foreach(glob(BASE_DIR."/lib/indexing_plugins/*_plugin.php") as $filename) { 
+    require_once $filename;
+}
 
 /*
  *  We'll set up multi-byte string handling to use UTF-8
@@ -189,12 +196,19 @@ class QueueServer implements CrawlConstants
      * @var int
      */
      var $index_dirty;
+
     /**
-     * Makes a queue_server object with the supplied indexed_file_types
-     *
-     * As part of the creation process, a database manager is initialized so
-     * the queue_server can make use of its file/folder manipulation functions.
+     * This is a list of indexing_plugins which might do
+     * post processing after the crawl. The plugins postProcessing function
+     * is called if it is selected in the crawl options page.
+     * @var array
      */
+    var $indexing_plugins;
+
+    /**
+     * holds the post processors selected in the crawl options page
+     */
+
     function __construct($indexed_file_types) 
     {
         $db_class = ucfirst(DBMS)."Manager";
@@ -257,7 +271,11 @@ class QueueServer implements CrawlConstants
             
             //check for orphaned queue bundles
             $this->deleteOrphanedBundles();
-
+            
+            /*check for web traffic data (either from a browser extension
+                ) or from search result links
+            */
+            $this->processTrafficData();
 
             $this->processIndexData();
             if(time() - $this->last_index_save_time > FORCE_SAVE_TIME){
@@ -275,7 +293,7 @@ class QueueServer implements CrawlConstants
                     $count = $this->web_queue->to_crawl_queue->count;
 
                     if($count < NUM_URLS_QUEUE_RAM - 
-                        SEEN_URLS_BEFORE_UPDATE_SCHEDULER * MAX_LINKS_PER_PAGE) {
+                        SEEN_URLS_BEFORE_UPDATE_SCHEDULER * MAX_LINKS_PER_PAGE){
                         $info = $this->processQueueUrls();
                     }
 
@@ -328,7 +346,7 @@ class QueueServer implements CrawlConstants
     }
 
     /**
-     * Even during a recrawl teh fetcher may send robot data to the
+     * Even during a recrawl the fetcher may send robot data to the
      * queue_server. This function prints a log message and calls another
      * function to delete this useless robot file.
      */
@@ -416,8 +434,8 @@ class QueueServer implements CrawlConstants
         if(file_exists(CRAWL_DIR."/schedules/queue_server_messages.txt")) {
             $info = unserialize(file_get_contents(
                 CRAWL_DIR."/schedules/queue_server_messages.txt"));
-
-            unlink(CRAWL_DIR."/schedules/queue_server_messages.txt");
+                unlink(CRAWL_DIR."/schedules/queue_server_messages.txt");
+                
             switch($info[self::STATUS])
             {
                 case "NEW_CRAWL":
@@ -430,12 +448,30 @@ class QueueServer implements CrawlConstants
                         crawlLog("Performing an archive crawl of ".
                             "archive with timestamp ".$this->crawl_index);
                     }
+                    $crawl_status = array();
+                    $crawl_status['MOST_RECENT_FETCHER'] = "";
+                    $crawl_status['MOST_RECENT_URLS_SEEN'] = array();
+                    $crawl_status['CRAWL_TIME'] = $this->crawl_time;
+                    $crawl_status['COUNT'] = 0;
+                    $crawl_status['DESCRIPTION'] = "BEGIN_CRAWL";
+                    file_put_contents(
+                        CRAWL_DIR."/schedules/crawl_status.txt", 
+                        serialize($crawl_status));
+                    chmod(
+                        CRAWL_DIR."/schedules/crawl_status.txt", 0777);
                 break;
 
                 case "STOP_CRAWL":
-                    if(file_exists(CRAWL_DIR."/schedules/crawl_status.txt")) {
-                        unlink(CRAWL_DIR."/schedules/crawl_status.txt");
-                    }
+                    crawlLog("Stopping crawl !! This involves multiple steps!");
+                    $crawl_status = array();
+                    $crawl_status['MOST_RECENT_FETCHER'] = "";
+                    $crawl_status['MOST_RECENT_URLS_SEEN'] = array();
+                    $crawl_status['CRAWL_TIME'] = $this->crawl_time;
+                    $crawl_status['COUNT'] = 0;
+                    $crawl_status['DESCRIPTION'] = "SHUTDOWN_DICTIONARY";
+                    file_put_contents(
+                        CRAWL_DIR."/schedules/crawl_status.txt", 
+                        serialize($crawl_status));
                     if(is_object($this->index_archive)) {
                         $this->
                             index_archive->saveAndAddCurrentShardDictionary();
@@ -444,8 +480,35 @@ class QueueServer implements CrawlConstants
                     $this->db->setWorldPermissionsRecursive(
                         CRAWL_DIR.'/cache/'.
                         self::index_data_base_name.$this->crawl_time);
-                    crawlLog("Stopping crawl !!\n");
+
                     $info[self::STATUS] = self::WAITING_START_MESSAGE_STATE;
+                    //Added by Priya Gangaraju. 
+                    //Calling post processing function if the processor is 
+                    //selected in the crawl options page.
+                    if(isset($this->indexing_plugins)) {
+                        crawlLog("Post Processing....");
+                        $crawl_status['DESCRIPTION'] = "SHUTDOWN_RUNPLUGINS";
+                        file_put_contents(
+                            CRAWL_DIR."/schedules/crawl_status.txt", 
+                            serialize($crawl_status));
+                        foreach($this->indexing_plugins as $plugin) {
+                            $plugin_instance_name = 
+                                lcfirst($plugin)."Plugin";
+                            $plugin_name = $plugin."Plugin";
+                            $this->$plugin_instance_name = 
+                                new $plugin_name();
+                            if($this->$plugin_instance_name) {
+                                crawlLog(
+                                    "... executing $plugin_instance_name");
+                                $this->$plugin_instance_name->
+                                    postProcessing($this->crawl_time);
+                            }
+                        }
+                    }
+                    if(file_exists(CRAWL_DIR."/schedules/crawl_status.txt")) {
+                        unlink(CRAWL_DIR."/schedules/crawl_status.txt");
+                    }
+                    crawlLog("Crawl has been succesfully stopped!!");
                 break;
 
                 case "RESUME_CRAWL":
@@ -520,6 +583,8 @@ class QueueServer implements CrawlConstants
             "restrict_sites_by_url" => self::RESTRICT_SITES_BY_URL,
             "allowed_sites" => self::ALLOWED_SITES,
             "disallowed_sites" => self::DISALLOWED_SITES,
+            "meta_words" => self::META_WORDS,
+            "indexing_plugins" => self::INDEXING_PLUGINS,
         );
         $try_to_set_from_old_index = array();
         foreach($read_from_info as $index_field => $info_field) {
@@ -528,9 +593,6 @@ class QueueServer implements CrawlConstants
             } else {
                 array_push($try_to_set_from_old_index,  $index_field);
             }
-        }
-        if(isset($info[self::META_WORDS])) {
-            $this->meta_words = $info[self::META_WORDS];
         }
 
         switch($this->crawl_order) 
@@ -576,9 +638,6 @@ class QueueServer implements CrawlConstants
                     $this->$index_field = 
                         $index_info[$read_from_info[$index_field]];
                 }
-            }
-            if(isset($index_info[self::META_WORDS])) {
-                $this->meta_words = $index_info[self::META_WORDS];
             }
         }
 
@@ -674,6 +733,117 @@ class QueueServer implements CrawlConstants
     }
 
     /**
+     * Sets up the directory to look for a file of unprocessed
+     * index archive data from toolbar then calls the function
+     * processDataFile to process the oldest file found
+     */
+    function processTrafficData()
+    {
+       crawlLog("Checking for web traffic data files to process...");
+
+       $index_dir =  CRAWL_DIR."/schedules/".
+           "TrafficData";
+       $this->processDataFile($index_dir, "processTrafficDataInvertedIndex");
+       crawlLog("done.");
+    }
+   
+   /**
+    * Builds the MiniInvertedIndex for the files recived from
+    * web traffic data then adds it to the INVERTED INDEX.
+    * 
+    * @param string $file gets the traffic file contents to process
+    *   traffic shard
+    */
+    function processTrafficDataInvertedIndex($file)
+    {
+        static $first = true;
+        crawlLog(
+            "Start processing web traffic data memory usage".
+            memory_get_usage() . "...");
+        crawlLog("Processing trafic data in $file...");
+
+        $start_time = microtime();
+        $rowdelimiter = ",";
+        $delimiter = "|:|";
+        $filecontent = file_get_contents($file);
+
+        $rows = explode($rowdelimiter, $filecontent);
+
+        foreach ($rows as $newrow) {
+            $tok = explode($delimiter, $newrow);
+            $site[self::LINKS][$tok[2]]= $tok[0];
+            $site[self::TIMESTAMP]= $tok[3];
+            $site[self::ENCODING]= $tok[4];
+        }
+
+        $traffic_shard = new IndexShard("traffic_shard");
+        $seen_sites = array();
+        foreach($site[self::LINKS] as $url => $link_text) {
+            if(strlen($url) > 0) {
+                $summary = array();
+
+                $had_links = true;
+
+                $link_text = strip_tags($link_text);
+                $link_id =
+                    "url|".$url."|text|$link_text|iref|".$site[self::URL];
+
+                $link_keys = crawlHash($url, true) .
+                      crawlHash($link_id, true) .
+                      "i".substr(crawlHash(
+                            UrlParser::getHost($site[self::URL])."/", true), 1);
+
+                $summary[self::HASH_URL] =  $link_keys;
+                $summary[self::URL] =  $link_id;
+                $summary[self::TITLE] = $url;
+                   // stripping html to be on the safe side
+                $summary[self::DESCRIPTION] =  $link_text;
+                $summary[self::TIMESTAMP] =  $site[self::TIMESTAMP];
+                $summary[self::ENCODING] = $site[self::ENCODING];
+                $summary[self::HASH] =  $link_id;
+                $summary[self::TYPE] = "link";
+                $summary[self::HTTP_CODE] = "link";
+                $seen_sites[] = $summary;
+
+                $link_text =
+                    mb_ereg_replace(PUNCT, " ", $link_text);
+
+                $link_word_lists =
+                    PhraseParser::extractPhrasesInLists($link_text,
+                    MAX_PHRASE_LEN, $lang);
+
+                $traffic_shard->addDocumentWords($link_keys,
+                    self::NEEDS_OFFSET_FLAG,
+                    $link_word_lists, array());
+            }
+        }
+
+        $visited_urls_count = 0;
+        $generation =
+             $this->index_archive->initGenerationToAdd($traffic_shard);
+
+        $summary_offsets = array();
+        if(isset($seen_sites)) {
+            $this->index_archive->addPages(
+                $generation, self::SUMMARY_OFFSET, $seen_sites,
+                $visited_urls_count);
+
+            foreach($seen_sites as $site) {
+                $hash = $site[self::HASH_URL];
+                $dict_word =  NULL;
+                $summary_offsets[$hash] =
+                    array($site[self::SUMMARY_OFFSET], $dict_word);
+            }
+        }
+        $traffic_shard->changeDocumentOffsets($summary_offsets);
+        $this->index_archive->addIndexData($traffic_shard);
+        $this->index_dirty = true;
+        unlink($file);
+
+    }
+
+
+    /**
      * Adds the summary and index data in $file to summary bundle and word index
      *
      * @param string $file containing web pages summaries and a mini-inverted
@@ -718,20 +888,30 @@ class QueueServer implements CrawlConstants
         }
 
         $visited_urls_count = 0;
+        $recent_urls_count = 0;
+        $recent_urls = array();
         for($i = 0; $i < $num_seen; $i++) {
             $seen_sites[$i][self::HASH_URL] = 
                 crawlHash($seen_sites[$i][self::URL], true);
             $link_url_parts = explode("|", $seen_sites[$i][self::URL]);
-            if(strcmp("url", $link_url_parts[0]) == 0 &&
-                strcmp("text", $link_url_parts[2]) == 0) {
+            if(strcmp("url", $link_url_parts[0]) == 0) {
+                $reftype =  (strcmp("eref", $link_url_parts[4]) == 0) ?
+                    "e" : "i";
                 $seen_sites[$i][self::HASH_URL] = 
-                    crawlHash($link_url_parts[1],true)
+                    crawlHash($link_url_parts[1], true)
                     . crawlHash($seen_sites[$i][self::URL], true)
-                    . crawlHash("info:".$link_url_parts[1], true);
+                    . $reftype. substr(crawlHash(
+                      UrlParser::getHost($link_url_parts[5])."/", true), 1);
                 $seen_sites[$i][self::IS_DOC] = false;
             } else {
                 $seen_sites[$i][self::IS_DOC] = true;
                 $visited_urls_count++;
+                array_push($recent_urls, $seen_sites[$i][self::URL]);
+                if($recent_urls_count >= NUM_RECENT_URLS_TO_DISPLAY)
+                {
+                    array_shift($recent_urls);
+                }
+                $recent_urls_count++;
             }
         }
 
@@ -753,8 +933,9 @@ class QueueServer implements CrawlConstants
                     if($site[self::IS_DOC]){ // so not link
                         $hash = $site[self::HASH_URL]. 
                             $site[self::HASH] . 
-                            crawlHash("link:".$site[self::URL], true);
-                        $dict_word = "info:".$site[self::URL];
+                            "d". substr(crawlHash(
+                            UrlParser::getHost($site[self::URL])."/", true), 1);
+                        $dict_word = "info:".crawlHash($site[self::URL]);
                     } else {
                         $hash = $site[self::HASH_URL];
                         $dict_word =  NULL;
@@ -776,12 +957,18 @@ class QueueServer implements CrawlConstants
             $start_time = microtime();
 
             $this->index_archive->addIndexData($index_shard);
+            crawlLog("WORD_DOC_LEN ".$this->index_archive->getActiveShard()->word_docs_len);
             $this->index_dirty = true;
         }
         crawlLog("D (add index shard) memory usage".memory_get_usage(). 
             " time: ".(changeInMicrotime($start_time)));
 
+
         crawlLog("Done Processing File: $file");
+        if(isset($recent_urls)) {
+            $sites[self::RECENT_URLS] = & $recent_urls;
+            $this->writeCrawlStatus($sites);
+        }
 
         unlink($file);
     }
@@ -939,7 +1126,6 @@ class QueueServer implements CrawlConstants
 
         crawlLog("...Seen Urls ...");
         $start_time = microtime();
-        $most_recent_urls = array();
 
         if(isset($sites[self::HASH_SEEN_URLS])) {
             $cnt = 0;
@@ -1018,8 +1204,6 @@ class QueueServer implements CrawlConstants
 
         unlink($file);
 
-
-        $this->writeCrawlStatus($sites);
     }
 
     /**
@@ -1059,7 +1243,7 @@ class QueueServer implements CrawlConstants
             $info_bundle['VISITED_URLS_COUNT']);
         crawlLog("Total urls extracted so far: ".$info_bundle['COUNT']); 
         if(isset($sites[self::RECENT_URLS])) {
-        crawlLog("Of these, the most recent urls are:");
+            crawlLog("Of these, the most recent urls are:");
             foreach($sites[self::RECENT_URLS] as $url) {
                 crawlLog("URL: $url");
             }
@@ -1094,6 +1278,7 @@ class QueueServer implements CrawlConstants
         $sites[self::CRAWL_TYPE] = $this->crawl_type;
         $sites[self::CRAWL_INDEX] = $this->crawl_index;
         $sites[self::META_WORDS] = $this->meta_words;
+        $sites[self::INDEXING_PLUGINS] =  $this->indexing_plugins;
         $sites[self::SITES] = array();
 
         return base64_encode(serialize($sites))."\n";

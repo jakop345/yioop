@@ -137,10 +137,20 @@ class SearchController extends Controller implements CrawlConstants
             $index_time_stamp = $this->clean($its, "int");
             if(!$this->phraseModel->indexExists($index_time_stamp)
               && !$this->crawlModel->isCrawlMix($index_time_stamp)) {
-                $index_time_stamp = 0; //use the default crawl index
+                $index_time_stamp = 
+                    $this->crawlModel->getCurrentIndexDatabaseName(); 
+                    //use the default crawl index
             }
         } else {
-            $index_time_stamp = 0; //use the default crawl index
+            $index_time_stamp = 
+                $this->crawlModel->getCurrentIndexDatabaseName(); 
+                //use the default crawl index
+        }
+        $index_info = NULL;
+        if($this->phraseModel->indexExists($index_time_stamp) || 
+           $this->crawlModel->isCrawlMix($index_time_stamp)) {
+            $index_info = 
+                $this->crawlModel->getInfoTimestamp($index_time_stamp);
         }
         if(isset($_REQUEST['q']) && strlen($_REQUEST['q']) > 0 
             || $activity != "query") {
@@ -178,6 +188,19 @@ class SearchController extends Controller implements CrawlConstants
         }
 
         $data['its'] = (isset($index_time_stamp)) ? $index_time_stamp : 0;
+        if($index_info !== NULL) {
+            if(isset($index_info['IS_MIX'])) {
+                $data['INDEX_INFO'] = tl('search_controller_mix_info',
+                    $index_info['DESCRIPTION']);
+            } else {
+                $data['INDEX_INFO'] = tl('search_controller_crawl_info',
+                    $index_info['DESCRIPTION'], 
+                    $index_info['VISITED_URLS_COUNT'],
+                    $index_info['COUNT']);
+            }
+        } else {
+            $data['INDEX_INFO'] = "";
+        }
 
         $data['YIOOP_TOKEN'] = $this->generateCSRFToken($user);
 
@@ -210,20 +233,33 @@ class SearchController extends Controller implements CrawlConstants
     function processQuery($query, $activity, $arg, $results_per_page, 
         $limit = 0, $index_name = 0) 
     {
+        $no_index_given = false;
         if($index_name == 0) {
             $index_name = $this->crawlModel->getCurrentIndexDatabaseName();
-            if(!$this->phraseModel->indexExists($index_name)
-                && !$this->crawlModel->isCrawlMix($index_name)) {
+            $no_index_given = true;
+        }
+        $is_mix = $this->crawlModel->isCrawlMix($index_name);
+        if($no_index_given && (!$this->phraseModel->indexExists($index_name)
+                && !$is_mix)) {
                 $data['SCRIPT'] = 
                         "doMessage('<h1 class=\"red\" >".
                         tl('search_controller_no_index_set').
                         "</h1>');";
                 return $data;
-            }
         }
 
         $this->phraseModel->index_name = $index_name;
+        $this->phraseModel->additional_meta_words = array();
+        foreach($this->indexing_plugins as $plugin) {
+            $plugin_name = ucfirst($plugin)."Plugin";
+            $tmp_meta_words = $plugin_name::getAdditionalMetaWords();
+            $this->phraseModel->additional_meta_words = 
+                array_merge($this->phraseModel->additional_meta_words, 
+                    $tmp_meta_words);
+        }
+
         $this->crawlModel->index_name = $index_name;
+
 
         switch($activity)
         {
@@ -250,7 +286,7 @@ class SearchController extends Controller implements CrawlConstants
             default:
                 if(trim($query) != "") {
                     $original_query = $query;
-                    if($this->crawlModel->isCrawlMix($index_name)) {
+                    if($is_mix) {
                         $mix = $this->crawlModel->getCrawlMix($index_name);
                         $query = 
                             $this->phraseModel->rewriteMixQuery($query, $mix);
@@ -265,14 +301,12 @@ class SearchController extends Controller implements CrawlConstants
 
             break;
         }
-
         $data['PAGES'] = (isset($phrase_results['PAGES'])) ?
              $phrase_results['PAGES']: array();
         $data['TOTAL_ROWS'] = (isset($phrase_results['TOTAL_ROWS'])) ? 
             $phrase_results['TOTAL_ROWS'] : 0;
         $data['LIMIT'] = $limit;
         $data['RESULTS_PER_PAGE'] = $results_per_page;
-
 
         return $data;
 
@@ -371,7 +405,7 @@ class SearchController extends Controller implements CrawlConstants
 
             $meta_words = array('link\:', 'site\:', 'version\:', 'modified\:',
                 'filetype\:', 'info\:', '\-', 'os\:', 'server\:', 'date\:',
-                'lang\:',
+                'lang\:', 'elink\:',
                 'index:', 'ip:', 'i:', 'weight:', 'w:', 'u:');
             foreach($meta_words as $meta_word) {
                 $pattern = "/(\s)($meta_word(\S)+)/";
@@ -413,8 +447,25 @@ class SearchController extends Controller implements CrawlConstants
             $body =  $dom->getElementsByTagName('body')->item(0);
         }
         $first_child = $body->firstChild;
+        $summaryNode = $dom->createElement('pre');
+        $summaryNode = $body->insertBefore($summaryNode, $first_child);
+        $summaryNode->setAttributeNS("","style", "border-color: black; ".
+            "border-style:solid; border-width:3px; ".
+            "padding: 5px; background-color: white; display:none;");
+        $summaryNode->setAttributeNS("","id", "summary-page-id");
+        $cache_string = wordwrap($crawl_item[self::TITLE], 80, "\n")."\n\n" .
+            wordwrap($crawl_item[self::DESCRIPTION], 80, "\n")."\n\n".
+            wordwrap(print_r($crawl_item[self::LINKS], true), 80, "\n");
+        $textNode = $dom->createTextNode($cache_string);
+        $summaryNode->appendChild($textNode);
+
+        $scriptNode = $dom->createElement('script');
+        $scriptNode = $body->insertBefore($scriptNode, $summaryNode);
+        $textNode = $dom->createTextNode("var summaryShow = 'none';");
+        $scriptNode->appendChild($textNode);
+
         $preNode = $dom->createElement('pre');
-        $preNode = $body->insertBefore($preNode, $first_child);
+        $preNode = $body->insertBefore($preNode, $summaryNode);
         $preNode->setAttributeNS("","style", "border-color: black; ".
             "border-style:solid; border-width:3px; ".
             "padding: 5px; background-color: white");
@@ -427,11 +478,29 @@ class SearchController extends Controller implements CrawlConstants
         $textNode = $dom->createTextNode(tl('search_controller_cached_version', 
             "$url", $date));
         $divNode->appendChild($textNode);
-        if(isset($cache_item[self::HEADER])) {
 
-            $textNode = $dom->createTextNode($cache_item[self::HEADER]);
-            $preNode->appendChild($textNode);
+        if(isset($cache_item[self::HEADER])) {
+            $textNode = $dom->createTextNode($cache_item[self::HEADER]."\n");
+        } else {
+            $textNode = $dom->createTextNode("");
         }
+
+        $preNode->appendChild($textNode);
+
+        $aNode = $dom->createElement("a");
+        $aTextNode = $dom->createTextNode(
+            tl('search_controller_summary_data'));
+        $aNode->setAttributeNS("","onclick", "javascript:".
+            "summaryShow=(summaryShow!='block')?'block':'none';".
+            "elt=document.getElementById('summary-page-id');".
+            "elt.style.display=summaryShow;");
+        $aNode->setAttributeNS("","style", "text-decoration: underline; ".
+            "cursor: pointer");
+
+        $aNode->appendChild($aTextNode);
+
+        $aNode = $preNode->appendChild($aNode);
+
         $body = $this->markChildren($body, $words, $dom);
 
         $newDoc = $dom->saveHTML();

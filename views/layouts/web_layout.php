@@ -87,12 +87,12 @@ class WebLayout extends Layout
                 <?php
                     e("<h1>".tl('web_layout_query_statistics')."</h1>");
                     e("<b>".tl('web_layout_total_elapsed_time',
-                         $data['TOTAL_ELAPSED_TIME'])."</b>"); 
+                         $data['TOTAL_ELAPSED_TIME'])."</b>");
                     foreach($data['QUERY_STATISTICS'] as $query_info) {
                         e("<div class='query'><div>".$query_info['QUERY'].
                             "</div><div><b>".
                             tl('web_layout_query_time', 
-                                $query_info['ELASPED_TIME']).
+                                $query_info['ELAPSED_TIME']).
                                 "</b></div></div>");
                     }
                 ?>

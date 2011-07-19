@@ -47,6 +47,7 @@ require_once BASE_DIR."/lib/crawl_constants.php";
  * @package seek_quarry
  * @subpackage controller
  */
+ 
 class AdminController extends Controller implements CrawlConstants
 {
     /**
@@ -77,7 +78,7 @@ class AdminController extends Controller implements CrawlConstants
      *
      * ProcessRequest determines the type of request (signin , manageAccount, 
      * etc) is being made.  It then calls the appropriate method to handle the 
-     * given activity.Finally, it draws the relevant admin screen
+     * given activity. Finally, it draws the relevant admin screen
      */
     function processRequest() 
     {
@@ -705,7 +706,10 @@ class AdminController extends Controller implements CrawlConstants
                         $seed_info['disallowed_sites']['url'];
                     $info[self::META_WORDS] = 
                         $seed_info['meta_words'];
-
+                    if(isset($seed_info['indexing_plugins']['plugins'])) {
+                        $info[self::INDEXING_PLUGINS] =
+                            $seed_info['indexing_plugins']['plugins'];
+                    }
                     if(isset($_REQUEST['description'])) {
                         $description = 
                             $this->clean($_REQUEST['description'], "string");
@@ -915,6 +919,26 @@ class AdminController extends Controller implements CrawlConstants
                     } else if(isset($seed_info['meta_words'])){
                             $data['META_WORDS'] = $seed_info['meta_words'];
                     }
+                    $data['INDEXING_PLUGINS'] = array();
+                    $included_plugins = array();
+                    if(!$no_further_changes && isset($_REQUEST["posted"])) {
+                        $seed_info['indexing_plugins']['plugins'] =
+                            (isset($_REQUEST["INDEXING_PLUGINS"])) ?
+                            $_REQUEST["INDEXING_PLUGINS"] : array();
+                        $update_flag = true;
+                    } 
+                    $included_plugins = 
+                        (isset($seed_info['indexing_plugins']['plugins'])) ?
+                            $seed_info['indexing_plugins']['plugins'] 
+                            : array();
+
+                    foreach($this->indexing_plugins as $plugin) {
+                        $plugin_name = ucfirst($plugin);
+                        $data['INDEXING_PLUGINS'][$plugin_name] = 
+                            (in_array($plugin_name, $included_plugins)) ? 
+                            "checked='checked'" : "";
+                    }
+
                     $data['SCRIPT'] = "setDisplay('toggle', ".
                         "'{$data['restrict_sites_by_url']}');".
                         " elt('load-options').onchange = ".

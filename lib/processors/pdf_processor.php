@@ -61,7 +61,7 @@ class PdfProcessor extends TextProcessor
      *  @return a summary of the contents of the page
      *
      */
-    public static function process($page, $url)
+    public function process($page, $url)
     {
         $text = "";
         if(is_string($page)) {

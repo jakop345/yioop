@@ -79,22 +79,24 @@ class FetchUrl implements CrawlConstants
 
         //Set-up requests
         for($i = 0; $i < count($sites); $i++) {
-            $sites[$i][0] = curl_init();
-            $ip_holder[$i] = fopen(CRAWL_DIR."/tmp$i.txt", 'w+');
-            curl_setopt($sites[$i][0], CURLOPT_USERAGENT, USER_AGENT);
-            curl_setopt($sites[$i][0], CURLOPT_URL, $sites[$i][$key]);
-            curl_setopt($sites[$i][0], CURLOPT_VERBOSE, true);
-            curl_setopt($sites[$i][0], CURLOPT_STDERR, $ip_holder[$i]);
-            curl_setopt($sites[$i][0], CURLOPT_FOLLOWLOCATION, true);
-            curl_setopt($sites[$i][0], CURLOPT_MAXREDIRS, 5);
-            curl_setopt($sites[$i][0], CURLOPT_AUTOREFERER, true);
-            curl_setopt($sites[$i][0], CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($sites[$i][0], CURLOPT_CONNECTTIMEOUT, PAGE_TIMEOUT);
-            curl_setopt($sites[$i][0], CURLOPT_TIMEOUT, PAGE_TIMEOUT);
-            curl_setopt($sites[$i][0], CURLOPT_HEADER, true);
-            curl_setopt($sites[$i][0], CURLOPT_HTTPHEADER, 
-                array('Range: bytes=0-'.PAGE_RANGE_REQUEST));
-            curl_multi_add_handle($agent_handler, $sites[$i][0]);
+            if(isset($sites[$i][$key])) {
+                $sites[$i][0] = curl_init();
+                $ip_holder[$i] = fopen(CRAWL_DIR."/tmp$i.txt", 'w+');
+                curl_setopt($sites[$i][0], CURLOPT_USERAGENT, USER_AGENT);
+                curl_setopt($sites[$i][0], CURLOPT_URL, $sites[$i][$key]);
+                curl_setopt($sites[$i][0], CURLOPT_VERBOSE, true);
+                curl_setopt($sites[$i][0], CURLOPT_STDERR, $ip_holder[$i]);
+                curl_setopt($sites[$i][0], CURLOPT_FOLLOWLOCATION, true);
+                curl_setopt($sites[$i][0], CURLOPT_MAXREDIRS, 5);
+                curl_setopt($sites[$i][0], CURLOPT_AUTOREFERER, true);
+                curl_setopt($sites[$i][0], CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($sites[$i][0], CURLOPT_CONNECTTIMEOUT, PAGE_TIMEOUT);
+                curl_setopt($sites[$i][0], CURLOPT_TIMEOUT, PAGE_TIMEOUT);
+                curl_setopt($sites[$i][0], CURLOPT_HEADER, true);
+                curl_setopt($sites[$i][0], CURLOPT_HTTPHEADER, 
+                    array('Range: bytes=0-'.PAGE_RANGE_REQUEST));
+                curl_multi_add_handle($agent_handler, $sites[$i][0]);
+            }
         }
         if($timer) {
             crawlLog("  Init Get Pages ".(changeInMicrotime($start_time)));
@@ -126,9 +128,11 @@ class FetchUrl implements CrawlConstants
 
         //Process returned pages
         for($i = 0; $i < count($sites); $i++) {
-            $ip_addresses = self::getCurlIp($ip_holder[$i]);
-            fclose($ip_holder[$i]);
-            if($sites[$i][0]) { 
+            if(isset($ip_holder[$i]) ) {
+                $ip_addresses = self::getCurlIp($ip_holder[$i]);
+                fclose($ip_holder[$i]);
+            }
+            if(isset($sites[$i][0]) && $sites[$i][0]) { 
                 // Get Data and Message Code
                 $content = @curl_multi_getcontent($sites[$i][0]);
 

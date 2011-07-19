@@ -52,7 +52,7 @@ class JpgProcessor extends ImageProcessor
     /**
      * {@inheritdoc}
      */
-    public static function process($page, $url)
+    function process($page, $url)
     {
         if(is_string($page)) {
             file_put_contents(CRAWL_DIR."/cache/tmp.jpg", $page); 

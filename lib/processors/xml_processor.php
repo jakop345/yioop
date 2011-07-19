@@ -77,8 +77,8 @@ class XmlProcessor extends TextProcessor
      *
      *  @return array  a summary of the contents of the page
      *
-     */
-    public static function process($page, $url)
+     */ 
+    function process($page, $url)
     {
         $summary = NULL;
         if(is_string($page)) {
@@ -89,25 +89,17 @@ class XmlProcessor extends TextProcessor
             $root_name = isset($dom->documentElement->nodeName) ?
                 $dom->documentElement->nodeName : "";
             unset($dom);
-            switch ($root_name)
-            {
-                case "rss":
-                    $summary = RssProcessor::process($page, $url);
-                break;
-                case "html":
-                    $summary = HtmlProcessor::process($page, $url);
-                break;
-                case "sitemapindex":
-                    $summary = SitemapProcessor::process($page, $url);
-                break;
-                case "urlset":
-                    $summary = SitemapProcessor::process($page, $url);
-                break;
-                case "svg":
-                    $summary = SvgProcessor::process($page, $url);
-                break;
-                default:
-                    $summary = parent::process($page, $url);
+            $XML_PROCESSORS = array(
+                "rss" => "RssProcessor", "html" => "HtmlProcessor",
+                "sitemapindex" => "SitemapProcessor", 
+                "urlset" => "SitemapProcessor", "svg" => "SvgProcessor"
+            );
+            if(isset($XML_PROCESSORS[$root_name])) {
+                $processor_name = $XML_PROCESSORS[$root_name];
+                $processor = new $processor_name($this->indexing_plugins);
+                $summary = $processor->process($page, $url);
+            } else {
+                $summary = parent::process($page, $url);
             }
         }
 

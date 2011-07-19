@@ -79,7 +79,7 @@ class SvgProcessor extends TextProcessor
      *  @return array  a summary of the contents of the page
      *
      */
-    public static function process($page, $url)
+    public function process($page, $url)
     {
 
         if(is_string($page)) {

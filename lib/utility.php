@@ -32,7 +32,6 @@
  * @copyright 2009, 2010, 2011
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
@@ -41,14 +40,18 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  *
  * @param string $source  string to copy from
  * @param string &$destination string to copy to
- * @param $start starting offset
- * @param $length number of bytes to copy
+ * @param int $start starting offset
+ * @param int $length number of bytes to copy
  */
 function charCopy($source, &$destination, $start, $length) 
 {
-    $end = $start + $length;
-    for($j = $start, $k = 0; $j < $end; $j++, $k++) {
-        $destination[$j] = $source[$k];
+    $endk = $length - 1;
+    $end = $start + $endk;
+    for($j = $end, $k = $endk; $j >= $start; $j--, $k--) {
+        $destination[$j] = "" . $source[$k]; 
+        /* for some reason, the "" makes this faster if source and destination
+           are the same in PHP
+         */
     }
 }
 
@@ -87,6 +90,201 @@ function vByteDecode(&$str, &$offset)
 
     return $pos_int;
 }
+
+/**
+ * Computes the difference of a list of integers.
+ * i.e., (a1, a2, a3, a4) becomes (a1, a2-a1, a3-a2, a4-a3) 
+ *
+ * @param array $list a nondecreasing list of integers
+ * @return array the corresponding list of differences of adjacent
+ *      integers
+ */
+function deltaList($list)
+{
+    $last = 0;
+    $delta_list = array();
+    foreach($list as $elt) {
+        $delta_list[] = $elt - $last;
+        $last = $elt;
+    }
+    return $delta_list;
+}
+
+/**
+ * Given an array of differences of integers reconstructs the
+ * original list. This computes the inverse of the deltaList function
+ *
+ * @see deltaList
+ * @param array $delta_list a list of nonegative integers
+ * @return array a nondecreasing list of integers
+ */
+function deDeltaList($delta_list)
+{
+    $last = 0;
+    $list = array();
+    foreach($delta_list as $delta) {
+        $last += $delta;
+        $list[] = $last;
+    }
+    return $list;
+}
+
+/**
+ * Encodes a sequence of integers x, such that 1 <= x <= 2<<28-1
+ * as a string.
+ *
+ * The encoded string is a sequence of 4 byte words (packed int's).
+ * The high order 2 bits of a given word indicate whether or not
+ * to look at the next word. The codes are as follows:
+ * 11 start of encoded string, 10 continue four more bytes, 01 end of
+ * encoded, and 00 indicates whole sequence encoded in one word.
+ *
+ * After the high order 2 bits, the next most significant bits indicate
+ * the format of the current word. There are nine possibilities:
+ * 00 - 1 28 bit number, 01 - 2 14 bit numbers, 10 - 3 9 bit numbers,
+ * 1100 - 4 6 bit numbers, 1101 - 5 5 bit numbers, 1110 6 4 bit numbers,
+ * 11110 - 7 3 bit numbers, 111110 - 12 2 bit numbers, 111111 - 24 1 bit 
+ * numbers.
+ *
+ * @param array $list a list of positive integers satsfying above
+ * @return string encoded string
+ */
+function encodeModified9($list)
+{
+    global $MOD9_PACK_POSSIBILITIES;
+    $cnt = 0;
+    $cur_size = 1;
+    $cur_len = 1;
+    $pack_list = array();
+    $list_string = "";
+    $continue_bits = 3;
+    foreach($list as $elt) {
+        $old_len = $cur_len;
+        while( $elt > $cur_size )
+        {
+            $cur_len++;
+            $cur_size = (1 << $cur_len) - 1;
+
+        }
+
+        if( $cnt < $MOD9_PACK_POSSIBILITIES[$cur_len] ) {
+            $pack_list[] = $elt;
+            $cnt++;
+        } else {
+            $list_string .= packListModified9($continue_bits, 
+                $MOD9_PACK_POSSIBILITIES[$old_len], $pack_list);
+            $continue_bits = 2;
+            $pack_list = array($elt);
+            $cur_size = 1;
+            $cur_len = 1;
+            $cnt = 1;
+            while( $elt > $cur_size )
+            {
+                $cur_size = (1 << $cur_len) - 1;
+                $cur_len++;
+            }
+        }
+    }
+    $continue_bits = ($continue_bits == 3) ? 0 : 1;
+    $list_string .= packListModified9($continue_bits, 
+        $MOD9_PACK_POSSIBILITIES[$cur_len], $pack_list);
+
+    return $list_string;
+}
+
+/**
+ * Packs the contents of a single word of a sequence being encoded
+ * using Modified9.
+ *
+ * @param int $continue_bits the high order 2 bits of the word
+ * @param int $cnt the number of element that will be packed in this word
+ * @param array $list a list of positive integers to pack into word
+ * @return string encoded 4 byte string
+ * @see encodeModified9
+ */
+function packListModified9($continue_bits, $cnt, $pack_list)
+{
+    global $MOD9_NUM_ELTS_CODES, $MOD9_NUM_BITS_CODES;
+
+    $out_int = 0;
+    $code = $MOD9_NUM_ELTS_CODES[$cnt];
+    $num_bits = $MOD9_NUM_BITS_CODES[$code];
+    foreach($pack_list as $elt) {
+        $out_int <<= $num_bits;
+        $out_int += $elt;
+    }
+    $out_string = packInt($out_int);
+
+    $out_string[0] = chr(($continue_bits << 6) + $code + ord($out_string[0]));
+    return $out_string;
+}
+
+/**
+ * Decoded a sequence of positive integers from a string that has been
+ * encoded using Modified 9
+ *
+ * @param string $int_string string to decode from
+ * @param int &$offset where to string in the string, after decode
+ *      points to where one was after decoding.
+ * @return array sequence of positive integers that were decoded
+ * @see encodeModified9
+ */
+function decodeModified9($input_string, &$offset)
+{
+    $flag_mask = 192;
+    $continue_threshold = 128;
+    $first_time = true;
+    $decode_list = array();
+    if(($len = strlen($input_string) ) < 4) return array();
+    do {
+        $int_string = substr($input_string, $offset, 4);
+        $ord_first = ord($int_string[0]);
+        $flag_bits = ($ord_first & $flag_mask);
+        if($first_time) {
+            if($flag_bits != 0 && $flag_bits != $flag_mask) {
+                return false;
+            }
+            $first_time = false;
+        }
+        $int_string[0] = chr($ord_first - $flag_bits);
+        $decode_list = array_merge($decode_list, 
+            unpackListModified9($int_string));
+        $offset += 4;
+        $len -= 4;
+    } while($flag_bits >= $continue_threshold);
+
+   return $decode_list;
+}
+
+/**
+ * Decoded a single word with high two bits off according to modified 9
+ *
+ * @param string $int_string 4 byte string to decode
+ * @return array sequence of integers that results from the decoding.
+ */
+function unpackListModified9($int_string) 
+{
+    global $MOD9_NUM_BITS_CODES, $MOD9_NUM_ELTS_DECODES;
+
+    $first_char = ord($int_string[0]);
+    foreach($MOD9_NUM_BITS_CODES as $code => $num_bits) {
+        if(($first_char & $code) == $code) break;
+    }
+    $mask = (2 << ($num_bits - 1)) - 1;
+    $num_elts = $MOD9_NUM_ELTS_DECODES[$code];
+    $int_string[0] = chr($first_char - $code);
+
+    $encoded_list = unpackInt($int_string);
+    $decoded_list = array();
+    for($i = 0; $i < $num_elts; $i++) {
+        if(($pre_elt = $encoded_list & $mask) == 0) break;
+        array_unshift($decoded_list, $pre_elt);
+        $encoded_list >>= $num_bits;
+    }
+
+    return $decoded_list;
+}
+
 
 /**
  * Unpacks an int from a 4 char string
@@ -146,6 +344,22 @@ function toHexString($str)
     $out = "";
     for($i = 0; $i < strlen($str); $i++) {
         $out .= dechex(ord($str[$i]))." ";
+    }
+    return $out;
+}
+
+/**
+ * Converts a string to string where each char has been replaced by its 
+ * binary equivalent
+ *
+ * @param string $str what we want rewritten in hex
+ * @return string the binary string
+ */
+function toBinString($str)
+{
+    $out = "";
+    for($i = 0; $i < strlen($str); $i++) {
+        $out .= substr(decbin(256+ord($str[$i])), 1)." ";
     }
     return $out;
 }
@@ -211,7 +425,7 @@ function crawlLog($msg, $lname = NULL)
  *  @param bool $raw whether to leave raw or base 64 encode
  *  @return string the hash of $string
  */
-function crawlHash($string, $raw=false) 
+function crawlHash($string, $raw = false) 
 {
     $pre_hash = md5($string, true);
 
@@ -221,9 +435,7 @@ function crawlHash($string, $raw=false)
     $combine = $right ^ $left;
 
     if(!$raw) {
-        $hash = rtrim(base64_encode($combine), "=");
-        $hash = str_replace("/", "_", $hash);
-        $hash = str_replace("+", "-" , $hash); 
+        $hash = base64Hash($combine);
             // common variant of base64 safe for urls and paths
     } else {
         $hash = $combine;
@@ -231,6 +443,41 @@ function crawlHash($string, $raw=false)
 
     return $hash; 
 }
+
+/**
+ * Converts a crawl hash number to something closer to base64 coded but
+ * so doesn't get confused in urls or DBs
+ *
+ *  @param string $string a hash to base64 encode
+ *  @return string the encoded hash 
+ */
+function base64Hash($string)
+{
+    $hash = rtrim(base64_encode($string), "=");
+    $hash = str_replace("/", "_", $hash);
+    $hash = str_replace("+", "-" , $hash); 
+
+    return $hash;
+}
+
+
+/**
+ * Decodes a crawl hash number from base64 to raw ASCII
+ *
+ *  @param string $base64 a hash to decode
+ *  @return string the decoded hash 
+ */
+function unbase64Hash($base64)
+{
+    //get rid of out modified base64 encoding
+    $hash = str_replace("_", "/", $base64);
+    $hash = str_replace("-", "+" , $hash);
+    $hash .= "=";
+    $raw = base64_decode($hash);
+
+    return $raw;
+}
+
 
 /**
  * The search engine project's variation on the Unix crypt function using the 
@@ -246,7 +493,7 @@ function crawlHash($string, $raw=false)
 function crawlCrypt($string, $salt = NULL)
 {
     if($salt == NULL) {
-        $salt = rand(10000,99999);
+        $salt = rand(10000, 99999);
     } else {
         $len = strlen($salt);
         $salt = substr($salt, $len - 5, 5);

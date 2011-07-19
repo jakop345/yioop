@@ -114,12 +114,37 @@ class PhraseParser
 
     /**
      * Extracts all phrases (sequences of adjacent words) from $string of 
+     * length less than or equal to $len.
+     *
+     * @param string $string subject to extract phrases from
+     * @param int $len longest length of phrases to consider
+     * @param string $lang locale tag for stemming
+     * @return array word => list of positions at which the word occurred in
+     *      the document
+     */
+    static function extractPhrasesInLists($string, 
+        $len =  MAX_PHRASE_LEN, $lang = NULL)
+    {
+        $phrase_lists = array();
+
+        for($i = 0; $i < $len; $i++) {
+            $phrases = self::extractPhrasesOfLength($string, $i, $lang);
+            $count = count($phrases);
+            for($j = 0; $j < $count; $j++) {
+                $phrase_lists[$phrases[$j]][] = $j;
+            }
+        }
+        return $phrase_lists;
+    }
+
+    /**
+     * Extracts all phrases (sequences of adjacent words) from $string of 
      * length exactly equal to $len.
      *
      * @param string $string subject to extract phrases from
      * @param int $len length of phrases to consider
      * @param string $lang locale tag for stemming
-     * @return array pairs of the form (phrase, number of occurrences)
+     * @return array of phrases
      */
     static function extractPhrasesOfLength($string, $phrase_len, $lang = NULL) 
     {
@@ -144,7 +169,7 @@ class PhraseParser
      * @param int $len length of phrases to consider
      * @param int $offset the first word to begin with
      * @param string $lang locale tag for stemming
-     * @return array pairs of the form (phrase, number of occurrences)
+     * @return array of phrases
      */
     static function extractPhrasesOfLengthOffset($string, 
         $phrase_len, $offset, $lang = NULL) 
@@ -182,4 +207,5 @@ class PhraseParser
         return $stems;
 
     }
+
 }

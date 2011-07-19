@@ -72,6 +72,11 @@ foreach(glob(BASE_DIR."/lib/processors/*_processor.php") as $filename) {
     require_once $filename;
 }
 
+/** get any indexing plugins */
+foreach(glob(BASE_DIR."/lib/indexing_plugins/*_plugin.php") as $filename) { 
+    require_once $filename;
+}
+
 /** Used to manipulate urls*/
 require_once BASE_DIR."/lib/url_parser.php";
 /** Used to extract summaries from web pages*/
@@ -142,6 +147,16 @@ class Fetcher implements CrawlConstants
      * @var array
      */
     var $page_processors;
+
+    /**
+     * An associative array of (page processor => array of
+     * indexing plugin name associated with the page processor). It is used
+     * to determine after a page is processed which plugins'
+     * pageProcessing($page, $url) method should be called
+     * @var array
+     */
+    var $plugin_processors;
+
     /**
      * Holds an array of word -> url patterns which are used to 
      * add meta words to the words that are extracted from any given doc
@@ -433,7 +448,8 @@ class Fetcher implements CrawlConstants
         if($can_schedule_again == true) {
             //only schedule to crawl again on fail sites without crawl-delay
             foreach($schedule_again_pages as $schedule_again_page) {
-                if($schedule_again_page[self::CRAWL_DELAY] == 0) {
+                if(isset($schedule_again_page[self::CRAWL_DELAY]) && 
+                    $schedule_again_page[self::CRAWL_DELAY] == 0) {
                     $this->to_crawl_again[] = 
                         array($schedule_again_page[self::URL], 
                             $schedule_again_page[self::WEIGHT],
@@ -591,6 +607,15 @@ class Fetcher implements CrawlConstants
         if(isset($info[self::META_WORDS])) {
             $this->meta_words = $info[self::META_WORDS];
         }
+        if(isset($info[self::INDEXING_PLUGINS])) {
+            foreach($info[self::INDEXING_PLUGINS] as $plugin) {
+                $plugin_name = $plugin."Plugin";
+                $processors = $plugin_name::getProcessors();
+                foreach($processors as $processor) {
+                    $this->plugin_processors[$processor][] = $plugin_name;
+                }
+            }
+        }
         if(isset($info[self::SITES])) {
             $this->to_crawl = array();
             while($tok !== false) {
@@ -740,7 +765,7 @@ class Fetcher implements CrawlConstants
         $PAGE_PROCESSORS = $this->page_processors;
 
         $start_time = microtime();
-
+     
         $stored_site_pages = array();
         $summarized_site_pages = array();
 
@@ -786,17 +811,15 @@ class Fetcher implements CrawlConstants
             } else {
                 continue;
             }
+            if(isset($this->plugin_processors[$page_processor])) {
+                $processor = new $page_processor(
+                    $this->plugin_processors[$page_processor]);
+            } else {
+                $processor = new $page_processor();
+            }
 
-            $processor = new $page_processor();
-
-            $doc_info = $processor->process($site[self::PAGE], 
+            $doc_info = $processor->handle($site[self::PAGE], 
                 $site[self::URL]);
-
-            $stored_fields = array(self::URL, self::HEADER, self::PAGE);
-            $summary_fields = array(self::IP_ADDRESSES, self::WEIGHT,
-                self::TIMESTAMP, self::TYPE, self::ENCODING, self::HTTP_CODE,
-                self::HASH, self::SERVER, self::SERVER_VERSION,
-                self::OPERATING_SYSTEM, self::MODIFIED, self::ROBOT_INSTANCE);
 
             if($doc_info) {
                 $site[self::DOC_INFO] =  $doc_info;
@@ -820,17 +843,8 @@ class Fetcher implements CrawlConstants
                     $site[self::ENCODING] = "UTF-8";
                 }
 
-                foreach($summary_fields as $field) {
-                    if(isset($site[$field])) {
-                        $stored_site_pages[$i][$field] = $site[$field];
-                        $summarized_site_pages[$i][$field] = $site[$field];
-                    }
-                }
-                foreach($stored_fields as $field) {
-                    if(isset($site[$field])) {
-                        $stored_site_pages[$i][$field] = $site[$field];
-                    }
-                }
+                $this->copySiteFields($i, $site, $summarized_site_pages, 
+                    $stored_site_pages);
 
                 $summarized_site_pages[$i][self::URL] = 
                     strip_tags($site[self::URL]);
@@ -855,6 +869,12 @@ class Fetcher implements CrawlConstants
                     $summarized_site_pages[$i][self::THUMB] = 
                         $site[self::DOC_INFO][self::THUMB];
                 }
+
+                if(isset($site[self::DOC_INFO][self::SUBDOCS])) {
+                    $this->processSubdocs($i, $site, $summarized_site_pages,
+                       $stored_site_pages);
+                }
+
                 $i++;
             }
         } // end for
@@ -872,11 +892,95 @@ class Fetcher implements CrawlConstants
                     $cache_page_partition;
             }
         }
-
         crawlLog("  Process pages time".(changeInMicrotime($start_time)));
 
         return $summarized_site_pages;
     }
+
+    /**
+     * Copies fields from the array of site data to the $i indexed 
+     * element of the $summarized_site_pages and $stored_site_pages array
+     *
+     * @param int &$i index to copy to
+     * @param array &$site web page info to copy
+     * @param array &$summarized_site_pages array of summaries of web pages
+     * @param array &$stored_site_pages array of cache info of web pages
+     */
+    function copySiteFields(&$i, &$site,
+        &$summarized_site_pages, &$stored_site_pages)
+    {
+        $stored_fields = array(self::URL, self::HEADER, self::PAGE);
+        $summary_fields = array(self::IP_ADDRESSES, self::WEIGHT,
+            self::TIMESTAMP, self::TYPE, self::ENCODING, self::HTTP_CODE,
+            self::HASH, self::SERVER, self::SERVER_VERSION,
+            self::OPERATING_SYSTEM, self::MODIFIED, self::ROBOT_INSTANCE);
+
+        foreach($summary_fields as $field) {
+            if(isset($site[$field])) {
+                $stored_site_pages[$i][$field] = $site[$field];
+                $summarized_site_pages[$i][$field] = $site[$field];
+            }
+        }
+        foreach($stored_fields as $field) {
+            if(isset($site[$field])) {
+                $stored_site_pages[$i][$field] = $site[$field];
+            }
+        }
+    }
+
+    /**
+     * The pageProcessing method of an IndexingPlugin generates 
+     * a self::SUBDOCS array of additional "micro-documents" that
+     * might have been in the page. This methods adds these
+     * documents to the summaried_size_pages and stored_site_pages
+     * arrays constructed during the execution of processFetchPages()
+     *
+     * @param int &$i index to begin adding subdocs at
+     * @param array &$site web page that subdocs were from and from 
+     *      which some subdoc summary info is copied
+     * @param array &$summarized_site_pages array of summaries of web pages
+     * @param array &$stored_site_pages array of cache info of web pages
+     */
+    function processSubdocs(&$i, &$site,
+        &$summarized_site_pages, &$stored_site_pages)
+    {
+        $subdocs = $site[self::DOC_INFO][self::SUBDOCS];
+        foreach($subdocs as $subdoc) {
+            $i++;
+            
+            $this->copySiteFields($i, $site, $summarized_site_pages, 
+                $stored_site_pages);
+
+            $summarized_site_pages[$i][self::URL] = 
+                strip_tags($site[self::URL]);
+
+            $summarized_site_pages[$i][self::TITLE] = 
+                strip_tags($subdoc[self::TITLE]); 
+
+            $summarized_site_pages[$i][self::DESCRIPTION] = 
+                strip_tags($subdoc[self::DESCRIPTION]);
+
+            if(isset($site[self::JUST_METAS])) {
+                $summarized_site_pages[$i][self::JUST_METAS] = true;
+            }
+            
+            if(isset($subdoc[self::LANG])) {
+                $summarized_site_pages[$i][self::LANG] = 
+                    $subdoc[self::LANG];
+            }
+
+            if(isset($subdoc[self::LINKS])) {
+                $summarized_site_pages[$i][self::LINKS] = 
+                    $subdoc[self::LINKS];
+            }
+
+            if(isset($subdoc[self::SUBDOCTYPE])) {
+                $summarized_site_pages[$i][self::SUBDOCTYPE] =
+                    $subdoc[self::SUBDOCTYPE];
+            }
+        }
+    }
+
 
     /**
      * Parses the contents of a robots.txt page extracting disallowed paths and
@@ -970,7 +1074,6 @@ class Fetcher implements CrawlConstants
 
         for($i = 0; $i < count($sites); $i++) {
             $site = $sites[$i];
-            
             if(isset($site[self::ROBOT_PATHS])) {
                 $host = UrlParser::getHost($site[self::URL]);
                 $this->found_sites[self::ROBOT_TXT][$host][self::PATHS] = 
@@ -1108,24 +1211,12 @@ class Fetcher implements CrawlConstants
         if(isset($this->found_sites[self::SEEN_URLS]) && 
             count($this->found_sites[self::SEEN_URLS]) > 0 ) {
             $hash_seen_urls = array();
-            $recent_urls = array();
-            $cnt = 0;
             foreach($this->found_sites[self::SEEN_URLS] as $site) {
                 $hash_seen_urls[] =
                     crawlHash($site[self::URL], true);
-                if(strpos($site[self::URL], "url|") !== 0) {
-                    array_push($recent_urls, $site[self::URL]);
-                    if($cnt >= NUM_RECENT_URLS_TO_DISPLAY)
-                    {
-                        array_shift($recent_urls);
-                    }
-                    $cnt++;
-                }
             }
             $schedule_data[self::HASH_SEEN_URLS] = & $hash_seen_urls;
             unset($hash_seen_urls);
-            $schedule_data[self::RECENT_URLS] = & $recent_urls;
-            unset($recent_urls);
         }
         if(!empty($schedule_data)) {
             if(isset($schedule_time)) {
@@ -1232,7 +1323,8 @@ class Fetcher implements CrawlConstants
             $site = $this->found_sites[self::SEEN_URLS][$i];
             if(!isset($site[self::HASH])) {continue; }
             $doc_keys = crawlHash($site[self::URL], true) . 
-                $site[self::HASH]. crawlHash("link:".$site[self::URL], true);
+                $site[self::HASH]."d". substr(crawlHash(
+                UrlParser::getHost($site[self::URL])."/",true), 1);
 
             $doc_rank = false;
             if($this->crawl_type == self::ARCHIVE_CRAWL && 
@@ -1242,7 +1334,7 @@ class Fetcher implements CrawlConstants
 
             $meta_ids = $this->calculateMetas($site);
 
-            $word_counts = array();
+            $word_lists = array();
             /* 
                 self::JUST_METAS check to avoid getting sitemaps in results for 
                 popular words
@@ -1256,8 +1348,8 @@ class Fetcher implements CrawlConstants
                     $lang = $site[self::LANG];
                 }
                 
-                $word_counts = 
-                    PhraseParser::extractPhrasesAndCount($phrase_string,
+                $word_lists = 
+                    PhraseParser::extractPhrasesInLists($phrase_string,
                         MAX_PHRASE_LEN, $lang);
             }
 
@@ -1270,7 +1362,7 @@ class Fetcher implements CrawlConstants
                 $link_weight = $weight/$num_links;
                 $link_rank = false;
                 if($doc_rank !== false) {
-                    $link_rank = max($doc_rank -1, 1);
+                    $link_rank = max($doc_rank - 1, 1);
                 }
             } else {
                 $link_weight = 0;
@@ -1278,18 +1370,24 @@ class Fetcher implements CrawlConstants
             }
             $had_links = false;
 
-            $link_shard = new IndexShard("link_shard");
             foreach($site[self::LINKS] as $url => $link_text) {
                 $link_meta_ids = array();
                 if(strlen($url) > 0) {
                     $summary = array();
+                    $elink_flag = (UrlParser::getHost($url) != 
+                        UrlParser::getHost($site[self::URL])) ? true : false;
                     $had_links = true;
                     $link_text = strip_tags($link_text);
+                    $ref = ($elink_flag) ? "eref" : "iref";
                     $link_id = 
-                        "url|".$url."|text|$link_text|ref|".$site[self::URL];
+                        "url|".$url."|text|$link_text|$ref|".$site[self::URL];
+                    $elink_flag_string = ($elink_flag) ? "e" :
+                        "i";
                     $link_keys = crawlHash($url, true) .
                         crawlHash($link_id, true) . 
-                        crawlHash("info:".$url, "true");
+                        $elink_flag_string.
+                        substr(crawlHash(
+                            UrlParser::getHost($site[self::URL])."/", true), 1);
                     $summary[self::URL] =  $link_id;
                     $summary[self::TITLE] = $url; 
                         // stripping html to be on the safe side
@@ -1308,21 +1406,22 @@ class Fetcher implements CrawlConstants
                     }
                     $link_text = 
                         mb_ereg_replace(PUNCT, " ", $link_text);
-                    $link_word_counts = 
-                        PhraseParser::extractPhrasesAndCount($link_text,
+                    $link_word_lists = 
+                        PhraseParser::extractPhrasesInLists($link_text,
                             MAX_PHRASE_LEN, $lang);
-                    $link_shard->addDocumentWords($link_keys, 
+                    $index_shard->addDocumentWords($link_keys, 
                         self::NEEDS_OFFSET_FLAG, 
-                        $link_word_counts, $link_meta_ids, false, $link_rank);
+                        $link_word_lists, $link_meta_ids, false, $link_rank);
 
                     $meta_ids[] = 'link:'.$url;
+                    $meta_ids[] = 'link:'.crawlHash($url);
+
                 }
 
             }
-            $index_shard->addDocumentWords($doc_keys, self::NEEDS_OFFSET_FLAG, 
-                $word_counts, $meta_ids, true, $doc_rank);
 
-            $index_shard->appendIndexShard($link_shard);
+            $index_shard->addDocumentWords($doc_keys, self::NEEDS_OFFSET_FLAG, 
+                $word_lists, $meta_ids, true, $doc_rank);
 
         }
 
@@ -1331,7 +1430,6 @@ class Fetcher implements CrawlConstants
         if($this->crawl_type == self::ARCHIVE_CRAWL) {
             $this->recrawl_check_scheduler = true;
         }
-
         crawlLog("  Build mini inverted index time ".
             (changeInMicrotime($start_time)));
     }
@@ -1364,6 +1462,8 @@ class Fetcher implements CrawlConstants
             }
         }
         $meta_ids[] = 'info:'.$site[self::URL];
+        $meta_ids[] = 'info:'.crawlHash($site[self::URL]);
+
         foreach($site[self::IP_ADDRESSES] as $address) {
             $meta_ids[] = 'ip:'.$address;
         }
@@ -1404,6 +1504,12 @@ class Fetcher implements CrawlConstants
                 $meta_ids[] = 'lang:'.$site[self::LANG];
             }
         }
+        
+        //Added by Priya Gangaraju
+        if(isset($site[self::SUBDOCTYPE])){
+            $meta_ids[] = $site[self::SUBDOCTYPE].':all';
+        }
+        
         // handles user added meta words
         if(isset($this->meta_words)) {
             $matches = array();

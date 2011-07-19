@@ -66,7 +66,7 @@ class RssProcessor extends TextProcessor
      *  @return array  a summary of the contents of the page
      *
      */
-    public static function process($page, $url)
+    function process($page, $url)
     {
         $summary = NULL;
         if(is_string($page)) {

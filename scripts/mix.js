@@ -198,9 +198,25 @@ function drawCrawl(i, j, ts, name, weight, keywords)
         "][COMPONENTS]["+j+"][CRAWL_TIMESTAMP]\"' value=\""+ts+"\" />"+
         "<input title=\""+tl['editmix_add_query']+"\" "+
         "name=\"mix[GROUPS]["+i+"][COMPONENTS]["+j+"][KEYWORDS]\" "+
-        "value=\""+ keywords+"\" class=\"widefield\"/></td><td><a href=\""+
+        "value=\""+ keywords+"\" onchange=\"updateKeywords("+i+","+j+
+        ", this.value)\""+
+        "class=\"widefield\"/></td><td><a href=\""+
         "javascript:removeCrawl("+i+", "+j+");\">"+
         tl['editmix_element_delete']+"</a></td>";
+}
+
+/*
+ * Used to update the keywords of a crawl in the groups array whenever it is
+ * changed in the form.
+ *
+ * @param int i group to update keywords in
+ * @param int j crawl within group to update
+ * @param String keywords the new keywords
+ */
+function updateKeywords(i, j, keywords)
+{
+    groups[i]['components'][j][3] = keywords;
+
 }
 
 /*

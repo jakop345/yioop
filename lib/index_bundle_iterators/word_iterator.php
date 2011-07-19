@@ -48,7 +48,7 @@ require_once BASE_DIR.'/lib/index_bundle_iterators/index_bundle_iterator.php';
  *
  * @author Chris Pollett
  * @package seek_quarry
- * @subpackage library
+ * @subpackage iterator
  * @see IndexArchiveBundle
  */
 class WordIterator extends IndexBundleIterator
@@ -71,25 +71,26 @@ class WordIterator extends IndexBundleIterator
     var $next_offset;
 
     /**
-     * 
+     * An array of shard generation and posting list offsets, lengths, and
+     * numbers of documents
      * @var array
      */
     var $dictionary_info;
 
     /**
-     * 
+     * The total number of shards that have data for this word
      * @var int
      */
     var $num_generations;
 
     /**
-     * 
+     * Index into dictionary_info corresponding to the current shard
      * @var int
      */
     var $generation_pointer;
 
     /**
-     * The current byte offset in the IndexShard
+     * Numeric number of current shard
      * @var int
      */
     var $current_generation;
@@ -142,6 +143,7 @@ class WordIterator extends IndexBundleIterator
 
         }
         $this->word_key = $word_key;
+
         $this->index =  $index;
         $this->current_block_fresh = false;
         $this->dictionary_info = 
@@ -231,6 +233,7 @@ class WordIterator extends IndexBundleIterator
         $results = $shard->getPostingsSlice(
             $this->start_offset,
             $this->next_offset, $this->last_offset, $this->results_per_block);
+
         $this->count_block = count($results);
         return $results;
     }
@@ -250,10 +253,12 @@ class WordIterator extends IndexBundleIterator
             $this->current_offset = $this->next_offset;
         } else {
             $this->advanceGeneration();
+            $this->next_offset = $this->current_offset;
         }
         
         if($this->current_offset > $this->last_offset) {
             $this->advanceGeneration();
+            $this->next_offset = $this->current_offset;
         }
         if($gen_doc_offset !== null) {
             $last_current_generation = -1;
@@ -263,16 +268,16 @@ class WordIterator extends IndexBundleIterator
                 $last_current_generation = $this->current_generation;
                 $this->next_offset = $this->current_offset;
             }
-
             $this->index->setCurrentShard($this->current_generation, true);
-
-            $this->current_offset =
-                $this->index->getCurrentShard(
-                    )->nextPostingOffsetDocOffset($this->next_offset,
-                        $this->last_offset, $gen_doc_offset[1]);
-            if($this->current_offset === false) {
-                $this->current_offset = $this->last_offset + 1;
-                $this->advanceGeneration();
+            if($this->current_generation == $gen_doc_offset[0]) {
+                $this->current_offset =
+                    $this->index->getCurrentShard(
+                        )->nextPostingOffsetDocOffset($this->next_offset,
+                            $this->last_offset, $gen_doc_offset[1]);
+                if($this->current_offset === false) {
+                    $this->advanceGeneration();
+                    $this->next_offset = $this->current_offset;
+                }
             }
             $this->seen_docs = 
                 ($this->current_offset - $this->start_offset)/

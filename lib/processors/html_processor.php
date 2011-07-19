@@ -54,34 +54,33 @@ class HtmlProcessor extends TextProcessor
 {
     const MAX_DESCRIPTION_LEN = 2000;
 
-
     /**
      *  Used to extract the title, description and links from
      *  a string consisting of webpage data.
      *
-     *  @param string $page   web-page contents
-     *  @param string $url   the url where the page contents came from,
+     *  @param string $page web-page contents
+     *  @param string $url the url where the page contents came from,
      *     used to canonicalize relative links
      *
      *  @return array  a summary of the contents of the page
      *
      */
-    public static function process($page, $url)
+    function process($page, $url)
     {
         $summary = NULL;
 
         if(is_string($page)) {
-
             $page = preg_replace('@<script[^>]*?>.*?</script>@si', ' ', $page);
             $page = preg_replace('/>/', '> ', $page);
             $dom = self::dom($page);
             if($dom !== false && self::checkMetaRobots($dom)) {
                 $summary[self::TITLE] = self::title($dom);
-                $summary[self::DESCRIPTION] = self::description($dom);
+                $summary[self::DESCRIPTION] = self::description($dom); 
                 $summary[self::LANG] = self::lang($dom, 
                     $summary[self::DESCRIPTION]);
                 $summary[self::LINKS] = self::links($dom, $url);
                 $summary[self::PAGE] = $page;
+
                 if(strlen($summary[self::DESCRIPTION] . $summary[self::TITLE])
                     == 0 && count($summary[self::LINKS]) == 0) {
                     //maybe not html? treat as text still try to get urls
@@ -232,7 +231,7 @@ class HtmlProcessor extends TextProcessor
         $page_parts = array("/html//h1", "/html//h2", "/html//h3",
             "/html//h4", "/html//h5", "/html//h6", "/html//p[1]",
             "/html//div[1]", "/html//p[2]", "/html//div[2]", 
-            "/html//td");
+            "/html//td", "/html//li", "/html//a");
         foreach($page_parts as $part) {
             $doc_nodes = $xpath->evaluate($part);
             foreach($doc_nodes as $node) {

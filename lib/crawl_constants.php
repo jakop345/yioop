@@ -154,7 +154,13 @@ interface CrawlConstants
     const LANG = 'bg';
     const ROBOT_INSTANCE = 'bh';
     const DOC_LEN = 'bi';
-
+    const SUBDOCS = 'bj';
+    const SUBDOCTYPE = 'bk';
+    const INDEXING_PLUGINS = 'bl';
+    const DOMAIN_WEIGHTS = 'bm';
+    const POSITION_LIST = 'bn';
+    const PROXIMITY = 'bo';
+    
     const NEEDS_OFFSET_FLAG = 0x7FFFFFFF;
 
 } 

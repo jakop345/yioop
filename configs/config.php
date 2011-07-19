@@ -185,7 +185,7 @@ define('MIN_QUEUE_WEIGHT', 1/100000);
 define('NUM_ARCHIVE_PARTITIONS', 10);
 
 /** number of documents before next gen */
-define('NUM_DOCS_PER_GENERATION', 50000);
+define('NUM_DOCS_PER_GENERATION', 75000);
 
 /** precision to round floating points document scores */
 define('PRECISION', 10); 
@@ -289,6 +289,25 @@ $PAGE_PROCESSORS = array(   "text/html" => "HtmlProcessor",
                             "image/svg+xml"=> "SvgProcessor"
 );
 
+$INDEXING_PLUGINS = array("recipe");
+
+$MOD9_PACK_POSSIBILITIES = array(
+    0, 24, 12, 7, 6, 5, 4, 3, 3, 3, 2, 2, 2, 2,
+    2,  1,  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1);
+
+$MOD9_NUM_ELTS_CODES = array( 
+    24 => 63, 12 => 62, 7 => 60, 6 => 56, 5 => 52, 4 => 48, 3 => 32,
+    2 => 16, 1 => 0);
+
+$MOD9_NUM_BITS_CODES = array( 63 => 1, 62 => 2, 60 => 3, 56 => 4, 52 => 5,
+    48 => 6, 32 => 9, 16 => 14, 0 => 28);
+
+$MOD9_NUM_ELTS_DECODES = array( 
+    63 => 24, 62 => 12, 60=> 7, 56 => 6, 52 => 5, 48 => 4, 32 => 3,
+    16 => 2, 0 => 1);
+
+
 /** Characters we view as not part of words, not same as POSIX [:punct:]*/
 define ('PUNCT', "\.|\,|\:|\;|\"|\'|\`|\[|\]|\{|\}|\(|\)|\!|\||\&");
 
@@ -310,7 +329,7 @@ define ('MINIMUM_FETCH_LOOP_TIME', 5);
 
 /** Max time before dirty index (queue_server) and 
     filters (fetcher) will be force saved in seconds*/
-define('FORCE_SAVE_TIME', 600);
+define('FORCE_SAVE_TIME', 1200);
 
 /** default number of search results to display per page */
 define ('NUM_RESULTS_PER_PAGE', 10); 

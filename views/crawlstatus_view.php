@@ -61,13 +61,32 @@ class CrawlstatusView extends View
         <h2><?php e(tl('crawlstatus_view_currently_processing')); ?></h2>
         <p><b><?php e(tl('crawlstatus_view_description')); ?></b> <?php
         if(isset($data['DESCRIPTION'])) {
-            e($data['DESCRIPTION']);
-            ?>&nbsp;&nbsp;
-            <button class="buttonbox" type="button"
-                onclick="javascript:document.location = '<?php
-                e($base_url); ?>stop'" ><?php
-                e(tl('managecrawls_element_stop_crawl'))?></button>
-            <?php
+            switch($data['DESCRIPTION'])
+            {
+                case 'BEGIN_CRAWL':
+                    e(tl('crawlstatus_view_starting_crawl'));?>&nbsp;&nbsp;
+                <button class="buttonbox" type="button"
+                    onclick="javascript:document.location = '<?php
+                    e($base_url); ?>stop'" ><?php
+                    e(tl('managecrawls_element_stop_crawl'))?></button>
+                <?php
+                break;
+                case 'SHUTDOWN_DICTIONARY':
+                    e(tl('crawlstatus_view_closing_dict'));
+                break;
+                case 'SHUTDOWN_RUNPLUGINS':
+                    e(tl('crawlstatus_view_run_plugins'));
+                break;
+                default:
+                    e($data['DESCRIPTION']);
+                ?>&nbsp;&nbsp;
+                <button class="buttonbox" type="button"
+                    onclick="javascript:document.location = '<?php
+                    e($base_url); ?>stop'" ><?php
+                    e(tl('managecrawls_element_stop_crawl'))?></button>
+                <?php
+            }
+
         } else {
             e(tl('crawlstatus_view_no_description'));
         }

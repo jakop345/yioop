@@ -37,7 +37,9 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * logging is done during crawl not through web, 
  * so it will not be used in the phrase model 
  */
-define("LOG_TO_FILES", false); 
+if(!defined("POST_PROCESSING")) {
+    define("LOG_TO_FILES", false);
+} 
 /** For crawlHash function */
 require_once BASE_DIR."/lib/utility.php"; 
 /** 
@@ -70,6 +72,20 @@ class PhraseModel extends Model
      *  @var string
      */
     var $index_name;
+
+    /** an associative array of additional meta words and 
+     * the max description length of results if such a meta word is used
+     * this array is typically set in index.php
+     *
+     *  @var array
+     */
+    var $additional_meta_words;
+
+    /**
+     * Used to hold query statistics about the current query
+     * @var array
+     */
+    var $query_info;
 
     /**
      * Number of pages to cache in one go in memcache
@@ -179,6 +195,17 @@ class PhraseModel extends Model
         $input_phrase, $low = 0, $results_per_page = NUM_RESULTS_PER_PAGE, 
         $format = true)
     {
+        if(QUERY_STATISTICS) {
+            $indent= "&nbsp;&nbsp;";
+            $in2 = $indent . $indent; 
+            $in3 = $in2 . $indent;
+            $prs_cnt = 0;
+            $dis_cnt = 0;
+            $this->query_info = array();
+            $this->query_info['QUERY'] = 
+                "<b>PHRASE QUERY</b>: ".$input_phrase."<br />";
+            $start_time = microtime();
+        }
         $results = NULL;
         $word_structs = array();
         /* 
@@ -192,6 +219,7 @@ class PhraseModel extends Model
         $presentation_parts = preg_split('/#(\d)+#/', 
             $input_phrase, -1, PREG_SPLIT_DELIM_CAPTURE);
         $count = 0;
+
         $presentation_parts = array_chunk($presentation_parts, 2);
 
         $num_parts = count($presentation_parts);
@@ -215,9 +243,16 @@ class PhraseModel extends Model
         }
 
         $results_high = $low + $results_per_page;
+        $num_last_parts = count($query_parts[$last_part]);
+        if($query_parts[$last_part][$num_last_parts - 1][0] + 
+            $query_parts[$last_part][$num_last_parts - 1][1] < $low) {
+            $query_parts[$last_part][$num_last_parts - 1][1] = $results_high;
+        }
+
         $num_phrases = count($query_parts);
 
         foreach($query_parts as $phrase => $pre_result_bounds) {
+
             $phrase_high = $pre_result_bounds[0][1];
             $result_bounds = array();
             $start_flag = false;
@@ -227,6 +262,7 @@ class PhraseModel extends Model
                 if($bound[0] > $results_high) break;
                 //rest of presentation after what we'll return so break
                 $phrase_high =  $bound[0] + $bound[1];
+
                 if($phrase_high < $low) continue;
                 // this part of presentation is before what we'll return so skip
                 $result_bounds[] = $bound;
@@ -244,12 +280,34 @@ class PhraseModel extends Model
                 $low;
             $disjunct_phrases = explode("|", $phrase);
             $word_structs = array();
+            if(QUERY_STATISTICS) {
+                $this->query_info['QUERY'] .= $indent . 
+                    "<b>Presentation $prs_cnt:</b><br />";
+                $this->query_info['QUERY'] .= "$in2<i>Low</i>:".
+                    $result_bounds[0][0]."<br />";
+                $this->query_info['QUERY'] .= $in2 . 
+                    "<i>High</i>: ".$result_bounds[0][1]."<br />";
+                $prs_cnt++;
+            }
+
             foreach($disjunct_phrases as $disjunct) {
+                if(QUERY_STATISTICS) {
+
+                    $this->query_info['QUERY'] .= "$in2<b>Disjunct $dis_cnt:"
+                        . "</b><br />";
+                    $dis_cnt++;
+                }
                 list($word_struct, $format_words) = 
                     $this->parseWordStructConjunctiveQuery($disjunct);
                 if($word_struct != NULL) {
                     $word_structs[] = $word_struct;
                 }
+            }
+            if(QUERY_STATISTICS) { 
+                $this->query_info['QUERY'] .= 
+                    "$in2<b>Presentation Parse time</b>: " .
+                    changeInMicrotime($start_time)."<br />";
+                $summaries_time = microtime();
             }
             $out_results = $this->getSummariesByHash($word_structs, 
                 $low, $phrase_num);
@@ -272,10 +330,16 @@ class PhraseModel extends Model
                     $total_rows = $out_results['TOTAL_ROWS'];
                 }
             }
+            if(QUERY_STATISTICS) { 
+                $this->query_info['QUERY'] .= "$in2<b>Get Summaries time</b>: ".
+                    changeInMicrotime($summaries_time)."<br />";
+                $format_time = microtime();
+            }
         }
 
         if(isset($results['PAGES'])){
             ksort($results['PAGES']);
+            $results["PAGES"] = array_values($results["PAGES"]);
         }
         if(count($results) == 0) {
             $results = NULL;
@@ -298,8 +362,27 @@ class PhraseModel extends Model
             $format_words = NULL;
         }
 
-        $output = $this->formatPageResults($results, $format_words);
+        $description_length = self::DEFAULT_DESCRIPTION_LENGTH;
+        if(isset($this->additional_meta_words) && 
+            is_array($this->additional_meta_words)) {
+            foreach($this->additional_meta_words as $meta_word => $length){
+                $pattern = "/$meta_word/";
+                if(preg_match($pattern, $input_phrase)) {
+                    $description_length = $length;
+                    break; // only match the first found
+                }
+            }
+        }
+        $output = $this->formatPageResults($results, $format_words, 
+            $description_length);
 
+        if(QUERY_STATISTICS) { 
+            $this->query_info['QUERY'] .= "<b>Format time</b>: ".
+                changeInMicrotime($format_time)."<br />";
+            $this->query_info['ELAPSED_TIME'] = changeInMicrotime($start_time);
+            $this->db->total_time += $this->query_info['ELAPSED_TIME'];
+            $this->db->query_log[] = $this->query_info;
+        }
         return $output;
 
     }
@@ -355,12 +438,20 @@ class PhraseModel extends Model
      */
     function parseWordStructConjunctiveQuery($phrase)
     {
+        $indent= "&nbsp;&nbsp;";
+        $in2 = $indent . $indent;
+        $in3 = $in2 . $indent;
+        $in4 = $in2. $in2;
         $phrase = " ".$phrase;
         $phrase_string = $phrase;
         $meta_words = array('link:', 'site:', 'version:', 'modified:',
             'filetype:', 'info:', '\-', 'os:', 'server:', 'date:',
             'index:', 'i:', 'ip:', 'weight:', 'w:', 'u:',
-            'lang:', 'media:');
+            'lang:', 'media:', 'elink:');
+        if(isset($this->additional_meta_words)) {
+            $meta_words = array_merge($meta_words, array_keys(
+                $this->additional_meta_words));
+        }
         $index_name = $this->index_name;
         $weight = 1;
         $found_metas = array();
@@ -370,7 +461,7 @@ class PhraseModel extends Model
             preg_match_all($pattern, $phrase, $matches);
             if(!in_array($meta_word, array('i:', 'index:', 'w:', 
             'weight:', '\-') )) {
-                $matches = array_map("mb_strtolower", $matches[2]);
+                $matches = $matches[2];
                 $found_metas = array_merge($found_metas, $matches);
             } else if($meta_word == '\-') {
                 if(count($matches[0]) > 0) {
@@ -390,7 +481,6 @@ class PhraseModel extends Model
             }
             $phrase_string = preg_replace($pattern,"", $phrase_string);
         }
-
         $index_archive_name = self::index_data_base_name . $index_name;
         $index_archive = new IndexArchiveBundle(
             CRAWL_DIR.'/cache/'.$index_archive_name);
@@ -402,11 +492,25 @@ class PhraseModel extends Model
             results by bolding either
          */
         $query_words = explode(" ", $phrase_string); //not stemmed
+
         $base_words = 
             array_keys(PhraseParser::extractPhrasesAndCount($phrase_string,
-            MAX_PHRASE_LEN, getLocaleTag()));
-            //stemmed
+            MAX_PHRASE_LEN, getLocaleTag())); //stemmed
         $words = array_merge($base_words, $found_metas);
+        if(QUERY_STATISTICS) {
+            $this->query_info['QUERY'] .= "$in3<i>Index</i>: ".
+                $index_archive_name."<br />";
+            $this->query_info['QUERY'] .= "$in3<i>LocaleTag</i>: ".
+                getLocaleTag()."<br />";
+            $this->query_info['QUERY'] .= "$in3<i>Stemmed Words</i>:<br />";
+            foreach($base_words as $word){
+                $this->query_info['QUERY'] .= "$in4$word<br />";
+            }
+            $this->query_info['QUERY'] .= "$in3<i>Meta Words</i>:<br />";
+            foreach($found_metas as $word){
+                $this->query_info['QUERY'] .= "$in4$word<br />";
+            }
+        }
         if(isset($words) && count($words) == 1 && 
             count($disallow_phrases) < 1) {
             $phrase_string = $words[0];
@@ -533,9 +637,9 @@ class PhraseModel extends Model
         $start_slice = floor(($limit)/self::NUM_CACHE_PAGES) *
             self::NUM_CACHE_PAGES;
         if(USE_MEMCACHE) {
-            $tmp = "";
+            $mem_tmp = "";
             foreach($word_structs as $word_struct) {
-                $tmp .= serialize($word_struct["KEYS"]).
+                $mem_tmp .= serialize($word_struct["KEYS"]).
                     serialize($word_struct["RESTRICT_PHRASES"]) .
                     serialize($word_struct["DISALLOW_PHRASES"]) .
                     $word_struct["WEIGHT"] .
@@ -546,7 +650,7 @@ class PhraseModel extends Model
             $results = array();
             $results['PAGES'] = array();
             for($i=$start_slice; $i< $to_retrieve; $i+=self::NUM_CACHE_PAGES){
-                $summary_hash = crawlHash($tmp.":".$i);
+                $summary_hash = crawlHash($mem_tmp.":".$i);
                 $slice = $MEMCACHE->get($summary_hash);
                 if($slice === false) {
                     $cache_success = false;
@@ -571,6 +675,9 @@ class PhraseModel extends Model
             $num_retrieved < $to_retrieve) {
             foreach($next_docs as $doc_key => $doc_info) {
                 $summary = & $doc_info[CrawlConstants::SUMMARY];
+                $tmp = unserialize($query_iterator->getIndex(
+                    $doc_key)->description);
+                $doc_info[self::CRAWL_TIME] = $tmp[self::CRAWL_TIME];
                 unset($doc_info[CrawlConstants::SUMMARY]);
                 if(is_array($summary)) {
                     $pages[] = array_merge($doc_info, $summary);
@@ -597,7 +704,7 @@ class PhraseModel extends Model
                 unset($pages[$i][self::LINKS]);
             }
             for($i = 0;$i < $to_retrieve;$i+=self::NUM_CACHE_PAGES){
-                $summary_hash = crawlHash($tmp.":".$i);
+                $summary_hash = crawlHash($mem_tmp.":".$i);
                 $slice['PAGES'] = array_slice($pages, $i, 
                     self::NUM_CACHE_PAGES);
                 $slice['TOTAL_ROWS'] = $results['TOTAL_ROWS'];
@@ -632,6 +739,7 @@ class PhraseModel extends Model
     function getQueryIterator($word_structs)
     {
         $iterators = array();
+        $total_iterators = 0;
         foreach($word_structs as $word_struct) {
             if(!is_array($word_struct)) { continue;}
             $word_keys = $word_struct["KEYS"];
@@ -641,6 +749,7 @@ class PhraseModel extends Model
 
             $weight = $word_struct["WEIGHT"];
             $num_word_keys = count($word_keys);
+            $total_iterators += $num_word_keys;
             $word_iterators = array();
             if($num_word_keys < 1) {continue;}
 
@@ -672,7 +781,7 @@ class PhraseModel extends Model
             $union_iterator = new UnionIterator($iterators);
         }
 
-        $group_iterator = new GroupIterator($union_iterator);
+        $group_iterator = new GroupIterator($union_iterator, $total_iterators);
 
         return $group_iterator;
     }

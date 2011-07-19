@@ -46,7 +46,7 @@ define("SCORE_PRECISION", 4);
 
 define("TITLE_LENGTH", 20);
 define("MAX_TITLE_LENGTH", 20);
-define("DESCRIPTION_LENGTH", 200);
+
 define("SNIPPET_LENGTH_LEFT", 40);
 define("SNIPPET_LENGTH_RIGHT", 30);
 define("MIN_SNIPPET_LENGTH", 50);
@@ -65,6 +65,11 @@ define("MIN_SNIPPET_LENGTH", 50);
  */
 class Model implements CrawlConstants
 {
+
+    /**
+     * Default maximum character length of a search summary
+     */
+    const DEFAULT_DESCRIPTION_LENGTH = 200;
 
     /** Reference to a DatasourceManager
      *  @var object
@@ -101,11 +106,13 @@ class Model implements CrawlConstants
      * @param array $results web pages summaries (these in turn are 
      *      arrays!)
      * @param array $words keywords (typically what was searched on)
+     * @param int $description_length length of the description
      * @return array summaries which have been snippified and bold faced
      */
-    function formatPageResults($results, $words = NULL)
+    function formatPageResults($results, $words = NULL, $description_length =
+        self::DEFAULT_DESCRIPTION_LENGTH)
     {
-        if(isset($results['PAGES'])) {
+            if(isset($results['PAGES'])) {
             $pages = $results['PAGES'];
             $num_pages = count($pages);
         } else {
@@ -146,17 +153,18 @@ class Model implements CrawlConstants
                     $this->boldKeywords($page[self::TITLE], $words);
                 $page[self::DESCRIPTION] = 
                     substr(strip_tags(
-                        $page[self::DESCRIPTION]), 0, DESCRIPTION_LENGTH);
+                        $page[self::DESCRIPTION]), 0, $description_length);
 
                 $page[self::DESCRIPTION] = 
-                    $this->getSnippets($page[self::DESCRIPTION], $words);
+                    $this->getSnippets($page[self::DESCRIPTION], $words,
+                        $description_length);
                 $page[self::DESCRIPTION] = 
                     $this->boldKeywords($page[self::DESCRIPTION], $words);
 
             } else {
                 $page[self::DESCRIPTION] = 
                     substr(strip_tags(
-                        $page[self::DESCRIPTION]), 0, DESCRIPTION_LENGTH);
+                        $page[self::DESCRIPTION]), 0, $description_length);
             }
 
             $page[self::SCORE] = substr($page[self::SCORE], 0, SCORE_PRECISION);
@@ -184,7 +192,7 @@ class Model implements CrawlConstants
      *  @param array $words keywords used to make look in haystack
      *  @return string a concatenation of the extracted snippets of each word
      */
-    function getSnippets($text, $words)
+    function getSnippets($text, $words, $description_length)
     {
         $snippet_string = "";
         $ellipsis = "";
@@ -220,13 +228,13 @@ class Model implements CrawlConstants
                     $high = $pre_high;
                 }
 
-                if( strlen($snippet_string)  < DESCRIPTION_LENGTH) {
+                if( strlen($snippet_string)  < $description_length) {
                     $snippet_string .= 
                         $ellipsis.mb_substr($text, $low, $high - $low);
                     $ellipsis = "...";
                 }
             }
-        } while(strlen($snippet_string) < DESCRIPTION_LENGTH && $offset < $len);
+        } while(strlen($snippet_string) < $description_length && $offset < $len);
 
         if(strlen($snippet_string) < MIN_SNIPPET_LENGTH) {
             $snippet_string = $text;
