@@ -328,7 +328,7 @@ define ('MINIMUM_FETCH_LOOP_TIME', 5);
 
 /** Max time before dirty index (queue_server) and 
     filters (fetcher) will be force saved in seconds*/
-define('FORCE_SAVE_TIME', 1200);
+define('FORCE_SAVE_TIME', 3600);
 
 /** default number of search results to display per page */
 define ('NUM_RESULTS_PER_PAGE', 10); 
