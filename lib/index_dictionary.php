@@ -70,6 +70,7 @@ class IndexDictionary implements CrawlConstants
      */
     var $dir_name;
 
+    var $hash_name;
     /**
      * Array of file handle for files in the dictionary. Members are used
      * to read files to look up words.
@@ -140,7 +141,7 @@ class IndexDictionary implements CrawlConstants
     function __construct($dir_name)
     {
         $this->dir_name = $dir_name;
-
+        $this->hash_name = crawlHash($dir_name);
         if(!is_dir($this->dir_name)) {
             mkdir($this->dir_name);
             for($i = 0; $i < self::NUM_PREFIX_LETTERS; $i++) {
@@ -459,7 +460,7 @@ class IndexDictionary implements CrawlConstants
      *      generation, first offset, last offset, count or
      *      just a string of the word_info data if $extract is false 
      */
-    function getWordInfo($word_id, $raw = false, $extract = true,
+     function getWordInfo($word_id, $raw = false, $extract = true,
         $num_entries = -1) {
         if($raw == false) {
             //get rid of out modified base64 encoding
@@ -512,54 +513,56 @@ class IndexDictionary implements CrawlConstants
         if(!$found) {
             return false;
         }
-        //find first record with word id (linear search but probably not many)
-        $test_loc = $check_loc;
+        //now extract the info
+        $word_string = substr($word_string, IndexShard::WORD_KEY_LEN);
+        if($extract) {
+            $info = array();
+            $info[0]=IndexShard::getWordInfoFromString($word_string, true);
+        } else {
+            $info = $word_string;
+        }
+        //up to first record with word id 
+        $test_loc = $check_loc - 1;
         $start_loc = $check_loc;
 
-        do {
+        while ($test_loc >= $low) {
             $word_string = $this->getDictSubstring($file_num, $start + 
                 $test_loc * $word_item_len, $word_item_len);
             if($word_string == "" ) break;
             $id = substr($word_string, 0, IndexShard::WORD_KEY_LEN);
             if(strcmp($word_id, $id) != 0 ) break;
             $start_loc = $test_loc;
-            $test_loc -= 1;
-        } while ($test_loc >=$low);
-
-        if($num_entries < 1) {
-            //find last record with word id (linear search but probably not many)
-            $test_loc = $check_loc;
-            $end_loc = $check_loc;
-            do {
-                $word_string = $this->getDictSubstring($file_num, $start + 
-                    $test_loc * $word_item_len, $word_item_len);
-                if($word_string == "" ) break;
-                $id = substr($word_string, 0, IndexShard::WORD_KEY_LEN);
-                if(strcmp($word_id, $id) != 0 ) break;
-                $end_loc = $test_loc;
-                $test_loc += 1;
-            } while ($test_loc <= $high);
-        } else {
-            $end_loc = $start_loc + ($num_entries - 1);
-        }
-        //now extract the info from the range of results we got
-        if($extract) {
-            $info = array();
-        } else {
-            $info = "";
-        }
-
-        for($i = $start_loc; $i <=$end_loc; $i++) {
-            $word_string = substr($this->getDictSubstring($file_num, $start + 
-                $i * $word_item_len, $word_item_len), IndexShard::WORD_KEY_LEN);
+            $test_loc--;
+            $ws = substr($word_string, IndexShard::WORD_KEY_LEN);
             if($extract) {
-                $tmp = IndexShard::getWordInfoFromString($word_string, true);
-                array_unshift($info, $tmp);
+                $tmp = IndexShard::getWordInfoFromString($ws, true);
+                array_push($info, $tmp);
             } else {
-                $info .= $word_string;
+                $info = $ws . $info;
             }
         }
+        //until last record with word id 
 
+        $test_loc = $check_loc + 1;
+
+        if($num_entries > 0) {
+            $high = $start_loc + ($num_entries - 1);
+        }
+        while ($test_loc <= $high) {
+            $word_string = $this->getDictSubstring($file_num, $start + 
+                $test_loc * $word_item_len, $word_item_len);
+            if($word_string == "" ) break;
+            $id = substr($word_string, 0, IndexShard::WORD_KEY_LEN);
+            if($num_entries < 1 && strcmp($word_id, $id) != 0 ) break;
+            $test_loc++;
+            $ws = substr($word_string, IndexShard::WORD_KEY_LEN);
+            if($extract) {
+                $tmp = IndexShard::getWordInfoFromString($ws, true);
+                array_unshift($info, $tmp);
+            } else {
+                $info .= $ws;
+            }
+        }
         return $info;
     }
 
@@ -646,7 +649,7 @@ class IndexDictionary implements CrawlConstants
             2 * $word_data_len  + $posting_len, 
             $word_key_len);
         $item[self::IS_DOC] = true;
-
+        
         return $item;
     }
 
@@ -673,7 +676,6 @@ class IndexDictionary implements CrawlConstants
             $substring .= substr($data, $start_loc);
             $start_loc = 0;
         } while (strlen($substring) < $len);
-
         return substr($substring, 0, $len);
     }
 
@@ -689,16 +691,10 @@ class IndexDictionary implements CrawlConstants
      */
     function &readBlockDictAtOffset($file_num, $bytes)
     {
-        global $MEMCACHE;
         $false = false;
         if(isset($this->blocks[$file_num][$bytes])) {
             return $this->blocks[$file_num][$bytes];
-        } else if (!defined("NO_CACHE") && USE_MEMCACHE && 
-            ($this->blocks[$file_num][$bytes] = 
-            $MEMCACHE->get("Dict:$file_num:$bytes:".$this->dir_name)) != false){
-            return $this->blocks[$file_num][$bytes];
         }
-
         if(!isset($this->fhs[$file_num]) || $this->fhs[$file_num] === NULL) {
             $this->fhs[$file_num] = fopen($this->dir_name.
                 "/$file_num/".$this->max_tier."A.dic", "rb");
@@ -716,11 +712,10 @@ class IndexDictionary implements CrawlConstants
         }
         $this->blocks[$file_num][$bytes] = fread($this->fhs[$file_num], 
             self::DICT_BLOCK_SIZE);
-        if(!defined("NO_CACHE") && USE_MEMCACHE) {
-            $MEMCACHE->set("Dict:$file_num:$bytes:".$this->dir_name, 
-                $this->blocks[$file_num][$bytes]);
-        }
+
         return $this->blocks[$file_num][$bytes];
     }
+
+
 }
  ?>

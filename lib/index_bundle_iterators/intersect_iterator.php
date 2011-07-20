@@ -246,50 +246,55 @@ class IntersectIterator extends IndexBundleIterator
     {
         $biggest_gen_offset = $this->index_bundle_iterators[
                         0]->currentGenDocOffsetWithWord();
-        $old_biggest_gen_offset = $biggest_gen_offset;
 
+        $all_same = true; 
         for($i = 0; $i < $this->num_iterators; $i++) {
-            $old_gen_doc_offset[$i] = NULL;
+            $cur_gen_doc_offset = 
+                $this->index_bundle_iterators[
+                    $i]->currentGenDocOffsetWithWord();
+            $gen_doc_offset[$i] = $cur_gen_doc_offset;
+            if($cur_gen_doc_offset == -1) {
+                return -1;
+            }
+            $gen_doc_cmp = $this->genDocOffsetCmp($cur_gen_doc_offset, 
+                $biggest_gen_offset);
+            if($gen_doc_cmp > 0) {
+                $biggest_gen_offset = $cur_gen_doc_offset;
+                $all_same = false;
+            } else if ($gen_doc_cmp < 0) {
+                $all_same = false;
+            }
         }
-
-        do{
-            $all_same = true; 
-            for($i = 0; $i < $this->num_iterators; $i++) {
-                $new_gen_doc_offset[$i] = 
-                    $this->index_bundle_iterators[
-                        $i]->currentGenDocOffsetWithWord();
-                if($new_gen_doc_offset[$i] == $old_gen_doc_offset[$i] && 
-                    $new_gen_doc_offset[$i] != $old_biggest_gen_offset) {
+        if($all_same) {
+            return 1;
+        }
+        $last_changed = -1;
+        $i = 0;
+        while($i != $last_changed) {
+            if($last_changed == -1) $last_changed = 0;
+            if($this->genDocOffsetCmp($gen_doc_offset[$i], 
+                $biggest_gen_offset) < 0) {
+                $iterator = $this->index_bundle_iterators[$i];
+                $iterator->advance($biggest_gen_offset);
+                $cur_gen_doc_offset = 
+                    $iterator->currentGenDocOffsetWithWord();
+                $gen_doc_offset[$i] = $cur_gen_doc_offset;
+                if($cur_gen_doc_offset == -1) {
                     return -1;
                 }
 
-                if($new_gen_doc_offset[$i] == -1) {
-                    return -1;
-                }
-                // 0 - generation, 1 - doc_offset
-                $gen_doc_cmp = $this->genDocOffsetCmp($new_gen_doc_offset[$i], 
-                    $biggest_gen_offset);
-                if($gen_doc_cmp > 0) {
-                    $biggest_gen_offset = $new_gen_doc_offset[$i];
-                    $all_same = false;
-                } else if ($gen_doc_cmp < 0) {
-                    $all_same = false;
+                if($this->genDocOffsetCmp($cur_gen_doc_offset, 
+                    $biggest_gen_offset) > 0) {
+                    $last_changed = $i;
+                    $biggest_gen_offset = $cur_gen_doc_offset;
                 }
             }
-            $old_biggest_gen_offset = $biggest_gen_offset;
-            if($all_same) {
-                return 1;
+            $i++;
+            if($i == $this->num_iterators) {
+                $i = 0;
             }
-            for($i = 0; $i < $this->num_iterators; $i++) {
-                if($this->genDocOffsetCmp($new_gen_doc_offset[$i], 
-                    $biggest_gen_offset) < 0) {
-                    $this->index_bundle_iterators[$i]->advance(
-                        $biggest_gen_offset);
-                    $old_gen_doc_offset[$i] = $new_gen_doc_offset[$i];
-                }
-            }
-
-        } while(!$all_same);
+        }
+        return 1;
     }
 
     /**

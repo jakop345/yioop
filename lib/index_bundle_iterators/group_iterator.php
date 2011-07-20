@@ -165,9 +165,7 @@ class GroupIterator extends IndexBundleIterator
     function findDocsWithWord()
     {
         // first get a block of documents on which grouping can be done
-
         $pages =  $this->getPagesToGroup();
-
         $this->count_block_unfiltered = count($pages);
         if(!is_array($pages)) {
             return $pages;
@@ -189,11 +187,9 @@ class GroupIterator extends IndexBundleIterator
             /*
                 Calculate aggregate values for each field of the groups we found
              */
-
             $pages = $this->computeBoostAndOutPages($pre_out_pages);
         }
         $this->pages = $pages;
-
         return $pages;
 
     }
@@ -361,7 +357,6 @@ class GroupIterator extends IndexBundleIterator
         $hash_inlinks = array();
         $indexes = array();
         $one_word_flag = isset($this->index_bundle_iterator->word_key);
-        
         foreach($pre_out_pages as $hash_url => $group_infos) {
             $key = $group_infos[0]["KEY"];
             $tmp_index =  $this->getIndex($key);
@@ -374,12 +369,10 @@ class GroupIterator extends IndexBundleIterator
 
         }
         $num_docs_array = array();
-
         foreach($hash_inlinks as $name => $inlinks) {
             $num_docs_array = array_merge($num_docs_array, 
                 $indexes[$name]->dictionary->getNumDocsArray($inlinks));
         }
-
         foreach($pre_out_pages as $hash_url => $group_infos) {
             $out_pages[$hash_url] = $pre_out_pages[$hash_url][0];
             $out_pages[$hash_url][self::SUMMARY_OFFSET] = array();
@@ -474,7 +467,6 @@ class GroupIterator extends IndexBundleIterator
             }
 
         }
-
         return $out_pages;
     }
 
@@ -509,7 +501,7 @@ class GroupIterator extends IndexBundleIterator
                 $min = ($current_rank < $min ) ? $current_rank : $min;
                 $max = ($max < $current_rank ) ? $current_rank : $max;
                 $sum_score += $hash_page[self::DOC_RANK] 
-                    * $relevance_boost * pow(1.3,$hash_page[self::RELEVANCE]) *
+                    * $relevance_boost * pow(1.2,$hash_page[self::RELEVANCE]) *
                     $hash_page[self::PROXIMITY] * $domain_weights[$hash_host];
                 $sum_rank += $hash_page[self::DOC_RANK] 
                     * $domain_weights[$hash_host];

@@ -134,8 +134,7 @@ define ('SESSION_NAME', "yioopbiscuit");
 if(USE_MEMCACHE) {
     $memcache_hosts = explode("|Z|", MEMCACHE_SERVERS);
     foreach($memcache_hosts as $host)
-    $MEMCACHES[] = array("host" => $host, "port" => "11211", 
-        "persistent" => true, "weight" => 1, "timeout" => 1, "retry" => 5
+    $MEMCACHES[] = array("host" => $host, "port" => "11211"
     );
     unset($memcache_hosts);
     unset($host);
@@ -329,7 +328,7 @@ define ('MINIMUM_FETCH_LOOP_TIME', 5);
 
 /** Max time before dirty index (queue_server) and 
     filters (fetcher) will be force saved in seconds*/
-define('FORCE_SAVE_TIME', 1200);
+define('FORCE_SAVE_TIME', 3600);
 
 /** default number of search results to display per page */
 define ('NUM_RESULTS_PER_PAGE', 10); 

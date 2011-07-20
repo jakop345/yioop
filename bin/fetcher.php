@@ -447,6 +447,7 @@ class Fetcher implements CrawlConstants
 
         if($can_schedule_again == true) {
             //only schedule to crawl again on fail sites without crawl-delay
+            crawlLog("  Scheduling again..");
             foreach($schedule_again_pages as $schedule_again_page) {
                 if(isset($schedule_again_page[self::CRAWL_DELAY]) && 
                     $schedule_again_page[self::CRAWL_DELAY] == 0) {
@@ -457,6 +458,7 @@ class Fetcher implements CrawlConstants
                         );
                 }
             }
+            crawlLog("....done.");
         }
 
         return $downloaded_pages;
@@ -763,7 +765,7 @@ class Fetcher implements CrawlConstants
     function processFetchPages($site_pages)
     {
         $PAGE_PROCESSORS = $this->page_processors;
-
+        crawlLog("  Start process pages...");
         $start_time = microtime();
      
         $stored_site_pages = array();
@@ -1208,8 +1210,9 @@ class Fetcher implements CrawlConstants
         }
         unset($this->found_sites[self::TO_CRAWL]);
 
+        $seen_cnt = 0;
         if(isset($this->found_sites[self::SEEN_URLS]) && 
-            count($this->found_sites[self::SEEN_URLS]) > 0 ) {
+            ($seen_cnt = count($this->found_sites[self::SEEN_URLS])) > 0 ) {
             $hash_seen_urls = array();
             foreach($this->found_sites[self::SEEN_URLS] as $site) {
                 $hash_seen_urls[] =
@@ -1229,17 +1232,20 @@ class Fetcher implements CrawlConstants
         unset($schedule_data);
 
         //handle mini inverted index
-        if(isset($this->found_sites[self::SEEN_URLS]) && 
-            count($this->found_sites[self::SEEN_URLS]) > 0 ) {
+        if($seen_cnt > 0 ) {
             $this->buildMiniInvertedIndex();
         }
+        crawlLog("...");
         if(isset($this->found_sites[self::INVERTED_INDEX])) {
-
-            $compress_urls = gzcompress(serialize( 
-                $this->found_sites[self::SEEN_URLS]));
+            $compress_urls = "";
+            while($this->found_sites[self::SEEN_URLS] != array()) {
+                $site = array_shift($this->found_sites[self::SEEN_URLS]);
+                $site_string = gzcompress(serialize($site));
+                $compress_urls .= packInt(strlen($site_string)).$site_string;
+            }
             unset($this->found_sites[self::SEEN_URLS]);
             $len_urls =  strlen($compress_urls);
-
+            crawlLog("...Finish Compressing seen URLs.");
             $post_data['index_data'] = urlencode(base64_encode(
                 packInt($len_urls).
                 $compress_urls. $this->found_sites[self::INVERTED_INDEX]
@@ -1254,7 +1260,7 @@ class Fetcher implements CrawlConstants
             crawlLog("No data to send aborting update scheduler...");
             return;
         }
-
+        crawlLog("...");
         //try to send to queue server
         $sleep = false;
         do {

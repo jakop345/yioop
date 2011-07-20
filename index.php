@@ -56,8 +56,7 @@ require_once(BASE_DIR."/models/datasources/".DBMS."_manager.php");
 if(USE_MEMCACHE) {
     $MEMCACHE = new Memcache();
     foreach($MEMCACHES as $mc) {
-        $MEMCACHE->addServer($mc['host'], $mc['port'], $mc['persistent'],
-            $mc['weight'], $mc['timeout'], $mc['retry']);
+        $MEMCACHE->addServer($mc['host'], $mc['port']);
     }
     unset($mc);
 }

@@ -88,6 +88,18 @@ foreach(glob(BASE_DIR."/lib/indexing_plugins/*_plugin.php") as $filename) {
 mb_internal_encoding("UTF-8");
 mb_regex_encoding("UTF-8");
 
+/*
+ * If Memcache is available queueserver can be used to load 
+ * index dictionaries and shards into memcache. Note in only
+ * this situation is NO_CACHE ignored
+ */
+if(USE_MEMCACHE) {
+    $MEMCACHE = new Memcache();
+    foreach($MEMCACHES as $mc) {
+        $MEMCACHE->addServer($mc['host'], $mc['port']);
+    }
+    unset($mc);
+}
 
 /**
  * Command line program responsible for managing Yioop crawls.
@@ -482,7 +494,6 @@ class QueueServer implements CrawlConstants
                         self::index_data_base_name.$this->crawl_time);
 
                     $info[self::STATUS] = self::WAITING_START_MESSAGE_STATE;
-                    //Added by Priya Gangaraju. 
                     //Calling post processing function if the processor is 
                     //selected in the crawl options page.
                     if(isset($this->indexing_plugins)) {
@@ -864,9 +875,18 @@ class QueueServer implements CrawlConstants
 
         $len_urls = unpackInt(substr($pre_sites, 0, 4));
 
-        $sites[self::SEEN_URLS] = unserialize(gzuncompress(
-            substr($pre_sites, 4, $len_urls)));
+        $seen_urls_string = substr($pre_sites, 4, $len_urls);
         $pre_sites = substr($pre_sites, 4 + $len_urls);
+
+        $sites[self::SEEN_URLS] = array();
+        $pos = 0;
+        while($pos < $len_urls) {
+            $len_site = unpackInt(substr($seen_urls_string, $pos ,4));
+            $pos += 4;
+            $site_string = substr($seen_urls_string, $pos, $len_site);
+            $pos += strlen($site_string);
+            $sites[self::SEEN_URLS][] = unserialize(gzuncompress($site_string));
+        }
 
         $sites[self::INVERTED_INDEX] = IndexShard::load("fetcher_shard", 
             $pre_sites);
@@ -957,7 +977,6 @@ class QueueServer implements CrawlConstants
             $start_time = microtime();
 
             $this->index_archive->addIndexData($index_shard);
-            crawlLog("WORD_DOC_LEN ".$this->index_archive->getActiveShard()->word_docs_len);
             $this->index_dirty = true;
         }
         crawlLog("D (add index shard) memory usage".memory_get_usage(). 
@@ -1606,6 +1625,8 @@ class QueueServer implements CrawlConstants
 
         return $list;
     }
+
+
 }
 
 /*
