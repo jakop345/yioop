@@ -331,25 +331,25 @@ class FetchUrl implements CrawlConstants
      */
     public static function getPage($site, $post_data = NULL) 
     {
-
         $agent = curl_init();
+        crawlLog("Init curl request");
         curl_setopt($agent, CURLOPT_USERAGENT, USER_AGENT);
         curl_setopt($agent, CURLOPT_URL, $site);
         curl_setopt($agent, CURLOPT_AUTOREFERER, true);
         curl_setopt($agent, CURLOPT_FOLLOWLOCATION, true);
-
+        curl_setopt($agent, CURLOPT_NOSIGNAL, true);
         curl_setopt($agent, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($agent, CURLOPT_FAILONERROR, true);
-
+        curl_setopt($agent, CURLOPT_VERBOSE, true);
         curl_setopt($agent, CURLOPT_TIMEOUT, PAGE_TIMEOUT);
         curl_setopt($agent, CURLOPT_CONNECTTIMEOUT, PAGE_TIMEOUT);
         if($post_data != NULL) {
             curl_setopt($agent, CURLOPT_POST, true);
             curl_setopt($agent, CURLOPT_POSTFIELDS, $post_data);
         }
-
+        crawlLog("Set curl options");
         $response = curl_exec($agent);
-
+        crawlLog("Done curl exec");
         return $response;
     }
 }
