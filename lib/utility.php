@@ -481,12 +481,17 @@ function unbase64Hash($base64)
 
 function webencode($str)
 {
-    return str_replace("-", "%2D", rawurlencode(base64_encode($str)));
+    $str = str_replace("/", "_", base64_encode($str));
+    $str = str_replace("+", ".", $str);
+    $str = str_replace("=", "~", $str);
+    return $str;
 }
 
 function webdecode($str)
 {
-    return base64_decode(rawurldecode(str_replace("%2D", "-", $str)));
+    $str = str_replace("_", "/", $str);
+    $str = str_replace(".", "+", $str);
+    return base64_decode(str_replace("~", "=", $str));
 }
 
 /**
