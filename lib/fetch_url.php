@@ -93,7 +93,6 @@ class FetchUrl implements CrawlConstants
                 curl_setopt($sites[$i][0], CURLOPT_CONNECTTIMEOUT, PAGE_TIMEOUT);
                 curl_setopt($sites[$i][0], CURLOPT_TIMEOUT, PAGE_TIMEOUT);
                 curl_setopt($sites[$i][0], CURLOPT_HEADER, true);
-                curl_setopt($sites[$i][0], CURLOPT_HTTPAUTH, NULL);
                 curl_setopt($sites[$i][0], CURLOPT_HTTPHEADER, 
                     array('Range: bytes=0-'.PAGE_RANGE_REQUEST));
                 curl_multi_add_handle($agent_handler, $sites[$i][0]);
@@ -332,12 +331,14 @@ class FetchUrl implements CrawlConstants
      */
     public static function getPage($site, $post_data = NULL) 
     {
+        file_put_contents(CRAWL_DIR."post.txt", $post_data);
         $agent = curl_init();
         crawlLog("Init curl request");
         curl_setopt($agent, CURLOPT_USERAGENT, USER_AGENT);
         curl_setopt($agent, CURLOPT_URL, $site);
         curl_setopt($agent, CURLOPT_AUTOREFERER, true);
         curl_setopt($agent, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($agent, CURLOPT_NOSIGNAL, true);
         curl_setopt($agent, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($agent, CURLOPT_FAILONERROR, true);
         curl_setopt($agent, CURLOPT_TIMEOUT, PAGE_TIMEOUT);
