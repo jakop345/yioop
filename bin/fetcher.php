@@ -1276,7 +1276,9 @@ class Fetcher implements CrawlConstants
             $post_data['time'] = $time;
             $post_data['session'] = $session;
             $post_data['fetcher_peak_memory'] = memory_get_peak_usage();
-
+            crawlLog(
+                "Sending Queue Server" .
+                " $bytes_to_send bytes...");
             $info_string = FetchUrl::getPage($queue_server, $post_data);
             crawlLog(
                 "Updated Queue Server, sent approximately" .

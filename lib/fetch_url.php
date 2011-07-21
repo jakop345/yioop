@@ -341,6 +341,8 @@ class FetchUrl implements CrawlConstants
         curl_setopt($agent, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($agent, CURLOPT_FAILONERROR, true);
         curl_setopt($agent, CURLOPT_VERBOSE, true);
+        curl_setopt($agent, CURLOPT_FORBID_REUSE, true);
+        curl_setopt($agent, CURLOPT_FRESH_CONNECT, true);
         curl_setopt($agent, CURLOPT_TIMEOUT, PAGE_TIMEOUT);
         curl_setopt($agent, CURLOPT_CONNECTTIMEOUT, PAGE_TIMEOUT);
         if($post_data != NULL) {
