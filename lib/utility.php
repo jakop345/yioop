@@ -479,6 +479,16 @@ function unbase64Hash($base64)
 }
 
 
+function webencode($str)
+{
+    return str_replace("-", "%2D", rawurlencode(base64_encode($str)));
+}
+
+function webdecode($str)
+{
+    return base64_decode(rawurldecode(str_replace("%2D", "-", $str)));
+}
+
 /**
  * The search engine project's variation on the Unix crypt function using the 
  * crawlHash function instead of DES

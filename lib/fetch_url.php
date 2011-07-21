@@ -93,6 +93,7 @@ class FetchUrl implements CrawlConstants
                 curl_setopt($sites[$i][0], CURLOPT_CONNECTTIMEOUT, PAGE_TIMEOUT);
                 curl_setopt($sites[$i][0], CURLOPT_TIMEOUT, PAGE_TIMEOUT);
                 curl_setopt($sites[$i][0], CURLOPT_HEADER, true);
+                curl_setopt($sites[$i][0], CURLOPT_HTTPAUTH, NULL);
                 curl_setopt($sites[$i][0], CURLOPT_HTTPHEADER, 
                     array('Range: bytes=0-'.PAGE_RANGE_REQUEST));
                 curl_multi_add_handle($agent_handler, $sites[$i][0]);
@@ -337,12 +338,8 @@ class FetchUrl implements CrawlConstants
         curl_setopt($agent, CURLOPT_URL, $site);
         curl_setopt($agent, CURLOPT_AUTOREFERER, true);
         curl_setopt($agent, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($agent, CURLOPT_NOSIGNAL, true);
         curl_setopt($agent, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($agent, CURLOPT_FAILONERROR, true);
-        curl_setopt($agent, CURLOPT_VERBOSE, true);
-        curl_setopt($agent, CURLOPT_FORBID_REUSE, true);
-        curl_setopt($agent, CURLOPT_FRESH_CONNECT, true);
         curl_setopt($agent, CURLOPT_TIMEOUT, PAGE_TIMEOUT);
         curl_setopt($agent, CURLOPT_CONNECTTIMEOUT, PAGE_TIMEOUT);
         if($post_data != NULL) {

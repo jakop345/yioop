@@ -399,9 +399,8 @@ class QueueServer implements CrawlConstants
     {
         crawlLog("Processing File: $file");
 
-        $sites = unserialize(gzuncompress(base64_decode(
-            urldecode(file_get_contents($file) ))
-            ));
+        $sites = unserialize(gzuncompress(webdecode(file_get_contents($file) ))
+            );
 
         $robot_table_name = CRAWL_DIR."/robot_table.txt";
         if(file_exists($robot_table_name)) {
@@ -870,8 +869,7 @@ class QueueServer implements CrawlConstants
 
         $start_time = microtime();
 
-        $pre_sites = base64_decode(
-            urldecode(file_get_contents($file)));
+        $pre_sites = webdecode(file_get_contents($file));
 
         $len_urls = unpackInt(substr($pre_sites, 0, 4));
 
@@ -1029,9 +1027,7 @@ class QueueServer implements CrawlConstants
         crawlLog("Processing Robots data in $file");
         $start_time = microtime();
 
-        $sites = unserialize(gzuncompress(base64_decode(
-            urldecode(file_get_contents($file)))
-            ));
+        $sites = unserialize(gzuncompress(webdecode(file_get_contents($file))));
         if(isset($sites)) {
             foreach($sites as $robot_host => $robot_info) {
                 $this->web_queue->addGotRobotTxtFilter($robot_host);
