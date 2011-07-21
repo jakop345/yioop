@@ -1279,7 +1279,7 @@ class Fetcher implements CrawlConstants
 
             $info_string = FetchUrl::getPage($queue_server, $post_data);
             crawlLog(
-                "Updating Queue Server, sending approximately" .
+                "Updated Queue Server, sent approximately" .
                 " $bytes_to_send bytes:");
 
             $info = unserialize(trim($info_string));

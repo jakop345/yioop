@@ -244,7 +244,7 @@ class IndexShard extends PersistentStructure implements
      * from the words array is flattened to word_postings. (It will
      * also be flattened during periodic index saves)
      */
-    const FLATTEN_MERGE_RATIO = 0.10;
+    const FLATTEN_FREQUENCY = 25000;
 
     
     /**
@@ -908,7 +908,7 @@ class IndexShard extends PersistentStructure implements
         $this->len_all_link_docs += $index_shard->len_all_link_docs;
 
         if($this->num_docs - $this->last_flattened_words_count >
-            self::FLATTEN_MERGE_RATIO * $this->num_docs_per_generation) {
+            self::FLATTEN_FREQUENCY) {
             $this->mergeWordPostingsToString();
         }
     }
