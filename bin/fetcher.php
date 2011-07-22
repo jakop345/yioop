@@ -1246,8 +1246,7 @@ class Fetcher implements CrawlConstants
             unset($this->found_sites[self::SEEN_URLS]);
             $len_urls =  strlen($compress_urls);
             crawlLog("...Finish Compressing seen URLs.");
-            $post_data['index_data'] = webencode(
-                packInt($len_urls).
+            $post_data['index_data'] = webencode( packInt($len_urls).
                 $compress_urls. $this->found_sites[self::INVERTED_INDEX]
                 ); // don't compress index data
             unset($compress_urls);
