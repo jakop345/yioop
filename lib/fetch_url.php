@@ -343,7 +343,6 @@ class FetchUrl implements CrawlConstants
         curl_setopt($agent, CURLOPT_TIMEOUT, PAGE_TIMEOUT);
         curl_setopt($agent, CURLOPT_CONNECTTIMEOUT, PAGE_TIMEOUT);
         if($post_data != NULL) {
-            file_put_contents(CRAWL_DIR."/post.txt", var_export($post_data));
             curl_setopt($agent, CURLOPT_POST, true);
             curl_setopt($agent, CURLOPT_POSTFIELDS, $post_data);
         }

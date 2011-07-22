@@ -819,7 +819,7 @@ class Fetcher implements CrawlConstants
             } else {
                 $processor = new $page_processor();
             }
-
+            crawlLog("  Using Processor...".$page_processor);
             $doc_info = $processor->handle($site[self::PAGE], 
                 $site[self::URL]);
 
