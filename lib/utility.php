@@ -478,6 +478,33 @@ function unbase64Hash($base64)
     return $raw;
 }
 
+/**
+ * Encodes a string in a format suitable for post data
+ * (mainly, base64, but str_replace data that might mess up post in result) 
+ *
+ * @param string $str string to encode
+ * @return string encoded string
+ */
+function webencode($str)
+{
+    $str = str_replace("/", "_", base64_encode($str));
+    $str = str_replace("+", ".", $str);
+    $str = str_replace("=", "~", $str);
+    return $str;
+}
+
+/**
+ * Decodes a string encoded by webencode
+ *
+ * @param string $str string to encode
+ * @return string encoded string
+ */
+function webdecode($str)
+{
+    $str = str_replace("_", "/", $str);
+    $str = str_replace(".", "+", $str);
+    return base64_decode(str_replace("~", "=", $str));
+}
 
 /**
  * The search engine project's variation on the Unix crypt function using the 

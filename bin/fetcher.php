@@ -819,7 +819,7 @@ class Fetcher implements CrawlConstants
             } else {
                 $processor = new $page_processor();
             }
-
+            crawlLog("  Using Processor...".$page_processor);
             $doc_info = $processor->handle($site[self::PAGE], 
                 $site[self::URL]);
 
@@ -1196,8 +1196,8 @@ class Fetcher implements CrawlConstants
 
         //handle robots.txt data
         if(isset($this->found_sites[self::ROBOT_TXT])) {
-            $post_data['robot_data'] = urlencode(base64_encode(
-                gzcompress(serialize($this->found_sites[self::ROBOT_TXT]))));
+            $post_data['robot_data'] = webencode(
+                gzcompress(serialize($this->found_sites[self::ROBOT_TXT])));
             unset($this->found_sites[self::ROBOT_TXT]);
             $bytes_to_send += strlen($post_data['robot_data']);
         }
@@ -1225,8 +1225,8 @@ class Fetcher implements CrawlConstants
             if(isset($schedule_time)) {
                 $schedule_data[self::SCHEDULE_TIME] = $schedule_time;
             }
-            $post_data['schedule_data'] = urlencode(base64_encode(
-                gzcompress(serialize($schedule_data))));
+            $post_data['schedule_data'] = webencode(
+                gzcompress(serialize($schedule_data)));
             $bytes_to_send += strlen($post_data['schedule_data']);
         }
         unset($schedule_data);
@@ -1246,10 +1246,9 @@ class Fetcher implements CrawlConstants
             unset($this->found_sites[self::SEEN_URLS]);
             $len_urls =  strlen($compress_urls);
             crawlLog("...Finish Compressing seen URLs.");
-            $post_data['index_data'] = urlencode(base64_encode(
-                packInt($len_urls).
+            $post_data['index_data'] = webencode( packInt($len_urls).
                 $compress_urls. $this->found_sites[self::INVERTED_INDEX]
-                )); // don't compress index data
+                ); // don't compress index data
             unset($compress_urls);
             unset($this->found_sites[self::INVERTED_INDEX]);
             $bytes_to_send += strlen($post_data['index_data']);
@@ -1276,7 +1275,9 @@ class Fetcher implements CrawlConstants
             $post_data['time'] = $time;
             $post_data['session'] = $session;
             $post_data['fetcher_peak_memory'] = memory_get_peak_usage();
-
+            crawlLog(
+                "Sending Queue Server" .
+                " $bytes_to_send bytes...");
             $info_string = FetchUrl::getPage($queue_server, $post_data);
             crawlLog(
                 "Updated Queue Server, sent approximately" .

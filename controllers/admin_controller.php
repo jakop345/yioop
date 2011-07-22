@@ -728,8 +728,8 @@ class AdminController extends Controller implements CrawlConstants
                     foreach ($seed_info['seed_sites']['url'] as $site) {
                         $scheduler_info[self::TO_CRAWL][] = array($site, 1.0);
                     }
-                    $scheduler_string = "\n".urlencode(base64_encode(
-                        gzcompress(serialize($scheduler_info))));
+                    $scheduler_string = "\n".webencode(
+                        gzcompress(serialize($scheduler_info)));
                     @unlink(CRAWL_DIR."/schedules/schedule.txt");
                     file_put_contents(
                         CRAWL_DIR."/schedules/ScheduleDataStartCrawl.txt", 
