@@ -244,7 +244,7 @@ class IndexShard extends PersistentStructure implements
      * from the words array is flattened to word_postings. (It will
      * also be flattened during periodic index saves)
      */
-    const FLATTEN_FREQUENCY = 25000;
+    const FLATTEN_FREQUENCY = 10000;
 
     
     /**

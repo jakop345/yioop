@@ -50,6 +50,20 @@ class BmpProcessor extends ImageProcessor
 {
 
     /**
+     * Size in bytes of one block to read in of BMP
+     */
+    const BLOCK_SIZE = 4096;
+
+    /**
+     * Size in bytes of BMP identifier and size info
+     */
+    const BMP_ID = 10;
+
+    /**
+     * Size in bytes of BMP header
+     */
+    const BMP_HEADER_LEN = 108;
+    /**
      * {@inheritdoc}
      */
     function process($page, $url)
@@ -70,6 +84,89 @@ class BmpProcessor extends ImageProcessor
                 base64_encode($thumb_string);
         }
         return $summary;
+    }
+
+    /**
+     * Reads in a 32 / 24bit non-palette bmp files from provided filename 
+     * and returns a php  image object corresponding to it. This is a crude 
+     * variation of code from imagecreatewbmp function documentation at php.net
+     *
+     * @param string $filename = name of 
+     */
+    function imagecreatefrombmp($filename)
+    {
+        // Read image into a string
+        $file = fopen($filename, "rb");
+        $read = fread($file, self::BMP_ID); //skip identifier and size
+
+        while(!feof($file) && ($read != "")) {
+            $read .= fread($file, self::BLOCK_SIZE);
+        }
+
+        $temp = unpack("H*", $read);
+        $hex = $temp[1];
+        $header = substr($hex, 0, self::BMP_HEADER_LEN);
+
+
+        $can_understand_flag= substr($header, 0, 4) == "424d";
+        // get parameters of image from header bytes
+        if ($can_understand_flag) {
+            $header_parts = str_split($header, 2);
+            $width  = hexdec($header_parts[19] . $header_parts[18]);
+            $height = hexdec($header_parts[23] . $header_parts[22]);
+            $bits_per_pixel = hexdec($header_parts[29] . $header_parts[28]);
+            unset($header_parts);
+        }
+
+        $x = 0;
+        $y = 1;
+       
+        /* We're going to manually write pixel info in to the following
+            image object
+        */
+        $image  = imagecreatetruecolor($width, $height);
+        if(!$can_understand_flag) {
+            return $image;
+        }
+        //    Grab the body from the image
+        $body = substr($hex, self::BMP_HEADER_LEN);
+
+        /*
+            Calculate any end-of-line padding needed
+        */
+        $body_size = strlen($body)/2;
+        $header_size = ($width * $height);
+
+        // Set-up padding flag
+        // Set-up padding flag
+        $padding_flag = ($body_size > ($header_size * 3) + 4);
+
+        $pixel_step = ceil($bits_per_pixel >> 3);
+        // Write pixels
+        for($i = 0; $i < $body_size; $i += $pixel_step)
+        {
+            //    Calculate line-ending and padding
+            if ($x >= $width)
+            {
+                if ($padding_flag) {
+                    $i += $width % 4;
+                }
+                $x = 0;
+                $y++;
+                if ($y > $height) break;
+            }
+            $i_pos  = $i << 1;
+            $r =hexdec($body[$i_pos + 4].$body[$i_pos + 5]);
+            $g = hexdec($body[$i_pos + 2].$body[$i_pos + 3]);
+            $b  = hexdec($body[$i_pos].$body[$i_pos + 1]);
+
+            $color = imagecolorallocate($image, $r, $g, $b);
+            imagesetpixel($image, $x, $height - $y, $color);
+            $x++;
+        }
+
+        unset($body);
+        return $image;
     }
 
 }
