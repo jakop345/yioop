@@ -324,7 +324,10 @@ class Fetcher implements CrawlConstants
     function loop()
     {
         crawlLog("In Fetch Loop", "fetcher");
-        
+
+        if(!file_exists(CRAWL_DIR."/temp")) {
+            mkdir(CRAWL_DIR."/temp");
+        }
         $info[self::STATUS] = self::CONTINUE_STATE;
         $this->checkCrawlTime();
         

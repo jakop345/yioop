@@ -81,7 +81,7 @@ class FetchUrl implements CrawlConstants
         for($i = 0; $i < count($sites); $i++) {
             if(isset($sites[$i][$key])) {
                 $sites[$i][0] = curl_init();
-                $ip_holder[$i] = fopen(CRAWL_DIR."/tmp$i.txt", 'w+');
+                $ip_holder[$i] = fopen(CRAWL_DIR."/temp/tmp$i.txt", 'w+');
                 curl_setopt($sites[$i][0], CURLOPT_USERAGENT, USER_AGENT);
                 curl_setopt($sites[$i][0], CURLOPT_URL, $sites[$i][$key]);
                 curl_setopt($sites[$i][0], CURLOPT_VERBOSE, true);
