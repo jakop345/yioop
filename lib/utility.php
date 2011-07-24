@@ -48,10 +48,7 @@ function charCopy($source, &$destination, $start, $length)
     $endk = $length - 1;
     $end = $start + $endk;
     for($j = $end, $k = $endk; $j >= $start; $j--, $k--) {
-        $destination[$j] = "" . $source[$k]; 
-        /* for some reason, the "" makes this faster if source and destination
-           are the same in PHP
-         */
+        $destination[$j] = $source[$k]; 
     }
 }
 
