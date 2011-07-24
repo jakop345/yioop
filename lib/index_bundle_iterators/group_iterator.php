@@ -261,7 +261,7 @@ class GroupIterator extends IndexBundleIterator
             }
 
             if(!isset($this->grouped_keys[$hash_url])) {
-               /* 
+               /*
                     new urls found in this block
                 */
                 $this->current_block_hashes[] = $hash_url;
@@ -585,7 +585,7 @@ class GroupIterator extends IndexBundleIterator
      *      next block must all have $doc_offsets larger than or equal to 
      *      this value
      */
-    function advance($gen_doc_offset = null) 
+    function advance($gen_doc_offset = NULL) 
     {
         $this->advanceSeenDocs();
 

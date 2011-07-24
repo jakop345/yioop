@@ -115,6 +115,8 @@ class BmpProcessor extends ImageProcessor
             $width  = hexdec($header_parts[19] . $header_parts[18]);
             $height = hexdec($header_parts[23] . $header_parts[22]);
             $bits_per_pixel = hexdec($header_parts[29] . $header_parts[28]);
+            $can_understand_flag = (($bits_per_pixel == 24) ||
+                ($bits_per_pixel == 32));
             unset($header_parts);
         }
 

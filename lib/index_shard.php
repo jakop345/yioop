@@ -246,7 +246,11 @@ class IndexShard extends PersistentStructure implements
      */
     const FLATTEN_FREQUENCY = 10000;
 
-    
+    /**
+     * Bytes of tmp string allowed during flattenings
+     */
+     const WORD_POSTING_COPY_LEN = 2000000;
+
     /**
      * Used to keep track of whether a record in document infos is for a
      * document or for a link
@@ -953,7 +957,7 @@ class IndexShard extends PersistentStructure implements
                         packInt($word_id_posts_len). $postings;
                 }
                 $tmp_len = strlen($tmp_string);
-                $copy_data_len = min(self::SHARD_BLOCK_SIZE, $tmp_len);
+                $copy_data_len = min(self::WORD_POSTING_COPY_LEN, $tmp_len);
                 $copy_to_len = min($offset - $write_offset, 
                     $len - $write_offset);
                 if($copy_to_len > $copy_data_len) {

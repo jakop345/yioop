@@ -154,7 +154,7 @@ class IndexArchiveBundle implements CrawlConstants
 
         if(!is_dir($this->dir_name)) {
             mkdir($this->dir_name);
-
+            mkdir($this->dir_name."/posting_doc_shards");
         } else {
             $index_archive_exists = true;
 
@@ -239,8 +239,8 @@ class IndexArchiveBundle implements CrawlConstants
             $this->generation_info['ACTIVE']++;
             $this->generation_info['CURRENT'] = 
                 $this->generation_info['ACTIVE'];
-            $current_index_shard_file = $this->dir_name."/index".
-                $this->generation_info['ACTIVE'];
+            $current_index_shard_file = $this->dir_name.
+                "/posting_doc_shards/index". $this->generation_info['ACTIVE'];
             $this->current_shard = new IndexShard(
                 $current_index_shard_file, $this->generation_info['ACTIVE'], 
                     $this->num_docs_per_generation);
@@ -260,8 +260,8 @@ class IndexArchiveBundle implements CrawlConstants
     {
         // Save current shard dictionary to main dictionary
         $this->forceSave();
-        $current_index_shard_file = $this->dir_name."/index".
-            $this->generation_info['ACTIVE'];
+        $current_index_shard_file = $this->dir_name.
+            "/posting_doc_shards/index". $this->generation_info['ACTIVE'];
         /* want to do the copying of dictionary as files to conserve memory
            in case merge tiers after adding to dictionary
         */
@@ -282,8 +282,8 @@ class IndexArchiveBundle implements CrawlConstants
         if($this->setCurrentShard($this->generation_info['ACTIVE'])) {
             return $this->getCurrentShard();
         } else if(!isset($this->current_shard) ) {
-            $current_index_shard_file = $this->dir_name."/index".
-                $this->generation_info['CURRENT'];
+            $current_index_shard_file = $this->dir_name.
+                "/posting_doc_shards/index". $this->generation_info['CURRENT'];
             $this->current_shard = new IndexShard($current_index_shard_file,
                 $this->generation_info['CURRENT'], 
                 $this->num_docs_per_generation);
@@ -306,8 +306,8 @@ class IndexArchiveBundle implements CrawlConstants
                 $this->generation_info['CURRENT'] = 
                     $this->generation_info['ACTIVE'];
             }
-            $current_index_shard_file = $this->dir_name."/index".
-                $this->generation_info['CURRENT'];
+            $current_index_shard_file = $this->dir_name.
+                "/posting_doc_shards/index". $this->generation_info['CURRENT'];
                 
             if(file_exists($current_index_shard_file)) {
                 if(isset($this->generation_info['DISK_BASED']) &&
