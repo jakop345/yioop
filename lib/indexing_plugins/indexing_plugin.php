@@ -24,6 +24,7 @@
  *
  * @author Priya Gangaraju priya.gangaraju@gmail.com, Chris Pollett
  * @package seek_quarry
+ * @subpackage indexing_plugin
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
  * @copyright 2011
@@ -53,7 +54,7 @@ require_once BASE_DIR."/models/datasources/".DBMS."_manager.php";
  *
  * @author Priya Gangaraju, Chris Pollett
  * @package seek_quarry
- * @subpackage component
+ * @subpackage indexing_plugin
  */ 
 abstract class IndexingPlugin
 {

@@ -228,6 +228,7 @@ define('NORMALIZE_FREQUENCY', 10000);
 $INDEXED_FILE_TYPES =
     array(  
             "asp",
+            "bmp",
             "cgi",
             "cfm",
             "cfml",

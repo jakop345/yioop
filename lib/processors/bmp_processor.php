@@ -64,13 +64,18 @@ class BmpProcessor extends ImageProcessor
      */
     const BMP_HEADER_LEN = 108;
     /**
+     * Maximum pixel width or height
+     */
+    const MAX_DIM = 1000;
+
+    /**
      * {@inheritdoc}
      */
     function process($page, $url)
     {
         if(is_string($page)) {
             file_put_contents(CRAWL_DIR."/cache/tmp.bmp", $page); 
-            $image = @imagecreatefrombmp(CRAWL_DIR."/cache/tmp.bmp");
+            $image = $this->imagecreatefrombmp(CRAWL_DIR."/cache/tmp.bmp");
             $thumb_string = self::createThumb($image);
             $summary[self::TITLE] = "";
             $summary[self::DESCRIPTION] = "Image of ".
@@ -108,7 +113,7 @@ class BmpProcessor extends ImageProcessor
         $header = substr($hex, 0, self::BMP_HEADER_LEN);
 
 
-        $can_understand_flag= substr($header, 0, 4) == "424d";
+        $can_understand_flag = substr($header, 0, 4) == "424d";
         // get parameters of image from header bytes
         if ($can_understand_flag) {
             $header_parts = str_split($header, 2);
@@ -116,7 +121,8 @@ class BmpProcessor extends ImageProcessor
             $height = hexdec($header_parts[23] . $header_parts[22]);
             $bits_per_pixel = hexdec($header_parts[29] . $header_parts[28]);
             $can_understand_flag = (($bits_per_pixel == 24) ||
-                ($bits_per_pixel == 32));
+                ($bits_per_pixel == 32)) && ($width < 
+                self::MAX_DIM && $height < self::MAX_DIM );
             unset($header_parts);
         }
 
@@ -139,7 +145,6 @@ class BmpProcessor extends ImageProcessor
         $body_size = strlen($body)/2;
         $header_size = ($width * $height);
 
-        // Set-up padding flag
         // Set-up padding flag
         $padding_flag = ($body_size > ($header_size * 3) + 4);
 

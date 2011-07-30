@@ -1086,14 +1086,22 @@ class IndexShard extends PersistentStructure implements
      * 
      *  @param bool $to_string whether output should be written to a string
      *      rather than the default file location
+     *  @param bool $with_logging whether log messages should be written
+     *      as the shard save progresses
      *  @return string serialized shard if output was to string else empty 
      *      string
      */
-    public function save($to_string = false)
+    public function save($to_string = false, $with_logging = false)
     {
         $out = "";
         $this->mergeWordPostingsToString();
+        if($with_logging) {
+            crawlLog("Saving index shard .. done merge postings to string");
+        }
         $this->prepareWordsAndPrefixes();
+        if($with_logging) {
+            crawlLog("Saving index shard .. make prefixes");
+        }
         $header =  pack("N", $this->prefixes_len) .
             pack("N", $this->words_len) .
             pack("N", $this->word_docs_len) .
@@ -1104,6 +1112,9 @@ class IndexShard extends PersistentStructure implements
             pack("N", $this->num_link_docs) .
             pack("N", $this->len_all_docs) .
             pack("N", $this->len_all_link_docs);
+        if($with_logging) {
+            crawlLog("Saving index shard .. packed header");
+        }
         if($to_string) {
             $out = $header;
             $this->packWords(NULL);
@@ -1116,9 +1127,15 @@ class IndexShard extends PersistentStructure implements
             fwrite($fh, $header);
             fwrite($fh, $this->prefixes);
             $this->packWords($fh);
+            if($with_logging) {
+                crawlLog("Saving index shard .. wrote dictionary");
+            }
             $this->outputPostingLists($fh);
             fwrite($fh, $this->doc_infos);
             fclose($fh);
+        }
+        if($with_logging) {
+            crawlLog("Saving index shard .. done");
         }
         // clean up by returning to state where could add more docs
         $this->words = array();
