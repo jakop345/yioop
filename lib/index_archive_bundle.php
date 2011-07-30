@@ -374,7 +374,7 @@ class IndexArchiveBundle implements CrawlConstants
      */
     function forceSave()
     {
-        $this->getActiveShard()->save();
+        $this->getActiveShard()->save(false, true);
     }
 
 

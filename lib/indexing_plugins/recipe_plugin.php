@@ -25,7 +25,7 @@
  *
  * @author Priya Gangaraju priya.gangaraju@gmail.com
  * @package seek_quarry
- * @subpackage component
+ * @subpackage indexing_plugin
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
  * @copyright 2011
@@ -77,9 +77,8 @@ require_once BASE_DIR."/lib/crawl_constants.php";
  * 
  * @author Priya Gangaraju, Chris Pollett (reorganized and added documentation)
  * @package seek_quarry
- * @subpackage component
+ * @subpackage indexing_plugin
  */
-
 class RecipePlugin extends IndexingPlugin implements CrawlConstants
 {
 
@@ -495,6 +494,8 @@ if(!function_exists("getLocaleTag")) {
 
 /**
  * class to define vertex
+ * @package seek_quarry
+ * @subpackage indexing_plugin
  */
 class Vertex
 {
@@ -520,6 +521,8 @@ class Vertex
 }    
 /**
  * class to define edge
+ * @package seek_quarry
+ * @subpackage indexing_plugin
  */
 class Edge
 {
@@ -554,6 +557,8 @@ class Edge
  * the minimum spanning tree using heap. formCluster forms clusters by 
  * deleting the most expensive edge. BreadthFirstSearch is used to 
  * traverse the MST.
+ * @package seek_quarry
+ * @subpackage indexing_plugin
  */ 
 class Tree 
 {
@@ -703,6 +708,8 @@ class Tree
 }
 /**
  * heap to maintain the MST
+ * @package seek_quarry
+ * @subpackage indexing_plugin
  */
 class Cluster extends SplHeap
 {
@@ -717,6 +724,8 @@ class Cluster extends SplHeap
 }
 /**
  * heap to maintain the tree
+ * @package seek_quarry
+ * @subpackage indexing_plugin
  */
 class TreeCluster extends SplHeap
 {
@@ -732,6 +741,8 @@ class TreeCluster extends SplHeap
 
 /**
  * queue for the BFS traversal
+ * @package seek_quarry
+ * @subpackage indexing_plugin
  */
 class Queue
 {
