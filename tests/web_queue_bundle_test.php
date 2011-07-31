@@ -106,7 +106,6 @@ class WebQueueBundleTest extends UnitTest
             array('http://www.slashdot.org/', 3)
         );
 
-
         $this->assertEqual(
             $this->test_objects['FILE1']->getContents(), $expected_array, 
             "Insert Queue matches predicted");
