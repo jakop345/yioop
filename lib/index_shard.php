@@ -535,7 +535,7 @@ class IndexShard extends PersistentStructure implements
 
         $num_docs_so_far = 0;
         $results = array();
-        $end = min($this->word_docs_len, $last_offset);
+        $end = min($this->file_len - $this->docids_len, $last_offset);
         $num_docs_or_links =  
             self::numDocsOrLinks($start_offset, $last_offset);
 
@@ -1504,9 +1504,7 @@ class IndexShard extends PersistentStructure implements
     function getDocInfoSubstring($offset, $len)
     {
         if($this->read_only_from_disk) {
-            $base_offset = self::HEADER_LENGTH + 
-                $this->prefixes_len + $this->words_len + $this->word_docs_len;
-
+            $base_offset = $this->file_len - $this->docids_len;
             return $this->getShardSubstring($base_offset + $offset, $len);
         }
         return substr($this->doc_infos, $offset, $len);

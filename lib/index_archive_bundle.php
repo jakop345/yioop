@@ -266,7 +266,7 @@ class IndexArchiveBundle implements CrawlConstants
            in case merge tiers after adding to dictionary
         */
         $this->current_shard = new IndexShard(
-            $current_index_shard_file, $this->generation_info['ACTIVE'],  
+            $current_index_shard_file, $this->generation_info['ACTIVE'],
                 $this->num_docs_per_generation, true);
         $this->dictionary->addShardDictionary($this->current_shard);
     }
