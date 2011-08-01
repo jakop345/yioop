@@ -164,7 +164,7 @@ class IndexDictionary implements CrawlConstants
      * @param object $index_shard the shard to add the word to the dictionary
      *      with
      */
-    function addShardDictionary(&$index_shard) 
+    function addShardDictionary($index_shard) 
     {
         $out_slot = "A";
         if(file_exists($this->dir_name."/0/0A.dic")) {
@@ -193,11 +193,11 @@ class IndexDictionary implements CrawlConstants
                         $first_offset_flag = false;
                     }
                     $offset -= $first_offset;
-                    $out = pack("N", $offset).pack("N", $count);
+                    $out = pack("N", $offset) . pack("N", $count);
                     $last_set = $j;
                     $last_out = $prefix_info;
                     charCopy($out, $prefix_string, 
-                        (($i << 8) + $j)*self::PREFIX_ITEM_SIZE,
+                        (($i << 8) + $j) * self::PREFIX_ITEM_SIZE,
                         self::PREFIX_ITEM_SIZE);
                 }
             }
@@ -210,7 +210,7 @@ class IndexDictionary implements CrawlConstants
             if($last_set >= 0) {
                 list($offset, $count) = $last_out;
                 $next_offset = $base_offset + $offset + 
-                    $count*IndexShard::WORD_ITEM_LEN;
+                    $count * IndexShard::WORD_ITEM_LEN;
                 fwrite($fh, $index_shard->getShardSubstring($last_offset, 
                     $next_offset - $last_offset));
             } 
@@ -595,7 +595,10 @@ class IndexDictionary implements CrawlConstants
      }
 
     /**
-     *
+     * Looks up the shard information (which is actually embedded in
+     * the dictionary) for a info:url query
+     * @param string $hash_info_url hash of info:url meta word
+     * @return array summary (to the extent stoed in a shard) data for this url
      */
     function getInfoItem($hash_info_url)
     {

@@ -736,7 +736,7 @@ class WebQueueBundle implements Notifier
         gc_collect_cycles();
         unlink($url_archive_name);
         rename($tmp_archive_name, $url_archive_name); 
-        $tmp_archive->filename = $$url_archive_name;
+        $tmp_archive->filename = $url_archive_name;
         $this->to_crawl_archive =  $tmp_archive; 
 
     }
