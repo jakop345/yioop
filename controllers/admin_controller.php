@@ -1711,8 +1711,12 @@ class AdminController extends Controller implements CrawlConstants
                 "logindbms[elt('database-system').value]);\n";
             $data['SCRIPT'] .= 
                 "elt('use-memcache').onchange = function () {" .
+                "setDisplay('filecache',".
+                "(elt('use-memcache').checked) ? false: true);" .
                 "setDisplay('memcache',".
                 "(elt('use-memcache').checked) ? true : false);};" .
+                "setDisplay('filecache', ".
+                "(elt('use-memcache').checked) ? false : true);\n".
                 "setDisplay('memcache', ".
                 "(elt('use-memcache').checked) ? true : false);\n";
 
