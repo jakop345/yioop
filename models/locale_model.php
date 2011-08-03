@@ -63,7 +63,7 @@ class LocaleModel extends Model
      */
     var $locale_name;
     /**
-     * Combination of text direction and block porgression as a string. Has one 
+     * Combination of text direction and block progression as a string. Has one 
      * of four values: lr-tb, rl-tb, tb-lr, tb-rl. Other possible values for 
      * things like Arabic block quoted in Mongolian not supported
      * @var string

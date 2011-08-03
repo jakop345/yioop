@@ -48,7 +48,7 @@ require_once BASE_DIR."/views/helpers/helper.php";
 class PaginationHelper extends Helper
 {
     /**
-     * The maixmum numbered links to pages to show besides the next and 
+     * The maximum numbered links to pages to show besides the next and 
      * previous links
      *  @var int
      */
