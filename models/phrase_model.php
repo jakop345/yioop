@@ -49,6 +49,11 @@ require_once BASE_DIR."/lib/utility.php";
 require_once BASE_DIR."/lib/index_archive_bundle.php";
 
 /**
+ * Load FileCache class in case used
+ */
+require_once(BASE_DIR."/lib/file_cache.php");
+
+/**
  * Load iterators to get docs out of index archive
  */
 foreach(glob(BASE_DIR."/lib/index_bundle_iterators/*_iterator.php") 
@@ -88,10 +93,10 @@ class PhraseModel extends Model
     var $query_info;
 
     /**
-     * Number of pages to cache in one go in memcache
-     * Size chosen based on 1MB max object size for memcache
+     * Number of pages to cache in one go in memcache or filecache
+     * Size chosen based on 1MB max object size for memcache or filecache
      */
-     const NUM_CACHE_PAGES = 50;
+     const NUM_CACHE_PAGES = 10;
     /**
      * {@inheritdoc}
      */
@@ -628,7 +633,7 @@ class PhraseModel extends Model
      */
     function getSummariesByHash($word_structs, $limit, $num)
     {
-        global $MEMCACHE;
+        global $CACHE;
 
         $pages = array();
         $generation = 0;
@@ -636,7 +641,7 @@ class PhraseModel extends Model
             self::NUM_CACHE_PAGES;
         $start_slice = floor(($limit)/self::NUM_CACHE_PAGES) *
             self::NUM_CACHE_PAGES;
-        if(USE_MEMCACHE) {
+        if(USE_CACHE) {
             $mem_tmp = "";
             foreach($word_structs as $word_struct) {
                 $mem_tmp .= serialize($word_struct["KEYS"]).
@@ -651,7 +656,7 @@ class PhraseModel extends Model
             $results['PAGES'] = array();
             for($i=$start_slice; $i< $to_retrieve; $i+=self::NUM_CACHE_PAGES){
                 $summary_hash = crawlHash($mem_tmp.":".$i);
-                $slice = $MEMCACHE->get($summary_hash);
+                $slice = $CACHE->get($summary_hash);
                 if($slice === false) {
                     $cache_success = false;
                     break;
@@ -699,7 +704,7 @@ class PhraseModel extends Model
 
 
         $result_count = count($pages);
-        if(USE_MEMCACHE) {
+        if(USE_CACHE) {
             for($i = 0; $i < $result_count; $i++){
                 unset($pages[$i][self::LINKS]);
             }
@@ -708,7 +713,7 @@ class PhraseModel extends Model
                 $slice['PAGES'] = array_slice($pages, $i, 
                     self::NUM_CACHE_PAGES);
                 $slice['TOTAL_ROWS'] = $results['TOTAL_ROWS'];
-                $MEMCACHE->set($summary_hash, $slice);
+                $CACHE->set($summary_hash, $slice);
             }
 
         }

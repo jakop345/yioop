@@ -242,8 +242,10 @@ class WebArchiveBundle
             //this might not have been open yet
             $create_flag = false;
             $compressor = $this->compressor;
+            $compressor = $this->compressor;
+            $compressor_obj = new $compressor();
             $archive_name = $this->dir_name."/web_archive_".$index
-                . $compressor::fileExtension();
+                . $compressor_obj->fileExtension();
             if(!file_exists($archive_name)) {
                 $create_flag = true;
             }

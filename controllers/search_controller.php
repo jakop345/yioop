@@ -252,7 +252,8 @@ class SearchController extends Controller implements CrawlConstants
         $this->phraseModel->additional_meta_words = array();
         foreach($this->indexing_plugins as $plugin) {
             $plugin_name = ucfirst($plugin)."Plugin";
-            $tmp_meta_words = $plugin_name::getAdditionalMetaWords();
+            $plugin_obj = new $plugin_name();
+            $tmp_meta_words = $plugin_obj->getAdditionalMetaWords();
             $this->phraseModel->additional_meta_words = 
                 array_merge($this->phraseModel->additional_meta_words, 
                     $tmp_meta_words);

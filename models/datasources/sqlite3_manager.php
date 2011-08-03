@@ -63,6 +63,13 @@ class Sqlite3Manager extends DatasourceManager
      *  Filename of the Sqlite3 Database
      *  @var string
      */
+    var $dbname;
+
+    /**
+     *  Sqlite3 whether access to DB is through PDO object or SQLite3 object
+     *  @var bool
+     */
+    var $pdo_flag;
 
     /** {@inheritdoc} */
     function __construct() 
@@ -71,6 +78,15 @@ class Sqlite3Manager extends DatasourceManager
         if(!file_exists(CRAWL_DIR."/data")) {
             mkdir(CRAWL_DIR."/data");
             chmod(CRAWL_DIR."/data", 0777);
+        }
+        if(class_exists("SQLite3")) {
+            $this->pdo_flag = false;
+        } else if (class_exists("PDO") && 
+            in_array("sqlite", PDO::getAvailableDrivers())) {
+            $this->pdo_flag = true;
+        } else {
+            echo "SQLite3 needs to be installed!";
+            $this->pdo_flag = false;
         }
         $this->dbname = NULL;
     }
@@ -94,15 +110,22 @@ class Sqlite3Manager extends DatasourceManager
         }
 
         $this->dbname = $db_name;
-        $this->dbhandle = new SQLite3(CRAWL_DIR."/data/$db_name.db", 
-            SQLITE3_OPEN_READWRITE |SQLITE3_OPEN_CREATE);
+        if(!$this->pdo_flag) {
+            $this->dbhandle = new SQLite3(CRAWL_DIR."/data/$db_name.db", 
+                SQLITE3_OPEN_READWRITE |SQLITE3_OPEN_CREATE);
+        } else {
+            $this->dbhandle = new PDO("sqlite:".
+                CRAWL_DIR."/data/$db_name.db");
+        }
         return $this->dbhandle;
     }
 
     /** {@inheritdoc} */
     function disconnect() 
     {
-        $this->dbhandle->close();
+        if(!$this->pdo_flag) {
+            $this->dbhandle->close();
+        }
     }
 
     /** {@inheritdoc} */
@@ -116,7 +139,11 @@ class Sqlite3Manager extends DatasourceManager
     /** {@inheritdoc} */
     function affectedRows() 
     {
-        return $this->dbhandle->changes();
+        if(method_exists($this->dbhandle, "changes")) {
+            return $this->dbhandle->changes();
+        } else {
+            echo "Affected rows not supported in PDO!";
+        }
     }
 
     /** {@inheritdoc} */
@@ -128,15 +155,22 @@ class Sqlite3Manager extends DatasourceManager
     /** {@inheritdoc} */
     function fetchArray($result) 
     {
-        $row = $result->fetchArray(SQLITE3_ASSOC);
-
+        if(!$this->pdo_flag) {
+            $row = $result->fetchArray(SQLITE3_ASSOC);
+        } else {
+            $row = $result->fetch(PDO::FETCH_ASSOC);
+        }
         return $row;
     }
 
     /** {@inheritdoc} */
     function escapeString($str) 
     {
-        return $this->dbhandle->escapeString($str);
+        if(method_exists($this->dbhandle, "escapeString")) {
+            return $this->dbhandle->escapeString($str);
+        } else {
+            return addslashes($str);
+        }
     }
 
 

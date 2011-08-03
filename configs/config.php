@@ -92,11 +92,13 @@ if(file_exists(WORK_DIRECTORY."/profile.php")) {
     define('DEFAULT_LOCALE', "en-US");
     define('AUTH_KEY', 0);
     define('USE_MEMCACHE', false);
+    define('USE_FILECACHE', false);
     define('CACHE_LINK', true);
     define('SIMILAR_LINK', true);
     define('IN_LINK', true);
     define('IP_LINK', true);
     define('SIGNIN_LINK', true);
+    $INDEXING_PLUGINS = array();
 }
 
 if((DEBUG_LEVEL & ERROR_INFO) == ERROR_INFO) {
