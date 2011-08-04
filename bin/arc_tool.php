@@ -31,6 +31,8 @@
  * @filesource
  */
 
+if(php_sapi_name() != 'cli') {echo "BAD REQUEST"; exit();}
+
 /** Calculate base directory of script @ignore*/
 define("BASE_DIR", substr(
     dirname(realpath($_SERVER['PHP_SELF'])), 0, 
@@ -109,12 +111,6 @@ class ArcTool implements CrawlConstants
     {
         global $argv;
 
-        if(isset($_SERVER['DOCUMENT_ROOT']) && 
-            strlen($_SERVER['DOCUMENT_ROOT']) > 0) {
-            echo "BAD REQUEST";
-            exit();
-        }
-        
         if(!isset($argv[1])) {
             $this->usageMessageAndExit();
         }
@@ -362,4 +358,4 @@ class ArcTool implements CrawlConstants
 
 $arc_tool =  new ArcTool();
 $arc_tool->start();
-
+?>

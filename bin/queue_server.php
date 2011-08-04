@@ -31,6 +31,9 @@
  * @filesource
  */
 
+if(php_sapi_name() != 'cli') {echo "BAD REQUEST"; exit();}
+
+
 /** Calculate base directory of script 
  * @ignore 
  */

@@ -31,6 +31,9 @@
  * @filesource
  */
 
+
+if(php_sapi_name() != 'cli') {echo "BAD REQUEST"; exit();}
+
 /** 
  * Calculate base directory of script
  * @ignore
@@ -39,7 +42,7 @@ define("BASE_DIR", substr(
     dirname(realpath($_SERVER['PHP_SELF'])), 0, 
     -strlen("/bin")));
 
-ini_set("memory_limit","600M"); //so have enough memory to crawl big pages
+ini_set("memory_limit","750M"); //so have enough memory to crawl big pages
 
 /** Load in global configuration settings */
 require_once BASE_DIR.'/configs/config.php';
