@@ -49,6 +49,9 @@ if(!PROFILE) {
 /** NO_CACHE means don't try to use memcache*/
 define("NO_CACHE", true);
 
+/** USE_CACHE false rules out file cache as well*/
+define("USE_CACHE", false);
+
 /** Load the class that maintains our URL queue */
 require_once BASE_DIR."/lib/web_queue_bundle.php";
 
