@@ -52,13 +52,23 @@ session_start();
  * Sets up DB to be used
  */
 require_once(BASE_DIR."/models/datasources/".DBMS."_manager.php");
+/**
+ * Load FileCache class in case used
+ */
+require_once(BASE_DIR."/lib/file_cache.php");
 
 if(USE_MEMCACHE) {
-    $MEMCACHE = new Memcache();
+    $CACHE = new Memcache();
     foreach($MEMCACHES as $mc) {
-        $MEMCACHE->addServer($mc['host'], $mc['port']);
+        $CACHE->addServer($mc['host'], $mc['port']);
     }
     unset($mc);
+    define("USE_CACHE", true);
+} else if (USE_FILECACHE) {
+    $CACHE = new FileCache(WORK_DIRECTORY."/cache/queries");
+    define("USE_CACHE", true);
+} else {
+    define("USE_CACHE", false);
 }
 
 mb_internal_encoding("UTF-8");

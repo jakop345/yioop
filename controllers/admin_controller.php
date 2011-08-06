@@ -1346,7 +1346,7 @@ class AdminController extends Controller implements CrawlConstants
             array("name" => "GD Graphics Library", 
                 "check"=>"imagecreate", "type"=>"function"),
             array("name" => "SQLite3 Library", 
-                "check"=>"SQLite3", "type"=>"class"),
+                "check"=>"SQLite3|PDO", "type"=>"class"),
             array("name" => "Multibyte Character Library", 
                 "check"=>"mb_internal_encoding", "type"=>"function"),
         );
@@ -1359,9 +1359,16 @@ class AdminController extends Controller implements CrawlConstants
         $comma = "";
         foreach($required_items as $item) {
             $check_function = $item["type"]."_exists";
-            if(!$check_function($item["check"])) {
-                $comma = ", ";
+            $check_parts = explode("|", $item["check"]);
+            $check_flag = true;
+            foreach($check_parts as $check) {
+                if($check_function($check)) {
+                    $check_flag = false;
+                }
+            }
+            if($check_flag) {
                 $missing_required .= $comma.$item["name"];
+                $comma = ", ";
             }
         }
 
@@ -1391,11 +1398,18 @@ class AdminController extends Controller implements CrawlConstants
 
         $missing_optional = "";
         $comma = "";
-        foreach($required_items as $item) {
+        foreach($optional_items as $item) {
             $check_function = $item["type"]."_exists";
-            if(!$check_function($item["check"])) {
-                $comma = ", ";
+            $check_parts = explode("|", $item["check"]);
+            $check_flag = true;
+            foreach($check_parts as $check) {
+                if($check_function($check)) {
+                    $check_flag = false;
+                }
+            }
+            if($check_flag) {
                 $missing_optional .= $comma.$item["name"];
+                $comma = ", ";
             }
         }
         
@@ -1573,7 +1587,8 @@ class AdminController extends Controller implements CrawlConstants
                     }
                     if(!isset($data[$field])) {
                         $data[$field] = "";
-                        if(in_array($field, array('USE_MEMCACHE', 'IP_LINK',
+                        if(in_array($field, array(
+                            'USE_FILECACHE', 'USE_MEMCACHE', 'IP_LINK',
                             'CACHE_LINK', 'SIMILAR_LINK', 'IN_LINK',
                             'SIGNIN_LINK'))) {
                             $profile[$field] = false;
@@ -1696,8 +1711,12 @@ class AdminController extends Controller implements CrawlConstants
                 "logindbms[elt('database-system').value]);\n";
             $data['SCRIPT'] .= 
                 "elt('use-memcache').onchange = function () {" .
+                "setDisplay('filecache',".
+                "(elt('use-memcache').checked) ? false: true);" .
                 "setDisplay('memcache',".
                 "(elt('use-memcache').checked) ? true : false);};" .
+                "setDisplay('filecache', ".
+                "(elt('use-memcache').checked) ? false : true);\n".
                 "setDisplay('memcache', ".
                 "(elt('use-memcache').checked) ? true : false);\n";
 

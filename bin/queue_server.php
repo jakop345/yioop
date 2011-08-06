@@ -31,6 +31,9 @@
  * @filesource
  */
 
+if(php_sapi_name() != 'cli') {echo "BAD REQUEST"; exit();}
+
+
 /** Calculate base directory of script 
  * @ignore 
  */
@@ -218,6 +221,18 @@ class QueueServer implements CrawlConstants
     var $indexing_plugins;
 
     /**
+     * This is a list of hourly (timestamp, number_of_urls_crawled) data
+     * @var array
+     */
+    var $hourly_crawl_data;
+
+    /**
+     * This is an index of daily  (timestamp, number_of_urls_crawled) data
+     * @var array
+     */
+    var $daily_crawl_data;
+
+    /**
      * holds the post processors selected in the crawl options page
      */
 
@@ -236,6 +251,8 @@ class QueueServer implements CrawlConstants
         $this->meta_words = array();
         $this->last_index_save_time = 0;
         $this->index_dirty = false;
+        $this->hourly_crawl_data = array();
+        $this->daily_crawl_data = array();
     }
 
     /**
@@ -1127,6 +1144,26 @@ class QueueServer implements CrawlConstants
             CRAWL_DIR.'/cache/'.self::index_data_base_name.$this->crawl_time);
         $index_archive_info = unserialize($info_bundle['DESCRIPTION']);
         $crawl_status['COUNT'] = $info_bundle['COUNT'];
+        $now = time();
+        if(count($this->hourly_crawl_data) > 0 ) {
+            $last_recent_hourly_pair = array_pop($this->hourly_crawl_data);
+            $change_in_time_hours = 
+                floatval(($now - $last_recent_hourly_pair[0])/3600.0);
+            $change_in_urls = floatval($info_bundle['COUNT'] - 
+                $last_recent_hourly_pair[1]);
+            $crawl_status['VISITED_URLS_COUNT_PER_HOUR'] = 
+                $change_in_urls/$change_in_time_hours;
+            if($change_in_time_hours <= 1) {
+                $this->hourly_crawl_data[] = $last_recent_hourly_pair;
+            }
+        } else {
+            $change_in_time_hours = 
+                floatval(($now - $this->crawltime)/3600.0);
+            $crawl_status['VISITED_URLS_COUNT_PER_HOUR'] = 
+                $info_bundle['COUNT']/$change_in_time_hours;
+        }
+        array_unshift($this->hourly_crawl_data, 
+            array($now, $info_bundle['COUNT']));
         $crawl_status['VISITED_URLS_COUNT'] =$info_bundle['VISITED_URLS_COUNT'];
         $crawl_status['DESCRIPTION'] = $index_archive_info['DESCRIPTION'];
         $crawl_status['QUEUE_PEAK_MEMORY'] = memory_get_peak_usage();
@@ -1138,6 +1175,8 @@ class QueueServer implements CrawlConstants
         crawlLog(
             "The current crawl description is: ".
                 $index_archive_info['DESCRIPTION']);
+        crawlLog("Estimated Unique Pages/Hour".
+            $crawl_status['VISITED_URLS_COUNT_PER_HOUR']);
         crawlLog("Number of unique pages so far: ".
             $info_bundle['VISITED_URLS_COUNT']);
         crawlLog("Total urls extracted so far: ".$info_bundle['COUNT']); 

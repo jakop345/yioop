@@ -53,7 +53,7 @@ class ProfileModel extends Model
             'DEFAULT_LOCALE', 'DEBUG_LEVEL', 'DBMS','DB_URL', 
             'DB_NAME', 'DB_USER', 'DB_PASSWORD', 
             'QUEUE_SERVER', 'AUTH_KEY', "ROBOT_DESCRIPTION", 'WEB_URI',
-            'USE_MEMCACHE', 'MEMCACHE_SERVERS', 'CACHE_LINK', 
+            'USE_MEMCACHE', 'MEMCACHE_SERVERS', 'USE_FILECACHE', 'CACHE_LINK', 
             'SIMILAR_LINK', 'IN_LINK', 'IP_LINK', 'SIGNIN_LINK',
             'ROBOT_INSTANCE');
     /**

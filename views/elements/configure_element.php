@@ -224,6 +224,14 @@ class ConfigureElement extends Element
                     name="MEMCACHE_SERVERS"><?php e($data['MEMCACHE_SERVERS']);
                 ?></textarea>
                 </div>
+                <div id="filecache">
+                <div class="topmargin"><label for="use-filecache"><b><?php 
+                    e(tl('configure_element_use_filecache'))?></b></label>
+                        <input type="checkbox" id="use-filecache" 
+                            name="USE_FILECACHE" value="true" <?php 
+                            e($data['USE_FILECACHE'] ? "checked='checked'" :
+                                "" ); ?> /></div>
+                </div>
             </fieldset>
             </div>
             <div class="topmargin"><fieldset><legend><?php 

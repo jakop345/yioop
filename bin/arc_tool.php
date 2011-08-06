@@ -31,6 +31,8 @@
  * @filesource
  */
 
+if(php_sapi_name() != 'cli') {echo "BAD REQUEST"; exit();}
+
 /** Calculate base directory of script @ignore*/
 define("BASE_DIR", substr(
     dirname(realpath($_SERVER['PHP_SELF'])), 0, 
@@ -46,6 +48,9 @@ if(!PROFILE) {
 
 /** NO_CACHE means don't try to use memcache*/
 define("NO_CACHE", true);
+
+/** USE_CACHE false rules out file cache as well*/
+define("USE_CACHE", false);
 
 /** Load the class that maintains our URL queue */
 require_once BASE_DIR."/lib/web_queue_bundle.php";
@@ -109,12 +114,6 @@ class ArcTool implements CrawlConstants
     {
         global $argv;
 
-        if(isset($_SERVER['DOCUMENT_ROOT']) && 
-            strlen($_SERVER['DOCUMENT_ROOT']) > 0) {
-            echo "BAD REQUEST";
-            exit();
-        }
-        
         if(!isset($argv[1])) {
             $this->usageMessageAndExit();
         }
@@ -362,4 +361,4 @@ class ArcTool implements CrawlConstants
 
 $arc_tool =  new ArcTool();
 $arc_tool->start();
-
+?>

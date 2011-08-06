@@ -49,7 +49,6 @@ require_once BASE_DIR."/lib/crawl_constants.php";
 /**
  * Library of functions used to manipulate words and phrases 
  *
- *
  * @author Chris Pollett
  *
  * @package seek_quarry
@@ -195,7 +194,8 @@ class PhraseParser
 
 
             if($stemmer != NULL) {
-                $stem = $stemmer::stem($pre_stem);
+                $stem_obj = new $stemmer(); //for php 5.2 compatibility
+                $stem =  $stem_obj->stem($pre_stem); 
             } else {
                 $stem = $pre_stem;
             }
