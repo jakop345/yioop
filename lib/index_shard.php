@@ -421,8 +421,8 @@ class IndexShard extends PersistentStructure implements
             $rank <<= 19;
             $flags += $rank;
         }
-
-        $len_num_keys = $this->packDoclenNum(($flags + $doc_len), $num_keys);
+        $item_len = ($is_doc) ? $doc_len: $link_doc_len;
+        $len_num_keys = $this->packDoclenNum(($flags + $item_len), $num_keys);
 
         $this->doc_infos .=  $len_num_keys;
         $added_len += strlen($len_num_keys);
@@ -596,8 +596,9 @@ class IndexShard extends PersistentStructure implements
         $offset = 0;
         list($doc_index, $item[self::POSITION_LIST]) = 
             $this->unpackPosting($posting, $offset);
-        $item[self::PROXIMITY] = 1;
-        $occurrences = count($item[self::POSITION_LIST]);
+        $item[self::PROXIMITY] = 
+            $this->computeProximity($item[self::POSITION_LIST]);
+        $occurrences = $this->weightedCount($item[self::POSITION_LIST]);
 
         if($occurrences < $occurs) {
             $occurrences = $occurs;
@@ -620,7 +621,7 @@ class IndexShard extends PersistentStructure implements
 
         $is_doc = (($doc_len & self::LINK_FLAG) == 0) ? true : false;
         if(!$is_doc) {
-            $doc_len -= self::LINK_FLAG;
+            $doc_len &= (self::LINK_FLAG - 1);
         }
         $item[self::IS_DOC] = $is_doc;
         /* 
@@ -631,7 +632,7 @@ class IndexShard extends PersistentStructure implements
         $pre_rank = ($doc_len & $rank_mask);
         if( $pre_rank > 0) {
             $item[self::DOC_RANK] = $pre_rank >> 19;
-            $doc_len -= $pre_rank;
+            $doc_len &= (2 << 19 - 1);
         }
 
         $skip_stats = false;
@@ -643,10 +644,12 @@ class IndexShard extends PersistentStructure implements
         } else if($is_doc) {
             $average_doc_len = $this->len_all_docs/$this->num_docs;
             $num_docs = $this->num_docs;
+            $type_weight = 1;
         } else {
             $average_doc_len = ($this->num_link_docs != 0) ? 
                 $this->len_all_link_docs/$this->num_link_docs : 0;
             $num_docs = $this->num_link_docs;
+            $type_weight = LINK_WEIGHT;
         }
         if(!isset($item['KEY'])) {
             $doc_id = $this->getDocInfoSubstring(
@@ -657,17 +660,36 @@ class IndexShard extends PersistentStructure implements
         if(!$skip_stats) {
             self::docStats($item, $occurrences, $doc_len, $num_doc_or_links, 
                 $average_doc_len, $num_docs, 
-                $this->num_docs + $this->num_link_docs);
+                $this->num_docs + $this->num_link_docs, $type_weight);
         }
 
         return $doc_id;
 
     }
+    /**
+     *
+     */
+    function weightedCount($position_list) {
+        $count = 0;
+        foreach($position_list as $position) {
+            $count += ($position < AD_HOC_TITLE_LENGTH) ?
+                TITLE_WEIGHT : DESCRIPTION_WEIGHT;
+        }
+        return $count;
+    }
+
+    /**
+     *
+     */
+    function computeProximity($position_list) {
+        return ($position_list[0] < AD_HOC_TITLE_LENGTH) ?
+            TITLE_WEIGHT : DESCRIPTION_WEIGHT;
+    }
 
     /**
      *  Computes BM25F relevance and a score for the supplied item based
-     *  on the supplied parameters
-     * 
+     *  on the supplied parameters.
+     *
      *  @param array &$item doc summary to compute a relevance and score for.
      *      Pass-by-ref so self::RELEVANCE and self::SCORE fields can be changed
      *  @param int $occurrences - number of occurences of the term in the item
@@ -677,9 +699,10 @@ class IndexShard extends PersistentStructure implements
      *  @param int $num_docs either number of links or number of docs depending
      *      if item represents a link or a doc.
      *  @param int $total_docs_or_links number of docs or links in corpus
+     *  @param float BM25F weight for this component (doc or link) of score
      */
     static function docStats(&$item, $occurrences, $doc_len, $num_doc_or_links, 
-        $average_doc_len, $num_docs, $total_docs_or_links)
+        $average_doc_len, $num_docs, $total_docs_or_links, $type_weight)
     {
 
         $doc_ratio = ($average_doc_len > 0) ?
@@ -695,9 +718,7 @@ class IndexShard extends PersistentStructure implements
         $IDF = log(($num_docs - $num_term_occurrences + 0.5) /
             ($num_term_occurrences + 0.5));
 
-        $item[self::RELEVANCE] = 0.5 * $IDF * $pre_relevance;
-
-
+        $item[self::RELEVANCE] = 0.5 * $IDF * $pre_relevance * $type_weight;
         $item[self::SCORE] = $item[self::DOC_RANK]
             * $item[self::RELEVANCE];
     }
@@ -1593,8 +1614,10 @@ class IndexShard extends PersistentStructure implements
         $shard = new IndexShard($fname);
         if($data === NULL) {
             $fh = fopen($fname, "rb");
+            $shard->file_len = filesize($fname);
             $header = fread($fh, self::HEADER_LENGTH);
         } else {
+            $shard->file_len = strlen($data);
             $header = substr($data, 0, self::HEADER_LENGTH);
             $pos = self::HEADER_LENGTH;
         }

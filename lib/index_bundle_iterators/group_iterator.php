@@ -166,6 +166,7 @@ class GroupIterator extends IndexBundleIterator
     {
         // first get a block of documents on which grouping can be done
         $pages =  $this->getPagesToGroup();
+
         $this->count_block_unfiltered = count($pages);
         if(!is_array($pages)) {
             return $pages;
@@ -456,11 +457,8 @@ class GroupIterator extends IndexBundleIterator
                 } else {
                     $boost = 0;
                 }
-
                 $out_pages[$hash_url][self::SCORE] = 
-                    ($out_pages[$hash_url][self::HASH_SUM_SCORE] + 
-                        $boost *$out_pages[$hash_url][self::RELEVANCE]
-                        );
+                    $out_pages[$hash_url][self::HASH_SUM_SCORE] + $boost;
             } else {
                 $out_pages[$hash_url][self::SCORE] = 
                     $out_pages[$hash_url][self::HASH_SUM_SCORE]; 

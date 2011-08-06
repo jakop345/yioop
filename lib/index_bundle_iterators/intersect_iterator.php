@@ -212,6 +212,7 @@ class IntersectIterator extends IndexBundleIterator
         $counters = array_fill(0, $num_iterators, 0);
 
         $min_diff = 5000000;
+        $weight = DESCRIPTION_WEIGHT;
         do {
             $min_counter = ($counters[0] < $len_lists[0] - 1) ? 0 : -1;
             $o_position = $position_lists[0][$counters[0]];
@@ -230,11 +231,14 @@ class IntersectIterator extends IndexBundleIterator
             }
             if($total_diff < $min_diff) {
                 $min_diff = $total_diff;
+                if($positions[$num_iterators -1] < AD_HOC_TITLE_LENGTH) {
+                    $weight = TITLE_WEIGHT;
+                }
             }
             if($min_counter >=0) $counters[$min_counter]++;
         } while($min_counter >= 0);
 
-        return ($num_iterators - 1)/$min_diff;
+        return $weight*($num_iterators - 1)/$min_diff;
     }
 
     /**
