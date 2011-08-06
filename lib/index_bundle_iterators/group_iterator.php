@@ -458,7 +458,8 @@ class GroupIterator extends IndexBundleIterator
                     $boost = 0;
                 }
                 $out_pages[$hash_url][self::SCORE] = 
-                    $out_pages[$hash_url][self::HASH_SUM_SCORE] + $boost;
+                    $out_pages[$hash_url][self::HASH_SUM_SCORE]
+                     + 0*$boost;
             } else {
                 $out_pages[$hash_url][self::SCORE] = 
                     $out_pages[$hash_url][self::HASH_SUM_SCORE]; 
@@ -499,7 +500,7 @@ class GroupIterator extends IndexBundleIterator
                 $min = ($current_rank < $min ) ? $current_rank : $min;
                 $max = ($max < $current_rank ) ? $current_rank : $max;
                 $sum_score += $hash_page[self::DOC_RANK] 
-                    * $relevance_boost * pow(1.2,$hash_page[self::RELEVANCE]) *
+                    * $relevance_boost * pow(1.1,$hash_page[self::RELEVANCE]) *
                     $hash_page[self::PROXIMITY] * $domain_weights[$hash_host];
                 $sum_rank += $hash_page[self::DOC_RANK] 
                     * $domain_weights[$hash_host];

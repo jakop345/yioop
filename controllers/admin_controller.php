@@ -251,6 +251,18 @@ class AdminController extends Controller implements CrawlConstants
                 $data = array_merge($data, $crawl_status);
             }
         }
+        if(isset($data['VISITED_COUNT_HISTORY']) && 
+            count($data['VISITED_COUNT_HISTORY']) > 1) {
+            $recent = array_shift($data['VISITED_COUNT_HISTORY']);
+            $oldest = array_pop($data['VISITED_COUNT_HISTORY']);
+            $change_in_time_hours = floatval($recent[0] - $oldest[0])/3600.;
+            $change_in_urls = $recent[1] - $oldest[1];
+            $data['VISITED_URLS_COUNT_PER_HOUR'] = 
+                number_format($change_in_urls/$change_in_time_hours, 2, 
+                    ".", "");
+        } else {
+            $data['VISITED_URLS_COUNT_PER_HOUR'] = 0;
+        }
         $data['RECENT_CRAWLS'] = $this->crawlModel->getCrawlList(false, true);
         if(isset($data['CRAWL_TIME'])) { 
             //erase from previous crawl list any active crawl
