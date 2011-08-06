@@ -1147,23 +1147,15 @@ class QueueServer implements CrawlConstants
         $now = time();
         if(count($this->hourly_crawl_data) > 0 ) {
             $last_recent_hourly_pair = array_pop($this->hourly_crawl_data);
-            $change_in_time_hours = 
-                floatval(($now - $last_recent_hourly_pair[0])/3600.0);
-            $change_in_urls = floatval($info_bundle['COUNT'] - 
-                $last_recent_hourly_pair[1]);
-            $crawl_status['VISITED_URLS_COUNT_PER_HOUR'] = 
-                $change_in_urls/$change_in_time_hours;
-            if($change_in_time_hours <= 1) {
+            $change_in_time = 
+                ($now - $last_recent_hourly_pair[0]);
+            if($change_in_time <= 3600) {
                 $this->hourly_crawl_data[] = $last_recent_hourly_pair;
             }
-        } else {
-            $change_in_time_hours = 
-                floatval(($now - $this->crawltime)/3600.0);
-            $crawl_status['VISITED_URLS_COUNT_PER_HOUR'] = 
-                $info_bundle['COUNT']/$change_in_time_hours;
-        }
+        } 
         array_unshift($this->hourly_crawl_data, 
-            array($now, $info_bundle['COUNT']));
+            array($now, $info_bundle['VISITED_URLS_COUNT']));
+        $crawl_status['VISITED_COUNT_HISTORY'] = $this->hourly_crawl_data;
         $crawl_status['VISITED_URLS_COUNT'] =$info_bundle['VISITED_URLS_COUNT'];
         $crawl_status['DESCRIPTION'] = $index_archive_info['DESCRIPTION'];
         $crawl_status['QUEUE_PEAK_MEMORY'] = memory_get_peak_usage();
