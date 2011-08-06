@@ -1154,7 +1154,7 @@ class QueueServer implements CrawlConstants
             }
         } 
         array_unshift($this->hourly_crawl_data, 
-            array($now, $info_bundle['COUNT']));
+            array($now, $info_bundle['VISITED_URLS_COUNT']));
         $crawl_status['VISITED_COUNT_HISTORY'] = $this->hourly_crawl_data;
         $crawl_status['VISITED_URLS_COUNT'] =$info_bundle['VISITED_URLS_COUNT'];
         $crawl_status['DESCRIPTION'] = $index_archive_info['DESCRIPTION'];

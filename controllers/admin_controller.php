@@ -258,8 +258,7 @@ class AdminController extends Controller implements CrawlConstants
             $change_in_time_hours = floatval($recent[0] - $oldest[0])/3600.;
             $change_in_urls = $recent[1] - $oldest[1];
             $data['VISITED_URLS_COUNT_PER_HOUR'] = 
-                number_format($change_in_urls/$change_in_time_hours, 2, 
-                    ".", "");
+                $change_in_urls/$change_in_time_hours;
         } else {
             $data['VISITED_URLS_COUNT_PER_HOUR'] = 0;
         }

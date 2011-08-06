@@ -121,8 +121,11 @@ class CrawlstatusView extends View
         </p>
         <p><b><?php e(tl('crawlstatus_view_urls_per_hour')); ?></b> <?php
             if(isset($data['VISITED_URLS_COUNT_PER_HOUR'])) {
-                e(number_format($data['VISITED_URLS_COUNT_PER_HOUR'], 2)
-                    ); } else {e("0");}
+                e(number_format($data['VISITED_URLS_COUNT_PER_HOUR'], 
+                    2, ".", "")); 
+            } else {
+                e("0.00");
+            }
             ?></p>
         <p><b><?php e(tl('crawlstatus_view_visited_urls')); ?></b> <?php
             if(isset($data['VISITED_URLS_COUNT'])) {
