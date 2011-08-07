@@ -188,7 +188,7 @@ class GroupIterator extends IndexBundleIterator
             /*
                 Calculate aggregate values for each field of the groups we found
              */
-            $pages = $this->computeBoostAndOutPages($pre_out_pages);
+            $pages = $this->computeOutPages($pre_out_pages);
         }
         $this->pages = $pages;
         return $pages;
@@ -338,133 +338,30 @@ class GroupIterator extends IndexBundleIterator
      * For a collection of grouped pages generates a grouped summary for each
      * group and returns an array of out pages consisting 
      * of single summarized documents for each group. These single summarized 
-     * documents have aggregated scores to which a "boost" has been added. 
-     * For a single summarized page, its boost is an estimate of the score of
-     * the pages that would have been grouped with it had more pages from the
-     * underlying iterator been examined. This is calculated by looking at
-     * total number of inlinks to the page, estimating how many of these inlinks
-     * would have been returned by the current iterator, then assuming the
-     * scores of these pages follow a Zipfian distribution and computing the
-     * appropriate integral.
+     * documents have aggregated scores. 
      *
      * @param array &$pre_out_pages array of groups of pages for which out pages
      *      are to be generated.
-     * @return array $out_pages array of single summarized documents to which a
-     *      "boost" has been applied
+     * @return array $out_pages array of single summarized documents
      */
-    function computeBoostAndOutPages(&$pre_out_pages)
+    function computeOutPages(&$pre_out_pages)
     {
         $out_pages = array();
-        $hash_inlinks = array();
-        $indexes = array();
-        $one_word_flag = isset($this->index_bundle_iterator->word_key);
-        foreach($pre_out_pages as $hash_url => $group_infos) {
-            $key = $group_infos[0]["KEY"];
-            $tmp_index =  $this->getIndex($key);
-            $indexes[$tmp_index->dir_name] = $tmp_index;
-            $hash_inlinks[$tmp_index->dir_name][$hash_url] = 
-                $pre_out_pages[$hash_url][0][self::INLINKS];
 
-            $hash_inlinks[$tmp_index->dir_name][$hash_url] =
-                crawlHash("link:".base64Hash($hash_url), true);
-
-        }
-        $num_docs_array = array();
-        foreach($hash_inlinks as $name => $inlinks) {
-            $num_docs_array = array_merge($num_docs_array, 
-                $indexes[$name]->dictionary->getNumDocsArray($inlinks));
-        }
         foreach($pre_out_pages as $hash_url => $group_infos) {
             $out_pages[$hash_url] = $pre_out_pages[$hash_url][0];
             $out_pages[$hash_url][self::SUMMARY_OFFSET] = array();
             unset($out_pages[$hash_url][self::GENERATION]);
-            for($i = 0; $i <
-                $pre_out_pages[$hash_url][0][self::HASH_URL_COUNT]; $i++) {
+
+            $hash_count = $out_pages[$hash_url][self::HASH_URL_COUNT];
+            for($i = 0; $i < $hash_count; $i++) {
                 $doc_info = $group_infos[$i];
                 $out_pages[$hash_url][self::SUMMARY_OFFSET][] = 
                     array($doc_info["KEY"], $doc_info[self::GENERATION],
                         $doc_info[self::SUMMARY_OFFSET]);
             }
-            $num_inlinks = $num_docs_array[$hash_url] + 0.1;
-
-            /* approximate the scores contributed to this
-               doc for this word search by links we haven't
-               reached in our grouping
-            */
-
-            $num_docs_seen = $this->seen_docs_unfiltered + 
-                $this->count_block_unfiltered;
-
-            $hash_count = $out_pages[$hash_url][self::HASH_URL_COUNT];
-
-            /*
-                An attempt to approximate the total number of inlinks
-                to a document which will have the terms in question.
-
-                A result after grouping consists of a document and inlinks
-                which contain the terms of the base iterator.
-                
-                $hash_count/($num_docs_seen *sqrt($num_inlinks))
-                
-                approximates the probability that an inlink for 
-                a particular document happens to 
-                contain the terms of the iterator. The last
-                1/sqrt($num_inlinks) is a fudge factor to
-                the number of inlinks that contain the term. 
-                After $num_docs_seen
-                many documents, there are $num_inlinks - $hash_count
-                many inlinks which might appear in the remainder of
-                the iterators document list, giving a value
-                for the $num_inlinks_not_seen as per the equation below:
-             */
-
-            $docs_inlinks_ratio = $num_inlinks/$this->num_docs;
-            $group_ratio = $hash_count/$num_docs_seen;
-            $min_ratio = min($docs_inlinks_ratio, $group_ratio);
-
-            $num_inlinks_not_seen = 
-                 ($num_inlinks - $hash_count) * $min_ratio ;
-
-            $total_inlinks_for_doc = 
-                $num_inlinks_not_seen + $hash_count;
-            /*
-                 we estimate score[x] of the xth inlink for this document
-                 as approximately score[x] = Ae^{-alpha * ln x}.
-                 i.e., we try to fit the zipfian distribution to the scores
-                 so far and we suck up the 1/zeta from this distrbution
-                 as part of A. Here alpha can be calculated using
-                 max/min = e^{-alpha(ln 1 - ln hash_count)}
-                 as 
-                 ln(max_seen_score/min_seen_score)/ln(hash_count)
-                 and A can be calculated as
-                 max_seen_score*e^(-alpha *ln 1) = max_seen_score
-                 If n = $total_inlinks_for_doc, then by integrating this
-                 from k = self::HASH_URL_COUNT to n, we get an 
-                 approximation for the score we haven't seen (which
-                 we call the boost). 
-                 boost = (A/(1-alpha)) *
-                    (e^{(1- alpha)* ln n}- e^{(1- alpha)* ln k})
-            */
-            $max_rank = $out_pages[$hash_url][self::MAX];
-            $min_rank = $out_pages[$hash_url][self::MIN];
-            if($hash_count > 1 && $min_rank < $max_rank ) {
-                $alpha  = log($max_rank/$min_rank)/log($hash_count);
-                $oneminus = 1 - $alpha;
-                if($oneminus > 0) {
-                    $boost = ($max_rank/$oneminus)*
-                        ( pow($total_inlinks_for_doc, $oneminus)
-                            - pow($hash_count, $oneminus) );
-                } else {
-                    $boost = 0;
-                }
-                $out_pages[$hash_url][self::SCORE] = 
-                    $out_pages[$hash_url][self::HASH_SUM_SCORE]
-                     + 0*$boost;
-            } else {
-                $out_pages[$hash_url][self::SCORE] = 
-                    $out_pages[$hash_url][self::HASH_SUM_SCORE]; 
-            }
-
+            $out_pages[$hash_url][self::SCORE] = 
+                $out_pages[$hash_url][self::HASH_SUM_SCORE]; 
         }
         return $out_pages;
     }

@@ -95,7 +95,6 @@ require_once BASE_DIR."/lib/crawl_constants.php";
 /** used to build miniinverted index*/
 require_once BASE_DIR."/lib/index_shard.php";
 
-
 /*
  *  We'll set up multi-byte string handling to use UTF-8
  */
