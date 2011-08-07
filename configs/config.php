@@ -121,8 +121,13 @@ if(!PROFILE) {
 /** this is the User-Agent names the crawler provides 
  * a web-server it is crawling
  */
-define('USER_AGENT', 
-    'Mozilla/5.0 (compatible; '.USER_AGENT_SHORT.'  +'.QUEUE_SERVER.'bot.php)');
+ if(!stristr(QUEUE_SERVER, 'localhost') && !stristr(QUEUE_SERVER,'127.0.0.1')) {
+    define('USER_AGENT', 
+        'Mozilla/5.0 (compatible; '.USER_AGENT_SHORT.
+        '  +'.QUEUE_SERVER.'bot.php)');
+} else {
+    define('USER_AGENT', 'Mozilla/5.0 (compatible; '.USER_AGENT_SHORT.')');
+}
 
 /** name of the cookie used to manage the session 
  * (store language and perpage settings)
