@@ -259,7 +259,8 @@ $INDEXED_FILE_TYPES =
             "tab",
             "tsv",
             "txt",
-            "xml");
+            "xml",
+            "xlsx");
 
 /**
  * @global array filetypes which should be considered images
@@ -293,7 +294,9 @@ $PAGE_PROCESSORS = array(   "text/html" => "HtmlProcessor",
                             "image/gif" => "GifProcessor", 
                             "image/png" => "PngProcessor",
                             "image/bmp" => "BmpProcessor",
-                            "image/svg+xml"=> "SvgProcessor"
+                            "image/svg+xml"=> "SvgProcessor",
+                            "application/vnd.openxmlformats-officedocument.
+                                spreadsheetml.sheet" => "XlsxProcessor"
 );
 
 $INDEXING_PLUGINS = array("recipe");
