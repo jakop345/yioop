@@ -45,10 +45,10 @@ class SearchFiltersElement extends Element
 {
 
     /**
-     * Draws 
+     * Draws the Screen for the Search Filter activity. This activity is
+     * used to filter urls out of the search results
      *
-     * @param array $data keys are generally the different setting that can 
-     *      be set in the crawl.ini file
+     * @param array $data keys used to store disallowed_sites
      */
     public function render($data) 
     {
