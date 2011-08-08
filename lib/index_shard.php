@@ -682,7 +682,8 @@ class IndexShard extends PersistentStructure implements
      *
      */
     function computeProximity($position_list) {
-        return ($position_list[0] < AD_HOC_TITLE_LENGTH) ?
+        return (isset($position_list[0]) && 
+            $position_list[0] < AD_HOC_TITLE_LENGTH) ?
             TITLE_WEIGHT : DESCRIPTION_WEIGHT;
     }
 

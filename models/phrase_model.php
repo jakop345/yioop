@@ -194,11 +194,13 @@ class PhraseModel extends Model
      * @param int $results_per_page  how many results to return
      * @param bool $format  whether to highlight in the returned summaries the 
      *      matched text
+     * @param array $filter an array of hashes of domains to filter from
+     *      results
      * @return array an array of summary data
      */
     function getPhrasePageResults(
         $input_phrase, $low = 0, $results_per_page = NUM_RESULTS_PER_PAGE, 
-        $format = true)
+        $format = true, &$filter = NULL)
     {
         if(QUERY_STATISTICS) {
             $indent= "&nbsp;&nbsp;";
@@ -315,7 +317,7 @@ class PhraseModel extends Model
                 $summaries_time = microtime();
             }
             $out_results = $this->getSummariesByHash($word_structs, 
-                $low, $phrase_num);
+                $low, $phrase_num, $filter);
 
             if(isset($out_results['PAGES']) && 
                 count($out_results['PAGES']) != 0) {
@@ -629,9 +631,11 @@ class PhraseModel extends Model
      *      INDEX_ARCHIVE -- an index_archive object to get results from
      * @param int $limit number of first document in order to return
      * @param int $num number of documents to return summaries of
+     * @param array &$filter an array of hashes of domains to filter from
+     *      results
      * @return array document summaries
      */
-    function getSummariesByHash($word_structs, $limit, $num)
+    function getSummariesByHash($word_structs, $limit, $num, &$filter)
     {
         global $CACHE;
 
@@ -672,7 +676,7 @@ class PhraseModel extends Model
             }
         }
 
-        $query_iterator = $this->getQueryIterator($word_structs);
+        $query_iterator = $this->getQueryIterator($word_structs, $filter);
         $num_retrieved = 0;
         $pages = array();
         while(is_object($query_iterator) && 
@@ -738,10 +742,12 @@ class PhraseModel extends Model
      *      DISALLOW_PHRASES -- an array of words the document must not contain
      *      WEIGHT -- a weight to multiple scores returned from this iterator by
      *      INDEX_ARCHIVE -- an index_archive object to get results from
+     * @param array &$filter an array of hashes of domains to filter from
+     *      results
      * @return &object an iterator for iterating through results to the 
      *  query
      */
-    function getQueryIterator($word_structs)
+    function getQueryIterator($word_structs, &$filter)
     {
         $iterators = array();
         $total_iterators = 0;
@@ -760,7 +766,8 @@ class PhraseModel extends Model
 
             for($i = 0; $i < $num_word_keys; $i++) {
                 $word_iterators[$i] = 
-                    new WordIterator($word_keys[$i], $index_archive);
+                    new WordIterator($word_keys[$i], $index_archive, 
+                        false, $filter);
             }
             if($num_word_keys == 1) {
                 $base_iterator = $word_iterators[0];
