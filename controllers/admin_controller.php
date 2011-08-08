@@ -37,6 +37,9 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 require_once BASE_DIR."/controllers/controller.php";
 /** Loads common constants for web crawling */
 require_once BASE_DIR."/lib/crawl_constants.php";
+/** Need get host for search filter admin */
+require_once BASE_DIR."/lib/url_parser.php";
+
 
 /**
  * Controller used to handle admin functionalities such as
@@ -62,15 +65,19 @@ class AdminController extends Controller implements CrawlConstants
      * @var array
      */
     var $models = array(
-        "signin", "user", "activity", "crawl", "role", "locale", "profile");
+        "signin", "user", "activity", "crawl", "role", "locale", "profile",
+        "searchfilters");
     /**
      * Says which activities (roughly methods invoke from the web) this 
      * controller will respond to
      * @var array
      */
     var $activities = array("signin", "manageAccount", "manageUsers",
-        "manageRoles", "manageCrawls", "mixCrawls",
+        "manageRoles", "manageCrawls", "mixCrawls", "searchFilters",
         "manageLocales", "crawlStatus", "configure");
+
+    /** Number of seconds of no fetcher contact before crawl is deemed dead*/
+    const CRAWL_TIME_OUT = 1200;
 
     /**
      * This is the main entry point for handling requests to administer the
@@ -242,14 +249,18 @@ class AdminController extends Controller implements CrawlConstants
 
         if(file_exists(CRAWL_DIR."/schedules/crawl_status.txt")) {
 
+            //assume if status not updated for 20min crawl not active
             if(filemtime(
-                CRAWL_DIR."/schedules/crawl_status.txt") + 1200 > time()) { 
-                //assume if status not updated for 20min crawl not active
-                $crawl_status = 
-                    unserialize(file_get_contents(
-                        CRAWL_DIR."/schedules/crawl_status.txt"));
-                $data = array_merge($data, $crawl_status);
+                CRAWL_DIR."/schedules/crawl_status.txt") + 
+                    self::CRAWL_TIME_OUT < time()) { 
+                $this->sendStopCrawlMessage();
             }
+
+            $crawl_status = 
+                unserialize(file_get_contents(
+                    CRAWL_DIR."/schedules/crawl_status.txt"));
+            $data = array_merge($data, $crawl_status);
+
         }
         if(isset($data['VISITED_COUNT_HISTORY']) && 
             count($data['VISITED_COUNT_HISTORY']) > 1) {
@@ -276,6 +287,19 @@ class AdminController extends Controller implements CrawlConstants
         }
 
         return $data;
+    }
+
+    /**
+     *
+     */
+    function sendStopCrawlMessage()
+    {
+        $info = array();
+        $info[self::STATUS] = "STOP_CRAWL";
+        $info_string = serialize($info);
+        file_put_contents(
+            CRAWL_DIR."/schedules/queue_server_messages.txt", 
+            $info_string);
     }
 
     /**
@@ -751,14 +775,7 @@ class AdminController extends Controller implements CrawlConstants
                 case "stop":
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('admin_controller_stop_crawl')."</h1>')";
-
-                    $info = array();
-                    $info[self::STATUS] = "STOP_CRAWL";
-                    $info_string = serialize($info);
-                    file_put_contents(
-                        CRAWL_DIR."/schedules/queue_server_messages.txt", 
-                        $info_string);
-
+                    $this->sendStopCrawlMessage();
                 break;
 
                 case "resume":
@@ -1117,7 +1134,10 @@ class AdminController extends Controller implements CrawlConstants
     }
 
     /**
+     * Handles admin request related to the editing a crawl mix activity
      *
+     * @return array $data info about the groups and their contents for a
+     *      particular crawl mix
      */
     function editMix(&$data, &$mix_ids, $mix)
     {
@@ -1227,6 +1247,42 @@ class AdminController extends Controller implements CrawlConstants
         $data['SCRIPT'] .= ']; drawGroups();';
     }
 
+    /**
+     * Handles admin request related to the search filter activity
+     *
+     * This activity allows a user to specify hosts whose web pages are to be
+     * filtered out the search results
+     *
+     * @return array $data info about the groups and their contents for a
+     *      particular crawl mix
+     */
+    function searchFilters()
+    {
+        $data["ELEMENT"] = "searchfiltersElement";
+        $data['SCRIPT'] = "";
+
+        if(isset($_REQUEST['disallowed_sites'])) {
+            $sites = $this->convertStringCleanUrlsArray(
+                $_REQUEST['disallowed_sites']);
+            $disallowed_sites = array();
+            foreach($sites as $site) {
+                $site = UrlParser::getHost($site);
+                if(strlen($site) > 0) {
+                    $disallowed_sites[] = $site."/";
+                }
+            }
+            $data['disallowed_sites'] = implode("\n", $disallowed_sites);
+            $this->searchfiltersModel->set($disallowed_sites);
+            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                tl('admin_controller_site_filter_update')."</h1>')";
+        }
+        if(!isset($data['disallowed_sites'])) {
+            $data['disallowed_sites'] = 
+                implode("\n", $this->searchfiltersModel->getUrls());
+        }
+
+        return $data;
+    }
 
     /**
      * Handles admin request related to the manage locale activity

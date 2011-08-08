@@ -162,8 +162,7 @@ class CrawloptionsElement extends Element
                    name="META_WORDS[<?php e($i); ?>]['URL_PATTERN']" /></td>
             </tr>
             </table>
-            
-            <!-- Added by Priya Gangaraju -->
+
             <?php if(isset($data['INDEXING_PLUGINS'])) {
             ?>
                 <div class="topmargin"><b><?php 
@@ -192,7 +191,7 @@ class CrawloptionsElement extends Element
                 </table>
             <?php
             }
-            ?> <!-- -->
+            ?> 
             
             
         <div class="center slightpad"><button class="buttonbox" 
