@@ -59,7 +59,7 @@ class SearchController extends Controller implements CrawlConstants
      * is used for cached web page requests
      * @var array
      */
-    var $models = array("phrase", "crawl");
+    var $models = array("phrase", "crawl", "searchfilters");
     /**
      * Says which views to load for this controller.
      * The SearchView is used for displaying general search results as well 
@@ -292,9 +292,9 @@ class SearchController extends Controller implements CrawlConstants
                         $query = 
                             $this->phraseModel->rewriteMixQuery($query, $mix);
                     }
-
+                    $filter = $this->searchfiltersModel->getFilter();
                     $phrase_results = $this->phraseModel->getPhrasePageResults(
-                        $query, $limit, $results_per_page);
+                        $query, $limit, $results_per_page, true, $filter);
                     $query = $original_query;
                 }
                 $data['PAGING_QUERY'] = "index.php?q=".urlencode($query);

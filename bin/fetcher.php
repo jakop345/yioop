@@ -559,7 +559,8 @@ class Fetcher implements CrawlConstants
         $info = @unserialize(trim($info_string));
 
         if(isset($info[self::CRAWL_TIME]) 
-            && $info[self::CRAWL_TIME] != $this->crawl_time) {
+            && ($info[self::CRAWL_TIME] != $this->crawl_time
+            || $info[self::CRAWL_TIME] == 0)) {
             $this->to_crawl = array(); // crawl has changed. Dump rest of batch.
         }
     
@@ -824,10 +825,13 @@ class Fetcher implements CrawlConstants
             } else {
                 $processor = new $page_processor();
             }
-            crawlLog("  Using Processor...".$page_processor);
-            $doc_info = $processor->handle($site[self::PAGE], 
-                $site[self::URL]);
-
+            if(isset($site[self::PAGE])) {
+                crawlLog("  Using Processor...".$page_processor);
+                $doc_info = $processor->handle($site[self::PAGE], 
+                    $site[self::URL]);
+            } else {
+                $doc_info = false;
+            }
             if($doc_info) {
                 $site[self::DOC_INFO] =  $doc_info;
                 $site[self::ROBOT_INSTANCE] = ROBOT_INSTANCE;
@@ -1262,6 +1266,7 @@ class Fetcher implements CrawlConstants
         $this->found_sites = array(); // reset found_sites so have more space.
         if($bytes_to_send <= 0) {
             crawlLog("No data to send aborting update scheduler...");
+            $this->checkCrawlTime();
             return;
         }
         crawlLog("...");

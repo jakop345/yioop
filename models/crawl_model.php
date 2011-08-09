@@ -478,7 +478,6 @@ class CrawlModel extends Model implements CrawlConstants
             if(isset($index_info[self::META_WORDS]) ) {
                 $seed_info['meta_words'] = $index_info[self::META_WORDS];
             }
-            // Added by Priya Gangaraju
             if(isset($index_info[self::INDEXING_PLUGINS])) {
                 $seed_info['indexing_plugins'] = 
                     $index_info[self::INDEXING_PLUGINS];
@@ -569,8 +568,6 @@ EOT;
             }
             $n[]="";
         }
-        //Added by Priya Gangaraju
-        //for adding post processors
         $n[] = "[indexing_plugins]";
         if(isset($info["indexing_plugins"])) {
             foreach($info["indexing_plugins"]['plugins'] as $plugin) {

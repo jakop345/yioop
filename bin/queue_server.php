@@ -530,7 +530,7 @@ class QueueServer implements CrawlConstants
                     if(file_exists(CRAWL_DIR."/schedules/crawl_status.txt")) {
                         unlink(CRAWL_DIR."/schedules/crawl_status.txt");
                     }
-                    crawlLog("Crawl has been succesfully stopped!!");
+                    crawlLog("Crawl has been successfully stopped!!");
                 break;
 
                 case "RESUME_CRAWL":
@@ -1146,13 +1146,13 @@ class QueueServer implements CrawlConstants
         $crawl_status['COUNT'] = $info_bundle['COUNT'];
         $now = time();
         if(count($this->hourly_crawl_data) > 0 ) {
-            $last_recent_hourly_pair = array_pop($this->hourly_crawl_data);
+            $least_recent_hourly_pair = array_pop($this->hourly_crawl_data);
             $change_in_time = 
-                ($now - $last_recent_hourly_pair[0]);
+                ($now - $least_recent_hourly_pair[0]);
             if($change_in_time <= 3600) {
-                $this->hourly_crawl_data[] = $last_recent_hourly_pair;
+                $this->hourly_crawl_data[] = $least_recent_hourly_pair;
             }
-        } 
+        }
         array_unshift($this->hourly_crawl_data, 
             array($now, $info_bundle['VISITED_URLS_COUNT']));
         $crawl_status['VISITED_COUNT_HISTORY'] = $this->hourly_crawl_data;
@@ -1167,8 +1167,6 @@ class QueueServer implements CrawlConstants
         crawlLog(
             "The current crawl description is: ".
                 $index_archive_info['DESCRIPTION']);
-        crawlLog("Estimated Unique Pages/Hour".
-            $crawl_status['VISITED_URLS_COUNT_PER_HOUR']);
         crawlLog("Number of unique pages so far: ".
             $info_bundle['VISITED_URLS_COUNT']);
         crawlLog("Total urls extracted so far: ".$info_bundle['COUNT']); 

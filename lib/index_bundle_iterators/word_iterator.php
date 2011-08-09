@@ -120,7 +120,18 @@ class WordIterator extends IndexBundleIterator
      */
     var $empty;
 
+    /**
+     * Keeps track of whether the word_iterator list is empty becuase the
+     * word does not appear in the index shard
+     * @var int
+     */
+    var $filter;
 
+    /** Host Key position + 1 (first char says doc, inlink or eternal link)*/
+    const HOST_KEY_POS = 17;
+
+    /** Length of a doc key*/
+    const KEY_LEN = 8;
 
 
     /**
@@ -131,8 +142,10 @@ class WordIterator extends IndexBundleIterator
      * @param int $limit the first element to return from the list of docs
      *      iterated over
      * @param bool $raw whether the $word_key is our variant of base64 encoded
+     * @param array $filter an array of hashes of domains to filter from
+     *      results
      */
-    function __construct($word_key, $index, $raw = false)
+    function __construct($word_key, $index, $raw = false, &$filter = NULL)
     {
         if($raw == false) {
             //get rid of out modfied base64 encoding
@@ -142,6 +155,13 @@ class WordIterator extends IndexBundleIterator
             $word_key = base64_decode($hash);
 
         }
+        
+        if($filter != NULL) {
+            $this->filter = & $filter;
+        } else {
+            $this->filter = NULL;
+        }
+
         $this->word_key = $word_key;
 
         $this->index =  $index;
@@ -220,7 +240,7 @@ class WordIterator extends IndexBundleIterator
      */
     function findDocsWithWord()
     {
-        if($this->empty || ($this->generation_pointer >= $this->num_generations) 
+        if($this->empty || ($this->generation_pointer >= $this->num_generations)
             || ($this->generation_pointer == $this->num_generations -1 &&
             $this->current_offset > $this->last_offset)) {
             return -1;
@@ -233,6 +253,15 @@ class WordIterator extends IndexBundleIterator
         $results = $shard->getPostingsSlice(
             $this->start_offset,
             $this->next_offset, $this->last_offset, $this->results_per_block);
+
+        if($this->filter != NULL) {
+            foreach($results as $keys => $data) {
+                $host_key = substr($keys, self::HOST_KEY_POS, self::KEY_LEN);
+                if(in_array($host_key, $this->filter) ) {
+                    unset($results[$keys]);
+                }
+            }
+        }
 
         $this->count_block = count($results);
         return $results;

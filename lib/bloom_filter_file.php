@@ -88,8 +88,8 @@ class BloomFilterFile extends PersistentStructure
         $save_frequency = self::DEFAULT_SAVE_FREQUENCY) 
     {
         $log2 = log(2);
-        $this->num_keys = ceil(log($num_values)/($log2*$log2));
-        $this->filter_size = ($this->num_keys)*$num_values;
+        $this->num_keys = ceil(log($num_values)/$log2);
+        $this->filter_size = ($this->num_keys)*$num_values/$log2;
 
         $mem_before =  memory_get_usage(true);
         $this->filter = pack("x". ceil(.125*$this->filter_size)); 
