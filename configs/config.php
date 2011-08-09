@@ -50,7 +50,7 @@ if(file_exists(BASE_DIR."/configs/local_config.php")) {
 if(!defined('WORK_DIRECTORY')) {
 /*+++ The next block of code is machine edited, change at 
 your own risk, please use configure web page instead +++*/
-define('WORK_DIRECTORY', '');
+define('WORK_DIRECTORY', '/var/www/work');
 /*++++++*/
 }
 
@@ -92,13 +92,11 @@ if(file_exists(WORK_DIRECTORY."/profile.php")) {
     define('DEFAULT_LOCALE', "en-US");
     define('AUTH_KEY', 0);
     define('USE_MEMCACHE', false);
-    define('USE_FILECACHE', false);
     define('CACHE_LINK', true);
     define('SIMILAR_LINK', true);
     define('IN_LINK', true);
     define('IP_LINK', true);
     define('SIGNIN_LINK', true);
-    $INDEXING_PLUGINS = array();
 }
 
 if((DEBUG_LEVEL & ERROR_INFO) == ERROR_INFO) {
@@ -121,13 +119,8 @@ if(!PROFILE) {
 /** this is the User-Agent names the crawler provides 
  * a web-server it is crawling
  */
- if(!stristr(QUEUE_SERVER, 'localhost') && !stristr(QUEUE_SERVER,'127.0.0.1')) {
-    define('USER_AGENT', 
-        'Mozilla/5.0 (compatible; '.USER_AGENT_SHORT.
-        '  +'.QUEUE_SERVER.'bot.php)');
-} else {
-    define('USER_AGENT', 'Mozilla/5.0 (compatible; '.USER_AGENT_SHORT.')');
-}
+define('USER_AGENT', 
+    'Mozilla/5.0 (compatible; '.USER_AGENT_SHORT.'  +'.QUEUE_SERVER.'bot.php)');
 
 /** name of the cookie used to manage the session 
  * (store language and perpage settings)
@@ -235,12 +228,12 @@ define('NORMALIZE_FREQUENCY', 10000);
 $INDEXED_FILE_TYPES =
     array(  
             "asp",
-            "bmp",
             "cgi",
             "cfm",
             "cfml",
             "csv",
             "doc",
+	    "epub",
             "gif",
             "html",
             "htm",
@@ -260,7 +253,8 @@ $INDEXED_FILE_TYPES =
             "tsv",
             "txt",
             "xml",
-            "pptx");
+            "pptx",
+            "xlsx");
 
 /**
  * @global array filetypes which should be considered images
@@ -284,6 +278,7 @@ $PAGE_PROCESSORS = array(   "text/html" => "HtmlProcessor",
 
                             "application/msword" => "DocProcessor",
                             "application/vnd.ms-powerpoint" => "PptProcessor",
+			    "application/epub+zip" => "EpubProcessor",
 
                             "text/rtf" => "RtfProcessor",  
                             "text/plain" => "TextProcessor", 
@@ -296,7 +291,9 @@ $PAGE_PROCESSORS = array(   "text/html" => "HtmlProcessor",
                             "image/bmp" => "BmpProcessor",
                             "image/svg+xml"=> "SvgProcessor",
                             "application/vnd.openxmlformats-officedocument.
-                                presentationml.presentation"=> "PptxProcessor"
+                                presentationml.presentation"=> "PptxProcessor",
+                            "application/vnd.openxmlformats-officedocument.
+                                spreadsheetml.sheet" => "XlsxProcessor"
 );
 
 $INDEXING_PLUGINS = array("recipe");
@@ -323,18 +320,6 @@ define ('PUNCT', "\.|\,|\:|\;|\"|\'|\`|\[|\]|\{|\}|\(|\)|\!|\||\&");
 
 /** Percentage ASCII text before guess we dealing with english*/
 define ('EN_RATIO', 0.9);
-
-/** Number of total description deemed title */
-define ('AD_HOC_TITLE_LENGTH', 10);
-
-/** BM25F weight for title text */
-define ('TITLE_WEIGHT', 2);
-
-/** BM25F weight for other text within doc*/
-define ('DESCRIPTION_WEIGHT', 1);
-
-/** BM25F weight for other text within links to a doc*/
-define ('LINK_WEIGHT', 0.5);
 
 
 /**
