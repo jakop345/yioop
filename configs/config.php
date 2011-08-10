@@ -244,6 +244,7 @@ $INDEXED_FILE_TYPES =
             "php",
             "pl",
             "ppt",
+            "pptx",
             "png",
             "rtf",
             "rss",
@@ -277,6 +278,8 @@ $PAGE_PROCESSORS = array(   "text/html" => "HtmlProcessor",
 
                             "application/msword" => "DocProcessor",
                             "application/vnd.ms-powerpoint" => "PptProcessor",
+                            "application/vnd.openxmlformats-officedocument.
+                                presentationml.presentation"=> "PptxProcessor",
 			    "application/epub+zip" => "EpubProcessor",
 
                             "text/rtf" => "RtfProcessor",  
