@@ -57,9 +57,9 @@ class PptxProcessorTest extends UnitTest implements CrawlConstants
     {
         $processors="PptxProcessor";
         $processor= new $processors();
-        $filename=BASE_DIR . "/PC54.pptx";
+        $filename=BASE_DIR . "/tests/test_files/test.pptx";
         $page=file_get_contents($filename);
-        $url="http://mschnlnine.vo.llnwd.net/d1/pdc08/PPTX/PC54.pptx";
+        $url="";
         $summary=array();
         $summary=$processor->process($page,$url);
         $this->test_objects['summary'] = $summary;
@@ -78,7 +78,7 @@ class PptxProcessorTest extends UnitTest implements CrawlConstants
     public function checkTitleTestCase()
     {
         $objects = $this->test_objects['summary'];
-        $title="PC54: Mono And .NET";
+        $title="Nakul Natu";
         $this->assertEqual
             ($objects[self::TITLE], $title,"Correct Title Retrived");
     }
@@ -101,10 +101,8 @@ class PptxProcessorTest extends UnitTest implements CrawlConstants
     {
         $objects = $this->test_objects['summary'];
         $testLinks=array();
-        $testLinks[0]="http://www.mono-project.com";
-        $testLinks[1]="http://www.mono-project.com/Start";
-        $testLinks[2]="http://www.go-mono.com/monologue";
-        $testLinks[3]="http://tirania.org/blog";
+        $testLinks[0]="http://www.google.com/";
+        $testLinks[1]="http://www.facebook.com/";
         $links=array();
         $links=$objects[self::LINKS];
         $i=0;

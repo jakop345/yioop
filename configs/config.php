@@ -244,6 +244,7 @@ $INDEXED_FILE_TYPES =
             "php",
             "pl",
             "ppt",
+            "pptx",
             "png",
             "rtf",
             "rss",
@@ -253,7 +254,6 @@ $INDEXED_FILE_TYPES =
             "tsv",
             "txt",
             "xml",
-            "pptx",
             "xlsx");
 
 /**
@@ -278,6 +278,8 @@ $PAGE_PROCESSORS = array(   "text/html" => "HtmlProcessor",
 
                             "application/msword" => "DocProcessor",
                             "application/vnd.ms-powerpoint" => "PptProcessor",
+                            "application/vnd.openxmlformats-officedocument.
+                                presentationml.presentation"=> "PptxProcessor",
 			    "application/epub+zip" => "EpubProcessor",
 
                             "text/rtf" => "RtfProcessor",  
@@ -290,8 +292,6 @@ $PAGE_PROCESSORS = array(   "text/html" => "HtmlProcessor",
                             "image/png" => "PngProcessor",
                             "image/bmp" => "BmpProcessor",
                             "image/svg+xml"=> "SvgProcessor",
-                            "application/vnd.openxmlformats-officedocument.
-                                presentationml.presentation"=> "PptxProcessor",
                             "application/vnd.openxmlformats-officedocument.
                                 spreadsheetml.sheet" => "XlsxProcessor"
 );
