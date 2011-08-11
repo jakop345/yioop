@@ -44,7 +44,7 @@ require_once BASE_DIR."/lib/url_parser.php";
 
  /**
  * Used to create crawl summary information 
- * for RSS files
+ * for sitemap files
  *
  * @author Chris Pollett
  * @package seek_quarry

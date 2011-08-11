@@ -80,7 +80,7 @@ class PptxProcessor extends TextProcessor
         $zip = new ZipArchive;
         if ($zip->open($filename) === TRUE) {
             $buf= $zip->getFromName("docProps/core.xml");
-            if ($buf){
+            if ($buf) {
                 $dom = self::dom($buf);
                 if($dom !== false) {
                 // Get the title
@@ -100,7 +100,7 @@ class PptxProcessor extends TextProcessor
                 $buf=$zip->getFromName("ppt/slides/slide" . $i . ".xml");
                 if($buf){
                 /* Get description , language and url links asociated
-                 * with each slide*/
+                   with each slide*/
                     $dom = self::dom($buf);
                     $desc=self::description($dom);
 
@@ -152,15 +152,15 @@ class PptxProcessor extends TextProcessor
 
         foreach($paras as $para) {
             if($i < MAX_LINKS_PER_PAGE) {
-                $hlink=$para->parentNode->parentNode->
+                $hlink = $para->parentNode->parentNode->
                     getElementsByTagName("t")->item(0)->nodeValue;
 
-                $url=UrlParser::canonicalLink(
+                $url = UrlParser::canonicalLink(
                     $hlink, $site);
                 if(!UrlParser::checkRecursiveUrl($url)  &&
                     strlen($url) < MAX_URL_LENGTH) {
                     if(isset($sites[$url])) {
-                        $sites[$url] .=" ".$hlink;
+                        $sites[$url] .= " ".$hlink;
                     } else {
                         $sites[$url] = $hlink;
                     }

@@ -123,15 +123,15 @@ class EpubProcessor extends TextProcessor
      */ 
     function process($page, $url)
     { 
-        $summary       = NULL;
+        $summary = NULL;
         $opf_pattern   = "/.opf$/i";
         $html_pattern  = "/.html$/i";
         $xhtml_pattern = "/.xhtml$/i";
         $temp_filename = "epubzipfilename.zip";
-        $epub_url      = 0;
+        $epub_url = 0;
         $epub_language = '';
         file_put_contents($temp_filename,$page);
-        $zip = new ZipArchive;        
+        $zip = new ZipArchive;
         if ($zip->open($temp_filename))
         {    
             for($i = 0; $i < $zip->numFiles; $i++)
@@ -143,13 +143,16 @@ class EpubProcessor extends TextProcessor
                     // Get the file data from zipped folder
                     $opf_data = $zip->getFromName($filename[$i]);
                     $opf_summary = $this->xmlToObject($opf_data);
-                    for($m = 0;$m <= 10;$m++)
+                    for($m = 0;$m <= 10; $m++)
                     {
-                        for($n = 0;$n <= 10;$n++)
-                        {
-                            if(($opf_summary->children[$m]->children[$n]->
-                                name) == "dc:language")
-                            {
+                        if(!isset($opf_summary->children[$m])) continue;
+                        for($n = 0;$n <= 10; $n++)  {
+                            if(!isset(
+                                $opf_summary->children[$m]->children[$n])) 
+                                    continue;
+                            $child = $opf_summary->children[$m]->children[$n];
+                            if( isset($child->name) && 
+                                $child->name == "dc:language") {
                                 $epub_language = $opf_summary->children[$m]->
                                 children[$n]->content ;
                             }
@@ -183,11 +186,11 @@ class EpubProcessor extends TextProcessor
             }
         }
         $summary[self::TITLE] = $epub_title;
-        $summary[self::DESCRIPTION] = $description;      
+        $summary[self::DESCRIPTION] = $description;
         $summary[self::LANG] = $epub_language;
         $summary[self::LINKS] = $epub_url;
         $summary[self::PAGE] = $page;
-        unlink($temp_filename);    
+        unlink($temp_filename);
         return $summary;
     }
 
@@ -195,7 +198,7 @@ class EpubProcessor extends TextProcessor
      *  Used to extract the title, author, language and links from
      *  a string consisting of ebook publication data.
      *
-     *  @param string $page xml contents   
+     *  @param string $page xml contents
      *
      *  @return array  an information about the contents of the page
      *
