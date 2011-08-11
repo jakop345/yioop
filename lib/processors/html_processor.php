@@ -259,6 +259,12 @@ class HtmlProcessor extends TextProcessor
         $sites = array();
 
         $xpath = new DOMXPath($dom);
+        $base_refs = $xpath->evaluate("/html//base");
+        if($base_refs->item(0)) {
+            $tmp_site = $base_refs->item(0)->getAttribute('href');
+            if(strlen($tmp_site) > 0) {$site = $tmp_site;}
+        }
+
         $hrefs = $xpath->evaluate("/html/body//a");
 
         $i = 0;
@@ -325,7 +331,6 @@ class HtmlProcessor extends TextProcessor
             }
 
         }
-
 
        return $sites;
     }

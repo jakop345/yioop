@@ -568,8 +568,6 @@ EOT;
             }
             $n[]="";
         }
-        //Added by Priya Gangaraju
-        //for adding post processors
         $n[] = "[indexing_plugins]";
         if(isset($info["indexing_plugins"])) {
             foreach($info["indexing_plugins"]['plugins'] as $plugin) {

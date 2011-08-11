@@ -268,8 +268,8 @@ class AdminController extends Controller implements CrawlConstants
             $oldest = array_pop($data['VISITED_COUNT_HISTORY']);
             $change_in_time_hours = floatval($recent[0] - $oldest[0])/3600.;
             $change_in_urls = $recent[1] - $oldest[1];
-            $data['VISITED_URLS_COUNT_PER_HOUR'] = 
-                $change_in_urls/$change_in_time_hours;
+            $data['VISITED_URLS_COUNT_PER_HOUR'] = ($change_in_time_hours > 0) ?
+                $change_in_urls/$change_in_time_hours : 0;
         } else {
             $data['VISITED_URLS_COUNT_PER_HOUR'] = 0;
         }
@@ -290,7 +290,7 @@ class AdminController extends Controller implements CrawlConstants
     }
 
     /**
-     *
+     * Used to send a message to the queue_server to stop a crawl
      */
     function sendStopCrawlMessage()
     {

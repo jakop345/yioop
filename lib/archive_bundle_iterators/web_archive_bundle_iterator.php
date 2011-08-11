@@ -190,7 +190,7 @@ class WebArchiveBundleIterator implements CrawlConstants
     function reset()
     {
         $this->count = $this->archive->count;
-        $this->num_partitions = $this->archive->write_partition+1;
+        $this->num_partitions = $this->archive->write_partition + 1;
         $this->overall_index = 0;
         $this->end_of_iterator = ($this->overall_index >= $this->count) ?
             true : false;

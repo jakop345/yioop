@@ -682,11 +682,9 @@ EOT;
                 }
             }
         }
-
-        return $strings;
         closedir($dh);
+        return $strings;
 
-        return;
     }
 }
  ?>
