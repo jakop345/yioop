@@ -49,16 +49,6 @@ require_once BASE_DIR."/lib/processors/rss_processor.php";
 require_once BASE_DIR."/lib/processors/html_processor.php";
 
 /**
- * If XML turns out to be OPF
- */
-//require_once BASE_DIR."/lib/processors/epub_opf_filehandler.php";
-
-/**
- * If XML turns out to be XML/XHTML
- */
-//require_once BASE_DIR."/lib/processors/epub_xhtml_filehandler.php";
-
-/**
  * Load so can parse urls
  */
 require_once BASE_DIR."/lib/url_parser.php";
@@ -108,8 +98,9 @@ class EpubProcessor extends TextProcessor
      *
      *  @const integer MAX_DESCRIPTION_LEN
      */
-
     const MAX_DESCRIPTION_LEN = 2000;
+   
+    
     /**
      *  Used to extract the title, description and links from
      *  a string consisting of ebook publication data.
@@ -130,6 +121,10 @@ class EpubProcessor extends TextProcessor
         $temp_filename = "epubzipfilename.zip";
         $epub_url = 0;
         $epub_language = '';
+        $epub_title    = '';
+        $epub_unique_identifier = '';
+        $epub_author   = '';
+        $MAX_DOM_LEVEL = 10;
         file_put_contents($temp_filename,$page);
         $zip = new ZipArchive;
         if ($zip->open($temp_filename))
@@ -143,39 +138,41 @@ class EpubProcessor extends TextProcessor
                     // Get the file data from zipped folder
                     $opf_data = $zip->getFromName($filename[$i]);
                     $opf_summary = $this->xmlToObject($opf_data);
-                    for($m = 0;$m <= 10; $m++)
+                    for($m = 0;$m <= $MAX_DOM_LEVEL; $m++)
                     {
-                        if(!isset($opf_summary->children[$m])) continue;
-                        for($n = 0;$n <= 10; $n++)  {
-                            if(!isset(
-                                $opf_summary->children[$m]->children[$n])) 
-                                    continue;
-                            $child = $opf_summary->children[$m]->children[$n];
-                            if( isset($child->name) && 
-                                $child->name == "dc:language") {
-                                $epub_language = $opf_summary->children[$m]->
-                                children[$n]->content ;
+                        for($n = 0;$n <= $MAX_DOM_LEVEL; $n++)
+                        {
+                            if(isset($opf_summary->children[$m]->children[$n])) 
+                            {   
+                                $child = $opf_summary->children[$m]->
+                                        children[$n];
+                                if( isset($child->name) && 
+                                    $child->name == "dc:language")
+                                {
+                                    $epub_language = $opf_summary->children[$m]->
+                                    children[$n]->content ;
+                                }
+                                if( ($opf_summary->children[$m]->children[$n]->
+                                    name) == "dc:title")
+                                {
+                                    $epub_title = $opf_summary->children[$m]->
+                                    children[$n]->content ;
+                                }
+                                if( ($opf_summary->children[$m]->children[$n]->
+                                    name) == "dc:creator")
+                                {
+                                    $epub_author = $opf_summary->children[$m]->
+                                    children[$n]->content ;
+                                }
+                                if( ($opf_summary->children[$m]->children[$n]->
+                                    name) == "dc:identifier")
+                                {
+                                    $epub_unique_identifier = $opf_summary->
+                                    children[$m]->children[$n]->content ;
+                                }
                             }
-                            if( ($opf_summary->children[$m]->children[$n]->
-                                name) == "dc:title")
-                            {
-                                $epub_title = $opf_summary->children[$m]->
-                                children[$n]->content ;
-                            }
-                            if( ($opf_summary->children[$m]->children[$n]->
-                                name) == "dc:creator")
-                            {
-                                $epub_author = $opf_summary->children[$m]->
-                                children[$n]->content ;
-                            }
-                            if( ($opf_summary->children[$m]->children[$n]->
-                                name) == "dc:identifier")
-                            {
-                                $epub_unique_identifier = $opf_summary->
-                                children[$m]->children[$n]->content ;
-                            }
-                        }
-                     }
+                        }       
+                    }
                 }else if((preg_match($html_pattern,$filename[$i])) ||
                          (preg_match($xhtml_pattern,$filename[$i])))
                 {
@@ -220,8 +217,14 @@ class EpubProcessor extends TextProcessor
             {
                 $elements[$index] = new EpubProcessor;
                 $elements[$index]->name = $tag['tag'];
-                $elements[$index]->attributes = $tag['attributes'];
-                $elements[$index]->content = $tag['value'];
+                if(isset($tag['attributes']))
+                {
+                    $elements[$index]->attributes = $tag['attributes'];
+                }
+                if(isset($tag['value']))
+                {
+                    $elements[$index]->content = $tag['value'];
+                }
                 if ($tag['type'] == "open")
                 {  // push
                     $elements[$index]->children = array();
