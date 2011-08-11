@@ -94,7 +94,11 @@ class EpubProcessor extends TextProcessor
      *  @const integer MAX_DESCRIPTION_LEN
      */
     const MAX_DESCRIPTION_LEN = 2000;
-
+    /**
+     * The maximum DOM level of data in OPF file
+     *
+     *  @const integer MAX_DOM_LEVEL
+     */
     const MAX_DOM_LEVEL = 10;
     /**
      *  Used to extract the title, description and links from
@@ -177,8 +181,8 @@ class EpubProcessor extends TextProcessor
     }
 
     /**
-     *  Used to extract the title, author, language and links from
-     *  a string consisting of ebook publication data.
+     *  Used to extract the DOM tree from
+     *  a string consisting of ebook publication content OPF file.
      *
      *  @param string $page xml contents
      *
