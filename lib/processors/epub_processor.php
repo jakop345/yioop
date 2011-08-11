@@ -95,7 +95,9 @@ class EpubProcessor extends TextProcessor
      */
     const MAX_DESCRIPTION_LEN = 2000;
     /**
-     * The maximum DOM level of data in OPF file
+     * The constant represents the number of 
+     * child levels at which the data is present in
+     * the content.opf file.
      *
      *  @const integer MAX_DOM_LEVEL
      */
@@ -181,8 +183,10 @@ class EpubProcessor extends TextProcessor
     }
 
     /**
-     *  Used to extract the DOM tree from
-     *  a string consisting of ebook publication content OPF file.
+     *  Used to extract the DOM tree containing the information
+     *  about the epub file such as title, author, language, unique
+     *  identifier of the book from a string consisting of ebook publication
+     *  content OPF file.
      *
      *  @param string $page xml contents
      *
