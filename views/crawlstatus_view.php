@@ -176,9 +176,13 @@ class CrawlstatusView extends View
                 <td> <?php e( (isset($crawl["VISITED_URLS_COUNT"]) ?
                     $crawl['VISITED_URLS_COUNT'] : 0) ."/".
                     $crawl['COUNT']); ?></td>
-                <td><a href="<?php e($base_url); ?>resume&timestamp=<?php
-                    e($crawl['CRAWL_TIME']); ?>"><?php
-                    e(tl('crawlstatus_view_resume'));?></a></td>
+                <td><?php if($crawl['RESUMABLE']) { ?>
+                    <a href="<?php e($base_url); ?>resume&timestamp=<?php
+                        e($crawl['CRAWL_TIME']); ?>"><?php
+                        e(tl('crawlstatus_view_resume'));?></a>
+                    <?php } else { 
+                            e(tl('crawlstatus_view_no_resume'));
+                          }?></td>
                 <td>
                 <?php
                 if( $crawl['CRAWL_TIME'] != $data['CURRENT_INDEX']) { ?>

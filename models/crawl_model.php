@@ -215,6 +215,10 @@ class CrawlModel extends Model implements CrawlConstants
                     $index_info[self::CRAWL_TYPE] == self::ARCHIVE_CRAWL) {
                     $crawl['DESCRIPTION'] = "RECRAWL::";
                 }
+                $schedules = glob(CRAWL_DIR.'/schedules/'.
+                    self::index_data_base_name.$crawl['CRAWL_TIME'].
+                    '/*/At*.txt');
+                $crawl['RESUMABLE'] = (count($schedules) > 0) ? true: false;
                 $crawl['DESCRIPTION'] .= $index_info['DESCRIPTION'];
                 $crawl['VISITED_URLS_COUNT'] = 
                     isset($info['VISITED_URLS_COUNT']) ?
