@@ -39,11 +39,6 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 require_once BASE_DIR."/lib/processors/text_processor.php";
 
 /**
- * If XML turns out to be RSS ...
- */
-require_once BASE_DIR."/lib/processors/rss_processor.php";
-
-/**
  * If XML turns out to be XHTML ...
  */
 require_once BASE_DIR."/lib/processors/html_processor.php";
@@ -111,71 +106,61 @@ class EpubProcessor extends TextProcessor
      *
      *  @return array  a summary of the contents of the page
      *
-     */ 
+     */
     function process($page, $url)
-    { 
+    {
         $summary = NULL;
-        $opf_pattern   = "/.opf$/i";
+        $opf_pattern = "/.opf$/i";
         $html_pattern  = "/.html$/i";
         $xhtml_pattern = "/.xhtml$/i";
         $temp_filename = "epubzipfilename.zip";
         $epub_url = 0;
         $epub_language = '';
-        $epub_title    = '';
+        $epub_title = '';
         $epub_unique_identifier = '';
-        $epub_author   = '';
+        $epub_author = '';
         $MAX_DOM_LEVEL = 10;
         file_put_contents($temp_filename,$page);
         $zip = new ZipArchive;
-        if ($zip->open($temp_filename))
-        {    
-            for($i = 0; $i < $zip->numFiles; $i++)
-            {
+        if($zip->open($temp_filename)) {
+            for($i = 0; $i < $zip->numFiles; $i++) {
                 // get the content file names of .epub document
                 $filename[$i] = $zip->getNameIndex($i) ;
-                if(preg_match($opf_pattern,$filename[$i]))
-                {
+                if(preg_match($opf_pattern,$filename[$i])) {
                     // Get the file data from zipped folder
                     $opf_data = $zip->getFromName($filename[$i]);
                     $opf_summary = $this->xmlToObject($opf_data);
-                    for($m = 0;$m <= $MAX_DOM_LEVEL; $m++)
-                    {
-                        for($n = 0;$n <= $MAX_DOM_LEVEL; $n++)
-                        {
-                            if(isset($opf_summary->children[$m]->children[$n])) 
-                            {   
+                    for($m = 0;$m <= $MAX_DOM_LEVEL; $m++) {
+                        for($n = 0;$n <= $MAX_DOM_LEVEL; $n++) {
+                            if(isset($opf_summary->children[$m]->children[$n])){
                                 $child = $opf_summary->children[$m]->
-                                        children[$n];
+                                    children[$n];
                                 if( isset($child->name) && 
-                                    $child->name == "dc:language")
-                                {
-                                    $epub_language = $opf_summary->children[$m]->
-                                    children[$n]->content ;
+                                    $child->name == "dc:language") {
+                                    $epub_language = 
+                                        $opf_summary->children[$m]->
+                                            children[$n]->content ;
                                 }
                                 if( ($opf_summary->children[$m]->children[$n]->
-                                    name) == "dc:title")
-                                {
+                                    name) == "dc:title") {
                                     $epub_title = $opf_summary->children[$m]->
-                                    children[$n]->content ;
+                                        children[$n]->content;
                                 }
                                 if( ($opf_summary->children[$m]->children[$n]->
-                                    name) == "dc:creator")
-                                {
+                                    name) == "dc:creator") {
                                     $epub_author = $opf_summary->children[$m]->
-                                    children[$n]->content ;
+                                        children[$n]->content ;
                                 }
                                 if( ($opf_summary->children[$m]->children[$n]->
-                                    name) == "dc:identifier")
-                                {
+                                    name) == "dc:identifier") {
                                     $epub_unique_identifier = $opf_summary->
-                                    children[$m]->children[$n]->content ;
+                                        children[$m]->children[$n]->content ;
                                 }
                             }
-                        }       
+                        }
                     }
                 }else if((preg_match($html_pattern,$filename[$i])) ||
-                         (preg_match($xhtml_pattern,$filename[$i])))
-                {
+                    (preg_match($xhtml_pattern,$filename[$i]))) {
                     $html = new HtmlProcessor;
                     $html_data = $zip->getFromName($filename[$i]);
                     $description[$i] = $html->process($html_data,$url);
@@ -213,27 +198,22 @@ class EpubProcessor extends TextProcessor
         foreach ($tags as $tag)
         {
             $index = count($elements);
-            if ($tag['type'] == "complete" || $tag['type'] == "open")
-            {
+            if ($tag['type'] == "complete" || $tag['type'] == "open") {
                 $elements[$index] = new EpubProcessor;
                 $elements[$index]->name = $tag['tag'];
-                if(isset($tag['attributes']))
-                {
+                if(isset($tag['attributes'])) {
                     $elements[$index]->attributes = $tag['attributes'];
                 }
-                if(isset($tag['value']))
-                {
+                if(isset($tag['value'])) {
                     $elements[$index]->content = $tag['value'];
                 }
-                if ($tag['type'] == "open")
-                {  // push
+                if ($tag['type'] == "open") {  // push
                     $elements[$index]->children = array();
                     $stack[count($stack)] = &$elements;
                     $elements = &$elements[$index]->children;
                 }
             }
-            if ($tag['type'] == "close")
-            {  // pop
+            if ($tag['type'] == "close") {  // pop
                 $elements = &$stack[count($stack) - 1];
                 unset($stack[count($stack) - 1]);
             }
