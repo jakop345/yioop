@@ -1055,7 +1055,7 @@ class AdminController extends Controller implements CrawlConstants
         $data["ELEMENT"] = "mixcrawlsElement";
 
         $data['mix_default'] = 0;
-        $crawls = $this->crawlModel->getCrawlList();
+        $crawls = $this->crawlModel->getCrawlList(false, true);
         $data['available_crawls'][0] = tl('admin_controller_select_crawl');
         $data['SCRIPT'] = "c = [];c[0]='".
             tl('admin_controller_select_crawl')."';";

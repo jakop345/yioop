@@ -42,6 +42,11 @@ require_once BASE_DIR."/lib/processors/text_processor.php";
 require_once BASE_DIR."/lib/url_parser.php";
 
 /**
+ * For deleteFileOrDir
+ */
+require_once BASE_DIR."/lib/utility.php";
+
+/**
  * Used to create crawl summary information
  * for PPTX files
  *
@@ -111,10 +116,10 @@ class PptxProcessor extends TextProcessor
                     }
                     $lang1=self::lang($dom);
                     if($lang1){
-                        $summary[self::LANG]=$lang1;
+                        $summary[self::LANG] = $lang1;
                     }
-                    $summary[self::LINKS]=array_merge($summary[self::LINKS]
-                        ,self::links($dom,$url));
+                    $summary[self::LINKS] = array_merge($summary[self::LINKS],
+                        self::links($dom,$url));
                 }
             }
             // Close the zip
@@ -124,7 +129,7 @@ class PptxProcessor extends TextProcessor
         }
         else{
         // If not pptx then process it as a text file
-            $summary=parent::process($page, $url);
+            $summary = parent::process($page, $url);
         }
 
         return $summary;
@@ -197,12 +202,11 @@ class PptxProcessor extends TextProcessor
      */
     static function title($dom)
     {
-        $coreProperties=$dom->getElementsByTagName("coreProperties");
-        foreach ($coreProperties as $property) {
-            $titles=$property->getElementsByTagName("title");
-            $title=$titles->item(0)->nodeValue;
-            return $title;
-        }
+        $coreProperties = $dom->getElementsByTagName("coreProperties");
+        $property = $coreProperties->item(0);
+        $titles = $property->getElementsByTagName("title");
+        $title = $titles->item(0)->nodeValue;
+        return $title;
     }
 
     /**
@@ -214,12 +218,11 @@ class PptxProcessor extends TextProcessor
      */
     static function slides($dom)
     {
-        $properties=$dom->getElementsByTagName("Properties");
-        foreach($properties as $property){
-            $slides=$property->getElementsByTagName("Slides");
-            $number=$slides->item(0)->nodeValue;
-            return $number;
-        }
+        $properties = $dom->getElementsByTagName("Properties");
+        $property = $properties->item(0);
+        $slides = $property->getElementsByTagName("Slides");
+        $number = $slides->item(0)->nodeValue;
+        return $number;
     }
 
     /** 
@@ -236,9 +239,7 @@ class PptxProcessor extends TextProcessor
 
         $languages = $xpath->evaluate("/p:sld//p:cSld//p:spTree//
             p:sp//p:txBody//a:p//a:r//a:rPr");
-        foreach ($languages as $language){
-            return $language->getAttribute("lang");
-        }
+        return $languages->item(0)->getAttribute("lang");
     }
 
     /**
@@ -256,7 +257,7 @@ class PptxProcessor extends TextProcessor
             //p:sp//p:txBody//a:p//a:r//a:t");
         $description="";
         foreach ($titles as $title){
-            $description=$description.$title->nodeValue;
+            $description .= $title->nodeValue;
         }
         return $description;
     }

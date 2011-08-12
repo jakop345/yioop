@@ -84,7 +84,8 @@ class MixcrawlsElement extends Element
         <?php
         foreach($data['available_mixes'] as $mix) {
         ?>
-            <tr><td><b><?php e($mix['MIX_NAME']); ?></b><br /><?php
+            <tr><td><b><?php e($mix['MIX_NAME']); ?></b><br />
+                <?php e($mix['MIX_TIMESTAMP']); ?><br /><?php
                 e("<small>".date("d M Y H:i:s", $mix['MIX_TIMESTAMP']).
                     "</small>"); ?></td>
             <td><?php

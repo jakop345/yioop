@@ -34,11 +34,10 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /** Load search engine-wide configuration file */
-require_once BASE_DIR.'/configs/config.php';
-foreach(glob(BASE_DIR."/lib/processors/*_processor.php") as $filename) { 
-    require_once $filename;
-}
- 
+require_once BASE_DIR.'configs/config.php';
+
+/** Load PPTX class we'll test */
+require_once BASE_DIR."lib/processors/pptx_processor.php"; 
 
 /**
  * UnitTest for the PptxProcessor class. It is used to process 
@@ -55,13 +54,12 @@ class PptxProcessorTest extends UnitTest implements CrawlConstants
      */
     public function setUp()
     {
-        $processors="PptxProcessor";
-        $processor= new $processors();
-        $filename=BASE_DIR . "/tests/test_files/test.pptx";
-        $page=file_get_contents($filename);
-        $url="";
-        $summary=array();
-        $summary=$processor->process($page,$url);
+        $processor = new PptxProcessor();
+        $filename = BASE_DIR . "/tests/test_files/test.pptx";
+        $page = file_get_contents($filename);
+        $url = "";
+        $summary = array();
+        $summary = $processor->process($page, $url);
         $this->test_objects['summary'] = $summary;
     }
 
@@ -70,7 +68,7 @@ class PptxProcessorTest extends UnitTest implements CrawlConstants
      */
     public function tearDown()
     {
-        $this->test_objects=null;
+        $this->test_objects = NULL;
     }
     /**
      * Checks title of the pptx is correct or not 
@@ -79,8 +77,8 @@ class PptxProcessorTest extends UnitTest implements CrawlConstants
     {
         $objects = $this->test_objects['summary'];
         $title="Nakul Natu";
-        $this->assertEqual
-            ($objects[self::TITLE], $title,"Correct Title Retrived");
+        $this->assertEqual($objects[self::TITLE], 
+            $title,"Correct Title Retrieved");
     }
 
     /**
@@ -91,7 +89,7 @@ class PptxProcessorTest extends UnitTest implements CrawlConstants
         $objects = $this->test_objects['summary'];
         $lang="en-US";
         $this->assertEqual(
-            $objects[self::LANG], $lang,"Correct Language Retrived");
+            $objects[self::LANG], $lang,"Correct Language Retrieved");
     }
 
     /**
@@ -100,15 +98,15 @@ class PptxProcessorTest extends UnitTest implements CrawlConstants
     public function checkLinksTestCase()
     {
         $objects = $this->test_objects['summary'];
-        $testLinks=array();
-        $testLinks[0]="http://www.google.com/";
-        $testLinks[1]="http://www.facebook.com/";
-        $links=array();
-        $links=$objects[self::LINKS];
-        $i=0;
-        foreach ($links as $link){
+        $testLinks = array();
+        $testLinks[0] = "http://www.google.com/";
+        $testLinks[1] = "http://www.facebook.com/";
+        $links = array();
+        $links = $objects[self::LINKS];
+        $i = 0;
+        foreach ($links as $link) {
             $this->assertEqual(
-                $link, $testLinks[$i],"Correct Link Retrived");
+                $link, $testLinks[$i],"Correct Link Retrieved");
             $i++;
         }
     }
@@ -116,7 +114,7 @@ class PptxProcessorTest extends UnitTest implements CrawlConstants
     /**
      * Checks if description is not null
      */
-    Public function checkDescriptionTestCase()
+    public function checkDescriptionTestCase()
     {
         $objects = $this->test_objects['summary'];
         $this->assertTrue(

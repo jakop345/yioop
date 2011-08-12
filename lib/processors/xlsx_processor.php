@@ -76,23 +76,22 @@ class XlsxProcessor extends TextProcessor
         $file_name=CRAWL_DIR . "/temp.xlsx";
         
         file_put_contents($file_name, $page);
-   
+
         // Open a zip archive
         $zip = new ZipArchive;
-        if ($zip->open($file_name) === TRUE) {
+        if($zip->open($file_name) === TRUE) {
 
             //Count of the sheets in xlsx
             $file_count = 0;
-       
+
             //Getting the title from xlsx file
-            $buf= $zip->getFromName("docProps/app.xml");
-            if ($buf) {
+            $buf = $zip->getFromName("docProps/app.xml");
+            if($buf) {
 
                $dom = self::dom($buf);
                if($dom !== false) {
                    // Get the title
                    $summary[self::TITLE] = self::title($dom);
-                   
                    $file_count = self::sheetCount($dom);
                }
             }
@@ -106,23 +105,22 @@ class XlsxProcessor extends TextProcessor
                     // Get the description
                     $summary[self::DESCRIPTION] = self::description($dom);
                 }
-  
+
                 //Getting the language from xlsx file
                 $summary[self::LANG] = self::lang($summary[self::DESCRIPTION]);
             }
- 
+
             $summary[self::LINKS]=$sites;
             //Getting links from each worksheet
             for ($i = 1; $i<= $file_count; $i++) {
-                $buf= $zip->getFromName("xl/worksheets/_rels/sheet" . $i . 
+                $buf= $zip->getFromName("xl/worksheets/_rels/sheet" . $i .
                     ".xml.rels");
-                if ($buf) {
-
+                if($buf) {
                     $dom = self::dom($buf);
                     if($dom !== false) {
                         // Get the links
                         $summary[self::LINKS] = array_merge(
-                            $summary[self::LINKS],self::links($dom,$url));
+                            $summary[self::LINKS], self::links($dom, $url));
                     }
                 }
             }
@@ -149,9 +147,9 @@ class XlsxProcessor extends TextProcessor
     static function dom($page)
     {
         $dom = new DOMDocument();
-        
+
         @$dom->loadXML($page);
-        
+
         return $dom;
     }
     
@@ -170,7 +168,6 @@ class XlsxProcessor extends TextProcessor
             $titles = $property->getElementsByTagName("TitlesOfParts");
             $title = $titles->item(0)->nodeValue;
         }
-        
         return $title;
      }
 
@@ -194,7 +191,6 @@ class XlsxProcessor extends TextProcessor
                 }
             }
         }
-        
         return $count;
     }
     
@@ -208,7 +204,7 @@ class XlsxProcessor extends TextProcessor
     static function description($dom)
     {
         $xpath = new DOMXPath($dom);
-        
+
         $sst_tag = $dom->getElementsByTagName("sst");
         $descriptions = "";
         foreach ($sst_tag as $sst_value) {

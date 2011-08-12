@@ -123,7 +123,11 @@ class HtmlProcessor extends TextProcessor
     static function checkMetaRobots($dom) 
     {
         $xpath = new DOMXPath($dom);
-        $metas = $xpath->evaluate("/html/head//meta[@name='ROBOTS']");
+        // we use robot rather than robots just in case people forget the s
+        $robots_check = "contains(translate(@name,".
+            "'abcdefghijklmnopqrstuvwxyz'," .
+            " 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'),'ROBOT')";
+        $metas = $xpath->evaluate("/html/head//meta[$robots_check]");
 
         foreach($metas as $meta) {
             // don't crawl if either noindex or nofollow

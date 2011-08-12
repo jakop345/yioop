@@ -74,7 +74,6 @@ if(USE_MEMCACHE) {
 mb_internal_encoding("UTF-8");
 mb_regex_encoding("UTF-8");
 
-
 if ( false === function_exists('lcfirst') ) {
     /**
      *  Lower cases the first letter in a string
