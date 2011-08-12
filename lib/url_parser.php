@@ -92,6 +92,19 @@ class UrlParser
         if(!isset($url_parts['scheme']) ) {return false;}
         $host_url = $url_parts['scheme'].'://';
 
+        //handles common typo http:/yahoo.com rather than http://yahoo.com
+        if(!isset($url_parts['host'])) {
+            if(isset($url_parts['path'])) {
+                $url_parts = @parse_url($url_parts['scheme'].":/".
+                    $url_parts['path']);
+                if(!isset($url_parts['host'])) {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        }
+
         if(isset($url_parts['user']) && isset($url_parts['pass'])) {
             $host_url .= $url_parts['user'].":".$url_parts['pass']."@";
         }
