@@ -1074,7 +1074,7 @@ class QueueServer implements CrawlConstants
             foreach($to_crawl_sites as $triple) {
                 $url = & $triple[0];
                 $weight = $triple[1];
-                $this->web_queue->addSeenUrlFilter($triple[2]);
+                $this->web_queue->addSeenUrlFilter($triple[2]); //add for dedup
                 unset($triple[2]); // so triple is now a pair
                 $host_url = UrlParser::getHost($url);
                 $host_with_robots = $host_url."/robots.txt";
@@ -1111,6 +1111,10 @@ class QueueServer implements CrawlConstants
 
             crawlLog("C..");
             $start_time = microtime();
+            /* 
+                 adding urls to queue involves disk contains and adjust do not
+                 so group and do last
+             */
             $this->web_queue->addUrlsQueue($added_pairs);
 
         }
@@ -1251,24 +1255,36 @@ class QueueServer implements CrawlConstants
         $start_time = microtime();
 
         $fh = $this->web_queue->openUrlArchive();
+        /*
+            $delete - array of items we will delete from the queue after
+                we have selected all of the items for fetch batch
+            $sites - array of urls for fetch batch indices in this array we'll
+                call slots. Crawled-delayed host urls are spaced by a certain
+                number of slots
+        */
         while ($i <= $count && $fetch_size < MAX_FETCH_SIZE) {
+
+            //look in queue for url and its weight
             $tmp = $this->web_queue->peekQueue($i, $fh);
+
             list($url, $weight) = $tmp;
+
+            // if queue error remove entry any loop
             if($tmp === false || strcmp($url, "LOOKUP ERROR") == 0) {
-                $this->web_queue->to_crawl_queue->poll($i);
+                $delete_urls[$i] = $url;
                 crawlLog("Removing lookup error index");
                 $i++;
                 continue;
             }
 
             $host_url = UrlParser::getHost($url);
-            
+
+            //if $url is a robots.txt url see if we need to schedule or not
             if(strcmp($host_url."/robots.txt", $url) == 0) {
                 if($this->web_queue->containsGotRobotTxt($host_url)) {
                     $delete_urls[$i] = $url;
                     $i++;
                 } else {
-
                     $next_slot = $this->getEarliestSlot($current_crawl_index, 
                         $sites);
                     
@@ -1288,12 +1304,12 @@ class QueueServer implements CrawlConstants
                 }
                 continue;
             }
-            
+
+            //Now handle the non-robots.txt url case
             $robots_okay = true;
 
             if($this->web_queue->containsGotRobotTxt($host_url)) {
                 $host_paths = UrlParser::getHostPaths($url);
-
 
                 foreach($host_paths as $host_path) {
                     if($this->web_queue->containsDisallowedRobot($host_path)) {
@@ -1389,7 +1405,7 @@ class QueueServer implements CrawlConstants
         if(isset($sites) && count($sites) > 0 ) {
             $dummy_slot = array(self::DUMMY, 0.0, 0);
             /* dummy's are used for crawl delays of sites with longer delays
-               when we don't have much else to crawl
+               when we don't have much else to crawl.
              */
             $cnt = 0;
             for($j = 0; $j < MAX_FETCH_SIZE; $j++) {
