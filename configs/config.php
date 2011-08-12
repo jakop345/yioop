@@ -280,15 +280,14 @@ $PAGE_PROCESSORS = array(   "text/html" => "HtmlProcessor",
                             "application/vnd.ms-powerpoint" => "PptProcessor",
                             "application/vnd.openxmlformats-officedocument.
                                 presentationml.presentation"=> "PptxProcessor",
-			    "application/epub+zip" => "EpubProcessor",
+                            "application/epub+zip" => "EpubProcessor",
                             "application/vnd.openxmlformats-officedocument.
-                                spreadsheetml.sheet" => "XlsxProcessor"
-                                
-                            "text/rtf" => "RtfProcessor",  
+                                spreadsheetml.sheet" => "XlsxProcessor",
+
+                            "text/rtf" => "RtfProcessor",
                             "text/plain" => "TextProcessor", 
                             "text/csv" => "TextProcessor",
                             "text/tab-separated-values" => "TextProcessor",
-
                             "image/jpeg" => "JpgProcessor",
                             "image/gif" => "GifProcessor", 
                             "image/png" => "PngProcessor",
