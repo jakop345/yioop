@@ -65,14 +65,14 @@ class EpubProcessor extends TextProcessor
      *  @var string name
      */
     var $name;
-    
+
     /**
      *  The attribute of the tag element in an xml document
      *
      *  @var string attributes
      */
-    var $attributes;  
-    
+    var $attributes;
+
     /**
      *  The content of the tag element or attribute, used to extract
      *  the fields like title, creator, language of the document 
@@ -94,8 +94,8 @@ class EpubProcessor extends TextProcessor
      *  @const integer MAX_DESCRIPTION_LEN
      */
     const MAX_DESCRIPTION_LEN = 2000;
-   
-    
+
+    const MAX_DOM_LEVEL = 10;
     /**
      *  Used to extract the title, description and links from
      *  a string consisting of ebook publication data.
@@ -119,7 +119,7 @@ class EpubProcessor extends TextProcessor
         $epub_title = '';
         $epub_unique_identifier = '';
         $epub_author = '';
-        $MAX_DOM_LEVEL = 10;
+
         file_put_contents($temp_filename,$page);
         $zip = new ZipArchive;
         if($zip->open($temp_filename)) {
@@ -195,8 +195,7 @@ class EpubProcessor extends TextProcessor
 
         $elements = array();  // the currently filling [child] XmlElement array
         $stack = array();
-        foreach ($tags as $tag)
-        {
+        foreach ($tags as $tag) {
             $index = count($elements);
             if ($tag['type'] == "complete" || $tag['type'] == "open") {
                 $elements[$index] = new EpubProcessor;
