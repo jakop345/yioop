@@ -478,6 +478,28 @@ class IndexArchiveBundle implements CrawlConstants
         return WebArchiveBundle::getArchiveInfo($dir_name."/summaries");
     }
 
-    
+    /**
+     * Sets the archive info (DESCRIPTION, COUNT, 
+     * NUM_DOCS_PER_PARTITION) for the web archive bundle associated with
+     * this bundle. As DESCRIPTION is used to store info about the info
+     * bundle this sets the global properties of the info bundle as well.
+     *
+     * @param string $dir_name folder with archive bundle 
+     * @param array $info struct with above fields 
+     */
+    static function setArchiveInfo($dir_name, $info)
+    {
+        WebArchiveBundle::setArchiveInfo($dir_name."/summaries", $info);
+    }
+
+    /**
+     * Returns the mast time the archive info of the bundle was modified.
+     *
+     * @param string $dir_name folder with archive bundle
+     */
+    static function getParamModifiedTime($dir_name)
+    {
+        return WebArchiveBundle::getParamModifiedTime($dir_name."/summaries");
+    }
 }
 ?>

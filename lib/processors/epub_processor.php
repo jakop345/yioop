@@ -95,9 +95,9 @@ class EpubProcessor extends TextProcessor
      */
     const MAX_DESCRIPTION_LEN = 2000;
     /**
-     * The constant represents the number of 
-     * child levels at which the data is present in
-     * the content.opf file.
+     * The processor will get the first this many files found in
+     * an .odf file and get the first this many elements from
+     * each of those files
      *
      *  @const integer MAX_DOM_LEVEL
      */
@@ -126,18 +126,18 @@ class EpubProcessor extends TextProcessor
         $epub_unique_identifier = '';
         $epub_author = '';
 
-        file_put_contents($temp_filename,$page);
+        file_put_contents($temp_filename, $page);
         $zip = new ZipArchive;
         if($zip->open($temp_filename)) {
             for($i = 0; $i < $zip->numFiles; $i++) {
                 // get the content file names of .epub document
                 $filename[$i] = $zip->getNameIndex($i) ;
-                if(preg_match($opf_pattern,$filename[$i])) {
+                if(preg_match($opf_pattern, $filename[$i])) {
                     // Get the file data from zipped folder
                     $opf_data = $zip->getFromName($filename[$i]);
                     $opf_summary = $this->xmlToObject($opf_data);
-                    for($m = 0;$m <= $MAX_DOM_LEVEL; $m++) {
-                        for($n = 0;$n <= $MAX_DOM_LEVEL; $n++) {
+                    for($m = 0; $m <= self::MAX_DOM_LEVEL; $m++) {
+                        for($n = 0;$n <= self::MAX_DOM_LEVEL; $n++) {
                             if(isset($opf_summary->children[$m]->children[$n])){
                                 $child = $opf_summary->children[$m]->
                                     children[$n];
@@ -216,13 +216,12 @@ class EpubProcessor extends TextProcessor
                 }
                 if ($tag['type'] == "open") {  // push
                     $elements[$index]->children = array();
-                    $stack[count($stack)] = &$elements;
+                    $stack[] = &$elements;
                     $elements = &$elements[$index]->children;
                 }
             }
             if ($tag['type'] == "close") {  // pop
-                $elements = &$stack[count($stack) - 1];
-                unset($stack[count($stack) - 1]);
+                $elements = array_pop($stack);
             }
         }
         return $elements[0];  // the single top-level element

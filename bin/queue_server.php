@@ -213,6 +213,14 @@ class QueueServer implements CrawlConstants
      var $index_dirty;
 
     /**
+     * This keeps track of the time the current archive info was last modified
+     * This way the queue_server knows if the user has changed the crawl
+     * parameters during the crawl.
+     * @var int
+     */
+    var $archive_modified_time;
+
+    /**
      * This is a list of indexing_plugins which might do
      * post processing after the crawl. The plugins postProcessing function
      * is called if it is selected in the crawl options page.
@@ -225,12 +233,6 @@ class QueueServer implements CrawlConstants
      * @var array
      */
     var $hourly_crawl_data;
-
-    /**
-     * This is an index of daily  (timestamp, number_of_urls_crawled) data
-     * @var array
-     */
-    var $daily_crawl_data;
 
     /**
      * holds the post processors selected in the crawl options page
@@ -252,7 +254,7 @@ class QueueServer implements CrawlConstants
         $this->last_index_save_time = 0;
         $this->index_dirty = false;
         $this->hourly_crawl_data = array();
-        $this->daily_crawl_data = array();
+        $this->archive_modified_time = 0;
     }
 
     /**
@@ -297,7 +299,10 @@ class QueueServer implements CrawlConstants
             if($info[self::STATUS] == self::STOP_STATE) {
                 continue;
             }
-            
+
+            //check and update if necessary the crawl params of current crawl
+            $this->checkUpdateCrawlParameters();
+
             //check for orphaned queue bundles
             $this->deleteOrphanedBundles();
 
@@ -641,15 +646,11 @@ class QueueServer implements CrawlConstants
                     NUM_URLS_QUEUE_RAM, $min_or_max);
         }
 
-        if(!file_exists(
-            CRAWL_DIR.'/cache/'.self::index_data_base_name.$this->crawl_time)) {
-            $this->index_archive = new IndexArchiveBundle(
-                CRAWL_DIR.'/cache/'.
-                    self::index_data_base_name.$this->crawl_time,
-                false, serialize($info));
+        $dir = CRAWL_DIR.'/cache/'.self::index_data_base_name.$this->crawl_time;
+        if(!file_exists($dir)) {
+            $this->index_archive = new IndexArchiveBundle($dir, false,
+                serialize($info));
         } else {
-            $dir = CRAWL_DIR.'/cache/'.
-                    self::index_data_base_name.$this->crawl_time;
             $this->index_archive = new IndexArchiveBundle($dir,
                 false);
             $archive_info = IndexArchiveBundle::getArchiveInfo($dir);
@@ -668,13 +669,48 @@ class QueueServer implements CrawlConstants
             $this->db->setWorldPermissionsRecursive(
                 CRAWL_DIR.'/cache/'.self::queue_base_name.$this->crawl_time);
         }
-        $this->db->setWorldPermissionsRecursive(
-            CRAWL_DIR.'/cache/'.self::index_data_base_name.$this->crawl_time);
-        // initialize, store the description of this crawl in the index archive
+        $this->db->setWorldPermissionsRecursive($dir);
 
-
+        //Get modified time of initial setting of crawl params
+        $this->archive_modified_time = 
+            IndexArchiveBundle::getParamModifiedTime($dir);
         $info[self::STATUS] = self::CONTINUE_STATE;
         return $info;
+    }
+
+    /**
+     * Checks to see if the parameters by which the active crawl are being
+     * conducted have been modified since the last time the values were put
+     * into queue server field variables. If so, it updates the values to
+     * to their new values
+     */
+    function checkUpdateCrawlParameters()
+    {
+        crawlLog("Check for update in crawl parameters...");
+        $dir = CRAWL_DIR.'/cache/'.self::index_data_base_name.$this->crawl_time;
+        $modified_time = IndexArchiveBundle::getParamModifiedTime($dir);
+        if($this->archive_modified_time == $modified_time) {
+            crawlLog("...none.");
+            return;
+        }
+        $updatable_info = array(
+            "restrict_sites_by_url" => self::RESTRICT_SITES_BY_URL,
+            "allowed_sites" => self::ALLOWED_SITES,
+            "disallowed_sites" => self::DISALLOWED_SITES,
+            "meta_words" => self::META_WORDS,
+            "indexing_plugins" => self::INDEXING_PLUGINS,
+        );
+        $keys = array_keys($updatable_info);
+        $archive_info = IndexArchiveBundle::getArchiveInfo($dir);
+        $index_info = unserialize($archive_info['DESCRIPTION']);
+        foreach($keys as $index_field) {
+            if(isset($index_info[$updatable_info[$index_field]]) ) {
+                $this->$index_field = 
+                    $index_info[$updatable_info[$index_field]];
+                crawlLog("Updating ...$index_field.");
+            }
+        }
+        $this->archive_modified_time = $modified_time;
     }
 
     /**

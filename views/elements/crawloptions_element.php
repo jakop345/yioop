@@ -54,7 +54,7 @@ class CrawloptionsElement extends Element
      *      be set in the crawl.ini file
      */
     public function render($data) 
-    {
+    { 
     ?>
         <div class="currentactivity">
         <div class="<?php e($data['leftorright']);?>">
@@ -62,7 +62,11 @@ class CrawloptionsElement extends Element
             e($data['YIOOP_TOKEN']) ?>"
         ><?php e(tl('crawloptions_element_back_to_manage'))?></a>
         </div>
-        <h2><?php e(tl('crawloptions_element_edit_crawl_options'))?></h2>
+        <?php if(isset($data['ts'])) { ?>
+        <h2><?php e(tl('crawloptions_element_modify_active_crawl')); ?></h2>
+        <?php } else { ?>
+        <h2><?php e(tl('crawloptions_element_edit_crawl_options')); ?></h2>
+        <?php } ?>
         <form id="crawloptionsForm" method="post" action='?'>
         <input type="hidden" name="c" value="admin" />
         <input type="hidden" name="YIOOP_TOKEN" value="<?php 
@@ -72,18 +76,34 @@ class CrawloptionsElement extends Element
         <input type="hidden" name="posted" value="posted" />
         <input type="hidden" id='crawl-type' name="crawl_type" value="<?php 
             e($data['crawl_type'])?>" />
+        <?php if(isset($data['ts'])) { ?>
+            <input type="hidden" name="ts" value="<?php 
+                e($data['ts'])?>" />
+        <?php } ?>
         <ul class='tabmenu-list'>
-        <li><a href="javascript:switchTab('webcrawltab', 'archivetab');" 
+        <?php if(!isset($data['ts']) || 
+            $data['crawl_type'] == CrawlConstants::WEB_CRAWL) { ?>
+        <li><a  <?php if(!isset($data['ts'])) { ?>
+            href="javascript:switchTab('webcrawltab', 'archivetab');"
+            <?php } ?>
             id='webcrawltabitem'
             class="<?php e($data['web_crawl_active']); ?>"><?php 
             e(tl('crawloptions_element_web_crawl'))?></a></li>
-        <li><a href="javascript:switchTab('archivetab', 'webcrawltab');"
+        <?php
+        }
+        if(!isset($data['ts']) || 
+            $data['crawl_type'] == CrawlConstants::ARCHIVE_CRAWL) { ?>
+        <li><a <?php if(!isset($data['ts'])) { ?>
+            href="javascript:switchTab('archivetab', 'webcrawltab');"
+            <?php } ?>
             id='archivetabitem'
             class="<?php e($data['archive_crawl_active']); ?>"><?php 
             e(tl('crawloptions_element_archive_crawl'))?></a></li>
+        <?php } ?>
         </ul>
         <div class='tabmenu-content'>
         <div id='webcrawltab'>
+        <?php if(!isset($data['ts'])) { ?>
         <div class="topmargin"><label for="load-options"><b><?php 
             e(tl('crawloptions_element_load_options'))?></b></label><?php
             $this->view->optionsHelper->render("load-options", "load_option", 
@@ -95,6 +115,7 @@ class CrawloptionsElement extends Element
                 $data['available_crawl_orders'], $data['crawl_order']);
         ?>
         </div>
+        <?php } ?>
         <div class="topmargin"><label for="restrict-sites-by-url"><b><?php 
             e(tl('crawloptions_element_restrict_by_url'))?></b></label>
                 <input type="checkbox" id="restrict-sites-by-url" 
@@ -113,19 +134,23 @@ class CrawloptionsElement extends Element
         <textarea class="shorttextarea" id="disallowed-sites" 
             name="disallowed_sites" ><?php e($data['disallowed_sites']);
         ?></textarea>
+        <?php if(!isset($data['ts'])) { ?>
         <div class="topmargin"><label for="seed-sites"><b><?php 
             e(tl('crawloptions_element_seed_sites'))?></b></label></div>
         <textarea class="talltextarea" id="seed-sites" name="seed_sites" ><?php 
             e($data['seed_sites']);
         ?></textarea>
+        <?php } ?>
         </div>
         <div id='archivetab'>
+        <?php if(!isset($data['ts'])) { ?>
         <div class="topmargin"><label for="load-options"><b><?php 
             e(tl('crawloptions_element_reindex_crawl'))?></b></label><?php
             $this->view->optionsHelper->render("crawl-indexes", "crawl_indexes",
                 $data['available_crawl_indexes'], $data['crawl_index']);
         ?></div>
         </div>
+        <?php } ?>
         </div>
         <div class="topmargin"><b><?php 
             e(tl('crawloptions_element_meta_words'))?></b></div>
@@ -206,15 +231,20 @@ class CrawloptionsElement extends Element
             setDisplay(newtab, true);
             setDisplay(oldtab, false);
             ntab = elt(newtab+"item");
-            ntab.className = 'active';
+            if(ntab) {
+                ntab.className = 'active';
+            }
             otab = elt(oldtab+"item");
-            otab.className = '';
+            if(otab) {
+                otab.className = '';
+            }
             ctype = elt('crawl-type');
+            if(ctype) {
             ctype.value = (newtab == 'webcrawltab') 
                 ? '<?php e(CrawlConstants::WEB_CRAWL); ?>' : 
                 '<?php e(CrawlConstants::ARCHIVE_CRAWL); ?>';
+            }
         }
-
         </script>
     <?php
     }

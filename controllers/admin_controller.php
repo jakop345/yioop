@@ -858,6 +858,12 @@ class AdminController extends Controller implements CrawlConstants
                             $timestamp);
                         $update_flag = true;
                         $no_further_changes = true;
+                    } else if(isset($_REQUEST['ts'])) {
+                        $timestamp = 
+                            $this->clean($_REQUEST['ts'], "int");
+                        $seed_info = $this->crawlModel->getCrawlSeedInfo(
+                            $timestamp);
+                        $data['ts'] = $timestamp;
                     } else {
                         $seed_info = $this->crawlModel->getSeedInfo();
                     }
@@ -968,10 +974,13 @@ class AdminController extends Controller implements CrawlConstants
                     }
 
                     $data['SCRIPT'] = "setDisplay('toggle', ".
-                        "'{$data['restrict_sites_by_url']}');".
+                        "'{$data['restrict_sites_by_url']}');";
+                    if(!isset($_REQUEST['ts'])) {
+                        $data['SCRIPT'] .= 
                         " elt('load-options').onchange = ".
                         "function() { if(elt('load-options').selectedIndex !=".
                         " 0) { elt('crawloptionsForm').submit();  }};";
+                    }
                     if($data['crawl_type'] == CrawlConstants::WEB_CRAWL) {
                         $data['SCRIPT'] .=
                             "switchTab('webcrawltab', 'archivetab');";
@@ -980,7 +989,12 @@ class AdminController extends Controller implements CrawlConstants
                             "switchTab('archivetab', 'webcrawltab');";
                     }
                     if($update_flag) {
-                        $this->crawlModel->setSeedInfo($seed_info);
+                        if(isset($_REQUEST['ts'])) {
+                            $this->crawlModel->setCrawlSeedInfo($timestamp, 
+                                $seed_info);
+                        } else {
+                            $this->crawlModel->setSeedInfo($seed_info);
+                        }
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('admin_controller_update_seed_info')."</h1>');";
                     }

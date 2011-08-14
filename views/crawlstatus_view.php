@@ -88,7 +88,8 @@ class CrawlstatusView extends View
             }
             ?><br /><a href="?c=admin&amp;a=manageCrawls<?php
                 ?>&amp;arg=options&amp;YIOOP_TOKEN=<?php
-                e($data['YIOOP_TOKEN']) ?>"><?php 
+                e($data['YIOOP_TOKEN']); ?>&amp;ts=<?php 
+                e($data['CRAWL_TIME']); ?>"><?php 
                 e(tl('crawlstatus_view_changeoptions')); ?></a><?php
         } else {
             e(tl('crawlstatus_view_no_description'));

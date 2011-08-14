@@ -266,7 +266,9 @@ class HtmlProcessor extends TextProcessor
         $base_refs = $xpath->evaluate("/html//base");
         if($base_refs->item(0)) {
             $tmp_site = $base_refs->item(0)->getAttribute('href');
-            if(strlen($tmp_site) > 0) {$site = $tmp_site;}
+            if(strlen($tmp_site) > 0) {
+                $site = UrlParser::canonicalLink($tmp_site, $site);
+            }
         }
 
         $hrefs = $xpath->evaluate("/html/body//a");
@@ -275,17 +277,20 @@ class HtmlProcessor extends TextProcessor
 
         foreach($hrefs as $href) {
             if($i < MAX_LINKS_PER_PAGE) {
-                $url = UrlParser::canonicalLink(
-                    $href->getAttribute('href'), $site);
-                if(!UrlParser::checkRecursiveUrl($url)  && 
-                    strlen($url) < MAX_URL_LENGTH) {
-                    if(isset($sites[$url])) { 
-                        $sites[$url] .=" ".strip_tags($href->textContent);
-                    } else {
-                        $sites[$url] = strip_tags($href->textContent);
-                    }
+                $rel = $href->getAttribute("rel");
+                if($rel == "" || !stristr($rel, "nofollow")) {
+                    $url = UrlParser::canonicalLink(
+                        $href->getAttribute('href'), $site);
+                    if(!UrlParser::checkRecursiveUrl($url)  && 
+                        strlen($url) < MAX_URL_LENGTH) {
+                        if(isset($sites[$url])) { 
+                            $sites[$url] .=" ".strip_tags($href->textContent);
+                        } else {
+                            $sites[$url] = strip_tags($href->textContent);
+                        }
 
-                   $i++;
+                       $i++;
+                    }
                 }
             }
 

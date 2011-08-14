@@ -483,13 +483,51 @@ class CrawlModel extends Model implements CrawlConstants
                 $seed_info['meta_words'] = $index_info[self::META_WORDS];
             }
             if(isset($index_info[self::INDEXING_PLUGINS])) {
-                $seed_info['indexing_plugins'] = 
+                $seed_info['indexing_plugins']['plugins'] = 
                     $index_info[self::INDEXING_PLUGINS];
             }
         }
         return $seed_info;
     }
-    
+
+    /**
+     * Changes the crawl parameters of an existing crawl
+     *
+     * @param string $timestamp timestamp of the crawl to change
+     * @param array $new_info the new parameters
+     */
+    function setCrawlSeedInfo($timestamp, $new_info)
+    {
+        $dir = CRAWL_DIR.'/cache/'.self::index_data_base_name.$timestamp;
+        if(file_exists($dir)) {
+            $info = IndexArchiveBundle::getArchiveInfo($dir);
+            $index_info = unserialize($info['DESCRIPTION']);
+            if(isset($new_info['general']["restrict_sites_by_url"])) {
+                $index_info[self::RESTRICT_SITES_BY_URL] = 
+                    $new_info['general']["restrict_sites_by_url"];
+            }
+            $updatable_site_info = array(
+                "allowed_sites" => self::ALLOWED_SITES,
+                "disallowed_sites" => self::DISALLOWED_SITES
+            );
+            foreach($updatable_site_info as $type => $code) {
+                if(isset($new_info[$type])) {
+                    $index_info[$code] = $new_info[$type]['url'];
+                }
+            }
+            if(isset($new_info['meta_words']) ) {
+                $index_info[self::META_WORDS] = $new_info['meta_words'];
+            }
+            if(isset($new_info['indexing_plugins']) ) {
+                $index_info[self::INDEXING_PLUGINS] = 
+                    $new_info['indexing_plugins']['plugins'];
+            }
+            $info['DESCRIPTION'] = serialize($index_info);
+            IndexArchiveBundle::setArchiveInfo($dir, $info);
+        }
+    }
+
+
     /**
      *  Returns the initial sites that a new crawl will start with along with
      *  crawl parameters such as crawl order, allowed and disallowed crawl sites
@@ -503,7 +541,8 @@ class CrawlModel extends Model implements CrawlConstants
         if(file_exists(WORK_DIRECTORY."/crawl.ini") && !$use_default) {
             $info = parse_ini_file (WORK_DIRECTORY."/crawl.ini", true);
         } else {
-            $info =parse_ini_file (BASE_DIR."/configs/default_crawl.ini", true);
+            $info =
+                parse_ini_file (BASE_DIR."/configs/default_crawl.ini", true);
         }
 
         return $info;

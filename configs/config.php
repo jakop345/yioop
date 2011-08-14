@@ -324,7 +324,7 @@ define ('EN_RATIO', 0.9);
 define ('AD_HOC_TITLE_LENGTH', 10);
 
 /** BM25F weight for title text */
-define ('TITLE_WEIGHT', 4);
+define ('TITLE_WEIGHT', 2);
 
 /** BM25F weight for other text within doc*/
 define ('DESCRIPTION_WEIGHT', 1);
