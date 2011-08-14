@@ -600,6 +600,7 @@ class Fetcher implements CrawlConstants
             return false;
         }
         $info_string = trim($info_string);
+
         $tok = strtok($info_string, "\n");
         $info = unserialize(base64_decode($tok));
 

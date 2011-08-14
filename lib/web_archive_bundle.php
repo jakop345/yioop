@@ -319,5 +319,31 @@ class WebArchiveBundle
 
     }
 
+    /**
+     * Sets the archive info (DESCRIPTION, COUNT, 
+     * NUM_DOCS_PER_PARTITION) for this web archive 
+     *
+     * @param string $dir_name folder with archive bundle 
+     * @param array $info struct with above fields 
+     */
+    static function setArchiveInfo($dir_name, $info)
+    {
+        if(file_exists($dir_name."/description.txt")) {
+            file_put_contents($dir_name."/description.txt", serialize($info));
+        }
+    }
+
+    /**
+     * Returns the mast time the archive info of the bundle was modified.
+     *
+     * @param string $dir_name folder with archive bundle
+     */
+    static function getParamModifiedTime($dir_name)
+    {
+        if(file_exists($dir_name."/description.txt")) {
+            return filemtime($dir_name."/description.txt");
+        }
+        return false;
+    }
 }
 ?>

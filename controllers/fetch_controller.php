@@ -221,7 +221,7 @@ class FetchController extends Controller implements CrawlConstants
         }
 
         $data_hash = crawlHash($data_string);
-        $fh = file_put_contents($dir."/At".$time."From".$address.
+        file_put_contents($dir."/At".$time."From".$address.
             "WithHash$data_hash.txt", $data_string);
     }
 

@@ -49,7 +49,7 @@ class ManagecrawlsElement
      * Draw form to start a new crawl, has div place holder and ajax code to 
      * get info about current crawl
      *
-     * @param array $data  form about about a crawl such as its description
+     * @param array $data  information about a crawl such as its description
      */
     public function render($data) 
     {?>

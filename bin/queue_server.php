@@ -213,6 +213,14 @@ class QueueServer implements CrawlConstants
      var $index_dirty;
 
     /**
+     * This keeps track of the time the current archive info was last modified
+     * This way the queue_server knows if the user has changed the crawl
+     * parameters during the crawl.
+     * @var int
+     */
+    var $archive_modified_time;
+
+    /**
      * This is a list of indexing_plugins which might do
      * post processing after the crawl. The plugins postProcessing function
      * is called if it is selected in the crawl options page.
@@ -225,12 +233,6 @@ class QueueServer implements CrawlConstants
      * @var array
      */
     var $hourly_crawl_data;
-
-    /**
-     * This is an index of daily  (timestamp, number_of_urls_crawled) data
-     * @var array
-     */
-    var $daily_crawl_data;
 
     /**
      * holds the post processors selected in the crawl options page
@@ -252,7 +254,7 @@ class QueueServer implements CrawlConstants
         $this->last_index_save_time = 0;
         $this->index_dirty = false;
         $this->hourly_crawl_data = array();
-        $this->daily_crawl_data = array();
+        $this->archive_modified_time = 0;
     }
 
     /**
@@ -297,7 +299,10 @@ class QueueServer implements CrawlConstants
             if($info[self::STATUS] == self::STOP_STATE) {
                 continue;
             }
-            
+
+            //check and update if necessary the crawl params of current crawl
+            $this->checkUpdateCrawlParameters();
+
             //check for orphaned queue bundles
             $this->deleteOrphanedBundles();
 
@@ -471,65 +476,20 @@ class QueueServer implements CrawlConstants
                         crawlLog("Performing an archive crawl of ".
                             "archive with timestamp ".$this->crawl_index);
                     }
-                    $crawl_status = array();
-                    $crawl_status['MOST_RECENT_FETCHER'] = "";
-                    $crawl_status['MOST_RECENT_URLS_SEEN'] = array();
-                    $crawl_status['CRAWL_TIME'] = $this->crawl_time;
-                    $crawl_status['COUNT'] = 0;
-                    $crawl_status['DESCRIPTION'] = "BEGIN_CRAWL";
-                    file_put_contents(
-                        CRAWL_DIR."/schedules/crawl_status.txt", 
-                        serialize($crawl_status));
-                    chmod(
-                        CRAWL_DIR."/schedules/crawl_status.txt", 0777);
+                    $this->writeAdminMessage("BEGIN_CRAWL");
                 break;
 
                 case "STOP_CRAWL":
                     crawlLog("Stopping crawl !! This involves multiple steps!");
-                    $crawl_status = array();
-                    $crawl_status['MOST_RECENT_FETCHER'] = "";
-                    $crawl_status['MOST_RECENT_URLS_SEEN'] = array();
-                    $crawl_status['CRAWL_TIME'] = $this->crawl_time;
-                    $crawl_status['COUNT'] = 0;
-                    $crawl_status['DESCRIPTION'] = "SHUTDOWN_DICTIONARY";
-                    file_put_contents(
-                        CRAWL_DIR."/schedules/crawl_status.txt", 
-                        serialize($crawl_status));
-                    if(is_object($this->index_archive)) {
-                        $this->
-                            index_archive->saveAndAddCurrentShardDictionary();
-                        $this->index_archive->dictionary->mergeAllTiers();
-                    }
-                    $this->db->setWorldPermissionsRecursive(
-                        CRAWL_DIR.'/cache/'.
-                        self::index_data_base_name.$this->crawl_time);
-
-                    $info[self::STATUS] = self::WAITING_START_MESSAGE_STATE;
+                    $this->dumpQueueToSchedules();
+                    $this->shutdownDictionary();
                     //Calling post processing function if the processor is 
                     //selected in the crawl options page.
-                    if(isset($this->indexing_plugins)) {
-                        crawlLog("Post Processing....");
-                        $crawl_status['DESCRIPTION'] = "SHUTDOWN_RUNPLUGINS";
-                        file_put_contents(
-                            CRAWL_DIR."/schedules/crawl_status.txt", 
-                            serialize($crawl_status));
-                        foreach($this->indexing_plugins as $plugin) {
-                            $plugin_instance_name = 
-                                lcfirst($plugin)."Plugin";
-                            $plugin_name = $plugin."Plugin";
-                            $this->$plugin_instance_name = 
-                                new $plugin_name();
-                            if($this->$plugin_instance_name) {
-                                crawlLog(
-                                    "... executing $plugin_instance_name");
-                                $this->$plugin_instance_name->
-                                    postProcessing($this->crawl_time);
-                            }
-                        }
-                    }
+                    $this->runPostProcessingPlugins();
                     if(file_exists(CRAWL_DIR."/schedules/crawl_status.txt")) {
                         unlink(CRAWL_DIR."/schedules/crawl_status.txt");
                     }
+                    $info[self::STATUS] = self::WAITING_START_MESSAGE_STATE;
                     crawlLog("Crawl has been successfully stopped!!");
                 break;
 
@@ -549,17 +509,8 @@ class QueueServer implements CrawlConstants
                             $msg .= "bundle for crawl restart doesn't exist\n";
                         }
                         $info["MESSAGE"] = $msg;
-                        $crawl_status = array();
-                        $crawl_status['MOST_RECENT_FETCHER'] = "";
-                        $crawl_status['MOST_RECENT_URLS_SEEN'] = array();
-                        $crawl_status['CRAWL_TIME'] = $this->crawl_time;
-                        $crawl_status['COUNT'] = 0;
-                        $crawl_status['DESCRIPTION'] = $msg;
+                        $this->writeAdminMessage($msg);
                         crawlLog($msg);
-                        file_put_contents(
-                            CRAWL_DIR."/schedules/crawl_status.txt", 
-                            serialize($crawl_status));
-                        chmod(CRAWL_DIR."/schedules/crawl_status.txt", 0777);
                         $info[self::STATUS] = self::WAITING_START_MESSAGE_STATE;
                     }
                 break;
@@ -570,6 +521,132 @@ class QueueServer implements CrawlConstants
         return $info;
     }
 
+    /**
+     *
+     */
+    function writeAdminMessage($message)
+    {
+        $crawl_status = array();
+        $crawl_status['MOST_RECENT_FETCHER'] = "";
+        $crawl_status['MOST_RECENT_URLS_SEEN'] = array();
+        $crawl_status['CRAWL_TIME'] = $this->crawl_time;
+        $crawl_status['COUNT'] = 0;
+        $crawl_status['DESCRIPTION'] = $message;
+        file_put_contents(
+            CRAWL_DIR."/schedules/crawl_status.txt", 
+            serialize($crawl_status));
+        chmod(CRAWL_DIR."/schedules/crawl_status.txt", 0777);
+    }
+
+    /**
+     * When a crawl is being shutdown, this function is called to write
+     * the contents of the web queue bundle back to schedules. This allows
+     * crawls to be resumed without losing urls.
+     */
+    function dumpQueueToSchedules()
+    {
+        $this->writeAdminMessage("SHUTDOWN_QUEUE");
+        if(!isset($this->web_queue->to_crawl_queue)) {
+            crawlLog("URL queue appears to be empty or NULL");
+            return;
+        }
+        crawlLog("Writing queue contents back to schedules...");
+        $dir = CRAWL_DIR."/schedules/".self::schedule_data_base_name.
+            $this->crawl_time;
+        if(!file_exists($dir)) {
+            mkdir($dir);
+            chmod($dir, 0777);
+        }
+
+        $day = floor($this->crawl_time/86400) - 1; 
+            //want before all other schedules, so will be reloaded first
+
+        $dir .= "/$day";
+        if(!file_exists($dir)) {
+            mkdir($dir);
+            chmod($dir, 0777);
+        }
+        //get rid of previous restart attempts, if present
+        $this->db->unlinkRecursive($dir);
+        $count = $this->web_queue->to_crawl_queue->count;
+        $old_time = 1;
+        $now = time();
+        $schedule_data = array();
+        $schedule_data[self::SCHEDULE_TIME] = $this->crawl_time;
+        $schedule_data[self::TO_CRAWL] = array();
+        $fh = $this->web_queue->openUrlArchive();
+        for($time = 1; $time < $count; $time++) {
+            $tmp =  $this->web_queue->peekQueue($time, $fh);
+            list($url, $weight) = $tmp;
+            // if queue error skip
+            if($tmp === false || strcmp($url, "LOOKUP ERROR") == 0) {
+                continue;
+            }
+            $hash = crawlHash($now.$url);
+            $schedule_data[self::TO_CRAWL][] = array($url, $weight, $hash);
+            if($time - $old_time >= MAX_FETCH_SIZE) {
+                if(count($schedule_data[self::TO_CRAWL]) > 0) {
+                    $data_string = webencode(
+                        gzcompress(serialize($schedule_data)));
+                    $data_hash = crawlHash($data_string);
+                    file_put_contents($dir."/At".$time."From127-0-0-1".
+                        "WithHash$data_hash.txt", $data_string);
+                    $data_string = "";
+                    $schedule_data[self::TO_CRAWL] = array();
+                }
+                $old_time = $time;
+            }
+        }
+        $this->web_queue->closeUrlArchive($fh);
+        if(count($schedule_data[self::TO_CRAWL]) > 0) {
+            $data_string = webencode(
+                gzcompress(serialize($schedule_data)));
+            $data_hash = crawlHash($data_string);
+            file_put_contents($dir."/At".$time."From127-0-0-1".
+                "WithHash$data_hash.txt", $data_string);
+        }
+    }
+
+    /**
+     * During crawl shutdown, this function is called to do a final save and
+     * merge of the crawl dictionary, so that it is ready to serve queries.
+     */
+    function shutdownDictionary()
+    {
+        $this->writeAdminMessage("SHUTDOWN_DICTIONARY");
+        if(is_object($this->index_archive)) {
+            $this->
+                index_archive->saveAndAddCurrentShardDictionary();
+            $this->index_archive->dictionary->mergeAllTiers();
+        }
+        $this->db->setWorldPermissionsRecursive(
+            CRAWL_DIR.'/cache/'.
+            self::index_data_base_name.$this->crawl_time);
+    }
+
+    /**
+     * During crawl shutdown this is called to run any post processing plugins
+     */
+    function runPostProcessingPlugins()
+    {
+        if(isset($this->indexing_plugins)) {
+            crawlLog("Post Processing....");
+            $this->writeAdminMessage("SHUTDOWN_RUNPLUGINS");
+            foreach($this->indexing_plugins as $plugin) {
+                $plugin_instance_name = 
+                    lcfirst($plugin)."Plugin";
+                $plugin_name = $plugin."Plugin";
+                $this->$plugin_instance_name = 
+                    new $plugin_name();
+                if($this->$plugin_instance_name) {
+                    crawlLog(
+                        "... executing $plugin_instance_name");
+                    $this->$plugin_instance_name->
+                        postProcessing($this->crawl_time);
+                }
+            }
+        }
+    }
     /**
      * Saves the index_archive and, in particular, its current shard to disk
      */
@@ -641,15 +718,11 @@ class QueueServer implements CrawlConstants
                     NUM_URLS_QUEUE_RAM, $min_or_max);
         }
 
-        if(!file_exists(
-            CRAWL_DIR.'/cache/'.self::index_data_base_name.$this->crawl_time)) {
-            $this->index_archive = new IndexArchiveBundle(
-                CRAWL_DIR.'/cache/'.
-                    self::index_data_base_name.$this->crawl_time,
-                false, serialize($info));
+        $dir = CRAWL_DIR.'/cache/'.self::index_data_base_name.$this->crawl_time;
+        if(!file_exists($dir)) {
+            $this->index_archive = new IndexArchiveBundle($dir, false,
+                serialize($info));
         } else {
-            $dir = CRAWL_DIR.'/cache/'.
-                    self::index_data_base_name.$this->crawl_time;
             $this->index_archive = new IndexArchiveBundle($dir,
                 false);
             $archive_info = IndexArchiveBundle::getArchiveInfo($dir);
@@ -668,13 +741,48 @@ class QueueServer implements CrawlConstants
             $this->db->setWorldPermissionsRecursive(
                 CRAWL_DIR.'/cache/'.self::queue_base_name.$this->crawl_time);
         }
-        $this->db->setWorldPermissionsRecursive(
-            CRAWL_DIR.'/cache/'.self::index_data_base_name.$this->crawl_time);
-        // initialize, store the description of this crawl in the index archive
+        $this->db->setWorldPermissionsRecursive($dir);
 
-
+        //Get modified time of initial setting of crawl params
+        $this->archive_modified_time = 
+            IndexArchiveBundle::getParamModifiedTime($dir);
         $info[self::STATUS] = self::CONTINUE_STATE;
         return $info;
+    }
+
+    /**
+     * Checks to see if the parameters by which the active crawl are being
+     * conducted have been modified since the last time the values were put
+     * into queue server field variables. If so, it updates the values to
+     * to their new values
+     */
+    function checkUpdateCrawlParameters()
+    {
+        crawlLog("Check for update in crawl parameters...");
+        $dir = CRAWL_DIR.'/cache/'.self::index_data_base_name.$this->crawl_time;
+        $modified_time = IndexArchiveBundle::getParamModifiedTime($dir);
+        if($this->archive_modified_time == $modified_time) {
+            crawlLog("...none.");
+            return;
+        }
+        $updatable_info = array(
+            "restrict_sites_by_url" => self::RESTRICT_SITES_BY_URL,
+            "allowed_sites" => self::ALLOWED_SITES,
+            "disallowed_sites" => self::DISALLOWED_SITES,
+            "meta_words" => self::META_WORDS,
+            "indexing_plugins" => self::INDEXING_PLUGINS,
+        );
+        $keys = array_keys($updatable_info);
+        $archive_info = IndexArchiveBundle::getArchiveInfo($dir);
+        $index_info = unserialize($archive_info['DESCRIPTION']);
+        foreach($keys as $index_field) {
+            if(isset($index_info[$updatable_info[$index_field]]) ) {
+                $this->$index_field = 
+                    $index_info[$updatable_info[$index_field]];
+                crawlLog("Updating ...$index_field.");
+            }
+        }
+        $this->archive_modified_time = $modified_time;
     }
 
     /**
@@ -1060,12 +1168,12 @@ class QueueServer implements CrawlConstants
         $start_time = microtime();
         if(isset($sites[self::TO_CRAWL])) {
 
-            crawlLog("A..");
+            crawlLog("A.. Delete previously seen urls from add set");
             $to_crawl_sites = & $sites[self::TO_CRAWL];
             $this->deleteSeenUrls($to_crawl_sites);
             crawlLog(" time: ".(changeInMicrotime($start_time)));
 
-            crawlLog("B..");
+            crawlLog("B..Insert unseen robots.txt urls;adjust changed weights");
             $start_time = microtime();
 
             $added_urls = array();
@@ -1109,7 +1217,7 @@ class QueueServer implements CrawlConstants
 
             crawlLog(" time: ".(changeInMicrotime($start_time)));
 
-            crawlLog("C..");
+            crawlLog("C.. Add urls to queue");
             $start_time = microtime();
             /* 
                  adding urls to queue involves disk contains and adjust do not
