@@ -71,6 +71,9 @@ class CrawlstatusView extends View
                     e(tl('managecrawls_element_stop_crawl'))?></button>
                 <?php
                 break;
+                case 'SHUTDOWN_QUEUE':
+                    e(tl('crawlstatus_view_shutdown_queue'));
+                break;
                 case 'SHUTDOWN_DICTIONARY':
                     e(tl('crawlstatus_view_closing_dict'));
                 break;

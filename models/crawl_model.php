@@ -216,7 +216,7 @@ class CrawlModel extends Model implements CrawlConstants
                     $crawl['DESCRIPTION'] = "RECRAWL::";
                 }
                 $schedules = glob(CRAWL_DIR.'/schedules/'.
-                    self::index_data_base_name.$crawl['CRAWL_TIME'].
+                    self::schedule_data_base_name.$crawl['CRAWL_TIME'].
                     '/*/At*.txt');
                 $crawl['RESUMABLE'] = (count($schedules) > 0) ? true: false;
                 $crawl['DESCRIPTION'] .= $index_info['DESCRIPTION'];
