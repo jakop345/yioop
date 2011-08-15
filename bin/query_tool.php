@@ -59,8 +59,10 @@ define("NO_CACHE", true);
  */
 if(USE_FILECACHE) {
     $CACHE = new FileCache(WORK_DIRECTORY."/cache/queries");
+    /** @ignore */
     define("USE_CACHE", true);
 } else {
+    /** @ignore */
     define("USE_CACHE", false);
 }
 /** Loads common constants for web crawling*/
