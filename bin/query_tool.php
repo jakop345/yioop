@@ -59,8 +59,10 @@ define("NO_CACHE", true);
  */
 if(USE_FILECACHE) {
     $CACHE = new FileCache(WORK_DIRECTORY."/cache/queries");
+    /** @ignore */
     define("USE_CACHE", true);
 } else {
+    /** @ignore */
     define("USE_CACHE", false);
 }
 /** Loads common constants for web crawling*/
@@ -151,7 +153,7 @@ class QueryTool implements CrawlConstants
         echo " query from the command line.\n For example,\n";
         echo "  php query_tool.php 'chris pollett' \n returns results ".
             "from the default index of a search on 'chris pollett'.\n";
-        echo "The general command format is:";
+        echo "The general command format is:\n";
         echo "  php query_tool.php query num_results start_num lang_tag\n";
         exit();
     }
