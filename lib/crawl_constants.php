@@ -47,10 +47,15 @@ interface CrawlConstants
     const queue_base_name = "QueueBundle";
     const archive_base_name = "Archive";
     const schedule_data_base_name = "ScheduleData";
+    const schedule_name = "FetchSchedule";
     const robot_data_base_name = "RobotData";
     const index_data_base_name = "IndexData";
+    const index_closed_name = "IndexClosed";
+    const fetch_batch_name = "FetchBatch";
+    const fetch_crawl_info = "FetchInfo";
+    const fetch_closed_name = "FetchClosed";
     const data_base_name = "At";
-    const schedule_start_name = "ScheduleDataStartCrawl.txt";
+    const schedule_start_name = "StartCrawlSchedule.txt";
 
     const MAX = 1;
     const MIN = -1;

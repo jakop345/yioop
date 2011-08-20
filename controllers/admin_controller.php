@@ -765,9 +765,8 @@ class AdminController extends Controller implements CrawlConstants
                     }
                     $scheduler_string = "\n".webencode(
                         gzcompress(serialize($scheduler_info)));
-                    @unlink(CRAWL_DIR."/schedules/schedule.txt");
                     file_put_contents(
-                        CRAWL_DIR."/schedules/ScheduleDataStartCrawl.txt", 
+                        CRAWL_DIR."/schedules/".self::schedule_start_name,
                         $scheduler_string);
 
                 break;
