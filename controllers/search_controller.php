@@ -64,10 +64,12 @@ class SearchController extends Controller implements CrawlConstants
      * Says which views to load for this controller.
      * The SearchView is used for displaying general search results as well 
      * as the initial search screen; NocacheView
-     * is used on a cached web page request that fails
+     * is used on a cached web page request that fails; RssView is used
+     * to present search results according to the opensearch.org rss results
+     * format.
      * @var array
      */
-    var $views = array("search",  "nocache");
+    var $views = array("search",  "nocache", "rss");
     /**
      * Says which activities (roughly methods invoke from the web) this 
      * controller will respond to
@@ -88,6 +90,10 @@ class SearchController extends Controller implements CrawlConstants
     {
         $data = array();
         $view = "search";
+        if(isset($_REQUEST['f']) && $_REQUEST['f']=='rss') {
+            $view = "rss";
+            $this->activities = array("query");
+        }
         $start_time = microtime();
 
         if(isset($_SESSION['MAX_PAGES_TO_SHOW']) ) {
