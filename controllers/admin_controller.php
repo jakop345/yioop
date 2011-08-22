@@ -757,7 +757,8 @@ class AdminController extends Controller implements CrawlConstants
                     file_put_contents(
                         CRAWL_DIR."/schedules/queue_server_messages.txt", 
                         $info_string);
-
+                    chmod(CRAWL_DIR."/schedules/queue_server_messages.txt",
+                        0777);
                     $scheduler_info[self::HASH_SEEN_URLS] = array();
 
                     foreach ($seed_info['seed_sites']['url'] as $site) {
