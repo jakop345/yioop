@@ -55,7 +55,7 @@ class AdminController extends Controller implements CrawlConstants
 {
     /**
      * Says which models to load for this controller
-     * admin is the main one, sighin has the login screen crawlstatus
+     * admin is the main one, signin has the login screen crawlstatus
      * is used to see how many pages crawled by the current crawl
      * @var array
      */

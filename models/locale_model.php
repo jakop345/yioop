@@ -203,8 +203,7 @@ class LocaleModel extends Model
             "', '".$this->db->escapeString($writing_mode)."')";
 
         $this->db->execute($sql);
-        
-        
+
         if(!file_exists(LOCALE_DIR."/$locale_tag")) {
             mkdir(LOCALE_DIR."/$locale_tag");
             $this->db->setWorldPermissionsRecursive(LOCALE_DIR."/$locale_tag");
@@ -457,7 +456,7 @@ class LocaleModel extends Model
 
     /**
      *  Cycles through locale subdirectories in LOCALE_DIR, for each
-     *  locale it merges out the current gneral_ini and strings data.
+     *  locale it merges out the current general_ini and strings data.
      *  It deletes identifiers that are not in strings, it adds new identifiers
      *  and it leaves existing identifier translation pairs untouched.
      *
@@ -514,6 +513,11 @@ class LocaleModel extends Model
         if(file_exists($cur_path.'/configure.ini')) {
             $old_configure = parse_ini_file($cur_path.'/configure.ini', true);
         }
+        $fallback_path = FALLBACK_LOCALE_DIR. '/' . $locale;
+        if(file_exists($fallback_path . '/configure.ini')) {
+            $fallback_configure = parse_ini_file(
+                $fallback_path . '/configure.ini', true);
+        }
         $n = array();
         $n[] = <<<EOT
 ; ***** BEGIN LICENSE BLOCK ***** 
@@ -551,6 +555,10 @@ EOT;
                         $n[] = $name.' = "'.
                             addslashes($old_configure[$general_name][$name]).
                             '"';
+                    } else if(isset($fallback_configure[$general_name][$name])){
+                        $n[] = $name.' = "'. addslashes(
+                            $fallback_configure[$general_name][$name]).
+                            '"';
                     } else {
                         $n[] = $name.' = "'.$value.'"';
                     }
@@ -562,6 +570,9 @@ EOT;
                 } else if(isset($old_configure[$general_name])) {
                     $n[] = $general_name.' = "'.
                         addslashes($old_configure[$general_name]).'"';
+                } else if(isset($fallback_configure[$general_name])){
+                    $n[] = $name.' = "'. addslashes(
+                        $fallback_configure[$general_name]). '"';
                 } else {
                     $n[] = $name.' = "'.$value.'"';
                 }
@@ -580,6 +591,9 @@ EOT;
                 } else if(isset($old_configure['strings'][$string])) {
                     $n[] = $string.' = "'.
                         addslashes($old_configure['strings'][$string]).'"';
+                } else if(isset($fallback_configure['strings'][$string])){
+                    $n[] = $string.' = "'.
+                        addslashes($fallback_configure['strings'][$string]).'"';
                 } else {
                     $n[] = $string.' = ""';
                 }
