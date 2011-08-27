@@ -1099,6 +1099,8 @@ class QueueServer implements CrawlConstants
             $this->deleteRobotData();
         } else {
             crawlLog("... less than max age\n");
+            crawlLog("Number of Crawl-Delayed Hosts".count(
+                $this->waiting_hosts));
         }
 
         crawlLog("Checking for robots.txt files to process...");
@@ -1172,6 +1174,9 @@ class QueueServer implements CrawlConstants
 
         crawlLog("... resetting robot bloom filters ...");
         $this->web_queue->emptyRobotFilters();
+
+        crawlLog("...Clearing Waiting Hosts");
+        $this->waiting_hosts = array();
     }
 
     /**
