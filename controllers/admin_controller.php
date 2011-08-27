@@ -55,7 +55,7 @@ class AdminController extends Controller implements CrawlConstants
 {
     /**
      * Says which models to load for this controller
-     * admin is the main one, sighin has the login screen crawlstatus
+     * admin is the main one, signin has the login screen crawlstatus
      * is used to see how many pages crawled by the current crawl
      * @var array
      */
@@ -757,7 +757,8 @@ class AdminController extends Controller implements CrawlConstants
                     file_put_contents(
                         CRAWL_DIR."/schedules/queue_server_messages.txt", 
                         $info_string);
-
+                    chmod(CRAWL_DIR."/schedules/queue_server_messages.txt",
+                        0777);
                     $scheduler_info[self::HASH_SEEN_URLS] = array();
 
                     foreach ($seed_info['seed_sites']['url'] as $site) {
@@ -765,9 +766,8 @@ class AdminController extends Controller implements CrawlConstants
                     }
                     $scheduler_string = "\n".webencode(
                         gzcompress(serialize($scheduler_info)));
-                    @unlink(CRAWL_DIR."/schedules/schedule.txt");
                     file_put_contents(
-                        CRAWL_DIR."/schedules/ScheduleDataStartCrawl.txt", 
+                        CRAWL_DIR."/schedules/".self::schedule_start_name,
                         $scheduler_string);
 
                 break;

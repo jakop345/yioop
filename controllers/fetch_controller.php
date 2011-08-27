@@ -104,9 +104,15 @@ class FetchController extends Controller implements CrawlConstants
     {
         $view = "fetch";
 
+        if(isset($_REQUEST['crawl_time'])) {;
+            $crawl_time = $this->clean($_REQUEST['crawl_time'], 'int');
+        } else {
+            $crawl_time = "";
+        }
         // set up query
         $data = array();
-        $schedule_filename = CRAWL_DIR."/schedules/schedule.txt";
+        $schedule_filename = CRAWL_DIR."/schedules/".
+            self::schedule_name."$crawl_time.txt";
 
         if(file_exists($schedule_filename)) {
             $data['MESSAGE'] = file_get_contents($schedule_filename);
@@ -240,8 +246,8 @@ class FetchController extends Controller implements CrawlConstants
         if(file_exists(CRAWL_DIR."/schedules/crawl_status.txt")) {
             $crawl_status = unserialize(file_get_contents(
                 CRAWL_DIR."/schedules/crawl_status.txt"));
-            $info[self::CRAWL_TIME] = (isset($crawl_status[self::CRAWL_TIME])) ?
-                $crawl_status[self::CRAWL_TIME] : 0;
+            $info[self::CRAWL_TIME] = (isset($crawl_status["CRAWL_TIME"])) ?
+                $crawl_status["CRAWL_TIME"] : 0;
         } else {
             $info[self::CRAWL_TIME] = 0;
         }

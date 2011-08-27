@@ -186,6 +186,7 @@ class CrawlDaemon implements CrawlConstants
             break;
 
             case "terminal":
+
                 $info = array();
                 $info[self::STATUS] = self::WAITING_START_MESSAGE_STATE;
                 file_put_contents(

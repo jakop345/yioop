@@ -71,6 +71,14 @@ class CrawlstatusView extends View
                     e(tl('managecrawls_element_stop_crawl'))?></button>
                 <?php
                 break;
+                case 'RESUME_CRAWL':
+                    e(tl('crawlstatus_view_resuming_crawl'));?>&nbsp;&nbsp;
+                <button class="buttonbox" type="button"
+                    onclick="javascript:document.location = '<?php
+                    e($base_url); ?>stop'" ><?php
+                    e(tl('managecrawls_element_stop_crawl'))?></button>
+                <?php
+                break;
                 case 'SHUTDOWN_QUEUE':
                     e(tl('crawlstatus_view_shutdown_queue'));
                 break;

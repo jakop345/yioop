@@ -54,6 +54,8 @@ define('WORK_DIRECTORY', '/var/www/yioop_data');
 /*++++++*/
 }
 
+define('FALLBACK_LOCALE_DIR', BASE_DIR."/locale");
+
 if(file_exists(WORK_DIRECTORY."/profile.php")) {
     require_once(WORK_DIRECTORY."/profile.php");
     define('PROFILE', true);
@@ -62,7 +64,7 @@ if(file_exists(WORK_DIRECTORY."/profile.php")) {
         define('LOCALE_DIR', WORK_DIRECTORY."/locale");
     } else {
         /** @ignore */
-        define('LOCALE_DIR', BASE_DIR."/locale");
+        define('LOCALE_DIR', FALLBACK_LOCALE_DIR);
     }
     define('LOG_DIR', WORK_DIRECTORY."/log");
 } else {
@@ -82,7 +84,7 @@ if(file_exists(WORK_DIRECTORY."/profile.php")) {
     /** @ignore */
     define('CRAWL_DIR', BASE_DIR);
     /** @ignore */
-    define('LOCALE_DIR', BASE_DIR."/locale");
+    define('LOCALE_DIR', FALLBACK_LOCALE_DIR);
     /** @ignore */
     define('LOG_DIR', BASE_DIR."/log");
     define('QUEUE_SERVER', "http://localhost/");

@@ -123,6 +123,10 @@ if(!isset($locale_tag)) {
 
 }
 
+if(upgradeCheck()) {
+    upgrade();
+}
+
 /**
  * Used to contain information about the current language and regional settings
  */
@@ -273,5 +277,33 @@ function getWritingMode()
 
 }
 
+/**
+ * Checks to see if the version of Yioop! in the profile is older than the
+ * currently running Yioop!
+ */
+function upgradeCheck()
+{
+    global $locale_tag;
+    $config_name = LOCALE_DIR."/$locale_tag/configure.ini";
+    $fallback_config_name = 
+        FALLBACK_LOCALE_DIR."/$locale_tag/configure.ini";
+    if(filemtime($fallback_config_name) > filemtime($config_name)) {
+        return true;
+    }
+
+    return false;
+}
+
+/**
+ * If version of Yioop! in the profile is older than the
+ * currently running Yioop! then this function is called to at least
+ * try to copy the new strings into the old profile.
+ */
+function upgrade()
+{
+    global $locale;
+    $locale = new LocaleModel();
+    $locale->extractMergeLocales();
+}
 
 ?>
