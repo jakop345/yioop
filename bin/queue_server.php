@@ -876,7 +876,8 @@ class QueueServer implements CrawlConstants
                 if(strlen(
                     $pre_timestamp = strstr($file, $name)) > 0) {
                     $timestamp =  substr($pre_timestamp, strlen($name), 10);
-                    if($name == self::schedule_name || self::index_closed_name){
+                    if($name == self::schedule_name ||
+                        $name == self::index_closed_name){
                         $unlink_flag = true;
                     }
                     break;
