@@ -976,10 +976,17 @@ class QueueServer implements CrawlConstants
         $pos = 0;
         while($pos < $len_urls) {
             $len_site = unpackInt(substr($seen_urls_string, $pos ,4));
+            if($len_site > MAX_URL_LENGTH) {
+                crawlLog("To index data $file appears corrupted");
+                break; // data corrupted, so bail
+            }
             $pos += 4;
             $site_string = substr($seen_urls_string, $pos, $len_site);
             $pos += strlen($site_string);
-            $sites[self::SEEN_URLS][] = unserialize(gzuncompress($site_string));
+            $tmp_site = unserialize(gzuncompress($site_string));
+            if($tmp_site != "") {
+                $sites[self::SEEN_URLS][] = & $tmp_site;
+            }
         }
 
         $sites[self::INVERTED_INDEX] = IndexShard::load("fetcher_shard", 
