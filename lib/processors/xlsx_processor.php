@@ -132,7 +132,6 @@ class XlsxProcessor extends TextProcessor
         $zip->close();
         //delete the temporarily created file
         @unlink("$file_name");
-        
         return $summary;
     }
     

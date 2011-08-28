@@ -535,7 +535,13 @@ class IndexShard extends PersistentStructure implements
 
         $num_docs_so_far = 0;
         $results = array();
-        $end = min($this->file_len - $this->docids_len, $last_offset);
+        /* wd_len is a kludgy fix because word_docs_len can get out of sync
+           when things are file-based and am still tracking down why
+        */
+        $wd_len = (isset($this->file_len )) ? 
+            $this->file_len - $this->docids_len : $this->word_docs_len;
+        $end = min($wd_len, $last_offset);
+
         $num_docs_or_links =  
             self::numDocsOrLinks($start_offset, $last_offset);
 
@@ -867,7 +873,6 @@ class IndexShard extends PersistentStructure implements
     {
         $results = array();
         $info = $this->getWordInfo($word_id, true);
-
         if($info !== false) {
             list($first_offset, $last_offset,
                 $num_docs_or_links) = $info;
