@@ -235,7 +235,6 @@ $INDEXED_FILE_TYPES =
             "cfml",
             "csv",
             "doc",
-	    "epub",
             "gif",
             "html",
             "htm",

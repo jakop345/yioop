@@ -131,7 +131,6 @@ class PptxProcessor extends TextProcessor
         // If not pptx then process it as a text file
             $summary = parent::process($page, $url);
         }
-
         return $summary;
     }
 
