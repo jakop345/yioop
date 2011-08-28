@@ -88,7 +88,7 @@ class IndexShardTest extends UnitTest
         $docid = "AAAAAAAA";
         $doc_hash = "BBBBBBBB";
         $doc_hosts_url = "CCCCCCCC";
-        $docid .= $doc_hash.$doc_hosts_url;
+        $docid .= $doc_hash . $doc_hosts_url;
         $offset = 5;
         $word_counts = array(
             'BBBBBBBB' => array(1, 3),
