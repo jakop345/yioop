@@ -1104,7 +1104,7 @@ class QueueServer implements CrawlConstants
             $this->deleteRobotData();
         } else {
             crawlLog("... less than max age\n");
-            crawlLog("Number of Crawl-Delayed Hosts".count(
+            crawlLog("Number of Crawl-Delayed Hosts: ".count(
                 $this->waiting_hosts));
         }
 
