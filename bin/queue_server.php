@@ -977,13 +977,20 @@ class QueueServer implements CrawlConstants
         while($pos < $len_urls) {
             $len_site = unpackInt(substr($seen_urls_string, $pos ,4));
             if($len_site > 2*PAGE_RANGE_REQUEST) {
-                crawlLog("Site string too long, $len_site, may be corrupted?");
+                crawlLog("Site string too long, $len_site,".
+                    " data file may be corrupted? Skip rest.");
                 break;
             }
             $pos += 4;
             $site_string = substr($seen_urls_string, $pos, $len_site);
             $pos += strlen($site_string);
-            $sites[self::SEEN_URLS][] = unserialize(gzuncompress($site_string));
+            $tmp = unserialize(gzuncompress($site_string));
+            if(!$tmp  || !is_array($tmp)) {
+                crawlLog("Compressed array null,".
+                    " data file may be corrupted? Skip rest.");
+                break;
+            }
+            $sites[self::SEEN_URLS][] = $tmp;
         }
 
         $sites[self::INVERTED_INDEX] = IndexShard::load("fetcher_shard", 
