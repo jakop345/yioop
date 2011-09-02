@@ -123,14 +123,15 @@ if(!isset($locale_tag)) {
 
 }
 
-if(upgradeCheck()) {
-    upgrade();
-}
 
 /**
  * Used to contain information about the current language and regional settings
  */
 require_once BASE_DIR."/models/locale_model.php";
+
+if(upgradeCheck()) {
+    upgrade();
+}
 
 $locale = NULL;
 setLocaleObject($locale_tag);
