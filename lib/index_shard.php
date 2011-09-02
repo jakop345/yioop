@@ -602,13 +602,6 @@ class IndexShard extends PersistentStructure implements
         $offset = 0;
         list($doc_index, $item[self::POSITION_LIST]) = 
             $this->unpackPosting($posting, $offset);
-        $item[self::PROXIMITY] = 
-            $this->computeProximity($item[self::POSITION_LIST]);
-        $occurrences = $this->weightedCount($item[self::POSITION_LIST]);
-
-        if($occurrences < $occurs) {
-            $occurrences = $occurs;
-        }
 
         $doc_depth = log(10*(($doc_index +1) + 
             $this->num_docs_per_generation*$this->generation), 10);
@@ -630,6 +623,22 @@ class IndexShard extends PersistentStructure implements
             $doc_len &= (self::LINK_FLAG - 1);
         }
         $item[self::IS_DOC] = $is_doc;
+
+        $item[self::PROXIMITY] = 
+            $this->computeProximity($item[self::POSITION_LIST],$is_doc);
+        $occurrences = $this->weightedCount($item[self::POSITION_LIST],$is_doc);
+
+        if($occurs != 0) {
+            $occurences = array(
+                self::TITLE => 0,
+                self::DESCRIPTION => 0,
+                self::LINKS => 0);
+            if($is_doc) {
+                $occurrences[self::DESCRIPTION] = $occurs;
+            } else {
+                $occurences[self::LINKS] = $occurs;
+            }
+        }
         /* 
            for archive crawls we store rank as the 4 bits after the high order 
            bit
@@ -664,9 +673,28 @@ class IndexShard extends PersistentStructure implements
             $doc_id = $item['KEY'];
         }
         if(!$skip_stats) {
-            self::docStats($item, $occurrences, $doc_len, $num_doc_or_links, 
-                $average_doc_len, $num_docs, 
-                $this->num_docs + $this->num_link_docs, $type_weight);
+            $item[self::RELEVANCE] = 0;
+            if($occurrences[self::TITLE] > 0) {
+                self::docStats($item, $occurrences[self::TITLE], 
+                    AD_HOC_TITLE_LENGTH, 
+                    $num_doc_or_links, AD_HOC_TITLE_LENGTH, $num_docs, 
+                    $this->num_docs + $this->num_link_docs, TITLE_WEIGHT);
+            }
+            if($occurrences[self::DESCRIPTION] > 0) {
+                $average_doc_len = 
+                    max($average_doc_len - AD_HOC_TITLE_LENGTH, 1);
+                $doc_len = max($doc_len - AD_HOC_TITLE_LENGTH, 1);
+                self::docStats($item, $occurrences[self::DESCRIPTION], 
+                    $doc_len, $num_doc_or_links, $average_doc_len , $num_docs, 
+                    $this->num_docs + $this->num_link_docs, DESCRIPTION_WEIGHT);
+            }
+            if($occurrences[self::LINKS] > 0) {
+                self::docStats($item, $occurrences[self::LINKS], 
+                    $doc_len, $num_doc_or_links, $average_doc_len , $num_docs,
+                    $this->num_docs + $this->num_link_docs, LINK_WEIGHT);
+            }
+            $item[self::SCORE] = $item[self::DOC_RANK]
+                * $item[self::RELEVANCE];
         }
 
         return $doc_id;
@@ -675,11 +703,21 @@ class IndexShard extends PersistentStructure implements
     /**
      *
      */
-    function weightedCount($position_list) {
-        $count = 0;
+    function weightedCount($position_list, $is_doc) {
+        $count = array(
+            self::TITLE => 0,
+            self::DESCRIPTION => 0,
+            self::LINKS => 0);
         foreach($position_list as $position) {
-            $count += ($position < AD_HOC_TITLE_LENGTH) ?
-                TITLE_WEIGHT : DESCRIPTION_WEIGHT;
+            if($is_doc) {
+                if($position < AD_HOC_TITLE_LENGTH) {
+                    $count[self::TITLE] ++;
+                } else {
+                    $count[self::DESCRIPTION]++;
+                }
+            } else {
+                $count[self::LINKS]++;
+            }
         }
         return $count;
     }
@@ -687,8 +725,8 @@ class IndexShard extends PersistentStructure implements
     /**
      *
      */
-    function computeProximity($position_list) {
-        return (isset($position_list[0]) && 
+    function computeProximity($position_list, $is_doc) {
+        return (!$is_doc) ? LINK_WEIGHT : (isset($position_list[0]) && 
             $position_list[0] < AD_HOC_TITLE_LENGTH) ?
             TITLE_WEIGHT : DESCRIPTION_WEIGHT;
     }
@@ -725,9 +763,8 @@ class IndexShard extends PersistentStructure implements
         $IDF = log(($num_docs - $num_term_occurrences + 0.5) /
             ($num_term_occurrences + 0.5));
 
-        $item[self::RELEVANCE] = 0.5 * $IDF * $pre_relevance * $type_weight;
-        $item[self::SCORE] = $item[self::DOC_RANK]
-            * $item[self::RELEVANCE];
+        $item[self::RELEVANCE] += 0.5 * $IDF * $pre_relevance * $type_weight;
+
     }
 
     /**

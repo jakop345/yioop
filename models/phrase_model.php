@@ -486,7 +486,7 @@ class PhraseModel extends Model
                     $weight = substr($matches[2][0],strlen($meta_word));
                 }
             }
-            $phrase_string = preg_replace($pattern,"", $phrase_string);
+            $phrase_string = preg_replace($pattern, "", $phrase_string);
         }
         $index_archive_name = self::index_data_base_name . $index_name;
         $index_archive = new IndexArchiveBundle(

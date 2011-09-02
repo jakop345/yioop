@@ -204,12 +204,25 @@ class IntersectIterator extends IndexBundleIterator
      *  @param array $len_lists length for each item of its position list
      *  @return sum of smallest abs of position differences between terms
      */
-    function computeProximity($position_lists, $len_lists)
+    function computeProximity(&$word_position_lists, &$word_len_lists)
     {
         $num_iterators = $this->num_iterators;
         if($num_iterators < 1) return 1;
 
         $counters = array_fill(0, $num_iterators, 0);
+
+        // remove meta words from proximity score
+        $position_lists = array();
+        $len_lists = array();
+        $num = 0;
+        for($i = 0; $i < $num_iterators; $i++) {
+            if(isset($word_position_lists[$i][$counters[$i]])) {
+                $position_lists[$num] = $word_position_lists[$i];
+                $len_lists[$num] = $word_len_lists[$i];
+                $num++;
+            }
+        }
+        if($num < 2) return 1;
 
         $min_diff = 5000000;
         $weight = DESCRIPTION_WEIGHT;
@@ -218,7 +231,7 @@ class IntersectIterator extends IndexBundleIterator
             $o_position = $position_lists[0][$counters[0]];
             $total_diff = 0;
             $positions = array($o_position);
-            for($i = 1; $i < $num_iterators; $i++) {
+            for($i = 1; $i < $num; $i++) {
                 $positions[$i] = $position_lists[$i][$counters[$i]];
                 if($positions[$i] < $o_position && 
                     $counters[$i] < $len_lists[$i] - 1) {
@@ -226,19 +239,19 @@ class IntersectIterator extends IndexBundleIterator
                 }
             }
             sort($positions);
-            for($i = 1; $i < $num_iterators; $i++) {
+            for($i = 1; $i < $num; $i++) {
                 $total_diff += abs($positions[$i] - $positions[$i-1]);
             }
             if($total_diff < $min_diff) {
                 $min_diff = $total_diff;
-                if($positions[$num_iterators -1] < AD_HOC_TITLE_LENGTH) {
+                if($positions[$num -1] < AD_HOC_TITLE_LENGTH) {
                     $weight = TITLE_WEIGHT;
                 }
             }
             if($min_counter >=0) $counters[$min_counter]++;
         } while($min_counter >= 0);
 
-        return $weight*($num_iterators - 1)/$min_diff;
+        return $weight*($num - 1)/$min_diff;
     }
 
     /**
