@@ -453,11 +453,12 @@ class PhraseModel extends Model
         $in3 = $in2 . $indent;
         $in4 = $in2. $in2;
         $phrase = " ".$phrase;
+        $phrase = $this->parseIfConditions($phrase);
         $phrase_string = $phrase;
         $meta_words = array('link:', 'site:', 'version:', 'modified:',
             'filetype:', 'info:', '\-', 'os:', 'server:', 'date:',
             'index:', 'i:', 'ip:', 'weight:', 'w:', 'u:',
-            'lang:', 'media:', 'elink:', 'pages:');
+            'lang:', 'media:', 'elink:');
         if(isset($this->additional_meta_words)) {
             $meta_words = array_merge($meta_words, array_keys(
                 $this->additional_meta_words));
@@ -583,6 +584,33 @@ class PhraseModel extends Model
         $format_words = array_merge($query_words, $base_words);
 
         return array($word_struct, $format_words);
+    }
+
+    /**
+     * Evaluates any if: conditional meta-words in the query string to
+     * caluclate a new query string.
+     *
+     * @param string $phrase original query string
+     * @return string query string after if: meta words have been evaluated
+     */
+    function parseIfConditions($phrase)
+    {
+        $cond_token = "if:";
+        $pattern = "/(\s)($cond_token(\S)+)/";
+        preg_match_all($pattern, $phrase, $matches);
+        $matches = $matches[2];
+        $result_phrase = preg_replace($pattern, "", $phrase);
+        foreach($matches as $match) {
+            $match = substr($match, strlen($cond_token));
+            $match_parts = explode("!", $match);
+            if(count($match_parts) < 2) continue;
+            if(stristr($result_phrase, $match_parts[0]) !== false) {
+                $result_phrase .= " ".str_replace("+", " ", $match_parts[1]);
+            } else if(isset($match_parts[2])) {
+                $result_phrase .= " ".str_replace("+", " ", $match_parts[2]);
+            }
+        }
+        return $result_phrase;
     }
 
     /**
