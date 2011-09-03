@@ -174,7 +174,8 @@ class IntersectIterator extends IndexBundleIterator
             }
             if(count($position_lists) > 1) {
                 $docs[$key][self::PROXIMITY] = 
-                    $this->computeProximity($position_lists, $len_lists);
+                    $this->computeProximity($position_lists, $len_lists,
+                        $docs[$key][self::IS_DOC]);
             } else {
                  $docs[$key][self::PROXIMITY] = 1;
             }
@@ -193,9 +194,11 @@ class IntersectIterator extends IndexBundleIterator
      *  @param array $position_lists a 2D array item number => position_list
      *      (locations in doc where item occurred) for that item. 
      *  @param array $len_lists length for each item of its position list
+     *  @param bool $is_doc whether this is the position list of a document
+     *      or a link
      *  @return sum of smallest abs of position differences between terms
      */
-    function computeProximity(&$word_position_lists, &$word_len_lists)
+    function computeProximity(&$word_position_lists, &$word_len_lists, $is_doc)
     {
         $num_iterators = $this->num_iterators;
         if($num_iterators < 1) return 1;
@@ -216,7 +219,7 @@ class IntersectIterator extends IndexBundleIterator
         if($num < 2) return 1;
 
         $min_diff = 5000000;
-        $weight = DESCRIPTION_WEIGHT;
+        $weight = ($is_doc) ? DESCRIPTION_WEIGHT : LINK_WEIGHT;
         do {
             $min_counter = ($counters[0] < $len_lists[0] - 1) ? 0 : -1;
             $o_position = $position_lists[0][$counters[0]];
@@ -236,7 +239,7 @@ class IntersectIterator extends IndexBundleIterator
             if($total_diff < $min_diff) {
                 $min_diff = $total_diff;
                 if($positions[$num -1] < AD_HOC_TITLE_LENGTH) {
-                    $weight = TITLE_WEIGHT;
+                    $weight = ($is_doc) ? TITLE_WEIGHT : LINK_WEIGHT;
                 }
             }
             if($min_counter >=0) $counters[$min_counter]++;
