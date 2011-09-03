@@ -546,25 +546,26 @@ class PhraseModel extends Model
             //get a raw list of words and their hashes 
 
             $hashes = array();
+            $i = 0;
             foreach($words as $word) {
-                $hashes[] = crawlHash($word); 
+                $hashes[] = crawlHash($word);
             }
 
             $restrict_phrases = $quoteds;
 
             $hashes = array_unique($hashes);
-            $restrict_phrases = array_unique($restrict_phrases);
-            $restrict_phrases = array_filter($restrict_phrases);
-            $index_archive->setCurrentShard(0, true);
-            $words_array = $index_archive->getSelectiveWords($hashes, 5);
-            if(is_array($words_array)) {
-                $word_keys = array_keys($words_array);
+            if(count($hashes) > 0) {
+                $word_keys = array_slice($hashes, 0, MAX_QUERY_TERMS);
             } else {
                 $word_keys = NULL;
                 $word_struct = NULL;
             }
+            $restrict_phrases = array_unique($restrict_phrases);
+            $restrict_phrases = array_filter($restrict_phrases);
+            $index_archive->setCurrentShard(0, true);
+
             $disallow_keys = array();
-            $num_disallow_keys = min(5, count($disallow_phrases));
+            $num_disallow_keys = min(MAX_QUERY_TERMS, count($disallow_phrases));
             for($i = 0; $i < $num_disallow_keys; $i++) {
                 $disallow_stem=array_keys(PhraseParser::extractPhrasesAndCount(
                     $disallow_phrases[$i], 2, getLocaleTag())); 

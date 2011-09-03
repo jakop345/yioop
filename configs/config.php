@@ -349,6 +349,9 @@ define ('MINIMUM_FETCH_LOOP_TIME', 5);
     filters (fetcher) will be force saved in seconds*/
 define('FORCE_SAVE_TIME', 3600);
 
+/** maximum number of terms allowed in a conjunctive search query */
+define ('MAX_QUERY_TERMS', 10); 
+
 /** default number of search results to display per page */
 define ('NUM_RESULTS_PER_PAGE', 10); 
 
