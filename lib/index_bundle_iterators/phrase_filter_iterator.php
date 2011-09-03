@@ -40,14 +40,12 @@ require_once BASE_DIR.'/lib/index_bundle_iterators/index_bundle_iterator.php';
 
 /**
  * Used to iterate through a collection of documents to return only those
- * which have certain restricted_phrases and don't have disallowed_phrases.
+ * which have certain restricted_phrases.
  *
  * For restricted_phrases a string like "Chris * Homepage" will match any
  * string where * has been replace by any other string. So for example it will
  * match Chris Pollett's Homepage.
  *
- * disallowed_phrases are really just disallowed words and must be an exact 
- * match
  *
  * @author Chris Pollett
  * @package seek_quarry
@@ -69,12 +67,6 @@ class PhraseFilterIterator extends IndexBundleIterator
      */
     var $restrict_phrases;
 
-    /**
-     * This iterator returns only documents not containing any the elements of
-     * disallow phrases
-     * @var array
-     */
-    var $disallow_phrases;
     /**
      * The number of documents in the current block before filtering
      * by restricted words
@@ -109,18 +101,14 @@ class PhraseFilterIterator extends IndexBundleIterator
      * @param array $restrict_phrases this iterator returns only documents from
      *      $index_bundle_iterator containing all the elements of restrict 
      *      phrases
-     * @param array $disallow_phrases this iterator returns only documents from
-     *      $index_bundle_iterator not containing any of the words in disallow 
-     *      phrases
      * @param float $weight a quantity to multiply each score returned from
      *      this iterator with
      */
     function __construct($index_bundle_iterator, $restrict_phrases,
-        $disallow_phrases, $weight = 1)
+        $weight = 1)
     {
         $this->index_bundle_iterator = $index_bundle_iterator;
         $this->restrict_phrases = $restrict_phrases;
-        $this->disallow_phrases = $disallow_phrases;
         $this->num_docs = $this->index_bundle_iterator->num_docs;
         $this->results_per_block = 
             $this->index_bundle_iterator->results_per_block;
@@ -199,15 +187,7 @@ class PhraseFilterIterator extends IndexBundleIterator
                             }
                         }
                     }
-                    if($this->disallow_phrases != NULL && 
-                        is_array($this->disallow_phrases)) {
-                        foreach($this->disallow_phrases as $phrase) {
-                            if(strlen($phrase) > 0 && 
-                                mb_eregi($phrase, $page_string)  !== false) {
-                                $found = false;
-                            }
-                        }
-                    }
+
                     if($found == true) {
                         $doc_info["WEIGHT"] = $this->weight;
                         $doc_info[self::SCORE] *= $this->weight;

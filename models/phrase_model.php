@@ -41,7 +41,10 @@ if(!defined("POST_PROCESSING")) {
     define("LOG_TO_FILES", false);
 } 
 /** For crawlHash function */
-require_once BASE_DIR."/lib/utility.php"; 
+require_once BASE_DIR."/lib/utility.php";
+/** For extractPhrasesAndCount function */
+require_once BASE_DIR."/lib/phrase_parser.php"; 
+ 
 /** 
  * Used to look up words and phrases in the inverted index 
  * associated with a given crawl
@@ -454,7 +457,7 @@ class PhraseModel extends Model
         $meta_words = array('link:', 'site:', 'version:', 'modified:',
             'filetype:', 'info:', '\-', 'os:', 'server:', 'date:',
             'index:', 'i:', 'ip:', 'weight:', 'w:', 'u:',
-            'lang:', 'media:', 'elink:');
+            'lang:', 'media:', 'elink:', 'pages:');
         if(isset($this->additional_meta_words)) {
             $meta_words = array_merge($meta_words, array_keys(
                 $this->additional_meta_words));
@@ -523,7 +526,7 @@ class PhraseModel extends Model
             $phrase_string = $words[0];
             $phrase_hash = crawlHash($phrase_string);
             $word_struct = array("KEYS" => array($phrase_hash),
-                "RESTRICT_PHRASES" => NULL, "DISALLOW_PHRASES" => NULL,
+                "RESTRICT_PHRASES" => NULL, "DISALLOW_KEYS" => array(),
                 "WEIGHT" => $weight, "INDEX_ARCHIVE" => $index_archive
             );
         } else {
@@ -543,8 +546,7 @@ class PhraseModel extends Model
 
             $hashes = array();
             foreach($words as $word) {
-                $tmp = crawlHash($word); 
-                $hashes[] = $tmp;
+                $hashes[] = crawlHash($word); 
             }
 
             $restrict_phrases = $quoteds;
@@ -560,11 +562,19 @@ class PhraseModel extends Model
                 $word_keys = NULL;
                 $word_struct = NULL;
             }
+            $disallow_keys = array();
+            $num_disallow_keys = min(5, count($disallow_phrases));
+            for($i = 0; $i < $num_disallow_keys; $i++) {
+                $disallow_stem=array_keys(PhraseParser::extractPhrasesAndCount(
+                    $disallow_phrases[$i], 2, getLocaleTag())); 
+                        //stemmed
+                $disallow_keys[] = crawlHash($disallow_stem[0]);
+            }
 
             if($word_keys !== NULL) {
                 $word_struct = array("KEYS" => $word_keys,
                     "RESTRICT_PHRASES" => $restrict_phrases, 
-                    "DISALLOW_PHRASES" => $disallow_phrases,
+                    "DISALLOW_KEYS" => $disallow_keys,
                     "WEIGHT" => $weight,
                     "INDEX_ARCHIVE" => $index_archive
                 );
@@ -650,7 +660,7 @@ class PhraseModel extends Model
             foreach($word_structs as $word_struct) {
                 $mem_tmp .= serialize($word_struct["KEYS"]).
                     serialize($word_struct["RESTRICT_PHRASES"]) .
-                    serialize($word_struct["DISALLOW_PHRASES"]) .
+                    serialize($word_struct["DISALLOW_KEYS"]) .
                     $word_struct["WEIGHT"] .
                     $word_struct["INDEX_ARCHIVE"]->dir_name;
             }
@@ -755,7 +765,7 @@ class PhraseModel extends Model
             if(!is_array($word_struct)) { continue;}
             $word_keys = $word_struct["KEYS"];
             $restrict_phrases = $word_struct["RESTRICT_PHRASES"];
-            $disallow_phrases = $word_struct["DISALLOW_PHRASES"];
+            $disallow_keys = $word_struct["DISALLOW_KEYS"];
             $index_archive = $word_struct["INDEX_ARCHIVE"];
 
             $weight = $word_struct["WEIGHT"];
@@ -769,17 +779,29 @@ class PhraseModel extends Model
                     new WordIterator($word_keys[$i], $index_archive, 
                         false, $filter);
             }
+            $num_disallow_keys = count($disallow_keys);
+            if($num_disallow_keys > 0) {
+            for($i = 0; $i < $num_disallow_keys; $i++) {
+                    $disallow_iterator = 
+                        new WordIterator($disallow_keys[$i], $index_archive, 
+                            false, $filter);
+                    $word_iterators[$num_word_keys + $i] =
+                        new NegationIterator($disallow_iterator);
+                }
+            }
+            $num_word_keys += $num_disallow_keys;
+
             if($num_word_keys == 1) {
                 $base_iterator = $word_iterators[0];
             } else {
                 $base_iterator = new IntersectIterator($word_iterators);
             }
-            if($restrict_phrases == NULL && $disallow_phrases == NULL &&
+            if($restrict_phrases == NULL && $disallow_keys == array() &&
                 $weight == 1) {
                 $iterators[] = $base_iterator;
             } else {
                 $iterators[] = new PhraseFilterIterator($base_iterator, 
-                    $restrict_phrases, $disallow_phrases, $weight);
+                    $restrict_phrases, $weight);
             }
 
         }

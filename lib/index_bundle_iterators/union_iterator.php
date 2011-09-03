@@ -65,20 +65,12 @@ class UnionIterator extends IndexBundleIterator
      * @var int
      */
     var $num_iterators;
-
     /**
      * The number of documents in the current block before filtering
      * by restricted words
      * @var int
      */
     var $count_block_unfiltered;
-    /**
-     * The number of documents in the current block after filtering
-     * by restricted words
-     * @var int
-     */
-    var $count_block;
-
     /**
      * The number of iterated docs before the restriction test
      * @var int
