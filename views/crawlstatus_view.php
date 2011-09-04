@@ -106,10 +106,14 @@ class CrawlstatusView extends View
             e(tl('crawlstatus_view_no_description'));
         }
         ?></p>
-        <p><b><?php e(tl('crawlstatus_view_time_started')); ?></b>
         <?php
-        if(isset($data['CRAWL_TIME'])) {  e(date("r",$data['CRAWL_TIME'])); }
-            else {e(tl('crawlstatus_view_no_crawl_time'));} ?></p>
+        if(isset($data['CRAWL_TIME'])) { ?>
+            <p><b><?php e(tl('crawlstatus_view_timestamp')); ?></b>
+            <?php e($data['CRAWL_TIME']);  ?></p>
+            <p><b><?php e(tl('crawlstatus_view_time_started')); ?></b>
+            <?php e(date("r",$data['CRAWL_TIME']));?> </p>
+        <?php
+        } ?>
         <p><b><?php e(tl('crawlstatus_view_queue_memory')); ?></b>
         <?php
         if(isset($data['QUEUE_PEAK_MEMORY'])) {

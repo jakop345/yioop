@@ -337,6 +337,13 @@ class CrawlModel extends Model implements CrawlConstants
         return $mix;
     }
 
+    /**
+     * Get a description associated with a Web Crawl or Crawl Mix
+     *
+     * @param int $timestamp of crawl or mix in question
+     * @param bool $is_mix whether it is a mix or not
+     * @return array associative array containing item DESCRIPTION
+     */
     function getInfoTimestamp($timestamp, $is_mix = NULL)
     {
         if($is_mix === NULL) {
