@@ -265,7 +265,7 @@ class AdminController extends Controller implements CrawlConstants
         if(isset($data['VISITED_COUNT_HISTORY']) && 
             count($data['VISITED_COUNT_HISTORY']) > 1) {
             $recent = array_shift($data['VISITED_COUNT_HISTORY']);
-            $data["MOST_RECENT_TIMESTAMP"] = $recent;
+            $data["MOST_RECENT_TIMESTAMP"] = $recent[0];
             $oldest = array_pop($data['VISITED_COUNT_HISTORY']);
             $change_in_time_hours = floatval($recent[0] - $oldest[0])/3600.;
             $change_in_urls = $recent[1] - $oldest[1];
