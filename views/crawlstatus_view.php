@@ -158,6 +158,9 @@ class CrawlstatusView extends View
         <?php
         if(isset($data['MOST_RECENT_FETCHER'])) {
             e($data['MOST_RECENT_FETCHER']);
+            if(isset($data['MOST_RECENT_TIMESTAMP'])) {
+                e(" @ ".date("r", $data['MOST_RECENT_TIMESTAMP']));
+            }
         } else {
             e(tl('crawlstatus_view_no_fetcher'));
         }
