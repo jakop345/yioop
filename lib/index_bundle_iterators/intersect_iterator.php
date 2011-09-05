@@ -62,13 +62,6 @@ class IntersectIterator extends IndexBundleIterator
     var $num_iterators;
 
     /**
-     * The number of documents in the current block after filtering
-     * by restricted words
-     * @var int
-     */
-    var $count_block;
-
-    /**
      * The number of iterated docs before the restriction test
      * @var int
      */
@@ -103,7 +96,6 @@ class IntersectIterator extends IndexBundleIterator
         */
         for($i = 0; $i < $this->num_iterators; $i++) {
             $this->num_docs += $this->index_bundle_iterators[$i]->num_docs;
-            $this->index_bundle_iterators[$i]->setResultsPerBlock(1);
         }
         $this->reset();
     }
@@ -150,7 +142,6 @@ class IntersectIterator extends IndexBundleIterator
      */
     function findDocsWithWord()
     {
-        $pages = array();
         $status = $this->syncGenDocOffsetsAmongstIterators();
 
         if($status == -1) {
@@ -183,7 +174,8 @@ class IntersectIterator extends IndexBundleIterator
             }
             if(count($position_lists) > 1) {
                 $docs[$key][self::PROXIMITY] = 
-                    $this->computeProximity($position_lists, $len_lists);
+                    $this->computeProximity($position_lists, $len_lists,
+                        $docs[$key][self::IS_DOC]);
             } else {
                  $docs[$key][self::PROXIMITY] = 1;
             }
@@ -202,9 +194,11 @@ class IntersectIterator extends IndexBundleIterator
      *  @param array $position_lists a 2D array item number => position_list
      *      (locations in doc where item occurred) for that item. 
      *  @param array $len_lists length for each item of its position list
+     *  @param bool $is_doc whether this is the position list of a document
+     *      or a link
      *  @return sum of smallest abs of position differences between terms
      */
-    function computeProximity(&$word_position_lists, &$word_len_lists)
+    function computeProximity(&$word_position_lists, &$word_len_lists, $is_doc)
     {
         $num_iterators = $this->num_iterators;
         if($num_iterators < 1) return 1;
@@ -225,7 +219,7 @@ class IntersectIterator extends IndexBundleIterator
         if($num < 2) return 1;
 
         $min_diff = 5000000;
-        $weight = DESCRIPTION_WEIGHT;
+        $weight = ($is_doc) ? DESCRIPTION_WEIGHT : LINK_WEIGHT;
         do {
             $min_counter = ($counters[0] < $len_lists[0] - 1) ? 0 : -1;
             $o_position = $position_lists[0][$counters[0]];
@@ -245,7 +239,7 @@ class IntersectIterator extends IndexBundleIterator
             if($total_diff < $min_diff) {
                 $min_diff = $total_diff;
                 if($positions[$num -1] < AD_HOC_TITLE_LENGTH) {
-                    $weight = TITLE_WEIGHT;
+                    $weight = ($is_doc) ? TITLE_WEIGHT : LINK_WEIGHT;
                 }
             }
             if($min_counter >=0) $counters[$min_counter]++;
@@ -255,7 +249,7 @@ class IntersectIterator extends IndexBundleIterator
     }
 
     /**
-     * Finds the next generation and doc offet amongst all the iterators
+     * Finds the next generation and doc offset amongst all the iterators
      * that contains the word. It assumes that the (generation, doc offset)
      * pairs are ordered in an increasing fashion for the underlying iterators
      */
@@ -263,7 +257,6 @@ class IntersectIterator extends IndexBundleIterator
     {
         $biggest_gen_offset = $this->index_bundle_iterators[
                         0]->currentGenDocOffsetWithWord();
-
         $all_same = true; 
         for($i = 0; $i < $this->num_iterators; $i++) {
             $cur_gen_doc_offset = 
@@ -287,10 +280,10 @@ class IntersectIterator extends IndexBundleIterator
         }
         $last_changed = -1;
         $i = 0;
-        while($i != $last_changed) {
+        while($i != $last_changed) { 
             if($last_changed == -1) $last_changed = 0;
             if($this->genDocOffsetCmp($gen_doc_offset[$i], 
-                $biggest_gen_offset) < 0) {
+                $biggest_gen_offset) < 0) { 
                 $iterator = $this->index_bundle_iterators[$i];
                 $iterator->advance($biggest_gen_offset);
                 $cur_gen_doc_offset = 
@@ -311,6 +304,7 @@ class IntersectIterator extends IndexBundleIterator
                 $i = 0;
             }
         }
+
         return 1;
     }
 
@@ -352,7 +346,7 @@ class IntersectIterator extends IndexBundleIterator
      */
     function currentGenDocOffsetWithWord() {
         $this->syncGenDocOffsetsAmongstIterators();
-        $this->index_bundle_iterators[0]->currentGenDocOffsetWithWord();
+        return $this->index_bundle_iterators[0]->currentGenDocOffsetWithWord();
     }
 
     /**
@@ -378,8 +372,10 @@ class IntersectIterator extends IndexBundleIterator
      *      a block
      */
      function setResultsPerBlock($num) {
-        trigger_error("Cannot set the results per block of
-            an intersect iterator", E_USER_ERROR);
+        if($num != 1) {
+            trigger_error("Cannot set the results per block of
+                an intersect iterator", E_USER_ERROR);
+        }
      }
 }
 ?>

@@ -325,7 +325,7 @@ define ('EN_RATIO', 0.9);
 define ('AD_HOC_TITLE_LENGTH', 10);
 
 /** BM25F weight for title text */
-define ('TITLE_WEIGHT', 5);
+define ('TITLE_WEIGHT', 4);
 
 /** BM25F weight for other text within doc*/
 define ('DESCRIPTION_WEIGHT', 1);
@@ -348,6 +348,9 @@ define ('MINIMUM_FETCH_LOOP_TIME', 5);
 /** Max time before dirty index (queue_server) and 
     filters (fetcher) will be force saved in seconds*/
 define('FORCE_SAVE_TIME', 3600);
+
+/** maximum number of terms allowed in a conjunctive search query */
+define ('MAX_QUERY_TERMS', 10); 
 
 /** default number of search results to display per page */
 define ('NUM_RESULTS_PER_PAGE', 10); 

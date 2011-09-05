@@ -120,7 +120,6 @@ if(isset($_SESSION['l']) ||isset($_REQUEST['l'])) {
 
 if(!isset($locale_tag)) {
     $locale_tag = DEFAULT_LOCALE;
-
 }
 
 

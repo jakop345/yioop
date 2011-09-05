@@ -390,6 +390,9 @@ class SearchController extends Controller implements CrawlConstants
             $this->displayView("nocache", $data);
             exit();
         }
+        $summary_string = wordwrap($crawl_item[self::TITLE], 80, "\n")."\n\n" .
+            wordwrap($crawl_item[self::DESCRIPTION], 80, "\n")."\n\n".
+            wordwrap(print_r($crawl_item[self::LINKS], true), 80, "\n");
         $robot_instance = $crawl_item[self::ROBOT_INSTANCE];
         $robot_table_name = CRAWL_DIR."/robot_table.txt";
         $robot_table = array();
@@ -397,6 +400,7 @@ class SearchController extends Controller implements CrawlConstants
             $robot_table = unserialize(file_get_contents($robot_table_name));
         }
         if(!isset($robot_table[$robot_instance])) {
+            $data["SUMMARY_STRING"] = $summary_string;
             $this->displayView("nocache", $data);
             exit();
         }
@@ -406,6 +410,11 @@ class SearchController extends Controller implements CrawlConstants
         $offset = $crawl_item[self::OFFSET];
         $cache_item = $this->crawlModel->getCacheFile($machine, 
             $machine_uri, $cache_partition, $offset,  $crawl_time);
+        if(!isset($cache_item[self::PAGE])) {
+            $data["SUMMARY_STRING"] = $summary_string;
+            $this->displayView("nocache", $data);
+            exit();
+        }
         $cache_file = $cache_item[self::PAGE];
 
         if(!stristr($cache_item[self::TYPE], "image")) {
@@ -460,10 +469,8 @@ class SearchController extends Controller implements CrawlConstants
             "border-style:solid; border-width:3px; ".
             "padding: 5px; background-color: white; display:none;");
         $summaryNode->setAttributeNS("","id", "summary-page-id");
-        $cache_string = wordwrap($crawl_item[self::TITLE], 80, "\n")."\n\n" .
-            wordwrap($crawl_item[self::DESCRIPTION], 80, "\n")."\n\n".
-            wordwrap(print_r($crawl_item[self::LINKS], true), 80, "\n");
-        $textNode = $dom->createTextNode($cache_string);
+
+        $textNode = $dom->createTextNode($summary_string);
         $summaryNode->appendChild($textNode);
 
         $scriptNode = $dom->createElement('script');

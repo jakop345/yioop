@@ -1568,6 +1568,7 @@ class Fetcher implements CrawlConstants
         }
         $meta_ids[] = 'info:'.$site[self::URL];
         $meta_ids[] = 'info:'.crawlHash($site[self::URL]);
+        $meta_ids[] = 'site:all';
 
         foreach($site[self::IP_ADDRESSES] as $address) {
             $meta_ids[] = 'ip:'.$address;
