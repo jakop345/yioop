@@ -348,10 +348,10 @@ class IndexShardTest extends UnitTest
         $c_data = $this->test_objects['shard']->getPostingsSliceById(
             crawlHash('BBBBBBBB', true), 5);
         $new_doc_offsets = array(
-            "AAAAAAAASSSSSSSS" => array(5, "hello"),
-            "AAAAAAAAEEEEEEEEFFFFFFFF" => array(10, "bob"),
-            "QQQQQQQQEEEEEEEEFFFFFFFF" => array(9, "yippee"),
-            "DDDDDDDD" => array(7, "spiderman"),
+            "AAAAAAAASSSSSSSS" => 5,
+            "AAAAAAAAEEEEEEEEFFFFFFFF" => 10,
+            "QQQQQQQQEEEEEEEEFFFFFFFF" => 9,
+            "DDDDDDDD" => 7,
         );
         $this->test_objects['shard']->changeDocumentOffsets($new_doc_offsets);
         $c_data = $this->test_objects['shard']->getPostingsSliceById(
