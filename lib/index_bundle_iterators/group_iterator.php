@@ -310,7 +310,6 @@ class GroupIterator extends IndexBundleIterator
                         IndexShard::DOC_KEY_LEN, IndexShard::DOC_KEY_LEN);
                     $item[self::INLINKS] = substr($key,
                         2*IndexShard::DOC_KEY_LEN, IndexShard::DOC_KEY_LEN);
-                        print_r($item);
                     array_unshift($pre_out_pages[$hash_url], $item);
 
                 }
