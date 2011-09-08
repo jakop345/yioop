@@ -1060,13 +1060,10 @@ class QueueServer implements CrawlConstants
                             $site[self::HASH] . 
                             "d". substr(crawlHash(
                             UrlParser::getHost($site[self::URL])."/", true), 1);
-                        $dict_word = "info:".crawlHash($site[self::URL]);
                     } else {
                         $hash = $site[self::HASH_URL];
-                        $dict_word =  NULL;
                     }
-                    $summary_offsets[$hash] = array(
-                        $site[self::SUMMARY_OFFSET], $dict_word);
+                    $summary_offsets[$hash] = $site[self::SUMMARY_OFFSET];
                 }
             }
             crawlLog("B Init Shard, Store Summaries memory usage".

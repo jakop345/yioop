@@ -292,20 +292,25 @@ class GroupIterator extends IndexBundleIterator
                 $hash_info_url= 
                     crawlHash("info:".base64Hash($hash_url), true);
                 $index = $this->getIndex($pre_out_pages[$hash_url][0]['KEY']);
-                $item = $index->dictionary->getInfoItem($hash_info_url);
-                if($item !== false) {
-                    $item[self::PROXIMITY] = 1;
-                    $item[self::POSITION_LIST] = array(0);
-                    $item[self::RELEVANCE] = 0.15 *
-                        $pre_out_pages[$hash_url][0][self::RELEVANCE];
-                    if(!isset($item[self::DOC_RANK])) {
-                        $item[self::DOC_RANK] = 0.15 *
-                            $pre_out_pages[$hash_url][0][self::DOC_RANK];
-                    }
-                    $item[self::SCORE] = $item[self::RELEVANCE] * 
-                        $item[self::DOC_RANK];
-                    $item['KEY'] = $hash_url.$item[self::HASH].
-                        $item[self::INLINKS];
+                $word_iterator =
+                     new WordIterator($hash_info_url,
+                        $index, true);
+                $doc_array = $word_iterator->currentDocsWithWord();
+                if(is_array($doc_array) && count($doc_array) == 1) {
+                    $relevance =  $this->computeRelevance(
+                        $word_iterator->current_generation,
+                        $word_iterator->current_offset);
+                    $keys = array_keys($doc_array);
+                    $key = $keys[0];
+                    $item = $doc_array[$key];
+                    $item[self::RELEVANCE] = $relevance;
+                    $item[self::SCORE] += $relevance;
+                    $item['KEY'] = $key;
+                    $item[self::HASH] = substr($key,
+                        IndexShard::DOC_KEY_LEN, IndexShard::DOC_KEY_LEN);
+                    $item[self::INLINKS] = substr($key,
+                        2*IndexShard::DOC_KEY_LEN, IndexShard::DOC_KEY_LEN);
+                        print_r($item);
                     array_unshift($pre_out_pages[$hash_url], $item);
 
                 }

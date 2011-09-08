@@ -454,14 +454,11 @@ class IndexDictionary implements CrawlConstants
      * @param bool $raw whether the id is our version of base64 encoded or not
      * @param bool $extract whether to extract an array of entries or to just
      *      return the word info as a string
-     * @param int $num_entries if not -1 then the number of word records to
-     *      return after the first entry of looked up word
      * @return mixed an array of entries of the form 
      *      generation, first offset, last offset, count or
      *      just a string of the word_info data if $extract is false 
      */
-     function getWordInfo($word_id, $raw = false, $extract = true,
-        $num_entries = -1) {
+     function getWordInfo($word_id, $raw = false, $extract = true) {
         if($raw == false) {
             //get rid of out modified base64 encoding
             $word_id = unbase64Hash($word_id);
@@ -545,15 +542,12 @@ class IndexDictionary implements CrawlConstants
 
         $test_loc = $check_loc + 1;
 
-        if($num_entries > 0) {
-            $high = $start_loc + ($num_entries - 1);
-        }
         while ($test_loc <= $high) {
             $word_string = $this->getDictSubstring($file_num, $start + 
                 $test_loc * $word_item_len, $word_item_len);
             if($word_string == "" ) break;
             $id = substr($word_string, 0, IndexShard::WORD_KEY_LEN);
-            if($num_entries < 1 && strcmp($word_id, $id) != 0 ) break;
+            if(strcmp($word_id, $id) != 0 ) break;
             $test_loc++;
             $ws = substr($word_string, IndexShard::WORD_KEY_LEN);
             if($extract) {
@@ -593,68 +587,6 @@ class IndexDictionary implements CrawlConstants
         }
         return $num_docs_array;
      }
-
-    /**
-     * Looks up the shard information (which is actually embedded in
-     * the dictionary) for a info:url query
-     * @param string $hash_info_url hash of info:url meta word
-     * @return array summary (to the extent stoed in a shard) data for this url
-     */
-    function getInfoItem($hash_info_url)
-    {
-
-        $word_key_len = IndexShard::WORD_KEY_LEN;
-        $word_data_len = IndexShard::WORD_ITEM_LEN - $word_key_len;
-        $posting_len = IndexShard::POSTING_LEN;
-
-        $hash_info_data = $this->getWordInfo($hash_info_url, true, false,
-            3);
-
-        if($hash_info_data === false) return false;
-
-        $word_string = substr($hash_info_data, 0, 
-            $word_data_len);
-        $item = array();
-        list($item[self::GENERATION], , , ) = 
-            IndexShard::getWordInfoFromString($word_string, true);
-
-        $pre_offset = substr($hash_info_data, 
-            $word_data_len, $posting_len);
-
-        $pre_offset[0] = chr(ord($pre_offset[0]) - 0x80);
-        $item[self::SUMMARY_OFFSET] = unpackInt($pre_offset);
-
-        $item[self::HASH] = substr($hash_info_data, 
-            $word_data_len + $posting_len, 
-            $word_key_len);
-        // don't delete 0x80 for doc_len as is_doc flag already kills it
-        $pre_doc_len = substr($hash_info_data, 
-                2 * $word_data_len, $posting_len);
-        if(strlen($pre_doc_len) > 0) {
-            $pre_doc_len[0] = chr(ord($pre_doc_len[0]) - 0x80);
-            list($item[self::DOC_LEN], ) = 
-                IndexShard::unpackDoclenNum($pre_doc_len);
-        } else {
-            $item[self::DOC_LEN] = 0;
-        }
-        /* 
-           for archive crawls we store rank as the 4 bits after the high order 
-           bit
-        */
-        $rank_mask = (0x0f) << 19;
-        $pre_rank = ($item[self::DOC_LEN] & $rank_mask);
-        if( $pre_rank > 0) {
-            $item[self::DOC_RANK] = $pre_rank >> 19;
-            $item[self::DOC_LEN] -= $pre_rank;
-        }
-
-        $item[self::INLINKS] = substr($hash_info_data, 
-            2 * $word_data_len  + $posting_len, 
-            $word_key_len);
-        $item[self::IS_DOC] = true;
-        
-        return $item;
-    }
 
     /**
      *  Gets from disk $len many bytes beginning at $offset from the

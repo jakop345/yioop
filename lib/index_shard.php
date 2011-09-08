@@ -1083,11 +1083,8 @@ class IndexShard extends PersistentStructure implements
      * that point. This function should be called when shard unpacked 
      * (we check and unpack to be on the safe side).
      *
-     * @param array $docid_offsets a set of doc_id  associated with a pair
-     *      new_doc_offset, dict_word. If dict_word is present information
-     *      about this document is also stored as word data in the shards
-     *      word list, this is used to improve the speed of doing info:url
-     *      look ups.
+     * @param array $docid_offsets a set of doc_id  associated with a
+     *      new_doc_offset.
      */
     function changeDocumentOffsets($docid_offsets)
     {
@@ -1113,34 +1110,12 @@ class IndexShard extends PersistentStructure implements
             $id = substr($this->doc_infos, $i + self::DOC_KEY_LEN, 
                 $num_keys * self::DOC_KEY_LEN);
 
-            $new_offset = (isset($docid_offsets[$id][0])) ? 
-                packInt($docid_offsets[$id][0]) : 
+            $new_offset = (isset($docid_offsets[$id])) ? 
+                packInt($docid_offsets[$id]) : 
                 packInt($offset);
 
             charCopy($new_offset, $this->doc_infos, $i, self::POSTING_LEN);
 
-            /*
-             * encodes doc data into the shard's word dictionary except for
-             * the first key which is the hash_url itself (should be obtainable
-             * by other means).
-             */
-            if(isset($docid_offsets[$id][1]) && 
-                strlen($docid_offsets[$id][1]) > 0) {
-                $len_id = strlen($id);
-                $dict_word = crawlHash($docid_offsets[$id][1], true);
-                $len_dict_word = strlen($dict_word);
-                $last_char = ord($dict_word[$len_dict_word - 1]);
-                $fill_array = array($new_offset, $doc_len_info);
-                for( $j = $len_dict_word, $k = 1; $j < $len_id; 
-                    $j += $len_dict_word, $k++) {
-                    $dict_word = substr($dict_word, 0, $len_dict_word -1).
-                        chr($last_char + $k);
-                    $fill = (isset($fill_array[$k-1])) ? $fill_array[$k-1] :
-                        self::HALF_BLANK;
-                    $this->words[$dict_word] = self::HALF_BLANK. $fill .
-                        substr($id, $j, $len_dict_word);
-                }
-            }
         }
     }
 
