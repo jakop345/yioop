@@ -292,6 +292,25 @@ class SearchController extends Controller implements CrawlConstants
             default:
                 if(trim($query) != "") {
                     $original_query = $query;
+                    $mix_metas = array("m:", "mix:");
+                    foreach($mix_metas as $mix_meta) {
+                        $pattern = "/(\s)($mix_meta(\S)+)/";
+                        preg_match_all($pattern, $query, $matches);
+                        if(isset($matches[2][0]) && !isset($mix_name)) {
+                            $mix_name = substr($matches[2][0],
+                                strlen($mix_meta));
+                            $mix_name = str_replace("+", " ", $mix_name);
+                        }
+                        $query = preg_replace($pattern, "", $query);
+                    }
+                    if(isset($mix_name)) {
+                        $tmp = $this->crawlModel->getCrawlMixTimestamp(
+                            $mix_name);
+                        if($tmp != false) {
+                            $index_name = $tmp;
+                            $is_mix = true;
+                        }
+                    }
                     if($is_mix) {
                         $mix = $this->crawlModel->getCrawlMix($index_name);
                         $query = 

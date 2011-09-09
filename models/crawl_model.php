@@ -295,7 +295,7 @@ class CrawlModel extends Model implements CrawlConstants
     /**
      * Retrieves the weighting component of the requested crawl mix
      *
-     * @param string timestamp of the requested crawl mix
+     * @param string $timestamp of the requested crawl mix
      * @param bool $just_components says whether to find the mix name or
      *      just the components array.
      * @return array the crawls and their weights that make up the
@@ -338,6 +338,24 @@ class CrawlModel extends Model implements CrawlConstants
     }
 
     /**
+     * Returns the timestamp associated with a mix name;
+     *
+     * @param string $mix_name name to lookup
+     * @return mixed timestamp associated with name if exists false otherwise
+     */
+    function getCrawlMixTimestamp($mix_name)
+    {
+        $this->db->selectDB(DB_NAME);
+            $sql = "SELECT MIX_TIMESTAMP, MIX_NAME FROM CRAWL_MIXES WHERE ".
+                " MIX_NAME='$mix_name'";
+            $result = $this->db->execute($sql);
+            $mix =  $this->db->fetchArray($result);
+        if(isset($mix["MIX_TIMESTAMP"])) {
+            return $mix["MIX_TIMESTAMP"];
+        }
+        return false;
+    }
+    /**
      * Get a description associated with a Web Crawl or Crawl Mix
      *
      * @param int $timestamp of crawl or mix in question
@@ -376,7 +394,7 @@ class CrawlModel extends Model implements CrawlConstants
      * Returns whether the supplied timestamp corresponds to a crawl mix
      *
      * @param string timestamp of the requested crawl mix
-
+     *
      * @return bool true if it does; false otherwise
      */
     function isCrawlMix($timestamp)

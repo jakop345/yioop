@@ -239,7 +239,8 @@ EOT;
 
         $tables = array("VERSION", "USER", "USER_SESSION", "TRANSLATION", 
             "LOCALE", "TRANSLATION_LOCALE", "ROLE", 
-            "ROLE_ACTIVITY", "ACTIVITY", "USER_ROLE", "CURRENT_WEB_INDEX");
+            "ROLE_ACTIVITY", "ACTIVITY", "USER_ROLE", "CURRENT_WEB_INDEX",
+            "CRAWL_MIXES", "MIX_GROUPS", "MIX_COMPONENTS");
         $create_statements = array(
             "CREATE TABLE VERSION( ID INTEGER PRIMARY KEY)",
             "CREATE TABLE USER( USER_ID INTEGER PRIMARY KEY $auto_increment, ".
@@ -261,7 +262,15 @@ EOT;
                 "$auto_increment, TRANSLATION_ID INTEGER, ".
                 "METHOD_NAME VARCHAR(256))",
             "CREATE TABLE USER_ROLE (USER_ID INTEGER, ROLE_ID INTEGER)",
-            "CREATE TABLE CURRENT_WEB_INDEX (CRAWL_TIME INT(11) )");
+            "CREATE TABLE CURRENT_WEB_INDEX (CRAWL_TIME INT(11) )",
+            "CREATE TABLE CRAWL_MIXES (MIX_TIMESTAMP INT(11) PRIMARY KEY,".
+                " MIX_NAME VARCHAR(16) UNIQUE)",
+            "CREATE TABLE MIX_GROUPS (MIX_TIMESTAMP INT(11), GROUP_ID INT(4),".
+                " RESULT_BOUND INT(4))",
+            "CREATE TABLE MIX_COMPONENTS (MIX_TIMESTAMP INT(11),".
+                "GROUP_ID INT(4), CRAWL_TIMESTAMP INT(11), WEIGHT REAL,".
+                " KEYWORDS VARCHAR(256))"
+            );
         foreach($create_statements as $statement) {
             if(!$test_dbm->execute($statement)) {return false;}
         }
