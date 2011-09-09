@@ -201,11 +201,15 @@ class PhraseModel extends Model
      *      matched text
      * @param array $filter an array of hashes of domains to filter from
      *      results
+     * @param bool $use_cache_if_allowed if true and USE_CACHE is true then
+     *      an attempt will be made to look up the results in either
+     *      the file cache or memcache. Otherwise, items will be recomputed
+     *      and then potentially restored in cache
      * @return array an array of summary data
      */
     function getPhrasePageResults(
         $input_phrase, $low = 0, $results_per_page = NUM_RESULTS_PER_PAGE, 
-        $format = true, &$filter = NULL)
+        $format = true, &$filter = NULL, $use_cache_if_allowed = true)
     {
         if(QUERY_STATISTICS) {
             $indent= "&nbsp;&nbsp;";
@@ -220,6 +224,7 @@ class PhraseModel extends Model
         }
         $results = NULL;
         $word_structs = array();
+
         /* 
             this is a quick and dirty parsing and will usually work,
             exceptions would be # or | in quotes or if someone tried
@@ -323,7 +328,7 @@ class PhraseModel extends Model
             }
 
             $out_results = $this->getSummariesByHash($word_structs, 
-                $low, $phrase_num, $filter);
+                $low, $phrase_num, $filter, $use_cache_if_allowed);
 
             if(isset($out_results['PAGES']) && 
                 count($out_results['PAGES']) != 0) {
@@ -675,9 +680,14 @@ class PhraseModel extends Model
      * @param int $num number of documents to return summaries of
      * @param array &$filter an array of hashes of domains to filter from
      *      results
+     * @param bool $use_cache_if_allowed if true and USE_CACHE is true then
+     *      an attempt will be made to look up the results in either
+     *      the file cache or memcache. Otherwise, items will be recomputed
+     *      and then potentially restored in cache
      * @return array document summaries
      */
-    function getSummariesByHash($word_structs, $limit, $num, &$filter)
+    function getSummariesByHash($word_structs, $limit, $num, &$filter,
+        $use_cache_if_allowed = true)
     {
         global $CACHE;
 
@@ -696,25 +706,27 @@ class PhraseModel extends Model
                     $word_struct["WEIGHT"] .
                     $word_struct["INDEX_ARCHIVE"]->dir_name;
             }
-            
-            $cache_success = true;
-            $results = array();
-            $results['PAGES'] = array();
-            for($i=$start_slice; $i< $to_retrieve; $i+=self::NUM_CACHE_PAGES){
-                $summary_hash = crawlHash($mem_tmp.":".$i);
-                $slice = $CACHE->get($summary_hash);
-                if($slice === false) {
-                    $cache_success = false;
-                    break;
+            if($use_cache_if_allowed) {
+                $cache_success = true;
+                $results = array();
+                $results['PAGES'] = array();
+                for($i=$start_slice; $i<$to_retrieve;$i+=self::NUM_CACHE_PAGES){
+                    $summary_hash = crawlHash($mem_tmp.":".$i);
+                    $slice = $CACHE->get($summary_hash);
+                    if($slice === false) {
+                        $cache_success = false;
+                        break;
+                    }
+                    $results['PAGES'] = array_merge($results['PAGES'], 
+                        $slice['PAGES']);
+                    $results['TOTAL_ROWS'] = $slice['TOTAL_ROWS'];
                 }
-                $results['PAGES'] = array_merge($results['PAGES'], 
-                    $slice['PAGES']);
-                $results['TOTAL_ROWS'] = $slice['TOTAL_ROWS'];
-            }
-            if($cache_success) {
-                $results['PAGES'] = 
-                    array_slice($results['PAGES'], $limit - $start_slice, $num);
-                return $results;
+                if($cache_success) {
+                    $results['PAGES'] = 
+                        array_slice($results['PAGES'], 
+                            $limit - $start_slice, $num);
+                    return $results;
+                }
             }
         }
 
@@ -747,8 +759,6 @@ class PhraseModel extends Model
             $results['TOTAL_ROWS'] =  $query_iterator->num_docs;
             //this is only an approximation 
         }
-        
-
 
         $result_count = count($pages);
         if(USE_CACHE) {

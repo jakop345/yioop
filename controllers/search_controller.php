@@ -266,6 +266,10 @@ class SearchController extends Controller implements CrawlConstants
 
         $this->crawlModel->index_name = $index_name;
 
+        $original_query = $query;
+        $query = preg_replace('/no:cache/', "", $query);
+
+        $use_cache_if_possible = ($original_query == $query) ? true : false;
 
         switch($activity)
         {
@@ -283,7 +287,8 @@ class SearchController extends Controller implements CrawlConstants
                     $this->phraseModel->getTopPhrases($crawl_item, 3);
                 $top_query = implode(" ", $top_phrases);
                 $phrase_results = $this->phraseModel->getPhrasePageResults(
-                    $top_query, $limit, $results_per_page, false);
+                    $top_query, $limit, $results_per_page, false, NULL,
+                    $use_cache_if_possible);
                 $data['PAGING_QUERY'] = "index.php?c=search&a=related&arg=".
                     urlencode($url);
             break;
@@ -291,7 +296,6 @@ class SearchController extends Controller implements CrawlConstants
             case "query":
             default:
                 if(trim($query) != "") {
-                    $original_query = $query;
                     $mix_metas = array("m:", "mix:");
                     foreach($mix_metas as $mix_meta) {
                         $pattern = "/(\s)($mix_meta(\S)+)/";
@@ -318,7 +322,8 @@ class SearchController extends Controller implements CrawlConstants
                     }
                     $filter = $this->searchfiltersModel->getFilter();
                     $phrase_results = $this->phraseModel->getPhrasePageResults(
-                        $query, $limit, $results_per_page, true, $filter);
+                        $query, $limit, $results_per_page, true, $filter,
+                        $use_cache_if_possible);
                     $query = $original_query;
                 }
                 $data['PAGING_QUERY'] = "index.php?q=".urlencode($query);
@@ -391,6 +396,16 @@ class SearchController extends Controller implements CrawlConstants
      */
     function cacheRequest($query, $url, $highlight=true, $crawl_time = 0)
     {
+        global $CACHE;
+
+        $hash_key = crawlHash(
+            $query.$url.serialize($highlight).serialize($crawl_time));
+        if(USE_CACHE) {
+            if($newDoc = $CACHE->get($hash_key)) {
+                echo $newDoc;
+                exit();
+            }
+        }
 
         if($crawl_time == 0) {
             $crawl_time = $this->crawlModel->getCurrentIndexDatabaseName();
@@ -558,6 +573,9 @@ class SearchController extends Controller implements CrawlConstants
             }
         }
 
+        if(USE_CACHE) {
+            $CACHE->set($hash_key, $new_doc);
+        }
 
         echo $newDoc;
         exit();
