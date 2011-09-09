@@ -210,7 +210,6 @@ class SearchController extends Controller implements CrawlConstants
 
         $data['YIOOP_TOKEN'] = $this->generateCSRFToken($user);
 
-
         $data['ELAPSED_TIME'] = changeInMicrotime($start_time);
         $this->displayView($view, $data);
     }

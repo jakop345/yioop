@@ -118,6 +118,45 @@ class UserModel extends Model
 
     }
 
+    /**
+     * Returns $_SESSION variable of given user from the last time
+     * logged in.
+     *
+     * @param int $user_id id of user to get session for
+     * @return array user's session data
+     */
+    function getUserSession($user_id)
+    {
+        $this->db->selectDB(DB_NAME);
+
+        $sql = "SELECT SESSION FROM USER_SESSION ".
+            "WHERE USER_ID = '$user_id' LIMIT 1";
+        $result = $this->db->execute($sql);
+        $row = $this->db->fetchArray($result);
+        if(isset($row["SESSION"])) {
+            return unserialize($row["SESSION"]);
+        }
+        return NULL;
+    }
+
+    /**
+     * Stores into DB the $session associative array of given user
+     *
+     * @param int $user_id id of user to store session for
+     * @param array $session session data for the given user
+     */
+    function setUserSession($user_id, $session)
+    {
+        $this->db->selectDB(DB_NAME);
+
+        $sql = "DELETE FROM USER_SESSION ".
+            "WHERE USER_ID = '$user_id'";
+        $this->db->execute($sql);
+        $session_string = serialize($session);
+        $sql = "INSERT INTO USER_SESSION ".
+            "VALUES ('$user_id', '$session_string')";
+        $this->db->execute($sql);
+    }
 
     /**
      * Gets all the roles associated with a user id

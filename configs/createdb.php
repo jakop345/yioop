@@ -74,13 +74,18 @@ if(!in_array(DBMS, array('sqlite', 'sqlite3'))) {
 }
 $db->selectDB(DB_NAME);
 
+$db->execute("CREATE TABLE VERSION( ID INTEGER PRIMARY KEY)");
+$db->execute("INSERT INTO VERSION VALUES (1)");
+
 $db->execute("CREATE TABLE USER( USER_ID INTEGER PRIMARY KEY $auto_increment, ".
     "USER_NAME VARCHAR(16) UNIQUE,  PASSWORD VARCHAR(16))");
+
+$db->execute("CREATE TABLE USER_SESSION( USER_ID INTEGER PRIMARY KEY, ".
+    "SESSION VARCHAR(4096))");
 
 //default account is root without a password
 $sql ="INSERT INTO USER VALUES (1, 'root', '".crawlCrypt('')."' ) ";
 $db->execute($sql);
-
 
 $db->execute("CREATE TABLE TRANSLATION (TRANSLATION_ID INTEGER PRIMARY KEY ".
     "$auto_increment, IDENTIFIER_STRING VARCHAR(512) UNIQUE)");

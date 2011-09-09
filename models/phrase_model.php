@@ -129,7 +129,7 @@ class PhraseModel extends Model
      */
     function rewriteMixQuery($query, $mix)
     {
-        $disjunct_phrases = explode("|", $query); 
+        $disjunct_phrases = explode("|", $query);
         $rewrite = "";
         if(isset($mix['GROUPS'])) {
             foreach($mix['GROUPS'] as $group) {
@@ -167,7 +167,9 @@ class PhraseModel extends Model
                     }
                     $pipe2 = "";
                     if(isset($group['COMPONENTS'])) {
+                        $start_disjunct_string = $disjunct_string;
                         foreach($group['COMPONENTS'] as $component) {
+                            $disjunct_string = $start_disjunct_string;
                             if(isset($component['KEYWORDS'])) {
                                 $disjunct_string .= " ".$component['KEYWORDS'];
                             }
@@ -319,6 +321,7 @@ class PhraseModel extends Model
                     changeInMicrotime($start_time)."<br />";
                 $summaries_time = microtime();
             }
+
             $out_results = $this->getSummariesByHash($word_structs, 
                 $low, $phrase_num, $filter);
 
@@ -716,6 +719,7 @@ class PhraseModel extends Model
         }
 
         $query_iterator = $this->getQueryIterator($word_structs, $filter);
+
         $num_retrieved = 0;
         $pages = array();
         while(is_object($query_iterator) && 

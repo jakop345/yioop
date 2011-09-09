@@ -77,6 +77,8 @@ class UnionIterator extends IndexBundleIterator
      */
     var $seen_docs_unfiltered;
 
+    var $key_iterator_table;
+
 
     /**
      * Creates a union iterator with the given parameters.
@@ -95,6 +97,7 @@ class UnionIterator extends IndexBundleIterator
         $this->num_iterators = count($index_bundle_iterators);
         $this->num_docs = 0;
         $this->results_per_block = 0;
+        $this->key_iterator_table = array();
         for($i = 0; $i < $this->num_iterators; $i++) {
             $this->num_docs += $this->index_bundle_iterators[$i]->num_docs;
             /* 
@@ -120,7 +123,6 @@ class UnionIterator extends IndexBundleIterator
         $this->seen_docs = 0;
         $this->seen_docs_unfiltered = 0;
         $doc_block = $this->currentDocsWithWord();
-        
     }
 
     /**
@@ -160,6 +162,7 @@ class UnionIterator extends IndexBundleIterator
                 $doc_keys = array_keys($docs);
                 foreach($doc_keys as $key) {
                     $docs[$key]["ITERATOR"] = $i;
+                    $this->key_iterator_table[$key] = $i;
                 }
                 $pages = array_merge($pages, $docs);
                 $found_docs = true;
@@ -222,7 +225,7 @@ class UnionIterator extends IndexBundleIterator
     {
         $this->advanceSeenDocs();
 
-        	$this->seen_docs_unfiltered += $this->count_block_unfiltered;
+        $this->seen_docs_unfiltered += $this->count_block_unfiltered;
 
         $total_num_docs = 0;
         for($i = 0; $i < $this->num_iterators; $i++) {
@@ -245,7 +248,11 @@ class UnionIterator extends IndexBundleIterator
     function getIndex($key = NULL)
     {
         if($key != NULL) {
-            if($this->current_block_fresh == false) {
+            if(isset($this->key_iterator_table[$key])) {
+                return $this->index_bundle_iterators[
+                    $this->key_iterator_table[$key]]->getIndex($key);
+            }
+            if($this->current_block_fresh == false ) {
                 $result = $this->currentDocsWithWord();
                 if(!is_array($result)) {
                     return $this->index_bundle_iterators[0]->getIndex($key);

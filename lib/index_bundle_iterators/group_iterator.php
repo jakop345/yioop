@@ -306,6 +306,7 @@ class GroupIterator extends IndexBundleIterator
                     $item[self::RELEVANCE] = $relevance;
                     $item[self::SCORE] += $relevance;
                     $item['KEY'] = $key;
+                    $item['INDEX'] = $word_iterator->index;
                     $item[self::HASH] = substr($key,
                         IndexShard::DOC_KEY_LEN, IndexShard::DOC_KEY_LEN);
                     $item[self::INLINKS] = substr($key,
@@ -454,7 +455,11 @@ class GroupIterator extends IndexBundleIterator
                 $out_pages[$doc_key] = $doc_info;
                 foreach($doc_info[self::SUMMARY_OFFSET] as $offset_array) {
                     list($key, $generation, $summary_offset) = $offset_array;
-                    $index = $this->getIndex($key);
+                    if(isset($doc_info['INDEX'])) {
+                        $index = $doc_info['INDEX'];
+                    } else {
+                        $index = $this->getIndex($key);
+                    }
                     $index->setCurrentShard($generation, true);
                     $page = $index->getPage($summary_offset);
                     if($page == array()) {continue;}

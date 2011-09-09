@@ -193,7 +193,7 @@ class IndexDictionary implements CrawlConstants
                         $first_offset_flag = false;
                     }
                     $offset -= $first_offset;
-                    $out = pack("N", $offset) . pack("N", $count);
+                    $out = packInt($offset) . packInt($count);
                     $last_set = $j;
                     $last_out = $prefix_info;
                     charCopy($out, $prefix_string, 

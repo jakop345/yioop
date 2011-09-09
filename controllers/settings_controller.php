@@ -59,7 +59,7 @@ class SettingsController extends Controller
      * is used to get a list of available crawls
      * @var array
      */
-    var $models = array("locale", "crawl");
+    var $models = array("locale", "crawl", "user");
 
     /**
      *  Sets up the available perpage language options.
@@ -138,6 +138,9 @@ class SettingsController extends Controller
         if($changed_settings_flag) {
             $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
                 tl('settings_controller_settings_saved')."</h1>')";
+            if($user != $_SERVER['REMOTE_ADDR']) {
+                $this->userModel->setUserSession($user, $_SESSION);
+            }
         }
 
         $this->displayView($view, $data);
