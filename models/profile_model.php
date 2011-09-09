@@ -237,12 +237,15 @@ EOT;
                  */
         }
 
-        $tables = array("USER", "TRANSLATION", 
+        $tables = array("VERSION", "USER", "USER_SESSION", "TRANSLATION", 
             "LOCALE", "TRANSLATION_LOCALE", "ROLE", 
             "ROLE_ACTIVITY", "ACTIVITY", "USER_ROLE", "CURRENT_WEB_INDEX");
         $create_statements = array(
+            "CREATE TABLE VERSION( ID INTEGER PRIMARY KEY)",
             "CREATE TABLE USER( USER_ID INTEGER PRIMARY KEY $auto_increment, ".
                 "USER_NAME VARCHAR(16) UNIQUE,  PASSWORD VARCHAR(16))",
+            "CREATE TABLE USER_SESSION( USER_ID INTEGER PRIMARY KEY, ".
+                "SESSION VARCHAR(4096))",
             "CREATE TABLE TRANSLATION (TRANSLATION_ID INTEGER PRIMARY KEY ".
                 "$auto_increment, IDENTIFIER_STRING VARCHAR(512) UNIQUE)",
             "CREATE TABLE LOCALE(LOCALE_ID INTEGER PRIMARY KEY ".

@@ -114,8 +114,13 @@ class AdminController extends Controller implements CrawlConstants
                     $view = "crawlstatus";
                 }
              } else if ($this->checkSignin()){
-                $_SESSION['USER_ID'] = $this->signinModel->getUserId(
+                $user_id = $this->signinModel->getUserId(
                     $this->clean($_REQUEST['u'], "string"));
+                $session = $this->userModel->getUserSession($user_id);
+                if(is_array($session)) {
+                    $_SESSION = $session;
+                }
+                $_SESSION['USER_ID'] = $user_id;
                 $data['YIOOP_TOKEN'] = $this->generateCSRFToken(
                     $_SESSION['USER_ID']); 
                     // now don't want to use remote address anymore
