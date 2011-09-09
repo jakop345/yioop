@@ -198,8 +198,8 @@ class SearchView extends View implements CrawlConstants
             <?php 
             } //end foreach
             $this->paginationHelper->render(
-                $data['PAGING_QUERY'], $data['LIMIT'], 
-                $data['RESULTS_PER_PAGE'], $data['TOTAL_ROWS']);
+                $data['PAGING_QUERY']."&amp;YIOOP_TOKEN=".$data['YIOOP_TOKEN'], 
+                $data['LIMIT'], $data['RESULTS_PER_PAGE'], $data['TOTAL_ROWS']);
         }
         ?><div class="landing-footer">
             <div><b><?php e($data['INDEX_INFO']);?></b></div>
