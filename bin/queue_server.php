@@ -861,6 +861,11 @@ class QueueServer implements CrawlConstants
                     $index_archive->dictionary->mergeAllTiers();
                     file_put_contents(CRAWL_DIR.'/schedules/'.
                         self::index_closed_name.$timestamp.".txt", "1");
+                    /*
+                       touch crawl_status so it doesn't stop the crawl right
+                       after it just restarted
+                     */
+                    touch(CRAWL_DIR."/schedules/crawl_status.txt", time());
                 }
                 $living_stamps[] = $timestamp;
             }
