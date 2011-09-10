@@ -110,6 +110,7 @@ class GroupIterator extends IndexBundleIterator
      */
     const MIN_FIND_RESULTS_PER_BLOCK = 200;
 
+    const MIN_DESCRIPTION_LENGTH = 10;
     /**
      * Creates a group iterator with the given parameters.
      *
@@ -312,7 +313,6 @@ class GroupIterator extends IndexBundleIterator
                     $item[self::INLINKS] = substr($key,
                         2*IndexShard::DOC_KEY_LEN, IndexShard::DOC_KEY_LEN);
                     array_unshift($pre_out_pages[$hash_url], $item);
-
                 }
             }
 
@@ -473,6 +473,11 @@ class GroupIterator extends IndexBundleIterator
                         }
                         $out_pages[$doc_key][self::SUMMARY][self::DESCRIPTION].=
                             " .. ".$page[self::DESCRIPTION];
+                    }
+                    if(strlen($out_pages[$doc_key][
+                        self::SUMMARY][self::DESCRIPTION]) > 
+                        self::MIN_DESCRIPTION_LENGTH) {
+                        break;
                     }
                 }
             }
