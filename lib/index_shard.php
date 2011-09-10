@@ -974,10 +974,11 @@ class IndexShard extends PersistentStructure implements
         $this->num_link_docs += $index_shard->num_link_docs;
         $this->len_all_docs += $index_shard->len_all_docs;
         $this->len_all_link_docs += $index_shard->len_all_link_docs;
-
+        crawlLog("Finishing append...mem:".memory_get_usage());
         if($this->num_docs - $this->last_flattened_words_count >
             self::FLATTEN_FREQUENCY) {
             $this->mergeWordPostingsToString();
+            crawlLog("...Flattened Word Postings mem:".memory_get_usage());
         }
     }
 
