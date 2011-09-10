@@ -289,32 +289,6 @@ class GroupIterator extends IndexBundleIterator
     {
         $domain_vector = array();
         foreach($pre_out_pages as $hash_url => $data) {
-            if(!$pre_out_pages[$hash_url][0][self::IS_DOC]) {
-                $hash_info_url= 
-                    crawlHash("info:".base64Hash($hash_url), true);
-                $index = $this->getIndex($pre_out_pages[$hash_url][0]['KEY']);
-                $word_iterator =
-                     new WordIterator($hash_info_url,
-                        $index, true);
-                $doc_array = $word_iterator->currentDocsWithWord();
-                if(is_array($doc_array) && count($doc_array) == 1) {
-                    $relevance =  $this->computeRelevance(
-                        $word_iterator->current_generation,
-                        $word_iterator->current_offset);
-                    $keys = array_keys($doc_array);
-                    $key = $keys[0];
-                    $item = $doc_array[$key];
-                    $item[self::RELEVANCE] = $relevance;
-                    $item[self::SCORE] += $relevance;
-                    $item['KEY'] = $key;
-                    $item['INDEX'] = $word_iterator->index;
-                    $item[self::HASH] = substr($key,
-                        IndexShard::DOC_KEY_LEN, IndexShard::DOC_KEY_LEN);
-                    $item[self::INLINKS] = substr($key,
-                        2*IndexShard::DOC_KEY_LEN, IndexShard::DOC_KEY_LEN);
-                    array_unshift($pre_out_pages[$hash_url], $item);
-                }
-            }
 
             $this->aggregateScores($hash_url, $pre_out_pages[$hash_url]);
 
@@ -449,6 +423,33 @@ class GroupIterator extends IndexBundleIterator
                 continue;
             } else {
                 $doc_info = $this->pages[$doc_key];
+            }
+            if(!$doc_info[self::IS_DOC]) {
+                $hash_info_url= 
+                    crawlHash("info:".base64Hash($doc_key), true);
+                $index = $this->getIndex($doc_info['KEY']);
+                $word_iterator =
+                     new WordIterator($hash_info_url,
+                        $index, true);
+                $doc_array = $word_iterator->currentDocsWithWord();
+                if(is_array($doc_array) && count($doc_array) == 1) {
+                    $relevance =  $this->computeRelevance(
+                        $word_iterator->current_generation,
+                        $word_iterator->current_offset);
+                    $keys = array_keys($doc_array);
+                    $key = $keys[0];
+                    $item = $doc_array[$key];
+                    $doc_info[self::RELEVANCE] += $relevance;
+                    $doc_info[self::DOC_RANK] += $item[self::DOC_RANK];
+                    $doc_info[self::SCORE] += $item[self::DOC_RANK] 
+                        * pow(1.1, $relevance);
+                    $doc_info['KEY'] = $key;
+                    if(isset($item[self::SUMMARY_OFFSET])) {
+                        array_unshift($doc_info[self::SUMMARY_OFFSET], 
+                            array($doc_info["KEY"], $item[self::GENERATION],
+                            $item[self::SUMMARY_OFFSET]));
+                    }
+                }
             }
             if(isset($doc_info[self::SUMMARY_OFFSET]) && 
                 is_array($doc_info[self::SUMMARY_OFFSET])) {
