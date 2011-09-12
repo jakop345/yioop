@@ -458,7 +458,8 @@ class IndexDictionary implements CrawlConstants
      *      generation, first offset, last offset, count or
      *      just a string of the word_info data if $extract is false 
      */
-     function getWordInfo($word_id, $raw = false, $extract = true) {
+     function getWordInfo($word_id, $raw = false, $extract = true)
+     {
         if($raw == false) {
             //get rid of out modified base64 encoding
             $word_id = unbase64Hash($word_id);

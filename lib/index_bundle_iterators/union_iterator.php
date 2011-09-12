@@ -77,6 +77,10 @@ class UnionIterator extends IndexBundleIterator
      */
     var $seen_docs_unfiltered;
 
+    /**
+     * stores a mapping between seen doc keys and which iterator they came from
+     * @var array
+     */
     var $key_iterator_table;
 
 

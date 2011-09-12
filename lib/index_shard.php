@@ -701,6 +701,13 @@ class IndexShard extends PersistentStructure implements
 
     }
     /**
+     * Used to sum over the occurences in a position list counting with
+     * weight based on term location in the document
+     *
+     * @param array $position_list positions of term in item
+     * @param bool $is_doc whether the item is a document or a link
+     * @return array asscoiative array of document_part => weight count 
+     *  of occurrences of term in 
      *
      */
     function weightedCount($position_list, $is_doc) {
@@ -723,7 +730,12 @@ class IndexShard extends PersistentStructure implements
     }
 
     /**
+     * Returns a proximity score for a single term based on its location in
+     * doc.
      *
+     * @param array $position_list locations of term within item
+     * @param bool $is_doc whether the item is a document or not
+     * @return int a score for proximity
      */
     function computeProximity($position_list, $is_doc) {
         return (!$is_doc) ? LINK_WEIGHT : (isset($position_list[0]) && 

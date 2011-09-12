@@ -111,6 +111,11 @@ class GroupIterator extends IndexBundleIterator
     const MIN_FIND_RESULTS_PER_BLOCK = 200;
 
     /**
+     * the minimum length of a description before we stop appending
+     * additional link doc summaries
+     */
+    const MIN_DESCRIPTION_LENGTH = 10;
+    /**
      * Creates a group iterator with the given parameters.
      *
      * @param object $index_bundle_iterator to use as a source of documents
@@ -289,7 +294,7 @@ class GroupIterator extends IndexBundleIterator
         $domain_vector = array();
         foreach($pre_out_pages as $hash_url => $data) {
             if(!$pre_out_pages[$hash_url][0][self::IS_DOC]) {
-                $hash_info_url= 
+                $hash_info_url=
                     crawlHash("info:".base64Hash($hash_url), true);
                 $index = $this->getIndex($pre_out_pages[$hash_url][0]['KEY']);
                 $word_iterator =
@@ -312,7 +317,6 @@ class GroupIterator extends IndexBundleIterator
                     $item[self::INLINKS] = substr($key,
                         2*IndexShard::DOC_KEY_LEN, IndexShard::DOC_KEY_LEN);
                     array_unshift($pre_out_pages[$hash_url], $item);
-
                 }
             }
 
@@ -450,6 +454,7 @@ class GroupIterator extends IndexBundleIterator
             } else {
                 $doc_info = $this->pages[$doc_key];
             }
+
             if(isset($doc_info[self::SUMMARY_OFFSET]) && 
                 is_array($doc_info[self::SUMMARY_OFFSET])) {
                 $out_pages[$doc_key] = $doc_info;
@@ -473,6 +478,11 @@ class GroupIterator extends IndexBundleIterator
                         }
                         $out_pages[$doc_key][self::SUMMARY][self::DESCRIPTION].=
                             " .. ".$page[self::DESCRIPTION];
+                    }
+                    if(strlen($out_pages[$doc_key][
+                        self::SUMMARY][self::DESCRIPTION]) > 
+                        self::MIN_DESCRIPTION_LENGTH) {
+                        break;
                     }
                 }
             }
