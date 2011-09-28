@@ -211,7 +211,8 @@ class ArcTool implements CrawlConstants
         if(is_array($shards)) {
             $dbms_manager = DBMS."Manager";
             $db = new $dbms_manager();
-            $db->unlinkRecursive($path."/dictionary", true);
+            $db->unlinkRecursive($path."/dictionary", false);
+            IndexDictionary::makePrefixLetters($path."/dictionary");
             $dictionary = new IndexDictionary($path."/dictionary");
             $max_generation = 0;
             foreach($shards as $shard_name) {
