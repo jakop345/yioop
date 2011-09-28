@@ -33,6 +33,8 @@
  * @filesource
  */
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
+/** Don't display any query info*/
+define('NO_DEBUG_INFO', 0);
 /** bit of DEBUG_LEVEL used to indicate test cases should be displayable*/
 define('TEST_INFO', 1);
 /** bit of DEBUG_LEVEL used to indicate query statistics should be displayed*/
@@ -76,7 +78,7 @@ if(file_exists(WORK_DIRECTORY."/profile.php")) {
     /** @ignore */
     define('PROFILE', false);
     define('DBMS', 'sqlite3');
-    define('DEBUG_LEVEL', "NO_DEBUG_INFO");
+    define('DEBUG_LEVEL', NO_DEBUG_INFO);
     define('DB_NAME', "default");
     define('DB_USER', '');
     define('DB_PASSWORD', '');
