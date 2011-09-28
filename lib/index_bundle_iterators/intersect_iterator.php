@@ -51,7 +51,7 @@ require_once BASE_DIR.'/lib/index_bundle_iterators/index_bundle_iterator.php';
 class IntersectIterator extends IndexBundleIterator
 {
     /**
-     * An array of iterators whose interection we  get documents from
+     * An array of iterators whose intersection we  get documents from
      * @var array
      */
     var $index_bundle_iterators;

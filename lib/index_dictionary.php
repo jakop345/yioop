@@ -104,7 +104,7 @@ class IndexDictionary implements CrawlConstants
      * When merging two files on a given dictionary tier. This is the max number
      * of bytes to read in one go. (Must be divisible by WORD_ITEM_LEN)
      */
-     const SEGMENT_SIZE = 16777216;
+     const SEGMENT_SIZE = 20000000;
 
     /**
      * Size in bytes of one block in IndexDictionary
