@@ -188,8 +188,8 @@ class SearchController extends Controller implements CrawlConstants
                     list(,$query_activity,) = $this->extractActivityQuery();
                     if($query_activity != "query") {$highlight = false;}
                 }
-                $this->cacheRequest($query, $arg,
-                    $highlight, $index_time_stamp);
+                $this->cacheRequest($arg,
+                    $highlight, $query, $index_time_stamp);
             }
         }
 
@@ -213,6 +213,7 @@ class SearchController extends Controller implements CrawlConstants
         $data['ELAPSED_TIME'] = changeInMicrotime($start_time);
         $this->displayView($view, $data);
     }
+
 
     /**
      * Searches the database for the most relevant pages for the supplied search
@@ -342,6 +343,7 @@ class SearchController extends Controller implements CrawlConstants
 
     }
 
+
     /**
      * This method is responsible for parsing out the kind of query 
      * from the raw query string
@@ -385,21 +387,91 @@ class SearchController extends Controller implements CrawlConstants
     }
 
     /**
+     *  Used in rendering a cached web page to highlight the search terms.
+     * 
+     *  @param object $node DOM object to mark html elements of
+     *  @param array $words an array of words to be highlighted
+     *  @param object $dom a DOM object for the whole document
+     *  @return object the node modified to now have highlighting
+     */
+    function markChildren($node, $words, $dom)
+    {
+
+        if(!isset($node->childNodes->length)) {
+            return $node;
+        }
+        for($k = 0; $node->childNodes->length; $k++) 
+        {
+            if(!$node->childNodes->item($k)) { break; }
+            
+            $clone = $node->childNodes->item($k)->cloneNode(true);
+
+            if($clone->nodeType == XML_TEXT_NODE) { 
+                $text = $clone->textContent;
+
+                foreach($words as $word) {
+                    //only mark string of length at least 2
+                    if(strlen($word) > 1) {
+                        $mark_prefix = crawlHash($word);
+                        if(stristr($mark_prefix, $word) !== false) {
+                            $mark_prefix = preg_replace(
+                            "/$word/i", '', $mark_prefix);
+                        }
+                        $text = preg_replace(
+                            "/$word/i", $mark_prefix.'$0', $text);
+                    }
+                }
+
+                $textNode =  $dom->createTextNode($text);
+                $node->replaceChild($textNode, $node->childNodes->item($k));
+            } else {
+                $clone = $this->markChildren($clone, $words, $dom);
+
+                $node->replaceChild($clone, $node->childNodes->item($k));
+
+            }
+        }
+        
+        return $node;
+    }
+
+
+    /**
+     *
+     */
+    public function queryRequest($query, $results_per_page, $limit = 0)
+    {
+        return $this->processQuery($query, "query", "", $results_per_page, 
+            $limit);
+    }
+
+    /**
+     *
+     */
+    public function relatedRequest($url, $results_per_page, $limit = 0, 
+        $crawl_time = 0)
+    {
+        return $this->processQuery("", "related", $url, $results_per_page, 
+            $limit, $crawl_time);
+    }
+
+    /**
      * Used to get and render a cached web page
      *
-     * @param string $query the list of query terms
      * @param string $url the url of the page to find the cached version of
      * @param bool $highlight whether or not to highlight the query terms in
      *      the cached page
+     * @param string $terms the list of query terms
      * @param int $crawl_time the timestamp of the crawl to look up the cached
      *      page in
      */
-    function cacheRequest($query, $url, $highlight=true, $crawl_time = 0)
+    public function cacheRequest($url, $highlight=true, $terms ="", 
+        $crawl_time = 0)
     {
         global $CACHE;
 
         $hash_key = crawlHash(
-            $query.$url.serialize($highlight).serialize($crawl_time));
+            $terms.$url.serialize($highlight).serialize($crawl_time));
         if(USE_CACHE) {
             if($newDoc = $CACHE->get($hash_key)) {
                 echo $newDoc;
@@ -458,15 +530,15 @@ class SearchController extends Controller implements CrawlConstants
                 'index:', 'ip:', 'i:', 'weight:', 'w:', 'u:');
             foreach($meta_words as $meta_word) {
                 $pattern = "/(\s)($meta_word(\S)+)/";
-                $query = preg_replace($pattern, "", $query);
+                $terms = preg_replace($pattern, "", $terms);
             }
-            $query = str_replace("'", " ", $query);
-            $query = str_replace('"', " ", $query);
-            $query = str_replace('\\', " ", $query);
-            $query = str_replace('|', " ", $query);
-            $query = $this->clean($query, "string");
+            $terms = str_replace("'", " ", $terms);
+            $terms = str_replace('"', " ", $terms);
+            $terms = str_replace('\\', " ", $terms);
+            $terms = str_replace('|', " ", $terms);
+            $terms = $this->clean($terms, "string");
 
-            $phrase_string = mb_ereg_replace("[[:punct:]]", " ", $query); 
+            $phrase_string = mb_ereg_replace("[[:punct:]]", " ", $terms); 
             $words = mb_split(" ",$phrase_string);
             if(!$highlight) {
                 $words = array();
@@ -580,56 +652,5 @@ class SearchController extends Controller implements CrawlConstants
         echo $newDoc;
         exit();
     }
-
-
-    /**
-     *  Used in rendering a cached web page to highlight the search terms.
-     * 
-     *  @param object $node DOM object to mark html elements of
-     *  @param array $words an array of words to be highlighted
-     *  @param object $dom a DOM object for the whole document
-     *  @return object the node modified to now have highlighting
-     */
-    function markChildren($node, $words, $dom)
-    {
-
-        if(!isset($node->childNodes->length)) {
-            return $node;
-        }
-        for($k = 0; $node->childNodes->length; $k++) 
-        {
-            if(!$node->childNodes->item($k)) { break; }
-            
-            $clone = $node->childNodes->item($k)->cloneNode(true);
-
-            if($clone->nodeType == XML_TEXT_NODE) { 
-                $text = $clone->textContent;
-
-                foreach($words as $word) {
-                    //only mark string of length at least 2
-                    if(strlen($word) > 1) {
-                        $mark_prefix = crawlHash($word);
-                        if(stristr($mark_prefix, $word) !== false) {
-                            $mark_prefix = preg_replace(
-                            "/$word/i", '', $mark_prefix);
-                        }
-                        $text = preg_replace(
-                            "/$word/i", $mark_prefix.'$0', $text);
-                    }
-                }
-
-                $textNode =  $dom->createTextNode($text);
-                $node->replaceChild($textNode, $node->childNodes->item($k));
-            } else {
-                $clone = $this->markChildren($clone, $words, $dom);
-
-                $node->replaceChild($clone, $node->childNodes->item($k));
-
-            }
-        }
-        
-        return $node;
-    }
-
 }
 ?>

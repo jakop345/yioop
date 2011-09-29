@@ -38,6 +38,9 @@ define("BASE_DIR", substr(
     dirname(realpath($_SERVER['PHP_SELF'])), 0, 
     -strlen("/bin")));
 
+/** THis tool does not need logging*/
+define("LOG_TO_FILES", false);
+
 /** Load in global configuration settings */
 require_once BASE_DIR.'/configs/config.php';
 if(!PROFILE) {
@@ -63,6 +66,9 @@ require_once BASE_DIR."/lib/url_parser.php";
 
 /**  For crawlHash function */
 require_once BASE_DIR."/lib/utility.php";
+
+/** Get the database library based on the current database type */
+require_once BASE_DIR."/models/datasources/".DBMS."_manager.php";
 
 /** Loads common constants for web crawling*/
 require_once BASE_DIR."/lib/crawl_constants.php";
@@ -114,24 +120,35 @@ class ArcTool implements CrawlConstants
     {
         global $argv;
 
-        if(!isset($argv[1])) {
+        if(!isset($argv[1]) || (!isset($argv[2]) && $argv[1] != "list")) {
             $this->usageMessageAndExit();
+        }
+        if($argv[1] != "list") {
+            $path =  $bundle_name = UrlParser::getDocumentFilename($argv[2]);
+            if($path == $argv[2] && !file_exists($path)) {
+                $path = CRAWL_DIR."/cache/".$path;
+            }
         }
 
         switch($argv[1])
         {
-            case "info":
-                if(!isset($argv[2]) ) {
-                    $this->usageMessageAndExit();
-                }
-                $this->outputInfo($argv[2]);
+            case "list":
+                $this->outputArchiveList();
             break;
 
-            case "list":
-                if(!isset($argv[2]) || !isset($argv[3])) {
+            case "info":
+                $this->outputInfo($path);
+            break;
+
+            case "reindex":
+                $this->reindexIndexArchive($path);
+            break;
+
+            case "show":
+                if(!isset($argv[3])) {
                     $this->usageMessageAndExit();
                 }
-                $this->outputList($argv[2], $argv[3], $argv[4]);
+                $this->outputShowPages($path, $argv[3], $argv[4]);
             break;
 
             default:
@@ -139,6 +156,24 @@ class ArcTool implements CrawlConstants
         }
 
     }
+
+    /**
+     * Lists the Web or IndexArchives in the crawl directory
+     */
+     function outputArchiveList()
+     {
+        $pattern = CRAWL_DIR."/cache/{".self::archive_base_name.",".
+            self::index_data_base_name."}*";
+
+        $archives = glob($pattern, GLOB_BRACE);
+        if(is_array($archives)) {
+            foreach($archives as $archive_name) {
+                echo UrlParser::getDocumentFilename($archive_name)."\n";
+            }
+        } else {
+            echo "No archives currently in crawl directory \n";
+        }
+     }
 
     /**
      * Determines whether the supplied name is a WebArchiveBundle or
@@ -160,6 +195,46 @@ class ArcTool implements CrawlConstants
         $call = "outputInfo".$archive_type;
         $info = $archive_type::getArchiveInfo($archive_name);
         $this->$call($info, $archive_name);
+    }
+
+    /**
+     *
+     */
+    function reindexIndexArchive($path)
+    {
+        if($this->getArchiveKind($path) != "IndexArchiveBundle") {
+            echo "\n$path ...\n".
+                "  is not an IndexArchiveBundle so cannot be re-indexed\n\n";
+            exit();
+        }
+        $shards = glob($path."/posting_doc_shards/index*");
+        if(is_array($shards)) {
+            $dbms_manager = DBMS."Manager";
+            $db = new $dbms_manager();
+            $db->unlinkRecursive($path."/dictionary", false);
+            IndexDictionary::makePrefixLetters($path."/dictionary");
+            $dictionary = new IndexDictionary($path."/dictionary");
+            $max_generation = 0;
+            foreach($shards as $shard_name) {
+                $file_name = UrlParser::getDocumentFilename($shard_name);
+                $generation = (int)substr($file_name, strlen("index"));
+                $max_generation = max($max_generation, $generation);
+            }
+            for($i = 0; $i < $max_generation + 1; $i++) {
+                $shard_name = $path."/posting_doc_shards/index$i";
+                echo "\nShard $i\n";
+                $shard = new IndexShard($shard_name, $i,
+                    NUM_DOCS_PER_GENERATION, true);
+                $dictionary->addShardDictionary($shard);
+            }
+            echo "\nFinal Merge Tiers\n";
+            $dictionary->mergeAllTiers();
+            echo "\nReindex complete!!\n";
+        } else {
+            echo "\n$path ...\n".
+                "  does not contain posting shards so cannot be re-indexed\n\n";
+
+        }
     }
 
     /**
@@ -234,7 +309,7 @@ class ArcTool implements CrawlConstants
      * @param int $start first document to list
      * @param int $num number of documents to list
      */
-    function outputList($archive_name, $start, $num)
+    function outputShowPages($archive_name, $start, $num)
     {
         $fields_to_print = array(
             self::URL => "URL",
@@ -349,12 +424,17 @@ class ArcTool implements CrawlConstants
      */
     function usageMessageAndExit() 
     {
-        echo "arc_tool is used to look at the contents of";
-        echo " WebArchiveBundles and IndexArchiveBundles.\n For example,\n";
-        echo "php arc_tool.php info bundle_name //return info about ".
-            "documents stored in archive.\n";
-        echo "php arc_tool.php list bundle_name start num //outputs".
-            " items start through num from bundle_name\n";
+        echo "\narc_tool is used to look at the contents of\n";
+        echo "WebArchiveBundles and IndexArchiveBundles.\n";
+        echo "It will look for these using the path provided or \n";
+        echo "will check in the Yioop! crawl directory asa a fall back\n\n";
+        echo "The available commands for arc_tool are:\n\n";
+        echo "php arc_tool.php list //returns a list \n".
+            "//of all the archives in the Yioop! crawl directory.\n\n";
+        echo "php arc_tool.php info bundle_name //return info about\n".
+            "//documents stored in archive.\n\n";
+        echo "php arc_tool.php show bundle_name start num //outputs\n".
+            "//items start through num from bundle_name\n";
         exit();
     }
 }

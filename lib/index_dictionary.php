@@ -104,7 +104,7 @@ class IndexDictionary implements CrawlConstants
      * When merging two files on a given dictionary tier. This is the max number
      * of bytes to read in one go. (Must be divisible by WORD_ITEM_LEN)
      */
-     const SEGMENT_SIZE = 16777216;
+     const SEGMENT_SIZE = 20000000;
 
     /**
      * Size in bytes of one block in IndexDictionary
@@ -144,17 +144,24 @@ class IndexDictionary implements CrawlConstants
         $this->hash_name = crawlHash($dir_name);
         if(!is_dir($this->dir_name)) {
             mkdir($this->dir_name);
-            for($i = 0; $i < self::NUM_PREFIX_LETTERS; $i++) {
-                mkdir($this->dir_name."/$i");
-            }
+            IndexDictionary::makePrefixLetters($this->dir_name);
             $this->max_tier = 0;
-            file_put_contents($this->dir_name."/max_tier.txt", 
-                serialize($this->max_tier));
-
         } else {
             $this->max_tier = unserialize(
                 file_get_contents($this->dir_name."/max_tier.txt"));
         }
+    }
+
+    /**
+     *
+     */
+    static function makePrefixLetters($dir_name)
+    {
+        for($i = 0; $i < self::NUM_PREFIX_LETTERS; $i++) {
+            mkdir($dir_name."/$i");
+        }
+        file_put_contents($dir_name."/max_tier.txt", 
+            serialize(0));
     }
 
     /**
