@@ -255,10 +255,12 @@ class IntersectIterator extends IndexBundleIterator
      */
     function syncGenDocOffsetsAmongstIterators()
     {
-        $biggest_gen_offset = $this->index_bundle_iterators[
-                        0]->currentGenDocOffsetWithWord();
+        if(($biggest_gen_offset = $this->index_bundle_iterators[
+                        0]->currentGenDocOffsetWithWord()) == -1) {
+            return -1;
+        }
         $all_same = true; 
-        for($i = 0; $i < $this->num_iterators; $i++) {
+        for($i = 1; $i < $this->num_iterators; $i++) {
             $cur_gen_doc_offset = 
                 $this->index_bundle_iterators[
                     $i]->currentGenDocOffsetWithWord();
@@ -280,7 +282,7 @@ class IntersectIterator extends IndexBundleIterator
         }
         $last_changed = -1;
         $i = 0;
-        while($i != $last_changed) { 
+        while($i != $last_changed) {
             if($last_changed == -1) $last_changed = 0;
             if($this->genDocOffsetCmp($gen_doc_offset[$i], 
                 $biggest_gen_offset) < 0) { 
@@ -292,7 +294,6 @@ class IntersectIterator extends IndexBundleIterator
                 if($cur_gen_doc_offset == -1) {
                     return -1;
                 }
-
                 if($this->genDocOffsetCmp($cur_gen_doc_offset, 
                     $biggest_gen_offset) > 0) {
                     $last_changed = $i;
