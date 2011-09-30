@@ -334,6 +334,7 @@ class SearchController extends Controller implements CrawlConstants
         }
         $data['PAGES'] = (isset($phrase_results['PAGES'])) ?
              $phrase_results['PAGES']: array();
+
         $data['TOTAL_ROWS'] = (isset($phrase_results['TOTAL_ROWS'])) ? 
             $phrase_results['TOTAL_ROWS'] : 0;
         $data['LIMIT'] = $limit;

@@ -319,8 +319,11 @@ class WordIterator extends IndexBundleIterator
      *
      * @param int $generation generation to advance beyond
      */
-    function advanceGeneration($generation)
+    function advanceGeneration($generation = null)
     {
+        if($generation === null) {
+            $generation = $this->current_generation;
+        }
         do {
             if($this->generation_pointer < $this->num_generations) {
                 $this->generation_pointer++;

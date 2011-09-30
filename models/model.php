@@ -146,8 +146,12 @@ class Model implements CrawlConstants
                     $page[self::TITLE] = $page[self::URL];
                 }
             }
-
-
+            // do a little cleaning on text
+            $page[self::TITLE] = preg_replace('/[^(\x20-\x7F)]*/','',
+                 $page[self::TITLE]);
+            $page[self::DESCRIPTION] = preg_replace('/[^(\x20-\x7F)]*/','',
+                 $page[self::DESCRIPTION]);
+                 
             if($words != NULL) {
                 $page[self::TITLE] = 
                     $this->boldKeywords($page[self::TITLE], $words);
