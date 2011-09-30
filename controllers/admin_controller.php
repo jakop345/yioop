@@ -742,9 +742,11 @@ class AdminController extends Controller implements CrawlConstants
                     $info[self::RESTRICT_SITES_BY_URL] = 
                         $seed_info['general']['restrict_sites_by_url'];
                     $info[self::ALLOWED_SITES] = 
-                        $seed_info['allowed_sites']['url'];
+                        isset($seed_info['allowed_sites']['url']) ?
+                        $seed_info['allowed_sites']['url'] : array();
                     $info[self::DISALLOWED_SITES] = 
-                        $seed_info['disallowed_sites']['url'];
+                        isset($seed_info['disallowed_sites']['url']) ?
+                        $seed_info['disallowed_sites']['url'] : array();
                     $info[self::META_WORDS] = 
                         $seed_info['meta_words'];
                     if(isset($seed_info['indexing_plugins']['plugins'])) {

@@ -209,7 +209,7 @@ class PhraseModel extends Model
      */
     function getPhrasePageResults(
         $input_phrase, $low = 0, $results_per_page = NUM_RESULTS_PER_PAGE, 
-        $format = true, &$filter = NULL, $use_cache_if_allowed = true)
+        $format = true, $filter = NULL, $use_cache_if_allowed = true)
     {
         if(QUERY_STATISTICS) {
             $indent= "&nbsp;&nbsp;";

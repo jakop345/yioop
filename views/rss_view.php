@@ -75,18 +75,25 @@ class RssView extends View implements CrawlConstants
             <?php
             foreach($data['PAGES'] as $page) {?>
                 <item>
-                <title><?php  e(htmlentities(strip_tags($page[self::TITLE])));
+                <title><?php  e(strip_tags($page[self::TITLE]));
                     if(isset($page[self::TYPE])) {
                         $this->filetypeHelper->render($page[self::TYPE]);
                     }?></title>
+
                 <link><?php if(isset($page[self::TYPE]) 
                     && $page[self::TYPE] != "link") {
                         e($page[self::URL]); 
                     } else {
-                        e(htmlentities(strip_tags($page[self::TITLE])));
+                        e(strip_tags($page[self::TITLE]));
                     } ?></link>
                 <description><?php 
-                e(htmlentities(strip_tags($page[self::DESCRIPTION]))); 
+                e(strip_tags($page[self::DESCRIPTION]));
+                if(isset($page[self::THUMB]) 
+                    && $page[self::THUMB] != 'NULL') { 
+                    $img = "<img src='{$page[self::THUMB]}' ".
+                        "alt='Image' />";
+                    e(htmlentities($img));
+                }
                 ?></description>
                 </item>
 

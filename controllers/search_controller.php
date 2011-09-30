@@ -188,8 +188,9 @@ class SearchController extends Controller implements CrawlConstants
                     list(,$query_activity,) = $this->extractActivityQuery();
                     if($query_activity != "query") {$highlight = false;}
                 }
-                $this->cacheRequest($arg,
+                $this->cacheRequestAndOutput($arg,
                     $highlight, $query, $index_time_stamp);
+                return;
             }
         }
 
@@ -436,9 +437,18 @@ class SearchController extends Controller implements CrawlConstants
         return $node;
     }
 
-
+    //*********BEGIN SEARCH API *********
     /**
+     * Part of Yioop! Search API. Performs a normal search query and returns
+     * associative array of query results
      *
+     * @param string $query this can be any query string that could be
+     *      entered into the search bar on Yioop! (other than related: and 
+     *      cache: queries)
+     * @param int $results_per_page number of results to return
+     * @param int $limit first result to return from the ordered query results
+     *
+     * @return array associative array of results for the query performed
      */
     public function queryRequest($query, $results_per_page, $limit = 0)
     {
@@ -447,7 +457,15 @@ class SearchController extends Controller implements CrawlConstants
     }
 
     /**
+     * Part of Yioop! Search API. Performs a related to a given url 
+     * search query and returns associative array of query results
      *
+     * @param string $url to find related documents for
+     * @param int $results_per_page number of results to return
+     * @param int $limit first result to return from the ordered query results
+     *
+     * @return array associative array of results for the query performed
+
      */
     public function relatedRequest($url, $results_per_page, $limit = 0, 
         $crawl_time = 0)
@@ -456,6 +474,31 @@ class SearchController extends Controller implements CrawlConstants
             $limit, $crawl_time);
     }
 
+    /**
+     * Part of Yioop! Search API. Performs a related to a given url 
+     * search query and returns associative array of query results
+     *
+     * @param string $url to get cached page for
+     * @param bool $highlight whether to put the search terms in the page
+     *      in colored span tags.
+     * @param string $terms space separated list of search terms
+     * @param string $crawl_time timestamp of crawl to look for cached page in
+     *
+     * @return string with contents of cached page
+     */
+    public function cacheRequest($url, $highlight=true, $terms ="", 
+        $crawl_time = 0)
+    {
+        ob_start();
+        $this->cacheRequestAndOutput($url, $highlight, $terms, 
+            $crawl_time);
+        $cached_page = ob_get_contents();
+        ob_end_clean();
+        return $cached_page;
+    }
+    //*********END SEARCH API *********
+
+    
     /**
      * Used to get and render a cached web page
      *
@@ -466,7 +509,7 @@ class SearchController extends Controller implements CrawlConstants
      * @param int $crawl_time the timestamp of the crawl to look up the cached
      *      page in
      */
-    public function cacheRequest($url, $highlight=true, $terms ="", 
+   function cacheRequestAndOutput($url, $highlight=true, $terms ="", 
         $crawl_time = 0)
     {
         global $CACHE;
@@ -476,7 +519,7 @@ class SearchController extends Controller implements CrawlConstants
         if(USE_CACHE) {
             if($newDoc = $CACHE->get($hash_key)) {
                 echo $newDoc;
-                exit();
+                return;
             }
         }
 
@@ -492,9 +535,8 @@ class SearchController extends Controller implements CrawlConstants
         $data = array();
         if(!$crawl_item = $this->crawlModel->getCrawlItem($summary_offset, 
             $generation)) {
-
             $this->displayView("nocache", $data);
-            exit();
+            return;
         }
         $summary_string = wordwrap($crawl_item[self::TITLE], 80, "\n")."\n\n" .
             wordwrap($crawl_item[self::DESCRIPTION], 80, "\n")."\n\n".
@@ -508,7 +550,7 @@ class SearchController extends Controller implements CrawlConstants
         if(!isset($robot_table[$robot_instance])) {
             $data["SUMMARY_STRING"] = $summary_string;
             $this->displayView("nocache", $data);
-            exit();
+            return;
         }
         $machine = $robot_table[$robot_instance][0];
         $machine_uri = $robot_table[$robot_instance][1];
@@ -519,7 +561,7 @@ class SearchController extends Controller implements CrawlConstants
         if(!isset($cache_item[self::PAGE])) {
             $data["SUMMARY_STRING"] = $summary_string;
             $this->displayView("nocache", $data);
-            exit();
+            return;
         }
         $cache_file = $cache_item[self::PAGE];
 
@@ -651,7 +693,7 @@ class SearchController extends Controller implements CrawlConstants
         }
 
         echo $newDoc;
-        exit();
+        return;
     }
 }
 ?>
