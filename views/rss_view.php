@@ -75,7 +75,7 @@ class RssView extends View implements CrawlConstants
             <?php
             foreach($data['PAGES'] as $page) {?>
                 <item>
-                <title><?php  e(strip_tags($page[self::TITLE]));
+                <title><?php  e(htmlentities(strip_tags($page[self::TITLE])));
                     if(isset($page[self::TYPE])) {
                         $this->filetypeHelper->render($page[self::TYPE]);
                     }?></title>
