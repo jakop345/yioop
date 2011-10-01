@@ -93,7 +93,6 @@ class SearchController extends Controller implements CrawlConstants
         if(isset($_REQUEST['f']) && $_REQUEST['f']=='rss' &&
             RSS_ACCESS) {
             $view = "rss";
-            $this->activities = array("query");
         } else if (!WEB_ACCESS) {
             return;
         }
@@ -114,8 +113,7 @@ class SearchController extends Controller implements CrawlConstants
             }
         } else {
             $user = $_SERVER['REMOTE_ADDR']; 
-        } 
-
+        }
 
         if(isset($_REQUEST['a'])) {
             if(in_array($_REQUEST['a'], $this->activities)) {
@@ -296,6 +294,9 @@ class SearchController extends Controller implements CrawlConstants
                     $use_cache_if_possible);
                 $data['PAGING_QUERY'] = "index.php?c=search&a=related&arg=".
                     urlencode($url);
+                
+                $data['QUERY'] = urlencode($this->clean($data['QUERY'],
+                    "string"));
             break;
 
             case "query":
