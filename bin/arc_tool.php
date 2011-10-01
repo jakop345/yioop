@@ -435,6 +435,8 @@ class ArcTool implements CrawlConstants
             "//documents stored in archive.\n\n";
         echo "php arc_tool.php show bundle_name start num //outputs\n".
             "//items start through num from bundle_name\n";
+        echo "php arc_tool.php reindex bundle_name \n".
+            "//reindex the word dictionary in bundle_name\n";
         exit();
     }
 }
