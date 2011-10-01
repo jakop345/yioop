@@ -94,6 +94,10 @@ if ( false === function_exists('lcfirst') ) {
 
 $available_controllers = array("search", "fetch", "cache",
     "settings", "admin", "archive");
+if(!WEB_ACCESS) {
+$available_controllers = array("fetch", "cache",
+    "admin", "archive");
+}
 
 //the request variable c is used to determine the controller
 if(!isset($_REQUEST['c'])) {
@@ -104,7 +108,11 @@ if(!isset($_REQUEST['c'])) {
 
 if(!checkAllowedController($controller_name))
 {
-    $controller_name = "search";
+    if(WEB_ACCESS) {
+        $controller_name = "search";
+    } else {
+        $controller_name = "admin";
+    }
 }
 
 // if no profile exists we force the page to be the configuration page
@@ -162,7 +170,7 @@ function checkAllowedController($controller_name)
 {
     global $available_controllers;
 
-    return in_array($controller_name, $available_controllers);
+    return in_array($controller_name, $available_controllers) ;
 }
 
 /**

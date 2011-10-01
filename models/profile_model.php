@@ -55,7 +55,7 @@ class ProfileModel extends Model
             'QUEUE_SERVER', 'AUTH_KEY', "ROBOT_DESCRIPTION", 'WEB_URI',
             'USE_MEMCACHE', 'MEMCACHE_SERVERS', 'USE_FILECACHE', 'CACHE_LINK', 
             'SIMILAR_LINK', 'IN_LINK', 'IP_LINK', 'SIGNIN_LINK',
-            'ROBOT_INSTANCE');
+            'ROBOT_INSTANCE', "WEB_ACCESS", "RSS_ACCESS", "API_ACCESS");
     /**
      *  {@inheritdoc}
      */

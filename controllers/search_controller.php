@@ -90,9 +90,12 @@ class SearchController extends Controller implements CrawlConstants
     {
         $data = array();
         $view = "search";
-        if(isset($_REQUEST['f']) && $_REQUEST['f']=='rss') {
+        if(isset($_REQUEST['f']) && $_REQUEST['f']=='rss' &&
+            RSS_ACCESS) {
             $view = "rss";
             $this->activities = array("query");
+        } else if (!WEB_ACCESS) {
+            return;
         }
         $start_time = microtime();
 
@@ -452,8 +455,9 @@ class SearchController extends Controller implements CrawlConstants
      */
     public function queryRequest($query, $results_per_page, $limit = 0)
     {
-        return $this->processQuery($query, "query", "", $results_per_page, 
-            $limit);
+        return (API_ACCESS) ? 
+            $this->processQuery($query, "query", "", $results_per_page, 
+            $limit) : NULL;
     }
 
     /**
@@ -470,8 +474,9 @@ class SearchController extends Controller implements CrawlConstants
     public function relatedRequest($url, $results_per_page, $limit = 0, 
         $crawl_time = 0)
     {
-        return $this->processQuery("", "related", $url, $results_per_page, 
-            $limit, $crawl_time);
+        return (API_ACCESS) ? 
+            $this->processQuery("", "related", $url, $results_per_page, 
+            $limit, $crawl_time) : NULL;
     }
 
     /**
@@ -489,6 +494,7 @@ class SearchController extends Controller implements CrawlConstants
     public function cacheRequest($url, $highlight=true, $terms ="", 
         $crawl_time = 0)
     {
+        if(!API_ACCESS) return false;
         ob_start();
         $this->cacheRequestAndOutput($url, $highlight, $terms, 
             $crawl_time);
@@ -498,7 +504,6 @@ class SearchController extends Controller implements CrawlConstants
     }
     //*********END SEARCH API *********
 
-    
     /**
      * Used to get and render a cached web page
      *

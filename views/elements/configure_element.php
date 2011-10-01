@@ -129,6 +129,26 @@ class ConfigureElement extends Element
             </div>
             <div class="topmargin">
             <fieldset class="extrawidefield"><legend><?php 
+                e(tl('configure_element_site_access'))?></legend>
+                <label for="web-access"><input id='error-info' type="checkbox" 
+                    name="WEB_ACCESS" value="true" 
+                    <?php if( $data['WEB_ACCESS']==true){
+                        e("checked='checked'");}?> 
+                    /><?php e(tl('configure_element_web_access')); ?></label>
+                <label for="rss-access"><input id='rss-access' type="checkbox" 
+                    name="RSS_ACCESS" value="true" 
+                    <?php if($data['RSS_ACCESS']==true){
+                        e("checked='checked'");}?>/><?php 
+                        e(tl('configure_element_rss_access')); ?></label>
+                <label for="api-access"><input id='api-access' type="checkbox" 
+                    name="API_ACCESS" value="true" 
+                    <?php if($data['API_ACCESS'] == true){
+                        e("checked='checked'");}?>/><?php 
+                        e(tl('configure_element_api_access')); ?></label>
+            </fieldset>
+            </div>
+            <div class="topmargin">
+            <fieldset class="extrawidefield"><legend><?php 
                 e(tl('configure_element_database_setup'))?></legend>
                 <div ><label for="database-system"><b><?php 
                     e(tl('configure_element_database_system')); ?></b></label>
