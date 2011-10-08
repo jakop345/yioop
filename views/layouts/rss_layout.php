@@ -62,14 +62,17 @@ header("Content-type: application/rss+xml");
 xmlns:atom="http://www.w3.org/2005/Atom"
 >
     <channel>
-        <title><?php e(tl('rss_layout_title', urldecode($data['QUERY']))); 
+        <title><?php e(tl('rss_layout_title', 
+             mb_convert_encoding(html_entity_decode(
+             urldecode($data['QUERY'])), "UTF-8"))); 
         ?></title>
         <language><?php e(getLocaleTag()); ?></language>
         <link><?php e(QUEUE_SERVER);
         ?>?f=rss&amp;q=<?php e($data['QUERY']); ?>&amp;<?php
         ?>its=<?php e($data['its']); ?></link>
         <description><?php e(tl('rss_layout_description', 
-        urldecode($data['QUERY'])));?></description>
+        mb_convert_encoding(html_entity_decode(urldecode($data['QUERY'])),
+        "UTF-8")));?></description>
         <opensearch:totalResults><?php e($data['TOTAL_ROWS']); 
         ?></opensearch:totalResults>
         <opensearch:startIndex><?php e($data['LIMIT']); 

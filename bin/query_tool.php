@@ -114,7 +114,6 @@ class QueryTool implements CrawlConstants
         $start_time = microtime();
         $controller = new SearchController($INDEXING_PLUGINS);
         $data = $controller->queryRequest($query, $results_per_page, $limit);
-        print_r($data);
 
         foreach($data['PAGES'] as $page) {
             echo "============\n";

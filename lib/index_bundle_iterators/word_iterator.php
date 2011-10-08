@@ -291,10 +291,8 @@ class WordIterator extends IndexBundleIterator
         }
         if($gen_doc_offset !== null) {
             $last_current_generation = -1;
-            while($this->current_generation < $gen_doc_offset[0] &&  
-                  $last_current_generation != $this->current_generation) {
-                $this->advanceGeneration();
-                $last_current_generation = $this->current_generation;
+            if($this->current_generation < $gen_doc_offset[0]) {
+                $this->advanceGeneration($gen_doc_offset[0]);
                 $this->next_offset = $this->current_offset;
             }
             $this->index->setCurrentShard($this->current_generation, true);
@@ -318,18 +316,26 @@ class WordIterator extends IndexBundleIterator
     /**
      * Switches which index shard is being used to return occurences of
      * the nord to the next shard containing the word
+     *
+     * @param int $generation generation to advance beyond
      */
-    function advanceGeneration()
+    function advanceGeneration($generation = null)
     {
-        if($this->generation_pointer < $this->num_generations) {
-            $this->generation_pointer++;
+        if($generation === null) {
+            $generation = $this->current_generation;
         }
-        if($this->generation_pointer < $this->num_generations) {
-            list($this->current_generation, $this->start_offset, 
-                $this->last_offset, ) 
-                = $this->dictionary_info[$this->generation_pointer];
-            $this->current_offset = $this->start_offset;
-        }
+        do {
+            if($this->generation_pointer < $this->num_generations) {
+                $this->generation_pointer++;
+            }
+            if($this->generation_pointer < $this->num_generations) {
+                list($this->current_generation, $this->start_offset, 
+                    $this->last_offset, ) 
+                    = $this->dictionary_info[$this->generation_pointer];
+                $this->current_offset = $this->start_offset;
+            }
+       } while($this->current_generation < $generation &&
+            $this->generation_pointer < $this->num_generations);
     }
 
 
@@ -341,7 +347,8 @@ class WordIterator extends IndexBundleIterator
      *  and generation; -1 on fail
      */
     function currentGenDocOffsetWithWord() {
-        if($this->current_offset > $this->last_offset) {
+        if($this->current_offset > $this->last_offset ||
+            $this->generation_pointer >= $this->num_generations) {
             return -1;
         }
         $this->index->setCurrentShard($this->current_generation, true);

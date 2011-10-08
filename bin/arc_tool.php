@@ -271,8 +271,10 @@ class ArcTool implements CrawlConstants
             }
         }
         echo "Sites not allowed to be crawled:\n";
-        foreach($info[self::DISALLOWED_SITES] as $site) {
-            echo "   $site\n";
+        if(is_array($info[self::DISALLOWED_SITES])) {
+            foreach($info[self::DISALLOWED_SITES] as $site) {
+                echo "   $site\n";
+            }
         }
         echo "Meta Words:\n";
         foreach($info[self::META_WORDS] as $word) {
@@ -434,7 +436,9 @@ class ArcTool implements CrawlConstants
         echo "php arc_tool.php info bundle_name //return info about\n".
             "//documents stored in archive.\n\n";
         echo "php arc_tool.php show bundle_name start num //outputs\n".
-            "//items start through num from bundle_name\n";
+            "//items start through num from bundle_name\n\n";
+        echo "php arc_tool.php reindex bundle_name \n".
+            "//reindex the word dictionary in bundle_name\n";
         exit();
     }
 }

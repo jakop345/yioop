@@ -53,6 +53,12 @@ session_start();
  */
 require_once(BASE_DIR."/models/datasources/".DBMS."_manager.php");
 /**
+ * Load global functions related to localization
+ */
+require_once BASE_DIR."/locale_functions.php";
+
+
+/**
  * Load FileCache class in case used
  */
 require_once(BASE_DIR."/lib/file_cache.php");
@@ -88,6 +94,10 @@ if ( false === function_exists('lcfirst') ) {
 
 $available_controllers = array("search", "fetch", "cache",
     "settings", "admin", "archive");
+if(!WEB_ACCESS) {
+$available_controllers = array("fetch", "cache",
+    "admin", "archive");
+}
 
 //the request variable c is used to determine the controller
 if(!isset($_REQUEST['c'])) {
@@ -98,7 +108,11 @@ if(!isset($_REQUEST['c'])) {
 
 if(!checkAllowedController($controller_name))
 {
-    $controller_name = "search";
+    if(WEB_ACCESS) {
+        $controller_name = "search";
+    } else {
+        $controller_name = "admin";
+    }
 }
 
 // if no profile exists we force the page to be the configuration page
@@ -122,12 +136,6 @@ if(!isset($locale_tag)) {
     $locale_tag = DEFAULT_LOCALE;
 }
 
-
-/**
- * Used to contain information about the current language and regional settings
- */
-require_once BASE_DIR."/models/locale_model.php";
-
 if(upgradeLocaleCheck()) {
     upgradeLocale();
 }
@@ -138,7 +146,6 @@ if(upgradeDatabaseCheck()) {
 
 $locale = NULL;
 setLocaleObject($locale_tag);
-
 
 /**
  * Loads controller responsible for calculating
@@ -163,7 +170,7 @@ function checkAllowedController($controller_name)
 {
     global $available_controllers;
 
-    return in_array($controller_name, $available_controllers);
+    return in_array($controller_name, $available_controllers) ;
 }
 
 /**
@@ -176,110 +183,6 @@ function e($text)
     echo $text;
 }
 
-/**
- * Translate the supplied arguments into the current locale.
- * This function takes a variable number of arguments. The first
- * being an identifier to translate. Additional arguments
- * are used to interpolate values in for %s's in the translation.
- *
- * @param string string_identifier  identifier to be translated
- * @param mixed additional_args  used for interpolation in translated string
- * @return string  translated string
- */
-function tl()
-{
-    global $locale;
-
-    $args = func_get_args();
-
-    $translation = $locale->translate($args);
-    if($translation == "") {
-        $translation = $args[0];
-    }
-    return $translation;
-}
-
-/**
- * Sets the language to be used for locale settings
- *
- * @param string $locale_tag the tag of the language to use to determine
- *      locale settings
- */
-function setLocaleObject($locale_tag)
-{
-    global $locale;
-    $locale = new LocaleModel();
-    $locale->initialize($locale_tag);
-}
-
-/**
- * Gets the language tag (for instance, en_US for American English) of the
- * locale that is currently being used.
- *
- * @return string  the tag of the language currently being used for locale
- *      settings
- */
-function getLocaleTag()
-{
-    global $locale;
-    return $locale->getLocaleTag();
-}
-
-/**
- * Returns the current language directions.
- *
- * @return string ltr or rtl depending on if the language is left-to-right
- * or right-to-left
- */
-function getLocaleDirection()
-{
-    global $locale;
-    return $locale->getLocaleDirection();
-}
-
-/**
- * Returns the query statistics info for the current llocalt.
- *
- * @return array consisting of queries and elapses times for locale computations
- */
-function getLocaleQueryStatistics()
-{
-    global $locale;
-    $query_info = array();
-    $query_info['QUERY_LOG'] = $locale->db->query_log;
-    $query_info['TOTAL_ELAPSED_TIME'] = $locale->db->total_time;
-    return $query_info;
-}
-
-
-/**
- * Returns the current locales method of writing blocks (things like divs or
- * paragraphs).A language like English puts blocks one after another from the
- * top of the page to the bottom. Other languages like classical Chinese list
- * them from right to left.
- *
- *  @return string  tb lr rl depending on the current locales block progression
- */
-function getBlockProgression()
-{
-    global $locale;
-    return $locale->getBlockProgression();
-
-}
-
-/**
- * Returns the writing mode of the current locale. This is a combination of the
- * locale direction and the block progression. For instance, for English the
- * writing mode is lr-tb (left-to-right top-to-bottom).
- *
- *  @return string   the locales writing mode
- */
-function getWritingMode()
-{
-    global $locale;
-    return $locale->getWritingMode();
-
-}
 
 /**
  * Checks to see if the locale data of Yioop! in the work dir is older than the

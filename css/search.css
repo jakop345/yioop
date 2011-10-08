@@ -117,17 +117,17 @@ body.html-tb-lr
 .html-ltr .userNav
 {
     text-align: right;
-    margin:0;
+    margin:0 0.25in 0 0;
     padding:0;
-    min-width: 10in;	
+    min-width: 9in;
 }
 
 .html-rtl .userNav
 {
     text-align: left;
-    margin:0;
+    margin:0 0 0 0.25in;
     padding:0;
-    min-width: 10in;	
+    min-width: 9in;
 }
 
 .html-ltr .userNav ul li

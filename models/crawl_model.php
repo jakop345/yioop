@@ -46,6 +46,9 @@ require_once BASE_DIR."/lib/crawl_constants.php";
  */
 require_once BASE_DIR."/lib/index_archive_bundle.php";
 
+/** used to prevent cache page requests from being logged*/
+define("NO_LOGGING", true);
+
 /**
  * This is class is used to handle
  * db results for a given phrase search

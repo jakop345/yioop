@@ -374,6 +374,9 @@ function crawlLog($msg, $lname = NULL)
 {
     static $logname;
 
+    if(defined("NO_LOGGING")) {
+        return;
+    }
 
     if($lname != NULL)
     {

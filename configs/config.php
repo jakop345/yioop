@@ -79,6 +79,9 @@ if(file_exists(WORK_DIRECTORY."/profile.php")) {
     define('PROFILE', false);
     define('DBMS', 'sqlite3');
     define('DEBUG_LEVEL', NO_DEBUG_INFO);
+    define('WEB_ACCESS', true);
+    define('RSS_ACCESS', true);
+    define('API_ACCESS', true);
     define('DB_NAME', "default");
     define('DB_USER', '');
     define('DB_PASSWORD', '');
