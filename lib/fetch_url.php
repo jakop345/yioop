@@ -252,6 +252,10 @@ class FetchUrl implements CrawlConstants
             $new_offset = ($CRLFCRLF > 0) ? $header_offset + 4 
                 : $header_offset + 2;
             $redirect_pos = strpos($header_and_page, 'Location:', $old_offset);
+            if(isset($header_and_page[$redirect_pos - 1]) &&
+                ord($header_and_page[$redirect_pos - 1]) > 32) {
+                $redirect_pos = $new_offset; //ignore X-XRDS-Location header
+            }
         } while($redirect_pos !== false && $redirect_pos < $new_offset);
 
         $site = array();

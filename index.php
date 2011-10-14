@@ -57,7 +57,6 @@ require_once(BASE_DIR."/models/datasources/".DBMS."_manager.php");
  */
 require_once BASE_DIR."/locale_functions.php";
 
-
 /**
  * Load FileCache class in case used
  */
@@ -120,9 +119,29 @@ if(!PROFILE ) {
     $controller_name = "admin";
 }
 
-//the request variable l is used to determine the locale
-if(isset($_SESSION['l']) ||isset($_REQUEST['l'])) {
-    $l = (isset($_REQUEST['l'])) ? $_REQUEST['l'] : $_SESSION['l'];
+/* the request variable l and the browser's HTTP_ACCEPT_LANGUAGE
+   are used to determine the locale */
+if(isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
+    $l_parts = explode(",", $_SERVER['HTTP_ACCEPT_LANGUAGE']);
+    if(count($l_parts) > 0) {
+        $guess_l = $l_parts[0];
+    }
+    $guess_map = array(
+        "en" => "en-US",
+        "fr" => "fr-FR",
+        "in" => "in-ID",
+        "vi" => "vi-VN",
+        "zh" => "zh-CN"
+    );
+    if(isset($guess_map[$guess_l])) {
+        $guess_l = $guess_map[$guess_l];
+    }
+
+}
+
+if(isset($_SESSION['l']) || isset($_REQUEST['l']) || isset($guess_l)) {
+    $l = (isset($_REQUEST['l'])) ? $_REQUEST['l'] : 
+        ((isset($_SESSION['l'])) ? $_SESSION['l'] : $guess_l);
     if(strlen($l) < 10) {
         $l= addslashes($l);
         if(is_dir(LOCALE_DIR."/$l")) {

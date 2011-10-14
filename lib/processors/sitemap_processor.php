@@ -60,11 +60,12 @@ class SitemapProcessor extends TextProcessor
      *  @param string $page   web-page contents
      *  @param string $url   the url where the page contents came from,
      *     used to canonicalize relative links
+     *  @param string $encoding to say how to handle characters in doc
      *
      *  @return array a summary of the contents of the page
      *
      */
-    public function process($page, $url)
+    public function process($page, $url, $encoding)
     {
         $summary = NULL;
         if(is_string($page)) {
@@ -77,11 +78,11 @@ class SitemapProcessor extends TextProcessor
                 if(strlen($summary[self::DESCRIPTION] . $summary[self::TITLE])
                     == 0 && count($summary[self::LINKS]) == 0) {
                     //maybe not a sitemap? treat as text still try to get urls
-                    $summary = parent::process($page, $url);
+                    $summary = parent::process($page, $url, $encoding);
                 }
                 $summary[self::JUST_METAS] = true;
             } else {
-                $summary = parent::process($page, $url);
+                $summary = parent::process($page, $url, $encoding);
                 $summary[self::JUST_METAS] = true;
             }
         }

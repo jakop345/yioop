@@ -83,9 +83,10 @@ class UrlParser
      * Get the host name portion of a url if present; if not return false
      *
      * @param string $url the url to parse
+     * @param bool $with_login whether to include user,password,port if present
      * @return the host portion of the url if present; false otherwise
      */
-    static function getHost($url) 
+    static function getHost($url, $with_login_and_port = true) 
     {
         $url_parts = @parse_url($url);
 
@@ -105,7 +106,8 @@ class UrlParser
             }
         }
 
-        if(isset($url_parts['user']) && isset($url_parts['pass'])) {
+        if($with_login_and_port &&
+            isset($url_parts['user']) && isset($url_parts['pass'])) {
             $host_url .= $url_parts['user'].":".$url_parts['pass']."@";
         }
 
@@ -113,13 +115,116 @@ class UrlParser
 
         $host_url .= $url_parts['host'];
 
-        if(isset($url_parts['port'])) {
+        if($with_login_and_port && isset($url_parts['port'])) {
             $host_url .= ":".$url_parts['port'];
         }
 
         return $host_url;
-          
     }
+
+    /**
+     *  Attempts to guess the language tag based on url
+     *
+     *  @param string $url the url to parse
+     *  @return the top level domain if present; false otherwise
+     */
+    static function getLang($url) 
+    {
+        $LANG = array(
+            "com" => 'en',
+            "edu" => 'en',
+            "gov" => 'en',
+            "mil" => 'en',
+            "org" => 'en',
+            "net" => 'en',
+            "uk" => 'en',
+            "ca" => 'en',
+            "au" => 'en',
+            "bz" => 'en',
+            "ie" => 'en',
+            "jm" => 'en',
+            "nz" => 'en',
+            "za" => 'en',
+            "zw" => 'en',
+            "tt" => 'en',
+            "eg" => 'ar',
+            "dz" => 'ar',
+            "bh" => 'ar',
+            "jo" => 'ar',
+            "kw" => 'ar',
+            "lb" => 'ar',
+            "iq" => 'ar',
+            "ma" => 'ar',
+            "om" => 'ar',
+            "qa" => 'ar',
+            "sa" => 'ar',
+            "sy" => 'ar',
+            "tn" => 'ar',
+            "ae" => 'ar',
+            "ye" => 'ar',
+            "de" => 'de',
+            "at" => "de",
+            "es" => 'es',
+            "ar" => 'es',
+            "bo" => 'es',
+            "cl" => 'es',
+            "co" => 'es',
+            "cr" => 'es',
+            "dr" => 'es',
+            "ec" => 'es',
+            "sv" => 'es',
+            "gt" => 'es',
+            "hn" => 'es',
+            "mx" => 'es',
+            "ni" => 'es',
+            "pa" => 'es',
+            "py" => 'es',
+            "pe" => 'es',
+            "pr" => 'es',
+            "uy" => 'es',
+            "ve" => 'es',
+            "fr" => 'fr-FR',
+            "be" => 'fr-FR',
+            "lu" => 'fr-FR',
+            "hk" => 'zh-CN',
+            "id" => 'in-ID',
+            "il" => 'he',
+            "it" => 'it',
+            "jp" => 'ja',
+            "kp" => 'ko',
+            "kr" => 'ko',
+            "pl" => 'pl',
+            "br" => 'pt',
+            "pt" => 'pt',
+            "qc" => 'fr',
+            "ru" => 'ru',
+            "sg" => 'zh-CN',
+            "th" => 'th',
+            "tw" => 'zh-CN',
+            "vi" => 'vi-VN',
+            "cn" => 'zh-CN',
+        );
+
+        $host = self::getHost($url, false);
+        if(!$host) return false;
+        
+        $host_parts = explode(".", $host);
+        $count = count($host_parts);
+        if($count > 0) {
+            $tld = $host_parts[$count - 1];
+            if($tld == 'ca' && isset($host_parts[$count - 2]) &&
+                $host_parts[$count - 2] == 'qc') {
+                $tld = 'qc';
+            }
+            if(isset($LANG[$tld])) {
+                return $LANG[$tld];
+            }
+        }
+
+        return NULL;
+    }
+  
+
 
     /**
      *  Get the path portion of a url if present; if not return NULL

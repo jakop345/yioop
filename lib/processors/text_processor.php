@@ -39,6 +39,12 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 require_once BASE_DIR."/lib/processors/page_processor.php";
 
 /**
+ * So can extract parts of the URL if need to guess lang
+ */
+require_once BASE_DIR."/lib/url_parser.php";
+
+
+/**
  * Parent class common to all processors used to create crawl summary 
  * information  that involves basically text data
  *
@@ -57,12 +63,17 @@ class TextProcessor extends PageProcessor
      *      TextProcessor at this point. Some of its subclasses override
      *      this method and use url to produce complete links for
      *      relative links within a document
+     * @param string $encoding to say how to handle characters in doc
+     *
      * @return array a summary of (title, description,links, and content) of 
      *      the information in $page
      */
-    function process($page, $url)
+    function process($page, $url, $encoding)
     {
         $summary = NULL;
+        if($encoding != "UTF-8") {
+            $page = mb_convert_encoding($page, "UTF-8", $encoding);
+        }
         if(is_string($page)) {
             $summary[self::TITLE] = "";
             $summary[self::DESCRIPTION] = mb_substr($page, 0, 400);
@@ -78,13 +89,15 @@ class TextProcessor extends PageProcessor
 
     /**
      *  Tries to determine the language of the document by looking at the
-     *  $sample_text provided
+     *  $sample_text and $url provided
      *  the language
      *  @param string $sample_text sample text to try guess the language from
+     *  @param string $url url of web-page as a fallback look at the country
+     *      to figure out language
      *
      *  @return string language tag for guessed language
      */
-    static function calculateLang($sample_text = NULL)
+    static function calculateLang($sample_text = NULL, $url = NULL)
     {
         if($sample_text != NULL){
             $words = mb_split("[[:space:]]|".PUNCT, $sample_text);
@@ -104,6 +117,10 @@ class TextProcessor extends PageProcessor
         } else {
             $lang = NULL;
         }
+        if($lang == NULL && $url != NULL) {
+            $lang = UrlParser::getLang($url);
+        }
+
         return $lang;
     }
 

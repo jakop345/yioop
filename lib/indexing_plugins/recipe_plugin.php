@@ -100,16 +100,17 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
      *  @param string $page web-page contents
      *  @param string $url the url where the page contents came from,
      *     used to canonicalize relative links
+     *  @param string $encoding to say how to handle characters in doc
      *
      *  @return array consisting of a sequence of subdoc arrays found
      *      on the given page. Each subdoc array has a self::TITLE and
      *      a self::DESCRIPTION
      */
-    function pageProcessing($page, $url) 
+    function pageProcessing($page, $url, $encoding) 
     {
         $page = preg_replace('@<script[^>]*?>.*?</script>@si', ' ', $page);
         $page = preg_replace('/>/', '> ', $page);
-        $dom = HtmlProcessor::dom($page);
+        $dom = HtmlProcessor::dom($page, $encoding);
         if($dom == NULL) return NULL;
 
         $xpath = new DOMXPath($dom);

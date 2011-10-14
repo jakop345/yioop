@@ -71,10 +71,12 @@ class PptProcessor extends TextProcessor
      *      TextProcessor at this point. Some of its subclasses override
      *      this method and use url to produce complete links for
      *      relative links within a document
+     * @param string $encoding to say how to handle characters in doc
+     *
      * @return array a summary of (title, description,links, and content) of 
      *      the information in $page
      */
-    function process($page, $url)
+    function process($page, $url, $encoding)
     {
         $text = "";
         if(is_string($page)) {
@@ -168,7 +170,7 @@ class PptProcessor extends TextProcessor
             $text = $url;
         }
 
-        $summary = parent::process($text, $url);
+        $summary = parent::process($text, $url, $encoding);
 
         return $summary;
     }

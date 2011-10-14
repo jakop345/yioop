@@ -55,11 +55,12 @@ class DocProcessor extends TextProcessor
      *  @param string $page  the web-page contents
      *  @param string $url  the url where the page contents came from,
      *     used to canonicalize relative links
+     *  @param string $encoding to say how to handle characters in doc
      *
      *  @return array  a summary of the contents of the page
      *
      */
-    public function process($page, $url)
+    public function process($page, $url, $encoding)
     {
         $text = "";
         if(is_string($page)) {

@@ -913,10 +913,14 @@ class Fetcher implements CrawlConstants
             } else {
                 $processor = new $page_processor();
             }
+
             if(isset($site[self::PAGE])) {
                 crawlLog("  Using Processor...".$page_processor);
+                if(!isset($site[self::ENCODING])) {
+                    $site[self::ENCODING] = "UTF-8";
+                } 
                 $doc_info = $processor->handle($site[self::PAGE], 
-                    $site[self::URL]);
+                    $site[self::URL], $site[self::ENCODING]);
             } else {
                 $doc_info = false;
             }
@@ -936,9 +940,6 @@ class Fetcher implements CrawlConstants
                     } else {
                         $site[self::PAGE] = NULL;
                     }
-                }
-                if(!isset($site[self::ENCODING])) {
-                    $site[self::ENCODING] = "UTF-8";
                 }
 
                 $this->copySiteFields($i, $site, $summarized_site_pages, 

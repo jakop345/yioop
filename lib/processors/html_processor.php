@@ -65,27 +65,29 @@ class HtmlProcessor extends TextProcessor
      *  @return array  a summary of the contents of the page
      *
      */
-    function process($page, $url)
+    function process($page, $url, $encoding)
     {
         $summary = NULL;
 
         if(is_string($page)) {
-            $page = preg_replace('@<script[^>]*?>.*?</script>@si', ' ', $page);
             $page = preg_replace('/>/', '> ', $page);
-            $dom = self::dom($page);
+            $page = preg_replace('@<script[^>]*?>.*?</script>@si', 
+                ' ', $page);
+            $dom = self::dom($page, $encoding);
             if($dom !== false && self::checkMetaRobots($dom)) {
                 $summary[self::TITLE] = self::title($dom);
                 $summary[self::DESCRIPTION] = self::description($dom); 
                 $summary[self::LANG] = self::lang($dom, 
-                    $summary[self::DESCRIPTION]);
+                    $summary[self::DESCRIPTION], $url);
                 $summary[self::LINKS] = self::links($dom, $url);
                 $summary[self::PAGE] = $page;
-
                 if(strlen($summary[self::DESCRIPTION] . $summary[self::TITLE])
                     == 0 && count($summary[self::LINKS]) == 0) {
                     //maybe not html? treat as text still try to get urls
-                    $summary = parent::process($page, $url);
+                    $summary = parent::process($page, $url, $encoding);
                 }
+            } else if( $dom == false ) {
+                $summary = parent::process($page, $url, $encoding);
             }
         }
 
@@ -103,11 +105,30 @@ class HtmlProcessor extends TextProcessor
      *
      *  @return object  document object
      */
-    static function dom($page) 
+    static function dom($page, $encoding) 
     {
+        /* 
+             first do a crube check to see if we have at least an <html> tag
+             otherwise fall back to text processing
+         */
+        if(!stristr($page, "<html")) {
+            $head_tags = "<title><meta><base>";
+            $head = strip_tags($page, $head_tags);
+            $body_tags = "<frameset><frame>".
+                "<h1><h2><h3><h4><h5><h6><p><div>".
+                "<a><table><tr><td><th>";
+            $body = strip_tags($page, $body_tags);
+            $page = "<html><head>$head</head><body>$body</body>";
+        }
         $dom = new DOMDocument();
 
-        @$dom->loadHTML($page);
+        //this hack modified from php.net
+        @$dom->loadHTML('<?xml encoding="'.$encoding.'">' . $page);
+
+        foreach ($dom->childNodes as $item)
+        if ($item->nodeType == XML_PI_NODE)
+            $dom->removeChild($item); // remove hack
+        $dom->encoding = $encoding; // insert proper
 
         return $dom;
     }
@@ -146,10 +167,12 @@ class HtmlProcessor extends TextProcessor
      *
      *  @param object $dom  a document object to check the language of
      *  @param string $sample_text sample text to try guess the language from
+     *  @param string $url url of web-page as a fallback look at the country
+     *      to figure out language
      *
      *  @return string language tag for guessed language
      */
-    static function lang($dom, $sample_text = NULL)
+    static function lang($dom, $sample_text = NULL, $url = NULL)
     {
 
         $htmls = $dom->getElementsByTagName("html");
@@ -161,23 +184,8 @@ class HtmlProcessor extends TextProcessor
             }
         }
 
-        if($lang == NULL && $sample_text != NULL){
-            $words = mb_split("[[:space:]]|".PUNCT, $sample_text);
-            $num_words = count($words);
-            $ascii_count = 0;
-            foreach($words as $word) {
-                if(strlen($word) == mb_strlen($word)) {
-                    $ascii_count++;
-                }
-            }
-            // crude, but let's guess ASCII == english
-            if($ascii_count/$num_words > EN_RATIO) {
-                $lang = 'en';
-            } else {
-                $lang = NULL;
-            }
-        } else {
-            $lang = NULL;
+        if($lang == NULL){
+            $lang = self::calculateLang($sample_text, $url);
         }
         return $lang;
     }

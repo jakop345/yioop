@@ -52,7 +52,7 @@ class PngProcessor extends ImageProcessor
     /**
      * {@inheritdoc}
      */
-    function process($page, $url)
+    function process($page, $url, $encoding)
     {
        if(is_string($page)) {
             file_put_contents(CRAWL_DIR."/cache/tmp.png", $page); 

@@ -81,15 +81,16 @@ abstract class PageProcessor implements CrawlConstants
      *
      * @param string $page string of a web document
      * @param string $url location the document came from
+     * @param string $encoding to say how to handle characters in doc
      *
      * @return array a summary of (title, description,links, and content) of 
      *      the information in $page also has a subdocs array containing any
      *      subdocuments returned from a plugin. A subdocumenst might be 
      *      things like recipes that appeared in a page or tweets, etc.
      */
-    function handle($page, $url)
+    function handle($page, $url, $encoding)
     {
-        $summary = $this->process($page, $url);
+        $summary = $this->process($page, $url, $encoding);
         if($summary != NULL && isset($this->indexing_plugins) &&
             is_array($this->indexing_plugins) ) {
             $summary[self::SUBDOCS] = array();
@@ -98,7 +99,8 @@ abstract class PageProcessor implements CrawlConstants
                 $plugin_instance_name = 
                     lcfirst($plugin);
                 $subdocs_description = 
-                    $this->$plugin_instance_name->pageProcessing($page, $url);
+                    $this->$plugin_instance_name->pageProcessing($page, $url, 
+                        $encoding);
                 if(is_array($subdocs_description) 
                     && count($subdocs_description) != 0) {
                     foreach($subdocs_description as $subdoc_description) {
@@ -125,11 +127,12 @@ abstract class PageProcessor implements CrawlConstants
      *
      * @param string $page string of a document
      * @param string $url location the document came from
+     * @param string $encoding to say how to handle characters in doc
      *
      * @return array a summary of (title, description,links, and content) of 
      *      the information in $page
      */
-    abstract function process($page, $url);
+    abstract function process($page, $url, $encoding);
 }
 
 ?>

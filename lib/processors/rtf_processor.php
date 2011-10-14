@@ -54,11 +54,13 @@ class RtfProcessor extends TextProcessor
      *
      * @param string $page rtf string of a document
      * @param string $url location the document came from, not used by 
-     *      RTFProcessor at this point. 
+     *      RTFProcessor at this point.
+     * @param string $encoding to say how to handle characters in doc
+     *
      * @return array a summary of (title, description,links, and content) of 
      *      the information in $page
      */
-    function process($page, $url)
+    function process($page, $url, $encoding)
     {
         $text = "";
         if(is_string($page)) {
@@ -69,7 +71,7 @@ class RtfProcessor extends TextProcessor
             $text = $url;
         }
 
-        $summary = parent::process($text, $url);
+        $summary = parent::process($text, $url, $encoding);
 
         return $summary;
     

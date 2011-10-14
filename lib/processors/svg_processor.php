@@ -75,11 +75,12 @@ class SvgProcessor extends TextProcessor
      *  @param string $page   web-page contents
      *  @param string $url   the url where the page contents came from,
      *     used to canonicalize relative links
+     *  @param string $encoding to say how to handle characters in doc
      *
      *  @return array  a summary of the contents of the page
      *
      */
-    public function process($page, $url)
+    public function process($page, $url, $encoding)
     {
 
         if(is_string($page)) {
@@ -100,7 +101,7 @@ class SvgProcessor extends TextProcessor
                         base64_encode($thumb_string);
                 }
             }else {
-                $summary = parent::process($page, $url);
+                $summary = parent::process($page, $url, $encoding);
             }
         }
         return $summary;

@@ -934,8 +934,12 @@ class AdminController extends Controller implements CrawlConstants
                                 $this->convertStringCleanUrlsArray(
                                 $_REQUEST[$type]);
                         }
-                        $data[$type] = $this->convertArrayCleanLines(
-                            $seed_info[$type]['url']);
+                        if(isset($seed_info[$type]['url'])) {
+                            $data[$type] = $this->convertArrayCleanLines(
+                                $seed_info[$type]['url']);
+                        } else {
+                            $data[$type] = "";
+                        }
                     }
                     $data['TOGGLE_STATE'] = 
                         ($data['restrict_sites_by_url']) ? 

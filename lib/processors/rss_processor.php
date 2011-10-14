@@ -66,7 +66,7 @@ class RssProcessor extends TextProcessor
      *  @return array  a summary of the contents of the page
      *
      */
-    function process($page, $url)
+    function process($page, $url, $encoding)
     {
         $summary = NULL;
         if(is_string($page)) {
@@ -81,7 +81,7 @@ class RssProcessor extends TextProcessor
                 if(strlen($summary[self::DESCRIPTION] . $summary[self::TITLE])
                     == 0 && count($summary[self::LINKS]) == 0) {
                     //maybe not rss? treat as text still try to get urls
-                    $summary = parent::process($page, $url);
+                    $summary = parent::process($page, $url, $encoding);
                 }
             }
         }
@@ -95,33 +95,19 @@ class RssProcessor extends TextProcessor
      *
      *  @param object $dom - a document object to check the language of
      *  @param string $sample_text sample text to try guess the language from
+     *  @param string $encoding to say how to handle characters in doc
      *
      *  @return string language tag for guessed language
      */
-    static function lang($dom, $sample_text = NULL)
+    static function lang($dom, $sample_text = NULL, $url = NULL)
     {
         $xpath = new DOMXPath($dom);
         $languages = $xpath->evaluate("/rss/channel/language");
         if($languages && is_object($languages) && 
             is_object($languages->item(0))) {
             return $languages->item(0)->textContent;
-        } else if($sample_text != NULL){
-            $words = mb_split("[[:space:]]|".PUNCT, $sample_text);
-            $num_words = count($words);
-            $ascii_count = 0;
-            foreach($words as $word) {
-                if(strlen($word) == mb_strlen($word)) {
-                    $ascii_count++;
-                }
-            }
-            // crude, but let's guess ASCII == english
-            if($ascii_count/$num_words > EN_RATIO) {
-                $lang = 'en';
-            } else {
-                $lang = NULL;
-            }
         } else {
-            $lang = NULL;
+            $lang = self::calculateLang($sample_text, $url);
         }
         return $lang;
     }
