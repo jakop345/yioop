@@ -703,7 +703,7 @@ class Fetcher implements CrawlConstants
     }
 
     /**
-     *
+     * @param array &$info
      */
     function setCrawlParamsFromArray(&$info)
     {

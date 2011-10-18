@@ -100,9 +100,19 @@ class GroupIterator extends IndexBundleIterator
     var $grouped_hashes;
 
     /**
+     * Used to keep track and to weight pages based on the number of other
+     * pages from the same domain
      * @var array
      */
     var $domain_factors;
+
+    /**
+     * Flag used to tell group iterator whether to do a usual grouping
+     * or to only look-up parent pages for links for which a parent page
+     * hasn't been seen
+     * @var bool
+     */
+    var $only_lookup;
 
     /**
      * the minimum number of pages to group from a block;
@@ -121,15 +131,21 @@ class GroupIterator extends IndexBundleIterator
      * @param object $index_bundle_iterator to use as a source of documents
      *      to iterate over
      */
-    function __construct($index_bundle_iterator, $num_iterators = 1)
+    function __construct($index_bundle_iterator, $num_iterators = 1, 
+        $only_lookup = false)
     {
         $this->index_bundle_iterator = $index_bundle_iterator;
         $this->num_docs = $this->index_bundle_iterator->num_docs;
-        $this->results_per_block = max(
-            $this->index_bundle_iterator->results_per_block,
-            self::MIN_FIND_RESULTS_PER_BLOCK);
-
-        $this->results_per_block /=  ceil($num_iterators/2);
+        if($only_lookup) {
+            $this->results_per_block = 
+                $this->index_bundle_iterator->results_per_block;
+        } else {
+            $this->results_per_block = max(
+                $this->index_bundle_iterator->results_per_block,
+                self::MIN_FIND_RESULTS_PER_BLOCK);
+            $this->results_per_block /=  ceil($num_iterators/2);
+        }
+        $this->only_lookup = $only_lookup;
         $this->reset();
     }
 
@@ -179,21 +195,28 @@ class GroupIterator extends IndexBundleIterator
         $this->current_block_hashes = array();
         $this->current_seen_hashes = array();
         if($this->count_block_unfiltered > 0 ) {
-            /* next we group like documents by url and remember which urls we've
-               seen this block
-            */
+            if($this->only_lookup) {
 
-            $pre_out_pages = $this->groupByHashUrl($pages);
+                $pages = $this->insertUnseenDocs($pages);
+                $this->count_block = count($pages);
+            } else {
+                /* next we group like documents by url and remember 
+                   which urls we've seen this block
+                */
 
-           /*get doc page for groups of link data if exists and don't have
-             also aggregate by hash
-           */
-           $this->groupByHashAndAggregate($pre_out_pages);
-           $this->count_block = count($pre_out_pages);
-            /*
-                Calculate aggregate values for each field of the groups we found
-             */
-            $pages = $this->computeOutPages($pre_out_pages);
+                $pre_out_pages = $this->groupByHashUrl($pages);
+
+               /*get doc page for groups of link data if exists and don't have
+                 also aggregate by hash
+               */
+               $this->groupByHashAndAggregate($pre_out_pages);
+               $this->count_block = count($pre_out_pages);
+                /*
+                    Calculate aggregate values for each field of the groups we 
+                    found
+                 */
+                $pages = $this->computeOutPages($pre_out_pages);
+            }
         }
         $this->pages = $pages;
         return $pages;
@@ -293,44 +316,24 @@ class GroupIterator extends IndexBundleIterator
     {
         $domain_vector = array();
         foreach($pre_out_pages as $hash_url => $data) {
-            if(!$pre_out_pages[$hash_url][0][self::IS_DOC]) {
-                $hash_info_url=
-                    crawlHash("info:".base64Hash($hash_url), true);
-                $index = $this->getIndex($pre_out_pages[$hash_url][0]['KEY']);
-                $word_iterator =
-                     new WordIterator($hash_info_url,
-                        $index, true);
-                $doc_array = $word_iterator->currentDocsWithWord();
-                if(is_array($doc_array) && count($doc_array) == 1) {
-                    $relevance =  $this->computeRelevance(
-                        $word_iterator->current_generation,
-                        $word_iterator->current_offset);
-                    $keys = array_keys($doc_array);
-                    $key = $keys[0];
-                    $item = $doc_array[$key];
-                    $item[self::RELEVANCE] = $relevance;
-                    $item[self::SCORE] += $relevance;
-                    $item['KEY'] = $key;
-                    $item['INDEX'] = $word_iterator->index;
-                    $item[self::HASH] = substr($key,
-                        IndexShard::DOC_KEY_LEN, IndexShard::DOC_KEY_LEN);
-                    $item[self::INLINKS] = substr($key,
-                        2*IndexShard::DOC_KEY_LEN, IndexShard::DOC_KEY_LEN);
+            if(!$data[0][self::IS_DOC]) {
+                $item = $this->lookupDoc($data[0]['KEY']);
+                if($item != false) {
                     array_unshift($pre_out_pages[$hash_url], $item);
                 }
             }
 
             $this->aggregateScores($hash_url, $pre_out_pages[$hash_url]);
 
-            if(isset($pre_out_pages[$hash_url][0][self::HASH])) {
-                $hash = $pre_out_pages[$hash_url][0][self::HASH];
+            if(isset($pre_out_pages[$hash_url][self::HASH])) {
+                $hash = $pre_out_pages[$hash_url][self::HASH];
                 if(isset($this->grouped_hashes[$hash])) {
                     unset($pre_out_pages[$hash_url]);
                 } else if(isset($this->current_seen_hashes[$hash])) {
                     $previous_url = $this->current_seen_hashes[$hash];
                     if($pre_out_pages[$previous_url][0][
                         self::HASH_SUM_SCORE] >= 
-                        $pre_out_pages[$hash_url][0][self::HASH_SUM_SCORE]) {
+                        $pre_out_pages[$hash_url][0][self::HASH_SUM_SCORE]){
                         unset($pre_out_pages[$hash_url]);
                     } else {
                         $this->current_seen_hashes[$hash] = $hash_url;
@@ -342,6 +345,109 @@ class GroupIterator extends IndexBundleIterator
             }
         }
     }
+
+    /**
+     * Looks up a doc for a link doc_key, so can get its summary info
+     *
+     * @param string $doc_key key to look up doc of
+     * 
+     * @return array consisting of info about the doc
+     */
+     function lookupDoc($doc_key)
+     {
+        $hash_url = substr($doc_key, 0, IndexShard::DOC_KEY_LEN);
+        $hash_info_url=
+            crawlHash("info:".base64Hash($hash_url), true);
+        $index = $this->getIndex($doc_key);
+        $word_iterator =
+             new WordIterator($hash_info_url,
+                $index, true);
+        $doc_array = $word_iterator->currentDocsWithWord();
+        $item = false;
+        if(is_array($doc_array) && count($doc_array) == 1) {
+            $relevance =  $this->computeRelevance(
+                $word_iterator->current_generation,
+                $word_iterator->current_offset);
+            $keys = array_keys($doc_array);
+            $key = $keys[0];
+            $item = $doc_array[$key];
+            $item[self::RELEVANCE] = $relevance;
+            $item[self::SCORE] = $item[self::DOC_RANK]*pow(1.1, $relevance);
+            $item['KEY'] = $key;
+            $item['INDEX'] = $word_iterator->index;
+            $item[self::HASH] = substr($key,
+                IndexShard::DOC_KEY_LEN, IndexShard::DOC_KEY_LEN);
+            $item[self::INLINKS] = substr($key,
+                2*IndexShard::DOC_KEY_LEN, IndexShard::DOC_KEY_LEN);
+        }
+        return $item;
+     }
+
+    /**
+     *  This function is called if $raw mode 1 was requested. In this
+     *  mode no grouping is done, but it a link does not correspond to
+     *  a doc file already listed, then an attempt to look up the doc is
+     *  done
+     *
+     *  @param array $pages an array of links or docs returned by the
+     *     iterator that had been fed into this group iterator
+     *
+     *  @return array new pages where docs have been added if possible
+     */
+     function insertUnseenDocs($pages)
+     {
+        $new_pages = array();
+        $doc_keys = array_keys($pages);
+        $need_docs = array();
+        foreach($doc_keys as $key) {
+           $hash_url = substr($key, 0, IndexShard::DOC_KEY_LEN);
+           $need_docs[$hash_url] = $key;
+        }
+        $need_docs = array_diff_key($need_docs, $this->grouped_keys);
+        foreach($pages as $doc_key => $doc_info) {
+            $doc_info['KEY'] = $doc_key;
+            $hash_url = substr($doc_key, 0, IndexShard::DOC_KEY_LEN);
+            $doc_info[self::HASH] = substr($doc_key, 
+                IndexShard::DOC_KEY_LEN, IndexShard::DOC_KEY_LEN);
+            // inlinks is the domain of the inlink
+            $doc_info[self::INLINKS] = substr($doc_key, 
+                2 * IndexShard::DOC_KEY_LEN, IndexShard::DOC_KEY_LEN);
+            $new_pages[$doc_key] = $doc_info;
+            if($doc_info[self::IS_DOC]) {
+                if(isset($need_docs[$hash_url])) {
+                    unset($need_docs[$hash_url]);
+                }
+            }
+            if(!isset($this->grouped_keys[$hash_url])) {
+                /*
+                    new url found in this block
+                */
+                $this->current_block_hashes[] = $hash_url;
+            }
+        }
+
+        $item_pages = array();
+        if(is_array($need_docs)) {
+            $need_docs = array_unique($need_docs);
+            foreach($need_docs as $hash_url => $doc_key) {
+                $item = $this->lookupDoc($doc_key);
+                if($item != false) {
+                    $item_pages[$hash_url] = $item;
+                }
+            }
+        }
+
+        $new_pages = array_merge($new_pages, $item_pages);
+        
+        foreach($new_pages as $doc_key => $doc_info) {
+            $new_pages[$doc_key][self::SUMMARY_OFFSET] = array();
+            $new_pages[$doc_key][self::SUMMARY_OFFSET][] = 
+                array($doc_info["KEY"], $doc_info[self::GENERATION],
+                        $doc_info[self::SUMMARY_OFFSET]);
+        }
+
+        return $new_pages;
+     }
 
     /**
      * For a collection of grouped pages generates a grouped summary for each

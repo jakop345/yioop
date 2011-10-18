@@ -90,13 +90,19 @@ class SearchController extends Controller implements CrawlConstants
     {
         $data = array();
         $view = "search";
+        $start_time = microtime();
+
         if(isset($_REQUEST['f']) && $_REQUEST['f']=='rss' &&
             RSS_ACCESS) {
             $view = "rss";
         } else if (!WEB_ACCESS) {
             return;
         }
-        $start_time = microtime();
+        if(isset($_REQUEST['raw']) && $_REQUEST['raw'] == true) {
+            $raw = true;
+        } else {
+            $raw = false;
+        }
 
         if(isset($_SESSION['MAX_PAGES_TO_SHOW']) ) {
             $results_per_page = $_SESSION['MAX_PAGES_TO_SHOW'];
@@ -180,7 +186,7 @@ class SearchController extends Controller implements CrawlConstants
                 $data = 
                     $this->processQuery(
                         $query, $activity, $arg, 
-                        $results_per_page, $limit, $index_time_stamp); 
+                        $results_per_page, $limit, $index_time_stamp, $raw); 
                         // calculate the results of a search if there is one
             } else {
                 $highlight = true;
@@ -236,10 +242,14 @@ class SearchController extends Controller implements CrawlConstants
      *      for those query terms will be return, then the eleventh, etc.
      * @param int $index_name the timestamp of an index to use, if 0 then 
      *      default used
+     * @param int $raw ($raw == 0) normal grouping, ($raw == 1)
+     *      no grouping but page look-up for links, ($raw == 2) 
+     *      no grouping done on data
+     *
      * @return array an array of at most results_per_page many search results
      */
     function processQuery($query, $activity, $arg, $results_per_page, 
-        $limit = 0, $index_name = 0) 
+        $limit = 0, $index_name = 0, $raw = 0) 
     {
         $no_index_given = false;
         if($index_name == 0) {
@@ -291,7 +301,7 @@ class SearchController extends Controller implements CrawlConstants
                 $top_query = implode(" ", $top_phrases);
                 $phrase_results = $this->phraseModel->getPhrasePageResults(
                     $top_query, $limit, $results_per_page, false, NULL,
-                    $use_cache_if_possible);
+                    $use_cache_if_possible, $raw);
                 $data['PAGING_QUERY'] = "index.php?c=search&a=related&arg=".
                     urlencode($url);
                 
@@ -329,7 +339,7 @@ class SearchController extends Controller implements CrawlConstants
                     $filter = $this->searchfiltersModel->getFilter();
                     $phrase_results = $this->phraseModel->getPhrasePageResults(
                         $query, $limit, $results_per_page, true, $filter,
-                        $use_cache_if_possible);
+                        $use_cache_if_possible, $raw);
                     $query = $original_query;
                 }
                 $data['PAGING_QUERY'] = "index.php?q=".urlencode($query);
@@ -451,14 +461,18 @@ class SearchController extends Controller implements CrawlConstants
      *      cache: queries)
      * @param int $results_per_page number of results to return
      * @param int $limit first result to return from the ordered query results
+     * @param int $raw ($raw == 0) normal grouping, ($raw == 1)
+     *      no grouping but page look-up for links, ($raw == 2) 
+     *      no grouping done on data
      *
      * @return array associative array of results for the query performed
      */
-    public function queryRequest($query, $results_per_page, $limit = 0)
+    public function queryRequest($query, $results_per_page, $limit = 0, 
+        $raw = 0)
     {
         return (API_ACCESS) ? 
             $this->processQuery($query, "query", "", $results_per_page, 
-            $limit) : NULL;
+                $limit, $raw) : NULL;
     }
 
     /**
@@ -468,16 +482,18 @@ class SearchController extends Controller implements CrawlConstants
      * @param string $url to find related documents for
      * @param int $results_per_page number of results to return
      * @param int $limit first result to return from the ordered query results
+     * @param int $raw ($raw == 0) normal grouping, ($raw == 1)
+     *      no grouping but page look-up for links, ($raw == 2) 
+     *      no grouping done on data
      *
      * @return array associative array of results for the query performed
-
      */
     public function relatedRequest($url, $results_per_page, $limit = 0, 
-        $crawl_time = 0)
+        $crawl_time = 0, $raw = 0)
     {
         return (API_ACCESS) ? 
             $this->processQuery("", "related", $url, $results_per_page, 
-            $limit, $crawl_time) : NULL;
+                $limit, $crawl_time, $raw) : NULL;
     }
 
     /**

@@ -205,11 +205,16 @@ class PhraseModel extends Model
      *      an attempt will be made to look up the results in either
      *      the file cache or memcache. Otherwise, items will be recomputed
      *      and then potentially restored in cache
+     * @param int $raw ($raw == 0) normal grouping, ($raw == 1)
+     *      no grouping but page look-up for links, ($raw == 2) 
+     *      no grouping done on data
+     *
      * @return array an array of summary data
      */
     function getPhrasePageResults(
         $input_phrase, $low = 0, $results_per_page = NUM_RESULTS_PER_PAGE, 
-        $format = true, $filter = NULL, $use_cache_if_allowed = true)
+        $format = true, $filter = NULL, $use_cache_if_allowed = true,
+        $raw = 0)
     {
         if(QUERY_STATISTICS) {
             $indent= "&nbsp;&nbsp;";
@@ -328,7 +333,7 @@ class PhraseModel extends Model
             }
 
             $out_results = $this->getSummariesByHash($word_structs, 
-                $low, $phrase_num, $filter, $use_cache_if_allowed);
+                $low, $phrase_num, $filter, $use_cache_if_allowed, $raw);
 
             if(isset($out_results['PAGES']) && 
                 count($out_results['PAGES']) != 0) {
@@ -684,10 +689,14 @@ class PhraseModel extends Model
      *      an attempt will be made to look up the results in either
      *      the file cache or memcache. Otherwise, items will be recomputed
      *      and then potentially restored in cache
+     * @param int $raw ($raw == 0) normal grouping, ($raw == 1)
+     *      no grouping but page look-up for links, ($raw == 2) 
+     *      no grouping done on data
+     *
      * @return array document summaries
      */
     function getSummariesByHash($word_structs, $limit, $num, &$filter,
-        $use_cache_if_allowed = true)
+        $use_cache_if_allowed = true, $raw = 0)
     {
         global $CACHE;
 
@@ -730,7 +739,7 @@ class PhraseModel extends Model
             }
         }
 
-        $query_iterator = $this->getQueryIterator($word_structs, $filter);
+        $query_iterator = $this->getQueryIterator($word_structs, $filter, $raw);
 
         $num_retrieved = 0;
         $pages = array();
@@ -748,7 +757,6 @@ class PhraseModel extends Model
                     $num_retrieved++;
                 }
             }
-
         }
 
         usort($pages, "scoreOrderCallback");
@@ -797,10 +805,15 @@ class PhraseModel extends Model
      *      INDEX_ARCHIVE -- an index_archive object to get results from
      * @param array &$filter an array of hashes of domains to filter from
      *      results
+     *      and then potentially restored in cache
+     * @param int $raw ($raw == 0) normal grouping, ($raw == 1)
+     *      no grouping but page look-up for links, ($raw == 2) 
+     *      no grouping done on data
+     *
      * @return &object an iterator for iterating through results to the 
      *  query
      */
-    function getQueryIterator($word_structs, &$filter)
+    function getQueryIterator($word_structs, &$filter, $raw = 0)
     {
         $iterators = array();
         $total_iterators = 0;
@@ -858,7 +871,17 @@ class PhraseModel extends Model
             $union_iterator = new UnionIterator($iterators);
         }
 
-        $group_iterator = new GroupIterator($union_iterator, $total_iterators);
+        $raw = intval($raw);
+        if ($raw == 2) {
+            $group_iterator = $union_iterator;
+        } else if ($raw == 1) {
+
+            $group_iterator = 
+                new GroupIterator($union_iterator, $total_iterators, true);
+        } else {
+            $group_iterator = 
+                new GroupIterator($union_iterator, $total_iterators);
+        }
 
         return $group_iterator;
     }

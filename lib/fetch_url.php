@@ -69,8 +69,6 @@ class FetchUrl implements CrawlConstants
         $key=CrawlConstants::URL, $value=CrawlConstants::PAGE, 
         $hash=CrawlConstants::HASH)
     {
-        static $ex_cnt = 0;
-
         $agent_handler = curl_multi_init(); 
 
         $active = NULL;
