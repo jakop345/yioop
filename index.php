@@ -128,10 +128,15 @@ if(isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
     }
     $guess_map = array(
         "en" => "en-US",
+        "en-US" => "en-US",
         "fr" => "fr-FR",
+        "ko" => "ko",
         "in" => "in-ID",
+        "ja" => "ja",
         "vi" => "vi-VN",
-        "zh" => "zh-CN"
+        "vi-VN" => "vi-VN",
+        "zh" => "zh-CN",
+        "zh-CN" => "zh-CN"
     );
     if(isset($guess_map[$guess_l])) {
         $guess_l = $guess_map[$guess_l];

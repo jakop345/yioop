@@ -108,8 +108,8 @@ class HtmlProcessor extends TextProcessor
     static function dom($page, $encoding) 
     {
         /* 
-             first do a crube check to see if we have at least an <html> tag
-             otherwise fall back to text processing
+             first do a crude check to see if we have at least an <html> tag
+             otherwise try to make a simplified html document from what we got
          */
         if(!stristr($page, "<html")) {
             $head_tags = "<title><meta><base>";
