@@ -66,6 +66,28 @@ class PhraseParser
         'en-GB' => "EnStemmer",
         'en-CA' => "EnStemmer",
      );
+
+    /**
+     * Language tags and their corresponding character n-gram length
+     * (should only use one of character n-grams or stemmer)
+     */
+     static $CHARGRAMS = array(
+        'ar' => 5,
+        'de' => 5,
+        'es' => 5,
+        'fr' => 5,
+        'fr-FR' => '5',
+        'he' => 5,
+        'in-ID' => 5,
+        'it' => 5,
+        'ko' => 3,
+        'ja' => 3,
+        'ru' => 5,
+        'th' => 4,
+        'zh-CN' => 2,
+        'zh' => 2
+     );
+
     /**
      * Converts a summary of a web page into a string of space separated words
      *
@@ -204,8 +226,51 @@ class PhraseParser
             $first_time = " ";
         }
 
+        if($phrase_len == 1) {
+            /*
+                calculate character n-grams if dealing with single terms
+                not phrases; this only changes anything if no stemmer
+                was used
+             */
+            $stems = self::getCharGramsTerm($stems, $lang);
+        }
+
         return $stems;
 
     }
 
+    /**
+     * Returns the characters n-grams for the given terms where n is the length
+     * Yioop uses for the language in question. If a stemmer is used for
+     * language then n-gramming is no done and this just returns $term
+     * 
+     * @param array $term the terms to make n-grams for
+     * @param string $lang locale tag to determine n to be used for n-gramming
+     *
+     * @return array the n-grams for the terms in question
+     */
+    static function getCharGramsTerm($terms, $lang)
+    {
+        if(isset(self::$CHARGRAMS[$lang])) {
+            $n = self::$CHARGRAMS[$lang];
+        } else {
+            return $terms;
+        }
+        
+        $ngrams = array();
+
+        foreach($terms as $term) {
+            $pre_gram = "_".$term."_";
+            $last_pos = mb_strlen($pre_gram) - $n;
+            if($last_pos < 1) {
+                $ngrams[] = $pre_gram;
+            } else {
+                for($i = 0; $i <= $last_pos; $i++) {
+                    $ngrams[] = mb_substr($pre_gram, $i, $n);
+                }
+            }
+        }
+
+        return $ngrams;
+    }
 }

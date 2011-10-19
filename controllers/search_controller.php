@@ -586,7 +586,6 @@ class SearchController extends Controller implements CrawlConstants
             return;
         }
         $cache_file = $cache_item[self::PAGE];
-
         if(!stristr($cache_item[self::TYPE], "image")) {
 
             $meta_words = array('link\:', 'site\:', 'version\:', 'modified\:',

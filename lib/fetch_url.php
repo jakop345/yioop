@@ -164,7 +164,7 @@ class FetchUrl implements CrawlConstants
                     explode(";", curl_getinfo($sites[$i][0], 
                         CURLINFO_CONTENT_TYPE));
 
-                $sites[$i][self::TYPE] = trim($type_parts[0]);
+                $sites[$i][self::TYPE] = strtolower(trim($type_parts[0]));
                 if(isset($type_parts[1])) {
                     $encoding_parts = explode("charset=", $type_parts[1]);
                     if(isset($encoding_parts[1])) {
@@ -284,7 +284,8 @@ class FetchUrl implements CrawlConstants
             }
             if(stristr($line, 'charset=')) {
                 $line_parts = explode("charset=", $line);
-                $site[CrawlConstants::ENCODING] = @trim($line_parts[1]);
+                $site[CrawlConstants::ENCODING] = 
+                    strtoupper(@trim($line_parts[1]));
             }
             if(stristr($line, 'Last-Modified:')) {
                 $line_parts = explode("Last-Modified:", $line);
@@ -294,6 +295,25 @@ class FetchUrl implements CrawlConstants
 
         }
         if(!isset($site[CrawlConstants::ENCODING]) ) {
+        //first guess we are html and try to find charset in doc head
+            $end_head = stripos($site[CrawlConstants::PAGE], "</head");
+            if($end_head) {
+                $start_charset = stripos($site[CrawlConstants::PAGE], 
+                    "charset=");
+                if($start_charset && $start_charset < $end_head) {
+                    $end_charset = stripos($site[CrawlConstants::PAGE], 
+                        '"', $start_charset);
+                    if($end_charset && $end_charset < $end_head) {
+                        $pre_charset = substr($site[CrawlConstants::PAGE],
+                            $start_charset, $end_charset - $start_charset);
+                        $charset_parts = 
+                            preg_split("/[\s,]+/", $pre_charset);
+                        $site[CrawlConstants::ENCODING] = strtoupper(
+                            $charset_parts[0]);
+                    }
+                }
+            }
+            //else  fallback to auto-detect
             $site[CrawlConstants::ENCODING] =
                 mb_detect_encoding($site[$value], 'auto');
         }

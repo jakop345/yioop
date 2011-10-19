@@ -68,7 +68,6 @@ class HtmlProcessor extends TextProcessor
     function process($page, $url, $encoding)
     {
         $summary = NULL;
-
         if(is_string($page)) {
             $page = preg_replace('/>/', '> ', $page);
             $page = preg_replace('@<script[^>]*?>.*?</script>@si', 
@@ -76,7 +75,7 @@ class HtmlProcessor extends TextProcessor
             $dom = self::dom($page, $encoding);
             if($dom !== false && self::checkMetaRobots($dom)) {
                 $summary[self::TITLE] = self::title($dom);
-                $summary[self::DESCRIPTION] = self::description($dom); 
+                $summary[self::DESCRIPTION] = self::description($dom);
                 $summary[self::LANG] = self::lang($dom, 
                     $summary[self::DESCRIPTION], $url);
                 $summary[self::LINKS] = self::links($dom, $url);

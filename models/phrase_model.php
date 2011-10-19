@@ -512,21 +512,22 @@ class PhraseModel extends Model
         $phrase_string = mb_ereg_replace(PUNCT, " ", $phrase_string);
         $phrase_string = preg_replace("/(\s)+/", " ", $phrase_string);
         /*
-            we search using the stemmed words, but we format snippets in the 
-            results by bolding either
+            we search using the stemmed/char-grammed words, but we format 
+            snippets in the results by bolding either
          */
         $query_words = explode(" ", $phrase_string); //not stemmed
 
         $base_words = 
             array_keys(PhraseParser::extractPhrasesAndCount($phrase_string,
-            MAX_PHRASE_LEN, getLocaleTag())); //stemmed
+            MAX_PHRASE_LEN, getLocaleTag())); //stemmed, if have stemmer
         $words = array_merge($base_words, $found_metas);
         if(QUERY_STATISTICS) {
             $this->query_info['QUERY'] .= "$in3<i>Index</i>: ".
                 $index_archive_name."<br />";
             $this->query_info['QUERY'] .= "$in3<i>LocaleTag</i>: ".
                 getLocaleTag()."<br />";
-            $this->query_info['QUERY'] .= "$in3<i>Stemmed Words</i>:<br />";
+            $this->query_info['QUERY'] .= 
+                "$in3<i>Stemmed/Char-grammed Words</i>:<br />";
             foreach($base_words as $word){
                 $this->query_info['QUERY'] .= "$in4$word<br />";
             }
