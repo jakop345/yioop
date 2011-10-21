@@ -63,7 +63,7 @@ const MAX_DESCRIPTION_LEN = 2000;
  *
  *  @const integer MAX_DOM_LEVEL
 */
-const MAX_DOM_LEVEL = 10;
+const MAX_DOM_LEVEL = 15;
 
  /**
  * Used to create crawl summary information
@@ -118,7 +118,7 @@ class EpubProcessor extends TextProcessor
      *  @return array  a summary of the contents of the page
      *
      */
-    function process($page, $url, $encoding)
+    function process($page, $url)
     {
         $summary = NULL;
         $opf_pattern = "/.opf$/i";
@@ -178,8 +178,7 @@ class EpubProcessor extends TextProcessor
                     (preg_match($xhtml_pattern,$filename[$i]))) {
                     $html = new HtmlProcessor;
                     $html_data = $zip->getFromName($filename[$i]);
-                    $description[$i] = $html->process($html_data,$url,
-                        $encoding);
+                    $description[$i] = $html->process($html_data,$url);
                     $htmlcontent.= $description[$i]['t'];
                 }
             }
