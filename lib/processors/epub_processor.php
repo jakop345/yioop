@@ -178,8 +178,7 @@ class EpubProcessor extends TextProcessor
                     (preg_match($xhtml_pattern,$filename[$i]))) {
                     $html = new HtmlProcessor;
                     $html_data = $zip->getFromName($filename[$i]);
-                    $description[$i] = $html->process($html_data,$url,
-                        $encoding);
+                    $description[$i] = $html->process($html_data,$url);
                     $htmlcontent.= $description[$i]['t'];
                 }
             }
