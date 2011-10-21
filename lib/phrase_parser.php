@@ -109,27 +109,27 @@ class PhraseParser
     }
 
     /**
-	 * Extracts all phrases (sequences of adjacent words) from $string of
-	 * length less than or equal to $len.
-	 *
-	 * @param string $string subject to extract phrases from
-	 * @param int $len longest length of phrases to consider
-	 * @param string $lang locale tag for stemming
-	 * @return array of phrases
-	 */
-	static function extractPhrases($string,
-		$len =  MAX_PHRASE_LEN, $lang = NULL)
-	{
-		$phrases = array();
+     * Extracts all phrases (sequences of adjacent words) from $string of
+     * length less than or equal to $len.
+     *
+     * @param string $string subject to extract phrases from
+     * @param int $len longest length of phrases to consider
+     * @param string $lang locale tag for stemming
+     * @return array of phrases
+     */
+    static function extractPhrases($string,
+        $len =  MAX_PHRASE_LEN, $lang = NULL)
+    {
+        $phrases = array();
 
-		for($i = 0; $i < $len; $i++) {
-			$phrases =
-				array_merge($phrases,
-					self::extractPhrasesOfLength($string, $i, $lang));
-		}
+        for($i = 0; $i < $len; $i++) {
+            $phrases =
+                array_merge($phrases,
+                    self::extractPhrasesOfLength($string, $i, $lang));
+        }
 
-		return $phrases;
-	}
+        return $phrases;
+    }
 
     /**
      * Extracts all phrases (sequences of adjacent words) from $string of

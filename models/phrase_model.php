@@ -517,13 +517,9 @@ class PhraseModel extends Model
          */
         $query_words = explode(" ", $phrase_string); //not stemmed
 
-        /*$base_words =															//Commented by Ravi Dhillon
-			array_keys(PhraseParser::extractPhrasesAndCount($phrase_string,
-			MAX_PHRASE_LEN, getLocaleTag())); //stemmed, if have stemmer
-		 */
-		$base_words =															//Added by Ravi Dhillon
-			PhraseParser::extractPhrases($phrase_string,MAX_PHRASE_LEN,
-			getLocaleTag()); //stemmed, if have stemmer
+        $base_words =
+            PhraseParser::extractPhrases($phrase_string,MAX_PHRASE_LEN,
+            getLocaleTag()); //stemmed, if have stemmer
         $words = array_merge($base_words, $found_metas);
         if(QUERY_STATISTICS) {
             $this->query_info['QUERY'] .= "$in3<i>Index</i>: ".
@@ -571,7 +567,6 @@ class PhraseModel extends Model
 
             $restrict_phrases = $quoteds;
 
-            //$hashes = array_unique($hashes);									   //Commented by Ravi Dhillon
             if(count($hashes) > 0) {
                 $word_keys = array_slice($hashes, 0, MAX_QUERY_TERMS);
             } else {
@@ -825,27 +820,27 @@ class PhraseModel extends Model
         foreach($word_structs as $word_struct) {
             if(!is_array($word_struct)) { continue;}
             $word_keys = $word_struct["KEYS"];
-            $distinct_word_keys = array_unique($word_keys);									//Added by Ravi Dhillon
+            $distinct_word_keys = array_unique($word_keys);
             $restrict_phrases = $word_struct["RESTRICT_PHRASES"];
             $disallow_keys = $word_struct["DISALLOW_KEYS"];
             $index_archive = $word_struct["INDEX_ARCHIVE"];
 
             $weight = $word_struct["WEIGHT"];
             $num_word_keys = count($word_keys);
-            $total_iterators = count($distinct_word_keys);									//Modified by Ravi Dhillon
+            $total_iterators = count($distinct_word_keys);
             $word_iterators = array();
-            $word_iterator_map = array();													//Added by Ravi Dhillon
+            $word_iterator_map = array();
             if($num_word_keys < 1) {continue;}
 
-            for($i = 0; $i < $total_iterators; $i++) {										//Modified by Ravi Dhillon
-				$word_iterators[$i] =
-					new WordIterator($distinct_word_keys[$i], $index_archive,				//Modified by Ravi Dhillon
-						false, $filter);
-				foreach ($word_keys as $index => $key) {									//Added by Ravi Dhillon
-					if($key == $distinct_word_keys[$i]){
-						$word_iterator_map[$index] = $i;
-					}
-				}
+            for($i = 0; $i < $total_iterators; $i++) {
+                $word_iterators[$i] =
+                    new WordIterator($distinct_word_keys[$i], $index_archive,
+                        false, $filter);
+                foreach ($word_keys as $index => $key) {
+                    if($key == $distinct_word_keys[$i]){
+                        $word_iterator_map[$index] = $i;
+                    }
+                }
             }
             $num_disallow_keys = count($disallow_keys);
             if($num_disallow_keys > 0) {
@@ -862,7 +857,8 @@ class PhraseModel extends Model
             if($num_word_keys == 1) {
                 $base_iterator = $word_iterators[0];
             } else {
-                $base_iterator = new IntersectIterator($word_iterators,$word_iterator_map);	//Modified by Ravi Dhillon
+                $base_iterator = new IntersectIterator(
+                    $word_iterators,$word_iterator_map);
             }
             if($restrict_phrases == NULL && $disallow_keys == array() &&
                 $weight == 1) {
