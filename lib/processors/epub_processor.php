@@ -118,7 +118,7 @@ class EpubProcessor extends TextProcessor
      *  @return array  a summary of the contents of the page
      *
      */
-    function process($page, $url)
+    function process($page, $url, $encoding)
     {
         $summary = NULL;
         $opf_pattern = "/.opf$/i";
@@ -178,7 +178,8 @@ class EpubProcessor extends TextProcessor
                     (preg_match($xhtml_pattern,$filename[$i]))) {
                     $html = new HtmlProcessor;
                     $html_data = $zip->getFromName($filename[$i]);
-                    $description[$i] = $html->process($html_data,$url);
+                    $description[$i] = $html->process($html_data,$url,
+                        $encoding);
                     $htmlcontent.= $description[$i]['t'];
                 }
             }
