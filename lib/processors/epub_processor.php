@@ -63,7 +63,7 @@ const MAX_DESCRIPTION_LEN = 2000;
  *
  *  @const integer MAX_DOM_LEVEL
 */
-const MAX_DOM_LEVEL = 10;
+const MAX_DOM_LEVEL = 15;
 
  /**
  * Used to create crawl summary information
