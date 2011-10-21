@@ -118,7 +118,7 @@ class EpubProcessor extends TextProcessor
      *  @return array  a summary of the contents of the page
      *
      */
-    function process($page, $url, $encoding)
+    function process($page, $url)
     {
         $summary = NULL;
         $opf_pattern = "/.opf$/i";

@@ -65,14 +65,14 @@ class HtmlProcessor extends TextProcessor
      *  @return array  a summary of the contents of the page
      *
      */
-    function process($page, $url, $encoding)
+    function process($page, $url)
     {
         $summary = NULL;
         if(is_string($page)) {
             $page = preg_replace('/>/', '> ', $page);
             $page = preg_replace('@<script[^>]*?>.*?</script>@si', 
                 ' ', $page);
-            $dom = self::dom($page, $encoding);
+            $dom = self::dom($page);
             if($dom !== false && self::checkMetaRobots($dom)) {
                 $summary[self::TITLE] = self::title($dom);
                 $summary[self::DESCRIPTION] = self::description($dom);
@@ -83,10 +83,10 @@ class HtmlProcessor extends TextProcessor
                 if(strlen($summary[self::DESCRIPTION] . $summary[self::TITLE])
                     == 0 && count($summary[self::LINKS]) == 0) {
                     //maybe not html? treat as text still try to get urls
-                    $summary = parent::process($page, $url, $encoding);
+                    $summary = parent::process($page, $url);
                 }
             } else if( $dom == false ) {
-                $summary = parent::process($page, $url, $encoding);
+                $summary = parent::process($page, $url);
             }
         }
 
@@ -104,7 +104,7 @@ class HtmlProcessor extends TextProcessor
      *
      *  @return object  document object
      */
-    static function dom($page, $encoding) 
+    static function dom($page) 
     {
         /* 
              first do a crude check to see if we have at least an <html> tag
@@ -122,12 +122,12 @@ class HtmlProcessor extends TextProcessor
         $dom = new DOMDocument();
 
         //this hack modified from php.net
-        @$dom->loadHTML('<?xml encoding="'.$encoding.'">' . $page);
+        @$dom->loadHTML('<?xml encoding="UTF-8">' . $page);
 
         foreach ($dom->childNodes as $item)
         if ($item->nodeType == XML_PI_NODE)
             $dom->removeChild($item); // remove hack
-        $dom->encoding = $encoding; // insert proper
+        $dom->encoding = "UTF-8"; // insert proper
 
         return $dom;
     }

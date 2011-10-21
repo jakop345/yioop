@@ -232,7 +232,8 @@ class PhraseParser
                 not phrases; this only changes anything if no stemmer
                 was used
              */
-            $stems = self::getCharGramsTerm($stems, $lang);
+            $ngrams = self::getCharGramsTerm($stems, $lang);
+            $stems = array_merge($stems, $ngrams);
         }
 
         return $stems;
@@ -242,7 +243,7 @@ class PhraseParser
     /**
      * Returns the characters n-grams for the given terms where n is the length
      * Yioop uses for the language in question. If a stemmer is used for
-     * language then n-gramming is no done and this just returns $term
+     * language then n-gramming is no done and this just returns an empty array
      * 
      * @param array $term the terms to make n-grams for
      * @param string $lang locale tag to determine n to be used for n-gramming
@@ -254,15 +255,15 @@ class PhraseParser
         if(isset(self::$CHARGRAMS[$lang])) {
             $n = self::$CHARGRAMS[$lang];
         } else {
-            return $terms;
+            return array();
         }
         
         $ngrams = array();
 
         foreach($terms as $term) {
-            $pre_gram = "_".$term."_";
+            $pre_gram = $term;
             $last_pos = mb_strlen($pre_gram) - $n;
-            if($last_pos < 1) {
+            if($last_pos < 0) {
                 $ngrams[] = $pre_gram;
             } else {
                 for($i = 0; $i <= $last_pos; $i++) {
@@ -270,7 +271,6 @@ class PhraseParser
                 }
             }
         }
-
         return $ngrams;
     }
 }

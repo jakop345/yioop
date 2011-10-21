@@ -59,12 +59,11 @@ class ImageProcessor extends PageProcessor
      *      subclasses
      * @param string $page  the image represented as a character string
      * @param string $url  the url where the image was downloaded from
-     * @param string $encoding to say how to handle characters in doc
      *
      * @return array summary information including a thumbnail and a 
      *      description (where the description is just the url)
      */
-    function process($page, $url, $encoding) { return NULL;} 
+    function process($page, $url) { return NULL;} 
 
     /**
      * Used to create a thumbnail from an image object

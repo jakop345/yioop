@@ -915,12 +915,26 @@ class Fetcher implements CrawlConstants
             }
 
             if(isset($site[self::PAGE])) {
-                crawlLog("  Using Processor...".$page_processor);
                 if(!isset($site[self::ENCODING])) {
                     $site[self::ENCODING] = "UTF-8";
-                } 
+                }
+                //if not UTF-8 convert before doing anything else
+                if(isset($site[self::ENCODING]) && 
+                    $site[self::ENCODING] != "UTF-8" &&
+                    ($page_processor == "TextProcessor" ||
+                    is_subclass_of($page_processor, "TextProcessor"))) {
+                    if(!mb_check_encoding($site[self::PAGE], 
+                        $site[self::ENCODING])) {
+                        crawlLog("  NOT VALID ENCODING DETECTED!!");
+                    }
+                    crawlLog("  Converting from encoding ".
+                        $site[self::ENCODING]."...");
+                    $site[self::PAGE] = mb_convert_encoding($site[self::PAGE],
+                        "UTF-8", $site[self::ENCODING]);
+                }
+                crawlLog("  Using Processor...".$page_processor);
                 $doc_info = $processor->handle($site[self::PAGE], 
-                    $site[self::URL], $site[self::ENCODING]);
+                    $site[self::URL]);
             } else {
                 $doc_info = false;
             }
@@ -956,6 +970,11 @@ class Fetcher implements CrawlConstants
                     $summarized_site_pages[$i][self::JUST_METAS] = true;
                 }
                 if(isset($site[self::DOC_INFO][self::LANG])) {
+                    if($site[self::DOC_INFO][self::LANG] == 'en' &&
+                        $site[self::ENCODING] != "UTF-8") {
+                        $site[self::DOC_INFO][self::LANG] =
+                            self::guessLangEncoding($site[self::ENCODING]);
+                    }
                     $summarized_site_pages[$i][self::LANG] = 
                         $site[self::DOC_INFO][self::LANG];
                 }
@@ -1639,6 +1658,37 @@ class Fetcher implements CrawlConstants
         }
 
         return $meta_ids;
+    }
+
+    /**
+     * Tries to guess at a language tag based on the name of a character
+     * encoding
+     *
+     *  @param string $encoding a character encoding name
+     *
+     *  @return string guessed language tag拟主
+     */
+    static function guessLangEncoding($encoding)
+    {
+        $lang = array("EUC-JP", "Shift_JIS", "JIS", "ISO-2022-JP");
+        if(in_array($encoding, $lang)) {
+            return "ja";
+        }
+        $lang = array("EUC-CN", "GB2312", "EUC-TW", "HZ", "CP936", "BIG-5",
+            "CP950");
+        if(in_array($encoding, $lang)) {
+            return "zh-CN";
+        }
+        $lang = array("EUC-KR", "UHC", "CP949", "ISO-2022-KR");
+        if(in_array($encoding, $lang)) {
+            return "ko";
+        }
+        $lang = array("Windows-1251", "CP1251", "CP866", "IBM866", "KOI8-R");
+        if(in_array($encoding, $lang)) {
+            return "ru";
+        }
+
+        return 'en';
     }
 }
 

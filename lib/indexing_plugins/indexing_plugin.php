@@ -117,13 +117,12 @@ abstract class IndexingPlugin
      *  @param string $page web-page contents
      *  @param string $url the url where the page contents came from,
      *     used to canonicalize relative links
-     * @param string $encoding to say how to handle characters in doc
      *
      *  @return array consisting of a sequence of subdoc arrays found
      *      on the given page. Each subdoc array has a self::TITLE and
      *      a self::DESCRIPTION
      */
-    abstract function pageProcessing($page, $url, $encoding);
+    abstract function pageProcessing($page, $url);
 
     /**
      * This method is called by the queue_server with the name of

@@ -71,7 +71,7 @@ class BmpProcessor extends ImageProcessor
     /**
      * {@inheritdoc}
      */
-    function process($page, $url, $encoding)
+    function process($page, $url)
     {
         if(is_string($page)) {
             file_put_contents(CRAWL_DIR."/cache/tmp.bmp", $page); 

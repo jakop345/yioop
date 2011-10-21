@@ -618,7 +618,11 @@ class SearchController extends Controller implements CrawlConstants
 
         $dom = new DOMDocument();
 
-        $did_dom = @$dom->loadHTML($cache_file);
+        $did_dom = @$dom->loadHTML('<?xml encoding="UTF-8">' . $cache_file);
+        foreach ($dom->childNodes as $item)
+        if ($item->nodeType == XML_PI_NODE)
+            $dom->removeChild($item); // remove hack
+        $dom->encoding = "UTF-8"; // insert proper
 
         $xpath = new DOMXPath($dom);
 

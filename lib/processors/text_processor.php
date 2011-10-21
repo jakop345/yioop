@@ -54,6 +54,10 @@ require_once BASE_DIR."/lib/url_parser.php";
  */
 class TextProcessor extends PageProcessor
 {
+    /**
+     * Max number of chars to extract for description
+     */
+    const MAX_DESCRIPTION_LEN = 2000;
 
     /**
      * Computes a summary based on a text string of a document
@@ -63,20 +67,18 @@ class TextProcessor extends PageProcessor
      *      TextProcessor at this point. Some of its subclasses override
      *      this method and use url to produce complete links for
      *      relative links within a document
-     * @param string $encoding to say how to handle characters in doc
      *
      * @return array a summary of (title, description,links, and content) of 
      *      the information in $page
      */
-    function process($page, $url, $encoding)
+    function process($page, $url)
     {
         $summary = NULL;
-        if($encoding != "UTF-8") {
-            $page = mb_convert_encoding($page, "UTF-8", $encoding);
-        }
+
         if(is_string($page)) {
             $summary[self::TITLE] = "";
-            $summary[self::DESCRIPTION] = mb_substr($page, 0, 400);
+            $summary[self::DESCRIPTION] = mb_substr($page, 0, 
+                self::MAX_DESCRIPTION_LEN);
             $summary[self::LANG] = self::calculateLang(
                 $summary[self::DESCRIPTION]);
             $summary[self::LINKS] = self::extractHttpHttpsUrls($page);
@@ -99,6 +101,10 @@ class TextProcessor extends PageProcessor
      */
     static function calculateLang($sample_text = NULL, $url = NULL)
     {
+        if($url != NULL) {
+            $lang = UrlParser::getLang($url);
+            if($lang != NULL) return $lang;
+        }
         if($sample_text != NULL){
             $words = mb_split("[[:space:]]|".PUNCT, $sample_text);
             $num_words = count($words);
@@ -117,9 +123,7 @@ class TextProcessor extends PageProcessor
         } else {
             $lang = NULL;
         }
-        if($lang == NULL && $url != NULL) {
-            $lang = UrlParser::getLang($url);
-        }
+
 
         return $lang;
     }

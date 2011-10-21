@@ -137,6 +137,7 @@ class UrlParser
             "mil" => 'en',
             "org" => 'en',
             "net" => 'en',
+            'us' => 'en',
             "uk" => 'en',
             "ca" => 'en',
             "au" => 'en',

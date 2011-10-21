@@ -74,12 +74,11 @@ class XmlProcessor extends TextProcessor
      *  @param string $page   web-page contents
      *  @param string $url   the url where the page contents came from,
      *     used to canonicalize relative links
-     *  @param string $encoding to say how to handle characters in doc
      *
      *  @return array  a summary of the contents of the page
      *
      */ 
-    function process($page, $url, $encoding)
+    function process($page, $url)
     {
         $summary = NULL;
         if(is_string($page)) {
@@ -98,9 +97,9 @@ class XmlProcessor extends TextProcessor
             if(isset($XML_PROCESSORS[$root_name])) {
                 $processor_name = $XML_PROCESSORS[$root_name];
                 $processor = new $processor_name($this->indexing_plugins);
-                $summary = $processor->process($page, $url, $encoding);
+                $summary = $processor->process($page, $url);
             } else {
-                $summary = parent::process($page, $url, $encoding);
+                $summary = parent::process($page, $url);
             }
         }
 

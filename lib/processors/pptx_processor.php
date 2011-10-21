@@ -69,12 +69,11 @@ class PptxProcessor extends TextProcessor
      *  @param string $page pptx(zip) contents
      *  @param string $url the url where the page contents came from,
      *     used to canonicalize relative links
-     *  @param string $encoding to say how to handle characters in doc
      *
      *  @return array  a summary of the contents of the page
      *
      */
-    function process($page, $url, $encoding)
+    function process($page, $url)
     {
         $summary = NULL;
         $sites = array();
@@ -130,7 +129,7 @@ class PptxProcessor extends TextProcessor
         }
         else{
         // If not pptx then process it as a text file
-            $summary = parent::process($page, $url, $encoding);
+            $summary = parent::process($page, $url);
         }
         return $summary;
     }

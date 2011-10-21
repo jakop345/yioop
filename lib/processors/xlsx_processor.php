@@ -62,12 +62,11 @@ class XlsxProcessor extends TextProcessor
      *  @param string $page contents of xlsx file in zip format
      *  @param string $url the url where the page contents came from,
      *     used to canonicalize relative links
-     *  @param string $encoding to say how to handle characters in doc
      *
      *  @return array  a summary of the contents of the page
      *
      */
-    function process($page, $url, $encoding)
+    function process($page, $url)
     {
     
         $summary = NULL;
@@ -128,7 +127,7 @@ class XlsxProcessor extends TextProcessor
             }
         }
         else {
-            $summary=parent::process($page, $url, $encoding);
+            $summary=parent::process($page, $url);
         }
         // Close the zip
         $zip->close();
