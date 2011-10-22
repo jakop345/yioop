@@ -871,6 +871,12 @@ class Fetcher implements CrawlConstants
 
         foreach($site_pages as $site) {
             $response_code = $site[self::HTTP_CODE]; 
+            
+	    //deals with short URLs and directs them to the original link
+	    if(isset($site[self::LOCATION]))
+	    {
+	    	$site[self::URL]=$site[self::LOCATION];
+	    }	
 
             //process robot.txt files separately
             if(isset($site[self::ROBOT_PATHS])) {

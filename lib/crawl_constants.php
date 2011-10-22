@@ -165,7 +165,8 @@ interface CrawlConstants
     const DOMAIN_WEIGHTS = 'bm';
     const POSITION_LIST = 'bn';
     const PROXIMITY = 'bo';
-    
+    const LOCATION = 'bp';
+
     const NEEDS_OFFSET_FLAG = 0x7FFFFFFF;
 
 } 

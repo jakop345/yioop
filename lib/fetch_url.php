@@ -281,6 +281,10 @@ class FetchUrl implements CrawlConstants
                 $site[CrawlConstants::MODIFIED] = 
                     strtotime(@trim($line_parts[1]));
             }
+  	    if(stristr($line,'Location:')){
+	    	$line_parts=explode("Location:",line);
+		$site[CrawlConstants::LOCATION]=@trim(line_parts[1]);
+	    }	
 
         }
         if(!isset($site[CrawlConstants::ENCODING]) ) {
