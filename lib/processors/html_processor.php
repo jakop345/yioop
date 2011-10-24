@@ -79,9 +79,18 @@ class HtmlProcessor extends TextProcessor
                 $summary[self::LANG] = self::lang($dom, 
                     $summary[self::DESCRIPTION], $url);
                 $summary[self::LINKS] = self::links($dom, $url);
+                $location = self::location($dom, $url);
+                if($location) {
+                    $summary[self::LINKS][$location] = "location:".$url;
+                    $summary[self::LOCATION] = true;
+                    $summary[self::DESCRIPTION] .= $url." => ".$location;
+                    if(!$summary[self::TITLE]) {
+                        $summary[self::TITLE] = $url;
+                    }
+                }
                 $summary[self::PAGE] = $page;
                 if(strlen($summary[self::DESCRIPTION] . $summary[self::TITLE])
-                    == 0 && count($summary[self::LINKS]) == 0) {
+                    == 0 && count($summary[self::LINKS]) == 0 && !$location) {
                     //maybe not html? treat as text still try to get urls
                     $summary = parent::process($page, $url);
                 }
@@ -117,8 +126,9 @@ class HtmlProcessor extends TextProcessor
                 "<h1><h2><h3><h4><h5><h6><p><div>".
                 "<a><table><tr><td><th>";
             $body = strip_tags($page, $body_tags);
-            $page = "<html><head>$head</head><body>$body</body>";
+            $page = "<html><head>$head</head><body>$body</body></html>";
         }
+
         $dom = new DOMDocument();
 
         //this hack modified from php.net
@@ -230,7 +240,7 @@ class HtmlProcessor extends TextProcessor
 
         //look for a meta tag with a description
         foreach($metas as $meta) {
-            if(mb_stristr($meta->getAttribute('name'), "description")) {
+            if(stristr($meta->getAttribute('name'), "description")) {
                 $description .= " ".$meta->getAttribute('content');
             }
         }
@@ -256,6 +266,29 @@ class HtmlProcessor extends TextProcessor
     }
 
     /**
+     *
+     */
+    static function location($dom, $site)
+    {
+        $xpath = new DOMXPath($dom);
+        //Look for Refresh or Location
+        $metas = $xpath->evaluate("/html//meta");
+        foreach($metas as $meta) {
+            if(stristr($meta->getAttribute('http-equiv'), "refresh") ||
+               stristr($meta->getAttribute('http-equiv'), "location")) {
+                $urls = explode("=", $meta->getAttribute('content'));
+                if(isset($urls[1]) && !UrlParser::checkRecursiveUrl($urls[1]) &&
+                    strlen($urls[1]) < MAX_URL_LENGTH) {
+                    $url = @trim($urls[1]);
+                    return $url;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Returns up to MAX_LINK_PER_PAGE many links from the supplied
      * dom object where links have been canonicalized according to
      * the supplied $site information.
@@ -270,6 +303,7 @@ class HtmlProcessor extends TextProcessor
         $sites = array();
 
         $xpath = new DOMXPath($dom);
+
         $base_refs = $xpath->evaluate("/html//base");
         if($base_refs->item(0)) {
             $tmp_site = $base_refs->item(0)->getAttribute('href');
@@ -278,9 +312,10 @@ class HtmlProcessor extends TextProcessor
             }
         }
 
+        $i = 0;
+
         $hrefs = $xpath->evaluate("/html/body//a");
 
-        $i = 0;
 
         foreach($hrefs as $href) {
             if($i < MAX_LINKS_PER_PAGE) {

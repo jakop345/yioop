@@ -229,6 +229,8 @@ class FetchUrl implements CrawlConstants
     {
         $new_offset = 0;
         // header will include all redirect headers
+        $site = array();
+        $site[CrawlConstants::LOCATION] = array();
         do {
             $CRLFCRLF = strpos($header_and_page, "\x0D\x0A\x0D\x0A", 
                 $new_offset);
@@ -238,14 +240,27 @@ class FetchUrl implements CrawlConstants
             $header_offset = ($CRLFCRLF > 0) ? $CRLFCRLF : $LFLF;
             $new_offset = ($CRLFCRLF > 0) ? $header_offset + 4 
                 : $header_offset + 2;
-            $redirect_pos = strpos($header_and_page, 'Location:', $old_offset);
+            $redirect_pos = stripos($header_and_page, 'Location:', $old_offset);
+            $redirect_str = "Location:";
+            if($redirect_pos == false) {
+                $redirect_pos = 
+                    stripos($header_and_page, 'Refresh:', $old_offset);
+                $redirect_str = "Refresh:";
+            }
             if(isset($header_and_page[$redirect_pos - 1]) &&
                 ord($header_and_page[$redirect_pos - 1]) > 32) {
                 $redirect_pos = $new_offset; //ignore X-XRDS-Location header
+            } else if($redirect_pos !== false){
+                $redirect_pos += strlen($redirect_str);
+                $pre_line = substr($header_and_page, $redirect_pos,
+                    strpos($header_and_page, "\n", $redirect_pos) - 
+                    $redirect_pos);
+                $site[CrawlConstants::LOCATION][] = @trim($pre_line);
+
             }
         } while($redirect_pos !== false && $redirect_pos < $new_offset);
 
-        $site = array();
+
         $site[CrawlConstants::HEADER] = 
             substr($header_and_page, 0, $header_offset);
         $site[$value] = ltrim(substr($header_and_page, $header_offset));
@@ -281,11 +296,6 @@ class FetchUrl implements CrawlConstants
                 $site[CrawlConstants::MODIFIED] = 
                     strtotime(@trim($line_parts[1]));
             }
-  	    if(stristr($line,'Location:')){
-	    	$line_parts=explode("Location:",line);
-		$site[CrawlConstants::LOCATION]=@trim(line_parts[1]);
-	    }	
-
         }
         if(!isset($site[CrawlConstants::ENCODING]) ) {
         //first guess we are html and try to find charset in doc head

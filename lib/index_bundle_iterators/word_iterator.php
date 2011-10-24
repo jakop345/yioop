@@ -168,7 +168,6 @@ class WordIterator extends IndexBundleIterator
         $this->current_block_fresh = false;
         $this->dictionary_info = 
             $index->dictionary->getWordInfo($word_key, true);
-
         if ($this->dictionary_info === false) {
             $this->empty = true;
         } else {
@@ -253,7 +252,6 @@ class WordIterator extends IndexBundleIterator
         $results = $shard->getPostingsSlice(
             $this->start_offset,
             $this->next_offset, $this->last_offset, $this->results_per_block);
-
         if($this->filter != NULL) {
             foreach($results as $keys => $data) {
                 $host_key = substr($keys, self::HOST_KEY_POS, self::KEY_LEN);

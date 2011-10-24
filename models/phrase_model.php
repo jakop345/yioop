@@ -471,7 +471,7 @@ class PhraseModel extends Model
         $meta_words = array('link:', 'site:', 'version:', 'modified:',
             'filetype:', 'info:', '\-', 'os:', 'server:', 'date:',
             'index:', 'i:', 'ip:', 'weight:', 'w:', 'u:',
-            'lang:', 'media:', 'elink:');
+            'lang:', 'media:', 'elink:', 'location:');
         if(isset($this->additional_meta_words)) {
             $meta_words = array_merge($meta_words, array_keys(
                 $this->additional_meta_words));

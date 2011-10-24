@@ -316,8 +316,12 @@ class GroupIterator extends IndexBundleIterator
     {
         $domain_vector = array();
         foreach($pre_out_pages as $hash_url => $data) {
-            if(!$data[0][self::IS_DOC]) {
-                $item = $this->lookupDoc($data[0]['KEY']);
+            $hash = substr($data[0]['KEY'], IndexShard::DOC_KEY_LEN, 
+                IndexShard::DOC_KEY_LEN);
+            if(!$data[0][self::IS_DOC] || 
+                crawlHash($hash_url. "LOCATION", true) == $hash) {
+                $item = $this->lookupDoc($data[0]['KEY'], 
+                    $data[0][self::IS_DOC]);
                 if($item != false) {
                     array_unshift($pre_out_pages[$hash_url], $item);
                 }
@@ -350,14 +354,16 @@ class GroupIterator extends IndexBundleIterator
      * Looks up a doc for a link doc_key, so can get its summary info
      *
      * @param string $doc_key key to look up doc of
+     * @param bool $is_location we are doing look up because doc had a refresh
      * 
      * @return array consisting of info about the doc
      */
-     function lookupDoc($doc_key)
+     function lookupDoc($doc_key, $is_location = false)
      {
         $hash_url = substr($doc_key, 0, IndexShard::DOC_KEY_LEN);
+        $prefix = ($is_location) ? "location:" : "info:";
         $hash_info_url=
-            crawlHash("info:".base64Hash($hash_url), true);
+            crawlHash($prefix.base64Hash($hash_url), true);
         $index = $this->getIndex($doc_key);
         $word_iterator =
              new WordIterator($hash_info_url,
@@ -371,6 +377,9 @@ class GroupIterator extends IndexBundleIterator
             $keys = array_keys($doc_array);
             $key = $keys[0];
             $item = $doc_array[$key];
+            if(!$item[self::IS_DOC] && $is_location) {
+                return $this->lookupDoc($key);
+            }
             $item[self::RELEVANCE] = $relevance;
             $item[self::SCORE] = $item[self::DOC_RANK]*pow(1.1, $relevance);
             $item['KEY'] = $key;
