@@ -69,8 +69,6 @@ class FetchUrl implements CrawlConstants
         $key=CrawlConstants::URL, $value=CrawlConstants::PAGE, 
         $hash=CrawlConstants::HASH)
     {
-        static $ex_cnt = 0;
-
         $agent_handler = curl_multi_init(); 
 
         $active = NULL;
@@ -166,18 +164,7 @@ class FetchUrl implements CrawlConstants
                     explode(";", curl_getinfo($sites[$i][0], 
                         CURLINFO_CONTENT_TYPE));
 
-                $sites[$i][self::TYPE] = trim($type_parts[0]);
-                if(isset($type_parts[1])) {
-                    $encoding_parts = explode("charset=", $type_parts[1]);
-                    if(isset($encoding_parts[1])) {
-                        $sites[$i][self::ENCODING] = 
-                            mb_strtoupper(trim($encoding_parts[1])); 
-                                //hopefully safe to trust encoding sent
-                    }
-                } else {
-                    $sites[$i][self::ENCODING] = 
-                        mb_detect_encoding($content, 'auto');
-                }
+                $sites[$i][self::TYPE] = strtolower(trim($type_parts[0]));
 
 
                 curl_multi_remove_handle($agent_handler, $sites[$i][0]);
@@ -242,6 +229,8 @@ class FetchUrl implements CrawlConstants
     {
         $new_offset = 0;
         // header will include all redirect headers
+        $site = array();
+        $site[CrawlConstants::LOCATION] = array();
         do {
             $CRLFCRLF = strpos($header_and_page, "\x0D\x0A\x0D\x0A", 
                 $new_offset);
@@ -251,10 +240,27 @@ class FetchUrl implements CrawlConstants
             $header_offset = ($CRLFCRLF > 0) ? $CRLFCRLF : $LFLF;
             $new_offset = ($CRLFCRLF > 0) ? $header_offset + 4 
                 : $header_offset + 2;
-            $redirect_pos = strpos($header_and_page, 'Location:', $old_offset);
+            $redirect_pos = stripos($header_and_page, 'Location:', $old_offset);
+            $redirect_str = "Location:";
+            if($redirect_pos == false) {
+                $redirect_pos = 
+                    stripos($header_and_page, 'Refresh:', $old_offset);
+                $redirect_str = "Refresh:";
+            }
+            if(isset($header_and_page[$redirect_pos - 1]) &&
+                ord($header_and_page[$redirect_pos - 1]) > 32) {
+                $redirect_pos = $new_offset; //ignore X-XRDS-Location header
+            } else if($redirect_pos !== false){
+                $redirect_pos += strlen($redirect_str);
+                $pre_line = substr($header_and_page, $redirect_pos,
+                    strpos($header_and_page, "\n", $redirect_pos) - 
+                    $redirect_pos);
+                $site[CrawlConstants::LOCATION][] = @trim($pre_line);
+
+            }
         } while($redirect_pos !== false && $redirect_pos < $new_offset);
 
-        $site = array();
+
         $site[CrawlConstants::HEADER] = 
             substr($header_and_page, 0, $header_offset);
         $site[$value] = ltrim(substr($header_and_page, $header_offset));
@@ -282,18 +288,44 @@ class FetchUrl implements CrawlConstants
             }
             if(stristr($line, 'charset=')) {
                 $line_parts = explode("charset=", $line);
-                $site[CrawlConstants::ENCODING] = @trim($line_parts[1]);
+                $site[CrawlConstants::ENCODING] = 
+                    strtoupper(@trim($line_parts[1]));
             }
             if(stristr($line, 'Last-Modified:')) {
                 $line_parts = explode("Last-Modified:", $line);
                 $site[CrawlConstants::MODIFIED] = 
                     strtotime(@trim($line_parts[1]));
             }
-
         }
         if(!isset($site[CrawlConstants::ENCODING]) ) {
-            $site[CrawlConstants::ENCODING] =
-                mb_detect_encoding($site[$value], 'auto');
+        //first guess we are html and try to find charset in doc head
+            $end_head = stripos($site[CrawlConstants::PAGE], "</head");
+            if($end_head) {
+                $len_c = strlen("charset=");
+                $start_charset = stripos($site[CrawlConstants::PAGE], 
+                    "charset=") + $len_c;
+                if($start_charset && $start_charset < $end_head) {
+                    $end_charset = stripos($site[CrawlConstants::PAGE], 
+                        '"', $start_charset);
+                    if($end_charset && $end_charset < $end_head) {
+                        $pre_charset = substr($site[CrawlConstants::PAGE],
+                            $start_charset, $end_charset - $start_charset);
+                        $charset_parts = 
+                            preg_split("/[\s,]+/", $pre_charset);
+                        $site[CrawlConstants::ENCODING] = strtoupper(
+                            $charset_parts[0]);
+                        $site[CrawlConstants::PAGE] = substr_replace(
+                            $site[CrawlConstants::PAGE], "", $start_charset -
+                                $len_c, $end_charset - $start_charset + $len_c);
+                    }
+                }
+            }
+            
+            if(!isset($site[CrawlConstants::ENCODING])) {
+                //else  fallback to auto-detect
+                $site[CrawlConstants::ENCODING] =
+                    mb_detect_encoding($site[$value], 'auto');
+            }
         }
         if(!isset($site[CrawlConstants::SERVER]) ) {
             $site[CrawlConstants::SERVER] = "unknown";

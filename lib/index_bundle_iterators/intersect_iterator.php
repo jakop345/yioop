@@ -1,5 +1,5 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
@@ -34,7 +34,7 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 
-/** 
+/**
  *Loads base class for iterating
  */
 require_once BASE_DIR.'/lib/index_bundle_iterators/index_bundle_iterator.php';
@@ -75,22 +75,35 @@ class IntersectIterator extends IndexBundleIterator
     var $to_advance_index;
 
     /**
+	 * An array holding iterator no corresponding to the word key
+	 * @var array
+	 */
+	var $word_iterator_map;															//Added by Ravi Dhillon
+
+	/**
+	 * Number of elements in $this->word_iterator_map
+	 * @var int
+	 */
+    var $num_words;																	//Added by Ravi Dhillon
+
+    /**
      * Creates an intersect iterator with the given parameters.
      *
      * @param object $index_bundle_iterator to use as a source of documents
      *      to iterate over
      */
-    function __construct($index_bundle_iterators)
+    function __construct($index_bundle_iterators, $word_iterator_map)				//Modified by Ravi Dhillon
     {
         $this->index_bundle_iterators = $index_bundle_iterators;
-
+		$this->word_iterator_map     = $word_iterator_map;							//Added by Ravi Dhillon
+		$this->num_words = count($word_iterator_map);								//Added by Ravi Dhillon
         $this->num_iterators = count($index_bundle_iterators);
         $this->num_docs = 0;
         $this->results_per_block = 1;
-        
+
         /*
              We take an initial guess of the num_docs we returns as the sum
-             of the num_docs of the underlying iterators. We are also setting 
+             of the num_docs of the underlying iterators. We are also setting
              up here that we return at most one posting at a time from each
              iterator
         */
@@ -158,22 +171,29 @@ class IntersectIterator extends IndexBundleIterator
             $len_lists = array();
             $position_lists[0] = $docs[$key][self::POSITION_LIST];
             $len_lists[0] = count($docs[$key][self::POSITION_LIST]);
-            for($i = 1; $i < $this->num_iterators; $i++) {
-                $i_docs = 
-                    $this->index_bundle_iterators[$i]->currentDocsWithWord();
-                if(isset($i_docs[$key][self::POSITION_LIST]) &&
-                   ($ct = count($i_docs[$key][self::POSITION_LIST]) > 0 )) {
-                    $position_lists[] = $i_docs[$key][self::POSITION_LIST];
-                    $len_lists[] = $ct;
+			for($i = 1; $i < $this->num_words; $i++) {														//Modified by Ravi Dhillon
+                if($this->word_iterator_map[$i]<$i) {														//Added by Ravi Dhillon
+                	$position_lists[] = $position_lists[$this->word_iterator_map[$i]];
+                	$docs[$key][self::RELEVANCE] +=
+							$docs[$key][self::RELEVANCE];
                 }
+                else {																						//Added by Ravi Dhillon
+					$i_docs =
+						$this->index_bundle_iterators[$this->word_iterator_map[$i]]->currentDocsWithWord();	//Modified by Ravi Dhillon
+					if(isset($i_docs[$key][self::POSITION_LIST]) &&
+					   ($ct = count($i_docs[$key][self::POSITION_LIST]) > 0 )) {
+						$position_lists[] = $i_docs[$key][self::POSITION_LIST];
+						$len_lists[] = $ct;
+					}
 
-                if(isset($i_docs[$key])) {
-                    $docs[$key][self::RELEVANCE] += 
-                        $i_docs[$key][self::RELEVANCE];
-                }
+					if(isset($i_docs[$key])) {
+						$docs[$key][self::RELEVANCE] +=
+							$i_docs[$key][self::RELEVANCE];
+					}
+				}
             }
             if(count($position_lists) > 1) {
-                $docs[$key][self::PROXIMITY] = 
+                $docs[$key][self::PROXIMITY] =
                     $this->computeProximity($position_lists, $len_lists,
                         $docs[$key][self::IS_DOC]);
             } else {
@@ -182,7 +202,7 @@ class IntersectIterator extends IndexBundleIterator
             $docs[$key][self::SCORE] = $docs[$key][self::DOC_RANK] *
                  $docs[$key][self::RELEVANCE] * $docs[$key][self::PROXIMITY];
         }
-        $this->count_block = count($docs); 
+        $this->count_block = count($docs);
         $this->pages = $docs;
         return $docs;
     }
@@ -192,12 +212,13 @@ class IntersectIterator extends IndexBundleIterator
      * a score for how close those words were in the given document
      *
      *  @param array $position_lists a 2D array item number => position_list
-     *      (locations in doc where item occurred) for that item. 
+     *      (locations in doc where item occurred) for that item.
      *  @param array $len_lists length for each item of its position list
      *  @param bool $is_doc whether this is the position list of a document
      *      or a link
      *  @return sum of smallest abs of position differences between terms
      */
+    /*
     function computeProximity(&$word_position_lists, &$word_len_lists, $is_doc)
     {
         $num_iterators = $this->num_iterators;
@@ -227,7 +248,7 @@ class IntersectIterator extends IndexBundleIterator
             $positions = array($o_position);
             for($i = 1; $i < $num; $i++) {
                 $positions[$i] = $position_lists[$i][$counters[$i]];
-                if($positions[$i] < $o_position && 
+                if($positions[$i] < $o_position &&
                     $counters[$i] < $len_lists[$i] - 1) {
                     $min_counter = $i;
                 }
@@ -247,6 +268,100 @@ class IntersectIterator extends IndexBundleIterator
 
         return $weight*($num - 1)/$min_diff;
     }
+	*/
+
+	/**
+     * Given the position_lists of a collection of terms computes
+     * a score for how close those words were in the given document
+     *
+     *  @param array $position_lists a 2D array item number => position_list
+     *      (locations in doc where item occurred) for that item.
+     *  @param array $len_lists length for each item of its position list
+     *  @param bool $is_doc whether this is the position list of a document
+     *      or a link
+     *  @return sum of inverse of all covers computed by plane sweep algorithm
+     */
+    function computeProximity(&$word_position_lists, &$word_len_lists, $is_doc)
+    {
+        $num_iterators = $this->num_iterators;
+        if($num_iterators < 1) return 1;
+
+        $covers = array();
+		$position_list = $word_position_lists;
+		$interval = array();
+		$num_words = count($position_list);
+		for ($i = 0; $i < $num_words; $i++) {
+		    $min = array_shift($position_list[$i]);
+		    if(isset($min)){
+				array_push($interval,array($min,$i));
+		    	for($j = 0;$j < $num_words; $j++){
+		    		if(isset($position_list[$j][0]) && $min == $position_list[$j][0]){
+		    			array_shift($position_list[$j]);
+		    		}
+		    	}
+		    }
+		}
+
+		if(count($interval) != $num_words){
+			return 0;
+		}
+		sort($interval);
+		$l = array_shift($interval);
+		$r = end($interval);
+		$stop = false;
+		if(sizeof($position_list[$l[1]])==0){
+			$stop = true;
+		}
+		while(!$stop){
+			$p = array_shift($position_list[$l[1]]);
+			for ($i = 0;$i < $num_words; $i++){
+				if(isset($position_list[$i][0]) && $p == $position_list[$i][0]){
+					array_shift($position_list[$i]);
+				}
+		    }
+			$q = $interval[0][0];
+			if($p>$r[0]){
+				array_push($covers,array($l[0],$r[0]));
+				array_push($interval,array($p,$l[1]));
+			}
+			else{
+				if($p<$q){
+					array_unshift($interval,array($p,$l[1]));
+				}
+				else{
+					array_push($interval,array($p,$l[1]));
+					sort($interval);
+				}
+			}
+			$l = array_shift($interval);
+			$r = end($interval);
+			if(sizeof($position_list[$l[1]])==0){
+				$stop = true;
+			}
+
+		}
+		array_push($covers,array($l[0],$r[0]));
+		$score = 0;
+		if($is_doc){
+			$weight = TITLE_WEIGHT;
+			$cover = array_shift($covers);
+			while(isset($cover[1]) && $cover[1] < AD_HOC_TITLE_LENGTH){
+				$score += ($weight/($cover[1]-$cover[0]+1));
+				$cover = array_shift($covers);
+			}
+			$weight = DESCRIPTION_WEIGHT;
+			foreach($covers as $cover){
+				$score += ($weight/($cover[1]-$cover[0]+1));
+			}
+		}
+		else{
+			$weight = LINK_WEIGHT;
+			foreach($covers as $cover){
+				$score += ($weight/($cover[1]-$cover[0]+1));
+			}
+		}
+		return $score;
+    }
 
     /**
      * Finds the next generation and doc offset amongst all the iterators
@@ -260,16 +375,16 @@ class IntersectIterator extends IndexBundleIterator
             return -1;
         }
         $gen_doc_offset[0] = $biggest_gen_offset;
-        $all_same = true; 
+        $all_same = true;
         for($i = 1; $i < $this->num_iterators; $i++) {
-            $cur_gen_doc_offset = 
+            $cur_gen_doc_offset =
                 $this->index_bundle_iterators[
                     $i]->currentGenDocOffsetWithWord();
             $gen_doc_offset[$i] = $cur_gen_doc_offset;
             if($cur_gen_doc_offset == -1) {
                 return -1;
             }
-            $gen_doc_cmp = $this->genDocOffsetCmp($cur_gen_doc_offset, 
+            $gen_doc_cmp = $this->genDocOffsetCmp($cur_gen_doc_offset,
                 $biggest_gen_offset);
             if($gen_doc_cmp > 0) {
                 $biggest_gen_offset = $cur_gen_doc_offset;
@@ -285,17 +400,17 @@ class IntersectIterator extends IndexBundleIterator
         $i = 0;
         while($i != $last_changed) {
             if($last_changed == -1) $last_changed = 0;
-            if($this->genDocOffsetCmp($gen_doc_offset[$i], 
-                $biggest_gen_offset) < 0) { 
+            if($this->genDocOffsetCmp($gen_doc_offset[$i],
+                $biggest_gen_offset) < 0) {
                 $iterator = $this->index_bundle_iterators[$i];
                 $iterator->advance($biggest_gen_offset);
-                $cur_gen_doc_offset = 
+                $cur_gen_doc_offset =
                     $iterator->currentGenDocOffsetWithWord();
                 $gen_doc_offset[$i] = $cur_gen_doc_offset;
                 if($cur_gen_doc_offset == -1) {
                     return -1;
                 }
-                if($this->genDocOffsetCmp($cur_gen_doc_offset, 
+                if($this->genDocOffsetCmp($cur_gen_doc_offset,
                     $biggest_gen_offset) > 0) {
                     $last_changed = $i;
                     $biggest_gen_offset = $cur_gen_doc_offset;
@@ -314,10 +429,10 @@ class IntersectIterator extends IndexBundleIterator
      * Forwards the iterator one group of docs
      * @param array $gen_doc_offset a generation, doc_offset pair. If set,
      *      the must be of greater than or equal generation, and if equal the
-     *      next block must all have $doc_offsets larger than or equal to 
+     *      next block must all have $doc_offsets larger than or equal to
      *      this value
      */
-    function advance($gen_doc_offset = null) 
+    function advance($gen_doc_offset = null)
     {
         $this->advanceSeenDocs();
 
@@ -326,24 +441,24 @@ class IntersectIterator extends IndexBundleIterator
         //num_docs can change when advance() called so that's why we recompute
         $total_num_docs = 0;
         for($i = 0; $i < $this->num_iterators; $i++) {
-             $this->seen_docs_unfiltered += 
+             $this->seen_docs_unfiltered +=
                 $this->index_bundle_iterators[$i]->seen_docs;
             $total_num_docs += $this->index_bundle_iterators[$i]->num_docs;
         }
         if($this->seen_docs_unfiltered > 0) {
-            $this->num_docs = 
+            $this->num_docs =
                 floor(($this->seen_docs * $total_num_docs) /
                 $this->seen_docs_unfiltered);
-        } 
+        }
         $this->index_bundle_iterators[0]->advance($gen_doc_offset);
 
     }
 
     /**
-     * Gets the doc_offset and generation for the next document that 
+     * Gets the doc_offset and generation for the next document that
      * would be return by this iterator
      *
-     * @return mixed an array with the desired document offset 
+     * @return mixed an array with the desired document offset
      *  and generation; -1 on fail
      */
     function currentGenDocOffsetWithWord() {

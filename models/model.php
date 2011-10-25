@@ -147,11 +147,7 @@ class Model implements CrawlConstants
                 }
             }
             // do a little cleaning on text
-            $page[self::TITLE] = mb_convert_encoding(
-                 $page[self::TITLE], "UTF-8", "auto");
-            $page[self::DESCRIPTION] = mb_convert_encoding(
-                 $page[self::DESCRIPTION], "UTF-8", "auto");
-                 
+
             if($words != NULL) {
                 $page[self::TITLE] = 
                     $this->boldKeywords($page[self::TITLE], $words);

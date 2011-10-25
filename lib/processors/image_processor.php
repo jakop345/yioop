@@ -59,6 +59,7 @@ class ImageProcessor extends PageProcessor
      *      subclasses
      * @param string $page  the image represented as a character string
      * @param string $url  the url where the image was downloaded from
+     *
      * @return array summary information including a thumbnail and a 
      *      description (where the description is just the url)
      */

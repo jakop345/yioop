@@ -267,6 +267,10 @@ class CrawlModel extends Model implements CrawlConstants
         foreach($rows as $row) {
             $this->deleteCrawlMix($row['MIX_TIMESTAMP']);
         }
+        $current_timestamp = $this->getCurrentIndexDatabaseName();
+        if($current_timestamp == $timestamp) {
+            $this->db->execute("DELETE FROM CURRENT_WEB_INDEX");
+        }
     }
 
     /**

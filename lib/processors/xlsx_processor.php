@@ -107,7 +107,8 @@ class XlsxProcessor extends TextProcessor
                 }
 
                 //Getting the language from xlsx file
-                $summary[self::LANG] = self::lang($summary[self::DESCRIPTION]);
+                $summary[self::LANG] = 
+                    self::calculateLang($summary[self::DESCRIPTION], $url);
             }
 
             $summary[self::LINKS]=$sites;
@@ -215,42 +216,7 @@ class XlsxProcessor extends TextProcessor
         }
         return $descriptions;
     }
-    
-    /**
-     *  Determines the language of the xlsx document by looking at data
-     *  and guessing the language
-     *  Used the code from html_processor.php
-     *
-     *  @param string $sample_text sample text to try guess the language from
-     *
-     *  @return string language tag for guessed language
-     */
-    static function lang($sample_text = NULL)
-    {
-        $lang = NULL;
-        
-        if($lang == NULL && $sample_text != NULL) {
-            $words = mb_split("[[:space:]]|".PUNCT, $sample_text);
-            $num_words = count($words);
-            $ascii_count = 0;
-            foreach($words as $word) {
-                if(strlen($word) == mb_strlen($word)) {
-                    $ascii_count++;
-                }
-            }
-            // crude, but let's guess ASCII == english
-            if($ascii_count/$num_words > EN_RATIO) {
-                $lang = 'en';
-            } else {
-                $lang = NULL;
-            }
-        } else {
-            $lang = NULL;
-        }
-        
-        return $lang;
-    }
-    
+
     /**
      * Returns up to MAX_LINK_PER_PAGE many links from the supplied
      * dom object where links have been canonicalized according to

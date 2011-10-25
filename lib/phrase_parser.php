@@ -1,5 +1,5 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
@@ -36,27 +36,27 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 /**
  *  Load the stem word functions, if necessary
  */
-foreach(glob(BASE_DIR."/lib/stemmers/*_stemmer.php") 
-    as $filename) { 
+foreach(glob(BASE_DIR."/lib/stemmers/*_stemmer.php")
+    as $filename) {
     require_once $filename;
 }
- 
+
 /**
  * Reads in constants used as enums used for storing web sites
  */
 require_once BASE_DIR."/lib/crawl_constants.php";
 
 /**
- * Library of functions used to manipulate words and phrases 
+ * Library of functions used to manipulate words and phrases
  *
  * @author Chris Pollett
  *
  * @package seek_quarry
  * @subpackage library
  */
-class PhraseParser 
+class PhraseParser
 {
-    /** 
+    /**
      * Language tags and their corresponding stemmer
      * @var array
      */
@@ -66,6 +66,28 @@ class PhraseParser
         'en-GB' => "EnStemmer",
         'en-CA' => "EnStemmer",
      );
+
+    /**
+     * Language tags and their corresponding character n-gram length
+     * (should only use one of character n-grams or stemmer)
+     */
+     static $CHARGRAMS = array(
+        'ar' => 5,
+        'de' => 5,
+        'es' => 5,
+        'fr' => 5,
+        'fr-FR' => '5',
+        'he' => 5,
+        'in-ID' => 5,
+        'it' => 5,
+        'ko' => 3,
+        'ja' => 3,
+        'ru' => 5,
+        'th' => 4,
+        'zh-CN' => 2,
+        'zh' => 2
+     );
+
     /**
      * Converts a summary of a web page into a string of space separated words
      *
@@ -75,9 +97,9 @@ class PhraseParser
      */
     static function extractWordStringPageSummary($page)
     {
-        $title_phrase_string = mb_ereg_replace(PUNCT, " ", 
+        $title_phrase_string = mb_ereg_replace(PUNCT, " ",
             $page[CrawlConstants::TITLE]);
-        $description_phrase_string = mb_ereg_replace(PUNCT, " ", 
+        $description_phrase_string = mb_ereg_replace(PUNCT, " ",
             $page[CrawlConstants::DESCRIPTION]);
 
         $page_string = $title_phrase_string . " " . $description_phrase_string;
@@ -85,9 +107,32 @@ class PhraseParser
 
         return $page_string;
     }
-    
+
     /**
-     * Extracts all phrases (sequences of adjacent words) from $string of 
+     * Extracts all phrases (sequences of adjacent words) from $string of
+     * length less than or equal to $len.
+     *
+     * @param string $string subject to extract phrases from
+     * @param int $len longest length of phrases to consider
+     * @param string $lang locale tag for stemming
+     * @return array of phrases
+     */
+    static function extractPhrases($string,
+        $len =  MAX_PHRASE_LEN, $lang = NULL)
+    {
+        $phrases = array();
+
+        for($i = 0; $i < $len; $i++) {
+            $phrases =
+                array_merge($phrases,
+                    self::extractPhrasesOfLength($string, $i, $lang));
+        }
+
+        return $phrases;
+    }
+
+    /**
+     * Extracts all phrases (sequences of adjacent words) from $string of
      * length less than or equal to $len.
      *
      * @param string $string subject to extract phrases from
@@ -95,13 +140,13 @@ class PhraseParser
      * @param string $lang locale tag for stemming
      * @return array pairs of the form (phrase, number of occurrences)
      */
-    static function extractPhrasesAndCount($string, 
-        $len =  MAX_PHRASE_LEN, $lang = NULL) 
+    static function extractPhrasesAndCount($string,
+        $len =  MAX_PHRASE_LEN, $lang = NULL)
     {
         $phrases = array();
 
         for($i = 0; $i < $len; $i++) {
-            $phrases = 
+            $phrases =
                 array_merge($phrases,
                     self::extractPhrasesOfLength($string, $i, $lang));
         }
@@ -112,7 +157,7 @@ class PhraseParser
     }
 
     /**
-     * Extracts all phrases (sequences of adjacent words) from $string of 
+     * Extracts all phrases (sequences of adjacent words) from $string of
      * length less than or equal to $len.
      *
      * @param string $string subject to extract phrases from
@@ -121,7 +166,7 @@ class PhraseParser
      * @return array word => list of positions at which the word occurred in
      *      the document
      */
-    static function extractPhrasesInLists($string, 
+    static function extractPhrasesInLists($string,
         $len =  MAX_PHRASE_LEN, $lang = NULL)
     {
         $phrase_lists = array();
@@ -137,7 +182,7 @@ class PhraseParser
     }
 
     /**
-     * Extracts all phrases (sequences of adjacent words) from $string of 
+     * Extracts all phrases (sequences of adjacent words) from $string of
      * length exactly equal to $len.
      *
      * @param string $string subject to extract phrases from
@@ -145,13 +190,13 @@ class PhraseParser
      * @param string $lang locale tag for stemming
      * @return array of phrases
      */
-    static function extractPhrasesOfLength($string, $phrase_len, $lang = NULL) 
+    static function extractPhrasesOfLength($string, $phrase_len, $lang = NULL)
     {
         $phrases = array();
-       
+
         for($i = 0; $i < $phrase_len; $i++) {
-            $phrases = array_merge($phrases, 
-                self::extractPhrasesOfLengthOffset($string, 
+            $phrases = array_merge($phrases,
+                self::extractPhrasesOfLengthOffset($string,
                     $phrase_len, $i, $lang));
         }
 
@@ -159,7 +204,7 @@ class PhraseParser
     }
 
     /**
-     * Extracts phrases (sequences of adjacent words) from $string of 
+     * Extracts phrases (sequences of adjacent words) from $string of
      * length exactly equal to $len, beginning with the $offset'th word.
      * This extracts the the $len many words after offset, then the $len
      * many words after that, and so on.
@@ -170,8 +215,8 @@ class PhraseParser
      * @param string $lang locale tag for stemming
      * @return array of phrases
      */
-    static function extractPhrasesOfLengthOffset($string, 
-        $phrase_len, $offset, $lang = NULL) 
+    static function extractPhrasesOfLengthOffset($string,
+        $phrase_len, $offset, $lang = NULL)
     {
         $words = mb_split("[[:space:]]|".PUNCT, $string);
 
@@ -186,7 +231,7 @@ class PhraseParser
             if($words[$i] == "") {continue;}
 
             $phrase_number = ($i - $offset)/$phrase_len;
-            if(!isset($stems[$phrase_number])) { 
+            if(!isset($stems[$phrase_number])) {
                 $stems[$phrase_number]="";
                 $first_time = "";
             }
@@ -195,7 +240,7 @@ class PhraseParser
 
             if($stemmer != NULL) {
                 $stem_obj = new $stemmer(); //for php 5.2 compatibility
-                $stem =  $stem_obj->stem($pre_stem); 
+                $stem =  $stem_obj->stem($pre_stem);
             } else {
                 $stem = $pre_stem;
             }
@@ -204,8 +249,51 @@ class PhraseParser
             $first_time = " ";
         }
 
+        if($phrase_len == 1) {
+            /*
+                calculate character n-grams if dealing with single terms
+                not phrases; this only changes anything if no stemmer
+                was used
+             */
+            $ngrams = self::getCharGramsTerm($stems, $lang);
+            $stems = array_merge($stems, $ngrams);
+        }
+
         return $stems;
 
     }
 
+    /**
+     * Returns the characters n-grams for the given terms where n is the length
+     * Yioop uses for the language in question. If a stemmer is used for
+     * language then n-gramming is no done and this just returns an empty array
+     *
+     * @param array $term the terms to make n-grams for
+     * @param string $lang locale tag to determine n to be used for n-gramming
+     *
+     * @return array the n-grams for the terms in question
+     */
+    static function getCharGramsTerm($terms, $lang)
+    {
+        if(isset(self::$CHARGRAMS[$lang])) {
+            $n = self::$CHARGRAMS[$lang];
+        } else {
+            return array();
+        }
+
+        $ngrams = array();
+
+        foreach($terms as $term) {
+            $pre_gram = $term;
+            $last_pos = mb_strlen($pre_gram) - $n;
+            if($last_pos < 0) {
+                $ngrams[] = $pre_gram;
+            } else {
+                for($i = 0; $i <= $last_pos; $i++) {
+                    $ngrams[] = mb_substr($pre_gram, $i, $n);
+                }
+            }
+        }
+        return $ngrams;
+    }
 }

@@ -429,7 +429,7 @@ class ArcTool implements CrawlConstants
         echo "\narc_tool is used to look at the contents of\n";
         echo "WebArchiveBundles and IndexArchiveBundles.\n";
         echo "It will look for these using the path provided or \n";
-        echo "will check in the Yioop! crawl directory asa a fall back\n\n";
+        echo "will check in the Yioop! crawl directory as a fall back\n\n";
         echo "The available commands for arc_tool are:\n\n";
         echo "php arc_tool.php list //returns a list \n".
             "//of all the archives in the Yioop! crawl directory.\n\n";

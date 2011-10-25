@@ -54,7 +54,8 @@ class RtfProcessor extends TextProcessor
      *
      * @param string $page rtf string of a document
      * @param string $url location the document came from, not used by 
-     *      RTFProcessor at this point. 
+     *      RTFProcessor at this point.
+     *
      * @return array a summary of (title, description,links, and content) of 
      *      the information in $page
      */

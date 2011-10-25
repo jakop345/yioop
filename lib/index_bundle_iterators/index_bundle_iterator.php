@@ -245,7 +245,6 @@ abstract class IndexBundleIterator implements CrawlConstants
      */
     function advanceSeenDocs()
     {
-
         if($this->current_block_fresh != true) {
             $doc_block = $this->currentDocsWithWord();
             if($doc_block == -1 || !is_array($doc_block) ) {

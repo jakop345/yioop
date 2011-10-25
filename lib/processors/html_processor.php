@@ -68,24 +68,34 @@ class HtmlProcessor extends TextProcessor
     function process($page, $url)
     {
         $summary = NULL;
-
         if(is_string($page)) {
-            $page = preg_replace('@<script[^>]*?>.*?</script>@si', ' ', $page);
             $page = preg_replace('/>/', '> ', $page);
+            $page = preg_replace('@<script[^>]*?>.*?</script>@si', 
+                ' ', $page);
             $dom = self::dom($page);
             if($dom !== false && self::checkMetaRobots($dom)) {
                 $summary[self::TITLE] = self::title($dom);
-                $summary[self::DESCRIPTION] = self::description($dom); 
+                $summary[self::DESCRIPTION] = self::description($dom);
                 $summary[self::LANG] = self::lang($dom, 
-                    $summary[self::DESCRIPTION]);
+                    $summary[self::DESCRIPTION], $url);
                 $summary[self::LINKS] = self::links($dom, $url);
+                $location = self::location($dom, $url);
+                if($location) {
+                    $summary[self::LINKS][$location] = "location:".$url;
+                    $summary[self::LOCATION] = true;
+                    $summary[self::DESCRIPTION] .= $url." => ".$location;
+                    if(!$summary[self::TITLE]) {
+                        $summary[self::TITLE] = $url;
+                    }
+                }
                 $summary[self::PAGE] = $page;
-
                 if(strlen($summary[self::DESCRIPTION] . $summary[self::TITLE])
-                    == 0 && count($summary[self::LINKS]) == 0) {
+                    == 0 && count($summary[self::LINKS]) == 0 && !$location) {
                     //maybe not html? treat as text still try to get urls
                     $summary = parent::process($page, $url);
                 }
+            } else if( $dom == false ) {
+                $summary = parent::process($page, $url);
             }
         }
 
@@ -105,9 +115,29 @@ class HtmlProcessor extends TextProcessor
      */
     static function dom($page) 
     {
+        /* 
+             first do a crude check to see if we have at least an <html> tag
+             otherwise try to make a simplified html document from what we got
+         */
+        if(!stristr($page, "<html")) {
+            $head_tags = "<title><meta><base>";
+            $head = strip_tags($page, $head_tags);
+            $body_tags = "<frameset><frame>".
+                "<h1><h2><h3><h4><h5><h6><p><div>".
+                "<a><table><tr><td><th>";
+            $body = strip_tags($page, $body_tags);
+            $page = "<html><head>$head</head><body>$body</body></html>";
+        }
+
         $dom = new DOMDocument();
 
-        @$dom->loadHTML($page);
+        //this hack modified from php.net
+        @$dom->loadHTML('<?xml encoding="UTF-8">' . $page);
+
+        foreach ($dom->childNodes as $item)
+        if ($item->nodeType == XML_PI_NODE)
+            $dom->removeChild($item); // remove hack
+        $dom->encoding = "UTF-8"; // insert proper
 
         return $dom;
     }
@@ -146,10 +176,12 @@ class HtmlProcessor extends TextProcessor
      *
      *  @param object $dom  a document object to check the language of
      *  @param string $sample_text sample text to try guess the language from
+     *  @param string $url url of web-page as a fallback look at the country
+     *      to figure out language
      *
      *  @return string language tag for guessed language
      */
-    static function lang($dom, $sample_text = NULL)
+    static function lang($dom, $sample_text = NULL, $url = NULL)
     {
 
         $htmls = $dom->getElementsByTagName("html");
@@ -161,23 +193,8 @@ class HtmlProcessor extends TextProcessor
             }
         }
 
-        if($lang == NULL && $sample_text != NULL){
-            $words = mb_split("[[:space:]]|".PUNCT, $sample_text);
-            $num_words = count($words);
-            $ascii_count = 0;
-            foreach($words as $word) {
-                if(strlen($word) == mb_strlen($word)) {
-                    $ascii_count++;
-                }
-            }
-            // crude, but let's guess ASCII == english
-            if($ascii_count/$num_words > EN_RATIO) {
-                $lang = 'en';
-            } else {
-                $lang = NULL;
-            }
-        } else {
-            $lang = NULL;
+        if($lang == NULL){
+            $lang = self::calculateLang($sample_text, $url);
         }
         return $lang;
     }
@@ -223,7 +240,7 @@ class HtmlProcessor extends TextProcessor
 
         //look for a meta tag with a description
         foreach($metas as $meta) {
-            if(mb_stristr($meta->getAttribute('name'), "description")) {
+            if(stristr($meta->getAttribute('name'), "description")) {
                 $description .= " ".$meta->getAttribute('content');
             }
         }
@@ -249,6 +266,29 @@ class HtmlProcessor extends TextProcessor
     }
 
     /**
+     *
+     */
+    static function location($dom, $site)
+    {
+        $xpath = new DOMXPath($dom);
+        //Look for Refresh or Location
+        $metas = $xpath->evaluate("/html//meta");
+        foreach($metas as $meta) {
+            if(stristr($meta->getAttribute('http-equiv'), "refresh") ||
+               stristr($meta->getAttribute('http-equiv'), "location")) {
+                $urls = explode("=", $meta->getAttribute('content'));
+                if(isset($urls[1]) && !UrlParser::checkRecursiveUrl($urls[1]) &&
+                    strlen($urls[1]) < MAX_URL_LENGTH) {
+                    $url = @trim($urls[1]);
+                    return $url;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Returns up to MAX_LINK_PER_PAGE many links from the supplied
      * dom object where links have been canonicalized according to
      * the supplied $site information.
@@ -263,6 +303,7 @@ class HtmlProcessor extends TextProcessor
         $sites = array();
 
         $xpath = new DOMXPath($dom);
+
         $base_refs = $xpath->evaluate("/html//base");
         if($base_refs->item(0)) {
             $tmp_site = $base_refs->item(0)->getAttribute('href');
@@ -271,9 +312,10 @@ class HtmlProcessor extends TextProcessor
             }
         }
 
+        $i = 0;
+
         $hrefs = $xpath->evaluate("/html/body//a");
 
-        $i = 0;
 
         foreach($hrefs as $href) {
             if($i < MAX_LINKS_PER_PAGE) {

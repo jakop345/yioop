@@ -71,6 +71,7 @@ class PptProcessor extends TextProcessor
      *      TextProcessor at this point. Some of its subclasses override
      *      this method and use url to produce complete links for
      *      relative links within a document
+     *
      * @return array a summary of (title, description,links, and content) of 
      *      the information in $page
      */

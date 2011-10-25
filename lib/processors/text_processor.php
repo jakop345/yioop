@@ -39,6 +39,12 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 require_once BASE_DIR."/lib/processors/page_processor.php";
 
 /**
+ * So can extract parts of the URL if need to guess lang
+ */
+require_once BASE_DIR."/lib/url_parser.php";
+
+
+/**
  * Parent class common to all processors used to create crawl summary 
  * information  that involves basically text data
  *
@@ -48,6 +54,10 @@ require_once BASE_DIR."/lib/processors/page_processor.php";
  */
 class TextProcessor extends PageProcessor
 {
+    /**
+     * Max number of chars to extract for description
+     */
+    const MAX_DESCRIPTION_LEN = 2000;
 
     /**
      * Computes a summary based on a text string of a document
@@ -57,15 +67,18 @@ class TextProcessor extends PageProcessor
      *      TextProcessor at this point. Some of its subclasses override
      *      this method and use url to produce complete links for
      *      relative links within a document
+     *
      * @return array a summary of (title, description,links, and content) of 
      *      the information in $page
      */
     function process($page, $url)
     {
         $summary = NULL;
+
         if(is_string($page)) {
             $summary[self::TITLE] = "";
-            $summary[self::DESCRIPTION] = mb_substr($page, 0, 400);
+            $summary[self::DESCRIPTION] = mb_substr($page, 0, 
+                self::MAX_DESCRIPTION_LEN);
             $summary[self::LANG] = self::calculateLang(
                 $summary[self::DESCRIPTION]);
             $summary[self::LINKS] = self::extractHttpHttpsUrls($page);
@@ -78,14 +91,20 @@ class TextProcessor extends PageProcessor
 
     /**
      *  Tries to determine the language of the document by looking at the
-     *  $sample_text provided
+     *  $sample_text and $url provided
      *  the language
      *  @param string $sample_text sample text to try guess the language from
+     *  @param string $url url of web-page as a fallback look at the country
+     *      to figure out language
      *
      *  @return string language tag for guessed language
      */
-    static function calculateLang($sample_text = NULL)
+    static function calculateLang($sample_text = NULL, $url = NULL)
     {
+        if($url != NULL) {
+            $lang = UrlParser::getLang($url);
+            if($lang != NULL) return $lang;
+        }
         if($sample_text != NULL){
             $words = mb_split("[[:space:]]|".PUNCT, $sample_text);
             $num_words = count($words);
@@ -104,6 +123,8 @@ class TextProcessor extends PageProcessor
         } else {
             $lang = NULL;
         }
+
+
         return $lang;
     }
 

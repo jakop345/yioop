@@ -52,6 +52,9 @@ require_once BASE_DIR."/lib/url_parser.php";
  */
 class RssProcessor extends TextProcessor
 {
+    /**
+     * Max number of chars to extract for description
+     */
     const MAX_DESCRIPTION_LEN = 2000;
 
 
@@ -95,33 +98,19 @@ class RssProcessor extends TextProcessor
      *
      *  @param object $dom - a document object to check the language of
      *  @param string $sample_text sample text to try guess the language from
+     *  @param string $url guess lang from url as fallback
      *
      *  @return string language tag for guessed language
      */
-    static function lang($dom, $sample_text = NULL)
+    static function lang($dom, $sample_text = NULL, $url = NULL)
     {
         $xpath = new DOMXPath($dom);
         $languages = $xpath->evaluate("/rss/channel/language");
         if($languages && is_object($languages) && 
             is_object($languages->item(0))) {
             return $languages->item(0)->textContent;
-        } else if($sample_text != NULL){
-            $words = mb_split("[[:space:]]|".PUNCT, $sample_text);
-            $num_words = count($words);
-            $ascii_count = 0;
-            foreach($words as $word) {
-                if(strlen($word) == mb_strlen($word)) {
-                    $ascii_count++;
-                }
-            }
-            // crude, but let's guess ASCII == english
-            if($ascii_count/$num_words > EN_RATIO) {
-                $lang = 'en';
-            } else {
-                $lang = NULL;
-            }
         } else {
-            $lang = NULL;
+            $lang = self::calculateLang($sample_text, $url);
         }
         return $lang;
     }

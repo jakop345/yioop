@@ -703,7 +703,7 @@ class Fetcher implements CrawlConstants
     }
 
     /**
-     *
+     * @param array &$info
      */
     function setCrawlParamsFromArray(&$info)
     {
@@ -872,6 +872,13 @@ class Fetcher implements CrawlConstants
         foreach($site_pages as $site) {
             $response_code = $site[self::HTTP_CODE]; 
 
+            //deals with short URLs and directs them to the original link
+            if(isset($site[self::LOCATION]) && 
+                count($site[self::LOCATION]) > 0) {
+                array_unshift($site[self::LOCATION], $site[self::URL]);
+                $site[self::URL] = array_pop($site[self::LOCATION]);
+            }
+
             //process robot.txt files separately
             if(isset($site[self::ROBOT_PATHS])) {
                 if($response_code >= 200 && $response_code < 300) {
@@ -913,15 +920,39 @@ class Fetcher implements CrawlConstants
             } else {
                 $processor = new $page_processor();
             }
+
             if(isset($site[self::PAGE])) {
+                if(!isset($site[self::ENCODING])) {
+                    $site[self::ENCODING] = "UTF-8";
+                }
+                //if not UTF-8 convert before doing anything else
+                if(isset($site[self::ENCODING]) && 
+                    $site[self::ENCODING] != "UTF-8" && 
+                    $site[self::ENCODING] != "" &&
+                    ($page_processor == "TextProcessor" ||
+                    is_subclass_of($page_processor, "TextProcessor"))) {
+                    if(!@mb_check_encoding($site[self::PAGE], 
+                        $site[self::ENCODING])) {
+                        crawlLog("  NOT VALID ENCODING DETECTED!!");
+                    }
+                    crawlLog("  Converting from encoding ".
+                        $site[self::ENCODING]."...");
+                    $site[self::PAGE] = mb_convert_encoding($site[self::PAGE],
+                        "UTF-8", $site[self::ENCODING]);
+                }
                 crawlLog("  Using Processor...".$page_processor);
                 $doc_info = $processor->handle($site[self::PAGE], 
                     $site[self::URL]);
             } else {
                 $doc_info = false;
             }
+
             if($doc_info) {
                 $site[self::DOC_INFO] =  $doc_info;
+                if(isset($doc_info[self::LOCATION])) {
+                    $site[self::HASH] = crawlHash(
+                        crawlHash($site[self::URL], true). "LOCATION", true);
+                }
                 $site[self::ROBOT_INSTANCE] = ROBOT_INSTANCE;
 
                 if(!is_dir(CRAWL_DIR."/cache")) {
@@ -936,9 +967,6 @@ class Fetcher implements CrawlConstants
                     } else {
                         $site[self::PAGE] = NULL;
                     }
-                }
-                if(!isset($site[self::ENCODING])) {
-                    $site[self::ENCODING] = "UTF-8";
                 }
 
                 $this->copySiteFields($i, $site, $summarized_site_pages, 
@@ -955,6 +983,11 @@ class Fetcher implements CrawlConstants
                     $summarized_site_pages[$i][self::JUST_METAS] = true;
                 }
                 if(isset($site[self::DOC_INFO][self::LANG])) {
+                    if($site[self::DOC_INFO][self::LANG] == 'en' &&
+                        $site[self::ENCODING] != "UTF-8") {
+                        $site[self::DOC_INFO][self::LANG] =
+                            self::guessLangEncoding($site[self::ENCODING]);
+                    }
                     $summarized_site_pages[$i][self::LANG] = 
                         $site[self::DOC_INFO][self::LANG];
                 }
@@ -972,7 +1005,6 @@ class Fetcher implements CrawlConstants
                     $this->processSubdocs($i, $site, $summarized_site_pages,
                        $stored_site_pages);
                 }
-
                 $i++;
             }
         } // end for
@@ -1011,7 +1043,8 @@ class Fetcher implements CrawlConstants
         $summary_fields = array(self::IP_ADDRESSES, self::WEIGHT,
             self::TIMESTAMP, self::TYPE, self::ENCODING, self::HTTP_CODE,
             self::HASH, self::SERVER, self::SERVER_VERSION,
-            self::OPERATING_SYSTEM, self::MODIFIED, self::ROBOT_INSTANCE);
+            self::OPERATING_SYSTEM, self::MODIFIED, self::ROBOT_INSTANCE,
+            self::LOCATION);
 
         foreach($summary_fields as $field) {
             if(isset($site[$field])) {
@@ -1477,8 +1510,15 @@ class Fetcher implements CrawlConstants
 
             foreach($site[self::LINKS] as $url => $link_text) {
                 $link_meta_ids = array();
+                $location_link = false;
                 if(strlen($url) > 0) {
                     $summary = array();
+                    if(substr($link_text, 0, 9) == "location:") {
+                        $location_link = true;
+                        $link_meta_ids[] = $link_text;
+                        $link_meta_ids[] = "location:".
+                            crawlHash($site[self::URL]);
+                    }
                     $elink_flag = (UrlParser::getHost($url) != 
                         UrlParser::getHost($site[self::URL])) ? true : false;
                     $had_links = true;
@@ -1513,7 +1553,8 @@ class Fetcher implements CrawlConstants
                         mb_ereg_replace(PUNCT, " ", $link_text);
                     $link_word_lists = 
                         PhraseParser::extractPhrasesInLists($link_text,
-                            MAX_PHRASE_LEN, $lang);
+                        MAX_PHRASE_LEN, $lang);
+
                     $index_shard->addDocumentWords($link_keys, 
                         self::NEEDS_OFFSET_FLAG, 
                         $link_word_lists, $link_meta_ids, false, $link_rank);
@@ -1569,6 +1610,13 @@ class Fetcher implements CrawlConstants
         $meta_ids[] = 'info:'.$site[self::URL];
         $meta_ids[] = 'info:'.crawlHash($site[self::URL]);
         $meta_ids[] = 'site:all';
+        if(isset($site[self::LOCATION]) && count($site[self::LOCATION]) > 0){
+            foreach($site[self::LOCATION] as $location) {
+                $meta_ids[] = 'info:'.$location;
+                $meta_ids[] = 'info:'.crawlHash($location);
+                $meta_ids[] = 'location:'.$location;
+            }
+        }
 
         foreach($site[self::IP_ADDRESSES] as $address) {
             $meta_ids[] = 'ip:'.$address;
@@ -1638,6 +1686,37 @@ class Fetcher implements CrawlConstants
         }
 
         return $meta_ids;
+    }
+
+    /**
+     * Tries to guess at a language tag based on the name of a character
+     * encoding
+     *
+     *  @param string $encoding a character encoding name
+     *
+     *  @return string guessed language tag拟主
+     */
+    static function guessLangEncoding($encoding)
+    {
+        $lang = array("EUC-JP", "Shift_JIS", "JIS", "ISO-2022-JP");
+        if(in_array($encoding, $lang)) {
+            return "ja";
+        }
+        $lang = array("EUC-CN", "GB2312", "EUC-TW", "HZ", "CP936", "BIG-5",
+            "CP950");
+        if(in_array($encoding, $lang)) {
+            return "zh-CN";
+        }
+        $lang = array("EUC-KR", "UHC", "CP949", "ISO-2022-KR");
+        if(in_array($encoding, $lang)) {
+            return "ko";
+        }
+        $lang = array("Windows-1251", "CP1251", "CP866", "IBM866", "KOI8-R");
+        if(in_array($encoding, $lang)) {
+            return "ru";
+        }
+
+        return 'en';
     }
 }
 
