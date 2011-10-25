@@ -299,16 +299,16 @@ class FetchUrl implements CrawlConstants
         }
         if(!isset($site[CrawlConstants::ENCODING]) ) {
         //first guess we are html and try to find charset in doc head
-            $end_head = stripos($site[CrawlConstants::PAGE], "</head");
+            $end_head = stripos($site[$value], "</head");
             if($end_head) {
                 $len_c = strlen("charset=");
-                $start_charset = stripos($site[CrawlConstants::PAGE], 
+                $start_charset = stripos($site[$value], 
                     "charset=") + $len_c;
                 if($start_charset && $start_charset < $end_head) {
-                    $end_charset = stripos($site[CrawlConstants::PAGE], 
+                    $end_charset = stripos($site[$value], 
                         '"', $start_charset);
                     if($end_charset && $end_charset < $end_head) {
-                        $pre_charset = substr($site[CrawlConstants::PAGE],
+                        $pre_charset = substr($site[$value],
                             $start_charset, $end_charset - $start_charset);
                         $charset_parts = 
                             preg_split("/[\s,]+/", $pre_charset);

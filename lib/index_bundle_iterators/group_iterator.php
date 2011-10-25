@@ -314,7 +314,6 @@ class GroupIterator extends IndexBundleIterator
      */
     function groupByHashAndAggregate(&$pre_out_pages)
     {
-        $domain_vector = array();
         foreach($pre_out_pages as $hash_url => $data) {
             $hash = substr($data[0]['KEY'], IndexShard::DOC_KEY_LEN, 
                 IndexShard::DOC_KEY_LEN);
@@ -329,8 +328,8 @@ class GroupIterator extends IndexBundleIterator
 
             $this->aggregateScores($hash_url, $pre_out_pages[$hash_url]);
 
-            if(isset($pre_out_pages[$hash_url][self::HASH])) {
-                $hash = $pre_out_pages[$hash_url][self::HASH];
+            if(isset($pre_out_pages[$hash_url][0][self::HASH])) {
+                $hash = $pre_out_pages[$hash_url][0][self::HASH];
                 if(isset($this->grouped_hashes[$hash])) {
                     unset($pre_out_pages[$hash_url]);
                 } else if(isset($this->current_seen_hashes[$hash])) {
