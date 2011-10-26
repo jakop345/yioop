@@ -332,19 +332,23 @@ class GroupIterator extends IndexBundleIterator
                 $hash = $pre_out_pages[$hash_url][0][self::HASH];
                 if(isset($this->grouped_hashes[$hash])) {
                     unset($pre_out_pages[$hash_url]);
-                } else if(isset($this->current_seen_hashes[$hash])) {
-                    $previous_url = $this->current_seen_hashes[$hash];
-                    if($pre_out_pages[$previous_url][0][
-                        self::HASH_SUM_SCORE] >= 
-                        $pre_out_pages[$hash_url][0][self::HASH_SUM_SCORE]){
-                        unset($pre_out_pages[$hash_url]);
-                    } else {
-                        $this->current_seen_hashes[$hash] = $hash_url;
-                        unset($pre_out_pages[$previous_url]);
-                    }
                 } else {
-                    $this->current_seen_hashes[$hash] = $hash_url;
+                    if(!isset($this->current_seen_hashes[$hash])) {
+                        $this->current_seen_hashes[$hash] = array();
+                    }
+                    if(!isset($this->current_seen_hashes[$hash][$hash_url])) {
+                        $this->current_seen_hashes[$hash][$hash_url] = 0;
+                    }
+                    $this->current_seen_hashes[$hash][$hash_url] += 
+                        $pre_out_pages[$hash_url][0][self::HASH_SUM_SCORE];
                 }
+            }
+        }
+        foreach($this->current_seen_hashes as $hash => $url_data) {
+            arsort($url_data);
+            array_shift($url_data);
+            foreach($url_data as $hash_url => $value) {
+                unset($pre_out_pages[$hash_url]);
             }
         }
     }
@@ -638,7 +642,7 @@ class GroupIterator extends IndexBundleIterator
             $this->grouped_keys[$hash_url] = true;
         }
 
-        foreach($this->current_seen_hashes as $hash) {
+        foreach($this->current_seen_hashes as $hash => $url_data) {
             $this->grouped_hashes[$hash] = true;
         }
 

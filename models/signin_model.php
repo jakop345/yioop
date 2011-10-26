@@ -79,6 +79,9 @@ class SigninModel extends Model
             "WHERE USER_NAME = '$username' LIMIT 1";
 
         $result = $this->db->execute($sql);
+        if(!$result) {
+            return false;
+        }
         $row = $this->db->fetchArray($result);
 
         return ($username == $row['USER_NAME'] && 
@@ -99,6 +102,7 @@ class SigninModel extends Model
 
         $sql = "SELECT USER_ID FROM USER WHERE USER_NAME = '$username' LIMIT 1";
         $result = $this->db->execute($sql);
+        if(!$result) return false;
         $row = $this->db->fetchArray($result);
         $user_id = $row['USER_ID'];
         return $user_id;
