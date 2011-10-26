@@ -297,36 +297,41 @@ class FetchUrl implements CrawlConstants
                     strtotime(@trim($line_parts[1]));
             }
         }
-        if(!isset($site[CrawlConstants::ENCODING]) ) {
-        //first guess we are html and try to find charset in doc head
-            $end_head = stripos($site[CrawlConstants::PAGE], "</head");
-            if($end_head) {
-                $len_c = strlen("charset=");
-                $start_charset = stripos($site[CrawlConstants::PAGE], 
-                    "charset=") + $len_c;
-                if($start_charset && $start_charset < $end_head) {
-                    $end_charset = stripos($site[CrawlConstants::PAGE], 
-                        '"', $start_charset);
-                    if($end_charset && $end_charset < $end_head) {
-                        $pre_charset = substr($site[CrawlConstants::PAGE],
-                            $start_charset, $end_charset - $start_charset);
-                        $charset_parts = 
-                            preg_split("/[\s,]+/", $pre_charset);
-                        $site[CrawlConstants::ENCODING] = strtoupper(
-                            $charset_parts[0]);
-                        $site[CrawlConstants::PAGE] = substr_replace(
-                            $site[CrawlConstants::PAGE], "", $start_charset -
-                                $len_c, $end_charset - $start_charset + $len_c);
-                    }
+        /*
+           If the doc is HTML and it uses a http-equiv to set the encoding
+           then we override what the server says (if anything). As we
+           are going to convert to UTF-8 we remove the charset info
+           from the meta tag so cached pages will display correctly and
+           redirects without char encoding won't be given a different hash.
+         */
+        $end_head = stripos($site[$value], "</head");
+        if($end_head) {
+            $len_c = strlen("charset=");
+            $start_charset = stripos($site[$value], 
+                "charset=") + $len_c;
+            if($start_charset && $start_charset < $end_head) {
+                $end_charset = stripos($site[$value], 
+                    '"', $start_charset);
+                if($end_charset && $end_charset < $end_head) {
+                    $pre_charset = substr($site[$value],
+                        $start_charset, $end_charset - $start_charset);
+                    $charset_parts = 
+                        preg_split("/[\s,]+/", $pre_charset);
+                    $site[CrawlConstants::ENCODING] = strtoupper(
+                        $charset_parts[0]);
+                    $site[CrawlConstants::PAGE] = substr_replace(
+                        $site[CrawlConstants::PAGE], "", $start_charset -
+                            $len_c, $end_charset - $start_charset + $len_c);
                 }
             }
-            
-            if(!isset($site[CrawlConstants::ENCODING])) {
-                //else  fallback to auto-detect
-                $site[CrawlConstants::ENCODING] =
-                    mb_detect_encoding($site[$value], 'auto');
-            }
         }
+        
+        if(!isset($site[CrawlConstants::ENCODING])) {
+            //else  fallback to auto-detect
+            $site[CrawlConstants::ENCODING] =
+                mb_detect_encoding($site[$value], 'auto');
+        }
+
         if(!isset($site[CrawlConstants::SERVER]) ) {
             $site[CrawlConstants::SERVER] = "unknown";
         }

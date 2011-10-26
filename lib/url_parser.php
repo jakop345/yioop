@@ -294,7 +294,9 @@ class UrlParser
     {
         $subdomains = array();
         $url_parts = @parse_url($url);
-        if(strlen($url_parts['host']) <= 0) { return $subdomains; }
+        if(!isset($url_parts['host']) || strlen($url_parts['host']) <= 0) { 
+            return $subdomains; 
+        }
         $host = $url_parts['host'];
         $host_parts = explode(".", $host);
         $num_parts = count($host_parts);
