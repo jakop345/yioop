@@ -315,12 +315,11 @@ class GroupIterator extends IndexBundleIterator
     function groupByHashAndAggregate(&$pre_out_pages)
     {
         foreach($pre_out_pages as $hash_url => $data) {
-            $hash = substr($data[0]['KEY'], IndexShard::DOC_KEY_LEN, 
-                IndexShard::DOC_KEY_LEN);
-            if(!$data[0][self::IS_DOC] || 
-                crawlHash($hash_url. "LOCATION", true) == $hash) {
+            $hash = $pre_out_pages[$hash_url][0][self::HASH];
+            $is_location = (crawlHash($hash_url. "LOCATION", true) == $hash);
+            if(!$data[0][self::IS_DOC] || $is_location) {
                 $item = $this->lookupDoc($data[0]['KEY'], 
-                    $data[0][self::IS_DOC]);
+                    $is_location); 
                 if($item != false) {
                     array_unshift($pre_out_pages[$hash_url], $item);
                 }
@@ -380,15 +379,19 @@ class GroupIterator extends IndexBundleIterator
             $keys = array_keys($doc_array);
             $key = $keys[0];
             $item = $doc_array[$key];
-            if(!$item[self::IS_DOC] && $is_location) {
-                return $this->lookupDoc($key);
+            $hash = substr($key, IndexShard::DOC_KEY_LEN, 
+                IndexShard::DOC_KEY_LEN);
+            $is2_location = (crawlHash($hash_url. "LOCATION", true) == $hash);
+            if($is2_location) {
+                return $this->lookupDoc($key, $is2_location);
+            } else if(!isset($item[self::IS_DOC]) || !$item[self::IS_DOC]) {
+                return $this->lookupDoc($key, false);
             }
             $item[self::RELEVANCE] = $relevance;
             $item[self::SCORE] = $item[self::DOC_RANK]*pow(1.1, $relevance);
             $item['KEY'] = $key;
             $item['INDEX'] = $word_iterator->index;
-            $item[self::HASH] = substr($key,
-                IndexShard::DOC_KEY_LEN, IndexShard::DOC_KEY_LEN);
+            $item[self::HASH] = $hash;
             $item[self::INLINKS] = substr($key,
                 2*IndexShard::DOC_KEY_LEN, IndexShard::DOC_KEY_LEN);
         }

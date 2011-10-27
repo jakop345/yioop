@@ -38,6 +38,61 @@
  */
 require_once BASE_DIR."/models/locale_model.php";
 
+
+/**
+ *  Attempts to guess the user's locale based on the request, session,
+ *  and user-agent data
+ *
+ * @return string IANA language tag of the guessed locale
+ */
+function guessLocale()
+{
+    /* the request variable l and the browser's HTTP_ACCEPT_LANGUAGE
+       are used to determine the locale */
+    if(isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
+        $l_parts = explode(",", $_SERVER['HTTP_ACCEPT_LANGUAGE']);
+        if(count($l_parts) > 0) {
+            $guess_l = $l_parts[0];
+        }
+        $guess_map = array(
+            "en" => "en-US",
+            "en-us" => "en-US",
+            "en-US" => "en-US",
+            "fr" => "fr-FR",
+            "ko" => "ko",
+            "in" => "in-ID",
+            "ja" => "ja",
+            "vi" => "vi-VN",
+            "vi-vn" => "vi-VN",
+            "vi-VN" => "vi-VN",
+            "zh" => "zh-CN",
+            "zh-CN" => "zh-CN",
+            "zh-cn" => "zh-CN",
+        );
+        if(isset($guess_map[$guess_l])) {
+            $guess_l = $guess_map[$guess_l];
+        }
+
+    }
+
+    if(isset($_SESSION['l']) || isset($_REQUEST['l']) || isset($guess_l)) {
+        $l = (isset($_REQUEST['l'])) ? $_REQUEST['l'] : 
+            ((isset($_SESSION['l'])) ? $_SESSION['l'] : $guess_l);
+        if(strlen($l) < 10) { 
+            $l= addslashes($l);
+            if(is_dir(LOCALE_DIR."/$l")) {
+                $locale_tag = $l;
+            }
+        }
+    }
+
+    if(!isset($locale_tag)) {
+        $locale_tag = DEFAULT_LOCALE;
+    }
+
+    return $locale_tag;
+}
+
 /**
  * Translate the supplied arguments into the current locale.
  * This function takes a variable number of arguments. The first
