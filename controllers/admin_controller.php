@@ -186,20 +186,17 @@ class AdminController extends Controller implements CrawlConstants
         } else {
             $activity = "manageAccount";
         }
-
         $allowed = false;
         if(!PROFILE) {
             $allowed_activities = array( array( 
                 "ACTIVITY_NAME" => 
                 $this->activityModel->getActivityNameFromMethodName($activity),
-                'METHOD_NAME' => $activity));
+                'METHOD_NAME' => $activity)); 
             $allowed = true;
         } else {
             $allowed_activities =
                  $this->userModel->getUserActivities($_SESSION['USER_ID']);
         }
-        
-
         foreach($allowed_activities as $allowed_activity) {
             if($activity == $allowed_activity['METHOD_NAME']) {
                  $allowed = true;
