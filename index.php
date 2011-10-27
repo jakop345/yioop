@@ -58,6 +58,11 @@ require_once(BASE_DIR."/models/datasources/".DBMS."_manager.php");
 require_once BASE_DIR."/locale_functions.php";
 
 /**
+ * Load global functions related to checking Yioop! version
+ */
+require_once BASE_DIR."/upgrade_functions.php";
+ 
+/**
  * Load FileCache class in case used
  */
 require_once(BASE_DIR."/lib/file_cache.php");
@@ -168,94 +173,4 @@ function e($text)
     echo $text;
 }
 
-
-/**
- * Checks to see if the locale data of Yioop! in the work dir is older than the
- * currently running Yioop!
- */
-function upgradeLocaleCheck()
-{
-    global $locale_tag;
-    $config_name = LOCALE_DIR."/$locale_tag/configure.ini";
-    $fallback_config_name = 
-        FALLBACK_LOCALE_DIR."/$locale_tag/configure.ini";
-    if(filemtime($fallback_config_name) > filemtime($config_name)) {
-        return "locale";
-    }
-    return false;
-}
-
-/**
- * If the locale data of Yioop! in the work directory is older than the
- * currently running Yioop! then this function is called to at least
- * try to copy the new strings into the old profile.
- */
-function upgradeLocale()
-{
-    global $locale;
-    $locale = new LocaleModel();
-    $locale->extractMergeLocales();
-}
-
-/**
- * Checks to see if the database data of Yioop! is from an older version
- * of Yioop! than the currently running Yioop!
- */
-function upgradeDatabaseCheck()
-{
-    $model = new Model();
-    $model->db->selectDB(DB_NAME);
-    $sql = "SELECT ID FROM VERSION";
-
-    $result = @$model->db->execute($sql);
-    if($result !== false) {
-        $row = $model->db->fetchArray($result);
-        if($row['ID'] == 1) {
-            return false;
-        }
-    }
-    return true;
-}
-
-/**
- * If the database data of Yioop!  is older than the version of the
- * currently running Yioop! then this function is called to try
- * upgrade the database to the new version
- */
-function upgradeDatabase()
-{
-    $versions = array(0, 1);
-    $model = new Model();
-    $model->db->selectDB(DB_NAME);
-    $sql = "SELECT ID FROM VERSION";
-    $result = @$model->db->execute($sql);
-    if($result !== false) {
-        $row = $this->db->fetchArray($result);
-        if(isset($row['ID']) && in_array($row['ID'], $versions)) {
-            $current_version = $row['ID'];
-        } else {
-            $current_version = 0;
-        }
-    } else {
-        $current_version = 0;
-    }
-    $key = array_search($current_version, $versions);
-    $versions = array_slice($versions, $current_version + 1);
-    foreach($versions as $version) {
-        $upgradeDB = "upgradeDatabaseVersion$version";
-        $upgradeDB($model->db);
-    }
-}
-
-/**
- * Upgrades a Version 0 version of the Yioop! database to a Version 1 version
- * @param resource $db database handle to use to upgrade 
- */
-function upgradeDatabaseVersion1($db)
-{
-    $db->execute("CREATE TABLE VERSION( ID INTEGER PRIMARY KEY)");
-    $db->execute("INSERT INTO VERSION VALUES (1)");
-    $db->execute("CREATE TABLE USER_SESSION( USER_ID INTEGER PRIMARY KEY, ".
-        "SESSION VARCHAR(4096))");
-}
 ?>
