@@ -308,10 +308,18 @@ class FetchUrl implements CrawlConstants
         if($end_head) {
             $len_c = strlen("charset=");
             $start_charset = stripos($site[$value], 
-                "charset=") + $len_c;
-            if($start_charset && $start_charset < $end_head) {
+                "charset=");
+            if($start_charset && $start_charset + $len_c < $end_head) {
+                $start_charset += $len_c;
                 $end_charset = stripos($site[$value], 
                     '"', $start_charset);
+                $end_charset2 = false;
+                if(!$end_charset) {
+                    $end_charset2 = stripos($site[$value], "'", $start_charset);
+                }
+                if($end_charset && $end_charset2) {
+                    $end_charset = min($end_charset, $end_charset2);
+                }
                 if($end_charset && $end_charset < $end_head) {
                     $pre_charset = substr($site[$value],
                         $start_charset, $end_charset - $start_charset);

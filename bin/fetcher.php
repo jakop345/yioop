@@ -937,7 +937,7 @@ class Fetcher implements CrawlConstants
                     }
                     crawlLog("  Converting from encoding ".
                         $site[self::ENCODING]."...");
-                    $site[self::PAGE] = mb_convert_encoding($site[self::PAGE],
+                    $site[self::PAGE] = @mb_convert_encoding($site[self::PAGE],
                         "UTF-8", $site[self::ENCODING]);
                 }
                 crawlLog("  Using Processor...".$page_processor);
