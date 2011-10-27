@@ -232,6 +232,7 @@ class FetchUrl implements CrawlConstants
         $site = array();
         $site[CrawlConstants::LOCATION] = array();
         do {
+            $continue = false;
             $CRLFCRLF = strpos($header_and_page, "\x0D\x0A\x0D\x0A", 
                 $new_offset);
             $LFLF = strpos($header_and_page, "\x0A\x0A", $new_offset);
@@ -242,7 +243,7 @@ class FetchUrl implements CrawlConstants
                 : $header_offset + 2;
             $redirect_pos = stripos($header_and_page, 'Location:', $old_offset);
             $redirect_str = "Location:";
-            if($redirect_pos == false) {
+            if($redirect_pos === false) {
                 $redirect_pos = 
                     stripos($header_and_page, 'Refresh:', $old_offset);
                 $redirect_str = "Refresh:";
@@ -250,15 +251,18 @@ class FetchUrl implements CrawlConstants
             if(isset($header_and_page[$redirect_pos - 1]) &&
                 ord($header_and_page[$redirect_pos - 1]) > 32) {
                 $redirect_pos = $new_offset; //ignore X-XRDS-Location header
-            } else if($redirect_pos !== false){
+            } else if($redirect_pos !== false && $redirect_pos < $new_offset){
                 $redirect_pos += strlen($redirect_str);
                 $pre_line = substr($header_and_page, $redirect_pos,
                     strpos($header_and_page, "\n", $redirect_pos) - 
                     $redirect_pos);
-                $site[CrawlConstants::LOCATION][] = @trim($pre_line);
-
+                $loc = @trim($pre_line);
+                if(strlen($loc) > 0) {
+                    $site[CrawlConstants::LOCATION][] = @$loc;
+                }
+                $continue = true;
             }
-        } while($redirect_pos !== false && $redirect_pos < $new_offset);
+        } while($continue);
 
 
         $site[CrawlConstants::HEADER] = 
