@@ -920,7 +920,6 @@ class Fetcher implements CrawlConstants
             } else {
                 $processor = new $page_processor();
             }
-
             if(isset($site[self::PAGE])) {
                 if(!isset($site[self::ENCODING])) {
                     $site[self::ENCODING] = "UTF-8";

@@ -78,6 +78,8 @@ class PhraseParser
         'fr' => 5,
         'fr-FR' => '5',
         'he' => 5,
+        'hi' => 5,
+        'kn' => 5,
         'in-ID' => 5,
         'it' => 5,
         'ko' => 3,

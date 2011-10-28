@@ -36,6 +36,21 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 /** Loads base model class if necessary */
 require_once BASE_DIR."/models/model.php";
 
+/**
+ * Function for comparing two locale arrays by locale tag so can sort
+ *
+ * @param array $a an associative array of locale info
+ * @param array $b an associative array of locale info
+ *
+ * @return int -1, 0, or 1 depending on which is alphabetically smaller or if
+ *      they are the same size
+ */
+function lessThanLocale($a, $b) {
+    if ($a["LOCALE_TAG"] == $b["LOCALE_TAG"]) {
+        return 0;
+    }
+    return ($a["LOCALE_TAG"] < $b["LOCALE_TAG"]) ? -1 : 1;
+}
 
 /**
  * Used to encapsulate information about a locale (data about a language in
@@ -177,8 +192,8 @@ class LocaleModel extends Model
             
         }
         unset($locales[$i]); //last one will be null
-        
-        
+        usort($locales,"lessThanLocale");
+
         return $locales;
     }
 

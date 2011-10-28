@@ -75,7 +75,7 @@ if(!in_array(DBMS, array('sqlite', 'sqlite3'))) {
 $db->selectDB(DB_NAME);
 
 $db->execute("CREATE TABLE VERSION( ID INTEGER PRIMARY KEY)");
-$db->execute("INSERT INTO VERSION VALUES (1)");
+$db->execute("INSERT INTO VERSION VALUES (2)");
 
 $db->execute("CREATE TABLE USER( USER_ID INTEGER PRIMARY KEY $auto_increment, ".
     "USER_NAME VARCHAR(16) UNIQUE,  PASSWORD VARCHAR(16))");
@@ -114,6 +114,8 @@ $db->execute("INSERT INTO LOCALE VALUES (13, 'ru', 'Русский', 'lr-tb')");
 $db->execute("INSERT INTO LOCALE VALUES (14, 'th', 'ไทย', 'lr-tb')");
 $db->execute("INSERT INTO LOCALE VALUES (15, 'vi-VN', 'Tiếng Việt', 'lr-tb')");
 $db->execute("INSERT INTO LOCALE VALUES (16, 'zh-CN', '中文', 'lr-tb')");
+$db->execute("INSERT INTO LOCALE VALUES (17, 'kn', 'ಕನ್ನಡ', 'lr-tb')");
+$db->execute("INSERT INTO LOCALE VALUES (18, 'hi', 'हिन्दी', 'lr-tb')");
 
 $db->execute("CREATE TABLE ROLE (ROLE_ID INTEGER PRIMARY KEY ".
     "$auto_increment, NAME VARCHAR(512))");
@@ -166,6 +168,18 @@ $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (1, 5,
     'Modifier votre compte' )");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (2, 5, 
     'Modifier les utilisateurs')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (3, 5, 
+    'Modifier les rôles')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (4, 5, 
+    'Modifier les indexes')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (5, 5, 
+    'Mélanger les indexes')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (6, 5, 
+    'Les filtres de recherche')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (7, 5, 
+    'Modifier les lieux')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (8, 5, 
+    'Configurer')");
 
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (1, 9, 'アカウント管理' )");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (2, 9, 'ユーザー管理')");
