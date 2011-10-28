@@ -81,6 +81,7 @@ class PhraseParser
         'hi' => 5,
         'kn' => 5,
         'in-ID' => 5,
+        'pt' => 5,
         'it' => 5,
         'ko' => 3,
         'ja' => 3,
