@@ -55,12 +55,12 @@ require_once(BASE_DIR."/models/datasources/".DBMS."_manager.php");
 /**
  * Load global functions related to localization
  */
-require_once BASE_DIR."/locale_functions.php";
+require_once BASE_DIR."/lib/locale_functions.php";
 
 /**
  * Load global functions related to checking Yioop! version
  */
-require_once BASE_DIR."/upgrade_functions.php";
+require_once BASE_DIR."/lib/upgrade_functions.php";
  
 /**
  * Load FileCache class in case used

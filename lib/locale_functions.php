@@ -94,6 +94,38 @@ function guessLocale()
 }
 
 /**
+ * Tries to guess at a language tag based on the name of a character
+ * encoding
+ *
+ *  @param string $encoding a character encoding name
+ *
+ *  @return string guessed language tag
+ */
+function guessLangEncoding($encoding)
+{
+    $lang = array("EUC-JP", "Shift_JIS", "JIS", "ISO-2022-JP");
+    if(in_array($encoding, $lang)) {
+        return "ja";
+    }
+    $lang = array("EUC-CN", "GBK", "GB2312", "EUC-TW", "HZ", "CP936", 
+        "BIG-5", "CP950");
+    if(in_array($encoding, $lang)) {
+        return "zh-CN";
+    }
+    $lang = array("EUC-KR", "UHC", "CP949", "ISO-2022-KR");
+    if(in_array($encoding, $lang)) {
+        return "ko";
+    }
+    $lang = array("Windows-1251", "CP1251", "CP866", "IBM866", "KOI8-R");
+    if(in_array($encoding, $lang)) {
+        return "ru";
+    }
+
+    return 'en';
+}
+
+
+/**
  * Translate the supplied arguments into the current locale.
  * This function takes a variable number of arguments. The first
  * being an identifier to translate. Additional arguments

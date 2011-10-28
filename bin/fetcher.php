@@ -59,6 +59,7 @@ define("NO_CACHE", true);
 
 /** get the database library based on the current database type */
 require_once BASE_DIR."/models/datasources/".DBMS."_manager.php"; 
+
 /** caches of web pages are stored in a 
  *  web archive bundle, so we load in its definition 
  */
@@ -69,6 +70,9 @@ foreach(glob(BASE_DIR."/lib/archive_bundle_iterators/*_bundle_iterator.php")
     as $filename) { 
     require_once $filename;
 }
+
+/** To guess language based on page encoding */
+require_once BASE_DIR."/lib/locale_functions.php"; 
 
 /** get processors for different file types */
 foreach(glob(BASE_DIR."/lib/processors/*_processor.php") as $filename) { 
@@ -985,7 +989,7 @@ class Fetcher implements CrawlConstants
                     if($site[self::DOC_INFO][self::LANG] == 'en' &&
                         $site[self::ENCODING] != "UTF-8") {
                         $site[self::DOC_INFO][self::LANG] =
-                            self::guessLangEncoding($site[self::ENCODING]);
+                            guessLangEncoding($site[self::ENCODING]);
                     }
                     $summarized_site_pages[$i][self::LANG] = 
                         $site[self::DOC_INFO][self::LANG];
@@ -1687,36 +1691,6 @@ class Fetcher implements CrawlConstants
         return $meta_ids;
     }
 
-    /**
-     * Tries to guess at a language tag based on the name of a character
-     * encoding
-     *
-     *  @param string $encoding a character encoding name
-     *
-     *  @return string guessed language tag拟主
-     */
-    static function guessLangEncoding($encoding)
-    {
-        $lang = array("EUC-JP", "Shift_JIS", "JIS", "ISO-2022-JP");
-        if(in_array($encoding, $lang)) {
-            return "ja";
-        }
-        $lang = array("EUC-CN", "GB2312", "EUC-TW", "HZ", "CP936", "BIG-5",
-            "CP950");
-        if(in_array($encoding, $lang)) {
-            return "zh-CN";
-        }
-        $lang = array("EUC-KR", "UHC", "CP949", "ISO-2022-KR");
-        if(in_array($encoding, $lang)) {
-            return "ko";
-        }
-        $lang = array("Windows-1251", "CP1251", "CP866", "IBM866", "KOI8-R");
-        if(in_array($encoding, $lang)) {
-            return "ru";
-        }
-
-        return 'en';
-    }
 }
 
 /*

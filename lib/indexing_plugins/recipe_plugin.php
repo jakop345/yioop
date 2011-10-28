@@ -477,6 +477,7 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
             "ingredient:" => HtmlProcessor::MAX_DESCRIPTION_LEN);
     }
 }
+
 /**
  * Gets the language tag (for instance, en_US for American English) of the
  * locale that is currently being used.

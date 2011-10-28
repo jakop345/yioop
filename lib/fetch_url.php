@@ -310,34 +310,25 @@ class FetchUrl implements CrawlConstants
          */
         $end_head = stripos($site[$value], "</head");
         if($end_head) {
-            $len_c = strlen("charset=");
-            $start_charset = stripos($site[$value], 
-                "charset=");
-            if($start_charset && $start_charset + $len_c < $end_head) {
-                $start_charset += $len_c;
-                $end_charset = stripos($site[$value], 
-                    '"', $start_charset);
-                $end_charset2 = false;
-                if(!$end_charset) {
-                    $end_charset2 = stripos($site[$value], "'", $start_charset);
-                }
-                if($end_charset && $end_charset2) {
-                    $end_charset = min($end_charset, $end_charset2);
-                }
-                if($end_charset && $end_charset < $end_head) {
-                    $pre_charset = substr($site[$value],
-                        $start_charset, $end_charset - $start_charset);
-                    $charset_parts = 
-                        preg_split("/[\s,]+/", $pre_charset);
-                    $site[CrawlConstants::ENCODING] = strtoupper(
-                        $charset_parts[0]);
-                    $site[CrawlConstants::PAGE] = substr_replace(
-                        $site[CrawlConstants::PAGE], "", $start_charset -
-                            $len_c, $end_charset - $start_charset + $len_c);
+            $reg = "charset(\s*)=(\s*)(\'|\")?(\w+)(\'|\")?";
+            mb_regex_encoding("UTF-8");
+            mb_ereg_search_init($site[$value]);
+            mb_ereg_search($reg);
+            $match = mb_ereg_search_getregs();
+            if(isset($match[0])) {
+                $len_c = mb_strlen($match[0]);
+                $start_charset = mb_ereg_search_getpos() - $len_c;
+                if($start_charset + $len_c < $end_head) {
+                    if(isset($match[4])) {
+                        $site[CrawlConstants::ENCODING] = strtoupper(
+                            $match[4]);
+                        $site[CrawlConstants::PAGE] = substr_replace(
+                            $site[CrawlConstants::PAGE], "", $start_charset, 
+                            $start_charset + $len_c);
+                    }
                 }
             }
         }
-        
         if(!isset($site[CrawlConstants::ENCODING])) {
             //else  fallback to auto-detect
             $site[CrawlConstants::ENCODING] =

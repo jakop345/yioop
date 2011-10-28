@@ -319,7 +319,7 @@ class GroupIterator extends IndexBundleIterator
             $is_location = (crawlHash($hash_url. "LOCATION", true) == $hash);
             if(!$data[0][self::IS_DOC] || $is_location) {
                 $item = $this->lookupDoc($data[0]['KEY'], 
-                    $is_location); 
+                    $is_location, 3); 
                 if($item != false) {
                     array_unshift($pre_out_pages[$hash_url], $item);
                 }
@@ -357,10 +357,12 @@ class GroupIterator extends IndexBundleIterator
      *
      * @param string $doc_key key to look up doc of
      * @param bool $is_location we are doing look up because doc had a refresh
+     * @param int $depth max recursion depth to carry out lookup to if need
+     *      to follow location redirects
      * 
      * @return array consisting of info about the doc
      */
-     function lookupDoc($doc_key, $is_location = false)
+     function lookupDoc($doc_key, $is_location = false, $depth = 3)
      {
         $hash_url = substr($doc_key, 0, IndexShard::DOC_KEY_LEN);
         $prefix = ($is_location) ? "location:" : "info:";
@@ -382,10 +384,12 @@ class GroupIterator extends IndexBundleIterator
             $hash = substr($key, IndexShard::DOC_KEY_LEN, 
                 IndexShard::DOC_KEY_LEN);
             $is2_location = (crawlHash($hash_url. "LOCATION", true) == $hash);
-            if($is2_location) {
-                return $this->lookupDoc($key, $is2_location);
-            } else if(!isset($item[self::IS_DOC]) || !$item[self::IS_DOC]) {
-                return $this->lookupDoc($key, false);
+            if($depth > 0) {
+                if($is2_location) {
+                    return $this->lookupDoc($key, $is2_location, $depth - 1);
+                } else if(!isset($item[self::IS_DOC]) || !$item[self::IS_DOC]) {
+                    return $this->lookupDoc($key, false, $depth - 1);
+                }
             }
             $item[self::RELEVANCE] = $relevance;
             $item[self::SCORE] = $item[self::DOC_RANK]*pow(1.1, $relevance);
