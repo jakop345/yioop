@@ -141,8 +141,8 @@ class CrawlDaemon implements CrawlConstants
             if(!$terminal_flag) {
                 echo "pcntl_fork function does not exist falling back to ".
                     "terminal mode\n";
+                $argv[1] = "terminal";
             }
-            $argv[1] = "terminal";
         }
 
         //used mainly to handle segmentation faults caused by flaky multi_curl
