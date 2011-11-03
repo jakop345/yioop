@@ -120,13 +120,16 @@ class CrawlDaemon implements CrawlConstants
             echo "For example,\n";
             echo "php $name.php start //starts the $name as a daemon\n";
             echo "php $name.php stop //stops the $name daemon\n";
+            echo "php $name.php job //runs $name within the current ".
+                "process, not as a daemon, output going to a log file\n";
             echo "php $name.php terminal //runs $name within the current ".
-                "process not as a daemon\n";
+                "process, not as a daemon, output going to the terminal\n";
             exit();
         }
 
         //the next code is for running as a daemon on *nix systems
-        $terminal_flag = strcmp($argv[1], "terminal") == 0;
+        $terminal_flag = strcmp($argv[1], "terminal") == 0 || 
+            strcmp($argv[1], "job") == 0;
         if(function_exists("pcntl_fork") && !$terminal_flag)  {
             $pid = pcntl_fork();
             if ($pid == -1) {
@@ -138,8 +141,8 @@ class CrawlDaemon implements CrawlConstants
             if(!$terminal_flag) {
                 echo "pcntl_fork function does not exist falling back to ".
                     "terminal mode\n";
+                $argv[1] = "terminal";
             }
-            $argv[1] = "terminal";
         }
 
         //used mainly to handle segmentation faults caused by flaky multi_curl
@@ -194,6 +197,15 @@ class CrawlDaemon implements CrawlConstants
                     serialize($info));
 
                 define("LOG_TO_FILES", false);
+            break;
+
+            case "job":
+                $info = array();
+                $info[self::STATUS] = self::WAITING_START_MESSAGE_STATE;
+                file_put_contents(
+                    CRAWL_DIR."/schedules/$name"."_messages.txt", 
+                    serialize($info));
+                define("LOG_TO_FILES", true);
             break;
 
             default:
