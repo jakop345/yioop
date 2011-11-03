@@ -357,8 +357,8 @@ class Fetcher implements CrawlConstants
 
             if($info === false) {
                 crawlLog("Cannot connect to queue server...".
-                    " will try again in 5 seconds.");
-                sleep(5);
+                    " will try again in ".FETCH_SLEEP_TIME." seconds.");
+                sleep(FETCH_SLEEP_TIME);
                 continue;
             }
 
@@ -369,7 +369,7 @@ class Fetcher implements CrawlConstants
 
             if($info[self::STATUS] == self::NO_DATA_STATE) {
                 crawlLog("No data from queue server. Sleeping...");
-                sleep(5);
+                sleep(FETCH_SLEEP_TIME);
                 continue;
             }
 

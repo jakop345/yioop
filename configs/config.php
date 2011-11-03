@@ -351,6 +351,10 @@ define ('MAX_FETCH_SIZE', 5000);
 /** fetcher must wait at least this long between multi-curl requests */
 define ('MINIMUM_FETCH_LOOP_TIME', 5); 
 
+/** an idling fetcher sleeps this long between queue_server pings*/
+define ('FETCH_SLEEP_TIME', 15); 
+
+
 /** Max time before dirty index (queue_server) and 
     filters (fetcher) will be force saved in seconds*/
 define('FORCE_SAVE_TIME', 3600);
