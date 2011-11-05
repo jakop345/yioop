@@ -240,7 +240,7 @@ $INDEXED_FILE_TYPES =
             "cfml",
             "csv",
             "doc",
-	    "epub",
+            "epub",
             "gif",
             "html",
             "htm",
@@ -354,6 +354,8 @@ define ('MINIMUM_FETCH_LOOP_TIME', 5);
 /** an idling fetcher sleeps this long between queue_server pings*/
 define ('FETCH_SLEEP_TIME', 15); 
 
+/** an queue_server minimim loop idel time*/
+define ('QUEUE_SLEEP_TIME', 5);
 
 /** Max time before dirty index (queue_server) and 
     filters (fetcher) will be force saved in seconds*/

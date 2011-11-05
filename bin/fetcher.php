@@ -1398,6 +1398,7 @@ class Fetcher implements CrawlConstants
 
             if($sleep == true) {
                 crawlLog("Trouble sending to the scheduler\n $info_string...");
+                crawlLog("Maybe post_max_size too small in php.ini file? ...");
                 sleep(5);
             }
             $sleep = true;

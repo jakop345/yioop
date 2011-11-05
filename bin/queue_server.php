@@ -294,13 +294,15 @@ class QueueServer implements CrawlConstants
 
             if( $info[self::STATUS] == self::WAITING_START_MESSAGE_STATE) {
                 crawlLog("Waiting for start message\n");
-                sleep(5);
+                sleep(QUEUE_SLEEP_TIME);
                 continue;
             }
 
             if($info[self::STATUS] == self::STOP_STATE) {
                 continue;
             }
+
+            $start_loop_time = time();
 
             //check and update if necessary the crawl params of current crawl
             $this->checkUpdateCrawlParameters();
@@ -356,8 +358,11 @@ class QueueServer implements CrawlConstants
                     }
                 break;
             }
-            crawlLog("Taking five second sleep...");
-            sleep(5);
+            $time_diff = time() - $start_loop_time;
+            if( $time_diff < QUEUE_SLEEP_TIME) {
+                crawlLog("Sleeping...");
+                sleep(QUEUE_SLEEP_TIME - $time_diff);
+            }
         }
 
         crawlLog("Queue Server shutting down!!");
