@@ -73,8 +73,8 @@ class AdminController extends Controller implements CrawlConstants
      * @var array
      */
     var $activities = array("signin", "manageAccount", "manageUsers",
-        "manageRoles", "manageCrawls", "mixCrawls", "searchFilters",
-        "manageLocales", "crawlStatus", "configure");
+        "manageRoles", "manageCrawls", "fileOptions", "",
+        "searchFilters", "manageLocales", "crawlStatus", "configure");
 
     /** Number of seconds of no fetcher contact before crawl is deemed dead*/
     const CRAWL_TIME_OUT = 1200;
@@ -1271,6 +1271,25 @@ class AdminController extends Controller implements CrawlConstants
     }
 
     /**
+     * Handles admin request related to controlling file options to be used
+     * in a crawl
+     *
+     * This activity allows a user to specify the page range size to be
+     * be used during a crawl as well as which file types can be downloaded
+     *
+     * @return array $data info about the groups and their contents for a
+     *      particular crawl mix
+     */
+    function fileOptions()
+    {
+        $data["ELEMENT"] = "fileoptionsElement";
+        $data['SCRIPT'] = "";
+
+
+        return $data;
+    }
+
+    /**
      * Handles admin request related to the search filter activity
      *
      * This activity allows a user to specify hosts whose web pages are to be
@@ -1475,7 +1494,7 @@ class AdminController extends Controller implements CrawlConstants
             $br = "<br />";
         }
 
-        if(intval(ini_get("post_max_size")) < 16) {
+        if(intval(ini_get("post_max_size")) < 32) {
             $out .= $br. tl('admin_controller_post_size_small');
             $br = "<br />";
         }

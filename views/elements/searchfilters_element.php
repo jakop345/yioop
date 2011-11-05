@@ -34,7 +34,9 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
-
+ * Element used to control how urls are filtered out of search results
+ * (if desired) after a crawl has already been performed.
+ *
  * @author Chris Pollett
  *
  * @package seek_quarry
