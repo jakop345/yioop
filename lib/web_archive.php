@@ -316,7 +316,7 @@ class WebArchive
 
                 $len = $this->compressor->uncompressInt($compressed_len);
 
-                if($len > 0) {
+                if($len > 0 && $len < MAX_ARCHIVE_OBJECT_SIZE) {
                     $compressed_file = fread($fh, $len);
                     $file = $this->compressor->uncompress($compressed_file);
                     $object = @unserialize($file);

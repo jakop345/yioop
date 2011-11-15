@@ -187,8 +187,10 @@ define('NUM_URLS_QUEUE_RAM', 300000);
 /** Minimum weight in priority queue before rebuilt*/
 define('MIN_QUEUE_WEIGHT', 1/100000);
 
-/**  number of web archive files to use to store web pages in */
-define('NUM_ARCHIVE_PARTITIONS', 10);
+/**  largest sized object allowedin a web archive (used to sanity check
+     reading data out of a web archive)
+*/
+define('MAX_ARCHIVE_OBJECT_SIZE', 100000000);
 
 /** number of documents before next gen */
 define('NUM_DOCS_PER_GENERATION', 50000);

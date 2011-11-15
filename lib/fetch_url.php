@@ -91,6 +91,8 @@ class FetchUrl implements CrawlConstants
                 curl_setopt($sites[$i][0], CURLOPT_CONNECTTIMEOUT, PAGE_TIMEOUT);
                 curl_setopt($sites[$i][0], CURLOPT_TIMEOUT, PAGE_TIMEOUT);
                 curl_setopt($sites[$i][0], CURLOPT_HEADER, true);
+                curl_setopt($sites[$i][0], CURLOPT_ENCODING, "");
+                   // ^ need to set for sites like att that use gzip
                 curl_setopt($sites[$i][0], CURLOPT_HTTPHEADER, 
                     array('Range: bytes=0-'.PAGE_RANGE_REQUEST));
                 curl_multi_add_handle($agent_handler, $sites[$i][0]);
