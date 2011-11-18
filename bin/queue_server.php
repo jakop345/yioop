@@ -1657,8 +1657,9 @@ class QueueServer implements CrawlConstants
                 "...Time to create batch: ".
                 (changeInMicrotime($start_time)));
         } else {
-            crawlLog("No fetch batch created!! \nTime failing to make a batch:".
-                (changeInMicrotime($start_time).". Loop properties:$i $count");
+            crawlLog("No fetch batch created!! " .
+                "\nTime failing to make a batch:".
+                (changeInMicrotime($start_time)).". Loop properties:$i $count");
         }
 
     }
