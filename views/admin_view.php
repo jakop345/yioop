@@ -54,7 +54,8 @@ class AdminView extends View
     var $elements = array("language", "activity", "signin", 
         "managecrawls", "manageaccount", "manageusers", "manageroles",
         "mixcrawls", "managelocales", "editlocales", "crawloptions", 
-        "editmix", "fileoptions", "searchfilters", "configure");
+        "editmix", "fileoptions", "searchfilters", 
+        "managemachines", "configure");
     /** Names of helper objects that the view uses to help draw itself 
      *  @var array
      */

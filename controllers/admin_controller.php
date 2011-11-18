@@ -73,8 +73,8 @@ class AdminController extends Controller implements CrawlConstants
      * @var array
      */
     var $activities = array("signin", "manageAccount", "manageUsers",
-        "manageRoles", "manageCrawls", "fileOptions", "",
-        "searchFilters", "manageLocales", "crawlStatus", "configure");
+        "manageRoles", "manageCrawls", "fileOptions", "searchFilters", 
+        "manageMachines", "manageLocales", "crawlStatus", "configure");
 
     /** Number of seconds of no fetcher contact before crawl is deemed dead*/
     const CRAWL_TIME_OUT = 1200;
@@ -1282,10 +1282,18 @@ class AdminController extends Controller implements CrawlConstants
      */
     function fileOptions()
     {
+        global $INDEXED_FILE_TYPES;
         $data["ELEMENT"] = "fileoptionsElement";
         $data['SCRIPT'] = "";
-
-
+        $data['SELECT_SIZE'] = 1;
+        $data['SIZE_VALUE'] = array(10000, 50000, 100000, 500000, 1000000);
+        $data['INDEXED_FILE_TYPES'] = array();
+        foreach($INDEXED_FILE_TYPES as $filetype) {
+            $data['INDEXED_FILE_TYPES'][$filetype] = '';
+        }
+        $data['TITLE_WEIGHT'] = "";
+        $data['DESCRIPTION_WEIGHT'] = "";
+        $data['LINK_WEIGHT'] = "";
         return $data;
     }
 
@@ -1323,6 +1331,22 @@ class AdminController extends Controller implements CrawlConstants
                 implode("\n", $this->searchfiltersModel->getUrls());
         }
 
+        return $data;
+    }
+
+
+    /**
+     * Handles admin request related to the managing the machines which perform
+     *  crawls
+     *
+     * @return array $data 
+     */
+    function manageMachines()
+    {
+        $data["ELEMENT"] = "managemachinesElement";
+        $data['SCRIPT'] = "";
+        $data['MACHINES'] = array();
+        $data['MACHINE_NAMES'] = array();
         return $data;
     }
 
