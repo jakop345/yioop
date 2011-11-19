@@ -166,6 +166,8 @@ interface CrawlConstants
     const POSITION_LIST = 'bn';
     const PROXIMITY = 'bo';
     const LOCATION = 'bp';
+    const INDEXED_FILE_TYPES = 'bq';
+    const PAGE_RANGE_REQUEST = 'br';
 
     const NEEDS_OFFSET_FLAG = 0x7FFFFFFF;
 

@@ -73,8 +73,8 @@ class AdminController extends Controller implements CrawlConstants
      * @var array
      */
     var $activities = array("signin", "manageAccount", "manageUsers",
-        "manageRoles", "manageCrawls", "fileOptions", "",
-        "searchFilters", "manageLocales", "crawlStatus", "configure");
+        "manageRoles", "manageCrawls", "pageOptions", "searchFilters", 
+        "manageMachines", "manageLocales", "crawlStatus", "configure");
 
     /** Number of seconds of no fetcher contact before crawl is deemed dead*/
     const CRAWL_TIME_OUT = 1200;
@@ -732,6 +732,10 @@ class AdminController extends Controller implements CrawlConstants
                         (isset($seed_info['general']['crawl_index'])) ?
                         $seed_info['general']['crawl_index'] :
                         '';
+                    $info[self::PAGE_RANGE_REQUEST] = 
+                        (isset($seed_info['general']['page_range_request'])) ?
+                        intval($seed_info['general']['page_range_request']) :
+                        PAGE_RANGE_REQUEST;
                     $info[self::TO_CRAWL] = 
                         $seed_info['seed_sites']['url'];
                     $info[self::CRAWL_ORDER] = 
@@ -749,6 +753,10 @@ class AdminController extends Controller implements CrawlConstants
                     if(isset($seed_info['indexing_plugins']['plugins'])) {
                         $info[self::INDEXING_PLUGINS] =
                             $seed_info['indexing_plugins']['plugins'];
+                    }
+                    if(isset($seed_info['indexed_file_types']['extensions'])) {
+                        $info[self::INDEXED_FILE_TYPES] =
+                            $seed_info['indexed_file_types']['extensions'];
                     }
                     if(isset($_REQUEST['description'])) {
                         $description = 
@@ -852,7 +860,18 @@ class AdminController extends Controller implements CrawlConstants
                     $no_further_changes = false;
                     if(isset($_REQUEST['load_option']) && 
                         $_REQUEST['load_option'] == 1) {
+                        $seed_current = $this->crawlModel->getSeedInfo();
                         $seed_info = $this->crawlModel->getSeedInfo(true);
+                        if(isset(
+                            $seed_current['general']['page_range_request'])) {
+                            $seed_info['general']['page_range_request'] =
+                                $seed_current['general']['page_range_request'];
+                        }
+                        if(isset(
+                            $seed_current['indexed_file_types'])) {
+                            $seed_info['indexed_file_types'] =
+                                $seed_current['general']['indexed_file_types'];
+                        }
                         $update_flag = true;
                         $no_further_changes = true;
                     } else if (isset($_REQUEST['load_option']) && 
@@ -1280,11 +1299,74 @@ class AdminController extends Controller implements CrawlConstants
      * @return array $data info about the groups and their contents for a
      *      particular crawl mix
      */
-    function fileOptions()
+    function pageOptions()
     {
-        $data["ELEMENT"] = "fileoptionsElement";
-        $data['SCRIPT'] = "";
+        global $INDEXED_FILE_TYPES;
+        $seed_info = $this->crawlModel->getSeedInfo();
 
+        if(!isset($seed_info["indexed_file_types"]["extensions"])) {
+            $seed_info["indexed_file_types"]["extensions"] =
+                $INDEXED_FILE_TYPES;
+        }
+        $data["ELEMENT"] = "pageoptionsElement";
+        $data['SCRIPT'] = "";
+        $profile =  $this->profileModel->getProfile(WORK_DIRECTORY);
+        $weights = array('TITLE_WEIGHT' => 4, 
+            'DESCRIPTION_WEIGHT' => 1, 'LINK_WEIGHT' => 2);
+        $change = false;
+        foreach($weights as $weight => $value) {
+            if(isset($_REQUEST[$weight])) {
+                $data[$weight] = $this->clean($_REQUEST[$weight], 'float', 1
+                    );
+                $profile[$weight] = $data[$weight];
+                $change = true;
+            } else if(isset($profile[$weight]) && $profile[$weight] != ""){
+                $data[$weight] = $profile[$weight];
+            } else {
+                $data[$weight] = $value;
+                $profile[$weight] = $data[$weight];
+                $change = true;
+            }
+        }
+
+        if($change == true) {
+            $this->profileModel->updateProfile(WORK_DIRECTORY, array(), 
+                $profile);
+        }
+        $data['SIZE_VALUE'] = array(10000=>10000, 50000=>50000, 
+            100000=>100000, 500000=>500000, 1000000=>1000000,
+            5000000=>5000000, 10000000=>10000000);
+        $data['INDEXED_FILE_TYPES'] = array();
+        if(isset($_REQUEST["page_range_request"]) && 
+            in_array($_REQUEST["page_range_request"], $data['SIZE_VALUE'])) {
+            $seed_info["general"]["page_range_request"] =  
+                $_REQUEST["page_range_request"];
+        }
+        if(!isset($seed_info["general"]["page_range_request"])) {
+            $seed_info["general"]["page_range_request"] = PAGE_RANGE_REQUEST;
+        }
+        $data['PAGE_SIZE'] = $seed_info["general"]["page_range_request"];
+
+        $filetypes = array();
+        foreach($INDEXED_FILE_TYPES as $filetype) {
+            $ison =false;
+            if(isset($_REQUEST["filetype"])) {
+                if(isset($_REQUEST["filetype"][$filetype])) {
+                    $filetypes[] = $filetype;
+                    $ison = true;
+                }
+            } else {
+                if(in_array($filetype, 
+                    $seed_info["indexed_file_types"]["extensions"])) {
+                    $filetypes[] = $filetype;
+                    $ison = true;
+                }
+            }
+            $data['INDEXED_FILE_TYPES'][$filetype] = ($ison) ? 
+                "checked='checked'" :'';
+        }
+        $seed_info["indexed_file_types"]["extensions"] = $filetypes;
+        $this->crawlModel->setSeedInfo($seed_info);
 
         return $data;
     }
@@ -1323,6 +1405,22 @@ class AdminController extends Controller implements CrawlConstants
                 implode("\n", $this->searchfiltersModel->getUrls());
         }
 
+        return $data;
+    }
+
+
+    /**
+     * Handles admin request related to the managing the machines which perform
+     *  crawls
+     *
+     * @return array $data 
+     */
+    function manageMachines()
+    {
+        $data["ELEMENT"] = "managemachinesElement";
+        $data['SCRIPT'] = "";
+        $data['MACHINES'] = array();
+        $data['MACHINE_NAMES'] = array();
         return $data;
     }
 

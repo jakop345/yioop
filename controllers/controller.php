@@ -231,7 +231,8 @@ abstract class Controller
 
         case "string":
             if(isset($value)) {
-                $clean_value = htmlentities($value, ENT_QUOTES, "UTF-8");
+                $value2 = str_replace("&amp;", "&", $value);
+                $clean_value = htmlentities($value2, ENT_QUOTES, "UTF-8");
             } else {
                 $clean_value = $default;
             }

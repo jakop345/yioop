@@ -664,7 +664,7 @@ class IndexShard extends PersistentStructure implements
             $average_doc_len = ($this->num_link_docs != 0) ? 
                 $this->len_all_link_docs/$this->num_link_docs : 0;
             $num_docs = $this->num_link_docs;
-            $type_weight = LINK_WEIGHT;
+            $type_weight = floatval(LINK_WEIGHT);
         }
         if(!isset($item['KEY'])) {
             $doc_id = $this->getDocInfoSubstring(
@@ -678,7 +678,8 @@ class IndexShard extends PersistentStructure implements
                 self::docStats($item, $occurrences[self::TITLE], 
                     AD_HOC_TITLE_LENGTH, 
                     $num_doc_or_links, AD_HOC_TITLE_LENGTH, $num_docs, 
-                    $this->num_docs + $this->num_link_docs, TITLE_WEIGHT);
+                    $this->num_docs + $this->num_link_docs, 
+                    floatval(TITLE_WEIGHT));
             }
             if($occurrences[self::DESCRIPTION] > 0) {
                 $average_doc_len = 
@@ -686,12 +687,14 @@ class IndexShard extends PersistentStructure implements
                 $doc_len = max($doc_len - AD_HOC_TITLE_LENGTH, 1);
                 self::docStats($item, $occurrences[self::DESCRIPTION], 
                     $doc_len, $num_doc_or_links, $average_doc_len , $num_docs, 
-                    $this->num_docs + $this->num_link_docs, DESCRIPTION_WEIGHT);
+                    $this->num_docs + $this->num_link_docs, 
+                    floatval(DESCRIPTION_WEIGHT));
             }
             if($occurrences[self::LINKS] > 0) {
                 self::docStats($item, $occurrences[self::LINKS], 
                     $doc_len, $num_doc_or_links, $average_doc_len , $num_docs,
-                    $this->num_docs + $this->num_link_docs, LINK_WEIGHT);
+                    $this->num_docs + $this->num_link_docs, 
+                    floatval(LINK_WEIGHT));
             }
             $item[self::SCORE] = $item[self::DOC_RANK]
                 * $item[self::RELEVANCE];
@@ -738,9 +741,9 @@ class IndexShard extends PersistentStructure implements
      * @return int a score for proximity
      */
     function computeProximity($position_list, $is_doc) {
-        return (!$is_doc) ? LINK_WEIGHT : (isset($position_list[0]) && 
+        return (!$is_doc) ? floatval(LINK_WEIGHT): (isset($position_list[0]) && 
             $position_list[0] < AD_HOC_TITLE_LENGTH) ?
-            TITLE_WEIGHT : DESCRIPTION_WEIGHT;
+            floatval(TITLE_WEIGHT) : floatval(DESCRIPTION_WEIGHT);
     }
 
     /**

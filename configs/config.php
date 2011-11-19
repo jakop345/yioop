@@ -104,6 +104,13 @@ if(file_exists(WORK_DIRECTORY."/profile.php")) {
     define('IN_LINK', true);
     define('IP_LINK', true);
     define('SIGNIN_LINK', true);
+    /** BM25F weight for title text */
+    define ('TITLE_WEIGHT', 4);
+    /** BM25F weight for other text within doc*/
+    define ('DESCRIPTION_WEIGHT', 1);
+    /** BM25F weight for other text within links to a doc*/
+    define ('LINK_WEIGHT', 2);
+
 }
 
 if((DEBUG_LEVEL & ERROR_INFO) == ERROR_INFO) {
@@ -331,15 +338,6 @@ define ('EN_RATIO', 0.9);
 
 /** Number of total description deemed title */
 define ('AD_HOC_TITLE_LENGTH', 10);
-
-/** BM25F weight for title text */
-define ('TITLE_WEIGHT', 4);
-
-/** BM25F weight for other text within doc*/
-define ('DESCRIPTION_WEIGHT', 1);
-
-/** BM25F weight for other text within links to a doc*/
-define ('LINK_WEIGHT', 2);
 
 /**
  * How many non robot urls the fetcher successfully downloads before
