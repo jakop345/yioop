@@ -619,15 +619,28 @@ class CrawlModel extends Model implements CrawlConstants
 ; crawl configuration file
 ;
 EOT;
+        if(!isset($info['general']['page_range_request'])) {
+            $info['general']['page_range_request'] = PAGE_RANGE_REQUEST;
+        }
         $n[] = '[general]';
         $n[] = "crawl_order = '".$info['general']['crawl_order']."';";
         $n[] = "crawl_type = '".$info['general']['crawl_type']."';";
         $n[] = "crawl_index = '".$info['general']['crawl_index']."';";
+        $n[] = "page_range_request = '".
+            $info['general']['page_range_request']."';";
         $bool_string = 
             ($info['general']['restrict_sites_by_url']) ? "true" : "false";
         $n[] = "restrict_sites_by_url = $bool_string;";
         $n[] = "";
-        
+
+        $n[] = "[indexed_file_types]";
+        if(isset($info["indexed_file_types"]['extensions'])) {
+            foreach($info["indexed_file_types"]['extensions'] as $extension) {
+                $n[] = "extensions[] = '$extension';";
+            }
+        }
+        $n[] = "";
+
         $site_types = array('allowed_sites', 'disallowed_sites', 'seed_sites');
         foreach($site_types as $type) {
             $n[] = "[$type]";
@@ -644,11 +657,11 @@ EOT;
             $n[]="";
         }
         $n[] = "[indexing_plugins]";
-        if(isset($info["indexing_plugins"])) {
+        if(isset($info["indexing_plugins"]['plugins'])) {
             foreach($info["indexing_plugins"]['plugins'] as $plugin) {
                 $n[] = "plugins[] = '$plugin';";
             }
-        }//
+        }
 
         $out = implode("\n", $n);
         file_put_contents(WORK_DIRECTORY."/crawl.ini", $out);

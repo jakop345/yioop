@@ -41,7 +41,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @subpackage element
  */
 
-class FileOptionsElement extends Element
+class PageOptionsElement extends Element
 {
 
     /**
@@ -53,20 +53,19 @@ class FileOptionsElement extends Element
         global $INDEXED_FILE_TYPES;
     ?>
         <div class="currentactivity">
-        <form id="fileoptionsForm" method="post" action='?'>
-        <h2><?php e(tl('fileoptions_element_crawl_time'))?></h2>
+        <form id="pageoptionsForm" method="get" action='?'>
+        <h2><?php e(tl('pageoptions_element_crawl_time'))?></h2>
         <input type="hidden" name="c" value="admin" />
         <input type="hidden" name="YIOOP_TOKEN" value="<?php 
             e($data['YIOOP_TOKEN']); ?>" />
-        <input type="hidden" name="a" value="fileOptions" />
-        <input type="hidden" name="arg" value="options" />
-        <div class="topmargin"><b><label for="select-role"><?php 
-            e(tl('fileoptions_element_max_size'))?></label></b>
-            <?php $this->view->optionsHelper->render("select-size", 
-            "selectsize", $data['SIZE_VALUE'], $data['SELECT_SIZE']); 
+        <input type="hidden" name="a" value="pageOptions" />
+        <div class="topmargin"><b><label for="page_range_request"><?php 
+            e(tl('pageoptions_element_page_range'))?></label></b>
+            <?php $this->view->optionsHelper->render("page-range-request", 
+            "page_range_request", $data['SIZE_VALUE'], $data['PAGE_SIZE']); 
             ?></div>
         <div class="topmargin"><b><?php 
-            e(tl('fileoptions_element_file_types'))?></b>
+            e(tl('pageoptions_element_file_types'))?></b>
        </div>
        <table class="ftypesall"><tr>
        <?php $cnt = 0;
@@ -78,7 +77,7 @@ class FileOptionsElement extends Element
             <tr><td><label for="<?php e($filetype); ?>-id"><?php 
                 e($filetype); ?>
             </label></td><td><input type="checkbox" <?php e($checked) ?>
-                name="<?php  e($filetype); ?>" value="true" /></td>
+                name="filetype[<?php  e($filetype); ?>]" value="true" /></td>
             </tr>
        <?php 
                 $cnt++;
@@ -92,26 +91,26 @@ class FileOptionsElement extends Element
             }
         ?>
         </tr></table>
-        <h2><?php e(tl('fileoptions_element_search_time'))?></h2>
+        <h2><?php e(tl('pageoptions_element_page_scoring'))?></h2>
         <table class="weightstable" >
         <tr><th><label for="title-weight"><?php 
-            e(tl('fileoptions_element_title_weight'))?></label></th><td>
-            <input type="text" id="title-weight" <
+            e(tl('pageoptions_element_title_weight'))?></label></th><td>
+            <input type="text" id="title-weight" size="3" maxlength="6"
                 name="TITLE_WEIGHT" 
                 value="<?php  e($data['TITLE_WEIGHT']); ?>" /></td></tr>
         <tr><th><label for="description-weight"><?php 
-            e(tl('fileoptions_element_description_weight'))?></label></th><td>
-            <input type="text" id="description-weight" <
+            e(tl('pageoptions_element_description_weight'))?></label></th><td>
+            <input type="text" id="description-weight" size="3" maxlength="6"
                 name="DESCRIPTION_WEIGHT" 
                 value="<?php  e($data['DESCRIPTION_WEIGHT']); ?>" /></td></tr>
         <tr><th><label for="link-weight"><?php 
-            e(tl('fileoptions_element_link_weight'))?></label></th><td>
-            <input type="text" id="link-weight" <
+            e(tl('pageoptions_element_link_weight'))?></label></th><td>
+            <input type="text" id="link-weight" size="3" maxlength="6"
                 name="LINK_WEIGHT" 
                 value="<?php  e($data['LINK_WEIGHT']); ?>" /></td></tr>
         </table>
         <div class="center slightpad"><button class="buttonbox" 
-            type="submit"><?php e(tl('fileoptions_element_save_options')); 
+            type="submit"><?php e(tl('pageoptions_element_save_options')); 
             ?></button></div>
         </form>
         </div>

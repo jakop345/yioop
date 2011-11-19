@@ -55,6 +55,7 @@ class FetchUrl implements CrawlConstants
      *
      * @param array $sites  an array containing urls of pages to request
      * @param bool $timer  flag, true means print timing statistics to log
+     * @param int $page_range_request maximum number of bytes to download/page
      * @param string $key  the component of $sites[$i] that has the value of 
      *      a url to get defaults to URL
      * @param string $value component of $sites[$i] in which to store the 
@@ -65,8 +66,9 @@ class FetchUrl implements CrawlConstants
      *  @return array an updated array with the contents of those pages
      */ 
 
-    public static function getPages($sites, $timer = false, 
-        $key=CrawlConstants::URL, $value=CrawlConstants::PAGE, 
+    public static function getPages($sites, $timer = false,
+        $page_range_request = PAGE_RANGE_REQUEST,
+        $key=CrawlConstants::URL, $value = CrawlConstants::PAGE, 
         $hash=CrawlConstants::HASH)
     {
         $agent_handler = curl_multi_init(); 
@@ -81,7 +83,8 @@ class FetchUrl implements CrawlConstants
                 $sites[$i][0] = curl_init();
                 $ip_holder[$i] = fopen(CRAWL_DIR."/temp/tmp$i.txt", 'w+');
                 curl_setopt($sites[$i][0], CURLOPT_USERAGENT, USER_AGENT);
-                curl_setopt($sites[$i][0], CURLOPT_URL, $sites[$i][$key]);
+                $url = str_replace("&amp;", "&", $sites[$i][$key]);
+                curl_setopt($sites[$i][0], CURLOPT_URL, $url);
                 curl_setopt($sites[$i][0], CURLOPT_VERBOSE, true);
                 curl_setopt($sites[$i][0], CURLOPT_STDERR, $ip_holder[$i]);
                 curl_setopt($sites[$i][0], CURLOPT_FOLLOWLOCATION, true);
@@ -93,8 +96,10 @@ class FetchUrl implements CrawlConstants
                 curl_setopt($sites[$i][0], CURLOPT_HEADER, true);
                 curl_setopt($sites[$i][0], CURLOPT_ENCODING, "");
                    // ^ need to set for sites like att that use gzip
-                curl_setopt($sites[$i][0], CURLOPT_HTTPHEADER, 
-                    array('Range: bytes=0-'.PAGE_RANGE_REQUEST));
+                if($page_range_request > 0) {
+                    curl_setopt($sites[$i][0], CURLOPT_RANGE, "0-".
+                        $page_range_request);
+                }
                 curl_multi_add_handle($agent_handler, $sites[$i][0]);
             }
         }
@@ -135,7 +140,12 @@ class FetchUrl implements CrawlConstants
             if(isset($sites[$i][0]) && $sites[$i][0]) { 
                 // Get Data and Message Code
                 $content = @curl_multi_getcontent($sites[$i][0]);
-
+                /* 
+                    If the Transfer-encoding was chunked then the Range header 
+                    we sent was ignored. So we manually truncate the data
+                    here
+                 */
+                $content = substr($content, 0, $page_range_request);
                 if(isset($content)) {
                     $site = self::parseHeaderPage($content, $value);
                     $sites[$i] = array_merge($sites[$i], $site);

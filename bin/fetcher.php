@@ -143,11 +143,6 @@ class Fetcher implements CrawlConstants
      */
     var $queue_server;
     /**
-     * Contains each of the file extenstions this fetcher will try to process
-     * @var array
-     */
-    var $indexed_file_types;
-    /**
      * An associative array of (mimetype => name of processor class to handle)
      * pairs.
      * @var array
@@ -243,6 +238,12 @@ class Fetcher implements CrawlConstants
     var $crawl_type;
 
     /**
+     * Maximum number of bytes to download of a webpage
+     * @var int
+     */
+    var $page_range_request;
+
+    /**
      * If self::ARCHIVE_CRAWL is being down, then this field holds the iterator
      * object used to iterate over the archive
      * @var object
@@ -267,16 +268,17 @@ class Fetcher implements CrawlConstants
     /**
      * Sets up the field variables for that crawling can begin
      *
-     * @param array $indexed_file_types file extensions to index
      * @param array $page_processors (mimetype => name of processor) pairs
      * @param string $queue_server URL or IP address of the queue server
+     * @param int $page_range_request maximum number of bytes to download from
+     *      a webpage; <=0 -- unlimited
      */
-    function __construct($indexed_file_types, $page_processors, $queue_server) 
+    function __construct($page_processors, $queue_server,
+        $page_range_request) 
     {
         $db_class = ucfirst(DBMS)."Manager";
         $this->db = new $db_class();
 
-        $this->indexed_file_types = $indexed_file_types;
         $this->queue_server = $queue_server;
         $this->page_processors = $page_processors;
         $this->meta_words = array();
@@ -292,6 +294,7 @@ class Fetcher implements CrawlConstants
         $this->to_crawl = array();
         $this->to_crawl_again = array();
         $this->found_sites = array();
+        $this->page_range_request = $page_range_request;
 
         $this->sum_seen_title_length = 0;
         $this->sum_seen_description_length = 0;
@@ -456,7 +459,8 @@ class Fetcher implements CrawlConstants
             return array();
         }
 
-        $site_pages = FetchUrl::getPages($sites, true);
+        $site_pages = FetchUrl::getPages($sites, true, 
+            $this->page_range_request);
 
         list($downloaded_pages, $schedule_again_pages) = 
             $this->reschedulePages($site_pages);
@@ -680,6 +684,7 @@ class Fetcher implements CrawlConstants
         $this->setCrawlParamsFromArray($info);
 
         if(isset($info[self::SITES])) {
+            $tok = strtok("\n"); //skip meta info
             $this->to_crawl = array();
             while($tok !== false) {
                 $string = base64_decode($tok);
@@ -707,7 +712,11 @@ class Fetcher implements CrawlConstants
     }
 
     /**
-     * @param array &$info
+     * Sets parameters for fetching based on provided info struct
+     * ($info typically would come from the queue server)
+     *
+     * @param array &$info struct with info about the kind of crawl, timestamp
+     *  of index, crawl order, etc.
      */
     function setCrawlParamsFromArray(&$info)
     {
@@ -734,6 +743,10 @@ class Fetcher implements CrawlConstants
         }
         if(isset($info[self::SCHEDULE_TIME])) {
               $this->schedule_time = $info[self::SCHEDULE_TIME];
+        }
+
+        if(isset($info[self::PAGE_RANGE_REQUEST])) {
+            $this->page_range_request = $info[self::PAGE_RANGE_REQUEST];
         }
     }
 
@@ -1696,7 +1709,8 @@ class Fetcher implements CrawlConstants
 /*
  *  Instantiate and runs the Fetcher
  */
-$fetcher =  new Fetcher($INDEXED_FILE_TYPES, $PAGE_PROCESSORS, QUEUE_SERVER);
+$fetcher =  new Fetcher($PAGE_PROCESSORS, QUEUE_SERVER,
+    PAGE_RANGE_REQUEST);
 $fetcher->start();
 
 ?>

@@ -139,6 +139,11 @@ class QueueServer implements CrawlConstants
      */
     var $crawl_order;
     /**
+     * Maximum number of bytes to download of a webpage
+     * @var int
+     */
+    var $page_range_request;
+    /**
      * Indicates the kind of crawl being performed: self::WEB_CRAWL indicates
      * a new crawl of the web; self::ARCHIVE_CRAWL indicates a crawl of an 
      * existing web archive
@@ -256,6 +261,7 @@ class QueueServer implements CrawlConstants
         $this->hourly_crawl_data = array();
         $this->archive_modified_time = 0;
         $this->crawl_time = 0;
+        $this->page_range_request = PAGE_RANGE_REQUEST;
     }
 
     /**
@@ -723,6 +729,8 @@ class QueueServer implements CrawlConstants
             "crawl_order" => self::CRAWL_ORDER,
             "crawl_type" => self::CRAWL_TYPE,
             "crawl_index" => self::CRAWL_INDEX,
+            "page_range_request" => self::PAGE_RANGE_REQUEST,
+            "indexed_file_types" => self::INDEXED_FILE_TYPES,
             "restrict_sites_by_url" => self::RESTRICT_SITES_BY_URL,
             "allowed_sites" => self::ALLOWED_SITES,
             "disallowed_sites" => self::DISALLOWED_SITES,
@@ -986,7 +994,7 @@ class QueueServer implements CrawlConstants
         $pos = 0;
         while($pos < $len_urls) {
             $len_site = unpackInt(substr($seen_urls_string, $pos ,4));
-            if($len_site > 2*PAGE_RANGE_REQUEST) {
+            if($len_site > 2*$this->page_range_request) {
                 crawlLog("Site string too long, $len_site,".
                     " data file may be corrupted? Skip rest.");
                 break;
@@ -1429,6 +1437,7 @@ class QueueServer implements CrawlConstants
         $sites[self::CRAWL_INDEX] = $this->crawl_index;
         $sites[self::META_WORDS] = $this->meta_words;
         $sites[self::INDEXING_PLUGINS] =  $this->indexing_plugins;
+        $sites[self::PAGE_RANGE_REQUEST] = $this->page_range_request;
         $sites[self::SITES] = array();
 
         return base64_encode(serialize($sites))."\n";
