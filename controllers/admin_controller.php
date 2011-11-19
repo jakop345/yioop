@@ -1320,7 +1320,7 @@ class AdminController extends Controller implements CrawlConstants
                     );
                 $profile[$weight] = $data[$weight];
                 $change = true;
-            } else if(isset($profile[$weight]) ){
+            } else if(isset($profile[$weight]) && $profile[$weight] != ""){
                 $data[$weight] = $profile[$weight];
             } else {
                 $data[$weight] = $value;
