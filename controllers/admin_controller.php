@@ -1016,6 +1016,48 @@ class AdminController extends Controller implements CrawlConstants
                         $data['SCRIPT'] .=
                             "switchTab('archivetab', 'webcrawltab');";
                     }
+                    $add_message = "";
+                    if(isset($_REQUEST['ts']) &&
+                        isset($_REQUEST['inject_sites'])) {
+                        $dir = CRAWL_DIR."/schedules/".
+                            self::schedule_data_base_name. $timestamp;
+                        if(!file_exists($dir)) {
+                            mkdir($dir);
+                            chmod($dir, 0777);
+                        }
+                        $day = floor($timestamp/86400) - 1; 
+                            //want before all other schedules, 
+                            // execute next
+                        $dir .= "/$day";
+                        if(!file_exists($dir)) {
+                            mkdir($dir);
+                            chmod($dir, 0777);
+                        }
+                        $inject_urls = 
+                            $this->convertStringCleanUrlsArray(
+                                $_REQUEST['inject_sites']);
+                        $count = count($inject_urls);
+                        if($count > 0 ) {
+                            $now = time();
+                            $schedule_data = array();
+                            $schedule_data[self::SCHEDULE_TIME] = 
+                                $timestamp;
+                            $schedule_data[self::TO_CRAWL] = array();
+                            for($i = 0; $i < $count; $i++) {
+                                $url = $inject_urls[$i];
+                                $hash = crawlHash($now.$url);
+                                $schedule_data[self::TO_CRAWL][] = 
+                                    array($url, 1, $hash);
+                            }
+                            $data_string = webencode(
+                                gzcompress(serialize($schedule_data)));
+                            $data_hash = crawlHash($data_string);
+                            file_put_contents($dir."/At1From127-0-0-1".
+                                "WithHash$data_hash.txt", $data_string);
+                            $add_message = "<br />".
+                                tl('admin_controller_urls_injected');
+                        }
+                    }
                     if($update_flag) {
                         if(isset($_REQUEST['ts'])) {
                             $this->crawlModel->setCrawlSeedInfo($timestamp, 
@@ -1024,7 +1066,8 @@ class AdminController extends Controller implements CrawlConstants
                             $this->crawlModel->setSeedInfo($seed_info);
                         }
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('admin_controller_update_seed_info')."</h1>');";
+                            tl('admin_controller_update_seed_info').
+                            "$add_message</h1>');";
                     }
                 break;
  

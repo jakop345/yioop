@@ -140,6 +140,11 @@ class CrawloptionsElement extends Element
         <textarea class="talltextarea" id="seed-sites" name="seed_sites" ><?php 
             e($data['seed_sites']);
         ?></textarea>
+        <?php } else { ?>
+        <div class="topmargin"><label for="inject-sites"><b><?php 
+            e(tl('crawloptions_element_inject_sites'))?></b></label></div>
+        <textarea class="shorttextarea" id="inject-sites" 
+            name="inject_sites" ></textarea>
         <?php } ?>
         </div>
         <div id='archivetab'>
