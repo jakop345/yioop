@@ -168,6 +168,7 @@ interface CrawlConstants
     const LOCATION = 'bp';
     const INDEXED_FILE_TYPES = 'bq';
     const PAGE_RANGE_REQUEST = 'br';
+    const PAGE_RECRAWL_FREQUENCY = 'bs';
 
     const NEEDS_OFFSET_FLAG = 0x7FFFFFFF;
 

@@ -62,7 +62,13 @@ class PageOptionsElement extends Element
         <div class="topmargin"><b><label for="page_range_request"><?php 
             e(tl('pageoptions_element_page_range'))?></label></b>
             <?php $this->view->optionsHelper->render("page-range-request", 
-            "page_range_request", $data['SIZE_VALUE'], $data['PAGE_SIZE']); 
+            "page_range_request", $data['SIZE_VALUES'], $data['PAGE_SIZE']); 
+            ?></div>
+        <div class="topmargin"><b><label for="allow-recrawl"><?php 
+            e(tl('pageoptions_element_allow_recrawl'))?></label></b>
+            <?php $this->view->optionsHelper->render("page-recrawl-frequency", 
+            "page_recrawl_frequency", $data['RECRAWL_FREQS'], 
+                $data['PAGE_RECRAWL_FREQUENCY']); 
             ?></div>
         <div class="topmargin"><b><?php 
             e(tl('pageoptions_element_file_types'))?></b>

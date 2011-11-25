@@ -736,6 +736,11 @@ class AdminController extends Controller implements CrawlConstants
                         (isset($seed_info['general']['page_range_request'])) ?
                         intval($seed_info['general']['page_range_request']) :
                         PAGE_RANGE_REQUEST;
+                    $info[self::PAGE_RECRAWL_FREQUENCY] = 
+                        (isset($seed_info['general']['page_recrawl_frequency']))
+                        ?
+                        intval($seed_info['general']['page_recrawl_frequency']):
+                        PAGE_RECRAWL_FREQUENCY;
                     $info[self::TO_CRAWL] = 
                         $seed_info['seed_sites']['url'];
                     $info[self::CRAWL_ORDER] = 
@@ -866,6 +871,12 @@ class AdminController extends Controller implements CrawlConstants
                             $seed_current['general']['page_range_request'])) {
                             $seed_info['general']['page_range_request'] =
                                 $seed_current['general']['page_range_request'];
+                        }
+                        if(isset(
+                            $seed_current['general']['page_recrawl_frequency'])
+                            ){
+                            $seed_info['general']['page_recrawl_frequency'] =
+                            $seed_current['general']['page_recrawl_frequency'];
                         }
                         if(isset(
                             $seed_current['indexed_file_types'])) {
@@ -1371,17 +1382,35 @@ class AdminController extends Controller implements CrawlConstants
                 $change = true;
             }
         }
+        $data['RECRAWL_FREQS'] = array(-1=>tl('admin_controller_recrawl_never'),
+            1=>tl('admin_controller_recrawl_1day'), 
+            2=>tl('admin_controller_recrawl_2day'), 
+            3=>tl('admin_controller_recrawl_3day'), 
+            7=>tl('admin_controller_recrawl_7day'), 
+            14=>tl('admin_controller_recrawl_14day'));
+        if(isset($_REQUEST["page_recrawl_frequency"]) && 
+            in_array($_REQUEST["page_recrawl_frequency"], 
+                array_keys($data['RECRAWL_FREQS']))) {
+            $seed_info["general"]["page_recrawl_frequency"] =  
+                $_REQUEST["page_recrawl_frequency"];
+        }
+        if(!isset($seed_info["general"]["page_recrawl_frequency"])) {
+            $seed_info["general"]["page_recrawl_frequency"] = 
+                PAGE_RECRAWL_FREQUENCY;
+        }
+        $data['PAGE_RECRAWL_FREQUENCY'] = 
+            $seed_info["general"]["page_recrawl_frequency"];
 
         if($change == true) {
             $this->profileModel->updateProfile(WORK_DIRECTORY, array(), 
                 $profile);
         }
-        $data['SIZE_VALUE'] = array(10000=>10000, 50000=>50000, 
+        $data['SIZE_VALUES'] = array(10000=>10000, 50000=>50000, 
             100000=>100000, 500000=>500000, 1000000=>1000000,
             5000000=>5000000, 10000000=>10000000);
         $data['INDEXED_FILE_TYPES'] = array();
         if(isset($_REQUEST["page_range_request"]) && 
-            in_array($_REQUEST["page_range_request"], $data['SIZE_VALUE'])) {
+            in_array($_REQUEST["page_range_request"], $data['SIZE_VALUES'])) {
             $seed_info["general"]["page_range_request"] =  
                 $_REQUEST["page_range_request"];
         }

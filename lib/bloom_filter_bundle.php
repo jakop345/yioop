@@ -223,6 +223,25 @@ class BloomFilterBundle
     }
 
     /**
+     *  Empties the contents of the bloom filter bundle and resets
+     *  it to start storing new data.
+     */
+    function reset()
+    {
+        for($i = 0; $i < $this->num_filters; $i++) {
+            @unlink($this->dir_name."/filter_$i.ftr");
+        }
+        $this->num_filters = 0;
+        $this->current_filter_count = 0;
+        $this->current_filter = 
+            new BloomFilterFile($this->dir_name."/filter_0.ftr", 
+            $this->filter_size);
+        $this->num_filters++;
+        $this->current_filter->save();
+        $this->saveMetaData();
+    }
+
+    /**
      * Used to save to disk all the file data associated with this bundle
      */
     function forceSave()

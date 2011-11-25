@@ -622,12 +622,18 @@ EOT;
         if(!isset($info['general']['page_range_request'])) {
             $info['general']['page_range_request'] = PAGE_RANGE_REQUEST;
         }
+        if(!isset($info['general']['page_recrawl_frequency'])) {
+            $info['general']['page_recrawl_frequency'] = PAGE_RECRAWL_FREQUENCY;
+        }
         $n[] = '[general]';
         $n[] = "crawl_order = '".$info['general']['crawl_order']."';";
         $n[] = "crawl_type = '".$info['general']['crawl_type']."';";
         $n[] = "crawl_index = '".$info['general']['crawl_index']."';";
+        $n[] = "page_recrawl_frequency = '".
+            $info['general']['page_recrawl_frequency']."';";
         $n[] = "page_range_request = '".
             $info['general']['page_range_request']."';";
+
         $bool_string = 
             ($info['general']['restrict_sites_by_url']) ? "true" : "false";
         $n[] = "restrict_sites_by_url = $bool_string;";

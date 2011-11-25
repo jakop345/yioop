@@ -41,7 +41,7 @@ define("BASE_DIR", substr(
     dirname(realpath($_SERVER['PHP_SELF'])), 0, 
     -strlen("/bin")));
 
-ini_set("memory_limit","1000M"); //so have enough memory to crawl big pages
+ini_set("memory_limit","1400M"); //so have enough memory to crawl big pages
 
 /** Load in global configuration settings */
 require_once BASE_DIR.'/configs/config.php';
@@ -143,6 +143,12 @@ class QueueServer implements CrawlConstants
      * @var int
      */
     var $page_range_request;
+    /**
+     * Number of days between resets of the page url filter
+     * If nonpositive, then never reset filter
+     * @var int
+     */
+    var $page_recrawl_frequency;
     /**
      * Indicates the kind of crawl being performed: self::WEB_CRAWL indicates
      * a new crawl of the web; self::ARCHIVE_CRAWL indicates a crawl of an 
@@ -261,6 +267,7 @@ class QueueServer implements CrawlConstants
         $this->hourly_crawl_data = array();
         $this->archive_modified_time = 0;
         $this->crawl_time = 0;
+        $this->page_recrawl_frequency = PAGE_RECRAWL_FREQUENCY;
         $this->page_range_request = PAGE_RANGE_REQUEST;
     }
 
@@ -730,6 +737,7 @@ class QueueServer implements CrawlConstants
             "crawl_type" => self::CRAWL_TYPE,
             "crawl_index" => self::CRAWL_INDEX,
             "page_range_request" => self::PAGE_RANGE_REQUEST,
+            "page_recrawl_frequency" => self::PAGE_RECRAWL_FREQUENCY,
             "indexed_file_types" => self::INDEXED_FILE_TYPES,
             "restrict_sites_by_url" => self::RESTRICT_SITES_BY_URL,
             "allowed_sites" => self::ALLOWED_SITES,
@@ -745,7 +753,6 @@ class QueueServer implements CrawlConstants
                 array_push($try_to_set_from_old_index,  $index_field);
             }
         }
-
         switch($this->crawl_order) 
         {
             case self::BREADTH_FIRST:
@@ -823,6 +830,8 @@ class QueueServer implements CrawlConstants
             return;
         }
         $updatable_info = array(
+            "page_range_request" => self::PAGE_RANGE_REQUEST,
+            "page_recrawl_frequency" => self::PAGE_RECRAWL_FREQUENCY,
             "restrict_sites_by_url" => self::RESTRICT_SITES_BY_URL,
             "allowed_sites" => self::ALLOWED_SITES,
             "disallowed_sites" => self::DISALLOWED_SITES,
@@ -1206,6 +1215,7 @@ class QueueServer implements CrawlConstants
         $this->waiting_hosts = array();
     }
 
+
     /**
      * Checks for a new crawl file or a schedule data for the current crawl and
      * if such a exists then processes its contents adding the relevant urls to
@@ -1284,6 +1294,7 @@ class QueueServer implements CrawlConstants
 
         crawlLog("... To Crawl ...");
         $start_time = microtime();
+        
         if(isset($sites[self::TO_CRAWL])) {
 
             crawlLog("A.. Delete previously seen urls from add set");
@@ -1297,6 +1308,14 @@ class QueueServer implements CrawlConstants
             $added_urls = array();
             $added_pairs = array();
             $contains_host = array();
+            /* if we allow web page recrawls then check here to see if delete
+               url filter*/
+            if($this->page_recrawl_frequency > 0 &&
+                $this->web_queue->getUrlFilterAge() > 
+                86400 * $this->page_recrawl_frequency) {
+                crawlLog("Emptying page url filter!!!!!!");
+                $this->web_queue->emptyUrlFilter();
+            }
             foreach($to_crawl_sites as $triple) {
                 $url = & $triple[0];
                 $weight = $triple[1];

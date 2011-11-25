@@ -222,8 +222,18 @@ define('MAX_LINKS_WORD_TEXT', 100);
  */
 define('MAX_URL_LENGTH', 512); 
 
-/** request this many bytes out of a page */
+/** request this many bytes out of a page -- this is the default value to
+    use if the user doesn't set this value in the page options GUI 
+ */
 define('PAGE_RANGE_REQUEST', 50000);
+
+/** 
+    Allow pages to be recrawled after this many days -- this is the 
+    default value to use if the user doesn't set this value in the page options 
+    GUI. What this controls is how often the page url filter is deleted.
+    A nonpositive value means the filter will never be deleted.
+ */
+define('PAGE_RECRAWL_FREQUENCY', -1);
 
 /** maximum length +1 exact phrase matches */
 define('MAX_PHRASE_LEN', 2); 

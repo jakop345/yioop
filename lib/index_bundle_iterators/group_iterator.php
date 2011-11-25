@@ -372,6 +372,20 @@ class GroupIterator extends IndexBundleIterator
         $word_iterator =
              new WordIterator($hash_info_url,
                 $index, true);
+        $count = 1;
+        if(isset($word_iterator->dictionary_info)) {
+            $count = count($word_iterator->dictionary_info);
+        }
+        if($count > 1) { 
+            /* if a page is recrawlled it gets a second info page,
+               this is to ensure we look up the most recent
+            */
+            $gen_off = array();
+            list($gen_off[0], $gen_off[1], , ) =
+                 $word_iterator->dictionary_info[
+                 $word_iterator->num_generations - 1];
+            $word_iterator->advance($gen_off);
+        }
         $doc_array = $word_iterator->currentDocsWithWord();
         $item = false;
         if(is_array($doc_array) && count($doc_array) == 1) {
