@@ -1493,6 +1493,17 @@ class AdminController extends Controller implements CrawlConstants
         $data['SCRIPT'] = "";
         $data['MACHINES'] = array();
         $data['MACHINE_NAMES'] = array();
+        $data['FETCHER_NUMBERS'] = array(
+            0 => 0,
+            1 => 1,
+            2 => 2,
+            3 => 3,
+            4 => 4,
+            8 => 8,
+            16 => 16,
+            32 => 32,
+        );
+        $data['FETCHER_NUMBER'] = 0;
         return $data;
     }
 

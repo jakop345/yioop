@@ -34,8 +34,7 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- * Used to draw the admin screen on which admin users can create roles, delete 
- * roles and add and delete roles from users
+ * Used to draw the admin screen on which admin users can 
  *
  * @author Chris Pollett
  * @package seek_quarry
@@ -46,17 +45,14 @@ class ManagemachinesElement extends Element
 {
 
     /**
-     * renders the screen in which roles can be created, deleted, and added or 
-     * deleted from a user
      *
      * @param array $data  contains antiCSRF token, as well as data on 
-     *      available roles or which user has what role
      */
     public function render($data) 
     {?>
         <div class="currentactivity">
         <h2><?php e(tl('managemachines_element_add_machine'))?></h2>
-        <form id="addRoleForm" method="post" action=''>
+        <form id="addMachineForm" method="post" action=''>
         <input type="hidden" name="c" value="admin" /> 
         <input type="hidden" name="YIOOP_TOKEN" value="<?php 
             e($data['YIOOP_TOKEN']); ?>" /> 
@@ -64,11 +60,27 @@ class ManagemachinesElement extends Element
         <input type="hidden" name="arg" value="addmachine" />
 
         <table class="nametable">
-        <tr><td><label for="machine-url"><?php 
-            e(tl('manageroles_element_machineurl'))?></label></td>
+        <tr><th><label for="machine-name"><?php 
+            e(tl('managemachines_element_machine_name'))?></label></th>
+            <td><input type="text" id="machine-name" name="machine_name" 
+                maxlength="80" class="widefield" /></td>
+        </tr>
+
+        <tr><th><label for="machine-url"><?php 
+            e(tl('managemachines_element_machineurl'))?></label></th>
             <td><input type="text" id="machine-url" name="machineurl" 
-                maxlength="80" class="widefield" /></td><td 
-                class="center"><button class="buttonbox" type="submit"><?php 
+                maxlength="80" class="widefield" /></td></tr>
+
+        <tr><th><label for="queue-box"><?php 
+            e(tl('managemachines_element_has_queueserver'))?></label></th>
+            <td><input type="checkbox" id="queue-box" 
+                name="queuebox"  /></td></tr>
+        <tr><th><label for="fetcher-number"><?php 
+            e(tl('managemachines_element_num_fetchers'))?></label></th><td>
+            <?php $this->view->optionsHelper->render("fetcher-number", 
+            "fetcher_number", $data['FETCHER_NUMBERS'],$data['FETCHER_NUMBER']);
+            ?></td></tr>
+        <tr><td></td><td><button class="buttonbox" type="submit"><?php 
                 e(tl('managemachines_element_submit')); ?></button></td>
         </tr>
         </table>
@@ -83,10 +95,10 @@ class ManagemachinesElement extends Element
         <input type="hidden" name="arg" value="deletemachine" />
 
         <table class="nametable">
-         <tr><td><label for="delete-machinename"><?php 
-            e(tl('manageusers_element_delete_machinename'))?></label></td>
+         <tr><th><label for="delete-machine-name"><?php 
+            e(tl('managemachines_element_machine_name'))?></label></th>
             <td><?php $this->view->optionsHelper->render(
-                "delete-machinename", "selectmachine", 
+                "delete-machine-name", "selectmachine", 
                 $data['MACHINE_NAMES'], "-1"); 
                 ?></td><td><button class="buttonbox" type="submit"><?php 
                 e(tl('managemachines_element_submit')); ?></button></td>

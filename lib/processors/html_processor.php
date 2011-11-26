@@ -53,6 +53,7 @@ require_once BASE_DIR."/lib/url_parser.php";
 class HtmlProcessor extends TextProcessor
 {
     const MAX_DESCRIPTION_LEN = 2000;
+    const MAX_TITLE_LEN = 100;
 
     /**
      *  Used to extract the title, description and links from
@@ -71,6 +72,8 @@ class HtmlProcessor extends TextProcessor
         if(is_string($page)) {
             $page = preg_replace('/>/', '> ', $page);
             $page = preg_replace('@<script[^>]*?>.*?</script>@si', 
+                ' ', $page);
+            $page = preg_replace('@<style[^>]*?>.*?</style>@si', 
                 ' ', $page);
             $dom = self::dom($page);
             if($dom !== false && self::checkMetaRobots($dom)) {
@@ -218,7 +221,18 @@ class HtmlProcessor extends TextProcessor
         foreach($titles as $pre_title) {
             $title .= $pre_title->textContent;
         }
-
+        if($title == "") {
+            $title_parts = array("/html//h1", "/html//h2", "/html//h3",
+                "/html//h4", "/html//h5", "/html//h6");
+            foreach($title_parts as $part) {
+                $doc_nodes = $xpath->evaluate($part);
+                foreach($doc_nodes as $node) {
+                    $title .= " .. ".$node->textContent;
+                    if(strlen($title) > 
+                        self::MAX_TITLE_LEN) { break 2;}
+                }
+            }
+        }
         return $title;
     }
 
@@ -249,17 +263,46 @@ class HtmlProcessor extends TextProcessor
           concatenate the contents of then additional dom elements up to
           the limit of description length
         */
-        $page_parts = array("/html//h1", "/html//h2", "/html//h3",
-            "/html//h4", "/html//h5", "/html//h6", "/html//p[1]",
-            "/html//div[1]", "/html//p[2]", "/html//div[2]", 
+        $page_parts = array("/html//p[1]",
+            "/html//div[1]", "/html//p[2]", "/html//div[2]", "/html//p[3]",
+            "/html//div[3]", "/html//p[4]", "/html//div[4]", 
             "/html//td", "/html//li", "/html//a");
+
+        $para_data = array();
+        $len = 0;
+
         foreach($page_parts as $part) {
             $doc_nodes = $xpath->evaluate($part);
             foreach($doc_nodes as $node) {
-                $description .= " ".$node->textContent;
-                if(strlen($description) > self::MAX_DESCRIPTION_LEN) { break 2;}
+                if($part == "/html//a") {
+                    $content = $node->getAttribute('href')." = ";
+                    $add_len  = min(self::MAX_DESCRIPTION_LEN / 2, 
+                        mb_strlen($content));
+                    $para_data[$add_len][] =mb_substr($content, 0, $add_len);
+                }
+                $add_len  = min(self::MAX_DESCRIPTION_LEN / 2, 
+                    mb_strlen($node->textContent));
+                $para_data[$add_len][] =mb_substr($node->textContent, 
+                    0, $add_len);
+                $len += $add_len;
+
+                if($len > self::MAX_DESCRIPTION_LEN) { break 2;}
+                if(in_array($part, array("/html//p[1]", "/html//div[1]", 
+                    "/html//div[2]", "/html//p[2]", "/html//p[3]", 
+                    "/html//div[3]", "/html//div[4]", "/html//p[4]"))) break;
             }
         }
+        krsort($para_data);
+        foreach($para_data as $add_len => $data) {
+            if(!isset($first_len)) {
+                $first_len = $add_len;
+            }
+            foreach($data as $datum) {
+                $description .= $datum;
+            }
+            if($first_len > 3 * $add_len) break;
+        }
+
         $description = mb_ereg_replace("(\s)+", " ",  $description);
 
         return $description;

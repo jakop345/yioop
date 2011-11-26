@@ -851,7 +851,7 @@ class Fetcher implements CrawlConstants
         $not_downloaded = array();
 
         foreach($site_pages as $site) {
-            if( isset($site[self::ROBOT_PATHS]) || isset($site[self::HASH])) {
+            if( isset($site[self::ROBOT_PATHS]) || isset($site[self::PAGE])) {
                 $downloaded[] = $site;
             }  else {
                 $not_downloaded[] = $site;
@@ -901,6 +901,8 @@ class Fetcher implements CrawlConstants
                     $site = $this->processRobotPage($site);
                 }
                 $site[self::GOT_ROBOT_TXT] = true;
+                $site[self::HASH] = FetchUrl::computePageHash(
+                    $site[self::PAGE]);
                 $stored_site_pages[$i] = $site;
                 $summarized_site_pages[$i] = $site;
                 $i++;
@@ -962,12 +964,14 @@ class Fetcher implements CrawlConstants
                 $doc_info = false;
             }
 
+            $not_loc = true;
             if($doc_info) {
                 $site[self::DOC_INFO] =  $doc_info;
                 if(isset($doc_info[self::LOCATION])) {
                     $site[self::HASH] = crawlHash(
                         crawlHash($site[self::URL], true). "LOCATION", true);
-                }
+                        $not_loc = false;
+                } 
                 $site[self::ROBOT_INSTANCE] = ROBOT_INSTANCE;
 
                 if(!is_dir(CRAWL_DIR."/cache")) {
@@ -982,6 +986,15 @@ class Fetcher implements CrawlConstants
                     } else {
                         $site[self::PAGE] = NULL;
                     }
+                    if($not_loc) {
+                        $content = 
+                            $doc_info[self::DESCRIPTION];
+                        $site[self::HASH] = FetchUrl::computePageHash(
+                            $content);
+                    }
+                } else {
+                    $site[self::HASH] = FetchUrl::computePageHash(
+                        $site[self::PAGE]);
                 }
 
                 $this->copySiteFields($i, $site, $summarized_site_pages, 
