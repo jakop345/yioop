@@ -87,6 +87,7 @@ class PhraseParser
         'ja' => 3,
         'ru' => 5,
         'th' => 4,
+        'tr' => 6,
         'zh-CN' => 2,
         'zh' => 2
      );
