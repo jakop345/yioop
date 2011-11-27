@@ -118,10 +118,12 @@ class CrawlModel extends Model implements CrawlConstants
      *      the WebArchiveBundle at which the cached page lives.
      * @param string $crawl_time the timestamp of the crawl the cache page is 
      *      from
+     * @param int $instance_num which fetcher instance for the particular 
+     *      fetcher crawled the page (if more than one), false otherwise
      * @return array page data of the cached page
      */
     function getCacheFile($machine, $machine_uri, $partition, 
-        $offset, $crawl_time) 
+        $offset, $crawl_time, $instance_num = false) 
     {
         $time = time();
         $session = md5($time . AUTH_KEY);
@@ -129,11 +131,14 @@ class CrawlModel extends Model implements CrawlConstants
             $machine = "[::1]/"; 
             //used if the fetching and queue serving were on the same machine
         }
-
-        $request= "http://$machine$machine_uri?c=archive&a=cache&time=$time".
+        $request = "http://$machine$machine_uri?c=archive&a=cache&time=$time".
             "&session=$session&partition=$partition&offset=$offset".
             "&crawl_time=$crawl_time";
+        if($instance_num !== false) {
+            $request .= "&instance_num=$instance_num";
+        }
         $tmp = FetchUrl::getPage($request);
+
         $page = @unserialize(base64_decode($tmp));
         $page['REQUEST'] = $request;
 

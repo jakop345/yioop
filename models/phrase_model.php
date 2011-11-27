@@ -518,7 +518,7 @@ class PhraseModel extends Model
         $query_words = explode(" ", $phrase_string); //not stemmed
 
         $base_words =
-            PhraseParser::extractPhrases($phrase_string,MAX_PHRASE_LEN,
+            PhraseParser::extractPhrases($phrase_string, MAX_PHRASE_LEN,
             getLocaleTag()); //stemmed, if have stemmer
         $words = array_merge($base_words, $found_metas);
         if(QUERY_STATISTICS) {

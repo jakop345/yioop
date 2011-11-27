@@ -881,7 +881,7 @@ class AdminController extends Controller implements CrawlConstants
                         if(isset(
                             $seed_current['indexed_file_types'])) {
                             $seed_info['indexed_file_types'] =
-                                $seed_current['general']['indexed_file_types'];
+                                $seed_current['indexed_file_types'];
                         }
                         $update_flag = true;
                         $no_further_changes = true;

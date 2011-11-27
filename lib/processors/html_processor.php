@@ -71,10 +71,10 @@ class HtmlProcessor extends TextProcessor
         $summary = NULL;
         if(is_string($page)) {
             $page = preg_replace('/>/', '> ', $page);
-            $page = preg_replace('@<script[^>]*?>.*?</script>@si', 
-                ' ', $page);
-            $page = preg_replace('@<style[^>]*?>.*?</style>@si', 
-                ' ', $page);
+            $page = preg_replace('@<style[^>]*?>.*?</style>@si',' ', $page);
+
+            $page = preg_replace('@<script[^>]*?>.*?</script>@si', ' ', $page);
+
             $dom = self::dom($page);
             if($dom !== false && self::checkMetaRobots($dom)) {
                 $summary[self::TITLE] = self::title($dom);
@@ -97,7 +97,7 @@ class HtmlProcessor extends TextProcessor
                     //maybe not html? treat as text still try to get urls
                     $summary = parent::process($page, $url);
                 }
-            } else if( $dom == false ) {
+            } else if( $dom == false ) { 
                 $summary = parent::process($page, $url);
             }
         }
@@ -125,9 +125,9 @@ class HtmlProcessor extends TextProcessor
         if(!stristr($page, "<html")) {
             $head_tags = "<title><meta><base>";
             $head = strip_tags($page, $head_tags);
-            $body_tags = "<frameset><frame>".
-                "<h1><h2><h3><h4><h5><h6><p><div>".
-                "<a><table><tr><td><th>";
+            $body_tags = "<frameset><frame><noscript><img><span><b><i><em>".
+                "<strong><h1><h2><h3><h4><h5><h6><p><div>".
+                "<a><table><tr><td><th><dt><dir><dl><dd>";
             $body = strip_tags($page, $body_tags);
             $page = "<html><head>$head</head><body>$body</body></html>";
         }
@@ -266,7 +266,7 @@ class HtmlProcessor extends TextProcessor
         $page_parts = array("/html//p[1]",
             "/html//div[1]", "/html//p[2]", "/html//div[2]", "/html//p[3]",
             "/html//div[3]", "/html//p[4]", "/html//div[4]", 
-            "/html//td", "/html//li", "/html//a");
+            "/html//td", "/html//li", "/html//dt", "/html//dd", "/html//a");
 
         $para_data = array();
         $len = 0;

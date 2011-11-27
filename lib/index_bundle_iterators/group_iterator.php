@@ -607,6 +607,7 @@ class GroupIterator extends IndexBundleIterator
                     $index->setCurrentShard($generation, true);
                     $page = $index->getPage($summary_offset);
                     if($page == array()) {continue;}
+                    $ellipsis_used = false;
                     if(!isset($out_pages[$doc_key][self::SUMMARY])) {
                         $out_pages[$doc_key][self::SUMMARY] = $page;
                     } else if (isset($page[self::DESCRIPTION])) {
@@ -617,15 +618,20 @@ class GroupIterator extends IndexBundleIterator
                         }
                         $out_pages[$doc_key][self::SUMMARY][self::DESCRIPTION].=
                             " .. ".$page[self::DESCRIPTION];
+                        $ellipsis_used = true;
                     }
-                    if(strlen($out_pages[$doc_key][
+                    if($ellipsis_used && strlen($out_pages[$doc_key][
                         self::SUMMARY][self::DESCRIPTION]) > 
                         self::MIN_DESCRIPTION_LENGTH) {
+                        /* want at least one ellipsis in case terms only appear
+                           in links
+                         */
                         break;
                     }
                 }
             }
         }
+
         return $out_pages;
 
     }

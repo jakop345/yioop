@@ -266,6 +266,12 @@ class Fetcher implements CrawlConstants
     var $crawl_index;
 
     /**
+     * Which fetcher instance we are (if fetcher run as a job and more that one)
+     * @var string
+     */
+     var $fetcher_num;
+
+    /**
      * Sets up the field variables for that crawling can begin
      *
      * @param array $page_processors (mimetype => name of processor) pairs
@@ -295,6 +301,7 @@ class Fetcher implements CrawlConstants
         $this->to_crawl_again = array();
         $this->found_sites = array();
         $this->page_range_request = $page_range_request;
+        $this->fetcher_num = false;
 
         $this->sum_seen_title_length = 0;
         $this->sum_seen_description_length = 0;
@@ -316,8 +323,15 @@ class Fetcher implements CrawlConstants
         global $argv;
 
         declare(ticks=1);
-        CrawlDaemon::init($argv, "fetcher");
-
+        if(isset($argv[2])) {
+            $this->fetcher_num = intval($argv[2]);
+            CrawlDaemon::init($argv, $this->fetcher_num."-fetcher");
+            crawlLog("\n\nInitialize logger..", $this->fetcher_num."-fetcher");
+            
+        } else {
+            CrawlDaemon::init($argv, "fetcher");
+            crawlLog("\n\nInitialize logger..", "fetcher");
+        }
         $this->loop();
     }
 
@@ -332,15 +346,20 @@ class Fetcher implements CrawlConstants
      */
     function loop()
     {
-        crawlLog("In Fetch Loop", "fetcher");
+        crawlLog("In Fetch Loop");
 
-        if(!file_exists(CRAWL_DIR."/temp")) {
-            mkdir(CRAWL_DIR."/temp");
+        $prefix = "";
+        if($this->fetcher_num !== false) {
+            $prefix = $this->fetcher_num."-";
+        }
+        if(!file_exists(CRAWL_DIR."/{$prefix}temp")) {
+            mkdir(CRAWL_DIR."/{$prefix}temp");
         }
         $info[self::STATUS] = self::CONTINUE_STATE;
         
         while ($info[self::STATUS] != self::STOP_STATE) {
-            $fetcher_message_file = CRAWL_DIR."/schedules/fetcher_messages.txt";
+            $fetcher_message_file = CRAWL_DIR.
+                "/schedules/{$prefix}fetcher_messages.txt";
             if(file_exists($fetcher_message_file)) {
                 $info = unserialize(file_get_contents($fetcher_message_file));
                 unlink($fetcher_message_file);
@@ -377,7 +396,7 @@ class Fetcher implements CrawlConstants
             }
 
             $tmp_base_name = (isset($info[self::CRAWL_TIME])) ? 
-                CRAWL_DIR."/cache/" . self::archive_base_name .
+                CRAWL_DIR."/cache/{$prefix}" . self::archive_base_name .
                     $info[self::CRAWL_TIME] : "";
             if(isset($info[self::CRAWL_TIME]) && ($this->web_archive == NULL || 
                     $this->web_archive->dir_name != $tmp_base_name)) {
@@ -493,7 +512,11 @@ class Fetcher implements CrawlConstants
      */
     function downloadPagesArchiveCrawl()
     {
-        $base_name = CRAWL_DIR.'/cache/'.self::archive_base_name.
+        $prefix = "";
+        if($this->fetcher_num !== false) {
+            $prefix = $this->fetcher_num."-";
+        }
+        $base_name = CRAWL_DIR.'/cache/{$prefix}'.self::archive_base_name.
             $this->crawl_index;
         $pages = array();
         if(!isset($this->archive_iterator->iterate_timestamp) || 
@@ -534,12 +557,18 @@ class Fetcher implements CrawlConstants
      */
     function deleteOldCrawls(&$still_active_crawls)
     {
+        $prefix = "";
+        if($this->fetcher_num !== false) {
+            $prefix = $this->fetcher_num."-";
+        }
         $dirs = glob(CRAWL_DIR.'/cache/*', GLOB_ONLYDIR);
 
+        $full_base_name = $prefix . self::archive_base_name; 
         foreach($dirs as $dir) {
             if(strlen(
-                $pre_timestamp = strstr($dir, self::archive_base_name)) > 0) {
-                $time = substr($pre_timestamp, strlen(self::archive_base_name));
+                $pre_timestamp = strstr($dir, $full_base_name)) > 0) {
+                $time = substr($pre_timestamp, 
+                    strlen($full_base_name));
                 if(!in_array($time, $still_active_crawls) ){
                     $this->db->unlinkRecursive($dir);
                 }
@@ -550,9 +579,11 @@ class Fetcher implements CrawlConstants
         foreach($files as $file) {
             $timestamp = "";
             foreach($names as $name) {
+                $full_name = $prefix. $name;
                 if(strlen(
-                    $pre_timestamp = strstr($file, $name)) > 0) {
-                    $timestamp =  substr($pre_timestamp, strlen($name), 10);
+                    $pre_timestamp = strstr($file, $full_name)) > 0) {
+                    $timestamp =  substr($pre_timestamp, 
+                        strlen($full_name), 10);
                     break;
                 }
             }
@@ -581,12 +612,18 @@ class Fetcher implements CrawlConstants
         $time = time();
         $session = md5($time . AUTH_KEY);
 
+        $prefix = "";
+        if($this->fetcher_num !== false) {
+            $prefix = $this->fetcher_num."-";
+        }
+
         /* if just restarted, check to make sure the crawl hasn't changed, 
            if it has bail
         */
+        $robot_instance = $prefix . ROBOT_INSTANCE;
         $request =  
             $queue_server."?c=fetch&a=crawlTime&time=$time&session=$session".
-            "&robot_instance=".ROBOT_INSTANCE."&machine_uri=".WEB_URI;
+            "&robot_instance=".$robot_instance."&machine_uri=".WEB_URI;
 
         $info_string = FetchUrl::getPage($request);
         $info = @unserialize(trim($info_string));
@@ -602,26 +639,29 @@ class Fetcher implements CrawlConstants
             $this->to_crawl_again = array();
             $this->found_sites = array();
             if($this->crawl_time > 0) {
-                file_put_contents("$dir/".self::fetch_closed_name.
+                file_put_contents("$dir/$prefix".self::fetch_closed_name.
                     "{$this->crawl_time}.txt", "1");
             }
             $this->crawl_time = $info[self::CRAWL_TIME];
             //load any batch that might exist for changed-to crawl
-            if(file_exists("$dir/".self::fetch_crawl_info.
+            if(file_exists("$dir/$prefix".self::fetch_crawl_info.
                 "{$this->crawl_time}.txt") && file_exists(
-                "$dir/".self::fetch_batch_name."{$this->crawl_time}.txt")) {
+                "$dir/$prefix".self::fetch_batch_name.
+                    "{$this->crawl_time}.txt")) {
                 $info = unserialize(file_get_contents(
-                    "$dir/".self::fetch_crawl_info."{$this->crawl_time}.txt"));
+                    "$dir/$prefix".self::fetch_crawl_info.
+                        "{$this->crawl_time}.txt"));
                 $this->setCrawlParamsFromArray($info);
-                unlink("$dir/".self::fetch_crawl_info.
+                unlink("$dir/$prefix".self::fetch_crawl_info.
                     "{$this->crawl_time}.txt");
                 $this->to_crawl = unserialize(file_get_contents(
-                    "$dir/".self::fetch_batch_name."{$this->crawl_time}.txt"));
-                unlink("$dir/".self::fetch_batch_name.
+                    "$dir/$prefix".
+                        self::fetch_batch_name."{$this->crawl_time}.txt"));
+                unlink("$dir/$prefix".self::fetch_batch_name.
                     "{$this->crawl_time}.txt");
-                if(file_exists("$dir/".self::fetch_closed_name.
+                if(file_exists("$dir/$prefix".self::fetch_closed_name.
                     "{$this->crawl_time}.txt")) {
-                    unlink("$dir/".self::fetch_closed_name.
+                    unlink("$dir/$prefix".self::fetch_closed_name.
                     "{$this->crawl_time}.txt");
                 } else {
                     $update_num = SEEN_URLS_BEFORE_UPDATE_SCHEDULER;
@@ -653,6 +693,11 @@ class Fetcher implements CrawlConstants
      */
     function checkScheduler() 
     {
+        $prefix = "";
+        if($this->fetcher_num !== false) {
+            $prefix = $this->fetcher_num."-";
+        }
+
         $info = array();
         if((count($this->to_crawl) > 0 || count($this->to_crawl_again) > 0) &&
            (!$this->recrawl_check_scheduler)) {
@@ -669,7 +714,7 @@ class Fetcher implements CrawlConstants
 
         $request =  
             $queue_server."?c=fetch&a=schedule&time=$time&session=$session".
-            "&robot_instance=".ROBOT_INSTANCE."&machine_uri=".WEB_URI.
+            "&robot_instance=".$prefix.ROBOT_INSTANCE."&machine_uri=".WEB_URI.
             "&crawl_time=".$this->crawl_time;
 
         $info_string = FetchUrl::getPage($request);
@@ -695,13 +740,13 @@ class Fetcher implements CrawlConstants
                 $tok = strtok("\n");
             }
             $dir = CRAWL_DIR."/schedules";
-            file_put_contents("$dir/".
+            file_put_contents("$dir/$prefix".
                 self::fetch_batch_name."{$this->crawl_time}.txt",
                 serialize($this->to_crawl));
-            $this->db->setWorldPermissionsRecursive("$dir/".
+            $this->db->setWorldPermissionsRecursive("$dir/$prefix".
                 self::fetch_batch_name."{$this->crawl_time}.txt");
             unset($info[self::SITES]);
-            file_put_contents("$dir/".
+            file_put_contents("$dir/$prefix".
                 self::fetch_crawl_info."{$this->crawl_time}.txt",
                 serialize($info));
         }
@@ -878,7 +923,12 @@ class Fetcher implements CrawlConstants
         $PAGE_PROCESSORS = $this->page_processors;
         crawlLog("  Start process pages...");
         $start_time = microtime();
-     
+
+        $prefix = "";
+        if($this->fetcher_num !== false) {
+            $prefix = $this->fetcher_num."-";
+        }
+
         $stored_site_pages = array();
         $summarized_site_pages = array();
 
@@ -938,6 +988,7 @@ class Fetcher implements CrawlConstants
             } else {
                 $processor = new $page_processor();
             }
+
             if(isset($site[self::PAGE])) {
                 if(!isset($site[self::ENCODING])) {
                     $site[self::ENCODING] = "UTF-8";
@@ -972,12 +1023,13 @@ class Fetcher implements CrawlConstants
                         crawlHash($site[self::URL], true). "LOCATION", true);
                         $not_loc = false;
                 } 
-                $site[self::ROBOT_INSTANCE] = ROBOT_INSTANCE;
+                $site[self::ROBOT_INSTANCE] = $prefix.ROBOT_INSTANCE;
 
                 if(!is_dir(CRAWL_DIR."/cache")) {
                     mkdir(CRAWL_DIR."/cache");
                     $htaccess = "Options None\nphp_flag engine off\n";
-                    file_put_contents(CRAWL_DIR."/cache/.htaccess", $htaccess);
+                    file_put_contents(CRAWL_DIR."/cache/.htaccess", 
+                        $htaccess);
                 }
 
                 if($text_data) {
@@ -1336,6 +1388,10 @@ class Fetcher implements CrawlConstants
     {
         $queue_server = $this->queue_server;
 
+        $prefix = "";
+        if($this->fetcher_num !== false) {
+            $prefix = $this->fetcher_num."-";
+        }
 
         if(count($this->to_crawl) <= 0) {
             $schedule_time = $this->schedule_time;
@@ -1349,7 +1405,7 @@ class Fetcher implements CrawlConstants
         $bytes_to_send = 0;
         $post_data = array('c'=>'fetch', 'a'=>'update', 
             'crawl_time' => $this->crawl_time, 'machine_uri' => WEB_URI,
-            'robot_instance' => ROBOT_INSTANCE);
+            'robot_instance' => $prefix.ROBOT_INSTANCE);
 
         //handle robots.txt data
         if(isset($this->found_sites[self::ROBOT_TXT])) {
@@ -1452,10 +1508,10 @@ class Fetcher implements CrawlConstants
             $info[self::STATUS] != self::CONTINUE_STATE);
         if($this->crawl_type == self::WEB_CRAWL) {
             $dir = CRAWL_DIR."/schedules";
-            file_put_contents("$dir/".self::fetch_batch_name.
+            file_put_contents("$dir/$prefix".self::fetch_batch_name.
                 "{$this->crawl_time}.txt",
                 serialize($this->to_crawl));
-            $this->db->setWorldPermissionsRecursive("$dir/".
+            $this->db->setWorldPermissionsRecursive("$dir/$prefix".
                 self::fetch_batch_name."{$this->crawl_time}.txt");
         }
     }
