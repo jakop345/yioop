@@ -1574,6 +1574,7 @@ class AdminController extends Controller implements CrawlConstants
         $machine_exists = (isset($r["name"]) && in_array($r["name"], 
             $data['MACHINE_NAMES']) ) || (isset($r["url"]) &&
             in_array($r["url"], $urls));
+
         if(isset($_REQUEST['arg']) && 
             in_array($_REQUEST['arg'], $possible_arguments)) {
             
@@ -1609,6 +1610,23 @@ class AdminController extends Controller implements CrawlConstants
                             tl('admin_controller_machine_doesnt_exists').
                             "</h1>')";
                     } else {
+                        $machines = $this->machineModel->getMachineStatuses();
+                        $service_in_use = false;
+                        foreach($machines as $machine) {
+                            if($machine['NAME'] == $r["name"]) {
+                                if($machine['STATUSES'] != array()) {
+                                    $service_in_use = true;
+                                    break;
+                                } else {
+                                    break;
+                                }
+                            }
+                        }
+                        if($service_in_use) {
+                            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('admin_controller_stop_service_first')."</h1>')";
+                            break;
+                        }
                         $this->machineModel->deleteMachine($r["name"]);
                         $tmp_array = array($r["name"]);
                         $diff = 
