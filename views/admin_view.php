@@ -55,7 +55,7 @@ class AdminView extends View
         "managecrawls", "manageaccount", "manageusers", "manageroles",
         "mixcrawls", "managelocales", "editlocales", "crawloptions", 
         "editmix", "pageoptions", "searchfilters", 
-        "managemachines", "configure");
+        "managemachines", "machinelog", "configure");
     /** Names of helper objects that the view uses to help draw itself 
      *  @var array
      */

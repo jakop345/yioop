@@ -59,14 +59,14 @@ class AdminController extends Controller implements CrawlConstants
      * is used to see how many pages crawled by the current crawl
      * @var array
      */
-    var $views = array("admin", "signin", "crawlstatus");
+    var $views = array("admin", "signin", "crawlstatus", "machinestatus");
     /**
      * Says which views to load for this controller.
      * @var array
      */
     var $models = array(
         "signin", "user", "activity", "crawl", "role", "locale", "profile",
-        "searchfilters");
+        "searchfilters", "machine");
     /**
      * Says which activities (roughly methods invoke from the web) this 
      * controller will respond to
@@ -74,7 +74,8 @@ class AdminController extends Controller implements CrawlConstants
      */
     var $activities = array("signin", "manageAccount", "manageUsers",
         "manageRoles", "manageCrawls", "pageOptions", "searchFilters", 
-        "manageMachines", "manageLocales", "crawlStatus", "configure");
+        "manageMachines", "manageLocales", "crawlStatus",
+        "machineStatus", "configure");
 
     /** Number of seconds of no fetcher contact before crawl is deemed dead*/
     const CRAWL_TIME_OUT = 1200;
@@ -111,7 +112,7 @@ class AdminController extends Controller implements CrawlConstants
                 if(!isset($data['REFRESH'])) {
                     $view = "admin";
                 } else {
-                    $view = "crawlstatus";
+                    $view = $data['REFRESH'];
                 }
              } else if ($this->checkSignin()){
                 $user_id = $this->signinModel->getUserId(
@@ -201,14 +202,23 @@ class AdminController extends Controller implements CrawlConstants
             if($activity == $allowed_activity['METHOD_NAME']) {
                  $allowed = true;
             }
+            if($allowed_activity['METHOD_NAME'] == "manageCrawls" &&
+                $activity == "crawlStatus") {
+                $allowed = true;
+            }
+            if($allowed_activity['METHOD_NAME'] == "manageMachines" &&
+                $activity == "machineStatus") {
+                $allowed = true;
+            }
         }
 
         //for now we allow anyone to get crawlStatus
-        if($activity == "crawlStatus" || $allowed) {
+        if($allowed) {
             $data = $this->$activity();
             $data['ACTIVITIES'] = $allowed_activities;
         }
-        if($activity != "crawlStatus") {
+        $status_activities = array("crawlStatus", "machineStatus");
+        if(!in_array($activity, $status_activities)) {
             $data['CURRENT_ACTIVITY'] = 
                 $this->activityModel->getActivityNameFromMethodName($activity);
         }
@@ -240,7 +250,7 @@ class AdminController extends Controller implements CrawlConstants
     function crawlStatus()
     {
         $data = array();
-        $data['REFRESH'] = true;
+        $data['REFRESH'] = "crawlstatus";
 
         $crawl_time = $this->crawlModel->getCurrentIndexDatabaseName();
         if(isset($crawl_time) ) {
@@ -259,9 +269,10 @@ class AdminController extends Controller implements CrawlConstants
             }
 
             $crawl_status = 
-                unserialize(file_get_contents(
+                @unserialize(file_get_contents(
                     CRAWL_DIR."/schedules/crawl_status.txt"));
-            $data = array_merge($data, $crawl_status);
+            $data = (is_array($crawl_status)) ? 
+                array_merge($data, $crawl_status) : $data;
 
         }
         if(isset($data['VISITED_COUNT_HISTORY']) && 
@@ -303,6 +314,18 @@ class AdminController extends Controller implements CrawlConstants
         file_put_contents(
             CRAWL_DIR."/schedules/queue_server_messages.txt", 
             $info_string);
+    }
+
+    /**
+     *
+     * @return array $data 
+     */
+    function machineStatus()
+    {
+        $data = array();
+        $data['REFRESH'] = "machinestatus";
+        $data['MACHINES'] = $this->machineModel->getMachineStatuses();
+        return $data;
     }
 
     /**
@@ -1490,9 +1513,13 @@ class AdminController extends Controller implements CrawlConstants
     function manageMachines()
     {
         $data["ELEMENT"] = "managemachinesElement";
-        $data['SCRIPT'] = "";
+        $possible_arguments = array("addmachine", "deletemachine",
+            "log", "update");
+        $data['SCRIPT'] = "doUpdate();";
+        $data["leftorright"]=(getLocaleDirection() == 'ltr') ? "right": "left";
         $data['MACHINES'] = array();
         $data['MACHINE_NAMES'] = array();
+        $urls = array();
         $data['FETCHER_NUMBERS'] = array(
             0 => 0,
             1 => 1,
@@ -1503,7 +1530,152 @@ class AdminController extends Controller implements CrawlConstants
             16 => 16,
             32 => 32,
         );
-        $data['FETCHER_NUMBER'] = 0;
+
+        $machines = $this->machineModel->getMachineList();
+        $tmp = tl('admin_controller_select_machine');
+        $data['DELETABLE_MACHINES'] = array(
+            $tmp => $tmp
+        );
+        foreach($machines as $machine) {
+            $data['MACHINE_NAMES'][] = $machine["NAME"];
+            $urls[] = $machine["URL"];
+            $data['DELETABLE_MACHINES'][$machine["NAME"]] = $machine["NAME"];
+        }
+
+        $request_fields = array(
+            "name" => "string",
+            "url" => "string",
+            "has_queue_server" => "bool",
+            "num_fetchers" => "int"
+        );
+        $r = array();
+
+        if(!isset($_REQUEST["has_queue_server"])) {
+            $_REQUEST["has_queue_server"] = false;
+        }
+
+        $allset = true;
+        foreach($request_fields as $field => $type) {
+            if(isset($_REQUEST[$field])) {
+                $r[$field] = $this->clean($_REQUEST[$field], $type);
+            } else {
+                $allset = false;
+            }
+        }
+        if(isset($r["num_fetchers"]) && 
+            in_array($r["num_fetchers"], $data['FETCHER_NUMBERS'])) {
+            $data['FETCHER_NUMBER'] = $r["num_fetchers"];
+        } else {
+            $data['FETCHER_NUMBER'] = 0;
+            if(isset($r["num_fetchers"])) {
+                $r["num_fetchers"] = 0;
+            }
+        }
+        $machine_exists = (isset($r["name"]) && in_array($r["name"], 
+            $data['MACHINE_NAMES']) ) || (isset($r["url"]) &&
+            in_array($r["url"], $urls));
+        if(isset($_REQUEST['arg']) && 
+            in_array($_REQUEST['arg'], $possible_arguments)) {
+            
+            switch($_REQUEST['arg'])
+            {
+                case "addmachine":
+                    if($allset == true && !$machine_exists) {
+                        $this->machineModel->addMachine(
+                            $r["name"], $r["url"], $r["has_queue_server"],
+                            $r["num_fetchers"]);
+
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('admin_controller_machine_added').
+                            "</h1>')";
+                        $data['MACHINE_NAMES'][] = $r["name"];
+                        $data['DELETABLE_MACHINES'][$r["name"]] = $r["name"];
+                        sort($data['MACHINE_NAMES']);
+                    } else if ($allset && $machine_exists ) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('admin_controller_machine_exists').
+                            "</h1>')";
+                    } else {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('admin_controller_machine_incomplete').
+                            "</h1>')";
+                    }
+                break;
+
+                case "deletemachine":
+                    if(!isset($r["name"]) ||
+                        !in_array($r["name"], $data['MACHINE_NAMES'])) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('admin_controller_machine_doesnt_exists').
+                            "</h1>')";
+                    } else {
+                        $this->machineModel->deleteMachine($r["name"]);
+                        $tmp_array = array($r["name"]);
+                        $diff = 
+                            array_diff($data['MACHINE_NAMES'],  $tmp_array);
+                        $data['MACHINE_NAMES'] = array_merge($diff);
+                        $tmp_array = array($r["name"] => $r["name"]);
+                        $diff = 
+                            array_diff($data['DELETABLE_MACHINES'], $tmp_array);
+                        $data['DELETABLE_MACHINES'] = array_merge($diff);
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('admin_controller_machine_deleted')."</h1>')";
+                    }
+                break;
+
+                case "log":
+                    if(isset($_REQUEST["fetcher_num"])) {
+                        $r["fetcher_num"] = 
+                            $this->clean($_REQUEST["fetcher_num"], "int");
+                    }
+                    $data["ELEMENT"] = "machinelogElement";
+
+                    $data["LOG_TYPE"] = "";
+                    if(isset($r['fetcher_num']) && isset($r['name'])) {
+                        $data["LOG_FILE_DATA"] = $this->machineModel->getLog(
+                            $r["name"], $r["fetcher_num"]);
+                        $data["LOG_TYPE"] = $r['name'].
+                            " fetcher ".$r["fetcher_num"];
+                    } else if(isset($r['name'])) {
+                        $data["LOG_TYPE"] = $r['name']." queue_server";
+                        $data["LOG_FILE_DATA"] = $this->machineModel->getLog(
+                            $r["name"]);
+                    }
+                    if(!isset($data["LOG_FILE_DATA"]) 
+                        || $data["LOG_FILE_DATA"] == ""){
+                        $data["LOG_FILE_DATA"] = 
+                            tl('admin_controller_no_machine_log');
+                    }
+                    $lines =array_reverse(explode("\n",$data["LOG_FILE_DATA"]));
+                    $data["LOG_FILE_DATA"] = implode("\n", $lines);
+                break;
+
+                case "update":
+                    if(isset($_REQUEST["fetcher_num"])) {
+                        $r["fetcher_num"] = 
+                            $this->clean($_REQUEST["fetcher_num"], "int");
+                    } else {
+                        $r["fetcher_num"] = NULL;
+                    }
+                    $available_actions = array("start", "stop");
+                    if(isset($r["name"]) && isset($_REQUEST["action"]) && 
+                        in_array($_REQUEST["action"], $available_actions)) {
+                        $this->machineModel->update($r["name"],
+                            $_REQUEST["action"], $r["fetcher_num"]);
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('admin_controller_machine_servers_updated').
+                            "</h1>')";
+                    } else {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('admin_controller_machine_no_action').
+                            "</h1>')";
+                    }
+
+                break;
+
+            }
+        }
+
         return $data;
     }
 

@@ -445,9 +445,19 @@ p
     color:red;
 }
 
-.highlight
+.highlight, .backred
 {
     background-color:red;
+}
+
+.backgreen
+{
+    background-color:green;
+}
+
+.backgray
+{
+    background-color: lightgray;
 }
 
 .frame
@@ -672,22 +682,38 @@ p
     padding: 2px;
 }
 
-.html-ltr .filetypestable, .html-ltr .ftypesall td{
+.html-ltr .filetypestable, .html-ltr .ftypesall td
+{
    margin-left: .3in;
    vertical-align: top;
 }
 
-.html-rtl  .filetypestable, .html-rtl .ftypesall td{
+.html-rtl  .filetypestable, .html-rtl .ftypesall td
+{
    margin-right: .3in;
    vertical-align: top;
 }
 
-.html-ltr .weightstable th {
+.html-ltr .weightstable th 
+{
     text-align: right;
 }
 
-.html-rtl .weightstable th {
+.html-rtl .weightstable th 
+{
     text-align: left;
+}
+
+.machinetable, .machinetable th, .machinetable td
+{
+    border: 1px ridge black;
+    margin: 2px;
+    padding: 3px;
+}
+
+.toggletable, .toggletable td
+{
+    border: 1px ridge black;
 }
 
 .translatetable, .translatetable th, .translatetable td, .filetypestable td
@@ -803,6 +829,17 @@ p
 .topmargin
 {
     margin-top: .2in;
+}
+
+.nomargin
+{
+    margin: 0;
+}
+
+.box
+{
+    border: 1px ridge #ccc;
+    padding: 3px;
 }
 
 .slightpad

@@ -311,7 +311,6 @@ class Fetcher implements CrawlConstants
         //we will get the correct crawl order from the queue_server
         $this->crawl_order = self::PAGE_IMPORTANCE;
     }
-   
 
     /**
      *  This is the function that should be called to get the fetcher to start 
@@ -322,16 +321,17 @@ class Fetcher implements CrawlConstants
     {
         global $argv;
 
-        declare(ticks=1);
-        if(isset($argv[2])) {
+        // To use CrawlDaemon need to declare ticks first
+        declare(ticks=50);
+        CrawlDaemon::init($argv, "fetcher");
+        if(isset($argv[2]) ) {
             $this->fetcher_num = intval($argv[2]);
-            CrawlDaemon::init($argv, $this->fetcher_num."-fetcher");
             crawlLog("\n\nInitialize logger..", $this->fetcher_num."-fetcher");
             
         } else {
-            CrawlDaemon::init($argv, "fetcher");
             crawlLog("\n\nInitialize logger..", "fetcher");
         }
+
         $this->loop();
     }
 

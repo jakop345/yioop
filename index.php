@@ -97,10 +97,10 @@ if ( false === function_exists('lcfirst') ) {
 }
 
 $available_controllers = array("search", "fetch", "cache",
-    "settings", "admin", "archive");
+    "settings", "admin", "archive", "machine");
 if(!WEB_ACCESS) {
 $available_controllers = array("fetch", "cache",
-    "admin", "archive");
+    "admin", "archive", "machine");
 }
 
 //the request variable c is used to determine the controller

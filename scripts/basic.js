@@ -104,7 +104,6 @@ function getPage(tag, url)
                 tag.innerHTML = self.request.responseText;
             }
         }
-
         request.open("GET", url, true);
 
         request.send();
