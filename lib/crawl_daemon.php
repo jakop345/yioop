@@ -144,9 +144,9 @@ class CrawlDaemon implements CrawlConstants
                         exit();
                     }
                 }
-                $start_time = date('H:m', time() + 60);
                 if(strstr(PHP_OS, "WIN")) {
-                    $script = "at $start_time \"php $name.php child %s\"";
+                    $script = "psexec -accepteula -d php ".
+                        BASE_DIR."\\bin\\$name.php child %s";
                 } else {
                     $script = "echo \"php ".
                         BASE_DIR."/bin/$name.php child %s\" | at now ";

@@ -109,25 +109,29 @@ class MachineController extends Controller implements CrawlConstants
     {
         $statuses = CrawlDaemon::statuses();
 
-        $bin_dir = BASE_DIR."/bin";
+        $sl = "/";
+        if(strstr(PHP_OS, "WIN")) {
+            $sl = "\\";
+        }
+        $bin_dir = BASE_DIR.$sl."bin";
 
         if(isset($_REQUEST['queue_server'])) {
             if($_REQUEST['queue_server'] == "true" && 
                 !isset($statuses["queue_server"][-1])) {
-                exec("php $bin_dir/queue_server.php start");
+                exec("php $bin_dir{$sl}queue_server.php start");
             } else if($_REQUEST['queue_server'] == "false" && 
                 isset($statuses["queue_server"][-1]) ) {
-                exec("php $bin_dir/queue_server.php stop");
+                exec("php $bin_dir{$sl}queue_server.php stop");
             }
         }
 
         if(isset($_REQUEST['fetcher']) && is_array($_REQUEST['fetcher'])) {
             foreach($_REQUEST['fetcher'] as $index => $value) {
                 if($value == "true" && !isset($statuses["fetcher"][$index]) ) {
-                    exec("php $bin_dir/fetcher.php start $index");
+                    exec("php $bin_dir{$sl}fetcher.php start $index");
                 } else if($value == "false" && 
                     isset($statuses["fetcher"][$index]) ) {
-                    exec("php $bin_dir/fetcher.php stop $index");
+                    exec("php $bin_dir{$sl}fetcher.php stop $index");
                 }
             }
         }
