@@ -74,7 +74,7 @@ function upgradeDatabaseCheck()
     $result = @$model->db->execute($sql);
     if($result !== false) {
         $row = $model->db->fetchArray($result);
-        if($row['ID'] == 1) {
+        if($row['ID'] == 3) {
             return false;
         }
     }
@@ -88,7 +88,7 @@ function upgradeDatabaseCheck()
  */
 function upgradeDatabase()
 {
-    $versions = array(0, 1, 2);
+    $versions = array(0, 1, 2, 3);
     $model = new Model();
     $model->db->selectDB(DB_NAME);
     $sql = "SELECT ID FROM VERSION";
@@ -113,11 +113,11 @@ function upgradeDatabase()
 
 /**
  * Upgrades a Version 0 version of the Yioop! database to a Version 1 version
- * @param resource $db database handle to use to upgrade 
+ * @param object $db datasource to use to upgrade 
  */
-function upgradeDatabaseVersion1($db)
+function upgradeDatabaseVersion1(&$db)
 {
-    $db->execute("CREATE TABLE VERSION( ID INTEGER PRIMARY KEY)");
+    $db->execute("CREATE TABLE VERSION (ID INTEGER PRIMARY KEY)");
     $db->execute("INSERT INTO VERSION VALUES (1)");
     $db->execute("CREATE TABLE USER_SESSION( USER_ID INTEGER PRIMARY KEY, ".
         "SESSION VARCHAR(4096))");
@@ -125,11 +125,11 @@ function upgradeDatabaseVersion1($db)
 
 /**
  * Upgrades a Version 1 version of the Yioop! database to a Version 2 version
- * @param resource $db database handle to use to upgrade 
+ * @param object $db datasource to use to upgrade 
  */
-function upgradeDatabaseVersion2($db)
+function upgradeDatabaseVersion2(&$db)
 {
-    $db->execute("DELETE FROM VERSION;");
+    $db->execute("DELETE FROM VERSION WHERE ID=1");
     $db->execute("INSERT INTO VERSION VALUES (2)");
     $db->execute("ALTER TABLE USER ADD UNIQUE ( USER_NAME )" );
     $db->execute("INSERT INTO LOCALE VALUES (17, 'kn', 'ಕನ್ನಡ', 'lr-tb')");
@@ -151,11 +151,11 @@ function upgradeDatabaseVersion2($db)
 
 /**
  * Upgrades a Version 2 version of the Yioop! database to a Version 3 version
- * @param resource $db database handle to use to upgrade 
+ * @param object $db datasource to use to upgrade 
  */
-function upgradeDatabaseVersion3($db)
+function upgradeDatabaseVersion3(&$db)
 {
-    $db->execute("DELETE FROM VERSION;");
+    $db->execute("DELETE FROM VERSION WHERE ID=2");
     $db->execute("INSERT INTO VERSION VALUES (3)");
     $db->execute("INSERT INTO LOCALE VALUES (19, 'tr', 'Türkçe', 'lr-tb')");
 
