@@ -74,7 +74,7 @@ class MachinestatusView extends View
                 $off_queue_server = $base_url . "update&name={$m['NAME']}".
                     "&action=stop";
             ?></p>
-            <?php if($m['HAS_QUEUE_SERVER'] == "TRUE") {
+            <?php if($m['HAS_QUEUE_SERVER'] == "1") {
                 $log_url = $base_url . "log&name={$m['NAME']}";
             ?>
                 <table class="machinetable">
