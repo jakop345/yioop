@@ -3,7 +3,7 @@
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009, 2010, 2011  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage library
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009, 2010, 2011
+ * @copyright 2009 - 2012
  * @filesource
  */
 
@@ -60,16 +60,13 @@ class FetchUrl implements CrawlConstants
      *      a url to get defaults to URL
      * @param string $value component of $sites[$i] in which to store the 
      *      page that was gotten
-     * @param string $hash component of $sites[$i] in which to store a hash 
-     *      of page for de-deuplication purposes
      * 
      *  @return array an updated array with the contents of those pages
      */ 
 
     public static function getPages($sites, $timer = false,
         $page_range_request = PAGE_RANGE_REQUEST,
-        $key=CrawlConstants::URL, $value = CrawlConstants::PAGE, 
-        $hash=CrawlConstants::HASH)
+        $key=CrawlConstants::URL, $value = CrawlConstants::PAGE)
     {
         $agent_handler = curl_multi_init(); 
 
@@ -91,7 +88,7 @@ class FetchUrl implements CrawlConstants
                 curl_setopt($sites[$i][0], CURLOPT_MAXREDIRS, 5);
                 curl_setopt($sites[$i][0], CURLOPT_AUTOREFERER, true);
                 curl_setopt($sites[$i][0], CURLOPT_RETURNTRANSFER, true);
-                curl_setopt($sites[$i][0], CURLOPT_CONNECTTIMEOUT, PAGE_TIMEOUT);
+                curl_setopt($sites[$i][0], CURLOPT_CONNECTTIMEOUT,PAGE_TIMEOUT);
                 curl_setopt($sites[$i][0], CURLOPT_TIMEOUT, PAGE_TIMEOUT);
                 curl_setopt($sites[$i][0], CURLOPT_HEADER, true);
                 curl_setopt($sites[$i][0], CURLOPT_ENCODING, "");
@@ -149,13 +146,6 @@ class FetchUrl implements CrawlConstants
                 if(isset($content)) {
                     $site = self::parseHeaderPage($content, $value);
                     $sites[$i] = array_merge($sites[$i], $site);
-                    /* 
-                       Store Data into our $sites array, create a hash for 
-                       deduplication purposes
-                     */
-                    $sites[$i][$hash] = 
-                        self::computePageHash($sites[$i][$value]);
-
                 }
 
                 $sites[$i][self::HTTP_CODE] = 

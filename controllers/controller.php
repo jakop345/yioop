@@ -3,7 +3,7 @@
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009, 2010, 2011  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage controller
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009, 2010, 2011
+ * @copyright 2009 - 2012
  * @filesource
  */
 
@@ -197,47 +197,73 @@ abstract class Controller
     public function clean($value, $type, $default = NULL) 
     {
         $clean_value = NULL;
-        switch($type) {
-        case "int":
-            if(isset($value)) {
-                $clean_value = intval($value);
-            } else if ($default != NULL) {
-                $clean_value = $default;
-            } else {
-                $clean_value = 0;
-            }
-        break;
-
-        case "float":
-            if(isset($value)) {
-                $clean_value = floatval($value);
-            } else if ($default != NULL) {
-                $clean_value = $default;
-            } else {
-                $clean_value = 0;
-            }
-        break;
-
-        case "hash";
-            if(isset($value)) {
-                if(strlen($value) == strlen(crawlHash("A")) && 
-                    base64_decode($value)) {
-                    $clean_value = $value;
+        switch($type) 
+        {
+            case "boolean":
+            case "bool":
+                if(isset($value)) {
+                    if(!is_bool($value)) {
+                        $clean_value = false;
+                        if($value == "true" || $value != 0) {
+                            $clean_value = true;
+                        }
+                    }
+                } else if ($default != NULL) {
+                    $clean_value = $default;
+                } else {
+                    $clean_value = false;
                 }
-            } else {
-                $clean_value = $default;
-            }
-        break;
-
-        case "string":
-            if(isset($value)) {
-                $value2 = str_replace("&amp;", "&", $value);
-                $clean_value = htmlentities($value2, ENT_QUOTES, "UTF-8");
-            } else {
-                $clean_value = $default;
-            }
             break;
 
+            case "int":
+                if(isset($value)) {
+                    $clean_value = intval($value);
+                } else if ($default != NULL) {
+                    $clean_value = $default;
+                } else {
+                    $clean_value = 0;
+                }
+            break;
+
+            case "float":
+                if(isset($value)) {
+                    $clean_value = floatval($value);
+                } else if ($default != NULL) {
+                    $clean_value = $default;
+                } else {
+                    $clean_value = 0;
+                }
+            break;
+
+            case "double":
+                if(isset($value)) {
+                    $clean_value = doubleval($value);
+                } else if ($default != NULL) {
+                    $clean_value = $default;
+                } else {
+                    $clean_value = 0;
+                }
+            break;
+
+            case "hash";
+                if(isset($value)) {
+                    if(strlen($value) == strlen(crawlHash("A")) && 
+                        base64_decode($value)) {
+                        $clean_value = $value;
+                    }
+                } else {
+                    $clean_value = $default;
+                }
+            break;
+
+            case "string":
+                if(isset($value)) {
+                    $value2 = str_replace("&amp;", "&", $value);
+                    $clean_value = htmlentities($value2, ENT_QUOTES, "UTF-8");
+                } else {
+                    $clean_value = $default;
+                }
+            break;
         }
 
         return $clean_value;

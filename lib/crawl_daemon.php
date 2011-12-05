@@ -3,7 +3,7 @@
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009, 2010, 2011  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage library
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009, 2010, 2011
+ * @copyright 2009 - 2012
  * @filesource
  */
  
@@ -48,6 +48,8 @@ require_once BASE_DIR."/lib/crawl_constants.php";
 
 /**
  * Used to run scripts as a daemon on *nix systems
+ * To use CrawlDaemon need to declare ticks first in a scope that
+ * won't go away after CrawlDaemon:init is called
  *
  * @author Chris Pollett
  * @package seek_quarry
@@ -65,32 +67,30 @@ class CrawlDaemon implements CrawlConstants
     static $name;
 
     /**
-     * Callback function to handle signals sent to this daemon
+     * Used by processHandler to decide when to update the lock file
+     * @var int
+     * @static
+     */
+    static $time;
+
+    /**
+     * Tick callback function used to update the timestamp in this processes
+     * lock. If lock_file does not exist it stops the process
      *
      * @param int $signo signal sent to the daemon
      */
-    static function processHandler($signo)
+    static function processHandler()
     {
-         switch ($signo) 
-         {
-             case SIGTERM:
-                 // handle shutdown tasks
-                 $info = array();
-                 $info[self::STATUS] = self::STOP_STATE;
-                 file_put_contents(
-                    CRAWL_DIR."/schedules/".self::$name."_messages.txt", 
-                    serialize($info));
-                 unlink(CRAWL_DIR."/schedules/".self::$name."_lock.txt"); 
-             break;
+        $now = time();
+        if($now - self::$time < 30) return;
 
-             case SIGSEGV:
-                 // handle shutdown tasks
-                crawlLog(
-                    "Segmentation Fault Caught!! Debug back trace follows:");
-                crawlLog(var_dump(debug_backtrace(), true));
-             break;
+        $lock_file = CRAWL_DIR."/schedules/".self::$name."_lock.txt";
+        if(!file_exists($lock_file)) {
+            crawlLog("Stopping ".self::$name." ...");
+            exit();
+        }
 
-         }
+        file_put_contents($lock_file, $now);
     }
 
     /**
@@ -108,7 +108,11 @@ class CrawlDaemon implements CrawlConstants
      */
     static function init($argv, $name)
     {
-        self::$name = $name;
+        if(isset($argv[2])) {
+            self::$name = intval($argv[2])."-".$name;
+        } else {
+            self::$name = $name;
+        }
         //don't let our script be run from apache
         if(isset($_SERVER['DOCUMENT_ROOT']) && 
             strlen($_SERVER['DOCUMENT_ROOT']) > 0) {
@@ -120,68 +124,50 @@ class CrawlDaemon implements CrawlConstants
             echo "For example,\n";
             echo "php $name.php start //starts the $name as a daemon\n";
             echo "php $name.php stop //stops the $name daemon\n";
-            echo "php $name.php job //runs $name within the current ".
-                "process, not as a daemon, output going to a log file\n";
             echo "php $name.php terminal //runs $name within the current ".
                 "process, not as a daemon, output going to the terminal\n";
             exit();
         }
 
-        //the next code is for running as a daemon on *nix systems
-        $terminal_flag = strcmp($argv[1], "terminal") == 0 || 
-            strcmp($argv[1], "job") == 0;
-        if(function_exists("pcntl_fork") && !$terminal_flag)  {
-            $pid = pcntl_fork();
-            if ($pid == -1) {
-                die("could not fork"); 
-            } else if ($pid) {
-                exit(); // parent goes away 
-            }
-        } else { //for Windows systems we fall back to console operation
-            if(!$terminal_flag) {
-                echo "pcntl_fork function does not exist falling back to ".
-                    "terminal mode\n";
-                $argv[1] = "terminal";
-            }
-        }
-
-        //used mainly to handle segmentation faults caused by flaky multi_curl
-        if(function_exists("pcntl_signal")) {
-            pcntl_signal(SIGSEGV, "CrawlDaemon::processHandler");
-        }
+        $lock_file = CRAWL_DIR."/schedules/".self::$name."_lock.txt";
+        $messages_file = CRAWL_DIR."/schedules/".self::$name."_messages.txt";
 
         switch($argv[1])
         {
             case "start":
-                if(file_exists(CRAWL_DIR."/schedules/$name"."_lock.txt")) {
-                    echo "$name appears to be already running...\n";
-                    echo "Try stopping it first, then running start.";
-                    exit();
+                
+                if(file_exists($lock_file)) {
+                    $time = intval(file_get_contents($lock_file));
+                    if(time() - $time < 60) {
+                        echo "$name appears to be already running...\n";
+                        echo "Try stopping it first, then running start.";
+                        exit();
+                    }
                 }
+                if(strstr(PHP_OS, "WIN")) {
+                    $script = "psexec -accepteula -d php ".
+                        BASE_DIR."\\bin\\$name.php child %s";
+                } else {
+                    $script = "echo \"php ".
+                        BASE_DIR."/bin/$name.php child %s\" | at now ";
+                }
+                $options = "";
+                for($i = 2; $i < count($argv); $i++) {
+                    $options .= " ". $argv[$i];
+                }
+                $at_job = sprintf($script, $options);
+                echo $at_job;
+                exec($at_job);
                 echo "Starting $name...\n";
-                // setup signal handler
-                pcntl_signal(SIGTERM, "CrawlDaemon::processHandler");
 
-                file_put_contents(
-                    CRAWL_DIR."/schedules/$name"."_lock.txt", 
-                    serialize(getmypid()));
-
-                $info = array();
-                $info[self::STATUS] = self::WAITING_START_MESSAGE_STATE;
-                file_put_contents(
-                    CRAWL_DIR."/schedules/$name"."_messages.txt", 
-                    serialize($info));
-
-                define("LOG_TO_FILES", true); 
-                    // if false log messages are sent to the console
+                file_put_contents($lock_file,  time());
+                exit();
             break;
 
             case "stop":
-                if(file_exists(CRAWL_DIR."/schedules/$name"."_lock.txt")) {
-                    $pid = unserialize(file_get_contents(
-                        CRAWL_DIR."/schedules/$name"."_lock.txt"));
-                    echo "Stopping $name...$pid\n";
-                    posix_kill($pid, SIGTERM);
+                if(file_exists($lock_file)) {
+                    unlink($lock_file);
+                    echo "Sending stop signal to $name...\n";
                 } else {
                     echo "$name does not appear to running...\n";
                 }
@@ -189,23 +175,22 @@ class CrawlDaemon implements CrawlConstants
             break;
 
             case "terminal":
-
                 $info = array();
                 $info[self::STATUS] = self::WAITING_START_MESSAGE_STATE;
-                file_put_contents(
-                    CRAWL_DIR."/schedules/$name"."_messages.txt", 
-                    serialize($info));
-
+                file_put_contents($messages_file, serialize($info));
                 define("LOG_TO_FILES", false);
             break;
 
-            case "job":
+            case "child":
+                register_tick_function('CrawlDaemon::processHandler');
+
+                self::$time = time();
                 $info = array();
                 $info[self::STATUS] = self::WAITING_START_MESSAGE_STATE;
-                file_put_contents(
-                    CRAWL_DIR."/schedules/$name"."_messages.txt", 
-                    serialize($info));
-                define("LOG_TO_FILES", true);
+                file_put_contents($messages_file, serialize($info));
+
+                define("LOG_TO_FILES", true); 
+                    // if false log messages are sent to the console
             break;
 
             default:
@@ -213,6 +198,38 @@ class CrawlDaemon implements CrawlConstants
             break;
         }
 
+    }
+
+    /**
+     * Returns the statuses of the running daemons 
+     * 
+     * @return array 2d array active_daemons[name][instance] = true
+     */
+    static function statuses()
+    {
+        $prefix = CRAWL_DIR."/schedules/";
+        $prefix_len = strlen($prefix);
+        $suffix = "_lock.txt";
+        $suffix_len = strlen($suffix);
+        $lock_files = "$prefix*$suffix";
+        clearstatcache();
+        $time = time();
+        $active_daemons = array();
+        foreach (glob($lock_files) as $file) {
+            if(filemtime($file) - $time < 120) {
+                $len = strlen($file) - $suffix_len - $prefix_len;
+                $pre_name = substr($file, $prefix_len, $len);
+                $pre_name_parts = explode("-", $pre_name);
+                if(count($pre_name_parts) == 1) {
+                    $active_daemons[$pre_name][-1] = true;
+                } else { 
+                    $first = array_shift($pre_name_parts);
+                    $rest = implode("-", $pre_name_parts);
+                    $active_daemons[$rest][$first] = true;
+                }
+            }
+        }
+        return $active_daemons;
     }
 }
  ?>

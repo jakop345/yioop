@@ -3,7 +3,7 @@
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009, 2010, 2011  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage model
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009, 2010, 2011
+ * @copyright 2009 - 2012
  * @filesource
  */
 
@@ -118,10 +118,12 @@ class CrawlModel extends Model implements CrawlConstants
      *      the WebArchiveBundle at which the cached page lives.
      * @param string $crawl_time the timestamp of the crawl the cache page is 
      *      from
+     * @param int $instance_num which fetcher instance for the particular 
+     *      fetcher crawled the page (if more than one), false otherwise
      * @return array page data of the cached page
      */
     function getCacheFile($machine, $machine_uri, $partition, 
-        $offset, $crawl_time) 
+        $offset, $crawl_time, $instance_num = false) 
     {
         $time = time();
         $session = md5($time . AUTH_KEY);
@@ -129,11 +131,14 @@ class CrawlModel extends Model implements CrawlConstants
             $machine = "[::1]/"; 
             //used if the fetching and queue serving were on the same machine
         }
-
-        $request= "http://$machine$machine_uri?c=archive&a=cache&time=$time".
+        $request = "http://$machine$machine_uri?c=archive&a=cache&time=$time".
             "&session=$session&partition=$partition&offset=$offset".
             "&crawl_time=$crawl_time";
+        if($instance_num !== false) {
+            $request .= "&instance_num=$instance_num";
+        }
         $tmp = FetchUrl::getPage($request);
+
         $page = @unserialize(base64_decode($tmp));
         $page['REQUEST'] = $request;
 
@@ -622,12 +627,18 @@ EOT;
         if(!isset($info['general']['page_range_request'])) {
             $info['general']['page_range_request'] = PAGE_RANGE_REQUEST;
         }
+        if(!isset($info['general']['page_recrawl_frequency'])) {
+            $info['general']['page_recrawl_frequency'] = PAGE_RECRAWL_FREQUENCY;
+        }
         $n[] = '[general]';
         $n[] = "crawl_order = '".$info['general']['crawl_order']."';";
         $n[] = "crawl_type = '".$info['general']['crawl_type']."';";
         $n[] = "crawl_index = '".$info['general']['crawl_index']."';";
+        $n[] = "page_recrawl_frequency = '".
+            $info['general']['page_recrawl_frequency']."';";
         $n[] = "page_range_request = '".
             $info['general']['page_range_request']."';";
+
         $bool_string = 
             ($info['general']['restrict_sites_by_url']) ? "true" : "false";
         $n[] = "restrict_sites_by_url = $bool_string;";

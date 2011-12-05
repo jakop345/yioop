@@ -3,7 +3,7 @@
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009, 2010, 2011  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,15 +27,17 @@
  * @subpackage element
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009, 2010, 2011
+ * @copyright 2009 - 2012
  * @filesource
  */
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- * Used to draw the admin screen on which admin users can create roles, delete 
- * roles and add and delete roles from users
+ * Used to draw the admin screen on which admin users can add/delete
+ * and manage machines which might act as fetchers or queue_servers.
+ * The managing protion of this element is actually done via an ajax
+ * call of the mMchinestatusView
  *
  * @author Chris Pollett
  * @package seek_quarry
@@ -46,17 +48,16 @@ class ManagemachinesElement extends Element
 {
 
     /**
-     * renders the screen in which roles can be created, deleted, and added or 
-     * deleted from a user
+     * Draws the ManageMachines element to the output buffer
      *
-     * @param array $data  contains antiCSRF token, as well as data on 
-     *      available roles or which user has what role
+     * @param array $data  contains antiCSRF token, as well as data for
+     * the select fetcher number element.
      */
     public function render($data) 
     {?>
         <div class="currentactivity">
         <h2><?php e(tl('managemachines_element_add_machine'))?></h2>
-        <form id="addRoleForm" method="post" action=''>
+        <form id="addMachineForm" method="post" action=''>
         <input type="hidden" name="c" value="admin" /> 
         <input type="hidden" name="YIOOP_TOKEN" value="<?php 
             e($data['YIOOP_TOKEN']); ?>" /> 
@@ -64,11 +65,27 @@ class ManagemachinesElement extends Element
         <input type="hidden" name="arg" value="addmachine" />
 
         <table class="nametable">
-        <tr><td><label for="machine-url"><?php 
-            e(tl('manageroles_element_machineurl'))?></label></td>
-            <td><input type="text" id="machine-url" name="machineurl" 
-                maxlength="80" class="widefield" /></td><td 
-                class="center"><button class="buttonbox" type="submit"><?php 
+        <tr><th><label for="machine-name"><?php 
+            e(tl('managemachines_element_machine_name'))?></label></th>
+            <td><input type="text" id="machine-name" name="name" 
+                maxlength="80" class="widefield" /></td>
+        </tr>
+
+        <tr><th><label for="machine-url"><?php 
+            e(tl('managemachines_element_machineurl'))?></label></th>
+            <td><input type="text" id="machine-url" name="url" 
+                maxlength="80" class="widefield" /></td></tr>
+
+        <tr><th><label for="queue-box"><?php 
+            e(tl('managemachines_element_has_queueserver'))?></label></th>
+            <td><input type="checkbox" id="queue-box" 
+                name="has_queue_server" value="true" /></td></tr>
+        <tr><th><label for="fetcher-number"><?php 
+            e(tl('managemachines_element_num_fetchers'))?></label></th><td>
+            <?php $this->view->optionsHelper->render("fetcher-number", 
+            "num_fetchers", $data['FETCHER_NUMBERS'],$data['FETCHER_NUMBER']);
+            ?></td></tr>
+        <tr><td></td><td><button class="buttonbox" type="submit"><?php 
                 e(tl('managemachines_element_submit')); ?></button></td>
         </tr>
         </table>
@@ -81,26 +98,51 @@ class ManagemachinesElement extends Element
             e($data['YIOOP_TOKEN']); ?>" />
         <input type="hidden" name="a" value="manageMachines" /> 
         <input type="hidden" name="arg" value="deletemachine" />
-
         <table class="nametable">
-         <tr><td><label for="delete-machinename"><?php 
-            e(tl('manageusers_element_delete_machinename'))?></label></td>
+         <tr><th><label for="delete-machine-name"><?php 
+            e(tl('managemachines_element_machine_name'))?></label></th>
             <td><?php $this->view->optionsHelper->render(
-                "delete-machinename", "selectmachine", 
-                $data['MACHINE_NAMES'], "-1"); 
+                "delete-machine-name", "name", 
+                $data['DELETABLE_MACHINES'], 
+                tl('admin_controller_select_machine')); 
                 ?></td><td><button class="buttonbox" type="submit"><?php 
                 e(tl('managemachines_element_submit')); ?></button></td>
         </tr>
         </table>
         </form>
-        <h2><?php e(tl('managemachines_element_machine_info'))?></h2>
-        <?php
-        if(isset($data['MACHINES'])) {
 
-             ?>
-        <?php
+        <h2><?php e(tl('managemachines_element_machine_info'))?></h2>
+        <div id="machinestatus" >
+        <p class="red"><?php 
+            e(tl('managemachines_element_awaiting_status'))?></p>
+        </div>
+        <script type="text/javascript" >
+        var updateId;
+        function machineStatusUpdate()
+        {
+            var startUrl = "?c=admin&YIOOP_TOKEN=<?php 
+                e($data['YIOOP_TOKEN']); ?>&a=machineStatus";
+            var machineTag = elt('machinestatus');
+            getPage(machineTag, startUrl);
         }
-        ?>
+
+        function clearUpdate()
+        {
+             clearInterval(updateId );
+             var machineTag = elt('machinestatus');
+             machine.innerHTML= "<h2 class='red'><?php 
+                e(tl('managemachines_element_no_longer_update'))?></h2>";
+        }
+        function doUpdate()
+        {
+             var sec = 1000;
+             var minute = 60*sec;
+             machineStatusUpdate();
+             updateId = setInterval("machineStatusUpdate()", 30*sec);
+             setTimeout("clearUpdate()", 20*minute + sec);
+        }
+        </script>
+
         </div>
     <?php 
     }

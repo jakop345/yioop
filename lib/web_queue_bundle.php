@@ -3,7 +3,7 @@
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009, 2010, 2011  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage library
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009, 2010, 2011
+ * @copyright 2009 - 2012
  * @filesource
  */
 
@@ -220,6 +220,11 @@ class WebQueueBundle implements Notifier
         }
         $this->to_crawl_archive = new WebArchive(
             $url_archive_name, new NonCompressor());
+
+        //timestamp for robot filters (so can delete if get too old)
+        if(!file_exists($dir_name."/url_timestamp.txt")) {
+            file_put_contents($dir_name."/url_timestamp.txt", time());
+        }
 
         //filter bundle to check if we have already visited a URL
         $this->url_exists_filter_bundle = new BloomFilterBundle(
@@ -534,7 +539,7 @@ class WebQueueBundle implements Notifier
     }
 
     /**
-     * Gets when the timestamp of the oldest robot data still stored in
+     * Gets the timestamp of the oldest robot data still stored in
      * the queue bundle
      * @return int a Unix timestamp
      */
@@ -543,6 +548,20 @@ class WebQueueBundle implements Notifier
 
         $creation_time = intval(
             file_get_contents($this->dir_name."/robot_timestamp.txt"));
+
+        return (time() - $creation_time);
+    }
+
+    /**
+     * Gets the timestamp of the oldest url filter data still stored in
+     * the queue bundle
+     * @return int a Unix timestamp
+     */
+    function getUrlFilterAge()
+    {
+
+        $creation_time = intval(
+            file_get_contents($this->dir_name."/url_timestamp.txt"));
 
         return (time() - $creation_time);
     }
@@ -769,6 +788,17 @@ class WebQueueBundle implements Notifier
         $this->crawl_delay_filter = 
             new BloomFilterFile(
                 $this->dir_name."/crawl_delay.ftr", $this->filter_size);
+    }
+
+    /**
+     * Empty the crawled url filter for this web queue bundle; resets the
+     * the timestamp of the last time this filter was emptied.
+     */
+    function emptyUrlFilter()
+    {
+        file_put_contents($this->dir_name."/url_timestamp.txt", time());
+
+        $this->url_exists_filter_bundle->reset();
     }
 
     /**

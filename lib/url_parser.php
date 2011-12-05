@@ -3,7 +3,7 @@
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009, 2010, 2011  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage library
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009, 2010, 2011
+ * @copyright 2009 - 2012
  * @filesource
  */
  
@@ -201,6 +201,7 @@ class UrlParser
             "ru" => 'ru',
             "sg" => 'zh-CN',
             "th" => 'th',
+            "tr" => 'tr',
             "tw" => 'zh-CN',
             "vi" => 'vi-VN',
             "cn" => 'zh-CN',
@@ -379,10 +380,27 @@ class UrlParser
             $out = NULL;
         }
 
-        return NULL;
+        return $out;
     }
 
-    
+    /**
+     * Get the url fragment string component of a url
+     *
+     * @param string $url  a url to get the url fragment string out of
+     * @return string the url fragment string if present; NULL otherwise
+     */
+    static function getFragment($url) 
+    {
+        $url_parts = @parse_url($url);
+        if(isset($url_parts['fragment'])) {
+            $out = $url_parts['fragment'];
+        } else {
+            $out = NULL;
+        }
+
+        return $out;
+    }
+
     /**
      * Given a $link that was obtained from a website $site, returns 
      * a complete URL for that link.
@@ -408,6 +426,7 @@ class UrlParser
             $host = self::getHost($link);
             $path = self::getPath($link);
             $query = self::getQuery($link);
+            $fragment = self::getFragment($link);
         } else {
 
             $host = self::getHost($site);
@@ -432,8 +451,9 @@ class UrlParser
 
                 if(strlen($link) > 0 ) {$pre_path .="/".$link;}
                 $path = self::getPath($pre_path);
-                $query = self::getQuery($host.$pre_path);
-
+                $so_far_link = $host . $pre_path;
+                $query = self::getQuery($so_far_link);
+                $fragment = self::getFragment($so_far_link);
             }
         }
 
@@ -475,6 +495,9 @@ class UrlParser
             $url .= "?".$query;
         }
 
+        if(isset($fragment) && $fragment !== "") {
+            $url .= "#".$fragment;
+        }
         return $url;
     }
 

@@ -3,7 +3,7 @@
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009, 2010, 2011  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -29,7 +29,7 @@
  * @subpackage configs
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009, 2010, 2011
+ * @copyright 2009 - 2012
  * @filesource
  */
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
@@ -222,8 +222,18 @@ define('MAX_LINKS_WORD_TEXT', 100);
  */
 define('MAX_URL_LENGTH', 512); 
 
-/** request this many bytes out of a page */
+/** request this many bytes out of a page -- this is the default value to
+    use if the user doesn't set this value in the page options GUI 
+ */
 define('PAGE_RANGE_REQUEST', 50000);
+
+/** 
+    Allow pages to be recrawled after this many days -- this is the 
+    default value to use if the user doesn't set this value in the page options 
+    GUI. What this controls is how often the page url filter is deleted.
+    A nonpositive value means the filter will never be deleted.
+ */
+define('PAGE_RECRAWL_FREQUENCY', -1);
 
 /** maximum length +1 exact phrase matches */
 define('MAX_PHRASE_LEN', 2); 

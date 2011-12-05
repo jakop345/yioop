@@ -3,7 +3,7 @@
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009, 2010, 2011  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage controller
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009, 2010, 2011
+ * @copyright 2009 - 2012
  * @filesource
  */
 
@@ -59,14 +59,14 @@ class AdminController extends Controller implements CrawlConstants
      * is used to see how many pages crawled by the current crawl
      * @var array
      */
-    var $views = array("admin", "signin", "crawlstatus");
+    var $views = array("admin", "signin", "crawlstatus", "machinestatus");
     /**
      * Says which views to load for this controller.
      * @var array
      */
     var $models = array(
         "signin", "user", "activity", "crawl", "role", "locale", "profile",
-        "searchfilters");
+        "searchfilters", "machine");
     /**
      * Says which activities (roughly methods invoke from the web) this 
      * controller will respond to
@@ -74,7 +74,8 @@ class AdminController extends Controller implements CrawlConstants
      */
     var $activities = array("signin", "manageAccount", "manageUsers",
         "manageRoles", "manageCrawls", "pageOptions", "searchFilters", 
-        "manageMachines", "manageLocales", "crawlStatus", "configure");
+        "manageMachines", "manageLocales", "crawlStatus",
+        "machineStatus", "configure");
 
     /** Number of seconds of no fetcher contact before crawl is deemed dead*/
     const CRAWL_TIME_OUT = 1200;
@@ -111,7 +112,7 @@ class AdminController extends Controller implements CrawlConstants
                 if(!isset($data['REFRESH'])) {
                     $view = "admin";
                 } else {
-                    $view = "crawlstatus";
+                    $view = $data['REFRESH'];
                 }
              } else if ($this->checkSignin()){
                 $user_id = $this->signinModel->getUserId(
@@ -201,14 +202,23 @@ class AdminController extends Controller implements CrawlConstants
             if($activity == $allowed_activity['METHOD_NAME']) {
                  $allowed = true;
             }
+            if($allowed_activity['METHOD_NAME'] == "manageCrawls" &&
+                $activity == "crawlStatus") {
+                $allowed = true;
+            }
+            if($allowed_activity['METHOD_NAME'] == "manageMachines" &&
+                $activity == "machineStatus") {
+                $allowed = true;
+            }
         }
 
         //for now we allow anyone to get crawlStatus
-        if($activity == "crawlStatus" || $allowed) {
+        if($allowed) {
             $data = $this->$activity();
             $data['ACTIVITIES'] = $allowed_activities;
         }
-        if($activity != "crawlStatus") {
+        $status_activities = array("crawlStatus", "machineStatus");
+        if(!in_array($activity, $status_activities)) {
             $data['CURRENT_ACTIVITY'] = 
                 $this->activityModel->getActivityNameFromMethodName($activity);
         }
@@ -240,7 +250,7 @@ class AdminController extends Controller implements CrawlConstants
     function crawlStatus()
     {
         $data = array();
-        $data['REFRESH'] = true;
+        $data['REFRESH'] = "crawlstatus";
 
         $crawl_time = $this->crawlModel->getCurrentIndexDatabaseName();
         if(isset($crawl_time) ) {
@@ -259,9 +269,10 @@ class AdminController extends Controller implements CrawlConstants
             }
 
             $crawl_status = 
-                unserialize(file_get_contents(
+                @unserialize(file_get_contents(
                     CRAWL_DIR."/schedules/crawl_status.txt"));
-            $data = array_merge($data, $crawl_status);
+            $data = (is_array($crawl_status)) ? 
+                array_merge($data, $crawl_status) : $data;
 
         }
         if(isset($data['VISITED_COUNT_HISTORY']) && 
@@ -303,6 +314,24 @@ class AdminController extends Controller implements CrawlConstants
         file_put_contents(
             CRAWL_DIR."/schedules/queue_server_messages.txt", 
             $info_string);
+    }
+
+    /**
+     * Gets data from the machineModel concerning the on/off states
+     * of the machines managed by this Yioop instance and then passes
+     * this data the the machinestatus view.
+     * @return array $data MACHINES field has information about each
+     *      machine managed by this Yioop instance as well the on off
+     *      status of its queue_servers and fetchers.
+     *      The REFRESH field is used to tell the controller that the
+     *      view shouldn't have its own sidemenu.
+     */
+    function machineStatus()
+    {
+        $data = array();
+        $data['REFRESH'] = "machinestatus";
+        $data['MACHINES'] = $this->machineModel->getMachineStatuses();
+        return $data;
     }
 
     /**
@@ -736,6 +765,11 @@ class AdminController extends Controller implements CrawlConstants
                         (isset($seed_info['general']['page_range_request'])) ?
                         intval($seed_info['general']['page_range_request']) :
                         PAGE_RANGE_REQUEST;
+                    $info[self::PAGE_RECRAWL_FREQUENCY] = 
+                        (isset($seed_info['general']['page_recrawl_frequency']))
+                        ?
+                        intval($seed_info['general']['page_recrawl_frequency']):
+                        PAGE_RECRAWL_FREQUENCY;
                     $info[self::TO_CRAWL] = 
                         $seed_info['seed_sites']['url'];
                     $info[self::CRAWL_ORDER] = 
@@ -868,9 +902,15 @@ class AdminController extends Controller implements CrawlConstants
                                 $seed_current['general']['page_range_request'];
                         }
                         if(isset(
+                            $seed_current['general']['page_recrawl_frequency'])
+                            ){
+                            $seed_info['general']['page_recrawl_frequency'] =
+                            $seed_current['general']['page_recrawl_frequency'];
+                        }
+                        if(isset(
                             $seed_current['indexed_file_types'])) {
                             $seed_info['indexed_file_types'] =
-                                $seed_current['general']['indexed_file_types'];
+                                $seed_current['indexed_file_types'];
                         }
                         $update_flag = true;
                         $no_further_changes = true;
@@ -1016,6 +1056,48 @@ class AdminController extends Controller implements CrawlConstants
                         $data['SCRIPT'] .=
                             "switchTab('archivetab', 'webcrawltab');";
                     }
+                    $add_message = "";
+                    if(isset($_REQUEST['ts']) &&
+                        isset($_REQUEST['inject_sites'])) {
+                        $dir = CRAWL_DIR."/schedules/".
+                            self::schedule_data_base_name. $timestamp;
+                        if(!file_exists($dir)) {
+                            mkdir($dir);
+                            chmod($dir, 0777);
+                        }
+                        $day = floor($timestamp/86400) - 1; 
+                            //want before all other schedules, 
+                            // execute next
+                        $dir .= "/$day";
+                        if(!file_exists($dir)) {
+                            mkdir($dir);
+                            chmod($dir, 0777);
+                        }
+                        $inject_urls = 
+                            $this->convertStringCleanUrlsArray(
+                                $_REQUEST['inject_sites']);
+                        $count = count($inject_urls);
+                        if($count > 0 ) {
+                            $now = time();
+                            $schedule_data = array();
+                            $schedule_data[self::SCHEDULE_TIME] = 
+                                $timestamp;
+                            $schedule_data[self::TO_CRAWL] = array();
+                            for($i = 0; $i < $count; $i++) {
+                                $url = $inject_urls[$i];
+                                $hash = crawlHash($now.$url);
+                                $schedule_data[self::TO_CRAWL][] = 
+                                    array($url, 1, $hash);
+                            }
+                            $data_string = webencode(
+                                gzcompress(serialize($schedule_data)));
+                            $data_hash = crawlHash($data_string);
+                            file_put_contents($dir."/At1From127-0-0-1".
+                                "WithHash$data_hash.txt", $data_string);
+                            $add_message = "<br />".
+                                tl('admin_controller_urls_injected');
+                        }
+                    }
                     if($update_flag) {
                         if(isset($_REQUEST['ts'])) {
                             $this->crawlModel->setCrawlSeedInfo($timestamp, 
@@ -1024,7 +1106,8 @@ class AdminController extends Controller implements CrawlConstants
                             $this->crawlModel->setSeedInfo($seed_info);
                         }
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('admin_controller_update_seed_info')."</h1>');";
+                            tl('admin_controller_update_seed_info').
+                            "$add_message</h1>');";
                     }
                 break;
  
@@ -1328,17 +1411,35 @@ class AdminController extends Controller implements CrawlConstants
                 $change = true;
             }
         }
+        $data['RECRAWL_FREQS'] = array(-1=>tl('admin_controller_recrawl_never'),
+            1=>tl('admin_controller_recrawl_1day'), 
+            2=>tl('admin_controller_recrawl_2day'), 
+            3=>tl('admin_controller_recrawl_3day'), 
+            7=>tl('admin_controller_recrawl_7day'), 
+            14=>tl('admin_controller_recrawl_14day'));
+        if(isset($_REQUEST["page_recrawl_frequency"]) && 
+            in_array($_REQUEST["page_recrawl_frequency"], 
+                array_keys($data['RECRAWL_FREQS']))) {
+            $seed_info["general"]["page_recrawl_frequency"] =  
+                $_REQUEST["page_recrawl_frequency"];
+        }
+        if(!isset($seed_info["general"]["page_recrawl_frequency"])) {
+            $seed_info["general"]["page_recrawl_frequency"] = 
+                PAGE_RECRAWL_FREQUENCY;
+        }
+        $data['PAGE_RECRAWL_FREQUENCY'] = 
+            $seed_info["general"]["page_recrawl_frequency"];
 
         if($change == true) {
             $this->profileModel->updateProfile(WORK_DIRECTORY, array(), 
                 $profile);
         }
-        $data['SIZE_VALUE'] = array(10000=>10000, 50000=>50000, 
+        $data['SIZE_VALUES'] = array(10000=>10000, 50000=>50000, 
             100000=>100000, 500000=>500000, 1000000=>1000000,
             5000000=>5000000, 10000000=>10000000);
         $data['INDEXED_FILE_TYPES'] = array();
         if(isset($_REQUEST["page_range_request"]) && 
-            in_array($_REQUEST["page_range_request"], $data['SIZE_VALUE'])) {
+            in_array($_REQUEST["page_range_request"], $data['SIZE_VALUES'])) {
             $seed_info["general"]["page_range_request"] =  
                 $_REQUEST["page_range_request"];
         }
@@ -1413,14 +1514,197 @@ class AdminController extends Controller implements CrawlConstants
      * Handles admin request related to the managing the machines which perform
      *  crawls
      *
-     * @return array $data 
+     * With this activity an admin can add/delete machines to manage. For each
+     * managed machine, the admin can stop and start fetchers/queue_servers
+     * as well as look at their log files
+     *
+     * @return array $data MACHINES, their MACHINE_NAMES, data for 
+     *      FETCHER_NUMBERS drop-down
      */
     function manageMachines()
     {
         $data["ELEMENT"] = "managemachinesElement";
-        $data['SCRIPT'] = "";
+        $possible_arguments = array("addmachine", "deletemachine",
+            "log", "update");
+        $data['SCRIPT'] = "doUpdate();";
+        $data["leftorright"]=(getLocaleDirection() == 'ltr') ? "right": "left";
         $data['MACHINES'] = array();
         $data['MACHINE_NAMES'] = array();
+        $urls = array();
+        $data['FETCHER_NUMBERS'] = array(
+            0 => 0,
+            1 => 1,
+            2 => 2,
+            3 => 3,
+            4 => 4,
+            8 => 8,
+            16 => 16,
+            32 => 32,
+        );
+
+        $machines = $this->machineModel->getMachineList();
+        $tmp = tl('admin_controller_select_machine');
+        $data['DELETABLE_MACHINES'] = array(
+            $tmp => $tmp
+        );
+        foreach($machines as $machine) {
+            $data['MACHINE_NAMES'][] = $machine["NAME"];
+            $urls[] = $machine["URL"];
+            $data['DELETABLE_MACHINES'][$machine["NAME"]] = $machine["NAME"];
+        }
+
+        $request_fields = array(
+            "name" => "string",
+            "url" => "string",
+            "has_queue_server" => "bool",
+            "num_fetchers" => "int"
+        );
+        $r = array();
+
+        if(!isset($_REQUEST["has_queue_server"])) {
+            $_REQUEST["has_queue_server"] = false;
+        }
+
+        $allset = true;
+        foreach($request_fields as $field => $type) {
+            if(isset($_REQUEST[$field])) {
+                $r[$field] = $this->clean($_REQUEST[$field], $type);
+            } else {
+                $allset = false;
+            }
+        }
+        if(isset($r["num_fetchers"]) && 
+            in_array($r["num_fetchers"], $data['FETCHER_NUMBERS'])) {
+            $data['FETCHER_NUMBER'] = $r["num_fetchers"];
+        } else {
+            $data['FETCHER_NUMBER'] = 0;
+            if(isset($r["num_fetchers"])) {
+                $r["num_fetchers"] = 0;
+            }
+        }
+        $machine_exists = (isset($r["name"]) && in_array($r["name"], 
+            $data['MACHINE_NAMES']) ) || (isset($r["url"]) &&
+            in_array($r["url"], $urls));
+
+        if(isset($_REQUEST['arg']) && 
+            in_array($_REQUEST['arg'], $possible_arguments)) {
+            
+            switch($_REQUEST['arg'])
+            {
+                case "addmachine":
+                    if($allset == true && !$machine_exists) {
+                        $this->machineModel->addMachine(
+                            $r["name"], $r["url"], $r["has_queue_server"],
+                            $r["num_fetchers"]);
+
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('admin_controller_machine_added').
+                            "</h1>')";
+                        $data['MACHINE_NAMES'][] = $r["name"];
+                        $data['DELETABLE_MACHINES'][$r["name"]] = $r["name"];
+                        sort($data['MACHINE_NAMES']);
+                    } else if ($allset && $machine_exists ) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('admin_controller_machine_exists').
+                            "</h1>')";
+                    } else {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('admin_controller_machine_incomplete').
+                            "</h1>')";
+                    }
+                break;
+
+                case "deletemachine":
+                    if(!isset($r["name"]) ||
+                        !in_array($r["name"], $data['MACHINE_NAMES'])) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('admin_controller_machine_doesnt_exists').
+                            "</h1>')";
+                    } else {
+                        $machines = $this->machineModel->getMachineStatuses();
+                        $service_in_use = false;
+                        foreach($machines as $machine) {
+                            if($machine['NAME'] == $r["name"]) {
+                                if($machine['STATUSES'] != array()) {
+                                    $service_in_use = true;
+                                    break;
+                                } else {
+                                    break;
+                                }
+                            }
+                        }
+                        if($service_in_use) {
+                            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('admin_controller_stop_service_first')."</h1>')";
+                            break;
+                        }
+                        $this->machineModel->deleteMachine($r["name"]);
+                        $tmp_array = array($r["name"]);
+                        $diff = 
+                            array_diff($data['MACHINE_NAMES'],  $tmp_array);
+                        $data['MACHINE_NAMES'] = array_merge($diff);
+                        $tmp_array = array($r["name"] => $r["name"]);
+                        $diff = 
+                            array_diff($data['DELETABLE_MACHINES'], $tmp_array);
+                        $data['DELETABLE_MACHINES'] = array_merge($diff);
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('admin_controller_machine_deleted')."</h1>')";
+                    }
+                break;
+
+                case "log":
+                    if(isset($_REQUEST["fetcher_num"])) {
+                        $r["fetcher_num"] = 
+                            $this->clean($_REQUEST["fetcher_num"], "int");
+                    }
+                    $data["ELEMENT"] = "machinelogElement";
+
+                    $data["LOG_TYPE"] = "";
+                    if(isset($r['fetcher_num']) && isset($r['name'])) {
+                        $data["LOG_FILE_DATA"] = $this->machineModel->getLog(
+                            $r["name"], $r["fetcher_num"]);
+                        $data["LOG_TYPE"] = $r['name'].
+                            " fetcher ".$r["fetcher_num"];
+                    } else if(isset($r['name'])) {
+                        $data["LOG_TYPE"] = $r['name']." queue_server";
+                        $data["LOG_FILE_DATA"] = $this->machineModel->getLog(
+                            $r["name"]);
+                    }
+                    if(!isset($data["LOG_FILE_DATA"]) 
+                        || $data["LOG_FILE_DATA"] == ""){
+                        $data["LOG_FILE_DATA"] = 
+                            tl('admin_controller_no_machine_log');
+                    }
+                    $lines =array_reverse(explode("\n",$data["LOG_FILE_DATA"]));
+                    $data["LOG_FILE_DATA"] = implode("\n", $lines);
+                break;
+
+                case "update":
+                    if(isset($_REQUEST["fetcher_num"])) {
+                        $r["fetcher_num"] = 
+                            $this->clean($_REQUEST["fetcher_num"], "int");
+                    } else {
+                        $r["fetcher_num"] = NULL;
+                    }
+                    $available_actions = array("start", "stop");
+                    if(isset($r["name"]) && isset($_REQUEST["action"]) && 
+                        in_array($_REQUEST["action"], $available_actions)) {
+                        $this->machineModel->update($r["name"],
+                            $_REQUEST["action"], $r["fetcher_num"]);
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('admin_controller_machine_servers_updated').
+                            "</h1>')";
+                    } else {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('admin_controller_machine_no_action').
+                            "</h1>')";
+                    }
+
+                break;
+
+            }
+        }
+
         return $data;
     }
 

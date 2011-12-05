@@ -3,7 +3,7 @@
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009, 2010, 2011  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage controller
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009, 2010, 2011
+ * @copyright 2009 - 2012
  * @filesource
  */
 
@@ -84,7 +84,7 @@ class ArchiveController extends Controller implements CrawlConstants
          */
         if(!$this->checkRequest()) {return; }
 
-        $activity = $_REQUEST['a'];
+        $activity = $this->clean($_REQUEST['a'], "string");
         $this->$activity();
 
     }
@@ -96,11 +96,18 @@ class ArchiveController extends Controller implements CrawlConstants
      */
     function cache()
     {
+        $offset = $this->clean($_REQUEST['offset'], "int");
+        $partition = $this->clean($_REQUEST['partition'], "int");
+        $crawl_time = $this->clean($_REQUEST['crawl_time'], "string");
+        $prefix = "";
+        if(isset($_REQUEST['instance_num'])) {
+            $prefix = $this->clean($_REQUEST['instance_num'], "int")."-";
+        }
         $web_archive = new WebArchiveBundle(
-            CRAWL_DIR.'/cache/'.self::archive_base_name.
-                $_REQUEST['crawl_time']);
-        $page = $web_archive->getPage($_REQUEST['offset'], 
-            $_REQUEST['partition']);
+            CRAWL_DIR.'/cache/'.$prefix.self::archive_base_name.
+                $crawl_time);
+        $page = $web_archive->getPage($offset, 
+            $partition);
 
         echo base64_encode(serialize($page));
     }

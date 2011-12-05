@@ -3,7 +3,7 @@
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009, 2010, 2011  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage element
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009, 2010, 2011
+ * @copyright 2009 - 2012
  * @filesource
  */
 
@@ -140,6 +140,11 @@ class CrawloptionsElement extends Element
         <textarea class="talltextarea" id="seed-sites" name="seed_sites" ><?php 
             e($data['seed_sites']);
         ?></textarea>
+        <?php } else { ?>
+        <div class="topmargin"><label for="inject-sites"><b><?php 
+            e(tl('crawloptions_element_inject_sites'))?></b></label></div>
+        <textarea class="shorttextarea" id="inject-sites" 
+            name="inject_sites" ></textarea>
         <?php } ?>
         </div>
         <div id='archivetab'>

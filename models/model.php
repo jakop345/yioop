@@ -3,7 +3,7 @@
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009, 2010, 2011  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage model
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009, 2010, 2011
+ * @copyright 2009 - 2012
  * @filesource
  */
 
@@ -47,9 +47,9 @@ define("SCORE_PRECISION", 4);
 define("TITLE_LENGTH", 20);
 define("MAX_TITLE_LENGTH", 20);
 
-define("SNIPPET_LENGTH_LEFT", 40);
-define("SNIPPET_LENGTH_RIGHT", 30);
-define("MIN_SNIPPET_LENGTH", 50);
+define("SNIPPET_LENGTH_LEFT", 60);
+define("SNIPPET_LENGTH_RIGHT", 50);
+define("MIN_SNIPPET_LENGTH", 100);
 
 
 /**
@@ -151,13 +151,13 @@ class Model implements CrawlConstants
             if($words != NULL) {
                 $page[self::TITLE] = 
                     $this->boldKeywords($page[self::TITLE], $words);
-                $page[self::DESCRIPTION] = 
-                    substr(strip_tags(
-                        $page[self::DESCRIPTION]), 0, $description_length);
 
                 $page[self::DESCRIPTION] = 
-                    $this->getSnippets($page[self::DESCRIPTION], $words,
-                        $description_length);
+                    $this->getSnippets(strip_tags($page[self::DESCRIPTION]), 
+                        $words, $description_length);
+                $page[self::DESCRIPTION] = substr(
+                    $page[self::DESCRIPTION], 0, $description_length);
+
                 $page[self::DESCRIPTION] = 
                     $this->boldKeywords($page[self::DESCRIPTION], $words);
 
@@ -194,26 +194,31 @@ class Model implements CrawlConstants
      */
     function getSnippets($text, $words, $description_length)
     {
-        $snippet_string = "";
+        $snippets = array();
         $ellipsis = "";
         $len = mb_strlen($text);
         $offset = 0;
+        $words = array_unique($words);
+        $out_len = 0;
+        $i = 0;
         do
         {
             $word_locations = array();
             $new_offset = $offset;
             foreach($words as $word) {
-                if($word != "" && $pos = mb_strpos($text, $word, $offset)) {
-                    $word_locations[$pos] = $word;
-                    if($new_offset < $pos) {
-                        $new_offset = $pos;
+                if($word != "") {
+                    $pos = mb_stripos($text, $word, $offset);
+                    
+                    if($pos !== false) {
+                        $word_locations[$pos] = $word;
+                        if($new_offset < $pos) {
+                            $new_offset = $pos;
+                        }
                     }
                 }
             }
             $offset = $new_offset + 1;
             ksort($word_locations);
-            $i = 0;
-
 
             foreach($word_locations as $pos => $word) {
                 $pre_low = ($pos >= SNIPPET_LENGTH_LEFT) ? 
@@ -224,17 +229,24 @@ class Model implements CrawlConstants
 
                 $pre_high = ($pos + SNIPPET_LENGTH_RIGHT <= $len ) ? 
                     $pos + SNIPPET_LENGTH_RIGHT: $len;
-                if(!($high = mb_strpos($text, " ", $pre_high))) {
+                if(!($high = mb_stripos($text, " ", $pre_high))) {
                     $high = $pre_high;
                 }
-
-                if( strlen($snippet_string)  < $description_length) {
-                    $snippet_string .= 
-                        $ellipsis.mb_substr($text, $low, $high - $low);
-                    $ellipsis = "...";
+                
+                if( $out_len  < $description_length) {
+                    
+                    $str = mb_substr($text, $low, $high - $low);
+                    if(isset($snippets[$i]) && 
+                        mb_stristr($str, $snippets[$i])) {
+                        $i++;
+                    }
+                    $snippets[$i] = $str;
+                    $out_len += strlen($str) + 3;
                 }
             }
-        } while(strlen($snippet_string) < $description_length && $offset < $len);
+        } while($out_len < $description_length && $offset < $len);
+
+        $snippet_string = implode("...", $snippets);
 
         if(strlen($snippet_string) < MIN_SNIPPET_LENGTH) {
             $snippet_string = $text;

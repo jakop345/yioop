@@ -3,7 +3,7 @@
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009, 2010, 2011  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,13 +27,16 @@
  * @subpackage element
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009, 2010, 2011
+ * @copyright 2009 - 2012
  * @filesource
  */
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
+ * This element is used to render the Page Options admin activity
+ * This activity lets a usercontrol the amount of web pages downloaded,
+ * the recrawl frequency, the file types, etc of the pages crawled
  *
  * @author Chris Pollett
  *
@@ -45,8 +48,10 @@ class PageOptionsElement extends Element
 {
 
     /**
+     * Draws the page options element to the output buffer
      *
-     * @param array $data keys used to store disallowed_sites
+     * @param array $data used to keep track of page range, recrawl frequency,
+     *  and file types of the page
      */
     public function render($data) 
     {
@@ -59,10 +64,16 @@ class PageOptionsElement extends Element
         <input type="hidden" name="YIOOP_TOKEN" value="<?php 
             e($data['YIOOP_TOKEN']); ?>" />
         <input type="hidden" name="a" value="pageOptions" />
-        <div class="topmargin"><b><label for="page_range_request"><?php 
+        <div class="topmargin"><b><label for="page-range-request"><?php 
             e(tl('pageoptions_element_page_range'))?></label></b>
             <?php $this->view->optionsHelper->render("page-range-request", 
-            "page_range_request", $data['SIZE_VALUE'], $data['PAGE_SIZE']); 
+            "page_range_request", $data['SIZE_VALUES'], $data['PAGE_SIZE']); 
+            ?></div>
+        <div class="topmargin"><b><label for="allow-recrawl"><?php 
+            e(tl('pageoptions_element_allow_recrawl'))?></label></b>
+            <?php $this->view->optionsHelper->render("page-recrawl-frequency", 
+            "page_recrawl_frequency", $data['RECRAWL_FREQS'], 
+                $data['PAGE_RECRAWL_FREQUENCY']); 
             ?></div>
         <div class="topmargin"><b><?php 
             e(tl('pageoptions_element_file_types'))?></b>

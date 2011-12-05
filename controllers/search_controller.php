@@ -3,7 +3,7 @@
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009, 2010, 2011  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage controller
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009, 2010, 2011
+ * @copyright 2009 - 2012
  * @filesource
  */
 
@@ -574,12 +574,19 @@ class SearchController extends Controller implements CrawlConstants
             $this->displayView("nocache", $data);
             return;
         }
+
+        $instance_parts = explode("-", $robot_instance);
+        $instance_num = false;
+        if(count($instance_parts) > 1) {
+            $instance_num = intval($instance_parts[0]);
+        }
         $machine = $robot_table[$robot_instance][0];
         $machine_uri = $robot_table[$robot_instance][1];
         $page = $crawl_item[self::HASH];
         $offset = $crawl_item[self::OFFSET];
         $cache_item = $this->crawlModel->getCacheFile($machine, 
-            $machine_uri, $cache_partition, $offset,  $crawl_time);
+            $machine_uri, $cache_partition, $offset,  $crawl_time, 
+            $instance_num);
         if(!isset($cache_item[self::PAGE])) {
             $data["SUMMARY_STRING"] = $summary_string;
             $this->displayView("nocache", $data);
@@ -629,8 +636,12 @@ class SearchController extends Controller implements CrawlConstants
 
         $body =  $dom->getElementsByTagName('body')->item(0);
         if($body == false) {
+            $body_tags = "<frameset><frame><noscript><img><span><b><i><em>".
+                "<strong><h1><h2><h3><h4><h5><h6><p><div>".
+                "<a><table><tr><td><th><dt><dir><dl><dd>";
+            $cache_file = strip_tags($cache_file, $body_tags);
             $cache_file = "<html><head><title>Yioop! Cache</title></head>".
-                "<body>".htmlentities($cache_file)."</body></html>";
+                "<body>".$cache_file."</body></html>";
             $dom = new DOMDocument();
             @$dom->loadHTML($cache_file);
             $body =  $dom->getElementsByTagName('body')->item(0);

@@ -3,7 +3,7 @@
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009, 2010, 2011  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage library
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009, 2010, 2011
+ * @copyright 2009 - 2012
  * @filesource
  */
 
@@ -220,6 +220,25 @@ class BloomFilterBundle
         $meta['FILTER_SIZE'] = $this->filter_size;
 
         file_put_contents($this->dir_name.'/meta.txt', serialize($meta));
+    }
+
+    /**
+     *  Empties the contents of the bloom filter bundle and resets
+     *  it to start storing new data.
+     */
+    function reset()
+    {
+        for($i = 0; $i < $this->num_filters; $i++) {
+            @unlink($this->dir_name."/filter_$i.ftr");
+        }
+        $this->num_filters = 0;
+        $this->current_filter_count = 0;
+        $this->current_filter = 
+            new BloomFilterFile($this->dir_name."/filter_0.ftr", 
+            $this->filter_size);
+        $this->num_filters++;
+        $this->current_filter->save();
+        $this->saveMetaData();
     }
 
     /**

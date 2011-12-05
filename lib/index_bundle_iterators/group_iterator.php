@@ -3,7 +3,7 @@
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009, 2010, 2011  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage iterator
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009, 2010, 2011
+ * @copyright 2009 - 2012
  * @filesource
  */
 
@@ -372,6 +372,20 @@ class GroupIterator extends IndexBundleIterator
         $word_iterator =
              new WordIterator($hash_info_url,
                 $index, true);
+        $count = 1;
+        if(isset($word_iterator->dictionary_info)) {
+            $count = count($word_iterator->dictionary_info);
+        }
+        if($count > 1) { 
+            /* if a page is recrawlled it gets a second info page,
+               this is to ensure we look up the most recent
+            */
+            $gen_off = array();
+            list($gen_off[0], $gen_off[1], , ) =
+                 $word_iterator->dictionary_info[
+                 $word_iterator->num_generations - 1];
+            $word_iterator->advance($gen_off);
+        }
         $doc_array = $word_iterator->currentDocsWithWord();
         $item = false;
         if(is_array($doc_array) && count($doc_array) == 1) {
@@ -593,6 +607,7 @@ class GroupIterator extends IndexBundleIterator
                     $index->setCurrentShard($generation, true);
                     $page = $index->getPage($summary_offset);
                     if($page == array()) {continue;}
+                    $ellipsis_used = false;
                     if(!isset($out_pages[$doc_key][self::SUMMARY])) {
                         $out_pages[$doc_key][self::SUMMARY] = $page;
                     } else if (isset($page[self::DESCRIPTION])) {
@@ -603,15 +618,20 @@ class GroupIterator extends IndexBundleIterator
                         }
                         $out_pages[$doc_key][self::SUMMARY][self::DESCRIPTION].=
                             " .. ".$page[self::DESCRIPTION];
+                        $ellipsis_used = true;
                     }
-                    if(strlen($out_pages[$doc_key][
+                    if($ellipsis_used && strlen($out_pages[$doc_key][
                         self::SUMMARY][self::DESCRIPTION]) > 
                         self::MIN_DESCRIPTION_LENGTH) {
+                        /* want at least one ellipsis in case terms only appear
+                           in links
+                         */
                         break;
                     }
                 }
             }
         }
+
         return $out_pages;
 
     }
