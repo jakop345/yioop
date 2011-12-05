@@ -317,8 +317,14 @@ class AdminController extends Controller implements CrawlConstants
     }
 
     /**
-     *
-     * @return array $data 
+     * Gets data from the machineModel concerning the on/off states
+     * of the machines managed by this Yioop instance and then passes
+     * this data the the machinestatus view.
+     * @return array $data MACHINES field has information about each
+     *      machine managed by this Yioop instance as well the on off
+     *      status of its queue_servers and fetchers.
+     *      The REFRESH field is used to tell the controller that the
+     *      view shouldn't have its own sidemenu.
      */
     function machineStatus()
     {
@@ -1508,7 +1514,12 @@ class AdminController extends Controller implements CrawlConstants
      * Handles admin request related to the managing the machines which perform
      *  crawls
      *
-     * @return array $data 
+     * With this activity an admin can add/delete machines to manage. For each
+     * managed machine, the admin can stop and start fetchers/queue_servers
+     * as well as look at their log files
+     *
+     * @return array $data MACHINES, their MACHINE_NAMES, data for 
+     *      FETCHER_NUMBERS drop-down
      */
     function manageMachines()
     {

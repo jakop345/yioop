@@ -93,7 +93,7 @@ class MachineController extends Controller implements CrawlConstants
     }
 
     /**
-     * Checks the running/non running status of the 
+     * Checks the running/non-running status of the 
      * fetchers and queue_servers of the current Yioop instance
      */
     function statuses()

@@ -34,6 +34,9 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
+ * This element is used to render the Page Options admin activity
+ * This activity lets a usercontrol the amount of web pages downloaded,
+ * the recrawl frequency, the file types, etc of the pages crawled
  *
  * @author Chris Pollett
  *
@@ -45,8 +48,10 @@ class PageOptionsElement extends Element
 {
 
     /**
+     * Draws the page options element to the output buffer
      *
-     * @param array $data keys used to store disallowed_sites
+     * @param array $data used to keep track of page range, recrawl frequency,
+     *  and file types of the page
      */
     public function render($data) 
     {

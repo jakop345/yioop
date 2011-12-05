@@ -34,7 +34,10 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- * Used to draw the admin screen on which admin users can 
+ * Used to draw the admin screen on which admin users can add/delete
+ * and manage machines which might act as fetchers or queue_servers.
+ * The managing protion of this element is actually done via an ajax
+ * call of the mMchinestatusView
  *
  * @author Chris Pollett
  * @package seek_quarry
@@ -45,8 +48,10 @@ class ManagemachinesElement extends Element
 {
 
     /**
+     * Draws the ManageMachines element to the output buffer
      *
-     * @param array $data  contains antiCSRF token, as well as data on 
+     * @param array $data  contains antiCSRF token, as well as data for
+     * the select fetcher number element.
      */
     public function render($data) 
     {?>

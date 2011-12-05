@@ -280,7 +280,7 @@ class QueueServer implements CrawlConstants
     {
         global $argv;
 
-        declare(ticks=500);
+        declare(ticks=200);
         CrawlDaemon::init($argv, "queue_server");
         crawlLog("\n\nInitialize logger..", "queue_server");
         $this->loop();

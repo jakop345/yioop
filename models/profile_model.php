@@ -193,7 +193,7 @@ EOT;
     }
 
     /**
-     * Creates a  directory and sets it to owrld prermission if it doesn't 
+     * Creates a  directory and sets it to world prermission if it doesn't 
      * aleady exist
      *
      * @param string $directory name of directory to create

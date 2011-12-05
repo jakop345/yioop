@@ -129,6 +129,9 @@ class MachineModel extends Model
     /**
      * Returns the statuses of machines in the machine table of their
      * fetchers and queue_server as well as the name and url's of these machines
+     *
+     * @return array  a list of machines, together with all their properties
+     *  and the statuses of their fetchers and queue_servers
      */
     function getMachineStatuses()
     {

@@ -322,7 +322,7 @@ class Fetcher implements CrawlConstants
         global $argv;
 
         // To use CrawlDaemon need to declare ticks first
-        declare(ticks=50);
+        declare(ticks=200);
         CrawlDaemon::init($argv, "fetcher");
         if(isset($argv[2]) ) {
             $this->fetcher_num = intval($argv[2]);

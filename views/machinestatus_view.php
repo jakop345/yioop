@@ -35,7 +35,8 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
  * This view is used to display information about
- * crawls that have been made by this seek_quarry instance
+ * the on/off state of the queue_servers and fetchers managed by
+ * this instance of Yioop.
  *
  * @author Chris Pollett
  * @package seek_quarry
@@ -46,17 +47,16 @@ class MachinestatusView extends View
 {
     /** 
      * Names of helper objects that the view uses to help draw itself
+     * toggle is used to draw an On/Off switch
      * @var array
      */
     var $helpers = array('toggle');
 
     /**
-     * An Ajax call from the Manage Crawl Element in Admin View triggers
-     * this view to be instantiated. The renderView method then draws statistics
-     * about the currently active crawl.The $data is supplied by the crawlStatus
-     * method of the AdminController.
+     * Draws the ManagestatusView to the output buffer
      *
-     * @param array $data   info about the current crawl status
+     * @param array $data  contains on/off status info for each of the machines
+     *      managed by this Yioop instance.
      */
     public function renderView($data) 
     {
