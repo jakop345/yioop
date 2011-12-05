@@ -148,4 +148,78 @@ function upgradeDatabaseVersion2($db)
         'Configurer')");
 
 }
+
+/**
+ * Upgrades a Version 2 version of the Yioop! database to a Version 3 version
+ * @param resource $db database handle to use to upgrade 
+ */
+function upgradeDatabaseVersion3($db)
+{
+    $db->execute("DELETE FROM VERSION;");
+    $db->execute("INSERT INTO VERSION VALUES (3)");
+    $db->execute("INSERT INTO LOCALE VALUES (19, 'tr', 'Türkçe', 'lr-tb')");
+
+    $db->execute("INSERT INTO ROLE_ACTIVITY VALUES (1, 10)");
+
+    $db->execute("CREATE TABLE MACHINE (
+        NAME VARCHAR(16) PRIMARY KEY, URL VARCHAR(256) UNIQUE,
+        HAS_QUEUE_SERVER BOOLEAN, NUM_FETCHERS INT(4))");
+
+    $db->execute("DELETE FROM ACTIVITY WHERE ACTIVITY_ID>5 AND ACTIVITY_ID<11");
+    $db->execute(
+        "DELETE FROM TRANSLATION WHERE TRANSLATION_ID>5 AND TRANSLATION_ID<11");
+    $db->execute("DELETE FROM TRANSLATION_LOCALE ".
+        "WHERE TRANSLATION_ID>5 AND TRANSLATION_ID<11");
+
+    $db->execute("INSERT INTO ACTIVITY VALUES (6, 6, 'pageOptions')");
+    $db->execute("INSERT INTO ACTIVITY VALUES (7, 7, 'searchFilters')");
+    $db->execute("INSERT INTO ACTIVITY VALUES (8, 8, 'manageMachines')");
+    $db->execute("INSERT INTO ACTIVITY VALUES (9, 9, 'manageLocales')");
+    $db->execute("INSERT INTO ACTIVITY VALUES (10, 10, 'configure')");
+
+    $db->execute(
+        "INSERT INTO TRANSLATION VALUES (6, 'db_activity_file_options')");
+    $db->execute(
+        "INSERT INTO TRANSLATION VALUES (7,'db_activity_search_filters')");
+    $db->execute(
+        "INSERT INTO TRANSLATION VALUES(8,'db_activity_manage_machines')");
+    $db->execute(
+        "INSERT INTO TRANSLATION VALUES (9,'db_activity_manage_locales')");
+    $db->execute(
+        "INSERT INTO TRANSLATION VALUES (10, 'db_activity_configure')");
+
+    $db->execute(
+        "INSERT INTO TRANSLATION_LOCALE VALUES (6, 1, 'Page Options')");
+    $db->execute(
+        "INSERT INTO TRANSLATION_LOCALE VALUES (7, 1, 'Search Filters')");
+    $db->execute(
+        "INSERT INTO TRANSLATION_LOCALE VALUES (8, 1, 'Manage Machines')");
+    $db->execute(
+        "INSERT INTO TRANSLATION_LOCALE VALUES (9, 1, 'Manage Locales')");
+    $db->execute(
+        "INSERT INTO TRANSLATION_LOCALE VALUES (10, 1, 'Configure')");
+
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (6, 5, 
+        'Options de fichier')");
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (7, 5, 
+        'Les filtres de recherche')");
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (8, 5, 
+        'Modifier les ordinateurs')");
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (9, 5, 
+        'Modifier les lieux')");
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (10, 5, 
+        'Configurer')");
+
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (9, 9, 'ローケル管理')");
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (10, 9, '設定')");
+
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (9, 10, '로케일 관리')");
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (10, 10, '구성')");
+
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (9, 15, 
+        'Quản lý miền địa phương')");
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (10, 15, 
+        'Sắp xếp hoạt động dựa theo hoạch định')");
+
+}
 ?>

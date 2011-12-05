@@ -75,7 +75,7 @@ if(!in_array(DBMS, array('sqlite', 'sqlite3'))) {
 $db->selectDB(DB_NAME);
 
 $db->execute("CREATE TABLE VERSION( ID INTEGER PRIMARY KEY)");
-$db->execute("INSERT INTO VERSION VALUES (2)");
+$db->execute("INSERT INTO VERSION VALUES (3)");
 
 $db->execute("CREATE TABLE USER( USER_ID INTEGER PRIMARY KEY $auto_increment, ".
     "USER_NAME VARCHAR(16) UNIQUE,  PASSWORD VARCHAR(16))");
@@ -116,6 +116,7 @@ $db->execute("INSERT INTO LOCALE VALUES (15, 'vi-VN', 'Tiếng Việt', 'lr-tb')
 $db->execute("INSERT INTO LOCALE VALUES (16, 'zh-CN', '中文', 'lr-tb')");
 $db->execute("INSERT INTO LOCALE VALUES (17, 'kn', 'ಕನ್ನಡ', 'lr-tb')");
 $db->execute("INSERT INTO LOCALE VALUES (18, 'hi', 'हिन्दी', 'lr-tb')");
+$db->execute("INSERT INTO LOCALE VALUES (19, 'tr', 'Türkçe', 'lr-tb')");
 
 $db->execute("CREATE TABLE ROLE (ROLE_ID INTEGER PRIMARY KEY ".
     "$auto_increment, NAME VARCHAR(512))");
@@ -185,7 +186,7 @@ $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (6, 5,
     'Options de fichier')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (7, 5, 
     'Les filtres de recherche')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (7, 5, 
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (8, 5, 
     'Modifier les ordinateurs')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (9, 5, 
     'Modifier les lieux')");
@@ -243,8 +244,6 @@ $db->execute("CREATE TABLE MIX_COMPONENTS (
 $db->execute("CREATE TABLE MACHINE (
     NAME VARCHAR(16) PRIMARY KEY, URL VARCHAR(256) UNIQUE,
     HAS_QUEUE_SERVER BOOLEAN, NUM_FETCHERS INT(4))");
-
-
 
 $db->disconnect();
 if(in_array(DBMS, array('sqlite','sqlite3' ))){
