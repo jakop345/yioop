@@ -100,15 +100,14 @@ class MachineModel extends Model
     {
         $this->db->selectDB(DB_NAME);
         if($has_queue_server == true) {
-            $has_string = "TRUE";
+            $has_string = "1";
         } else {
-            $has_string = "FALSE";
+            $has_string = "0";
         }
         $sql = "INSERT INTO MACHINE VALUES ('".
-            $this->db->escapeString($name)."',
-            '".$this->db->escapeString($url)."',
-            '".$has_string."',
-            '".$this->db->escapeString($num_fetchers)."')";
+            $this->db->escapeString($name)."','".
+            $this->db->escapeString($url)."',".$has_string.",'".
+            $this->db->escapeString($num_fetchers)."')";
 
         $this->db->execute($sql);
     }

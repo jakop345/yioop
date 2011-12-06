@@ -84,6 +84,7 @@ class CrawlDaemon implements CrawlConstants
         $now = time();
         if($now - self::$time < 30) return;
 
+        self::$time = $now;
         $lock_file = CRAWL_DIR."/schedules/".self::$name."_lock.txt";
         if(!file_exists($lock_file)) {
             crawlLog("Stopping ".self::$name." ...");
