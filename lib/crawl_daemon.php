@@ -217,7 +217,7 @@ class CrawlDaemon implements CrawlConstants
         $time = time();
         $active_daemons = array();
         foreach (glob($lock_files) as $file) {
-            if(filemtime($file) - $time < 120) {
+            if($time - filemtime($file)  < 120) {
                 $len = strlen($file) - $suffix_len - $prefix_len;
                 $pre_name = substr($file, $prefix_len, $len);
                 $pre_name_parts = explode("-", $pre_name);
