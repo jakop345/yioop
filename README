@@ -37,7 +37,7 @@ queue_server.php - maintains a queue of urls that are
 arc_tool.php - an auxiliary script used to view the contents
     of a web or index archive from the command line
 
-arc_tool.php - an auxiliary script used to query an index
+query_tool.php - an auxiliary script used to query an index
     from the command line
 
 index.php -- a search engine web page. It is also used
