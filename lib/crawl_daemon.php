@@ -67,6 +67,16 @@ class CrawlDaemon implements CrawlConstants
     static $name;
 
     /**
+     *  Subname of the name prefix used on files associated with this daemon
+     *  For example, the name might be fetcher, the subname might 2 to indicate
+     *  which fetcher daemon instance.
+     *
+     * @var string
+     * @var static
+     */
+     static $subname;
+      
+    /**
      * Used by processHandler to decide when to update the lock file
      * @var int
      * @static
@@ -85,9 +95,11 @@ class CrawlDaemon implements CrawlConstants
         if($now - self::$time < 30) return;
 
         self::$time = $now;
-        $lock_file = CRAWL_DIR."/schedules/".self::$name."_lock.txt";
+        $lock_file = CrawlDaemon::getLockFileName(self::$name, self::$subname);
         if(!file_exists($lock_file)) {
-            crawlLog("Stopping ".self::$name." ...");
+            $name_string = CrawlDaemon::getNameString(self::$name, 
+                self::$subname);
+            crawlLog("Stopping $name_string ...");
             exit();
         }
 
@@ -109,10 +121,12 @@ class CrawlDaemon implements CrawlConstants
      */
     static function init($argv, $name)
     {
+        self::$name = $name;
+
         if(isset($argv[2])) {
-            self::$name = intval($argv[2])."-".$name;
+            self::$subname = $argv[2]);
         } else {
-            self::$name = $name;
+            self::$subname = "";
         }
         //don't let our script be run from apache
         if(isset($_SERVER['DOCUMENT_ROOT']) && 
@@ -130,49 +144,21 @@ class CrawlDaemon implements CrawlConstants
             exit();
         }
 
-        $lock_file = CRAWL_DIR."/schedules/".self::$name."_lock.txt";
-        $messages_file = CRAWL_DIR."/schedules/".self::$name."_messages.txt";
+        $messages_file = self::getMesssageFileName(self::$name, self::$subname);
 
         switch($argv[1])
         {
             case "start":
-                
-                if(file_exists($lock_file)) {
-                    $time = intval(file_get_contents($lock_file));
-                    if(time() - $time < 60) {
-                        echo "$name appears to be already running...\n";
-                        echo "Try stopping it first, then running start.";
-                        exit();
-                    }
-                }
-                if(strstr(PHP_OS, "WIN")) {
-                    $script = "psexec -accepteula -d php ".
-                        BASE_DIR."\\bin\\$name.php child %s";
-                } else {
-                    $script = "echo \"php ".
-                        BASE_DIR."/bin/$name.php child %s\" | at now ";
-                }
                 $options = "";
                 for($i = 2; $i < count($argv); $i++) {
                     $options .= " ". $argv[$i];
                 }
-                $at_job = sprintf($script, $options);
-                echo $at_job;
-                exec($at_job);
-                echo "Starting $name...\n";
+                CrawlDaemon::start($name, self::$subname, $options);
 
-                file_put_contents($lock_file,  time());
-                exit();
             break;
 
             case "stop":
-                if(file_exists($lock_file)) {
-                    unlink($lock_file);
-                    echo "Sending stop signal to $name...\n";
-                } else {
-                    echo "$name does not appear to running...\n";
-                }
-                exit();
+                CrawlDaemon::stop();
             break;
 
             case "terminal":
@@ -199,6 +185,81 @@ class CrawlDaemon implements CrawlConstants
             break;
         }
 
+    }
+
+    /**
+     *
+     */
+    static function start($name, $subname = "", $options = "")
+    {
+        $lock_file = CrawlDaemon::getLockFileName($name, $subname);
+        if(file_exists($lock_file)) {
+            $time = intval(file_get_contents($lock_file));
+            if(time() - $time < 60) {
+                echo "$name appears to be already running...\n";
+                echo "Try stopping it first, then running start.";
+                exit();
+            }
+        }
+        if(strstr(PHP_OS, "WIN")) {
+            $base_dir = str_replace("/", "\\", BASE_DIR);
+            $script = "psexec -accepteula -d php ".
+                $base_dir."\\bin\\$name.php child %s";
+        } else {
+            $script = "echo \"php ".
+                BASE_DIR."/bin/$name.php child %s\" | at now ";
+        }
+
+        $at_job = sprintf($script, $options);
+        echo $at_job;
+        exec($at_job);
+        $name_string = CrawlDaemon::getNameString($name, $subname);
+        echo "Starting $name_string...\n";
+
+        file_put_contents($lock_file,  time());
+        exit();
+    }
+
+    /**
+     *
+     */
+    static function stop($name, $subname = "")
+    {
+        $name_string = CrawlDaemon::getNameString($name, $subname);
+        $lock_file = CrawlDaemon::getLockFileName($name, $subname);
+        if(file_exists($lock_file)) {
+            unlink($lock_file);
+            echo "Sending stop signal to $name_string...\n";
+        } else {
+            echo "$name_string does not appear to running...\n";
+        }
+        exit();
+    }
+
+    /**
+     *
+     */
+    static function getMesssageFileName($name, $subname = "")
+    {
+        return CRAWL_DIR."/schedules/".self::getNameString($name, $subname)
+            . "_messages.txt";
+    }
+
+    /**
+     *
+     */
+    static function getLockFileName($name, $subname = "")
+    {
+        return CRAWL_DIR."/schedules/".self::getNameString($name, $subname)
+            . "_lock.txt";
+    }
+
+    /**
+     *
+     */
+    static function getNameString($name, $subname)
+    {
+            return ($subname == "") ? $name : $subname."-".$name;
     }
 
     /**
