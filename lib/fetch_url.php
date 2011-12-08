@@ -65,7 +65,7 @@ class FetchUrl implements CrawlConstants
      */ 
 
     public static function getPages($sites, $timer = false,
-        $page_range_request = PAGE_RANGE_REQUEST,
+        $page_range_request = PAGE_RANGE_REQUEST, $temp_dir = NULL,
         $key=CrawlConstants::URL, $value = CrawlConstants::PAGE)
     {
         $agent_handler = curl_multi_init(); 
@@ -74,11 +74,18 @@ class FetchUrl implements CrawlConstants
 
         $start_time = microtime();
 
+        if($temp_dir == NULL) {
+            $temp_dir = CRAWL_DIR."/temp";
+            if(!file_exists($temp_dir)) {
+                mkdir($temp_dir);
+            }
+        }
+
         //Set-up requests
         for($i = 0; $i < count($sites); $i++) {
             if(isset($sites[$i][$key])) {
                 $sites[$i][0] = curl_init();
-                $ip_holder[$i] = fopen(CRAWL_DIR."/temp/tmp$i.txt", 'w+');
+                $ip_holder[$i] = fopen("$temp_dir/tmp$i.txt", 'w+');
                 curl_setopt($sites[$i][0], CURLOPT_USERAGENT, USER_AGENT);
                 $url = str_replace("&amp;", "&", $sites[$i][$key]);
                 curl_setopt($sites[$i][0], CURLOPT_URL, $url);
