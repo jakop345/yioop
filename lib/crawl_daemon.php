@@ -189,7 +189,13 @@ class CrawlDaemon implements CrawlConstants
     }
 
     /**
+     * Used to start a daemon running in the background
      *
+     * @param string $name the main name of this daemon such as queue_server
+     *      or fetcher.
+     * @param string $subname the instance name if it is possible for more
+     *      than one copy of the daemon to be running at the same time
+     * @param string $options a string of additional command line options
      */
     static function start($name, $subname = "", $options = "")
     {
@@ -221,7 +227,12 @@ class CrawlDaemon implements CrawlConstants
     }
 
     /**
+     * Used to stop a daemon that is running in the background
      *
+     * @param string $name the main name of this daemon such as queue_server
+     *      or fetcher.
+     * @param string $subname the instance name if it is possible for more
+     *      than one copy of the daemon to be running at the same time
      */
     static function stop($name, $subname = "")
     {
@@ -237,7 +248,16 @@ class CrawlDaemon implements CrawlConstants
     }
 
     /**
+     * Used to return the string name of the messages file used to pass
+     * messages to a daemon running in the background
      *
+     * @param string $name the main name of this daemon such as queue_server
+     *      or fetcher.
+     * @param string $subname the instance name if it is possible for more
+     *      than one copy of the daemon to be running at the same time
+     *
+     * @return string the name of the message file for the daemon with
+     *      the given name and subname
      */
     static function getMesssageFileName($name, $subname = "")
     {
@@ -246,7 +266,16 @@ class CrawlDaemon implements CrawlConstants
     }
 
     /**
+     * Used to return the string name of the lock file used to pass
+     * by a daemon
      *
+     * @param string $name the main name of this daemon such as queue_server
+     *      or fetcher.
+     * @param string $subname the instance name if it is possible for more
+     *      than one copy of the daemon to be running at the same time
+     *
+     * @return string the name of the lock file for the daemon with
+     *      the given name and subname
      */
     static function getLockFileName($name, $subname = "")
     {
@@ -255,7 +284,14 @@ class CrawlDaemon implements CrawlConstants
     }
 
     /**
+     * Used to return a string name for a given daemon instance
      *
+     * @param string $name the main name of this daemon such as queue_server
+     *      or fetcher.
+     * @param string $subname the instance name if it is possible for more
+     *      than one copy of the daemon to be running at the same time
+     *
+     * @return string a single name that combines the name and subname
      */
     static function getNameString($name, $subname)
     {
