@@ -122,10 +122,10 @@ class MachineController extends Controller implements CrawlConstants
         if(isset($_REQUEST['fetcher']) && is_array($_REQUEST['fetcher'])) {
             foreach($_REQUEST['fetcher'] as $index => $value) {
                 if($value == "true" && !isset($statuses["fetcher"][$index]) ) {
-                    CrawlDaemon::start("fetcher", $index);
+                    CrawlDaemon::start("fetcher", "$index");
                 } else if($value == "false" && 
                     isset($statuses["fetcher"][$index]) ) {
-                    CrawlDaemon::stop("fetcher", $index);
+                    CrawlDaemon::stop("fetcher", "$index");
                 }
             }
         }

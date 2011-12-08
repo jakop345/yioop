@@ -387,7 +387,7 @@ function crawlLog($msg, $lname = NULL)
 
     $time_string = date("r", time());
     $out_msg = "[$time_string] $msg";
-    if(LOG_TO_FILES) {
+    if(defined("LOG_TO_FILES") && LOG_TO_FILES) {
         $logfile = LOG_DIR."/$logname.log";
 
         clearstatcache(); //hopefully, this doesn't slow things too much

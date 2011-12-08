@@ -124,7 +124,7 @@ class CrawlDaemon implements CrawlConstants
         self::$name = $name;
 
         if(isset($argv[2])) {
-            self::$subname = $argv[2]);
+            self::$subname = $argv[2];
         } else {
             self::$subname = "";
         }
@@ -150,15 +150,16 @@ class CrawlDaemon implements CrawlConstants
         {
             case "start":
                 $options = "";
-                for($i = 2; $i < count($argv); $i++) {
+                for($i = 3; $i < count($argv); $i++) {
                     $options .= " ". $argv[$i];
                 }
+                $name_string = CrawlDaemon::getNameString($name,self::$subname);
+                echo "Starting $name_string...\n";
                 CrawlDaemon::start($name, self::$subname, $options);
-
             break;
 
             case "stop":
-                CrawlDaemon::stop();
+                CrawlDaemon::stop($name, self::$subname);
             break;
 
             case "terminal":
@@ -193,6 +194,7 @@ class CrawlDaemon implements CrawlConstants
     static function start($name, $subname = "", $options = "")
     {
         $lock_file = CrawlDaemon::getLockFileName($name, $subname);
+
         if(file_exists($lock_file)) {
             $time = intval(file_get_contents($lock_file));
             if(time() - $time < 60) {
@@ -209,12 +211,10 @@ class CrawlDaemon implements CrawlConstants
             $script = "echo \"php ".
                 BASE_DIR."/bin/$name.php child %s\" | at now ";
         }
+        $total_options = $subname." ".$options;
+        $at_job = sprintf($script, $total_options);
 
-        $at_job = sprintf($script, $options);
-        echo $at_job;
         exec($at_job);
-        $name_string = CrawlDaemon::getNameString($name, $subname);
-        echo "Starting $name_string...\n";
 
         file_put_contents($lock_file,  time());
         exit();
@@ -229,9 +229,9 @@ class CrawlDaemon implements CrawlConstants
         $lock_file = CrawlDaemon::getLockFileName($name, $subname);
         if(file_exists($lock_file)) {
             unlink($lock_file);
-            echo "Sending stop signal to $name_string...\n";
+            crawlLog("Sending stop signal to $name_string...");
         } else {
-            echo "$name_string does not appear to running...\n";
+            crawlLog("$name_string does not appear to running...");
         }
         exit();
     }
