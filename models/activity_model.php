@@ -78,7 +78,7 @@ class ActivityModel extends Model
         $sql = "SELECT LOCALE_ID FROM LOCALE ".
             "WHERE LOCALE_TAG = '$locale_tag' LIMIT 1";
         $result = $db->execute($sql);
-		$row = $db->fetchArray($result);
+        $row = $db->fetchArray($result);
         
         $locale_id = $row['LOCALE_ID'];
 
@@ -89,7 +89,7 @@ class ActivityModel extends Model
             "AND L.LOCALE_ID='$locale_id' AND ".
             "L.LOCALE_ID = TL.LOCALE_ID LIMIT 1"; 
         $result = $db->execute($sql);
-		$row = $db->fetchArray($result);
+        $row = $db->fetchArray($result);
         
         
         if($row == NULL) {
@@ -100,7 +100,7 @@ class ActivityModel extends Model
                 " AND T.TRANSLATION_ID = A.TRANSLATION_ID LIMIT 1";
 
             $result = $db->execute($sql);
-			$row = $db->fetchArray($result);
+            $row = $db->fetchArray($result);
             
         }
 
@@ -128,8 +128,7 @@ class ActivityModel extends Model
         $sql = "SELECT LOCALE_ID FROM LOCALE ".
             "WHERE LOCALE_TAG = '$locale_tag' LIMIT 1";
         $result = $db->execute($sql);
-		$row = $db->fetchArray($result);
-		print("activity_model-result-4:".$result);
+        $row = $db->fetchArray($result);
         $locale_id = $row['LOCALE_ID'];
 
         $sql = "SELECT A.ACTIVITY_ID AS ACTIVITY_ID, ".
@@ -140,7 +139,7 @@ class ActivityModel extends Model
 
         $result = $db->execute($sql);
         $i = 0;
-		while($activities[$i] = $db->fetchArray($result)) {
+        while($activities[$i] = $db->fetchArray($result)) {
             $id = $activities[$i]['ACTIVITY_ID'];
 
             $sub_sql = "SELECT TRANSLATION AS ACTIVITY_NAME ".
@@ -149,7 +148,7 @@ class ActivityModel extends Model
                 // maybe do left join at some point
                     
             $result_sub =  $db->execute($sub_sql);
-			$translate = $db->fetchArray($result_sub);
+            $translate = $db->fetchArray($result_sub);
 
             if($translate) {
                 $activities[$i]['ACTIVITY_NAME'] = $translate['ACTIVITY_NAME'];

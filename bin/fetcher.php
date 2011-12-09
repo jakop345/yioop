@@ -477,9 +477,15 @@ class Fetcher implements CrawlConstants
                 MINIMUM_FETCH_LOOP_TIME - changeInMicrotime($start_time))));
             return array();
         }
-
+        
+        $prefix = "";
+        if($this->fetcher_num !== false) {
+            $prefix = $this->fetcher_num."-";
+        }
+        $tmp_dir = CRAWL_DIR."/{$prefix}temp";
         $site_pages = FetchUrl::getPages($sites, true, 
-            $this->page_range_request);
+            $this->page_range_request, $tmp_dir
+            );
 
         list($downloaded_pages, $schedule_again_pages) = 
             $this->reschedulePages($site_pages);
