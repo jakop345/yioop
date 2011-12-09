@@ -942,7 +942,13 @@ class Fetcher implements CrawlConstants
             if(isset($site[self::LOCATION]) && 
                 count($site[self::LOCATION]) > 0) {
                 array_unshift($site[self::LOCATION], $site[self::URL]);
-                $site[self::URL] = array_pop($site[self::LOCATION]);
+                $tmp_loc = array_pop($site[self::LOCATION]);
+				$tmp_loc = UrlParser::canonicalLink(
+					$tmp_loc, $site[self::URL]);
+				$tmp_host = UrlParser::getHost($tmp_loc)."/";
+				if($tmp_host != $site[self::URL]) {
+					$site[self::URL] = $tmp_loc;
+				}
             }
 
             //process robot.txt files separately
