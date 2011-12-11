@@ -619,7 +619,7 @@ class PhraseModel extends Model
         $matches = $matches[2];
         $result_phrase = preg_replace($pattern, "", $phrase);
         foreach($matches as $match) {
-            if(!strstr($match, ":")) { echo "hi";
+            if(!strstr($match, ":")) { 
                 $result_phrase .= " site:".$match;
             } else {
                 $result_phrase .= " ".$match;
