@@ -329,5 +329,6 @@ class CrawlDaemon implements CrawlConstants
         }
         return $active_daemons;
     }
+
 }
  ?>

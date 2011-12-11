@@ -466,6 +466,7 @@ class PhraseModel extends Model
         $in3 = $in2 . $indent;
         $in4 = $in2. $in2;
         $phrase = " ".$phrase;
+        $phrase = $this->guessSemantics($phrase);
         $phrase = $this->parseIfConditions($phrase);
         $phrase_string = $phrase;
         $meta_words = array('link:', 'site:', 'version:', 'modified:',
@@ -598,6 +599,49 @@ class PhraseModel extends Model
         $format_words = array_merge($query_words, $base_words);
 
         return array($word_struct, $format_words);
+    }
+
+    /**
+     * The plan is code to tru to guess from the query what the user is 
+     * looking for will be called from here. For now, we are just guessing
+     * when a query term is a url and rewriting it to the appropriate meta
+     * meta word.
+     *
+     *  @param string $phrase input query to guess semantics of
+     *  @return string a phrase that more closely matches the intentions of the
+     *      query.
+     */
+    function guessSemantics($phrase)
+    {
+        $cond_token = "\.com|\.edu|\.org|\.gov|\.mil|.ca|\.uk|\.fr";
+        $pattern = "/(\s)((\S)+$cond_token(\S)+)/";
+        preg_match_all($pattern, $phrase, $matches);
+        $matches = $matches[2];
+        $result_phrase = preg_replace($pattern, "", $phrase);
+        foreach($matches as $match) {
+            $result_phrase .= " site:".$match;
+        }
+        $phrase = $result_phrase;
+
+        $cond_token = "www\.";
+        $pattern = "/(\s)($cond_token(\S)+)/";
+        preg_match_all($pattern, $phrase, $matches);
+        $matches = $matches[2];
+        $result_phrase = preg_replace($pattern, "", $phrase);
+        foreach($matches as $match) {
+            $result_phrase .= " site:".$match;
+        }
+        $phrase = $result_phrase;
+
+        $cond_token = "http:";
+        $pattern = "/(\s)($cond_token(\S)+)/";
+        preg_match_all($pattern, $phrase, $matches);
+        $matches = $matches[2];
+        $result_phrase = preg_replace($pattern, "", $phrase);
+        foreach($matches as $match) {
+            $result_phrase .= " site:".$match;
+        }
+        return $result_phrase;
     }
 
     /**
