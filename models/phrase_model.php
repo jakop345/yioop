@@ -616,7 +616,6 @@ class PhraseModel extends Model
         $cond_token = "(\.com|\.edu|\.org|\.gov|\.mil|.ca|\.uk|\.fr)";
         $pattern = "/(\s)((\S)+$cond_token(\S)*)/";
         preg_match_all($pattern, $phrase, $matches);
-                print_r($matches);
         $matches = $matches[2];
         $result_phrase = preg_replace($pattern, "", $phrase);
         foreach($matches as $match) {
