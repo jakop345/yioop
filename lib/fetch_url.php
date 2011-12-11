@@ -99,6 +99,9 @@ class FetchUrl implements CrawlConstants
                 curl_setopt($sites[$i][0], CURLOPT_TIMEOUT, PAGE_TIMEOUT);
                 curl_setopt($sites[$i][0], CURLOPT_HEADER, true);
                 curl_setopt($sites[$i][0], CURLOPT_ENCODING, "");
+                //make lighttpd happier
+                curl_setopt($sites[$i][0], CURLOPT_HTTPHEADER, 
+                    array('Expect:'));
                    // ^ need to set for sites like att that use gzip
                 if($page_range_request > 0) {
                     curl_setopt($sites[$i][0], CURLOPT_RANGE, "0-".
@@ -395,6 +398,8 @@ class FetchUrl implements CrawlConstants
         curl_setopt($agent, CURLOPT_FAILONERROR, true);
         curl_setopt($agent, CURLOPT_TIMEOUT, PAGE_TIMEOUT);
         curl_setopt($agent, CURLOPT_CONNECTTIMEOUT, PAGE_TIMEOUT);
+        //make lighttpd happier
+        curl_setopt($agent, CURLOPT_HTTPHEADER, array('Expect:'));
         if($post_data != NULL) {
             curl_setopt($agent, CURLOPT_POST, true);
             curl_setopt($agent, CURLOPT_POSTFIELDS, $post_data);
