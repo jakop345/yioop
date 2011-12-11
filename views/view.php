@@ -83,8 +83,14 @@ abstract class View
         //read in and instantiate Element's needed for this View
         require_once BASE_DIR."/views/elements/element.php";
         foreach($this->elements as $element) {
-            require_once BASE_DIR."/views/elements/".$element."_element.php";
-
+            if(file_exists(
+                APP_DIR."/views/elements/".$element."_element.php")) {
+                require_once 
+                    APP_DIR."/views/elements/".$element."_element.php";
+            } else {
+                require_once 
+                    BASE_DIR."/views/elements/".$element."_element.php";
+            }
             $element_name = ucfirst($element)."Element";
             $element_instance_name = lcfirst($element_name);
 
@@ -95,7 +101,13 @@ abstract class View
         require_once BASE_DIR."/views/helpers/helper.php";
 
         foreach($this->helpers as $helper) {
-            require_once BASE_DIR."/views/helpers/".$helper."_helper.php";
+            if(file_exists(
+                APP_DIR."/views/helpers/".$helper."_helper.php")) {
+                require_once 
+                    APP_DIR."/views/helpers/".$helper."_helper.php";
+            } else {
+                require_once BASE_DIR."/views/helpers/".$helper."_helper.php";
+            }
 
             $helper_name = ucfirst($helper)."Helper";
             $helper_instance_name = lcfirst($helper_name);
@@ -116,7 +128,14 @@ abstract class View
 
         $layout_name = ucfirst($this->layout)."Layout";
         if($this->layout != "") {
-            require_once BASE_DIR."/views/layouts/".$this->layout."_layout.php";
+            if(file_exists(
+                APP_DIR."/views/layouts/".$this->layout."_layout.php")) {
+                require_once 
+                    APP_DIR."/views/layouts/".$this->layout."_layout.php";
+            } else {
+                require_once 
+                    BASE_DIR."/views/layouts/".$this->layout."_layout.php";
+            }
         }
 
         $this->layout_object = new $layout_name($this);

@@ -137,12 +137,20 @@ if(upgradeDatabaseCheck()) {
 $locale = NULL;
 setLocaleObject($locale_tag);
 
+if(file_exists(APP_DIR."/index.php")) {
+    require_once(APP_DIR."/index.php");
+}
+
 /**
  * Loads controller responsible for calculating
  * the data needed to render the scene
  *
  */
-require_once(BASE_DIR."/controllers/".$controller_name."_controller.php");
+if(file_exists(APP_DIR."/controllers/".$controller_name."_controller.php")) {
+    require_once(APP_DIR."/controllers/".$controller_name."_controller.php");
+} else {
+    require_once(BASE_DIR."/controllers/".$controller_name."_controller.php");
+}
 $controller_class = ucfirst($controller_name)."Controller";
 $controller = new $controller_class($INDEXING_PLUGINS);
 

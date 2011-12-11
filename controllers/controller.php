@@ -74,8 +74,11 @@ abstract class Controller
         require_once BASE_DIR."/models/model.php";
 
         foreach($this->models as $model) {
-            require_once BASE_DIR."/models/".$model."_model.php";
-             
+            if(file_exists(APP_DIR."/models/".$model."_model.php")) {
+                require_once APP_DIR."/models/".$model."_model.php";
+            }  else {
+                require_once BASE_DIR."/models/".$model."_model.php";
+            }
             $model_name = ucfirst($model)."Model";
             $model_instance_name = lcfirst($model_name);
 
@@ -85,7 +88,11 @@ abstract class Controller
         require_once BASE_DIR."/views/view.php";
 
         foreach($this->views as $view) {
-            require_once BASE_DIR."/views/".$view."_view.php";
+            if(file_exists(APP_DIR."/views/".$view."_view.php")) {
+                require_once APP_DIR."/views/".$view."_view.php";
+            } else {
+                require_once BASE_DIR."/views/".$view."_view.php";
+            }
             $view_name = ucfirst($view)."View";
             $view_instance_name = lcfirst($view_name);
 
@@ -93,8 +100,14 @@ abstract class Controller
         }
         $this->indexing_plugins = $indexing_plugins;
         foreach($this->indexing_plugins as $plugin) {
-            require_once BASE_DIR .
-                "/lib/indexing_plugins/".$plugin."_plugin.php";
+            if(file_exists(APP_DIR.
+                    "/lib/indexing_plugins/".$plugin."_plugin.php")) {
+                require_once APP_DIR.
+                    "/lib/indexing_plugins/".$plugin."_plugin.php";
+            } else {
+                require_once BASE_DIR .
+                    "/lib/indexing_plugins/".$plugin."_plugin.php";
+            }
             $plugin_name = ucfirst($plugin)."Plugin";
             $plugin_instance_name = lcfirst($plugin_name);
             $this->$plugin_instance_name = new $plugin_name();

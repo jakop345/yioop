@@ -56,6 +56,8 @@ define('WORK_DIRECTORY', '/var/www/yioop_data');
 /*++++++*/
 }
 
+define('APP_DIR', WORK_DIRECTORY."/app");
+
 define('FALLBACK_LOCALE_DIR', BASE_DIR."/locale");
 
 if(file_exists(WORK_DIRECTORY."/profile.php")) {
