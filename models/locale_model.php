@@ -639,13 +639,17 @@ EOT;
     function getTranslateStrings($extract_dirs, $extensions) 
     {
         $strings = array();
+        $base_dirs = array(BASE_DIR, APP_DIR);
         foreach($extract_dirs as $dir) {
-            $path = BASE_DIR."/".$dir;
-            $dir_strings = $this->traverseExtractRecursive($path, $extensions);
-            if(count($dir_strings) > 0) {
-                $strings[] = ";";
-                $strings[] = "; $path";
-                $strings = array_merge($strings, $dir_strings);
+            foreach($base_dirs as $base_dir) {
+                $path = $base_dir."/".$dir;
+                $dir_strings = 
+                    $this->traverseExtractRecursive($path, $extensions);
+                if(count($dir_strings) > 0) {
+                    $strings[] = ";";
+                    $strings[] = "; $path";
+                    $strings = array_merge($strings, $dir_strings);
+                }
             }
         }
 
