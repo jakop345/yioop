@@ -63,8 +63,16 @@ class WebLayout extends Layout
         ?>" dir="<?php e($data['LOCALE_DIR']);?>">
 
         <head>
-            <title><?php e(tl('web_layout_title')); ?></title>
+            <title><?php if(isset($data['page']) && 
+                isset($this->view->head_objects[$data['page']]['title']))
+                e($this->view->head_objects[$data['page']]['title']);
+            else e(tl('web_layout_title')); ?></title>
 
+            <meta name="description" content="<?php 
+        if(isset($data['page']) && 
+        isset($this->view->head_objects[$data['page']]['description']))
+                    e($this->view->head_objects[$data['page']]['description']);
+                    else e(tl('web_layout_description')); ?>" />
             <meta name="Author" content="Christopher Pollett" />
 
             <meta name="description" content="<?php 

@@ -119,8 +119,26 @@ abstract class View
         foreach($this->pages as $page) {
             ob_start();
             require_once(LOCALE_DIR."/".getLocaleTag()."/pages/".$page.".thtml");
-            $this->page_objects[$page] = ob_get_contents();
+            $page_string = ob_get_contents();
             ob_end_clean();
+            $page_parts = explode("END_HEAD_VARS", $page_string);
+            $this->head_objects[$page] = array();
+            if(count($page_parts) > 1) { 
+                $this->page_objects[$page]  = $page_parts[1];
+                $head_lines = explode("\n", $page_parts[0]);
+                foreach($head_lines as $line) {
+                    $semi_pos =  (strpos($line, ";")) ? strpos($line, ";") :
+                    	strlen($line);
+                    $line = substr($line, 0, $semi_pos);
+                    $line_parts = explode("=",$line);
+                    if(count($line_parts) == 2) {
+                    	$this->head_objects[$page][trim(addslashes($line_parts[0]))] =
+                    	   addslashes(trim($line_parts[1]));
+                    }
+                }  
+            } else {
+            	$this->page_objects[$page] = $page_parts[0];
+            } 
         }
 
         //read in and instantiate the Layout on which the View will be drawn
