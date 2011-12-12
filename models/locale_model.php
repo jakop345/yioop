@@ -258,6 +258,66 @@ class LocaleModel extends Model
         }
     }
 
+    /**
+     *  Returns a list of the static pages thaat can be localized
+     *
+     *  @param string $locale_tag tag we are going to select static page for
+     *
+     *  @return array of file_path => name of static pages that can be localized
+     */
+    function getStaticPageList($locale_tag = DEFAULT_LOCALE)
+    {
+        $default_dir = LOCALE_DIR."/".DEFAULT_LOCALE."/pages";
+        $pre_pages = glob("$default_dir/*.thtml");
+        $pages = array();
+        foreach($pre_pages as $path) {
+            $type = UrlParser::getDocumentType($path);
+            $name = UrlParser::getDocumentFilename($path);
+            $name = "$name.$type";
+            $pages[$name] = $name;
+        }
+        return $pages;
+    }
+
+    /**
+     * Returns the static page for with the given name translated to the
+     *  given locale_tag
+     *
+     * @param string $page_name name of a static page
+     * @param string $locale_tag the language we want the static page for
+     *
+     * @return string the page data in the given language
+     */
+    function getStaticPage($page_name, $locale_tag)
+    {
+        $filename = LOCALE_DIR."/".$locale_tag."/pages/$page_name";
+        $page = "";
+        if(file_exists($filename)) {
+            $page = file_get_contents($filename);
+        }
+
+        return $page;
+    }
+
+    /**
+      * Save the static page data for with the given name to the
+     *  given locale_tag
+     *
+     * @param string $page_name name of a static page
+     * @param string $locale_tag the language we want the static page for
+     * @param string $data to save
+     */
+    function setStaticPage($page_name, $locale_tag, $data)
+    {
+        $dirname = LOCALE_DIR."/".$locale_tag."/pages";
+        if(!file_exists($dirname)) {
+            mkdir($dirname);
+            $this->db->setWorldPermissionsRecursive($dirname);
+        }
+
+        $filename = "$dirname/$page_name";
+        file_put_contents($filename, $data);
+    }
 
     /**
      * For each translatable identifier string (either static from a 
@@ -272,7 +332,7 @@ class LocaleModel extends Model
     {
         $this->db->selectDB(DB_NAME);
         
-        $data = parse_ini_file (LOCALE_DIR."/$locale_tag/configure.ini", true);
+        $data = parse_ini_file(LOCALE_DIR."/$locale_tag/configure.ini", true);
         $data = $data['strings'];
 
         //hacky. Join syntax isn't quite the same between sqlite and mysql

@@ -1728,6 +1728,7 @@ class AdminController extends Controller implements CrawlConstants
 
         $data["LOCALES"] = $this->localeModel->getLocaleList();
         $data['LOCALE_NAMES'][-1] = tl('admin_controller_select_localename');
+
         $locale_ids = array();
 
         foreach ($data["LOCALES"] as $locale) {
@@ -1760,7 +1761,7 @@ class AdminController extends Controller implements CrawlConstants
             } else {
                 $select_locale = "";
             }
-            
+
             switch($_REQUEST['arg'])
             {
                 case "addlocale":
@@ -1790,12 +1791,43 @@ class AdminController extends Controller implements CrawlConstants
                 break;
 
                 case "editlocale":
+                    if(!isset($select_locale)) break;
                     $data["leftorright"] = 
                         (getLocaleDirection() == 'ltr') ? "right": "left";
                     $data["ELEMENT"] = "editlocalesElement";
+                    $data['STATIC_PAGES'][-1]= 
+                        tl('admin_controller_select_staticpages');
+                    $data['STATIC_PAGES'] += 
+                        $this->localeModel->getStaticPageList($select_locale);
                     $data['CURRENT_LOCALE_NAME'] = 
                         $data['LOCALE_NAMES'][$select_locale];
                     $data['CURRENT_LOCALE_TAG'] = $select_locale;
+                    $tmp_pages = $data['STATIC_PAGES'];
+                    array_shift($tmp_pages);
+                    $page_keys = array_keys($tmp_pages);
+                    if(isset($_REQUEST['static_page']) && 
+                        in_array($_REQUEST['static_page'], $page_keys)) {
+                        $data["ELEMENT"] = "editstaticElement";
+                        $data['STATIC_PAGE'] = $_REQUEST['static_page'];
+                        if(isset($_REQUEST['PAGE_DATA'])) {
+                            $this->localeModel->setStaticPage(
+                                $_REQUEST['static_page'],
+                                $data['CURRENT_LOCALE_TAG'],
+                                $_REQUEST['PAGE_DATA']);
+                            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                                tl('admin_controller_staticpage_updated').
+                                "</h1>')";
+                        }
+                        $data['PAGE_NAME'] = 
+                            $data['STATIC_PAGES'][$data['STATIC_PAGE']];
+                        $data['PAGE_DATA'] = 
+                            $this->localeModel->getStaticPage(
+                                $_REQUEST['static_page'],
+                                $data['CURRENT_LOCALE_TAG']);
+                        break;
+                    }
+                    $data['SCRIPT'] .= "selectPage = elt('static-pages');".
+                        "selectPage.onchange = submitStaticPageForm;";
                     if(isset($_REQUEST['STRINGS'])) {
                         $safe_strings = array();
                         foreach($_REQUEST['STRINGS'] as $key => $value) {

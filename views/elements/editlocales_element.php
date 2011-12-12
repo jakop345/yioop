@@ -64,8 +64,23 @@ class EditlocalesElement extends Element
         </div>
         <h2><?php e(tl('editlocales_element_edit_locale', 
             $data['CURRENT_LOCALE_NAME']))?></h2>
-        
-        <form id="editLocaleForm" method="post" action=''>
+        <?php if(count($data['STATIC_PAGES']) > 1) {?>
+        <form id="staticPageForm" method="post" action='?'>
+        <input type="hidden" name="c" value="admin" />
+        <input type="hidden" name="YIOOP_TOKEN" value="<?php 
+            e($data['YIOOP_TOKEN']); ?>" />
+        <input type="hidden" name="a" value="manageLocales" />
+        <input type="hidden" name="arg" value="editlocale" />
+        <input type="hidden" name="selectlocale" value="<?php 
+            e($data['CURRENT_LOCALE_TAG']); ?>" />
+        <div class="topmargin"><b><label for="static-pages"><?php 
+            e(tl('editlocales_element_static_pages'))?></label></b>
+            <?php $this->view->optionsHelper->render("static-pages", 
+            "static_page", $data['STATIC_PAGES'], -1); 
+            ?></div>
+        </form>
+        <?php }?>
+        <form id="editLocaleForm" method="post" action='?'>
         <input type="hidden" name="c" value="admin" />
         <input type="hidden" name="YIOOP_TOKEN" value="<?php 
             e($data['YIOOP_TOKEN']); ?>" />
@@ -96,6 +111,13 @@ class EditlocalesElement extends Element
                 e(tl('editlocales_element_submit')); ?></button></div>
         </form>
         </div>
+        <script type="text/javascript">
+        function submitStaticPageForm()
+        {
+            elt('staticPageForm').submit();
+        }
+
+        </script>
     <?php
     }
 }
