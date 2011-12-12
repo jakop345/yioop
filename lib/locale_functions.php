@@ -55,7 +55,7 @@ function guessLocale()
             $guess_l = $l_parts[0];
         }
         $guess_map = array(
-			"cn" => "zh-CN",
+            "cn" => "zh-CN",
             "en" => "en-US",
             "en-us" => "en-US",
             "en-US" => "en-US",

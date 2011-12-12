@@ -67,6 +67,13 @@ class LocaleModel extends Model
      * @var array
      */
     var $configure = array();
+
+    /**
+     * Used to store ini file data of the default locale (will use if no 
+     * translation current locale)
+     * @var array
+     */
+    var $default_configure = array();
     /**
      * IANA tag name of current locale
      * @var string
@@ -119,6 +126,10 @@ class LocaleModel extends Model
 
         $this->configure = parse_ini_file(
             LOCALE_DIR."/$locale_tag/configure.ini", true);
+        if($locale_tag != DEFAULT_LOCALE) {
+            $this->default_configure = parse_ini_file(
+                LOCALE_DIR."/".DEFAULT_LOCALE."/configure.ini", true);
+        }
         $this->locale_tag = $locale_tag;
         $sql = "SELECT LOCALE_NAME, WRITING_MODE ".
             " FROM LOCALE WHERE LOCALE_TAG ='$locale_tag'"; 
@@ -362,6 +373,9 @@ class LocaleModel extends Model
         $args = array_slice($arr, 1);
 
         $msg_string = $this->configure['strings'][$msg_id];
+        if($msg_string == "" ) {
+            $msg_string = $this->default_configure['strings'][$msg_id];
+        }
 
         return vsprintf($msg_string, $args);
     }
