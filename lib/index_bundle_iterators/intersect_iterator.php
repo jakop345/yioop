@@ -78,13 +78,13 @@ class IntersectIterator extends IndexBundleIterator
      * An array holding iterator no corresponding to the word key
      * @var array
      */
-    var $word_iterator_map;                                                            //Added by Ravi Dhillon
+    var $word_iterator_map;
 
     /**
      * Number of elements in $this->word_iterator_map
      * @var int
      */
-    var $num_words;                                                                    //Added by Ravi Dhillon
+    var $num_words;
 
     /**
      * Creates an intersect iterator with the given parameters.
@@ -207,69 +207,6 @@ class IntersectIterator extends IndexBundleIterator
         $this->pages = $docs;
         return $docs;
     }
-
-    /**
-     * Given the position_lists of a collection of terms computes
-     * a score for how close those words were in the given document
-     *
-     *  @param array $position_lists a 2D array item number => position_list
-     *      (locations in doc where item occurred) for that item.
-     *  @param array $len_lists length for each item of its position list
-     *  @param bool $is_doc whether this is the position list of a document
-     *      or a link
-     *  @return sum of smallest abs of position differences between terms
-     */
-    /*
-    function computeProximity(&$word_position_lists, &$word_len_lists, $is_doc)
-    {
-        $num_iterators = $this->num_iterators;
-        if($num_iterators < 1) return 1;
-
-        $counters = array_fill(0, $num_iterators, 0);
-
-        // remove meta words from proximity score
-        $position_lists = array();
-        $len_lists = array();
-        $num = 0;
-        for($i = 0; $i < $num_iterators; $i++) {
-            if(isset($word_position_lists[$i][$counters[$i]])) {
-                $position_lists[$num] = $word_position_lists[$i];
-                $len_lists[$num] = $word_len_lists[$i];
-                $num++;
-            }
-        }
-        if($num < 2) return 1;
-
-        $min_diff = 5000000;
-        $weight = ($is_doc) ? DESCRIPTION_WEIGHT : LINK_WEIGHT;
-        do {
-            $min_counter = ($counters[0] < $len_lists[0] - 1) ? 0 : -1;
-            $o_position = $position_lists[0][$counters[0]];
-            $total_diff = 0;
-            $positions = array($o_position);
-            for($i = 1; $i < $num; $i++) {
-                $positions[$i] = $position_lists[$i][$counters[$i]];
-                if($positions[$i] < $o_position &&
-                    $counters[$i] < $len_lists[$i] - 1) {
-                    $min_counter = $i;
-                }
-            }
-            sort($positions);
-            for($i = 1; $i < $num; $i++) {
-                $total_diff += abs($positions[$i] - $positions[$i-1]);
-            }
-            if($total_diff < $min_diff) {
-                $min_diff = $total_diff;
-                if($positions[$num -1] < AD_HOC_TITLE_LENGTH) {
-                    $weight = ($is_doc) ? TITLE_WEIGHT : LINK_WEIGHT;
-                }
-            }
-            if($min_counter >=0) $counters[$min_counter]++;
-        } while($min_counter >= 0);
-
-        return $weight*($num - 1)/$min_diff;
-    }
-    */
 
     /**
      * Given the position_lists of a collection of terms computes
