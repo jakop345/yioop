@@ -75,16 +75,16 @@ class IntersectIterator extends IndexBundleIterator
     var $to_advance_index;
 
     /**
-	 * An array holding iterator no corresponding to the word key
-	 * @var array
-	 */
-	var $word_iterator_map;															//Added by Ravi Dhillon
+     * An array holding iterator no corresponding to the word key
+     * @var array
+     */
+    var $word_iterator_map;                                                            //Added by Ravi Dhillon
 
-	/**
-	 * Number of elements in $this->word_iterator_map
-	 * @var int
-	 */
-    var $num_words;																	//Added by Ravi Dhillon
+    /**
+     * Number of elements in $this->word_iterator_map
+     * @var int
+     */
+    var $num_words;                                                                    //Added by Ravi Dhillon
 
     /**
      * Creates an intersect iterator with the given parameters.
@@ -92,11 +92,11 @@ class IntersectIterator extends IndexBundleIterator
      * @param object $index_bundle_iterator to use as a source of documents
      *      to iterate over
      */
-    function __construct($index_bundle_iterators, $word_iterator_map)				//Modified by Ravi Dhillon
+    function __construct($index_bundle_iterators, $word_iterator_map)
     {
         $this->index_bundle_iterators = $index_bundle_iterators;
-		$this->word_iterator_map     = $word_iterator_map;							//Added by Ravi Dhillon
-		$this->num_words = count($word_iterator_map);								//Added by Ravi Dhillon
+        $this->word_iterator_map  = $word_iterator_map;
+        $this->num_words = count($word_iterator_map);
         $this->num_iterators = count($index_bundle_iterators);
         $this->num_docs = 0;
         $this->results_per_block = 1;
@@ -171,26 +171,27 @@ class IntersectIterator extends IndexBundleIterator
             $len_lists = array();
             $position_lists[0] = $docs[$key][self::POSITION_LIST];
             $len_lists[0] = count($docs[$key][self::POSITION_LIST]);
-			for($i = 1; $i < $this->num_words; $i++) {														//Modified by Ravi Dhillon
-                if($this->word_iterator_map[$i]<$i) {														//Added by Ravi Dhillon
-                	$position_lists[] = $position_lists[$this->word_iterator_map[$i]];
-                	$docs[$key][self::RELEVANCE] +=
-							$docs[$key][self::RELEVANCE];
-                }
-                else {																						//Added by Ravi Dhillon
-					$i_docs =
-						$this->index_bundle_iterators[$this->word_iterator_map[$i]]->currentDocsWithWord();	//Modified by Ravi Dhillon
-					if(isset($i_docs[$key][self::POSITION_LIST]) &&
-					   ($ct = count($i_docs[$key][self::POSITION_LIST]) > 0 )) {
-						$position_lists[] = $i_docs[$key][self::POSITION_LIST];
-						$len_lists[] = $ct;
-					}
+            for($i = 1; $i < $this->num_words; $i++) {
+                if($this->word_iterator_map[$i]<$i) {
+                    $position_lists[] = 
+                        $position_lists[$this->word_iterator_map[$i]];
+                    $docs[$key][self::RELEVANCE] +=
+                        $docs[$key][self::RELEVANCE];
+                } else {
+                    $i_docs =
+                        $this->index_bundle_iterators[
+                            $this->word_iterator_map[$i]]->currentDocsWithWord();
+                    if(isset($i_docs[$key][self::POSITION_LIST]) &&
+                       ($ct = count($i_docs[$key][self::POSITION_LIST]) > 0 )) {
+                        $position_lists[] = $i_docs[$key][self::POSITION_LIST];
+                        $len_lists[] = $ct;
+                    }
 
-					if(isset($i_docs[$key])) {
-						$docs[$key][self::RELEVANCE] +=
-							$i_docs[$key][self::RELEVANCE];
-					}
-				}
+                    if(isset($i_docs[$key])) {
+                        $docs[$key][self::RELEVANCE] +=
+                            $i_docs[$key][self::RELEVANCE];
+                    }
+                }
             }
             if(count($position_lists) > 1) {
                 $docs[$key][self::PROXIMITY] =
@@ -268,9 +269,9 @@ class IntersectIterator extends IndexBundleIterator
 
         return $weight*($num - 1)/$min_diff;
     }
-	*/
+    */
 
-	/**
+    /**
      * Given the position_lists of a collection of terms computes
      * a score for how close those words were in the given document
      *
@@ -287,80 +288,81 @@ class IntersectIterator extends IndexBundleIterator
         if($num_iterators < 1) return 1;
 
         $covers = array();
-		$position_list = $word_position_lists;
-		$interval = array();
-		$num_words = count($position_list);
-		for ($i = 0; $i < $num_words; $i++) {
-		    $min = array_shift($position_list[$i]);
-		    if(isset($min)){
-				array_push($interval,array($min,$i));
-		    	for($j = 0;$j < $num_words; $j++){
-		    		if(isset($position_list[$j][0]) && $min == $position_list[$j][0]){
-		    			array_shift($position_list[$j]);
-		    		}
-		    	}
-		    }
-		}
+        $position_list = $word_position_lists;
+        $interval = array();
+        $num_words = count($position_list);
+        for ($i = 0; $i < $num_words; $i++) {
+            $min = array_shift($position_list[$i]);
+            if(isset($min)){
+                array_push($interval,array($min,$i));
+                for($j = 0;$j < $num_words; $j++){
+                    if(isset($position_list[$j][0]) && 
+                        $min == $position_list[$j][0]){
+                        array_shift($position_list[$j]);
+                    }
+                }
+            }
+        }
 
-		if(count($interval) != $num_words){
-			return 0;
-		}
-		sort($interval);
-		$l = array_shift($interval);
-		$r = end($interval);
-		$stop = false;
-		if(sizeof($position_list[$l[1]])==0){
-			$stop = true;
-		}
-		while(!$stop){
-			$p = array_shift($position_list[$l[1]]);
-			for ($i = 0;$i < $num_words; $i++){
-				if(isset($position_list[$i][0]) && $p == $position_list[$i][0]){
-					array_shift($position_list[$i]);
-				}
-		    }
-			$q = $interval[0][0];
-			if($p>$r[0]){
-				array_push($covers,array($l[0],$r[0]));
-				array_push($interval,array($p,$l[1]));
-			}
-			else{
-				if($p<$q){
-					array_unshift($interval,array($p,$l[1]));
-				}
-				else{
-					array_push($interval,array($p,$l[1]));
-					sort($interval);
-				}
-			}
-			$l = array_shift($interval);
-			$r = end($interval);
-			if(sizeof($position_list[$l[1]])==0){
-				$stop = true;
-			}
+        if(count($interval) != $num_words){
+            return 0;
+        }
+        sort($interval);
+        $l = array_shift($interval);
+        $r = end($interval);
+        $stop = false;
+        if(sizeof($position_list[$l[1]])==0){
+            $stop = true;
+        }
+        while(!$stop){
+            $p = array_shift($position_list[$l[1]]);
+            for ($i = 0;$i < $num_words; $i++){
+                if(isset($position_list[$i][0]) && $p == $position_list[$i][0]){
+                    array_shift($position_list[$i]);
+                }
+            }
+            $q = $interval[0][0];
+            if($p>$r[0]){
+                array_push($covers,array($l[0],$r[0]));
+                array_push($interval,array($p,$l[1]));
+            }
+            else{
+                if($p<$q){
+                    array_unshift($interval,array($p,$l[1]));
+                }
+                else{
+                    array_push($interval,array($p,$l[1]));
+                    sort($interval);
+                }
+            }
+            $l = array_shift($interval);
+            $r = end($interval);
+            if(sizeof($position_list[$l[1]])==0){
+                $stop = true;
+            }
 
-		}
-		array_push($covers,array($l[0],$r[0]));
-		$score = 0;
-		if($is_doc){
-			$weight = TITLE_WEIGHT;
-			$cover = array_shift($covers);
-			while(isset($cover[1]) && $cover[1] < AD_HOC_TITLE_LENGTH){
-				$score += ($weight/($cover[1]-$cover[0]+1));
-				$cover = array_shift($covers);
-			}
-			$weight = DESCRIPTION_WEIGHT;
-			foreach($covers as $cover){
-				$score += ($weight/($cover[1]-$cover[0]+1));
-			}
-		}
-		else{
-			$weight = LINK_WEIGHT;
-			foreach($covers as $cover){
-				$score += ($weight/($cover[1]-$cover[0]+1));
-			}
-		}
-		return $score;
+        }
+        array_push($covers,array($l[0],$r[0]));
+        $score = 0;
+        if($is_doc){
+            $weight = TITLE_WEIGHT;
+            $cover = array_shift($covers);
+            while(isset($cover[1]) && $cover[1] < AD_HOC_TITLE_LENGTH){
+                $score += ($weight/($cover[1]-$cover[0]+1));
+                $cover = array_shift($covers);
+            }
+            $weight = DESCRIPTION_WEIGHT;
+            foreach($covers as $cover){
+                $score += ($weight/($cover[1]-$cover[0]+1));
+            }
+        }
+        else{
+            $weight = LINK_WEIGHT;
+            foreach($covers as $cover){
+                $score += ($weight/($cover[1]-$cover[0]+1));
+            }
+        }
+        return $score;
     }
 
     /**
