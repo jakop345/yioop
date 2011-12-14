@@ -64,6 +64,7 @@ class MachinelogElement extends Element
         <pre><?php
             e(wordwrap($data["LOG_FILE_DATA"], 60));
         ?></pre>
+        <?php if(isset($_REQUEST['NO_REFRESH'])) {?>
          <script type="text/javascript" >
         var updateId;
         function logUpdate()
@@ -78,9 +79,10 @@ class MachinelogElement extends Element
         {
              var sec = 1000;
              var minute = 60*sec;
-             updateId = setInterval("logUpdate()", 30*sec);
+             updateId = setInterval("logUpdate()", minute);
         }
         </script>
+        <?php }?>
     <?php
     }
 }

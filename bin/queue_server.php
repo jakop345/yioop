@@ -975,7 +975,7 @@ class QueueServer implements CrawlConstants, Join
                 $file_root_name = substr($base_name, 0, $len_name);
 
                 if(strcmp($file_root_name, self::data_base_name) == 0) {
-                    $this->$callback_method($file);
+                    $this->$callback_method($file, $blocking);
                     return;
                 }
             }
