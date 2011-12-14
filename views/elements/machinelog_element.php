@@ -61,10 +61,21 @@ class MachinelogElement extends Element
         ><?php e(tl('machinelog_element_back_to_manage'))?></a>
         </div>
         <h2><?php e(tl('machinelog_element_log_file',$data['LOG_TYPE']));?></h2>
+        <?php if(!isset($_REQUEST['NO_REFRESH']) ) {?>
+        <p>[<a href="?c=admin&YIOOP_TOKEN=<?php 
+                e($data['YIOOP_TOKEN']); ?>&a=manageMachines<?php 
+                e($data['REFRESH_LOG']); ?>&NO_REFRESH=true" ><?php 
+                e(tl('machinelog_element_refresh_off') ); ?></a>]</p>
+        <?php } else { ?>
+        <p>[<a href="?c=admin&YIOOP_TOKEN=<?php 
+                e($data['YIOOP_TOKEN']); ?>&a=manageMachines<?php 
+                e($data['REFRESH_LOG']); ?>"><?php 
+                e(tl('machinelog_element_refresh_on')); ?></a>]</p>
+        <?php } ?>
         <pre><?php
             e(wordwrap($data["LOG_FILE_DATA"], 60));
         ?></pre>
-        <?php if(isset($_REQUEST['NO_REFRESH'])) {?>
+        <?php if(!isset($_REQUEST['NO_REFRESH'])) {?>
          <script type="text/javascript" >
         var updateId;
         function logUpdate()
@@ -78,11 +89,14 @@ class MachinelogElement extends Element
         function doUpdate()
         {
              var sec = 1000;
-             var minute = 60*sec;
-             updateId = setInterval("logUpdate()", minute);
+             updateId = setInterval("logUpdate()", 30*sec);
         }
         </script>
-        <?php }?>
+        <?php } else {?>
+         <script type="text/javascript" >
+        function doUpdate() {}
+        </script>
+        <?php } ?>
     <?php
     }
 }
