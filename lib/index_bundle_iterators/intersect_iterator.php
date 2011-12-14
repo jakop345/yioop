@@ -180,7 +180,8 @@ class IntersectIterator extends IndexBundleIterator
                 } else {
                     $i_docs =
                         $this->index_bundle_iterators[
-                            $this->word_iterator_map[$i]]->currentDocsWithWord();
+                                $this->word_iterator_map[$i]
+                            ]->currentDocsWithWord();
                     if(isset($i_docs[$key][self::POSITION_LIST]) &&
                        ($ct = count($i_docs[$key][self::POSITION_LIST]) > 0 )) {
                         $position_lists[] = $i_docs[$key][self::POSITION_LIST];
@@ -274,7 +275,7 @@ class IntersectIterator extends IndexBundleIterator
             }
             $l = array_shift($interval);
             $r = end($interval);
-            if(sizeof($position_list[$l[1]])==0){
+            if(sizeof($position_list[$l[1]]) == 0){
                 $stop = true;
             }
 
@@ -285,18 +286,18 @@ class IntersectIterator extends IndexBundleIterator
             $weight = TITLE_WEIGHT;
             $cover = array_shift($covers);
             while(isset($cover[1]) && $cover[1] < AD_HOC_TITLE_LENGTH){
-                $score += ($weight/($cover[1]-$cover[0]+1));
+                $score += ($weight/($cover[1] - $cover[0] + 1));
                 $cover = array_shift($covers);
             }
             $weight = DESCRIPTION_WEIGHT;
             foreach($covers as $cover){
-                $score += ($weight/($cover[1]-$cover[0]+1));
+                $score += ($weight/($cover[1] - $cover[0] + 1));
             }
         }
         else{
             $weight = LINK_WEIGHT;
             foreach($covers as $cover){
-                $score += ($weight/($cover[1]-$cover[0]+1));
+                $score += ($weight/($cover[1] - $cover[0] + 1));
             }
         }
         return $score;

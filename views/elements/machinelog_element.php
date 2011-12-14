@@ -64,6 +64,23 @@ class MachinelogElement extends Element
         <pre><?php
             e(wordwrap($data["LOG_FILE_DATA"], 60));
         ?></pre>
+         <script type="text/javascript" >
+        var updateId;
+        function logUpdate()
+        {
+            var refreshUrl= "?c=admin&YIOOP_TOKEN=<?php 
+                e($data['YIOOP_TOKEN']); ?>&a=manageMachines<?php 
+                e($data['REFRESH_LOG'].""); ?>";
+            document.location = refreshUrl;
+        }
+
+        function doUpdate()
+        {
+             var sec = 1000;
+             var minute = 60*sec;
+             updateId = setInterval("logUpdate()", 30*sec);
+        }
+        </script>
     <?php
     }
 }

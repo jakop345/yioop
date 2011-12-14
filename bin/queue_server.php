@@ -78,7 +78,12 @@ require_once BASE_DIR."/lib/fetch_url.php";
 /** Loads common constants for web crawling*/
 require_once BASE_DIR."/lib/crawl_constants.php";
 
+/** */
 require_once BASE_DIR."/lib/phrase_parser.php";
+
+/** */
+require_once BASE_DIR."/lib/join.php";
+
 
 /** get any indexing plugins */
 foreach(glob(BASE_DIR."/lib/indexing_plugins/*_plugin.php") as $filename) { 
@@ -115,7 +120,7 @@ if(USE_MEMCACHE) {
  * @author Chris Pollett
  * @package seek_quarry
  */
-class QueueServer implements CrawlConstants
+class QueueServer implements CrawlConstants, Join
 {
     /**
      * Reference to a database object. Used since has directory manipulation
@@ -326,51 +331,8 @@ class QueueServer implements CrawlConstants
              */
             $this->deleteOrphanedBundles();
 
-            $this->processIndexData();
-            if(time() - $this->last_index_save_time > FORCE_SAVE_TIME){
-                crawlLog("Periodic Index Save... \n");
-                $start_time = microtime();
-                $this->indexSave();
-                crawlLog("... Save time".(changeInMicrotime($start_time)));
-            }
+            $this->processCrawlData();
 
-            switch($this->crawl_type)
-            {
-                case self::WEB_CRAWL:
-                    $this->processRobotUrls();
-
-                    $count = $this->web_queue->to_crawl_queue->count;
-
-                    if($count < NUM_URLS_QUEUE_RAM - 
-                        SEEN_URLS_BEFORE_UPDATE_SCHEDULER * MAX_LINKS_PER_PAGE){
-                        $info = $this->processQueueUrls();
-                    }
-
-                    if($count > 0) {
-                        $top = $this->web_queue->peekQueue();
-                        if($top[1] < MIN_QUEUE_WEIGHT) { 
-                            crawlLog("Normalizing Weights!!\n");
-                            $this->web_queue->normalize(); 
-                            /* this will undercount the weights of URLS 
-                               from fetcher data that have not completed
-                             */
-                         }
-
-                        if(!file_exists(
-                            CRAWL_DIR."/schedules/".self::schedule_name.
-                            $this->crawl_time.".txt")) {
-                            $this->produceFetchBatch();
-                        }
-                    }
-                break;
-                case self::ARCHIVE_CRAWL:
-                    $this->processRecrawlRobotUrls();
-                    if(!file_exists(CRAWL_DIR."/schedules/".self::schedule_name.
-                            $this->crawl_time.".txt")) {
-                        $this->writeArchiveCrawlInfo();
-                    }
-                break;
-            }
             $time_diff = time() - $start_loop_time;
             if( $time_diff < QUEUE_SLEEP_TIME) {
                 crawlLog("Sleeping...");
@@ -379,6 +341,58 @@ class QueueServer implements CrawlConstants
         }
 
         crawlLog("Queue Server shutting down!!");
+    }
+
+    /**
+     *
+     */
+    function processCrawlData($blocking = false)
+    {
+        $this->processIndexData($blocking);
+        if(time() - $this->last_index_save_time > FORCE_SAVE_TIME){
+            crawlLog("Periodic Index Save... \n");
+            $start_time = microtime();
+            $this->indexSave();
+            crawlLog("... Save time".(changeInMicrotime($start_time)));
+        }
+
+        switch($this->crawl_type)
+        {
+            case self::WEB_CRAWL:
+                $this->processRobotUrls();
+
+                $count = $this->web_queue->to_crawl_queue->count;
+
+                if($count < NUM_URLS_QUEUE_RAM - 
+                    SEEN_URLS_BEFORE_UPDATE_SCHEDULER * MAX_LINKS_PER_PAGE){
+                    $info = $this->processQueueUrls();
+                }
+
+                if($count > 0) {
+                    $top = $this->web_queue->peekQueue();
+                    if($top[1] < MIN_QUEUE_WEIGHT) { 
+                        crawlLog("Normalizing Weights!!\n");
+                        $this->web_queue->normalize(); 
+                        /* this will undercount the weights of URLS 
+                           from fetcher data that have not completed
+                         */
+                     }
+
+                    if(!file_exists(
+                        CRAWL_DIR."/schedules/".self::schedule_name.
+                        $this->crawl_time.".txt")) {
+                        $this->produceFetchBatch();
+                    }
+                }
+            break;
+            case self::ARCHIVE_CRAWL:
+                $this->processRecrawlRobotUrls();
+                if(!file_exists(CRAWL_DIR."/schedules/".self::schedule_name.
+                        $this->crawl_time.".txt")) {
+                    $this->writeArchiveCrawlInfo();
+                }
+            break;
+        }
     }
 
     /**
@@ -880,14 +894,9 @@ class QueueServer implements CrawlConstants
                         $timestamp. ". Will contain all but last shard before ".
                         "crash.");
                     $index_archive = new IndexArchiveBundle($dir, false);
-                    $index_archive->dictionary->mergeAllTiers();
+                    $index_archive->dictionary->mergeAllTiers($this);
                     file_put_contents(CRAWL_DIR.'/schedules/'.
                         self::index_closed_name.$timestamp.".txt", "1");
-                    /*
-                       touch crawl_status so it doesn't stop the crawl right
-                       after it just restarted
-                     */
-                    touch(CRAWL_DIR."/schedules/crawl_status.txt", time());
                 }
                 $living_stamps[] = $timestamp;
             }
@@ -920,6 +929,20 @@ class QueueServer implements CrawlConstants
         }
     }
 
+    /**
+     *
+     */
+    function join()
+    {
+        /*
+           touch crawl_status so it doesn't stop the crawl right
+           after it just restarted
+         */
+        touch(CRAWL_DIR."/schedules/crawl_status.txt", time());
+        crawlLog("Begin rejoining crawl loop...");
+        $this->processCrawlData(true);
+        crawlLog("End rejoining crawl loop...");
+    }
 
     /**
      * Generic function used to process Data, Index, and Robot info schedules
@@ -930,7 +953,7 @@ class QueueServer implements CrawlConstants
      * @param string $callback_method what method should be called to handle
      *      a schedule
      */
-    function processDataFile($base_dir, $callback_method)
+    function processDataFile($base_dir, $callback_method, $blocking = false)
     {
         $dirs = glob($base_dir.'/*', GLOB_ONLYDIR);
 
@@ -966,13 +989,13 @@ class QueueServer implements CrawlConstants
      * index archive data from fetchers then calls the function 
      * processDataFile to process the oldest file found
      */
-    function processIndexData()
+    function processIndexData($blocking)
     {
         crawlLog("Checking for index data files to process...");
 
         $index_dir =  CRAWL_DIR."/schedules/".
             self::index_data_base_name.$this->crawl_time;
-        $this->processDataFile($index_dir, "processIndexArchive");
+        $this->processDataFile($index_dir, "processIndexArchive", $blocking);
         crawlLog("done.");
     }
 
@@ -982,9 +1005,19 @@ class QueueServer implements CrawlConstants
      * @param string $file containing web pages summaries and a mini-inverted
      *      index for their content
      */
-    function processIndexArchive($file)
+    function processIndexArchive($file, $blocking)
     {
-        static $first = true;
+        static $blocked = false;
+
+        if($blocking && $blocked) {
+            crawlLog("Indexing waiting for merge tiers to ".
+                "complete before write partition. B");
+            return;
+        }
+        if(!$blocking) {
+            $blocked = false;
+        }
+
         crawlLog(
             "Start processing index data memory usage".
             memory_get_usage() . "...");
@@ -1073,7 +1106,14 @@ class QueueServer implements CrawlConstants
                 $index_shard->unpackWordDocs();
             }
             $generation = 
-                $this->index_archive->initGenerationToAdd($index_shard);
+                $this->index_archive->initGenerationToAdd($index_shard, 
+                    $this, $blocking);
+            if($generation == -1) {
+                crawlLog("Indexing waiting for merge tiers to ".
+                    "complete before write partition. A");
+                $blocked = true;
+                return;
+            }
 
             $summary_offsets = array();
             if(isset($seen_sites)) {
@@ -1105,7 +1145,7 @@ class QueueServer implements CrawlConstants
                 " time: ".(changeInMicrotime($start_time)));
             $start_time = microtime();
 
-            $this->index_archive->addIndexData($index_shard);
+            $this->index_archive->addIndexData($index_shard, $this);
             $this->index_dirty = true;
         }
         crawlLog("D (add index shard) memory usage".memory_get_usage(). 

@@ -170,8 +170,10 @@ class IndexDictionary implements CrawlConstants
      *
      * @param object $index_shard the shard to add the word to the dictionary
      *      with
+     * @param object $callback object with join function to be 
+     *      called if process is taking too  long
      */
-    function addShardDictionary($index_shard) 
+    function addShardDictionary($index_shard, $callback = NULL) 
     {
         $out_slot = "A";
         if(file_exists($this->dir_name."/0/0A.dic")) {
@@ -228,6 +230,9 @@ class IndexDictionary implements CrawlConstants
         // log merge tiers if needed
         $tier = 0;
         while($out_slot == "B") {
+            if($callback != NULL) {
+                $callback->join();
+            }
             $out_slot = "A";
             if(file_exists($this->dir_name."/0/".($tier + 1)."A.dic")) {
                 $out_slot ="B";
@@ -418,14 +423,18 @@ class IndexDictionary implements CrawlConstants
      * file is renamed with a name one tier higher. The output in all cases is 
      * stored in file ending with A or B one tier up. B is used if an A file is
      * already present.
-     *
+     * @param object $callback object with join function to be 
+     *      called if process is taking too  long
      */
-    function mergeAllTiers()
+    function mergeAllTiers($callback = NULL)
     {
         $new_tier = false;
 
         for($i = 0; $i < self::NUM_PREFIX_LETTERS; $i++) {
             for($j = 0; $j <= $this->max_tier; $j++) {
+                if($callback != NULL) {
+                    $callback->join();
+                }
                 $a_exists = file_exists($this->dir_name."/$i/".$j."A.dic");
                 $b_exists = file_exists($this->dir_name."/$i/".$j."B.dic");
                 $higher_a = file_exists($this->dir_name."/$i/".($j+1)."A.dic");

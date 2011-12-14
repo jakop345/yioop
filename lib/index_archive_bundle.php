@@ -225,16 +225,22 @@ class IndexArchiveBundle implements CrawlConstants
      * and a log-merge performed if needed
      *
      * @param object $index_shard a mini inverted index of word_key=>doc data
+     * @param object $callback object with join function to be 
+     *      called if process is taking too long
      * @return int the active generation after the check and possible change has
      *      been performed
      */
-    function initGenerationToAdd($index_shard)
+    function initGenerationToAdd($index_shard, $callback = NULL, 
+        $blocking = false)
     {
         $current_num_docs = $this->getActiveShard()->num_docs;
         $add_num_docs = $index_shard->num_docs;
         if($current_num_docs + $add_num_docs > $this->num_docs_per_generation){
+            if($blocking == true) {
+                return -1;
+            }
             $switch_time = microtime();
-            $this->saveAndAddCurrentShardDictionary();
+            $this->saveAndAddCurrentShardDictionary($callback);
             //Set up new shard
             $this->generation_info['ACTIVE']++;
             $this->generation_info['CURRENT'] = 
@@ -255,8 +261,10 @@ class IndexArchiveBundle implements CrawlConstants
     /**
      * Saves the active index shard to disk, then adds the words from this
      * shard to the dictionary
+     * @param object $callback object with join function to be 
+     *      called if process is taking too  long
      */
-    function saveAndAddCurrentShardDictionary()
+    function saveAndAddCurrentShardDictionary($callback = NULL)
     {
         // Save current shard dictionary to main dictionary
         $this->forceSave();
@@ -268,7 +276,7 @@ class IndexArchiveBundle implements CrawlConstants
         $this->current_shard = new IndexShard(
             $current_index_shard_file, $this->generation_info['ACTIVE'],
                 $this->num_docs_per_generation, true);
-        $this->dictionary->addShardDictionary($this->current_shard);
+        $this->dictionary->addShardDictionary($this->current_shard, $callback);
     }
 
     /**
@@ -407,46 +415,6 @@ class IndexArchiveBundle implements CrawlConstants
         uasort( $words_array, $comparison);
         
         return array_slice($words_array, 0, $num);
-    }
-
-
-    /**
-     *
-     */
-    function setMemcache($dict = true, $shards = false)
-    {
-        if($dict) {
-            $this->dictionary->setMemcache();
-        }
-        if($shards) {
-            $this->setCurrentShard(0, true);
-            $this->getCurrentShard();
-            $old_current_index =  $this->generation_info['CURRENT'];
-            $active_index = $this->generation_info['ACTIVE'];
-            for($i = 0; $i <= $active_index; $i++) {
-                $mem_shard = $this->setCurrentShard($i, true);
-                $this->getCurrentShard()->setMemcachePostingsDocs();
-            }
-            $this->setCurrentShard($old_current_index, true);
-        }
-    }
-
-    /**
-     *
-     */
-    function removeMemcache()
-    {
-        $this->dictionary->removeMemcache();
-        $this->setCurrentShard(0, true);
-        $this->getCurrentShard();
-        $old_current_index =  $this->generation_info['CURRENT'];
-        $active_index = $this->generation_info['ACTIVE'];
-        for($i = 0; $i <= $active_index; $i++) {
-            $mem_shard = $this->setCurrentShard($i, true);
-            $this->getCurrentShard()->removeMemcachePostingsDocs();
-        }
-        $this->setCurrentShard($old_current_index, true);
-
     }
 
     /**

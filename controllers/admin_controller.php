@@ -1657,19 +1657,33 @@ class AdminController extends Controller implements CrawlConstants
                         $r["fetcher_num"] = 
                             $this->clean($_REQUEST["fetcher_num"], "int");
                     }
+                    if(isset($_REQUEST["time"])) {
+                        $data["time"] = 
+                            $this->clean($_REQUEST["time"], "int") + 30;
+                    } else {
+                        $data["time"] = 30;
+                    }
                     $data["ELEMENT"] = "machinelogElement";
 
+                    $data["REFRESH_LOG"] = "&time=".$data["time"];
                     $data["LOG_TYPE"] = "";
                     if(isset($r['fetcher_num']) && isset($r['name'])) {
                         $data["LOG_FILE_DATA"] = $this->machineModel->getLog(
                             $r["name"], $r["fetcher_num"]);
                         $data["LOG_TYPE"] = $r['name'].
                             " fetcher ".$r["fetcher_num"];
+                        $data["REFRESH_LOG"] .= "&arg=log&name=".$r['name'].
+                            "&fetcher_num=". $r['fetcher_num'];
                     } else if(isset($r['name'])) {
                         $data["LOG_TYPE"] = $r['name']." queue_server";
                         $data["LOG_FILE_DATA"] = $this->machineModel->getLog(
                             $r["name"]);
+                        $data["REFRESH_LOG"] .= "&arg=log&name=".$r['name'];
                     }
+                    if($data["time"] >= 1200) {
+                        $data["REFRESH_LOG"] = "";
+                    }
+
                     if(!isset($data["LOG_FILE_DATA"]) 
                         || $data["LOG_FILE_DATA"] == ""){
                         $data["LOG_FILE_DATA"] = 
