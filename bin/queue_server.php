@@ -298,7 +298,7 @@ class QueueServer implements CrawlConstants, Join
             $remove = true;
         }
         if($remove == true) {
-            crawlLog("\n\nRemove old messages..", "queue_server");
+            crawlLog("Remove old messages..", "queue_server");
         }
         $this->loop();
 
@@ -906,7 +906,8 @@ class QueueServer implements CrawlConstants, Join
                         $timestamp. ". Will contain all but last shard before ".
                         "crash.");
                     $index_archive = new IndexArchiveBundle($dir, false);
-                    $index_archive->dictionary->mergeAllTiers($this);
+                    $index_archive->dictionary->mergeAllTiers();
+                    touch(CRAWL_DIR."/schedules/crawl_status.txt", time());
                     file_put_contents(CRAWL_DIR.'/schedules/'.
                         self::index_closed_name.$timestamp.".txt", "1");
                 }
