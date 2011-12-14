@@ -288,6 +288,10 @@ class QueueServer implements CrawlConstants, Join
         declare(ticks=200);
         CrawlDaemon::init($argv, "queue_server");
         crawlLog("\n\nInitialize logger..", "queue_server");
+        if(file_exists(CRAWL_DIR."/schedules/queue_server_messages.txt")) {
+            @unlink(CRAWL_DIR."/schedules/queue_server_messages.txt");
+        }
+        crawlLog("\n\nRemove old messages..", "queue_server");
         $this->loop();
 
     }
@@ -939,9 +943,9 @@ class QueueServer implements CrawlConstants, Join
            after it just restarted
          */
         touch(CRAWL_DIR."/schedules/crawl_status.txt", time());
-        crawlLog("Begin rejoining crawl loop...");
+        crawlLog("{{{{");
         $this->processCrawlData(true);
-        crawlLog("End rejoining crawl loop...");
+        crawlLog("}}}}");
     }
 
     /**
