@@ -130,7 +130,7 @@ class ManagemachinesElement extends Element
         {
              clearInterval(updateId );
              var machineTag = elt('machinestatus');
-             machine.innerHTML= "<h2 class='red'><?php 
+             machineTag.innerHTML= "<h2 class='red'><?php 
                 e(tl('managemachines_element_no_longer_update'))?></h2>";
         }
         function doUpdate()
