@@ -288,10 +288,18 @@ class QueueServer implements CrawlConstants, Join
         declare(ticks=200);
         CrawlDaemon::init($argv, "queue_server");
         crawlLog("\n\nInitialize logger..", "queue_server");
+        $remove = false;
         if(file_exists(CRAWL_DIR."/schedules/queue_server_messages.txt")) {
             @unlink(CRAWL_DIR."/schedules/queue_server_messages.txt");
+            $remove = true;
         }
-        crawlLog("\n\nRemove old messages..", "queue_server");
+        if(file_exists(CRAWL_DIR."/schedules/crawl_status.txt")) {
+            @unlink(CRAWL_DIR."/schedules/crawl_status.txt");
+            $remove = true;
+        }
+        if($remove == true) {
+            crawlLog("\n\nRemove old messages..", "queue_server");
+        }
         $this->loop();
 
     }
