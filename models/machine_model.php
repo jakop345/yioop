@@ -178,7 +178,7 @@ class MachineModel extends Model
             if($fetcher_num !== NULL) {
                 $url .= "&fetcher_num=$fetcher_num";
             }
-            $log_data = json_decode(FetchUrl::getPage($url));
+            $log_data = urldecode(json_decode(FetchUrl::getPage($url)));
         } else {
             $log_data = "";
         }

@@ -390,10 +390,23 @@ class QueueServer implements CrawlConstants, Join
                          */
                      }
 
+                    /*
+                        only produce fetch batch if the last one has already
+                        been taken by some fetcher
+                     */
                     if(!file_exists(
                         CRAWL_DIR."/schedules/".self::schedule_name.
                         $this->crawl_time.".txt")) {
-                        $this->produceFetchBatch();
+                        $index_files = glob(CRAWL_DIR.'/schedules/'.
+                            self::index_data_base_name . $this->crawl_time.
+                            "/*/".self::data_base_name."*.txt");
+                        // only produce a fetch batch if nothing left to index
+                        if(!is_array($index_files) || count($index_files) < 1){
+                            $this->produceFetchBatch();
+                        } else {
+                            crawlLog("Waiting till done indexing to make ".
+                                "a new fetch batch!");
+                        }
                     }
                 }
             break;
@@ -688,6 +701,10 @@ class QueueServer implements CrawlConstants, Join
             file_put_contents($dir."/At".$time."From127-0-0-1".
                 "WithHash$data_hash.txt", $data_string);
         }
+        $this->db->setWorldPermissionsRecursive(
+            CRAWL_DIR.'/cache/'.
+            self::queue_base_name.$this->crawl_time);
+        $this->db->setWorldPermissionsRecursive($dir);
     }
 
     /**
@@ -952,9 +969,9 @@ class QueueServer implements CrawlConstants, Join
            after it just restarted
          */
         touch(CRAWL_DIR."/schedules/crawl_status.txt", time());
-        crawlLog("{{{{");
+        crawlLog("Rejoin Crawl {{{{");
         $this->processCrawlData(true);
-        crawlLog("}}}}");
+        crawlLog("}}}} End Rejoin Crawl");
     }
 
     /**

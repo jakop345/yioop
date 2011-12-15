@@ -154,7 +154,7 @@ class MachineController extends Controller implements CrawlConstants
                 fclose($fh);
             }
         }
-        echo json_encode($log_data);
+        echo json_encode(urlencode($log_data));
     }
 
 

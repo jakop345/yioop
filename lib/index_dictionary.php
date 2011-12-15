@@ -245,6 +245,8 @@ class IndexDictionary implements CrawlConstants
                     serialize($this->max_tier));
             }
         }
+        crawlLog("...Done Merging tiers of dictionary");
+
     }
 
     /**
