@@ -613,8 +613,9 @@ class PhraseModel extends Model
      */
     function guessSemantics($phrase)
     {
+        $phrase .= " ";
         $cond_token = "(\.com|\.edu|\.org|\.gov|\.mil|.ca|\.uk|\.fr)";
-        $pattern = "/(\s)((\S)+$cond_token(\S)*)/";
+        $pattern = "/(\s)((\S)+$cond_token)(\s)/";
         preg_match_all($pattern, $phrase, $matches);
         $matches = $matches[2];
         $result_phrase = preg_replace($pattern, "", $phrase);
