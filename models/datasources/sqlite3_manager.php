@@ -96,7 +96,7 @@ class Sqlite3Manager extends DatasourceManager
      * method does nothing
      * {@inheritdoc}
      */
-    function connect($db_url = DB_URL, $db_user = DB_USER, 
+    function connect($db_HOST = DB_HOST, $db_user = DB_USER, 
         $db_password = DB_PASSWORD)
     {
         return true;

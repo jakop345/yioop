@@ -142,7 +142,8 @@ class SitemapProcessor extends TextProcessor
                     $node->textContent, $site);
                 if($url === NULL || $url === "" ||
                     UrlParser::checkRecursiveUrl($url) ||
-                    UrlParser::getDocumentType($url) == "gz") { 
+                    UrlParser::getDocumentType($url) == "gz" ||
+                    strlen($url) >= MAX_URL_LENGTH) { 
                     //at this point we can't handle gzip'd sitemaps
                     continue;
                 }

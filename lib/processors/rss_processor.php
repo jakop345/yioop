@@ -252,7 +252,8 @@ class RssProcessor extends TextProcessor
                 $url = UrlParser::canonicalLink(
                     $node->textContent, $site);
                 if($url === NULL || $url === "" ||
-                    UrlParser::checkRecursiveUrl($url)) {
+                    UrlParser::checkRecursiveUrl($url) ||
+                    strlen($url) >= MAX_URL_LENGTH) {
                     return false;
                 }
             }
