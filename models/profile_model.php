@@ -50,7 +50,7 @@ require_once(BASE_DIR.'/lib/url_parser.php');
 class ProfileModel extends Model
 {
     var $profile_fields = array('USER_AGENT_SHORT', 
-            'DEFAULT_LOCALE', 'DEBUG_LEVEL', 'DBMS','DB_URL', 
+            'DEFAULT_LOCALE', 'DEBUG_LEVEL', 'DBMS','DB_HOST', 
             'DB_NAME', 'DB_USER', 'DB_PASSWORD', 
             'QUEUE_SERVER', 'AUTH_KEY', "ROBOT_DESCRIPTION", 'WEB_URI',
             'USE_MEMCACHE', 'MEMCACHE_SERVERS', 'USE_FILECACHE', 'CACHE_LINK', 
@@ -217,7 +217,7 @@ EOT;
      * database. If it does provide a valid db connection but no data then try 
      * to recreate the database from the default copy stored in /data dir.
      *
-     * @param array $dbinfo has fields for DBMS, DB_USER, DB_PASSWORD, DB_URL
+     * @param array $dbinfo has fields for DBMS, DB_USER, DB_PASSWORD, DB_HOST
      *      and DB_NAME
      * @return bool returns true if can connect to/create a valid database;
      *      returns false otherwise
@@ -294,7 +294,7 @@ EOT;
      * Checks if $dbinfo provides info to connect to an working instance of 
      * app db.
      *
-     * @param array $dbinfo has field for DBMS, DB_USER, DB_PASSWORD, DB_URL
+     * @param array $dbinfo has field for DBMS, DB_USER, DB_PASSWORD, DB_HOST
      *      and DB_NAME
      * @return mixed returns true if can connect to DBMS with username and 
      *      password, can select the given database name and that database
@@ -312,18 +312,18 @@ EOT;
             BASE_DIR."/models/datasources/".$dbinfo['DBMS']."_manager.php");
         $dbms_manager = ucfirst($dbinfo['DBMS'])."Manager";
         $test_dbm = new $dbms_manager();
-        if(isset($dbinfo['DB_URL'])) {
+        if(isset($dbinfo['DB_HOST'])) {
             if(isset($dbinfo['DB_USER'])) {
                 if(isset($dbinfo['DB_PASSWORD'])) {
                     $conn = @$test_dbm->connect(
-                        $dbinfo['DB_URL'], 
+                        $dbinfo['DB_HOST'], 
                         $dbinfo['DB_USER'], $dbinfo['DB_PASSWORD']);
                 } else {
                     $conn = @$test_dbm->connect(
-                        $dbinfo['DB_URL'], $dbinfo['DB_USER']);
+                        $dbinfo['DB_HOST'], $dbinfo['DB_USER']);
                 }
             } else {
-                $conn = @$test_dbm->connect($dbinfo['DB_URL']);
+                $conn = @$test_dbm->connect($dbinfo['DB_HOST']);
             }
         } else {
             $conn = @$test_dbm->connect();

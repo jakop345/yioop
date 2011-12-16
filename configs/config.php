@@ -71,6 +71,9 @@ if(file_exists(WORK_DIRECTORY."/profile.php")) {
         define('LOCALE_DIR', FALLBACK_LOCALE_DIR);
     }
     define('LOG_DIR', WORK_DIRECTORY."/log");
+    if(defined('DB_URL') && !defined('DB_HOST')) {
+        define('DB_HOST', DB_URL); //for backward compatibility
+    }
 } else {
     if($_SERVER['SERVER_NAME'] !== 'localhost') {
         echo "SERVICE AVAILABLE ONLY VIA LOCALHOST UNTIL CONFIGURED"; 
@@ -87,7 +90,7 @@ if(file_exists(WORK_DIRECTORY."/profile.php")) {
     define('DB_NAME', "default");
     define('DB_USER', '');
     define('DB_PASSWORD', '');
-    define('DB_URL', '');
+    define('DB_HOST', '');
     /** @ignore */
     define('CRAWL_DIR', BASE_DIR);
     /** @ignore */

@@ -163,10 +163,10 @@ class ConfigureElement extends Element
                         class="widefield" />
                 </div>
                 <div id="login-dbms">
-                    <div class="topmargin"><b><label for="database-url"><?php 
-                        e(tl('configure_element_databaseurl')); ?></label></b>
-                        <input type="text" id="database-user" name="DB_URL" 
-                            value="<?php e($data['DB_URL']); ?>" 
+                    <div class="topmargin"><b><label for="database-host"><?php 
+                        e(tl('configure_element_databasehost')); ?></label></b>
+                        <input type="text" id="database-user" name="DB_HOST" 
+                            value="<?php e($data['DB_HOST']); ?>" 
                             class="widefield" />
                     </div>
                     <div class="topmargin"><b><label for="database-user"><?php 

@@ -69,7 +69,7 @@ abstract class DatasourceManager
     /**
      * Connects to a DBMS using data provided or from config.php
      *
-     * @param string $db_url the url of where the database is located 
+     * @param string $db_host the hostname of where the database is located 
      *      (not used in all dbms's)
      * @param string $db_user the user to connect as
      * @param string $db_password the password of the user to connect as
@@ -77,7 +77,7 @@ abstract class DatasourceManager
      *      connection object/identifier otherwise
      */
 
-    abstract function connect($db_url = DB_URL, $db_user = DB_USER, 
+    abstract function connect($db_host = DB_HOST, $db_user = DB_USER, 
         $db_password = DB_PASSWORD);
 
     /**

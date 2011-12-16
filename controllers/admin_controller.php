@@ -2150,8 +2150,8 @@ class AdminController extends Controller implements CrawlConstants
                     $profile['DBMS'] != $old_profile['DBMS']) || 
                     (isset($profile['DB_NAME']) && 
                     $profile['DB_NAME'] != $old_profile['DB_NAME']) ||
-                    (isset($profile['DB_URL']) && 
-                    $profile['DB_URL'] != $old_profile['DB_URL'])) {
+                    (isset($profile['DB_HOST']) && 
+                    $profile['DB_HOST'] != $old_profile['DB_HOST'])) {
                     
                     if(!$this->profileModel->migrateDatabaseIfNecessary(
                         $profile)) {
@@ -2174,7 +2174,7 @@ class AdminController extends Controller implements CrawlConstants
                         "</h1>');";
                     $data['DBMS'] = $old_profile['DBMS'];
                     $data['DB_NAME'] = $old_profile['DB_NAME'];
-                    $data['DB_URL'] = $old_profile['DB_URL'];
+                    $data['DB_HOST'] = $old_profile['DB_HOST'];
                     $data['DB_USER'] = $old_profile['DB_USER'];
                     $data['DB_PASSWORD'] = $old_profile['DB_PASSWORD'];
                     break;
