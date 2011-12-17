@@ -397,16 +397,7 @@ class QueueServer implements CrawlConstants, Join
                     if(!file_exists(
                         CRAWL_DIR."/schedules/".self::schedule_name.
                         $this->crawl_time.".txt")) {
-                        $index_files = glob(CRAWL_DIR.'/schedules/'.
-                            self::index_data_base_name . $this->crawl_time.
-                            "/*/".self::data_base_name."*.txt");
-                        // only produce a fetch batch if nothing left to index
-                        if(!is_array($index_files) || count($index_files) < 1){
                             $this->produceFetchBatch();
-                        } else {
-                            crawlLog("Waiting till done indexing to make ".
-                                "a new fetch batch!");
-                        }
                     }
                 }
             break;
@@ -1594,10 +1585,11 @@ class QueueServer implements CrawlConstants, Join
             }
 
             $host_url = UrlParser::getHost($url);
+            $has_robots = $this->web_queue->containsGotRobotTxt($host_url);
 
             //if $url is a robots.txt url see if we need to schedule or not
             if(strcmp($host_url."/robots.txt", $url) == 0) {
-                if($this->web_queue->containsGotRobotTxt($host_url)) {
+                if($has_robots) {
                     $delete_urls[$i] = $url;
                     $i++;
                 } else {
@@ -1624,7 +1616,7 @@ class QueueServer implements CrawlConstants, Join
             //Now handle the non-robots.txt url case
             $robots_okay = true;
 
-            if($this->web_queue->containsGotRobotTxt($host_url)) {
+            if($has_robots) {
                 $host_paths = UrlParser::getHostPaths($url);
 
                 foreach($host_paths as $host_path) {
