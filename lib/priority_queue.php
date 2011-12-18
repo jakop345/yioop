@@ -347,7 +347,7 @@ class PriorityQueue extends StringArray implements CrawlConstants
             if($child < $count) { // this 'if' checks if there is a right child 
                 $right_child_row = $this->getRow($child + 1);
 
-                if($this->compare($left_child_row[1], $right_child_row[1]) <0) {
+                if($this->compare($left_child_row[1], $right_child_row[1]) < 0){
                     $child++;
                 }
             }

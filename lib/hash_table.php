@@ -87,18 +87,22 @@ class HashTable extends StringArray
     var $count;
 
     /**
-     * Flag for lookup methods
+     * Flag for hash table lookup methods
      */
     const ALWAYS_RETURN_PROBE = 1;
     /**
-     * Flag for lookup methods
+     * Flag for hash table lookup methods
      */
     const RETURN_PROBE_ON_KEY_FOUND = 0;
     /**
-     * Flag for lookup methods
+     * Flag for hash table lookup methods
      */
     const RETURN_VALUE = -1;
 
+    /**
+     * Flag for hash table lookup methods
+     */
+    const RETURN_BOTH = -2;
 
     /**
      * Makes a persistently stored (i.e., on disk and ram)  hash table using the
@@ -131,14 +135,18 @@ class HashTable extends StringArray
      * @param string $key the key to use for the insert (will be needed for
      *      lookup)
      * @param string $value the value associated with $key
+     * @param int $probe if the location in the hash table is already known
+     *      to be $probe then this variable can be used to save a lookup
      * @return bool whether the insert was succesful or not
      */
-    function insert($key, $value)
+    function insert($key, $value, $probe = false)
     {
         $null = $this->null;
         $deleted = $this->deleted;
 
-        $probe = $this->lookup($key, self::ALWAYS_RETURN_PROBE);
+        if($probe === false) {
+            $probe = $this->lookup($key, self::ALWAYS_RETURN_PROBE);
+        }
 
         if($probe === false) {
             /* this is a little slow
@@ -183,8 +191,8 @@ class HashTable extends StringArray
      *
      * @param string $key key to look up in the hash table
      * @param int $return_probe_value one of self::ALWAYS_RETURN_PROBE, 
-     *      self::RETURN_PROBE_ON_KEY_FOUND, or self::RETURN_VALUE. Here
-     *      value means the value associated with the key and probe is
+     *      self::RETURN_PROBE_ON_KEY_FOUND, self::RETURN_VALUE, or self::BOTH. 
+     *      Here value means the value associated with the key and probe is
      *      either the location in the array where the key was found or
      *      the first location in the array where it was determined the
      *      key could not be found.
@@ -251,6 +259,9 @@ class HashTable extends StringArray
         if(in_array($return_probe_value, $probe_array)) {
             $result = $probe;
         }
+        if($return_probe_value == self::RETURN_BOTH) {
+            $result = array($probe, $index_value);
+        }
 
         return $result; 
 
@@ -260,14 +271,18 @@ class HashTable extends StringArray
      * Deletes the data associated with the provided key from the hash table
      *
      * @param string $key the key to delete the entry for
+     * @param int $probe if the location in the hash table is already known
+     *      to be $probe then this variable can be used to save a lookup
      * @return bool whether or not something was deleted
      */
-    function delete($key)
+    function delete($key, $probe = false)
     {
         $deleted = pack("H2x".($this->key_size + $this->value_size - 1), "FF");
             //deletes
 
-        $probe = $this->lookup($key, self::RETURN_PROBE_ON_KEY_FOUND);
+        if($probe === false) {
+            $probe = $this->lookup($key, self::RETURN_PROBE_ON_KEY_FOUND);
+        }
 
         if($probe === false) { return false; }
 

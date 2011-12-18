@@ -664,7 +664,7 @@ class QueueServer implements CrawlConstants, Join
         $fh = $this->web_queue->openUrlArchive();
         for($time = 1; $time < $count; $time++) {
             $tmp =  $this->web_queue->peekQueue($time, $fh);
-            list($url, $weight) = $tmp;
+            list($url, $weight, , ) = $tmp;
             // if queue error skip
             if($tmp === false || strcmp($url, "LOOKUP ERROR") == 0) {
                 continue;
@@ -1574,7 +1574,7 @@ class QueueServer implements CrawlConstants, Join
             //look in queue for url and its weight
             $tmp = $this->web_queue->peekQueue($i, $fh);
 
-            list($url, $weight) = $tmp;
+            list($url, $weight, $flag, $probe) = $tmp;
 
             // if queue error remove entry any loop
             if($tmp === false || strcmp($url, "LOOKUP ERROR") == 0) {
@@ -1584,11 +1584,24 @@ class QueueServer implements CrawlConstants, Join
                 continue;
             }
 
-            $host_url = UrlParser::getHost($url);
-            $has_robots = $this->web_queue->containsGotRobotTxt($host_url);
-
+            $no_flags = false;
+            if($flag ==  WebQueueBundle::NO_FLAGS) {
+                $host_url = UrlParser::getHost($url);
+                $has_robots = $this->web_queue->containsGotRobotTxt($host_url);
+                $is_robot = (strcmp($host_url."/robots.txt", $url) == 0);
+                $no_flags = true;
+            } else {
+                $is_robot = ($flag == WebQueueBundle::ROBOT);
+                if($flag >= WebQueueBundle::SCHEDULABLE) {
+                    $has_robots = true;
+                    if($flag > WebQueueBundle::SCHEDULABLE) {
+                        $delay = $flag - WebQueueBundle::SCHEDULABLE;
+                        $host_url = UrlParser::getHost($url);
+                    }
+                }
+            }
             //if $url is a robots.txt url see if we need to schedule or not
-            if(strcmp($host_url."/robots.txt", $url) == 0) {
+            if($is_robot) {
                 if($has_robots) {
                     $delete_urls[$i] = $url;
                     $i++;
@@ -1608,6 +1621,10 @@ class QueueServer implements CrawlConstants, Join
                         $i++;
                       } else { //no more available slots so prepare to bail
                         $i = $count;
+                        if($no_flags) {
+                            $this->web_queue->setQueueFlag($url, 
+                                WebQueueBundle::ROBOT);
+                        }
                     }
                 }
                 continue;
@@ -1617,49 +1634,52 @@ class QueueServer implements CrawlConstants, Join
             $robots_okay = true;
 
             if($has_robots) {
-                $host_paths = UrlParser::getHostPaths($url);
-
-                foreach($host_paths as $host_path) {
-                    if($this->web_queue->containsDisallowedRobot($host_path)) {
-                        $robots_okay = false;
-                        $delete_urls[$i] = $url; 
+                if($no_flags) {
+                    $host_paths = UrlParser::getHostPaths($url);
+                    foreach($host_paths as $host_path) {
+                        if($this->web_queue->containsDisallowedRobot(
+                            $host_path)) {
+                            $robots_okay = false;
+                            $delete_urls[$i] = $url; 
                             //want to remove from queue since robots forbid it
-                        $this->web_queue->addSeenUrlFilter($url); 
+                            $this->web_queue->addSeenUrlFilter($url); 
                             /* at this point we might miss some sites by marking
                                them seen: the robot url might change in 24 hours
                              */
-                        break;
+                            break;
+                        }
                     }
+
+                    if(!$robots_okay) {
+                        $i++;
+                        continue;
+                    }
+                    $delay = $this->web_queue->getCrawlDelay($host_url);
                 }
 
-                if(!$robots_okay) {
-                    $i++;
-                    continue;
-                }
-
-                $delay = $this->web_queue->getCrawlDelay($host_url);
                 $num_waiting = count($this->waiting_hosts);
 
                 if($delay > 0 ) { 
                     // handle adding a url if there is a crawl delay
-                    if((!isset($this->waiting_hosts[crawlHash($host_url)])
+                    $hash_host = crawlHash($host_url);
+                    if((!isset($this->waiting_hosts[$hash_host])
                         && $num_waiting < MAX_WAITING_HOSTS)
-                        || (isset($this->waiting_hosts[crawlHash($host_url)]) &&
-                            $this->waiting_hosts[crawlHash($host_url) ] == 
+                        || (isset($this->waiting_hosts[$hash_host]) &&
+                            $this->waiting_hosts[$hash_host] == 
                             $schedule_time)) {
 
-                        $this->waiting_hosts[crawlHash($host_url)] = 
+                        $this->waiting_hosts[$hash_host] = 
                            $schedule_time;
                         $this->waiting_hosts[$schedule_time][] = 
-                            crawlHash($host_url);
+                            $hash_host;
                         $request_batches_per_delay = 
                             ceil($delay/$time_per_request_guess); 
                         
-                        if(!isset($crawl_delay_hosts[$host_url])) {
+                        if(!isset($crawl_delay_hosts[$hash_host])) {
                             $next_earliest_slot = $current_crawl_index;
-                            $crawl_delay_hosts[$host_url] = $next_earliest_slot;
+                            $crawl_delay_hosts[$hash_host]= $next_earliest_slot;
                         } else {
-                            $next_earliest_slot = $crawl_delay_hosts[$host_url] 
+                            $next_earliest_slot = $crawl_delay_hosts[$hash_host]
                                 + $request_batches_per_delay
                                 * NUM_MULTI_CURL_PAGES;
                         }
@@ -1667,7 +1687,7 @@ class QueueServer implements CrawlConstants, Join
                         if(($next_slot = 
                             $this->getEarliestSlot( $next_earliest_slot, 
                                 $sites)) < MAX_FETCH_SIZE) {
-                            $crawl_delay_hosts[$host_url] = $next_slot;
+                            $crawl_delay_hosts[$hash_host] = $next_slot;
                             $sites[$next_slot] = 
                                 array($url, $weight, $delay);
                             $delete_urls[$i] = $url;
@@ -1677,6 +1697,9 @@ class QueueServer implements CrawlConstants, Join
                                  */
 
                             $fetch_size++;
+                        } else if ($no_flags) {
+                            $this->web_queue->setQueueFlag($url, 
+                                $delay + WebQueueBundle::SCHEDULABLE);
                         }
                     }
                 } else { // add a url no crawl delay
@@ -1695,6 +1718,10 @@ class QueueServer implements CrawlConstants, Join
                         $fetch_size++;
                     } else { //no more available slots so prepare to bail
                         $i = $count;
+                        if($no_flags) {
+                            $this->web_queue->setQueueFlag($url, 
+                                WebQueueBundle::SCHEDULABLE);
+                        }
                     }
                 } //if delay else
             } // if containsGotRobotTxt
@@ -1706,9 +1733,16 @@ class QueueServer implements CrawlConstants, Join
         } //end while
         $this->web_queue->closeUrlArchive($fh);
 
+        $new_time = microtime();
+        crawlLog("...Done selecting URLS time so far:".
+            (changeInMicrotime($start_time)));
+
         foreach($delete_urls as $delete_url) {
             $this->web_queue->removeQueue($delete_url);
         }
+        crawlLog("...Removing selected URLS from queue time: ".
+            (changeInMicrotime($new_time)));
+        $new_time = microtime();
 
         if(isset($sites) && count($sites) > 0 ) {
             $dummy_slot = array(self::DUMMY, 0.0, 0);
@@ -1740,11 +1774,13 @@ class QueueServer implements CrawlConstants, Join
                 fwrite($fh, $out_string);
             }
             fclose($fh);
+            crawlLog("...Sort URLS and write schedule time: ".
+                (changeInMicrotime($new_time)));
 
             crawlLog("End Produce Fetch Memory usage".memory_get_usage() );
             crawlLog("Created fetch batch... Queue size is now ".
                 $this->web_queue->to_crawl_queue->count.
-                "...Time to create batch: ".
+                "...Total Time to create batch: ".
                 (changeInMicrotime($start_time)));
         } else {
             crawlLog("No fetch batch created!! " .

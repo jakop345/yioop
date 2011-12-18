@@ -447,8 +447,12 @@ class Fetcher implements CrawlConstants
 
             $this->updateFoundSites($summarized_site_pages);
 
-            sleep(max(0, ceil(
-                MINIMUM_FETCH_LOOP_TIME - changeInMicrotime($start_time))));
+            $sleep_time = max(0, ceil(
+                MINIMUM_FETCH_LOOP_TIME - changeInMicrotime($start_time)));
+            if($sleep_time > 0) {
+                crawlLog("Ensure minimum loop time by sleeping...".$sleep_time);
+                sleep($sleep_time);
+            }
         } //end while
 
         crawlLog("Fetcher shutting down!!");
@@ -834,42 +838,32 @@ class Fetcher implements CrawlConstants
         }
 
         $i = 0;
-        while ($i < $num_items) {
-            if(!isset($site_pair)) {
-                $site_pair = each($crawl_source);
-                $old_pair['key'] = $site_pair['key'] - 1;
+        $site_pair = each($crawl_source);
 
-            } else {
-                $old_pair =  $site_pair;
-                $site_pair = each($crawl_source);
-            }
+        while ($site_pair !== false && $i < $num_items) {
 
-            if($old_pair['key'] + 1 == $site_pair['key']) {
-                $delete_indices[] = $site_pair['key'];
-
-                if($site_pair['value'][0] != self::DUMMY) {
-                    $seeds[$i][self::URL] = $site_pair['value'][0];
-                    $seeds[$i][self::WEIGHT] = $site_pair['value'][1];
-                    $seeds[$i][self::CRAWL_DELAY] = $site_pair['value'][2];
-                    /*
-                      Crawl delay is only used in scheduling on the queue_server
-                      on the fetcher, we only use crawl-delay to determine
-                      if we will give a page a second try if it doesn't
-                      download the first time
-                    */
-                    
-                    if(UrlParser::getDocumentFilename($seeds[$i][self::URL]).
-                        ".".UrlParser::getDocumentType($seeds[$i][self::URL]) 
-                        == "robots.txt") {
-                        $seeds[$i][self::ROBOT_PATHS] = array();
-                    }
-                } else {
-                    $num_items--;
+            $delete_indices[] = $site_pair['key'];
+            if($site_pair['value'][0] != self::DUMMY) {
+                $seeds[$i][self::URL] = $site_pair['value'][0];
+                $seeds[$i][self::WEIGHT] = $site_pair['value'][1];
+                $seeds[$i][self::CRAWL_DELAY] = $site_pair['value'][2];
+                /*
+                  Crawl delay is only used in scheduling on the queue_server
+                  on the fetcher, we only use crawl-delay to determine
+                  if we will give a page a second try if it doesn't
+                  download the first time
+                */
+                
+                if(UrlParser::getDocumentFilename($seeds[$i][self::URL]).
+                    ".".UrlParser::getDocumentType($seeds[$i][self::URL]) 
+                    == "robots.txt") {
+                    $seeds[$i][self::ROBOT_PATHS] = array();
                 }
                 $i++;
             } else {
-             $i = $num_items;
+                break;
             }
+            $site_pair = each($crawl_source);
         } //end while
 
         foreach($delete_indices as $delete_index) {
@@ -949,12 +943,12 @@ class Fetcher implements CrawlConstants
                 count($site[self::LOCATION]) > 0) {
                 array_unshift($site[self::LOCATION], $site[self::URL]);
                 $tmp_loc = array_pop($site[self::LOCATION]);
-				$tmp_loc = UrlParser::canonicalLink(
-					$tmp_loc, $site[self::URL]);
-				$tmp_host = UrlParser::getHost($tmp_loc)."/";
-				if($tmp_host != $site[self::URL]) {
-					$site[self::URL] = $tmp_loc;
-				}
+                $tmp_loc = UrlParser::canonicalLink(
+                    $tmp_loc, $site[self::URL]);
+                $tmp_host = UrlParser::getHost($tmp_loc)."/";
+                if($tmp_host != $site[self::URL]) {
+                    $site[self::URL] = $tmp_loc;
+                }
             }
 
             //process robot.txt files separately

@@ -165,7 +165,32 @@ class WebQueueBundle implements Notifier
      * make a new WebArchive containing only those urls which are still in
      * the queue.
      */
-    const max_url_archive_offset = 1000000000;
+    const max_url_archive_offset = 200000000;
+
+    /**
+     * Number of bytes in for hash table key
+     */
+    const HASH_KEY_SIZE = 8;
+
+    /**
+     * 4 bytes offset,  4 bytes index, 4 bytes flags
+     */
+    const HASH_VALUE_SIZE = 12;
+
+    /**
+     * Url type flag
+     */
+     const NO_FLAGS = 0;
+
+    /**
+     * Url type flag
+     */
+     const ROBOT = 1;
+
+    /**
+     * Url type flag
+     */
+     const SCHEDULABLE = 2;
 
     /**
      * Makes a WebQueueBundle with the provided parameters
@@ -196,7 +221,7 @@ class WebQueueBundle implements Notifier
         */
         // set up the priority queue... stores (hash(url), weight) pairs.
         $this->to_crawl_queue = new PriorityQueue($dir_name."/queue.dat", 
-            $num_urls_ram, 8, $min_or_max, $this, 0);
+            $num_urls_ram, self::HASH_KEY_SIZE, $min_or_max, $this, 0);
 
         /* set up the hash table... stores (hash(url), offset into url archive, 
           index in priority queue) triples.
@@ -219,7 +244,7 @@ class WebQueueBundle implements Notifier
             unlink($url_archive_name);
         }
         $this->to_crawl_archive = new WebArchive(
-            $url_archive_name, new NonCompressor());
+            $url_archive_name, new NonCompressor(), false, true);
 
         //timestamp for robot filters (so can delete if get too old)
         if(!file_exists($dir_name."/url_timestamp.txt")) {
@@ -289,7 +314,7 @@ class WebQueueBundle implements Notifier
             if(isset($objects[$i]['offset'])) {
                 $offset = $objects[$i]['offset'];
 
-                $data = packInt($offset).packInt(0);
+                $data = packInt($offset).packInt(0).packInt(self::NO_FLAGS);
 
                 if($this->insertHashTable(crawlHash($url, true), $data)) {
                     /* 
@@ -350,6 +375,33 @@ class WebQueueBundle implements Notifier
     }
 
     /**
+     * Sets the flag which provides additional information about the
+     * kind of url, for a url already stored in the queue. For instance,
+     * might say if it is a robots.txt url, or if the url has already 
+     * passed the robots.txt test, or if it has a crawl-delay
+     *
+     * @param string $url url whose weight in queue we want to adjust
+     * @param int $flag should be one of self::ROBOT, self::NO_FLAGS, 
+     *      self::SCHEDULABLE or self::SCHEDULABLE + crawl_delay
+     */
+    function setQueueFlag(&$url, $flag)
+    {
+        $hash_url = crawlHash($url, true);
+        $both = 
+            $this->lookupHashTable($hash_url, HashTable::RETURN_BOTH);
+        if($both !== false)
+        {
+            list($probe, $data) = $both;
+            $non_flag = substr($data, 0 , 8);
+            $new_data = $non_flag . packInt($flag);
+
+            $this->insertHashTable($hash_url, $new_data, $probe);
+        } else {
+          crawlLog("Can't set flag. Not in queue $url");
+        }
+    }
+
+    /**
      * Removes a url from the priority queue.
      *
      * This method would typical be called during a crawl after the given
@@ -366,18 +418,20 @@ class WebQueueBundle implements Notifier
         } else {
             $hash_url = crawlHash($url, true);
         }
-        $data = $this->lookupHashTable($hash_url);
+        $both = 
+            $this->lookupHashTable($hash_url, HashTable::RETURN_BOTH);
 
-        if(!$data) {
+        if(!$both) {
             crawlLog("Not in queue $url");
             return;
         }
+        list($probe, $data) = $both;
 
         $queue_index = unpackInt(substr($data, 4 , 4));
 
         $this->to_crawl_queue->poll($queue_index);
 
-        $this->deleteHashTable($hash_url);
+        $this->deleteHashTable($hash_url, $probe);
 
     }
 
@@ -385,7 +439,7 @@ class WebQueueBundle implements Notifier
      * Gets the url and weight of the ith entry in the priority queue
      * @param int $i entry to look up
      * @param resource $fh a file handle to the WebArchive for urls
-     * @return mixed false on error, otherwise the ordered pair in an array
+     * @return mixed false on error, otherwise the ordered 4-tuple in an array
      */
     function peekQueue($i = 1, $fh = NULL)
     {
@@ -397,13 +451,15 @@ class WebQueueBundle implements Notifier
 
         list($hash_url, $weight) = $tmp;
 
-        $data = $this->lookupHashTable($hash_url);
-        if($data === false ) {
+        $both = $this->lookupHashTable($hash_url, HashTable::RETURN_BOTH);
+        if($both === false ) {
             crawlLog("web queue hash lookup error $hash_url");
             return false;
         }
+        list($probe, $data) =  $both;
 
         $offset = unpackInt(substr($data, 0 , 4));
+        $flag = unpackInt(substr($data, 8 , 4));
 
         $url_obj = $this->to_crawl_archive->getObjects($offset, 1, true, $fh);
 
@@ -413,7 +469,7 @@ class WebQueueBundle implements Notifier
         } else {
             $url = "LOOKUP ERROR";
         }
-        return array($url, $weight);
+        return array($url, $weight, $flag, $probe);
     }
 
     /**
@@ -424,15 +480,15 @@ class WebQueueBundle implements Notifier
         $count = $this->to_crawl_queue->count;
 
         for($i = 1; $i <= $count; $i++) {
-            list($url, $weight) = $this->peekQueue($i);
-            print "$i URL: $url WEIGHT:$weight\n";
+            list($url, $weight, $flag, $probe) = $this->peekQueue($i);
+            print "$i URL: $url WEIGHT:$weight FLAG: $flag PROBE: $probe\n";
         }
     }
 
     /**
-     * Gets the contents of the queue bundle as an array of ordered url,weight
-     * pairs
-     * @return array a list of ordered url, weight pairs
+     * Gets the contents of the queue bundle as an array of ordered 
+     * url,weight, flag triples
+     * @return array a list of ordered url, weight, falg triples
      */
     function getContents()
     {
@@ -600,7 +656,7 @@ class WebQueueBundle implements Notifier
         $value = 0;
         for($i = 0; $i < 8; $i++) {
             if($this->crawl_delay_filter->contains("$i".$host)) {
-                $value += (2 << $i);
+                $value += (1 << $i);
             }
         }
 
@@ -622,28 +678,38 @@ class WebQueueBundle implements Notifier
     {
         $this->hash_rebuild_count = 0;
         $this->max_hash_ops_before_rebuild = floor($num_values/4);
-        return new HashTable($name, $num_values, 8, 8);
+        return new HashTable($name, $num_values, 
+            self::HASH_KEY_SIZE, self::HASH_VALUE_SIZE);
     }
 
     /**
      * Looks up $key in the to-crawl hash table
      *
      * @param string $key the things to look up
+     * @param int $return_probe_value one of self::ALWAYS_RETURN_PROBE, 
+     *      self::RETURN_PROBE_ON_KEY_FOUND, self::RETURN_VALUE, or self::BOTH. 
+     *      Here value means the value associated with the key and probe is
+     *      either the location in the array where the key was found or
+     *      the first location in the array where it was determined the
+     *      key could not be found.
      * @return mixed would be string if the value is being returned, 
      *      otherwise, false if the key is not found 
      */
-    function lookupHashTable($key)
+    function lookupHashTable($key, $return_probe_value = 
+        HashTable::RETURN_VALUE)
     {
-        return $this->to_crawl_table->lookup($key);
+        return $this->to_crawl_table->lookup($key, $return_probe_value);
     }
 
     /**
      * Removes an entries from the to crawl hash table
+     * @param int $probe if the location in the hash table is already known
+     *      to be $probe then this variable can be used to save a lookup
      * @param string $key usually a hash of a url
      */
-    function deleteHashTable($key)
+    function deleteHashTable($key, $probe = false)
     {
-        $this->to_crawl_table->delete($key);
+        $this->to_crawl_table->delete($key, $probe);
         $this->hash_rebuild_count++;
         if($this->hash_rebuild_count > $this->max_hash_ops_before_rebuild) {
             $this->rebuildHashTable();
@@ -656,15 +722,17 @@ class WebQueueBundle implements Notifier
      * @param string $key intended to be a hash of a url
      * @param string $value intended to be offset into a webarchive for urls
      *      together with an index into the priority queue
+     * @param int $probe if the location in the hash table is already known
+     *      to be $probe then this variable can be used to save a lookup
      * @return bool whether the insert was a success or not
      */
-    function insertHashTable($key, $value)
+    function insertHashTable($key, $value, $probe = false)
     {
         $this->hash_rebuild_count++;
         if($this->hash_rebuild_count > $this->max_hash_ops_before_rebuild) {
             $this->rebuildHashTable();
         }
-        return $this->to_crawl_table->insert($key, $value);
+        return $this->to_crawl_table->insert($key, $value, $probe);
     }
 
     /**
@@ -729,11 +797,11 @@ class WebQueueBundle implements Notifier
         $url_archive_name = $dir_name."/url_archive" .
             NonCompressor::fileExtension();
         $tmp_archive = 
-            new WebArchive($tmp_archive_name, new NonCompressor());
+            new WebArchive($tmp_archive_name, new NonCompressor(), false, true);
         
         for($i = 1; $i <= $count; $i++) {
 
-            list($url, $weight) = $this->peekQueue($i);
+            list($url, $weight, $flag, $probe) = $this->peekQueue($i);
             $url_container = array(array($url));
             $objects = $tmp_archive->addObjects("offset", $url_container);
             if(isset($objects[0]['offset'])) {
@@ -744,11 +812,9 @@ class WebQueueBundle implements Notifier
             }
             
             $hash_url = crawlHash($url, true);
-            $data = $this->lookupHashTable($hash_url);
-            $queue_index = unpackInt(substr($data, 4 , 4));
-            $data = packInt($offset).packInt($queue_index);
+            $data = packInt($offset).packInt($i).packInt($flag);
 
-            $this->insertHashTable(crawlHash($url, true), $data);
+            $this->insertHashTable($hash_url, $data, $probe);
         }
         
         $this->to_crawl_archive = NULL;
@@ -813,12 +879,14 @@ class WebQueueBundle implements Notifier
     function notify($index, $data)
     {
         $hash_url = $data[0];
-        $value = $this->lookupHashTable($hash_url);
-        if($value !== false) {
+        $both = $this->lookupHashTable($hash_url, HashTable::RETURN_BOTH);
+        if($both !== false) {
+            list($probe, $value) = $both;
             $packed_offset = substr($value, 0 , 4);
-            $data = $packed_offset.packInt($index);
+            $packed_flag = substr($value, 8 , 4);
+            $new_data = $packed_offset.packInt($index).$packed_flag;
 
-            $this->insertHashTable($hash_url, $data);
+            $this->insertHashTable($hash_url, $new_data, $probe);
         } else {
             crawlLog("NOTIFY LOOKUP FAILED. INDEX WAS $index. DATA WAS ".
                 bin2hex($data[0]));

@@ -80,6 +80,19 @@ class WebArchive
     var $version;
 
     /**
+     * Says whether the archive is a string archive
+     * @var bool
+     */
+    var $is_string;
+
+    /**
+     * If archive is stored as a string rather than persistently to disk
+     * then $storage is used to hold the string
+     * @var string
+     */
+    var $storage;
+
+    /**
      * Version number to use in the WebArchive header if constructing a new
      * archive
      */
@@ -93,11 +106,21 @@ class WebArchive
      *      used to read and write objects in the archive
      * @param bool $fast_construct do we read the info block of the web
      *      archive as part of the constructing process
+     * @param bool $is_string says whether the archive stores to string
+     *      rather than a file
      */
-    function __construct($fname, $compressor, $fast_construct = false) 
+    function __construct($fname, $compressor, $fast_construct = false, 
+        $is_string = false) 
     {
         $this->filename = $fname;
         $this->compressor = $compressor;
+        $this->is_string = $is_string;
+        if($this->is_string) {
+            $this->storage = "";
+            $this->iterator_pos = 0;
+            $this->count = 0;
+            return;
+        }
         if(file_exists($fname)) {
             if(!$fast_construct) {
                 $this->readInfoBlock();
@@ -121,6 +144,7 @@ class WebArchive
      */
     function readInfoBlock()
     {
+        if($this->is_string) return NULL;
         $fh =  fopen($this->filename, "r");
         $len = $this->seekEndObjects($fh);
         $info_string = fread($fh, $len);
@@ -148,6 +172,7 @@ class WebArchive
      */
     function writeInfoBlock($fh = NULL, &$data = NULL)
     {
+        if($this->is_string) return;
         $compressed_int_len = $this->compressor->compressedIntLen();
         $open_flag = false;
         if($fh == NULL) {
@@ -187,6 +212,9 @@ class WebArchive
      */
     function seekEndObjects($fh)
     {
+        if($this->is_string) {
+            return strlen($this->storage);
+        }
         $compressed_int_len = $this->compressor->compressedIntLen();
         fseek($fh, - $compressed_int_len, SEEK_END);
         $len_block = $this->compressor->uncompressInt(
@@ -216,12 +244,17 @@ class WebArchive
         $data = NULL, $callback = NULL, $return_flag = true)
     {
 
-        $fh =  fopen($this->filename, "r+");
+        $is_string = $this->is_string;
+        if(!$is_string) {
+            $fh =  fopen($this->filename, "r+");
 
-        $this->seekEndObjects($fh);
+            $this->seekEndObjects($fh);
 
-        $offset = ftell($fh);
-        ftruncate($fh, $offset);
+            $offset = ftell($fh);
+            ftruncate($fh, $offset);
+        } else {
+            $offset = strlen($this->storage);
+        }
 
         $out = "";
 
@@ -243,15 +276,21 @@ class WebArchive
         }
         
         $this->count += $num_objects;
-        
-        fwrite($fh, $out, strlen($out));
-        
+
+        if($is_string) {
+            $this->storage .= $out;
+        } else {
+            fwrite($fh, $out, strlen($out));
+        }
+
         if($data != NULL && $callback != NULL) {
             $data = $callback($data, $new_objects, $offset_field);
         }
-        $this->writeInfoBlock($fh, $data);
 
-        fclose($fh);
+        if(!$is_string) {
+            $this->writeInfoBlock($fh, $data);
+            fclose($fh);
+        }
 
         if($return_flag) {
             return $new_objects;
@@ -269,6 +308,9 @@ class WebArchive
      */
     function open($mode = "r")
     {
+        if($this->is_string) {
+            return "is_string";
+        }
         $fh = fopen($this->filename, $mode);
         return $fh;
     }
@@ -278,6 +320,7 @@ class WebArchive
      */
     function close($fh)
     {
+        if($this->is_string) return;
         fclose($fh);
     }
 
@@ -302,22 +345,32 @@ class WebArchive
             $fh =  $this->open();
             $open_flag = true;
         }
+        $is_string = $this->is_string;
 
         $objects = array();
         $compressed_int_len = $this->compressor->compressedIntLen();
-        if(fseek($fh, $offset) == 0) {
+        if($is_string) {
+            $storage_len = strlen($this->storage);
+        }
+        if((!$is_string &&fseek($fh, $offset) == 0 ) || ($is_string
+            && $offset < $storage_len)) {
 
             for($i = 0; $i < $num; $i++) {
-                if(feof($fh)) {break; }
+                if(!$is_string && feof($fh)) {break; }
+                if($is_string && $offset >= $storage_len) {break; }
 
                 $object = NULL;
-                $compressed_len = 
-                    fread($fh, $compressed_int_len);
+                $compressed_len = ($is_string) 
+                    ? substr($this->storage, $offset, $compressed_int_len)
+                    : fread($fh, $compressed_int_len);
 
                 $len = $this->compressor->uncompressInt($compressed_len);
 
                 if($len > 0 && $len < MAX_ARCHIVE_OBJECT_SIZE) {
-                    $compressed_file = fread($fh, $len);
+                    $compressed_file = ($is_string) 
+                        ? substr($this->storage, $offset + $compressed_int_len,
+                            $len)
+                        : fread($fh, $len);
                     $file = $this->compressor->uncompress($compressed_file);
                     $object = @unserialize($file);
 
