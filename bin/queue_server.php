@@ -251,6 +251,13 @@ class QueueServer implements CrawlConstants, Join
     var $hourly_crawl_data;
 
     /**
+     *  Used to say what kind of queue_server this is (one of BOTH, INDEXERm
+     *  SCHEDULER)
+     *  @var int
+     */
+     var $servertype;
+
+    /**
      * holds the post processors selected in the crawl options page
      */
 
@@ -274,6 +281,7 @@ class QueueServer implements CrawlConstants, Join
         $this->crawl_time = 0;
         $this->page_recrawl_frequency = PAGE_RECRAWL_FREQUENCY;
         $this->page_range_request = PAGE_RANGE_REQUEST;
+        $this->server_type = self::BOTH;
     }
 
     /**
@@ -286,17 +294,33 @@ class QueueServer implements CrawlConstants, Join
         global $argv;
 
         declare(ticks=200);
-        CrawlDaemon::init($argv, "queue_server");
+        if(isset($argv[1]) && $argv[1] == "start") {
+            $argv[2] = "none";
+            $argv[3] = self::INDEXER;
+            CrawlDaemon::init($argv, "queue_server", false);
+            $argv[2] = "none";
+            $argv[3] = self::SCHEDULER;
+            CrawlDaemon::init($argv, "queue_server");
+        } else {
+            CrawlDaemon::init($argv, "queue_server");
+        }
+
         crawlLog("\n\nInitialize logger..", "queue_server");
+        if(isset($argv[3]) && $argv[1] == "child" && 
+            in_array($argv[3], array(self::INDEXER, self::SCHEDULER))) {
+            $this->server_type = $argv[3];
+            crawlLog($argv[3]." logging started.");
+        } 
         $remove = false;
-        if(file_exists(CRAWL_DIR."/schedules/queue_server_messages.txt")) {
-            @unlink(CRAWL_DIR."/schedules/queue_server_messages.txt");
-            $remove = true;
+        $old_message_names = array("queue_server_messages.txt",
+            "scheduler_messages.txt", "crawl_status.txt");
+        foreach($old_message_names as $name) {
+            if(file_exists(CRAWL_DIR."/schedules/$name")) {
+                @unlink(CRAWL_DIR."/schedules/$name");
+                $remove = true;
+            }
         }
-        if(file_exists(CRAWL_DIR."/schedules/crawl_status.txt")) {
-            @unlink(CRAWL_DIR."/schedules/crawl_status.txt");
-            $remove = true;
-        }
+
         if($remove == true) {
             crawlLog("Remove old messages..", "queue_server");
         }
@@ -314,11 +338,18 @@ class QueueServer implements CrawlConstants, Join
     function loop()
     {
         $info[self::STATUS] = self::WAITING_START_MESSAGE_STATE;
-        crawlLog("In queue loop!!", "queue_server");
+        $server_name = ($this->server_type != self::BOTH) ? 
+            $this->server_type : "";
+        crawlLog("In queue loop!! $server_name", "queue_server");
 
-        $this->deleteOrphanedBundles();
+        if($this->server_type != self::SCHEDULER) {
+            $this->deleteOrphanedBundles();
+        }
         while ($info[self::STATUS] != self::STOP_STATE) {
-            crawlLog("Peak memory usage so far".memory_get_peak_usage()."!!");
+            $server_name = ($this->server_type != self::BOTH) ? 
+                $this->server_type : "";
+            crawlLog("$this->server_type Peak memory usage so far".
+                memory_get_peak_usage()."!!");
 
             $info = $this->handleAdminMessages($info);
 
@@ -356,21 +387,32 @@ class QueueServer implements CrawlConstants, Join
     }
 
     /**
+     * Main body of queue_server loop where indexing, scheduling,
+     * robot file processing is done.
      *
+     * @param bool $blocking this method might be called by the indexer
+     *      subcomponent when a merge tier phase is ongoing to allow for
+     *      other processing to occur. If so, we don't want a regress
+     *      where the indexer calls this code calls the indexer etc. If
+     *      the blocking flag is set then the indexer subcomponent won't
+     *      be called
      */
     function processCrawlData($blocking = false)
     {
-        $this->processIndexData($blocking);
-        if(time() - $this->last_index_save_time > FORCE_SAVE_TIME){
-            crawlLog("Periodic Index Save... \n");
-            $start_time = microtime();
-            $this->indexSave();
-            crawlLog("... Save time".(changeInMicrotime($start_time)));
+        if($this->server_type == self::INDEXER || 
+            $this->server_type == self::BOTH) {
+            $this->processIndexData($blocking);
+            if(time() - $this->last_index_save_time > FORCE_SAVE_TIME){
+                crawlLog("Periodic Index Save... \n");
+                $start_time = microtime();
+                $this->indexSave();
+                crawlLog("... Save time".(changeInMicrotime($start_time)));
+            }
         }
-
         switch($this->crawl_type)
         {
             case self::WEB_CRAWL:
+                if($this->server_type == self::INDEXER) return;
                 $this->processRobotUrls();
 
                 $count = $this->web_queue->to_crawl_queue->count;
@@ -402,10 +444,13 @@ class QueueServer implements CrawlConstants, Join
                 }
             break;
             case self::ARCHIVE_CRAWL:
-                $this->processRecrawlRobotUrls();
-                if(!file_exists(CRAWL_DIR."/schedules/".self::schedule_name.
-                        $this->crawl_time.".txt")) {
-                    $this->writeArchiveCrawlInfo();
+                if($this->server_type == self::INDEXER || 
+                    $this->server_type == self::BOTH) {
+                    $this->processRecrawlRobotUrls();
+                    if(!file_exists(CRAWL_DIR."/schedules/".self::schedule_name.
+                            $this->crawl_time.".txt")) {
+                        $this->writeArchiveCrawlInfo();
+                    }
                 }
             break;
         }
@@ -517,39 +562,67 @@ class QueueServer implements CrawlConstants, Join
     function handleAdminMessages($info) 
     {
         $old_info = $info;
-        if(file_exists(CRAWL_DIR."/schedules/queue_server_messages.txt")) {
+        $is_scheduler = ($this->server_type == self::SCHEDULER);
+        $message_file = "queue_server_messages.txt";
+        $scheduler_file = "scheduler_messages.txt";
+        if($is_scheduler) {
+            $message_file = $scheduler_file;
+        }
+        if(file_exists(CRAWL_DIR."/schedules/$message_file")) {
             $info = unserialize(file_get_contents(
-                CRAWL_DIR."/schedules/queue_server_messages.txt"));
-                unlink(CRAWL_DIR."/schedules/queue_server_messages.txt");
-                
+                CRAWL_DIR."/schedules/$message_file"));
+            if($this->server_type == self::INDEXER) {
+                rename(CRAWL_DIR."/schedules/$message_file", 
+                    CRAWL_DIR."/schedules/$scheduler_file");
+            } else {
+                unlink(CRAWL_DIR."/schedules/$message_file");
+            }
             switch($info[self::STATUS])
             {
                 case "NEW_CRAWL":
                    if($old_info[self::STATUS] == self::CONTINUE_STATE) {
+                        if(!$is_scheduler) {
                         crawlLog("Stopping previous crawl before start".
                             " new crawl!");
+                        } else {
+                        crawlLog("Scheduler stopping for previous crawl before".
+                            " new crawl!");
+                        }
                         $this->stopCrawl();
                     }
                     $this->startCrawl($info);
-                    crawlLog(
-                        "Starting new crawl. Timestamp:".$this->crawl_time);
-                    if($this->crawl_type == self::WEB_CRAWL) {
-                        crawlLog("Performing a web crawl!");
+                    if(!$is_scheduler) {
+                        crawlLog(
+                            "Starting new crawl. Timestamp:".$this->crawl_time);
+                        if($this->crawl_type == self::WEB_CRAWL) {
+                            crawlLog("Performing a web crawl!");
+                        } else {
+                            crawlLog("Performing an archive crawl of ".
+                                "archive with timestamp ".$this->crawl_index);
+                        }
+                        $this->writeAdminMessage("BEGIN_CRAWL");
                     } else {
-                        crawlLog("Performing an archive crawl of ".
-                            "archive with timestamp ".$this->crawl_index);
+                        crawlLog("Scheduler started for new crawl");
                     }
-                    $this->writeAdminMessage("BEGIN_CRAWL");
                 break;
 
                 case "STOP_CRAWL":
-                    crawlLog("Stopping crawl !! This involves multiple steps!");
+                    if(!$is_scheduler) {
+                        crawlLog(
+                            "Stopping crawl !! This involves multiple steps!");
+                    } else {
+                        crawlLog("Scheduler received stop message!");
+                    }
                     $this->stopCrawl();
                     if(file_exists(CRAWL_DIR."/schedules/crawl_status.txt")) {
                         unlink(CRAWL_DIR."/schedules/crawl_status.txt");
                     }
                     $info[self::STATUS] = self::WAITING_START_MESSAGE_STATE;
-                    crawlLog("Crawl has been successfully stopped!!");
+                    if(!$is_scheduler) {
+                        crawlLog("Crawl has been successfully stopped!!");
+                    } else {
+                        crawlLog("Scheduler has been successfully stopped!!");
+                    }
                 break;
 
                 case "RESUME_CRAWL":
@@ -557,14 +630,23 @@ class QueueServer implements CrawlConstants, Join
                         file_exists(CRAWL_DIR.'/cache/'.
                             self::queue_base_name.$info[self::CRAWL_TIME])) {
                         if($old_info[self::STATUS] == self::CONTINUE_STATE) {
-                            crawlLog("Resuming old crawl... Stopping current ".
-                                "crawl first!");
+                            if(!$is_scheduler) {
+                                crawlLog("Resuming old crawl...".
+                                    " Stopping current crawl first!");
+                            } else {
+                                crawlLog("Sheduler resuming old crawl...".
+                                    " Stopping scheduling current first!");
+                            }
                             $this->stopCrawl();
                         }
                         $this->startCrawl($info);
-                        $this->writeAdminMessage("RESUME_CRAWL");
-                        crawlLog("Resuming crawl");
-                    } else {
+                        if(!$is_scheduler) {
+                            crawlLog("Resuming crawl");
+                            $this->writeAdminMessage("RESUME_CRAWL");
+                        } else {
+                            crawlLog("Scheduler Resuming crawl");
+                        }
+                    } else if(!$is_scheduler) {
                         $msg = "Restart failed!!!  ";
                         if(!isset($info[self::CRAWL_TIME])) {
                             $msg .="crawl time of crawl to restart not given\n";
@@ -594,14 +676,26 @@ class QueueServer implements CrawlConstants, Join
      */
     function stopCrawl()
     {
-        $this->dumpQueueToSchedules();
-        $this->shutdownDictionary();
-        //Calling post processing function if the processor is 
-        //selected in the crawl options page.
-        $this->runPostProcessingPlugins();
-        file_put_contents(CRAWL_DIR.'/schedules/'.self::index_closed_name.
-            $this->crawl_time.".txt", "1");
-
+        if($this->server_type != self::INDEXER) {
+            $this->dumpQueueToSchedules();
+        }
+        if($this->server_type != self::SCHEDULER) {
+            $this->shutdownDictionary();
+            //Calling post processing function if the processor is 
+            //selected in the crawl options page.
+            $this->runPostProcessingPlugins();
+        }
+        $close_file = CRAWL_DIR.'/schedules/'.self::index_closed_name.
+            $this->crawl_time.".txt";
+        if(!file_exists($close_file) && $this->server_type != self::BOTH) {
+            file_put_contents($close_file, "2");
+            do {
+                sleep(5);
+                $contents = file_get_contents($close_file);
+            } while(file_exists($close_file) && $contents == "2");
+        } else {
+            file_put_contents($close_file, "1");
+        }
     }
 
     /**
@@ -803,19 +897,28 @@ class QueueServer implements CrawlConstants, Join
 
         gc_collect_cycles(); // garbage collect old crawls
 
-        if($this->crawl_type == self::WEB_CRAWL || 
-            !isset($this->crawl_type)) {
-            $this->web_queue = new WebQueueBundle(
-                CRAWL_DIR.'/cache/'.self::queue_base_name.
-                $this->crawl_time, URL_FILTER_SIZE, 
-                    NUM_URLS_QUEUE_RAM, $min_or_max);
+        if($this->server_type != self::INDEXER) {
+            if($this->crawl_type == self::WEB_CRAWL || 
+                !isset($this->crawl_type)) {
+                $this->web_queue = new WebQueueBundle(
+                    CRAWL_DIR.'/cache/'.self::queue_base_name.
+                    $this->crawl_time, URL_FILTER_SIZE, 
+                        NUM_URLS_QUEUE_RAM, $min_or_max);
+            }
+            // chmod so web server can also write to these directories
+            if($this->crawl_type == self::WEB_CRAWL) {
+                $this->db->setWorldPermissionsRecursive(
+                   CRAWL_DIR.'/cache/'.self::queue_base_name.$this->crawl_time);
+            }
         }
 
         $dir = CRAWL_DIR.'/cache/'.self::index_data_base_name.$this->crawl_time;
 
         if(!file_exists($dir)) {
-            $this->index_archive = new IndexArchiveBundle($dir, false,
-                serialize($info));
+            if($this->server_type != self::SCHEDULER) {
+                $this->index_archive = new IndexArchiveBundle($dir, false,
+                    serialize($info));
+            }
         } else {
             $this->index_archive = new IndexArchiveBundle($dir,
                 false);
@@ -829,21 +932,18 @@ class QueueServer implements CrawlConstants, Join
                 }
             }
         }
-        if(file_exists(CRAWL_DIR.'/schedules/'. self::index_closed_name.
-            $this->crawl_time.".txt")) {
-            unlink(CRAWL_DIR.'/schedules/'. self::index_closed_name.
-                $this->crawl_time.".txt");
+        if($this->server_type != self::SCHEDULER) {
+            if(file_exists(CRAWL_DIR.'/schedules/'. self::index_closed_name.
+                $this->crawl_time.".txt")) {
+                unlink(CRAWL_DIR.'/schedules/'. self::index_closed_name.
+                    $this->crawl_time.".txt");
+            }
+            $this->db->setWorldPermissionsRecursive($dir);
         }
-        // chmod so web server can also write to these directories
-        if($this->crawl_type == self::WEB_CRAWL) {
-            $this->db->setWorldPermissionsRecursive(
-                CRAWL_DIR.'/cache/'.self::queue_base_name.$this->crawl_time);
-        }
-        $this->db->setWorldPermissionsRecursive($dir);
-
         //Get modified time of initial setting of crawl params
         $this->archive_modified_time = 
             IndexArchiveBundle::getParamModifiedTime($dir);
+
         $info[self::STATUS] = self::CONTINUE_STATE;
         return $info;
     }
@@ -879,7 +979,11 @@ class QueueServer implements CrawlConstants, Join
             if(isset($index_info[$updatable_info[$index_field]]) ) {
                 $this->$index_field = 
                     $index_info[$updatable_info[$index_field]];
-                crawlLog("Updating ...$index_field.");
+                if($this->server_type == self::SCHEDULER) {
+                    crawlLog("Scheduler Updating ...$index_field.");
+                } else {
+                    crawlLog("Updating ...$index_field.");
+                }
             }
         }
         $this->archive_modified_time = $modified_time;
@@ -891,6 +995,7 @@ class QueueServer implements CrawlConstants, Join
      */
     function deleteOrphanedBundles()
     {
+        if($this->server_type == self::SCHEDULER) return;
         $dirs = glob(CRAWL_DIR.'/cache/*', GLOB_ONLYDIR);
         $living_stamps = array();
         foreach($dirs as $dir) {

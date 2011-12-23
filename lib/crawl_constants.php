@@ -44,6 +44,19 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  
 interface CrawlConstants
 {
+    /**
+     *  Used to say what kind of queue_server this is
+     */
+    const BOTH = 0;
+    /**
+     *  Used to say what kind of queue_server this is
+     */
+    const INDEXER = "Indexer";
+    /**
+     *  Used to say what kind of queue_server this is
+     */
+    const SCHEDULER = "Scheduler";
+
     const queue_base_name = "QueueBundle";
     const archive_base_name = "Archive";
     const schedule_data_base_name = "ScheduleData";

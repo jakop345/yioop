@@ -169,8 +169,9 @@ class HashTableTest extends UnitTest
     {
         $this->test_objects['FILE2']->insert(crawlHash("hi7",true), "7");
         $index = 
-            $this->test_objects['FILE2']->lookup(crawlHash("hi7",true),true);
-        
+            $this->test_objects['FILE2']->lookup(crawlHash("hi7",true),
+            HashTable::ALWAYS_RETURN_PROBE);
+
         $this->test_objects['FILE2']->insert(crawlHash("hi7",true), "z");
         $this->assertTrue(
             $this->test_objects['FILE2']->lookup(
@@ -178,7 +179,8 @@ class HashTableTest extends UnitTest
                 "z", "Reinsert Item hi7 overwrites old value");
 
         $index2 = 
-            $this->test_objects['FILE2']->lookup(crawlHash("hi7",true),true);
+            $this->test_objects['FILE2']->lookup(crawlHash("hi7",true),
+                HashTable::ALWAYS_RETURN_PROBE);
         $this->assertEqual(
             $index, $index2, "Index of reinserted should not change");
 
@@ -187,23 +189,24 @@ class HashTableTest extends UnitTest
             "Item hi4 which collides with hi7 insert okay");
         $this->assertTrue(
             $this->test_objects['FILE2']->lookup(
-                crawlHash("hi4",true), true), $index2 + 1, 
-            "Item hi4 located one after hi7");
-        $this->test_objects['FILE2']->delete(crawlHash("hi7",true), true);
+                crawlHash("hi4",true), HashTable::ALWAYS_RETURN_PROBE), 
+                $index2 + 1, "Item hi4 located one after hi7");
+        $this->test_objects['FILE2']->delete(crawlHash("hi7",true));
         $this->assertTrue(
             $this->test_objects['FILE2']->lookup(
                 crawlHash("hi4",true), true), $index2 + 1, 
             "Item hi4 looked up succeed after hi7 deleted");
-        $this->test_objects['FILE2']->delete(crawlHash("hi4",true), true);
+        $this->test_objects['FILE2']->delete(crawlHash("hi4",true));
         $this->test_objects['FILE2']->insert(crawlHash("hi7",true), "7");
         $this->assertEqual(
             $this->test_objects['FILE2']->lookup(
-                crawlHash("hi7",true)), "7", 
+            crawlHash("hi7",true)), "7", 
             "Reinserted Item hi7 lookup succeeds");
         $this->assertEqual(
             $this->test_objects['FILE2']->lookup(
-                crawlHash("hi7",true),true), $index2 + 2, 
-            "New Item hi7 location does not overwrite deleted itemss");
+                crawlHash("hi7",true), HashTable::ALWAYS_RETURN_PROBE), 
+                $index2 + 2,
+                "New Item hi7 location does not overwrite deleted items");
     }
 
 }

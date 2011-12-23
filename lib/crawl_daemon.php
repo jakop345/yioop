@@ -75,7 +75,7 @@ class CrawlDaemon implements CrawlConstants
      * @var static
      */
      static $subname;
-      
+
     /**
      * Used by processHandler to decide when to update the lock file
      * @var int
@@ -86,8 +86,6 @@ class CrawlDaemon implements CrawlConstants
     /**
      * Tick callback function used to update the timestamp in this processes
      * lock. If lock_file does not exist it stops the process
-     *
-     * @param int $signo signal sent to the daemon
      */
     static function processHandler()
     {
@@ -119,11 +117,11 @@ class CrawlDaemon implements CrawlConstants
      *      program won't be run as a daemon.
      * @param string $name the prefix to use for lock and message files
      */
-    static function init($argv, $name)
+    static function init($argv, $name, $exit = true)
     {
         self::$name = $name;
 
-        if(isset($argv[2])) {
+        if(isset($argv[2]) && $argv[2] != "none") {
             self::$subname = $argv[2];
         } else {
             self::$subname = "";
@@ -151,11 +149,13 @@ class CrawlDaemon implements CrawlConstants
             case "start":
                 $options = "";
                 for($i = 3; $i < count($argv); $i++) {
-                    $options .= " ". $argv[$i];
+                    $options .= " ".$argv[$i];
                 }
-                $name_string = CrawlDaemon::getNameString($name,self::$subname);
+                $subname = ($argv[2] == 'none') ? 'none' :self::$subname;
+                $name_prefix = (isset($argv[3])) ? $argv[3] : self::$subname;;
+                $name_string = CrawlDaemon::getNameString($name,$name_prefix);
                 echo "Starting $name_string...\n";
-                CrawlDaemon::start($name, self::$subname, $options);
+                CrawlDaemon::start($name, $subname, $options, $exit);
             break;
 
             case "stop":
@@ -197,9 +197,10 @@ class CrawlDaemon implements CrawlConstants
      *      than one copy of the daemon to be running at the same time
      * @param string $options a string of additional command line options
      */
-    static function start($name, $subname = "", $options = "")
+    static function start($name, $subname = "", $options = "", $exit = true)
     {
-        $lock_file = CrawlDaemon::getLockFileName($name, $subname);
+        $tmp_subname = ($subname == 'none') ? '' : $subname;
+        $lock_file = CrawlDaemon::getLockFileName($name, $tmp_subname);
 
         if(file_exists($lock_file)) {
             $time = intval(file_get_contents($lock_file));
@@ -217,13 +218,14 @@ class CrawlDaemon implements CrawlConstants
             $script = "echo \"php ".
                 BASE_DIR."/bin/$name.php child %s\" | at now ";
         }
-        $total_options = $subname." ".$options;
+        $total_options = "$subname $options";
         $at_job = sprintf($script, $total_options);
-
         exec($at_job);
 
-        file_put_contents($lock_file,  time());
-        exit();
+        if($exit) {
+            file_put_contents($lock_file,  time());
+            exit();
+        }
     }
 
     /**
