@@ -74,11 +74,11 @@ class AdminController extends Controller implements CrawlConstants
      */
     var $activities = array("signin", "manageAccount", "manageUsers",
         "manageRoles", "manageCrawls", "pageOptions", "searchFilters", 
-        "manageMachines", "manageLocales", "crawlStatus",
+        "manageMachines", "manageLocales", "crawlStatus", "mixCrawls",
         "machineStatus", "configure");
 
     /** Number of seconds of no fetcher contact before crawl is deemed dead*/
-    const CRAWL_TIME_OUT = 1200;
+    const CRAWL_TIME_OUT = 1800;
 
     /**
      * This is the main entry point for handling requests to administer the
@@ -261,10 +261,16 @@ class AdminController extends Controller implements CrawlConstants
 
         if(file_exists(CRAWL_DIR."/schedules/crawl_status.txt")) {
 
-            //assume if status not updated for 20min crawl not active
+            //assume if status not updated for self::CRAWL_TIME_OUT
+            // crawl not active (do check for both scheduler and indexer)
             if(filemtime(
                 CRAWL_DIR."/schedules/crawl_status.txt") + 
-                    self::CRAWL_TIME_OUT < time()) { 
+                    self::CRAWL_TIME_OUT < time() ) { 
+                $this->sendStopCrawlMessage();
+            }
+            if(filemtime(
+                CRAWL_DIR."/schedules/schedule_status.txt") + 
+                    self::CRAWL_TIME_OUT < time() ) { 
                 $this->sendStopCrawlMessage();
             }
 

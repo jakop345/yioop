@@ -313,7 +313,8 @@ class QueueServer implements CrawlConstants, Join
         } 
         $remove = false;
         $old_message_names = array("queue_server_messages.txt",
-            "scheduler_messages.txt", "crawl_status.txt");
+            "scheduler_messages.txt", "crawl_status.txt",
+            "schedule_status.txt");
         foreach($old_message_names as $name) {
             if(file_exists(CRAWL_DIR."/schedules/$name")) {
                 @unlink(CRAWL_DIR."/schedules/$name");
@@ -342,7 +343,7 @@ class QueueServer implements CrawlConstants, Join
             $this->server_type : "";
         crawlLog("In queue loop!! $server_name", "queue_server");
 
-        if($this->server_type != self::SCHEDULER) {
+        if($this->isAIndexer()) {
             $this->deleteOrphanedBundles();
         }
         while ($info[self::STATUS] != self::STOP_STATE) {
@@ -399,8 +400,8 @@ class QueueServer implements CrawlConstants, Join
      */
     function processCrawlData($blocking = false)
     {
-        if($this->server_type == self::INDEXER || 
-            $this->server_type == self::BOTH) {
+        crawlLog("Process Crawl Data Method ({$this->server_type})");
+        if($this->isAIndexer()) {
             $this->processIndexData($blocking);
             if(time() - $this->last_index_save_time > FORCE_SAVE_TIME){
                 crawlLog("Periodic Index Save... \n");
@@ -409,10 +410,14 @@ class QueueServer implements CrawlConstants, Join
                 crawlLog("... Save time".(changeInMicrotime($start_time)));
             }
         }
+        if($this->isAScheduler()) {
+            file_put_contents(CRAWL_DIR."/schedules/schedule_status.txt",
+                time());
+        }
         switch($this->crawl_type)
         {
             case self::WEB_CRAWL:
-                if($this->server_type == self::INDEXER) return;
+                if($this->isOnlyIndexer()) return;
                 $this->processRobotUrls();
 
                 $count = $this->web_queue->to_crawl_queue->count;
@@ -444,8 +449,7 @@ class QueueServer implements CrawlConstants, Join
                 }
             break;
             case self::ARCHIVE_CRAWL:
-                if($this->server_type == self::INDEXER || 
-                    $this->server_type == self::BOTH) {
+                if($this->isAIndexer()) {
                     $this->processRecrawlRobotUrls();
                     if(!file_exists(CRAWL_DIR."/schedules/".self::schedule_name.
                             $this->crawl_time.".txt")) {
@@ -454,6 +458,28 @@ class QueueServer implements CrawlConstants, Join
                 }
             break;
         }
+    }
+
+    function isAScheduler()
+    {
+        return strcmp($this->server_type, self::SCHEDULER) == 0 || 
+            strcmp($this->server_type, self::BOTH) == 0;
+    }
+
+    function isAIndexer()
+    {
+        return strcmp($this->server_type, self::INDEXER) == 0 || 
+            strcmp($this->server_type, self::BOTH) == 0;
+    }
+
+    function isOnlyIndexer()
+    {
+        return strcmp($this->server_type, self::INDEXER) == 0;
+    }
+
+    function isOnlyScheduler()
+    {
+        return strcmp($this->server_type, self::SCHEDULER) == 0;
     }
 
     /**
@@ -562,7 +588,7 @@ class QueueServer implements CrawlConstants, Join
     function handleAdminMessages($info) 
     {
         $old_info = $info;
-        $is_scheduler = ($this->server_type == self::SCHEDULER);
+        $is_scheduler = $this->isOnlyScheduler();
         $message_file = "queue_server_messages.txt";
         $scheduler_file = "scheduler_messages.txt";
         if($is_scheduler) {
@@ -571,7 +597,7 @@ class QueueServer implements CrawlConstants, Join
         if(file_exists(CRAWL_DIR."/schedules/$message_file")) {
             $info = unserialize(file_get_contents(
                 CRAWL_DIR."/schedules/$message_file"));
-            if($this->server_type == self::INDEXER) {
+            if($this->isOnlyIndexer()) {
                 rename(CRAWL_DIR."/schedules/$message_file", 
                     CRAWL_DIR."/schedules/$scheduler_file");
             } else {
@@ -676,10 +702,10 @@ class QueueServer implements CrawlConstants, Join
      */
     function stopCrawl()
     {
-        if($this->server_type != self::INDEXER) {
+        if($this->isAScheduler()) {
             $this->dumpQueueToSchedules();
         }
-        if($this->server_type != self::SCHEDULER) {
+        if($this->isAIndexer()) {
             $this->shutdownDictionary();
             //Calling post processing function if the processor is 
             //selected in the crawl options page.
@@ -897,7 +923,7 @@ class QueueServer implements CrawlConstants, Join
 
         gc_collect_cycles(); // garbage collect old crawls
 
-        if($this->server_type != self::INDEXER) {
+        if($this->isAScheduler()) {
             if($this->crawl_type == self::WEB_CRAWL || 
                 !isset($this->crawl_type)) {
                 $this->web_queue = new WebQueueBundle(
@@ -915,7 +941,7 @@ class QueueServer implements CrawlConstants, Join
         $dir = CRAWL_DIR.'/cache/'.self::index_data_base_name.$this->crawl_time;
 
         if(!file_exists($dir)) {
-            if($this->server_type != self::SCHEDULER) {
+            if($this->isAIndexer()) {
                 $this->index_archive = new IndexArchiveBundle($dir, false,
                     serialize($info));
             }
@@ -932,7 +958,7 @@ class QueueServer implements CrawlConstants, Join
                 }
             }
         }
-        if($this->server_type != self::SCHEDULER) {
+        if($this->isAIndexer()) {
             if(file_exists(CRAWL_DIR.'/schedules/'. self::index_closed_name.
                 $this->crawl_time.".txt")) {
                 unlink(CRAWL_DIR.'/schedules/'. self::index_closed_name.
@@ -979,7 +1005,7 @@ class QueueServer implements CrawlConstants, Join
             if(isset($index_info[$updatable_info[$index_field]]) ) {
                 $this->$index_field = 
                     $index_info[$updatable_info[$index_field]];
-                if($this->server_type == self::SCHEDULER) {
+                if($this->isOnlyScheduler()) {
                     crawlLog("Scheduler Updating ...$index_field.");
                 } else {
                     crawlLog("Updating ...$index_field.");
@@ -995,7 +1021,7 @@ class QueueServer implements CrawlConstants, Join
      */
     function deleteOrphanedBundles()
     {
-        if($this->server_type == self::SCHEDULER) return;
+        if($this->isOnlyScheduler()) return;
         $dirs = glob(CRAWL_DIR.'/cache/*', GLOB_ONLYDIR);
         $living_stamps = array();
         foreach($dirs as $dir) {
@@ -1145,7 +1171,7 @@ class QueueServer implements CrawlConstants, Join
         }
 
         crawlLog(
-            "Start processing index data memory usage".
+            "Start processing ({$this->server_type}) index data memory usage".
             memory_get_usage() . "...");
         crawlLog("Processing index data in $file...");
 
