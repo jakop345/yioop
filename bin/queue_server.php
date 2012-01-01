@@ -414,6 +414,7 @@ class QueueServer implements CrawlConstants, Join
             file_put_contents(CRAWL_DIR."/schedules/schedule_status.txt",
                 time());
         }
+        $this->updateMostRecentFetcher();
         switch($this->crawl_type)
         {
             case self::WEB_CRAWL:
@@ -547,17 +548,6 @@ class QueueServer implements CrawlConstants, Join
         $sites = unserialize(gzuncompress(webdecode(file_get_contents($file) ))
             );
 
-        $robot_table_name = CRAWL_DIR."/robot_table.txt";
-        if(file_exists($robot_table_name)) {
-            $robot_table = unserialize(file_get_contents($robot_table_name));
-            $recent = 0 ;
-            foreach($robot_table as $robot_name => $robot_data) {
-                if($robot_data[2] > $recent) {
-                    $this->most_recent_fetcher =  $robot_name;
-                    $recent = $robot_data[2];
-                }
-            }
-        }
         return $sites;
     }
 
@@ -944,6 +934,7 @@ class QueueServer implements CrawlConstants, Join
             if($this->isAIndexer()) {
                 $this->index_archive = new IndexArchiveBundle($dir, false,
                     serialize($info));
+                $this->last_index_save_time = time();
             }
         } else {
             $this->index_archive = new IndexArchiveBundle($dir,
@@ -1137,6 +1128,26 @@ class QueueServer implements CrawlConstants, Join
     }
 
     /**
+     * Determines the most recent fetcher that has spoken with the
+     * web server of this queue_server and stored the result in the
+     * field variable most_recent_fetcher
+     */
+    function updateMostRecentFetcher()
+    {
+        $robot_table_name = CRAWL_DIR."/".self::robot_table_name;
+        if(file_exists($robot_table_name)) {
+            $robot_table = unserialize(file_get_contents($robot_table_name));
+            $recent = 0 ;
+            foreach($robot_table as $robot_name => $robot_data) {
+                if($robot_data[2] > $recent) {
+                    $this->most_recent_fetcher =  $robot_name;
+                    $recent = $robot_data[2];
+                }
+            }
+        }
+    }
+
+    /**
      * Sets up the directory to look for a file of unprocessed 
      * index archive data from fetchers then calls the function 
      * processDataFile to process the oldest file found
@@ -1144,7 +1155,6 @@ class QueueServer implements CrawlConstants, Join
     function processIndexData($blocking)
     {
         crawlLog("Checking for index data files to process...");
-
         $index_dir =  CRAWL_DIR."/schedules/".
             self::index_data_base_name.$this->crawl_time;
         $this->processDataFile($index_dir, "processIndexArchive", $blocking);

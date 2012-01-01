@@ -69,6 +69,7 @@ interface CrawlConstants
     const fetch_closed_name = "FetchClosed";
     const data_base_name = "At";
     const schedule_start_name = "StartCrawlSchedule.txt";
+    const robot_table_name = "robot_table.txt";
 
     const MAX = 1;
     const MIN = -1;

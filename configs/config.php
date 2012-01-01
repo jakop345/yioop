@@ -179,7 +179,7 @@ define('CACHE_ROBOT_TXT_TIME', 86400);
 define('MAXIMUM_CRAWL_DELAY', 64);
 
 /** maximum number of active crawl-delayed hosts */
-define('MAX_WAITING_HOSTS', 1000); 
+define('MAX_WAITING_HOSTS', 250); 
 
  
 /** 
