@@ -426,18 +426,25 @@ class IndexDictionary implements CrawlConstants
      * stored in file ending with A or B one tier up. B is used if an A file is
      * already present.
      * @param object $callback object with join function to be 
-     *      called if process is taking too  long
+     *      called if process is taking too long
+     * @param int $max_tier the maximum tier to merge to merge till --
+     *      if not set then $this->max_tier used. Otherwise, one would
+     *      typically set to a value bigger than $this->max_tier
      */
-    function mergeAllTiers($callback = NULL)
+    function mergeAllTiers($callback = NULL, $max_tier = -1)
     {
         $new_tier = false;
 
         crawlLog("Starting Full Merge of Dictionary Tiers");
 
+        if($max_tier == -1) {
+            $max_tier = $this->max_tier;
+        }
+
         for($i = 0; $i < self::NUM_PREFIX_LETTERS; $i++) {
-            for($j = 0; $j <= $this->max_tier; $j++) {
+            for($j = 0; $j <= $max_tier; $j++) {
                 crawlLog("...Processing Prefix Number $i Tier $j Max Tier ".
-                    $this->max_tier);
+                    $max_tier);
                 if($callback != NULL) {
                     $callback->join();
                 }
@@ -447,20 +454,21 @@ class IndexDictionary implements CrawlConstants
                 if($a_exists && $b_exists) {
                     $out_slot = ($higher_a) ? "B" : "A";
                     $this->mergeTierFiles($i, $j, $out_slot);
-                    if($j == $this->max_tier) {$new_tier = true;}
+                    if($j == $max_tier) {$new_tier = true;}
                 } else if ($a_exists && $higher_a) {
                     rename($this->dir_name."/$i/".$j."A.dic", 
                         $this->dir_name."/$i/".($j + 1)."B.dic");
-                } else if ($a_exists && $j < $this->max_tier) {
+                } else if ($a_exists && $j < $max_tier) {
                     rename($this->dir_name."/$i/".$j."A.dic", 
                         $this->dir_name."/$i/".($j + 1)."A.dic");
                 }
             }
         }
         if($new_tier) {
-            $this->max_tier++;
+            $max_tier++;
             file_put_contents($this->dir_name."/max_tier.txt", 
-                serialize($this->max_tier));
+                serialize($max_tier));
+            $this->max_tier = $max_tier;
         }
         crawlLog("...End Full Merge of Dictionary Tiers");
     }

@@ -461,23 +461,49 @@ class QueueServer implements CrawlConstants, Join
         }
     }
 
+    /**
+     * Used to check if the current queue_server process is acting a 
+     * url scheduler for fetchers
+     *
+     * @return bool whether it is or not
+     */
     function isAScheduler()
     {
         return strcmp($this->server_type, self::SCHEDULER) == 0 || 
             strcmp($this->server_type, self::BOTH) == 0;
     }
 
+    /**
+     * Used to check if the current queue_server process is acting a 
+     * indexer of data coming from fetchers
+     *
+     * @return bool whether it is or not
+     */
     function isAIndexer()
     {
         return strcmp($this->server_type, self::INDEXER) == 0 || 
             strcmp($this->server_type, self::BOTH) == 0;
     }
 
+    /**
+     * Used to check if the current queue_server process is acting only as a 
+     * indexer of data coming from fetchers (and not some other activity
+     * like scheduler as well)
+     *
+     * @return bool whether it is or not
+     */
     function isOnlyIndexer()
     {
         return strcmp($this->server_type, self::INDEXER) == 0;
     }
 
+    /**
+     * Used to check if the current queue_server process is acting only as a 
+     * indexer of data coming from fetchers (and not some other activity
+     * like indexer as well)
+     *
+     * @return bool whether it is or not
+     */
     function isOnlyScheduler()
     {
         return strcmp($this->server_type, self::SCHEDULER) == 0;

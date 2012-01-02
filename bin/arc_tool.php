@@ -144,6 +144,13 @@ class ArcTool implements CrawlConstants
                 $this->reindexIndexArchive($path);
             break;
 
+            case "mergetiers":
+                if(!isset($argv[3])) {
+                    $this->usageMessageAndExit();
+                }
+                $this->reindexIndexArchive($path, $argv[3]);
+            break;
+
             case "show":
                 if(!isset($argv[3])) {
                     $this->usageMessageAndExit();
@@ -198,9 +205,16 @@ class ArcTool implements CrawlConstants
     }
 
     /**
+     * Used to recompute the dictionary of an index archive -- either from
+     * scratch using the index shard data or just using the current dictionary
+     * but merging the tiers into one tier
      *
+     * @param string $path file path to dictionary of an IndexArchiveBundle
+     * @param int $max_tier tier up to which the dicitionary tiers should be
+     *      merge (typically a value greater than the max_tier of the
+     *      dictionary)
      */
-    function reindexIndexArchive($path)
+    function reindexIndexArchive($path, $max_tier = -1)
     {
         if($this->getArchiveKind($path) != "IndexArchiveBundle") {
             echo "\n$path ...\n".
@@ -209,26 +223,32 @@ class ArcTool implements CrawlConstants
         }
         $shards = glob($path."/posting_doc_shards/index*");
         if(is_array($shards)) {
-            $dbms_manager = DBMS."Manager";
-            $db = new $dbms_manager();
-            $db->unlinkRecursive($path."/dictionary", false);
-            IndexDictionary::makePrefixLetters($path."/dictionary");
-            $dictionary = new IndexDictionary($path."/dictionary");
-            $max_generation = 0;
-            foreach($shards as $shard_name) {
-                $file_name = UrlParser::getDocumentFilename($shard_name);
-                $generation = (int)substr($file_name, strlen("index"));
-                $max_generation = max($max_generation, $generation);
+            if($max_tier == -1) {
+                $dbms_manager = DBMS."Manager";
+                $db = new $dbms_manager();
+                $db->unlinkRecursive($path."/dictionary", false);
+                IndexDictionary::makePrefixLetters($path."/dictionary");
             }
-            for($i = 0; $i < $max_generation + 1; $i++) {
-                $shard_name = $path."/posting_doc_shards/index$i";
-                echo "\nShard $i\n";
-                $shard = new IndexShard($shard_name, $i,
-                    NUM_DOCS_PER_GENERATION, true);
-                $dictionary->addShardDictionary($shard);
+            $dictionary = new IndexDictionary($path."/dictionary");
+
+            if($max_tier == -1) {
+                $max_generation = 0;
+                foreach($shards as $shard_name) {
+                    $file_name = UrlParser::getDocumentFilename($shard_name);
+                    $generation = (int)substr($file_name, strlen("index"));
+                    $max_generation = max($max_generation, $generation);
+                }
+                for($i = 0; $i < $max_generation + 1; $i++) {
+                    $shard_name = $path."/posting_doc_shards/index$i";
+                    echo "\nShard $i\n";
+                    $shard = new IndexShard($shard_name, $i,
+                        NUM_DOCS_PER_GENERATION, true);
+                    $dictionary->addShardDictionary($shard);
+                }
+                $max_tier = $dictionary->max_tier;
             }
             echo "\nFinal Merge Tiers\n";
-            $dictionary->mergeAllTiers();
+            $dictionary->mergeAllTiers(NULL, $max_tier);
             echo "\nReindex complete!!\n";
         } else {
             echo "\n$path ...\n".
@@ -439,6 +459,8 @@ class ArcTool implements CrawlConstants
             "//items start through num from bundle_name\n\n";
         echo "php arc_tool.php reindex bundle_name \n".
             "//reindex the word dictionary in bundle_name\n";
+        echo "php arc_tool.php mergetiers bundle_name max_tier\n".
+            "//merges tiers of word dictionary into one tier up to max_tier\n";
         exit();
     }
 }
