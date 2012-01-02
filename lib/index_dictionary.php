@@ -226,7 +226,7 @@ class IndexDictionary implements CrawlConstants
             fclose($fh);
         }
         unset($prefix_string);
-        crawlLog("Merging tiers of dictionary");
+        crawlLog("Incrementally Merging tiers of dictionary");
         // log merge tiers if needed
         $tier = 0;
         while($out_slot == "B") {
@@ -245,7 +245,7 @@ class IndexDictionary implements CrawlConstants
                     serialize($this->max_tier));
             }
         }
-        crawlLog("...Done Merging tiers of dictionary");
+        crawlLog("...Done Incremental (Not Full) Merging of Dictionary Tiers");
 
     }
 
@@ -432,8 +432,12 @@ class IndexDictionary implements CrawlConstants
     {
         $new_tier = false;
 
+        crawlLog("Starting Full Merge of Dictionary Tiers");
+
         for($i = 0; $i < self::NUM_PREFIX_LETTERS; $i++) {
             for($j = 0; $j <= $this->max_tier; $j++) {
+                crawlLog("...Processing Prefix Number $i Tier $j Max Tier ".
+                    $this->max_tier);
                 if($callback != NULL) {
                     $callback->join();
                 }
@@ -458,6 +462,7 @@ class IndexDictionary implements CrawlConstants
             file_put_contents($this->dir_name."/max_tier.txt", 
                 serialize($this->max_tier));
         }
+        crawlLog("...End Full Merge of Dictionary Tiers");
     }
 
     /**

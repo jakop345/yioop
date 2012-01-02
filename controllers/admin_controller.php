@@ -268,8 +268,8 @@ class AdminController extends Controller implements CrawlConstants
                     self::CRAWL_TIME_OUT < time() ) { 
                 $this->sendStopCrawlMessage();
             }
-            if(filemtime(
-                CRAWL_DIR."/schedules/schedule_status.txt") + 
+            if(file_exists(CRAWL_DIR."/schedules/schedule_status.txt") &&
+                filemtime(CRAWL_DIR."/schedules/schedule_status.txt") + 
                     self::CRAWL_TIME_OUT < time() ) { 
                 $this->sendStopCrawlMessage();
             }
