@@ -114,14 +114,22 @@ class CrawlstatusView extends View
             <?php e(date("r",$data['CRAWL_TIME']));?> </p>
         <?php
         } ?>
-        <p><b><?php e(tl('crawlstatus_view_queue_memory')); ?></b>
-        <?php
-        if(isset($data['QUEUE_PEAK_MEMORY'])) {
-            e($data['QUEUE_PEAK_MEMORY']);
-        } else {
-            e(tl('crawlstatus_view_no_mem_data'));
-        } ?>
-        </p>
+        <?php if(isset($data['SCHEDULER_PEAK_MEMORY']) && 
+            isset($data['QUEUE_PEAK_MEMORY'])) { ?>
+            <p><b><?php e(tl('crawlstatus_view_indexer_memory')); ?></b>
+            <?php e($data['QUEUE_PEAK_MEMORY']); ?></p>
+            <p><b><?php e(tl('crawlstatus_view_scheduler_memory')); ?></b>
+            <?php e($data['SCHEDULER_PEAK_MEMORY']); ?></p>
+        <?php } else { ?>
+            <p><b><?php e(tl('crawlstatus_view_queue_memory')); ?></b>
+            <?php
+            if(isset($data['QUEUE_PEAK_MEMORY'])) {
+                e($data['QUEUE_PEAK_MEMORY']);
+            } else {
+                e(tl('crawlstatus_view_no_mem_data'));
+            } ?>
+            </p>
+        <?php } ?>
         <p><b><?php e(tl('crawlstatus_view_fetcher_memory')); ?></b>
         <?php
         if(isset($data['FETCHER_PEAK_MEMORY'])) {

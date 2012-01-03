@@ -117,9 +117,8 @@ abstract class View
 
         //read in localized static page elements
         foreach($this->pages as $page) {
-            file_get_contents(
+            $page_string = file_get_contents(
                 LOCALE_DIR."/".getLocaleTag()."/pages/".$page.".thtml");
-            $page_string = ob_get_contents();
             $page_parts = explode("END_HEAD_VARS", $page_string);
             $this->head_objects[$page] = array();
             if(count($page_parts) > 1) { 

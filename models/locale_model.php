@@ -36,6 +36,9 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 /** Loads base model class if necessary */
 require_once BASE_DIR."/models/model.php";
 
+/** Loads code to be able to make canonical urls */
+require_once BASE_DIR."/lib/url_parser.php";
+
 /**
  * Function for comparing two locale arrays by locale tag so can sort
  *
@@ -563,7 +566,7 @@ class LocaleModel extends Model
             die("Couldn't read locale directory!\n");
         }
         while (($obj = readdir($dh)) !== false) {
-            if($obj == '.' || $obj == '..') {
+            if($obj[0] == '.') {
                 continue;
             }
             $cur_path = $path . '/' . $obj;

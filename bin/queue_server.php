@@ -411,8 +411,11 @@ class QueueServer implements CrawlConstants, Join
             }
         }
         if($this->isAScheduler()) {
+            $info = array();
+            $info[self::TYPE] = $this->server_type;
+            $info[self::MEMORY_USAGE] = memory_get_peak_usage();
             file_put_contents(CRAWL_DIR."/schedules/schedule_status.txt",
-                time());
+                serialize($info));
         }
         $this->updateMostRecentFetcher();
         switch($this->crawl_type)

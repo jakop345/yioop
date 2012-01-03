@@ -268,12 +268,24 @@ class AdminController extends Controller implements CrawlConstants
                     self::CRAWL_TIME_OUT < time() ) { 
                 $this->sendStopCrawlMessage();
             }
-            if(file_exists(CRAWL_DIR."/schedules/schedule_status.txt") &&
+            $schedule_status_exists = 
+                file_exists(CRAWL_DIR."/schedules/schedule_status.txt");
+            if($schedule_status_exists &&
                 filemtime(CRAWL_DIR."/schedules/schedule_status.txt") + 
                     self::CRAWL_TIME_OUT < time() ) { 
                 $this->sendStopCrawlMessage();
             }
-
+            if($schedule_status_exists) {
+                $schedule_status = 
+                    @unserialize(file_get_contents(
+                        CRAWL_DIR."/schedules/schedule_status.txt"));
+                if(isset($schedule_status[self::TYPE]) &&
+                    $schedule_status[self::TYPE] == self::SCHEDULER) {
+                    $data['SCHEDULER_PEAK_MEMORY'] = 
+                        isset($schedule_status[self::MEMORY_USAGE]) ?
+                        $schedule_status[self::MEMORY_USAGE] : 0;
+                } 
+            }
             $crawl_status = 
                 @unserialize(file_get_contents(
                     CRAWL_DIR."/schedules/crawl_status.txt"));
