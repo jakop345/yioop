@@ -965,10 +965,10 @@ class IndexShard extends PersistentStructure implements
                 $index_shard_len = ($this->docids_len >> 4);
                 while($offset < $postings_len) {
                     list($doc_index, $posting_list) = // this changes $offset
-                        $this->unpackPosting($postings, $offset);
+                        $this->unpackPosting($postings, $offset, false);
                     $doc_index += $index_shard_len;
                     $new_postings .=
-                        $this->packPosting($doc_index, $posting_list);
+                        $this->packPosting($doc_index, $posting_list, false);
                 }
                 $add_len_flag = true;
             } else {
@@ -1433,12 +1433,18 @@ class IndexShard extends PersistentStructure implements
      * @param int $doc_index index (i.e., a count of which document it
      *      is rather than a byte offset) of a document in the document string
      * @param array integer positions word occurred in that doc
+     * @param bool $delta if true then stores the position_list as a sequence of
+     *      differences (a delta list)
      * @return string a modified9 (our compression scheme) packed 
      *      string containing this info.
      */
-    static function packPosting($doc_index, $position_list)
+    static function packPosting($doc_index, $position_list, $delta = true)
     {
-        $delta_list = deltaList($position_list);
+        if($delta) {
+            $delta_list = deltaList($position_list);
+        } else {
+            $delta_list = $position_list;
+        }
         if(isset($delta_list[0])){
             $delta_list[0]++;
         }
@@ -1463,10 +1469,13 @@ class IndexShard extends PersistentStructure implements
      *      a doc index position list pair coded encoded using modified9
      * @param int &offset a offset into the string where the modified9 posting
      *      is encoded
+     * @param bool $dedelta if true then assumes the list is a sequence of 
+     *      differences (a delta list) and undoes the difference to get 
+     *      the original sequence
      * @return array consisting of integer doc_index and a subarray consisting
      *      of integer positions of word in doc.
      */
-    static function unpackPosting($posting, &$offset)
+    static function unpackPosting($posting, &$offset, $dedelta = true)
     {
         $delta_list = decodeModified9($posting, $offset);
         $doc_index = array_shift($delta_list);
@@ -1484,7 +1493,11 @@ class IndexShard extends PersistentStructure implements
             $delta_list[0]--;
         }
 
-        $position_list = deDeltaList($delta_list);
+        if($dedelta) {
+            $position_list = deDeltaList($delta_list);
+        } else {
+            $position_list = $delta_list;
+        }
 
         return array($doc_index, $position_list);
     }
