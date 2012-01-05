@@ -272,7 +272,7 @@ class Fetcher implements CrawlConstants
      var $fetcher_num;
 
     /**
-     * Sets up the field variables for that crawling can begin
+     * Sets up the field variables so that crawling can begin
      *
      * @param array $page_processors (mimetype => name of processor) pairs
      * @param string $queue_server URL or IP address of the queue server

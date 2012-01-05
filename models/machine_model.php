@@ -95,8 +95,11 @@ class MachineModel extends Model
      *      queue_server
      *  @param int $num_fetchers - how many managed fetchers are on this
      *      machine.
+     *  @param string $parent - if this machine replicates some other machine
+     *      then the name of the parent
      */
-    function addMachine($name, $url, $has_queue_server, $num_fetchers)
+    function addMachine($name, $url, $has_queue_server, $num_fetchers, 
+        $parent = "")
     {
         $this->db->selectDB(DB_NAME);
         if($has_queue_server == true) {
@@ -107,7 +110,8 @@ class MachineModel extends Model
         $sql = "INSERT INTO MACHINE VALUES ('".
             $this->db->escapeString($name)."','".
             $this->db->escapeString($url)."',".$has_string.",'".
-            $this->db->escapeString($num_fetchers)."')";
+            $this->db->escapeString($num_fetchers)."','".
+            $this->db->escapeString($parent)."')";
 
         $this->db->execute($sql);
     }

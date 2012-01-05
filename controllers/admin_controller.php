@@ -1567,23 +1567,36 @@ class AdminController extends Controller implements CrawlConstants
         $data['DELETABLE_MACHINES'] = array(
             $tmp => $tmp
         );
+        $data['REPLICATABLE_MACHINES'] = array(
+            $tmp => $tmp
+        );
         foreach($machines as $machine) {
             $data['MACHINE_NAMES'][] = $machine["NAME"];
             $urls[] = $machine["URL"];
             $data['DELETABLE_MACHINES'][$machine["NAME"]] = $machine["NAME"];
+            if(!isset($machine["PARENT"]) || $machine["PARENT"] == "") {
+                $data['REPLICATABLE_MACHINES'][$machine["NAME"]] 
+                    = $machine["NAME"];
+            }
         }
 
+        if(!isset($_REQUEST["has_queue_server"]) || 
+            isset($_REQUEST['is_replica'])) {
+            $_REQUEST["has_queue_server"] = false;
+        }
+        if(isset($_REQUEST['is_replica'])) {
+            $_REQUEST['num_fetchers'] = 0;
+        } else {
+            $_REQUEST['parent'] = "";
+        }
         $request_fields = array(
             "name" => "string",
             "url" => "string",
             "has_queue_server" => "bool",
-            "num_fetchers" => "int"
+            "num_fetchers" => "int",
+            "parent" => "string"
         );
         $r = array();
-
-        if(!isset($_REQUEST["has_queue_server"])) {
-            $_REQUEST["has_queue_server"] = false;
-        }
 
         $allset = true;
         foreach($request_fields as $field => $type) {
@@ -1615,22 +1628,22 @@ class AdminController extends Controller implements CrawlConstants
                     if($allset == true && !$machine_exists) {
                         $this->machineModel->addMachine(
                             $r["name"], $r["url"], $r["has_queue_server"],
-                            $r["num_fetchers"]);
+                            $r["num_fetchers"], $r["parent"]);
 
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('admin_controller_machine_added').
-                            "</h1>')";
+                            "</h1>');";
                         $data['MACHINE_NAMES'][] = $r["name"];
                         $data['DELETABLE_MACHINES'][$r["name"]] = $r["name"];
                         sort($data['MACHINE_NAMES']);
                     } else if ($allset && $machine_exists ) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('admin_controller_machine_exists').
-                            "</h1>')";
+                            "</h1>');";
                     } else {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('admin_controller_machine_incomplete').
-                            "</h1>')";
+                            "</h1>');";
                     }
                 break;
 
@@ -1639,7 +1652,7 @@ class AdminController extends Controller implements CrawlConstants
                         !in_array($r["name"], $data['MACHINE_NAMES'])) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('admin_controller_machine_doesnt_exists').
-                            "</h1>')";
+                            "</h1>');";
                     } else {
                         $machines = $this->machineModel->getMachineStatuses();
                         $service_in_use = false;
@@ -1655,7 +1668,7 @@ class AdminController extends Controller implements CrawlConstants
                         }
                         if($service_in_use) {
                             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('admin_controller_stop_service_first')."</h1>')";
+                           tl('admin_controller_stop_service_first')."</h1>');";
                             break;
                         }
                         $this->machineModel->deleteMachine($r["name"]);
@@ -1668,7 +1681,7 @@ class AdminController extends Controller implements CrawlConstants
                             array_diff($data['DELETABLE_MACHINES'], $tmp_array);
                         $data['DELETABLE_MACHINES'] = array_merge($diff);
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('admin_controller_machine_deleted')."</h1>')";
+                            tl('admin_controller_machine_deleted')."</h1>');";
                     }
                 break;
 
@@ -1727,18 +1740,18 @@ class AdminController extends Controller implements CrawlConstants
                             $_REQUEST["action"], $r["fetcher_num"]);
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('admin_controller_machine_servers_updated').
-                            "</h1>')";
+                            "</h1>');";
                     } else {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('admin_controller_machine_no_action').
-                            "</h1>')";
+                            "</h1>');";
                     }
 
                 break;
 
             }
         }
-
+        $data['SCRIPT'] .= "toggleReplica(false);";
         return $data;
     }
 

@@ -89,7 +89,7 @@ class PhraseParser
         'th' => 4,
         'tr' => 6,
         'zh-CN' => 2,
-		'cn' => 2,
+        'cn' => 2,
         'zh' => 2
      );
 

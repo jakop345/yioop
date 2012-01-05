@@ -73,7 +73,23 @@ class MachinestatusView extends View
                     "&action=start";
                 $off_queue_server = $base_url . "update&name={$m['NAME']}".
                     "&action=stop";
+                $on_mirror = $base_url . "update&name={$m['NAME']}".
+                    "&action=mirror_start";
+                $off_mirror = $base_url . "update&name={$m['NAME']}".
+                    "&action=mirror_stop";
             ?></p>
+            <?php if($m['PARENT'] != "") {?>
+                <table class="machinetable"><tr>
+                <th><?php e(tl('machinestatus_view_mirrors')); ?></th>
+                <td><?php e($m['PARENT']);?></td><td><?php 
+                    $this->toggleHelper->render(
+                        isset($m['STATUSES']["mirror"]) , 
+                        $on_mirror, $off_mirror);
+                ?></td>
+                </table>
+                </div><br /><?php
+                continue;
+            } ?>
             <?php if($m['HAS_QUEUE_SERVER'] == "1") {
                 $log_url = $base_url . "log&name={$m['NAME']}";
             ?>
@@ -125,6 +141,7 @@ class MachinestatusView extends View
         <?php }
             ?></tr></table><?php
         }
+        ?></div><br /><?php
         }
     }
     }

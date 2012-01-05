@@ -75,17 +75,29 @@ class ManagemachinesElement extends Element
             e(tl('managemachines_element_machineurl'))?></label></th>
             <td><input type="text" id="machine-url" name="url" 
                 maxlength="80" class="widefield" /></td></tr>
-
-        <tr><th><label for="queue-box"><?php 
+        <tr><th><label for="is-replica-box"><?php 
+            e(tl('managemachines_element_is_mirror'))?></label></th>
+            <td><input type="checkbox" id="is-replica-box" 
+                name="is_replica" value="true" 
+                onclick="toggleReplica(this.checked)" /></td></tr>
+         <tr id="m1"><th><label for="parent-machine-name"><?php 
+            e(tl('managemachines_element_parent_name'))?></label></th>
+            <td><?php $this->view->optionsHelper->render(
+                "parent-machine-name", "parent", 
+                $data['REPLICATABLE_MACHINES'], 
+                tl('admin_controller_select_machine')); 
+                ?></td>
+        </tr> 
+        <tr id="m2"><th><label for="queue-box"><?php 
             e(tl('managemachines_element_has_queueserver'))?></label></th>
             <td><input type="checkbox" id="queue-box" 
                 name="has_queue_server" value="true" /></td></tr>
-        <tr><th><label for="fetcher-number"><?php 
+        <tr id="m3"><th><label for="fetcher-number"><?php 
             e(tl('managemachines_element_num_fetchers'))?></label></th><td>
             <?php $this->view->optionsHelper->render("fetcher-number", 
             "num_fetchers", $data['FETCHER_NUMBERS'],$data['FETCHER_NUMBER']);
-            ?></td></tr>
-        <tr><td></td><td><button class="buttonbox" type="submit"><?php 
+            ?></td></tr> 
+        <tr><th></th><td><button class="buttonbox" type="submit"><?php 
                 e(tl('managemachines_element_submit')); ?></button></td>
         </tr>
         </table>
@@ -140,6 +152,21 @@ class ManagemachinesElement extends Element
              machineStatusUpdate();
              updateId = setInterval("machineStatusUpdate()", 30*sec);
              setTimeout("clearUpdate()", 20*minute + sec);
+        }
+        function toggleReplica(is_replica)
+        {
+            if(is_replica) {
+                m1_value = "table-row";
+                m2_value = "none";
+                m3_value = "none";
+            } else {
+                m1_value = "none";
+                m2_value = "table-row";
+                m3_value = "table-row";
+            }
+            setDisplay('m1', m1_value);
+            setDisplay('m2', m2_value);
+            setDisplay('m3', m3_value);
         }
         </script>
 

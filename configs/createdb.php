@@ -243,7 +243,7 @@ $db->execute("CREATE TABLE MIX_COMPONENTS (
 
 $db->execute("CREATE TABLE MACHINE (
     NAME VARCHAR(16) PRIMARY KEY, URL VARCHAR(256) UNIQUE,
-    HAS_QUEUE_SERVER INT, NUM_FETCHERS INT(4))");
+    HAS_QUEUE_SERVER INT, NUM_FETCHERS INT(4), PARENT VARCHAR(16) )");
 
 $db->disconnect();
 if(in_array(DBMS, array('sqlite','sqlite3' ))){

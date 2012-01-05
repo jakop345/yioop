@@ -124,15 +124,18 @@ function elt(id)
  *  Sets whether an elt is styled as display:none or block
  *
  *  @param String id  the id of the DOM element one wants
- *  @param Boolean value  true means display block; false display none
+ *  @param mixed value  true means display block; false display none;
+ *      anything else will display that value
  */
 function setDisplay(id, value) 
 {
     obj = elt(id);
-    if(value) {
-        obj.style.display = "block";
-    } else {
-        obj.style.display = "none";
+    if(value == true)  {
+        value = "block";
     }
+    if(value == false) {
+        value = "none";
+    }
+    obj.style.display = value;
 }
 
