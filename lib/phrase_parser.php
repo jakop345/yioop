@@ -42,6 +42,11 @@ foreach(glob(BASE_DIR."/lib/stemmers/*_stemmer.php")
 }
 
 /**
+ * Load the Bigrams File
+ */
+require_once BASE_DIR."/lib/bigrams.php";
+
+/**
  * Reads in constants used as enums used for storing web sites
  */
 require_once BASE_DIR."/lib/crawl_constants.php";
@@ -89,7 +94,7 @@ class PhraseParser
         'th' => 4,
         'tr' => 6,
         'zh-CN' => 2,
-        'cn' => 2,
+		'cn' => 2,
         'zh' => 2
      );
 
@@ -178,9 +183,25 @@ class PhraseParser
 
         for($i = 0; $i < $len; $i++) {
             $phrases = self::extractPhrasesOfLength($string, $i, $lang);
-            $count = count($phrases);
-            for($j = 0; $j < $count; $j++) {
-                $phrase_lists[$phrases[$j]][] = $j;
+            if($i==1){
+                $n = 0;
+                foreach ($phrases as $phrase) {
+                    $words = explode(" ",$phrase);
+                    if(count($words)==2){
+                        $phrase_lists[$phrase][] = $n;
+                        $phrase_lists[$words[0]][] = $n++;
+                        $phrase_lists[$words[1]][] = $n++;
+                    }
+                    else{
+                        $phrase_lists[$phrase][] = $n++;
+                    }
+                }
+            }
+            else{
+                $count = count($phrases);
+                for($j = 0; $j < $count; $j++) {
+                    $phrase_lists[$phrases[$j]][] = $j;
+                }
             }
         }
         return $phrase_lists;
@@ -203,6 +224,10 @@ class PhraseParser
             $phrases = array_merge($phrases,
                 self::extractPhrasesOfLengthOffset($string,
                     $phrase_len, $i, $lang));
+        }
+
+        if($phrase_len == 1 && count($phrases)>1){
+            $phrases = Bigrams::extractBigrams($phrases,$lang);
         }
 
         return $phrases;
