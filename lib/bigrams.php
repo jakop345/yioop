@@ -108,8 +108,7 @@ class Bigrams
                 $bigram_phrases[] = $pair;
                 $i += 2;
                 $j += 2;
-            }
-            else{
+            } else {
                 $bigram_phrases[] = $phrases[$i];
                 $i += 1;
                 $j += 1;

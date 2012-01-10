@@ -112,7 +112,7 @@ class Model implements CrawlConstants
     function formatPageResults($results, $words = NULL, $description_length =
         self::DEFAULT_DESCRIPTION_LENGTH)
     {
-            if(isset($results['PAGES'])) {
+        if(isset($results['PAGES'])) {
             $pages = $results['PAGES'];
             $num_pages = count($pages);
         } else {
@@ -214,6 +214,8 @@ class Model implements CrawlConstants
                         if($new_offset < $pos) {
                             $new_offset = $pos;
                         }
+                    } else {
+                        break 2;
                     }
                 }
             }
