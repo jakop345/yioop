@@ -34,7 +34,13 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- *
+ * Marker interface used to say that a class has supports a join() 
+ * callback method. IndexArchiveBundle has methods which take objects
+ * that implement Join. For activities which may take a long time
+ * such as index saving index tier merging IndexArchiveBundle will
+ * periodically call the Join objects join method so that it can continue
+ * processing rather than blocking entirely until the long running method
+ * completes
  *
  * @author Chris Pollett
  * @package seek_quarry
@@ -45,7 +51,8 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 interface Join
 {
     /**
-     *
+     * A callback function which will be invoked periodically by a method
+     * of another object that runs a long time.
      */
     function join();
 } 

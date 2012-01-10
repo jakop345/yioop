@@ -165,10 +165,11 @@ class MachineModel extends Model
      *
      *  @param string name  the name of the machine to get the log file for
      *  @param int $fetcher_num  if a fetcher, which instance on the machine
+     *  @param bool whether the requested machine is a mirror of another machine
      *  @return string containing the last MachineController::LOG_LISTING_LEN
      *      bytes of the log record
      */
-    function getLog($machine_name, $fetcher_num = NULL)
+    function getLog($machine_name, $fetcher_num = NULL, $is_mirror = false)
     {
         $time = time();
         $session = md5($time . AUTH_KEY);
@@ -182,6 +183,9 @@ class MachineModel extends Model
             if($fetcher_num !== NULL) {
                 $url .= "&fetcher_num=$fetcher_num";
             }
+            if($is_mirror) {
+                $url .= "&mirror=true";
+            }
             $log_data = urldecode(json_decode(FetchUrl::getPage($url)));
         } else {
             $log_data = "";
@@ -190,12 +194,15 @@ class MachineModel extends Model
     }
 
     /**
-     * Used to start or stop a queue_server or fetcher instance on
+     * Used to start or stop a queue_server, fetcher, mirror instance on
      * a machine managed by the current one
      *
      * @param string $machine_name name of machine
+     * @param bool whether the requested machine is a mirror of another machine
+     *
      */
-    function update($machine_name, $action, $fetcher_num = NULL)
+    function update($machine_name, $action, $fetcher_num = NULL, 
+        $is_mirror = false)
     {
         $value = ($action == "start") ? "true" : "false";
         $time = time();
@@ -209,6 +216,8 @@ class MachineModel extends Model
                 "&session=$session";
             if($fetcher_num !== NULL) {
                 $url .= "&fetcher[$fetcher_num]=$value";
+            } else if($is_mirror) {
+                $url .= "&mirror=$value";
             } else {
                 $url .= "&queue_server=$value";
             }

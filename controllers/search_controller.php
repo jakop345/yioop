@@ -41,7 +41,8 @@ require_once BASE_DIR."/lib/phrase_parser.php";
 require_once BASE_DIR."/lib/utility.php";
 /** Loads common constants for web crawling */
 require_once BASE_DIR."/lib/crawl_constants.php";
-
+/** For getting pages from a mirror if decide not to handle ourselves*/
+require_once BASE_DIR."/lib/fetch_url.php";
 /**
  * Controller used to handle search requests to SeekQuarry
  * search site. Used to both get and display
@@ -144,6 +145,9 @@ class SearchController extends Controller implements CrawlConstants
         } else {
             $activity = "query";
         }
+
+        if($activity == "query" && $this->checkMirrorHandle()) {return; }
+
         if(isset($_REQUEST['its']) || isset($_SESSION['its'])) {
             $its = (isset($_REQUEST['its'])) ? $_REQUEST['its'] : 
                 $_SESSION['its'];
@@ -222,6 +226,42 @@ class SearchController extends Controller implements CrawlConstants
         $this->displayView($view, $data);
     }
 
+    /**
+     * Used to check if there are any mirrors of the current server.
+     * If so, it tries to distribute the query requests randomly amongst
+     * the mirrors
+     */
+    function checkMirrorHandle()
+    {
+        $mirror_table_name = CRAWL_DIR."/".self::mirror_table_name;
+        $handled = false;
+        if(file_exists($mirror_table_name)) {
+            $mirror_table = unserialize(file_get_contents($mirror_table_name));
+            $mirrors = array();
+            $time = time();
+            foreach($mirror_table['machines'] as $entry) {
+                if($time - $entry[3] < 2 * MIRROR_NOTIFY_FREQUENCY) {
+                    if($entry[0] == "::1") {
+                        $entry[0] = "[::1]";
+                    }
+                    $request = "http://".$entry[0].$entry[1];
+                    $mirrors[] = $request;
+                }
+            }
+            $count = count($mirrors);
+            if($count > 0 ) {
+                mt_srand();
+                $rand = mt_rand(0, $count);
+                // if ==$count, we'll let the current machine handle it
+                if($rand < $count) {
+                    $request = $mirrors[$rand]."?".$_SERVER["QUERY_STRING"];
+                    echo FetchUrl::getPage($request);
+                    $handled = true;
+                }
+            }
+        }
+        return $handled;
+    }
 
     /**
      * Searches the database for the most relevant pages for the supplied search

@@ -81,7 +81,7 @@ require_once BASE_DIR."/lib/crawl_constants.php";
 /** */
 require_once BASE_DIR."/lib/phrase_parser.php";
 
-/** */
+/** Include marker interface to say we support join() method*/
 require_once BASE_DIR."/lib/join.php";
 
 
@@ -251,7 +251,7 @@ class QueueServer implements CrawlConstants, Join
     var $hourly_crawl_data;
 
     /**
-     *  Used to say what kind of queue_server this is (one of BOTH, INDEXERm
+     *  Used to say what kind of queue_server this is (one of BOTH, INDEXER,
      *  SCHEDULER)
      *  @var int
      */
@@ -926,36 +926,8 @@ class QueueServer implements CrawlConstants, Join
                 array_push($try_to_set_from_old_index,  $index_field);
             }
         }
-        switch($this->crawl_order) 
-        {
-            case self::BREADTH_FIRST:
-                $min_or_max = self::MIN;
-            break;
 
-            case self::PAGE_IMPORTANCE:
-            default:
-                $min_or_max = self::MAX;
-            break;  
-        }
-        $this->web_queue = NULL;
-        $this->index_archive = NULL;
-
-        gc_collect_cycles(); // garbage collect old crawls
-
-        if($this->isAScheduler()) {
-            if($this->crawl_type == self::WEB_CRAWL || 
-                !isset($this->crawl_type)) {
-                $this->web_queue = new WebQueueBundle(
-                    CRAWL_DIR.'/cache/'.self::queue_base_name.
-                    $this->crawl_time, URL_FILTER_SIZE, 
-                        NUM_URLS_QUEUE_RAM, $min_or_max);
-            }
-            // chmod so web server can also write to these directories
-            if($this->crawl_type == self::WEB_CRAWL) {
-                $this->db->setWorldPermissionsRecursive(
-                   CRAWL_DIR.'/cache/'.self::queue_base_name.$this->crawl_time);
-            }
-        }
+        $this->initializeWebQueue();
 
         $dir = CRAWL_DIR.'/cache/'.self::index_data_base_name.$this->crawl_time;
 
@@ -992,6 +964,44 @@ class QueueServer implements CrawlConstants, Join
 
         $info[self::STATUS] = self::CONTINUE_STATE;
         return $info;
+    }
+
+    /**
+     * This method sets up a WebQueueBundle according to the current crawl
+     * order so that it can receive urls and prioritize them.
+     */
+    function initializeWebQueue()
+    {
+        switch($this->crawl_order) 
+        {
+            case self::BREADTH_FIRST:
+                $min_or_max = self::MIN;
+            break;
+
+            case self::PAGE_IMPORTANCE:
+            default:
+                $min_or_max = self::MAX;
+            break;  
+        }
+        $this->web_queue = NULL;
+        $this->index_archive = NULL;
+
+        gc_collect_cycles(); // garbage collect old crawls
+
+        if($this->isAScheduler()) {
+            if($this->crawl_type == self::WEB_CRAWL || 
+                !isset($this->crawl_type)) {
+                $this->web_queue = new WebQueueBundle(
+                    CRAWL_DIR.'/cache/'.self::queue_base_name.
+                    $this->crawl_time, URL_FILTER_SIZE, 
+                        NUM_URLS_QUEUE_RAM, $min_or_max);
+            }
+            // chmod so web server can also write to these directories
+            if($this->crawl_type == self::WEB_CRAWL) {
+                $this->db->setWorldPermissionsRecursive(
+                   CRAWL_DIR.'/cache/'.self::queue_base_name.$this->crawl_time);
+            }
+        }
     }
 
     /**
@@ -1102,7 +1112,10 @@ class QueueServer implements CrawlConstants, Join
     }
 
     /**
-     *
+     * This is a callback method that IndexArchiveBundle will periodically
+     * call when it processes a method that take a long time. This
+     * allows for instance continued processing of index data while say
+     * a dicitonary merge is being performed.
      */
     function join()
     {
@@ -1956,6 +1969,12 @@ class QueueServer implements CrawlConstants, Join
             crawlLog("No fetch batch created!! " .
                 "\nTime failing to make a batch:".
                 (changeInMicrotime($start_time)).". Loop properties:$i $count");
+            if($i >= $count && $count >= NUM_URLS_QUEUE_RAM) {
+                crawlLog("Queue Full and Couldn't produce Fetch Batch!! ".
+                    "Resetting Queue!!!");
+                $this->dumpQueueToSchedules();
+                $this->initializeWebQueue();
+            }
         }
 
     }

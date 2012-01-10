@@ -633,6 +633,23 @@ function setWorldPermissions($file)
     chmod($file, 0777);
 }
 
+/**
+ * This is a callback function used in the process of recursively calculating
+ * an array of file modification times and files sizes for a directorys
+ *
+ *  @param string a name of a file in the file system
+ *  @return an array whose single element contain an associative array
+ *      with the size and modification time of the file
+ */
+function fileInfo($file)
+{
+    $info["name"] = $file;
+    $info["size"] = filesize($file);
+    $info["is_dir"] = is_dir($file);
+    $info["modified"] = filemtime($file);
+    return array($info);
+}
+
 //ordering functions used in sorting
 
 /**

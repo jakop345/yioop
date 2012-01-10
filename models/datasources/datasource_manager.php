@@ -189,10 +189,20 @@ abstract class DatasourceManager
     }
 
     /**
+     * Returns arrays of filesizes and file modifcations times of files in
+     * a directory
+     */
+    function fileInfoRecursive($dir, $chmodRootToo = true)
+    {
+        return $this->traverseDirectory($dir, 
+            "fileInfo", $chmodRootToo); 
+    }
+
+    /**
      * Recursively copies a source directory to a destination directory 
      *
-     * It would have been coon to use traverseDirectory to implement this, but
-     * it was a little bit too much of a stretch to showhorn the code to match
+     * It would have been cool to use traverseDirectory to implement this, but
+     * it was a little bit too much of a stretch to shoehorn the code to match
      *
      * @param string $source_dir the name of the source directory
      * @param string $desitnation_dir the name of the destination directory
@@ -231,13 +241,14 @@ abstract class DatasourceManager
      *
      * @param string $dir Directory name
      * @param function $callback Function to call as traverse structure
-     * @param boolean $rootToo do op on top-level directory as well
+     * @return array results computed by performing the traversal
      */
 
     public function traverseDirectory($dir, $callback, $rootToo = true) 
     {
+        $results = array();
         if(!$dh = @opendir($dir)) {
-            return;
+            return $results;
         }
 
         while (false !== ($obj = readdir($dh))) {
@@ -245,16 +256,27 @@ abstract class DatasourceManager
                 continue;
             }
             if (is_dir($dir . '/' . $obj)) {
-                $this->traverseDirectory($dir.'/'.$obj, $callback, true);
+                $subdir_results = 
+                    $this->traverseDirectory($dir.'/'.$obj, $callback, true);
+                $results = array_merge($results, $subdir_results);
             }
-            @$callback($dir . '/' . $obj);
+            $obj_results = @$callback($dir . '/' . $obj);
+            if(is_array($obj_results)) {
+                $results = array_merge($results, $obj_results);
+            }
+
         }
 
         closedir($dh);
 
         if ($rootToo) {
-            @$callback($dir);
+            $obj_results = @$callback($dir);
+            if(is_array($obj_results)) {
+                $results = array_merge($results, $obj_results);
+            }
         }
+
+        return $results;
 
     }
 

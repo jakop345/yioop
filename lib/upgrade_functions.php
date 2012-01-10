@@ -74,7 +74,7 @@ function upgradeDatabaseCheck()
     $result = @$model->db->execute($sql);
     if($result !== false) {
         $row = $model->db->fetchArray($result);
-        if($row['ID'] == 3) {
+        if($row['ID'] == 4) {
             return false;
         }
     }
@@ -88,7 +88,7 @@ function upgradeDatabaseCheck()
  */
 function upgradeDatabase()
 {
-    $versions = array(0, 1, 2, 3);
+    $versions = array(0, 1, 2, 3, 4);
     $model = new Model();
     $model->db->selectDB(DB_NAME);
     $sql = "SELECT ID FROM VERSION";
@@ -221,5 +221,15 @@ function upgradeDatabaseVersion3(&$db)
     $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (10, 15, 
         'Sắp xếp hoạt động dựa theo hoạch định')");
 
+}
+/**
+ * Upgrades a Version 3 version of the Yioop! database to a Version 4 version
+ * @param object $db datasource to use to upgrade 
+ */
+function upgradeDatabaseVersion4(&$db)
+{
+    $db->execute("DELETE FROM VERSION WHERE ID=3");
+    $db->execute("INSERT INTO VERSION VALUES (4)");
+    $db->execute("ALTER TABLE MACHINE ADD COLUMN PARENT VARCHAR(16)");
 }
 ?>

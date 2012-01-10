@@ -1540,7 +1540,7 @@ class AdminController extends Controller implements CrawlConstants
      *      FETCHER_NUMBERS drop-down
      */
     function manageMachines()
-    {
+    { 
         $data["ELEMENT"] = "managemachinesElement";
         $possible_arguments = array("addmachine", "deletemachine",
             "log", "update");
@@ -1690,6 +1690,10 @@ class AdminController extends Controller implements CrawlConstants
                         $r["fetcher_num"] = 
                             $this->clean($_REQUEST["fetcher_num"], "int");
                     }
+                    if(isset($_REQUEST["mirror_name"])) {
+                        $r["mirror_name"] = 
+                            $this->clean($_REQUEST["mirror_name"], "string");
+                    }
                     if(isset($_REQUEST["time"])) {
                         $data["time"] = 
                             $this->clean($_REQUEST["time"], "int") + 30;
@@ -1707,6 +1711,11 @@ class AdminController extends Controller implements CrawlConstants
                             " fetcher ".$r["fetcher_num"];
                         $data["REFRESH_LOG"] .= "&arg=log&name=".$r['name'].
                             "&fetcher_num=". $r['fetcher_num'];
+                    } else if(isset($r["mirror_name"])) {
+                        $data["LOG_TYPE"] = $r['mirror_name']." mirror";
+                        $data["LOG_FILE_DATA"] = $this->machineModel->getLog(
+                            $r["mirror_name"], NULL, true);
+
                     } else if(isset($r['name'])) {
                         $data["LOG_TYPE"] = $r['name']." queue_server";
                         $data["LOG_FILE_DATA"] = $this->machineModel->getLog(
@@ -1733,11 +1742,21 @@ class AdminController extends Controller implements CrawlConstants
                     } else {
                         $r["fetcher_num"] = NULL;
                     }
-                    $available_actions = array("start", "stop");
+                    $available_actions = array("start", "stop", 
+                        "mirror_start", "mirror_stop");
                     if(isset($r["name"]) && isset($_REQUEST["action"]) && 
                         in_array($_REQUEST["action"], $available_actions)) {
+                        $action = $_REQUEST["action"];
+                        $is_mirror = false;
+                        if($action == "mirror_start") {
+                            $action = "start";
+                            $is_mirror = true;
+                        } else if ($action == "mirror_stop") {
+                            $action = "stop";
+                            $is_mirror = true;
+                        }
                         $this->machineModel->update($r["name"],
-                            $_REQUEST["action"], $r["fetcher_num"]);
+                            $action, $r["fetcher_num"], $is_mirror);
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('admin_controller_machine_servers_updated').
                             "</h1>');";

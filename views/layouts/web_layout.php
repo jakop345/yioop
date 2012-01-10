@@ -94,8 +94,11 @@ class WebLayout extends Layout
                 <div id="query-statistics">
                 <?php
                     e("<h1>".tl('web_layout_query_statistics')."</h1>");
+                    e("<div><b>".
+                        $data['YIOOP_INSTANCE']
+                        ."</b><br /><br />");
                     e("<b>".tl('web_layout_total_elapsed_time',
-                         $data['TOTAL_ELAPSED_TIME'])."</b>");
+                         $data['TOTAL_ELAPSED_TIME'])."</b></div>");
                     foreach($data['QUERY_STATISTICS'] as $query_info) {
                         e("<div class='query'><div>".$query_info['QUERY'].
                             "</div><div><b>".

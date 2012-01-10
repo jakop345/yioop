@@ -369,8 +369,14 @@ define ('MINIMUM_FETCH_LOOP_TIME', 5);
 /** an idling fetcher sleeps this long between queue_server pings*/
 define ('FETCH_SLEEP_TIME', 15); 
 
-/** an queue_server minimim loop idel time*/
+/** an queue_server minimim loop idle time*/
 define ('QUEUE_SLEEP_TIME', 5);
+
+/** How often mirror script tries to synchronize with machine it is mirroring*/
+define ('MIRROR_SYNC_FREQUENCY', 3600);
+/** How often mirror script tries to notify machine it is mirroring that it
+is still alive*/
+define ('MIRROR_NOTIFY_FREQUENCY', 60);
 
 /** Max time before dirty index (queue_server) and 
     filters (fetcher) will be force saved in seconds*/

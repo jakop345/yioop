@@ -120,6 +120,16 @@ class MachineController extends Controller implements CrawlConstants
             }
         }
 
+        if(isset($_REQUEST['mirror'])) {
+            if($_REQUEST['mirror'] == "true" && 
+                !isset($statuses["mirror"][-1])) {
+                CrawlDaemon::start("mirror");
+            } else if($_REQUEST['mirror'] == "false" && 
+                isset($statuses["mirror"][-1]) ) {
+                CrawlDaemon::stop("mirror");
+            }
+        }
+
         if(isset($_REQUEST['fetcher']) && is_array($_REQUEST['fetcher'])) {
             foreach($_REQUEST['fetcher'] as $index => $value) {
                 if($value == "true" && !isset($statuses["fetcher"][$index]) ) {
@@ -142,6 +152,8 @@ class MachineController extends Controller implements CrawlConstants
         if(isset($_REQUEST["fetcher_num"])) {
             $fetcher_num = $this->clean($_REQUEST["fetcher_num"], "int");
             $log_file_name = LOG_DIR . "/{$fetcher_num}-fetcher.log";
+        }  else if(isset($_REQUEST["mirror"])) {
+            $log_file_name = LOG_DIR . "/mirror.log";
         } else {
             $log_file_name = LOG_DIR . "/queue_server.log";
         }

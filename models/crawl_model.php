@@ -35,6 +35,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**  For crawlHash function  */
 require_once BASE_DIR."/lib/utility.php";
+
 /** 
  * Loads common constants for web crawling, used for index_data_base_name and 
  * schedule_data_base_name 
@@ -240,6 +241,42 @@ class CrawlModel extends Model implements CrawlConstants
         }
 
         return $list;
+    }
+
+    /**
+     * Returns all the files in $dir or its subdirectories with modfied times
+     * more recent than timestamp. The file which have
+     * in their path or name a string in the $excludes array will be exclude
+     *
+     * @param string a directory to traverse
+     * @param int $timestamp used to check modified times against
+     * @param array $excludes an array of path substrings tot exclude
+     * @return array of file structs consisting of name, modified time and
+     *      size.
+     */
+    function getDeltaFileInfo($dir, $timestamp = 0, $excludes)
+    {
+        $dir_path_len = strlen($dir) + 1;
+        $files = $this->db->fileInfoRecursive($dir, true);
+        $names = array();
+        $results = array();
+        foreach ($files as $file) {
+            $file["name"] = substr($file["name"], $dir_path_len);
+            if($file["modified"] > $timestamp && $file["name"] !="") {
+                $flag = true;
+                foreach($excludes as $exclude) {
+                    if(stristr($file["name"], $exclude)) {
+                        $flag = false;
+                        break;
+                    }
+                }
+                if($flag) {
+                    $results[$file["name"]] = $file;
+                }
+            }
+        }
+        $results = array_values($results);
+        return $results;
     }
 
     /**

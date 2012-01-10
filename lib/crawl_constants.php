@@ -70,6 +70,8 @@ interface CrawlConstants
     const data_base_name = "At";
     const schedule_start_name = "StartCrawlSchedule.txt";
     const robot_table_name = "robot_table.txt";
+    const mirror_table_name = "mirror_table.txt";
+
 
     const MAX = 1;
     const MIN = -1;
@@ -183,6 +185,7 @@ interface CrawlConstants
     const INDEXED_FILE_TYPES = 'bq';
     const PAGE_RANGE_REQUEST = 'br';
     const PAGE_RECRAWL_FREQUENCY = 'bs';
+    const DATA = 'bt';
 
     const NEEDS_OFFSET_FLAG = 0x7FFFFFFF;
 

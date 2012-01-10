@@ -138,6 +138,14 @@ abstract class Controller
         $data['WRITING_MODE'] = getWritingMode();
         if(QUERY_STATISTICS) {
             $data['QUERY_STATISTICS'] = array();
+            $machine =  htmlentities($_SERVER["HTTP_HOST"]);
+            $machine_uri = htmlentities($_SERVER['REQUEST_URI']);
+            $protocol = (isset($_SERVER["HTTPS"])) ? "https://" : "http://";
+            if($machine == '::1') { //IPv6 :(
+                $machine = "[::1]/"; 
+                //used if the fetching and queue serving were on the same machine
+            }
+            $data['YIOOP_INSTANCE'] = $protocol . $machine . $machine_uri;
             $data['TOTAL_ELAPSED_TIME'] = 0;
             foreach($this->models as $model) {
                 $model_name = ucfirst($model)."Model";

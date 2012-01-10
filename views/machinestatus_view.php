@@ -78,10 +78,14 @@ class MachinestatusView extends View
                 $off_mirror = $base_url . "update&name={$m['NAME']}".
                     "&action=mirror_stop";
             ?></p>
-            <?php if($m['PARENT'] != "") {?>
+            <?php if($m['PARENT'] != "") {
+                $log_url = $base_url . "log&mirror_name={$m['NAME']}"
+            ?>
                 <table class="machinetable"><tr>
-                <th><?php e(tl('machinestatus_view_mirrors')); ?></th>
-                <td><?php e($m['PARENT']);?></td><td><?php 
+                <th><?php e(tl('machinestatus_view_mirrors', $m['PARENT'])); ?>
+                    </th>
+                <td>[<a href="<?php e($log_url);?>"><?php 
+                    e(tl('machinestatus_view_log'));?>]</td><td><?php 
                     $this->toggleHelper->render(
                         isset($m['STATUSES']["mirror"]) , 
                         $on_mirror, $off_mirror);
