@@ -63,19 +63,19 @@ class Bigrams
 {
 
     /**
-	 * Language tags and their corresponding bigram prefix
-	 * @var array
-	 */
-	 static $LANGPREFIX = array(
-		'en' => "en",
-		'en-US' => "en",
-		'en-GB' => "en",
-		'en-CA' => "en"
+     * Language tags and their corresponding bigram prefix
+     * @var array
+     */
+     static $LANG_PREFIX = array(
+        'en' => "en",
+        'en-US' => "en",
+        'en-GB' => "en",
+        'en-CA' => "en"
      );
 
-     const FOLDER = "/search_filters/";
-     const FILTERSUFFIX = "_bigrams.ftr";
-     const TEXTSUFFIX = "_bigrams.txt";
+     const FILTER_FOLDER = "/search_filters/";
+     const FILTER_SUFFIX = "_bigrams.ftr";
+     const TEXT_SUFFIX = "_bigrams.txt";
 
     /**
      * Extracts Bigrams from input set of phrases.
@@ -84,42 +84,42 @@ class Bigrams
      * @param string $lang Language to be used to stem bigrams.
      * @return array of bigrams and phrases
      */
-    static function extractBigrams($phrases,$lang)
+    static function extractBigrams($phrases, $lang)
     {
         $lang_prefix = $lang;
-        if(isset(self::$LANGPREFIX[$lang])) {
-		    $lang_prefix = self::$LANGPREFIX[$lang];
+        if(isset(self::$LANG_PREFIX[$lang])) {
+            $lang_prefix = self::$LANG_PREFIX[$lang];
         }
-        $filterFilePath 
-		    = WORK_DIRECTORY.self::FOLDER.$lang_prefix.self::FILTERSUFFIX;
-        if (file_exists($filterFilePath)) {
-            $bigrams = BloomFilterFile::load($filterFilePath);
+        $filter_path = WORK_DIRECTORY . 
+            self::FILTER_FOLDER . $lang_prefix . self::FILTER_SUFFIX;
+        if (file_exists($filter_path)) {
+            $bigrams = BloomFilterFile::load($filter_path);
         }
         else {
             return $phrases;
         }
-        $bigramsAndPhrases = array();
+        $bigram_phrases = array();
         $num_phrases = count($phrases);
         $i = 0;
         $j = 1;
-        while($j<$num_phrases){
+        while($j < $num_phrases){
             $pair = $phrases[$i]." ".$phrases[$j];
             if($bigrams->contains(strtolower($pair))){
-                $bigramsAndPhrases[] = $pair;
+                $bigram_phrases[] = $pair;
                 $i += 2;
                 $j += 2;
             }
             else{
-                $bigramsAndPhrases[] = $phrases[$i];
+                $bigram_phrases[] = $phrases[$i];
                 $i += 1;
                 $j += 1;
             }
         }
-        if($j==$num_phrases){
-            $bigramsAndPhrases[] = $phrases[$j-1];
+        if($j == $num_phrases) {
+            $bigram_phrases[] = $phrases[$j - 1];
         }
 
-        return $bigramsAndPhrases;
+        return $bigram_phrases;
     }
 
 
@@ -131,34 +131,34 @@ class Bigrams
      * @param number $num_of_bigrams Count of bigrams in text file.
      * @return none
      */
-    static function createBigramFilterFile($lang,$num_of_bigrams)
+    static function createBigramFilterFile($lang, $num_of_bigrams)
     {
         $lang_prefix = $lang;
-        if(isset(self::$LANGPREFIX[$lang])) {
-            $lang_prefix = self::$LANGPREFIX[$lang];
+        if(isset(self::$LANG_PREFIX[$lang])) {
+            $lang_prefix = self::$LANG_PREFIX[$lang];
         }
-        $filterFilePath 
-		    = WORK_DIRECTORY.self::FOLDER.$lang_prefix.self::FILTERSUFFIX;
-        if (file_exists($filterFilePath)) {
-            $bigrams = BloomFilterFile::load($filterFilePath);
+        $filter_path = 
+            WORK_DIRECTORY . self::FILTER_FOLDER . $lang_prefix . 
+            self::FILTER_SUFFIX;
+        if (file_exists($filter_path)) {
+            $bigrams = BloomFilterFile::load($filter_path);
         }
         else {
-            $bigrams 
-			    = new BloomFilterFile($filterFilePath, 
-				    $num_of_bigrams, 10000);
+            $bigrams = new BloomFilterFile($filter_path, 
+                    $num_of_bigrams, 10000);
         }
-    
-        $inputFilePath 
-		    = WORK_DIRECTORY.self::FOLDER.$lang_prefix.self::TEXTSUFFIX;
+
+        $inputFilePath = WORK_DIRECTORY . self::FILTER_FOLDER . 
+            $lang_prefix . self::TEXT_SUFFIX;
         $fp = fopen($inputFilePath, 'r') or die("Can't open bigrams text file");
         while ( ($bigram = fgets($fp)) !== false) {
           $words 
-		      = PhraseParser::
-			      extractPhrasesOfLengthOffset(trim($bigram),1,0,$lang);
-          if(strlen($words[0])==1){
+              = PhraseParser::
+                  extractPhrasesOfLengthOffset(trim($bigram), 1, 0, $lang);
+          if(strlen($words[0]) == 1){
               continue;
           }
-          $bigram_stemmed = implode(" ",$words);
+          $bigram_stemmed = implode(" ", $words);
           $bigrams->add(strtolower($bigram_stemmed));
         }
         fclose($fp);
@@ -167,41 +167,40 @@ class Bigrams
     }
 
     /**
-     * Generates a bigrams text file from input xml file.
+     * Generates a bigrams text file from input wikimedia xml file.
      *
-     * @param string $inputXML XML file name to be used to extract bigrams.
+     * @param string $wiki_file wikimedia XML file name to be used to extract bigrams.
      * @param string $lang Language to be used to create bigrams.
      * @return number $num_of_bigrams Count of bigrams in text file.
      */
-    static function generateBigramsTextFile($inputXML,$lang)
+    static function generateBigramsTextFile($wiki_file, $lang)
     {
-        ini_set("memory_limit","1024M");
         $lang_prefix = $lang;
-		if(isset(self::$LANGPREFIX[$lang])) {
-		    $lang_prefix = self::$LANGPREFIX[$lang];
-		}
-        $xmlFilePath = WORK_DIRECTORY.self::FOLDER.$inputXML;
-        $fr = fopen($xmlFilePath, 'r') or die("Can't open xml file");
-        $bigramsFilePath 
-		    = WORK_DIRECTORY.self::FOLDER.$lang_prefix.self::TEXTSUFFIX;
-        $fw = fopen($bigramsFilePath, 'w') or die("Can't open text file");
+        if(isset(self::$LANG_PREFIX[$lang])) {
+            $lang_prefix = self::$LANG_PREFIX[$lang];
+        }
+        $wiki_file_path = WORK_DIRECTORY.self::FILTER_FOLDER.$wiki_file;
+        $fr = fopen($wiki_file_path, 'r') or die("Can't open xml file");
+        $bigrams_file_path 
+            = WORK_DIRECTORY.self::FILTER_FOLDER.$lang_prefix.self::TEXT_SUFFIX;
+        $fw = fopen($bigrams_file_path, 'w') or die("Can't open text file");
         $bigrams = array();
-        while ( ($inputText = fgetss($fr)) !== false) {
-            $inputText = strtolower($inputText);
+        while ( ($input_text = fgetss($fr)) !== false) {
+            $input_text = strtolower($input_text);
             $pattern = '/#redirect\s\[\[[a-z]+[\s|_][a-z0-9]+\]\]/';
-            preg_match($pattern, $inputText, $matches);
-            if(count($matches)==1){
-                $bigram 
-				    = str_replace(array('#redirect [[',']]'),"",$matches[0]);
-                $bigram = str_replace("_"," ",$bigram);
+            preg_match($pattern, $input_text, $matches);
+            if(count($matches) == 1) {
+                $bigram = str_replace(
+                    array('#redirect [[',']]'), "", $matches[0]);
+                $bigram = str_replace("_", " ", $bigram);
                 $bigrams[] = $bigram;
             }
         }
         $bigrams = array_unique($bigrams);
         $num_of_bigrams = count($bigrams);
         sort($bigrams);
-        $bigramsStr = implode("\n",$bigrams);
-        fwrite($fw,$bigramsStr);
+        $bigrams_string = implode("\n", $bigrams);
+        fwrite($fw, $bigrams_string);
         fclose($fr);
         fclose($fw);
         return $num_of_bigrams;

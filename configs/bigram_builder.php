@@ -30,9 +30,11 @@
  * @filesource
  */
 
-if(php_sapi_name() != 'cli') {echo "EXECUTE FROM COMMAND LINE"; exit();}
+if(php_sapi_name() != 'cli') {echo "BAD REQUEST"; exit();}
 
-if(count($argv)!=3){
+ini_set("memory_limit","1024M");
+
+if(count($argv) != 3){
     echo "Please provide arguments xmlFileName and language";
     exit();
 }
@@ -68,7 +70,7 @@ if (!file_exists($xmlFilePath)) {
  *This call creates a bigrams text file from input xml file and
  *returns the count of bigrams in the text file.
  */
-$num_of_bigrams = Bigrams::generateBigramsTextFile($argv[1],$argv[2]);
+$num_of_bigrams = Bigrams::generateBigramsTextFile($argv[1], $argv[2]);
 
 /*
  *This call creates a bloom filter file from bigrams text file based
@@ -76,6 +78,6 @@ $num_of_bigrams = Bigrams::generateBigramsTextFile($argv[1],$argv[2]);
  *to the filter file name. The count of bigrams in text file is passed
  *as a parameter to set the limit of bigrams in the filter file.
  */
-Bigrams::createBigramFilterFile($argv[2],$num_of_bigrams);
+Bigrams::createBigramFilterFile($argv[2], $num_of_bigrams);
 
 ?>
