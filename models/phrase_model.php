@@ -819,8 +819,14 @@ class PhraseModel extends Model
         foreach($subscore_fields as $field) {
             orderCallback($pages[0], $pages[0], $field);
             usort($pages, "orderCallback");
+            $score = 0;
             for($i = 0; $i < $result_count; $i++) {
-                $pages[$i][CrawlConstants::SCORE] += 100/(60 + $i);
+                if($i > 0) {
+                    if($pages[$i - 1][$field] != $pages[$i][$field]) {
+                        $score++;
+                    }
+                }
+                $pages[$i][CrawlConstants::SCORE] += 100/(60 + $score);
             }
         }
         orderCallback($pages[0], $pages[0], CrawlConstants::SCORE);
