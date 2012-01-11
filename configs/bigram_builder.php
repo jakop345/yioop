@@ -35,7 +35,13 @@ if(php_sapi_name() != 'cli') {echo "BAD REQUEST"; exit();}
 ini_set("memory_limit","1024M");
 
 if(count($argv) != 3){
-    echo "Please provide arguments xmlFileName and language";
+    echo "bigram_builder is used to create a bigram filter file for the \n".
+        "Yioop! search engine. This filter file is used to detect when two \n";
+        "words in a language should be treated as a unit. For example, \n".
+        "Bill Clinton. bigram_builder is run from the command line as:\n".
+        "php bigram.php wiki_xml lang\n".
+        "where wiki_xml is a wikimedia xml file whose urls will be used to\n"
+        "determine the bigrams and lang is an IANA language tag."
     exit();
 }
 
@@ -60,9 +66,9 @@ if(!PROFILE) {
  */
 require_once BASE_DIR."/lib/bigrams.php";
 
-$xmlFilePath = WORK_DIRECTORY."/search_filters/".$argv[1];
-if (!file_exists($xmlFilePath)) {
-    echo $argv[1]." does not exist in the directory.";
+$wiki_file_path = WORK_DIRECTORY."/search_filters/";
+if (!file_exists($wiki_file_path.$argv[1])) {
+    echo $argv[1]." does not exist in $wiki_file_path";
     exit();
 }
 
