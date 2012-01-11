@@ -260,7 +260,6 @@ class AdminController extends Controller implements CrawlConstants
         }
 
         if(file_exists(CRAWL_DIR."/schedules/crawl_status.txt")) {
-
             //assume if status not updated for self::CRAWL_TIME_OUT
             // crawl not active (do check for both scheduler and indexer)
             if(filemtime(

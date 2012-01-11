@@ -722,6 +722,7 @@ class QueueServer implements CrawlConstants, Join
     function stopCrawl()
     {
         if($this->isAScheduler()) {
+            
             $this->dumpQueueToSchedules();
         }
         if($this->isAIndexer()) {
@@ -732,12 +733,14 @@ class QueueServer implements CrawlConstants, Join
         }
         $close_file = CRAWL_DIR.'/schedules/'.self::index_closed_name.
             $this->crawl_time.".txt";
-        if(!file_exists($close_file) && $this->server_type != self::BOTH) {
+
+        if(!file_exists($close_file) && 
+            strcmp($this->server_type, self::BOTH) != 0) {
             file_put_contents($close_file, "2");
             do {
                 sleep(5);
-                $contents = file_get_contents($close_file);
-            } while(file_exists($close_file) && $contents == "2");
+                $contents = trim(file_get_contents($close_file));
+            } while(file_exists($close_file) && strcmp($contents, "1") != 0);
         } else {
             file_put_contents($close_file, "1");
         }
@@ -1069,16 +1072,22 @@ class QueueServer implements CrawlConstants, Join
                 $pre_timestamp = strstr($dir, self::index_data_base_name)) > 0){
                 $timestamp = 
                     substr($pre_timestamp, strlen(self::index_data_base_name));
-                if(!file_exists(CRAWL_DIR.'/schedules/'.self::index_closed_name.
-                    $timestamp.".txt") && $this->crawl_time != $timestamp) {
+                $close_file = CRAWL_DIR.'/schedules/'. self::index_closed_name.
+                    $timestamp.".txt";
+                $close_exists = file_exists($close_file);
+                $state = "1";
+                if($close_exists) {
+                    $state = trim(file_get_contents($close_file));
+                }
+                if((!$close_exists || strcmp($state, "1") != 0) && 
+                    $this->crawl_time != $timestamp) {
                     crawlLog("Properly closing Index with Timestamp ".
                         $timestamp. ". Will contain all but last shard before ".
                         "crash.");
                     $index_archive = new IndexArchiveBundle($dir, false);
                     $index_archive->dictionary->mergeAllTiers();
                     touch(CRAWL_DIR."/schedules/crawl_status.txt", time());
-                    file_put_contents(CRAWL_DIR.'/schedules/'.
-                        self::index_closed_name.$timestamp.".txt", "1");
+                    file_put_contents($close_file, "1");
                 }
                 $living_stamps[] = $timestamp;
             }
