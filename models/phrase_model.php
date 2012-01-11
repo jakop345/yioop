@@ -808,7 +808,23 @@ class PhraseModel extends Model
             }
         }
 
-        usort($pages, "scoreOrderCallback");
+        $result_count = count($pages);
+        // initialize scores
+        for($i = 0; $i < $result_count; $i++) {
+            $pages[$i][CrawlConstants::SCORE] = 0;
+        }
+        $subscore_fields = array(self::DOC_RANK, self::RELEVANCE,
+            self::PROXIMITY);
+        // Compute Reciprocal Rank Fusion Score
+        foreach($subscore_fields as $field) {
+            orderCallback($pages[0], $pages[0], $field);
+            usort($pages, "orderCallback");
+            for($i = 0; $i < $result_count; $i++) {
+                $pages[$i][CrawlConstants::SCORE] += 100/(60 + $i);
+            }
+        }
+        orderCallback($pages[0], $pages[0], CrawlConstants::SCORE);
+        usort($pages, "orderCallback");
 
         if($num_retrieved < $to_retrieve) {
             $results['TOTAL_ROWS'] = $num_retrieved;
@@ -817,7 +833,7 @@ class PhraseModel extends Model
             //this is only an approximation
         }
 
-        $result_count = count($pages);
+
         if(USE_CACHE) {
             for($i = 0; $i < $result_count; $i++){
                 unset($pages[$i][self::LINKS]);

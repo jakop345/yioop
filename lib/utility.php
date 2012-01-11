@@ -653,35 +653,24 @@ function fileInfo($file)
 //ordering functions used in sorting
 
 /**
- *  Callback function used to sort documents by score
+ *  Callback function used to sort documents by a field
  *
- *  The function is used to sort documents being added to an IndexArchiveBundle
- *
- *  @param string $word_doc_a doc id of first document to compare
- *  @param string $word_doc_b doc id of second document to compare
- *  @return int -1 if first doc bigger 1 otherwise
- *  @see IndexArchiveBundle::addPartitionWordData()
- */
-function scoreOrderCallback($word_doc_a, $word_doc_b)
-{
-    return ((float)$word_doc_a[CrawlConstants::SCORE] > 
-        (float)$word_doc_b[CrawlConstants::SCORE]) ? -1 : 1;
-}
-
-/**
- *  Callback function used to sort documents by doc_rank
- *
- *  The function is used to sort documents being added to an IndexArchiveBundle
+ *  Should be initialized before using in usort with a call
+ *  like: orderCallback($tmp, $tmp, "field_want");
  *
  *  @param string $word_doc_a doc id of first document to compare
  *  @param string $word_doc_b doc id of second document to compare
+ *  @param string $field which field of these associative arrays to sort by
  *  @return int -1 if first doc bigger 1 otherwise
- *  @see IndexArchiveBundle::addPartitionWordData()
  */
-function docRankOrderCallback($word_doc_a, $word_doc_b)
+function orderCallback($word_doc_a, $word_doc_b, $order_field = NULL)
 {
-    return ((float)$word_doc_a[CrawlConstants::DOC_RANK] > 
-        (float)$word_doc_b[CrawlConstants::DOC_RANK]) ? -1 : 1;
+    static $field = "a";
+    if($order_field !== NULL) {
+        $field = $order_field;
+    }
+    return ((float)$word_doc_a[$field] > 
+        (float)$word_doc_b[$field]) ? -1 : 1;
 }
 
 /**
