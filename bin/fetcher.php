@@ -585,7 +585,8 @@ class Fetcher implements CrawlConstants
             }
         }
         $files = glob(CRAWL_DIR.'/schedules/*');
-        $names = array(self::fetch_batch_name, self::fetch_crawl_info);
+        $names = array(self::fetch_batch_name, self::fetch_crawl_info,
+            self::fetch_closed_name, self::schedule_name);
         foreach($files as $file) {
             $timestamp = "";
             foreach($names as $name) {

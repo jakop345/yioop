@@ -110,8 +110,8 @@ class Bigrams
                 $j += 2;
             } else {
                 $bigram_phrases[] = $phrases[$i];
-                $i += 1;
-                $j += 1;
+                $i++;
+                $j++;
             }
         }
         if($j == $num_phrases) {

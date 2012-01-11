@@ -1084,9 +1084,10 @@ class QueueServer implements CrawlConstants, Join
             }
         }
         $files = glob(CRAWL_DIR.'/schedules/*');
-        $names = array(self::schedule_data_base_name, self::schedule_name,
-            self::index_data_base_name, self::robot_data_base_name,
-            self::index_closed_name);
+        $names_dir = array(self::schedule_data_base_name, 
+            self::index_data_base_name, self::robot_data_base_name);
+        $name_files = array(self::schedule_name, self::index_closed_name);
+        $names = array_merge($name_files, $names_dir);
         foreach($files as $file) {
             $timestamp = "";
             foreach($names as $name) {
@@ -1094,8 +1095,7 @@ class QueueServer implements CrawlConstants, Join
                 if(strlen(
                     $pre_timestamp = strstr($file, $name)) > 0) {
                     $timestamp =  substr($pre_timestamp, strlen($name), 10);
-                    if($name == self::schedule_name ||
-                        $name == self::index_closed_name){
+                    if(in_array($name, $name_files)) {
                         $unlink_flag = true;
                     }
                     break;
