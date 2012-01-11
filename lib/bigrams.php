@@ -126,11 +126,11 @@ class Bigrams
     /**
      * Creates a bloom filter file from a bigram text file
      *
-     * @param string $lang Language to be used to stem bigrams.
-     * @param number $num_of_bigrams Count of bigrams in text file.
+     * @param string $lang language to be used to stem bigrams.
+     * @param number $num_bigrams Count of bigrams in text file.
      * @return none
      */
-    static function createBigramFilterFile($lang, $num_of_bigrams)
+    static function createBigramFilterFile($lang, $num_bigrams)
     {
         $lang_prefix = $lang;
         if(isset(self::$LANG_PREFIX[$lang])) {
@@ -143,18 +143,16 @@ class Bigrams
             $bigrams = BloomFilterFile::load($filter_path);
         }
         else {
-            $bigrams = new BloomFilterFile($filter_path, 
-                    $num_of_bigrams, 10000);
+            $bigrams = new BloomFilterFile($filter_path, $num_bigrams);
         }
 
         $inputFilePath = WORK_DIRECTORY . self::FILTER_FOLDER . 
             $lang_prefix . self::TEXT_SUFFIX;
         $fp = fopen($inputFilePath, 'r') or die("Can't open bigrams text file");
         while ( ($bigram = fgets($fp)) !== false) {
-          $words 
-              = PhraseParser::
+          $words = PhraseParser::
                   extractPhrasesOfLengthOffset(trim($bigram), 1, 0, $lang);
-          if(strlen($words[0]) == 1){
+          if(strlen($words[0]) == 1) { // get rid of bigrams like "a dog"
               continue;
           }
           $bigram_stemmed = implode(" ", $words);
@@ -168,9 +166,10 @@ class Bigrams
     /**
      * Generates a bigrams text file from input wikimedia xml file.
      *
-     * @param string $wiki_file wikimedia XML file name to be used to extract bigrams.
+     * @param string $wiki_file wikimedia XML file name to be used to 
+     *      extract bigrams.
      * @param string $lang Language to be used to create bigrams.
-     * @return number $num_of_bigrams Count of bigrams in text file.
+     * @return number $num_bigrams Count of bigrams in text file.
      */
     static function generateBigramsTextFile($wiki_file, $lang)
     {
@@ -196,12 +195,12 @@ class Bigrams
             }
         }
         $bigrams = array_unique($bigrams);
-        $num_of_bigrams = count($bigrams);
+        $num_bigrams = count($bigrams);
         sort($bigrams);
         $bigrams_string = implode("\n", $bigrams);
         fwrite($fw, $bigrams_string);
         fclose($fr);
         fclose($fw);
-        return $num_of_bigrams;
+        return $num_bigrams;
     }
 }
