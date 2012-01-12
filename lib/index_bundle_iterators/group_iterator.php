@@ -550,7 +550,8 @@ class GroupIterator extends IndexBundleIterator
                 $sum_rank += $relevance_boost * $hash_page[self::DOC_RANK] 
                     * $domain_weights[$hash_host];
                 $sum_relevance += $relevance_boost *$hash_page[self::RELEVANCE];
-                $sum_proximity += $hash_page[self::PROXIMITY];
+                $sum_proximity += $hash_page[self::PROXIMITY]
+                    * $domain_weights[$hash_host];
                 $domain_weights[$hash_host] *=  0.5;
             }
         }

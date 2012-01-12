@@ -815,7 +815,9 @@ class PhraseModel extends Model
         }
         $subscore_fields = array(self::DOC_RANK, self::RELEVANCE,
             self::PROXIMITY);
+        $num_fields = count($subscore_fields);
         // Compute Reciprocal Rank Fusion Score
+        $alpha = 600/$num_fields;
         foreach($subscore_fields as $field) {
             orderCallback($pages[0], $pages[0], $field);
             usort($pages, "orderCallback");
@@ -826,7 +828,7 @@ class PhraseModel extends Model
                         $score++;
                     }
                 }
-                $pages[$i][CrawlConstants::SCORE] += 100/(60 + $score);
+                $pages[$i][CrawlConstants::SCORE] += $alpha/(60 + $score);
             }
         }
         orderCallback($pages[0], $pages[0], CrawlConstants::SCORE);
