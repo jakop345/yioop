@@ -22,6 +22,48 @@
  *
  *  END LICENSE
  *
+ * Bigrams are pair of words which always occur together in the same
+ * sequence in a user query, ex: "honda accord". Yioop treates these
+ * pair of words as a single word to increse the speed and efficiency
+ * of retrieval. This script can be used to create a bigrams filter
+ * file for the yioop search engine to filter such words from documents
+ * and queries. The input to this script is an xml file which contains
+ * a large collection of such bigrams. The most common source of a large
+ * set of bigrams in an xml file is wikipedia dumps. Wikipedia dumps are
+ * available for downloaded online free of cost. Typically the bigrams
+ * filter file is specific to a language, therefore user has to create a
+ * separate filter file for each language to use this functionality. This
+ * script can be run multiple times to create a different filter file by
+ * specifying a different input xml and a different language as the
+ * command line arguments. The xml dumps of wikipedia specific to
+ * different languages are available to download. These language specific
+ * dumps of wikipedia as xml file serve as input to this script.
+ *
+ * For example the user can follow the following steps to create a bigrams
+ * filter for english langauge.
+ *
+ * Step 1): Go to link http://dumps.wikimedia.org/enwiki/ which is source
+ * of dumps for english wikipedia. This page lists all the dumps according
+ * to date they were taken. Choose any suitable date or the latest. Say we
+ * chose 20120104/, dumps taken on 01/04/2012. This would take you to the
+ * page which has many links based on type of content you are looking for.
+ * We are interested in content titled
+ * "Recobine all pages, current versions only" with the link
+ * "enwiki-20120104-pages-meta-current.xml.bz2"
+ * This is a bz2 compressed xml file containing all the english pages of
+ * wikipedia. Download the file to the "serach_filters" folder of your
+ * yioop work directory associated with your profile.
+ * (Note: You should have sufficient hard disk space in the order of
+ *        100GB to store the compressed dump and script extracted xml.
+ *        The script also accepts an uncompressed XML file as input.
+ *        The filter file generated is a few megabytes.)
+ *
+ * Step 2): Run this script from the php command line as below
+ * php bigram_builder enwiki-20120104-pages-meta-current.xml.bz2 en
+ *
+ * This would create a bigram filter for english in the same directory.
+ *
+ *
  * @author Ravi Dhillon  ravi.dhillon@yahoo.com
  * @package seek_quarry
  * @license http://www.gnu.org/licenses/ GPL3
@@ -36,12 +78,13 @@ ini_set("memory_limit","1024M");
 
 if(count($argv) != 3){
     echo "bigram_builder is used to create a bigram filter file for the \n".
-        "Yioop! search engine. This filter file is used to detect when two \n";
+        "Yioop! search engine. This filter file is used to detect when two \n".
         "words in a language should be treated as a unit. For example, \n".
         "Bill Clinton. bigram_builder is run from the command line as:\n".
         "php bigram.php wiki_xml lang\n".
-        "where wiki_xml is a wikimedia xml file whose urls will be used to\n"
-        "determine the bigrams and lang is an IANA language tag."
+        "where wiki_xml is a wikipedia xml file or a bz2 compressed xml\n".
+        "file whose urls will be used to determine the bigrams and lang\n".
+        "is an IANA language tag.";
     exit();
 }
 
