@@ -56,17 +56,20 @@ class FetchUrl implements CrawlConstants
      * @param array $sites  an array containing urls of pages to request
      * @param bool $timer  flag, true means print timing statistics to log
      * @param int $page_range_request maximum number of bytes to download/page
+     *      0 means download all
      * @param string $key  the component of $sites[$i] that has the value of 
      *      a url to get defaults to URL
      * @param string $value component of $sites[$i] in which to store the 
      *      page that was gotten
-     * 
+     *  @param array $post_data for each site data to be POST'd to that site
+     *
      *  @return array an updated array with the contents of those pages
      */ 
 
     public static function getPages($sites, $timer = false,
         $page_range_request = PAGE_RANGE_REQUEST, $temp_dir = NULL,
-        $key=CrawlConstants::URL, $value = CrawlConstants::PAGE)
+        $key=CrawlConstants::URL, $value = CrawlConstants::PAGE, $minimal=false,
+        $post_data = NULL)
     {
         $agent_handler = curl_multi_init(); 
 
@@ -97,7 +100,9 @@ class FetchUrl implements CrawlConstants
                 curl_setopt($sites[$i][0], CURLOPT_RETURNTRANSFER, true);
                 curl_setopt($sites[$i][0], CURLOPT_CONNECTTIMEOUT,PAGE_TIMEOUT);
                 curl_setopt($sites[$i][0], CURLOPT_TIMEOUT, PAGE_TIMEOUT);
-                curl_setopt($sites[$i][0], CURLOPT_HEADER, true);
+                if(!$minimal) {
+                    curl_setopt($sites[$i][0], CURLOPT_HEADER, true);
+                }
                 curl_setopt($sites[$i][0], CURLOPT_ENCODING, "");
                 //make lighttpd happier
                 curl_setopt($sites[$i][0], CURLOPT_HTTPHEADER, 
@@ -107,9 +112,15 @@ class FetchUrl implements CrawlConstants
                     curl_setopt($sites[$i][0], CURLOPT_RANGE, "0-".
                         $page_range_request);
                 }
+                if($post_data != NULL) {
+                    curl_setopt($sites[$i][0], CURLOPT_POST, true);
+                    curl_setopt($sites[$i][0], CURLOPT_POSTFIELDS, 
+                        $post_data[$i]);
+                }
                 curl_multi_add_handle($agent_handler, $sites[$i][0]);
             }
         }
+
         if($timer) {
             crawlLog("  Init Get Pages ".(changeInMicrotime($start_time)));
         }
@@ -134,6 +145,7 @@ class FetchUrl implements CrawlConstants
         }
 
         if($timer) {
+
             crawlLog("  Page Request time ".(changeInMicrotime($start_time)));
         }
         $start_time = microtime();
@@ -152,10 +164,14 @@ class FetchUrl implements CrawlConstants
                     we sent was ignored. So we manually truncate the data
                     here
                  */
-                $content = substr($content, 0, $page_range_request);
-                if(isset($content)) {
+                if($page_range_request > 0) {
+                    $content = substr($content, 0, $page_range_request);
+                }
+                if(isset($content) && !$minimal) {
                     $site = self::parseHeaderPage($content, $value);
                     $sites[$i] = array_merge($sites[$i], $site);
+                } else {
+                    $sites[$i][$value] = $content;
                 }
 
                 $sites[$i][self::HTTP_CODE] = 
@@ -238,7 +254,7 @@ class FetchUrl implements CrawlConstants
      */
     public static function parseHeaderPage(&$header_and_page, 
         $value=CrawlConstants::PAGE)
-    {
+    { 
         $new_offset = 0;
         // header will include all redirect headers
         $site = array();

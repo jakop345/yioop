@@ -97,7 +97,7 @@ if(file_exists(WORK_DIRECTORY."/profile.php")) {
     define('LOCALE_DIR', FALLBACK_LOCALE_DIR);
     /** @ignore */
     define('LOG_DIR', BASE_DIR."/log");
-    define('QUEUE_SERVER', "http://localhost/");
+    define('NAME_SERVER', "http://localhost/");
     define('USER_AGENT_SHORT', "NeedsNameBot");
     /** @ignore */
     define('SESSION_NAME', "yioopbiscuit");
@@ -139,7 +139,7 @@ if(!PROFILE) {
  * a web-server it is crawling
  */
 define('USER_AGENT', 
-    'Mozilla/5.0 (compatible; '.USER_AGENT_SHORT.'  +'.QUEUE_SERVER.'bot.php)');
+    'Mozilla/5.0 (compatible; '.USER_AGENT_SHORT.'; +'.NAME_SERVER.'bot.php)');
 
 /** name of the cookie used to manage the session 
  * (store language and perpage settings)
@@ -369,7 +369,7 @@ define ('MINIMUM_FETCH_LOOP_TIME', 5);
 /** an idling fetcher sleeps this long between queue_server pings*/
 define ('FETCH_SLEEP_TIME', 15); 
 
-/** an queue_server minimim loop idle time*/
+/** an a queue_server minimum loop idle time*/
 define ('QUEUE_SLEEP_TIME', 5);
 
 /** How often mirror script tries to synchronize with machine it is mirroring*/
@@ -381,6 +381,9 @@ define ('MIRROR_NOTIFY_FREQUENCY', 60);
 /** Max time before dirty index (queue_server) and 
     filters (fetcher) will be force saved in seconds*/
 define('FORCE_SAVE_TIME', 3600);
+
+    /** Number of seconds of no fetcher contact before crawl is deemed dead*/
+define("CRAWL_TIME_OUT", 1800);
 
 /** maximum number of terms allowed in a conjunctive search query */
 define ('MAX_QUERY_TERMS', 10); 

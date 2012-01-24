@@ -69,21 +69,47 @@ class MachineModel extends Model
     {
         $this->db->selectDB(DB_NAME);
 
-        $roles = array();
+        $machines = array();
 
         $sql = "SELECT * FROM MACHINE ORDER BY NAME DESC"; 
 
         $result = $this->db->execute($sql);
         $i = 0;
 
-        while($roles[$i] = $this->db->fetchArray($result)) {
+        while($machines[$i] = $this->db->fetchArray($result)) {
             $i++;
         }
-        unset($roles[$i]); //last one will be null
+        unset($machines[$i]); //last one will be null
         
 
-        return $roles;
+        return $machines;
 
+    }
+
+    /**
+     *  Returns urls for all the queue_servers stored in the DB
+     *
+     *  @return array machine names
+     */
+    function getQueueServerUrls()
+    {
+        $this->db->selectDB(DB_NAME);
+
+        $machines = array();
+
+        $sql = "SELECT URL FROM MACHINE WHERE HAS_QUEUE_SERVER > 0 ".
+            "ORDER BY NAME DESC"; 
+
+        $result = $this->db->execute($sql);
+        $i = 0;
+
+        while($row = $this->db->fetchArray($result)) {
+            $machines[$i] = $row["URL"];
+            $i++;
+        }
+        unset($machines[$i]); //last one will be null
+
+        return $machines;
     }
 
     /**

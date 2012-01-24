@@ -115,6 +115,14 @@ class GroupIterator extends IndexBundleIterator
     var $only_lookup;
 
     /**
+     * When true, tells any parent iterator not to try to call getIndex,
+     * currentGenDocOffsetWithWord, or computeRelevance
+     *
+     * @var bool
+     */
+    var $no_lookup;
+
+    /**
      * the minimum number of pages to group from a block;
      * this trumps $this->index_bundle_iterator->results_per_block
      */
@@ -130,6 +138,8 @@ class GroupIterator extends IndexBundleIterator
      *
      * @param object $index_bundle_iterator to use as a source of documents
      *      to iterate over
+     * @param int $num_iterators
+     * @param bool $only_lookup
      */
     function __construct($index_bundle_iterator, $num_iterators = 1, 
         $only_lookup = false)
@@ -146,6 +156,10 @@ class GroupIterator extends IndexBundleIterator
             $this->results_per_block /=  ceil($num_iterators/2);
         }
         $this->only_lookup = $only_lookup;
+        $this->no_lookup = 
+            (isset( $this->index_bundle_iterator->no_lookup)) ?
+             $this->index_bundle_iterator->no_lookup : false;
+
         $this->reset();
     }
 
@@ -186,6 +200,7 @@ class GroupIterator extends IndexBundleIterator
     function findDocsWithWord()
     {
         // first get a block of documents on which grouping can be done
+
         $pages =  $this->getPagesToGroup();
 
         $this->count_block_unfiltered = count($pages);
@@ -195,9 +210,10 @@ class GroupIterator extends IndexBundleIterator
         $this->current_block_hashes = array();
         $this->current_seen_hashes = array();
         if($this->count_block_unfiltered > 0 ) {
-            if($this->only_lookup) {
+            if($this->only_lookup && !$this->no_lookup) {
 
                 $pages = $this->insertUnseenDocs($pages);
+
                 $this->count_block = count($pages);
             } else {
                 /* next we group like documents by url and remember 
@@ -219,8 +235,8 @@ class GroupIterator extends IndexBundleIterator
             }
         }
         $this->pages = $pages;
-        return $pages;
 
+        return $pages;
     }
 
     /**
@@ -242,7 +258,7 @@ class GroupIterator extends IndexBundleIterator
                     $pages = -1;
                 }
             } else {
-                $pages = array_merge($pages, $new_pages);
+                $pages += $new_pages;
                 $count = count($pages);
             }
             if($count < $this->results_per_block && !$done) {
@@ -250,7 +266,7 @@ class GroupIterator extends IndexBundleIterator
             } else {
                 $done = true;
             }
-        } while(!$done);
+        } while($done != true);
 
         return $pages;
     }
@@ -317,7 +333,7 @@ class GroupIterator extends IndexBundleIterator
         foreach($pre_out_pages as $hash_url => $data) {
             $hash = $pre_out_pages[$hash_url][0][self::HASH];
             $is_location = (crawlHash($hash_url. "LOCATION", true) == $hash);
-            if(!$data[0][self::IS_DOC] || $is_location) {
+            if(!$this->no_lookup && (!$data[0][self::IS_DOC] || $is_location)) {
                 $item = $this->lookupDoc($data[0]['KEY'], 
                     $is_location, 3); 
                 if($item != false) {
@@ -377,7 +393,7 @@ class GroupIterator extends IndexBundleIterator
             $count = count($word_iterator->dictionary_info);
         }
         if($count > 1) { 
-            /* if a page is recrawlled it gets a second info page,
+            /* if a page is recrawled it gets a second info page,
                this is to ensure we look up the most recent
             */
             $gen_off = array();
@@ -418,7 +434,7 @@ class GroupIterator extends IndexBundleIterator
 
     /**
      *  This function is called if $raw mode 1 was requested. In this
-     *  mode no grouping is done, but it a link does not correspond to
+     *  mode no grouping is done, but if a link does not correspond to
      *  a doc file already listed, then an attempt to look up the doc is
      *  done
      *
@@ -576,7 +592,7 @@ class GroupIterator extends IndexBundleIterator
     {
         if($this->current_block_fresh == false) {
             $result = $this->currentDocsWithWord();
-            if(!is_array($result)) {
+            if(!is_array($result) || $this->no_lookup) {
                 return $result;
             }
         }
@@ -605,8 +621,8 @@ class GroupIterator extends IndexBundleIterator
                         $index = $this->getIndex($key);
                     }
                     $index->setCurrentShard($generation, true);
-                    $page = $index->getPage($summary_offset);
-                    if($page == array()) {continue;}
+                    $page = @$index->getPage($summary_offset);
+                    if(!$page || $page == array()) {continue;}
                     $ellipsis_used = false;
                     if(!isset($out_pages[$doc_key][self::SUMMARY])) {
                         $out_pages[$doc_key][self::SUMMARY] = $page;

@@ -217,17 +217,17 @@ class ConfigureElement extends Element
             </fieldset>
             </div>
             <div class="topmargin"><fieldset><legend><?php 
-                e(tl('configure_element_queue_server'))?></legend>
+                e(tl('configure_element_name_server'))?></legend>
                 <div ><b><label for="queue-fetcher-salt"><?php 
-                    e(tl('configure_element_queue_server_key'))?></label></b> 
+                    e(tl('configure_element_name_server_key'))?></label></b> 
                     <input type="text" id="queue-fetcher-salt" name="AUTH_KEY" 
                         value="<?php e($data['AUTH_KEY']); ?>" 
                         class="widefield" />
                 </div>
                 <div class="topmargin"><b><label for="queue-server-url"><?php 
-                    e(tl('configure_element_queue_server_url'))?></label></b> 
-                    <input type="text" id="queue-server-url" name="QUEUE_SERVER"
-                        value="<?php e($data['QUEUE_SERVER']); ?>" 
+                    e(tl('configure_element_name_server_url'))?></label></b> 
+                    <input type="text" id="queue-server-url" name="NAME_SERVER"
+                        value="<?php e($data['NAME_SERVER']); ?>" 
                         class="extrawidefield" />
                 </div>
                 <div class="topmargin"><label for="use-memcache"><b><?php 

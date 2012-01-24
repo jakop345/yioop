@@ -96,10 +96,10 @@ class Mirror implements CrawlConstants
      */
     var $db;
     /**
-     * Url or IP address of the queue_server to get sites to crawl from
+     * Url or IP address of the name_server to get sites to crawl from
      * @var string
      */
-    var $queue_server;
+    var $name_server;
 
     /**
      * Last time a sync list was obtained from master machines
@@ -146,14 +146,14 @@ class Mirror implements CrawlConstants
     /**
      * Sets up the field variables so that syncing can begin
      *
-     * @param string $queue_server URL or IP address of the queue server
+     * @param string $name_server URL or IP address of the name server
      */
-    function __construct($queue_server) 
+    function __construct($name_server) 
     {
         $db_class = ucfirst(DBMS)."Manager";
         $this->db = new $db_class();
 
-        $this->queue_server = $queue_server;
+        $this->name_server = $name_server;
         $this->last_sync_file = CRAWL_DIR."/schedules/last_sync.txt";
         if(file_exists($this->last_sync_file)) {
             $this->last_sync = unserialize(
@@ -239,13 +239,13 @@ class Mirror implements CrawlConstants
 
         $info = array();
 
-        $queue_server = $this->queue_server;
+        $name_server = $this->name_server;
 
         $start_time = microtime();
         $time = time();
         $session = md5($time . AUTH_KEY);
         $request =  
-            $queue_server.
+            $name_server.
             "?c=resource&time=$time&session=$session".
             "&robot_instance=".ROBOT_INSTANCE."&machine_uri=".WEB_URI.
             "&last_sync=".$this->last_sync;
@@ -293,7 +293,7 @@ class Mirror implements CrawlConstants
     function copyNextSyncFile()
     {
         $dir = $this->sync_dir;
-        $queue_server = $this->queue_server;
+        $name_server = $this->name_server;
         $time = time();
         $session = md5($time . AUTH_KEY);
         if(count($this->sync_schedule) <= 0) return;
@@ -308,7 +308,7 @@ class Mirror implements CrawlConstants
             }
         } else {
             $request = 
-                "$queue_server?c=resource&a=get&time=$time&session=$session".
+                "$name_server?c=resource&a=get&time=$time&session=$session".
                 "&robot_instance=".ROBOT_INSTANCE."&machine_uri=".WEB_URI.
                 "&last_sync=".$this->last_sync."&f=cache&n=".
                 urlencode($file["name"]);
@@ -350,7 +350,7 @@ class Mirror implements CrawlConstants
 /*
  *  Instantiate and runs the Fetcher
  */
-$syncer =  new Mirror(QUEUE_SERVER);
+$syncer =  new Mirror(NAME_SERVER);
 $syncer->start();
 
 ?>

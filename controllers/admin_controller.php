@@ -77,8 +77,7 @@ class AdminController extends Controller implements CrawlConstants
         "manageMachines", "manageLocales", "crawlStatus", "mixCrawls",
         "machineStatus", "configure");
 
-    /** Number of seconds of no fetcher contact before crawl is deemed dead*/
-    const CRAWL_TIME_OUT = 1800;
+
 
     /**
      * This is the main entry point for handling requests to administer the
@@ -259,53 +258,18 @@ class AdminController extends Controller implements CrawlConstants
             $data['CURRENT_INDEX'] = -1;
         }
 
-        if(file_exists(CRAWL_DIR."/schedules/crawl_status.txt")) {
-            //assume if status not updated for self::CRAWL_TIME_OUT
-            // crawl not active (do check for both scheduler and indexer)
-            if(filemtime(
-                CRAWL_DIR."/schedules/crawl_status.txt") + 
-                    self::CRAWL_TIME_OUT < time() ) { 
-                $this->sendStopCrawlMessage();
-            }
-            $schedule_status_exists = 
-                file_exists(CRAWL_DIR."/schedules/schedule_status.txt");
-            if($schedule_status_exists &&
-                filemtime(CRAWL_DIR."/schedules/schedule_status.txt") + 
-                    self::CRAWL_TIME_OUT < time() ) { 
-                $this->sendStopCrawlMessage();
-            }
-            if($schedule_status_exists) {
-                $schedule_status = 
-                    @unserialize(file_get_contents(
-                        CRAWL_DIR."/schedules/schedule_status.txt"));
-                if(isset($schedule_status[self::TYPE]) &&
-                    $schedule_status[self::TYPE] == self::SCHEDULER) {
-                    $data['SCHEDULER_PEAK_MEMORY'] = 
-                        isset($schedule_status[self::MEMORY_USAGE]) ?
-                        $schedule_status[self::MEMORY_USAGE] : 0;
-                } 
-            }
-            $crawl_status = 
-                @unserialize(file_get_contents(
-                    CRAWL_DIR."/schedules/crawl_status.txt"));
-            $data = (is_array($crawl_status)) ? 
-                array_merge($data, $crawl_status) : $data;
+        $machine_urls = $this->machineModel->getQueueServerUrls();
+        list($stalled, $status, $data['RECENT_CRAWLS']) = 
+            $this->crawlModel->combinedCrawlInfo($machine_urls);
 
+        if($stalled) {
+            $this->crawlModel->sendStopCrawlMessage($machine_urls);
         }
-        if(isset($data['VISITED_COUNT_HISTORY']) && 
-            count($data['VISITED_COUNT_HISTORY']) > 1) {
-            $recent = array_shift($data['VISITED_COUNT_HISTORY']);
-            $data["MOST_RECENT_TIMESTAMP"] = $recent[0];
-            $oldest = array_pop($data['VISITED_COUNT_HISTORY']);
-            $change_in_time_hours = floatval(time() - $oldest[0])/3600.;
-            $change_in_urls = $recent[1] - $oldest[1];
-            $data['VISITED_URLS_COUNT_PER_HOUR'] = ($change_in_time_hours > 0) ?
-                $change_in_urls/$change_in_time_hours : 0;
-        } else {
-            $data['VISITED_URLS_COUNT_PER_HOUR'] = 0;
-        }
-        $data['RECENT_CRAWLS'] = $this->crawlModel->getCrawlList(false, true);
-        if(isset($data['CRAWL_TIME'])) { 
+
+        $data = array_merge($data, $status);
+
+        $data["CRAWL_RUNNING"] = false;
+        if(isset($data['CRAWL_TIME']) && $data["CRAWL_TIME"] != 0) { 
             //erase from previous crawl list any active crawl
             $num_crawls = count($data['RECENT_CRAWLS']);
             for($i = 0; $i < $num_crawls; $i++) {
@@ -314,23 +278,14 @@ class AdminController extends Controller implements CrawlConstants
                     $data['RECENT_CRAWLS'][$i] = false;
                 }
             }
+            $data["CRAWL_RUNNING"] = true;
             $data['RECENT_CRAWLS']= array_filter($data['RECENT_CRAWLS']);
         }
+        rorderCallback($data['RECENT_CRAWLS'][0], $data['RECENT_CRAWLS'][0], 
+            'CRAWL_TIME');
+        usort($data['RECENT_CRAWLS'], "rorderCallback");
 
         return $data;
-    }
-
-    /**
-     * Used to send a message to the queue_server to stop a crawl
-     */
-    function sendStopCrawlMessage()
-    {
-        $info = array();
-        $info[self::STATUS] = "STOP_CRAWL";
-        $info_string = serialize($info);
-        file_put_contents(
-            CRAWL_DIR."/schedules/queue_server_messages.txt", 
-            $info_string);
     }
 
     /**
@@ -762,51 +717,59 @@ class AdminController extends Controller implements CrawlConstants
 
         if(isset($_REQUEST['arg']) && 
             in_array($_REQUEST['arg'], $possible_arguments)) {
+
+            $machine_urls = $this->machineModel->getQueueServerUrls();
+            $num_machines = count($machine_urls);
+            if($num_machines <  1 || ($num_machines ==  1 &&
+                UrlParser::isLocalhostUrl($machine_urls[0]))) {
+                $machine_urls = NULL;
+            }
+
             switch($_REQUEST['arg'])
             {
                 case "start":
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('admin_controller_starting_new_crawl')."</h1>')";
 
-                    $info = array();
-                    $info[self::STATUS] = "NEW_CRAWL";
-                    $info[self::CRAWL_TIME] = time();
+                    $crawl_params = array();
+                    $crawl_params[self::STATUS] = "NEW_CRAWL";
+                    $crawl_params[self::CRAWL_TIME] = time();
                     $seed_info = $this->crawlModel->getSeedInfo();
-                    $info[self::CRAWL_TYPE] =
+                    $crawl_params[self::CRAWL_TYPE] =
                         $seed_info['general']['crawl_type'];
-                    $info[self::CRAWL_INDEX] = 
+                    $crawl_params[self::CRAWL_INDEX] = 
                         (isset($seed_info['general']['crawl_index'])) ?
                         $seed_info['general']['crawl_index'] :
                         '';
-                    $info[self::PAGE_RANGE_REQUEST] = 
+                    $crawl_params[self::PAGE_RANGE_REQUEST] = 
                         (isset($seed_info['general']['page_range_request'])) ?
                         intval($seed_info['general']['page_range_request']) :
                         PAGE_RANGE_REQUEST;
-                    $info[self::PAGE_RECRAWL_FREQUENCY] = 
+                    $crawl_params[self::PAGE_RECRAWL_FREQUENCY] = 
                         (isset($seed_info['general']['page_recrawl_frequency']))
                         ?
                         intval($seed_info['general']['page_recrawl_frequency']):
                         PAGE_RECRAWL_FREQUENCY;
-                    $info[self::TO_CRAWL] = 
+                    $crawl_params[self::TO_CRAWL] = 
                         $seed_info['seed_sites']['url'];
-                    $info[self::CRAWL_ORDER] = 
+                    $crawl_params[self::CRAWL_ORDER] = 
                         $seed_info['general']['crawl_order'];
-                    $info[self::RESTRICT_SITES_BY_URL] = 
+                    $crawl_params[self::RESTRICT_SITES_BY_URL] = 
                         $seed_info['general']['restrict_sites_by_url'];
-                    $info[self::ALLOWED_SITES] = 
+                    $crawl_params[self::ALLOWED_SITES] = 
                         isset($seed_info['allowed_sites']['url']) ?
                         $seed_info['allowed_sites']['url'] : array();
-                    $info[self::DISALLOWED_SITES] = 
+                    $crawl_params[self::DISALLOWED_SITES] = 
                         isset($seed_info['disallowed_sites']['url']) ?
                         $seed_info['disallowed_sites']['url'] : array();
-                    $info[self::META_WORDS] = 
+                    $crawl_params[self::META_WORDS] = 
                         $seed_info['meta_words'];
                     if(isset($seed_info['indexing_plugins']['plugins'])) {
-                        $info[self::INDEXING_PLUGINS] =
+                        $crawl_params[self::INDEXING_PLUGINS] =
                             $seed_info['indexing_plugins']['plugins'];
                     }
                     if(isset($seed_info['indexed_file_types']['extensions'])) {
-                        $info[self::INDEXED_FILE_TYPES] =
+                        $crawl_params[self::INDEXED_FILE_TYPES] =
                             $seed_info['indexed_file_types']['extensions'];
                     }
                     if(isset($_REQUEST['description'])) {
@@ -815,49 +778,32 @@ class AdminController extends Controller implements CrawlConstants
                     } else {
                         $description = tl('admin_controller_no_description');
                     }
-                    $info['DESCRIPTION'] = $description;
+                    $crawl_params['DESCRIPTION'] = $description;
 
-                    $info_string = serialize($info);
-                    file_put_contents(
-                        CRAWL_DIR."/schedules/queue_server_messages.txt", 
-                        $info_string);
-                    chmod(CRAWL_DIR."/schedules/queue_server_messages.txt",
-                        0777);
-                    $scheduler_info[self::HASH_SEEN_URLS] = array();
-
-                    foreach ($seed_info['seed_sites']['url'] as $site) {
-                        $scheduler_info[self::TO_CRAWL][] = array($site, 1.0);
-                    }
-                    $scheduler_string = "\n".webencode(
-                        gzcompress(serialize($scheduler_info)));
-                    file_put_contents(
-                        CRAWL_DIR."/schedules/".self::schedule_start_name,
-                        $scheduler_string);
+                    $this->crawlModel->sendStartCrawlMessage($crawl_params, 
+                        $seed_info, $machine_urls);
 
                 break;
 
                 case "stop":
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('admin_controller_stop_crawl')."</h1>')";
-                    $this->sendStopCrawlMessage();
+                    $this->crawlModel->sendStopCrawlMessage($machine_urls);
                 break;
 
                 case "resume":
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('admin_controller_resume_crawl')."</h1>')";
-                    $seed_info = $this->crawlModel->getSeedInfo();
-                    $info = array();
-                    $info[self::STATUS] = "RESUME_CRAWL";
-                    $info[self::CRAWL_TIME] = 
+                    $crawl_params = array();
+                    $crawl_params[self::STATUS] = "RESUME_CRAWL";
+                    $crawl_params[self::CRAWL_TIME] = 
                         $this->clean($_REQUEST['timestamp'], "int");
                     /* 
                         we only set crawl time. Other data such as allowed sites
                         should come from index.
                     */
-                    $info_string = serialize($info);
-                    file_put_contents(
-                        CRAWL_DIR."/schedules/queue_server_messages.txt", 
-                        $info_string);
+                    $this->crawlModel->sendStartCrawlMessage($crawl_params, 
+                        NULL, $machine_urls);
 
                 break;
 
@@ -865,7 +811,8 @@ class AdminController extends Controller implements CrawlConstants
                     if(isset($_REQUEST['timestamp'])) {
                          $timestamp = 
                             $this->clean($_REQUEST['timestamp'], "int");
-                         $this->crawlModel->deleteCrawl($timestamp);
+                         $this->crawlModel->deleteCrawl($timestamp, 
+                            $machine_urls);
                          
                          $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('admin_controller_delete_crawl_success').
@@ -891,7 +838,8 @@ class AdminController extends Controller implements CrawlConstants
                         (getLocaleDirection() == 'ltr') ? "right": "left";
                     $data["ELEMENT"] = "crawloptionsElement";
                     $crawls = $this->crawlModel->getCrawlList();
-                    $indexes = $this->crawlModel->getCrawlList(true, true);
+                    $indexes = $this->crawlModel->getCrawlList(true, true,
+                        $machine_urls);
                     $update_flag = false;
                     $data['available_options'] = array(
                         tl('admin_controller_use_below'),
@@ -990,7 +938,7 @@ class AdminController extends Controller implements CrawlConstants
                         $update_flag = true;
                     }
                     $data['crawl_order'] = $seed_info['general']['crawl_order'];
-                    
+
                     if(!$no_further_changes && isset($_REQUEST['posted'])) {
                         $seed_info['general']['restrict_sites_by_url'] = 
                             (isset($_REQUEST['restrict_sites_by_url'])) ?
@@ -1076,44 +1024,14 @@ class AdminController extends Controller implements CrawlConstants
                     $add_message = "";
                     if(isset($_REQUEST['ts']) &&
                         isset($_REQUEST['inject_sites'])) {
-                        $dir = CRAWL_DIR."/schedules/".
-                            self::schedule_data_base_name. $timestamp;
-                        if(!file_exists($dir)) {
-                            mkdir($dir);
-                            chmod($dir, 0777);
-                        }
-                        $day = floor($timestamp/86400) - 1; 
-                            //want before all other schedules, 
-                            // execute next
-                        $dir .= "/$day";
-                        if(!file_exists($dir)) {
-                            mkdir($dir);
-                            chmod($dir, 0777);
-                        }
-                        $inject_urls = 
-                            $this->convertStringCleanUrlsArray(
+                            $inject_urls = 
+                                $this->convertStringCleanUrlsArray(
                                 $_REQUEST['inject_sites']);
-                        $count = count($inject_urls);
-                        if($count > 0 ) {
-                            $now = time();
-                            $schedule_data = array();
-                            $schedule_data[self::SCHEDULE_TIME] = 
-                                $timestamp;
-                            $schedule_data[self::TO_CRAWL] = array();
-                            for($i = 0; $i < $count; $i++) {
-                                $url = $inject_urls[$i];
-                                $hash = crawlHash($now.$url);
-                                $schedule_data[self::TO_CRAWL][] = 
-                                    array($url, 1, $hash);
+                            if($this->crawlModel->injectUrlsCurrentCrawl(
+                                $inject_urls, $machine_urls)) {
+                                $add_message = "<br />".
+                                    tl('admin_controller_urls_injected');
                             }
-                            $data_string = webencode(
-                                gzcompress(serialize($schedule_data)));
-                            $data_hash = crawlHash($data_string);
-                            file_put_contents($dir."/At1From127-0-0-1".
-                                "WithHash$data_hash.txt", $data_string);
-                            $add_message = "<br />".
-                                tl('admin_controller_urls_injected');
-                        }
                     }
                     if($update_flag) {
                         if(isset($_REQUEST['ts'])) {
@@ -1127,7 +1045,7 @@ class AdminController extends Controller implements CrawlConstants
                             "$add_message</h1>');";
                     }
                 break;
- 
+
                 default:
 
             }
@@ -2160,7 +2078,7 @@ class AdminController extends Controller implements CrawlConstants
                         } else {
                             $clean_field = $_POST[$field];
                         }
-                        if($field == "QUEUE_SERVER" &&
+                        if($field == "NAME_SERVER" &&
                             $clean_field[strlen($clean_field) -1] != "/") {
                             $clean_field .= "/";
                         }

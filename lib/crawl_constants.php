@@ -186,6 +186,8 @@ interface CrawlConstants
     const PAGE_RANGE_REQUEST = 'br';
     const PAGE_RECRAWL_FREQUENCY = 'bs';
     const DATA = 'bt';
+    const QUEUE_SERVERS = "bu";
+    const CURRENT_SERVER = "bv";
 
     const NEEDS_OFFSET_FLAG = 0x7FFFFFFF;
 

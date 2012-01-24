@@ -54,7 +54,7 @@ class FetchController extends Controller implements CrawlConstants
      * No models used by this controller
      * @var array
      */
-    var $models = array();
+    var $models = array("machine");
     /**
      * Load FetchView to return results to fetcher
      * @var array
@@ -252,6 +252,10 @@ class FetchController extends Controller implements CrawlConstants
             $info[self::CRAWL_TIME] = 0;
         }
 
+        $info[self::QUEUE_SERVERS] = $this->machineModel->getQueueServerUrls();
+        if($info[self::QUEUE_SERVERS] == array()) {
+            $info[self::QUEUE_SERVERS] = array(NAME_SERVER);
+        }
         $data = array();
         $data['MESSAGE'] = serialize($info);
 

@@ -348,8 +348,8 @@ class QueueServer implements CrawlConstants, Join
         }
         while ($info[self::STATUS] != self::STOP_STATE) {
             $server_name = ($this->server_type != self::BOTH) ? 
-                $this->server_type : "";
-            crawlLog("$this->server_type Peak memory usage so far".
+                $this->server_type : "Queue server";
+            crawlLog("$server_name peak memory usage so far".
                 memory_get_peak_usage()."!!");
 
             $info = $this->handleAdminMessages($info);
@@ -384,7 +384,7 @@ class QueueServer implements CrawlConstants, Join
             }
         }
 
-        crawlLog("Queue Server shutting down!!");
+        crawlLog("$server_name shutting down!!");
     }
 
     /**
@@ -400,7 +400,9 @@ class QueueServer implements CrawlConstants, Join
      */
     function processCrawlData($blocking = false)
     {
-        crawlLog("Process Crawl Data Method ({$this->server_type})");
+        $server_name = ($this->server_type != self::BOTH) ? $this->server_type :
+            "";
+        crawlLog("$server_name Entering Process Crawl Data Method ");
         if($this->isAIndexer()) {
             $this->processIndexData($blocking);
             if(time() - $this->last_index_save_time > FORCE_SAVE_TIME){
@@ -1231,8 +1233,10 @@ class QueueServer implements CrawlConstants, Join
             $blocked = false;
         }
 
+        $server_name = ($this->server_type != self::BOTH) ? $this->server_type :
+            "Queue server";
         crawlLog(
-            "Start processing ({$this->server_type}) index data memory usage".
+            "$server_name is starting to process index data, memory usage".
             memory_get_usage() . "...");
         crawlLog("Processing index data in $file...");
 
@@ -1699,6 +1703,7 @@ class QueueServer implements CrawlConstants, Join
      */
     function calculateScheduleMetaInfo($schedule_time)
     {
+        //notice does not contain self::QUEUE_SERVERS
         $sites = array();
         $sites[self::CRAWL_TIME] = $this->crawl_time;
         $sites[self::SCHEDULE_TIME] = $schedule_time;

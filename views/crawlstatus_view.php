@@ -60,7 +60,7 @@ class CrawlstatusView extends View
 
         <h2><?php e(tl('crawlstatus_view_currently_processing')); ?></h2>
         <p><b><?php e(tl('crawlstatus_view_description')); ?></b> <?php
-        if(isset($data['DESCRIPTION'])) {
+        if(isset($data['DESCRIPTION']) && $data["CRAWL_RUNNING"]) {
             switch($data['DESCRIPTION'])
             {
                 case 'BEGIN_CRAWL':

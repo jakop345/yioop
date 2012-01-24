@@ -60,7 +60,7 @@ class SearchController extends Controller implements CrawlConstants
      * is used for cached web page requests
      * @var array
      */
-    var $models = array("phrase", "crawl", "searchfilters");
+    var $models = array("phrase", "crawl", "searchfilters", "machine");
     /**
      * Says which views to load for this controller.
      * The SearchView is used for displaying general search results as well 
@@ -91,11 +91,17 @@ class SearchController extends Controller implements CrawlConstants
     {
         $data = array();
         $view = "search";
+        $web_flag = true;
         $start_time = microtime();
 
         if(isset($_REQUEST['f']) && $_REQUEST['f']=='rss' &&
             RSS_ACCESS) {
             $view = "rss";
+            $web_flag = false;
+        } else if(isset($_REQUEST['f']) && $_REQUEST['f']=='serial' &&
+            RSS_ACCESS) {
+            $view = "serial";
+            $web_flag = false;
         } else if (!WEB_ACCESS) {
             return;
         }
@@ -105,7 +111,9 @@ class SearchController extends Controller implements CrawlConstants
             $raw = false;
         }
 
-        if(isset($_SESSION['MAX_PAGES_TO_SHOW']) ) {
+        if(isset($_REQUEST['num'])) {
+            $results_per_page = $this->clean($_REQUEST['num'], "int");
+        } else if(isset($_SESSION['MAX_PAGES_TO_SHOW']) ) {
             $results_per_page = $_SESSION['MAX_PAGES_TO_SHOW'];
         } else {
             $results_per_page = NUM_RESULTS_PER_PAGE;
@@ -148,26 +156,27 @@ class SearchController extends Controller implements CrawlConstants
 
         if($activity == "query" && $this->checkMirrorHandle()) {return; }
 
+        $machine_urls = $this->machineModel->getQueueServerUrls();
+        $current_its = $this->crawlModel->getCurrentIndexDatabaseName();
         if(isset($_REQUEST['its']) || isset($_SESSION['its'])) {
             $its = (isset($_REQUEST['its'])) ? $_REQUEST['its'] : 
                 $_SESSION['its'];
             $index_time_stamp = $this->clean($its, "int");
-            if(!$this->phraseModel->indexExists($index_time_stamp)
-              && !$this->crawlModel->isCrawlMix($index_time_stamp)) {
-                $index_time_stamp = 
-                    $this->crawlModel->getCurrentIndexDatabaseName(); 
-                    //use the default crawl index
-            }
         } else {
-            $index_time_stamp = 
-                $this->crawlModel->getCurrentIndexDatabaseName(); 
+            $index_time_stamp = $current_its; 
                 //use the default crawl index
         }
-        $index_info = NULL;
-        if($this->phraseModel->indexExists($index_time_stamp) || 
-           $this->crawlModel->isCrawlMix($index_time_stamp)) {
-            $index_info = 
-                $this->crawlModel->getInfoTimestamp($index_time_stamp);
+        if($web_flag) {
+            $index_info =  $this->crawlModel->getInfoTimestamp(
+                $index_time_stamp, $machine_urls);
+            if($index_info == array() || $index_info["COUNT"] == 0) {
+                if($index_time_stamp != $current_its) {
+                    $index_time_stamp = $current_its;
+                    $index_info =  $this->crawlModel->getInfoTimestamp(
+                        $index_time_stamp, $machine_urls);
+                    if($index_info == array()) { $index_info = NULL; }
+                }
+            }
         }
         if(isset($_REQUEST['q']) && strlen($_REQUEST['q']) > 0 
             || $activity != "query") {
@@ -206,7 +215,7 @@ class SearchController extends Controller implements CrawlConstants
         }
 
         $data['its'] = (isset($index_time_stamp)) ? $index_time_stamp : 0;
-        if($index_info !== NULL) {
+        if($web_flag && $index_info !== NULL) {
             if(isset($index_info['IS_MIX'])) {
                 $data['INDEX_INFO'] = tl('search_controller_mix_info',
                     $index_info['DESCRIPTION']);
@@ -223,7 +232,11 @@ class SearchController extends Controller implements CrawlConstants
         $data['YIOOP_TOKEN'] = $this->generateCSRFToken($user);
 
         $data['ELAPSED_TIME'] = changeInMicrotime($start_time);
-        $this->displayView($view, $data);
+        if ($view != "serial") {
+            $this->displayView($view, $data);
+        } else {
+            echo webencode(serialize($data));
+        }
     }
 
     /**
@@ -323,6 +336,12 @@ class SearchController extends Controller implements CrawlConstants
         $query = preg_replace('/no:cache/', "", $query);
 
         $use_cache_if_possible = ($original_query == $query) ? true : false;
+        if(!isset($_REQUEST['network']) || $_REQUEST['network'] == "true") {
+            $queue_servers = $this->machineModel->getQueueServerUrls();
+        } else {
+
+            $queue_servers = array();
+        }
 
         switch($activity)
         {
@@ -341,7 +360,7 @@ class SearchController extends Controller implements CrawlConstants
                 $top_query = implode(" ", $top_phrases);
                 $phrase_results = $this->phraseModel->getPhrasePageResults(
                     $top_query, $limit, $results_per_page, false, NULL,
-                    $use_cache_if_possible, $raw);
+                    $use_cache_if_possible, $raw, $queue_servers);
                 $data['PAGING_QUERY'] = "index.php?c=search&a=related&arg=".
                     urlencode($url);
                 
@@ -379,7 +398,7 @@ class SearchController extends Controller implements CrawlConstants
                     $filter = $this->searchfiltersModel->getFilter();
                     $phrase_results = $this->phraseModel->getPhrasePageResults(
                         $query, $limit, $results_per_page, true, $filter,
-                        $use_cache_if_possible, $raw);
+                        $use_cache_if_possible, $raw, $queue_servers);
                     $query = $original_query;
                 }
                 $data['PAGING_QUERY'] = "index.php?q=".urlencode($query);

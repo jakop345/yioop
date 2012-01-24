@@ -42,8 +42,10 @@ if(!defined("POST_PROCESSING")) {
 }
 /** For crawlHash function */
 require_once BASE_DIR."/lib/utility.php";
+
 /** For extractPhrasesAndCount function */
 require_once BASE_DIR."/lib/phrase_parser.php";
+
 
 /**
  * Used to look up words and phrases in the inverted index
@@ -94,6 +96,7 @@ class PhraseModel extends Model
      * @var array
      */
     var $query_info;
+
 
     /**
      * Number of pages to cache in one go in memcache or filecache
@@ -207,14 +210,15 @@ class PhraseModel extends Model
      *      and then potentially restored in cache
      * @param int $raw ($raw == 0) normal grouping, ($raw == 1)
      *      no grouping but page look-up for links, ($raw == 2)
-     *      no grouping done on data
-     *
+     *      no grouping done on data'
+     * @param array $queue_servers a list of urls of yioop machines which might
+     *      be used during lookup
      * @return array an array of summary data
      */
     function getPhrasePageResults(
         $input_phrase, $low = 0, $results_per_page = NUM_RESULTS_PER_PAGE,
         $format = true, $filter = NULL, $use_cache_if_allowed = true,
-        $raw = 0)
+        $raw = 0, $queue_servers = array())
     {
         if(QUERY_STATISTICS) {
             $indent= "&nbsp;&nbsp;";
@@ -333,7 +337,8 @@ class PhraseModel extends Model
             }
 
             $out_results = $this->getSummariesByHash($word_structs,
-                $low, $phrase_num, $filter, $use_cache_if_allowed, $raw);
+                $low, $phrase_num, $filter, $use_cache_if_allowed, $raw, 
+                $queue_servers, $phrase);
 
             if(isset($out_results['PAGES']) &&
                 count($out_results['PAGES']) != 0) {
@@ -469,6 +474,7 @@ class PhraseModel extends Model
         $phrase = $this->guessSemantics($phrase);
         $phrase = $this->parseIfConditions($phrase);
         $phrase_string = $phrase;
+        $phrase_string = str_replace("&", "&amp;", $phrase_string);
         $meta_words = array('link:', 'site:', 'version:', 'modified:',
             'filetype:', 'info:', '\-', 'os:', 'server:', 'date:',
             'index:', 'i:', 'ip:', 'weight:', 'w:', 'u:',
@@ -741,11 +747,16 @@ class PhraseModel extends Model
      * @param int $raw ($raw == 0) normal grouping, ($raw == 1)
      *      no grouping but page look-up for links, ($raw == 2)
      *      no grouping done on data
+     * @param array $queue_servers a list of urls of yioop machines which might
+     *      be used during lookup
+     * @param string $original_query if set, the original query that corresponds
+     *      to $word_structs
      *
      * @return array document summaries
      */
     function getSummariesByHash($word_structs, $limit, $num, &$filter,
-        $use_cache_if_allowed = true, $raw = 0)
+        $use_cache_if_allowed = true, $raw = 0, $queue_servers = array(),
+        $original_query = "")
     {
         global $CACHE;
 
@@ -788,21 +799,32 @@ class PhraseModel extends Model
             }
         }
 
-        $query_iterator = $this->getQueryIterator($word_structs, $filter, $raw);
+        $query_iterator = $this->getQueryIterator($word_structs, $filter, $raw,
+             $queue_servers, $original_query);
 
         $num_retrieved = 0;
         $pages = array();
-        while(is_object($query_iterator) &&
-            is_array($next_docs = $query_iterator->nextDocsWithWord()) &&
-            $num_retrieved < $to_retrieve) {
+
+        $isLocal = ($queue_servers == array()) ||
+            $this->isSingleLocalhost($queue_servers);
+
+        while($num_retrieved < $to_retrieve && is_object($query_iterator) &&
+            is_array($next_docs = $query_iterator->nextDocsWithWord()) ) {
             foreach($next_docs as $doc_key => $doc_info) {
-                $summary = & $doc_info[CrawlConstants::SUMMARY];
-                $tmp = unserialize($query_iterator->getIndex(
-                    $doc_key)->description);
-                $doc_info[self::CRAWL_TIME] = $tmp[self::CRAWL_TIME];
-                unset($doc_info[CrawlConstants::SUMMARY]);
-                if(is_array($summary)) {
-                    $pages[] = array_merge($doc_info, $summary);
+                if($isLocal) {
+                    $summary = & $doc_info[CrawlConstants::SUMMARY];
+
+                    $tmp = unserialize($query_iterator->getIndex(
+                        $doc_key)->description);
+
+                    $doc_info[self::CRAWL_TIME] = $tmp[self::CRAWL_TIME];
+                    unset($doc_info[CrawlConstants::SUMMARY]);
+                    if(is_array($summary)) {
+                        $pages[] = array_merge($doc_info, $summary);
+                        $num_retrieved++;
+                    }
+                } else {
+                    $pages[] = $doc_info;
                     $num_retrieved++;
                 }
             }
@@ -818,20 +840,22 @@ class PhraseModel extends Model
         $num_fields = count($subscore_fields);
         // Compute Reciprocal Rank Fusion Score
         $alpha = 600/$num_fields;
-        foreach($subscore_fields as $field) {
-            orderCallback($pages[0], $pages[0], $field);
-            usort($pages, "orderCallback");
-            $score = 0;
-            for($i = 0; $i < $result_count; $i++) {
-                if($i > 0) {
-                    if($pages[$i - 1][$field] != $pages[$i][$field]) {
-                        $score++;
+        if(isset($pages[0])) {
+            foreach($subscore_fields as $field) {
+                orderCallback($pages[0], $pages[0], $field);
+                usort($pages, "orderCallback");
+                $score = 0;
+                for($i = 0; $i < $result_count; $i++) {
+                    if($i > 0) {
+                        if($pages[$i - 1][$field] != $pages[$i][$field]) {
+                            $score++;
+                        }
                     }
+                    $pages[$i][CrawlConstants::SCORE] += $alpha/(60 + $score);
                 }
-                $pages[$i][CrawlConstants::SCORE] += $alpha/(60 + $score);
             }
+            orderCallback($pages[0], $pages[0], CrawlConstants::SCORE);
         }
-        orderCallback($pages[0], $pages[0], CrawlConstants::SCORE);
         usort($pages, "orderCallback");
 
         if($num_retrieved < $to_retrieve) {
@@ -860,7 +884,6 @@ class PhraseModel extends Model
         $results['PAGES'] = array_slice($results['PAGES'], $limit -
             $start_slice, $num);
 
-
         return $results;
     }
 
@@ -882,65 +905,83 @@ class PhraseModel extends Model
      * @param int $raw ($raw == 0) normal grouping, ($raw == 1)
      *      no grouping but page look-up for links, ($raw == 2)
      *      no grouping done on data
+     * @param array $queue_servers a list of urls of yioop machines which might
+     *      be used during lookup
+     * @param string $original_query if set, the orginal query that corresponds
+     *      to $word_structs
      *
      * @return &object an iterator for iterating through results to the
      *  query
      */
-    function getQueryIterator($word_structs, &$filter, $raw = 0)
+    function getQueryIterator($word_structs, &$filter, $raw = 0, 
+        $queue_servers = array(), $original_query = "")
     {
         $iterators = array();
         $total_iterators = 0;
-        foreach($word_structs as $word_struct) {
-            if(!is_array($word_struct)) { continue;}
-            $word_keys = $word_struct["KEYS"];
-            $distinct_word_keys = array_unique($word_keys);
-            $restrict_phrases = $word_struct["RESTRICT_PHRASES"];
-            $disallow_keys = $word_struct["DISALLOW_KEYS"];
-            $index_archive = $word_struct["INDEX_ARCHIVE"];
+        $network_flag = false;
+        if($queue_servers != array()) { 
+            if(!$this->isSingleLocalhost($queue_servers)) {
+                $network_flag = true;
+                $total_iterators = 1;
+                $num_servers = count($queue_servers);
+                $iterators[0] = new NetworkIterator($original_query, 
+                    $queue_servers, $this->index_name);
+            }
 
-            $weight = $word_struct["WEIGHT"];
-            $num_word_keys = count($word_keys);
-            $total_iterators = count($distinct_word_keys);
-            $word_iterators = array();
-            $word_iterator_map = array();
-            if($num_word_keys < 1) {continue;}
+        }
+        if(!$network_flag) {
+            foreach($word_structs as $word_struct) {
+                if(!is_array($word_struct)) { continue;}
+                $word_keys = $word_struct["KEYS"];
+                $distinct_word_keys = array_unique($word_keys);
+                $restrict_phrases = $word_struct["RESTRICT_PHRASES"];
+                $disallow_keys = $word_struct["DISALLOW_KEYS"];
+                $index_archive = $word_struct["INDEX_ARCHIVE"];
 
-            for($i = 0; $i < $total_iterators; $i++) {
-                $word_iterators[$i] =
-                    new WordIterator($distinct_word_keys[$i], $index_archive,
-                        false, $filter);
-                foreach ($word_keys as $index => $key) {
-                    if($key == $distinct_word_keys[$i]){
-                        $word_iterator_map[$index] = $i;
+                $weight = $word_struct["WEIGHT"];
+                $num_word_keys = count($word_keys);
+                $total_iterators = count($distinct_word_keys);
+                $word_iterators = array();
+                $word_iterator_map = array();
+                if($num_word_keys < 1) {continue;}
+
+                for($i = 0; $i < $total_iterators; $i++) {
+                    $word_iterators[$i] =
+                        new WordIterator($distinct_word_keys[$i], 
+                            $index_archive, false, $filter);
+                    foreach ($word_keys as $index => $key) {
+                        if($key == $distinct_word_keys[$i]){
+                            $word_iterator_map[$index] = $i;
+                        }
                     }
                 }
-            }
-            $num_disallow_keys = count($disallow_keys);
-            if($num_disallow_keys > 0) {
-            for($i = 0; $i < $num_disallow_keys; $i++) {
-                    $disallow_iterator =
-                        new WordIterator($disallow_keys[$i], $index_archive,
-                            false, $filter);
-                    $word_iterators[$num_word_keys + $i] =
-                        new NegationIterator($disallow_iterator);
+                $num_disallow_keys = count($disallow_keys);
+                if($num_disallow_keys > 0) {
+                for($i = 0; $i < $num_disallow_keys; $i++) {
+                        $disallow_iterator =
+                            new WordIterator($disallow_keys[$i], $index_archive,
+                                false, $filter);
+                        $word_iterators[$num_word_keys + $i] =
+                            new NegationIterator($disallow_iterator);
+                    }
                 }
-            }
-            $num_word_keys += $num_disallow_keys;
+                $num_word_keys += $num_disallow_keys;
 
-            if($num_word_keys == 1) {
-                $base_iterator = $word_iterators[0];
-            } else {
-                $base_iterator = new IntersectIterator(
-                    $word_iterators,$word_iterator_map);
-            }
-            if($restrict_phrases == NULL && $disallow_keys == array() &&
-                $weight == 1) {
-                $iterators[] = $base_iterator;
-            } else {
-                $iterators[] = new PhraseFilterIterator($base_iterator,
-                    $restrict_phrases, $weight);
-            }
+                if($num_word_keys == 1) {
+                    $base_iterator = $word_iterators[0];
+                } else {
+                    $base_iterator = new IntersectIterator(
+                        $word_iterators,$word_iterator_map);
+                }
+                if($restrict_phrases == NULL && $disallow_keys == array() &&
+                    $weight == 1) {
+                    $iterators[] = $base_iterator;
+                } else {
+                    $iterators[] = new PhraseFilterIterator($base_iterator,
+                        $restrict_phrases, $weight);
+                }
 
+            }
         }
         $num_iterators = count($iterators);
 
@@ -962,6 +1003,11 @@ class PhraseModel extends Model
         } else {
             $group_iterator =
                 new GroupIterator($union_iterator, $total_iterators);
+        }
+
+        if($network_flag) {
+            $union_iterator->results_per_block = 
+                1.1* $group_iterator->results_per_block/$num_servers;
         }
 
         return $group_iterator;

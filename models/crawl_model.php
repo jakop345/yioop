@@ -47,6 +47,11 @@ require_once BASE_DIR."/lib/crawl_constants.php";
  */
 require_once BASE_DIR."/lib/index_archive_bundle.php";
 
+/** 
+ * Needed to be able to send data via http to remote queue_servers
+ */
+require_once BASE_DIR.'/lib/fetch_url.php';
+
 /** used to prevent cache page requests from being logged*/
 define("NO_LOGGING", true);
 
@@ -182,66 +187,7 @@ class CrawlModel extends Model implements CrawlConstants
     }
 
 
-    /**
-     * Gets a list of all index archives of crawls that have been conducted
-     * 
-     * @param bool $return_arc_bundles whether index bundles used for indexing
-     *      arc or other archive bundles should be included in the lsit
-     * @param bool $return_recrawls whether index archive bundles generated as
-     *      a result of recrawling should be included in the result
-     *
-     * @return array Available IndexArchiveBundle directories and 
-     *      their meta information this meta information includes the time of 
-     *      the crawl, its description, the number of pages downloaded, and the 
-     *      number of partitions used in storing the inverted index
-     */
-    function getCrawlList($return_arc_bundles = false, $return_recrawls = false)
-    {
-        $list = array();
-        $dirs = glob(CRAWL_DIR.'/cache/*', GLOB_ONLYDIR);
 
-        foreach($dirs as $dir) {
-            if(strlen($pre_timestamp = 
-                strstr($dir, self::index_data_base_name)) > 0) {
-                $crawl = array();
-                $crawl['CRAWL_TIME'] = 
-                    substr($pre_timestamp, strlen(self::index_data_base_name));
-                $info = IndexArchiveBundle::getArchiveInfo($dir);
-                $index_info = unserialize($info['DESCRIPTION']);
-                $crawl['DESCRIPTION'] = "";
-                if(!$return_arc_bundles && isset($index_info['ARCFILE'])) {
-                    continue;
-                } else if ($return_arc_bundles
-                    && isset($index_info['ARCFILE'])) {
-                    $crawl['DESCRIPTION'] = "ARCFILE::";
-                }
-                if(!$return_recrawls && 
-                    isset($index_info[self::CRAWL_TYPE]) && 
-                    $index_info[self::CRAWL_TYPE] == self::ARCHIVE_CRAWL) {
-                    continue;
-                } else if($return_recrawls  && 
-                    isset($index_info[self::CRAWL_TYPE]) && 
-                    $index_info[self::CRAWL_TYPE] == self::ARCHIVE_CRAWL) {
-                    $crawl['DESCRIPTION'] = "RECRAWL::";
-                }
-                $schedules = glob(CRAWL_DIR.'/schedules/'.
-                    self::schedule_data_base_name.$crawl['CRAWL_TIME'].
-                    '/*/At*.txt');
-                $crawl['RESUMABLE'] = (count($schedules) > 0) ? true: false;
-                $crawl['DESCRIPTION'] .= $index_info['DESCRIPTION'];
-                $crawl['VISITED_URLS_COUNT'] = 
-                    isset($info['VISITED_URLS_COUNT']) ?
-                    $info['VISITED_URLS_COUNT'] : 0;
-                $crawl['COUNT'] = $info['COUNT'];
-                $crawl['NUM_DOCS_PER_PARTITION'] = 
-                    $info['NUM_DOCS_PER_PARTITION'];
-                $crawl['WRITE_PARTITION'] = $info['WRITE_PARTITION'];
-                $list[] = $crawl;
-            }
-        }
-
-        return $list;
-    }
 
     /**
      * Returns all the files in $dir or its subdirectories with modfied times
@@ -279,41 +225,7 @@ class CrawlModel extends Model implements CrawlConstants
         return $results;
     }
 
-    /**
-     * Deletes the crawl with the supplied timestamp if it exists. Also
-     * deletes any crawl mixes making use of this crawl
-     *
-     * @param string $timestamp a Unix timestamp
-     */
-    function deleteCrawl($timestamp)
-    {
-        $this->db->unlinkRecursive(
-            CRAWL_DIR.'/cache/'.self::index_data_base_name . $timestamp, true);
-        $this->db->unlinkRecursive(
-            CRAWL_DIR.'/schedules/'.self::index_data_base_name .
-            $timestamp, true);
-        $this->db->unlinkRecursive(
-            CRAWL_DIR.'/schedules/' . self::schedule_data_base_name.$timestamp,
-            true);
-        $this->db->unlinkRecursive(
-            CRAWL_DIR.'/schedules/'.self::robot_data_base_name.
-            $timestamp, true);
 
-        $this->db->selectDB(DB_NAME);
-        $sql = "SELECT DISTINCT MIX_TIMESTAMP FROM MIX_COMPONENTS WHERE ".
-            " CRAWL_TIMESTAMP='$timestamp'";
-        $result = $this->db->execute($sql);
-        $rows = array();
-        while($rows[] =  $this->db->fetchArray($result)) ;
-
-        foreach($rows as $row) {
-            $this->deleteCrawlMix($row['MIX_TIMESTAMP']);
-        }
-        $current_timestamp = $this->getCurrentIndexDatabaseName();
-        if($current_timestamp == $timestamp) {
-            $this->db->execute("DELETE FROM CURRENT_WEB_INDEX");
-        }
-    }
 
     /**
      * Gets a list of all mixes of available crawls
@@ -404,40 +316,7 @@ class CrawlModel extends Model implements CrawlConstants
         }
         return false;
     }
-    /**
-     * Get a description associated with a Web Crawl or Crawl Mix
-     *
-     * @param int $timestamp of crawl or mix in question
-     * @param bool $is_mix whether it is a mix or not
-     * @return array associative array containing item DESCRIPTION
-     */
-    function getInfoTimestamp($timestamp, $is_mix = NULL)
-    {
-        if($is_mix === NULL) {
-            $is_mix = $this->isCrawlMix($timestamp);
-        }
-        $info = array();
-        if($is_mix) {
-            $this->db->selectDB(DB_NAME);
 
-            $sql = "SELECT MIX_TIMESTAMP, MIX_NAME FROM CRAWL_MIXES WHERE ".
-                " MIX_TIMESTAMP='$timestamp'";
-            $result = $this->db->execute($sql);
-            $mix =  $this->db->fetchArray($result);
-            $info['TIMESTAMP'] = $timestamp;
-            $info['DESCRIPTION'] = $mix['MIX_NAME'];
-            $info['IS_MIX'] = true;
-        } else {
-            $dir = CRAWL_DIR.'/cache/'.self::index_data_base_name.$timestamp;
-            if(file_exists($dir)) {
-                $info = IndexArchiveBundle::getArchiveInfo($dir);
-                $tmp = unserialize($info['DESCRIPTION']);
-                $info['DESCRIPTION'] = $tmp['DESCRIPTION'];
-            }
-        }
-
-        return $info;
-    }
 
     /**
      * Returns whether the supplied timestamp corresponds to a crawl mix
@@ -714,5 +593,551 @@ EOT;
         $out = implode("\n", $n);
         file_put_contents(WORK_DIRECTORY."/crawl.ini", $out);
     }
+
+    /**
+     * Get a description associated with a Web Crawl or Crawl Mix
+     *
+     * @param int $timestamp of crawl or mix in question
+     * @param array $machine_urls an array of urls of yioop queue servers
+     *
+     * @return array associative array containing item DESCRIPTION
+     */
+    function getInfoTimestamp($timestamp, $machine_urls = NULL)
+    {
+        $is_mix = $this->isCrawlMix($timestamp);
+        $info = array();
+        if($is_mix) {
+            $this->db->selectDB(DB_NAME);
+
+            $sql = "SELECT MIX_TIMESTAMP, MIX_NAME FROM CRAWL_MIXES WHERE ".
+                " MIX_TIMESTAMP='$timestamp'";
+            $result = $this->db->execute($sql);
+            $mix =  $this->db->fetchArray($result);
+            $info['TIMESTAMP'] = $timestamp;
+            $info['DESCRIPTION'] = $mix['MIX_NAME'];
+            $info['IS_MIX'] = true;
+        } else {
+            if($machine_urls != NULL && 
+                !$this->isSingleLocalhost($machine_urls)) {
+                $cache_file = CRAWL_DIR."/cache/Network".$timestamp.".txt";
+                if(file_exists($cache_file) && filemtime($cache_file) 
+                    + 300 > time() ) {
+                    return unserialize(file_get_contents($cache_file));
+                }
+                $info_lists = $this->execMachines("getInfoTimestamp", 
+                    $machine_urls, serialize($timestamp));
+
+                $info = array();
+                $info['DESCRIPTION'] = "";
+                $info["COUNT"] = 0;
+                $info['VISITED_URLS_COUNT'] = 0;
+                foreach($info_lists as $info_list) {
+                    $a_info = unserialize(webdecode(
+                        $info_list[self::PAGE]));
+                    if(isset($a_info['DESCRIPTION'])) {
+                        $info['DESCRIPTION'] = $a_info['DESCRIPTION'];
+                    }
+                    if(isset($a_info['VISITED_URLS_COUNT'])) {
+                        $info['VISITED_URLS_COUNT'] += 
+                            $a_info['VISITED_URLS_COUNT'];
+                    }
+                    if(isset($a_info['COUNT'])) {
+                        $info['COUNT'] += 
+                            $a_info['COUNT'];
+                    }
+                }
+                file_put_contents($cache_file, serialize($info));
+                return $info;
+            }
+            $dir = CRAWL_DIR.'/cache/'.self::index_data_base_name.$timestamp;
+            if(file_exists($dir)) {
+                $info = IndexArchiveBundle::getArchiveInfo($dir);
+                $tmp = unserialize($info['DESCRIPTION']);
+                $info['DESCRIPTION'] = $tmp['DESCRIPTION'];
+            }
+        }
+
+        return $info;
+    }
+
+    /**
+     * Deletes the crawl with the supplied timestamp if it exists. Also
+     * deletes any crawl mixes making use of this crawl
+     *
+     * @param string $timestamp a Unix timestamp
+     * @param array $machine_urls an array of urls of yioop queue servers
+     */
+    function deleteCrawl($timestamp, $machine_urls)
+    {
+        if($machine_urls != NULL && !$this->isSingleLocalhost($machine_urls)) {
+            //get rid of cache info on Name machine
+            $mask = CRAWL_DIR."/cache/NetworkCrawlList*.txt";
+            array_map( "unlink", glob( $mask ) );
+            @unlink(CRAWL_DIR."/cache/Network$timestamp.txt");
+            //now get rid of files on queue_servers
+            $this->execMachines("deleteCrawl", 
+                $machine_urls, serialize($timestamp));
+            return;
+        }
+
+        $this->db->unlinkRecursive(
+            CRAWL_DIR.'/cache/'.self::index_data_base_name . $timestamp, true);
+        $this->db->unlinkRecursive(
+            CRAWL_DIR.'/schedules/'.self::index_data_base_name .
+            $timestamp, true);
+        $this->db->unlinkRecursive(
+            CRAWL_DIR.'/schedules/' . self::schedule_data_base_name.$timestamp,
+            true);
+        $this->db->unlinkRecursive(
+            CRAWL_DIR.'/schedules/'.self::robot_data_base_name.
+            $timestamp, true);
+
+        $this->db->selectDB(DB_NAME);
+        $sql = "SELECT DISTINCT MIX_TIMESTAMP FROM MIX_COMPONENTS WHERE ".
+            " CRAWL_TIMESTAMP='$timestamp'";
+        $result = $this->db->execute($sql);
+        $rows = array();
+        while($rows[] =  $this->db->fetchArray($result)) ;
+
+        foreach($rows as $row) {
+            $this->deleteCrawlMix($row['MIX_TIMESTAMP']);
+        }
+        $current_timestamp = $this->getCurrentIndexDatabaseName();
+        if($current_timestamp == $timestamp) {
+            $this->db->execute("DELETE FROM CURRENT_WEB_INDEX");
+        }
+    }
+
+    /**
+     * Used to send a message to the queue_servers to start a crawl
+     *
+     * @param array $machine_urls an array of urls of yioop queue servers
+     */
+    function sendStartCrawlMessage($crawl_params, $seed_info = NULL, 
+        $machine_urls = NULL)
+    {
+        if($machine_urls != NULL && !$this->isSingleLocalhost($machine_urls)) {
+            $params = array($crawl_params, $seed_info);
+            $this->execMachines("sendStartCrawlMessage", 
+                $machine_urls, serialize($params));
+            return;
+        }
+
+        $info_string = serialize($crawl_params);
+        file_put_contents(
+            CRAWL_DIR."/schedules/queue_server_messages.txt", 
+            $info_string);
+        chmod(CRAWL_DIR."/schedules/queue_server_messages.txt",
+            0777);
+        if($seed_info != NULL) {
+            $scheduler_info[self::HASH_SEEN_URLS] = array();
+
+            foreach ($seed_info['seed_sites']['url'] as $site) {
+                $scheduler_info[self::TO_CRAWL][] = array($site, 1.0);
+            }
+            $scheduler_string = "\n".webencode(
+                gzcompress(serialize($scheduler_info)));
+            file_put_contents(
+                CRAWL_DIR."/schedules/".self::schedule_start_name,
+                $scheduler_string);
+        }
+    }
+
+    /**
+     * Used to send a message to the queue_servers to stop a crawl
+     */
+    function sendStopCrawlMessage($machine_urls = NULL)
+    {
+        if($machine_urls != NULL && !$this->isSingleLocalhost($machine_urls)) {
+            $this->execMachines("sendStopCrawlMessage", $machine_urls);
+            return;
+        }
+
+        $info = array();
+        $info[self::STATUS] = "STOP_CRAWL";
+        $info_string = serialize($info);
+        file_put_contents(
+            CRAWL_DIR."/schedules/queue_server_messages.txt", 
+            $info_string);
+    }
+
+    /**
+     * Gets a list of all index archives of crawls that have been conducted
+     * 
+     * @param bool $return_arc_bundles whether index bundles used for indexing
+     *      arc or other archive bundles should be included in the lsit
+     * @param bool $return_recrawls whether index archive bundles generated as
+     *      a result of recrawling should be included in the result
+     * @param array $machine_urls an array of urls of yioop queue servers
+     * @param bool $cache whether to try to get/set the data to a cache file
+     *
+     * @return array Available IndexArchiveBundle directories and 
+     *      their meta information this meta information includes the time of 
+     *      the crawl, its description, the number of pages downloaded, and the 
+     *      number of partitions used in storing the inverted index
+     */
+    function getCrawlList($return_arc_bundles = false, $return_recrawls = false,
+        $machine_urls = NULL, $cache = false)
+    {
+        if($machine_urls != NULL && !$this->isSingleLocalhost($machine_urls)) {
+
+            $pre_arg = ($return_arc_bundles && $return_recrawls) ? 3 :
+                ($return_recrawls) ? 2 : ($return_arc_bundles) ? 1 : 0;
+            $cache_file = CRAWL_DIR."/cache/NetworkCrawlList$pre_arg.txt";
+            if($cache && file_exists($cache_file) && filemtime($cache_file) 
+                + 300 > time() ) {
+                return unserialize(file_get_contents($cache_file));
+            }
+            $arg = "arg=$pre_arg";
+            $list_strings = $this->execMachines("getCrawlList", 
+                $machine_urls, $arg);
+            $list = $this->aggregateCrawlList($list_strings);
+            if($cache) {
+                file_put_contents($cache_file, serialize($list));
+            }
+            return $list;
+        }
+        $list = array();
+        $dirs = glob(CRAWL_DIR.'/cache/*', GLOB_ONLYDIR);
+
+        foreach($dirs as $dir) {
+            if(strlen($pre_timestamp = 
+                strstr($dir, self::index_data_base_name)) > 0) {
+                $crawl = array();
+                $crawl['CRAWL_TIME'] = 
+                    substr($pre_timestamp, strlen(self::index_data_base_name));
+                $info = IndexArchiveBundle::getArchiveInfo($dir);
+                $index_info = unserialize($info['DESCRIPTION']);
+                $crawl['DESCRIPTION'] = "";
+                if(!$return_arc_bundles && isset($index_info['ARCFILE'])) {
+                    continue;
+                } else if ($return_arc_bundles
+                    && isset($index_info['ARCFILE'])) {
+                    $crawl['DESCRIPTION'] = "ARCFILE::";
+                }
+                if(!$return_recrawls && 
+                    isset($index_info[self::CRAWL_TYPE]) && 
+                    $index_info[self::CRAWL_TYPE] == self::ARCHIVE_CRAWL) {
+                    continue;
+                } else if($return_recrawls  && 
+                    isset($index_info[self::CRAWL_TYPE]) && 
+                    $index_info[self::CRAWL_TYPE] == self::ARCHIVE_CRAWL) {
+                    $crawl['DESCRIPTION'] = "RECRAWL::";
+                }
+                $schedules = glob(CRAWL_DIR.'/schedules/'.
+                    self::schedule_data_base_name.$crawl['CRAWL_TIME'].
+                    '/*/At*.txt');
+                $crawl['RESUMABLE'] = (count($schedules) > 0) ? true: false;
+                $crawl['DESCRIPTION'] .= $index_info['DESCRIPTION'];
+                $crawl['VISITED_URLS_COUNT'] = 
+                    isset($info['VISITED_URLS_COUNT']) ?
+                    $info['VISITED_URLS_COUNT'] : 0;
+                $crawl['COUNT'] = $info['COUNT'];
+                $crawl['NUM_DOCS_PER_PARTITION'] = 
+                    $info['NUM_DOCS_PER_PARTITION'];
+                $crawl['WRITE_PARTITION'] = $info['WRITE_PARTITION'];
+                $list[] = $crawl;
+            }
+        }
+
+        return $list;
+    }
+
+    /**
+     *
+     */
+    function aggregateCrawlList($list_strings, $data_field = NULL)
+    {
+        $pre_list = array();
+        foreach($list_strings as $list_string) {
+            $a_list = unserialize(webdecode(
+                $list_string[self::PAGE]));
+            if($data_field != NULL) {
+                $a_list = $a_list[$data_field];
+            }
+            if(is_array($a_list)) {
+                foreach($a_list as $elt) {
+                    $timestamp = $elt['CRAWL_TIME'];
+                    if(!isset($pre_list[$timestamp])) {
+                        $pre_list[$timestamp] = $elt;
+                    } else {
+                        $pre_list[$timestamp]["VISITED_URLS_COUNT"] +=
+                            $elt["VISITED_URLS_COUNT"];
+                        $pre_list[$timestamp]["COUNT"] +=
+                            $elt["COUNT"];
+                        $pre_list[$timestamp]['RESUMABLE'] |= $elt['RESUMABLE'];
+                    }
+                }
+            }
+        }
+        $list = array_values($pre_list);
+        return $list;
+    }
+    /**
+     *
+     */
+    function crawlStalled($machine_urls = NULL)
+    {
+        if($machine_urls != NULL && !$this->isSingleLocalhost($machine_urls)) {
+            $outputs = $this->execMachines("crawlStalled", $machine_urls);
+            return $this->aggregateStalled($outputs);
+        }
+
+        if(file_exists(CRAWL_DIR."/schedules/crawl_status.txt")) {
+            //assume if status not updated forCRAWL_TIME_OUT
+            // crawl not active (do check for both scheduler and indexer)
+            if(filemtime(
+                CRAWL_DIR."/schedules/crawl_status.txt") + 
+                    CRAWL_TIME_OUT < time() ) { 
+                return true;
+            }
+            $schedule_status_exists = 
+                file_exists(CRAWL_DIR."/schedules/schedule_status.txt");
+            if($schedule_status_exists &&
+                filemtime(CRAWL_DIR."/schedules/schedule_status.txt") + 
+                    CRAWL_TIME_OUT < time() ) { 
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     *
+     */
+    function aggregateStalled($stall_statuses, $data_field = NULL)
+    {
+        foreach($stall_statuses as $status) {
+            $stall_status = unserialize(webdecode($status[self::PAGE]));
+            if($data_field != NULL) {
+                $stall_status = $stall_status[$data_field];
+            }
+            if($stall_status === true) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     *
+     */
+    function crawlStatus($machine_urls = NULL)
+    {
+        if($machine_urls != NULL && !$this->isSingleLocalhost($machine_urls)) {
+            $status_strings = $this->execMachines("crawlStatus", $machine_urls);
+            return $this->aggregateStatuses($status_strings);
+        }
+
+        $data = array();
+        $crawl_status_exists = 
+            file_exists(CRAWL_DIR."/schedules/crawl_status.txt");
+        if($crawl_status_exists) {
+            $crawl_status = 
+                @unserialize(file_get_contents(
+                    CRAWL_DIR."/schedules/crawl_status.txt"));
+        }
+        $schedule_status_exists = 
+            file_exists(CRAWL_DIR."/schedules/schedule_status.txt");
+        if($schedule_status_exists) {
+            $schedule_status = 
+                @unserialize(file_get_contents(
+                    CRAWL_DIR."/schedules/schedule_status.txt"));
+            if(isset($schedule_status[self::TYPE]) &&
+                $schedule_status[self::TYPE] == self::SCHEDULER) {
+                $data['SCHEDULER_PEAK_MEMORY'] = 
+                    isset($schedule_status[self::MEMORY_USAGE]) ?
+                    $schedule_status[self::MEMORY_USAGE] : 0;
+            } 
+        }
+
+        $data = (isset($crawl_status) && is_array($crawl_status)) ? 
+            array_merge($data, $crawl_status) : $data;
+
+        if(isset($data['VISITED_COUNT_HISTORY']) && 
+            count($data['VISITED_COUNT_HISTORY']) > 1) {
+            $recent = array_shift($data['VISITED_COUNT_HISTORY']);
+            $data["MOST_RECENT_TIMESTAMP"] = $recent[0];
+            $oldest = array_pop($data['VISITED_COUNT_HISTORY']);
+            unset($data['VISITED_COUNT_HISTORY']);
+            $change_in_time_hours = floatval(time() - $oldest[0])/3600.;
+            $change_in_urls = $recent[1] - $oldest[1];
+            $data['VISITED_URLS_COUNT_PER_HOUR'] = ($change_in_time_hours > 0) ?
+                $change_in_urls/$change_in_time_hours : 0;
+        } else {
+            $data['VISITED_URLS_COUNT_PER_HOUR'] = 0;
+        }
+
+        return $data;
+    }
+
+    /**
+     *
+     */
+    function aggregateStatuses($status_strings, $data_field = NULL)
+    {
+        $status['WEBAPP_PEAK_MEMORY'] = 0;
+        $status['FETCHER_PEAK_MEMORY'] = 0;
+        $status['QUEUE_PEAK_MEMORY'] = 0;
+        $status["SCHEDULER_PEAK_MEMORY"] = 0;
+        $status["COUNT"] = 0;
+        $status["VISITED_URLS_COUNT"] = 0;
+        $status["VISITED_URLS_COUNT_PER_HOUR"] = 0;
+        $status["MOST_RECENT_TIMESTAMP"] = 0;
+        $status["DESCRIPTION"] = "";
+        $status['MOST_RECENT_FETCHER'] = "";
+        $status['MOST_RECENT_URLS_SEEN'] = array();
+        $status['CRAWL_TIME'] = 0;
+
+        foreach($status_strings as $status_string) {
+            $a_status = unserialize(webdecode(
+                    $status_string[self::PAGE]));
+            if($data_field != NULL) {
+                $a_status = $a_status[$data_field];
+            }
+            $count_fields = array("COUNT", "VISITED_URLS_COUNT_PER_HOUR",
+                "VISITED_URLS_COUNT");
+            foreach($count_fields as $field) {
+                if(isset($a_status[$field])) {
+                    $status[$field] += $a_status[$field];
+                }
+            }
+            if(isset($a_status["CRAWL_TIME"]) && $a_status["CRAWL_TIME"] >
+                $status['CRAWL_TIME']) {
+                $status['CRAWL_TIME'] = $a_status["CRAWL_TIME"];
+                $text_fields = array("DESCRIPTION", "MOST_RECENT_FETCHER");
+                foreach($text_fields as $field) {
+                    if(isset($a_status[$field])) {
+                        $status[$field] = $a_status[$field];
+                    }
+                }
+            }
+            if(isset($a_status["MOST_RECENT_TIMESTAMP"]) &&
+                $status["MOST_RECENT_TIMESTAMP"] <= 
+                    $a_status["MOST_RECENT_TIMESTAMP"]) {
+                $status["MOST_RECENT_TIMESTAMP"] = 
+                    $a_status["MOST_RECENT_TIMESTAMP"];
+                if(isset($a_status['MOST_RECENT_URLS_SEEN'])) {
+                    $status['MOST_RECENT_URLS_SEEN'] =
+                        $a_status['MOST_RECENT_URLS_SEEN'];
+                }
+            }
+            $memory_fields = array("WEBAPP_PEAK_MEMORY", 
+                "FETCHER_PEAK_MEMORY", "QUEUE_PEAK_MEMORY", 
+                "SCHEDULER_PEAK_MEMORY");
+            foreach($memory_fields as $field) {
+                $status[$field] = (!isset($a_status[$field])) ? 0 :
+                        max($status[$field], $a_status[$field]);
+            }
+        }
+        return $status;
+    }
+
+    /**
+     *
+     */
+    function combinedCrawlInfo($machine_urls = NULL)
+    {
+        if($machine_urls != NULL && !$this->isSingleLocalhost($machine_urls)) {
+            $combined_strings = 
+                $this->execMachines("combinedCrawlInfo", $machine_urls);
+            $combined = array();
+            $combined[] = $this->aggregateStalled($combined_strings, 
+                0);
+            $combined[] = $this->aggregateStatuses($combined_strings, 
+                1);
+            $combined[] = $this->aggregateCrawlList($combined_strings, 
+                2);
+            return $combined;
+        }
+
+        $combined = array();
+        $combined[] = $this->crawlStalled();
+        $combined[] = $this->crawlStatus();
+        $combined[] = $this->getCrawlList(false, true);
+        return $combined;
+    }
+
+    /**
+     *
+     */
+    function injectUrlsCurrentCrawl($inject_urls, $machine_urls = NULL)
+    {
+        if($machine_urls != NULL && !$this->isSingleLocalhost($machine_urls)) {
+            $this->execMachines("injectUrlsCurrentCrawl", $machine_urls,
+                serialize($inject_urls));
+            return;
+        }
+
+        $dir = CRAWL_DIR."/schedules/".
+            self::schedule_data_base_name. $timestamp;
+        if(!file_exists($dir)) {
+            mkdir($dir);
+            chmod($dir, 0777);
+        }
+        $day = floor($timestamp/86400) - 1; 
+            //want before all other schedules, 
+            // execute next
+        $dir .= "/$day";
+        if(!file_exists($dir)) {
+            mkdir($dir);
+            chmod($dir, 0777);
+        }
+        $count = count($inject_urls);
+        if($count > 0 ) {
+            $now = time();
+            $schedule_data = array();
+            $schedule_data[self::SCHEDULE_TIME] = 
+                $timestamp;
+            $schedule_data[self::TO_CRAWL] = array();
+            for($i = 0; $i < $count; $i++) {
+                $url = $inject_urls[$i];
+                $hash = crawlHash($now.$url);
+                $schedule_data[self::TO_CRAWL][] = 
+                    array($url, 1, $hash);
+            }
+            $data_string = webencode(
+                gzcompress(serialize($schedule_data)));
+            $data_hash = crawlHash($data_string);
+            file_put_contents($dir."/At1From127-0-0-1".
+                "WithHash$data_hash.txt", $data_string);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     *
+     */
+    function execMachines($command, $machine_urls, $arg = NULL)
+    {
+        $num_machines = count($machine_urls);
+        $time = time();
+        $session = md5($time . AUTH_KEY);
+        $query = "c=crawl&a=$command&time=$time&session=$session" . 
+            "&num=$num_machines";
+        if($arg != NULL) {
+            $arg = webencode($arg);
+            $query .= "&arg=$arg";
+        }
+
+        $sites = array();
+        $post_data = array();
+        $i = 0;
+        foreach($machine_urls as $machine_url) {
+            $sites[$i][CrawlConstants::URL] =  $machine_url;
+            $post_data[$i] = $query."&i=$i";
+            $i++;
+        }
+
+        $outputs = array();
+        if(count($sites) > 0) {
+            $outputs = FetchUrl::getPages($sites, false, 0, NULL, self::URL,
+                self::PAGE, true, $post_data);
+        }
+        
+        return $outputs;
+    }
+
 }
 ?>

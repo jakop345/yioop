@@ -260,8 +260,9 @@ class WordIterator extends IndexBundleIterator
                 }
             }
         }
-
         $this->count_block = count($results);
+        $this->pages = $results;
+
         return $results;
     }
 

@@ -52,7 +52,7 @@ class ProfileModel extends Model
     var $profile_fields = array('USER_AGENT_SHORT', 
             'DEFAULT_LOCALE', 'DEBUG_LEVEL', 'DBMS','DB_HOST', 
             'DB_NAME', 'DB_USER', 'DB_PASSWORD', 
-            'QUEUE_SERVER', 'AUTH_KEY', "ROBOT_DESCRIPTION", 'WEB_URI',
+            'NAME_SERVER', 'AUTH_KEY', "ROBOT_DESCRIPTION", 'WEB_URI',
             'USE_MEMCACHE', 'MEMCACHE_SERVERS', 'USE_FILECACHE', 'CACHE_LINK', 
             'SIMILAR_LINK', 'IN_LINK', 'IP_LINK', 'SIGNIN_LINK',
             'ROBOT_INSTANCE', "WEB_ACCESS", "RSS_ACCESS", "API_ACCESS",

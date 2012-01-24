@@ -422,6 +422,12 @@ class UrlParser
 
         if(!self::isSchemeHttpOrHttps($link)) {return NULL;}
 
+        if(isset($link[0]) && 
+            $link[0] == "/" && isset($link[1]) && $link[1] == "/") {
+            $http = ($site[4] == 's') ? "https:" : "http:";
+            $link = $http . $link;
+        }
+
         if(self::hasHostUrl($link)) {
             $host = self::getHost($link);
             $path = self::getPath($link);
@@ -540,6 +546,30 @@ class UrlParser
 
     }
 
+    /**
+     * Checks if a $url is on localhost
+     *
+     * @param string $url the url to check
+     * @return bool whether or not it is on localhost
+     */
+    static function isLocalhostUrl($url)
+    {
+        $host = UrlParser::getHost($url, false);
+        
+        $localhosts = array("localhost", "127.0.0.1", "::1");
+        if(isset($_SERVER["SERVER_NAME"])) {
+            $localhosts[] = $_SERVER["SERVER_NAME"];
+        }
+        if(isset($_SERVER["SERVER_ADDR"])) {
+            $localhosts[] = $_SERVER["SERVER_ADDR"];
+        }
+        foreach($localhosts as $localhost) {
+            if(stristr($host, $localhost)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
 }
 

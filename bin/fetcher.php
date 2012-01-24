@@ -137,11 +137,30 @@ class Fetcher implements CrawlConstants
      * @var object
      */
     var $db;
+
     /**
-     * Url or IP address of the queue_server to get sites to crawl from
-     * @var string
+     * Urls or IP address of the web_server used to administer this instance
+     * of yioop. Used to figure out available queue_servers to contact
+     * for crawling data
+     * 
+     * @var array
      */
-    var $queue_server;
+    var $name_server;
+
+    /**
+     * Array of Urls or IP addresses of the queue_servers to get sites to crawl 
+     * from
+     * @var array
+     */
+    var $queue_servers;
+
+    /**
+     * Index into $queue_servers of the server get schedule from (or last one
+     * we got the schedule from)
+     * @var int
+     */
+    var $current_server;
+
     /**
      * An associative array of (mimetype => name of processor class to handle)
      * pairs.
@@ -175,7 +194,7 @@ class Fetcher implements CrawlConstants
      */
     var $crawl_time;
     /**
-     * Contains the list of web pages to crawl from the queue_server
+     * Contains the list of web pages to crawl from a queue_server
      * @var array
      */
     var $to_crawl;
@@ -187,12 +206,12 @@ class Fetcher implements CrawlConstants
     var $to_crawl_again;
     /**
      * Summary information for visited sites that the fetcher hasn't sent to 
-     * the queue_server yet
+     * a queue_server yet
      * @var array
      */
     var $found_sites;
     /**
-     * Timestamp from the queue_server of the current schedule of sites to
+     * Timestamp from a queue_server of the current schedule of sites to
      * download. This is sent back to the server once this schedule is completed
      * to help the queue server implement crawl-delay if needed.
      * @var int
@@ -224,7 +243,7 @@ class Fetcher implements CrawlConstants
     /**
      * Stores the name of the ordering used to crawl pages. This is used in a
      * switch/case when computing weights of urls to be crawled before sending
-     * these new urls back to the queue_server.
+     * these new urls back to a queue_server.
      * @var string
      */
     var $crawl_order;
@@ -251,7 +270,7 @@ class Fetcher implements CrawlConstants
     var $archive_iterator;
 
     /**
-     * Keeps track of whether during the recrawl we should notify the 
+     * Keeps track of whether during the recrawl we should notify a
      * queue_server scheduler about our progress in mini-indexing documents
      * in the archive
      * @var bool
@@ -275,17 +294,20 @@ class Fetcher implements CrawlConstants
      * Sets up the field variables so that crawling can begin
      *
      * @param array $page_processors (mimetype => name of processor) pairs
-     * @param string $queue_server URL or IP address of the queue server
+     * @param string $name_server URL or IP address of the queue server
      * @param int $page_range_request maximum number of bytes to download from
      *      a webpage; <=0 -- unlimited
      */
-    function __construct($page_processors, $queue_server,
+    function __construct($page_processors, $name_server,
         $page_range_request) 
     {
         $db_class = ucfirst(DBMS)."Manager";
         $this->db = new $db_class();
 
-        $this->queue_server = $queue_server;
+        // initially same only one queueserver and is same as name server
+        $this->name_server = $name_server;
+        $this->queue_servers = array($name_server);
+        $this->current_server = 0;
         $this->page_processors = $page_processors;
         $this->meta_words = array();
 
@@ -308,7 +330,7 @@ class Fetcher implements CrawlConstants
         $this->sum_seen_site_link_length = 0;
         $this->num_seen_sites = 0;
        
-        //we will get the correct crawl order from the queue_server
+        //we will get the correct crawl order from a queue_server
         $this->crawl_order = self::PAGE_IMPORTANCE;
     }
 
@@ -617,7 +639,7 @@ class Fetcher implements CrawlConstants
      */
    function checkCrawlTime()
     {
-        $queue_server = $this->queue_server;
+        $name_server = $this->name_server;
 
         $start_time = microtime();
         $time = time();
@@ -633,7 +655,7 @@ class Fetcher implements CrawlConstants
         */
         $robot_instance = $prefix . ROBOT_INSTANCE;
         $request =  
-            $queue_server."?c=fetch&a=crawlTime&time=$time&session=$session".
+            $name_server."?c=fetch&a=crawlTime&time=$time&session=$session".
             "&robot_instance=".$robot_instance."&machine_uri=".WEB_URI;
 
         $info_string = FetchUrl::getPage($request);
@@ -649,6 +671,14 @@ class Fetcher implements CrawlConstants
             $this->to_crawl = array(); 
             $this->to_crawl_again = array();
             $this->found_sites = array();
+            if(isset($info[self::QUEUE_SERVERS])) {
+                $this->queue_servers = $info[self::QUEUE_SERVERS];
+                if(!isset($this->current_server) || 
+                    $this->current_server > count($info[self::QUEUE_SERVERS])) {
+                    $this->current_server = 0;
+                }
+            }
+
             if($this->crawl_time > 0) {
                 file_put_contents("$dir/$prefix".self::fetch_closed_name.
                     "{$this->crawl_time}.txt", "1");
@@ -716,8 +746,10 @@ class Fetcher implements CrawlConstants
             return true; 
         }
 
+        $this->current_server = ($this->current_server + 1) 
+            % count($this->queue_servers);
         $this->recrawl_check_scheduler = false;
-        $queue_server = $this->queue_server;
+        $queue_server = $this->queue_servers[$this->current_server];
 
         $start_time = microtime();
         $time = time();
@@ -730,6 +762,8 @@ class Fetcher implements CrawlConstants
 
         $info_string = FetchUrl::getPage($request);
         if($info_string === false) {
+            crawlLog("The following request failed:");
+            crawlLog($request);
             return false;
         }
         $info_string = trim($info_string);
@@ -776,6 +810,19 @@ class Fetcher implements CrawlConstants
      */
     function setCrawlParamsFromArray(&$info)
     {
+        /* QUEUE_SERVERS and CURRENT_SERVER might not be set if info came
+            from a queue_server rather than from name server
+         */
+        if(isset($info[self::QUEUE_SERVERS])) {
+            $this->queue_servers = $info[self::QUEUE_SERVERS];
+        } else {
+            $info[self::QUEUE_SERVERS] = $this->queue_servers;
+        }
+        if(isset($info[self::CURRENT_SERVER])) {
+            $this->current_server = $info[self::CURRENT_SERVER];
+        } else {
+            $info[self::CURRENT_SERVER] = $this->current_server;
+        }
         if(isset($info[self::CRAWL_TYPE])) {
             $this->crawl_type = $info[self::CRAWL_TYPE];
         }
@@ -1375,10 +1422,14 @@ class Fetcher implements CrawlConstants
             break;
         }
         $count = count($link_urls);
+        $num_queue_servers = count($this->queue_servers);
         for($i = 0; $i < $count; $i++) {
-            if(strlen($link_urls[$i]) > 0) {
-                $this->found_sites[self::TO_CRAWL][] = 
-                    array($link_urls[$i], $weight, $site_hash.$i);
+            $url = $link_urls[$i];
+            if(strlen($url) > 0) {
+                $part = calculatePartition($url, $num_queue_servers, 
+                    "UrlParser::getHost");
+                $this->found_sites[self::TO_CRAWL][$part][] = 
+                    array($url, $weight, $site_hash.$i);
             }
         }
     }
@@ -1397,7 +1448,7 @@ class Fetcher implements CrawlConstants
      */
     function updateScheduler() 
     {
-        $queue_server = $this->queue_server;
+        $queue_server = $this->queue_servers[$this->current_server];
 
         $prefix = "";
         if($this->fetcher_num !== false) {
@@ -1428,11 +1479,11 @@ class Fetcher implements CrawlConstants
 
         //handle schedule data
         $schedule_data = array();
-        if(isset($this->found_sites[self::TO_CRAWL])) {
+        if(isset($this->found_sites[self::TO_CRAWL][$this->current_server])) {
             $schedule_data[self::TO_CRAWL] = &
-                $this->found_sites[self::TO_CRAWL];
+                $this->found_sites[self::TO_CRAWL][$this->current_server];
         }
-        unset($this->found_sites[self::TO_CRAWL]);
+        unset($this->found_sites[self::TO_CRAWL][$this->current_server]);
 
         $seen_cnt = 0;
         if(isset($this->found_sites[self::SEEN_URLS]) && 
@@ -1460,7 +1511,8 @@ class Fetcher implements CrawlConstants
             $this->buildMiniInvertedIndex();
         }
         crawlLog("...");
-        if(isset($this->found_sites[self::INVERTED_INDEX])) {
+        if(isset($this->found_sites[self::INVERTED_INDEX][
+            $this->current_server])) {
             $compress_urls = "";
             while($this->found_sites[self::SEEN_URLS] != array()) {
                 $site = array_shift($this->found_sites[self::SEEN_URLS]);
@@ -1471,14 +1523,15 @@ class Fetcher implements CrawlConstants
             $len_urls =  strlen($compress_urls);
             crawlLog("...Finish Compressing seen URLs.");
             $post_data['index_data'] = webencode( packInt($len_urls).
-                $compress_urls. $this->found_sites[self::INVERTED_INDEX]
+                $compress_urls. $this->found_sites[self::INVERTED_INDEX][
+                $this->current_server]
                 ); // don't compress index data
             unset($compress_urls);
-            unset($this->found_sites[self::INVERTED_INDEX]);
+            unset($this->found_sites[self::INVERTED_INDEX][
+                $this->current_server]);
             $bytes_to_send += strlen($post_data['index_data']);
         }
 
-        $this->found_sites = array(); // reset found_sites so have more space.
         if($bytes_to_send <= 0) {
             crawlLog("No data to send aborting update scheduler...");
             return;
@@ -1532,7 +1585,7 @@ class Fetcher implements CrawlConstants
     /**
      * Builds an inverted index shard (word --> {docs it appears in}) 
      * for the current batch of SEEN_URLS_BEFORE_UPDATE_SCHEDULER many pages. 
-     * This inverted index shard is then merged by the queue_server 
+     * This inverted index shard is then merged by a queue_server 
      * into the inverted index of the current generation of the crawl. 
      * The complete inverted index for the whole crawl is built out of these 
      * inverted indexes for generations. The point of computing a partial 
@@ -1554,7 +1607,10 @@ class Fetcher implements CrawlConstants
             for the fetcher we are not saving the index shards so
             name doesn't matter.
         */
-        $index_shard = new IndexShard("fetcher_shard");
+        if(!isset($this->found_sites[self::INVERTED_INDEX][
+            $this->current_server]))
+            $this->found_sites[self::INVERTED_INDEX][$this->current_server] = 
+                new IndexShard("fetcher_shard_{$this->current_server}");
         for($i = 0; $i < $num_seen; $i++) {
             $site = $this->found_sites[self::SEEN_URLS][$i];
             if(!isset($site[self::HASH])) {continue; }
@@ -1605,11 +1661,13 @@ class Fetcher implements CrawlConstants
                 $link_rank = false;
             }
             $had_links = false;
-
+            $num_queue_servers = count($this->queue_servers);
             foreach($site[self::LINKS] as $url => $link_text) {
                 $link_meta_ids = array();
                 $location_link = false;
                 if(strlen($url) > 0) {
+                    $part_num = calculatePartition($url, 
+                        $num_queue_servers, "UrlParser::getHost");
                     $summary = array();
                     if(substr($link_text, 0, 9) == "location:") {
                         $location_link = true;
@@ -1652,10 +1710,15 @@ class Fetcher implements CrawlConstants
                     $link_word_lists = 
                         PhraseParser::extractPhrasesInLists($link_text,
                         MAX_PHRASE_LEN, $lang);
-
-                    $index_shard->addDocumentWords($link_keys, 
-                        self::NEEDS_OFFSET_FLAG, 
-                        $link_word_lists, $link_meta_ids, false, $link_rank);
+                    if(!isset($this->found_sites[self::INVERTED_INDEX][
+                        $part_num])) {
+                        $this->found_sites[self::INVERTED_INDEX][$part_num] = 
+                            new IndexShard("fetcher_shard_$part_num");
+                    }
+                    $this->found_sites[self::INVERTED_INDEX][
+                        $part_num]->addDocumentWords($link_keys, 
+                            self::NEEDS_OFFSET_FLAG, $link_word_lists, 
+                                $link_meta_ids, false, $link_rank);
 
                     $meta_ids[] = 'link:'.$url;
                     $meta_ids[] = 'link:'.crawlHash($url);
@@ -1664,12 +1727,15 @@ class Fetcher implements CrawlConstants
 
             }
 
-            $index_shard->addDocumentWords($doc_keys, self::NEEDS_OFFSET_FLAG, 
+            $this->found_sites[self::INVERTED_INDEX][$this->current_server
+                ]->addDocumentWords($doc_keys, self::NEEDS_OFFSET_FLAG, 
                 $word_lists, $meta_ids, true, $doc_rank);
 
         }
 
-        $this->found_sites[self::INVERTED_INDEX] = $index_shard->save(true);
+        $this->found_sites[self::INVERTED_INDEX][$this->current_server] = 
+            $this->found_sites[self::INVERTED_INDEX][
+                $this->current_server]->save(true);
 
         if($this->crawl_type == self::ARCHIVE_CRAWL) {
             $this->recrawl_check_scheduler = true;
@@ -1791,7 +1857,7 @@ class Fetcher implements CrawlConstants
 /*
  *  Instantiate and runs the Fetcher
  */
-$fetcher =  new Fetcher($PAGE_PROCESSORS, QUEUE_SERVER,
+$fetcher =  new Fetcher($PAGE_PROCESSORS, NAME_SERVER,
     PAGE_RANGE_REQUEST);
 $fetcher->start();
 

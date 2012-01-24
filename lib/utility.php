@@ -528,8 +528,44 @@ function crawlCrypt($string, $salt = NULL)
     return crawlHash($string.$salt).$salt;
 }
 
+/**
+ *
+ */
+function partitionByHash($table, $field, $num_partition, $instance, 
+    $callback = NULL)
+{
+    $out_table = array();
+    foreach($table as $row) {
+        $cell = ($field === NULL) ? $row : $row[$field];
+        $hash_int = calculatePartition($cell, $num_partition, $callback);
 
+        if($hash_int  == $instance) {
+            $out_table[] = $row;
+        }
+    }
+    return $out_table;
+}
 
+/**
+ *
+ */
+function calculatePartition($input, $num_partition, $callback = NULL)
+{
+    if($callback !== NULL) {
+        $callback_parts = explode("::", $callback);
+        if(count($callback_parts) == 1) {
+            $input = $callback($input);
+        } else {
+            $class_name = $callback_parts[0];
+            $method_name = $callback_parts[1];
+            $input = $class_name::$method_name($input);
+        }
+    }
+    $hash_int =  abs(unpackInt(substr(crawlHash($input, true), 0, 4))) %
+        $num_partition;
+
+    return $hash_int;
+}
 
 /**
  * Measures the change in time in seconds between two timestamps to microsecond
@@ -539,7 +575,7 @@ function crawlCrypt($string, $salt = NULL)
  * @param string $end ending time with microseconds, if null use current time
  * @return float time difference in seconds
  */
-function changeInMicrotime( $start, $end=NULL ) 
+function changeInMicrotime( $start, $end = NULL) 
 {
     if( !$end ) {
     	    $end= microtime();
@@ -671,6 +707,27 @@ function orderCallback($word_doc_a, $word_doc_b, $order_field = NULL)
     }
     return ((float)$word_doc_a[$field] > 
         (float)$word_doc_b[$field]) ? -1 : 1;
+}
+
+/**
+ *  Callback function used to sort documents by a field in reverse order
+ *
+ *  Should be initialized before using in usort with a call
+ *  like: orderCallback($tmp, $tmp, "field_want");
+ *
+ *  @param string $word_doc_a doc id of first document to compare
+ *  @param string $word_doc_b doc id of second document to compare
+ *  @param string $field which field of these associative arrays to sort by
+ *  @return int -1 if first doc bigger 1 otherwise
+ */
+function rorderCallback($word_doc_a, $word_doc_b, $order_field = NULL)
+{
+    static $field = "a";
+    if($order_field !== NULL) {
+        $field = $order_field;
+    }
+    return ((float)$word_doc_a[$field] > 
+        (float)$word_doc_b[$field]) ? 1 : -1;
 }
 
 /**

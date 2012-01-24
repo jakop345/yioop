@@ -39,6 +39,10 @@ require_once BASE_DIR."/models/datasources/".DBMS."_manager.php";
 /** Used to handle curl and multi curl page requests */
 require_once BASE_DIR."/lib/fetch_url.php";
 
+/** For checking if a url is on localhost */
+require_once BASE_DIR."/lib/url_parser.php";
+
+
 /** Used to load common constants among crawl components */
 require_once BASE_DIR."/lib/crawl_constants.php";
 
@@ -238,7 +242,7 @@ class Model implements CrawlConstants
                 if( $out_len  < $description_length) {
                     
                     $str = mb_substr($text, $low, $high - $low);
-                    if(isset($snippets[$i]) && 
+                    if(isset($snippets[$i]) && $snippets[$i] != "" && 
                         mb_stristr($str, $snippets[$i])) {
                         $i++;
                     }
@@ -313,6 +317,22 @@ class Model implements CrawlConstants
     function loginDbms($dbms)
     {
         return !in_array($dbms, array("sqlite", "sqlite3"));
+    }
+
+
+    /**
+     * Used to determine if an action involves just one yioop instance on
+     * the current local machine or not
+     *
+     * @param array $machine_urls urls of yioop instances to which the action
+     *      applies
+     * @return bool whether it involves a single local yioop instance (true)
+     *      or not (false)
+     */
+    function isSingleLocalhost($machine_urls)
+    {
+        return count($machine_urls) == 1 && 
+                    UrlParser::isLocalhostUrl($machine_urls[0]);
     }
 }
 ?>

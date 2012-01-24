@@ -59,7 +59,7 @@ class SettingsController extends Controller
      * is used to get a list of available crawls
      * @var array
      */
-    var $models = array("locale", "crawl", "user");
+    var $models = array("locale", "crawl", "user", "machine");
 
     /**
      *  Sets up the available perpage language options.
@@ -111,7 +111,10 @@ class SettingsController extends Controller
             $data['PER_PAGE_SELECTED'] = NUM_RESULTS_PER_PAGE;
         }
 
-        $crawls = $this->crawlModel->getCrawlList(false, true);
+        $machine_urls = $this->machineModel->getQueueServerUrls();
+
+        $crawls = $this->crawlModel->getCrawlList(false, true, $machine_urls,
+            true);
         $data['CRAWLS'] = array();
         foreach($crawls as $crawl) {
             $data['CRAWLS'][$crawl['CRAWL_TIME']] = $crawl['DESCRIPTION'].
