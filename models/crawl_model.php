@@ -393,93 +393,6 @@ class CrawlModel extends Model implements CrawlConstants
 
     }
 
-    /**
-     * Returns the crawl parameters that were used during a given crawl
-     *
-     * @param string $timestamp timestamp of the crawl to load the crawl
-     *      parameters of
-     * @return array  the first sites to crawl during the next crawl
-     *      restrict_by_url, allowed, disallowed_sites
-     */
-    function getCrawlSeedInfo($timestamp)
-    {
-        $dir = CRAWL_DIR.'/cache/'.self::index_data_base_name.$timestamp;
-        $seed_info = NULL;
-        if(file_exists($dir)) {
-            $info = IndexArchiveBundle::getArchiveInfo($dir);
-            $index_info = unserialize($info['DESCRIPTION']);
-            $seed_info['general']["restrict_sites_by_url"] = 
-                $index_info[self::RESTRICT_SITES_BY_URL];
-            $seed_info['general']["crawl_type"] = 
-                (isset($index_info[self::CRAWL_TYPE])) ?
-                $index_info[self::CRAWL_TYPE] : self::WEB_CRAWL;
-            $seed_info['general']["crawl_index"] = 
-                (isset($index_info[self::CRAWL_INDEX])) ?
-                $index_info[self::CRAWL_INDEX] : '';
-            $seed_info['general']["crawl_order"] = 
-                $index_info[self::CRAWL_ORDER];
-            $site_types = array(
-                "allowed_sites" => self::ALLOWED_SITES,
-                "disallowed_sites" => self::DISALLOWED_SITES,
-                "seed_sites" => self::TO_CRAWL
-            );
-            foreach($site_types as $type => $code) {
-                if(isset($index_info[$code])) {
-                    $tmp = & $index_info[$code];
-                } else {
-                    $tmp = array();
-                }
-                $seed_info[$type]['url'] =  $tmp;
-            }
-            $seed_info['meta_words'] = array();
-            if(isset($index_info[self::META_WORDS]) ) {
-                $seed_info['meta_words'] = $index_info[self::META_WORDS];
-            }
-            if(isset($index_info[self::INDEXING_PLUGINS])) {
-                $seed_info['indexing_plugins']['plugins'] = 
-                    $index_info[self::INDEXING_PLUGINS];
-            }
-        }
-        return $seed_info;
-    }
-
-    /**
-     * Changes the crawl parameters of an existing crawl
-     *
-     * @param string $timestamp timestamp of the crawl to change
-     * @param array $new_info the new parameters
-     */
-    function setCrawlSeedInfo($timestamp, $new_info)
-    {
-        $dir = CRAWL_DIR.'/cache/'.self::index_data_base_name.$timestamp;
-        if(file_exists($dir)) {
-            $info = IndexArchiveBundle::getArchiveInfo($dir);
-            $index_info = unserialize($info['DESCRIPTION']);
-            if(isset($new_info['general']["restrict_sites_by_url"])) {
-                $index_info[self::RESTRICT_SITES_BY_URL] = 
-                    $new_info['general']["restrict_sites_by_url"];
-            }
-            $updatable_site_info = array(
-                "allowed_sites" => self::ALLOWED_SITES,
-                "disallowed_sites" => self::DISALLOWED_SITES
-            );
-            foreach($updatable_site_info as $type => $code) {
-                if(isset($new_info[$type])) {
-                    $index_info[$code] = $new_info[$type]['url'];
-                }
-            }
-            if(isset($new_info['meta_words']) ) {
-                $index_info[self::META_WORDS] = $new_info['meta_words'];
-            }
-            if(isset($new_info['indexing_plugins']) ) {
-                $index_info[self::INDEXING_PLUGINS] = 
-                    $new_info['indexing_plugins']['plugins'];
-            }
-            $info['DESCRIPTION'] = serialize($index_info);
-            IndexArchiveBundle::setArchiveInfo($dir, $info);
-        }
-    }
-
 
     /**
      *  Returns the initial sites that a new crawl will start with along with
@@ -593,6 +506,99 @@ EOT;
         $out = implode("\n", $n);
         file_put_contents(WORK_DIRECTORY."/crawl.ini", $out);
     }
+
+
+    /**
+     * Returns the crawl parameters that were used during a given crawl
+     *
+     * @param string $timestamp timestamp of the crawl to load the crawl
+     *      parameters of
+     * @return array  the first sites to crawl during the next crawl
+     *      restrict_by_url, allowed, disallowed_sites
+     * @param array $machine_urls an array of urls of yioop queue servers
+     *
+     */
+    function getCrawlSeedInfo($timestamp,  $machine_urls = NULL)
+    {
+        $dir = CRAWL_DIR.'/cache/'.self::index_data_base_name.$timestamp;
+        $seed_info = NULL;
+        if(file_exists($dir)) {
+            $info = IndexArchiveBundle::getArchiveInfo($dir);
+            $index_info = unserialize($info['DESCRIPTION']);
+            $seed_info['general']["restrict_sites_by_url"] = 
+                $index_info[self::RESTRICT_SITES_BY_URL];
+            $seed_info['general']["crawl_type"] = 
+                (isset($index_info[self::CRAWL_TYPE])) ?
+                $index_info[self::CRAWL_TYPE] : self::WEB_CRAWL;
+            $seed_info['general']["crawl_index"] = 
+                (isset($index_info[self::CRAWL_INDEX])) ?
+                $index_info[self::CRAWL_INDEX] : '';
+            $seed_info['general']["crawl_order"] = 
+                $index_info[self::CRAWL_ORDER];
+            $site_types = array(
+                "allowed_sites" => self::ALLOWED_SITES,
+                "disallowed_sites" => self::DISALLOWED_SITES,
+                "seed_sites" => self::TO_CRAWL
+            );
+            foreach($site_types as $type => $code) {
+                if(isset($index_info[$code])) {
+                    $tmp = & $index_info[$code];
+                } else {
+                    $tmp = array();
+                }
+                $seed_info[$type]['url'] =  $tmp;
+            }
+            $seed_info['meta_words'] = array();
+            if(isset($index_info[self::META_WORDS]) ) {
+                $seed_info['meta_words'] = $index_info[self::META_WORDS];
+            }
+            if(isset($index_info[self::INDEXING_PLUGINS])) {
+                $seed_info['indexing_plugins']['plugins'] = 
+                    $index_info[self::INDEXING_PLUGINS];
+            }
+        }
+        return $seed_info;
+    }
+
+    /**
+     * Changes the crawl parameters of an existing crawl
+     *
+     * @param string $timestamp timestamp of the crawl to change
+     * @param array $new_info the new parameters
+     * @param array $machine_urls an array of urls of yioop queue servers
+     */
+    function setCrawlSeedInfo($timestamp, $new_info,  $machine_urls = NULL)
+    {
+        $dir = CRAWL_DIR.'/cache/'.self::index_data_base_name.$timestamp;
+        if(file_exists($dir)) {
+            $info = IndexArchiveBundle::getArchiveInfo($dir);
+            $index_info = unserialize($info['DESCRIPTION']);
+            if(isset($new_info['general']["restrict_sites_by_url"])) {
+                $index_info[self::RESTRICT_SITES_BY_URL] = 
+                    $new_info['general']["restrict_sites_by_url"];
+            }
+            $updatable_site_info = array(
+                "allowed_sites" => self::ALLOWED_SITES,
+                "disallowed_sites" => self::DISALLOWED_SITES
+            );
+            foreach($updatable_site_info as $type => $code) {
+                if(isset($new_info[$type])) {
+                    $index_info[$code] = $new_info[$type]['url'];
+                }
+            }
+            if(isset($new_info['meta_words']) ) {
+                $index_info[self::META_WORDS] = $new_info['meta_words'];
+            }
+            if(isset($new_info['indexing_plugins']) ) {
+                $index_info[self::INDEXING_PLUGINS] = 
+                    $new_info['indexing_plugins']['plugins'];
+            }
+            $info['DESCRIPTION'] = serialize($index_info);
+            IndexArchiveBundle::setArchiveInfo($dir, $info);
+        }
+    }
+
+
 
     /**
      * Get a description associated with a Web Crawl or Crawl Mix
@@ -745,6 +751,7 @@ EOT;
 
     /**
      * Used to send a message to the queue_servers to stop a crawl
+     * @param array $machine_urls an array of urls of yioop queue servers
      */
     function sendStopCrawlMessage($machine_urls = NULL)
     {
@@ -844,7 +851,13 @@ EOT;
     }
 
     /**
+     * When @see getCrawlList() is used in a multi-queue_server this method
+     * used to integrate the crawl lists received by the different machines
      *
+     * @param array $list_strings serialized crawl list data from different
+     *  queue_servers
+     * @param string $data_field field of $list_strings to use for data
+     * @return array list of crawls and their meta data
      */
     function aggregateCrawlList($list_strings, $data_field = NULL)
     {
@@ -874,7 +887,15 @@ EOT;
         return $list;
     }
     /**
+     * Determines if the length of time since any of the fetchers has spoken
+     * with any of the queue_servers has exceeded CRAWL_TIME_OUT. If so,
+     * typically the caller of this method would do something such as officially
+     * stop the crawl.
      *
+     * @param array $list_strings serialized crawl list data from different
+     *   queue_servers
+     * @param array $machine_urls an array of urls of yioop queue servers
+     * @return bool whether the current crawl is stalled or not
      */
     function crawlStalled($machine_urls = NULL)
     {
@@ -884,7 +905,7 @@ EOT;
         }
 
         if(file_exists(CRAWL_DIR."/schedules/crawl_status.txt")) {
-            //assume if status not updated forCRAWL_TIME_OUT
+            //assume if status not updated for CRAWL_TIME_OUT
             // crawl not active (do check for both scheduler and indexer)
             if(filemtime(
                 CRAWL_DIR."/schedules/crawl_status.txt") + 
@@ -903,7 +924,18 @@ EOT;
     }
 
     /**
+     * When @see crawlStalled() is used in a multi-queue_server this method
+     * used to integrate the stalled information received by the different 
+     * machines
      *
+     * @param array $stall_statuses contains web encoded serialized data one
+     *  one field of which has the boolean data concerning stalled statis
+     *
+     * @param string $data_field field of $stall_statuses to use for data
+     *      if NULL then each element of $stall_statuses is a wen encoded
+     *      serialized boolean
+     * @return bool true if at list one queue_server has heard from one
+     *      fetcher within the time out period
      */
     function aggregateStalled($stall_statuses, $data_field = NULL)
     {
@@ -920,7 +952,13 @@ EOT;
     }
 
     /**
+     *  Returns data about current crawl such as DESCRIPTION, TIMESTAMP,
+     *  peak memory of various processes, most recent fetcher, most recent
+     *  urls, urls seen, urls visited, etc.
      *
+     *  @param array $machine_urls an array of urls of yioop queue servers
+     *      on which the crawl is being conducted
+     *  @return array associative array of the said data
      */
     function crawlStatus($machine_urls = NULL)
     {
@@ -972,7 +1010,15 @@ EOT;
     }
 
     /**
+     * When @see crawlStatus() is used in a multi-queue_server this method
+     * used to integrate the status information received by the different 
+     * machines
      *
+     * @param array $status_strings
+     * @param string $data_field field of $status_strings to use for data
+     * @return array associative array of DESCRIPTION, TIMESTAMP,
+     *  peak memory of various processes, most recent fetcher, most recent
+     *  urls, urls seen, urls visited, etc.
      */
     function aggregateStatuses($status_strings, $data_field = NULL)
     {
@@ -1034,7 +1080,14 @@ EOT;
     }
 
     /**
+     *  This method is used to reduce the number of network requests
+     *  needed by the crawlStatus method of admin_controller. It returns
+     *  an array containing the results of the @see crawlStalled
+     *  @see crawlStatus and @see getCrawlList methods
      *
+     *  @param array $machine_urls an array of urls of yioop queue servers
+     *  @return array containing three components one for each of the three
+     *      kinds of results listed above
      */
     function combinedCrawlInfo($machine_urls = NULL)
     {
@@ -1059,7 +1112,12 @@ EOT;
     }
 
     /**
+     *  Add the provided urls to the schedule directory of URLs that will
+     *  be crawled
      *
+     *  @param array $inject_urls urls to be added to the schedule of
+     *      the active crawl
+     *  @param array $machine_urls an array of urls of yioop queue servers
      */
     function injectUrlsCurrentCrawl($inject_urls, $machine_urls = NULL)
     {
@@ -1107,7 +1165,23 @@ EOT;
     }
 
     /**
+     *  This method is invoked by other crawlModel methods when they
+     *  want to have their method performed on an array of other
+     *  Yioop instances. The results returned can then be aggregated.
+     *  The invokation sequence is 
+     *  crawlModelMethodA invokes execMachine with a list of 
+     *  urls of other Yioop instances. execMachine makes REST requests of
+     *  those instances of the given command and optional arguments
+     *  This request would be handled by a CrawlController which in turn
+     *  calls crawlModelMethodA on the given Yioop instance, serializes the
+     *  result and gives it back to execMachine and then back to the originally
+     *  calling function.
      *
+     *  @param string $command the CrawlModel method to invoke on the remote 
+     *      Yioop instances
+     *  @param array $machine_urls machines to invoke this command on
+     *  @param string additional arguments to be passed to the remote machine
+     *  @return array a list of outputs from each machine that was called.
      */
     function execMachines($command, $machine_urls, $arg = NULL)
     {

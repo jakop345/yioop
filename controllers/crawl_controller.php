@@ -44,7 +44,12 @@ require_once BASE_DIR."/lib/url_parser.php";
 
 
 /**
- * 
+ * Controller used to manage networked installations of Yioop where
+ * there might be mutliple queue_servers and a name_server. Command
+ * sent to the nameserver web page are mapped out to queue_servers
+ * using this controller. Each method of the controller essentially
+ * mimics one method of CrawlModel and is used to proxy that information
+ * through a result web page back to the name_server.
  *
  * @author Chris Pollett
  * @package seek_quarry
@@ -58,7 +63,7 @@ class CrawlController extends Controller implements CrawlConstants
      */
     var $models = array("crawl");
     /**
-     * Only outputs JSON data so don't need view
+     * Only outputs serialized php data so don't need view
      * @var array
      */
     var $views = array();
@@ -70,11 +75,6 @@ class CrawlController extends Controller implements CrawlConstants
         "crawlStalled", "crawlStatus", "deleteCrawl", "injectUrlsCurrentCrawl",
         "getCrawlList", "combinedCrawlInfo", "getInfoTimestamp");
 
-    /**
-     * Number of characters from end of most recent log file to return
-     * on a log request
-     */
-    const LOG_LISTING_LEN = 100000;
     /**
      * Checks that the request seems to be coming from a legitimate fetcher then
      * determines which activity the fetcher is requesting and calls that
@@ -94,16 +94,38 @@ class CrawlController extends Controller implements CrawlConstants
         if(in_array($activity, $this->activities)) {$this->$activity();}
     }
 
+    /**
+     * Handles a request for whether or not the crawl is stalled on the
+     * given local server (which means no fetcher has spoken to it in a while)
+     * outputs this info back as body of the http response (url encoded,
+     * serialized php data)
+     */
+
     function crawlStalled()
     {
         echo webencode(serialize($this->crawlModel->crawlStalled()));
     }
 
+    /**
+     * Handles a request for the crawl status (memory use, recent fetchers
+     * crawl rate, etc) data from a remote name server
+     * and retrieves that the statistic about this that are held by the 
+     * local queue server
+     * outputs this info back as body of the http response (url encoded,
+     * serialized php data)
+     */
     function crawlStatus()
     {
         echo webencode(serialize($this->crawlModel->crawlStatus()));
     }
 
+    /**
+     * Handles a request for information about a crawl with a given timestamp
+     * from a remote name server and retrieves statistics about this crawl
+     * that are held by the local queue server (number of pages, name, etc)
+     * outputs this info back as body of the http response (url encoded,
+     * serialized php data)
+     */
     function getInfoTimestamp()
     {
         $timestamp = 0;
@@ -114,6 +136,13 @@ class CrawlController extends Controller implements CrawlConstants
             $timestamp)));
     }
 
+    /**
+     * Handles a request for the crawl list (what crawl are stored on the 
+     * machine) data from a remote name server and retrieves the 
+     * statistic about this that are held by the local queue server
+     * outputs this info back as body of the http response (url encoded,
+     * serialized php data)
+     */
     function getCrawlList()
     {
         $return_arc_bundles = false;
@@ -127,12 +156,23 @@ class CrawlController extends Controller implements CrawlConstants
             $return_arc_bundles, $return_recrawls)));
     }
 
+    /**
+     * Handles a request for the combined crawl list, stalled, and status
+     * data from a remote name server and retrieves that the statistic about
+     * this that are held by the local queue server
+     * outputs this info back as body of the http response (url encoded,
+     * serialized php data)
+     */
     function combinedCrawlInfo()
     {
         $combined =  $this->crawlModel->combinedCrawlInfo();
         echo webencode(serialize($combined));
     }
 
+    /**
+     * Receives a request to delete a crawl from a remote name server
+     * and then deletes crawl on the local queue server
+     */
     function deleteCrawl()
     {
         if(!isset($_REQUEST["arg"]) ) {
@@ -142,6 +182,11 @@ class CrawlController extends Controller implements CrawlConstants
         $this->crawlModel->deleteCrawl($timestamp);
     }
 
+    /**
+     * Receives a request to inject new urls into the active 
+     * crawl from a remote name server and then does this for
+     * the local queue server
+     */
     function injectUrlsCurrentCrawl()
     {
         if(!isset($_REQUEST["arg"]) || !isset($_REQUEST["num"])
@@ -154,12 +199,20 @@ class CrawlController extends Controller implements CrawlConstants
         $this->crawlModel->injectUrlsCurrentCrawl($inject_urls, NULL);
     }
 
+    /**
+     * Receives a request to stop a crawl from a remote name server
+     * and then stop the current crawl on the local queue server
+     */
     function sendStopCrawlMessage()
     {
         $this->crawlModel->sendStopCrawlMessage();
     }
 
 
+    /**
+     * Receives a request to start a crawl from a remote name server
+     * and then starts the crawl process on the local queue server
+     */
     function sendStartCrawlMessage()
     {
 

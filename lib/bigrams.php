@@ -61,7 +61,6 @@ require_once BASE_DIR."/lib/phrase_parser.php";
  */
 class Bigrams
 {
-
      /**
       * Language tags and their corresponding bigram prefix
       * @var array
@@ -139,8 +138,6 @@ class Bigrams
 
         return $bigram_phrases;
     }
-
-
 
     /**
      * Creates a bloom filter file from a bigram text file. The

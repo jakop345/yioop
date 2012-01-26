@@ -884,14 +884,14 @@ class AdminController extends Controller implements CrawlConstants
                         $timestamp = 
                             $this->clean($_REQUEST['load_option'], "int");
                         $seed_info = $this->crawlModel->getCrawlSeedInfo(
-                            $timestamp);
+                            $timestamp, $machine_urls);
                         $update_flag = true;
                         $no_further_changes = true;
                     } else if(isset($_REQUEST['ts'])) {
                         $timestamp = 
                             $this->clean($_REQUEST['ts'], "int");
                         $seed_info = $this->crawlModel->getCrawlSeedInfo(
-                            $timestamp);
+                            $timestamp, $machine_urls);
                         $data['ts'] = $timestamp;
                     } else {
                         $seed_info = $this->crawlModel->getSeedInfo();

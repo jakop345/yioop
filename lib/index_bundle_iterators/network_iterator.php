@@ -102,9 +102,12 @@ class NetworkIterator extends IndexBundleIterator
     /**
      * Creates a network iterator with the given parameters.
      *
-     * @param string $query
-     * @param array $queue_servers
-     * @param string $timestamp
+     * @param string $query the query that was supplied by the end user
+     *      that we are trying to get search results for
+     * @param array $queue_servers urls of yioop instances on which documents
+     *  indexes live
+     * @param string $timestamp the timestamp of the particular current index
+     *      archive bundles that we look in for results
      */
     function __construct($query, $queue_servers, $timestamp)
     {
