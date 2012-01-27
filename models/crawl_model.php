@@ -520,6 +520,25 @@ EOT;
      */
     function getCrawlSeedInfo($timestamp,  $machine_urls = NULL)
     {
+        if($machine_urls != NULL && !$this->isSingleLocalhost($machine_urls)) {
+            /* seed info should be same amongst all queue_servers that have it--
+               only start schedule differs -- however, not all queue_servers
+               necessarily have the same crawls. THus, we still query all
+               machines in case only one has it.
+             */
+            $a_list = $this->execMachines("getCrawlSeedInfo", 
+                $machine_urls, serialize($timestamp));
+            if(is_array($a_list)) {
+                foreach($a_list as $elt) {
+                    $seed_info = unserialize(webdecode(
+                        $elt[self::PAGE]));
+                    if(isset($seed_info['general'])) {
+                        break;
+                    }
+                }
+            }
+            return $seed_info;
+        }
         $dir = CRAWL_DIR.'/cache/'.self::index_data_base_name.$timestamp;
         $seed_info = NULL;
         if(file_exists($dir)) {
@@ -569,6 +588,11 @@ EOT;
      */
     function setCrawlSeedInfo($timestamp, $new_info,  $machine_urls = NULL)
     {
+        if($machine_urls != NULL && !$this->isSingleLocalhost($machine_urls)) {
+            $params = array($timestamp, $new_info);
+            $this->execMachines("setCrawlSeedInfo", 
+                $machine_urls, serialize($params));
+        }
         $dir = CRAWL_DIR.'/cache/'.self::index_data_base_name.$timestamp;
         if(file_exists($dir)) {
             $info = IndexArchiveBundle::getArchiveInfo($dir);
@@ -1048,13 +1072,17 @@ EOT;
                     $status[$field] += $a_status[$field];
                 }
             }
-            if(isset($a_status["CRAWL_TIME"]) && $a_status["CRAWL_TIME"] >
+            if(isset($a_status["CRAWL_TIME"]) && $a_status["CRAWL_TIME"] >=
                 $status['CRAWL_TIME']) {
                 $status['CRAWL_TIME'] = $a_status["CRAWL_TIME"];
                 $text_fields = array("DESCRIPTION", "MOST_RECENT_FETCHER");
                 foreach($text_fields as $field) {
                     if(isset($a_status[$field])) {
-                        $status[$field] = $a_status[$field];
+                        if($status[$field] == "" ||
+                            in_array($status[$field], array("BEGIN_CRAWL",
+                                "RESUME_CRAWL") )) {
+                            $status[$field] = $a_status[$field];
+                        }
                     }
                 }
             }
@@ -1115,15 +1143,17 @@ EOT;
      *  Add the provided urls to the schedule directory of URLs that will
      *  be crawled
      *
+     *  @param string $timestamp Unix timestamp of crawl to add to schedule of
      *  @param array $inject_urls urls to be added to the schedule of
      *      the active crawl
      *  @param array $machine_urls an array of urls of yioop queue servers
      */
-    function injectUrlsCurrentCrawl($inject_urls, $machine_urls = NULL)
+    function injectUrlsCurrentCrawl($timestamp, $inject_urls, 
+        $machine_urls = NULL)
     {
         if($machine_urls != NULL && !$this->isSingleLocalhost($machine_urls)) {
             $this->execMachines("injectUrlsCurrentCrawl", $machine_urls,
-                serialize($inject_urls));
+                serialize(array($timestamp, $inject_urls)));
             return;
         }
 

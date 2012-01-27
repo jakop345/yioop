@@ -837,7 +837,8 @@ class AdminController extends Controller implements CrawlConstants
                     $data["leftorright"] = 
                         (getLocaleDirection() == 'ltr') ? "right": "left";
                     $data["ELEMENT"] = "crawloptionsElement";
-                    $crawls = $this->crawlModel->getCrawlList();
+                    $crawls = $this->crawlModel->getCrawlList(false, false,
+                        $machine_urls);
                     $indexes = $this->crawlModel->getCrawlList(true, true,
                         $machine_urls);
                     $update_flag = false;
@@ -1024,11 +1025,13 @@ class AdminController extends Controller implements CrawlConstants
                     $add_message = "";
                     if(isset($_REQUEST['ts']) &&
                         isset($_REQUEST['inject_sites'])) {
+                            $timestamp = $this->clean($_REQUEST['ts'], 
+                                "string");
                             $inject_urls = 
                                 $this->convertStringCleanUrlsArray(
                                 $_REQUEST['inject_sites']);
                             if($this->crawlModel->injectUrlsCurrentCrawl(
-                                $inject_urls, $machine_urls)) {
+                                $timestamp, $inject_urls, $machine_urls)) {
                                 $add_message = "<br />".
                                     tl('admin_controller_urls_injected');
                             }
@@ -1036,7 +1039,7 @@ class AdminController extends Controller implements CrawlConstants
                     if($update_flag) {
                         if(isset($_REQUEST['ts'])) {
                             $this->crawlModel->setCrawlSeedInfo($timestamp, 
-                                $seed_info);
+                                $seed_info, $machine_urls);
                         } else {
                             $this->crawlModel->setSeedInfo($seed_info);
                         }

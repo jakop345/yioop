@@ -73,7 +73,8 @@ class CrawlController extends Controller implements CrawlConstants
      */
     var $activities = array("sendStartCrawlMessage", "sendStopCrawlMessage", 
         "crawlStalled", "crawlStatus", "deleteCrawl", "injectUrlsCurrentCrawl",
-        "getCrawlList", "combinedCrawlInfo", "getInfoTimestamp");
+        "getCrawlList", "combinedCrawlInfo", "getInfoTimestamp",
+        "getCrawlSeedInfo", "setCrawlSeedInfo");
 
     /**
      * Checks that the request seems to be coming from a legitimate fetcher then
@@ -117,6 +118,38 @@ class CrawlController extends Controller implements CrawlConstants
     function crawlStatus()
     {
         echo webencode(serialize($this->crawlModel->crawlStatus()));
+    }
+
+    /**
+     * Handles a request for the starting parameters of a crawl of a given
+     * timestamp and retrieves that information from the bundle held by the 
+     * local queue server
+     * outputs this info back as body of the http response (url encoded,
+     * serialized php data)
+     */
+    function getCrawlSeedInfo()
+    {
+        $timestamp = 0;
+        if(isset($_REQUEST["arg"]) ) {
+            $timestamp = unserialize(webdecode($_REQUEST["arg"]));
+        }
+        echo webencode(serialize($this->crawlModel->getCrawlSeedInfo(
+            $timestamp)));
+    }
+
+
+    /**
+     * Handles a request to change the parameters of a crawl of a given
+     * timestamp on the local machine (does nothing if crawl doesn't exist)
+     */
+    function setCrawlSeedInfo()
+    {
+        if(isset($_REQUEST["arg"]) ) {
+            list($timestamp, $info) = unserialize(webdecode($_REQUEST["arg"]));
+            if($timestamp && $info) {
+                $this->crawlModel->getCrawlSeedInfo($timestamp, $info);
+            }
+        }
     }
 
     /**
@@ -193,10 +226,14 @@ class CrawlController extends Controller implements CrawlConstants
             || !isset($_REQUEST["i"])) {
             return;
         }
-        $inject_urls = unserialize(webdecode($_REQUEST["arg"]));
+        $num = $this->clean($_REQUEST["num"], "int");
+        $i = $this->clean($_REQUEST["i"], "int");
+        list($timestamp, $inject_urls) = 
+            unserialize(webdecode($_REQUEST["arg"]));
         $inject_urls = partitionByHash($inject_urls,
-            NULL, $num, $i, "ParseUrl::getHost");
-        $this->crawlModel->injectUrlsCurrentCrawl($inject_urls, NULL);
+            NULL, $num, $i, "UrlParser::getHost");
+        $this->crawlModel->injectUrlsCurrentCrawl($timestamp, 
+            $inject_urls, NULL);
     }
 
     /**

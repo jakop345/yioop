@@ -1148,6 +1148,12 @@ class QueueServer implements CrawlConstants, Join
      * @param string $base_dir directory for of schedules
      * @param string $callback_method what method should be called to handle
      *      a schedule
+     * @param boolean $blocking this method might be called by the indexer
+     *      subcomponent when a merge tier phase is ongoing to allow for
+     *      other processing to occur. If so, we don't want a regress
+     *      where the indexer calls this code calls the indexer etc. If
+     *      the blocking flag is set then the indexer subcomponent won't
+     *      be called
      */
     function processDataFile($base_dir, $callback_method, $blocking = false)
     {
@@ -1204,6 +1210,12 @@ class QueueServer implements CrawlConstants, Join
      * Sets up the directory to look for a file of unprocessed 
      * index archive data from fetchers then calls the function 
      * processDataFile to process the oldest file found
+     * @param bool $blocking this method might be called by the indexer
+     *      subcomponent when a merge tier phase is ongoing to allow for
+     *      other processing to occur. If so, we don't want a regress
+     *      where the indexer calls this code calls the indexer etc. If
+     *      the blocking flag is set then the indexer subcomponent won't
+     *      be called
      */
     function processIndexData($blocking)
     {
@@ -1219,6 +1231,12 @@ class QueueServer implements CrawlConstants, Join
      *
      * @param string $file containing web pages summaries and a mini-inverted
      *      index for their content
+     * @param bool $blocking this method might be called by the indexer
+     *      subcomponent when a merge tier phase is ongoing to allow for
+     *      other processing to occur. If so, we don't want a regress
+     *      where the indexer calls this code calls the indexer etc. If
+     *      the blocking flag is set then the indexer subcomponent won't
+     *      be called
      */
     function processIndexArchive($file, $blocking)
     {

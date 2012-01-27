@@ -529,7 +529,22 @@ function crawlCrypt($string, $salt = NULL)
 }
 
 /**
+ * Used by a controller to take a table and return those rows in the
+ * table that a given queue_server would be responsible for handling
  *
+ * @param array $table an array of rows of associative arrays which
+ *      a queue_server might need to process
+ * @param string $field column of $table whose values should be used
+ *   for partitioning
+ * @param int $num_partition number of queue_servers to choose between
+ * @param int $instance the id of the particular server we are interested
+ *  in
+ * @param object $callbackfunction or static method that might be
+ *      applied to input before deciding the responsible queue_server.
+ *      For example, if input was a url we might want to get the host
+ *      before deciding on the queue_server
+ * @return array the reduced table that the $instance queue_server is 
+ *      responsible for
  */
 function partitionByHash($table, $field, $num_partition, $instance, 
     $callback = NULL)
@@ -547,7 +562,18 @@ function partitionByHash($table, $field, $num_partition, $instance,
 }
 
 /**
- *
+ * Used by a controller to say which queue_server should receive
+ * a given input
+ * @param string $input can view as a key that might be processes by a
+ *      queue_server. For example, in some cases input might be
+ *      a url and we want to determine which queue_server should be
+ *      responsible for queuing that url
+ * @param int $num_partition number of queue_servers to choose between
+ * @param object $callback function or static method that might be
+ *      applied to input before deciding the responsible queue_server.
+ *      For example, if input was a url we might want to get the host
+ *      before deciding on the queue_server
+ * @return int id of server responsible for input
  */
 function calculatePartition($input, $num_partition, $callback = NULL)
 {
