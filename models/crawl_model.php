@@ -638,7 +638,6 @@ EOT;
         $info = array();
         if($is_mix) {
             $this->db->selectDB(DB_NAME);
-
             $sql = "SELECT MIX_TIMESTAMP, MIX_NAME FROM CRAWL_MIXES WHERE ".
                 " MIX_TIMESTAMP='$timestamp'";
             $result = $this->db->execute($sql);
@@ -649,6 +648,8 @@ EOT;
         } else {
             if($machine_urls != NULL && 
                 !$this->isSingleLocalhost($machine_urls)) {
+                array_unshift($machine_urls, NAME_SERVER);
+                array_unique($machine_urls);
                 $cache_file = CRAWL_DIR."/cache/Network".$timestamp.".txt";
                 if(file_exists($cache_file) && filemtime($cache_file) 
                     + 300 > time() ) {
@@ -748,6 +749,9 @@ EOT;
     {
         if($machine_urls != NULL && !$this->isSingleLocalhost($machine_urls)) {
             $params = array($crawl_params, $seed_info);
+            $timestamp = $crawl_params[self::CRAWL_TIME];
+            file_put_contents(CRAWL_DIR."/schedules/network_status.txt",
+                serialize($timestamp));
             $this->execMachines("sendStartCrawlMessage", 
                 $machine_urls, serialize($params));
             return;
@@ -780,6 +784,7 @@ EOT;
     function sendStopCrawlMessage($machine_urls = NULL)
     {
         if($machine_urls != NULL && !$this->isSingleLocalhost($machine_urls)) {
+            @unlink(CRAWL_DIR."/schedules/network_status.txt");
             $this->execMachines("sendStopCrawlMessage", $machine_urls);
             return;
         }
@@ -811,7 +816,8 @@ EOT;
         $machine_urls = NULL, $cache = false)
     {
         if($machine_urls != NULL && !$this->isSingleLocalhost($machine_urls)) {
-
+            array_unshift($machine_urls, NAME_SERVER);
+            array_unique($machine_urls);
             $pre_arg = ($return_arc_bundles && $return_recrawls) ? 3 :
                 ($return_recrawls) ? 2 : ($return_arc_bundles) ? 1 : 0;
             $cache_file = CRAWL_DIR."/cache/NetworkCrawlList$pre_arg.txt";
@@ -1120,6 +1126,8 @@ EOT;
     function combinedCrawlInfo($machine_urls = NULL)
     {
         if($machine_urls != NULL && !$this->isSingleLocalhost($machine_urls)) {
+            array_unshift($machine_urls, NAME_SERVER);
+            array_unique($machine_urls);
             $combined_strings = 
                 $this->execMachines("combinedCrawlInfo", $machine_urls);
             $combined = array();

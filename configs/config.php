@@ -74,6 +74,9 @@ if(file_exists(WORK_DIRECTORY."/profile.php")) {
     if(defined('DB_URL') && !defined('DB_HOST')) {
         define('DB_HOST', DB_URL); //for backward compatibility
     }
+    if(defined('QUEUE_SERVER') && !defined('NAME_SERVER')) {
+        define('NAME_SERVER', QUEUE_SERVER); //for backward compatibility
+    }
 } else {
     if($_SERVER['SERVER_NAME'] !== 'localhost') {
         echo "SERVICE AVAILABLE ONLY VIA LOCALHOST UNTIL CONFIGURED"; 
