@@ -904,6 +904,11 @@ EOT;
                     if(!isset($pre_list[$timestamp])) {
                         $pre_list[$timestamp] = $elt;
                     } else {
+                        if(isset($elt["DESCRIPTION"]) && 
+                            $elt["DESCRIPTION"] != "") {
+                            $pre_list[$timestamp]["DESCRIPTION"] =
+                                $elt["DESCRIPTION"];
+                        }
                         $pre_list[$timestamp]["VISITED_URLS_COUNT"] +=
                             $elt["VISITED_URLS_COUNT"];
                         $pre_list[$timestamp]["COUNT"] +=

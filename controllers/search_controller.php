@@ -158,6 +158,7 @@ class SearchController extends Controller implements CrawlConstants
 
         $machine_urls = $this->machineModel->getQueueServerUrls();
         $current_its = $this->crawlModel->getCurrentIndexDatabaseName();
+
         if(isset($_REQUEST['its']) || isset($_SESSION['its'])) {
             $its = (isset($_REQUEST['its'])) ? $_REQUEST['its'] : 
                 $_SESSION['its'];
@@ -165,6 +166,14 @@ class SearchController extends Controller implements CrawlConstants
         } else {
             $index_time_stamp = $current_its; 
                 //use the default crawl index
+        }
+        if($machine_urls != array() && file_exists(
+            CRAWL_DIR.'/cache/'.self::index_data_base_name.$index_time_stamp)) {
+            /*  add name_server to look up locations if it has
+                an IndexArchiveBundle of the correct timestamp 
+             */
+            array_unshift($machine_urls, NAME_SERVER);
+            array_unique($machine_urls);
         }
         if($web_flag) {
             $index_info =  $this->crawlModel->getInfoTimestamp(
