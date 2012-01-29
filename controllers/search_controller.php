@@ -167,14 +167,6 @@ class SearchController extends Controller implements CrawlConstants
             $index_time_stamp = $current_its; 
                 //use the default crawl index
         }
-        if($machine_urls != array() && file_exists(
-            CRAWL_DIR.'/cache/'.self::index_data_base_name.$index_time_stamp)) {
-            /*  add name_server to look up locations if it has
-                an IndexArchiveBundle of the correct timestamp 
-             */
-            array_unshift($machine_urls, NAME_SERVER);
-            array_unique($machine_urls);
-        }
         if($web_flag) {
             $index_info =  $this->crawlModel->getInfoTimestamp(
                 $index_time_stamp, $machine_urls);
@@ -347,6 +339,15 @@ class SearchController extends Controller implements CrawlConstants
         $use_cache_if_possible = ($original_query == $query) ? true : false;
         if(!isset($_REQUEST['network']) || $_REQUEST['network'] == "true") {
             $queue_servers = $this->machineModel->getQueueServerUrls();
+            if($queue_servers != array() && file_exists(
+                CRAWL_DIR.'/cache/'.self::index_data_base_name.
+                $index_name)) {
+                /*  add name_server to look up locations if it has
+                    an IndexArchiveBundle of the correct timestamp 
+                 */
+                array_unshift($queue_servers, NAME_SERVER);
+                array_unique($queue_servers);
+            }
         } else {
 
             $queue_servers = array();
