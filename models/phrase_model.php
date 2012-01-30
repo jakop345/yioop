@@ -324,7 +324,8 @@ class PhraseModel extends Model
                     $dis_cnt++;
                 }
                 list($word_struct, $format_words) =
-                    $this->parseWordStructConjunctiveQuery($disjunct);
+                    $this->parseWordStructConjunctiveQuery($disjunct,
+                        $queue_servers);
                 if($word_struct != NULL) {
                     $word_structs[] = $word_struct;
                 }
@@ -424,9 +425,11 @@ class PhraseModel extends Model
      *  which archive to use.
      *
      * @param string $phrase string to extract struct from
+     * @param array $queue_servers a list of urls of yioop machines which might
+     *      be used during lookup
      * @return array struct representing the conjunctive query
      */
-    function parseWordStructConjunctiveQuery($phrase)
+    function parseWordStructConjunctiveQuery($phrase, $queue_servers = array())
     {
         $indent= "&nbsp;&nbsp;";
         $in2 = $indent . $indent;
@@ -475,8 +478,19 @@ class PhraseModel extends Model
             $phrase_string = preg_replace($pattern, "", $phrase_string);
         }
         $index_archive_name = self::index_data_base_name . $index_name;
-        $index_archive = new IndexArchiveBundle(
-            CRAWL_DIR.'/cache/'.$index_archive_name);
+
+        /* if network query then don't want to create an IndexArchive
+           so create a mock object that suffices till the NetworkIterator
+           is constructed
+         */
+        if($queue_servers != array() &&
+            !$this->isSingleLocalhost($queue_servers)) {
+            $tmp["dir_name"] = CRAWL_DIR.'/cache/'.$index_archive_name;
+            $index_archive = (object) $tmp;
+        } else {
+            $index_archive = new IndexArchiveBundle(
+                CRAWL_DIR.'/cache/'.$index_archive_name);
+        }
 
         $phrase_string = mb_ereg_replace(PUNCT, " ", $phrase_string);
         $phrase_string = preg_replace("/(\s)+/", " ", $phrase_string);
