@@ -483,10 +483,12 @@ class PhraseModel extends Model
            so create a mock object that suffices till the NetworkIterator
            is constructed
          */
+        $index_dummy_flag = false;
         if($queue_servers != array() &&
             !$this->isSingleLocalhost($queue_servers)) {
             $tmp["dir_name"] = CRAWL_DIR.'/cache/'.$index_archive_name;
             $index_archive = (object) $tmp;
+            $index_dummy_flag = true;
         } else {
             $index_archive = new IndexArchiveBundle(
                 CRAWL_DIR.'/cache/'.$index_archive_name);
@@ -558,8 +560,9 @@ class PhraseModel extends Model
             }
             $restrict_phrases = array_unique($restrict_phrases);
             $restrict_phrases = array_filter($restrict_phrases);
-            $index_archive->setCurrentShard(0, true);
-
+            if(!$index_dummy_flag) {
+                $index_archive->setCurrentShard(0, true);
+            }
             $disallow_keys = array();
             $num_disallow_keys = min(MAX_QUERY_TERMS, count($disallow_phrases));
             for($i = 0; $i < $num_disallow_keys; $i++) {
