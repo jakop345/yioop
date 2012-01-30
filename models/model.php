@@ -39,6 +39,9 @@ require_once BASE_DIR."/models/datasources/".DBMS."_manager.php";
 /** Used to handle curl and multi curl page requests */
 require_once BASE_DIR."/lib/fetch_url.php";
 
+/**  For crawlHash function  */
+require_once BASE_DIR."/lib/utility.php";
+
 /** For checking if a url is on localhost */
 require_once BASE_DIR."/lib/url_parser.php";
 
@@ -334,5 +337,6 @@ class Model implements CrawlConstants
         return count($machine_urls) == 1 && 
                     UrlParser::isLocalhostUrl($machine_urls[0]);
     }
+
 }
 ?>

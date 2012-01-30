@@ -359,11 +359,8 @@ class SearchController extends Controller implements CrawlConstants
                 $data['QUERY'] = "related:$arg";
                 $url = $arg;
 
-                list($summary_offset, $generation, ) =  
-                        $this->phraseModel->lookupSummaryOffsetGeneration($url);
-
-                $crawl_item = $this->crawlModel->getCrawlItem($summary_offset, 
-                    $generation);
+                $crawl_item = $this->crawlModel->getCrawlItem($url, 
+                    $queue_servers);
 
                 $top_phrases  = 
                     $this->phraseModel->getTopPhrases($crawl_item, 3);
@@ -613,19 +610,16 @@ class SearchController extends Controller implements CrawlConstants
                 return;
             }
         }
-
+        $queue_servers = $this->machineModel->getQueueServerUrls();
         if($crawl_time == 0) {
             $crawl_time = $this->crawlModel->getCurrentIndexDatabaseName();
         }
         $this->phraseModel->index_name = $crawl_time;
         $this->crawlModel->index_name = $crawl_time;
 
-        list($summary_offset, $generation, $cache_partition) = 
-            $this->phraseModel->lookupSummaryOffsetGeneration($url);
-
         $data = array();
-        if(!$crawl_item = $this->crawlModel->getCrawlItem($summary_offset, 
-            $generation)) {
+        if(!$crawl_item = $this->crawlModel->getCrawlItem($url, 
+            $queue_servers)) {
             $this->displayView("nocache", $data);
             return;
         }
@@ -653,6 +647,7 @@ class SearchController extends Controller implements CrawlConstants
         $machine_uri = $robot_table[$robot_instance][1];
         $page = $crawl_item[self::HASH];
         $offset = $crawl_item[self::OFFSET];
+        $cache_partition = $crawl_item[self::CACHE_PAGE_PARTITION];
         $cache_item = $this->crawlModel->getCacheFile($machine, 
             $machine_uri, $cache_partition, $offset,  $crawl_time, 
             $instance_num);
@@ -794,7 +789,7 @@ class SearchController extends Controller implements CrawlConstants
         }
 
         if(USE_CACHE) {
-            $CACHE->set($hash_key, $new_doc);
+            $CACHE->set($hash_key, $newDoc);
         }
 
         echo $newDoc;

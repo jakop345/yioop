@@ -33,8 +33,6 @@
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
-/**  For crawlHash function  */
-require_once BASE_DIR."/lib/utility.php";
 
 /** 
  * Loads common constants for web crawling, used for index_data_base_name and 
@@ -89,21 +87,78 @@ class CrawlModel extends Model implements CrawlConstants
      *
      * @param int $summary_offset offset in $generation WebArchive
      * @param int $generation the index of the WebArchive in the 
-     *      IndexArchiveBundle to find the item in.
+     *      IndexArchiveBundle to find the item in
+     * @param string $url of summary we are trying to look-up
+     * @param array $machine_urls an array of urls of yioop queue servers
      * @return array summary data of the matching document
      */
-    function getCrawlItem($summary_offset, $generation)
+    function getCrawlItem($url, $machine_urls = NULL)
     {
+        if($machine_urls != NULL) {
+            $num_machines = count($machine_urls);
+            $index = calculatePartition($url, $num_machines, 
+                "UrlParser::getHost");
+            $machines = array($machine_urls[$index]);
+            $a_list = $this->execMachines("getCrawlItem", 
+                $machines, serialize(array($url, $this->index_name) ) );
+            if(is_array($a_list)) {
+                $elt = $a_list[0];
+                $summary = unserialize(webdecode(
+                    $elt[self::PAGE]));
+            }
+            return $summary;
+        }
+        list($summary_offset, $generation, $cache_partition) = 
+            $this->lookupSummaryOffsetGeneration($url);
         $index_archive_name = self::index_data_base_name . $this->index_name;
 
         $index_archive = 
             new IndexArchiveBundle(CRAWL_DIR.'/cache/'.$index_archive_name);
 
         $summary = $index_archive->getPage($summary_offset, $generation);
+        $summary[self::CACHE_PAGE_PARTITION] = $cache_partition;
 
         return $summary;
     }
 
+    /**
+     * Determines the offset into the summaries WebArchiveBundle of the
+     * provided url so that the info:url summary can be retrieved.
+     * This assumes of course that  the info:url meta word has been stored.
+     *
+     * @return array (offset, generation) into the web archive bundle
+     */
+    function lookupSummaryOffsetGeneration($url)
+    {
+        $index_archive_name = self::index_data_base_name . $this->index_name;
+        $index_archive = new IndexArchiveBundle(
+            CRAWL_DIR.'/cache/'.$index_archive_name);
+        $num_retrieved = 0;
+        $pages = array();
+        $summary_offset = NULL;
+        $num_generations = $index_archive->generation_info['ACTIVE'];
+        $word_iterator =
+            new WordIterator(crawlHash("info:$url"), $index_archive);
+        if(is_array($next_docs = $word_iterator->nextDocsWithWord())) {
+             foreach($next_docs as $doc_key => $doc_info) {
+                 $summary_offset =
+                    $doc_info[CrawlConstants::SUMMARY_OFFSET];
+                 $generation = $doc_info[CrawlConstants::GENERATION];
+                 $cache_partition = $doc_info[CrawlConstants::SUMMARY][
+                    CrawlConstants::CACHE_PAGE_PARTITION];
+                 $num_retrieved++;
+                 if($num_retrieved >=  1) {
+                     break;
+                 }
+             }
+             if($num_retrieved == 0) {
+                return false;
+             }
+        } else {
+            return false;
+        }
+        return array($summary_offset, $generation, $cache_partition);
+    }
 
     /**
      * Gets the cached version of a web page from the machine on which it was 
@@ -1207,11 +1262,12 @@ EOT;
         return false;
     }
 
+
     /**
-     *  This method is invoked by other crawlModel methods when they
-     *  want to have their method performed on an array of other
-     *  Yioop instances. The results returned can then be aggregated.
-     *  The invokation sequence is 
+     *  This method is invoked by other CrawlModel (for example, CrawlModel) 
+     * methods when they want to have their method performed 
+     *  on an array of other  Yioop instances. The results returned can then 
+     *  be aggregated.  The invocation sequence is 
      *  crawlModelMethodA invokes execMachine with a list of 
      *  urls of other Yioop instances. execMachine makes REST requests of
      *  those instances of the given command and optional arguments

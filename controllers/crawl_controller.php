@@ -74,7 +74,7 @@ class CrawlController extends Controller implements CrawlConstants
     var $activities = array("sendStartCrawlMessage", "sendStopCrawlMessage", 
         "crawlStalled", "crawlStatus", "deleteCrawl", "injectUrlsCurrentCrawl",
         "getCrawlList", "combinedCrawlInfo", "getInfoTimestamp",
-        "getCrawlSeedInfo", "setCrawlSeedInfo");
+        "getCrawlSeedInfo", "setCrawlSeedInfo", "getCrawlItem");
 
     /**
      * Checks that the request seems to be coming from a legitimate fetcher then
@@ -235,6 +235,20 @@ class CrawlController extends Controller implements CrawlConstants
         $this->crawlModel->injectUrlsCurrentCrawl($timestamp, 
             $inject_urls, NULL);
     }
+
+    /**
+     *
+     */
+     function getCrawlItem()
+     {
+        if(!isset($_REQUEST["arg"]) ) {
+            return;
+        }
+        list($url, $index_name) = unserialize(webdecode($_REQUEST["arg"]));
+        $this->crawlModel->index_name = $index_name;
+        echo webencode(serialize(
+            $this->crawlModel->getCrawlItem($url)));
+     }
 
     /**
      * Receives a request to stop a crawl from a remote name server
