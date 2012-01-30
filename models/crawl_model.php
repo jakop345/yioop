@@ -703,8 +703,9 @@ EOT;
         } else {
             if($machine_urls != NULL && 
                 !$this->isSingleLocalhost($machine_urls)) {
-                array_unshift($machine_urls, NAME_SERVER);
-                array_unique($machine_urls);
+                if(!in_array(NAME_SERVER, $machine_urls)) {
+                    array_unshift($machine_urls, NAME_SERVER);
+                }
                 $cache_file = CRAWL_DIR."/cache/Network".$timestamp.".txt";
                 if(file_exists($cache_file) && filemtime($cache_file) 
                     + 300 > time() ) {
@@ -871,8 +872,9 @@ EOT;
         $machine_urls = NULL, $cache = false)
     {
         if($machine_urls != NULL && !$this->isSingleLocalhost($machine_urls)) {
-            array_unshift($machine_urls, NAME_SERVER);
-            array_unique($machine_urls);
+            if(!in_array(NAME_SERVER, $machine_urls)) {
+                array_unshift($machine_urls, NAME_SERVER);
+            }
             $pre_arg = ($return_arc_bundles && $return_recrawls) ? 3 :
                 ($return_recrawls) ? 2 : ($return_arc_bundles) ? 1 : 0;
             $cache_file = CRAWL_DIR."/cache/NetworkCrawlList$pre_arg.txt";
@@ -1186,8 +1188,9 @@ EOT;
     function combinedCrawlInfo($machine_urls = NULL)
     {
         if($machine_urls != NULL && !$this->isSingleLocalhost($machine_urls)) {
-            array_unshift($machine_urls, NAME_SERVER);
-            array_unique($machine_urls);
+            if(!in_array(NAME_SERVER, $machine_urls)) {
+                array_unshift($machine_urls, NAME_SERVER);
+            }
             $combined_strings = 
                 $this->execMachines("combinedCrawlInfo", $machine_urls);
             $combined = array();
@@ -1262,10 +1265,61 @@ EOT;
         return false;
     }
 
+    /**
+     *  Computes for each word in an array of words a count of the total number
+     *  of times it occurs in this crawl model's default index.
+     *
+     *  @param array $words words to find the counts for
+     *  @param array $machine_urls machines to invoke this command on
+     *  @return array associative array of word => counts
+     */
+     function countWords($words, $machine_urls = NULL)
+     {
+        if($machine_urls != NULL && !$this->isSingleLocalhost($machine_urls)) {
+            $count_strings = $this->execMachines("countWords", $machine_urls,
+                serialize(array($words, $this->index_name)));
+            $word_counts = array();
+            foreach($count_strings as $count_string) {
+                $a_word_counts = unserialize(webdecode(
+                        $count_string[self::PAGE]));
+                if(is_array($a_word_counts)) {
+                    foreach($a_word_counts as $word => $count) {
+                        $word_counts[$word] = (isset($word_counts[$word])) ?
+                            $word_counts[$word] + $count : $count;
+                    }
+                }
+            }
+            return $word_counts;
+        }
+
+        $index_archive_name = self::index_data_base_name . $this->index_name;
+
+        $index_archive =
+            new IndexArchiveBundle(CRAWL_DIR.'/cache/'.$index_archive_name);
+
+        $hashes = array();
+        $lookup = array();
+        foreach($words as $word) {
+            $tmp = crawlHash($word);
+            $hashes[] = $tmp;
+            $lookup[$tmp] = $word;
+        }
+
+        $word_key_counts =
+            $index_archive->countWordKeys($hashes);
+        $phrases = array();
+
+        $word_counts = array();
+        foreach($word_key_counts as $word_key =>$count) {
+            $word_counts[$lookup[$word_key]] = $count;
+        }
+
+        return $word_counts;
+     }
 
     /**
      *  This method is invoked by other CrawlModel (for example, CrawlModel) 
-     * methods when they want to have their method performed 
+     *  methods when they want to have their method performed 
      *  on an array of other  Yioop instances. The results returned can then 
      *  be aggregated.  The invocation sequence is 
      *  crawlModelMethodA invokes execMachine with a list of 
@@ -1308,7 +1362,7 @@ EOT;
             $outputs = FetchUrl::getPages($sites, false, 0, NULL, self::URL,
                 self::PAGE, true, $post_data);
         }
-        
+
         return $outputs;
     }
 

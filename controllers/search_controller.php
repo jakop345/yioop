@@ -345,8 +345,9 @@ class SearchController extends Controller implements CrawlConstants
                 /*  add name_server to look up locations if it has
                     an IndexArchiveBundle of the correct timestamp 
                  */
-                array_unshift($queue_servers, NAME_SERVER);
-                array_unique($queue_servers);
+                if(!in_array(NAME_SERVER, $queue_servers)) {
+                    array_unshift($queue_servers, NAME_SERVER);
+                }
             }
         } else {
 
@@ -358,12 +359,10 @@ class SearchController extends Controller implements CrawlConstants
             case "related":
                 $data['QUERY'] = "related:$arg";
                 $url = $arg;
-
                 $crawl_item = $this->crawlModel->getCrawlItem($url, 
                     $queue_servers);
-
                 $top_phrases  = 
-                    $this->phraseModel->getTopPhrases($crawl_item, 3);
+                    $this->getTopPhrases($crawl_item, 3, $index_name);
                 $top_query = implode(" ", $top_phrases);
                 $phrase_results = $this->phraseModel->getPhrasePageResults(
                     $top_query, $limit, $results_per_page, false, NULL,
@@ -425,6 +424,53 @@ class SearchController extends Controller implements CrawlConstants
 
     }
 
+
+    /**
+     * Given a page summary extract the words from it and try to find documents
+     * which match the most relevant words. The algorithm for "relevant" is
+     * pretty weak. For now we pick the $num many words whose ratio
+     * of number of occurences in crawl item/ number of occurences in all 
+     * documents is the largest
+     *
+     * @param string $crawl_item a page summary
+     * @param int $num number of key phrase to return
+     * @param int $index_name the timestamp of an index to use, if 0 then 
+     *      default used
+     * @return array  an array of most selective key phrases
+     */
+    function getTopPhrases($crawl_item, $num, $crawl_time = 0)
+    {
+        $queue_servers = $this->machineModel->getQueueServerUrls();
+        if($crawl_time == 0) {
+            $crawl_time = $this->crawlModel->getCurrentIndexDatabaseName();
+        }
+        $this->phraseModel->index_name = $crawl_time;
+        $this->crawlModel->index_name = $crawl_time;
+
+        $phrase_string =
+            PhraseParser::extractWordStringPageSummary($crawl_item);
+
+        $page_word_counts = 
+            PhraseParser::extractPhrasesAndCount($phrase_string, MAX_PHRASE_LEN,
+                $crawl_item[self::LANG]);
+        $words = array_keys($page_word_counts);
+
+        $word_counts = $this->crawlModel->countWords($words, $queue_servers);
+
+        $word_ratios = array();
+        foreach($page_word_counts as $word => $count) {
+            $word_ratios[$word] = 
+                (isset($word_counts[$word])) ? $count/$word_counts[$word] : 0;
+        }
+
+        uasort($word_ratios, "greaterThan");
+
+        $top_phrases = array_keys($word_ratios);
+        $top_phrases = array_slice($top_phrases, 0, $num);
+
+        return $top_phrases;
+
+    }
 
     /**
      * This method is responsible for parsing out the kind of query 

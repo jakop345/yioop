@@ -645,50 +645,6 @@ class PhraseModel extends Model
     }
 
     /**
-     * Given a page summary extract the words from it and try to find documents
-     * which match the most relevant words. The algorithm for "relevant" is
-     * pretty weak. For now we pick the $num many words which appear in the
-     * fewest documents.
-     *
-     * @param string $crawl_item a page summary
-     * @param int $num number of key phrase to return
-     * @return array  an array of most selective key phrases
-     */
-    function getTopPhrases($crawl_item, $num)
-    {
-        $index_archive_name = self::index_data_base_name . $this->index_name;
-
-        $index_archive =
-            new IndexArchiveBundle(CRAWL_DIR.'/cache/'.$index_archive_name);
-
-        $phrase_string =
-            PhraseParser::extractWordStringPageSummary($crawl_item);
-
-        $words =
-            array_keys(PhraseParser::extractPhrasesAndCount($phrase_string));
-
-        $hashes = array();
-        $lookup = array();
-        foreach($words as $word) {
-            $tmp = crawlHash($word);
-            $hashes[] = $tmp;
-            $lookup[$tmp] = $word;
-        }
-
-        $words_array =
-            $index_archive->getSelectiveWords($hashes, $num, "greaterThan");
-        $word_keys = array_keys($words_array);
-        $phrases = array();
-
-        foreach($word_keys as $word_key) {
-          $phrases[] = $lookup[$word_key];
-        }
-
-        return $phrases;
-
-    }
-
-    /**
      * Gets doc summaries of documents containing given words and meeting the
      * additional provided criteria
      * @param array $word_structs an array of word_structs. Here a word_struct

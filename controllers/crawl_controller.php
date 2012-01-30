@@ -74,7 +74,7 @@ class CrawlController extends Controller implements CrawlConstants
     var $activities = array("sendStartCrawlMessage", "sendStopCrawlMessage", 
         "crawlStalled", "crawlStatus", "deleteCrawl", "injectUrlsCurrentCrawl",
         "getCrawlList", "combinedCrawlInfo", "getInfoTimestamp",
-        "getCrawlSeedInfo", "setCrawlSeedInfo", "getCrawlItem");
+        "getCrawlSeedInfo", "setCrawlSeedInfo", "getCrawlItem", "countWords");
 
     /**
      * Checks that the request seems to be coming from a legitimate fetcher then
@@ -237,7 +237,8 @@ class CrawlController extends Controller implements CrawlConstants
     }
 
     /**
-     *
+     * Receives a request to get crawl summary data for a url
+     * from a remote name server and then looks it up on the local queue server
      */
      function getCrawlItem()
      {
@@ -248,6 +249,22 @@ class CrawlController extends Controller implements CrawlConstants
         $this->crawlModel->index_name = $index_name;
         echo webencode(serialize(
             $this->crawlModel->getCrawlItem($url)));
+     }
+
+    /**
+     * Receives a request to get counts of the number of occurrences of an
+     * array of words a remote name server and then 
+     * determines and outputs these counts for the local queue server
+     */
+     function countWords()
+     {
+        if(!isset($_REQUEST["arg"]) ) {
+            return;
+        }
+        list($words, $index_name) = unserialize(webdecode($_REQUEST["arg"]));
+        $this->crawlModel->index_name = $index_name;
+        echo webencode(serialize(
+            $this->crawlModel->countWords($words)));
      }
 
     /**

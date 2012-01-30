@@ -387,14 +387,13 @@ class IndexArchiveBundle implements CrawlConstants
 
 
     /**
-     * Computes the words which appear in the fewest or most documents
+     * Computes the number of occurrences of each of the supplied list of 
+     * word_keys
      *
-     * @param array $word_keys keys of words to select amongst
-     * @param int $num number of words from the above set to return
-     * @param string $comparison callback function name for how to compare words
-     * @return array the $num most documents or $num least document words
+     * @param array $word_keys keys to compute counts for
+     * @return array associative array of key => count values.
      */
-    function getSelectiveWords($word_keys, $num, $comparison="lessThan") 
+    function countWordKeys($word_keys) 
         //lessThan is in utility.php
     {
         $words_array = array();
@@ -412,9 +411,7 @@ class IndexArchiveBundle implements CrawlConstants
             }
         }
 
-        uasort( $words_array, $comparison);
-        
-        return array_slice($words_array, 0, $num);
+        return $words_array;
     }
 
     /**
