@@ -451,16 +451,16 @@ class ArcTool implements CrawlConstants
         echo "It will look for these using the path provided or \n";
         echo "will check in the Yioop! crawl directory as a fall back\n\n";
         echo "The available commands for arc_tool are:\n\n";
-        echo "php arc_tool.php list //returns a list \n".
-            "//of all the archives in the Yioop! crawl directory.\n\n";
         echo "php arc_tool.php info bundle_name //return info about\n".
             "//documents stored in archive.\n\n";
-        echo "php arc_tool.php show bundle_name start num //outputs\n".
-            "//items start through num from bundle_name\n\n";
-        echo "php arc_tool.php reindex bundle_name \n".
-            "//reindex the word dictionary in bundle_name\n";
+        echo "php arc_tool.php list //returns a list \n".
+            "//of all the archives in the Yioop! crawl directory.\n\n";
         echo "php arc_tool.php mergetiers bundle_name max_tier\n".
             "//merges tiers of word dictionary into one tier up to max_tier\n";
+        echo "\nphp arc_tool.php reindex bundle_name \n".
+            "//reindex the word dictionary in bundle_name\n\n";
+        echo "php arc_tool.php show bundle_name start num //outputs\n".
+            "//items start through num from bundle_name\n\n";
         exit();
     }
 }

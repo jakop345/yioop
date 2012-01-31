@@ -461,6 +461,9 @@ class SearchController extends Controller implements CrawlConstants
         foreach($page_word_counts as $word => $count) {
             $word_ratios[$word] = 
                 (isset($word_counts[$word])) ? $count/$word_counts[$word] : 0;
+            /*discard cases where word only occurs in one doc as want
+              to find related relevant documents */
+            if($word_ratios[$word] == 1) $word_ratios[$word] = 0;
         }
 
         uasort($word_ratios, "greaterThan");
