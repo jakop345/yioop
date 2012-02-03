@@ -2001,7 +2001,8 @@ class QueueServer implements CrawlConstants, Join
             crawlLog("No fetch batch created!! " .
                 "\nTime failing to make a batch:".
                 (changeInMicrotime($start_time)).". Loop properties:$i $count");
-            if($i >= $count && $count >= NUM_URLS_QUEUE_RAM) {
+            if($i >= $count && $count >= NUM_URLS_QUEUE_RAM - 
+                    SEEN_URLS_BEFORE_UPDATE_SCHEDULER * MAX_LINKS_PER_PAGE) {
                 crawlLog("Queue Full and Couldn't produce Fetch Batch!! ".
                     "Resetting Queue!!!");
                 $this->dumpQueueToSchedules();

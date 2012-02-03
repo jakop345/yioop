@@ -733,7 +733,6 @@ class PhraseModel extends Model
                 }
             }
         }
-
         $query_iterator = $this->getQueryIterator($word_structs, $filter, $raw,
              $queue_servers, $original_query);
 

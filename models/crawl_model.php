@@ -761,6 +761,9 @@ EOT;
             $mask = CRAWL_DIR."/cache/NetworkCrawlList*.txt";
             array_map( "unlink", glob( $mask ) );
             @unlink(CRAWL_DIR."/cache/Network$timestamp.txt");
+            if(!in_array(NAME_SERVER, $machine_urls)) {
+                array_unshift($machine_urls, NAME_SERVER);
+            }
             //now get rid of files on queue_servers
             $this->execMachines("deleteCrawl", 
                 $machine_urls, serialize($timestamp));
@@ -901,7 +904,7 @@ EOT;
                 $crawl['CRAWL_TIME'] = 
                     substr($pre_timestamp, strlen(self::index_data_base_name));
                 $info = IndexArchiveBundle::getArchiveInfo($dir);
-                $index_info = unserialize($info['DESCRIPTION']);
+                $index_info = @unserialize($info['DESCRIPTION']);
                 $crawl['DESCRIPTION'] = "";
                 if(!$return_arc_bundles && isset($index_info['ARCFILE'])) {
                     continue;
@@ -922,14 +925,19 @@ EOT;
                     self::schedule_data_base_name.$crawl['CRAWL_TIME'].
                     '/*/At*.txt');
                 $crawl['RESUMABLE'] = (count($schedules) > 0) ? true: false;
-                $crawl['DESCRIPTION'] .= $index_info['DESCRIPTION'];
+                if(isset($index_info['DESCRIPTION'])) {
+                    $crawl['DESCRIPTION'] .= $index_info['DESCRIPTION'];
+                }
                 $crawl['VISITED_URLS_COUNT'] = 
                     isset($info['VISITED_URLS_COUNT']) ?
                     $info['VISITED_URLS_COUNT'] : 0;
-                $crawl['COUNT'] = $info['COUNT'];
+                $crawl['COUNT'] = (isset($info['COUNT'])) ? $info['COUNT'] :0;
                 $crawl['NUM_DOCS_PER_PARTITION'] = 
-                    $info['NUM_DOCS_PER_PARTITION'];
-                $crawl['WRITE_PARTITION'] = $info['WRITE_PARTITION'];
+                    (isset($info['NUM_DOCS_PER_PARTITION'])) ?
+                    $info['NUM_DOCS_PER_PARTITION'] : 0;
+                $crawl['WRITE_PARTITION'] = 
+                    (isset($info['WRITE_PARTITION'])) ?
+                    $info['WRITE_PARTITION'] : 0;
                 $list[] = $crawl;
             }
         }

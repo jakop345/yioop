@@ -23,45 +23,50 @@
  *  END LICENSE
  *
  * Bigrams are pair of words which always occur together in the same
- * sequence in a user query, ex: "honda accord". Yioop treates these
- * pair of words as a single word to increse the speed and efficiency
+ * sequence in a user query, ex: "honda accord". Yioop! can treat these
+ * pair of words as a single word to increase the speed and efficiency
  * of retrieval. This script can be used to create a bigrams filter
- * file for the yioop search engine to filter such words from documents
+ * file for the Yioop! search engine to detect such words in documents
  * and queries. The input to this script is an xml file which contains
- * a large collection of such bigrams. The most common source of a large
- * set of bigrams in an xml file is wikipedia dumps. Wikipedia dumps are
- * available for downloaded online free of cost. Typically the bigrams
- * filter file is specific to a language, therefore user has to create a
- * separate filter file for each language to use this functionality. This
- * script can be run multiple times to create a different filter file by
- * specifying a different input xml and a different language as the
- * command line arguments. The xml dumps of wikipedia specific to
- * different languages are available to download. These language specific
- * dumps of wikipedia as xml file serve as input to this script.
+ * a large collection of such bigrams. One common source of a large
+ * set of bigrams is an XML dump of Wikipedia. Wikipedia dumps are
+ * available for download online free of cost. The bigrams filter file is
+ * specific to a language, therefore, the user has to create a separate 
+ * filter file for each language that is to use this functionality. This
+ * script can be run multiple times to create different filter files 
+ * by specifying a different input xml files and a different language 
+ * as command line arguments.. Xml dumps of Wikipedia for different 
+ * specific languages are available to download, and it is these language 
+ * specific dumps which serve as input to this script.
  *
- * For example the user can follow the following steps to create a bigrams
- * filter for english langauge.
+ * To illustrate the use bigram_build.php, here are the steps to use it
+ * in the case of wanting to create an English language bigram filter file.
  *
- * Step 1): Go to link http://dumps.wikimedia.org/enwiki/ which is source
- * of dumps for english wikipedia. This page lists all the dumps according
- * to date they were taken. Choose any suitable date or the latest. Say we
- * chose 20120104/, dumps taken on 01/04/2012. This would take you to the
+ * Step 1: Go to http://dumps.wikimedia.org/enwiki/ and obtain a
+ * dump of the English Wikipedia. This page lists all the dumps according
+ * to date they were taken. Choose any suitable date or the latest. A
+ * link with a label such as 20120104/, represents a  dump taken on 
+ * 01/04/2012.  Click this link to go in turn to a
  * page which has many links based on type of content you are looking for.
  * We are interested in content titled
- * "Recobine all pages, current versions only" with the link
+ * "Recombine all pages, current versions only". Beneath this we might find a
+ * link with a name like:
  * "enwiki-20120104-pages-meta-current.xml.bz2"
- * This is a bz2 compressed xml file containing all the english pages of
- * wikipedia. Download the file to the "serach_filters" folder of your
+ * This is a bz2 compressed xml file containing all the English pages of
+ * Wikipedia. Download the file to the "search_filters" folder of your
  * yioop work directory associated with your profile.
  * (Note: You should have sufficient hard disk space in the order of
  *        100GB to store the compressed dump and script extracted xml.
  *        The script also accepts an uncompressed XML file as input.
  *        The filter file generated is a few megabytes.)
  *
- * Step 2): Run this script from the php command line as below
+ * Step 2: Run this script from the php command line as follows
  * php bigram_builder enwiki-20120104-pages-meta-current.xml.bz2 en
  *
- * This would create a bigram filter for english in the same directory.
+ * This creates a bigram filter en_bigrams.ftr for English in the same 
+ * directory. Yioop! will automatically detect the filter file and use 
+ * it the next time you crawl as well as when anyone performs an English
+ * language query.
  *
  *
  * @author Ravi Dhillon  ravi.dhillon@yahoo.com

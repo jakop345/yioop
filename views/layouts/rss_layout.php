@@ -67,7 +67,7 @@ xmlns:atom="http://www.w3.org/2005/Atom"
              urldecode($data['QUERY'])), "UTF-8"))); 
         ?></title>
         <language><?php e(getLocaleTag()); ?></language>
-        <link><?php e(QUEUE_SERVER);
+        <link><?php e(NAME_SERVER);
         ?>?f=rss&amp;q=<?php e($data['QUERY']); ?>&amp;<?php
         ?>its=<?php e($data['its']); ?></link>
         <description><?php e(tl('rss_layout_description', 

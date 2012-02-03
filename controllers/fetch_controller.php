@@ -54,7 +54,7 @@ class FetchController extends Controller implements CrawlConstants
      * No models used by this controller
      * @var array
      */
-    var $models = array("machine");
+    var $models = array("machine", "crawl");
     /**
      * Load FetchView to return results to fetcher
      * @var array
@@ -107,7 +107,7 @@ class FetchController extends Controller implements CrawlConstants
         if(isset($_REQUEST['crawl_time'])) {;
             $crawl_time = $this->clean($_REQUEST['crawl_time'], 'int');
         } else {
-            $crawl_time = "";
+            $crawl_time = 0;
         }
         // set up query
         $data = array();
@@ -118,6 +118,34 @@ class FetchController extends Controller implements CrawlConstants
             $data['MESSAGE'] = file_get_contents($schedule_filename);
             unlink($schedule_filename);
         } else {
+            /*  check if scheduler part of queue server went down
+                and needs to be restarted with current crawl time.
+                Idea is fetcher has recently spoken with name server
+                so knows the crawl time. queue server knows time
+                only by file messages never by making curl requests
+             */
+            if($crawl_time != 0) {
+                $restart = true;
+                if(file_exists(CRAWL_DIR."/schedules/crawl_status.txt")) {
+                    $crawl_status = unserialize(file_get_contents(
+                        CRAWL_DIR."/schedules/crawl_status.txt"));
+                    if($crawl_status['CRAWL_TIME'] != 0) {
+                        $restart = false;
+                    }
+                }
+                if($restart == true) {
+                    $crawl_params = array();
+                    $crawl_params[self::STATUS] = "RESUME_CRAWL";
+                    $crawl_params[self::CRAWL_TIME] = 
+                        $this->clean($_REQUEST['timestamp'], "int");
+                    /* 
+                        we only set crawl time. Other data such as allowed sites
+                        should come from index.
+                    */
+                    $this->crawlModel->sendStartCrawlMessage($crawl_params, 
+                        NULL, NULL);
+                }
+            }
             $info = array();
             $info[self::STATUS] = self::NO_DATA_STATE;
             $data['MESSAGE'] = base64_encode(serialize($info))."\n";

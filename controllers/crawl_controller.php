@@ -283,7 +283,6 @@ class CrawlController extends Controller implements CrawlConstants
      */
     function sendStartCrawlMessage()
     {
-
         if(!isset($_REQUEST["arg"]) || !isset($_REQUEST["num"])
             || !isset($_REQUEST["i"])) {
             return;
