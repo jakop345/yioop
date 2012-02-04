@@ -334,7 +334,7 @@ class Model implements CrawlConstants
      */
     function isSingleLocalhost($machine_urls)
     {
-        return count($machine_urls) == 1 && 
+        return count($machine_urls) <= 1 && 
                     UrlParser::isLocalhostUrl($machine_urls[0]);
     }
 

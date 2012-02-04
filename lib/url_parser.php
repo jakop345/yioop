@@ -559,6 +559,7 @@ class UrlParser
         $localhosts = array("localhost", "127.0.0.1", "::1");
         if(isset($_SERVER["SERVER_NAME"])) {
             $localhosts[] = $_SERVER["SERVER_NAME"];
+            $localhosts[] = gethostbyname($_SERVER["SERVER_NAME"]);
         }
         if(isset($_SERVER["SERVER_ADDR"])) {
             $localhosts[] = $_SERVER["SERVER_ADDR"];
