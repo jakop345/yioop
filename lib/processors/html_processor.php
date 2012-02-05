@@ -255,7 +255,7 @@ class HtmlProcessor extends TextProcessor
         //look for a meta tag with a description
         foreach($metas as $meta) {
             if(stristr($meta->getAttribute('name'), "description")) {
-                $description .= " ".$meta->getAttribute('content');
+                $description .= " .. ".$meta->getAttribute('content');
             }
         }
 
@@ -278,11 +278,11 @@ class HtmlProcessor extends TextProcessor
                     $content = $node->getAttribute('href')." = ";
                     $add_len  = min(self::MAX_DESCRIPTION_LEN / 2, 
                         mb_strlen($content));
-                    $para_data[$add_len][] =mb_substr($content, 0, $add_len);
+                    $para_data[$add_len][] = mb_substr($content, 0, $add_len);
                 }
                 $add_len  = min(self::MAX_DESCRIPTION_LEN / 2, 
                     mb_strlen($node->textContent));
-                $para_data[$add_len][] =mb_substr($node->textContent, 
+                $para_data[$add_len][] = mb_substr($node->textContent, 
                     0, $add_len);
                 $len += $add_len;
 
@@ -298,7 +298,7 @@ class HtmlProcessor extends TextProcessor
                 $first_len = $add_len;
             }
             foreach($data as $datum) {
-                $description .= $datum;
+                $description .= " .. ". $datum;
             }
             if($first_len > 3 * $add_len) break;
         }
@@ -309,7 +309,9 @@ class HtmlProcessor extends TextProcessor
     }
 
     /**
-     *
+     * @param object $dom
+     * @param string $site
+     * @return string
      */
     static function location($dom, $site)
     {
@@ -369,7 +371,8 @@ class HtmlProcessor extends TextProcessor
                     if(!UrlParser::checkRecursiveUrl($url)  && 
                         strlen($url) < MAX_URL_LENGTH) {
                         if(isset($sites[$url])) { 
-                            $sites[$url] .=" ".strip_tags($href->textContent);
+                            $sites[$url] .=" .. ".
+                                strip_tags($href->textContent);
                         } else {
                             $sites[$url] = strip_tags($href->textContent);
                         }
@@ -390,7 +393,7 @@ class HtmlProcessor extends TextProcessor
                 if(!UrlParser::checkRecursiveUrl($url) 
                     && strlen($url) < MAX_URL_LENGTH) {
                     if(isset($sites[$url]) ) { 
-                        $sites[$url] .=" HTMLframe";
+                        $sites[$url] .=" .. HTMLframe";
                     } else {
                         $sites[$url] = "HTMLframe";
                     }
@@ -415,7 +418,7 @@ class HtmlProcessor extends TextProcessor
                 if(!UrlParser::checkRecursiveUrl($url) 
                     && strlen($url) < MAX_URL_LENGTH) {
                     if(isset($sites[$url]) ) { 
-                        $sites[$url] .=" ".$alt;
+                        $sites[$url] .=" .. ".$alt;
                     } else {
                         $sites[$url] = $alt;
                     }

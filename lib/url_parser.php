@@ -311,7 +311,83 @@ class UrlParser
 
         return $subdomains;
     }
-    
+
+    /**
+     * Given a url, extracts the words in the host part of the url
+     * provided the url does not have a path part more than / .
+     * Ignores a leading www and also ignore tld.
+     *
+     * For example, "http://www.yahoo.com/" returns " yahoo "
+     *
+     * @param string $url a url to figure out the file type for
+     *
+     * @return string space separated words extracted.
+     *
+     */
+    static function getWordsIfHostUrl($url) 
+    {
+        $words = array();
+        $url_parts = @parse_url($url);
+        if(!isset($url_parts['host']) || strlen($url_parts['host']) <= 0
+            || (isset($url_parts['path']) && $url_parts['path'] != "/")|| 
+            isset($url_parts['query'])
+            || isset($url_parts['fragment'])) {
+            // if no host or has a query string bail
+            return ""; 
+        }
+        $host = $url_parts['host'];
+        $host_parts = explode(".", $host);
+        if(count($host_parts) <= 1) {
+            return "";
+        }
+        array_pop($host_parts); // get rid of tld
+        if(stristr($host_parts[0],"www")) {
+            array_shift($host_parts);
+        }
+        $words = array_merge($words, $host_parts);
+        $word_string = " ".implode(" ", $words). " ";
+        return $word_string;
+    }
+
+    /**
+     * Given a url, extracts the words in the last path part of the url
+     * For example, 
+     * http://us3.php.net/manual/en/function.array-filter.php
+     * yields " function array filter "
+     *
+     * @param string $url a url to figure out the file type for
+     *
+     * @return string space separated words extracted.
+     *
+     */
+    function getWordsLastPathPartUrl($url) 
+    {
+        $words = array();
+        $url_parts = @parse_url($url);
+        $path_info = @pathinfo($url_parts['path']);
+        $path = "";
+        if(isset($path_info['dirname'])) {
+            $path .= $path_info['dirname']."/";
+        }
+        if(isset($path_info['filename'])) {
+            $path .= $path_info['filename'];
+        }
+        $pre_path_parts = explode("/", $path);
+        $count = count($pre_path_parts);
+        if($count < 1 ) {
+            return "";
+        }
+        $last_path = $pre_path_parts[$count - 1];
+        $path_parts = preg_split("/(_|-|\ |\+|\.)/", $last_path);
+        foreach($path_parts as $part) {
+            if(strlen($part) > 0 ) {
+                $words[] = $part;
+            }
+        }
+        $word_string = " ".implode(" ", $words). " ";
+        return $word_string;
+    }
+
     /**
      * Given a url, makes a guess at the file type of the file it points to
      *

@@ -210,7 +210,6 @@ class Model implements CrawlConstants
         $i = 0;
         do
         {
-            $word_locations = array();
             $new_offset = $offset;
             foreach($words as $word) {
                 if($word != "") {
@@ -228,11 +227,10 @@ class Model implements CrawlConstants
             }
             $offset = $new_offset + 1;
             ksort($word_locations);
-
             foreach($word_locations as $pos => $word) {
                 $pre_low = ($pos >= SNIPPET_LENGTH_LEFT) ? 
                     $pos - SNIPPET_LENGTH_LEFT: 0;
-                if(!($low = mb_strpos($text, " ", $pre_low))) {
+                if(!($low = mb_stripos($text, " ", $pre_low))) {
                     $low = $pre_low;
                 }
 
@@ -246,7 +244,7 @@ class Model implements CrawlConstants
                     
                     $str = mb_substr($text, $low, $high - $low);
                     if(isset($snippets[$i]) && $snippets[$i] != "" && 
-                        mb_stristr($str, $snippets[$i])) {
+                        !mb_stristr($str, $snippets[$i])) {
                         $i++;
                     }
                     $snippets[$i] = $str;

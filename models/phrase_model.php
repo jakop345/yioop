@@ -402,8 +402,12 @@ class PhraseModel extends Model
                 }
             }
         }
-        $output = $this->formatPageResults($results, $format_words,
-            $description_length);
+        if($raw == 0) {
+            $output = $this->formatPageResults($results, $format_words,
+                $description_length);
+        } else {
+            $output = $results;
+        }
 
         if(QUERY_STATISTICS) {
             $this->query_info['QUERY'] .= "<b>Format time</b>: ".
