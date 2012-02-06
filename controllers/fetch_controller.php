@@ -124,7 +124,8 @@ class FetchController extends Controller implements CrawlConstants
                 so knows the crawl time. queue server knows time
                 only by file messages never by making curl requests
              */
-            if($crawl_time != 0) {
+            if($crawl_time != 0 && !file_exists(CRAWL_DIR.
+                    "/schedules/queue_server_messages.txt") ) {
                 $restart = true;
                 if(file_exists(CRAWL_DIR."/schedules/crawl_status.txt")) {
                     $crawl_status = unserialize(file_get_contents(
@@ -133,7 +134,8 @@ class FetchController extends Controller implements CrawlConstants
                         $restart = false;
                     }
                 }
-                if($restart == true) {
+                if($restart == true && file_exists(CRAWL_DIR.'/cache/'.
+                    self::queue_base_name.$crawl_time)) {
                     $crawl_params = array();
                     $crawl_params[self::STATUS] = "RESUME_CRAWL";
                     $crawl_params[self::CRAWL_TIME] = $crawl_time;
