@@ -233,6 +233,7 @@ class HtmlProcessor extends TextProcessor
                 }
             }
         }
+        $title = substr($title, 0, self::MAX_TITLE_LEN);
         return $title;
     }
 
