@@ -286,7 +286,9 @@ class PhraseParser
                 was used
              */
             $ngrams = self::getCharGramsTerm($stems, $lang);
-            $stems = array_merge($stems, $ngrams);
+            if(count($ngrams) > 0) {
+                $stems = $ngrams;
+            }
         }
 
         return $stems;

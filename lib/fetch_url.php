@@ -153,7 +153,9 @@ class FetchUrl implements CrawlConstants
         //Process returned pages
         for($i = 0; $i < count($sites); $i++) {
             if(isset($ip_holder[$i]) ) {
-                $ip_addresses = self::getCurlIp($ip_holder[$i]);
+                rewind($ip_holder[$i]);
+                $header = fread($ip_holder[$i], 8192);
+                $ip_addresses = self::getCurlIp($header);
                 fclose($ip_holder[$i]);
             }
             if(isset($sites[$i][0]) && $sites[$i][0]) { 
@@ -170,10 +172,24 @@ class FetchUrl implements CrawlConstants
                 if(isset($content) && !$minimal) {
                     $site = self::parseHeaderPage($content, $value);
                     $sites[$i] = array_merge($sites[$i], $site);
+                    if(isset($header)) {
+                        $header = substr($header, 0 ,
+                            strpos($header, "\x0D\x0A\x0D\x0A") + 4);
+                    } else {
+                        $header = "";
+                    }
+                    $sites[$i][CrawlConstants::HEADER] = 
+                        $header . $sites[$i][CrawlConstants::HEADER];
+                    unset($header);
                 } else {
                     $sites[$i][$value] = $content;
                 }
-
+                $sites[$i][self::SIZE] = @curl_getinfo($sites[$i][0],
+                    CURLINFO_SIZE_DOWNLOAD);
+                $sites[$i][self::DNS_TIME] = @curl_getinfo($sites[$i][0],
+                    CURLINFO_NAMELOOKUP_TIME);
+                $sites[$i][self::TOTAL_TIME] = @curl_getinfo($sites[$i][0],
+                    CURLINFO_TOTAL_TIME);
                 $sites[$i][self::HTTP_CODE] = 
                     curl_getinfo($sites[$i][0], CURLINFO_HTTP_CODE);
                 if(!$sites[$i][self::HTTP_CODE]) {
@@ -374,18 +390,15 @@ class FetchUrl implements CrawlConstants
     }
 
     /**
-     * Computes the IP address from a file pointer assumed to be pointing 
-     * at STDERR output from a curl request
+     * Computes the IP address from http get-responser header
      *
-     * @param resource $fp a file pointer to STDERR of a curl request
+     * @param string contains complete transcript of HTTP get/responce
      * @return string IPv4 address as a string of dot separated quads.
      */
-    static function getCurlIp($fp) 
+    static function getCurlIp($header) 
     {
-        rewind($fp);
-        $str = fread($fp, 8192);
         if (preg_match_all('/\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/', 
-            $str, $matches)) {
+            $header, $matches)) {
             return array_unique($matches[0]);
         } else {
             return false;

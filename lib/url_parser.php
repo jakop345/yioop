@@ -360,7 +360,7 @@ class UrlParser
      * @return string space separated words extracted.
      *
      */
-    function getWordsLastPathPartUrl($url) 
+    static function getWordsLastPathPartUrl($url) 
     {
         $words = array();
         $url_parts = @parse_url($url);

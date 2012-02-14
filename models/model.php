@@ -206,6 +206,7 @@ class Model implements CrawlConstants
         $len = mb_strlen($text);
         $offset = 0;
         $words = array_unique($words);
+        $word_locations = array();
         $out_len = 0;
         $i = 0;
         do

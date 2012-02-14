@@ -188,6 +188,9 @@ interface CrawlConstants
     const DATA = 'bt';
     const QUEUE_SERVERS = "bu";
     const CURRENT_SERVER = "bv";
+    const SIZE = "bw";
+    const TOTAL_TIME = "bx";
+    const DNS_TIME = "by";
 
     const NEEDS_OFFSET_FLAG = 0x7FFFFFFF;
 

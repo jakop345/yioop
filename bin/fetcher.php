@@ -1044,6 +1044,7 @@ class Fetcher implements CrawlConstants
             }
 
             if(isset($site[self::PAGE])) {
+
                 if(!isset($site[self::ENCODING])) {
                     $site[self::ENCODING] = "UTF-8";
                 }
@@ -1182,7 +1183,7 @@ class Fetcher implements CrawlConstants
             self::TIMESTAMP, self::TYPE, self::ENCODING, self::HTTP_CODE,
             self::HASH, self::SERVER, self::SERVER_VERSION,
             self::OPERATING_SYSTEM, self::MODIFIED, self::ROBOT_INSTANCE,
-            self::LOCATION);
+            self::LOCATION, self::SIZE, self::TOTAL_TIME, self::DNS_TIME);
 
         foreach($summary_fields as $field) {
             if(isset($site[$field])) {
@@ -1778,6 +1779,24 @@ class Fetcher implements CrawlConstants
         $meta_ids[] = 'info:'.$site[self::URL];
         $meta_ids[] = 'info:'.crawlHash($site[self::URL]);
         $meta_ids[] = 'site:all';
+        if(UrlParser::getHost($site[self::URL])."/" == $site[self::URL]) {
+            $meta_ids[] = 'host:all'; //used to count number of distinct hosts
+        }
+        if(isset($site[self::SIZE])) {
+            $interval = DOWNLOAD_SIZE_INTERVAL;
+            $size = floor($site[self::SIZE]/$interval) * $interval;
+            $meta_ids[] = "size:$size";
+        }
+        if(isset($site[self::TOTAL_TIME])) {
+            $interval = DOWNLOAD_TIME_INTERVAL;
+            $time = floor($site[self::TOTAL_TIME]/$interval) * $interval;
+            $meta_ids[] = "time:$time";
+        }
+        if(isset($site[self::DNS_TIME])) {
+            $interval = DOWNLOAD_TIME_INTERVAL;
+            $time = floor($site[self::DNS_TIME]/$interval) * $interval;
+            $meta_ids[] = "dns:$time";
+        }
         if(isset($site[self::LOCATION]) && count($site[self::LOCATION]) > 0){
             foreach($site[self::LOCATION] as $location) {
                 $meta_ids[] = 'info:'.$location;

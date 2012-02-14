@@ -357,6 +357,12 @@ define ('EN_RATIO', 0.9);
 /** Number of total description deemed title */
 define ('AD_HOC_TITLE_LENGTH', 10);
 
+/** Used to say number of bytes in histogram bar for file download sizes*/
+define('DOWNLOAD_SIZE_INTERVAL', 5000);
+
+/** Used to say number of secs in histogram bar for file download times*/
+define('DOWNLOAD_TIME_INTERVAL', 0.5);
+
 /**
  * How many non robot urls the fetcher successfully downloads before
  * between times data sent back to queue server

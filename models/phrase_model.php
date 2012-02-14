@@ -446,8 +446,8 @@ class PhraseModel extends Model
         $phrase_string = str_replace("&", "&amp;", $phrase_string);
         $meta_words = array('link:', 'site:', 'version:', 'modified:',
             'filetype:', 'info:', '\-', 'os:', 'server:', 'date:',
-            'index:', 'i:', 'ip:', 'weight:', 'w:', 'u:',
-            'lang:', 'media:', 'elink:', 'location:');
+            'index:', 'i:', 'ip:', 'weight:', 'w:', 'u:', 'time:',
+            'lang:', 'media:', 'elink:', 'location:', 'size:', 'host:', 'dns:');
         if(isset($this->additional_meta_words)) {
             $meta_words = array_merge($meta_words, array_keys(
                 $this->additional_meta_words));
@@ -498,8 +498,11 @@ class PhraseModel extends Model
                 CRAWL_DIR.'/cache/'.$index_archive_name);
         }
 
+        $phrase_string = mb_ereg_replace("&amp;", "ZZandZZ", $phrase_string);
         $phrase_string = mb_ereg_replace(PUNCT, " ", $phrase_string);
         $phrase_string = preg_replace("/(\s)+/", " ", $phrase_string);
+        $phrase_string = mb_ereg_replace('ZZandZZ', '&', $phrase_string);
+
         /*
             we search using the stemmed/char-grammed words, but we format
             snippets in the results by bolding either
