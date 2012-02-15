@@ -739,8 +739,10 @@ EOT;
             $dir = CRAWL_DIR.'/cache/'.self::index_data_base_name.$timestamp;
             if(file_exists($dir)) {
                 $info = IndexArchiveBundle::getArchiveInfo($dir);
-                $tmp = unserialize($info['DESCRIPTION']);
-                $info['DESCRIPTION'] = $tmp['DESCRIPTION'];
+                if(isset($info['DESCRIPTION'])) {
+                    $tmp = unserialize($info['DESCRIPTION']);
+                    $info['DESCRIPTION'] = $tmp['DESCRIPTION'];
+                }
             }
         }
 

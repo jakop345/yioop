@@ -281,9 +281,11 @@ class AdminController extends Controller implements CrawlConstants
             $data["CRAWL_RUNNING"] = true;
             $data['RECENT_CRAWLS']= array_filter($data['RECENT_CRAWLS']);
         }
-        rorderCallback($data['RECENT_CRAWLS'][0], $data['RECENT_CRAWLS'][0], 
-            'CRAWL_TIME');
-        usort($data['RECENT_CRAWLS'], "rorderCallback");
+        if(isset($data['RECENT_CRAWLS'][0])) {
+            rorderCallback($data['RECENT_CRAWLS'][0], $data['RECENT_CRAWLS'][0], 
+                'CRAWL_TIME');
+            usort($data['RECENT_CRAWLS'], "rorderCallback");
+        }
 
         return $data;
     }
