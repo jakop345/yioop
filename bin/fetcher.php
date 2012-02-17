@@ -1346,6 +1346,8 @@ class Fetcher implements CrawlConstants
             $site = $sites[$i];
             if(isset($site[self::ROBOT_PATHS])) {
                 $host = UrlParser::getHost($site[self::URL]);
+                $this->found_sites[self::ROBOT_TXT][$host][self::IP_ADDRESSES] =
+                    $site[self::IP_ADDRESSES];
                 $this->found_sites[self::ROBOT_TXT][$host][self::PATHS] = 
                     $site[self::ROBOT_PATHS];
                 if(isset($site[self::CRAWL_DELAY])) {

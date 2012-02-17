@@ -147,6 +147,12 @@ class WebQueueBundle implements Notifier
      */
     var $got_robottxt_filter;
     /**
+     * host-ip table used for dns look-up, comes from robot.txt data and
+     * deleted with same frequency
+     * @var object
+     */
+    var $dns_table;
+    /**
      * BloomFilter used to store dissallowed to crawl host paths
      * @var object
      */
@@ -176,6 +182,11 @@ class WebQueueBundle implements Notifier
      * 4 bytes offset,  4 bytes index, 4 bytes flags
      */
     const HASH_VALUE_SIZE = 12;
+
+    /**
+     * Length of an IPv6 ip address (IPv4 address are padded)
+     */
+    const IP_SIZE = 16;
 
     /**
      * Url type flag
@@ -246,7 +257,7 @@ class WebQueueBundle implements Notifier
         $this->to_crawl_archive = new WebArchive(
             $url_archive_name, new NonCompressor(), false, true);
 
-        //timestamp for robot filters (so can delete if get too old)
+        //timestamp for url filters (so can delete if get too old)
         if(!file_exists($dir_name."/url_timestamp.txt")) {
             file_put_contents($dir_name."/url_timestamp.txt", time());
         }
@@ -269,7 +280,15 @@ class WebQueueBundle implements Notifier
             $this->got_robottxt_filter = new BloomFilterFile(
                 $dir_name."/got_robottxt.ftr", $filter_size);
         }
-
+        /* Hash table containing DNS cache this is cleared whenever robot 
+           filters cleared
+         */
+        if(file_exists($dir_name."/dns_table.dat")) {
+            $this->dns_table = HashTable::load($dir_name."/dns_table.dat");
+        } else {
+            $this->dns_table = new HashTable($dir_name."/dns_table.dat", 
+                4*$num_urls_ram, self::HASH_KEY_SIZE, self::IP_SIZE);
+        }
         //filter with disallowed robots.txt paths
         if(file_exists($dir_name."/dissallowed_robot.ftr")) {
             $this->dissallowed_robot_filter = 
@@ -609,6 +628,49 @@ class WebQueueBundle implements Notifier
     }
 
     /**
+     * Add an entry to the web_queue_bundles DNS cache
+     *
+     * @param string $host hostname to add to DNS Lookup table
+     * @param string $ip_address in presentation format (not as int) to add
+     *      to table
+     */
+    function addDNSCache($host, $ip_address)
+    {
+        $pad = "000000000000";
+        $hash_host = crawlHash($host, true);
+        $packed_ip = inet_pton($ip_address);
+        if(strlen($packed_ip) == 4) {
+            $packed_ip .= $pad;
+        }
+        $this->dns_table->insert($hash_host, $packed_ip);
+    }
+
+    /**
+     * Add an entry to the web_queue_bundles DNS cache
+     *
+     * @param string $host hostname to add to DNS Lookup table
+     * @return value
+     */
+    function dnsLookup($host)
+    {
+        $pad = "000000000000";
+        $hash_host = crawlHash($host, true);
+        $packed_ip = $this->dns_table->lookup($hash_host);
+        if(!$packed_ip) return false;
+        $maybe_pad = substr($packed_ip, 4);
+        $maybe_ip4 = substr($packed_ip, 0, 4);
+        if(strcmp($maybe_pad, $pad) == 0) {
+            $ip_address = inet_ntop($maybe_ip4);
+        } else {
+            $ip_address = inet_ntop($packed_ip);
+        }
+        if(strcmp($ip_address, "0.0.0.0") == 0) {
+            return false;
+        }
+        return $ip_address;
+    }
+
+    /**
      * Gets the timestamp of the oldest url filter data still stored in
      * the queue bundle
      * @return int a Unix timestamp
@@ -827,7 +889,8 @@ class WebQueueBundle implements Notifier
 
     /**
      * Delete the Bloom filters used to store robots.txt file info.
-     * This is called roughly once a days so that robots files will be
+     * Then construct empty new ones.
+     * This is called roughly once a day so that robots files will be
      * reloaded and so the policies used won't be too old.
      */
     function emptyRobotFilters()
@@ -853,6 +916,22 @@ class WebQueueBundle implements Notifier
         $this->crawl_delay_filter = 
             new BloomFilterFile(
                 $this->dir_name."/crawl_delay.ftr", $this->filter_size);
+    }
+
+    /**
+     * Delete the Hash table used to store DNS lookup info.
+     * Then construct an empty new one.
+     * This is called roughly once a day at the same time as 
+     * @see emptyRobotFilters()
+     */
+    function emptyDNSCache()
+    {
+        $num_values = $this->dns_table->num_values;
+        unlink($this->dir_name."/dns_table.dat");
+        $this->dns_table = NULL;
+        gc_collect_cycles();
+        $this->dns_table = new HashTable($this->dir_name."/dns_table.dat", 
+            $num_values, self::HASH_KEY_SIZE, self::IP_SIZE);
     }
 
     /**

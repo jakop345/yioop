@@ -90,7 +90,8 @@ class FetchUrl implements CrawlConstants
                 $sites[$i][0] = curl_init();
                 $ip_holder[$i] = fopen("$temp_dir/tmp$i.txt", 'w+');
                 curl_setopt($sites[$i][0], CURLOPT_USERAGENT, USER_AGENT);
-                $url = str_replace("&amp;", "&", $sites[$i][$key]);
+                list($sites[$i][$key], $url, $headers) = 
+                    self::prepareUrlHeaders($sites[$i][$key]);
                 curl_setopt($sites[$i][0], CURLOPT_URL, $url);
                 curl_setopt($sites[$i][0], CURLOPT_VERBOSE, true);
                 curl_setopt($sites[$i][0], CURLOPT_STDERR, $ip_holder[$i]);
@@ -103,10 +104,10 @@ class FetchUrl implements CrawlConstants
                 if(!$minimal) {
                     curl_setopt($sites[$i][0], CURLOPT_HEADER, true);
                 }
-                curl_setopt($sites[$i][0], CURLOPT_ENCODING, "");
                 //make lighttpd happier
                 curl_setopt($sites[$i][0], CURLOPT_HTTPHEADER, 
-                    array('Expect:'));
+                    $headers);
+                curl_setopt($sites[$i][0], CURLOPT_ENCODING, "");
                    // ^ need to set for sites like att that use gzip
                 if($page_range_request > 0) {
                     curl_setopt($sites[$i][0], CURLOPT_RANGE, "0-".
@@ -224,6 +225,52 @@ class FetchUrl implements CrawlConstants
         curl_multi_close($agent_handler);
 
         return $sites;
+    }
+
+    /**
+     */
+    static function prepareUrlHeaders($url)
+    {
+        $url = str_replace("&amp;", "&", $url);
+        /* in queue_server we added the ip (if available)
+          after the url followed by ###
+         */
+        $headers = array();
+        $url_ip_parts = explode("###", $url);
+        if(count($url_ip_parts) > 1) {
+            $ip_address = urldecode(array_pop($url_ip_parts));
+            $len = strlen(inet_pton($ip_address));
+            if($len == 4 || $len == 16) {
+                if($len == 16) {
+                    $ip_address= "[$ip_address]";
+                }
+                if(count($url_ip_parts) > 1) {
+                    $url = implode("###", $url_ip_parts);
+                } else {
+                    $url = $url_ip_parts[0];
+                }
+                $url_parts = @parse_url($url);
+                if(isset($url_parts['host'])) {
+                    $cnt = 1;
+                    $url_with_ip_if_possible = str_replace($url_parts['host'],
+                        $ip_address ,$url, $cnt);
+                    
+                    if($cnt != 1) {
+                        $url_with_ip_if_possible = $url;
+                    } else {
+                        $headers[] = "Host:".$url_parts['host'];
+                    }
+                }
+            } else {
+                $url_with_ip_if_possible = $url;
+            }
+        } else {
+            $url_with_ip_if_possible = $url;
+        }
+
+        $headers[] = 'Expect:';
+        $results = array($url, $url_with_ip_if_possible, $headers);
+        return $results;
     }
 
     /**

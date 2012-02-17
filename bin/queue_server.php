@@ -1408,6 +1408,8 @@ class QueueServer implements CrawlConstants, Join
 
         if($this->web_queue->getRobotTxtAge() > CACHE_ROBOT_TXT_TIME) {
             $this->deleteRobotData();
+            crawlLog("Deleting DNS Cache data..");
+            $this->web_queue->emptyDNSCache();
         } else {
             crawlLog("... less than max age\n");
             crawlLog("Number of Crawl-Delayed Hosts: ".count(
@@ -1455,6 +1457,11 @@ class QueueServer implements CrawlConstants, Join
                         $this->web_queue->addDisallowedRobotFilter(
                             $robot_host.$path); 
                     }
+                }
+
+                if(isset($robot_info[self::IP_ADDRESSES])) {
+                    $final_ip = array_pop($robot_info[self::IP_ADDRESSES]);
+                    $this->web_queue->addDNSCache($robot_host, $final_ip);
                 }
             }
         }
@@ -1903,10 +1910,10 @@ class QueueServer implements CrawlConstants, Join
                             $this->getEarliestSlot( $next_earliest_slot, 
                                 $sites)) < MAX_FETCH_SIZE) {
                             $crawl_delay_hosts[$hash_host] = $next_slot;
+                            $delete_urls[$i] = $url;
+                            $this->web_queue->addSeenUrlFilter($url);
                             $sites[$next_slot] = 
                                 array($url, $weight, $delay);
-                            $delete_urls[$i] = $url;
-                            $this->web_queue->addSeenUrlFilter($url); 
                                 /* we might miss some sites by marking them 
                                    seen after only scheduling them
                                  */
@@ -1984,6 +1991,11 @@ class QueueServer implements CrawlConstants, Join
             fwrite($fh, $first_line);
             foreach($sites as $site) {
                 list($url, $weight, $delay) = $site;
+                $host_url = UrlParser::getHost($url);
+                $dns_lookup = $this->web_queue->dnsLookup($host_url);
+                if($dns_lookup) {
+                    $url .= "###".urlencode($dns_lookup);
+                }
                 $out_string = base64_encode(
                     packFloat($weight).packInt($delay).$url)."\n";
                 fwrite($fh, $out_string);
