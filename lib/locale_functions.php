@@ -94,6 +94,55 @@ function guessLocale()
     return $locale_tag;
 }
 
+
+/**
+ *  Attempts to guess the user's locale based on a string sample
+ *
+ * @return string IANA language tag of the guessed locale
+
+ */
+function guessLocaleFromString($phrase_string)
+{
+    $locale_tag = getLocaleTag();
+    $phrase_string = mb_convert_encoding($phrase_string, "UTF-32", "UTF-8");
+    $len = strlen($phrase_string);
+    $guess['zh-CN'] = 0;
+    $guess['ru'] = 0;
+    $guess['he'] = 0;
+    $guess['ar'] = 0;
+    $guess['th'] = 0;
+    $guess['ja'] = 0;
+    $guess['ko'] = 0;
+    for($i = 0; $i < $len; $i += 4) {
+        $start = ord($phrase_string[$i+2]);
+        $next = ord($phrase_string[$i+3]);
+        if($start >= 78 && $start <= 159) {
+            $guess['zh-CN']++;
+        } else if ($start == 4 || ($start == 5 && $next < 48)) {
+            $guess['ru']++;
+        } else if ($start == 5 && $next >= 144) {
+            $guess['he']++;
+        } else if ($start >= 6 && $start <= 7) {
+            $guess['ar']++;
+        } else if ($start == 14 && $next < 128) {
+            $guess['th']++;
+        } else if ($start >= 48 && $start <= 49) {
+            $guess['ja']++;
+        } else if ($start == 17 || $start >= 172 && $start < 215) {
+            $guess['ko']++;
+        }
+    }
+    $num_points = $len/4 - 2; //there will be a lead and tail space
+    if($num_points > 0 ) {
+        foreach($guess as $tag => $cnt) {
+            if(2*$cnt >= $num_points) {
+                $locale_tag = $tag;
+                break;
+            }
+        }
+    }
+    return $locale_tag;
+}
 /**
  * Tries to guess at a language tag based on the name of a character
  * encoding

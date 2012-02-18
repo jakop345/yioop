@@ -507,15 +507,16 @@ class PhraseModel extends Model
          */
         $query_words = explode(" ", $phrase_string); //not stemmed
 
+        $locale_tag = guessLocaleFromString($phrase_string);
         $base_words =
             PhraseParser::extractPhrases($phrase_string, MAX_PHRASE_LEN,
-            getLocaleTag()); //stemmed, if have stemmer
+            $locale_tag); //stemmed, if have stemmer
         $words = array_merge($base_words, $found_metas);
         if(QUERY_STATISTICS) {
             $this->query_info['QUERY'] .= "$in3<i>Index</i>: ".
                 $index_archive_name."<br />";
             $this->query_info['QUERY'] .= "$in3<i>LocaleTag</i>: ".
-                getLocaleTag()."<br />";
+                $locale_tag."<br />";
             $this->query_info['QUERY'] .=
                 "$in3<i>Stemmed/Char-grammed Words</i>:<br />";
             foreach($base_words as $word){
@@ -590,6 +591,8 @@ class PhraseModel extends Model
 
         return array($word_struct, $format_words);
     }
+
+
 
     /**
      * The plan is code to tru to guess from the query what the user is 
