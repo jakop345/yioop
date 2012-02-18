@@ -169,10 +169,12 @@ function setLocaleObject($locale_tag)
  * @return string  the tag of the language currently being used for locale
  *      settings
  */
+if(!function_exists("getLocaleTag")) {
 function getLocaleTag()
 {
     global $locale;
     return $locale->getLocaleTag();
+}
 }
 
 /**

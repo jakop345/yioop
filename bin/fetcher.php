@@ -1649,7 +1649,7 @@ class Fetcher implements CrawlConstants
                 
                 $word_lists = 
                     PhraseParser::extractPhrasesInLists($phrase_string,
-                        MAX_PHRASE_LEN, $lang);
+                        MAX_PHRASE_LEN, $lang, true);
             }
 
             $link_phrase_string = "";
@@ -1781,6 +1781,7 @@ class Fetcher implements CrawlConstants
         $meta_ids[] = 'info:'.$site[self::URL];
         $meta_ids[] = 'info:'.crawlHash($site[self::URL]);
         $meta_ids[] = 'site:all';
+        $meta_ids[] = 'code:'.$site[self::HTTP_CODE];
         if(UrlParser::getHost($site[self::URL])."/" == $site[self::URL]) {
             $meta_ids[] = 'host:all'; //used to count number of distinct hosts
         }
@@ -1839,6 +1840,9 @@ class Fetcher implements CrawlConstants
             $meta_ids[] = 'date:'.date('Y', $date);
             $meta_ids[] = 'date:'.date('Y-m', $date);
             $meta_ids[] = 'date:'.date('Y-m-d', $date);
+            $meta_ids[] = 'date:'.date('Y-m-d-H', $date);
+            $meta_ids[] = 'date:'.date('Y-m-d-H-i', $date);
+            $meta_ids[] = 'date:'.date('Y-m-d-H-i-s', $date);
         }
         if(isset($site[self::LANG])) {
             $lang_parts = explode("-", $site[self::LANG]);

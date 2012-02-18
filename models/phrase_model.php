@@ -420,8 +420,6 @@ class PhraseModel extends Model
 
     }
 
-
-
     /**
      *  Parses from a string phrase representing a conjunctive query, a struct
      *  consisting of the words keys searched for, the allowed and disallowed
@@ -446,7 +444,7 @@ class PhraseModel extends Model
         $phrase_string = str_replace("&", "&amp;", $phrase_string);
         $meta_words = array('link:', 'site:', 'version:', 'modified:',
             'filetype:', 'info:', '\-', 'os:', 'server:', 'date:',
-            'index:', 'i:', 'ip:', 'weight:', 'w:', 'u:', 'time:',
+            'index:', 'i:', 'ip:', 'weight:', 'w:', 'u:', 'time:', 'code:',
             'lang:', 'media:', 'elink:', 'location:', 'size:', 'host:', 'dns:');
         if(isset($this->additional_meta_words)) {
             $meta_words = array_merge($meta_words, array_keys(
@@ -610,7 +608,7 @@ class PhraseModel extends Model
         $pattern = "/(\s)((\S)+$cond_token)(\s)/";
         preg_match_all($pattern, $phrase, $matches);
         $matches = $matches[2];
-        $result_phrase = preg_replace($pattern, "", $phrase);
+        $result_phrase = preg_replace($pattern, " ", $phrase);
         foreach($matches as $match) {
             if(!strstr($match, ":")) { 
                 $result_phrase .= " site:".$match;

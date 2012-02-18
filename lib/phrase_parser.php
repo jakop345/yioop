@@ -125,17 +125,20 @@ class PhraseParser
      * @param string $string subject to extract phrases from
      * @param int $len longest length of phrases to consider
      * @param string $lang locale tag for stemming
+     * @param bool $orig_and_grams if char-gramming is done whether to keep
+     *      the original term as well in what's returned
      * @return array of phrases
      */
     static function extractPhrases($string,
-        $len =  MAX_PHRASE_LEN, $lang = NULL)
+        $len =  MAX_PHRASE_LEN, $lang = NULL, $orig_and_grams = false)
     {
         $phrases = array();
 
         for($i = 0; $i < $len; $i++) {
             $phrases =
                 array_merge($phrases,
-                    self::extractPhrasesOfLength($string, $i, $lang));
+                    self::extractPhrasesOfLength($string, $i, $lang,
+                        $orig_and_grams));
         }
 
         return $phrases;
@@ -148,17 +151,20 @@ class PhraseParser
      * @param string $string subject to extract phrases from
      * @param int $len longest length of phrases to consider
      * @param string $lang locale tag for stemming
+     * @param bool $orig_and_grams if char-gramming is done whether to keep
+     *      the original term as well in what's returned
      * @return array pairs of the form (phrase, number of occurrences)
      */
     static function extractPhrasesAndCount($string,
-        $len =  MAX_PHRASE_LEN, $lang = NULL)
+        $len =  MAX_PHRASE_LEN, $lang = NULL, $orig_and_grams = false)
     {
         $phrases = array();
 
         for($i = 0; $i < $len; $i++) {
             $phrases =
                 array_merge($phrases,
-                    self::extractPhrasesOfLength($string, $i, $lang));
+                    self::extractPhrasesOfLength($string, $i, $lang,
+                        $orig_and_grams));
         }
 
         $phrase_counts = array_count_values($phrases);
@@ -173,16 +179,19 @@ class PhraseParser
      * @param string $string subject to extract phrases from
      * @param int $len longest length of phrases to consider
      * @param string $lang locale tag for stemming
+     * @param bool $orig_and_grams if char-gramming is done whether to keep
+     *      the original term as well in what's returned
      * @return array word => list of positions at which the word occurred in
      *      the document
      */
     static function extractPhrasesInLists($string,
-        $len =  MAX_PHRASE_LEN, $lang = NULL)
+        $len =  MAX_PHRASE_LEN, $lang = NULL, $orig_and_grams = false)
     {
         $phrase_lists = array();
 
         for($i = 0; $i < $len; $i++) {
-            $phrases = self::extractPhrasesOfLength($string, $i, $lang);
+            $phrases = self::extractPhrasesOfLength($string, $i, $lang,
+                $orig_and_grams);
             if($i==1){
                 $n = 0;
                 foreach ($phrases as $phrase) {
@@ -214,20 +223,23 @@ class PhraseParser
      * @param string $string subject to extract phrases from
      * @param int $len length of phrases to consider
      * @param string $lang locale tag for stemming
+     * @param bool $orig_and_grams if char-gramming is done whether to keep
+     *      the original term as well in what's returned
      * @return array of phrases
      */
-    static function extractPhrasesOfLength($string, $phrase_len, $lang = NULL)
+    static function extractPhrasesOfLength($string, $phrase_len, $lang = NULL,
+        $orig_and_grams = false)
     {
         $phrases = array();
 
         for($i = 0; $i < $phrase_len; $i++) {
             $phrases = array_merge($phrases,
                 self::extractPhrasesOfLengthOffset($string,
-                    $phrase_len, $i, $lang));
+                    $phrase_len, $i, $lang, $orig_and_grams));
         }
 
         if($phrase_len == 1 && count($phrases) > 1){
-            $phrases = Bigrams::extractBigrams($phrases,$lang);
+            $phrases = Bigrams::extractBigrams($phrases, $lang);
         }
 
         return $phrases;
@@ -243,10 +255,12 @@ class PhraseParser
      * @param int $len length of phrases to consider
      * @param int $offset the first word to begin with
      * @param string $lang locale tag for stemming
+     * @param bool $orig_and_grams if char-gramming is done whether to keep
+     *      the original term as well in what's returned
      * @return array of phrases
      */
     static function extractPhrasesOfLengthOffset($string,
-        $phrase_len, $offset, $lang = NULL)
+        $phrase_len, $offset, $lang = NULL, $orig_and_grams = false)
     {
         $words = mb_split("[[:space:]]|".PUNCT, $string);
 
@@ -286,7 +300,9 @@ class PhraseParser
                 was used
              */
             $ngrams = self::getCharGramsTerm($stems, $lang);
-            if(count($ngrams) > 0) {
+            if($orig_and_grams) {
+                $stems = array_merge($stems, $ngrams);
+            } else if(count($ngrams) > 0) {
                 $stems = $ngrams;
             }
         }

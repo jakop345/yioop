@@ -68,6 +68,10 @@ if(USE_FILECACHE) {
 /** Loads common constants for web crawling*/
 require_once BASE_DIR."/lib/crawl_constants.php";
 
+/** Loads common constants for web crawling*/
+require_once BASE_DIR."/lib/locale_functions.php";
+
+
 /**Load base controller class, if needed. */
 require_once BASE_DIR."/controllers/search_controller.php";
 
@@ -109,12 +113,15 @@ class QueryTool implements CrawlConstants
         $query = $argv[1];
         $results_per_page = (isset($argv[2])) ? $argv[2] : 10;
         $limit = (isset($argv[3])) ? $argv[3] : 0;
-
+        setLocaleObject(getLocaleTag());
 
         $start_time = microtime();
         $controller = new SearchController($INDEXING_PLUGINS);
         $data = $controller->queryRequest($query, $results_per_page, $limit);
 
+        if(!isset($data['PAGES'])) {
+            $data['PAGES'] = array();
+        }
         foreach($data['PAGES'] as $page) {
             echo "============\n";
             echo "TITLE: ". trim($page[self::TITLE]). "\n";
@@ -132,14 +139,23 @@ class QueryTool implements CrawlConstants
             echo "============\n\n";
         }
         $data['ELAPSED_TIME'] = changeInMicrotime($start_time);
-
         echo "QUERY STATISTICS\n";
+
         echo "============\n";
         echo "ELAPSED TIME: ".$data['ELAPSED_TIME']."\n";
-        echo "LOW: ".$data['LIMIT']."\n";
-        echo "HIGH: ".min($data['TOTAL_ROWS'], 
-            $data['LIMIT'] + $data['RESULTS_PER_PAGE'])."\n";
-        echo "TOTAL ROWS: ".$data['TOTAL_ROWS']."\n";
+        if(isset($data['LIMIT'])) {
+            echo "LOW: ".$data['LIMIT']."\n";
+        }
+        if(isset($data['HIGH'])) {
+            echo "HIGH: ".min($data['TOTAL_ROWS'], 
+                $data['LIMIT'] + $data['RESULTS_PER_PAGE'])."\n";
+        }
+        if(isset($data['TOTAL_ROWS'])) {
+            echo "TOTAL ROWS: ".$data['TOTAL_ROWS']."\n";
+        }
+        if(isset($data['ERROR'])) {
+            echo $data['ERROR']."\n";
+        }
     }
 
 

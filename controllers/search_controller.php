@@ -318,6 +318,7 @@ class SearchController extends Controller implements CrawlConstants
         $is_mix = $this->crawlModel->isCrawlMix($index_name);
         if($no_index_given && (!$this->phraseModel->indexExists($index_name)
                 && !$is_mix)) {
+                $data["ERROR"] = tl('search_controller_no_index_set');
                 $data['SCRIPT'] = 
                         "doMessage('<h1 class=\"red\" >".
                         tl('search_controller_no_index_set').
