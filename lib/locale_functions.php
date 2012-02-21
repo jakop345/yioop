@@ -98,12 +98,16 @@ function guessLocale()
 /**
  *  Attempts to guess the user's locale based on a string sample
  *
+ * @param string $phrase_string used to make guess
+ * @param string $locale_tag language tag to use if can't guess -- if not
+ *      provided uses current locale's value
+ * @param int threshold number of chars to guess a particular encoding
  * @return string IANA language tag of the guessed locale
 
  */
-function guessLocaleFromString($phrase_string)
+function guessLocaleFromString($phrase_string, $locale_tag = NULL, $factor = 2)
 {
-    $locale_tag = getLocaleTag();
+    $locale_tag = ($locale_tag == NULL) ? getLocaleTag() : $locale_tag;
     $phrase_string = mb_convert_encoding($phrase_string, "UTF-32", "UTF-8");
     $len = strlen($phrase_string);
     $guess['zh-CN'] = 0;
@@ -135,7 +139,7 @@ function guessLocaleFromString($phrase_string)
     $num_points = $len/4 - 2; //there will be a lead and tail space
     if($num_points > 0 ) {
         foreach($guess as $tag => $cnt) {
-            if(2*$cnt >= $num_points) {
+            if($factor*$cnt >= $num_points) {
                 $locale_tag = $tag;
                 break;
             }

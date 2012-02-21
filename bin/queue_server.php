@@ -1923,7 +1923,7 @@ class QueueServer implements CrawlConstants, Join
                             $this->web_queue->setQueueFlag($url, 
                                 $delay + WebQueueBundle::SCHEDULABLE);
                         }
-                    }
+                    } 
                 } else { // add a url no crawl delay
                     $next_slot = $this->getEarliestSlot(
                         $current_crawl_index, $sites);

@@ -1359,7 +1359,8 @@ class Fetcher implements CrawlConstants
                     $num_links = count($site[self::LINKS]);
                     //robots pages might have sitemaps links on them
                     $this->addToCrawlSites($site[self::LINKS], 
-                        $site[self::WEIGHT], $site[self::HASH]);
+                        $site[self::WEIGHT], $site[self::HASH], 
+                        $site[self::URL], true);
                 }
             } else {
                 $this->found_sites[self::SEEN_URLS][] = $site;
@@ -1371,7 +1372,8 @@ class Fetcher implements CrawlConstants
                     $link_urls = array_keys($site[self::LINKS]);
 
                     $this->addToCrawlSites($link_urls, $site[self::WEIGHT],
-                        $site[self::HASH]);
+                        $site[self::HASH], 
+                        $site[self::URL]);
 
                 }
             } //end else
@@ -1405,36 +1407,121 @@ class Fetcher implements CrawlConstants
      * @param array $link_urls an array of urls to be crawled
      * @param int $old_weight the weight of the web page the links came from
      * @param string $site_hash a hash of the web_page on which the link was 
-     *      found, for use in deduplication
+     *      found, for use in deduplication (this is could be computed
+     *      from the next param but add to save on recomputation)
+     * @param string $old_url url of page where links came from
+     * @param bool whether the links are coming from a sitemap
      */
-    function addToCrawlSites($link_urls, $old_weight, $site_hash) 
+    function addToCrawlSites($link_urls, $old_weight, $site_hash, $old_url,
+        $from_sitemap = false) 
     {
+        $sitemap_link_weight = 0.25;
         $num_links = count($link_urls);
-        switch($this->crawl_order) {
-            case self::BREADTH_FIRST:
-                $weight= $old_weight + 1;
-            break;
-
-            case self::PAGE_IMPORTANCE:
-            default:
                 if($num_links > 0 ) {
                     $weight= $old_weight/$num_links;
                 } else {
                     $weight= $old_weight;
                 }
-            break;
-        }
         $count = count($link_urls);
         $num_queue_servers = count($this->queue_servers);
+        if($from_sitemap) {
+            $total_weight = 0;
+            for($i = 1; $i <= $count; $i++) {
+                $total_weight += $old_weight/($i*$i);
+            }
+            $total_weight = $total_weight ;
+        } else if ($this->crawl_order != self::BREADTH_FIRST) {
+            $num_common = 
+                $this->countCompanyLevelDomainsInCommon($old_url, $link_urls);
+            if($num_common > 0 ) {
+                $common_weight = 1/(2*$num_common);
+            }
+
+            $num_different = $count - $num_common;
+            if($num_different > 0 ) {
+                $different_weight = 1/$num_different; 
+                    //favour links between different company level domains
+            }
+
+        }
+        $old_cld = $this->getCompanyLevelDomain($old_url);
         for($i = 0; $i < $count; $i++) {
             $url = $link_urls[$i];
             if(strlen($url) > 0) {
                 $part = calculatePartition($url, $num_queue_servers, 
                     "UrlParser::getHost");
-                $this->found_sites[self::TO_CRAWL][$part][] = 
-                    array($url, $weight, $site_hash.$i);
+                if($from_sitemap) {
+                    $this->found_sites[self::TO_CRAWL][$part][] = 
+                        array($url,  $old_weight* $sitemap_link_weight /
+                            (($i+1)*($i+1)*$total_weight), 
+                            $site_hash.$i);
+                } else if ($this->crawl_order == self::BREADTH_FIRST) {
+                    $this->found_sites[self::TO_CRAWL][$part][] = 
+                        array($url, $old_weight + 1, $site_hash.$i);
+                } else { //page importance and default case
+                    $cld = $this->getCompanyLevelDomain($url);
+                    if(strcmp($old_cld, $cld) == 0) {
+                        $this->found_sites[self::TO_CRAWL][$part][] = 
+                            array($url, $common_weight, $site_hash.$i);
+                    } else {
+                        $this->found_sites[self::TO_CRAWL][$part][] = 
+                            array($url, $different_weight, $site_hash.$i);
+                    }
+                }
             }
         }
+    }
+
+    /**
+     *  Returns the number of links in the array $links which
+     *  which share the same company level domain (cld) as $url
+     *  For www.yahoo.com the cld is yahoo.com, for 
+     *  www.theregister.co.uk it is theregister.co.uk. It is 
+     *  similar for organizations.
+     *
+     *  @param string $url the url to compare against $links
+     *  @param array $links an array of urls
+     *  @return int the number of times $url shares the cld with a
+     *      link in $links
+     */
+    function countCompanyLevelDomainsInCommon($url, $links)
+    {
+        $cld = $this->getCompanyLevelDomain($url);
+        $cnt = 0;
+        foreach( $links as $link_url) {
+            $link_cld = $this->getCompanyLevelDomain($link_url);
+            if(strcmp($cld, $link_cld) == 0) {
+                $cnt++;
+            }
+        }
+        return $cnt;
+    }
+
+    /**
+     * Calculates the company level domain for the given url
+     *
+     *  For www.yahoo.com the cld is yahoo.com, for 
+     *  www.theregister.co.uk it is theregister.co.uk. It is 
+     *  similar for organizations.
+     *
+     *  @param string $url url to determine cld for
+     *  @return string the cld of $url
+     */
+    function getCompanyLevelDomain($url)
+    {
+        $subdomains = UrlParser::getHostSubdomains($url);
+        if(!isset($subdomains[0])) return "";
+        /*
+            if $url is www.yahoo.com
+                $subdomains[0] == com, $subdomains[1] == .com,
+                $subdomains[2] == yahoo.com,$subdomains[3] == .yahoo.com
+            etc.
+         */
+        if(strlen($subdomains[0]) == 2 && strlen($subdomains[2]) == 5
+            && isset($subdomains[4])) {
+            return $subdomains[4];
+        }
+        return $subdomains[2];
     }
 
     /**
@@ -1442,11 +1529,11 @@ class Fetcher implements CrawlConstants
      *
      * This method is called if there are currently no more sites to crawl or
      * if SEEN_URLS_BEFORE_UPDATE_SCHEDULER many pages have been processed. It
-     * creates a inverted index of the non robot pages crawled and then compresses
-     * and does a post request to send the page summary data, robot data, 
-     * to crawl url data, and inverted index back to the server. In the event
-     * that the server doesn't acknowledge it loops and tries again after a
-     * delay until the post is successful. At this point, memory for this data
+     * creates a inverted index of the non robot pages crawled and then 
+     * compresses and does a post request to send the page summary data, robot 
+     * data, to crawl url data, and inverted index back to the server. In the 
+     * event that the server doesn't acknowledge it loops and tries again after
+     * a delay until the post is successful. At this point, memory for this data
      * is freed.
      */
     function updateScheduler() 
@@ -1657,14 +1744,11 @@ class Fetcher implements CrawlConstants
             //store inlinks so they can be searched by
             $num_links = count($site[self::LINKS]);
             if($num_links > 0) {
-                $weight = (isset($site[self::WEIGHT])) ? $site[self::WEIGHT] :1;
-                $link_weight = $weight/$num_links;
                 $link_rank = false;
                 if($doc_rank !== false) {
                     $link_rank = max($doc_rank - 1, 1);
                 }
             } else {
-                $link_weight = 0;
                 $link_rank = false;
             }
             $had_links = false;

@@ -595,7 +595,7 @@ class PhraseModel extends Model
 
 
     /**
-     * The plan is code to tru to guess from the query what the user is 
+     * The plan is code to tru to  & from the query what the user is 
      * looking for will be called from here. For now, we are just guessing
      * when a query term is a url and rewriting it to the appropriate meta
      * meta word.
@@ -613,7 +613,8 @@ class PhraseModel extends Model
         $matches = $matches[2];
         $result_phrase = preg_replace($pattern, " ", $phrase);
         foreach($matches as $match) {
-            if(!strstr($match, ":")) { 
+            $tag = guessLocaleFromString($match, "en-US", 10);
+            if(!strstr($match, ":") && $tag == "en-US") { 
                 $result_phrase .= " site:".$match;
             } else {
                 $result_phrase .= " ".$match;
@@ -627,7 +628,10 @@ class PhraseModel extends Model
         $matches = $matches[2];
         $result_phrase = preg_replace($pattern, "", $phrase);
         foreach($matches as $match) {
-            $result_phrase .= " site:".$match;
+            $tag = guessLocaleFromString($match, "en-US", 10);
+            if($tag == "en-US") {
+                $result_phrase .= " site:".$match;
+            }
         }
         $phrase = $result_phrase;
 
@@ -637,7 +641,10 @@ class PhraseModel extends Model
         $matches = $matches[2];
         $result_phrase = preg_replace($pattern, "", $phrase);
         foreach($matches as $match) {
-            $result_phrase .= " site:".$match;
+            $tag = guessLocaleFromString($match, "en-US", 10);
+            if($tag == "en-US") {
+                $result_phrase .= " site:".$match;
+            }
         }
         return $result_phrase;
     }
