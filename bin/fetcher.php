@@ -1884,6 +1884,10 @@ class Fetcher implements CrawlConstants
             $time = floor($site[self::DNS_TIME]/$interval) * $interval;
             $meta_ids[] = "dns:$time";
         }
+        if(isset($site[self::LINKS])) {
+            $num_links = count($site[self::LINKS]);
+            $meta_ids[] = "numlinks:$num_links";
+        }
         if(isset($site[self::LOCATION]) && count($site[self::LOCATION]) > 0){
             foreach($site[self::LOCATION] as $location) {
                 $meta_ids[] = 'info:'.$location;

@@ -443,7 +443,7 @@ class PhraseModel extends Model
         $phrase_string = $phrase;
         $phrase_string = str_replace("&", "&amp;", $phrase_string);
         $meta_words = array('link:', 'site:', 'version:', 'modified:',
-            'filetype:', 'info:', '\-', 'os:', 'server:', 'date:',
+            'filetype:', 'info:', '\-', 'os:', 'server:', 'date:', "numlinks:",
             'index:', 'i:', 'ip:', 'weight:', 'w:', 'u:', 'time:', 'code:',
             'lang:', 'media:', 'elink:', 'location:', 'size:', 'host:', 'dns:');
         if(isset($this->additional_meta_words)) {

@@ -81,7 +81,7 @@ class WebLayout extends Layout
             <link rel="shortcut icon"   href="favicon.ico" />
             <link rel="stylesheet" type="text/css" href="css/search.css" />
             <link rel="search" type="application/opensearchdescription+xml" 
-                href="<?php e(QUEUE_SERVER."yioopbar.xml");?>"
+                href="<?php e(NAME_SERVER."yioopbar.xml");?>"
                 title="Content search" />
 
         </head>

@@ -63,6 +63,9 @@ interface CrawlConstants
     const schedule_name = "FetchSchedule";
     const robot_data_base_name = "RobotData";
     const index_data_base_name = "IndexData";
+    const network_base_name = "Network";
+    const network_crawllist_base_name = "NetworkCrawlList";
+    const statistics_base_name = "Statistics";
     const index_closed_name = "IndexClosed";
     const fetch_batch_name = "FetchBatch";
     const fetch_crawl_info = "FetchInfo";

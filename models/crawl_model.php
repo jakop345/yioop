@@ -706,7 +706,8 @@ EOT;
                 if(!in_array(NAME_SERVER, $machine_urls)) {
                     array_unshift($machine_urls, NAME_SERVER);
                 }
-                $cache_file = CRAWL_DIR."/cache/Network".$timestamp.".txt";
+                $cache_file = CRAWL_DIR."/cache/".self::network_base_name.
+                    $timestamp.".txt";
                 if(file_exists($cache_file) && filemtime($cache_file) 
                     + 300 > time() ) {
                     return unserialize(file_get_contents($cache_file));
@@ -760,9 +761,13 @@ EOT;
     {
         if($machine_urls != NULL && !$this->isSingleLocalhost($machine_urls)) {
             //get rid of cache info on Name machine
-            $mask = CRAWL_DIR."/cache/NetworkCrawlList*.txt";
+            $mask = CRAWL_DIR."/cache/".self::network_crawllist_base_name.
+                "*.txt";
             array_map( "unlink", glob( $mask ) );
-            @unlink(CRAWL_DIR."/cache/Network$timestamp.txt");
+            @unlink(CRAWL_DIR."/cache/".self::network_base_name.
+                "$timestamp.txt");
+            @unlink(CRAWL_DIR."/cache/".self::statistics_base_name.
+                "$timestamp.txt");
             if(!in_array(NAME_SERVER, $machine_urls)) {
                 array_unshift($machine_urls, NAME_SERVER);
             }
@@ -882,7 +887,8 @@ EOT;
             }
             $pre_arg = ($return_arc_bundles && $return_recrawls) ? 3 :
                 ($return_recrawls) ? 2 : ($return_arc_bundles) ? 1 : 0;
-            $cache_file = CRAWL_DIR."/cache/NetworkCrawlList$pre_arg.txt";
+            $cache_file = CRAWL_DIR."/cache/".self::network_crawllist_base_name.
+                "$pre_arg.txt";
             if($cache && file_exists($cache_file) && filemtime($cache_file) 
                 + 300 > time() ) {
                 return unserialize(file_get_contents($cache_file));

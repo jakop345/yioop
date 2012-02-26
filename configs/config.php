@@ -277,6 +277,7 @@ $INDEXED_FILE_TYPES =
             "pdf",
             "php",
             "pl",
+            "py",
             "ppt",
             "pptx",
             "png",

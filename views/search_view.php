@@ -202,7 +202,10 @@ class SearchView extends View implements CrawlConstants
                 $data['LIMIT'], $data['RESULTS_PER_PAGE'], $data['TOTAL_ROWS']);
         }
         ?><div class="landing-footer">
-            <div><b><?php e($data['INDEX_INFO']);?></b></div>
+            <div><b><?php e($data['INDEX_INFO']);?></b> 
+            [<a href="?YIOOP_TOKEN=<?php e($data['YIOOP_TOKEN']);
+                ?>&amp;c=statistics&its=<?php $data['its'];?>"><?php 
+                e(tl('search_view_more_statistics')); ?></a>]</div>
             <div><a href="http://www.seekquarry.com/"><?php
             e(tl('search_view_developed_seek_quarry')); ?></a></div>
 

@@ -199,7 +199,12 @@ class CrawlstatusView extends View
             <?php
             foreach($data['RECENT_CRAWLS'] as $crawl) {
             ?>
-                <tr><td><b><?php e($crawl['DESCRIPTION']); ?></b></td><td><?php
+                <tr><td><b><?php e($crawl['DESCRIPTION']); ?></b><br />
+                    [<a href="?YIOOP_TOKEN=<?php e(
+                    $data['YIOOP_TOKEN']); ?>&c=statistics&its=<?php 
+                    e($crawl['CRAWL_TIME']); ?>"><?php 
+                    e(tl('crawlstatus_view_statistics')); ?></a>]</td>
+                    <td><?php
                     e("<b>{$crawl['CRAWL_TIME']}</b><br />");
                     e("<small>".date("r", $crawl['CRAWL_TIME']).
                         "</small>"); ?></td>
