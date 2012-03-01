@@ -112,7 +112,6 @@ class StatisticsController extends Controller implements CrawlConstants
         $this->machine_urls = $this->machineModel->getQueueServerUrls();
         if(isset($_REQUEST['its'])) {
             $this->index_time_stamp = $this->clean($_REQUEST['its'], "string");
-            
         }
         if(!isset($this->index_time_stamp) || $this->index_time_stamp == "") {
             $this->index_time_stamp = 
@@ -130,7 +129,7 @@ class StatisticsController extends Controller implements CrawlConstants
             $this->computeStatistics($data);
         }
         $data['YIOOP_TOKEN'] = $this->generateCSRFToken($user);
-
+        $data["its"] = $this->index_time_stamp;
         $this->displayView($view, $data);
     }
 

@@ -87,8 +87,8 @@ class StatisticsView extends View
             <script type="text/javascript">
                 function continueCalculate()
                 {
-                    window.location = "?c=statistics&stars=<?php
-                        e($data["stars"]); ?>";
+                    window.location = "?c=statistics<?php
+                        e("&its=".$data["its"]."&stars=".$data["stars"]); ?>";
                 }
                 setTimeout("continueCalculate()", 2000);
             </script>
