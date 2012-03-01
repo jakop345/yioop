@@ -235,6 +235,9 @@ class SearchController extends Controller implements CrawlConstants
             $data['INDEX_INFO'] = "";
         }
 
+        $stats_file = CRAWL_DIR."/cache/".self::statistics_base_name.
+                $data['its'].".txt";
+        $data["HAS_STATISTICS"] = file_exists($stats_file);
         $data['YIOOP_TOKEN'] = $this->generateCSRFToken($user);
 
         $data['ELAPSED_TIME'] = changeInMicrotime($start_time);
@@ -430,7 +433,6 @@ class SearchController extends Controller implements CrawlConstants
             $phrase_results['TOTAL_ROWS'] : 0;
         $data['LIMIT'] = $limit;
         $data['RESULTS_PER_PAGE'] = $results_per_page;
-
         return $data;
 
     }

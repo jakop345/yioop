@@ -1126,7 +1126,7 @@ class QueueServer implements CrawlConstants, Join
      * This is a callback method that IndexArchiveBundle will periodically
      * call when it processes a method that take a long time. This
      * allows for instance continued processing of index data while say
-     * a dicitonary merge is being performed.
+     * a dictionary merge is being performed.
      */
     function join()
     {

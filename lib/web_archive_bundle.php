@@ -260,7 +260,7 @@ class WebArchiveBundle
     }
 
     /**
-     * Creates a new counter to be maintain in the description.txt
+     * Creates a new counter to be maintained in the description.txt
      * file if the counter doesn't exist, leaves unchanged otherwise
      *
      * @param string $field field of info struct to add a counter for
