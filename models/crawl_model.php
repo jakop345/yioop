@@ -94,7 +94,7 @@ class CrawlModel extends Model implements CrawlConstants
      */
     function getCrawlItem($url, $machine_urls = NULL)
     {
-        if($machine_urls != NULL) {
+        if($machine_urls != NULL && !$this->isSingleLocalhost($machine_urls)) {
             $num_machines = count($machine_urls);
             $index = calculatePartition($url, $num_machines, 
                 "UrlParser::getHost");

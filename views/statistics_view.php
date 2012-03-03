@@ -76,7 +76,8 @@ class StatisticsView extends View
             src="resources/yioop.png" alt="Yioop!" /></a><span> - <?php 
             e(tl('statistics_view_statistics')); ?></span></h1>
         <div class="statistics">
-        <?php 
+        <?php
+        $base_url = "?YIOOP_TOKEN=".$data["YIOOP_TOKEN"]."&its=".$data["its"];
         if(isset($data["UNFINISHED"])) {
             e("<h1 class='center'>".tl('statistics_view_calculating')."</h1>");
 
@@ -87,9 +88,8 @@ class StatisticsView extends View
             <script type="text/javascript">
                 function continueCalculate()
                 {
-                    window.location = "?c=statistics<?php
-                        e("&YIOOP_TOKEN=".$data["YIOOP_TOKEN"].
-                        "&its=".$data["its"]."&stars=".$data["stars"]); ?>";
+                    window.location = '<?php
+                        e("$base_url&c=statistics&stars=".$data["stars"]); ?>';
                 }
                 setTimeout("continueCalculate()", 2000);
             </script>
@@ -132,10 +132,12 @@ class StatisticsView extends View
                     <table summary= "$heading TABLE" class="box">
                         <?php 
                             $total = $data[$group_name]["TOTAL"];
+                            $lower_name = strtolower($group_name);
                             foreach($data[$group_name]["DATA"] as 
                                 $name => $value) {
                                 $width = round(500*$value/$total);
-                                e("<tr><th>$name</th>".
+                                e("<tr><th><a href='".$base_url."&c=search".
+                                    "&q=$lower_name:$name'>$name</a></th>".
                                     "<td><div style='background-color:green;".
                                         "width:{$width}px;' >$value</div>".
                                     " </td></tr>");
