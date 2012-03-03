@@ -584,7 +584,8 @@ function calculatePartition($input, $num_partition, $callback = NULL)
         } else {
             $class_name = $callback_parts[0];
             $method_name = $callback_parts[1];
-            $input = $class_name::$method_name($input);
+            $tmp_class = new $class_name;
+            $input = $tmp_class->$method_name($input);
         }
     }
     $hash_int =  abs(unpackInt(substr(crawlHash($input, true), 0, 4))) %

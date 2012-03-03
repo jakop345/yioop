@@ -87,6 +87,7 @@ if(file_exists(WORK_DIRECTORY."/profile.php")) {
     define('PROFILE', false);
     define('DBMS', 'sqlite3');
     define('DEBUG_LEVEL', NO_DEBUG_INFO);
+    define('USE_FILECACHE', false);
     define('WEB_ACCESS', true);
     define('RSS_ACCESS', true);
     define('API_ACCESS', true);
@@ -118,6 +119,7 @@ if(file_exists(WORK_DIRECTORY."/profile.php")) {
     define ('DESCRIPTION_WEIGHT', 1);
     /** BM25F weight for other text within links to a doc*/
     define ('LINK_WEIGHT', 2);
+    $INDEXING_PLUGINS = array();
 
 }
 
@@ -330,7 +332,11 @@ $PAGE_PROCESSORS = array(   "text/html" => "HtmlProcessor",
                             "image/svg+xml"=> "SvgProcessor"
 );
 
-$INDEXING_PLUGINS = array("recipe");
+if(defined('PHP_VERSION_ID') && PHP_VERSION_ID > 50300) {
+    $INDEXING_PLUGINS = array("recipe");
+} else {
+    $INDEXING_PLUGINS = array();
+}
 
 $MOD9_PACK_POSSIBILITIES = array(
     0, 24, 12, 7, 6, 5, 4, 3, 3, 3, 2, 2, 2, 2,

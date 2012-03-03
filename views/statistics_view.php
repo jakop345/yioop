@@ -88,7 +88,8 @@ class StatisticsView extends View
                 function continueCalculate()
                 {
                     window.location = "?c=statistics<?php
-                        e("&its=".$data["its"]."&stars=".$data["stars"]); ?>";
+                        e("&YIOOP_TOKEN=".$data["YIOOP_TOKEN"].
+                        "&its=".$data["its"]."&stars=".$data["stars"]); ?>";
                 }
                 setTimeout("continueCalculate()", 2000);
             </script>

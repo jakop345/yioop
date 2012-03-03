@@ -129,7 +129,7 @@ class CrawloptionsElement extends Element
             name="allowed_sites"><?php e($data['allowed_sites']);
         ?></textarea></div>
         <div class="topmargin"><label for="disallowed-sites"><b><?php 
-            e(tl('crawloptions_element_disallowed_to_crawl')); 
+            e(tl('crawloptions_element_disallowed_and_quota_sites')); 
                 ?></b></label></div>
         <textarea class="shorttextarea" id="disallowed-sites" 
             name="disallowed_sites" ><?php e($data['disallowed_sites']);

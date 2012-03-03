@@ -139,6 +139,21 @@ class QueueServer implements CrawlConstants, Join
      */
     var $disallowed_sites;
     /**
+     * Timestamp of lst time download from site quotas were cleared
+     * @var int
+     */
+    var $quota_clear_time;
+    /**
+     * Web-sites that have an hourly crawl quota
+     * @var array
+     */
+    var $quota_sites;
+    /**
+     * Cache of array_keys of $quota_sites
+     * @var array
+     */
+    var $quota_sites_keys;
+    /**
      * Constant saying the method used to order the priority queue for the crawl
      * @var string
      */
@@ -273,6 +288,9 @@ class QueueServer implements CrawlConstants, Join
         $this->restrict_sites_by_url = true;
         $this->allowed_sites = array();
         $this->disallowed_sites = array();
+        $this->quota_sites = array();
+        $this->quota_sites_keys = array();
+        $this->quota_clear_time = time();
         $this->meta_words = array();
         $this->last_index_save_time = 0;
         $this->index_dirty = false;
@@ -924,13 +942,22 @@ class QueueServer implements CrawlConstants, Join
             "indexing_plugins" => self::INDEXING_PLUGINS,
         );
         $try_to_set_from_old_index = array();
+        $update_disallow = false;
         foreach($read_from_info as $index_field => $info_field) {
             if(isset($info[$info_field])) {
+                if($index_field == "disallowed_sites") {
+                    $update_disallow = true;
+                }
                 $this->$index_field = $info[$info_field];
             } else {
                 array_push($try_to_set_from_old_index,  $index_field);
             }
         }
+
+        /* We now do further processing or disallowed sites to see if any
+           of them are really quota sites
+         */
+        if($update_disallow == true) {  $this->updateDisallowedQuotaSites(); }
 
         $this->initializeWebQueue();
 
@@ -969,6 +996,49 @@ class QueueServer implements CrawlConstants, Join
 
         $info[self::STATUS] = self::CONTINUE_STATE;
         return $info;
+    }
+
+
+    /**
+     * This is called whenever the crawl options are modified to parse
+     * from the disallowed sites, those sites of the format:
+     * site#quota
+     * where quota is the number of urls allowed to be downloaded in an hour
+     * from the site. These sites are then deleted from disallowed_sites
+     * and added to $this->quota sites. An entry in $this->quota_sites
+     * has the format: $quota_site => array($quota,$num_urls_downloaded_this_hr)
+     */
+    function updateDisallowedQuotaSites()
+    {
+        $num_sites = count($this->disallowed_sites);
+        $active_quota_sites = array();
+        for($i = 0; $i < $num_sites; $i++) {
+            $site_parts = explode("#", $this->disallowed_sites[$i]);
+            if(count($site_parts) > 1) {
+                $quota = intval(array_pop($site_parts));
+                if($quota <= 0) continue;
+                $this->disallowed_sites[$i] = false;
+                $quota_site = implode("#", $site_parts);
+                $active_quota_sites[] = $quota_site;
+                if(isset($this->quota_sites[$quota_site])) {
+                    $this->quota_sites[$quota_site] = array($quota,
+                        $this->quota_sites[$quota_site][1]);
+                } else {
+                    //($quota, $num_scheduled_this_last_hour)
+                    $this->quota_sites[$quota_site] = array($quota, 0);
+                }
+            }
+        }
+
+        foreach($this->quota_sites as $site => $info) {
+            if(!in_array($site, $active_quota_sites)) {
+                $this->quota_sites[$site] = false;
+            }
+        }
+
+        $this->disallowed_sites = array_filter($this->disallowed_sites);
+        $this->quota_sites = array_filter($this->quota_sites);
+        $this->quota_sites_keys = array_keys($this->quota_sites);
     }
 
     /**
@@ -1038,6 +1108,9 @@ class QueueServer implements CrawlConstants, Join
         $index_info = unserialize($archive_info['DESCRIPTION']);
         foreach($keys as $index_field) {
             if(isset($index_info[$updatable_info[$index_field]]) ) {
+                if($index_field == "disallowed_sites") {
+                    $update_disallow = true;
+                }
                 $this->$index_field = 
                     $index_info[$updatable_info[$index_field]];
                 if($this->isOnlyScheduler()) {
@@ -1047,6 +1120,11 @@ class QueueServer implements CrawlConstants, Join
                 }
             }
         }
+        /* We now do further processing or disallowed sites to see if any
+           of them are really quota sites
+         */
+        if($update_disallow == true) {  $this->updateDisallowedQuotaSites(); }
+
         $this->archive_modified_time = $modified_time;
     }
 
@@ -1879,6 +1957,14 @@ class QueueServer implements CrawlConstants, Join
                     $delay = $this->web_queue->getCrawlDelay($host_url);
                 }
 
+                if(!$this->withinQuota($url)) {
+                    //we've not allowed to schedule $url till next hour
+                    $delete_urls[$i] = $url;
+                    //delete from queue (so no clog) but don't mark seen
+                    $i++;
+                    continue;
+                }
+
                 $num_waiting = count($this->waiting_hosts);
 
                 if($delay > 0 ) { 
@@ -2082,6 +2168,38 @@ class QueueServer implements CrawlConstants, Join
     }
 
     /**
+     * Checks if the $url is from a site which has an hourly quota to download.
+     * If so, it bumps the quota count and return true; false otherwise.
+     * This method also resets the quota queue every over
+     *
+     * @param string $url to check if within quota
+     * @return bool whether $url exceeds the hourly quota of the site it is from
+     */
+    function withinQuota($url)
+    {
+        if(!($site = $this->urlMemberSiteArray(
+            $url, $this->quota_sites_keys, true))) {
+            return true;
+        }
+        list($quota, $current_count) = $this->quota_sites[$site];
+        if($current_count < $quota) {
+            $this->quota_sites[$site] = array($quota, $current_count + 1);
+            $flag = true;
+        } else {
+            $flag = false;
+        }
+        if($this->quota_clear_time + 3600 < time()) {
+            $this->quota_clear_time = time();
+            foreach ($this->quota_sites as $site => $info) {
+                list($quota,) = $info;
+                $this->quota_sites[$site] = array($quota, 0);
+            }
+        }
+        return $flag;
+    }
+
+
+    /**
      * Checks if the url belongs to one of the sites listed in site_array
      * Sites can be either given in the form domain:host or
      * in the form of a url in which case it is check that the site url
@@ -2089,9 +2207,11 @@ class QueueServer implements CrawlConstants, Join
      *
      * @param string $url url to check
      * @param array $site_array sites to check against
-     * @return bool whether the url belongs to one of the sites
+     * @param bool whether when a match is found to return true or to
+     *      return the matching site rule
+     * @return mixed whether the url belongs to one of the sites
      */
-    function urlMemberSiteArray($url, $site_array)
+    function urlMemberSiteArray($url, $site_array, $return_rule = false)
     {
         $flag = false;
         if(!is_array($site_array)) {return false;}
@@ -2108,6 +2228,9 @@ class QueueServer implements CrawlConstants, Join
                 $flag = true;
                 break;
             }
+        }
+        if($return_rule && $flag) {
+            $flag = $site;
         }
         return $flag;
     }
