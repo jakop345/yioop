@@ -252,7 +252,17 @@ define('MAX_PHRASE_LEN', 2);
 define('NUM_MULTI_CURL_PAGES', 100); 
 
 /** time in seconds before we give up on a page */
-define('PAGE_TIMEOUT', 30); 
+define('PAGE_TIMEOUT', 30);
+
+/**
+ *  Number of error page 400 or greater seen from a host before crawl-delay
+ *  host and dump remainder from current schedule
+ */
+define('DOWNLOAD_ERROR_THRESHOLD', 10);
+
+/** Crawl-delay to set in the event that DOWNLOAD_ERROR_THRESHOLD exceeded*/
+define('ERROR_CRAWL_DELAY', 20);
+
 
 /** how often should we make in OPIC the sum of weights totals MAX_URLS */
 define('NORMALIZE_FREQUENCY', 10000); 
@@ -332,7 +342,7 @@ $PAGE_PROCESSORS = array(   "text/html" => "HtmlProcessor",
                             "image/svg+xml"=> "SvgProcessor"
 );
 
-if(defined('PHP_VERSION_ID') && PHP_VERSION_ID > 50300) {
+if(defined('PHP_VERSION_ID') && PHP_VERSION_ID >= 50300) {
     $INDEXING_PLUGINS = array("recipe");
 } else {
     $INDEXING_PLUGINS = array();

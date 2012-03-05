@@ -1490,8 +1490,8 @@ class QueueServer implements CrawlConstants, Join
             $this->web_queue->emptyDNSCache();
         } else {
             crawlLog("... less than max age\n");
-            crawlLog("Number of Crawl-Delayed Hosts: ".count(
-                $this->waiting_hosts));
+            crawlLog("Number of Crawl-Delayed Hosts: ".floor(count(
+                $this->waiting_hosts)/2));
         }
 
         crawlLog("Checking for robots.txt files to process...");
@@ -1965,7 +1965,8 @@ class QueueServer implements CrawlConstants, Join
                     continue;
                 }
 
-                $num_waiting = count($this->waiting_hosts);
+                //each host has two entries in $this->waiting_hosts
+                $num_waiting = floor(count($this->waiting_hosts)/2);
 
                 if($delay > 0 ) { 
                     // handle adding a url if there is a crawl delay

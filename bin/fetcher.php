@@ -288,7 +288,13 @@ class Fetcher implements CrawlConstants
      * Which fetcher instance we are (if fetcher run as a job and more that one)
      * @var string
      */
-     var $fetcher_num;
+    var $fetcher_num;
+
+    /**
+     * An array to keep track of hosts which have had a lot of http errors
+     * @var array
+     */
+    var $hosts_with_errors;
 
     /**
      * Sets up the field variables so that crawling can begin
@@ -310,6 +316,7 @@ class Fetcher implements CrawlConstants
         $this->current_server = 0;
         $this->page_processors = $page_processors;
         $this->meta_words = array();
+        $this->hosts_with_errors = array();
 
         $this->web_archive = NULL;
         $this->crawl_time = NULL;
@@ -729,7 +736,7 @@ class Fetcher implements CrawlConstants
      *
      * @return mixed array or bool. If we are doing
      *      a web crawl and we still have pages to crawl then true, if the
-     *      schedulaer page fails to download then false, otherwise, returns
+     *      scheduler page fails to download then false, otherwise, returns
      *      an array of info from the scheduler.
      */
     function checkScheduler() 
@@ -750,6 +757,9 @@ class Fetcher implements CrawlConstants
             % count($this->queue_servers);
         $this->recrawl_check_scheduler = false;
         $queue_server = $this->queue_servers[$this->current_server];
+
+        // hosts with error counts cleared with each schedule
+        $this->hosts_with_errors = array();
 
         $start_time = microtime();
         $time = time();
@@ -892,22 +902,27 @@ class Fetcher implements CrawlConstants
 
             $delete_indices[] = $site_pair['key'];
             if($site_pair['value'][0] != self::DUMMY) {
-                $seeds[$i][self::URL] = $site_pair['value'][0];
-                $seeds[$i][self::WEIGHT] = $site_pair['value'][1];
-                $seeds[$i][self::CRAWL_DELAY] = $site_pair['value'][2];
-                /*
-                  Crawl delay is only used in scheduling on the queue_server
-                  on the fetcher, we only use crawl-delay to determine
-                  if we will give a page a second try if it doesn't
-                  download the first time
-                */
-                
-                if(UrlParser::getDocumentFilename($seeds[$i][self::URL]).
-                    ".".UrlParser::getDocumentType($seeds[$i][self::URL]) 
-                    == "robots.txt") {
-                    $seeds[$i][self::ROBOT_PATHS] = array();
+                $host = UrlParser::getHost($site_pair['value'][0]);
+                // only download if host doesn't seem congested
+                if(!isset($this->hosts_with_errors[$host]) || 
+                    $this->hosts_with_errors[$host] < DOWNLOAD_ERROR_THRESHOLD){
+                    $seeds[$i][self::URL] = $site_pair['value'][0];
+                    $seeds[$i][self::WEIGHT] = $site_pair['value'][1];
+                    $seeds[$i][self::CRAWL_DELAY] = $site_pair['value'][2];
+                    /*
+                      Crawl delay is only used in scheduling on the queue_server
+                      on the fetcher, we only use crawl-delay to determine
+                      if we will give a page a second try if it doesn't
+                      download the first time
+                    */
+                    
+                    if(UrlParser::getDocumentFilename($seeds[$i][self::URL]).
+                        ".".UrlParser::getDocumentType($seeds[$i][self::URL]) 
+                        == "robots.txt") {
+                        $seeds[$i][self::ROBOT_PATHS] = array();
+                    }
+                    $i++;
                 }
-                $i++;
             } else {
                 break;
             }
@@ -1015,7 +1030,11 @@ class Fetcher implements CrawlConstants
 
             if($response_code < 200 || $response_code >= 300) {
                 crawlLog($site[self::URL]." response code $response_code");
-
+                $host = UrlParser::getHost($site[self::URL]);
+                if(!isset($this->hosts_with_errors[$host])) {
+                    $this->hosts_with_errors[$host] = 0;
+                }
+                $this->hosts_with_errors[$host]++;
                 /* we print out errors to std output. We still go ahead and
                    process the page. Maybe it is a cool error page, also
                    this makes sure we don't crawl it again 
@@ -1344,8 +1363,8 @@ class Fetcher implements CrawlConstants
 
         for($i = 0; $i < count($sites); $i++) {
             $site = $sites[$i];
+            $host = UrlParser::getHost($site[self::URL]);
             if(isset($site[self::ROBOT_PATHS])) {
-                $host = UrlParser::getHost($site[self::URL]);
                 $this->found_sites[self::ROBOT_TXT][$host][self::IP_ADDRESSES] =
                     $site[self::IP_ADDRESSES];
                 $this->found_sites[self::ROBOT_TXT][$host][self::PATHS] = 
@@ -1377,6 +1396,13 @@ class Fetcher implements CrawlConstants
 
                 }
             } //end else
+
+            if(isset($this->hosts_with_errors[$host]) &&
+                $this->hosts_with_errors[$host] > DOWNLOAD_ERROR_THRESHOLD) {
+                $this->found_sites[self::ROBOT_TXT][$host][
+                    self::CRAWL_DELAY] = ERROR_CRAWL_DELAY;
+                echo "setting crawl delay $host";
+            }
 
             if(isset($this->found_sites[self::TO_CRAWL])) {
                 $this->found_sites[self::TO_CRAWL] = 
@@ -1510,7 +1536,7 @@ class Fetcher implements CrawlConstants
     function getCompanyLevelDomain($url)
     {
         $subdomains = UrlParser::getHostSubdomains($url);
-        if(!isset($subdomains[0])) return "";
+        if(!isset($subdomains[0]) || !isset($subdomains[2])) return "";
         /*
             if $url is www.yahoo.com
                 $subdomains[0] == com, $subdomains[1] == .com,
