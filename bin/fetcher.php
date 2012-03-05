@@ -1034,7 +1034,9 @@ class Fetcher implements CrawlConstants
                 if(!isset($this->hosts_with_errors[$host])) {
                     $this->hosts_with_errors[$host] = 0;
                 }
-                $this->hosts_with_errors[$host]++;
+                if($response_code >= 400) {
+                    $this->hosts_with_errors[$host]++;
+                }
                 /* we print out errors to std output. We still go ahead and
                    process the page. Maybe it is a cool error page, also
                    this makes sure we don't crawl it again 
