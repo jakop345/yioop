@@ -1094,7 +1094,12 @@ class AdminController extends Controller implements CrawlConstants
         $urls = array();
         foreach($pre_urls as $url) {
             $pre_url = $this->clean($url, "string");
-            if(strlen($url) > 0) {
+            if(strlen($pre_url) > 0) {
+                $start_url = substr($pre_url,0, 6);
+                if(!in_array($start_url, 
+                    array("file:/", "http:/", "domain", "https:"))) {
+                    $pre_url = "http://". $pre_url;
+                }
                 $urls[] =$pre_url;
             }
         }
