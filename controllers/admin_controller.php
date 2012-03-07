@@ -1882,6 +1882,10 @@ class AdminController extends Controller implements CrawlConstants
                 $comma = ", ";
             }
         }
+        if(!defined('PHP_VERSION_ID') || PHP_VERSION_ID < 50300) {
+            $missing_required .= $comma.tl("admin_controller_php_version");
+            $comma = ", ";
+        }
 
         $out = "";
         $br = "";

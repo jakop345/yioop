@@ -54,6 +54,11 @@ require_once "datasource_manager.php";
  */
 class MysqlManager extends DatasourceManager
 {
+    /** Used when to quote column names of db names that contain a 
+     *  a keyword or special character
+     *  @var string
+     */
+    var $special_quote = "\`";
 
     /** {@inheritdoc} */
     function __construct() 

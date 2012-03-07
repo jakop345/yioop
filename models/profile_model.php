@@ -332,7 +332,11 @@ EOT;
 
         //check if can select db or if not create it
         if(!$test_dbm->selectDB($dbinfo['DB_NAME'])) {
-            @$test_dbm->execute("CREATE DATABASE ".$dbinfo['DB_NAME']);
+            $q = "";
+            if(isset($test_dbm->special_quote)) {
+                $q = $test_dbm->special_quote;
+            }
+            @$test_dbm->execute("CREATE DATABASE $q".$dbinfo['DB_NAME']."$q");
             if(!$test_dbm->selectDB($dbinfo['DB_NAME'])) {
                 return false;
             }

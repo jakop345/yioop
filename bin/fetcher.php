@@ -749,7 +749,6 @@ class Fetcher implements CrawlConstants
         $info = array();
         if((count($this->to_crawl) > 0 || count($this->to_crawl_again) > 0) &&
            (!$this->recrawl_check_scheduler)) {
-            $info[self::STATUS]  = self::CONTINUE_STATE;
             return true; 
         }
 
