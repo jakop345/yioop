@@ -58,7 +58,7 @@ class MysqlManager extends DatasourceManager
      *  a keyword or special character
      *  @var string
      */
-    var $special_quote = "\`";
+    var $special_quote = "`";
 
     /** {@inheritdoc} */
     function __construct() 
