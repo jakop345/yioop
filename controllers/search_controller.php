@@ -347,7 +347,10 @@ class SearchController extends Controller implements CrawlConstants
 
         $use_cache_if_possible = ($original_query == $query) ? true : false;
         $index_archive_name= self::index_data_base_name.$index_name;
-
+        if(file_exists( CRAWL_DIR."/cache/$index_archive_name/no_network.txt")){
+            $_REQUEST['network'] = false;
+            //if default index says no network queries then no network queries
+        }
         if(!isset($_REQUEST['network']) || $_REQUEST['network'] == "true") {
             $queue_servers = $this->machineModel->getQueueServerUrls();
             if($queue_servers != array() && file_exists(
