@@ -575,7 +575,8 @@ EOT;
      */
     function getCrawlSeedInfo($timestamp,  $machine_urls = NULL)
     {
-        if($machine_urls != NULL && !$this->isSingleLocalhost($machine_urls)) {
+        if($machine_urls != NULL && 
+            !$this->isSingleLocalhost($machine_urls, $timestamp)) {
             /* seed info should be same amongst all queue_servers that have it--
                only start schedule differs -- however, not all queue_servers
                necessarily have the same crawls. THus, we still query all
@@ -643,7 +644,8 @@ EOT;
      */
     function setCrawlSeedInfo($timestamp, $new_info,  $machine_urls = NULL)
     {
-        if($machine_urls != NULL && !$this->isSingleLocalhost($machine_urls)) {
+        if($machine_urls != NULL && 
+            !$this->isSingleLocalhost($machine_urls, $timestamp)) {
             $params = array($timestamp, $new_info);
             $this->execMachines("setCrawlSeedInfo", 
                 $machine_urls, serialize($params));
@@ -702,7 +704,7 @@ EOT;
             $info['IS_MIX'] = true;
         } else {
             if($machine_urls != NULL && 
-                !$this->isSingleLocalhost($machine_urls)) {
+                !$this->isSingleLocalhost($machine_urls, $timestamp)) {
                 if(!in_array(NAME_SERVER, $machine_urls)) {
                     array_unshift($machine_urls, NAME_SERVER);
                 }
@@ -759,7 +761,8 @@ EOT;
      */
     function deleteCrawl($timestamp, $machine_urls)
     {
-        if($machine_urls != NULL && !$this->isSingleLocalhost($machine_urls)) {
+        if($machine_urls != NULL && 
+            !$this->isSingleLocalhost($machine_urls, $timestamp)) {
             //get rid of cache info on Name machine
             $mask = CRAWL_DIR."/cache/".self::network_crawllist_base_name.
                 "*.txt";
@@ -1238,7 +1241,8 @@ EOT;
     function injectUrlsCurrentCrawl($timestamp, $inject_urls, 
         $machine_urls = NULL)
     {
-        if($machine_urls != NULL && !$this->isSingleLocalhost($machine_urls)) {
+        if($machine_urls != NULL && 
+            !$this->isSingleLocalhost($machine_urls, $timestamp)) {
             $this->execMachines("injectUrlsCurrentCrawl", $machine_urls,
                 serialize(array($timestamp, $inject_urls)));
             return;

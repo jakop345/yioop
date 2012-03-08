@@ -328,11 +328,20 @@ class Model implements CrawlConstants
      *
      * @param array $machine_urls urls of yioop instances to which the action
      *      applies
+     * @param string $index_timestamp if timestamp exists checks if the index
+     *      has declared itself to be a no network index.
      * @return bool whether it involves a single local yioop instance (true)
      *      or not (false)
      */
-    function isSingleLocalhost($machine_urls)
+    function isSingleLocalhost($machine_urls, $index_timestamp = -1)
     {
+        if($index_timestamp >= 0) {
+            $index_archive_name= self::index_data_base_name.$index_timestamp;
+            if(file_exists(
+                CRAWL_DIR."/cache/$index_archive_name/no_network.txt")){
+                return true;
+            }
+        }
         return count($machine_urls) <= 1 && 
                     UrlParser::isLocalhostUrl($machine_urls[0]);
     }
