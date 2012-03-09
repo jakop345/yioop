@@ -472,7 +472,8 @@ class Fetcher implements CrawlConstants
             $summarized_site_pages = 
                 $this->processFetchPages($downloaded_pages);
 
-            crawlLog("Number summarize pages".count($summarized_site_pages));
+            crawlLog("Number of summarized pages".
+                count($summarized_site_pages));
 
             $this->updateFoundSites($summarized_site_pages);
 
@@ -1021,10 +1022,6 @@ class Fetcher implements CrawlConstants
                 $site[self::GOT_ROBOT_TXT] = true;
                 $site[self::HASH] = FetchUrl::computePageHash(
                     $site[self::PAGE]);
-                $stored_site_pages[$i] = $site;
-                $summarized_site_pages[$i] = $site;
-                $i++;
-                continue;
             }
 
             if($response_code < 200 || $response_code >= 300) {
@@ -1138,7 +1135,8 @@ class Fetcher implements CrawlConstants
                     // stripping html to be on the safe side
                 $summarized_site_pages[$i][self::DESCRIPTION] = 
                     strip_tags($site[self::DOC_INFO][self::DESCRIPTION]);
-                if(isset($site[self::DOC_INFO][self::JUST_METAS])) {
+                if(isset($site[self::DOC_INFO][self::JUST_METAS]) ||
+                    $site[self::ROBOT_PATHS]) {
                     $summarized_site_pages[$i][self::JUST_METAS] = true;
                 }
                 if(isset($site[self::DOC_INFO][self::LANG])) {
@@ -1167,6 +1165,7 @@ class Fetcher implements CrawlConstants
                 $i++;
             }
         } // end for
+
         $cache_page_partition = $this->web_archive->addPages(
             self::OFFSET, $stored_site_pages);
 
@@ -1203,7 +1202,8 @@ class Fetcher implements CrawlConstants
             self::TIMESTAMP, self::TYPE, self::ENCODING, self::HTTP_CODE,
             self::HASH, self::SERVER, self::SERVER_VERSION,
             self::OPERATING_SYSTEM, self::MODIFIED, self::ROBOT_INSTANCE,
-            self::LOCATION, self::SIZE, self::TOTAL_TIME, self::DNS_TIME);
+            self::LOCATION, self::SIZE, self::TOTAL_TIME, self::DNS_TIME,
+            self::ROBOT_PATHS, self::GOT_ROBOT_TXT);
 
         foreach($summary_fields as $field) {
             if(isset($site[$field])) {
@@ -1295,7 +1295,6 @@ class Fetcher implements CrawlConstants
             $rule_added_flag = false;
             $delay_flag = false;
 
-            $robot_rows = array();
             foreach($lines as $line) {
                 if(stristr($line, "User-agent") && (stristr($line, ":*") 
                     || stristr($line, " *") || stristr($line, USER_AGENT_SHORT) 
@@ -1382,6 +1381,7 @@ class Fetcher implements CrawlConstants
                         $site[self::WEIGHT], $site[self::HASH], 
                         $site[self::URL], true);
                 }
+                $this->found_sites[self::SEEN_URLS][] = $site;
             } else {
                 $this->found_sites[self::SEEN_URLS][] = $site;
                 if(isset($site[self::LINKS])

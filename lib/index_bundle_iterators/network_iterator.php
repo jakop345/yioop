@@ -94,6 +94,13 @@ class NetworkIterator extends IndexBundleIterator
     var $more_results;
 
     /**
+     * Keeps track of whether the word_iterator list is empty becuase the
+     * word does not appear in the index shard
+     * @var int
+     */
+    var $filter;
+
+    /**
      * the minimum number of pages to group from a block;
      * this trumps $this->index_bundle_iterator->results_per_block
      */
@@ -108,8 +115,10 @@ class NetworkIterator extends IndexBundleIterator
      *  indexes live
      * @param string $timestamp the timestamp of the particular current index
      *      archive bundles that we look in for results
+     * @param array $filter an array of hashes of domains to filter from
+     *      results
      */
-    function __construct($query, $queue_servers, $timestamp)
+    function __construct($query, $queue_servers, $timestamp, &$filter = NULL)
     {
         $this->no_lookup = true;
         $this->results_per_block = self::MIN_FIND_RESULTS_PER_BLOCK;
@@ -120,6 +129,12 @@ class NetworkIterator extends IndexBundleIterator
         $count = count($this->queue_servers);
         for($i = 0; $i < $count; $i++) {
             $this->more_flags[$i] = true;
+        }
+
+        if($filter != NULL) {
+            $this->filter = & $filter;
+        } else {
+            $this->filter = NULL;
         }
     }
 
@@ -245,6 +260,17 @@ class NetworkIterator extends IndexBundleIterator
         }
         if($results == array()) {
             $results = -1;
+        }
+        if($results != -1) {
+            if($this->filter != NULL) {
+                foreach($results as $keys => $data) {
+                    $host_key = 
+                        substr($keys, self::HOST_KEY_POS, self::KEY_LEN);
+                    if(in_array($host_key, $this->filter) ) {
+                        unset($results[$keys]);
+                    }
+                }
+            }
         }
         $this->count_block = count($results);
         $this->pages = $results;

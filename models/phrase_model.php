@@ -874,7 +874,7 @@ class PhraseModel extends Model
                 $total_iterators = 1;
                 $num_servers = count($queue_servers);
                 $iterators[0] = new NetworkIterator($original_query, 
-                    $queue_servers, $this->index_name);
+                    $queue_servers, $this->index_name, $filter);
         }
         if(!$network_flag) {
             foreach($word_structs as $word_struct) {
