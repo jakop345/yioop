@@ -106,6 +106,12 @@ class NetworkIterator extends IndexBundleIterator
      */
     const MIN_FIND_RESULTS_PER_BLOCK = 200;
 
+    /** Host Key position + 1 (first char says doc, inlink or eternal link)*/
+    const HOST_KEY_POS = 17;
+
+    /** Length of a doc key*/
+    const KEY_LEN = 8;
+
     /**
      * Creates a network iterator with the given parameters.
      *
