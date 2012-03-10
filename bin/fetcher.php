@@ -472,7 +472,7 @@ class Fetcher implements CrawlConstants
             $summarized_site_pages = 
                 $this->processFetchPages($downloaded_pages);
 
-            crawlLog("Number of summarized pages".
+            crawlLog("Number of summarized pages ".
                 count($summarized_site_pages));
 
             $this->updateFoundSites($summarized_site_pages);
@@ -965,7 +965,7 @@ class Fetcher implements CrawlConstants
                 $not_downloaded[] = $site;
             } 
         }
-        crawlLog("  Sort downloaded/not downloaded".
+        crawlLog("  Sort downloaded/not downloaded ".
             (changeInMicrotime($start_time)));
 
         return array($downloaded, $not_downloaded);
