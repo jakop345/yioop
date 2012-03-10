@@ -955,7 +955,7 @@ class PhraseModel extends Model
 
         if($network_flag) {
             $union_iterator->results_per_block = 
-                1.1* $group_iterator->results_per_block/$num_servers;
+                1.6* $group_iterator->results_per_block/$num_servers;
         }
 
         return $group_iterator;
