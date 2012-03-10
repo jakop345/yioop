@@ -1022,6 +1022,9 @@ class Fetcher implements CrawlConstants
                 $site[self::GOT_ROBOT_TXT] = true;
                 $site[self::HASH] = FetchUrl::computePageHash(
                     $site[self::PAGE]);
+
+                $summarized_site_pages[$i][self::LINKS] = 
+                    isset($site[self::LINKS]) ?$site[self::LINKS] : array();
             }
 
             if($response_code < 200 || $response_code >= 300) {
@@ -1136,7 +1139,7 @@ class Fetcher implements CrawlConstants
                 $summarized_site_pages[$i][self::DESCRIPTION] = 
                     strip_tags($site[self::DOC_INFO][self::DESCRIPTION]);
                 if(isset($site[self::DOC_INFO][self::JUST_METAS]) ||
-                    $site[self::ROBOT_PATHS]) {
+                    isset($site[self::ROBOT_PATHS])) {
                     $summarized_site_pages[$i][self::JUST_METAS] = true;
                 }
                 if(isset($site[self::DOC_INFO][self::LANG])) {
@@ -1148,7 +1151,8 @@ class Fetcher implements CrawlConstants
                     $summarized_site_pages[$i][self::LANG] = 
                         $site[self::DOC_INFO][self::LANG];
                 }
-                if(isset($site[self::DOC_INFO][self::LINKS])) {
+                if(isset($site[self::DOC_INFO][self::LINKS]) && 
+                    !isset($site[self::ROBOT_PATHS])) {
                     $summarized_site_pages[$i][self::LINKS] = 
                         $site[self::DOC_INFO][self::LINKS];
                 }
@@ -1294,7 +1298,7 @@ class Fetcher implements CrawlConstants
             $add_rule_state = false;
             $rule_added_flag = false;
             $delay_flag = false;
-
+            $robot_site[self::LINKS] = array();
             foreach($lines as $line) {
                 if(stristr($line, "User-agent") && (stristr($line, ":*") 
                     || stristr($line, " *") || stristr($line, USER_AGENT_SHORT) 
@@ -1363,11 +1367,12 @@ class Fetcher implements CrawlConstants
 
         for($i = 0; $i < count($sites); $i++) {
             $site = $sites[$i];
+            if(!isset($site[self::URL])) continue;
             $host = UrlParser::getHost($site[self::URL]);
             if(isset($site[self::ROBOT_PATHS])) {
                 $this->found_sites[self::ROBOT_TXT][$host][self::IP_ADDRESSES] =
                     $site[self::IP_ADDRESSES];
-                $this->found_sites[self::ROBOT_TXT][$host][self::PATHS] = 
+                $this->found_sites[self::ROBOT_TXT][$host][self::ROBOT_PATHS] = 
                     $site[self::ROBOT_PATHS];
                 if(isset($site[self::CRAWL_DELAY])) {
                     $this->found_sites[self::ROBOT_TXT][$host][
@@ -1377,7 +1382,8 @@ class Fetcher implements CrawlConstants
                     && $this->crawl_type == self::WEB_CRAWL) {
                     $num_links = count($site[self::LINKS]);
                     //robots pages might have sitemaps links on them
-                    $this->addToCrawlSites($site[self::LINKS], 
+                    $link_urls = array_keys($site[self::LINKS]);
+                    $this->addToCrawlSites($link_urls, 
                         $site[self::WEIGHT], $site[self::HASH], 
                         $site[self::URL], true);
                 }
@@ -1444,16 +1450,15 @@ class Fetcher implements CrawlConstants
     {
         $sitemap_link_weight = 0.25;
         $num_links = count($link_urls);
-                if($num_links > 0 ) {
-                    $weight= $old_weight/$num_links;
-                } else {
-                    $weight= $old_weight;
-                }
-        $count = count($link_urls);
+        if($num_links > 0 ) {
+            $weight= $old_weight/$num_links;
+        } else {
+            $weight= $old_weight;
+        }
         $num_queue_servers = count($this->queue_servers);
         if($from_sitemap) {
             $total_weight = 0;
-            for($i = 1; $i <= $count; $i++) {
+            for($i = 1; $i <= $num_links; $i++) {
                 $total_weight += $old_weight/($i*$i);
             }
             $total_weight = $total_weight ;
@@ -1464,15 +1469,16 @@ class Fetcher implements CrawlConstants
                 $common_weight = 1/(2*$num_common);
             }
 
-            $num_different = $count - $num_common;
+            $num_different = $num_links - $num_common;
             if($num_different > 0 ) {
                 $different_weight = 1/$num_different; 
                     //favour links between different company level domains
             }
 
         }
+
         $old_cld = $this->getCompanyLevelDomain($old_url);
-        for($i = 0; $i < $count; $i++) {
+        for($i = 0; $i < $num_links; $i++) {
             $url = $link_urls[$i];
             if(strlen($url) > 0) {
                 $part = calculatePartition($url, $num_queue_servers, 
@@ -1888,6 +1894,10 @@ class Fetcher implements CrawlConstants
             if(strlen($url_site) > 0) {
                 $meta_ids[] = 'site:'.$url_site;
             }
+        }
+        $path =  UrlParser::getPath($site[self::URL]);
+        if(strlen($path) > 0 ) {
+            $meta_ids[] = 'path:'.$path;
         }
         $meta_ids[] = 'info:'.$site[self::URL];
         $meta_ids[] = 'info:'.crawlHash($site[self::URL]);
