@@ -92,9 +92,16 @@ class OdpRdfArchiveBundleIterator implements CrawlConstants
      */
     var $fh;
     /**
+     * The fetcher prefix associated with this archive.
+     * @var string
+     */
+    var $fetcher_prefix;
+
+    /**
      * How many bytes to read into buffer from bz2 stream in one go
      */
     const BLOCK_SIZE = 8192;
+
     /**
      * Creates an open directory rdf archive iterator with the given parameters.
      *
@@ -103,12 +110,12 @@ class OdpRdfArchiveBundleIterator implements CrawlConstants
      * @param string $result_timestamp timestamp of the arc archive bundle
      *      results are being stored in
      */
-    function __construct($iterate_timestamp, $result_timestamp)
+    function __construct($prefix, $iterate_timestamp, $result_timestamp)
     {
+        $this->fetcher_prefix = $prefix;
         $this->iterate_timestamp = $iterate_timestamp;
         $this->result_timestamp = $result_timestamp;
-        $archive_name = CRAWL_DIR.'/cache/'.self::archive_base_name.
-            $iterate_timestamp;
+        $archive_name = $this->get_archive_name($iterate_timestamp);
         $this->partitions = array();
         foreach(glob("$archive_name/*.gz") as $filename) { 
             $this->partitions[] = $filename;
@@ -263,8 +270,7 @@ class OdpRdfArchiveBundleIterator implements CrawlConstants
         $this->current_offset = 0;
         $this->fh = NULL;
         $this->buffer = "";
-        $archive_name = CRAWL_DIR.'/cache/'.self::archive_base_name.
-            $this->result_timestamp;
+        $archive_name = $this->get_archive_name($this->result_timestamp);
         @unlink("$archive_name/iterate_status.txt");
     }
 
@@ -316,8 +322,7 @@ class OdpRdfArchiveBundleIterator implements CrawlConstants
             $this->current_page_num += $page_count;
         }
 
-        $archive_name = CRAWL_DIR.'/cache/'.self::archive_base_name.
-            $this->result_timestamp;
+        $archive_name = $this->get_archive_name($this->result_timestamp);
         $info = array();
         $info['end_of_iterator'] = $this->end_of_iterator;
         $info['current_partition_num'] = $this->current_partition_num;
@@ -469,6 +474,19 @@ class OdpRdfArchiveBundleIterator implements CrawlConstants
             $html .= "</ul>\n";
         }
         return $html;
+    }
+
+    /**
+     * Returns the path to an archive given its timestamp.
+     *
+     * @param string $timestamp the archive timestamp
+     * @return string the path to the archive, based off of the fetcher prefix 
+     *     used when this iterator was constructed
+     */
+    function get_archive_name($timestamp)
+    {
+        return CRAWL_DIR.'/cache/'.$this->fetcher_prefix.
+            self::archive_base_name.$timestamp;
     }
 }
 ?>

@@ -169,7 +169,7 @@ class ArcTool implements CrawlConstants
      */
      function outputArchiveList()
      {
-        $pattern = CRAWL_DIR."/cache/{".self::archive_base_name.",".
+        $pattern = CRAWL_DIR."/cache/*-{".self::archive_base_name.",".
             self::index_data_base_name."}*";
 
         $archives = glob($pattern, GLOB_BRACE);

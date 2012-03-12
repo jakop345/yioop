@@ -88,24 +88,29 @@ class WebArchiveBundleIterator implements CrawlConstants
      * @var object
      */
     var $archive;
+    /**
+     * The fetcher prefix associated with this archive.
+     * @var string
+     */
+    var $fetcher_prefix;
 
     /**
      * Creates a web archive iterator with the given parameters.
      *
+     * @param string $prefix fetcher number this bundle is associated with
      * @param string $iterate_timestamp timestamp of the web archive bundle to 
      *      iterate  over the pages of
      * @param string $result_timestamp timestamp of the web archive bundle
      *      results are being stored in
      */
-    function __construct($iterate_timestamp, $result_timestamp)
+    function __construct($prefix, $iterate_timestamp, $result_timestamp)
     {
+        $this->fetcher_prefix = $prefix;
         $this->iterate_timestamp = $iterate_timestamp;
         $this->result_timestamp = $result_timestamp;
-        $archive_name = CRAWL_DIR.'/cache/'.self::archive_base_name.
-            $iterate_timestamp;
+        $archive_name = $this->get_archive_name($iterate_timestamp);
         $this->archive = new WebArchiveBundle($archive_name);
-        $archive_name = CRAWL_DIR.'/cache/'.self::archive_base_name.
-            $result_timestamp;
+        $archive_name = $this->get_archive_name($result_timestamp);
         if(file_exists("$archive_name/iterate_status.txt")) {
             $info = unserialize(file_get_contents(
                 "$archive_name/iterate_status.txt"));
@@ -170,8 +175,7 @@ class WebArchiveBundleIterator implements CrawlConstants
         $this->end_of_iterator = ($this->overall_index >= $this->count ) ?
             true : false;
 
-        $archive_name = CRAWL_DIR.'/cache/'.self::archive_base_name.
-            $this->result_timestamp;
+        $archive_name = $this->get_archive_name($this->result_timestamp);
         $info = array();
         $info['overall_index'] = $this->overall_index;
         $info['end_of_iterator'] = $this->end_of_iterator;
@@ -199,9 +203,21 @@ class WebArchiveBundleIterator implements CrawlConstants
         $this->partition = $this->archive->getPartition(
             $this->current_partition_num, false);
         $this->partition->reset();
-        $archive_name = CRAWL_DIR.'/cache/'.self::archive_base_name.
-            $this->result_timestamp;
+        $archive_name = $this->get_archive_name($this->result_timestamp);
         @unlink("$archive_name/iterate_status.txt");
+    }
+
+    /**
+     * Returns the path to an archive given its timestamp.
+     *
+     * @param string $timestamp the archive timestamp
+     * @return string the path to the archive, based off of the fetcher prefix 
+     *     used when this iterator was constructed
+     */
+    function get_archive_name($timestamp)
+    {
+        return CRAWL_DIR.'/cache/'.$this->fetcher_prefix.
+            self::archive_base_name.$timestamp;
     }
 
 }

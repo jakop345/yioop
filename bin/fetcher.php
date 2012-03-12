@@ -355,11 +355,10 @@ class Fetcher implements CrawlConstants
         CrawlDaemon::init($argv, "fetcher");
         if(isset($argv[2]) ) {
             $this->fetcher_num = intval($argv[2]);
-            crawlLog("\n\nInitialize logger..", $this->fetcher_num."-fetcher");
-            
         } else {
-            crawlLog("\n\nInitialize logger..", "fetcher");
+            $this->fetcher_num = 0;
         }
+        crawlLog("\n\nInitialize logger..", $this->fetcher_num."-fetcher");
 
         $this->loop();
     }
@@ -377,10 +376,7 @@ class Fetcher implements CrawlConstants
     {
         crawlLog("In Fetch Loop");
 
-        $prefix = "";
-        if($this->fetcher_num !== false) {
-            $prefix = $this->fetcher_num."-";
-        }
+        $prefix = $this->fetcher_num."-";
         if(!file_exists(CRAWL_DIR."/{$prefix}temp")) {
             mkdir(CRAWL_DIR."/{$prefix}temp");
         }
@@ -512,10 +508,7 @@ class Fetcher implements CrawlConstants
             return array();
         }
         
-        $prefix = "";
-        if($this->fetcher_num !== false) {
-            $prefix = $this->fetcher_num."-";
-        }
+        $prefix = $this->fetcher_num."-";
         $tmp_dir = CRAWL_DIR."/{$prefix}temp";
         $site_pages = FetchUrl::getPages($sites, true, 
             $this->page_range_request, $tmp_dir
@@ -552,11 +545,8 @@ class Fetcher implements CrawlConstants
      */
     function downloadPagesArchiveCrawl()
     {
-        $prefix = "";
-        if($this->fetcher_num !== false) {
-            $prefix = $this->fetcher_num."-";
-        }
-        $base_name = CRAWL_DIR.'/cache/{$prefix}'.self::archive_base_name.
+        $prefix = $this->fetcher_num."-";
+        $base_name = CRAWL_DIR."/cache/{$prefix}".self::archive_base_name.
             $this->crawl_index;
         $pages = array();
         if(!isset($this->archive_iterator->iterate_timestamp) || 
@@ -575,7 +565,8 @@ class Fetcher implements CrawlConstants
                 }
                 $iterator_name = $arctype."Iterator";
                 $this->archive_iterator = 
-                    new $iterator_name($this->crawl_index, $this->crawl_time);
+                    new $iterator_name($prefix, $this->crawl_index,
+                        $this->crawl_time);
                 if($this->archive_iterator == NULL) {
                     crawlLog("Error creating archive iterator!!");
                     return $pages;
@@ -597,10 +588,7 @@ class Fetcher implements CrawlConstants
      */
     function deleteOldCrawls(&$still_active_crawls)
     {
-        $prefix = "";
-        if($this->fetcher_num !== false) {
-            $prefix = $this->fetcher_num."-";
-        }
+        $prefix = $this->fetcher_num."-";
         $dirs = glob(CRAWL_DIR.'/cache/*', GLOB_ONLYDIR);
 
         $full_base_name = $prefix . self::archive_base_name; 
@@ -653,10 +641,7 @@ class Fetcher implements CrawlConstants
         $time = time();
         $session = md5($time . AUTH_KEY);
 
-        $prefix = "";
-        if($this->fetcher_num !== false) {
-            $prefix = $this->fetcher_num."-";
-        }
+        $prefix = $this->fetcher_num."-";
 
         /* if just restarted, check to make sure the crawl hasn't changed, 
            if it has bail
@@ -742,10 +727,7 @@ class Fetcher implements CrawlConstants
      */
     function checkScheduler() 
     {
-        $prefix = "";
-        if($this->fetcher_num !== false) {
-            $prefix = $this->fetcher_num."-";
-        }
+        $prefix = $this->fetcher_num."-";
 
         $info = array();
         if((count($this->to_crawl) > 0 || count($this->to_crawl_again) > 0) &&
@@ -987,10 +969,7 @@ class Fetcher implements CrawlConstants
         crawlLog("  Start process pages...");
         $start_time = microtime();
 
-        $prefix = "";
-        if($this->fetcher_num !== false) {
-            $prefix = $this->fetcher_num."-";
-        }
+        $prefix = $this->fetcher_num."-";
 
         $stored_site_pages = array();
         $summarized_site_pages = array();
@@ -1573,10 +1552,7 @@ class Fetcher implements CrawlConstants
     {
         $queue_server = $this->queue_servers[$this->current_server];
 
-        $prefix = "";
-        if($this->fetcher_num !== false) {
-            $prefix = $this->fetcher_num."-";
-        }
+        $prefix = $this->fetcher_num."-";
 
         if(count($this->to_crawl) <= 0) {
             $schedule_time = $this->schedule_time;
