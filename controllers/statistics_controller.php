@@ -197,7 +197,7 @@ class StatisticsController extends Controller implements CrawlConstants
             "SERVER" => array("aolserver", "apache", "bigip", "boa", "caudium",
                 "cherokee", "gws", "goahead-webs", "httpd", "iis", 
                 "ibm_http_server", "jetty", "lighttpd", "litespeed", 
-                "microsoft-iis", "nginx", "resin", "sun-java-system", 
+                "microsoft-iis", "nginx", "resin", "server", "sun-java-system", 
                 "thttpd", "tux", "virtuoso", "webrick", "yaws", "yts", 
                 "zeus", "zope"),
             "SITE" => array(".aero", ".asia", ".biz", ".cat", ".com", ".coop",

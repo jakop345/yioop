@@ -43,6 +43,7 @@ define('QUERY_INFO', 2);
 define('ERROR_INFO', 4);
 date_default_timezone_set('America/Los_Angeles');
 
+
 if(file_exists(BASE_DIR."/configs/local_config.php")) {
     /** Include any locally specified defines (could use as an alternative
         way to set work directory) */
@@ -78,7 +79,8 @@ if(file_exists(WORK_DIRECTORY."/profile.php")) {
         define('NAME_SERVER', QUEUE_SERVER); //for backward compatibility
     }
 } else {
-    if($_SERVER['SERVER_NAME'] !== 'localhost') {
+    if($_SERVER['SERVER_NAME'] !== 'localhost' && !(defined(NO_LOCAL_CHECK) 
+        && NO_LOCAL_CHECK)) {
         echo "SERVICE AVAILABLE ONLY VIA LOCALHOST UNTIL CONFIGURED"; 
         exit();
     }
