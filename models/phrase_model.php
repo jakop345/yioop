@@ -596,7 +596,7 @@ class PhraseModel extends Model
 
 
     /**
-     * The plan is code to tru to  & from the query what the user is 
+     * The plan is code toguess from the query what the user is 
      * looking for will be called from here. For now, we are just guessing
      * when a query term is a url and rewriting it to the appropriate meta
      * meta word.
@@ -607,44 +607,102 @@ class PhraseModel extends Model
      */
     function guessSemantics($phrase)
     {
+        $domain_suffixes = array(".com", ".net", ".edu", ".org", ".gov", 
+            ".mil", ".ca", ".uk", ".fr");
+        foreach($domain_suffixes as $suffix) {
+            $phrase = $this->endMatch($phrase, $suffix, "site:", "", ":");
+        }
+
+        $phrase = $this->beginMatch($phrase, "www.", "site:www.");
+
+        $phrase = $this->beginMatch($phrase, "http:", "site:http:");
+
+        $phrase = $this->beginMatch($phrase, "info:", "info:http://", "/",
+            "/");
+
+        $phrase = $this->beginMatch($phrase, "info:", "info:http://", "",
+            "http://");
+
+        return $phrase;
+    }
+
+    /**
+     *  Matches terms (non white-char strings) in the language $lang_tag in 
+     *  $phrase that begin with  $start_with and don't contain  $not_contain, 
+     *  replaces $start_with with $new_prefix and adds $suffix to the end 
+     *
+     *  @param string $phrase string to look for terms in
+     *  @param string $start_with what we're looking to see if term begins with
+     *  @param string $new_prefix what to change $start_with to
+     *  @param string $suffix what to tack on to the end of the term if there is
+     *      a match
+     *  @param string $lang_tag what language the phrase must be in for the rule
+     *      to apply
+     *
+     *  @return string $phrase after modifications have been made
+     */
+    function beginMatch($phrase, $start_with, $new_prefix, $suffix = "",
+        $not_contain="", $lang_tag = "en-US")
+    {
         $phrase .= " ";
-        $cond_token = "(\.com|\.edu|\.org|\.gov|\.mil|.ca|\.uk|\.fr)";
-        $pattern = "/(\s)((\S)+$cond_token)(\s)/";
+        $quote_start_with = preg_quote($start_with, "/");
+        $pattern = "/(\s)($quote_start_with(\S)+)/";
+        $start_pos = strlen($start_with);
         preg_match_all($pattern, $phrase, $matches);
         $matches = $matches[2];
-        $result_phrase = preg_replace($pattern, " ", $phrase);
+        $result_phrase = preg_replace($pattern, "", $phrase);
         foreach($matches as $match) {
-            $tag = guessLocaleFromString($match, "en-US", 10);
-            if(!strstr($match, ":") && $tag == "en-US") { 
-                $result_phrase .= " site:".$match;
+            $tag = guessLocaleFromString($match, $lang_tag, 10);
+            if($tag == $lang_tag && ($not_contain == "" || 
+                !strstr($match, $not_contain))) {
+                $body = substr($match, $start_pos);
+                $result_phrase .= " ".$new_prefix.$body.$suffix;
             } else {
                 $result_phrase .= " ".$match;
             }
         }
-        $phrase = $result_phrase;
+        return $result_phrase;
+    }
 
-        $cond_token = "www\.";
-        $pattern = "/(\s)($cond_token(\S)+)/";
+    /**
+     *  Matches terms (non white-char strings) in the language $lang_tag in 
+     *  $phrase that end with $end_with and don't contain  $not_contain, 
+     *  replaces $end_with with $new_suffix (if not empty) and adds $prefix to 
+     *  the beginning 
+     *
+     *  @param string $phrase string to look for terms in
+     *  @param string $end_with what we're looking to see if term ends with
+     *  @param string $prefix what to tack on to the start if there is
+     *      a match
+     *  @param string $suffix what to change $end_with to
+     *  @param string $lang_tag what language the phrase must be in for the rule
+     *      to apply
+     *
+     *  @return string $phrase after modifications have been made
+     */
+    function endMatch($phrase, $end_with, $prefix, $new_suffix = "",
+        $not_contain="",
+        $lang_tag = "en-US")
+    {
+        $phrase .= " ";
+        $quote_end_with = preg_quote($end_with, "/");
+        $pattern = "/(\s)((\S)+$quote_end_with)(\s)/";
+        $end_len = strlen($end_with);
         preg_match_all($pattern, $phrase, $matches);
         $matches = $matches[2];
-        $result_phrase = preg_replace($pattern, "", $phrase);
+        $result_phrase = preg_replace($pattern, " ", $phrase);
         foreach($matches as $match) {
-            $tag = guessLocaleFromString($match, "en-US", 10);
-            if($tag == "en-US") {
-                $result_phrase .= " site:".$match;
-            }
-        }
-        $phrase = $result_phrase;
-
-        $cond_token = "http:";
-        $pattern = "/(\s)($cond_token(\S)+)/";
-        preg_match_all($pattern, $phrase, $matches);
-        $matches = $matches[2];
-        $result_phrase = preg_replace($pattern, "", $phrase);
-        foreach($matches as $match) {
-            $tag = guessLocaleFromString($match, "en-US", 10);
-            if($tag == "en-US") {
-                $result_phrase .= " site:".$match;
+            $tag = guessLocaleFromString($match, $lang_tag, 10);
+            if($tag == $lang_tag && ($not_contain = "" || 
+                !strstr($match, $not_contain))) {
+                if($new_suffix == "") {
+                    $body = $match;
+                } else {
+                    $body = substr($match, 0, -$end_len);
+                }
+                $result_phrase .= " $prefix".$body.$new_suffix;
+            } else {
+                $result_phrase .= " ".$match;
             }
         }
         return $result_phrase;
