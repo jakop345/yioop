@@ -49,7 +49,8 @@ require_once BASE_DIR.
  * @subpackage iterator
  * @see WebArchiveBundle
  */
-class WebArchiveBundleIterator implements CrawlConstants
+class WebArchiveBundleIterator extends ArchiveBundleIterator 
+    implements CrawlConstants
 {
 
     /**
@@ -88,11 +89,6 @@ class WebArchiveBundleIterator implements CrawlConstants
      * @var object
      */
     var $archive;
-    /**
-     * The fetcher prefix associated with this archive.
-     * @var string
-     */
-    var $fetcher_prefix;
 
     /**
      * Creates a web archive iterator with the given parameters.
@@ -206,19 +202,5 @@ class WebArchiveBundleIterator implements CrawlConstants
         $archive_name = $this->get_archive_name($this->result_timestamp);
         @unlink("$archive_name/iterate_status.txt");
     }
-
-    /**
-     * Returns the path to an archive given its timestamp.
-     *
-     * @param string $timestamp the archive timestamp
-     * @return string the path to the archive, based off of the fetcher prefix 
-     *     used when this iterator was constructed
-     */
-    function get_archive_name($timestamp)
-    {
-        return CRAWL_DIR.'/cache/'.$this->fetcher_prefix.
-            self::archive_base_name.$timestamp;
-    }
-
 }
 ?>

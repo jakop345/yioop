@@ -48,8 +48,6 @@ require_once BASE_DIR."/lib/crawl_constants.php";
  */
 abstract class ArchiveBundleIterator implements CrawlConstants
 {
-
-
     /**
      * Timestamp of the archive that is being iterated over
      * @var int
@@ -67,6 +65,25 @@ abstract class ArchiveBundleIterator implements CrawlConstants
      * @var bool
      */
      var $end_of_iterator;
+
+    /**
+     * The fetcher prefix associated with this archive.
+     * @var string
+     */
+    var $fetcher_prefix;
+
+    /**
+     * Returns the path to an archive given its timestamp.
+     *
+     * @param string $timestamp the archive timestamp
+     * @return string the path to the archive, based off of the fetcher prefix 
+     *     used when this iterator was constructed
+     */
+    function get_archive_name($timestamp)
+    {
+        return CRAWL_DIR.'/cache/'.$this->fetcher_prefix.
+            self::archive_base_name.$timestamp;
+    }
 
     /**
      * Estimates the important of the site according to the weighting of

@@ -50,7 +50,8 @@ require_once BASE_DIR.
  * @subpackage iterator
  * @see WebArchiveBundle
  */
-class MediaWikiArchiveBundleIterator implements CrawlConstants
+class MediaWikiArchiveBundleIterator extends ArchiveBundleIterator 
+    implements CrawlConstants
 {
     /**
      * The number of arc files in this arc archive bundle
@@ -98,11 +99,6 @@ class MediaWikiArchiveBundleIterator implements CrawlConstants
      *  @var resource
      */
     var $fh;
-    /**
-     * The fetcher prefix associated with this archive.
-     * @var string
-     */
-    var $fetcher_prefix;
 
     /**
      * Start state of FSA for lexing media wiki docs
@@ -600,19 +596,6 @@ class MediaWikiArchiveBundleIterator implements CrawlConstants
             }
         } while($continue && $pos < $len);
         return array($token, $state, $pos);
-    }
-
-    /**
-     * Returns the path to an archive given its timestamp.
-     *
-     * @param string $timestamp the archive timestamp
-     * @return string the path to the archive, based off of the fetcher prefix 
-     *     used when this iterator was constructed
-     */
-    function get_archive_name($timestamp)
-    {
-        return CRAWL_DIR.'/cache/'.$this->fetcher_prefix.
-            self::archive_base_name.$timestamp;
     }
 
 }

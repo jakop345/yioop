@@ -50,7 +50,8 @@ require_once BASE_DIR.
  * @subpackage iterator
  * @see WebArchiveBundle
  */
-class OdpRdfArchiveBundleIterator implements CrawlConstants
+class OdpRdfArchiveBundleIterator extends ArchiveBundleIterator 
+    implements CrawlConstants
 {
     /**
      * The number of arc files in this arc archive bundle
@@ -91,11 +92,6 @@ class OdpRdfArchiveBundleIterator implements CrawlConstants
      *  @var resource
      */
     var $fh;
-    /**
-     * The fetcher prefix associated with this archive.
-     * @var string
-     */
-    var $fetcher_prefix;
 
     /**
      * How many bytes to read into buffer from bz2 stream in one go
@@ -476,17 +472,5 @@ class OdpRdfArchiveBundleIterator implements CrawlConstants
         return $html;
     }
 
-    /**
-     * Returns the path to an archive given its timestamp.
-     *
-     * @param string $timestamp the archive timestamp
-     * @return string the path to the archive, based off of the fetcher prefix 
-     *     used when this iterator was constructed
-     */
-    function get_archive_name($timestamp)
-    {
-        return CRAWL_DIR.'/cache/'.$this->fetcher_prefix.
-            self::archive_base_name.$timestamp;
-    }
 }
 ?>

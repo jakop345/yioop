@@ -50,7 +50,8 @@ require_once BASE_DIR.
  * @subpackage iterator
  * @see WebArchiveBundle
  */
-class ArcArchiveBundleIterator implements CrawlConstants
+class ArcArchiveBundleIterator extends ArchiveBundleIterator 
+    implements CrawlConstants
 {
     /**
      * The number of arc files in this arc archive bundle
@@ -80,11 +81,7 @@ class ArcArchiveBundleIterator implements CrawlConstants
      *  @var resource
      */
     var $fh;
-    /**
-     * The fetcher prefix associated with this archive.
-     * @var string
-     */
-    var $fetcher_prefix;
+
 
     /**
      * Creates a arc archive iterator with the given parameters.
@@ -215,19 +212,6 @@ class ArcArchiveBundleIterator implements CrawlConstants
         $site[self::HASH] = FetchUrl::computePageHash($site[self::PAGE]);
         $site[self::WEIGHT] = 1;
         return $site;
-    }
-
-    /**
-     * Returns the path to an archive given its timestamp.
-     *
-     * @param string $timestamp the archive timestamp
-     * @return string the path to the archive, based off of the fetcher prefix 
-     *     used when this iterator was constructed
-     */
-    function get_archive_name($timestamp)
-    {
-        return CRAWL_DIR.'/cache/'.$this->fetcher_prefix.
-            self::archive_base_name.$timestamp;
     }
 
 }
