@@ -181,8 +181,8 @@ EOT;
         if(file_put_contents("$directory/profile.php", $out) !== false) {
             @chmod("$directory/profile.php", 0777);
             if(isset($new_profile_data['ROBOT_DESCRIPTION'])) {
-                file_put_contents(
-                    "$directory/bot.txt", 
+                $robot_path = LOCALE_DIR."/".DEFAULT_LOCALE."/pages/bot.thtml";
+                file_put_contents($robot_path, 
                     $new_profile_data['ROBOT_DESCRIPTION']);
                 @chmod("$directory/bot.txt", 0777);
             }
@@ -421,9 +421,11 @@ EOT;
             }
         }
 
-        if(file_exists($work_directory."/bot.txt")) {
+        $robot_path = LOCALE_DIR."/".DEFAULT_LOCALE."/pages/bot.thtml";
+
+        if(file_exists($robot_path)) {
             $profile['ROBOT_DESCRIPTION'] = 
-                file_get_contents($work_directory."/bot.txt");
+                file_get_contents($robot_path);
         }
 
         return $profile;

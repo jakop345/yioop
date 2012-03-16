@@ -65,8 +65,9 @@ if(!PROFILE) {echo "BAD REQUEST"; exit();}
 </head>
 <body>
 <?php
-    if(file_exists(WORK_DIRECTORY."/bot.txt")) {
-        echo file_get_contents(WORK_DIRECTORY."/bot.txt");
+    $default_bot_txt_path = LOCALE_DIR."/".DEFAULT_LOCALE."/pages/bot.thtml";
+    if(file_exists($default_bot_txt_path)) {
+        echo file_get_contents($default_bot_txt_path);
     } else {
         echo "Unfortunately, the person who is using this software did not ".
             "provide a description of their user-agent";

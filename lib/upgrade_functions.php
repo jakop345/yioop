@@ -62,10 +62,10 @@ function upgradeLocale()
 }
 
 /**
- * Checks to see if the database data of Yioop! is from an older version
- * of Yioop! than the currently running Yioop!
+ * Checks to see if the database data or work_dir folder of Yioop! is from an 
+ * older version of Yioop! than the currently running Yioop!
  */
-function upgradeDatabaseCheck()
+function upgradeDatabaseWorkDirectoryCheck()
 {
     $model = new Model();
     $model->db->selectDB(DB_NAME);
@@ -74,7 +74,7 @@ function upgradeDatabaseCheck()
     $result = @$model->db->execute($sql);
     if($result !== false) {
         $row = $model->db->fetchArray($result);
-        if($row['ID'] == 4) {
+        if($row['ID'] == 5) {
             return false;
         }
     }
@@ -86,9 +86,9 @@ function upgradeDatabaseCheck()
  * currently running Yioop! then this function is called to try
  * upgrade the database to the new version
  */
-function upgradeDatabase()
+function upgradeDatabaseWorkDirectory()
 {
-    $versions = array(0, 1, 2, 3, 4);
+    $versions = array(0, 1, 2, 3, 4, 5);
     $model = new Model();
     $model->db->selectDB(DB_NAME);
     $sql = "SELECT ID FROM VERSION";
@@ -231,5 +231,21 @@ function upgradeDatabaseVersion4(&$db)
     $db->execute("DELETE FROM VERSION WHERE ID=3");
     $db->execute("INSERT INTO VERSION VALUES (4)");
     $db->execute("ALTER TABLE MACHINE ADD COLUMN PARENT VARCHAR(16)");
+}
+
+/**
+ * Upgrades a Version 4 version of the Yioop! database to a Version 5 version
+ * @param object $db datasource to use to upgrade 
+ */
+function upgradeDatabaseVersion5(&$db)
+{
+    $db->execute("DELETE FROM VERSION WHERE ID=4");
+    $db->execute("INSERT INTO VERSION VALUES (5)");
+
+    $default_bot_txt_path = LOCALE_DIR."/".DEFAULT_LOCALE."/pages/bot.thtml";
+    $old__bot_txt_path = WORK_DIRECTORY."/bot.txt";
+    if(file_exists($old__bot_txt_path) && ! file_exists($default_bot_txt_path)){
+        rename($old__bot_txt_path, $default_bot_txt_path);
+    }
 }
 ?>
