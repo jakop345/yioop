@@ -209,8 +209,12 @@ class SearchView extends View implements CrawlConstants
                 e(tl('search_view_more_statistics')); ?></a>]
             <?php }?>
             </div>
-            <div><a href="http://www.seekquarry.com/"><?php
-            e(tl('search_view_developed_seek_quarry')); ?></a></div>
+            <div>- <a href="?c=static&p=blog"><?php 
+                e(tl('search_view_blog')); ?></a> -
+                <a href="?c=static&p=privacy"><?php 
+                e(tl('search_view_privacy')); ?></a> -
+                <a href="http://www.seekquarry.com/"><?php
+            e(tl('search_view_developed_seek_quarry')); ?></a> -</div>
 
         </div><?php
         if(!isset($data['PAGES'])) {

@@ -1873,7 +1873,15 @@ class Fetcher implements CrawlConstants
         }
         $path =  UrlParser::getPath($site[self::URL]);
         if(strlen($path) > 0 ) {
-            $meta_ids[] = 'path:'.$path;
+            $path_parts = explode("/", $path);
+            $pre_path = "";
+            $meta_ids[] = 'path:/';
+            foreach($path_parts as $part) {
+                if(strlen($part) > 0 ) {
+                    $pre_path .= "/$part";
+                    $meta_ids[] = 'path:'.$pre_path;
+                }
+            }
         }
         $meta_ids[] = 'info:'.$site[self::URL];
         $meta_ids[] = 'info:'.crawlHash($site[self::URL]);

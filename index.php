@@ -97,7 +97,8 @@ if ( false === function_exists('lcfirst') ) {
 }
 
 $available_controllers = array( "admin", "archive",  "cache", "crawl",
-    "fetch",  "machine", "resource", "search", "settings", "statistics");
+    "fetch",  "machine", "resource", "search", "settings", "statistics",
+    "static",);
 if(!WEB_ACCESS) {
 $available_controllers = array("admin", "archive", "cache", "crawl", "fetch",
      "machine");

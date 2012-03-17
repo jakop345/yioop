@@ -124,7 +124,7 @@ class ProfileModel extends Model
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009, 2010  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009-2012  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -151,7 +151,7 @@ class ProfileModel extends Model
  * @subpackage config
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009, 2010
+ * @copyright 2009-2012
  * @filesource
  */
 

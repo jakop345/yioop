@@ -243,14 +243,14 @@ function upgradeDatabaseVersion5(&$db)
     $db->execute("INSERT INTO VERSION VALUES (5)");
 
     $static_page_path = LOCALE_DIR."/".DEFAULT_LOCALE."/pages";
-    if(!file_exist($static_page_path)) {
+    if(!file_exists($static_page_path)) {
         mkdir($static_page_path);
     }
-    $default_bot_txt_path = "$static_page_path/pages/bot.thtml";
-    $old__bot_txt_path = WORK_DIRECTORY."/bot.txt";
-    if(file_exists($old__bot_txt_path) && ! file_exists($default_bot_txt_path)){
-        rename($old__bot_txt_path, $default_bot_txt_path);
+    $default_bot_txt_path = "$static_page_path/bot.thtml";
+    $old_bot_txt_path = WORK_DIRECTORY."/bot.txt";
+    if(file_exists($old_bot_txt_path) && !file_exists($default_bot_txt_path)){
+        rename($old_bot_txt_path, $default_bot_txt_path);
     }
-    $this->db->setWorldPermissionsRecursive($static_page_path);
+    $db->setWorldPermissionsRecursive($static_page_path);
 }
 ?>
