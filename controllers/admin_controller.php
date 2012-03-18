@@ -1987,9 +1987,28 @@ class AdminController extends Controller implements CrawlConstants
 
 
         if(isset($_REQUEST['WORK_DIRECTORY'])) {
-            $data['WORK_DIRECTORY'] = 
+            $dir = 
                 $this->clean($_REQUEST['WORK_DIRECTORY'], "string");
             $data['PROFILE'] = true;
+            if(strstr(PHP_OS, "WIN")) {
+                //convert to forward slashes so consistent with rest of code
+                $dir = str_replace("\\", "/", $dir);
+                if($dir[0] != "/" && $dir[1] != ":") {
+                    $data['PROFILE'] = false;
+                }
+            } else if($dir[0] != "/") {
+                    $data['PROFILE'] = false;
+            }
+            if($data['PROFILE'] == false) {
+                $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                    tl('admin_controller_configure_use_absolute_path').
+                    "</h1>');" . "setTimeout('window.location.href= ".
+                    "window.location.href', 3000);";
+                $data['WORK_DIRECTORY'] = $dir;
+                return $data;
+            }
+            $data['WORK_DIRECTORY'] = $dir;
+
         } else if (defined("WORK_DIRECTORY") &&  strlen(WORK_DIRECTORY) > 0 && 
             strcmp(realpath(WORK_DIRECTORY), realpath(BASE_DIR)) != 0 &&
             (is_dir(WORK_DIRECTORY) || is_dir(WORK_DIRECTORY."../"))) {

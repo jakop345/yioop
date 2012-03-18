@@ -136,7 +136,7 @@ class StatisticsView extends View
                             $lower_name = strtolower($group_name);
                             foreach($data[$group_name]["DATA"] as 
                                 $name => $value) {
-                                $width = round(500*$value/$total);
+                                $width = round(500*$value/(max($total,1));
                                 e("<tr><th><a href='".$base_url."&c=search".
                                     "&q=$lower_name:$name'>$name</a></th>".
                                     "<td><div style='background-color:green;".
