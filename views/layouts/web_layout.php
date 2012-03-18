@@ -67,7 +67,10 @@ class WebLayout extends Layout
                 isset($this->view->head_objects[$data['page']]['title']))
                 e($this->view->head_objects[$data['page']]['title']);
             else e(tl('web_layout_title')); ?></title>
-
+        <?php if(isset($this->view->head_objects['robots'])) {?>
+            <meta name="ROBOTS" content="<?php 
+                e($this->view->head_objects['robots']) ?>" />
+        <?php } ?>
             <meta name="description" content="<?php 
         if(isset($data['page']) && 
         isset($this->view->head_objects[$data['page']]['description']))

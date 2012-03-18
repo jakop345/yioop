@@ -130,6 +130,7 @@ class StatisticsController extends Controller implements CrawlConstants
         }
         $data['YIOOP_TOKEN'] = $this->generateCSRFToken($user);
         $data["its"] = $this->index_time_stamp;
+        $this->statisticsView->head_objects["robots"] = "NOINDEX, NOFOLLOW";
         $this->displayView($view, $data);
     }
 
