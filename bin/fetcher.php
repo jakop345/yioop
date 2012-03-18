@@ -352,12 +352,13 @@ class Fetcher implements CrawlConstants
 
         // To use CrawlDaemon need to declare ticks first
         declare(ticks=200);
-        CrawlDaemon::init($argv, "fetcher");
         if(isset($argv[2]) ) {
             $this->fetcher_num = intval($argv[2]);
         } else {
             $this->fetcher_num = 0;
+            $argv[2] = "0";
         }
+        CrawlDaemon::init($argv, "fetcher");
         crawlLog("\n\nInitialize logger..", $this->fetcher_num."-fetcher");
 
         $this->loop();
