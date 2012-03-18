@@ -72,8 +72,8 @@ class StaticView extends View
 <?php e($this->page_objects[$data['page']]); ?>
 </div>
 <div class="landing-footer">
-    <div>- <a href="?c=static&p=blog"><?php e(tl('static_view_blog')); ?></a> -
-        <a href="?c=static&p=privacy"><?php e(tl('static_view_privacy')); 
+    <div>- <a href="?c=static&amp;p=blog"><?php e(tl('static_view_blog')); ?></a> -
+        <a href="?c=static&amp;p=privacy"><?php e(tl('static_view_privacy')); 
         ?></a> - <a href="http://www.seekquarry.com/"><?php
     e(tl('static_view_developed_seek_quarry')); ?></a> -</div>
 </div>
