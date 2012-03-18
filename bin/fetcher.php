@@ -1012,7 +1012,9 @@ class Fetcher implements CrawlConstants
                 if(!isset($this->hosts_with_errors[$host])) {
                     $this->hosts_with_errors[$host] = 0;
                 }
-                if($response_code >= 400) {
+                if($response_code >= 400 || $response_code < 100) {
+                    // < 100 will capture failures to connect which are returned
+                    // as strings
                     $this->hosts_with_errors[$host]++;
                 }
                 /* we print out errors to std output. We still go ahead and

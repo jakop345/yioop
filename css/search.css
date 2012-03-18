@@ -249,6 +249,22 @@ body.html-tb-lr
     float:left;
 }
 
+.content
+{
+    position:relative;
+    top: 1.5in;
+    margin-left: .25in;
+    margin-right: .25in;
+    width:90%;
+    min-width: 10in;
+    min-height:6in;
+    padding: 8px;
+    border:1px solid black;
+    background-color:white;
+    border-radius: 16px;
+    -moz-border-radius: 16px; -webkit-border-radius:16px;
+}
+
 .searchbox
 {
     width:8in;
