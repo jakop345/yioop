@@ -343,7 +343,7 @@ class Fetcher implements CrawlConstants
 
     /**
      *  This is the function that should be called to get the fetcher to start 
-     *  fetching. Calls init to handle the command line arguments then enters 
+     *  fetching. Calls init to handle the command-line arguments then enters 
      *  the fetcher's main loop
      */
     function start()
@@ -370,7 +370,7 @@ class Fetcher implements CrawlConstants
      * Checks for stop message, checks queue server if crawl has changed and
      * for new pages to crawl. Loop gets a group of next pages to crawl if 
      * there are pages left to crawl (otherwise sleep 5 seconds). It downloads
-     * these pages, deplicates them, and updates the found site info with the 
+     * these pages, deduplicates them, and updates the found site info with the 
      * result before looping again.
      */
     function loop()

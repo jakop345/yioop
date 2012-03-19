@@ -127,12 +127,12 @@ if(!PROFILE ) {
 
 $locale_tag = guessLocale();
 
-if(upgradeLocaleCheck()) {
-    upgradeLocale();
-}
-
 if(upgradeDatabaseWorkDirectoryCheck()) {
     upgradeDatabaseWorkDirectory();
+}
+
+if(upgradeLocaleCheck()) {
+    upgradeLocale();
 }
 
 $locale = NULL;
