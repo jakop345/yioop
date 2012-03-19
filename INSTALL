@@ -31,11 +31,12 @@ Installation
 web server's document root. Yioop makes use of an auxiliary
 folder to store profile/crawl data. Before Yioop will
 run you must configure this directory. To do this
-point your web browser to the location Yioop, a
+point your web browser to the location of Yioop. A
 configuration page should appear and let you set the
 path to the auxiliary folder. For this
-step you must connect via localhost. Make sure the web
-server has permissions on the place where this auxiliary
+step you must connect via localhost or you must have a 
+configs/local_config.php file with NO_LOCAL_CHECK defined to true. 
+Make sure the web server has permissions on the place where this auxiliary
 folder needs to be created. Once you have set the folder,
 you should see a second form beneath the select-a-path
 form. This form allows you to configure the debug settings,
@@ -57,7 +58,7 @@ php fetcher.php terminal
 from the bin folder.
 
 (4) To start a crawl, you need to point your browser at the url
-of your seek_quarry installation. Click on the admin link,
+of your Yioop installation. Click on the admin link,
 then the manage crawl link. Type in a description of your
 crawl and click "Start New Crawl". After about a minute you should
 start the Currently Processing and Most Recent Urls sections updating

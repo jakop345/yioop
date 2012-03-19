@@ -59,13 +59,12 @@ and the sqlite3 built into PHP.
 Credits
 ------
 The source code is mainly due to Chris Pollett. 
-Other contributors include: Priya Gangaraju,
+Other contributors include: Ravi Dhillon, Priya Gangaraju,
 Nakul Natu, Vijaya Pamidi, Vijeth Patil, Tarun
-Pepira. Several people helped with localization: 
+Pepira, and Shawn Tice. Several people helped with localization: 
 My wife, Mary Pollett, Jonathan Ben-David, 
-Sujata Dongre, Youn Kim, Chao-Hsin Shih and Sugi Widjaja. 
-Thanks to Ravi Dhillon for finding and helping with the fixes for 
-Issue 15 and Commit 632e46.  
+Sujata Dongre, Animesh Dutta, Youn Kim, Akshat Kukreti,
+Chao-Hsin Shih and Sugi Widjaja. 
 
 Installation
 -------------
