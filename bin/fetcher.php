@@ -384,6 +384,7 @@ class Fetcher implements CrawlConstants
         $info[self::STATUS] = self::CONTINUE_STATE;
         
         while ($info[self::STATUS] != self::STOP_STATE) {
+            $start_time = microtime();
             $fetcher_message_file = CRAWL_DIR.
                 "/schedules/{$prefix}fetcher_messages.txt";
             if(file_exists($fetcher_message_file)) {
@@ -463,8 +464,6 @@ class Fetcher implements CrawlConstants
                     $downloaded_pages =  $this->downloadPagesArchiveCrawl();
                 break;
             }
-
-            $start_time = microtime();
 
             $summarized_site_pages = 
                 $this->processFetchPages($downloaded_pages);
