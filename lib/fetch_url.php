@@ -463,25 +463,40 @@ class FetchUrl implements CrawlConstants
      */
     public static function getPage($site, $post_data = NULL) 
     {
-        $agent = curl_init();
+        static $agents = array();
+        $MAX_SIZE = 50;
+        $host = @parse_url($site,PHP_URL_HOST);
+        if($host !== false) {
+            if(count($agents) > $MAX_SIZE) {
+                array_shift($agents);
+            }
+            if(!isset($agents[$host])) {
+                $agents[$host] = curl_init();
+            }
+        }
         crawlLog("Init curl request");
-        curl_setopt($agent, CURLOPT_USERAGENT, USER_AGENT);
-        curl_setopt($agent, CURLOPT_URL, $site);
-        curl_setopt($agent, CURLOPT_AUTOREFERER, true);
-        curl_setopt($agent, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($agent, CURLOPT_NOSIGNAL, true);
-        curl_setopt($agent, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($agent, CURLOPT_FAILONERROR, true);
-        curl_setopt($agent, CURLOPT_TIMEOUT, PAGE_TIMEOUT);
-        curl_setopt($agent, CURLOPT_CONNECTTIMEOUT, PAGE_TIMEOUT);
+        curl_setopt($agents[$host], CURLOPT_USERAGENT, USER_AGENT);
+        curl_setopt($agents[$host], CURLOPT_URL, $site);
+
+        curl_setopt($agents[$host], CURLOPT_AUTOREFERER, true);
+        curl_setopt($agents[$host], CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($agents[$host], CURLOPT_NOSIGNAL, true);
+        curl_setopt($agents[$host], CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($agents[$host], CURLOPT_FAILONERROR, true);
+        curl_setopt($agents[$host], CURLOPT_TIMEOUT, PAGE_TIMEOUT);
+        curl_setopt($agents[$host], CURLOPT_CONNECTTIMEOUT, PAGE_TIMEOUT);
         //make lighttpd happier
-        curl_setopt($agent, CURLOPT_HTTPHEADER, array('Expect:'));
+        curl_setopt($agents[$host], CURLOPT_HTTPHEADER, array('Expect:'));
         if($post_data != NULL) {
-            curl_setopt($agent, CURLOPT_POST, true);
-            curl_setopt($agent, CURLOPT_POSTFIELDS, $post_data);
+            curl_setopt($agents[$host], CURLOPT_POST, true);
+            curl_setopt($agents[$host], CURLOPT_POSTFIELDS, $post_data);
+        } else {
+            // since we are caching agents, need to do this so doesn't get stuck
+            // as post and so query string ignored for get's
+            curl_setopt($agents[$host], CURLOPT_HTTPGET, true);
         }
         crawlLog("Set curl options");
-        $response = curl_exec($agent);
+        $response = curl_exec($agents[$host]);
         crawlLog("Done curl exec");
         return $response;
     }

@@ -759,7 +759,6 @@ class Fetcher implements CrawlConstants
             return false;
         }
         $info_string = trim($info_string);
-
         $tok = strtok($info_string, "\n");
         $info = unserialize(base64_decode($tok));
 
@@ -1363,6 +1362,7 @@ class Fetcher implements CrawlConstants
                     && $this->crawl_type == self::WEB_CRAWL) {
                     $num_links = count($site[self::LINKS]);
                     //robots pages might have sitemaps links on them
+                    //which we want to crawl
                     $link_urls = array_keys($site[self::LINKS]);
                     $this->addToCrawlSites($link_urls, 
                         $site[self::WEIGHT], $site[self::HASH], 
@@ -1764,10 +1764,13 @@ class Fetcher implements CrawlConstants
             }
             $had_links = false;
             $num_queue_servers = count($this->queue_servers);
+
             foreach($site[self::LINKS] as $url => $link_text) {
                 $link_meta_ids = array();
                 $location_link = false;
-                if(strlen($url) > 0) {
+                // this mysterious if means won't index links from robots.txt
+                // Sitemap will still be in TO_CRAWL, but that's done elsewhere
+                if(strlen($url) > 0 && !is_numeric($url)){
                     $part_num = calculatePartition($url, 
                         $num_queue_servers, "UrlParser::getHost");
                     $summary = array();

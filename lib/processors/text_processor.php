@@ -187,7 +187,10 @@ class TextProcessor extends PageProcessor
     }
 
     /**
+     * If an end of file is reached before closed tags are seen, this methods
+     * closes these tags in the correct order.
      *
+     * @param string &$page a reference to an xml or html document
      */
     static function closeDanglingTags(&$page)
     {
