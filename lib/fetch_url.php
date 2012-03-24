@@ -95,8 +95,7 @@ class FetchUrl implements CrawlConstants
                 curl_setopt($sites[$i][0], CURLOPT_URL, $url);
                 curl_setopt($sites[$i][0], CURLOPT_VERBOSE, true);
                 curl_setopt($sites[$i][0], CURLOPT_STDERR, $ip_holder[$i]);
-                curl_setopt($sites[$i][0], CURLOPT_FOLLOWLOCATION, true);
-                curl_setopt($sites[$i][0], CURLOPT_MAXREDIRS, 5);
+                curl_setopt($sites[$i][0], CURLOPT_FOLLOWLOCATION, false);
                 curl_setopt($sites[$i][0], CURLOPT_AUTOREFERER, true);
                 curl_setopt($sites[$i][0], CURLOPT_RETURNTRANSFER, true);
                 curl_setopt($sites[$i][0], CURLOPT_CONNECTTIMEOUT,PAGE_TIMEOUT);

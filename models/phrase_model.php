@@ -608,7 +608,7 @@ class PhraseModel extends Model
     function guessSemantics($phrase)
     {
         $domain_suffixes = array(".com", ".net", ".edu", ".org", ".gov", 
-            ".mil", ".ca", ".uk", ".fr");
+            ".mil", ".ca", ".uk", ".fr", ".ly");
         foreach($domain_suffixes as $suffix) {
             $phrase = $this->endMatch($phrase, $suffix, "site:", "", ":");
         }

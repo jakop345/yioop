@@ -979,18 +979,6 @@ class Fetcher implements CrawlConstants
 
         foreach($site_pages as $site) {
             $response_code = $site[self::HTTP_CODE]; 
-            //deals with short URLs and directs them to the original link
-            if(isset($site[self::LOCATION]) && 
-                count($site[self::LOCATION]) > 0) {
-                array_unshift($site[self::LOCATION], $site[self::URL]);
-                $tmp_loc = array_pop($site[self::LOCATION]);
-                $tmp_loc = UrlParser::canonicalLink(
-                    $tmp_loc, $site[self::URL]);
-                $tmp_host = UrlParser::getHost($tmp_loc)."/";
-                if($tmp_host != $site[self::URL]) {
-                    $site[self::URL] = $tmp_loc;
-                }
-            }
 
             //process robot.txt files separately
             if(isset($site[self::ROBOT_PATHS])) {
@@ -1024,7 +1012,27 @@ class Fetcher implements CrawlConstants
 
             $type =  $site[self::TYPE];
 
-            if(isset($PAGE_PROCESSORS[$type])) { 
+            $handled = false;
+            //deals with short URLs and directs them to the original link
+            if(isset($site[self::LOCATION]) && 
+                count($site[self::LOCATION]) > 0) {
+                array_unshift($site[self::LOCATION], $site[self::URL]);
+                $tmp_loc = array_pop($site[self::LOCATION]);
+                $tmp_loc = UrlParser::canonicalLink(
+                    $tmp_loc, $site[self::URL]);
+                $doc_info = array();
+                $doc_info[self::LINKS][$tmp_loc] = "location:".$site[self::URL];
+                $doc_info[self::LOCATION] = true;
+                $doc_info[self::DESCRIPTION] = $site[self::URL]." => ".
+                        $tmp_loc;
+                $doc_info[self::PAGE] = $doc_info[self::DESCRIPTION];
+                $doc_info[self::TITLE] = $site[self::URL];
+                $text_data = true;
+                if(!isset($site[self::ENCODING])) {
+                    $site[self::ENCODING] = "UTF-8";
+                }
+                $handled = true;
+            } else if(isset($PAGE_PROCESSORS[$type])) { 
                 $page_processor = $PAGE_PROCESSORS[$type];
                 if($page_processor == "TextProcessor" ||
                     get_parent_class($page_processor) == "TextProcessor") {
@@ -1036,14 +1044,16 @@ class Fetcher implements CrawlConstants
             } else {
                 continue;
             }
-            if(isset($this->plugin_processors[$page_processor])) {
-                $processor = new $page_processor(
-                    $this->plugin_processors[$page_processor]);
-            } else {
-                $processor = new $page_processor();
+            if(!$handled) {
+                if(isset($this->plugin_processors[$page_processor])) {
+                    $processor = new $page_processor(
+                        $this->plugin_processors[$page_processor]);
+                } else {
+                    $processor = new $page_processor();
+                }
             }
 
-            if(isset($site[self::PAGE])) {
+            if(isset($site[self::PAGE]) && !$handled) {
 
                 if(!isset($site[self::ENCODING])) {
                     $site[self::ENCODING] = "UTF-8";
@@ -1070,7 +1080,7 @@ class Fetcher implements CrawlConstants
                 crawlLog("  Using Processor...".$page_processor);
                 $doc_info = $processor->handle($site[self::PAGE], 
                     $site[self::URL]);
-            } else {
+            } else if(!$handled) {
                 $doc_info = false;
             }
 
