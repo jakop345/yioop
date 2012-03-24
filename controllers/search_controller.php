@@ -685,9 +685,19 @@ class SearchController extends Controller implements CrawlConstants
             $this->displayView("nocache", $data);
             return;
         }
-        $summary_string = wordwrap($crawl_item[self::TITLE], 80, "\n")."\n\n" .
+        $summary_string = 
+            tl('search_controller_extracted_title')."\n\n".
+            wordwrap($crawl_item[self::TITLE], 80, "\n")."\n\n" .
+            tl('search_controller_extracted_description')."\n\n".
             wordwrap($crawl_item[self::DESCRIPTION], 80, "\n")."\n\n".
+            tl('search_controller_extracted_links')."\n\n".
             wordwrap(print_r($crawl_item[self::LINKS], true), 80, "\n");
+        if(isset($crawl_item[self::ROBOT_PATHS])) {
+            $summary_string = 
+                tl('search_controller_extracted_robot_paths')."\n\n".
+                wordwrap(print_r($crawl_item[self::ROBOT_PATHS], true), 
+                    80, "\n");
+        }
         $robot_instance = $crawl_item[self::ROBOT_INSTANCE];
         $robot_table_name = CRAWL_DIR."/robot_table.txt";
         $robot_table = array();
