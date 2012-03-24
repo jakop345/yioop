@@ -697,6 +697,12 @@ class SearchController extends Controller implements CrawlConstants
                 tl('search_controller_extracted_robot_paths')."\n\n".
                 wordwrap(print_r($crawl_item[self::ROBOT_PATHS], true), 
                     80, "\n");
+            if(isset($crawl_item[self::CRAWL_DELAY])) {
+                $summary_string = 
+                    tl('search_controller_crawl_delay')."\n\n".
+                    wordwrap(print_r($crawl_item[self::CRAWL_DELAY], true), 
+                        80, "\n") . $summary_string;
+            }
         }
         $robot_instance = $crawl_item[self::ROBOT_INSTANCE];
         $robot_table_name = CRAWL_DIR."/robot_table.txt";
