@@ -245,6 +245,12 @@ class SearchController extends Controller implements CrawlConstants
         if ($view != "serial") {
             $this->displayView($view, $data);
         } else {
+            if(isset($data["PAGES"])) {
+                $count = count($data["PAGES"]);
+                for($i = 0; $i < $count; $i++) {
+                    unset($data["PAGES"][$i]["INDEX"]);
+                }
+            }
             echo webencode(serialize($data));
         }
     }

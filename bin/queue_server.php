@@ -1680,7 +1680,6 @@ class QueueServer implements CrawlConstants, Join
                 $this->web_queue->addSeenUrlFilter($triple[2]); //add for dedup
                 unset($triple[2]); // so triple is now a pair
                 $host_url = UrlParser::getHost($url);
-echo "$url $host_url \n";
                 $host_with_robots = $host_url."/robots.txt";
                 $robots_in_queue = 
                     $this->web_queue->containsUrlQueue($host_with_robots);
@@ -1694,7 +1693,6 @@ echo "$url $host_url \n";
                     $this->web_queue->adjustQueueWeight($url, $weight);
                 } else if($this->allowedToCrawlSite($url) && 
                     !$this->disallowedToCrawlSite($url)  ) {
-echo "hihihihi\n\n\n";
                     if(!$this->web_queue->containsGotRobotTxt($host_url) 
                         && !$robots_in_queue
                         && !isset($added_urls[$host_with_robots])

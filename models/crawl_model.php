@@ -758,7 +758,7 @@ EOT;
      * @param string $timestamp a Unix timestamp
      * @param array $machine_urls an array of urls of yioop queue servers
      */
-    function deleteCrawl($timestamp, $machine_urls)
+    function deleteCrawl($timestamp, $machine_urls = NULL)
     {
         if($machine_urls != NULL && 
             !$this->isSingleLocalhost($machine_urls, $timestamp)) {

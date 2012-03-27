@@ -127,7 +127,7 @@ class NetworkIterator extends IndexBundleIterator
     function __construct($query, $queue_servers, $timestamp, &$filter = NULL)
     {
         $this->no_lookup = true;
-        $this->results_per_block = self::MIN_FIND_RESULTS_PER_BLOCK;
+        $this->results_per_block = ceil(self::MIN_FIND_RESULTS_PER_BLOCK);
         $this->base_query = "q=".urlencode($query).
             "&f=serial&network=&raw=1&its=$timestamp";
         $this->queue_servers = $queue_servers;
