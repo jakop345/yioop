@@ -1531,10 +1531,8 @@ class QueueServer implements CrawlConstants, Join
                 }
 
                 if(isset($robot_info[self::ROBOT_PATHS])) {
-                    foreach($robot_info[self::ROBOT_PATHS] as $path) {
-                        $this->web_queue->addDisallowedRobotFilter(
-                            $robot_host.$path); 
-                    }
+                    $this->web_queue->addRobotPaths($robot_host,
+                        $robot_info[self::ROBOT_PATHS]);
                 }
 
                 if(isset($robot_info[self::IP_ADDRESSES])) {
@@ -1568,8 +1566,8 @@ class QueueServer implements CrawlConstants, Join
             self::robot_data_base_name.$this->crawl_time;
         $this->db->unlinkRecursive($robot_schedules, true);
 
-        crawlLog("... resetting robot bloom filters ...");
-        $this->web_queue->emptyRobotFilters();
+        crawlLog("... resetting robot data files ...");
+        $this->web_queue->emptyRobotData();
 
         crawlLog("...Clearing Waiting Hosts");
         $this->waiting_hosts = array();
@@ -1682,6 +1680,7 @@ class QueueServer implements CrawlConstants, Join
                 $this->web_queue->addSeenUrlFilter($triple[2]); //add for dedup
                 unset($triple[2]); // so triple is now a pair
                 $host_url = UrlParser::getHost($url);
+echo "$url $host_url \n";
                 $host_with_robots = $host_url."/robots.txt";
                 $robots_in_queue = 
                     $this->web_queue->containsUrlQueue($host_with_robots);
@@ -1695,7 +1694,7 @@ class QueueServer implements CrawlConstants, Join
                     $this->web_queue->adjustQueueWeight($url, $weight);
                 } else if($this->allowedToCrawlSite($url) && 
                     !$this->disallowedToCrawlSite($url)  ) {
-
+echo "hihihihi\n\n\n";
                     if(!$this->web_queue->containsGotRobotTxt($host_url) 
                         && !$robots_in_queue
                         && !isset($added_urls[$host_with_robots])
@@ -1935,20 +1934,7 @@ class QueueServer implements CrawlConstants, Join
 
             if($has_robots) {
                 if($no_flags) {
-                    $host_paths = UrlParser::getHostPaths($url);
-                    foreach($host_paths as $host_path) {
-                        if($this->web_queue->containsDisallowedRobot(
-                            $host_path)) {
-                            $robots_okay = false;
-                            $delete_urls[$i] = $url; 
-                            //want to remove from queue since robots forbid it
-                            $this->web_queue->addSeenUrlFilter($url); 
-                            /* at this point we might miss some sites by marking
-                               them seen: the robot url might change in 24 hours
-                             */
-                            break;
-                        }
-                    }
+                    $robots_okay = $this->web_queue->checkRobotOkay($url);
 
                     if(!$robots_okay) {
                         $i++;
@@ -2149,7 +2135,6 @@ class QueueServer implements CrawlConstants, Join
         if(!in_array($doc_type, $this->indexed_file_types)) {
             return false;
         }
-
         if($this->restrict_sites_by_url) {
            return $this->urlMemberSiteArray($url, $this->allowed_sites);
         }

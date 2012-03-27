@@ -291,7 +291,7 @@ class UrlParser
      * @param string $url the url to extract prefixes from
      * @return array the array of url prefixes
      */
-    static function getHostSubdomains($url) 
+    static function getHostSubdomains($url)
     {
         $subdomains = array();
         $url_parts = @parse_url($url);
@@ -311,6 +311,49 @@ class UrlParser
 
         return $subdomains;
     }
+
+    /**
+     * Checks if $path matches against any of the Robots.txt style regex
+     * paths in $paths
+     *
+     * @param string $path a path component of a url
+     * @param array $robot_paths in format of robots.txt regex paths
+     * @return bool whether it is a member or not
+     */
+    static function isPathMemberRegexPaths($path, $robot_paths) 
+    {
+        $is_member = false;
+        $len = strlen($path);
+        foreach($robot_paths as $robot_path) {
+            $rlen = strlen($robot_path);
+            if($rlen == 0) continue;
+            $end_match = false;
+            if($robot_path[$rlen - 1] == "$"){
+                $end_match = true;
+                $path_parts = explode("*", substr($robot_path, 0, $rlen - 1));
+            } else {
+                $path_parts = explode("*", $robot_path);
+            }
+            $offset = 0;
+            $is_match = true;
+            foreach($path_parts as $part) {
+                if($part == "") continue;
+                $new_offset = stripos($path, $part, $offset);
+                if($new_offset === false) {
+                    $is_match = false;
+                    break;
+                }
+                $offset = $new_offset;
+            }
+            if($is_match) {
+                if(!$end_match || strlen($part) + $offset == $len) {
+                    $is_member = true;
+                } 
+            }
+        }
+        return $is_member;
+    }
+
 
     /**
      * Given a url, extracts the words in the host part of the url
@@ -403,6 +446,8 @@ class UrlParser
 
         if(!isset($url_parts['path'])) {
             return "html"; //we default to html
+        } else if ($url[strlen($url) - 1] == "/"||$url[strlen($url) - 1]=="\\"){
+            return "html";
         } else {
             $path_parts = pathinfo($url_parts['path']);
 
@@ -489,11 +534,13 @@ class UrlParser
      * 
      * @param string $link  a relative or complete url
      * @param string $site  a base url
+     * @param string $no_fragment if false then if the url had a fragment
+     *      (#link_within_page) then the fragement will be included
      * 
      * @return string a complete url based on these two pieces of information
      * 
      */
-    public static function canonicalLink($link, $site) 
+    public static function canonicalLink($link, $site, $no_fragment = true) 
     {
 
         if(!self::isSchemeHttpOrHttps($link)) {return NULL;}
@@ -577,7 +624,7 @@ class UrlParser
             $url .= "?".$query;
         }
 
-        if(isset($fragment) && $fragment !== "") {
+        if(isset($fragment) && $fragment !== "" && !$no_fragment) {
             $url .= "#".$fragment;
         }
         return $url;

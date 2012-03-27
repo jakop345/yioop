@@ -50,20 +50,26 @@ require_once 'priority_queue.php';
  * a web archive for that urls id actual complete url
  */
 require_once 'hash_table.php';
-
 /**
  * Urls are stored in a web archive using a filter that does no compression
  */
 require_once BASE_DIR.'/lib/compressors/non_compressor.php';
-
 /**
  *  Used to store to crawl urls
  */
 require_once 'web_archive.php';
 /**
+ *  Used for getHost function
+ */
+require_once 'url_parser.php';
+/**
  *  Used for the crawlHash function
  */
-require_once 'utility.php'; 
+require_once 'utility.php';
+/**
+ *  Needed for robot stuff
+ */
+require_once 'crawl_constants.php';
 
 /**
  * Encapsulates the data structures needed to have a queue of to crawl urls
@@ -153,10 +159,15 @@ class WebQueueBundle implements Notifier
      */
     var $dns_table;
     /**
-     * BloomFilter used to store dissallowed to crawl host paths
+     * HashTable used to store offsets into WebArchive that stores robot paths
      * @var object
      */
-    var $dissallowed_robot_filter;
+    var $robot_table;
+    /**
+     * WebArchive used to store paths coming from robots.txt files
+     * @var object
+     */
+    var $robot_archive;
     /**
      * BloomFilter used to keep track of crawl delay in seconds for a given 
      * host
@@ -202,6 +213,10 @@ class WebQueueBundle implements Notifier
      * Url type flag
      */
      const SCHEDULABLE = 2;
+
+    /** Size of int
+     **/
+    const INT_SIZE = 4;
 
     /**
      * Makes a WebQueueBundle with the provided parameters
@@ -289,17 +304,23 @@ class WebQueueBundle implements Notifier
             $this->dns_table = new HashTable($dir_name."/dns_table.dat", 
                 4*$num_urls_ram, self::HASH_KEY_SIZE, self::IP_SIZE);
         }
-        //filter with disallowed robots.txt paths
-        if(file_exists($dir_name."/dissallowed_robot.ftr")) {
-            $this->dissallowed_robot_filter = 
-                BloomFilterFile::load($dir_name."/dissallowed_robot.ftr");
+        //set up storage for robots.txt info
+        $robot_archive_name = $dir_name."/robot_archive". 
+            NonCompressor::fileExtension();
 
+        $this->robot_archive = new WebArchive(
+            $robot_archive_name, new NonCompressor(), false, true);
+
+        if(file_exists($dir_name."/robot.dat")) {
+            $this->robot_table = 
+                HashTable::load($dir_name."/robot.dat");
         } else {
-            $this->dissallowed_robot_filter = 
-                new BloomFilterFile(
-                    $dir_name."/dissallowed_robot.ftr", $filter_size);
+            $this->robot_table =  new HashTable($dir_name.
+                "/robot.dat", 8*$num_urls_ram, 
+                 self::HASH_KEY_SIZE, self::INT_SIZE);
         }
-      
+
+
         //filter to check for and determine crawl delay
         if(file_exists($dir_name."/crawl_delay.ftr")) {
             $this->crawl_delay_filter = 
@@ -593,24 +614,51 @@ class WebQueueBundle implements Notifier
     }
 
     /**
-     * Adds a new entry to the disallowed robot host path Bloom filter
-     * @param string $host_path the path on host that is excluded. For example
-     * http://somewhere.com/bob disallows bob on somewhere.com
+     * Adds all the paths for a host to the Robots Web Archive.
+     * @param string $host name that the paths are to be added for.
+     * @param array an array with two keys ALLOW and DISALLOW. For each key
+     *      one has an array of paths
      */
-    function addDisallowedRobotFilter($host_path)
+    function addRobotPaths($host, $paths)
     {
-        $this->dissallowed_robot_filter->add($host_path);
+        $paths_container = array($paths);
+        $objects = $this->robot_archive->addObjects("offset", $paths_container);
+        if(isset($objects[0]['offset'])) {
+            $offset = $objects[0]['offset'];
+            $data = packInt($offset);
+            $this->robot_table->insert(crawlHash($host, true), $data);
+        }
     }
 
     /**
-     * Checks if the given $host_path is disallowed by the host's
+     * Checks if the given $url is allowed to be crawled based on stored
      * robots.txt info.
-     * @param string $host_path host path to check
-     * @return bool whether it was disallowed or nots
+     * @param string $url to check
+     * @return bool whether it was allowed or not
      */
-    function containsDisallowedRobot($host_path)
+    function checkRobotOkay($url)
     {
-        return $this->dissallowed_robot_filter->contains($host_path);
+        $host = UrlParser::getHost($url);
+        $path = UrlParser::getPath($url);
+        $path = urldecode($path);
+        $key = crawlHash($host, true);
+        $data = $this->robot_table->lookup($key);
+        $offset = unpackInt($data);
+        $robot_object = $this->robot_archive->getObjects($offset, 1);
+        $robot_paths = (isset($robot_object[0][1])) ? $robot_object[0][1]
+            : array(); //these should have been urldecoded in RobotProcessor
+        $robots_okay = true;
+        $robots_not_okay = false;
+        if(isset($robot_paths[CrawlConstants::DISALLOWED_SITES])) {
+            $robots_not_okay = UrlParser::isPathMemberRegexPaths($path, 
+                $robot_paths[CrawlConstants::DISALLOWED_SITES]);
+            $robots_okay = !$robots_not_okay;
+        }
+        if(isset($robot_paths[CrawlConstants::ALLOWED_SITES])) {
+            $robots_okay = UrlParser::isPathMemberRegexPaths($path, 
+                $robot_paths[CrawlConstants::ALLOWED_SITES]);
+        }
+        return $robots_okay || !$robots_not_okay;
     }
 
     /**
@@ -893,29 +941,35 @@ class WebQueueBundle implements Notifier
      * This is called roughly once a day so that robots files will be
      * reloaded and so the policies used won't be too old.
      */
-    function emptyRobotFilters()
+    function emptyRobotData()
     {
+        $robot_archive_name = $this->dir_name."/robot_archive". 
+            NonCompressor::fileExtension();
         unlink($this->dir_name."/got_robottxt.ftr");  
-        unlink($this->dir_name."/dissallowed_robot.ftr");
         unlink($this->dir_name."/crawl_delay.ftr");
+        unlink($this->dir_name."/robot.dat");
+        unlink($robot_archive_name);
         $this->crawl_delay_table = array();
 
         file_put_contents($this->dir_name."/robot_timestamp.txt", time());
 
         $this->got_robottxt_filter = NULL;
-        $this->dissallowed_robot_filter = NULL;
         $this->crawl_delay_filter = NULL;
+        $this->robot_archive = NULL;
+        $this->robot_table = NULL;
         gc_collect_cycles();
 
         $this->got_robottxt_filter = 
             new BloomFilterFile(
                 $this->dir_name."/got_robottxt.ftr", $this->filter_size);
-        $this->dissallowed_robot_filter = 
-            new BloomFilterFile(
-                $this->dir_name."/dissallowed_robot.ftr", $this->filter_size);
         $this->crawl_delay_filter = 
             new BloomFilterFile(
                 $this->dir_name."/crawl_delay.ftr", $this->filter_size);
+        $this->robot_archive = new WebArchive(
+            $robot_archive_name, new NonCompressor(), false, true);
+        $this->robot_table =  new HashTable($this->dir_name.
+            "/robot.dat", 8*$this->num_urls_ram, 
+             self::HASH_KEY_SIZE, self::HASH_VALUE_SIZE);
     }
 
     /**

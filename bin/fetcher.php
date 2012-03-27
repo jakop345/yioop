@@ -761,7 +761,6 @@ class Fetcher implements CrawlConstants
         $info_string = trim($info_string);
         $tok = strtok($info_string, "\n");
         $info = unserialize(base64_decode($tok));
-
         $this->setCrawlParamsFromArray($info);
 
         if(isset($info[self::SITES])) {
@@ -980,19 +979,6 @@ class Fetcher implements CrawlConstants
         foreach($site_pages as $site) {
             $response_code = $site[self::HTTP_CODE]; 
 
-            //process robot.txt files separately
-            if(isset($site[self::ROBOT_PATHS])) {
-                if($response_code >= 200 && $response_code < 300) {
-                    $site = $this->processRobotPage($site);
-                }
-                $site[self::GOT_ROBOT_TXT] = true;
-                $site[self::HASH] = FetchUrl::computePageHash(
-                    $site[self::PAGE]);
-
-                $summarized_site_pages[$i][self::LINKS] = 
-                    isset($site[self::LINKS]) ?$site[self::LINKS] : array();
-            }
-
             if($response_code < 200 || $response_code >= 300) {
                 crawlLog($site[self::URL]." response code $response_code");
                 $host = UrlParser::getHost($site[self::URL]);
@@ -1010,7 +996,13 @@ class Fetcher implements CrawlConstants
                 */
             }
 
-            $type =  $site[self::TYPE];
+            //text/robot is my made up mimetype for robots.txt files
+            if(isset($site[self::ROBOT_PATHS])) {
+                $site[self::GOT_ROBOT_TXT] = true;
+                $type = "text/robot";
+            } else {
+                $type = $site[self::TYPE];
+            }
 
             $handled = false;
             //deals with short URLs and directs them to the original link
@@ -1034,7 +1026,7 @@ class Fetcher implements CrawlConstants
                 $handled = true;
             } else if(isset($PAGE_PROCESSORS[$type])) { 
                 $page_processor = $PAGE_PROCESSORS[$type];
-                if($page_processor == "TextProcessor" ||
+                if($page_processor == "TextProcessor"  ||
                     get_parent_class($page_processor) == "TextProcessor") {
                     $text_data =true;
                 } else {
@@ -1054,7 +1046,6 @@ class Fetcher implements CrawlConstants
             }
 
             if(isset($site[self::PAGE]) && !$handled) {
-
                 if(!isset($site[self::ENCODING])) {
                     $site[self::ENCODING] = "UTF-8";
                 }
@@ -1083,7 +1074,6 @@ class Fetcher implements CrawlConstants
             } else if(!$handled) {
                 $doc_info = false;
             }
-
             $not_loc = true;
             if($doc_info) {
                 $site[self::DOC_INFO] =  $doc_info;
@@ -1101,6 +1091,10 @@ class Fetcher implements CrawlConstants
                         $htaccess);
                 }
 
+                if($type == "text/robot" && 
+                    isset($doc_info[self::PAGE])) {
+                        $site[self::PAGE] = $doc_info[self::PAGE];
+                }
                 if($text_data) {
                     if(isset($doc_info[self::PAGE])) {
                         $site[self::PAGE] = $doc_info[self::PAGE];
@@ -1117,7 +1111,27 @@ class Fetcher implements CrawlConstants
                     $site[self::HASH] = FetchUrl::computePageHash(
                         $site[self::PAGE]);
                 }
-
+                if(isset($doc_info[self::CRAWL_DELAY])) {
+                    $site[self::CRAWL_DELAY] = $doc_info[self::CRAWL_DELAY];
+                }
+                if(isset($doc_info[self::ROBOT_PATHS])) {
+                    $site[self::ROBOT_PATHS] = $doc_info[self::ROBOT_PATHS];
+                }
+                if(!isset($site[self::ROBOT_METAS])) {
+                    $site[self::ROBOT_METAS] = array();
+                }
+                if(isset($doc_info[self::ROBOT_METAS])) {
+                    $site[self::ROBOT_METAS] = array_merge(
+                        $site[self::ROBOT_METAS], $doc_info[self::ROBOT_METAS]);
+                }
+                //here's where we enforce NOFOLLOW
+                if(in_array("NOFOLLOW", $site[self::ROBOT_METAS]) || 
+                    in_array("NONE", $site[self::ROBOT_METAS])) {
+                    $site[self::DOC_INFO][self::LINKS] = array();
+                }
+                if(isset($doc_info[self::AGENT_LIST])) {
+                    $site[self::AGENT_LIST] = $doc_info[self::AGENT_LIST];
+                }
                 $this->copySiteFields($i, $site, $summarized_site_pages, 
                     $stored_site_pages);
 
@@ -1141,8 +1155,7 @@ class Fetcher implements CrawlConstants
                     $summarized_site_pages[$i][self::LANG] = 
                         $site[self::DOC_INFO][self::LANG];
                 }
-                if(isset($site[self::DOC_INFO][self::LINKS]) && 
-                    !isset($site[self::ROBOT_PATHS])) {
+                if(isset($site[self::DOC_INFO][self::LINKS])) {
                     $summarized_site_pages[$i][self::LINKS] = 
                         $site[self::DOC_INFO][self::LINKS];
                 }
@@ -1197,7 +1210,8 @@ class Fetcher implements CrawlConstants
             self::HASH, self::SERVER, self::SERVER_VERSION,
             self::OPERATING_SYSTEM, self::MODIFIED, self::ROBOT_INSTANCE,
             self::LOCATION, self::SIZE, self::TOTAL_TIME, self::DNS_TIME,
-            self::ROBOT_PATHS, self::GOT_ROBOT_TXT);
+            self::ROBOT_PATHS, self::GOT_ROBOT_TXT, self::CRAWL_DELAY,
+            self::AGENT_LIST, self::ROBOT_METAS);
 
         foreach($summary_fields as $field) {
             if(isset($site[$field])) {
@@ -1265,81 +1279,6 @@ class Fetcher implements CrawlConstants
         }
     }
 
-
-    /**
-     * Parses the contents of a robots.txt page extracting disallowed paths and
-     * Crawl-delay
-     *
-     * @param array $robot_site array containing info about one robots.txt page
-     * @return array the $robot_site array with two new fields: one containing
-     *      an array of disallowed paths, the other containing the crawl-delay
-     *      if any
-     */
-    function processRobotPage($robot_site)
-    {
-        $web_archive = $this->web_archive;
-
-        $host_url = UrlParser::getHost($robot_site[self::URL]);
-
-        if(isset($robot_site[self::PAGE])) {
-            $robot_page = $robot_site[self::PAGE];
-            $lines = explode("\n", $robot_page);
-
-            $add_rule_state = false;
-            $rule_added_flag = false;
-            $delay_flag = false;
-            $robot_site[self::LINKS] = array();
-            foreach($lines as $line) {
-                if(stristr($line, "User-agent") && (stristr($line, ":*") 
-                    || stristr($line, " *") || stristr($line, USER_AGENT_SHORT) 
-                    || $add_rule_state)) {
-                    $add_rule_state = ($add_rule_state) ? false : true;
-                }
-                
-                if($add_rule_state) {
-                    if(stristr($line, "Disallow")) {
-                        $path = trim(preg_replace('/Disallow\:/i', "", $line));
-
-                        $rule_added_flag = true;
-
-                        if(strlen($path) > 0) {
-                        $robot_site[self::ROBOT_PATHS][] = $path; 
-                        }
-                    }
-                    
-                    if(stristr($line, "Crawl-delay")) {
-                      
-                        $delay_string = trim(
-                            preg_replace('/Crawl\-delay\:/i', "", $line));
-                        $delay_flag = true;
-                    }
-
-                }
-
-                if(stristr($line, "Sitemap")) {
-                    $tmp_url = UrlParser::canonicalLink(trim(
-                        preg_replace('/Sitemap\:/i', "", $line)), 
-                        $host_url);
-                    if(!UrlParser::checkRecursiveUrl($tmp_url) 
-                        && strlen($tmp_url) < MAX_URL_LENGTH) {
-                        $robot_site[self::LINKS][] = $tmp_url;
-                    }
-                }
-            }
-            
-            if($delay_flag) {
-                $delay = intval($delay_string);
-                if($delay > MAXIMUM_CRAWL_DELAY)  {
-                    $robot_site[self::ROBOT_PATHS][] = "/";
-                } else {
-                    $robot_site[self::CRAWL_DELAY] = $delay;
-                }
-            }
-        }
-        return $robot_site;
-    
-    }
-    
     /**
      * Updates the $this->found_sites array with data from the most recently
      * downloaded sites. This means updating the following sub arrays:
@@ -1353,7 +1292,6 @@ class Fetcher implements CrawlConstants
     function updateFoundSites($sites) 
     {
         $start_time = microtime();
-
 
         for($i = 0; $i < count($sites); $i++) {
             $site = $sites[$i];
@@ -1373,7 +1311,7 @@ class Fetcher implements CrawlConstants
                     $num_links = count($site[self::LINKS]);
                     //robots pages might have sitemaps links on them
                     //which we want to crawl
-                    $link_urls = array_keys($site[self::LINKS]);
+                    $link_urls = array_values($site[self::LINKS]);
                     $this->addToCrawlSites($link_urls, 
                         $site[self::WEIGHT], $site[self::HASH], 
                         $site[self::URL], true);
@@ -1399,7 +1337,7 @@ class Fetcher implements CrawlConstants
                 $this->hosts_with_errors[$host] > DOWNLOAD_ERROR_THRESHOLD) {
                 $this->found_sites[self::ROBOT_TXT][$host][
                     self::CRAWL_DELAY] = ERROR_CRAWL_DELAY;
-                echo "setting crawl delay $host";
+                crawlLog("setting crawl delay $host");
             }
 
             if(isset($this->found_sites[self::TO_CRAWL])) {
@@ -1975,7 +1913,11 @@ class Fetcher implements CrawlConstants
                 $meta_ids[] = 'lang:'.$site[self::LANG];
             }
         }
-        
+        if(isset($site[self::AGENT_LIST])) {
+            foreach($site[self::AGENT_LIST] as $agent) {
+                $meta_ids[] = 'robot:'.strtolower($agent);
+            }
+        }
         //Add all meta word for subdoctype
         if(isset($site[self::SUBDOCTYPE])){
             $meta_ids[] = $site[self::SUBDOCTYPE].':all';

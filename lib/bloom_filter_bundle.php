@@ -175,7 +175,7 @@ class BloomFilterBundle
                      */
                         unset($arr[$j]);
                     }
-                } else { //now do the same strategy for the aray of fields case
+                } else { //now do the same strategy for the array of fields case
                     foreach($field_names as $field_name) {
                         $tmp = & $arr[$j][$field_name];
                         if($tmp !== false && $tmp_filter->contains($tmp)) {

@@ -76,7 +76,8 @@ class HtmlProcessor extends TextProcessor
             $page = preg_replace('@<script[^>]*?>.*?</script>@si', ' ', $page);
 
             $dom = self::dom($page);
-            if($dom !== false && self::checkMetaRobots($dom)) {
+            if($dom !== false ) {
+                $summary[self::ROBOT_METAS] = self::getMetaRobots($dom);
                 $summary[self::TITLE] = self::title($dom);
                 $summary[self::DESCRIPTION] = self::description($dom);
                 $summary[self::LANG] = self::lang($dom, 
@@ -146,14 +147,14 @@ class HtmlProcessor extends TextProcessor
     }
 
     /**
-     * Check if there is a meta tag in the supplied document object that 
-     * forbids robots from crawling the page corresponding to the dom object.
+     * Get any NOINDEX, NOFOLLOW, NOARCHIVE, NONE, info out of any robot
+     * meta tags.
      *
      *  @param object $dom - a document object to check the meta tags for
      * 
-     *  @return bool true or false depending on the result of the check
+     *  @return array of robot meta instructions
      */
-    static function checkMetaRobots($dom) 
+    static function getMetaRobots($dom) 
     {
         $xpath = new DOMXPath($dom);
         // we use robot rather than robots just in case people forget the s
@@ -162,14 +163,15 @@ class HtmlProcessor extends TextProcessor
             " 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'),'ROBOT')";
         $metas = $xpath->evaluate("/html/head//meta[$robots_check]");
 
+        $found_metas = array();
         foreach($metas as $meta) {
-            // don't crawl if either noindex or nofollow
-            if(mb_stristr($meta->getAttribute('content'),"NOINDEX") || 
-                mb_stristr($meta->getAttribute('content'), "NOFOLLOW"))
-                { return false; }
+            $content = $meta->getAttribute('content');
+            $robot_metas = explode(",", $content);
+            foreach($robot_metas as $robot_meta) {
+                $found_metas[] = strtoupper(trim($robot_meta));
+            }
         }
-
-        return true;
+        return $found_metas;
     }
 
     /**

@@ -555,7 +555,7 @@ class SearchController extends Controller implements CrawlConstants
 
                 foreach($words as $word) {
                     //only mark string of length at least 2
-                    if(strlen($word) > 1) {
+                    if(mb_strlen($word) > 1) {
                         $mark_prefix = crawlHash($word);
                         if(stristr($mark_prefix, $word) !== false) {
                             $mark_prefix = preg_replace(
@@ -680,11 +680,14 @@ class SearchController extends Controller implements CrawlConstants
         $this->crawlModel->index_name = $crawl_time;
 
         $data = array();
-        if(!$crawl_item = $this->crawlModel->getCrawlItem($url, 
-            $queue_servers)) {
+        $crawl_item = $this->crawlModel->getCrawlItem($url, $queue_servers);
+        if(!$crawl_item || (isset($crawl_item[self::ROBOT_METAS]) &&
+                (in_array("NOARCHIVE", $crawl_item[self::ROBOT_METAS]) ||
+                in_array("NONE", $crawl_item[self::ROBOT_METAS])) )) {
             $this->displayView("nocache", $data);
             return;
         }
+
         $summary_string = 
             tl('search_controller_extracted_title')."\n\n".
             wordwrap($crawl_item[self::TITLE], 80, "\n")."\n\n" .
@@ -693,15 +696,23 @@ class SearchController extends Controller implements CrawlConstants
             tl('search_controller_extracted_links')."\n\n".
             wordwrap(print_r($crawl_item[self::LINKS], true), 80, "\n");
         if(isset($crawl_item[self::ROBOT_PATHS])) {
-            $summary_string = 
-                tl('search_controller_extracted_robot_paths')."\n\n".
-                wordwrap(print_r($crawl_item[self::ROBOT_PATHS], true), 
-                    80, "\n");
+            if(isset($crawl_item[self::ROBOT_PATHS][self::ALLOWED_SITES])) {
+                $summary_string = 
+                    tl('search_controller_extracted_allow_paths')."\n\n".
+                    wordwrap(print_r($crawl_item[self::ROBOT_PATHS][
+                        self::ALLOWED_SITES], true),  80, "\n");
+            }
+            if(isset($crawl_item[self::ROBOT_PATHS][self::DISALLOWED_SITES])) {
+                $summary_string = 
+                    tl('search_controller_extracted_disallow_paths')."\n\n".
+                    wordwrap(print_r($crawl_item[self::ROBOT_PATHS][
+                        self::DISALLOWED_SITES], true),  80, "\n");
+            }
             if(isset($crawl_item[self::CRAWL_DELAY])) {
                 $summary_string = 
                     tl('search_controller_crawl_delay')."\n\n".
                     wordwrap(print_r($crawl_item[self::CRAWL_DELAY], true), 
-                        80, "\n") . $summary_string;
+                        80, "\n") ."\n\n". $summary_string;
             }
         }
         $robot_instance = $crawl_item[self::ROBOT_INSTANCE];
@@ -851,7 +862,7 @@ class SearchController extends Controller implements CrawlConstants
         $i = 0;
         foreach($words as $word) {
             //only mark string of length at least 2
-            if(strlen($word) > 1) {
+            if(mb_strlen($word) > 1) {
                 $mark_prefix = crawlHash($word);
                 if(stristr($mark_prefix, $word) !== false) {
                     $mark_prefix = preg_replace(

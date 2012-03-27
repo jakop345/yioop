@@ -137,7 +137,7 @@ class HashTable extends StringArray
      * @param string $value the value associated with $key
      * @param int $probe if the location in the hash table is already known
      *      to be $probe then this variable can be used to save a lookup
-     * @return bool whether the insert was succesful or not
+     * @return bool whether the insert was successful or not
      */
     function insert($key, $value, $probe = false)
     {

@@ -128,9 +128,11 @@ class SearchView extends View implements CrawlConstants
                     }
                 }
                 ?></a></h2>
-                <p><?php 
-                echo $this->displayresultsHelper->
-                    render($page[self::DESCRIPTION]); ?></p>
+                <p><?php if(!isset($page[self::ROBOT_METAS]) || 
+                    !in_array("NOSNIPPET", $page[self::ROBOT_METAS])) {
+                        echo $this->displayresultsHelper->
+                            render($page[self::DESCRIPTION]); 
+                    }?></p>
                 <p class="echolink" ><?php if(isset($page[self::URL])){
                     e(substr($page[self::URL],0, 200)." ");}
                     e(tl('search_view_rank', 
@@ -141,7 +143,9 @@ class SearchView extends View implements CrawlConstants
                         number_format($page[self::PROXIMITY], 2) )." ");
                     e(tl('search_view_score', $page[self::SCORE]));
                 if(isset($page[self::TYPE]) && $page[self::TYPE] != "link") {
-                    if(CACHE_LINK) {
+                    if(CACHE_LINK && (!isset($page[self::ROBOT_METAS]) ||
+                        !(in_array("NOARCHIVE", $page[self::ROBOT_METAS]) ||
+                          in_array("NONE", $page[self::ROBOT_METAS])))) {
                     ?>
                         <a href="?YIOOP_TOKEN=<?php e($data['YIOOP_TOKEN']);
                             ?>&amp;c=search&amp;a=cache&amp;q=<?php 

@@ -115,10 +115,49 @@ class UrlParserTest extends UnitTest
         );
 
         foreach($test_links as $test_link) {
-            $result = UrlParser::canonicalLink($test_link[0], $test_link[1]);
+            $result = UrlParser::canonicalLink($test_link[0], 
+                $test_link[1], false);
             $this->assertEqual($result, $test_link[2], $test_link[3]);
         }
+
     }
 
+
+    /**
+     * Check is a path matches with a list of paths presumably coming from
+     * a robots.txt file
+     */
+    public function isPathMemberRegexPathsTestCase()
+    {
+        $path = array();
+        $robot_paths = array();
+        $results = array();
+        $tests = array(
+            array("/bobby", array("/bob"), true, "Substring Positive"),
+            array("/bobby", array("/alice", "/f/g/h/d"), false, 
+                "Substring Negative 1"),
+            array("/bobby/", array("/bobby/bay", "/f/g/h/d", "/yo"), false, 
+                "Substring Negative 2"),
+            array("/a/bbbb/c/", array("/bobby/bay", "/a/*/c/", "/yo"), true, 
+                "Star Positive 1"),
+            array("/a/bbbb/d/", array("/bobby/bay", "/a/*/c/", "/yo"), false, 
+                "Star Negative 1"),
+            array("/test.html?a=b", array("/bobby/bay", "/*?", "/yo"), true, 
+                "Star Positive 2"),
+            array("/test.html", array("/bobby/bay", "/*.html$", "/yo"), true, 
+                "Dollar Positive 1"),
+            array("/test.htmlish", array("/bobby/bay", "/*.html$", "/yo"),false, 
+                "Dollar Negative 1"),
+            array("/test.htmlish", array("/bobby/bay", "*", "/yo"),true, 
+                "Degenerate 1"),
+            array("/test.html", array("/bobby/bay", "/**.html$", "/yo"), true, 
+                "Degenerate 2"),
+        );
+        foreach ($tests as $test) {
+            list($path, $robot_paths, $result, $description) = $test;
+            $this->assertEqual(UrlParser::isPathMemberRegexPaths($path,
+                $robot_paths), $result, $description);
+        }
+    }
 }
 ?>

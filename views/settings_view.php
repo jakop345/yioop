@@ -107,7 +107,7 @@ class SettingsView extends View
 </div>
 <div class="setting-footer"><a 
             href="javascript:window.external.AddSearchProvider('<?php 
-            e(QUEUE_SERVER."yioopbar.xml");?>')"><?php 
+            e(NAME_SERVER."yioopbar.xml");?>')"><?php 
     e(tl('setting_install_search_plugin'));
 ?></a>.</div>
 </div>

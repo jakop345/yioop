@@ -308,8 +308,8 @@ class FetchUrl implements CrawlConstants
      *  and the web page returned. Parses out useful information from
      *  the header and return an array of these two parts and the useful info.
      *
-     *  @param string &$header_and_page
-     *  @param string $value
+     *  @param string &$header_and_page reference to string of downloaded data
+     *  @param string $value field to store the page protion of page
      *  @return array info array consisting of a header, page for an http
      *      response, as well as parsed from the header the server, server
      *      version, operating system, encoding, and date information.
@@ -363,10 +363,11 @@ class FetchUrl implements CrawlConstants
         $first_line = array_shift($lines);
         $response = preg_split("/(\s+)/", $first_line);
         $site[CrawlConstants::HTTP_CODE] = @trim($response[1]);
+        $site[CrawlConstants::ROBOT_METAS] = array();
         foreach($lines as $line) {
             $line = trim($line);
             if(stristr($line, 'Server:')) {
-                $server_parts = explode("Server:", $line);
+                $server_parts = preg_split("/Server\:/i", $line);
                 $server_name_parts = @explode("/", $server_parts[1]);
                 $site[CrawlConstants::SERVER] = @trim($server_name_parts[0]);
                 if(isset($server_name_parts[1])) {
@@ -381,14 +382,22 @@ class FetchUrl implements CrawlConstants
                 }
             }
             if(stristr($line, 'charset=')) {
-                $line_parts = explode("charset=", $line);
+                $line_parts = preg_split("/charset\=/i", $line);
                 $site[CrawlConstants::ENCODING] = 
                     strtoupper(@trim($line_parts[1]));
             }
             if(stristr($line, 'Last-Modified:')) {
-                $line_parts = explode("Last-Modified:", $line);
+                $line_parts = preg_split("/Last\-Modified\:/i", $line);
                 $site[CrawlConstants::MODIFIED] = 
                     strtotime(@trim($line_parts[1]));
+            }
+            if(stristr($line, 'X-Robots-Tag:')) {
+                $line_parts = preg_split("/X\-Robots\-Tag\:/i", $line);
+                $robot_metas = explode(",", $line_parts[1]);
+                foreach($robot_metas as $robot_meta) {
+                    $site[CrawlConstants::ROBOT_METAS][] = strtoupper(
+                        trim($robot_meta));
+                }
             }
         }
         /*

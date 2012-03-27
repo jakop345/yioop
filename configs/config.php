@@ -317,6 +317,7 @@ $IMAGE_TYPES = array("gif","jpg", "bmp", "png", "jpeg", "svg");
 $PAGE_PROCESSORS = array(   "text/html" => "HtmlProcessor", 
                             "text/asp" => "HtmlProcessor",
                             "text/xml" => "XmlProcessor",
+                            "text/robot" => "RobotProcessor",
 
                             "application/xml" => "XmlProcessor",
                             "application/xhtml+xml" => "HtmlProcessor",

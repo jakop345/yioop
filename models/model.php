@@ -277,7 +277,7 @@ class Model implements CrawlConstants
         $words = array_unique($words);
         foreach($words as $word) {
             if($word != "" && !stristr($word, "/")) {
-                $pattern = '/('.$word.')/i';
+                $pattern = '/('.preg_quote($word).')/i';
                 $new_text = preg_replace($pattern, '<b>$1</b>', $text);
                 $text = $new_text;
             }

@@ -446,7 +446,7 @@ class PhraseModel extends Model
             'filetype:', 'info:', '\-', 'os:', 'server:', 'date:', "numlinks:",
             'index:', 'i:', 'ip:', 'weight:', 'w:', 'u:', 'time:', 'code:',
             'lang:', 'media:', 'elink:', 'location:', 'size:', 'host:', 'dns:',
-            'path:');
+            'path:', 'robot:');
         if(isset($this->additional_meta_words)) {
             $meta_words = array_merge($meta_words, array_keys(
                 $this->additional_meta_words));
@@ -828,8 +828,19 @@ class PhraseModel extends Model
                     $doc_info[self::CRAWL_TIME] = $tmp[self::CRAWL_TIME];
                     unset($doc_info[CrawlConstants::SUMMARY]);
                     if(is_array($summary)) {
-                        $pages[] = array_merge($doc_info, $summary);
-                        $num_retrieved++;
+                        $pre_page = array_merge($doc_info, $summary);
+                        $robots_okay = true;
+                        if(isset($pre_page[CrawlConstants::ROBOT_METAS])) {
+                            if(in_array("NOINDEX", $pre_page[self::ROBOT_METAS])
+                                 || 
+                                in_array("NONE", $pre_page[self::ROBOT_METAS])){
+                                $robots_okay = false;
+                            }
+                        }
+                        if($robots_okay) {
+                            $pages[] = & $pre_page;
+                            $num_retrieved++;
+                        }
                     }
                 } else {
                     $pages[] = $doc_info;

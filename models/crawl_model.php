@@ -114,7 +114,6 @@ class CrawlModel extends Model implements CrawlConstants
 
         $index_archive = 
             new IndexArchiveBundle(CRAWL_DIR.'/cache/'.$index_archive_name);
-
         $summary = $index_archive->getPage($summary_offset, $generation);
         $summary[self::CACHE_PAGE_PARTITION] = $cache_partition;
 

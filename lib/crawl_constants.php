@@ -194,6 +194,8 @@ interface CrawlConstants
     const SIZE = "bw";
     const TOTAL_TIME = "bx";
     const DNS_TIME = "by";
+    const AGENT_LIST = "bz";
+    const ROBOT_METAS = "ca";
 
     const NEEDS_OFFSET_FLAG = 0x7FFFFFFF;
 
