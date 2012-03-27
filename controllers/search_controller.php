@@ -183,7 +183,9 @@ class SearchController extends Controller implements CrawlConstants
         } else if ($index_time_stamp == 0) {
             $index_info = NULL;
         }
-
+        if(isset($_REQUEST['q'])) {
+            $_REQUEST['q'] = $this->restrictQueryByUserAgent($_REQUEST['q']);
+        }
         if(isset($_REQUEST['q']) && strlen($_REQUEST['q']) > 0 
             || $activity != "query") {
             if($activity == "query") {
@@ -247,6 +249,26 @@ class SearchController extends Controller implements CrawlConstants
             echo webencode(serialize($data));
         }
     }
+
+    /**
+     * Sometimes robots disobey the statistics page nofollow meta tag.
+     * and need to be stopped before they query the whole index
+     * 
+     * @param string $query  the search request string
+     * @param string the search request string if not a bot; "" otherwise
+     */
+    function restrictQueryByUserAgent($query) 
+    {
+        $bots = array("googlebot", "baidu", "naver");
+        $query_okay = true;
+        foreach($bots as $bot) {
+            if(stristr($_SERVER["HTTP_USER_AGENT"], $bot)) {
+                $query_okay = false;
+            }
+        }
+        return ($query_okay) ? $query : "";
+    }
+
 
     /**
      * Used to check if there are any mirrors of the current server.
