@@ -129,7 +129,9 @@ class SearchController extends Controller implements CrawlConstants
         } else {
             $user = $_SERVER['REMOTE_ADDR']; 
         }
-
+        if(isset($_REQUEST['q'])) {
+            $_REQUEST['q'] = $this->restrictQueryByUserAgent($_REQUEST['q']);
+        }
         if(isset($_REQUEST['a'])) {
             if(in_array($_REQUEST['a'], $this->activities)) {
 
@@ -182,9 +184,6 @@ class SearchController extends Controller implements CrawlConstants
             }
         } else if ($index_time_stamp == 0) {
             $index_info = NULL;
-        }
-        if(isset($_REQUEST['q'])) {
-            $_REQUEST['q'] = $this->restrictQueryByUserAgent($_REQUEST['q']);
         }
         if(isset($_REQUEST['q']) && strlen($_REQUEST['q']) > 0 
             || $activity != "query") {
