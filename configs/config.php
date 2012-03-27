@@ -35,7 +35,7 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /** Maintenance mode restricts access to local machine*/
-define("MAINTENANCE_MODE", false)
+define("MAINTENANCE_MODE", false);
 if(MAINTENANCE_MODE && $_SERVER["SERVER_ADDR"] != $_SERVER["REMOTE_ADDR"]) {
     echo "This Yioop! installation is undergoing maintenance, please come ".
         "back later!";
