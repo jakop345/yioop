@@ -138,7 +138,8 @@ class StatisticsView extends View
                                 $name => $value) {
                                 $width = round(500*$value/(max($total,1)));
                                 e("<tr><th><a href='".$base_url."&c=search".
-                                    "&q=$lower_name:$name'>$name</a></th>".
+                                    "&q=$lower_name:$name' rel='nofollow'>".
+                                    "$name</a></th>".
                                     "<td><div style='background-color:green;".
                                         "width:{$width}px;' >$value</div>".
                                     " </td></tr>");

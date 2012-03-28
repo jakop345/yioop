@@ -90,7 +90,7 @@ class PaginationHelper extends Helper
         if(0 < $num_earlier_pages) {
             $prev_limit = ($num_earlier_pages - 1)*$results_per_page;
             echo "<li><span class='end'>&laquo;".
-                "<a href='$base_url&amp;limit=$prev_limit'>".
+                "<a href='$base_url&amp;limit=$prev_limit' rel='nofollow'>".
                 tl('pagination_helper_previous')."</a></span></li>";
         }
 
@@ -100,13 +100,13 @@ class PaginationHelper extends Helper
              } else {
                 $cur_limit = $i * $results_per_page;
                 echo "<li><a class='item' href='$base_url".
-                    "&amp;limit=$cur_limit'>$i</a></li>";
+                    "&amp;limit=$cur_limit' rel='nofollow'>$i</a></li>";
              }
         }
         if($num_earlier_pages < $total_pages - 1) {
             $next_limit = ($num_earlier_pages + 1)*$results_per_page;
             echo "<li><span class='end'><a href='$base_url".
-                "&amp;limit=$next_limit'>".
+                "&amp;limit=$next_limit' rel='nofollow'>".
                 tl('pagination_helper_next')."</a>&raquo;</span></li>";
         }
 

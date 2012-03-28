@@ -117,7 +117,7 @@ class SearchView extends View implements CrawlConstants
                         e($page[self::URL]); 
                     } else {
                         e(strip_tags($page[self::TITLE]));
-                    } ?>" ><?php
+                    } ?>" rel="nofollow"><?php
                  if(isset($page[self::THUMB]) && $page[self::THUMB] != 'NULL') {
                     ?><img src="<?php e($page[self::THUMB]); ?>" alt="<?php 
                         e($page[self::TITLE]); ?>"  /> <?php
@@ -151,7 +151,8 @@ class SearchView extends View implements CrawlConstants
                             ?>&amp;c=search&amp;a=cache&amp;q=<?php 
                             e($data['QUERY']); ?>&amp;arg=<?php 
                             e(urlencode($page[self::URL])); 
-                            ?>&amp;its=<?php e($page[self::CRAWL_TIME]); ?>" >
+                            ?>&amp;its=<?php e($page[self::CRAWL_TIME]); ?>" 
+                        rel='nofollow'>
                         <?php
                         if($page[self::TYPE] == "text/html" || 
                             stristr($page[self::TYPE], "image")) {
@@ -168,7 +169,8 @@ class SearchView extends View implements CrawlConstants
                     <a href="?YIOOP_TOKEN=<?php e($data['YIOOP_TOKEN']);
                         ?>&amp;c=search&amp;a=related&amp;arg=<?php 
                         e(urlencode($page[self::URL])); ?>&amp;<?php
-                        ?>its=<?php e($page[self::CRAWL_TIME]); ?>" ><?php 
+                        ?>its=<?php e($page[self::CRAWL_TIME]); ?>" 
+                        rel='nofollow'><?php 
                         e(tl('search_view_similar')); 
                     ?></a>.
                     <?php 
@@ -178,7 +180,8 @@ class SearchView extends View implements CrawlConstants
                         <a href="?YIOOP_TOKEN=<?php e($data['YIOOP_TOKEN']);
                         ?>&amp;c=search&amp;q=<?php 
                         e(urlencode("link:".$page[self::URL])); ?>&amp;<?php
-                        ?>its=<?php e($page[self::CRAWL_TIME]); ?>" ><?php 
+                        ?>its=<?php e($page[self::CRAWL_TIME]); ?>" 
+                        rel='nofollow'><?php 
                         e(tl('search_view_inlink')); 
                     ?></a>.
                     <?php 
@@ -190,7 +193,8 @@ class SearchView extends View implements CrawlConstants
                             <a href="?YIOOP_TOKEN=<?php e($data['YIOOP_TOKEN']);
                                 ?>&amp;c=search&amp;q=<?php
                                 e(urlencode('ip:'.$address));?>&amp;<?php
-                                ?>its=<?php e($data['its']); ?>" >IP:<?php 
+                                ?>its=<?php e($data['its']); ?>" 
+                                rel='nofollow'>IP:<?php 
                                 e("$address");?></a>. <?php 
                           } 
                         }?></p>
