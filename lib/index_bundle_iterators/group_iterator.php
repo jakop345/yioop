@@ -520,9 +520,11 @@ class GroupIterator extends IndexBundleIterator
             $hash_count = $out_pages[$hash_url][self::HASH_URL_COUNT];
             for($i = 0; $i < $hash_count; $i++) {
                 $doc_info = $group_infos[$i];
-                $out_pages[$hash_url][self::SUMMARY_OFFSET][] = 
-                    array($doc_info["KEY"], $doc_info[self::GENERATION],
-                        $doc_info[self::SUMMARY_OFFSET]);
+                if(isset($doc_info[self::GENERATION])) {
+                    $out_pages[$hash_url][self::SUMMARY_OFFSET][] = 
+                        array($doc_info["KEY"], $doc_info[self::GENERATION],
+                            $doc_info[self::SUMMARY_OFFSET]);
+                }
             }
             $out_pages[$hash_url][self::SCORE] = 
                 $out_pages[$hash_url][self::HASH_SUM_SCORE]; 
