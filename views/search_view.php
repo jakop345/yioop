@@ -55,7 +55,7 @@ class SearchView extends View implements CrawlConstants
     /** Names of element objects that the view uses to display itself 
      *  @var array
      */
-    var $elements = array("signin");
+    var $elements = array("signin", "footer");
 
     /** This view is drawn on a web layout
      *  @var string
@@ -208,18 +208,12 @@ class SearchView extends View implements CrawlConstants
         ?><div class="landing-footer">
             <div><b><?php e($data['INDEX_INFO']);?></b> <?php
             if(isset($data["HAS_STATISTICS"]) && $data["HAS_STATISTICS"]) { ?>
-            [<a href="?YIOOP_TOKEN=<?php e($data['YIOOP_TOKEN']);
+            [<a href="index.php?YIOOP_TOKEN=<?php e($data['YIOOP_TOKEN']);
                 ?>&amp;c=statistics&its=<?php e($data['its']);?>"><?php 
                 e(tl('search_view_more_statistics')); ?></a>]
             <?php }?>
             </div>
-            <div>- <a href="?c=static&amp;p=blog"><?php 
-                e(tl('search_view_blog')); ?></a> -
-                <a href="?c=static&amp;p=privacy"><?php 
-                e(tl('search_view_privacy')); ?></a> -
-                <a href="http://www.seekquarry.com/"><?php
-            e(tl('search_view_developed_seek_quarry')); ?></a> -</div>
-
+            <?php  $this->footerElement->render($data);?>
         </div><?php
         if(!isset($data['PAGES'])) {
             e("</div><div class='landing-spacer'></div>");

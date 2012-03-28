@@ -24,7 +24,7 @@
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
- * @subpackage view
+ * @subpackage element
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
  * @copyright 2009 - 2012
@@ -34,52 +34,41 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- * This View is responsible for drawing the landing page
- * of the Seek Quarry app
+ * Element responsible for drawing footer links on search view and static view
+ * pages
  *
  * @author Chris Pollett
  * @package seek_quarry
- * @subpackage view
- */ 
+ * @subpackage element
+ */
 
-class StaticView extends View
+class FooterElement extends Element
 {
 
-    /** This view is makes use of the localized static page overview.thtml
-     *  @var array
-     */
-    var $pages = array('privacy', 'blog', 'bot');
-
-    /** Names of element objects that the view uses to display itself 
-     *  @var array
-     */
-    var $elements = array("footer");
-
-    /** This view is drawn on a web layout
-     *  @var string
-     */
-    var $layout = "web";
-
     /**
-     *  Draws the login web page.
+     *  Element used to render the login screen for the admin control panel
      *
-     *  @param array $data  contains the anti CSRF token YIOOP_TOKEN
-     *  the view
+     *  @param array $data makes use of the YIOOP_TOKEN for anti CSRF attacks
      */
-    function renderView($data) {
-?>
-<div class="center">
-<h1 class="logo"><a href="."><img src="resources/yioop.png" 
-    alt="<?php e(tl('static_view_title')); ?>" /></a><span><?php 
-    e($data['subtitle']);?></span></h1>
-</div>
-<div class="content">
-<?php e($this->page_objects[$data['page']]); ?>
-</div>
-<div class="landing-footer">
-<?php  $this->footerElement->render($data);?>
-</div>
-<?php
+    public function render($data)
+    {
+    ?>
+        <div>
+        - <a href="./blog.php"><?php 
+        e(tl('footer_element_blog')); ?></a> -
+        <a href="./privacy.php"><?php 
+        e(tl('footer_element_privacy')); ?></a> -
+        <a href="./bot.php"><?php 
+        e(tl('footer_element_bot')); ?></a> -
+        <a href="http://www.seekquarry.com/"><?php
+        e(tl('footer_element_developed_seek_quarry')); ?></a> -
+        </div>
+        <div>
+        (c) 2012 Yioop! - 
+        <a href="http://www.yioop.com/"><?php
+        e(tl('footer_element_php_search_engine')); ?></a>
+        </div>
+    <?php
     }
 }
 ?>

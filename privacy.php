@@ -34,8 +34,9 @@
  * @filesource
  */
 $_REQUEST['c'] = "static";
-$_REQUEST['p'] = "bot";
-define("BASE_DIR", substr($_SERVER['SCRIPT_FILENAME'], 0,-strlen("bot.php")));
+$_REQUEST['p'] = "privacy";
+define("BASE_DIR", substr($_SERVER['SCRIPT_FILENAME'], 0,
+    -strlen("privacy.php")));
 
 include("index.php");
 ?>
