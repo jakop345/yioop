@@ -273,6 +273,8 @@ class FetchUrl implements CrawlConstants
             } else {
                 $url_with_ip_if_possible = $url;
             }
+        } else {
+            $url_with_ip_if_possible = $url;
         }
         $headers[] = 'Expect:';
         $results = array($url, $url_with_ip_if_possible, $headers);
