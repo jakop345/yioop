@@ -881,9 +881,6 @@ EOT;
         $machine_urls = NULL, $cache = false)
     {
         if($machine_urls != NULL && !$this->isSingleLocalhost($machine_urls)) {
-            if(!in_array(NAME_SERVER, $machine_urls)) {
-                array_unshift($machine_urls, NAME_SERVER);
-            }
             $pre_arg = ($return_arc_bundles && $return_recrawls) ? 3 :
                 ($return_recrawls) ? 2 : ($return_arc_bundles) ? 1 : 0;
             $cache_file = CRAWL_DIR."/cache/".self::network_crawllist_base_name.
@@ -1203,9 +1200,6 @@ EOT;
     function combinedCrawlInfo($machine_urls = NULL)
     {
         if($machine_urls != NULL && !$this->isSingleLocalhost($machine_urls)) {
-            if(!in_array(NAME_SERVER, $machine_urls)) {
-                array_unshift($machine_urls, NAME_SERVER);
-            }
             $combined_strings = 
                 $this->execMachines("combinedCrawlInfo", $machine_urls);
             $combined = array();
