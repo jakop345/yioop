@@ -838,7 +838,7 @@ class PhraseModel extends Model
                             }
                         }
                         if($robots_okay) {
-                            $pages[] = $pre_page;
+                            $pages[] = & $pre_page;
                             $num_retrieved++;
                         }
                     }
