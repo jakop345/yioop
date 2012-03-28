@@ -34,13 +34,7 @@
  */
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
-/** Maintenance mode restricts access to local machine*/
-define("MAINTENANCE_MODE", false);
-if(MAINTENANCE_MODE && $_SERVER["SERVER_ADDR"] != $_SERVER["REMOTE_ADDR"]) {
-    echo "This Yioop! installation is undergoing maintenance, please come ".
-        "back later!";
-    exit();
-}
+
 /** Don't display any query info*/
 define('NO_DEBUG_INFO', 0);
 /** bit of DEBUG_LEVEL used to indicate test cases should be displayable*/
@@ -51,11 +45,19 @@ define('QUERY_INFO', 2);
 define('ERROR_INFO', 4);
 date_default_timezone_set('America/Los_Angeles');
 
+/** Maintenance mode restricts access to local machine*/
+define("MAINTENANCE_MODE", false);
 
 if(file_exists(BASE_DIR."/configs/local_config.php")) {
     /** Include any locally specified defines (could use as an alternative
         way to set work directory) */
     require_once(BASE_DIR."/configs/local_config.php");
+}
+
+if(MAINTENANCE_MODE && $_SERVER["SERVER_ADDR"] != $_SERVER["REMOTE_ADDR"]) {
+    echo "This Yioop! installation is undergoing maintenance, please come ".
+        "back later!";
+    exit();
 }
 
 if(!defined('WORK_DIRECTORY')) {

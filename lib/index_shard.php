@@ -804,6 +804,7 @@ class IndexShard extends PersistentStructure implements
                 self::POSTING_LEN);
             $posting_start = $current;
             $posting_end = $current;
+            if($posting == "") return false;
             $end_word_start = 0;
             $chr = (ord($posting[0]) & 192);
             $first_time = ( $chr == 64);
