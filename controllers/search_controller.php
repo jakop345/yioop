@@ -251,7 +251,7 @@ class SearchController extends Controller implements CrawlConstants
                     unset($data["PAGES"][$i]["INDEX"]);
                 }
             }
-            echo webencode(json_encode($data, true));
+            echo webencode(serialize($data));
         }
     }
 
