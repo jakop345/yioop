@@ -246,7 +246,8 @@ class NetworkIterator extends IndexBundleIterator
         for($j = 0 ; $j < $count; $j++) {
             $download = & $downloads[$j];
             if(isset($download[self::PAGE])) {
-                $pre_result = @json_decode(webdecode($download[self::PAGE]));
+                $pre_result = @json_decode(webdecode($download[self::PAGE]),    
+                    true);
                 if(!isset($pre_result["TOTAL_ROWS"]) || 
                     $pre_result["TOTAL_ROWS"] < $this->results_per_block) {
                     $this->more_flags[$lookup[$j]] = false;
