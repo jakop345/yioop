@@ -91,12 +91,12 @@ class FetchUrl implements CrawlConstants
                 if(!$minimal) {
                     $ip_holder[$i] = fopen("$temp_dir/tmp$i.txt", 'w+');
                     curl_setopt($sites[$i][0], CURLOPT_STDERR, $ip_holder[$i]);
+                    curl_setopt($sites[$i][0], CURLOPT_VERBOSE, true);
                 }
                 curl_setopt($sites[$i][0], CURLOPT_USERAGENT, USER_AGENT);
                 list($sites[$i][$key], $url, $headers) = 
                     self::prepareUrlHeaders($sites[$i][$key], $minimal);
                 curl_setopt($sites[$i][0], CURLOPT_URL, $url);
-                curl_setopt($sites[$i][0], CURLOPT_VERBOSE, true);
                 curl_setopt($sites[$i][0], CURLOPT_FOLLOWLOCATION, false);
                 curl_setopt($sites[$i][0], CURLOPT_AUTOREFERER, true);
                 curl_setopt($sites[$i][0], CURLOPT_RETURNTRANSFER, true);
