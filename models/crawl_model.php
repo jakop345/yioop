@@ -704,9 +704,6 @@ EOT;
         } else {
             if($machine_urls != NULL && 
                 !$this->isSingleLocalhost($machine_urls, $timestamp)) {
-                if(!in_array(NAME_SERVER, $machine_urls)) {
-                    array_unshift($machine_urls, NAME_SERVER);
-                }
                 $cache_file = CRAWL_DIR."/cache/".self::network_base_name.
                     $timestamp.".txt";
                 if(file_exists($cache_file) && filemtime($cache_file) 

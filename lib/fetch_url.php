@@ -77,7 +77,7 @@ class FetchUrl implements CrawlConstants
 
         $start_time = microtime();
 
-        if($temp_dir == NULL) {
+        if(!$minimal && $temp_dir == NULL) {
             $temp_dir = CRAWL_DIR."/temp";
             if(!file_exists($temp_dir)) {
                 mkdir($temp_dir);
@@ -88,13 +88,15 @@ class FetchUrl implements CrawlConstants
         for($i = 0; $i < count($sites); $i++) {
             if(isset($sites[$i][$key])) {
                 $sites[$i][0] = curl_init();
-                $ip_holder[$i] = fopen("$temp_dir/tmp$i.txt", 'w+');
+                if(!$minimal) {
+                    $ip_holder[$i] = fopen("$temp_dir/tmp$i.txt", 'w+');
+                    curl_setopt($sites[$i][0], CURLOPT_STDERR, $ip_holder[$i]);
+                }
                 curl_setopt($sites[$i][0], CURLOPT_USERAGENT, USER_AGENT);
                 list($sites[$i][$key], $url, $headers) = 
-                    self::prepareUrlHeaders($sites[$i][$key]);
+                    self::prepareUrlHeaders($sites[$i][$key], $minimal);
                 curl_setopt($sites[$i][0], CURLOPT_URL, $url);
                 curl_setopt($sites[$i][0], CURLOPT_VERBOSE, true);
-                curl_setopt($sites[$i][0], CURLOPT_STDERR, $ip_holder[$i]);
                 curl_setopt($sites[$i][0], CURLOPT_FOLLOWLOCATION, false);
                 curl_setopt($sites[$i][0], CURLOPT_AUTOREFERER, true);
                 curl_setopt($sites[$i][0], CURLOPT_RETURNTRANSFER, true);
@@ -152,7 +154,7 @@ class FetchUrl implements CrawlConstants
 
         //Process returned pages
         for($i = 0; $i < count($sites); $i++) {
-            if(isset($ip_holder[$i]) ) {
+            if(!$minimal && isset($ip_holder[$i]) ) {
                 rewind($ip_holder[$i]);
                 $header = fread($ip_holder[$i], 8192);
                 $ip_addresses = self::getCurlIp($header);
@@ -184,32 +186,33 @@ class FetchUrl implements CrawlConstants
                 } else {
                     $sites[$i][$value] = $content;
                 }
-                $sites[$i][self::SIZE] = @curl_getinfo($sites[$i][0],
-                    CURLINFO_SIZE_DOWNLOAD);
-                $sites[$i][self::DNS_TIME] = @curl_getinfo($sites[$i][0],
-                    CURLINFO_NAMELOOKUP_TIME);
-                $sites[$i][self::TOTAL_TIME] = @curl_getinfo($sites[$i][0],
-                    CURLINFO_TOTAL_TIME);
-                $sites[$i][self::HTTP_CODE] = 
-                    curl_getinfo($sites[$i][0], CURLINFO_HTTP_CODE);
-                if(!$sites[$i][self::HTTP_CODE]) {
-                    $sites[$i][self::HTTP_CODE] = curl_error($sites[$i][0]);
+                if(!$minimal) {
+                    $sites[$i][self::SIZE] = @curl_getinfo($sites[$i][0],
+                        CURLINFO_SIZE_DOWNLOAD);
+                    $sites[$i][self::DNS_TIME] = @curl_getinfo($sites[$i][0],
+                        CURLINFO_NAMELOOKUP_TIME);
+                    $sites[$i][self::TOTAL_TIME] = @curl_getinfo($sites[$i][0],
+                        CURLINFO_TOTAL_TIME);
+                    $sites[$i][self::HTTP_CODE] = 
+                        curl_getinfo($sites[$i][0], CURLINFO_HTTP_CODE);
+                    if(!$sites[$i][self::HTTP_CODE]) {
+                        $sites[$i][self::HTTP_CODE] = curl_error($sites[$i][0]);
+                    }
+                    if($ip_addresses) {
+                        $sites[$i][self::IP_ADDRESSES] = $ip_addresses;
+                    } else {
+                        $sites[$i][self::IP_ADDRESSES] = array("0.0.0.0");
+                    }
+
+                    //Get Time, Mime type and Character encoding
+                    $sites[$i][self::TIMESTAMP] = time();
+
+                    $type_parts = 
+                        explode(";", curl_getinfo($sites[$i][0], 
+                            CURLINFO_CONTENT_TYPE));
+
+                    $sites[$i][self::TYPE] = strtolower(trim($type_parts[0]));
                 }
-                if($ip_addresses) {
-                    $sites[$i][self::IP_ADDRESSES] = $ip_addresses;
-                } else {
-                    $sites[$i][self::IP_ADDRESSES] = array("0.0.0.0");
-                }
-
-                //Get Time, Mime type and Character encoding
-                $sites[$i][self::TIMESTAMP] = time();
-
-                $type_parts = 
-                    explode(";", curl_getinfo($sites[$i][0], 
-                        CURLINFO_CONTENT_TYPE));
-
-                $sites[$i][self::TYPE] = strtolower(trim($type_parts[0]));
-
 
                 curl_multi_remove_handle($agent_handler, $sites[$i][0]);
                 // curl_close($sites[$i][0]);
@@ -227,46 +230,50 @@ class FetchUrl implements CrawlConstants
     }
 
     /**
+     *
+     * @param string $url
+     * @param bool $minimal
      */
-    static function prepareUrlHeaders($url)
+    static function prepareUrlHeaders($url, $minimal = false)
     {
         $url = str_replace("&amp;", "&", $url);
         /* in queue_server we added the ip (if available)
           after the url followed by ###
          */
         $headers = array();
-        $url_ip_parts = explode("###", $url);
-        if(count($url_ip_parts) > 1) {
-            $ip_address = urldecode(array_pop($url_ip_parts));
-            $len = strlen(inet_pton($ip_address));
-            if($len == 4 || $len == 16) {
-                if($len == 16) {
-                    $ip_address= "[$ip_address]";
-                }
-                if(count($url_ip_parts) > 1) {
-                    $url = implode("###", $url_ip_parts);
-                } else {
-                    $url = $url_ip_parts[0];
-                }
-                $url_parts = @parse_url($url);
-                if(isset($url_parts['host'])) {
-                    $cnt = 1;
-                    $url_with_ip_if_possible = str_replace($url_parts['host'],
-                        $ip_address ,$url, $cnt);
-                    
-                    if($cnt != 1) {
-                        $url_with_ip_if_possible = $url;
-                    } else {
-                        $headers[] = "Host:".$url_parts['host'];
+        if(!$minimal) {
+            $url_ip_parts = explode("###", $url);
+            if(count($url_ip_parts) > 1) {
+                $ip_address = urldecode(array_pop($url_ip_parts));
+                $len = strlen(inet_pton($ip_address));
+                if($len == 4 || $len == 16) {
+                    if($len == 16) {
+                        $ip_address= "[$ip_address]";
                     }
+                    if(count($url_ip_parts) > 1) {
+                        $url = implode("###", $url_ip_parts);
+                    } else {
+                        $url = $url_ip_parts[0];
+                    }
+                    $url_parts = @parse_url($url);
+                    if(isset($url_parts['host'])) {
+                        $cnt = 1;
+                        $url_with_ip_if_possible = 
+                            str_replace($url_parts['host'], $ip_address ,$url,
+                                 $cnt);
+                        if($cnt != 1) {
+                            $url_with_ip_if_possible = $url;
+                        } else {
+                            $headers[] = "Host:".$url_parts['host'];
+                        }
+                    }
+                } else {
+                    $url_with_ip_if_possible = $url;
                 }
             } else {
                 $url_with_ip_if_possible = $url;
             }
-        } else {
-            $url_with_ip_if_possible = $url;
         }
-
         $headers[] = 'Expect:';
         $results = array($url, $url_with_ip_if_possible, $headers);
         return $results;
