@@ -114,8 +114,8 @@ class StatisticsController extends Controller implements CrawlConstants
             $this->index_time_stamp = $this->clean($_REQUEST['its'], "string");
             //validate timestamp against list 
             //(some crawlers replay deleted crawls)
-            $crawls = $this->crawlModel->getCrawlList(false,true,$machine_urls,
-                true);
+            $crawls = $this->crawlModel->getCrawlList(false,true,
+                $this->machine_urls, true);
             $found_crawl = false;
             foreach($crawls as $crawl) {
                 if($this->index_time_stamp == $crawl['CRAWL_TIME']) {
