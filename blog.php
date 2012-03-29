@@ -35,7 +35,6 @@
  */
 $_REQUEST['c'] = "static";
 $_REQUEST['p'] = "blog";
-define("BASE_DIR", substr($_SERVER['SCRIPT_FILENAME'], 0,-strlen("blog.php")));
 
 include("index.php");
 ?>

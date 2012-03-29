@@ -35,8 +35,5 @@
  */
 $_REQUEST['c'] = "static";
 $_REQUEST['p'] = "privacy";
-define("BASE_DIR", substr($_SERVER['SCRIPT_FILENAME'], 0,
-    -strlen("privacy.php")));
-
 include("index.php");
 ?>

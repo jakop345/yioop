@@ -45,7 +45,7 @@ switch($_REQUEST['p'])
         header("HTTP/1.0 404 Not Found");
     break;
 }
-define("BASE_DIR", substr($_SERVER['SCRIPT_FILENAME'], 0,-strlen("error.php")));
 
 include("index.php");
+
 ?>

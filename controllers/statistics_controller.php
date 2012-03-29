@@ -125,7 +125,7 @@ class StatisticsController extends Controller implements CrawlConstants
             }
             if(!$found_crawl) {
                 unset($_SESSION['its']);
-                include(BASE_DIR."./error.php");
+                header("Location: ./error.php");
                 exit();
             }
         }

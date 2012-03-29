@@ -38,7 +38,8 @@
 /** Calculate base directory of script
  *  @ignore
  */
-define("BASE_DIR", substr($_SERVER['SCRIPT_FILENAME'], 0,-strlen("index.php")));
+$pathinfo = pathinfo($_SERVER['SCRIPT_FILENAME']);
+define("BASE_DIR", $pathinfo["dirname"].'/');
 
 /**
  * Load the configuration file
