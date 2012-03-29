@@ -165,6 +165,20 @@ class SearchController extends Controller implements CrawlConstants
             $its = (isset($_REQUEST['its'])) ? $_REQUEST['its'] : 
                 $_SESSION['its'];
             $index_time_stamp = $this->clean($its, "int");
+            //validate timestamp against list 
+            //(some crawlers replay deleted crawls)
+            $crawls = $this->crawlModel->getCrawlList(false,true,$machine_urls,
+                true);
+            $found_crawl = false;
+            foreach($crawls as $crawl) {
+                if($index_time_stamp == $crawl['CRAWL_TIME']) {
+                    $found_crawl = true;
+                    break;
+                }
+            }
+            if(!$found_crawl) {
+                $index_time_stamp = $current_its;
+            }
         } else {
             $index_time_stamp = $current_its; 
                 //use the default crawl index
@@ -264,7 +278,7 @@ class SearchController extends Controller implements CrawlConstants
      */
     function restrictQueryByUserAgent($query) 
     {
-        $bots = array("googlebot", "baidu", "naver");
+        $bots = array("googlebot", "baidu", "naver", "sogou");
         $query_okay = true;
         foreach($bots as $bot) {
             if(stristr($_SERVER["HTTP_USER_AGENT"], $bot)) {
