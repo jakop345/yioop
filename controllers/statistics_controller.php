@@ -124,8 +124,8 @@ class StatisticsController extends Controller implements CrawlConstants
                 }
             }
             if(!$found_crawl) {
-                e("<h1>".tl('statistics_controller_index_not_found')."</h1>");
-                
+                unset($_SESSION['its']);
+                include(BASE_DIR."./error.php");
                 exit();
             }
         }
@@ -133,7 +133,10 @@ class StatisticsController extends Controller implements CrawlConstants
             $this->index_time_stamp = 
                 $this->crawlModel->getCurrentIndexDatabaseName();
         }
-        if($this->index_time_stamp == 0) exit(); //bail
+        if($this->index_time_stamp == 0) {
+            include(BASE_DIR."./error.php");
+            exit(); //bail
+        }
 
         $this->stats_file = CRAWL_DIR."/cache/".self::statistics_base_name.
                 $this->index_time_stamp.".txt";
@@ -171,6 +174,7 @@ class StatisticsController extends Controller implements CrawlConstants
                 $this->index_time_stamp, $this->machine_urls);
             $data["stars"] = "*";
             if(!isset($data["COUNT"])) {
+                include(BASE_DIR."./error.php");
                 exit();
             }
             $data["UNFINISHED"] = true;
