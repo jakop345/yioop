@@ -124,7 +124,9 @@ class StatisticsController extends Controller implements CrawlConstants
                 }
             }
             if(!$found_crawl) {
-                $this->index_time_stamp = 0;
+                e("<h1>".tl('statistics_controller_index_not_found')."</h1>");
+                
+                exit();
             }
         }
         if(!isset($this->index_time_stamp) || $this->index_time_stamp == "") {

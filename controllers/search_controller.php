@@ -177,7 +177,8 @@ class SearchController extends Controller implements CrawlConstants
                 }
             }
             if(!$found_crawl) {
-                $index_time_stamp = $current_its;
+                e("<h1>".tl('search_controller_index_not_found')."</h1>");
+                exit();
             }
         } else {
             $index_time_stamp = $current_its; 
