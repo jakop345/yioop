@@ -178,7 +178,7 @@ class SearchController extends Controller implements CrawlConstants
             }
             if(!$found_crawl) {
                 unset($_SESSION['its']);
-                header("Location: ./error.php");
+                include(BASE_DIR."/error.php");
                 exit();
             }
         } else {

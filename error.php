@@ -34,7 +34,23 @@
  * @filesource
  */
 
-$_REQUEST['c'] = "static";
+/** 
+ * Used to set-up static error pages
+ */
+require_once(BASE_DIR."/controllers/static_controller.php");
+/**
+ * Load global functions related to localization
+ */
+require_once BASE_DIR."/lib/locale_functions.php";
+
+mb_internal_encoding("UTF-8");
+mb_regex_encoding("UTF-8");
+
+$locale_tag = guessLocale();
+
+$locale = NULL;
+setLocaleObject($locale_tag);
+
 if(!isset($_REQUEST['p']) ||
     !in_array($_REQUEST['p'], array("404"))) {
     $_REQUEST['p'] = "404";
@@ -46,6 +62,8 @@ switch($_REQUEST['p'])
     break;
 }
 
-include("index.php");
+$controller = new StaticController();
+
+$controller->processRequest();
 
 ?>

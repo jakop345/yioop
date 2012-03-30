@@ -125,8 +125,8 @@ class StatisticsController extends Controller implements CrawlConstants
             }
             if(!$found_crawl) {
                 unset($_SESSION['its']);
-                header("Location: ./error.php");
-                exit();
+                include(BASE_DIR."/error.php");
+                exit(); //bail
             }
         }
         if(!isset($this->index_time_stamp) || $this->index_time_stamp == "") {
@@ -134,7 +134,8 @@ class StatisticsController extends Controller implements CrawlConstants
                 $this->crawlModel->getCurrentIndexDatabaseName();
         }
         if($this->index_time_stamp == 0) {
-            include(BASE_DIR."./error.php");
+            unset($_SESSION['its']);
+            include(BASE_DIR."/error.php");
             exit(); //bail
         }
 
