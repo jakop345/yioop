@@ -162,7 +162,7 @@ class IndexArchiveBundle implements CrawlConstants
         if(file_exists($this->dir_name."/generation.txt")) {
             $this->generation_info = unserialize(
                 file_get_contents($this->dir_name."/generation.txt"));
-        } else {
+        } else if(!$read_only_archive) {
             $this->generation_info['ACTIVE'] = 0;
             file_put_contents($this->dir_name."/generation.txt", 
                 serialize($this->generation_info));

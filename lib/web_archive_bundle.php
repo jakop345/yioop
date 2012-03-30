@@ -92,7 +92,11 @@ class WebArchiveBundle
      * @var object
      */
     var $compressor;
-
+    /**
+     * Controls whether the archive was opened in read only mode
+     * @var bool
+     */
+    var $read_only_archive;
     /**
      * Makes or initializes an existing WebArchiveBundle with the given 
      * characteristics
@@ -113,8 +117,9 @@ class WebArchiveBundle
         $this->num_docs_per_partition = $num_docs_per_partition;
         $this->compressor = $compressor;
         $this->write_partition = 0;
+        $this->read_only_archive = $read_only_archive;
 
-        if(!is_dir($this->dir_name)) {
+        if(!is_dir($this->dir_name) && !$this->read_only_archive) {
             mkdir($this->dir_name);
         }
 
@@ -272,7 +277,10 @@ class WebArchiveBundle
         if(!isset($info[$field])) {
             $info[$field] = 0;
         }
-        file_put_contents($this->dir_name."/description.txt", serialize($info));
+        if(!$this->read_only_archive) {
+            file_put_contents($this->dir_name.
+                "/description.txt", serialize($info));
+        }
     }
 
     /**
@@ -289,7 +297,10 @@ class WebArchiveBundle
         $info = 
             unserialize(file_get_contents($this->dir_name."/description.txt"));
         $info[$field] += $num;
-        file_put_contents($this->dir_name."/description.txt", serialize($info));
+        if(!$this->read_only_archive) {
+            file_put_contents($this->dir_name."/description.txt",
+                serialize($info));
+        }
     }
 
     /**
@@ -328,7 +339,8 @@ class WebArchiveBundle
      */
     static function setArchiveInfo($dir_name, $info)
     {
-        if(file_exists($dir_name."/description.txt")) {
+        if(file_exists($dir_name."/description.txt") && 
+            !$this->read_only_archive) {
             file_put_contents($dir_name."/description.txt", serialize($info));
         }
     }
