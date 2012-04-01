@@ -107,11 +107,18 @@ class PhraseParser
      */
     static function extractWordStringPageSummary($page)
     {
-        $title_phrase_string = mb_ereg_replace(PUNCT, " ",
-            $page[CrawlConstants::TITLE]);
-        $description_phrase_string = mb_ereg_replace(PUNCT, " ",
-            $page[CrawlConstants::DESCRIPTION]);
-
+        if(isset($page[CrawlConstants::TITLE])) {
+            $title_phrase_string = mb_ereg_replace(PUNCT, " ",
+                $page[CrawlConstants::TITLE]);
+        } else {
+            $title_phrase_string = "";
+        }
+        if(isset($page[CrawlConstants::DESCRIPTION])) {
+            $description_phrase_string = mb_ereg_replace(PUNCT, " ",
+                $page[CrawlConstants::DESCRIPTION]);
+        } else {
+            $description_phrase_string = "";
+        }
         $page_string = $title_phrase_string . " " . $description_phrase_string;
         $page_string = preg_replace("/(\s)+/", " ", $page_string);
 
