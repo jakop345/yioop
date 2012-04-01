@@ -52,13 +52,16 @@ $locale = NULL;
 setLocaleObject($locale_tag);
 
 if(!isset($_REQUEST['p']) ||
-    !in_array($_REQUEST['p'], array("404"))) {
+    !in_array($_REQUEST['p'], array("404", "409"))) {
     $_REQUEST['p'] = "404";
 }
 switch($_REQUEST['p'])
 {
     case "404":
         header("HTTP/1.0 404 Not Found");
+    break;
+    case "409":
+        header("HTTP/1.0 409 Conflict");
     break;
 }
 

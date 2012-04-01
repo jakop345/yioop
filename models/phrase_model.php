@@ -886,7 +886,7 @@ class PhraseModel extends Model
         }
 
 
-        if(USE_CACHE  && $raw  == 0) {
+        if(USE_CACHE && $raw  == 0) {
             for($i = 0; $i < $result_count; $i++){
                 unset($pages[$i][self::LINKS]);
             }
