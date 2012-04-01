@@ -755,7 +755,8 @@ class PhraseModel extends Model
      *      and then potentially restored in cache
      * @param int $raw ($raw == 0) normal grouping, ($raw == 1)
      *      no grouping but page look-up for links, ($raw == 2)
-     *      no grouping done on data
+     *      no grouping done on data. If $raw > 0 no caching is done as will
+     *      likely come from a network query
      * @param array $queue_servers a list of urls of yioop machines which might
      *      be used during lookup
      * @param string $original_query if set, the original query that corresponds
@@ -775,7 +776,7 @@ class PhraseModel extends Model
             self::NUM_CACHE_PAGES;
         $start_slice = floor(($limit)/self::NUM_CACHE_PAGES) *
             self::NUM_CACHE_PAGES;
-        if(USE_CACHE) {
+        if(USE_CACHE && $raw == 0) {
             $mem_tmp = "";
             foreach($word_structs as $word_struct) {
                 $mem_tmp .= serialize($word_struct["KEYS"]).
@@ -885,7 +886,7 @@ class PhraseModel extends Model
         }
 
 
-        if(USE_CACHE) {
+        if(USE_CACHE  && $raw  == 0) {
             for($i = 0; $i < $result_count; $i++){
                 unset($pages[$i][self::LINKS]);
             }
