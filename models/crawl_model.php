@@ -1320,10 +1320,11 @@ EOT;
         $phrases = array();
 
         $word_counts = array();
-        foreach($word_key_counts as $word_key =>$count) {
-            $word_counts[$lookup[$word_key]] = $count;
+        if(is_array($word_key_counts ) && count($word_key_counts ) > 0) {
+            foreach($word_key_counts as $word_key =>$count) {
+                $word_counts[$lookup[$word_key]] = $count;
+            }
         }
-
         return $word_counts;
      }
 

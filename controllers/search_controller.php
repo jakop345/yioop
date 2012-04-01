@@ -511,6 +511,9 @@ class SearchController extends Controller implements CrawlConstants
         $phrase_string =
             PhraseParser::extractWordStringPageSummary($crawl_item);
 
+        $crawl_item[self::LANG] = (isset($crawl_item[self::LANG])) ?
+            $crawl_item[self::LANG] : DEFAULT_LOCALE;
+
         $page_word_counts = 
             PhraseParser::extractPhrasesAndCount($phrase_string, MAX_PHRASE_LEN,
                 $crawl_item[self::LANG]);

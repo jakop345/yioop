@@ -269,13 +269,15 @@ class PhraseModel extends Model
         }
 
         $results_high = $low + $results_per_page;
-        $num_last_parts = count($query_parts[$last_part]);
-        if($query_parts[$last_part][$num_last_parts - 1][0] +
-            $query_parts[$last_part][$num_last_parts - 1][1] < $low) {
-            $query_parts[$last_part][$num_last_parts - 1][1] = $results_high;
-        }
-
         $num_phrases = count($query_parts);
+        if($num_phrases > 0 ) {
+            $num_last_parts = count($query_parts[$last_part]);
+            if($query_parts[$last_part][$num_last_parts - 1][0] +
+                $query_parts[$last_part][$num_last_parts - 1][1] < $low) {
+                $query_parts[$last_part][$num_last_parts - 1][1] = 
+                    $results_high;
+            }
+        }
 
         foreach($query_parts as $phrase => $pre_result_bounds) {
 
