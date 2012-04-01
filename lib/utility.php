@@ -291,6 +291,7 @@ function unpackListModified9($int_string)
  */
 function unpackInt($str)
 {
+    if(!is_string($str)) return false;
     $tmp = unpack("N", $str);
     return $tmp[1];
 }
@@ -314,6 +315,7 @@ function packInt($my_int)
  */
 function unpackFloat($str)
 {
+    if(!is_string($str)) return false;
     $tmp = unpack("f", $str);
     return $tmp[1];
 }
