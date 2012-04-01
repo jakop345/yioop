@@ -165,21 +165,26 @@ class SearchController extends Controller implements CrawlConstants
             $its = (isset($_REQUEST['its'])) ? $_REQUEST['its'] : 
                 $_SESSION['its'];
             $index_time_stamp = $this->clean($its, "int");
-            //validate timestamp against list 
-            //(some crawlers replay deleted crawls)
-            $crawls = $this->crawlModel->getCrawlList(false,true,$machine_urls,
-                true);
-            $found_crawl = false;
-            foreach($crawls as $crawl) {
-                if($index_time_stamp == $crawl['CRAWL_TIME']) {
-                    $found_crawl = true;
-                    break;
+            if($index_time_stamp != 0 ) {
+                //validate timestamp against list 
+                //(some crawlers replay deleted crawls)
+                $crawls = $this->crawlModel->getCrawlList(false,true,
+                    $machine_urls,true);
+                $found_crawl = false;
+                foreach($crawls as $crawl) {
+                    if($index_time_stamp == $crawl['CRAWL_TIME']) {
+                        $found_crawl = true;
+                        break;
+                    }
                 }
-            }
-            if(!$found_crawl) {
-                unset($_SESSION['its']);
-                include(BASE_DIR."/error.php");
-                exit();
+                if(!$found_crawl) {
+                    unset($_SESSION['its']);
+                    include(BASE_DIR."/error.php");
+                    exit();
+                }
+            } else {
+                $index_time_stamp = $current_its; 
+                    //use the default crawl index
             }
         } else {
             $index_time_stamp = $current_its; 
