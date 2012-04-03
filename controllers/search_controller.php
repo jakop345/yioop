@@ -739,7 +739,11 @@ class SearchController extends Controller implements CrawlConstants
             $this->displayView("nocache", $data);
             return;
         }
-
+        $check_fields = array(self::TITLE, self::DESCRIPTION, self::LINKS);
+        foreach($check_fields as $field) {
+            $crawl_item[$field] = (isset($crawl_item[$field])) ?
+                $crawl_item[$field] : "";
+        }
         $summary_string = 
             tl('search_controller_extracted_title')."\n\n".
             wordwrap($crawl_item[self::TITLE], 80, "\n")."\n\n" .
