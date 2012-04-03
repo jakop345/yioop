@@ -119,6 +119,7 @@ abstract class View
         foreach($this->pages as $page) {
             $page_file = LOCALE_DIR."/".getLocaleTag()."/pages/".$page.".thtml";
             $fallback = LOCALE_DIR."/".DEFAULT_LOCALE."/pages/".$page.".thtml";
+
             if(file_exists($page_file)) {
                 $page_string = file_get_contents($page_file);
             } else if (file_exists($fallback)) {

@@ -90,6 +90,7 @@ class StaticController extends Controller
         $data['YIOOP_TOKEN'] = $this->generateCSRFToken($user);
 
         $this->displayView($view, $data);
+
     }
 
 
@@ -106,7 +107,7 @@ class StaticController extends Controller
             in_array($_REQUEST['p'], $this->staticView->pages)) {
             $data['page'] = $_REQUEST['p'];
         } else {
-            $data['page'] = "about";
+            $data['page'] = "blog";
         }
         if((isset($this->staticView->head_objects[$data['page']]['title']))) {
             $data["subtitle"]=" - ".

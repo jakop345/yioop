@@ -41,7 +41,10 @@ $pathinfo = pathinfo($_SERVER['SCRIPT_FILENAME']);
 if(!defined('BASE_DIR')) {
     define("BASE_DIR", $pathinfo["dirname"].'/');
 }
-
+/**
+ * Load the configuration file
+ */
+require_once(BASE_DIR.'configs/config.php');
 /** 
  * Used to set-up static error pages
  */
@@ -77,4 +80,13 @@ $controller = new StaticController();
 
 $controller->processRequest();
 
+/**
+ * shorthand for echo
+ *
+ * @param string $text string to send to the current output
+ */
+function e($text)
+{
+    echo $text;
+}
 ?>
