@@ -34,6 +34,14 @@
  * @filesource
  */
 
+/** Calculate base directory of script
+ *  @ignore
+ */
+$pathinfo = pathinfo($_SERVER['SCRIPT_FILENAME']);
+if(!defined('BASE_DIR')) {
+    define("BASE_DIR", $pathinfo["dirname"].'/');
+}
+
 /** 
  * Used to set-up static error pages
  */
