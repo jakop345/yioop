@@ -855,10 +855,10 @@ class PhraseModel extends Model
         $result_count = count($pages);
         // initialize scores
         for($i = 0; $i < $result_count; $i++) {
-            $pages[$i][CrawlConstants::SCORE] = 0;
+            $pages[$i]["OUT_SCORE"] = 0;
         }
         $subscore_fields = array(self::DOC_RANK, self::RELEVANCE,
-            self::PROXIMITY);
+            self::PROXIMITY, self::SCORE);
         $num_fields = count($subscore_fields);
         // Compute Reciprocal Rank Fusion Score
         $alpha = 600/$num_fields;
@@ -873,13 +873,15 @@ class PhraseModel extends Model
                             $score++;
                         }
                     }
-                    $pages[$i][CrawlConstants::SCORE] += $alpha/(60 + $score);
+                    $pages[$i]["OUT_SCORE"] += $alpha/(60 + $score);
                 }
             }
-            orderCallback($pages[0], $pages[0], CrawlConstants::SCORE);
+            orderCallback($pages[0], $pages[0], "OUT_SCORE");
         }
         usort($pages, "orderCallback");
-
+        for($i = 0; $i < $result_count; $i++) {
+            $pages[$i][self::SCORE] = $pages[$i]["OUT_SCORE"];
+        }
         if($num_retrieved < $to_retrieve) {
             $results['TOTAL_ROWS'] = $num_retrieved;
         } else {
