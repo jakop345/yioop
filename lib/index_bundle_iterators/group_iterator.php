@@ -562,10 +562,11 @@ class GroupIterator extends IndexBundleIterator
                 }
                 $min = ($current_rank < $min ) ? $current_rank : $min;
                 $max = ($max < $current_rank ) ? $current_rank : $max;
-                $sum_score += $hash_page[self::DOC_RANK] 
-                    * $relevance_boost * pow(1.1,$hash_page[self::RELEVANCE]) *
-                    $hash_page[self::PROXIMITY] * $domain_weights[$hash_host];
-                $alpha = $relevance_boost * $domain_weights[$hash_host];;
+                $alpha = $relevance_boost * $domain_weights[$hash_host];
+                $sum_score += $alpha * ($hash_page[self::DOC_RANK] 
+                    + $hash_page[self::RELEVANCE] +
+                    $hash_page[self::PROXIMITY]);
+
                 $sum_rank += $alpha * $hash_page[self::DOC_RANK];
                 $sum_relevance += $alpha * $hash_page[self::RELEVANCE];
                 $sum_proximity += $alpha * $hash_page[self::PROXIMITY];
