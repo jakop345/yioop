@@ -328,25 +328,31 @@ class UrlParser
             $rlen = strlen($robot_path);
             if($rlen == 0) continue;
             $end_match = false;
-            if($robot_path[$rlen - 1] == "$"){
-                $end_match = true;
-                $path_parts = explode("*", substr($robot_path, 0, $rlen - 1));
-            } else {
-                $path_parts = explode("*", $robot_path);
-            }
-            $offset = 0;
+            $end = ($robot_path[$rlen - 1] == "$") ? 1 : 0;
+            $path_string = substr($robot_path, 0, $rlen - $end);
+            $path_parts = explode("*", $path_string);
+            $offset = -1;
+            $old_part_len = 0;
             $is_match = true;
             foreach($path_parts as $part) {
-                if($part == "") continue;
+                $offset += 1 + $old_part_len;
+                $old_part_len = strlen($part);
+                if($part == "") {
+                    continue;
+                }
+                else if($offset >= $len) {
+                    $is_match = false;
+                    break;
+                }
                 $new_offset = stripos($path, $part, $offset);
-                if($new_offset === false) {
+                if($new_offset === false ||($offset == 0 && $new_offset !=0)) {
                     $is_match = false;
                     break;
                 }
                 $offset = $new_offset;
             }
             if($is_match) {
-                if(!$end_match || strlen($part) + $offset == $len) {
+                if($end == 0 || strlen($part) + $offset == $len) {
                     $is_member = true;
                 } 
             }
@@ -694,7 +700,6 @@ class UrlParser
         }
         return false;
     }
-
 }
 
 ?>

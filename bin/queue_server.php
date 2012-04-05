@@ -2207,11 +2207,9 @@ class QueueServer implements CrawlConstants, Join
                 break;
             }
 
+            $flag = UrlParser::isPathMemberRegexPaths($url, array($site));
+            if($flag) break;
 
-            if(mb_strstr($url, $site)) { 
-                $flag = true;
-                break;
-            }
         }
         if($return_rule && $flag) {
             $flag = $site;
