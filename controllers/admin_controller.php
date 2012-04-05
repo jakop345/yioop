@@ -1529,6 +1529,10 @@ class AdminController extends Controller implements CrawlConstants
         foreach($request_fields as $field => $type) {
             if(isset($_REQUEST[$field])) {
                 $r[$field] = $this->clean($_REQUEST[$field], $type);
+                if($field == "url" && $r[$field][strlen($r[$field])-1]
+                    != "/") {
+                    $r[$field] .= "/";
+                }
             } else {
                 $allset = false;
             }
