@@ -104,13 +104,14 @@ class Bigrams
      */
     static function extractBigrams($phrases, $lang)
     {
+        static $bigrams = NULL;
         $lang_prefix = $lang;
         if(isset(self::$LANG_PREFIX[$lang])) {
             $lang_prefix = self::$LANG_PREFIX[$lang];
         }
         $filter_path = WORK_DIRECTORY .
             self::FILTER_FOLDER . $lang_prefix . self::FILTER_SUFFIX;
-        if (file_exists($filter_path)) {
+        if ($bigrams == NULL && file_exists($filter_path)) {
             $bigrams = BloomFilterFile::load($filter_path);
         }
         else {
@@ -135,7 +136,6 @@ class Bigrams
         if($j == $num_phrases) {
             $bigram_phrases[] = $phrases[$j - 1];
         }
-
         return $bigram_phrases;
     }
 

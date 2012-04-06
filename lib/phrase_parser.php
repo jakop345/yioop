@@ -147,7 +147,6 @@ class PhraseParser
                     self::extractPhrasesOfLength($string, $i, $lang,
                         $orig_and_grams));
         }
-
         return $phrases;
     }
 
@@ -173,7 +172,6 @@ class PhraseParser
                     self::extractPhrasesOfLength($string, $i, $lang,
                         $orig_and_grams));
         }
-
         $phrase_counts = array_count_values($phrases);
 
         return $phrase_counts;
