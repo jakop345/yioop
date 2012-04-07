@@ -85,8 +85,10 @@ $controller->processRequest();
  *
  * @param string $text string to send to the current output
  */
-function e($text)
-{
-    echo $text;
+if(!function_exists("e")) {
+    function e($text)
+    {
+        echo $text;
+    }
 }
 ?>

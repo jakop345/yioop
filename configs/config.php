@@ -380,7 +380,8 @@ $MOD9_NUM_ELTS_DECODES = array(
 
 
 /** Characters we view as not part of words, not same as POSIX [:punct:]*/
-define ('PUNCT', "\.|\,|\:|\;|\"|\'|\`|\[|\]|\{|\}|\(|\)|\!|\||\&");
+define ('PUNCT', "\.|\,|\:|\;|\"|\'|\[|".
+    "\]|\{|\}|\(|\)|\!|\||\&|\`|\’|\‘|©|®|™|℠|… |- |\/ |\>|，|\=");
 
 /** Percentage ASCII text before guess we dealing with english*/
 define ('EN_RATIO', 0.9);

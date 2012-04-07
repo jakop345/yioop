@@ -49,6 +49,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 class EnStemmer
 {
 
+    static $no_stem_list = array("Titanic");
     /**
      * storage used in computing the stem
      * @var string
@@ -77,6 +78,10 @@ class EnStemmer
      */
     static function stem($word)
     {
+        if(in_array($word, self::$no_stem_list)) {
+            return $word;
+        }
+
         self::$buffer = $word;
 
         self::$k = strlen($word) - 1;

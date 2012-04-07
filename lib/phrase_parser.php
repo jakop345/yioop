@@ -201,7 +201,7 @@ class PhraseParser
                 $n = 0;
                 foreach ($phrases as $phrase) {
                     $words = explode(" ",$phrase);
-                    if(count($words)==2){
+                    if(count($words)==2 && $words[0] != "" && $words[1] != ""){
                         $phrase_lists[$phrase][] = $n;
                         $phrase_lists[$words[0]][] = $n++;
                         $phrase_lists[$words[1]][] = $n++;
@@ -210,8 +210,7 @@ class PhraseParser
                         $phrase_lists[$phrase][] = $n++;
                     }
                 }
-            }
-            else{
+            } else {
                 $count = count($phrases);
                 for($j = 0; $j < $count; $j++) {
                     $phrase_lists[$phrases[$j]][] = $j;
@@ -242,11 +241,6 @@ class PhraseParser
                 self::extractPhrasesOfLengthOffset($string,
                     $phrase_len, $i, $lang, $orig_and_grams));
         }
-
-        if($phrase_len == 1 && count($phrases) > 1){
-            $phrases = Bigrams::extractBigrams($phrases, $lang);
-        }
-
         return $phrases;
     }
 
@@ -267,7 +261,9 @@ class PhraseParser
     static function extractPhrasesOfLengthOffset($string,
         $phrase_len, $offset, $lang = NULL, $orig_and_grams = false)
     {
-        $words = mb_split("[[:space:]]|".PUNCT, $string);
+        mb_internal_encoding("UTF-8");
+        //split first on puctuation as bigrams shouldn't cross punctuation
+        $fragments = mb_split(PUNCT, $string);
 
         $stems = array();
 
@@ -276,26 +272,44 @@ class PhraseParser
         } else {
             $stemmer = NULL;
         }
-        for($i = $offset; $i < count($words); $i++) {
-            if($words[$i] == "") {continue;}
 
-            $phrase_number = ($i - $offset)/$phrase_len;
-            if(!isset($stems[$phrase_number])) {
-                $stems[$phrase_number]="";
-                $first_time = "";
+        $j = 0;
+        foreach($fragments as $fragment) {
+            $words = mb_split("[[:space:]]", $fragment);
+            $j += $offset;
+            $punct = true;
+            for($i = $offset; $i < count($words); $i++, $j++) {
+                if($words[$i] == "") {continue;}
+
+                $phrase_number = ($j - $offset)/$phrase_len;
+                if(!isset($stems[$phrase_number])) {
+                    $stems[$phrase_number]= "";
+                    $first_time = "";
+                }
+                $pre_stem = mb_strtolower($words[$i]);
+
+                if($stemmer != NULL) {
+                    $stem_obj = new $stemmer(); //for php 5.2 compatibility
+                    $stem =  $stem_obj->stem($pre_stem);
+                } else {
+                    $stem = $pre_stem;
+                }
+
+                $stems[$phrase_number] .= $first_time.$stem;
+                if($phrase_len ==  1 && !$punct && 
+                    isset($stems[$phrase_number - 1])) {
+                    $possible_bigram = $stems[$phrase_number - 1] . " ".
+                        $stems[$phrase_number];
+                    $isbigram = 
+                        Bigrams::bigramsContains($possible_bigram, $lang);
+                    if($isbigram) {
+                        $stems[$phrase_number - 1] = $possible_bigram;
+                        unset($stems[$phrase_number]);
+                    }
+                }
+                $first_time = " ";
+                $punct = false;
             }
-            $pre_stem = mb_strtolower($words[$i]);
-
-
-            if($stemmer != NULL) {
-                $stem_obj = new $stemmer(); //for php 5.2 compatibility
-                $stem =  $stem_obj->stem($pre_stem);
-            } else {
-                $stem = $pre_stem;
-            }
-
-            $stems[$phrase_number] .= $first_time.$stem;
-            $first_time = " ";
         }
 
         if($phrase_len == 1) {
@@ -328,6 +342,7 @@ class PhraseParser
      */
     static function getCharGramsTerm($terms, $lang)
     {
+        mb_internal_encoding("UTF-8");
         if(isset(self::$CHARGRAMS[$lang])) {
             $n = self::$CHARGRAMS[$lang];
         } else {
@@ -343,7 +358,10 @@ class PhraseParser
                 $ngrams[] = $pre_gram;
             } else {
                 for($i = 0; $i <= $last_pos; $i++) {
-                    $ngrams[] = mb_substr($pre_gram, $i, $n);
+                    $tmp = mb_substr($pre_gram, $i, $n);
+                    if($tmp != "") {
+                        $ngrams[] = $tmp;
+                    }
                 }
             }
         }

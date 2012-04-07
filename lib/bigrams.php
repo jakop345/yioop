@@ -73,6 +73,11 @@ class Bigrams
      );
 
      /**
+      * Static copy of bigrams files
+      * @var object
+      */
+    static $bigrams = NULL;
+     /**
       * @constant Name of the folder inside user work directory
       * that contains the input compressed XML file. The filter
       * file generated will also be stored in this folder.
@@ -90,53 +95,29 @@ class Bigrams
      const TEXT_SUFFIX = "_bigrams.txt";
 
     /**
-     * Extracts Bigrams from input set of phrases. If a filter file
-     * is not available for $lang we just return the input phrases.
-     * Each pair of phrases is searched in filter file to check if
-     * it is a bigram. If a pair passes the bigram check we add it
-     * to the array of phrases as a single phrase otherwise individual
-     * phrases are added to the array. The resultant array of phrases
-     * is returned at the end.
+     * Says whether or not phrase exists in the Bigrama Bloom Filter
      *
-     * @param array $phrases subject to bigram check
-     * @param string $lang Language to be used to stem bigrams.
-     * @return array of bigrams and phrases
+     * @param $phrase what to check if is a bigram
+     * @param string $lang language of bigrams file
+     * @return true or false
      */
-    static function extractBigrams($phrases, $lang)
+    static function bigramsContains($phrase, $lang)
     {
-        static $bigrams = NULL;
-        $lang_prefix = $lang;
-        if(isset(self::$LANG_PREFIX[$lang])) {
-            $lang_prefix = self::$LANG_PREFIX[$lang];
-        }
-        $filter_path = WORK_DIRECTORY .
-            self::FILTER_FOLDER . $lang_prefix . self::FILTER_SUFFIX;
-        if ($bigrams == NULL && file_exists($filter_path)) {
-            $bigrams = BloomFilterFile::load($filter_path);
-        }
-        else {
-            return $phrases;
-        }
-        $bigram_phrases = array();
-        $num_phrases = count($phrases);
-        $i = 0;
-        $j = 1;
-        while($j < $num_phrases){
-            $pair = $phrases[$i]." ".$phrases[$j];
-            if($bigrams->contains(strtolower($pair))){
-                $bigram_phrases[] = $pair;
-                $i += 2;
-                $j += 2;
-            } else {
-                $bigram_phrases[] = $phrases[$i];
-                $i++;
-                $j++;
+        
+        if(self::$bigrams == NULL) {
+            $lang_prefix = $lang;
+            if(isset(self::$LANG_PREFIX[$lang])) {
+                $lang_prefix = self::$LANG_PREFIX[$lang];
+            }
+            $filter_path = WORK_DIRECTORY .
+                self::FILTER_FOLDER . $lang_prefix . self::FILTER_SUFFIX;
+            if (file_exists($filter_path)) {
+                self::$bigrams = BloomFilterFile::load($filter_path);
+            } else  {
+                return $phrases;
             }
         }
-        if($j == $num_phrases) {
-            $bigram_phrases[] = $phrases[$j - 1];
-        }
-        return $bigram_phrases;
+        return self::$bigrams->contains(strtolower($phrase));
     }
 
     /**

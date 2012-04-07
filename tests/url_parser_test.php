@@ -40,7 +40,8 @@ require_once BASE_DIR."/lib/url_parser.php";
 
 /**
  *  Used to test that the UrlParser class. For now, want to see that the
- *  method canonicalLink is working correctly
+ *  method canonicalLink is working correctly and that
+ *  isPathMemberRegexPaths (used in robot_processor.php) works
  *
  *  @author Chris Pollett
  *  @package seek_quarry
