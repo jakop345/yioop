@@ -71,25 +71,28 @@ class Bigrams
         'en-GB' => "en",
         'en-CA' => "en"
      );
-
      /**
       * Static copy of bigrams files
       * @var object
       */
     static $bigrams = NULL;
      /**
-      * @constant Name of the folder inside user work directory
+      * Name of the folder inside user work directory
       * that contains the input compressed XML file. The filter
       * file generated will also be stored in this folder.
       */
      const FILTER_FOLDER = "/search_filters/";
      /**
-      * @constant Suffix appended to langauge tag to create the
+      * 
+      */
+     const BLOCK_SIZE = 8192;
+     /**
+      * Suffix appended to langauge tag to create the
       * filter file name containing bigrams.
       */
      const FILTER_SUFFIX = "_bigrams.ftr";
      /**
-      * @constant Suffix appended to langauge tag to create the
+      * Suffix appended to langauge tag to create the
       * text file name containing bigrams.
       */
      const TEXT_SUFFIX = "_bigrams.txt";
@@ -114,7 +117,7 @@ class Bigrams
             if (file_exists($filter_path)) {
                 self::$bigrams = BloomFilterFile::load($filter_path);
             } else  {
-                return $phrases;
+                return false;
             }
         }
         return self::$bigrams->contains(strtolower($phrase));
@@ -188,72 +191,63 @@ class Bigrams
         if(isset(self::$LANG_PREFIX[$lang])) {
             $lang_prefix = self::$LANG_PREFIX[$lang];
         }
-        $compressed_wiki_file_path =
+        $wiki_file_path =
             WORK_DIRECTORY.self::FILTER_FOLDER.$wiki_file;
-        $found = strpos($compressed_wiki_file_path, "bz2");
-        if($found == false){
-            $wiki_file_path = $compressed_wiki_file_path;
+        if(strpos($wiki_file_path, "bz2") !== false) {
+            $fr = bzopen($wiki_file_path, 'r') or
+                die ("Can't open compressed xml file");
+            $read = "bzread";
+            $close = "bzclose";
         }
         else{
-            $wiki_file_path =
-                self::uncompressBz2File($compressed_wiki_file_path);
+            $fr = fopen($wiki_file_path, 'r') or die("Can't open xml file");
+            $read = "fread";
+            $close = "fclose";
         }
-        $fr = fopen($wiki_file_path, 'r') or die("Can't open xml file");
         $bigrams_file_path
             = WORK_DIRECTORY.self::FILTER_FOLDER.$lang_prefix.self::TEXT_SUFFIX;
-        $fw = fopen($bigrams_file_path, 'w') or die("Can't open text file");
         $bigrams = array();
-        while ( ($input_text = fgetss($fr)) !== false) {
-            $input_text = strtolower($input_text);
-            $pattern = '/#redirect\s\[\[[a-z]+[\s|_][a-z0-9]+\]\]/';
-            preg_match($pattern, $input_text, $matches);
-            if(count($matches) == 1) {
-                $bigram = str_replace(
-                    array('#redirect [[',']]'), "", $matches[0]);
-                $bigram = str_replace("_", " ", $bigram);
-                $bigrams[] = $bigram;
+        $input_buffer = "";
+        $time = time();
+        echo "Reading wiki file ...\n";
+        $bytes = 0;
+        $bytes_since_last_output = 0;
+        $output_message_threshold = self::BLOCK_SIZE*self::BLOCK_SIZE;
+        $pattern = '/#redirect\s\[\[[a-z]+[\s|_][a-z0-9]+\]\]/';
+
+        while (!feof($fr)) {
+            $input_text = $read($fr, self::BLOCK_SIZE);
+            $len = strlen($input_text);
+            if($len == 0) break;
+            $bytes += $len;
+            $bytes_since_last_output += $len;
+            if($bytes_since_last_output > $output_message_threshold) {
+                echo "Have now read ".$bytes." many bytes. " .
+                    "Peak memory so far ".memory_get_peak_usage().
+                    " Elapsed time so far:".(time() - $time)."\n";
+                $bytes_since_last_output = 0;
+            }
+            $input_buffer .= strip_tags(strtolower($input_text));
+            $lines = explode("\n", $input_buffer);
+            $input_buffer = array_pop($lines);
+            foreach($lines as $line) {
+                preg_match($pattern, $line, $matches);
+                if(count($matches) == 1) {
+                    $bigram = str_replace(
+                        array('#redirect [[',']]'), "", $matches[0]);
+                    $bigram = str_replace("_", " ", $bigram);
+                    $bigrams[] = $bigram;
+                }
             }
         }
+
         $bigrams = array_unique($bigrams);
         $num_bigrams = count($bigrams);
         sort($bigrams);
         $bigrams_string = implode("\n", $bigrams);
-        fwrite($fw, $bigrams_string);
-        fclose($fr);
-        fclose($fw);
+        file_put_contents($bigrams_file_path, $bigrams_string);
+        $close($fr);
         return $num_bigrams;
     }
 
-    /**
-     * Uncompress the compressed Bz2 xml file specified by input
-     * parameter $compressed_wiki_file_path. The $buffer_size
-     * variable specifies the size of block which is read in one
-     * iteration from the compressed file. The uncompressed xml
-     * file is stored in the same directory as the compressed file.
-     * The name of this file is generated by removing ".bz2" from
-     * the end of compressed file name. The name of uncompressed
-     * file is returned by the function.
-     *
-     * @param string $compressed_wiki_file_path bz2 compressed
-     *     wikipedia XML file path.
-     * @return string $wiki_file_path Uncompressed xml file path.
-     */
-    static function uncompressBz2File($compressed_wiki_file_path)
-    {
-        $wiki_file_path = str_replace('.bz2', '', $compressed_wiki_file_path);
-        $bz = bzopen($compressed_wiki_file_path, 'r');
-        $out_file = fopen($wiki_file_path, 'w');
-        $buffer_size = 8092;
-
-        do {
-            $block = bzread($bz, $buffer_size);
-            if($block!==false)
-                fwrite($out_file, $block);
-        }
-        while($block);
-
-        fclose($out_file);
-        bzclose($bz);
-        return $wiki_file_path;
-    }
 }
