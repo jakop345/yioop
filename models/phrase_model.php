@@ -972,7 +972,8 @@ class PhraseModel extends Model
                         new WordIterator($distinct_word_keys[$i], 
                             $index_archive, false, $filter);
                     foreach ($word_keys as $index => $key) {
-                        if($key == $distinct_word_keys[$i]){
+                        if(isset($distinct_word_keys[$i]) && 
+                            $key == $distinct_word_keys[$i]){
                             $word_iterator_map[$index] = $i;
                         }
                     }
