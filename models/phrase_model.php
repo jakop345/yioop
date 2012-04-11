@@ -499,19 +499,20 @@ class PhraseModel extends Model
                 CRAWL_DIR.'/cache/'.$index_archive_name);
         }
 
-        $phrase_string = mb_ereg_replace("&amp;", "ZZandZZ", $phrase_string);
-        $phrase_string = mb_ereg_replace(PUNCT, " ", $phrase_string);
-        $phrase_string = preg_replace("/(\s)+/", " ", $phrase_string);
-        $phrase_string = mb_ereg_replace('ZZandZZ', '&', $phrase_string);
+        $query_string = mb_ereg_replace("&amp;", "_and_", $phrase_string);
+        $query_string = mb_ereg_replace(PUNCT, " ", $query_string);
+        $query_string = preg_replace("/(\s)+/", " ", $query_string);
+        $query_string = mb_ereg_replace('_and_', '&', $query_string);
 
         /*
             we search using the stemmed/char-grammed words, but we format
             snippets in the results by bolding either
          */
-        $query_words = explode(" ", $phrase_string); //not stemmed
+        $query_words = explode(" ", $query_string); //not stemmed
 
-        $locale_tag = guessLocaleFromString($phrase_string);
-        $base_words =
+        $locale_tag = guessLocaleFromString($query_string);
+        $base_words = //still use original phrase string here to handle acronyms
+                //abbreviations and the like that use periods
             PhraseParser::extractPhrases($phrase_string, MAX_PHRASE_LEN,
             $locale_tag); //stemmed, if have stemmer
         $words = array_merge($base_words, $found_metas);

@@ -288,7 +288,8 @@ class SearchController extends Controller implements CrawlConstants
         $bots = array("googlebot", "baidu", "naver", "sogou");
         $query_okay = true;
         foreach($bots as $bot) {
-            if(stristr($_SERVER["HTTP_USER_AGENT"], $bot)) {
+            if(!isset($_SERVER["HTTP_USER_AGENT"]) ||
+                stristr($_SERVER["HTTP_USER_AGENT"], $bot)) {
                 $query_okay = false;
             }
         }

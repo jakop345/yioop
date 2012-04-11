@@ -42,9 +42,9 @@ foreach(glob(BASE_DIR."/lib/stemmers/*_stemmer.php")
 }
 
 /**
- * Load the Bigrams File
+ * Load the n word grams File
  */
-require_once BASE_DIR."/lib/bigrams.php";
+require_once BASE_DIR."/lib/nword_grams.php";
 
 /**
  * Reads in constants used as enums used for storing web sites
@@ -141,6 +141,8 @@ class PhraseParser
     {
         $phrases = array();
 
+        self::canonicalizePunctuatedTerms($string, $lang);
+
         for($i = 0; $i < $len; $i++) {
             $phrases =
                 array_merge($phrases,
@@ -165,6 +167,8 @@ class PhraseParser
         $len =  MAX_PHRASE_LEN, $lang = NULL, $orig_and_grams = false)
     {
         $phrases = array();
+
+        self::canonicalizePunctuatedTerms($string, $lang);
 
         for($i = 0; $i < $len; $i++) {
             $phrases =
@@ -194,6 +198,8 @@ class PhraseParser
     {
         $phrase_lists = array();
 
+        self::canonicalizePunctuatedTerms($string, $lang);
+
         for($i = 0; $i < $len; $i++) {
             $phrases = self::extractPhrasesOfLength($string, $i, $lang,
                 $orig_and_grams);
@@ -219,6 +225,56 @@ class PhraseParser
         }
         return $phrase_lists;
     }
+
+    /**
+     * This functions tries to convert acronyms, e-mail, urls, etc into
+     * a format that does not involved punctuation that will be stripped
+     * as we extract phrases.
+     *
+     * @param &$string a string of words, etc which might involve such terms
+     * @param $lang a language tag to use as part of the canonicalization 
+     *      process not used right now
+     */
+    static function canonicalizePunctuatedTerms(&$string, $lang = NULL)
+    {
+        
+        $acronym_pattern = "/[A-Za-z]\.(\s*[A-Za-z]\.)+/";
+        $string = preg_replace_callback($acronym_pattern, 
+            function($matches) {
+                $result = "_".mb_strtolower(
+                    mb_ereg_replace("\.", "", $matches[0]));
+                return $result;
+            }, $string);
+
+        $ampersand_pattern = "/[A-Za-z]+(\s*(\s(\'n|\'N)\s|\&)\s*[A-Za-z])+/";
+        $string = preg_replace_callback($ampersand_pattern, 
+            function($matches) {
+                $result = mb_strtolower(
+                    mb_ereg_replace("\s*(\'n|\'N|\&)\s*", "_and_",$matches[0]));
+                return $result;
+            }, $string);
+
+        $url_or_email_pattern = 
+            '@((http|https)://([^ \t\r\n\v\f\'\"\;\,<>])*)|'.
+            '([A-Z0-9._%-]+\@[A-Z0-9.-]+\.[A-Z]{2,4})@i';
+        $string = preg_replace_callback($url_or_email_pattern, 
+            function($matches) {
+                $result =  mb_ereg_replace("\.", "_d_",$matches[0]);
+                $result =  mb_ereg_replace("\:", "_c_",$result);
+                $result =  mb_ereg_replace("\/", "_s_",$result);
+                $result =  mb_ereg_replace("\@", "_a_",$result);
+                $result =  mb_ereg_replace("\[", "_bo_",$result);
+                $result =  mb_ereg_replace("\]", "_bc_",$result);
+                $result =  mb_ereg_replace("\(", "_po_",$result);
+                $result =  mb_ereg_replace("\)", "_pc_",$result);
+                $result =  mb_ereg_replace("\?", "_q_",$result);
+                $result =  mb_ereg_replace("\=", "_e_",$result);
+                $result =  mb_ereg_replace("\&", "_a_",$result);
+                $result = mb_strtolower($result);
+                return $result;
+            }, $string);
+    }
+
 
     /**
      * Extracts all phrases (sequences of adjacent words) from $string of
@@ -262,7 +318,7 @@ class PhraseParser
         $phrase_len, $offset, $lang = NULL, $orig_and_grams = false)
     {
         mb_internal_encoding("UTF-8");
-        //split first on puctuation as bigrams shouldn't cross punctuation
+        //split first on puctuation as n word grams shouldn't cross punctuation
         $fragments = mb_split(PUNCT, $string);
 
         $stems = array();
@@ -298,12 +354,12 @@ class PhraseParser
                 $stems[$phrase_number] .= $first_time.$stem;
                 if($phrase_len ==  1 && !$punct && 
                     isset($stems[$phrase_number - 1])) {
-                    $possible_bigram = $stems[$phrase_number - 1] . " ".
+                    $possible_ngram = $stems[$phrase_number - 1] . " ".
                         $stems[$phrase_number];
-                    $isbigram = 
-                        Bigrams::bigramsContains($possible_bigram, $lang);
-                    if($isbigram) {
-                        $stems[$phrase_number - 1] = $possible_bigram;
+                    $isngram = 
+                        NWordGrams::ngramsContains($possible_ngram, $lang);
+                    if($isngram) {
+                        $stems[$phrase_number - 1] = $possible_ngram;
                         unset($stems[$phrase_number]);
                     }
                 }

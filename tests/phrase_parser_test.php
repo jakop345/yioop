@@ -104,6 +104,41 @@ EOD;
         $this->assertTrue(in_array("ab", $words), "Chinese test 3");
         $this->assertFalse(in_array("", $words), "Chinese test 3");
         $this->assertFalse(in_array("下，", $words), "Chinese test 4");
+
+        $phrase_string = <<< EOD
+P.O. Box 765,  http://somewhere.edu.au
+
+negative) results.  bigram/trigram 
+
+Simon & Somebody (1880b) analysed roughly 
+
+the U.K. based newspaper, 
+
+15, 2006, from http://www.yo.org/index.pl?a=b&c=d
+http://yo.lo.edu/faculty_pages/zebra/
+
+A&W a&TT chris@pollett.org
+Fish 'n chips
+EOD;
+
+        $word_lists = PhraseParser::extractPhrasesInLists($phrase_string,
+            MAX_PHRASE_LEN, "en-US", true);
+        $words = array_keys($word_lists);
+        $this->assertTrue(in_array("_po", $words), "Acronym Test 1");
+        $this->assertTrue(in_array("_uk", $words), "Acronym Test 2");
+        $this->assertTrue(in_array("a_and_w", $words), "Ampersand Test 1");
+        $this->assertTrue(in_array("a_and_tt", $words), "Ampersand Test 2");
+        $this->assertTrue(in_array("fish_and_chip", $words), "n for and test");
+        $this->assertTrue(in_array("chris_a_pollett_d_org", $words), 
+            "Email Check 1");
+        $this->assertTrue(in_array(
+            "http_c__s__s_www_d_yo_d_org_s_index_d_pl_q_a_e_b_and_c_e_d", 
+            $words), "URL Check 1");
+        $this->assertTrue(in_array(
+            "http_c__s__s_yo_d_lo_d_edu_s_faculty_pages_s_zebra_s_", 
+            $words), "URL Check 2");
+
+
     }
 
 }
