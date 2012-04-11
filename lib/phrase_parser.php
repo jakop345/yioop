@@ -199,7 +199,7 @@ class PhraseParser
         $phrase_lists = array();
 
         self::canonicalizePunctuatedTerms($string, $lang);
-
+echo "$string";
         for($i = 0; $i < $len; $i++) {
             $phrases = self::extractPhrasesOfLength($string, $i, $lang,
                 $orig_and_grams);
@@ -223,6 +223,7 @@ class PhraseParser
                 }
             }
         }
+print_r($phrase_lists);
         return $phrase_lists;
     }
 

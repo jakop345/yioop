@@ -138,8 +138,6 @@ EOD;
             "http_c__s__s_yo_d_lo_d_edu_s_faculty_pages_s_zebra_s_", 
             $words), "URL Check 2");
 
-
     }
-
 }
 ?>

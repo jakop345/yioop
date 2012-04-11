@@ -499,10 +499,12 @@ class PhraseModel extends Model
                 CRAWL_DIR.'/cache/'.$index_archive_name);
         }
 
-        $query_string = mb_ereg_replace("&amp;", "_and_", $phrase_string);
-        $query_string = mb_ereg_replace(PUNCT, " ", $query_string);
+        $phrase_string = mb_ereg_replace("&amp;", "_and_", $phrase_string);
+        
+        $query_string = mb_ereg_replace(PUNCT, " ", $phrase_string);
         $query_string = preg_replace("/(\s)+/", " ", $query_string);
         $query_string = mb_ereg_replace('_and_', '&', $query_string);
+        $phrase_string = mb_ereg_replace('_and_', '&', $phrase_string);
 
         /*
             we search using the stemmed/char-grammed words, but we format

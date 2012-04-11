@@ -1685,10 +1685,8 @@ class Fetcher implements CrawlConstants
                 $host_words = UrlParser::getWordsIfHostUrl($site[self::URL]);
                 $path_words = UrlParser::getWordsLastPathPartUrl(
                     $site[self::URL]);
-                $phrase_string = 
-                    mb_ereg_replace(PUNCT, " ", $host_words.
-                        $site[self::TITLE] . $path_words .
-                       " ". $site[self::DESCRIPTION]);
+                $phrase_string = $host_words." ".$site[self::TITLE] . 
+                        " ". $path_words . " ". $site[self::DESCRIPTION];
                 if(isset($site[self::LANG])) {
                     $lang = $site[self::LANG];
                 }

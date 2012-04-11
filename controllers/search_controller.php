@@ -177,10 +177,14 @@ class SearchController extends Controller implements CrawlConstants
                         break;
                     }
                 }
-                if(!$found_crawl) {
+                if(!$found_crawl && (isset($_REQUEST['q']) ||
+                    isset($_REQUEST['arg']))) {
                     unset($_SESSION['its']);
                     include(BASE_DIR."/error.php");
                     exit();
+                } else {
+                    unset($_SESSION['its']);
+                    $index_time_stamp = $current_its;
                 }
             } else {
                 $index_time_stamp = $current_its; 

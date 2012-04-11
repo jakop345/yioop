@@ -254,7 +254,7 @@ class NWordGrams
         }
         $pattern .= $pattern_end;
         $replace_types = array(self::TITLE, self::REDIRECT);
-$x =0;
+
         while (!feof($fr)) {
             $input_text = $read($fr, self::BLOCK_SIZE);
             $len = strlen($input_text);
