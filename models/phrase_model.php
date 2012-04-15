@@ -514,9 +514,9 @@ class PhraseModel extends Model
 
         $locale_tag = guessLocaleFromString($query_string);
         $base_words = //still use original phrase string here to handle acronyms
-                //abbreviations and the like that use periods
-            PhraseParser::extractPhrases($phrase_string, MAX_PHRASE_LEN,
-            $locale_tag); //stemmed, if have stemmer
+            //abbreviations and the like that use periods
+            PhraseParser::extractPhrases($phrase_string, $locale_tag); 
+                //stemmed, if have stemmer
         $words = array_merge($base_words, $found_metas);
         if(QUERY_STATISTICS) {
             $this->query_info['QUERY'] .= "$in3<i>Index</i>: ".

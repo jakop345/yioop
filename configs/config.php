@@ -90,7 +90,7 @@ if(file_exists(WORK_DIRECTORY."/profile.php")) {
     }
 } else {
     if((!isset( $_SERVER['SERVER_NAME'])||$_SERVER['SERVER_NAME']!=='localhost')
-        && (!defined(NO_LOCAL_CHECK) || NO_LOCAL_CHECK === false)) {
+        && !defined(NO_LOCAL_CHECK)) {
         echo "SERVICE AVAILABLE ONLY VIA LOCALHOST UNTIL CONFIGURED"; 
         exit();
     }

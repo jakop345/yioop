@@ -98,9 +98,10 @@ class NWordGrams
       */
      const TEXT_SUFFIX = "grams.txt";
 
-     const REDIRECT = 0;
-     const TITLE = 1;
-     const PAGE_COUNT_DUMPS = 2;
+     const WIKI_DUMP_REDIRECT = 0;
+     const WIKI_DUMP_TITLE = 1;
+     const PAGE_COUNT_WIKIPEDIA = 2;
+     const PAGE_COUNT_WIKTIONARY = 3;
 
     /**
      * Says whether or not phrase exists in the N word gram Bloom Filter
@@ -139,11 +140,12 @@ class NWordGrams
      *
      * @param string $lang language to be used to stem bigrams.
      * @param int $num_gram number of words in grams we are storing
-     * @param number $num_ngrams_found count of n word grams in text file.
+     * @param int $num_ngrams_found count of n word grams in text file.
+     * @param int $max_gram_len value n of longest n gram to be added.
      * @return none
      */
     static function createNWordGramsFilterFile($lang, $num_gram, 
-        $num_ngrams_found)
+        $num_ngrams_found, $max_gram_len)
     {
         $lang_prefix = $lang;
         if(isset(self::$LANG_PREFIX[$lang])) {
@@ -153,26 +155,23 @@ class NWordGrams
             WORK_DIRECTORY . self::FILTER_FOLDER . $lang_prefix .
             "_{$num_gram}_" . self::FILTER_SUFFIX;
         if (file_exists($filter_path)) {
-            $ngrams = BloomFilterFile::load($filter_path);
+            unlink($filter_path); //build again from scratch
         }
-        else {
-            $ngrams = new BloomFilterFile($filter_path, $num_ngrams_found);
-        }
+        $ngrams = new BloomFilterFile($filter_path, $num_ngrams_found);
 
         $inputFilePath = WORK_DIRECTORY . self::FILTER_FOLDER .
             $lang_prefix . "_{$num_gram}_" . self::TEXT_SUFFIX;
         $fp = fopen($inputFilePath, 'r') or die("Can't open ngrams text file");
         while ( ($ngram = fgets($fp)) !== false) {
-          $words = PhraseParser::
-                  extractPhrasesOfLengthOffset(trim($ngram), 1, 0, $lang);
+          $words = PhraseParser::stemTerms(trim($ngram), $lang);
           if(strlen($words[0]) == 1) { // get rid of n grams like "a dog"
               continue;
           }
           $ngram_stemmed = implode(" ", $words);
-          $ngrams->add(strtolower($ngram_stemmed));
+          $ngrams->add(mb_strtolower($ngram_stemmed));
         }
         fclose($fp);
-
+        $ngrams->max_gram_len = $max_gram_len;
         $ngrams->save();
     }
 
@@ -194,7 +193,8 @@ class NWordGrams
      * @return number $num_ngrams_found count of bigrams in text file.
      */
     static function generateNWordGramsTextFile($wiki_file, $lang, 
-        $num_gram = 2, $ngram_type = self::PAGE_COUNT_DUMPS, $max_terms = -1)
+        $num_gram = 2, $ngram_type = self::PAGE_COUNT_WIKIPEDIA, 
+        $max_terms = -1)
     {
         $lang_prefix = $lang;
         if(isset(self::$LANG_PREFIX[$lang])) {
@@ -227,33 +227,46 @@ class NWordGrams
         $bytes = 0;
         $bytes_since_last_output = 0;
         $output_message_threshold = self::BLOCK_SIZE*self::BLOCK_SIZE;
+        $is_count_type = false;
         switch($ngram_type)
         {
-            case self::TITLE:
-                $pattern = '/<title>[a-z]+';
-                $pattern_end = '<\/title>/';
+            case self::WIKI_DUMP_TITLE:
+                $pattern = '/<title>[^\p{P}]+';
+                $pattern_end = '<\/title>/u';
                 $replace_array = array('<title>','</title>');
             break;
-            case self::REDIRECT:
-                $pattern = '/#redirect\s\[\[[a-z]+';
-                $pattern_end='\]\]/';
+            case self::WIKI_DUMP_REDIRECT:
+                $pattern = '/#redirect\s\[\[[^\p{P}]+';
+                $pattern_end='\]\]/u';
                 $replace_array = array('#redirect [[',']]');
             break;
-            case self::PAGE_COUNT_DUMPS:
-                $pattern = '/^en\s[a-z]+';
-                $pattern_end='/';
+            case self::PAGE_COUNT_WIKIPEDIA:
+                $pattern = '/^'.$lang.'\s[^\p{P}]+';
+                $pattern_end='/u';
+                $is_count_type = true;
+            break;
+            case self::PAGE_COUNT_WIKTIONARY:
+                $pattern = '/^'.$lang.'.d\s[^\p{P}]+';
+                $pattern_end='/u';
+                $is_count_type = true;
             break;
         }
-        $repeat_pattern = "[\s|_][a-z0-9]+";
-        if($num_gram != "all") {
+        $is_all = false;
+        $repeat_pattern = "[\s|_][^\p{P}]+";
+        if($num_gram == "all" || $is_count_type) {
+            $pattern .= "($repeat_pattern)+";
+            if($num_gram == "all") {
+                $is_all = true;
+            }
+            $max_gram_len = -1;
+        } else {
             for($i = 1; $i < $num_gram; $i++) {
                 $pattern .= $repeat_pattern;
             }
-        } else {
-            $pattern .= "($repeat_pattern)+";
+            $max_gram_len = $num_gram;
         }
         $pattern .= $pattern_end;
-        $replace_types = array(self::TITLE, self::REDIRECT);
+        $replace_types = array(self::WIKI_DUMP_TITLE, self::WIKI_DUMP_REDIRECT);
 
         while (!feof($fr)) {
             $input_text = $read($fr, self::BLOCK_SIZE);
@@ -267,46 +280,72 @@ class NWordGrams
                     " Elapsed time so far:".(time() - $time)."\n";
                 $bytes_since_last_output = 0;
             }
-            $input_buffer .= strtolower($input_text);
+            $input_buffer .= mb_strtolower($input_text);
             $lines = explode("\n", $input_buffer);
             $input_buffer = array_pop($lines);
             foreach($lines as $line) {
                 preg_match($pattern, $line, $matches);
                 if(count($matches) > 0) {
-                    if($ngram_type == self::PAGE_COUNT_DUMPS) {
+                    if($is_count_type) {
                         $line_parts = explode(" ", $matches[0]);
                         if(isset($line_parts[1]) && isset($line_parts[2])) {
                             $ngram = mb_ereg_replace("_", " ", $line_parts[1]);
-                            if(strpos($ngram, " ") > 1) {
+                            $char_grams = 
+                                PhraseParser::getCharGramsTerm(array($ngram), 
+                                    $lang);
+                            $ngram = implode(" ", $char_grams);
+                            $ngram_num_words =  mb_substr_count($ngram, " ")+1;
+                            if(($is_all && $ngram_num_words > 1) ||(!$is_all &&
+                                $ngram_num_words == $num_gram)) {
                                 $ngrams[$ngram] = $line_parts[2];
-
                             }
                         }
                     } else {
                         $ngram = mb_ereg_replace(
                             $replace_array, "", $matches[0]);
                         $ngram = mb_ereg_replace("_", " ", $ngram);
+
                         $ngrams[] = $ngram;
+                    }
+                    if($is_all) {
+                        $ngram_num_words =  mb_substr_count($ngram, " ") + 1;
+                        $max_gram_len = max($max_gram_len, $ngram_num_words);
                     }
                 }
             }
         }
-        if($ngram_type == self::PAGE_COUNT_DUMPS) {
+        if($is_count_type) {
             arsort($ngrams);
             $ngrams = array_keys($ngrams);
         }
         $ngrams = array_unique($ngrams);
         $num_ngrams_found = count($ngrams);
         if($max_terms > 0 && $num_ngrams_found > $max_terms) {
-
             $ngrams = array_slice($ngrams, 0, $max_terms);
         }
-        sort($ngrams);
         $num_ngrams_found = count($ngrams);
+        // in is_all case add prefix*'s for (n >= 3)-grams
+        if($is_all) {
+            for($i = 0; $i < $num_ngrams_found; $i++) {
+                $ngram_in_word =  mb_substr_count($ngrams[$i], " ")+1;
+                if($ngram_in_word >= 3) {
+                    $ngram_parts = explode(" ", $ngrams[$i]);
+                    $ngram = $ngram_parts[0];
+                    for($j = 1; $j < $ngram_in_word - 1;  $j++ ) {
+                        $ngram .= " ".$ngram_parts[$j];
+                        $ngrams[] = $ngram."*";
+                    }
+                }
+            }
+            $ngrams = array_unique($ngrams);
+            $num_ngrams_found = count($ngrams);
+        }
+        sort($ngrams);
+
         $ngrams_string = implode("\n", $ngrams);
         file_put_contents($ngrams_file_path, $ngrams_string);
         $close($fr);
-        return $num_ngrams_found;
+        return array($num_ngrams_found, $max_gram_len);
     }
 
 }

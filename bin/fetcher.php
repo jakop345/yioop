@@ -1693,7 +1693,7 @@ class Fetcher implements CrawlConstants
                 
                 $word_lists = 
                     PhraseParser::extractPhrasesInLists($phrase_string,
-                        MAX_PHRASE_LEN, $lang, true);
+                        $lang, true);
             }
 
             $link_phrase_string = "";
@@ -1760,7 +1760,7 @@ class Fetcher implements CrawlConstants
                         mb_ereg_replace(PUNCT, " ", $link_text);
                     $link_word_lists = 
                         PhraseParser::extractPhrasesInLists($link_text,
-                        MAX_PHRASE_LEN, $lang);
+                        $lang, true);
                     if(!isset($this->found_sites[self::INVERTED_INDEX][
                         $part_num])) {
                         $this->found_sites[self::INVERTED_INDEX][$part_num] = 

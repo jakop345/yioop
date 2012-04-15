@@ -126,67 +126,55 @@ class PhraseParser
     }
 
     /**
-     * Extracts all phrases (sequences of adjacent words) from $string of
-     * length less than or equal to $len.
+     * Extracts all phrases (sequences of adjacent words) from $string. Does
+     * not extract terms within those phrase. Array key indicates position
+     * of phrase
      *
      * @param string $string subject to extract phrases from
-     * @param int $len longest length of phrases to consider
      * @param string $lang locale tag for stemming
      * @param bool $orig_and_grams if char-gramming is done whether to keep
      *      the original term as well in what's returned
      * @return array of phrases
      */
-    static function extractPhrases($string,
-        $len =  MAX_PHRASE_LEN, $lang = NULL, $orig_and_grams = false)
+    static function extractPhrases($string,$lang = NULL,$orig_and_grams = false)
     {
-        $phrases = array();
-
         self::canonicalizePunctuatedTerms($string, $lang);
-
-        for($i = 0; $i < $len; $i++) {
-            $phrases =
-                array_merge($phrases,
-                    self::extractPhrasesOfLength($string, $i, $lang,
-                        $orig_and_grams));
-        }
+        $phrase_pos = self::extractPhrasesInLists($string, $lang, 
+            $orig_and_grams, false);
+        $phrases = array_keys($phrase_pos);
         return $phrases;
     }
 
     /**
-     * Extracts all phrases (sequences of adjacent words) from $string of
-     * length less than or equal to $len.
+     * Extracts all phrases (sequences of adjacent words) from $string. Does
+     * not extract terms within those phrase. Returns an associative array
+     * of phrase => number of occurrences of phrase
      *
      * @param string $string subject to extract phrases from
-     * @param int $len longest length of phrases to consider
      * @param string $lang locale tag for stemming
      * @param bool $orig_and_grams if char-gramming is done whether to keep
      *      the original term as well in what's returned
      * @return array pairs of the form (phrase, number of occurrences)
      */
-    static function extractPhrasesAndCount($string,
-        $len =  MAX_PHRASE_LEN, $lang = NULL, $orig_and_grams = false)
+    static function extractPhrasesAndCount($string, $lang = NULL, 
+        $orig_and_grams = false)
     {
-        $phrases = array();
 
         self::canonicalizePunctuatedTerms($string, $lang);
 
-        for($i = 0; $i < $len; $i++) {
-            $phrases =
-                array_merge($phrases,
-                    self::extractPhrasesOfLength($string, $i, $lang,
-                        $orig_and_grams));
-        }
+        $phrases = self::extractPhrasesInLists($string, $lang, $orig_and_grams, 
+            false);
+
         $phrase_counts = array_count_values($phrases);
 
         return $phrase_counts;
     }
 
     /**
-     * Extracts all phrases (sequences of adjacent words) from $string of
-     * length less than or equal to $len.
+     * Extracts all phrases (sequences of adjacent words) from $string. Does
+     * extract terms within those phrase. 
      *
      * @param string $string subject to extract phrases from
-     * @param int $len longest length of phrases to consider
      * @param string $lang locale tag for stemming
      * @param bool $orig_and_grams if char-gramming is done whether to keep
      *      the original term as well in what's returned
@@ -194,35 +182,29 @@ class PhraseParser
      *      the document
      */
     static function extractPhrasesInLists($string,
-        $len =  MAX_PHRASE_LEN, $lang = NULL, $orig_and_grams = false)
+        $lang = NULL, $orig_and_grams = false, $phrases_and_terms = true)
     {
         $phrase_lists = array();
 
         self::canonicalizePunctuatedTerms($string, $lang);
-        for($i = 0; $i < $len; $i++) {
-            $phrases = self::extractPhrasesOfLength($string, $i, $lang,
-                $orig_and_grams);
-            if($i==1){
-                $n = 0;
-                foreach ($phrases as $phrase) {
-                    $words = explode(" ",$phrase);
-                    if(count($words)==2 && $words[0] != "" && $words[1] != ""){
-                        $phrase_lists[$phrase][] = $n;
-                        $phrase_lists[$words[0]][] = $n++;
-                        $phrase_lists[$words[1]][] = $n++;
-                    }
-                    else{
-                        $phrase_lists[$phrase][] = $n++;
-                    }
-                }
+        $pre_phrases = 
+            self::extractTermsAndFilterPhrases($string, $lang,$orig_and_grams);
+        $phrases = array();
+        $j = 0;
+        foreach($pre_phrases as $pre_phrase) {
+            $len = count($pre_phrase);
+            if($len == 1) {
+                $phrases[$pre_phrase[0]][] = $j++;
             } else {
-                $count = count($phrases);
-                for($j = 0; $j < $count; $j++) {
-                    $phrase_lists[$phrases[$j]][] = $j;
+                $phrases[implode(" ", $pre_phrase)][] = $j;
+                if($phrases_and_terms) {
+                    foreach($pre_phrase as $term) {
+                        $phrases[$term][] = $j++;
+                    }
                 }
             }
         }
-        return $phrase_lists;
+        return $phrases;
     }
 
     /**
@@ -274,115 +256,85 @@ class PhraseParser
             }, $string);
     }
 
-
     /**
-     * Extracts all phrases (sequences of adjacent words) from $string of
-     * length exactly equal to $len.
      *
-     * @param string $string subject to extract phrases from
-     * @param int $len length of phrases to consider
-     * @param string $lang locale tag for stemming
-     * @param bool $orig_and_grams if char-gramming is done whether to keep
-     *      the original term as well in what's returned
-     * @return array of phrases
      */
-    static function extractPhrasesOfLength($string, $phrase_len, $lang = NULL,
-        $orig_and_grams = false)
-    {
-        $phrases = array();
-
-        for($i = 0; $i < $phrase_len; $i++) {
-            $phrases = array_merge($phrases,
-                self::extractPhrasesOfLengthOffset($string,
-                    $phrase_len, $i, $lang, $orig_and_grams));
-        }
-        return $phrases;
-    }
-
-    /**
-     * Extracts phrases (sequences of adjacent words) from $string of
-     * length exactly equal to $len, beginning with the $offset'th word.
-     * This extracts the the $len many words after offset, then the $len
-     * many words after that, and so on.
-     *
-     * @param string $string subject to extract phrases from
-     * @param int $len length of phrases to consider
-     * @param int $offset the first word to begin with
-     * @param string $lang locale tag for stemming
-     * @param bool $orig_and_grams if char-gramming is done whether to keep
-     *      the original term as well in what's returned
-     * @return array of phrases
-     */
-    static function extractPhrasesOfLengthOffset($string,
-        $phrase_len, $offset, $lang = NULL, $orig_and_grams = false)
+    static function extractTermsAndFilterPhrases($string,
+        $lang = NULL, $orig_and_grams = false)
     {
         mb_internal_encoding("UTF-8");
         //split first on puctuation as n word grams shouldn't cross punctuation
         $fragments = mb_split(PUNCT, $string);
 
-        $stems = array();
+        $final_terms = array();
 
         if(isset(self::$STEMMERS[$lang])) {
             $stemmer = self::$STEMMERS[$lang];
+            $stem_obj = new $stemmer(); //for php 5.2 compatibility
         } else {
             $stemmer = NULL;
         }
 
-        $j = 0;
         foreach($fragments as $fragment) {
-            $words = mb_split("[[:space:]]", $fragment);
-            $j += $offset;
-            $punct = true;
-            for($i = $offset; $i < count($words); $i++, $j++) {
-                if($words[$i] == "") {continue;}
-
-                $phrase_number = ($j - $offset)/$phrase_len;
-                if(!isset($stems[$phrase_number])) {
-                    $stems[$phrase_number]= "";
-                    $first_time = "";
-                }
-                $pre_stem = mb_strtolower($words[$i]);
-
-                if($stemmer != NULL) {
-                    $stem_obj = new $stemmer(); //for php 5.2 compatibility
-                    $stem =  $stem_obj->stem($pre_stem);
-                } else {
-                    $stem = $pre_stem;
-                }
-
-                $stems[$phrase_number] .= $first_time.$stem;
-                if($phrase_len ==  1 && !$punct && 
-                    isset($stems[$phrase_number - 1])) {
-                    $possible_ngram = $stems[$phrase_number - 1] . " ".
-                        $stems[$phrase_number];
-                    $isngram = 
-                        NWordGrams::ngramsContains($possible_ngram, $lang);
-                    if($isngram) {
-                        $stems[$phrase_number - 1] = $possible_ngram;
-                        unset($stems[$phrase_number]);
+            $pre_terms = mb_split("[[:space:]]", $fragment);
+            if($pre_terms == array()) continue;
+            $terms = array();
+            if(isset(self::$CHARGRAMS[$lang])) {
+                foreach($pre_terms as $pre_term) {
+                    if($pre_term == "") continue;
+                    $ngrams = self::getCharGramsTerm(array($pre_term), $lang);
+                    if($orig_and_grams) {
+                        $terms[]  = $pre_term;
+                        $terms = array_merge($terms, $ngrams);
+                    } else if(count($ngrams) > 0) {
+                        $terms = array_merge($terms, $ngrams);
                     }
                 }
-                $first_time = " ";
-                $punct = false;
+            } else {
+                $terms = $pre_terms;
             }
-        }
-
-        if($phrase_len == 1) {
-            /*
-                calculate character n-grams if dealing with single terms
-                not phrases; this only changes anything if no stemmer
-                was used
-             */
-            $ngrams = self::getCharGramsTerm($stems, $lang);
-            if($orig_and_grams) {
-                $stems = array_merge($stems, $ngrams);
-            } else if(count($ngrams) > 0) {
-                $stems = $ngrams;
+            $stems = array();
+            if($stemmer != NULL) { 
+                foreach($terms as $term) {
+                    $pre_stem = mb_strtolower($term);
+                    $stems[] = $stem_obj->stem($pre_stem);
+                }
+            } else {
+                foreach($terms as $term) {
+                    $stems[] = mb_strtolower($term);
+                }
             }
+            $accumulators = array();
+            $phrases = array();
+            $i = 0;
+            $num_stems = count($stems);
+            while($i < $num_stems) {
+                $tmp = $stems[$i];
+                if($stems[$i] == "") {
+                    $i++;
+                    continue;
+                }
+                $j = $i + 1;
+                $max_j = $i;
+                $cont_ngram = true;
+                while($cont_ngram && $j < $num_stems) {
+                    $tmp .= " " . $stems[$j];
+                    $isngram = NWordGrams::ngramsContains($tmp, $lang, "all");
+                    if($isngram) {
+                        $max_j = $j;
+                    }
+                    $cont_ngram = NWordGrams::ngramsContains($tmp."*", $lang,
+                        "all");
+                    $j++;
+                }
+                $phrases[] = array_slice($stems, $i, $max_j - $i + 1);
+                $i = $max_j + 1;
+            }
+
+            $phrases = array_values($phrases);
+            $final_terms = array_merge($final_terms, $phrases);
         }
-
-        return $stems;
-
+        return $final_terms;
     }
 
     /**
@@ -421,5 +373,32 @@ class PhraseParser
             }
         }
         return $ngrams;
+    }
+
+    /**
+     *
+     */
+    static function stemTerms($string, $lang)
+    {
+        $terms = mb_split("[[:space:]]", $string);
+        if(isset(self::$STEMMERS[$lang])) {
+            $stemmer = self::$STEMMERS[$lang];
+            $stem_obj = new $stemmer(); //for php 5.2 compatibility
+        } else {
+            $stemmer = NULL;
+        }
+        $stems = array();
+        if($stemmer != NULL) {
+            foreach($terms as $term) {
+                $pre_stem = mb_strtolower($term);
+                $stems[] = $stem_obj->stem($pre_stem);
+            }
+        } else {
+            foreach($terms as $term) {
+                $stems[] = mb_strtolower($term);
+            }
+        }
+
+        return $stems;
     }
 }

@@ -104,12 +104,13 @@ if( $num_args < 2 || $num_args > 6){
         "Yioop! search engine. This filter file is used to detect when n \n".
         "words in a language should be treated as a unit. For example, \n".
         "Bill Clinton. ngram_builder is run from the command line as:\n".
-        "php bigram.php wiki_xml lang n extract_type max_to_extract\n".
+        "php ngram_builder.php wiki_xml lang n extract_type max_to_extract\n".
         "where wiki_xml is a wikipedia xml file or a bz2 compressed xml\n".
         "file whose urls will be used to determine the n-grams, lang\n".
         "is an IANA language tag, n is the number of words in a row to\n".
-        "consider, extract_type is where from wikipedia source to extract:".
-        "0 = title's, 1 = redirect's. 2 = means this is a page count wiki dump";
+        "consider, extract_type is where from wikipedia source to extract:\n".
+        "0 = title's, 1 = redirect's, 2 = page count dump wikipedia ".
+        " data, 3 = page count dump wiktionary data.";
     exit();
 }
 if(!isset($argv[2])) {
@@ -119,11 +120,11 @@ if(!isset($argv[3])) {
     $argv[3] = 2; // bigrams
 }
 if(!isset($argv[4])) {
-    $argv[4] = NWordGrams::PAGE_COUNT_DUMPS; 
+    $argv[4] = NWordGrams::PAGE_COUNT_WIKIPEDIA; 
 }
 if(!isset($argv[5]) && $argv[3] == "all" && 
-    $argv[4] == NWordGrams::PAGE_COUNT_DUMPS) {
-    $argv[5] = 500000;
+    $argv[4] == NWordGrams::PAGE_COUNT_WIKIPEDIA) {
+    $argv[5] = 400000;
 } else {
     $argv[5] = -1;
 }
@@ -145,8 +146,9 @@ if (!file_exists($wiki_file_path.$argv[1])) {
  *This call creates a ngrams text file from input xml file and
  *returns the count of ngrams in the text file.
  */
-$num_ngrams = NWordGrams::generateNWordGramsTextFile($argv[1], $argv[2], 
-    $argv[3], $argv[4], $argv[5]);
+list($num_ngrams, $max_gram_len) = 
+    NWordGrams::generateNWordGramsTextFile($argv[1], $argv[2], $argv[3], 
+    $argv[4], $argv[5]);
 
 /*
  *This call creates a bloom filter file from n word grams text file based
@@ -154,6 +156,7 @@ $num_ngrams = NWordGrams::generateNWordGramsTextFile($argv[1], $argv[2],
  *to the filter file name. The count of n word grams in text file is passed
  *as a parameter to set the limit of n word grams in the filter file.
  */
-NWordGrams::createNWordGramsFilterFile($argv[2], $argv[3], $num_ngrams);
+NWordGrams::createNWordGramsFilterFile($argv[2], $argv[3], $num_ngrams, 
+    $max_gram_len);
 
 ?>

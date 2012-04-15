@@ -69,11 +69,11 @@ class PhraseParserTest extends UnitTest
     {
         $phrase_string = <<< EOD
 THE THE
-‘Deep Space’ ‘Deep Space’ version of GIANT
-©2012
+‘Deep Space nine’ ‘Deep Space’ version of GIANT
+©2012 
 EOD;
         $word_lists = PhraseParser::extractPhrasesInLists($phrase_string,
-            MAX_PHRASE_LEN, "en-US", true);
+            "en-US", true);
         $words = array_keys($word_lists);
 
         $this->assertTrue(in_array("the the", $words), "Extract Bigram 1");
@@ -85,8 +85,9 @@ EOD;
 THE . THE
 EOD;
         $word_lists = PhraseParser::extractPhrasesInLists($phrase_string,
-            MAX_PHRASE_LEN, "en-US", true);
+            "en-US", true);
         $words = array_keys($word_lists);
+
         $this->assertFalse(in_array("the the", $words), "No Bigram when ".
             "punctuation present");
 
@@ -97,7 +98,7 @@ EOD;
 About Baidu
 EOD;
         $word_lists = PhraseParser::extractPhrasesInLists($phrase_string,
-            MAX_PHRASE_LEN, "zh-CN", true);
+            "zh-CN", true);
         $words = array_keys($word_lists);
         $this->assertTrue(in_array("百度", $words), "Chinese test 1");
         $this->assertTrue(in_array("mp3", $words), "Chinese test 2");
@@ -122,7 +123,7 @@ Fish 'n chips
 EOD;
 
         $word_lists = PhraseParser::extractPhrasesInLists($phrase_string,
-            MAX_PHRASE_LEN, "en-US", true);
+            "en-US", true);
         $words = array_keys($word_lists);
         $this->assertTrue(in_array("_po", $words), "Acronym Test 1");
         $this->assertTrue(in_array("_uk", $words), "Acronym Test 2");
