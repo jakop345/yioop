@@ -280,7 +280,7 @@ body.html-tb-lr
     font-size:16pt;
 }
 
-.searchbox input
+.searchbox input, .autoresult, .dropdown
 {
     width: 6.5in;
     font-size:16pt;
@@ -288,9 +288,40 @@ body.html-tb-lr
     margin-left:0;
     border: 0;
     padding-top: 0;
-    padding-bottom:3pt;
+    padding-bottom:0.05in;
     padding-right:0;
     padding-left:0;
+    margin:0;    
+}
+
+#aslist li
+{
+    width: 6.5in;
+    font-size:16pt;
+    margin-right:0in;
+    margin-left:0in;
+    padding-top:0;
+    padding-right:0;
+    padding-left:0.1in;
+    cursor:pointer;
+    list-style:none;
+    border-color: #ddddff;
+    border-top-style:none;
+    border-right-style:solid;
+    border-bottom-style:none;
+    border-left-style:solid;
+}
+
+
+#aslist li:last-child
+{
+    border-bottom-style:solid;
+}
+
+#aslist li:hover 
+{
+    background:#ddddff;
+    color:black;
 }
 
 .html-ltr .buttonbox

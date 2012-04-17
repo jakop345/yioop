@@ -89,7 +89,7 @@ class WebLayout extends Layout
 
         </head>
         <body class="html-<?php e($data['BLOCK_PROGRESSION']);?> html-<?php 
-            e($data['LOCALE_DIR']);?> html-<?php e($data['WRITING_MODE']);?>">
+            e($data['LOCALE_DIR']);?> html-<?php e($data['WRITING_MODE']);?>" onload="loadTrie()">
             <div id="message" ></div>
             <?php
                 $this->view->renderView($data);
@@ -114,6 +114,7 @@ class WebLayout extends Layout
                 <?php }
             ?>
             <script type="text/javascript" src="./scripts/basic.js" ></script>
+            <script type="text/javascript" src="./scripts/autosuggest.js" ></script>                        
             <?php
             if(isset($data['INCLUDE_SCRIPTS'])) {
                 foreach($data['INCLUDE_SCRIPTS'] as $script_name) {
