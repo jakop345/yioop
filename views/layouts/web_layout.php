@@ -89,7 +89,8 @@ class WebLayout extends Layout
 
         </head>
         <body class="html-<?php e($data['BLOCK_PROGRESSION']);?> html-<?php 
-            e($data['LOCALE_DIR']);?> html-<?php e($data['WRITING_MODE']);?>" onload="loadTrie()">
+            e($data['LOCALE_DIR']);?> html-<?php e($data['WRITING_MODE']);?>" 
+            onload="loadTrie()">
             <div id="message" ></div>
             <?php
                 $this->view->renderView($data);

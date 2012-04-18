@@ -45,7 +45,8 @@ function askeyup(textobj) {
 /**
  * To select a value from the dropdownlist and place in the search box 
  */
-function aslitem_click(liObj) {
+function aslitem_click(liObj)
+{
     var res_obj = document.getElementById("aslist");
    // var astobj = document.getElementById("astbox");
     var astobj = document.getElementById("search-name"); 
@@ -56,7 +57,8 @@ function aslitem_click(liObj) {
 /**
  * Fetch words from the Trie and add to seachList with <li> </li> tags
  */
-function getValues(arrayLevel, parent_word) { 
+function getValues(arrayLevel, parent_word)
+{
     if (arrayLevel != null && lastWord == 0 ) {
         for (key in arrayLevel) { 
             if (key != " " ) {
@@ -78,7 +80,8 @@ function getValues(arrayLevel, parent_word) {
  * If more than one character is entered, get the level of array to fetch the
  * words
  */
-function exist(arrayLevel, searchTerm) {
+function exist(arrayLevel, searchTerm)
+{
     var i;  
     for(i=1;i<searchTerm.length;i++) {
         if(arrayLevel == null){
@@ -100,12 +103,13 @@ function exist(arrayLevel, searchTerm) {
  * Entry point to find words for autosuggestion.Find the level of the array 
  * based on the number of characters entered by the user
  */
-function autosuggest(arrayLevel, searchTerm) {
+function autosuggest(arrayLevel, searchTerm)
+{
     lastWord=0, count=0;
     if(arrayLevel == null || arrayLevel[" "] == " ") {
         return false;
     }
-    if((searchTerm.length) > 1) {  
+    if((searchTerm.length) > 1) {
         arrayLevel = exist(arrayLevel[searchTerm.charAt(0)], searchTerm);
 
     } else {
@@ -117,7 +121,8 @@ function autosuggest(arrayLevel, searchTerm) {
 /**
  * Load the Trie(compressed with .gz extension) during the launch of website
  */
-function loadTrie() {
+function loadTrie() 
+{
     var xmlhttp;
     if (window.XMLHttpRequest) {
         // code for IE7i+, Firefox, Chrome, Opera, Safari
@@ -127,10 +132,15 @@ function loadTrie() {
         xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
     }
     xmlhttp.onreadystatechange=function() {
-        if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+        if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
             dictObj = JSON.parse(xmlhttp.responseText);
         }
     }
-    xmlhttp.open("GET","./resources/en-hf-words/en-hf.txt.gz",true);
-    xmlhttp.send();
+
+    locale = document.documentElement.lang
+    if(locale) {
+        trie_loc = "./locale/"+locale+"/resources/suggest_trie.txt.gz";
+        xmlhttp.open("GET", trie_loc, true);
+        xmlhttp.send();
+    }
 }
