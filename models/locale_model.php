@@ -620,8 +620,12 @@ class LocaleModel extends Model
                 $fallback_path . '/configure.ini', true);
         }
         if(file_exists($fallback_path.'/pages')) {
-            $this->updateLocaleStaticPages($cur_path.'/pages', 
-                $fallback_path.'/pages');
+            $this->updateLocaleSubFolder($cur_path.'/pages', 
+                $fallback_path.'/pages', array(".thtml"));
+        }
+        if(file_exists($fallback_path.'/resources')) {
+            $this->updateLocaleSubFolder($cur_path.'/resources', 
+                $fallback_path.'/resources', array(".php", ".ftr", ".txt.gz"));
         }
         $n = array();
         $n[] = <<<EOT
@@ -710,26 +714,33 @@ EOT;
     }
 
     /**
-     *  Copies over static pages which exists in a fallback directory, but
-     *  not in the actual directory of a locale.
+     *  Copies over subfolder items of the correct file extensions 
+     *  which exists in a fallback directory, but not in the actual directory 
+     *  of a locale.
      *
      *  @param string $locale_pages_path static page directory to which will 
      *     copy
      *  @param string $fallback_pages_path static page directory from which will
      *     copy
+     *  @param array $file_extensions an array of strings names of file 
+     *      extensions for example: .txt.gz .thtml .php ,etc
      */
-    function updateLocaleStaticPages($locale_pages_path, $fallback_pages_path) {
+    function updateLocaleSubFolder($locale_pages_path, $fallback_pages_path,
+        $file_extensions) {
         $change = false;
         if(!file_exists($locale_pages_path)) {
             mkdir($locale_pages_path);
             $change = true;
         }
-        foreach( glob($fallback_pages_path."/*.thtml") as $fallback_page_name) {
-            $basename = basename($fallback_page_name);
-            $locale_page_name = "$locale_pages_path/$basename";
-            if(!file_exists($locale_page_name)) {
-                copy($fallback_page_name, $locale_page_name);
-                $change = true;
+        foreach($file_extensions as $file_extension) {
+            foreach(glob($fallback_pages_path."/*.$file_extension") 
+                as $fallback_page_name) {
+                $basename = basename($fallback_page_name);
+                $locale_page_name = "$locale_pages_path/$basename";
+                if(!file_exists($locale_page_name)) {
+                    copy($fallback_page_name, $locale_page_name);
+                    $change = true;
+                }
             }
         }
         $this->db->setWorldPermissionsRecursive($locale_pages_path);

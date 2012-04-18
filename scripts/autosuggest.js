@@ -39,7 +39,7 @@ function askeyup(textobj) {
     searchList="";
     autosuggest(dictObj,inputTerm); 
     res_obj.innerHTML = searchList; 
-    searchList="";        
+    searchList="";
 }
 
 /**
@@ -50,7 +50,7 @@ function aslitem_click(liObj) {
    // var astobj = document.getElementById("astbox");
     var astobj = document.getElementById("search-name"); 
     astobj.value = liObj.innerHTML;
-    res_obj.innerHTML = ""; 
+    res_obj.innerHTML = "";
 }
 
 /**
@@ -62,14 +62,15 @@ function getValues(arrayLevel, parent_word) {
             if (key != " " ) {
                 getValues(arrayLevel[key], parent_word+key);
             } else {
-                searchList += "<li onclick='aslitem_click(this);'>" + parent_word + "</li>";
+                searchList += "<li onclick='aslitem_click(this);'>" 
+                    + parent_word + "</li>";
                 count++;
                 // Display only top 6 words
                 if(count == 6) {
                     lastWord = 1;
                 }
             }
-        }                                     
+        }
     }
 }
 
@@ -96,8 +97,8 @@ function exist(arrayLevel, searchTerm) {
 }
 
 /**
- * Entry point to find words for autosuggestion.Find the level of the array based on
- * the number of characters entered by the user
+ * Entry point to find words for autosuggestion.Find the level of the array 
+ * based on the number of characters entered by the user
  */
 function autosuggest(arrayLevel, searchTerm) {
     lastWord=0, count=0;
@@ -110,7 +111,7 @@ function autosuggest(arrayLevel, searchTerm) {
     } else {
         arrayLevel = arrayLevel[searchTerm];
     }
-    getValues(arrayLevel, searchTerm);  
+    getValues(arrayLevel, searchTerm);
 }
 
 /**
@@ -131,5 +132,5 @@ function loadTrie() {
         }
     }
     xmlhttp.open("GET","./resources/en-hf-words/en-hf.txt.gz",true);
-    xmlhttp.send();   
+    xmlhttp.send();
 }

@@ -63,26 +63,10 @@ require_once BASE_DIR."/lib/phrase_parser.php";
 class NWordGrams
 {
      /**
-      * Language tags and their corresponding bigram prefix
-      * @var array
-      */
-     static $LANG_PREFIX = array(
-        'en' => "en",
-        'en-US' => "en",
-        'en-GB' => "en",
-        'en-CA' => "en"
-     );
-     /**
       * Static copy of n-grams files
       * @var object
       */
     static $ngrams = NULL;
-     /**
-      * Name of the folder inside user work directory
-      * that contains the input compressed XML file. The filter
-      * file generated will also be stored in this folder.
-      */
-     const FILTER_FOLDER = "/search_filters/";
      /**
       * 
       */
@@ -91,12 +75,12 @@ class NWordGrams
       * Suffix appended to language tag to create the
       * filter file name containing bigrams.
       */
-     const FILTER_SUFFIX = "grams.ftr";
+     const FILTER_SUFFIX = "_word_grams.ftr";
      /**
       * Suffix appended to language tag to create the
       * text file name containing bigrams.
       */
-     const TEXT_SUFFIX = "grams.txt";
+     const TEXT_SUFFIX = "_word_grams.txt";
 
      const WIKI_DUMP_REDIRECT = 0;
      const WIKI_DUMP_TITLE = 1;
@@ -114,13 +98,9 @@ class NWordGrams
     {
         
         if(self::$ngrams == NULL || !isset(self::$ngrams[$num_gram])) {
-            $lang_prefix = $lang;
-            if(isset(self::$LANG_PREFIX[$lang])) {
-                $lang_prefix = self::$LANG_PREFIX[$lang];
-            }
-            $filter_path = WORK_DIRECTORY .
-                self::FILTER_FOLDER . $lang_prefix . "_{$num_gram}_" . 
-                self::FILTER_SUFFIX;
+            $filter_path =
+                LOCALE_DIR . "/$lang/resources/" .
+                "{$num_gram}" . self::FILTER_SUFFIX;
             if (file_exists($filter_path)) {
                 self::$ngrams[$num_gram] = BloomFilterFile::load($filter_path);
             } else  {
@@ -147,20 +127,16 @@ class NWordGrams
     static function createNWordGramsFilterFile($lang, $num_gram, 
         $num_ngrams_found, $max_gram_len)
     {
-        $lang_prefix = $lang;
-        if(isset(self::$LANG_PREFIX[$lang])) {
-            $lang_prefix = self::$LANG_PREFIX[$lang];
-        }
         $filter_path =
-            WORK_DIRECTORY . self::FILTER_FOLDER . $lang_prefix .
-            "_{$num_gram}_" . self::FILTER_SUFFIX;
+            LOCALE_DIR . "/$lang/resources/" .
+            "{$num_gram}" . self::FILTER_SUFFIX;
         if (file_exists($filter_path)) {
             unlink($filter_path); //build again from scratch
         }
         $ngrams = new BloomFilterFile($filter_path, $num_ngrams_found);
 
-        $inputFilePath = WORK_DIRECTORY . self::FILTER_FOLDER .
-            $lang_prefix . "_{$num_gram}_" . self::TEXT_SUFFIX;
+        $inputFilePath = LOCALE_DIR . "/$lang/resources/" .
+            "{$num_gram}" .  self::TEXT_SUFFIX;
         $fp = fopen($inputFilePath, 'r') or die("Can't open ngrams text file");
         while ( ($ngram = fgets($fp)) !== false) {
           $words = PhraseParser::stemTerms(trim($ngram), $lang);
@@ -187,21 +163,17 @@ class NWordGrams
      *
      * @param string $wiki_file compressed or uncompressed wikipedia
      *      XML file path to be used to extract bigrams.
-     * @param string $lang Language to be used to create bigrams.
+     * @param string $lang Language to be used to create n grams.
+     * @param string $locale Locale to be used to store results.
      * @param int $num_gram number of words in grams we are looking for
      * @param int $ngram_type where in Wiki Dump to extract grams from
      * @return number $num_ngrams_found count of bigrams in text file.
      */
     static function generateNWordGramsTextFile($wiki_file, $lang, 
-        $num_gram = 2, $ngram_type = self::PAGE_COUNT_WIKIPEDIA, 
+        $locale, $num_gram = 2, $ngram_type = self::PAGE_COUNT_WIKIPEDIA, 
         $max_terms = -1)
     {
-        $lang_prefix = $lang;
-        if(isset(self::$LANG_PREFIX[$lang])) {
-            $lang_prefix = self::$LANG_PREFIX[$lang];
-        }
-        $wiki_file_path =
-            WORK_DIRECTORY.self::FILTER_FOLDER.$wiki_file;
+        $wiki_file_path = PREP_DIR."/$wiki_file";
         if(strpos($wiki_file_path, "bz2") !== false) {
             $fr = bzopen($wiki_file_path, 'r') or
                 die ("Can't open compressed file");
@@ -218,8 +190,8 @@ class NWordGrams
             $close = "fclose";
         }
         $ngrams_file_path
-            = WORK_DIRECTORY.self::FILTER_FOLDER.$lang_prefix.
-                "_{$num_gram}_".self::TEXT_SUFFIX;
+            = LOCALE_DIR . "/$locale/resources/" . "{$num_gram}" .
+                self::TEXT_SUFFIX;
         $ngrams = array();
         $input_buffer = "";
         $time = time();
@@ -267,7 +239,6 @@ class NWordGrams
         }
         $pattern .= $pattern_end;
         $replace_types = array(self::WIKI_DUMP_TITLE, self::WIKI_DUMP_REDIRECT);
-
         while (!feof($fr)) {
             $input_text = $read($fr, self::BLOCK_SIZE);
             $len = strlen($input_text);
@@ -292,7 +263,7 @@ class NWordGrams
                             $ngram = mb_ereg_replace("_", " ", $line_parts[1]);
                             $char_grams = 
                                 PhraseParser::getCharGramsTerm(array($ngram), 
-                                    $lang);
+                                    $locale);
                             $ngram = implode(" ", $char_grams);
                             $ngram_num_words =  mb_substr_count($ngram, " ")+1;
                             if(($is_all && $ngram_num_words > 1) ||(!$is_all &&
@@ -307,7 +278,7 @@ class NWordGrams
 
                         $ngrams[] = $ngram;
                     }
-                    if($is_all) {
+                    if($is_all && isset($ngram)) {
                         $ngram_num_words =  mb_substr_count($ngram, " ") + 1;
                         $max_gram_len = max($max_gram_len, $ngram_num_words);
                     }

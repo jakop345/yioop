@@ -68,6 +68,7 @@ define('WORK_DIRECTORY', '');
 }
 
 define('APP_DIR', WORK_DIRECTORY."/app");
+define('PREP_DIR', WORK_DIRECTORY."/prepare");
 
 define('FALLBACK_LOCALE_DIR', BASE_DIR."/locale");
 

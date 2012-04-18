@@ -99,34 +99,44 @@ require_once BASE_DIR.'/configs/config.php';
 require_once BASE_DIR."/lib/nword_grams.php";
 
 $num_args = count($argv);
-if( $num_args < 2 || $num_args > 6){
-    echo "ngram_builder is used to create a n word gram filter file for the \n".
-        "Yioop! search engine. This filter file is used to detect when n \n".
+if( $num_args < 2 || $num_args > 7) {
+    echo "\n".
+        "ngram_builder is used to create a 'n' word gram filter file for\n".
+        "the Yioop! search engine. This filter file is used to detect when n\n".
         "words in a language should be treated as a unit. For example, \n".
-        "Bill Clinton. ngram_builder is run from the command line as:\n".
-        "php ngram_builder.php wiki_xml lang n extract_type max_to_extract\n".
+        "Bill Clinton is 2 word gram. ngram_builder is run from the command\n".
+        "line as:\n\n".
+        "php ngram_builder.php wiki_xml lang locale ".
+            "n extract_type max_to_extract\n\n".
         "where wiki_xml is a wikipedia xml file or a bz2 compressed xml\n".
         "file whose urls will be used to determine the n-grams, lang\n".
-        "is an IANA language tag, n is the number of words in a row to\n".
-        "consider, extract_type is where from wikipedia source to extract:\n".
-        "0 = title's, 1 = redirect's, 2 = page count dump wikipedia ".
-        " data, 3 = page count dump wiktionary data.";
+        "is an Wikipedia language tag,  locale is the IANA language tag\n". 
+        "of locale to store the results for (if different from lang, for\n".
+        " example, en-US versus en for lang), n is the number of words in a\n".
+        "row to consider, extract_type is where from Wikipedia source to \n".
+        "extract:\n\n".
+        " 0 = title's,\n 1 = redirect's,\n 2 = page count dump wikipedia ".
+        "data,\n 3 = page count dump wiktionary data.\n\n";
     exit();
 }
 if(!isset($argv[2])) {
-    $argv[2] = "en-US";
+    $argv[2] = "en";
+    $argv[3] = "en-US";
 }
 if(!isset($argv[3])) {
-    $argv[3] = 2; // bigrams
+    $argv[3] = $argv[2]; 
 }
 if(!isset($argv[4])) {
-    $argv[4] = NWordGrams::PAGE_COUNT_WIKIPEDIA; 
+    $argv[4] = 2; // bigrams
 }
-if(!isset($argv[5]) && $argv[3] == "all" && 
-    $argv[4] == NWordGrams::PAGE_COUNT_WIKIPEDIA) {
-    $argv[5] = 400000;
+if(!isset($argv[5])) {
+    $argv[5] = NWordGrams::PAGE_COUNT_WIKIPEDIA; 
+}
+if(!isset($argv[6]) && $argv[3] == "all" && 
+    $argv[3] == NWordGrams::PAGE_COUNT_WIKIPEDIA) {
+    $argv[6] = 400000;
 } else {
-    $argv[5] = -1;
+    $argv[6] = -1;
 }
 
 if(!PROFILE) {
@@ -136,7 +146,7 @@ if(!PROFILE) {
 }
 
 
-$wiki_file_path = WORK_DIRECTORY."/search_filters/";
+$wiki_file_path = PREP_DIR."/";
 if (!file_exists($wiki_file_path.$argv[1])) {
     echo $argv[1]." does not exist in $wiki_file_path";
     exit();
@@ -148,7 +158,7 @@ if (!file_exists($wiki_file_path.$argv[1])) {
  */
 list($num_ngrams, $max_gram_len) = 
     NWordGrams::generateNWordGramsTextFile($argv[1], $argv[2], $argv[3], 
-    $argv[4], $argv[5]);
+    $argv[4], $argv[5], $argv[6]);
 
 /*
  *This call creates a bloom filter file from n word grams text file based
@@ -156,7 +166,7 @@ list($num_ngrams, $max_gram_len) =
  *to the filter file name. The count of n word grams in text file is passed
  *as a parameter to set the limit of n word grams in the filter file.
  */
-NWordGrams::createNWordGramsFilterFile($argv[2], $argv[3], $num_ngrams, 
+NWordGrams::createNWordGramsFilterFile($argv[3], $argv[4], $num_ngrams, 
     $max_gram_len);
 
 ?>

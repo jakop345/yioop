@@ -114,7 +114,6 @@ class WebLayout extends Layout
                 <?php }
             ?>
             <script type="text/javascript" src="./scripts/basic.js" ></script>
-            <script type="text/javascript" src="./scripts/autosuggest.js" ></script>                        
             <?php
             if(isset($data['INCLUDE_SCRIPTS'])) {
                 foreach($data['INCLUDE_SCRIPTS'] as $script_name) {

@@ -34,14 +34,6 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- *  Load the stem word functions, if necessary
- */
-foreach(glob(BASE_DIR."/lib/stemmers/*_stemmer.php")
-    as $filename) {
-    require_once $filename;
-}
-
-/**
  * Load the n word grams File
  */
 require_once BASE_DIR."/lib/nword_grams.php";
@@ -62,41 +54,11 @@ require_once BASE_DIR."/lib/crawl_constants.php";
 class PhraseParser
 {
     /**
-     * Language tags and their corresponding stemmer
+     * Stemmer objects we've instantiated so far (so don't have to 
+     * re-instantiate)
      * @var array
      */
-     static $STEMMERS = array(
-        'en' => "EnStemmer",
-        'en-US' => "EnStemmer",
-        'en-GB' => "EnStemmer",
-        'en-CA' => "EnStemmer",
-     );
-
-    /**
-     * Language tags and their corresponding character n-gram length
-     * (should only use one of character n-grams or stemmer)
-     */
-     static $CHARGRAMS = array(
-        'ar' => 5,
-        'de' => 5,
-        'es' => 5,
-        'fr' => 5,
-        'fr-FR' => '5',
-        'he' => 5,
-        'hi' => 5,
-        'kn' => 5,
-        'in-ID' => 5,
-        'pt' => 5,
-        'it' => 5,
-        'ko' => 3,
-        'ja' => 3,
-        'ru' => 5,
-        'th' => 4,
-        'tr' => 6,
-        'zh-CN' => 2,
-        'cn' => 2,
-        'zh' => 2
-     );
+    static $stem_objs;
 
     /**
      * Converts a summary of a web page into a string of space separated words
@@ -257,29 +219,36 @@ class PhraseParser
     }
 
     /**
+     * Splits string according to punctuation and white space then
+     * extracts (stems/char grams) of terms and n word grams from the string
      *
+     * @param string $string to extract terms from
+     * @param string $lang IANA tag to look up stemmer under
+     * @param bool $orig_and_grams if char-gramming is done whether to keep
+     *      the original term as well in what's returned
+     * @return array of terms and n word grams in the order they appeared in
+     *      string
      */
     static function extractTermsAndFilterPhrases($string,
         $lang = NULL, $orig_and_grams = false)
     {
+        global $CHARGRAMS;
+        $tokenizer = LOCALE_DIR."/$lang/resources/tokenizer.php";
+        if(file_exists($tokenizer)) {
+            require_once $tokenizer;
+        }
         mb_internal_encoding("UTF-8");
         //split first on puctuation as n word grams shouldn't cross punctuation
         $fragments = mb_split(PUNCT, $string);
 
         $final_terms = array();
-
-        if(isset(self::$STEMMERS[$lang])) {
-            $stemmer = self::$STEMMERS[$lang];
-            $stem_obj = new $stemmer(); //for php 5.2 compatibility
-        } else {
-            $stemmer = NULL;
-        }
+        $stem_obj = self::getStemmer($lang);
 
         foreach($fragments as $fragment) {
             $pre_terms = mb_split("[[:space:]]", $fragment);
             if($pre_terms == array()) continue;
             $terms = array();
-            if(isset(self::$CHARGRAMS[$lang])) {
+            if(isset($CHARGRAMS[$lang])) {
                 foreach($pre_terms as $pre_term) {
                     if($pre_term == "") continue;
                     $ngrams = self::getCharGramsTerm(array($pre_term), $lang);
@@ -294,7 +263,7 @@ class PhraseParser
                 $terms = $pre_terms;
             }
             $stems = array();
-            if($stemmer != NULL) { 
+            if($stem_obj != NULL) { 
                 foreach($terms as $term) {
                     $pre_stem = mb_strtolower($term);
                     $stems[] = $stem_obj->stem($pre_stem);
@@ -342,16 +311,21 @@ class PhraseParser
      * Yioop uses for the language in question. If a stemmer is used for
      * language then n-gramming is no done and this just returns an empty array
      *
-     * @param array $term the terms to make n-grams for
+     * @param array $terms the terms to make n-grams for
      * @param string $lang locale tag to determine n to be used for n-gramming
      *
      * @return array the n-grams for the terms in question
      */
     static function getCharGramsTerm($terms, $lang)
     {
+        global $CHARGRAMS;
+        $tokenizer = LOCALE_DIR."/$lang/resources/tokenizer.php";
+        if(file_exists($tokenizer)) {
+            require_once $tokenizer;
+        }
         mb_internal_encoding("UTF-8");
-        if(isset(self::$CHARGRAMS[$lang])) {
-            $n = self::$CHARGRAMS[$lang];
+        if(isset($CHARGRAMS[$lang])) {
+            $n = $CHARGRAMS[$lang];
         } else {
             return array();
         }
@@ -376,19 +350,19 @@ class PhraseParser
     }
 
     /**
+     * Splits supplied string based on white space, then stems each
+     * terms according to the stemmer for $lanf if exists
      *
+     * @param string $string to extract stemmed terms from
+     * @param string $lang IANA tag to look up stemmer under
+     * @return array stemmed terms if stemmer; terms otherwise
      */
     static function stemTerms($string, $lang)
     {
         $terms = mb_split("[[:space:]]", $string);
-        if(isset(self::$STEMMERS[$lang])) {
-            $stemmer = self::$STEMMERS[$lang];
-            $stem_obj = new $stemmer(); //for php 5.2 compatibility
-        } else {
-            $stemmer = NULL;
-        }
+        $stem_obj = self::getStemmer($lang);
         $stems = array();
-        if($stemmer != NULL) {
+        if($stem_obj != NULL) {
             foreach($terms as $term) {
                 $pre_stem = mb_strtolower($term);
                 $stems[] = $stem_obj->stem($pre_stem);
@@ -400,5 +374,39 @@ class PhraseParser
         }
 
         return $stems;
+    }
+
+    /**
+     * Loads and instantiates a stemmer object for a language if exists
+     *
+     * @param string $lang IANA tag to look up stemmer under
+     * @return object stemmer object
+     */
+    static function getStemmer($lang)
+    {
+        if(isset($stem_objs[$lang])) {
+            return $stem_objs[$lang];
+        }
+        $tokenizer = LOCALE_DIR."/$lang/resources/tokenizer.php";
+        if(file_exists($tokenizer)) {
+            require_once $tokenizer;
+        }
+        $lang_parts = explode("-", $lang);
+        if(isset($lang_parts[1])) {
+            $stem_class_name = ucfirst($lang_parts[0]).ucfirst($lang_parts[1]) .
+                "Stemmer";
+            if(!class_exists($stem_class_name)) {
+                $stem_class_name = ucfirst($lang_parts[0])."Stemmer";
+            }
+        } else {
+            $stem_class_name = ucfirst($lang)."Stemmer";
+        }
+        if(class_exists($stem_class_name)) {
+            $stem_obj = new $stem_class_name(); //for php 5.2 compatibility
+        } else {
+            $stem_obj = NULL;
+        }
+        $stem_objs[$lang] = $stem_obj;
+        return $stem_obj;
     }
 }

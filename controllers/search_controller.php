@@ -268,6 +268,7 @@ class SearchController extends Controller implements CrawlConstants
 
         $data['ELAPSED_TIME'] = changeInMicrotime($start_time);
         if ($view != "serial") {
+            $data['INCLUDE_SCRIPTS'] = array("autosuggest.js");
             $this->displayView($view, $data);
         } else {
             if(isset($data["PAGES"])) {

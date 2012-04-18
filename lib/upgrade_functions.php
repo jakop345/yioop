@@ -74,7 +74,7 @@ function upgradeDatabaseWorkDirectoryCheck()
     $result = @$model->db->execute($sql);
     if($result !== false) {
         $row = $model->db->fetchArray($result);
-        if($row['ID'] == 5) {
+        if($row['ID'] == 6) {
             return false;
         }
     }
@@ -88,7 +88,7 @@ function upgradeDatabaseWorkDirectoryCheck()
  */
 function upgradeDatabaseWorkDirectory()
 {
-    $versions = array(0, 1, 2, 3, 4, 5);
+    $versions = array(0, 1, 2, 3, 4, 5, 6);
     $model = new Model();
     $model->db->selectDB(DB_NAME);
     $sql = "SELECT ID FROM VERSION";
@@ -252,5 +252,20 @@ function upgradeDatabaseVersion5(&$db)
         rename($old_bot_txt_path, $default_bot_txt_path);
     }
     $db->setWorldPermissionsRecursive($static_page_path);
+}
+
+/**
+ * Upgrades a Version 5 version of the Yioop! database to a Version 6 version
+ * @param object $db datasource to use to upgrade 
+ */
+function upgradeDatabaseVersion6(&$db)
+{
+    $db->execute("DELETE FROM VERSION WHERE ID=5");
+    $db->execute("INSERT INTO VERSION VALUES (6)");
+
+    if(!file_exists(PREP_DIR)) {
+        mkdir(PREP_DIR);
+    }
+    $db->setWorldPermissionsRecursive(PREP_DIR);
 }
 ?>

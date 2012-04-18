@@ -491,6 +491,9 @@ class IndexDictionary implements CrawlConstants
      */
      function getWordInfo($word_id, $raw = false, $extract = true)
      {
+        if(strlen($word_id) < IndexShard::WORD_KEY_LEN) {
+            return false;
+        }
         if($raw == false) {
             //get rid of out modified base64 encoding
             $word_id = unbase64Hash($word_id);
