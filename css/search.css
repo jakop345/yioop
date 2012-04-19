@@ -182,17 +182,19 @@ body.html-tb-lr
 .logo img
 {
     border: 0;
+    width:2in;
 }
 
 .landing .logo img
 {
     border: 0;
+    width:3in;
 }
 
 .logo span
 {
     position:relative;
-    top: -.6in;
+    top: -.3in;
 }
 
 .html-ltr .login, .html-ltr .settings
@@ -255,19 +257,30 @@ body.html-tb-lr
     padding-bottom: 8px;
 }
 
-.serp
+.html-ltr .serp
+{
+    position:relative;
+    top: -0.9in;
+    left:2.2in;
+}
+.html-ltr .serp-results
+{
+    position:relative;
+    top: -0.9in;
+    left:1in;
+}
+.html-rtl .serp
 {
     position:relative;
     top: -1.15in;
-    left:4in;
+    right:2.2in;
 }
-.serp-results
+.html-rtl .serp-results
 {
     position:relative;
     top: -1in;
-    left:1.5in;
+    right:1in;
 }
-
 .searchbox
 {
     width:8in;
