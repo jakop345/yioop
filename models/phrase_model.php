@@ -1020,10 +1020,10 @@ class PhraseModel extends Model
         }
 
         $raw = intval($raw);
+
         if ($raw == 2) {
             $group_iterator = $union_iterator;
         } else if ($raw == 1) {
-
             $group_iterator =
                 new GroupIterator($union_iterator, $total_iterators, true);
         } else {

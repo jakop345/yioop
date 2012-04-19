@@ -63,7 +63,7 @@ class ResourceController extends Controller implements CrawlConstants
      * These are the activities supported by this controller
      * @var array
      */
-    var $activities = array("get", "syncList", "syncNotify");
+    var $activities = array("get", "syncList", "syncNotify", "suggest");
 
 
     /**
@@ -75,7 +75,8 @@ class ResourceController extends Controller implements CrawlConstants
     function processRequest() 
     {
         if(!isset($_REQUEST['a']) ||
-            ($_REQUEST['a'] != "get" && !$this->checkRequest())) {return; }
+            (!in_array($_REQUEST['a'], array("get", "suggest"))
+            && !$this->checkRequest())) {return; }
         $activity = $_REQUEST['a'];
 
         if(in_array($activity, $this->activities)) {$this->$activity();}
@@ -90,7 +91,7 @@ class ResourceController extends Controller implements CrawlConstants
         if(!isset($_REQUEST['n']) || !isset($_REQUEST['f'])) return;
         $name = $this->clean($_REQUEST['n'], "string");
         if(in_array($_REQUEST['f'], array("css", "scripts", "resources"))) {
-            /* notice is this case we don't check if request come from a
+            /* notice in this case we don't check if request come from a
                legitimate source but we do try to restrict it to being
                a file (not a folder) in the above array
             */
@@ -127,6 +128,23 @@ class ResourceController extends Controller implements CrawlConstants
             } else {
                 readfile($path);
             }
+        }
+    }
+
+    /**
+     * Used to get a keyword suggest trie. This sends additional
+     * header so will be decompressed on the fly
+     */
+    function suggest()
+    {
+        if(!isset($_REQUEST["locale"])){return;}
+        $locale = $_REQUEST["locale"];
+        $count = preg_match("/^[a-zA-z]{2}(-[a-zA-z]{2})?$/", $locale);
+        if($count != 1) {return;}
+        $path = LOCALE_DIR."/$locale/resources/suggest_trie.txt.gz";
+        if(file_exists($path)) {
+            header("Content-Encoding: x-gzip");
+            readfile($path);
         }
     }
 

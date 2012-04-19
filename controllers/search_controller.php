@@ -105,10 +105,10 @@ class SearchController extends Controller implements CrawlConstants
         } else if (!WEB_ACCESS) {
             return;
         }
-        if(isset($_REQUEST['raw']) && $_REQUEST['raw'] == true) {
-            $raw = true;
+        if(isset($_REQUEST['raw']) && in_array($_REQUEST['raw'], array(0,1,2))){
+            $raw = $_REQUEST['raw'];
         } else {
-            $raw = false;
+            $raw = 0;
         }
 
         if(isset($_REQUEST['num'])) {

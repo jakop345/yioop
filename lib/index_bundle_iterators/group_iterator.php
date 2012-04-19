@@ -211,7 +211,6 @@ class GroupIterator extends IndexBundleIterator
         $this->current_seen_hashes = array();
         if($this->count_block_unfiltered > 0 ) {
             if($this->only_lookup && !$this->no_lookup) {
-
                 $pages = $this->insertUnseenDocs($pages);
 
                 $this->count_block = count($pages);
