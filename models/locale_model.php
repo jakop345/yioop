@@ -621,11 +621,11 @@ class LocaleModel extends Model
         }
         if(file_exists($fallback_path.'/pages')) {
             $this->updateLocaleSubFolder($cur_path.'/pages', 
-                $fallback_path.'/pages', array(".thtml"));
+                $fallback_path.'/pages', array("thtml"));
         }
         if(file_exists($fallback_path.'/resources')) {
             $this->updateLocaleSubFolder($cur_path.'/resources', 
-                $fallback_path.'/resources', array(".php", ".ftr", ".txt.gz"));
+                $fallback_path.'/resources', array("php", "ftr", "txt.gz"));
         }
         $n = array();
         $n[] = <<<EOT

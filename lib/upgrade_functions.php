@@ -40,9 +40,9 @@
 function upgradeLocaleCheck()
 {
     global $locale_tag;
-    $config_name = LOCALE_DIR."/$locale_tag/configure.ini";
+    $config_name = LOCALE_DIR."/$locale_tag/";
     $fallback_config_name = 
-        FALLBACK_LOCALE_DIR."/$locale_tag/configure.ini";
+        FALLBACK_LOCALE_DIR."/$locale_tag/";
     if(filemtime($fallback_config_name) > filemtime($config_name)) {
         return "locale";
     }
