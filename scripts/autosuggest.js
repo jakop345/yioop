@@ -139,9 +139,7 @@ function loadTrie()
 
     locale = document.documentElement.lang
     if(locale) {
-      //  trie_loc = "./locale/"+locale+"/resources/suggest_trie.txt.gz";
         trie_loc = "./?c=resource&a=suggest&locale="+locale;
-alert(trie_loc);
         xmlhttp.open("GET", trie_loc, true);
         xmlhttp.send();
     }
