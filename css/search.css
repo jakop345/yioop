@@ -169,14 +169,16 @@ body.html-tb-lr
 
 .landing .logo
 {
-    text-align:center;  
+    text-align:center;
+    min-width: 8in;
 }
 
 .logo
 {
     margin:0;
-    min-width: 8in;
+
 }
+
 .logo img
 {
     border: 0;
@@ -231,22 +233,9 @@ body.html-tb-lr
     font-size:16pt;
 }
 
-
-
 .settings button, .settings select, .login button
 {
     font-size: 16pt;
-}
-
-
-.html-ltr .img .logo
-{
-    float:left;
-}
-
-.html-rtl .img .logo
-{
-    float:left;
 }
 
 .content
@@ -254,7 +243,7 @@ body.html-tb-lr
     position:relative;
     margin-left: .5in;
     margin-right: .5in;
-    width:8;
+    width:8in;
     min-width: 10in;
     min-height:3in;
     padding: 8px;
@@ -265,14 +254,29 @@ body.html-tb-lr
 {
     padding-bottom: 8px;
 }
+
+.serp
+{
+    position:relative;
+    top: -1.15in;
+    left:4in;
+}
+.serp-results
+{
+    position:relative;
+    top: -1in;
+    left:1.5in;
+}
+
 .searchbox
 {
     width:8in;
-    padding: .1in;
-    background-color: #ddddff;
-    border-width: 2px;
-    border-style: dashed;
-
+    padding: 0.1in;
+    background-color: #DDF;
+    border-width: 0.05in;
+    border-color: #AAA;
+    border-style: solid;
+    border-radius: 0.07in;
 }
 
 .searchbox p
@@ -286,17 +290,21 @@ body.html-tb-lr
     font-size:16pt;
     margin-right:0;
     margin-left:0;
-    border: 0;
+    border:0;
     padding-top: 0;
     padding-bottom:0.05in;
     padding-right:0;
     padding-left:0;
-    margin:0;    
+    margin:0;
 }
+
 
 #aslist li
 {
-    width: 6.5in;
+    position:relative;
+    top:-0.015in;
+    background:#DDF;
+    width: 6.6in;
     font-size:16pt;
     margin-right:0in;
     margin-left:0in;
@@ -305,24 +313,38 @@ body.html-tb-lr
     padding-left:0.1in;
     cursor:pointer;
     list-style:none;
-    border-color: #ddddff;
+    border-color: #AAA;
+    border-width: 0.05in;
     border-top-style:none;
     border-right-style:solid;
     border-bottom-style:none;
     border-left-style:solid;
 }
 
-
 #aslist li:last-child
 {
     border-bottom-style:solid;
+    border-bottom-right-radius: 0.05in;
+    border-bottom-left-radius: 0.05in;
+    padding-bottom:0.1in;
 }
 
-#aslist li:hover 
+#aslist li span
 {
-    background:#ddddff;
+    background:white;
+    width:6.5in;
+    padding:0;
+    margin:0;
+    display:block
+}
+
+#aslist li:hover span
+{
+    background:#DDF;
     color:black;
 }
+
+
 
 .html-ltr .buttonbox
 {
@@ -525,7 +547,6 @@ p
     width: 2.5in;
     padding: 0;
     border-radius: 8px;
-    -moz-border-radius: 8px; -webkit-border-radius:8px;
 }
 
 .html-rtl .sidemenu
@@ -534,7 +555,6 @@ p
     width: 2.5in;
     padding: 0;
     border-radius: 8px;
-    -moz-border-radius: 8px; -webkit-border-radius:8px;
 }
 
 .sidemenu h2
@@ -545,10 +565,6 @@ p
     padding: .05in .15in .05in .15in ;
     border-top-right-radius: 8px;
     border-top-left-radius: 8px;
-    -moz-border-radius-topleft: 8px;
-    -moz-border-radius-topright: 8px;
-    -webkit-border-radius-topleft:8px;
-    -webkit-border-radius-topright:8px;
 }
 
 .sidemenu li
@@ -582,8 +598,6 @@ p
     padding: 0;
     margin: 0;
     border-radius: 8px;
-    -moz-border-radius: 8px; -webkit-border-radius:8px;
-
 }
 
 .html-ltr .currentactivity
@@ -602,7 +616,6 @@ p
     border: 1px solid #ccc;
 
     border-radius: 8px;
-    -moz-border-radius: 8px; -webkit-border-radius:8px;
 }
 
 .html-rtl .currentactivity
@@ -621,7 +634,6 @@ p
     border: 1px solid #ccc;
 
     border-radius: 8px;
-    -moz-border-radius: 8px; -webkit-border-radius:8px;
 }
 
 

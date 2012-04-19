@@ -76,12 +76,16 @@ class SearchView extends View implements CrawlConstants
         $this->signinElement->render($data);
         if(!isset($data['PAGES'])) {
             e('<div class="landing">');
-        }
-        ?>
+        } ?>
         <h1 class="logo"><a href="./?YIOOP_TOKEN=<?php 
             e($data['YIOOP_TOKEN'])?>"><img 
-            src="resources/yioop.png" alt="<?php e(tl('search_view_title')); ?>" 
+            src="resources/yioop.png" alt="<?php e(tl('search_view_title')); ?>"
             /></a></h1>
+        <?php
+        if(isset($data['PAGES'])) {
+            e('<div class="serp">');
+        }
+        ?>
         <div class="searchbox">
 
         <form id="searchForm" method="get" action='?'>
@@ -105,6 +109,8 @@ class SearchView extends View implements CrawlConstants
         <?php
         if(isset($data['PAGES'])) {
             ?>
+            </div>
+            <div class="serp-results">
             <h2><?php e(tl('search_view_query_results')); ?> (<?php 
                 e(tl('search_view_calculated', $data['ELAPSED_TIME']));?> <?php
                 e(tl('search_view_results', $data['LIMIT'], 
@@ -212,6 +218,7 @@ class SearchView extends View implements CrawlConstants
             $this->paginationHelper->render(
                 $data['PAGING_QUERY']."&amp;YIOOP_TOKEN=".$data['YIOOP_TOKEN'], 
                 $data['LIMIT'], $data['RESULTS_PER_PAGE'], $data['TOTAL_ROWS']);
+            e("</div>");
         }
         ?><div class="landing-footer">
             <div><b><?php e($data['INDEX_INFO']);?></b> <?php

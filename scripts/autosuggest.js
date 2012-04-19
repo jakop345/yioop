@@ -64,8 +64,8 @@ function getValues(arrayLevel, parent_word)
             if (key != " " ) {
                 getValues(arrayLevel[key], parent_word+key);
             } else {
-                searchList += "<li onclick='aslitem_click(this);'>" 
-                    + parent_word + "</li>";
+                searchList += "<li onclick='aslitem_click(this);'><span>" 
+                    + parent_word + "</span></li>";
                 count++;
                 // Display only top 6 words
                 if(count == 6) {
@@ -144,3 +144,4 @@ function loadTrie()
         xmlhttp.send();
     }
 }
+document.getElementsByTagName("body")[0].onload = loadTrie;
