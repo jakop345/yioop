@@ -143,7 +143,8 @@ class ResourceController extends Controller implements CrawlConstants
         if($count != 1) {return;}
         $path = LOCALE_DIR."/$locale/resources/suggest_trie.txt.gz";
         if(file_exists($path)) {
-            header("Content-Encoding: x-gzip");
+            header("Content-Type: plain/text");
+            header("Content-Encoding: gzip");
             readfile($path);
         }
     }
