@@ -124,7 +124,7 @@ class NWordGrams
      * @param int $max_gram_len value n of longest n gram to be added.
      * @return none
      */
-    static function createNWordGramsFilterFile($lang, $num_gram, 
+    static function makeNWordGramsFilterFile($lang, $num_gram, 
         $num_ngrams_found, $max_gram_len)
     {
         $filter_path =
@@ -169,7 +169,7 @@ class NWordGrams
      * @param int $ngram_type where in Wiki Dump to extract grams from
      * @return number $num_ngrams_found count of bigrams in text file.
      */
-    static function generateNWordGramsTextFile($wiki_file, $lang, 
+    static function makeNWordGramsTextFile($wiki_file, $lang, 
         $locale, $num_gram = 2, $ngram_type = self::PAGE_COUNT_WIKIPEDIA, 
         $max_terms = -1)
     {

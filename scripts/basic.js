@@ -37,9 +37,9 @@
  */
 function doMessage(msg)
 {
-    messageTag = document.getElementById("message");
-    messageTag.innerHTML = msg;
-    msgTimer = setInterval("undoMessage()", 2000);
+    message_tag = document.getElementById("message");
+    message_tag.innerHTML = msg;
+    msg_timer = setInterval("undoMessage()", 2000);
 }
 
 /*
@@ -48,9 +48,9 @@ function doMessage(msg)
  */
 function undoMessage()
 {
-    messageTag = document.getElementById("message");
-    messageTag.innerHTML = "";
-    clearInterval(msgTimer);
+    message_tag = document.getElementById("message");
+    message_tag.innerHTML = "";
+    clearInterval(msg_timer);
 }
 
 /*
@@ -61,28 +61,18 @@ function undoMessage()
 function makeRequest()
 {
     try {
-
         request = new XMLHttpRequest();
-
     } catch(e) {
-
         try {
             request = new ActiveXObject('MSXML2.XMLHTTP');
         } catch(e) {
-
             try {
-
             request = new ActiveXObject('Microsoft.XMLHTTP');
-
             } catch(e) {
-
             return false;
-
             }
-
         }
     }
-
     return request;
 }
 
