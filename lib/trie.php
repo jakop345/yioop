@@ -78,10 +78,11 @@ class Trie
             $character = mb_substr($term, $i, 1);
             // If letter doesnt exist then create one by
             // assigning new array
-            if(!isset($trie_array[$character])) {
-                $trie_array[$character] = array();
+            $enc_char = urlencode($character);
+            if(!isset($trie_array[$enc_char])) {
+                $trie_array[$enc_char] = array();
             }
-            $trie_array = & $trie_array[$character];
+            $trie_array = & $trie_array[$enc_char];
         }
         // Set end of term marker
         $trie_array[$this->end_marker] = $this->end_marker; 
@@ -106,11 +107,12 @@ class Trie
             }
             if ($trie_array != $this->end_marker) {
                 $character = mb_substr($term, $i, 1);
-                if(!isset($trie_array[$character])) {
+                $enc_char = urlencode($character);
+                if(!isset($trie_array[$enc_char])) {
                     return false;
                 }
-                if($trie_array[$character] != $this->end_marker) { 
-                    $trie_array = & $trie_array[$character];
+                if($trie_array[$enc_char] != $this->end_marker) { 
+                    $trie_array = & $trie_array[$enc_char];
                 }
             }
             else {
@@ -157,7 +159,7 @@ class Trie
                 if ($character != $end_marker) {
                     $new_terms =
                         $this->getValuesTrieArray($subtrie, 
-                            $prefix . $character, 
+                            $prefix . urldecode($character), 
                             $max_results, $count, $find_more);
                     $terms = array_merge($terms, $new_terms);
                 } else {

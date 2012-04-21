@@ -149,9 +149,12 @@ switch($argv[1])
 {
     case "dictionary":
         if(!isset($argv[3])) {
-            $argv[3] = " ";
+            $argv[3] = "en-US";
         }
-        makeSuggestTrie($argv[2], $argv[3]);
+        if(!isset($argv[4])) {
+            $argv[4] = " ";
+        }
+        makeSuggestTrie($argv[2], $argv[3], $argv[4]);
     break;
 
     case "filter":
@@ -237,7 +240,7 @@ function makeNWordGramsFiles($args)
 function makeSuggestTrie($file_name, $locale, $end_marker)
 {
     $dict_file = trim($file_name);
-    $out_file = LOCALE_DIR."/$locale/resource/suggest_trie.txt.gz";
+    $out_file = LOCALE_DIR."/$locale/resources/suggest_trie.txt.gz";
 
     // Read and load dictionary and stop word files
     $words = fileWithTrim($dict_file);
@@ -251,7 +254,7 @@ function makeSuggestTrie($file_name, $locale, $end_marker)
      */
     foreach($words as $word) {
         if(preg_match("/\p{P}/", $word) == 0 && mb_strlen($word) > 2) {
-            $trie->add($word);
+            $trie->add(mb_strtolower($word));
         }
     }
     $output = array();

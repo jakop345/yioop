@@ -48,7 +48,7 @@ function aslitem_click(liObj)
 {
     var results_dropdown = document.getElementById("aslist");
     var astobj = document.getElementById("search-name"); 
-    astobj.value = liObj.innerHTML;
+    astobj.value = liObj.firstChild.innerHTML;
     results_dropdown.innerHTML = "";
 }
 
@@ -64,7 +64,7 @@ function getValues(trie_array, parent_word, max_display)
     if (trie_array != null && last_word == false ) {
         for (key in trie_array) {
             if (key != end_marker ) {
-                getValues(trie_array[key], parent_word + key);
+                getValues(trie_array[key], parent_word + urldecode(key));
             } else {
                 search_list += "<li onclick='aslitem_click(this);'><span>"
                     + parent_word + "</span></li>";
@@ -76,6 +76,7 @@ function getValues(trie_array, parent_word, max_display)
         }
     }
 }
+
 
 /**
  * Returns the sub trie_array under term in
@@ -95,8 +96,9 @@ function exist(trie_array, term)
             tmp = getUnicodeCharAndNextOffset(term, i);
             if(tmp == false) return false;
             [next_char, i] = tmp;
-            if(trie_array[next_char] != 'null') {
-                trie_array = trie_array[next_char];
+            enc_char = urlencode(next_char);
+            if(trie_array[enc_char] != 'null') {
+                trie_array = trie_array[enc_char];
             }
         }
         else {
@@ -123,6 +125,7 @@ function autosuggest(trie_array, term)
     last_word = false;
     count = 0;
     search_list = "";
+    term = term.toLowerCase();
     var tmp;
     if(trie_array == null) {
         return false;
@@ -131,12 +134,22 @@ function autosuggest(trie_array, term)
         tmp = getUnicodeCharAndNextOffset(term, 0);
         if(tmp == false) return false;
         [start_char, ] = tmp;
-        trie_array = exist(trie_array[start_char], term);
+        enc_chr = urlencode(start_char);
+        trie_array = exist(trie_array[enc_chr], term);
 
     } else {
         trie_array = trie_array[term];
     }
     getValues(trie_array, term);
+}
+
+function urldecode(str) {
+    return unescape(str);
+}
+
+function urlencode(str)
+{
+    return encodeURIComponent(str);
 }
 
 /**
