@@ -64,10 +64,10 @@ function getValues(trie_array, parent_word, max_display)
     if (trie_array != null && last_word == false ) {
         for (key in trie_array) {
             if (key != end_marker ) {
-                getValues(trie_array[key], parent_word + urldecode(key));
+                getValues(trie_array[key], parent_word + key);
             } else {
                 search_list += "<li onclick='aslitem_click(this);'><span>"
-                    + parent_word + "</span></li>";
+                    + decode(parent_word) + "</span></li>";
                 count++;
                 if(count == max_display) {
                     last_word = true;
@@ -96,7 +96,7 @@ function exist(trie_array, term)
             tmp = getUnicodeCharAndNextOffset(term, i);
             if(tmp == false) return false;
             [next_char, i] = tmp;
-            enc_char = urlencode(next_char);
+            enc_char = encode(next_char);
             if(trie_array[enc_char] != 'null') {
                 trie_array = trie_array[enc_char];
             }
@@ -134,7 +134,7 @@ function autosuggest(trie_array, term)
         tmp = getUnicodeCharAndNextOffset(term, 0);
         if(tmp == false) return false;
         [start_char, ] = tmp;
-        enc_chr = urlencode(start_char);
+        enc_chr = encode(start_char);
         trie_array = exist(trie_array[enc_chr], term);
 
     } else {
@@ -143,11 +143,13 @@ function autosuggest(trie_array, term)
     getValues(trie_array, term);
 }
 
-function urldecode(str) {
-    return unescape(str);
+/* wrappers to save typing */
+function decode(str) {
+    str = str.replace(/\+/g, '%20');
+    return decodeURIComponent(str);
 }
-
-function urlencode(str)
+/* wrappers to save typing */
+function encode(str)
 {
     return encodeURIComponent(str);
 }

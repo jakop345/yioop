@@ -93,7 +93,8 @@ class SearchView extends View implements CrawlConstants
         <input type="hidden" name="YIOOP_TOKEN" value="<?php 
             e($data['YIOOP_TOKEN']); ?>" />
         <input type="hidden" name="its" value="<?php e($data['its']); ?>" />
-        <input type="text" autocomplete="off" onkeyup="askeyup(this)" title="<?php e(tl('search_view_input_label')); ?>" 
+        <input type="text" autocomplete="off" onkeyup="askeyup(this)" 
+            title="<?php e(tl('search_view_input_label')); ?>" 
             id="search-name" name="q" value="<?php if(isset($data['QUERY'])) {
             e(urldecode($data['QUERY']));} ?>" 
             placeholder="<?php e(tl('search_view_input_placeholder')); ?>" />
@@ -224,7 +225,7 @@ class SearchView extends View implements CrawlConstants
             <div><b><?php e($data['INDEX_INFO']);?></b> <?php
             if(isset($data["HAS_STATISTICS"]) && $data["HAS_STATISTICS"]) { ?>
             [<a href="index.php?YIOOP_TOKEN=<?php e($data['YIOOP_TOKEN']);
-                ?>&amp;c=statistics&its=<?php e($data['its']);?>"><?php 
+                ?>&amp;c=statistics&amp;its=<?php e($data['its']);?>"><?php 
                 e(tl('search_view_more_statistics')); ?></a>]
             <?php }?>
             </div>

@@ -233,13 +233,12 @@ function makeNWordGramsFiles($args)
  * terms into the Yioop! search box. Outputs the result into the file
  * suggest_trie.txt.gz in the supplied locale dir
  *
- * @param string $file_name where the word list is stored, one word per line
+ * @param string $dict_file where the word list is stored, one word per line
  * @param string $locale which locale to write the suggest file to
  * @param string $end_marker used to indicate end of word in the trie
  */
-function makeSuggestTrie($file_name, $locale, $end_marker)
+function makeSuggestTrie($dict_file, $locale, $end_marker)
 {
-    $dict_file = trim($file_name);
     $out_file = LOCALE_DIR."/$locale/resources/suggest_trie.txt.gz";
 
     // Read and load dictionary and stop word files
@@ -253,8 +252,8 @@ function makeSuggestTrie($file_name, $locale, $end_marker)
      *   - is a stop word
      */
     foreach($words as $word) {
-        if(preg_match("/\p{P}/", $word) == 0 && mb_strlen($word) > 2) {
-            $trie->add(mb_strtolower($word));
+        if(mb_ereg_match("\p{P}", $word) == 0 && mb_strlen($word) > 2) {
+            $trie->add($word);
         }
     }
     $output = array();
@@ -279,10 +278,11 @@ function fileWithTrim($file_name)
             return array();
         }
     }
-    $pre_lines = file($file_name);
+    $file_string = file_get_contents($file_name);
+    $pre_lines = mb_split("\n", $file_string);
     $lines = array();
     foreach($pre_lines as $pre_line) {
-        $line = trim($pre_line);
+        $line = preg_replace( "/(^\s+)|(\s+$)/us", "", $pre_line );
         if ($line != "") {
             array_push($lines, $line);
         }
