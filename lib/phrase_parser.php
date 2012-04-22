@@ -126,8 +126,10 @@ class PhraseParser
 
         $phrases = self::extractPhrasesInLists($string, $lang, $orig_and_grams, 
             false);
-
-        $phrase_counts = array_count_values($phrases);
+        $phrase_counts = array();
+        foreach($phrases as $term => $positions) {
+            $phrase_counts[$term] = count($positions);
+        }
 
         return $phrase_counts;
     }
