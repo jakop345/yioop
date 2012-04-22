@@ -602,10 +602,9 @@ class SearchController extends Controller implements CrawlConstants
         if(!isset($node->childNodes->length)) {
             return $node;
         }
-        for($k = 0; $node->childNodes->length; $k++) 
-        {
+        for($k = 0; $node->childNodes->length; $k++)  {
             if(!$node->childNodes->item($k)) { break; }
-            
+
             $clone = $node->childNodes->item($k)->cloneNode(true);
 
             if($clone->nodeType == XML_TEXT_NODE) { 
@@ -617,10 +616,10 @@ class SearchController extends Controller implements CrawlConstants
                         $mark_prefix = crawlHash($word);
                         if(stristr($mark_prefix, $word) !== false) {
                             $mark_prefix = preg_replace(
-                            "/$word/i", '', $mark_prefix);
+                            "/\b$word\b/i", '', $mark_prefix);
                         }
                         $text = preg_replace(
-                            "/$word/i", $mark_prefix.'$0', $text);
+                            "/\b$word\b/i", $mark_prefix.'$0', $text);
                     }
                 }
 
@@ -634,6 +633,43 @@ class SearchController extends Controller implements CrawlConstants
             }
         }
         
+        return $node;
+    }
+
+    function canonicalizeLinks($node, $url)
+    {
+        if(!isset($node->childNodes->length)) {
+            return $node;
+        }
+        for($k = 0; $node->childNodes->length; $k++) {
+            if(!$node->childNodes->item($k)) { break; }
+
+            $clone = $node->childNodes->item($k)->cloneNode(true);
+            $tag_name = (isset($clone->tagName) ) ? $clone->tagName : "-1";
+            if(in_array($tag_name, array("a", "link"))) {
+                if($clone->hasAttribute("href")) {
+                    $href = $clone->getAttribute("href");
+                    $href = UrlParser::canonicalLink($href, $url, false);
+                    $clone->setAttribute("href", $href);
+                    return $clone;
+                }
+            } else if (in_array($tag_name, array("img", "object",
+                "script"))) {
+                if($clone->hasAttribute("src")) {
+                    $src = $clone->getAttribute("src");
+                    $src = UrlParser::canonicalLink($src, $url, false);
+                    $clone->setAttribute("src", $src);
+                    return $clone;
+                }
+            } else {
+                if($clone->nodeType == XML_ELEMENT_NODE) {
+                    $clone = $this->canonicalizeLinks($clone, $url);
+                    if($clone != null) {
+                        $node->replaceChild($clone, $node->childNodes->item($k));
+                    }
+                }
+            }
+        }
         return $node;
     }
 
@@ -810,10 +846,7 @@ class SearchController extends Controller implements CrawlConstants
         $cache_file = $cache_item[self::PAGE];
         if(!stristr($cache_item[self::TYPE], "image")) {
 
-            $meta_words = array('link\:', 'site\:', 'version\:', 'modified\:',
-                'filetype\:', 'info\:', '\-', 'os\:', 'server\:', 'date\:',
-                'lang\:', 'elink\:',
-                'index:', 'ip:', 'i:', 'weight:', 'w:', 'u:');
+            $meta_words = $this->phraseModel->meta_words_list;
             foreach($meta_words as $meta_word) {
                 $pattern = "/(\s)($meta_word(\S)+)/";
                 $terms = preg_replace($pattern, "", $terms);
@@ -848,7 +881,8 @@ class SearchController extends Controller implements CrawlConstants
 
         $xpath = new DOMXPath($dom);
 
-
+        $head = $dom->getElementsByTagName('head')->item(0);
+        $head = $this->canonicalizeLinks($head, $url);
         $body =  $dom->getElementsByTagName('body')->item(0);
         if($body == false) {
             $body_tags = "<frameset><frame><noscript><img><span><b><i><em>".
@@ -861,6 +895,7 @@ class SearchController extends Controller implements CrawlConstants
             @$dom->loadHTML($cache_file);
             $body =  $dom->getElementsByTagName('body')->item(0);
         }
+        $body = $this->canonicalizeLinks($body, $url);
         $first_child = $body->firstChild;
         $summaryNode = $dom->createElement('pre');
         $summaryNode = $body->insertBefore($summaryNode, $first_child);

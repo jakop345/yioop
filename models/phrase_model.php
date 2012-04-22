@@ -97,6 +97,15 @@ class PhraseModel extends Model
      */
     var $query_info;
 
+    /**
+     * A list of meta words that might be extracted from a query
+     * @var array
+     */
+    var $meta_words_list = array('link:', 'site:', 'version:', 'modified:',
+            'filetype:', 'info:', '\-', 'os:', 'server:', 'date:', "numlinks:",
+            'index:', 'i:', 'ip:', 'weight:', 'w:', 'u:', 'time:', 'code:',
+            'lang:', 'media:', 'elink:', 'location:', 'size:', 'host:', 'dns:',
+            'path:', 'robot:');
 
     /**
      * Number of pages to cache in one go in memcache or filecache
@@ -444,11 +453,7 @@ class PhraseModel extends Model
         $phrase = $this->parseIfConditions($phrase);
         $phrase_string = $phrase;
         $phrase_string = str_replace("&", "&amp;", $phrase_string);
-        $meta_words = array('link:', 'site:', 'version:', 'modified:',
-            'filetype:', 'info:', '\-', 'os:', 'server:', 'date:', "numlinks:",
-            'index:', 'i:', 'ip:', 'weight:', 'w:', 'u:', 'time:', 'code:',
-            'lang:', 'media:', 'elink:', 'location:', 'size:', 'host:', 'dns:',
-            'path:', 'robot:');
+        $meta_words = $this->meta_words_list;
         if(isset($this->additional_meta_words)) {
             $meta_words = array_merge($meta_words, array_keys(
                 $this->additional_meta_words));
