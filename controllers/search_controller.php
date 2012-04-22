@@ -882,6 +882,16 @@ class SearchController extends Controller implements CrawlConstants
         $xpath = new DOMXPath($dom);
 
         $head = $dom->getElementsByTagName('head')->item(0);
+
+        // add a noindex nofollow robot directive to page
+        $head_first_child = $head->firstChild;
+        $robotNode = $dom->createElement('meta');
+        $robotNode = $head->insertBefore($robotNode, $head_first_child);
+        $robotNode->setAttribute("name", "ROBOTS");
+        $robotNode->setAttribute("content", "NOINDEX,NOFOLLOW");
+        $comment = $dom->createComment(tl('search_controller_cache_comment'));
+        $comment = $head->insertBefore($comment, $robotNode);
+        // make link and script links absolute
         $head = $this->canonicalizeLinks($head, $url);
         $body =  $dom->getElementsByTagName('body')->item(0);
         if($body == false) {
@@ -895,8 +905,11 @@ class SearchController extends Controller implements CrawlConstants
             @$dom->loadHTML($cache_file);
             $body =  $dom->getElementsByTagName('body')->item(0);
         }
+        //make tags in body absolute
         $body = $this->canonicalizeLinks($body, $url);
         $first_child = $body->firstChild;
+
+        // add information about what was extracted from page
         $summaryNode = $dom->createElement('pre');
         $summaryNode = $body->insertBefore($summaryNode, $first_child);
         $summaryNode->setAttributeNS("","style", "border-color: black; ".
