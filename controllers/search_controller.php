@@ -882,17 +882,19 @@ class SearchController extends Controller implements CrawlConstants
         $xpath = new DOMXPath($dom);
 
         $head = $dom->getElementsByTagName('head')->item(0);
-
-        // add a noindex nofollow robot directive to page
-        $head_first_child = $head->firstChild;
-        $robotNode = $dom->createElement('meta');
-        $robotNode = $head->insertBefore($robotNode, $head_first_child);
-        $robotNode->setAttribute("name", "ROBOTS");
-        $robotNode->setAttribute("content", "NOINDEX,NOFOLLOW");
-        $comment = $dom->createComment(tl('search_controller_cache_comment'));
-        $comment = $head->insertBefore($comment, $robotNode);
-        // make link and script links absolute
-        $head = $this->canonicalizeLinks($head, $url);
+        if(is_object($head)) {
+            // add a noindex nofollow robot directive to page
+            $head_first_child = $head->firstChild;
+            $robotNode = $dom->createElement('meta');
+            $robotNode = $head->insertBefore($robotNode, $head_first_child);
+            $robotNode->setAttribute("name", "ROBOTS");
+            $robotNode->setAttribute("content", "NOINDEX,NOFOLLOW");
+            $comment = $dom->createComment(
+                tl('search_controller_cache_comment'));
+            $comment = $head->insertBefore($comment, $robotNode);
+            // make link and script links absolute
+            $head = $this->canonicalizeLinks($head, $url);
+        }
         $body =  $dom->getElementsByTagName('body')->item(0);
         if($body == false) {
             $body_tags = "<frameset><frame><noscript><img><span><b><i><em>".
