@@ -448,14 +448,14 @@ class FetchUrl implements CrawlConstants
     /**
      * Computes the IP address from http get-responser header
      *
-     * @param string contains complete transcript of HTTP get/responce
+     * @param string contains complete transcript of HTTP get/response
      * @return string IPv4 address as a string of dot separated quads.
      */
     static function getCurlIp($header) 
     {
-        if (preg_match_all('/\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/', 
+        if (preg_match_all('/Trying\s+(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\b/', 
             $header, $matches)) {
-            return array_unique($matches[0]);
+            return array_unique($matches[1]);
         } else {
             return false;
         }
