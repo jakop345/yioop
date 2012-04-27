@@ -187,7 +187,13 @@ class ConfigureElement extends Element
             </div>
             <div class="topmargin">
             <fieldset><legend><?php 
-                e(tl('configure_element_search_results'))?></legend>
+                e(tl('configure_element_search_page'))?></legend>
+                <label for="wd-suggest"><input id='wd-suggest' type="checkbox" 
+                    name="WORD_SUGGEST" value="true" 
+                    <?php if(isset($data['WORD_SUGGEST']) && 
+                        $data['WORD_SUGGEST']){
+                        e("checked='checked'");}?> 
+                    /><?php e(tl('configure_element_wd_suggest')); ?></label>
                 <label for="signin-link"><input id='signin-link' type="checkbox" 
                     name="SIGNIN_LINK" value="true" 
                     <?php if(isset($data['SIGNIN_LINK']) && 

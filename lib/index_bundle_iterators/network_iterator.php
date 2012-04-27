@@ -129,7 +129,7 @@ class NetworkIterator extends IndexBundleIterator
         $this->no_lookup = true;
         $this->results_per_block = ceil(self::MIN_FIND_RESULTS_PER_BLOCK);
         $this->base_query = "q=".urlencode($query).
-            "&f=serial&network=&raw=1&its=$timestamp";
+            "&f=serial&network=&raw=2&its=$timestamp";
         $this->queue_servers = $queue_servers;
         $this->limit = 0;
         $count = count($this->queue_servers);

@@ -121,6 +121,7 @@ if(file_exists(WORK_DIRECTORY."/profile.php")) {
     define('DEFAULT_LOCALE', "en-US");
     define('AUTH_KEY', 0);
     define('USE_MEMCACHE', false);
+    define('WORD_SUGGEST', true);
     define('CACHE_LINK', true);
     define('SIMILAR_LINK', true);
     define('IN_LINK', true);
