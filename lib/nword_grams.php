@@ -32,15 +32,6 @@
  */
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
-/**
- *  Load the stem word functions
- */
-foreach(glob(BASE_DIR."/lib/stemmers/*_stemmer.php")
-    as $filename) {
-    require_once $filename;
-}
-
 /**
  * Load the Bloom Filter File
  */

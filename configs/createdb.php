@@ -75,7 +75,7 @@ if(!in_array(DBMS, array('sqlite', 'sqlite3'))) {
 $db->selectDB(DB_NAME);
 
 $db->execute("CREATE TABLE VERSION (ID INTEGER PRIMARY KEY)");
-$db->execute("INSERT INTO VERSION VALUES (6)");
+$db->execute("INSERT INTO VERSION VALUES (7)");
 
 $db->execute("CREATE TABLE USER (USER_ID INTEGER PRIMARY KEY $auto_increment, ".
     "USER_NAME VARCHAR(16) UNIQUE,  PASSWORD VARCHAR(16))");
@@ -144,7 +144,7 @@ $db->execute("INSERT INTO ACTIVITY VALUES (3, 3, 'manageRoles')");
 $db->execute("INSERT INTO ACTIVITY VALUES (4, 4, 'manageCrawls')");
 $db->execute("INSERT INTO ACTIVITY VALUES (5, 5, 'mixCrawls')");
 $db->execute("INSERT INTO ACTIVITY VALUES (6, 6, 'pageOptions')");
-$db->execute("INSERT INTO ACTIVITY VALUES (7, 7, 'searchFilters')");
+$db->execute("INSERT INTO ACTIVITY VALUES (7, 7, 'resultsEditor')");
 $db->execute("INSERT INTO ACTIVITY VALUES (8, 8, 'manageMachines')");
 $db->execute("INSERT INTO ACTIVITY VALUES (9, 9, 'manageLocales')");
 $db->execute("INSERT INTO ACTIVITY VALUES (10, 10, 'configure')");
@@ -155,7 +155,7 @@ $db->execute("INSERT INTO TRANSLATION VALUES (3, 'db_activity_manage_roles')");
 $db->execute("INSERT INTO TRANSLATION VALUES (4, 'db_activity_manage_crawl')");
 $db->execute("INSERT INTO TRANSLATION VALUES (5, 'db_activity_mix_crawls')");
 $db->execute("INSERT INTO TRANSLATION VALUES (6, 'db_activity_file_options')");
-$db->execute("INSERT INTO TRANSLATION VALUES (7,'db_activity_search_filters')");
+$db->execute("INSERT INTO TRANSLATION VALUES (7,'db_activity_results_editor')");
 $db->execute("INSERT INTO TRANSLATION VALUES(8,'db_activity_manage_machines')");
 $db->execute("INSERT INTO TRANSLATION VALUES (9,'db_activity_manage_locales')");
 $db->execute("INSERT INTO TRANSLATION VALUES (10, 'db_activity_configure')");
@@ -167,7 +167,7 @@ $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (3, 1, 'Manage Roles')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (4, 1, 'Manage Crawls')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (5, 1, 'Mix Crawls')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (6, 1, 'Page Options')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (7, 1, 'Search Filters')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (7, 1, 'Results Editor')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (8, 1, 'Manage Machines')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (9, 1, 'Manage Locales')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (10, 1, 'Configure')");
@@ -185,7 +185,7 @@ $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (5, 5,
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (6, 5, 
     'Options de fichier')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (7, 5, 
-    'Les filtres de recherche')");
+    'Éditeur de résultats')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (8, 5, 
     'Modifier les ordinateurs')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (9, 5, 

@@ -33,6 +33,10 @@
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
+foreach(glob(LOCALE_DIR."/*/resources/tokenizer.php")
+    as $filename) {
+    require_once $filename;
+}
 /**
  * Load the n word grams File
  */
@@ -53,13 +57,6 @@ require_once BASE_DIR."/lib/crawl_constants.php";
  */
 class PhraseParser
 {
-    /**
-     * Stemmer objects we've instantiated so far (so don't have to 
-     * re-instantiate)
-     * @var array
-     */
-    static $stem_objs;
-
     /**
      * Converts a summary of a web page into a string of space separated words
      *
@@ -235,10 +232,7 @@ class PhraseParser
         $lang = NULL, $orig_and_grams = false)
     {
         global $CHARGRAMS;
-        $tokenizer = LOCALE_DIR."/$lang/resources/tokenizer.php";
-        if(file_exists($tokenizer)) {
-            require_once $tokenizer;
-        }
+
         mb_internal_encoding("UTF-8");
         //split first on puctuation as n word grams shouldn't cross punctuation
         $fragments = mb_split(PUNCT, $string);
@@ -321,10 +315,7 @@ class PhraseParser
     static function getCharGramsTerm($terms, $lang)
     {
         global $CHARGRAMS;
-        $tokenizer = LOCALE_DIR."/$lang/resources/tokenizer.php";
-        if(file_exists($tokenizer)) {
-            require_once $tokenizer;
-        }
+
         mb_internal_encoding("UTF-8");
         if(isset($CHARGRAMS[$lang])) {
             $n = $CHARGRAMS[$lang];
@@ -386,13 +377,7 @@ class PhraseParser
      */
     static function getStemmer($lang)
     {
-        if(isset($stem_objs[$lang])) {
-            return $stem_objs[$lang];
-        }
-        $tokenizer = LOCALE_DIR."/$lang/resources/tokenizer.php";
-        if(file_exists($tokenizer)) {
-            require_once $tokenizer;
-        }
+        $lower_lang = strtolower($lang); //try to avoid case sensitivity issues
         $lang_parts = explode("-", $lang);
         if(isset($lang_parts[1])) {
             $stem_class_name = ucfirst($lang_parts[0]).ucfirst($lang_parts[1]) .
@@ -408,7 +393,6 @@ class PhraseParser
         } else {
             $stem_obj = NULL;
         }
-        $stem_objs[$lang] = $stem_obj;
         return $stem_obj;
     }
 }

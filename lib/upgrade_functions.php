@@ -88,7 +88,7 @@ function upgradeDatabaseWorkDirectoryCheck()
  */
 function upgradeDatabaseWorkDirectory()
 {
-    $versions = array(0, 1, 2, 3, 4, 5, 6);
+    $versions = array(0, 1, 2, 3, 4, 5, 6, 7);
     $model = new Model();
     $model->db->selectDB(DB_NAME);
     $sql = "SELECT ID FROM VERSION";
@@ -267,5 +267,21 @@ function upgradeDatabaseVersion6(&$db)
         mkdir(PREP_DIR);
     }
     $db->setWorldPermissionsRecursive(PREP_DIR);
+}
+
+function upgradeDatabaseVersion7(&$db)
+{
+    $db->execute("DELETE FROM VERSION WHERE ID=6");
+    $db->execute("INSERT INTO VERSION VALUES (7)");
+    $db->execute("DELETE FROM ACTIVITY WHERE ACTIVITY_ID=7");
+    $db->execute("INSERT INTO ACTIVITY VALUES (7, 7, 'resultsEditor')");
+    $db->execute("DELETE FROM TRANSLATION WHERE TRANSLATION_ID=7");
+    $db->execute("DELETE FROM TRANSLATION_LOCALE WHERE TRANSLATION_ID=7");
+    $db->execute(
+        "INSERT INTO TRANSLATION VALUES (7,'db_activity_results_editor')");
+    $db->execute(
+        "INSERT INTO TRANSLATION_LOCALE VALUES (7, 1, 'Results Editor')");
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (7, 5, 
+        'Éditeur de résultats')");
 }
 ?>

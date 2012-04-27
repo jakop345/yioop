@@ -73,7 +73,7 @@ class AdminController extends Controller implements CrawlConstants
      * @var array
      */
     var $activities = array("signin", "manageAccount", "manageUsers",
-        "manageRoles", "manageCrawls", "pageOptions", "searchFilters", 
+        "manageRoles", "manageCrawls", "pageOptions", "resultsEditor", 
         "manageMachines", "manageLocales", "crawlStatus", "mixCrawls",
         "machineStatus", "configure");
 
@@ -1426,9 +1426,9 @@ class AdminController extends Controller implements CrawlConstants
      * @return array $data info about the groups and their contents for a
      *      particular crawl mix
      */
-    function searchFilters()
+    function resultsEditor()
     {
-        $data["ELEMENT"] = "searchfiltersElement";
+        $data["ELEMENT"] = "resultseditorElement";
         $data['SCRIPT'] = "";
 
         if(isset($_REQUEST['disallowed_sites'])) {
@@ -1444,11 +1444,57 @@ class AdminController extends Controller implements CrawlConstants
             $data['disallowed_sites'] = implode("\n", $disallowed_sites);
             $this->searchfiltersModel->set($disallowed_sites);
             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                tl('admin_controller_site_filter_update')."</h1>')";
+                tl('admin_controller_results_editor_update')."</h1>')";
         }
         if(!isset($data['disallowed_sites'])) {
             $data['disallowed_sites'] = 
                 implode("\n", $this->searchfiltersModel->getUrls());
+        }
+        foreach (array("URL", "TITLE", "DESCRIPTION") as $field) {
+            $data[$field] = (isset($_REQUEST[$field])) ?
+                $this->clean($_REQUEST[$field], "string") :
+                 ((isset($data[$field]) ) ? $data[$field] : "");
+        }
+        if($data["URL"] != "") {
+            $data["URL"] = UrlParser::canonicalLink($data["URL"],"");
+        }
+        $tmp = tl('admin_controller_edited_pages');
+        $data["URL_LIST"] = array ($tmp => $tmp);
+        $summaries = $this->searchfiltersModel->getEditedPageSummaries();
+        foreach($summaries as $hash => $summary) {
+            $data["URL_LIST"][$summary[self::URL]] = $summary[self::URL];
+        }
+        if(isset($_REQUEST['arg']) ) {
+            switch($_REQUEST['arg']) 
+            {
+                case "save_page":
+                    $missing_page_field = ($data["URL"] == "") ? true: false;
+                    if($missing_page_field) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('admin_controller_results_editor_need_url').
+                            "</h1>')";
+                    } else {
+                        $this->searchfiltersModel->updateResultPage(
+                            $data["URL"], $data["TITLE"], $data["DESCRIPTION"]);
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('admin_controller_results_editor_page_updated').
+                            "</h1>')";
+                    }
+                break;
+                case "load_url":
+                    $hash_url = crawlHash($_REQUEST['LOAD_URL'], true);
+                    if(isset($summaries[$hash_url])) {
+                        $data["URL"] = $this->clean($_REQUEST['LOAD_URL'],
+                            "string");
+                        $data["TITLE"] = $summaries[$hash_url][self::TITLE];
+                        $data["DESCRIPTION"] = $summaries[$hash_url][
+                            self::DESCRIPTION];
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('admin_controller_results_editor_page_loaded').
+                            "</h1>')";
+                    }
+                break;
+            }
         }
 
         return $data;

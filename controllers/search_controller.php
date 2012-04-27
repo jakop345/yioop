@@ -432,8 +432,11 @@ class SearchController extends Controller implements CrawlConstants
                 $top_phrases  = 
                     $this->getTopPhrases($crawl_item, 3, $index_name);
                 $top_query = implode(" ", $top_phrases);
+                $filter = $this->searchfiltersModel->getFilter();
+                $this->phraseModel->editedPageSummaries = 
+                    $this->searchfiltersModel->getEditedPageSummaries();
                 $phrase_results = $this->phraseModel->getPhrasePageResults(
-                    $top_query, $limit, $results_per_page, false, NULL,
+                    $top_query, $limit, $results_per_page, false, $filter,
                     $use_cache_if_possible, $raw, $queue_servers);
                 $data['PAGING_QUERY'] = "index.php?c=search&a=related&arg=".
                     urlencode($url);
@@ -470,6 +473,8 @@ class SearchController extends Controller implements CrawlConstants
                             $this->phraseModel->rewriteMixQuery($query, $mix);
                     }
                     $filter = $this->searchfiltersModel->getFilter();
+                    $this->phraseModel->editedPageSummaries = 
+                        $this->searchfiltersModel->getEditedPageSummaries();
                     $phrase_results = $this->phraseModel->getPhrasePageResults(
                         $query, $limit, $results_per_page, true, $filter,
                         $use_cache_if_possible, $raw, $queue_servers);
