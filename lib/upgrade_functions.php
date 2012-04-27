@@ -74,7 +74,7 @@ function upgradeDatabaseWorkDirectoryCheck()
     $result = @$model->db->execute($sql);
     if($result !== false) {
         $row = $model->db->fetchArray($result);
-        if($row['ID'] == 6) {
+        if($row['ID'] == 7) {
             return false;
         }
     }
