@@ -133,7 +133,7 @@ class WordIterator extends IndexBundleIterator
     /** Length of a doc key*/
     const KEY_LEN = 8;
 
-
+    static $start_time = 0;
     /**
      * Creates a word iterator with the given parameters.
      *
@@ -249,16 +249,23 @@ class WordIterator extends IndexBundleIterator
 
         //the next call also updates next offset
         $shard = $this->index->getCurrentShard();
-        $results = $shard->getPostingsSlice(
+        $pre_results = $shard->getPostingsSlice(
             $this->start_offset,
             $this->next_offset, $this->last_offset, $this->results_per_block);
-        if($this->filter != NULL) {
-            foreach($results as $keys => $data) {
-                $host_key = substr($keys, self::HOST_KEY_POS, self::KEY_LEN);
-                if(in_array($host_key, $this->filter) ) {
-                    unset($results[$keys]);
-                }
+        $filter = ($this->filter == NULL) ? array() : $this->filter;
+        foreach($pre_results as $keys => $data) {
+            $host_key = substr($keys, self::HOST_KEY_POS, self::KEY_LEN);
+            if(in_array($host_key, $filter) ) {
+                continue;
             }
+            $data['KEY'] = $keys;
+            $hash_url = substr($keys, 0, IndexShard::DOC_KEY_LEN);
+            $data[self::HASH] = substr($keys, 
+                IndexShard::DOC_KEY_LEN, IndexShard::DOC_KEY_LEN);
+            // inlinks is the domain of the inlink
+            $data[self::INLINKS] = substr($keys, 
+                2 * IndexShard::DOC_KEY_LEN, IndexShard::DOC_KEY_LEN);
+            $results[$keys] = $data;
         }
         $this->count_block = count($results);
         $this->pages = $results;
