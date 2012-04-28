@@ -656,7 +656,7 @@ class SearchController extends Controller implements CrawlConstants
                     $href = $clone->getAttribute("href");
                     $href = UrlParser::canonicalLink($href, $url, false);
                     $clone->setAttribute("href", $href);
-                    return $clone;
+                    $node->replaceChild($clone, $node->childNodes->item($k));
                 }
             } else if (in_array($tag_name, array("img", "object",
                 "script"))) {
@@ -664,12 +664,12 @@ class SearchController extends Controller implements CrawlConstants
                     $src = $clone->getAttribute("src");
                     $src = UrlParser::canonicalLink($src, $url, false);
                     $clone->setAttribute("src", $src);
-                    return $clone;
+                    $node->replaceChild($clone, $node->childNodes->item($k));
                 }
             } else {
-                if($clone->nodeType == XML_ELEMENT_NODE) {
+                if($tag_name != -1) {
                     $clone = $this->canonicalizeLinks($clone, $url);
-                    if($clone != null) {
+                    if(is_object($clone)) {
                         $node->replaceChild($clone, $node->childNodes->item($k));
                     }
                 }
