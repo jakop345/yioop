@@ -76,6 +76,13 @@ class AdminController extends Controller implements CrawlConstants
         "manageRoles", "manageCrawls", "pageOptions", "resultsEditor", 
         "manageMachines", "manageLocales", "crawlStatus", "mixCrawls",
         "machineStatus", "configure");
+    /**
+     * An array of activities which are periodically updated within other
+     * activities that they live. For example, within manage crawl,
+     * the current crawl status is updated every 20 or so seconds.
+     * @var array
+     */
+    var $status_activities = array("crawlStatus", "machineStatus");
 
 
 
@@ -136,6 +143,11 @@ class AdminController extends Controller implements CrawlConstants
         } else if($this->checkCSRFToken('YIOOP_TOKEN', "config")) {
             $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
                 tl('admin_controller_login_to_config')."</h1>')";
+        } else if(isset($_REQUEST['a']) && 
+            in_array($_REQUEST['a'], $this->status_activities)) {
+            e("<p class='red'>".
+                tl('admin_controller_status_updates_stopped')."</p>");
+            exit();
         }
         $this->displayView($view, $data);
     }
@@ -216,8 +228,7 @@ class AdminController extends Controller implements CrawlConstants
             $data = $this->$activity();
             $data['ACTIVITIES'] = $allowed_activities;
         }
-        $status_activities = array("crawlStatus", "machineStatus");
-        if(!in_array($activity, $status_activities)) {
+        if(!in_array($activity, $this->status_activities)) {
             $data['CURRENT_ACTIVITY'] = 
                 $this->activityModel->getActivityNameFromMethodName($activity);
         }
