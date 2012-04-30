@@ -240,7 +240,8 @@ class CrawlstatusView extends View
             ?></table>
         <?php
         } else {
-            e("<p class='red'>".tl('crawlstatus_view_no_previous_crawl')."</p>");
+            e("<p class='red'>".
+                tl('crawlstatus_view_no_previous_crawl')."</p>");
         }
         ?>
     <?php

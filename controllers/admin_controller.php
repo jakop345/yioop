@@ -1878,6 +1878,10 @@ class AdminController extends Controller implements CrawlConstants
                             $this->localeModel->getStaticPage(
                                 $_REQUEST['static_page'],
                                 $data['CURRENT_LOCALE_TAG']);
+                        /*since page data can contain tags we clean it
+                          htmlentities it just before displaying*/
+                        $data['PAGE_DATA'] = $this->clean($data['PAGE_DATA'],
+                            "string");
                         break;
                     }
                     $data['SCRIPT'] .= "selectPage = elt('static-pages');".
@@ -2298,6 +2302,10 @@ class AdminController extends Controller implements CrawlConstants
                 strlen($data['ROBOT_DESCRIPTION']) == 0) {
                 $data['ROBOT_DESCRIPTION'] = 
                     tl('admin_controller_describe_robot');
+            } else {
+                //since the description might contain tags we apply htmlentities
+                $data['ROBOT_DESCRIPTION'] = 
+                    $this->clean($data['ROBOT_DESCRIPTION'], "string");
             }
             if(!isset($data['MEMCACHE_SERVERS']) ||
                 strlen($data['MEMCACHE_SERVERS']) == 0) {
