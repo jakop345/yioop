@@ -1935,6 +1935,8 @@ class QueueServer implements CrawlConstants, Join
                     $robots_okay = $this->web_queue->checkRobotOkay($url);
 
                     if(!$robots_okay) {
+                        $delete_urls[$i] = $url;
+                        $this->web_queue->addSeenUrlFilter($url);
                         $i++;
                         continue;
                     }

@@ -640,7 +640,7 @@ class WebQueueBundle implements Notifier
     {
         // local cache of recent robot.txt stuff
         static $robot_cache = array();
-        $cache_size = 500;
+        $cache_size = 2000;
         $host = UrlParser::getHost($url);
         $path = UrlParser::getPath($url);
         $path = urldecode($path);
