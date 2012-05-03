@@ -252,10 +252,16 @@ class SearchController extends Controller implements CrawlConstants
                 $data['INDEX_INFO'] = tl('search_controller_mix_info',
                     $index_info['DESCRIPTION']);
             } else {
-                $data['INDEX_INFO'] = tl('search_controller_crawl_info',
-                    $index_info['DESCRIPTION'], 
-                    $index_info['VISITED_URLS_COUNT'],
-                    $index_info['COUNT']);
+                if(isset($index_info['DESCRIPTION']) && 
+                    isset($index_info['VISITED_URLS_COUNT']) && 
+                    isset($index_info['COUNT']) ) {
+                    $data['INDEX_INFO'] = tl('search_controller_crawl_info',
+                        $index_info['DESCRIPTION'], 
+                        $index_info['VISITED_URLS_COUNT'],
+                        $index_info['COUNT']);
+                } else {
+                    $data['INDEX_INFO'] = "";
+                }
             }
         } else {
             $data['INDEX_INFO'] = "";

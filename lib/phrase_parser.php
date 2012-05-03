@@ -181,40 +181,42 @@ class PhraseParser
     {
         
         $acronym_pattern = "/[A-Za-z]\.(\s*[A-Za-z]\.)+/";
+        $replace_function = create_function('$matches', '
+            $result = "_".mb_strtolower(
+                mb_ereg_replace("\.", "", $matches[0]));
+            return $result;');
         $string = preg_replace_callback($acronym_pattern, 
-            function($matches) {
-                $result = "_".mb_strtolower(
-                    mb_ereg_replace("\.", "", $matches[0]));
-                return $result;
-            }, $string);
+            $replace_function, $string);
 
         $ampersand_pattern = "/[A-Za-z]+(\s*(\s(\'n|\'N)\s|\&)\s*[A-Za-z])+/";
-        $string = preg_replace_callback($ampersand_pattern, 
-            function($matches) {
-                $result = mb_strtolower(
-                    mb_ereg_replace("\s*(\'n|\'N|\&)\s*", "_and_",$matches[0]));
-                return $result;
-            }, $string);
+        $replace_function = create_function('$matches', '
+            $result = mb_strtolower(
+                mb_ereg_replace("\s*(\'n|\'N|\&)\s*", "_and_",$matches[0]));
+            return $result;
+        ');
+        $string = preg_replace_callback($ampersand_pattern, $replace_function, 
+            $string);
 
         $url_or_email_pattern = 
             '@((http|https)://([^ \t\r\n\v\f\'\"\;\,<>])*)|'.
             '([A-Z0-9._%-]+\@[A-Z0-9.-]+\.[A-Z]{2,4})@i';
+        $replace_function = create_function('$matches', '
+            $result =  mb_ereg_replace("\.", "_d_",$matches[0]);
+            $result =  mb_ereg_replace("\:", "_c_",$result);
+            $result =  mb_ereg_replace("\/", "_s_",$result);
+            $result =  mb_ereg_replace("\@", "_a_",$result);
+            $result =  mb_ereg_replace("\[", "_bo_",$result);
+            $result =  mb_ereg_replace("\]", "_bc_",$result);
+            $result =  mb_ereg_replace("\(", "_po_",$result);
+            $result =  mb_ereg_replace("\)", "_pc_",$result);
+            $result =  mb_ereg_replace("\?", "_q_",$result);
+            $result =  mb_ereg_replace("\=", "_e_",$result);
+            $result =  mb_ereg_replace("\&", "_a_",$result);
+            $result = mb_strtolower($result);
+            return $result;
+        ');
         $string = preg_replace_callback($url_or_email_pattern, 
-            function($matches) {
-                $result =  mb_ereg_replace("\.", "_d_",$matches[0]);
-                $result =  mb_ereg_replace("\:", "_c_",$result);
-                $result =  mb_ereg_replace("\/", "_s_",$result);
-                $result =  mb_ereg_replace("\@", "_a_",$result);
-                $result =  mb_ereg_replace("\[", "_bo_",$result);
-                $result =  mb_ereg_replace("\]", "_bc_",$result);
-                $result =  mb_ereg_replace("\(", "_po_",$result);
-                $result =  mb_ereg_replace("\)", "_pc_",$result);
-                $result =  mb_ereg_replace("\?", "_q_",$result);
-                $result =  mb_ereg_replace("\=", "_e_",$result);
-                $result =  mb_ereg_replace("\&", "_a_",$result);
-                $result = mb_strtolower($result);
-                return $result;
-            }, $string);
+            $replace_function, $string);
     }
 
     /**
