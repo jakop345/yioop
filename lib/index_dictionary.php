@@ -666,11 +666,11 @@ class IndexDictionary implements CrawlConstants
             return $this->blocks[$file_num][$bytes];
         }
         if(!isset($this->fhs[$file_num]) || $this->fhs[$file_num] === NULL) {
-            $this->fhs[$file_num] = fopen($this->dir_name.
-                "/$file_num/".$this->max_tier."A.dic", "rb");
+            $file_name = $this->dir_name. "/$file_num/".$this->max_tier."A.dic";
+            if(!file_exists($file_name)) return false;
+            $this->fhs[$file_num] = fopen($file_name, "rb");
             if($this->fhs[$file_num] === false) return false;
-            $this->file_lens[$file_num] = filesize($this->dir_name.
-                "/$file_num/".$this->max_tier."A.dic");
+            $this->file_lens[$file_num] = filesize($file_name);
         }
         if($bytes >= $this->file_lens[$file_num]) {
             
