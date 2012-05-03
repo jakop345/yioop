@@ -776,7 +776,8 @@ class AdminController extends Controller implements CrawlConstants
                         isset($seed_info['disallowed_sites']['url']) ?
                         $seed_info['disallowed_sites']['url'] : array();
                     $crawl_params[self::META_WORDS] = 
-                        $seed_info['meta_words'];
+                        isset($seed_info['meta_words']) ?
+                        $seed_info['meta_words'] : array();
                     if(isset($seed_info['indexing_plugins']['plugins'])) {
                         $crawl_params[self::INDEXING_PLUGINS] =
                             $seed_info['indexing_plugins']['plugins'];
@@ -792,7 +793,6 @@ class AdminController extends Controller implements CrawlConstants
                         $description = tl('admin_controller_no_description');
                     }
                     $crawl_params['DESCRIPTION'] = $description;
-
                     $this->crawlModel->sendStartCrawlMessage($crawl_params, 
                         $seed_info, $machine_urls);
 
