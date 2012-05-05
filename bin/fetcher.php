@@ -42,7 +42,7 @@ define("BASE_DIR", substr(
     dirname(realpath($_SERVER['PHP_SELF'])), 0, 
     -strlen("/bin")));
 
-ini_set("memory_limit","850M"); //so have enough memory to crawl big pages
+ini_set("memory_limit","1000M"); //so have enough memory to crawl big pages
 
 /** Load in global configuration settings */
 require_once BASE_DIR.'/configs/config.php';
@@ -1649,7 +1649,7 @@ class Fetcher implements CrawlConstants
         global $IMAGE_TYPES;
 
         $start_time = microtime();
-
+        crawlLog("  Start building mini inverted index ... ");
         $num_seen = count($this->found_sites[self::SEEN_URLS]);
         $this->num_seen_sites += $num_seen;
         /*
@@ -1760,10 +1760,10 @@ class Fetcher implements CrawlConstants
                     $this->found_sites[self::SEEN_URLS][] = $summary;
                     $link_type = UrlParser::getDocumentType($url);
                     if(in_array($link_type, $IMAGE_TYPES)) {
+                        $link_meta_ids[] = "media:image";
                         if(isset($safe) && !$safe) {
                             $link_meta_ids[] = "safe:false";
                         }
-                        $link_meta_ids[] = "media:image";
                     } else if(UrlParser::isVideoUrl($url)) {
                         $link_meta_ids[] = "media:video";
                         if(isset($safe) && !$safe) {
