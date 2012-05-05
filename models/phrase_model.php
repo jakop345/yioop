@@ -105,7 +105,7 @@ class PhraseModel extends Model
             'filetype:', 'info:', '\-', 'os:', 'server:', 'date:', "numlinks:",
             'index:', 'i:', 'ip:', 'weight:', 'w:', 'u:', 'time:', 'code:',
             'lang:', 'media:', 'elink:', 'location:', 'size:', 'host:', 'dns:',
-            'path:', 'robot:');
+            'path:', 'robot:', 'safe:');
 
     /**
      * Number of pages to cache in one go in memcache or filecache

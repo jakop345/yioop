@@ -1690,10 +1690,18 @@ class Fetcher implements CrawlConstants
                 if(isset($site[self::LANG])) {
                     $lang = $site[self::LANG];
                 }
-                
+
                 $word_lists = 
                     PhraseParser::extractPhrasesInLists($phrase_string,
                         $lang, true);
+                if(PhraseParser::computeSafeSearchScore($phrase_string) < 
+                    0.025) {
+                    $meta_ids[] = "safe:true";
+                    $safe = true;
+                } else {
+                    $meta_ids[] = "safe:false";
+                    $safe = false;
+                }
             }
 
             $link_phrase_string = "";
@@ -1752,7 +1760,15 @@ class Fetcher implements CrawlConstants
                     $this->found_sites[self::SEEN_URLS][] = $summary;
                     $link_type = UrlParser::getDocumentType($url);
                     if(in_array($link_type, $IMAGE_TYPES)) {
+                        if(isset($safe) && !$safe) {
+                            $link_meta_ids[] = "safe:false";
+                        }
                         $link_meta_ids[] = "media:image";
+                    } else if(UrlParser::isVideoUrl($url)) {
+                        $link_meta_ids[] = "media:video";
+                        if(isset($safe) && !$safe) {
+                            $link_meta_ids[] = "safe:false";
+                        }
                     } else {
                         $link_meta_ids[] = "media:text";
                     }
@@ -1871,9 +1887,13 @@ class Fetcher implements CrawlConstants
         foreach($site[self::IP_ADDRESSES] as $address) {
             $meta_ids[] = 'ip:'.$address;
         }
-        $meta_ids[] = (stripos($site[self::TYPE], "image") !== false) ? 
-            'media:image' : 'media:text';
 
+        if(UrlParser::isVideoUrl($site[self::URL])) {
+            $meta_ids[] = "media:video";
+        } else {
+            $meta_ids[] = (stripos($site[self::TYPE], "image") !== false) ? 
+                'media:image' : 'media:text';
+        }
         // store the filetype info
         $url_type = UrlParser::getDocumentType($site[self::URL]);
         if(strlen($url_type) > 0) {

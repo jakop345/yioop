@@ -249,7 +249,7 @@ class StatisticsController extends Controller implements CrawlConstants
                 'tn', 'to', 'tr', 'ts', 'tt', 'tw', 'ty', 'ug', 'uk', 'ur',
                 'uz', 've', 'vi', 'vo', 'wa', 'wo', 'xh', 'yi', 'yo', 'za',
                 'zh', 'zu'),
-            "MEDIA" => array("image", "text"),
+            "MEDIA" => array("image", "text", "video"),
             "OS" => array("asianux", "centos", "clearos", "debian", "fedora", 
                 "freebsd", "gentoo", "linux", "netware", "solaris", "sunos",
                 "ubuntu", "unix"),
@@ -370,7 +370,7 @@ class StatisticsController extends Controller implements CrawlConstants
     {
         $results = $this->phraseModel->getPhrasePageResults(
             "$query i:{$this->index_time_stamp}", 0, 
-            1, true, NULL, true, 0, $this->machine_urls);
+            1, true, NULL, false, 0, $this->machine_urls);
         return (isset($results["TOTAL_ROWS"])) ? $results["TOTAL_ROWS"] : -1;
     }
 

@@ -37,6 +37,8 @@ foreach(glob(LOCALE_DIR."/*/resources/tokenizer.php")
     as $filename) {
     require_once $filename;
 }
+$GLOBALS["CHARGRAMS"] = $CHARGRAMS;
+
 /**
  * Load the n word grams File
  */
@@ -146,10 +148,9 @@ class PhraseParser
         $lang = NULL, $orig_and_grams = false, $phrases_and_terms = true)
     {
         $phrase_lists = array();
-
         self::canonicalizePunctuatedTerms($string, $lang);
         $pre_phrases = 
-            self::extractTermsAndFilterPhrases($string, $lang,$orig_and_grams);
+            self::extractTermsAndFilterPhrases($string, $lang, $orig_and_grams);
         $phrases = array();
         $j = 0;
         foreach($pre_phrases as $pre_phrase) {
@@ -236,7 +237,7 @@ class PhraseParser
         global $CHARGRAMS;
 
         mb_internal_encoding("UTF-8");
-        //split first on puctuation as n word grams shouldn't cross punctuation
+        //split first on punctuation as n word grams shouldn't cross punctuation
         $fragments = mb_split(PUNCT, $string);
 
         $final_terms = array();
@@ -379,6 +380,8 @@ class PhraseParser
      */
     static function getStemmer($lang)
     {
+        mb_regex_encoding('UTF-8');
+        mb_internal_encoding("UTF-8");
         $lower_lang = strtolower($lang); //try to avoid case sensitivity issues
         $lang_parts = explode("-", $lang);
         if(isset($lang_parts[1])) {
@@ -396,5 +399,59 @@ class PhraseParser
             $stem_obj = NULL;
         }
         return $stem_obj;
+    }
+
+    /**
+     *  Scores documents according to the lack or nonlack of sexually explicit
+     *  terms. Tries to work for several languages.
+     *
+     *  @param string $text passage to score
+     *  @return int $score of how explicit document is
+     */
+    static function computeSafeSearchScore($text)
+    {
+        static $unsafe_phrase = "
+XXX sex slut nymphomaniac MILF lolita lesbian sadomasochism 
+bondage fisting erotic vagina Tribadism penis facial hermaphrodite
+transsexual tranny bestiality snuff boob fondle tit
+blowjob lap cock dick hardcore pr0n fuck pussy penetration ass
+cunt bisexual prostitution screw ass masturbation clitoris clit suck whore bitch
+bellaco cachar chingar shimar chinquechar chichar clavar coger culear hundir
+joder mámalo singar cojon carajo caray bicho concha chucha chocha
+chuchamadre coño panocha almeja culo fundillo fundío puta puto teta
+connorito cul pute putain sexe pénis vulve foutre baiser sein nicher nichons
+puta sapatão foder ferro punheta vadia buceta bucetinha bunda caralho
+mentula cunnus verpa sōpiō pipinna cōleī cunnilingus futuō copulate cēveō crīsō
+scortor meretrīx futatrix minchia coglione cornuto culo inocchio frocio puttana
+vaffanculo fok hoer kut lul やりまん 打っ掛け  二形 ふたなりゴックン ゴックン
+ショタコン 全裸 受け 裏本 пизда́ хуй еба́ть блядь елда́ гондо́н хер манда́ му́ди мудя
+пидора́с залу́па жо́па за́дница буфер 
+雞巴 鷄巴 雞雞 鷄鷄 阴茎 陰莖 胯下物
+屌 吊 小鳥 龟头 龜頭 屄 鸡白 雞白 傻屄 老二 那话儿 那話兒 屄 鸡白 雞白 阴道 陰道
+阴户 陰戶 大姨妈 淫蟲 老嫖 妓女 臭婊子 卖豆腐 賣豆腐 咪咪 大豆腐 爆乳 肏操
+炒饭 炒飯 cặc lồn kaltak orospu siktir sıçmak amcık ";
+        static $unsafe_terms = array();
+
+        if($unsafe_terms == array()) {
+           $pre_unsafe_terms = mb_split("(\s)+", $unsafe_phrase);
+            foreach($pre_unsafe_terms as $pre_unsafe) {
+                if(strlen($pre_unsafe) > 0) {
+                    $unsafe_terms[] = $pre_unsafe;
+                }
+            }
+        }
+
+        $num_unsafe_terms = 0;
+        $unsafe_count = 0;
+        foreach($unsafe_terms as $term) {
+            $count = mb_substr_count($text, $term);
+            if($count > 0 ) {
+                $unsafe_count += $count;
+                $num_unsafe_terms++;
+            }
+        }
+
+        $score = $num_unsafe_terms * $unsafe_count/(strlen($text) + 1);
+        return $score;
     }
 }
