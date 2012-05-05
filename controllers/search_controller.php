@@ -182,7 +182,7 @@ class SearchController extends Controller implements CrawlConstants
                     unset($_SESSION['its']);
                     include(BASE_DIR."/error.php");
                     exit();
-                } else {
+                } else if(!$found_crawl) {
                     unset($_SESSION['its']);
                     $index_time_stamp = $current_its;
                 }
@@ -194,7 +194,6 @@ class SearchController extends Controller implements CrawlConstants
             $index_time_stamp = $current_its; 
                 //use the default crawl index
         }
-
         if($web_flag && $index_time_stamp != 0 ) {
             $index_info =  $this->crawlModel->getInfoTimestamp(
                 $index_time_stamp, $machine_urls);
