@@ -1694,8 +1694,9 @@ class Fetcher implements CrawlConstants
                 $word_lists = 
                     PhraseParser::extractPhrasesInLists($phrase_string,
                         $lang, true);
-                if(PhraseParser::computeSafeSearchScore($phrase_string) < 
-                    0.025) {
+                $len = strlen($phrase_string);
+                if(PhraseParser::computeSafeSearchScore($word_lists, $len) < 
+                    0.012) {
                     $meta_ids[] = "safe:true";
                     $safe = true;
                 } else {

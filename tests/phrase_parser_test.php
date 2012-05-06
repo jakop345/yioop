@@ -166,8 +166,11 @@ small table the the the the the the the the the the the their there there
 this those three to to to trap uncle uncle wagon walls was was was was was
 were where which which whirlwinds who who wife with
 EOD;
-        $score = PhraseParser::computeSafeSearchScore($phrase_string);
-        $this->assertTrue(($score < 0.025), "Easy Safe Test 1");
+        $word_lists = PhraseParser::extractPhrasesInLists($phrase_string,
+            "en-US", true);
+        $len = strlen($phrase_string);
+        $score = PhraseParser::computeSafeSearchScore($word_lists, $len);
+        $this->assertTrue(($score < 0.012), "Easy Safe Test 1");
 
         $phrase_string = <<< EOD
 a afraid all and anon baby big boobs but cock crave dicking does
@@ -175,8 +178,11 @@ for from grown has how in is isnt knot lolita matts monster pussies ready
 she she shew slut teens their thom them thought they're tight to to to total
 up use whether
 EOD;
-        $score = PhraseParser::computeSafeSearchScore($phrase_string);
-        $this->assertTrue(($score > 0.025), "Easy Unsafe Test 1");
+        $word_lists = PhraseParser::extractPhrasesInLists($phrase_string,
+            "en-US", true);
+        $len = strlen($phrase_string);
+        $score = PhraseParser::computeSafeSearchScore($word_lists, $len);
+        $this->assertTrue(($score > 0.012), "Easy Unsafe Test 1");
 
         $phrase_string = <<< EOD
 a a a a a adventure after all alotta amazing and and and and and
@@ -191,8 +197,11 @@ those those those tit titties titty to to to togo today tramp truly
 us was we we we what what when what wild with with with workout wrap yes
 you 
 EOD;
-        $score = PhraseParser::computeSafeSearchScore($phrase_string);
-        $this->assertTrue(($score > 0.025), "Harder Unsafe Test 1");
+        $word_lists = PhraseParser::extractPhrasesInLists($phrase_string,
+            "en-US", true);
+        $len = strlen($phrase_string);
+        $score = PhraseParser::computeSafeSearchScore($word_lists, $len);
+        $this->assertTrue(($score > 0.012), "Harder Unsafe Test 1");
 
         $phrase_string = <<< EOD
 amino hog known a a a a an and and
@@ -206,8 +215,11 @@ over parents process reproduce reproduce result sex sex sexual
 sexual small specialist specialized specific such that that the the the
 the their to to traits traits transport two types variety while young
 EOD;
-        $score = PhraseParser::computeSafeSearchScore($phrase_string);
-        $this->assertTrue(($score < 0.025), "Harder Safe Test 1");
+        $word_lists = PhraseParser::extractPhrasesInLists($phrase_string,
+            "en-US", true);
+        $len = strlen($phrase_string);
+        $score = PhraseParser::computeSafeSearchScore($word_lists, $len);
+        $this->assertTrue(($score < 0.012), "Harder Safe Test 1");
 
         $phrase_string = <<< EOD
 a a active adverb an an and are as as as attribute be
@@ -217,8 +229,11 @@ lesbian may moist verb object of of or or or others secondary refer relay
 romantic same sex sexual trim the the the them to to to to to used
 used who who wide women ward
 EOD;
-        $score = PhraseParser::computeSafeSearchScore($phrase_string);
-        $this->assertTrue(($score < 0.025), "Harder Safe Test 2");
+        $word_lists = PhraseParser::extractPhrasesInLists($phrase_string,
+            "en-US", true);
+        $len = strlen($phrase_string);
+        $score = PhraseParser::computeSafeSearchScore($word_lists, $len);
+        $this->assertTrue(($score < 0.012), "Harder Safe Test 2");
 
     }
 }

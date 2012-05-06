@@ -405,10 +405,11 @@ class PhraseParser
      *  Scores documents according to the lack or nonlack of sexually explicit
      *  terms. Tries to work for several languages.
      *
-     *  @param string $text passage to score
+     *  @param array $word_lists word => pos_list tuples
+     *  @param int $len length of text being examined in characters
      *  @return int $score of how explicit document is
      */
-    static function computeSafeSearchScore($text)
+    static function computeSafeSearchScore($word_lists, $len)
     {
         static $unsafe_phrase = "
 XXX sex slut nymphomaniac MILF lolita lesbian sadomasochism 
@@ -433,25 +434,26 @@ vaffanculo fok hoer kut lul やりまん 打っ掛け  二形 ふたなりゴッ
         static $unsafe_terms = array();
 
         if($unsafe_terms == array()) {
-           $pre_unsafe_terms = mb_split("(\s)+", $unsafe_phrase);
-            foreach($pre_unsafe_terms as $pre_unsafe) {
-                if(strlen($pre_unsafe) > 0) {
-                    $unsafe_terms[] = $pre_unsafe;
-                }
-            }
+            $unsafe_lists = PhraseParser::extractPhrasesInLists($unsafe_phrase,
+                "en-US", true);
+            $unsafe_terms = array_keys($unsafe_lists);
         }
 
         $num_unsafe_terms = 0;
         $unsafe_count = 0;
-        foreach($unsafe_terms as $term) {
-            $count = mb_substr_count($text, $term);
+        $words = array_keys($word_lists);
+
+        $unsafe_found = array_intersect($words, $unsafe_terms);
+
+        foreach($unsafe_found as $term) {
+            $count = count($word_lists[$term]);
             if($count > 0 ) {
                 $unsafe_count += $count;
                 $num_unsafe_terms++;
             }
         }
 
-        $score = $num_unsafe_terms * $unsafe_count/(strlen($text) + 1);
+        $score = $num_unsafe_terms * $unsafe_count/($len + 1);
         return $score;
     }
 }

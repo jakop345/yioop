@@ -705,11 +705,11 @@ class UrlParser
      * Checks if a URL corresponds to a known playback page of a video
      * sharing site
      *
-     * @param string $url the url to check
+     * @param string &$url the url to check
      * @return bool whether or not corresponds to video playback page of a known
      *      video site
      */
-    static function isVideoUrl($url)
+    static function isVideoUrl(&$url)
     {
         $video_prefixes = array("http://www.youtube.com/watch?v=",
             "http://www.metacafe.com/watch/", 
