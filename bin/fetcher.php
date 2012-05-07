@@ -42,7 +42,7 @@ define("BASE_DIR", substr(
     dirname(realpath($_SERVER['PHP_SELF'])), 0, 
     -strlen("/bin")));
 
-ini_set("memory_limit","1100M"); //so have enough memory to crawl big pages
+ini_set("memory_limit","850M"); //so have enough memory to crawl sitemaps
 
 /** Load in global configuration settings */
 require_once BASE_DIR.'/configs/config.php';
@@ -964,7 +964,7 @@ class Fetcher implements CrawlConstants
     function processFetchPages($site_pages)
     {
         $PAGE_PROCESSORS = $this->page_processors;
-        crawlLog("  Start process pages...");
+        crawlLog("  Start process pages... Current Memory:".memory_get_usage());
         $start_time = microtime();
 
         $prefix = $this->fetcher_num."-";
@@ -1187,7 +1187,8 @@ class Fetcher implements CrawlConstants
                     $cache_page_partition;
             }
         }
-        crawlLog("  Process pages time".(changeInMicrotime($start_time)));
+        crawlLog("  Process pages time".(changeInMicrotime($start_time)).
+             " Current Memory:".memory_get_usage());
 
         return $summarized_site_pages;
     }
@@ -1554,12 +1555,10 @@ class Fetcher implements CrawlConstants
             $bytes_to_send += strlen($post_data['schedule_data']);
         }
         unset($schedule_data);
-
         //handle mini inverted index
         if($seen_cnt > 0 ) {
             $this->buildMiniInvertedIndex();
         }
-        crawlLog("...");
         if(isset($this->found_sites[self::INVERTED_INDEX][
             $this->current_server])) {
             $compress_urls = "";
@@ -1571,13 +1570,16 @@ class Fetcher implements CrawlConstants
             unset($this->found_sites[self::SEEN_URLS]);
             $len_urls =  strlen($compress_urls);
             crawlLog("...Finish Compressing seen URLs.");
-            $post_data['index_data'] = webencode( packInt($len_urls).
-                $compress_urls. $this->found_sites[self::INVERTED_INDEX][
-                $this->current_server]
-                ); // don't compress index data
+            $out_string = packInt($len_urls). $compress_urls;
             unset($compress_urls);
+            $out_string .= $this->found_sites[self::INVERTED_INDEX][
+                $this->current_server];
             unset($this->found_sites[self::INVERTED_INDEX][
                 $this->current_server]);
+            gc_collect_cycles();
+            $post_data['index_data'] = webencode($out_string);
+                // don't compress index data
+            unset($out_string);
             $bytes_to_send += strlen($post_data['index_data']);
         }
 
@@ -1621,6 +1623,7 @@ class Fetcher implements CrawlConstants
                 memory_get_peak_usage());
         } while(!isset($info[self::STATUS]) || 
             $info[self::STATUS] != self::CONTINUE_STATE);
+        crawlLog("...  Current Memory G:".memory_get_usage());
         if($this->crawl_type == self::WEB_CRAWL) {
             $dir = CRAWL_DIR."/schedules";
             file_put_contents("$dir/$prefix".self::fetch_batch_name.
@@ -1649,7 +1652,8 @@ class Fetcher implements CrawlConstants
         global $IMAGE_TYPES;
 
         $start_time = microtime();
-        crawlLog("  Start building mini inverted index ... ");
+        crawlLog("  Start building mini inverted index ...  Current Memory:".
+            memory_get_usage());
         $num_seen = count($this->found_sites[self::SEEN_URLS]);
         $this->num_seen_sites += $num_seen;
         /*
@@ -1657,9 +1661,10 @@ class Fetcher implements CrawlConstants
             name doesn't matter.
         */
         if(!isset($this->found_sites[self::INVERTED_INDEX][
-            $this->current_server]))
+            $this->current_server])) {
             $this->found_sites[self::INVERTED_INDEX][$this->current_server] = 
                 new IndexShard("fetcher_shard_{$this->current_server}");
+        }
         for($i = 0; $i < $num_seen; $i++) {
             $site = $this->found_sites[self::SEEN_URLS][$i];
             if(!isset($site[self::HASH])) {continue; }
@@ -1765,16 +1770,9 @@ class Fetcher implements CrawlConstants
                         if(isset($safe) && !$safe) {
                             $link_meta_ids[] = "safe:false";
                         }
-                    } else if(UrlParser::isVideoUrl($url)) {
-                        $link_meta_ids[] = "media:video";
-                        if(isset($safe) && !$safe) {
-                            $link_meta_ids[] = "safe:false";
-                        }
                     } else {
                         $link_meta_ids[] = "media:text";
                     }
-                    $link_text = 
-                        mb_ereg_replace(PUNCT, " ", $link_text);
                     $link_word_lists = 
                         PhraseParser::extractPhrasesInLists($link_text,
                         $lang, true);

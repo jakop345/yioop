@@ -180,44 +180,52 @@ class PhraseParser
      */
     static function canonicalizePunctuatedTerms(&$string, $lang = NULL)
     {
-        
+        //these obscure statics is because php 5.2 does not garbage collect
+        //create_function's
+        static $replace_function0, $replace_function1, $replace_function2;
         $acronym_pattern = "/[A-Za-z]\.(\s*[A-Za-z]\.)+/";
-        $replace_function = create_function('$matches', '
-            $result = "_".mb_strtolower(
-                mb_ereg_replace("\.", "", $matches[0]));
-            return $result;');
+        if(!isset($replace_function0)) {
+            $replace_function0 = create_function('$matches', '
+                $result = "_".mb_strtolower(
+                    mb_ereg_replace("\.", "", $matches[0]));
+                return $result;');
+        }
         $string = preg_replace_callback($acronym_pattern, 
-            $replace_function, $string);
+            $replace_function0, $string);
 
         $ampersand_pattern = "/[A-Za-z]+(\s*(\s(\'n|\'N)\s|\&)\s*[A-Za-z])+/";
-        $replace_function = create_function('$matches', '
-            $result = mb_strtolower(
-                mb_ereg_replace("\s*(\'n|\'N|\&)\s*", "_and_",$matches[0]));
-            return $result;
-        ');
-        $string = preg_replace_callback($ampersand_pattern, $replace_function, 
+        if(!isset($replace_function1)) {
+            $replace_function1 = create_function('$matches', '
+                $result = mb_strtolower(
+                    mb_ereg_replace("\s*(\'n|\'N|\&)\s*", "_and_",$matches[0]));
+                return $result;
+            ');
+        }
+        $string = preg_replace_callback($ampersand_pattern,$replace_function1,
             $string);
 
         $url_or_email_pattern = 
             '@((http|https)://([^ \t\r\n\v\f\'\"\;\,<>])*)|'.
             '([A-Z0-9._%-]+\@[A-Z0-9.-]+\.[A-Z]{2,4})@i';
-        $replace_function = create_function('$matches', '
-            $result =  mb_ereg_replace("\.", "_d_",$matches[0]);
-            $result =  mb_ereg_replace("\:", "_c_",$result);
-            $result =  mb_ereg_replace("\/", "_s_",$result);
-            $result =  mb_ereg_replace("\@", "_a_",$result);
-            $result =  mb_ereg_replace("\[", "_bo_",$result);
-            $result =  mb_ereg_replace("\]", "_bc_",$result);
-            $result =  mb_ereg_replace("\(", "_po_",$result);
-            $result =  mb_ereg_replace("\)", "_pc_",$result);
-            $result =  mb_ereg_replace("\?", "_q_",$result);
-            $result =  mb_ereg_replace("\=", "_e_",$result);
-            $result =  mb_ereg_replace("\&", "_a_",$result);
-            $result = mb_strtolower($result);
-            return $result;
-        ');
+        if(!isset($replace_function2)) {
+            $replace_function2 = create_function('$matches', '
+                $result =  mb_ereg_replace("\.", "_d_",$matches[0]);
+                $result =  mb_ereg_replace("\:", "_c_",$result);
+                $result =  mb_ereg_replace("\/", "_s_",$result);
+                $result =  mb_ereg_replace("\@", "_a_",$result);
+                $result =  mb_ereg_replace("\[", "_bo_",$result);
+                $result =  mb_ereg_replace("\]", "_bc_",$result);
+                $result =  mb_ereg_replace("\(", "_po_",$result);
+                $result =  mb_ereg_replace("\)", "_pc_",$result);
+                $result =  mb_ereg_replace("\?", "_q_",$result);
+                $result =  mb_ereg_replace("\=", "_e_",$result);
+                $result =  mb_ereg_replace("\&", "_a_",$result);
+                $result = mb_strtolower($result);
+                return $result;
+            ');
+        }
         $string = preg_replace_callback($url_or_email_pattern, 
-            $replace_function, $string);
+            $replace_function2, $string);
     }
 
     /**
@@ -409,7 +417,7 @@ class PhraseParser
      *  @param int $len length of text being examined in characters
      *  @return int $score of how explicit document is
      */
-    static function computeSafeSearchScore($word_lists, $len)
+    static function computeSafeSearchScore(&$word_lists, $len)
     {
         static $unsafe_phrase = "
 XXX sex slut nymphomaniac MILF lolita lesbian sadomasochism 
@@ -432,6 +440,10 @@ vaffanculo fok hoer kut lul やりまん 打っ掛け  二形 ふたなりゴッ
 阴户 陰戶 大姨妈 淫蟲 老嫖 妓女 臭婊子 卖豆腐 賣豆腐 咪咪 大豆腐 爆乳 肏操
 炒饭 炒飯 cặc lồn kaltak orospu siktir sıçmak amcık";
         static $unsafe_terms = array();
+
+        if(count($word_lists) == 0) {
+            return 0;
+        }
 
         if($unsafe_terms == array()) {
             $unsafe_lists = PhraseParser::extractPhrasesInLists($unsafe_phrase,

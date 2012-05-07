@@ -593,9 +593,10 @@ class QueueServer implements CrawlConstants, Join
     function &getDataArchiveFileData($file)
     {
         crawlLog("Processing File: $file");
-
-        $sites = unserialize(gzuncompress(webdecode(file_get_contents($file) ))
-            );
+        $decode = file_get_contents($file);
+        $decode = webdecode($decode);
+        $decode = gzuncompress($decode);
+        $sites = unserialize($decode);
 
         return $sites;
     }

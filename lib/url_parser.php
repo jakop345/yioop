@@ -705,13 +705,13 @@ class UrlParser
      * Checks if a URL corresponds to a known playback page of a video
      * sharing site
      *
-     * @param string &$url the url to check
+     * @param string $url the url to check
      * @return bool whether or not corresponds to video playback page of a known
      *      video site
      */
     static function isVideoUrl(&$url)
     {
-        $video_prefixes = array("http://www.youtube.com/watch?v=",
+        static $video_prefixes = array("http://www.youtube.com/watch?v=",
             "http://www.metacafe.com/watch/", 
             "http://screen.yahoo.com/",
             "http://player.vimeo.com/video/", 
@@ -719,9 +719,19 @@ class UrlParser
             "http://www.dailymotion.com/video/",
             "http://v.youku.com/v_playlist/",
             "http://www.break.com/index/");
-        foreach($video_prefixes as $prefix) {
-            $quoted = preg_quote($prefix, "/");
-            $pattern = "/$quoted/";
+        static $patterns = array();
+
+        if(strlen($url) <= 0 ) {
+            return false;
+        }
+        if($patterns == array()) {
+            foreach($video_prefixes as $prefix) {
+                $quoted = preg_quote($prefix, "/");
+                $patterns[] = "/$quoted/";
+            }
+        }
+
+        foreach($patterns as $pattern) {
             if(preg_match($pattern, $url) > 0) {
                 return true;
             }

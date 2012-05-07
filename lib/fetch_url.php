@@ -506,6 +506,7 @@ class FetchUrl implements CrawlConstants
         }
         crawlLog("Set curl options");
         $response = curl_exec($agents[$host]);
+        curl_setopt($agents[$host], CURLOPT_POSTFIELDS, "");
         crawlLog("Done curl exec");
         return $response;
     }

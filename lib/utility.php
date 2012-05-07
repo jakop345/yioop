@@ -489,7 +489,8 @@ function unbase64Hash($base64)
  */
 function webencode($str)
 {
-    $str = str_replace("/", "_", base64_encode($str));
+    $str = base64_encode($str);
+    $str = str_replace("/", "_", $str);
     $str = str_replace("+", ".", $str);
     $str = str_replace("=", "~", $str);
     return $str;
@@ -505,7 +506,8 @@ function webdecode($str)
 {
     $str = str_replace("_", "/", $str);
     $str = str_replace(".", "+", $str);
-    return base64_decode(str_replace("~", "=", $str));
+    $str = str_replace("~", "=", $str);
+    return base64_decode($str);
 }
 
 /**
