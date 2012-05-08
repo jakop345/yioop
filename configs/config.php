@@ -68,6 +68,7 @@ define('WORK_DIRECTORY', '');
 }
 
 define('APP_DIR', WORK_DIRECTORY."/app");
+define('PREP_DIR', WORK_DIRECTORY."/prepare");
 
 define('FALLBACK_LOCALE_DIR', BASE_DIR."/locale");
 
@@ -89,8 +90,8 @@ if(file_exists(WORK_DIRECTORY."/profile.php")) {
         define('NAME_SERVER', QUEUE_SERVER); //for backward compatibility
     }
 } else {
-    if($_SERVER['SERVER_NAME'] !== 'localhost' && !(defined(NO_LOCAL_CHECK) 
-        && NO_LOCAL_CHECK)) {
+    if((!isset( $_SERVER['SERVER_NAME'])||$_SERVER['SERVER_NAME']!=='localhost')
+        && !defined("NO_LOCAL_CHECK")) {
         echo "SERVICE AVAILABLE ONLY VIA LOCALHOST UNTIL CONFIGURED"; 
         exit();
     }
@@ -120,6 +121,7 @@ if(file_exists(WORK_DIRECTORY."/profile.php")) {
     define('DEFAULT_LOCALE', "en-US");
     define('AUTH_KEY', 0);
     define('USE_MEMCACHE', false);
+    define('WORD_SUGGEST', true);
     define('CACHE_LINK', true);
     define('SIMILAR_LINK', true);
     define('IN_LINK', true);
@@ -380,7 +382,8 @@ $MOD9_NUM_ELTS_DECODES = array(
 
 
 /** Characters we view as not part of words, not same as POSIX [:punct:]*/
-define ('PUNCT', "\.|\,|\:|\;|\"|\'|\`|\[|\]|\{|\}|\(|\)|\!|\||\&");
+define ('PUNCT', "\.|\,|\:|\;|\"|\'|\[|\/|\%".
+    "\]|\{|\}|\(|\)|\!|\||\&|\`|\’|\‘|©|®|™|℠|… |- |\/ |\>|，|\=");
 
 /** Percentage ASCII text before guess we dealing with english*/
 define ('EN_RATIO', 0.9);

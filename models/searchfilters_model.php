@@ -129,5 +129,52 @@ class SearchfiltersModel extends Model implements CrawlConstants
             serialize($hash_urls));
 
     }
+
+    /**
+     * Save/updates/deletes an override of a search engine result summary
+     * page. The information stored will be used instead of what was actually
+     * in the index when it comes to displaying search results for a page.
+     * It will not be used for looking up results.
+     *
+     * @param string $url url of a result page
+     * @param string $title the title to be used on SERP pages
+     * @param string $description the description from which snippets will
+     *      be generated.
+     */
+    function updateResultPage($url, $title, $description)
+    {
+        $result_pages = array();
+        $file_name = $this->dir_name."/result_pages.txt";
+        if(file_exists($file_name)) {
+            $result_pages = unserialize(file_get_contents($file_name));
+        }
+        $hash_url = crawlHash($url, true);
+        if($title == "" && $description == "") {
+            unset($result_pages[$hash_url]);
+        } else {
+            $result_pages[$hash_url] = array(
+                self::URL => $url, self::TITLE => $title, 
+                self::DESCRIPTION => $description);
+        }
+        file_put_contents($file_name, serialize($result_pages));
+    }
+
+    /**
+     * Reads in and returns data on result pages whose summaries should
+     * be altered to something other than whats in the current index.
+     *
+     * @return array of summary pages for url for which the summary page
+     *      is being overrided -- the intention is this is not many
+     *      as how this is being done won't in general scale
+     */
+    function getEditedPageSummaries()
+    {
+        $result_pages = array();
+        $file_name = $this->dir_name."/result_pages.txt";
+        if(file_exists($file_name)) {
+            $result_pages = unserialize(file_get_contents($file_name));
+        }
+        return $result_pages;
+    }
 }
 ?>

@@ -130,7 +130,7 @@ class RobotProcessor extends PageProcessor
 
                 case "sitemap":
                     $tmp_url = UrlParser::canonicalLink($value, $host_url);
-                    if(!UrlParser::checkRecursiveUrl($tmp_url) 
+                    if(!UrlParser::checkRecursiveUrl($tmp_url)
                         && strlen($tmp_url) < MAX_URL_LENGTH) {
                         $summary[self::LINKS][] = $tmp_url;
                     }
@@ -140,7 +140,7 @@ class RobotProcessor extends PageProcessor
                     if($add_rule_state) {
                         $rule_added_flag = true;
                         $summary[self::ROBOT_PATHS][self::ALLOWED_SITES][] = 
-                            urldecode($value); 
+                            $this->makeCanonicalRobotPath($value); 
                     }
                 break;
 
@@ -148,7 +148,7 @@ class RobotProcessor extends PageProcessor
                     if($add_rule_state) {
                         $rule_added_flag = true;
                         $summary[self::ROBOT_PATHS][self::DISALLOWED_SITES][] = 
-                            urldecode($value); 
+                            $this->makeCanonicalRobotPath($value); 
                     }
                 break;
 
@@ -174,6 +174,23 @@ class RobotProcessor extends PageProcessor
                 strip_tags($page)."</pre></body></html>";
 
         return $summary;
+    }
+
+    /**
+     * For robot paths 
+     *     foo
+     * is treated the same as
+     *     /foo
+     * Path might contain urlencoded characters. These are all decoded
+     * except for %2F which corresponds to a / (this is as per
+     * http://www.robotstxt.org/norobots-rfc.txt)
+     */
+    function makeCanonicalRobotPath($path)
+    {
+        if($path[0] != "/") {
+            $path = "/$path";
+        }
+        return urldecode(preg_replace("/\%2F/i", "%252F", $path));
     }
 }
 ?>

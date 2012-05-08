@@ -97,6 +97,15 @@ class PhraseModel extends Model
      */
     var $query_info;
 
+    /**
+     * A list of meta words that might be extracted from a query
+     * @var array
+     */
+    var $meta_words_list = array('link:', 'site:', 'version:', 'modified:',
+            'filetype:', 'info:', '\-', 'os:', 'server:', 'date:', "numlinks:",
+            'index:', 'i:', 'ip:', 'weight:', 'w:', 'u:', 'time:', 'code:',
+            'lang:', 'media:', 'elink:', 'location:', 'size:', 'host:', 'dns:',
+            'path:', 'robot:', 'safe:');
 
     /**
      * Number of pages to cache in one go in memcache or filecache
@@ -269,13 +278,15 @@ class PhraseModel extends Model
         }
 
         $results_high = $low + $results_per_page;
-        $num_last_parts = count($query_parts[$last_part]);
-        if($query_parts[$last_part][$num_last_parts - 1][0] +
-            $query_parts[$last_part][$num_last_parts - 1][1] < $low) {
-            $query_parts[$last_part][$num_last_parts - 1][1] = $results_high;
-        }
-
         $num_phrases = count($query_parts);
+        if($num_phrases > 0 ) {
+            $num_last_parts = count($query_parts[$last_part]);
+            if($query_parts[$last_part][$num_last_parts - 1][0] +
+                $query_parts[$last_part][$num_last_parts - 1][1] < $low) {
+                $query_parts[$last_part][$num_last_parts - 1][1] = 
+                    $results_high;
+            }
+        }
 
         foreach($query_parts as $phrase => $pre_result_bounds) {
 
@@ -442,11 +453,7 @@ class PhraseModel extends Model
         $phrase = $this->parseIfConditions($phrase);
         $phrase_string = $phrase;
         $phrase_string = str_replace("&", "&amp;", $phrase_string);
-        $meta_words = array('link:', 'site:', 'version:', 'modified:',
-            'filetype:', 'info:', '\-', 'os:', 'server:', 'date:', "numlinks:",
-            'index:', 'i:', 'ip:', 'weight:', 'w:', 'u:', 'time:', 'code:',
-            'lang:', 'media:', 'elink:', 'location:', 'size:', 'host:', 'dns:',
-            'path:', 'robot:');
+        $meta_words = $this->meta_words_list;
         if(isset($this->additional_meta_words)) {
             $meta_words = array_merge($meta_words, array_keys(
                 $this->additional_meta_words));
@@ -497,21 +504,24 @@ class PhraseModel extends Model
                 CRAWL_DIR.'/cache/'.$index_archive_name);
         }
 
-        $phrase_string = mb_ereg_replace("&amp;", "ZZandZZ", $phrase_string);
-        $phrase_string = mb_ereg_replace(PUNCT, " ", $phrase_string);
-        $phrase_string = preg_replace("/(\s)+/", " ", $phrase_string);
-        $phrase_string = mb_ereg_replace('ZZandZZ', '&', $phrase_string);
+        $phrase_string = mb_ereg_replace("&amp;", "_and_", $phrase_string);
+        
+        $query_string = mb_ereg_replace(PUNCT, " ", $phrase_string);
+        $query_string = preg_replace("/(\s)+/", " ", $query_string);
+        $query_string = mb_ereg_replace('_and_', '&', $query_string);
+        $phrase_string = mb_ereg_replace('_and_', '&', $phrase_string);
 
         /*
             we search using the stemmed/char-grammed words, but we format
             snippets in the results by bolding either
          */
-        $query_words = explode(" ", $phrase_string); //not stemmed
+        $query_words = explode(" ", $query_string); //not stemmed
 
-        $locale_tag = guessLocaleFromString($phrase_string);
-        $base_words =
-            PhraseParser::extractPhrases($phrase_string, MAX_PHRASE_LEN,
-            $locale_tag); //stemmed, if have stemmer
+        $locale_tag = guessLocaleFromString($query_string);
+        $base_words = //still use original phrase string here to handle acronyms
+            //abbreviations and the like that use periods
+            PhraseParser::extractPhrases($phrase_string, $locale_tag); 
+                //stemmed, if have stemmer
         $words = array_merge($base_words, $found_metas);
         if(QUERY_STATISTICS) {
             $this->query_info['QUERY'] .= "$in3<i>Index</i>: ".
@@ -755,7 +765,8 @@ class PhraseModel extends Model
      *      and then potentially restored in cache
      * @param int $raw ($raw == 0) normal grouping, ($raw == 1)
      *      no grouping but page look-up for links, ($raw == 2)
-     *      no grouping done on data
+     *      no grouping done on data. If $raw > 0 no caching is done as will
+     *      likely come from a network query
      * @param array $queue_servers a list of urls of yioop machines which might
      *      be used during lookup
      * @param string $original_query if set, the original query that corresponds
@@ -775,7 +786,7 @@ class PhraseModel extends Model
             self::NUM_CACHE_PAGES;
         $start_slice = floor(($limit)/self::NUM_CACHE_PAGES) *
             self::NUM_CACHE_PAGES;
-        if(USE_CACHE) {
+        if(USE_CACHE && $raw == 0) {
             $mem_tmp = "";
             foreach($word_structs as $word_struct) {
                 $mem_tmp .= serialize($word_struct["KEYS"]).
@@ -852,10 +863,10 @@ class PhraseModel extends Model
         $result_count = count($pages);
         // initialize scores
         for($i = 0; $i < $result_count; $i++) {
-            $pages[$i][CrawlConstants::SCORE] = 0;
+            $pages[$i]["OUT_SCORE"] = 0;
         }
         $subscore_fields = array(self::DOC_RANK, self::RELEVANCE,
-            self::PROXIMITY);
+            self::PROXIMITY, self::SCORE);
         $num_fields = count($subscore_fields);
         // Compute Reciprocal Rank Fusion Score
         $alpha = 600/$num_fields;
@@ -870,12 +881,15 @@ class PhraseModel extends Model
                             $score++;
                         }
                     }
-                    $pages[$i][CrawlConstants::SCORE] += $alpha/(60 + $score);
+                    $pages[$i]["OUT_SCORE"] += $alpha/(60 + $score);
                 }
             }
-            orderCallback($pages[0], $pages[0], CrawlConstants::SCORE);
+            orderCallback($pages[0], $pages[0], "OUT_SCORE");
         }
         usort($pages, "orderCallback");
+        for($i = 0; $i < $result_count; $i++) {
+           $pages[$i][self::SCORE] = $pages[$i]["OUT_SCORE"];
+        }
 
         if($num_retrieved < $to_retrieve) {
             $results['TOTAL_ROWS'] = $num_retrieved;
@@ -885,7 +899,7 @@ class PhraseModel extends Model
         }
 
 
-        if(USE_CACHE) {
+        if(USE_CACHE && $raw  == 0) {
             for($i = 0; $i < $result_count; $i++){
                 unset($pages[$i][self::LINKS]);
             }
@@ -954,7 +968,6 @@ class PhraseModel extends Model
                 $restrict_phrases = $word_struct["RESTRICT_PHRASES"];
                 $disallow_keys = $word_struct["DISALLOW_KEYS"];
                 $index_archive = $word_struct["INDEX_ARCHIVE"];
-
                 $weight = $word_struct["WEIGHT"];
                 $num_word_keys = count($word_keys);
                 $total_iterators = count($distinct_word_keys);
@@ -967,7 +980,8 @@ class PhraseModel extends Model
                         new WordIterator($distinct_word_keys[$i], 
                             $index_archive, false, $filter);
                     foreach ($word_keys as $index => $key) {
-                        if($key == $distinct_word_keys[$i]){
+                        if(isset($distinct_word_keys[$i]) && 
+                            $key == $distinct_word_keys[$i]){
                             $word_iterator_map[$index] = $i;
                         }
                     }
@@ -1011,10 +1025,10 @@ class PhraseModel extends Model
         }
 
         $raw = intval($raw);
+
         if ($raw == 2) {
             $group_iterator = $union_iterator;
         } else if ($raw == 1) {
-
             $group_iterator =
                 new GroupIterator($union_iterator, $total_iterators, true);
         } else {

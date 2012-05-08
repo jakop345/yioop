@@ -72,7 +72,7 @@ class CrawlDaemon implements CrawlConstants
      *  which fetcher daemon instance.
      *
      * @var string
-     * @var static
+     * @static
      */
      static $subname;
 

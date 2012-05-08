@@ -172,7 +172,7 @@ class TextProcessor extends PageProcessor
     static function extractHttpHttpsUrls($page)
     {
         $pattern = 
-            '@((http|https)://([^ \t\r\n\v\f\'\"\;\,\<\>\[\]\{\}\(\)])*)@i';
+            '@((http|https)://([^ \t\r\n\v\f\'\"\;\,<>\{\}])*)@i';
         $sites = array();
         preg_match_all($pattern, $page, $matches);
         $i = 0;

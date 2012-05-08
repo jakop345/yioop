@@ -211,7 +211,6 @@ class GroupIterator extends IndexBundleIterator
         $this->current_seen_hashes = array();
         if($this->count_block_unfiltered > 0 ) {
             if($this->only_lookup && !$this->no_lookup) {
-
                 $pages = $this->insertUnseenDocs($pages);
 
                 $this->count_block = count($pages);
@@ -288,13 +287,7 @@ class GroupIterator extends IndexBundleIterator
         foreach($pages as $doc_key => $doc_info) {
             if(!is_array($doc_info) || $doc_info[self::SUMMARY_OFFSET] == 
                 self::NEEDS_OFFSET_FLAG) { continue;}
-            $doc_info['KEY'] = $doc_key;
             $hash_url = substr($doc_key, 0, IndexShard::DOC_KEY_LEN);
-            $doc_info[self::HASH] = substr($doc_key, 
-                IndexShard::DOC_KEY_LEN, IndexShard::DOC_KEY_LEN);
-            // inlinks is the domain of the inlink
-            $doc_info[self::INLINKS] = substr($doc_key, 
-                2 * IndexShard::DOC_KEY_LEN, IndexShard::DOC_KEY_LEN);
             // initial aggregate domain score vector for given domain
             if($doc_info[self::IS_DOC]) { 
                 if(!isset($pre_out_pages[$hash_url])) {
@@ -454,13 +447,6 @@ class GroupIterator extends IndexBundleIterator
         }
         $need_docs = array_diff_key($need_docs, $this->grouped_keys);
         foreach($pages as $doc_key => $doc_info) {
-            $doc_info['KEY'] = $doc_key;
-            $hash_url = substr($doc_key, 0, IndexShard::DOC_KEY_LEN);
-            $doc_info[self::HASH] = substr($doc_key, 
-                IndexShard::DOC_KEY_LEN, IndexShard::DOC_KEY_LEN);
-            // inlinks is the domain of the inlink
-            $doc_info[self::INLINKS] = substr($doc_key, 
-                2 * IndexShard::DOC_KEY_LEN, IndexShard::DOC_KEY_LEN);
             $new_pages[$doc_key] = $doc_info;
             if($doc_info[self::IS_DOC]) {
                 if(isset($need_docs[$hash_url])) {
@@ -562,10 +548,10 @@ class GroupIterator extends IndexBundleIterator
                 }
                 $min = ($current_rank < $min ) ? $current_rank : $min;
                 $max = ($max < $current_rank ) ? $current_rank : $max;
+                $alpha = $relevance_boost * $domain_weights[$hash_host];
                 $sum_score += $hash_page[self::DOC_RANK] 
-                    * $relevance_boost * pow(1.1,$hash_page[self::RELEVANCE]) *
-                    $hash_page[self::PROXIMITY] * $domain_weights[$hash_host];
-                $alpha = $relevance_boost * $domain_weights[$hash_host];;
+                    * $alpha * pow(1.1,$hash_page[self::RELEVANCE]) *
+                    $hash_page[self::PROXIMITY];
                 $sum_rank += $alpha * $hash_page[self::DOC_RANK];
                 $sum_relevance += $alpha * $hash_page[self::RELEVANCE];
                 $sum_proximity += $alpha * $hash_page[self::PROXIMITY];

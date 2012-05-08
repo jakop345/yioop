@@ -491,6 +491,9 @@ class IndexDictionary implements CrawlConstants
      */
      function getWordInfo($word_id, $raw = false, $extract = true)
      {
+        if(strlen($word_id) < IndexShard::WORD_KEY_LEN) {
+            return false;
+        }
         if($raw == false) {
             //get rid of out modified base64 encoding
             $word_id = unbase64Hash($word_id);
@@ -663,11 +666,11 @@ class IndexDictionary implements CrawlConstants
             return $this->blocks[$file_num][$bytes];
         }
         if(!isset($this->fhs[$file_num]) || $this->fhs[$file_num] === NULL) {
-            $this->fhs[$file_num] = fopen($this->dir_name.
-                "/$file_num/".$this->max_tier."A.dic", "rb");
-            if($this->fhs[$file_num] === false) return false;
-            $this->file_lens[$file_num] = filesize($this->dir_name.
-                "/$file_num/".$this->max_tier."A.dic");
+            $file_name = $this->dir_name. "/$file_num/".$this->max_tier."A.dic";
+            if(!file_exists($file_name)) return $false;
+            $this->fhs[$file_num] = fopen($file_name, "rb");
+            if($this->fhs[$file_num] === false) return $false;
+            $this->file_lens[$file_num] = filesize($file_name);
         }
         if($bytes >= $this->file_lens[$file_num]) {
             

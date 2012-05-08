@@ -291,6 +291,7 @@ function unpackListModified9($int_string)
  */
 function unpackInt($str)
 {
+    if(!is_string($str)) return false;
     $tmp = unpack("N", $str);
     return $tmp[1];
 }
@@ -314,6 +315,7 @@ function packInt($my_int)
  */
 function unpackFloat($str)
 {
+    if(!is_string($str)) return false;
     $tmp = unpack("f", $str);
     return $tmp[1];
 }
@@ -487,7 +489,8 @@ function unbase64Hash($base64)
  */
 function webencode($str)
 {
-    $str = str_replace("/", "_", base64_encode($str));
+    $str = base64_encode($str);
+    $str = str_replace("/", "_", $str);
     $str = str_replace("+", ".", $str);
     $str = str_replace("=", "~", $str);
     return $str;
@@ -503,7 +506,8 @@ function webdecode($str)
 {
     $str = str_replace("_", "/", $str);
     $str = str_replace(".", "+", $str);
-    return base64_decode(str_replace("~", "=", $str));
+    $str = str_replace("~", "=", $str);
+    return base64_decode($str);
 }
 
 /**

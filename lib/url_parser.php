@@ -328,25 +328,31 @@ class UrlParser
             $rlen = strlen($robot_path);
             if($rlen == 0) continue;
             $end_match = false;
-            if($robot_path[$rlen - 1] == "$"){
-                $end_match = true;
-                $path_parts = explode("*", substr($robot_path, 0, $rlen - 1));
-            } else {
-                $path_parts = explode("*", $robot_path);
-            }
-            $offset = 0;
+            $end = ($robot_path[$rlen - 1] == "$") ? 1 : 0;
+            $path_string = substr($robot_path, 0, $rlen - $end);
+            $path_parts = explode("*", $path_string);
+            $offset = -1;
+            $old_part_len = 0;
             $is_match = true;
             foreach($path_parts as $part) {
-                if($part == "") continue;
+                $offset += 1 + $old_part_len;
+                $old_part_len = strlen($part);
+                if($part == "") {
+                    continue;
+                }
+                else if($offset >= $len) {
+                    $is_match = false;
+                    break;
+                }
                 $new_offset = stripos($path, $part, $offset);
-                if($new_offset === false) {
+                if($new_offset === false ||($offset == 0 && $new_offset !=0)) {
                     $is_match = false;
                     break;
                 }
                 $offset = $new_offset;
             }
             if($is_match) {
-                if(!$end_match || strlen($part) + $offset == $len) {
+                if($end == 0 || strlen($part) + $offset == $len) {
                     $is_member = true;
                 } 
             }
@@ -695,6 +701,43 @@ class UrlParser
         return false;
     }
 
+    /**
+     * Checks if a URL corresponds to a known playback page of a video
+     * sharing site
+     *
+     * @param string $url the url to check
+     * @return bool whether or not corresponds to video playback page of a known
+     *      video site
+     */
+    static function isVideoUrl(&$url)
+    {
+        static $video_prefixes = array("http://www.youtube.com/watch?v=",
+            "http://www.metacafe.com/watch/", 
+            "http://screen.yahoo.com/",
+            "http://player.vimeo.com/video/", 
+            "http://archive.org/movies/thumbnails.php?identifier=",
+            "http://www.dailymotion.com/video/",
+            "http://v.youku.com/v_playlist/",
+            "http://www.break.com/index/");
+        static $patterns = array();
+
+        if(strlen($url) <= 0 ) {
+            return false;
+        }
+        if($patterns == array()) {
+            foreach($video_prefixes as $prefix) {
+                $quoted = preg_quote($prefix, "/");
+                $patterns[] = "/$quoted/";
+            }
+        }
+
+        foreach($patterns as $pattern) {
+            if(preg_match($pattern, $url) > 0) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
 
 ?>

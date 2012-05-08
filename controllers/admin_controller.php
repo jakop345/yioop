@@ -73,9 +73,16 @@ class AdminController extends Controller implements CrawlConstants
      * @var array
      */
     var $activities = array("signin", "manageAccount", "manageUsers",
-        "manageRoles", "manageCrawls", "pageOptions", "searchFilters", 
+        "manageRoles", "manageCrawls", "pageOptions", "resultsEditor", 
         "manageMachines", "manageLocales", "crawlStatus", "mixCrawls",
         "machineStatus", "configure");
+    /**
+     * An array of activities which are periodically updated within other
+     * activities that they live. For example, within manage crawl,
+     * the current crawl status is updated every 20 or so seconds.
+     * @var array
+     */
+    var $status_activities = array("crawlStatus", "machineStatus");
 
 
 
@@ -136,6 +143,11 @@ class AdminController extends Controller implements CrawlConstants
         } else if($this->checkCSRFToken('YIOOP_TOKEN', "config")) {
             $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
                 tl('admin_controller_login_to_config')."</h1>')";
+        } else if(isset($_REQUEST['a']) && 
+            in_array($_REQUEST['a'], $this->status_activities)) {
+            e("<p class='red'>".
+                tl('admin_controller_status_updates_stopped')."</p>");
+            exit();
         }
         $this->displayView($view, $data);
     }
@@ -216,8 +228,7 @@ class AdminController extends Controller implements CrawlConstants
             $data = $this->$activity();
             $data['ACTIVITIES'] = $allowed_activities;
         }
-        $status_activities = array("crawlStatus", "machineStatus");
-        if(!in_array($activity, $status_activities)) {
+        if(!in_array($activity, $this->status_activities)) {
             $data['CURRENT_ACTIVITY'] = 
                 $this->activityModel->getActivityNameFromMethodName($activity);
         }
@@ -773,7 +784,8 @@ class AdminController extends Controller implements CrawlConstants
                         isset($seed_info['disallowed_sites']['url']) ?
                         $seed_info['disallowed_sites']['url'] : array();
                     $crawl_params[self::META_WORDS] = 
-                        $seed_info['meta_words'];
+                        isset($seed_info['meta_words']) ?
+                        $seed_info['meta_words'] : array();
                     if(isset($seed_info['indexing_plugins']['plugins'])) {
                         $crawl_params[self::INDEXING_PLUGINS] =
                             $seed_info['indexing_plugins']['plugins'];
@@ -1463,9 +1475,9 @@ class AdminController extends Controller implements CrawlConstants
      * @return array $data info about the groups and their contents for a
      *      particular crawl mix
      */
-    function searchFilters()
+    function resultsEditor()
     {
-        $data["ELEMENT"] = "searchfiltersElement";
+        $data["ELEMENT"] = "resultseditorElement";
         $data['SCRIPT'] = "";
 
         if(isset($_REQUEST['disallowed_sites'])) {
@@ -1481,11 +1493,57 @@ class AdminController extends Controller implements CrawlConstants
             $data['disallowed_sites'] = implode("\n", $disallowed_sites);
             $this->searchfiltersModel->set($disallowed_sites);
             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                tl('admin_controller_site_filter_update')."</h1>')";
+                tl('admin_controller_results_editor_update')."</h1>')";
         }
         if(!isset($data['disallowed_sites'])) {
             $data['disallowed_sites'] = 
                 implode("\n", $this->searchfiltersModel->getUrls());
+        }
+        foreach (array("URL", "TITLE", "DESCRIPTION") as $field) {
+            $data[$field] = (isset($_REQUEST[$field])) ?
+                $this->clean($_REQUEST[$field], "string") :
+                 ((isset($data[$field]) ) ? $data[$field] : "");
+        }
+        if($data["URL"] != "") {
+            $data["URL"] = UrlParser::canonicalLink($data["URL"],"");
+        }
+        $tmp = tl('admin_controller_edited_pages');
+        $data["URL_LIST"] = array ($tmp => $tmp);
+        $summaries = $this->searchfiltersModel->getEditedPageSummaries();
+        foreach($summaries as $hash => $summary) {
+            $data["URL_LIST"][$summary[self::URL]] = $summary[self::URL];
+        }
+        if(isset($_REQUEST['arg']) ) {
+            switch($_REQUEST['arg']) 
+            {
+                case "save_page":
+                    $missing_page_field = ($data["URL"] == "") ? true: false;
+                    if($missing_page_field) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('admin_controller_results_editor_need_url').
+                            "</h1>')";
+                    } else {
+                        $this->searchfiltersModel->updateResultPage(
+                            $data["URL"], $data["TITLE"], $data["DESCRIPTION"]);
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('admin_controller_results_editor_page_updated').
+                            "</h1>')";
+                    }
+                break;
+                case "load_url":
+                    $hash_url = crawlHash($_REQUEST['LOAD_URL'], true);
+                    if(isset($summaries[$hash_url])) {
+                        $data["URL"] = $this->clean($_REQUEST['LOAD_URL'],
+                            "string");
+                        $data["TITLE"] = $summaries[$hash_url][self::TITLE];
+                        $data["DESCRIPTION"] = $summaries[$hash_url][
+                            self::DESCRIPTION];
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('admin_controller_results_editor_page_loaded').
+                            "</h1>')";
+                    }
+                break;
+            }
         }
 
         return $data;
@@ -1566,6 +1624,10 @@ class AdminController extends Controller implements CrawlConstants
         foreach($request_fields as $field => $type) {
             if(isset($_REQUEST[$field])) {
                 $r[$field] = $this->clean($_REQUEST[$field], $type);
+                if($field == "url" && $r[$field][strlen($r[$field])-1]
+                    != "/") {
+                    $r[$field] .= "/";
+                }
             } else {
                 $allset = false;
             }
@@ -1854,6 +1916,10 @@ class AdminController extends Controller implements CrawlConstants
                             $this->localeModel->getStaticPage(
                                 $_REQUEST['static_page'],
                                 $data['CURRENT_LOCALE_TAG']);
+                        /*since page data can contain tags we clean it
+                          htmlentities it just before displaying*/
+                        $data['PAGE_DATA'] = $this->clean($data['PAGE_DATA'],
+                            "string");
                         break;
                     }
                     $data['SCRIPT'] .= "selectPage = elt('static-pages');".
@@ -2166,8 +2232,8 @@ class AdminController extends Controller implements CrawlConstants
                         if(in_array($field, array(
                             'USE_FILECACHE', 'USE_MEMCACHE', 'IP_LINK',
                             'CACHE_LINK', 'SIMILAR_LINK', 'IN_LINK',
-                            'SIGNIN_LINK', "WEB_ACCESS", "RSS_ACCESS",
-                            "API_ACCESS"))) {
+                            'SIGNIN_LINK', "WEB_ACCESS", 'RSS_ACCESS',
+                            'API_ACCESS', 'WORD_SUGGEST'))) {
                             $profile[$field] = false;
                         }
                     }
@@ -2274,6 +2340,10 @@ class AdminController extends Controller implements CrawlConstants
                 strlen($data['ROBOT_DESCRIPTION']) == 0) {
                 $data['ROBOT_DESCRIPTION'] = 
                     tl('admin_controller_describe_robot');
+            } else {
+                //since the description might contain tags we apply htmlentities
+                $data['ROBOT_DESCRIPTION'] = 
+                    $this->clean($data['ROBOT_DESCRIPTION'], "string");
             }
             if(!isset($data['MEMCACHE_SERVERS']) ||
                 strlen($data['MEMCACHE_SERVERS']) == 0) {

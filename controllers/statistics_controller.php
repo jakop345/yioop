@@ -57,7 +57,7 @@ class StatisticsController extends Controller implements CrawlConstants
      * No models used by this controller
      * @var array
      */
-    var $models = array("crawl", "machine", "phrase");
+    var $models = array("crawl", "machine", "phrase", "user");
     /**
      * Only outputs JSON data so don't need view
      * @var array
@@ -88,6 +88,11 @@ class StatisticsController extends Controller implements CrawlConstants
     const NUM_TIMES_INTERVAL = 50;
 
     /**
+     * While computing the statistics page, number of seconds until a
+     * page refresh and save of progress so far occurs
+     */
+    const STATISTIC_REFRESH_RATE = 30;
+    /**
      * Main handler for requests coming into this controller for web crawl
      * statistics. Checks for the presence of a statistics file, if not 
      * found performs the necessary queries to generate crawl statistics and
@@ -100,14 +105,14 @@ class StatisticsController extends Controller implements CrawlConstants
         $view = "statistics";
         $data = array();
         if(isset($_SESSION['USER_ID'])) {
-            $user = $_SESSION['USER_ID'];
-            $token_okay = $this->checkCSRFToken('YIOOP_TOKEN', $user);
+            $user_id = $_SESSION['USER_ID'];
+            $token_okay = $this->checkCSRFToken('YIOOP_TOKEN', $user_id);
             if($token_okay === false) {
                 unset($_SESSION['USER_ID']);
                 $user = $_SERVER['REMOTE_ADDR'];
             }
         } else {
-            $user = $_SERVER['REMOTE_ADDR']; 
+            $user_id = $_SERVER['REMOTE_ADDR']; 
         }
         $this->machine_urls = $this->machineModel->getQueueServerUrls();
         if(isset($_REQUEST['its'])) {
@@ -145,10 +150,39 @@ class StatisticsController extends Controller implements CrawlConstants
         if($stats_file_exists) {
             $data = unserialize(file_get_contents($this->stats_file));
         }
-        if(!$stats_file_exists || isset($data["UNFINISHED"])) {
+        $computing = false;
+        if((!$stats_file_exists || isset($data["UNFINISHED"])) &&
+            $user_id != $_SERVER['REMOTE_ADDR']) {
+            //check if user allowed to make statistics
+            $activities = $this->userModel->getUserActivities($user_id);
+            $allowed_to_make_statistics = false;
+            foreach($activities as $activity) {
+                if($activity['METHOD_NAME'] == "manageCrawls") {
+                    $allowed_to_make_statistics = true;
+                    break;
+                }
+            }
+            // check that no one else is making statistics on the same index
+            if(isset($data["UNFINISHED"])) {
+                if(!isset($data['user_id']) ||$data['user_id'] != $user_id ||
+                    !isset($data['REMOTE_ADDR']) ||
+                    $data['REMOTE_ADDR'] != $_SERVER["REMOTE_ADDR"]) {
+                    $_REQUEST['p'] = "409";
+                    include(BASE_DIR."/error.php");
+                    exit(); //bail
+                }
+            }
+            $data['user_id'] = $user_id;
+            $data['REMOTE_ADDR'] = $_SERVER["REMOTE_ADDR"];
             $this->computeStatistics($data);
+            $computing = true;
         }
-        $data['YIOOP_TOKEN'] = $this->generateCSRFToken($user);
+        if(!$stats_file_exists && !$computing) {
+            unset($_SESSION['its']);
+            include(BASE_DIR."/error.php");
+            exit(); //bail
+        }
+        $data['YIOOP_TOKEN'] = $this->generateCSRFToken($user_id);
         $data["its"] = $this->index_time_stamp;
         $this->statisticsView->head_objects["robots"] = "NOINDEX, NOFOLLOW";
         $this->displayView($view, $data);
@@ -171,8 +205,11 @@ class StatisticsController extends Controller implements CrawlConstants
         global $INDEXED_FILE_TYPES;
 
         if(!isset($data["COUNT"])) {
-            $data =  $this->crawlModel->getInfoTimestamp(
+            $tmp =  $this->crawlModel->getInfoTimestamp(
                 $this->index_time_stamp, $this->machine_urls);
+            $tmp["user_id"] = $data["user_id"];
+            $tmp["REMOTE_ADDR"] = $data["REMOTE_ADDR"];
+            $data = $tmp;
             $data["stars"] = "*";
             if(!isset($data["COUNT"])) {
                 include(BASE_DIR."./error.php");
@@ -212,7 +249,7 @@ class StatisticsController extends Controller implements CrawlConstants
                 'tn', 'to', 'tr', 'ts', 'tt', 'tw', 'ty', 'ug', 'uk', 'ur',
                 'uz', 've', 'vi', 'vo', 'wa', 'wo', 'xh', 'yi', 'yo', 'za',
                 'zh', 'zu'),
-            "MEDIA" => array("image", "text"),
+            "MEDIA" => array("image", "text", "video"),
             "OS" => array("asianux", "centos", "clearos", "debian", "fedora", 
                 "freebsd", "gentoo", "linux", "netware", "solaris", "sunos",
                 "ubuntu", "unix"),
@@ -297,7 +334,7 @@ class StatisticsController extends Controller implements CrawlConstants
                     $data[$group_description]["DATA"][$query] = $count;
                     $total += $count;
                 }
-                if(time() - $time > 20) {
+                if(time() - $time > self::STATISTIC_REFRESH_RATE) {
                     $data["UNFINISHED"] = true;
                     break 2;
                 }
@@ -333,7 +370,7 @@ class StatisticsController extends Controller implements CrawlConstants
     {
         $results = $this->phraseModel->getPhrasePageResults(
             "$query i:{$this->index_time_stamp}", 0, 
-            1, true, NULL, true, 0, $this->machine_urls);
+            1, true, NULL, false, 0, $this->machine_urls);
         return (isset($results["TOTAL_ROWS"])) ? $results["TOTAL_ROWS"] : -1;
     }
 

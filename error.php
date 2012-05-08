@@ -34,6 +34,17 @@
  * @filesource
  */
 
+/** Calculate base directory of script
+ *  @ignore
+ */
+$pathinfo = pathinfo($_SERVER['SCRIPT_FILENAME']);
+if(!defined('BASE_DIR')) {
+    define("BASE_DIR", $pathinfo["dirname"].'/');
+}
+/**
+ * Load the configuration file
+ */
+require_once(BASE_DIR.'configs/config.php');
 /** 
  * Used to set-up static error pages
  */
@@ -52,7 +63,7 @@ $locale = NULL;
 setLocaleObject($locale_tag);
 
 if(!isset($_REQUEST['p']) ||
-    !in_array($_REQUEST['p'], array("404"))) {
+    !in_array($_REQUEST['p'], array("404", "409"))) {
     $_REQUEST['p'] = "404";
 }
 switch($_REQUEST['p'])
@@ -60,10 +71,24 @@ switch($_REQUEST['p'])
     case "404":
         header("HTTP/1.0 404 Not Found");
     break;
+    case "409":
+        header("HTTP/1.0 409 Conflict");
+    break;
 }
 
 $controller = new StaticController();
 
 $controller->processRequest();
 
+/**
+ * shorthand for echo
+ *
+ * @param string $text string to send to the current output
+ */
+if(!function_exists("e")) {
+    function e($text)
+    {
+        echo $text;
+    }
+}
 ?>

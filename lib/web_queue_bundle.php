@@ -316,7 +316,7 @@ class WebQueueBundle implements Notifier
                 HashTable::load($dir_name."/robot.dat");
         } else {
             $this->robot_table =  new HashTable($dir_name.
-                "/robot.dat", 8*$num_urls_ram, 
+                "/robot.dat", 16*$num_urls_ram, 
                  self::HASH_KEY_SIZE, self::INT_SIZE);
         }
 
@@ -638,13 +638,24 @@ class WebQueueBundle implements Notifier
      */
     function checkRobotOkay($url)
     {
+        // local cache of recent robot.txt stuff
+        static $robot_cache = array();
+        $cache_size = 2000;
         $host = UrlParser::getHost($url);
         $path = UrlParser::getPath($url);
         $path = urldecode($path);
         $key = crawlHash($host, true);
-        $data = $this->robot_table->lookup($key);
-        $offset = unpackInt($data);
-        $robot_object = $this->robot_archive->getObjects($offset, 1);
+        if(isset($robot_cache[$key])) {
+            $robot_object = $robot_cache[$key];
+        } else {
+            $data = $this->robot_table->lookup($key);
+            $offset = unpackInt($data);
+            $robot_object = $this->robot_archive->getObjects($offset, 1);
+            $robot_cache[$key] = $robot_object;
+            if(count($robot_cache) > $cache_size) {
+                array_shift($robot_cache);
+            }
+        }
         $robot_paths = (isset($robot_object[0][1])) ? $robot_object[0][1]
             : array(); //these should have been urldecoded in RobotProcessor
         $robots_okay = true;

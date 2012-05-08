@@ -105,10 +105,10 @@ class SearchController extends Controller implements CrawlConstants
         } else if (!WEB_ACCESS) {
             return;
         }
-        if(isset($_REQUEST['raw']) && $_REQUEST['raw'] == true) {
-            $raw = true;
+        if(isset($_REQUEST['raw']) && in_array($_REQUEST['raw'], array(0,1,2))){
+            $raw = $_REQUEST['raw'];
         } else {
-            $raw = false;
+            $raw = 0;
         }
 
         if(isset($_REQUEST['num'])) {
@@ -165,27 +165,35 @@ class SearchController extends Controller implements CrawlConstants
             $its = (isset($_REQUEST['its'])) ? $_REQUEST['its'] : 
                 $_SESSION['its'];
             $index_time_stamp = $this->clean($its, "int");
-            //validate timestamp against list 
-            //(some crawlers replay deleted crawls)
-            $crawls = $this->crawlModel->getCrawlList(false,true,$machine_urls,
-                true);
-            $found_crawl = false;
-            foreach($crawls as $crawl) {
-                if($index_time_stamp == $crawl['CRAWL_TIME']) {
-                    $found_crawl = true;
-                    break;
+            if($index_time_stamp != 0 ) {
+                //validate timestamp against list 
+                //(some crawlers replay deleted crawls)
+                $crawls = $this->crawlModel->getCrawlList(false,true,
+                    $machine_urls,true);
+                $found_crawl = false;
+                foreach($crawls as $crawl) {
+                    if($index_time_stamp == $crawl['CRAWL_TIME']) {
+                        $found_crawl = true;
+                        break;
+                    }
                 }
-            }
-            if(!$found_crawl) {
-                unset($_SESSION['its']);
-                include(BASE_DIR."/error.php");
-                exit();
+                if(!$found_crawl && (isset($_REQUEST['q']) ||
+                    isset($_REQUEST['arg']))) {
+                    unset($_SESSION['its']);
+                    include(BASE_DIR."/error.php");
+                    exit();
+                } else if(!$found_crawl) {
+                    unset($_SESSION['its']);
+                    $index_time_stamp = $current_its;
+                }
+            } else {
+                $index_time_stamp = $current_its; 
+                    //use the default crawl index
             }
         } else {
             $index_time_stamp = $current_its; 
                 //use the default crawl index
         }
-
         if($web_flag && $index_time_stamp != 0 ) {
             $index_info =  $this->crawlModel->getInfoTimestamp(
                 $index_time_stamp, $machine_urls);
@@ -243,10 +251,16 @@ class SearchController extends Controller implements CrawlConstants
                 $data['INDEX_INFO'] = tl('search_controller_mix_info',
                     $index_info['DESCRIPTION']);
             } else {
-                $data['INDEX_INFO'] = tl('search_controller_crawl_info',
-                    $index_info['DESCRIPTION'], 
-                    $index_info['VISITED_URLS_COUNT'],
-                    $index_info['COUNT']);
+                if(isset($index_info['DESCRIPTION']) && 
+                    isset($index_info['VISITED_URLS_COUNT']) && 
+                    isset($index_info['COUNT']) ) {
+                    $data['INDEX_INFO'] = tl('search_controller_crawl_info',
+                        $index_info['DESCRIPTION'], 
+                        $index_info['VISITED_URLS_COUNT'],
+                        $index_info['COUNT']);
+                } else {
+                    $data['INDEX_INFO'] = "";
+                }
             }
         } else {
             $data['INDEX_INFO'] = "";
@@ -259,6 +273,7 @@ class SearchController extends Controller implements CrawlConstants
 
         $data['ELAPSED_TIME'] = changeInMicrotime($start_time);
         if ($view != "serial") {
+            $data['INCLUDE_SCRIPTS'] = array("autosuggest");
             $this->displayView($view, $data);
         } else {
             if(isset($data["PAGES"])) {
@@ -283,7 +298,8 @@ class SearchController extends Controller implements CrawlConstants
         $bots = array("googlebot", "baidu", "naver", "sogou");
         $query_okay = true;
         foreach($bots as $bot) {
-            if(stristr($_SERVER["HTTP_USER_AGENT"], $bot)) {
+            if(!isset($_SERVER["HTTP_USER_AGENT"]) ||
+                stristr($_SERVER["HTTP_USER_AGENT"], $bot)) {
                 $query_okay = false;
             }
         }
@@ -421,8 +437,11 @@ class SearchController extends Controller implements CrawlConstants
                 $top_phrases  = 
                     $this->getTopPhrases($crawl_item, 3, $index_name);
                 $top_query = implode(" ", $top_phrases);
+                $filter = $this->searchfiltersModel->getFilter();
+                $this->phraseModel->editedPageSummaries = 
+                    $this->searchfiltersModel->getEditedPageSummaries();
                 $phrase_results = $this->phraseModel->getPhrasePageResults(
-                    $top_query, $limit, $results_per_page, false, NULL,
+                    $top_query, $limit, $results_per_page, false, $filter,
                     $use_cache_if_possible, $raw, $queue_servers);
                 $data['PAGING_QUERY'] = "index.php?c=search&a=related&arg=".
                     urlencode($url);
@@ -459,6 +478,8 @@ class SearchController extends Controller implements CrawlConstants
                             $this->phraseModel->rewriteMixQuery($query, $mix);
                     }
                     $filter = $this->searchfiltersModel->getFilter();
+                    $this->phraseModel->editedPageSummaries = 
+                        $this->searchfiltersModel->getEditedPageSummaries();
                     $phrase_results = $this->phraseModel->getPhrasePageResults(
                         $query, $limit, $results_per_page, true, $filter,
                         $use_cache_if_possible, $raw, $queue_servers);
@@ -506,8 +527,11 @@ class SearchController extends Controller implements CrawlConstants
         $phrase_string =
             PhraseParser::extractWordStringPageSummary($crawl_item);
 
+        $crawl_item[self::LANG] = (isset($crawl_item[self::LANG])) ?
+            $crawl_item[self::LANG] : DEFAULT_LOCALE;
+
         $page_word_counts = 
-            PhraseParser::extractPhrasesAndCount($phrase_string, MAX_PHRASE_LEN,
+            PhraseParser::extractPhrasesAndCount($phrase_string,
                 $crawl_item[self::LANG]);
         $words = array_keys($page_word_counts);
 
@@ -516,7 +540,8 @@ class SearchController extends Controller implements CrawlConstants
         $word_ratios = array();
         foreach($page_word_counts as $word => $count) {
             $word_ratios[$word] = 
-                (isset($word_counts[$word])) ? $count/$word_counts[$word] : 0;
+                (isset($word_counts[$word]) && $word_counts[$word] > 0) ? 
+                $count/$word_counts[$word] : 0;
             /*discard cases where word only occurs in one doc as want
               to find related relevant documents */
             if($word_ratios[$word] == 1) $word_ratios[$word] = 0;
@@ -587,10 +612,9 @@ class SearchController extends Controller implements CrawlConstants
         if(!isset($node->childNodes->length)) {
             return $node;
         }
-        for($k = 0; $node->childNodes->length; $k++) 
-        {
+        for($k = 0; $node->childNodes->length; $k++)  {
             if(!$node->childNodes->item($k)) { break; }
-            
+
             $clone = $node->childNodes->item($k)->cloneNode(true);
 
             if($clone->nodeType == XML_TEXT_NODE) { 
@@ -602,10 +626,10 @@ class SearchController extends Controller implements CrawlConstants
                         $mark_prefix = crawlHash($word);
                         if(stristr($mark_prefix, $word) !== false) {
                             $mark_prefix = preg_replace(
-                            "/$word/i", '', $mark_prefix);
+                            "/\b$word\b/i", '', $mark_prefix);
                         }
                         $text = preg_replace(
-                            "/$word/i", $mark_prefix.'$0', $text);
+                            "/\b$word\b/i", $mark_prefix.'$0', $text);
                     }
                 }
 
@@ -619,6 +643,43 @@ class SearchController extends Controller implements CrawlConstants
             }
         }
         
+        return $node;
+    }
+
+    function canonicalizeLinks($node, $url)
+    {
+        if(!isset($node->childNodes->length)) {
+            return $node;
+        }
+        for($k = 0; $node->childNodes->length; $k++) {
+            if(!$node->childNodes->item($k)) { break; }
+
+            $clone = $node->childNodes->item($k)->cloneNode(true);
+            $tag_name = (isset($clone->tagName) ) ? $clone->tagName : "-1";
+            if(in_array($tag_name, array("a", "link"))) {
+                if($clone->hasAttribute("href")) {
+                    $href = $clone->getAttribute("href");
+                    $href = UrlParser::canonicalLink($href, $url, false);
+                    $clone->setAttribute("href", $href);
+                    $node->replaceChild($clone, $node->childNodes->item($k));
+                }
+            } else if (in_array($tag_name, array("img", "object",
+                "script"))) {
+                if($clone->hasAttribute("src")) {
+                    $src = $clone->getAttribute("src");
+                    $src = UrlParser::canonicalLink($src, $url, false);
+                    $clone->setAttribute("src", $src);
+                    $node->replaceChild($clone, $node->childNodes->item($k));
+                }
+            } else {
+                if($tag_name != -1) {
+                    $clone = $this->canonicalizeLinks($clone, $url);
+                    if(is_object($clone)) {
+                        $node->replaceChild($clone, $node->childNodes->item($k));
+                    }
+                }
+            }
+        }
         return $node;
     }
 
@@ -730,7 +791,11 @@ class SearchController extends Controller implements CrawlConstants
             $this->displayView("nocache", $data);
             return;
         }
-
+        $check_fields = array(self::TITLE, self::DESCRIPTION, self::LINKS);
+        foreach($check_fields as $field) {
+            $crawl_item[$field] = (isset($crawl_item[$field])) ?
+                $crawl_item[$field] : "";
+        }
         $summary_string = 
             tl('search_controller_extracted_title')."\n\n".
             wordwrap($crawl_item[self::TITLE], 80, "\n")."\n\n" .
@@ -791,10 +856,7 @@ class SearchController extends Controller implements CrawlConstants
         $cache_file = $cache_item[self::PAGE];
         if(!stristr($cache_item[self::TYPE], "image")) {
 
-            $meta_words = array('link\:', 'site\:', 'version\:', 'modified\:',
-                'filetype\:', 'info\:', '\-', 'os\:', 'server\:', 'date\:',
-                'lang\:', 'elink\:',
-                'index:', 'ip:', 'i:', 'weight:', 'w:', 'u:');
+            $meta_words = $this->phraseModel->meta_words_list;
             foreach($meta_words as $meta_word) {
                 $pattern = "/(\s)($meta_word(\S)+)/";
                 $terms = preg_replace($pattern, "", $terms);
@@ -829,7 +891,20 @@ class SearchController extends Controller implements CrawlConstants
 
         $xpath = new DOMXPath($dom);
 
-
+        $head = $dom->getElementsByTagName('head')->item(0);
+        if(is_object($head)) {
+            // add a noindex nofollow robot directive to page
+            $head_first_child = $head->firstChild;
+            $robotNode = $dom->createElement('meta');
+            $robotNode = $head->insertBefore($robotNode, $head_first_child);
+            $robotNode->setAttribute("name", "ROBOTS");
+            $robotNode->setAttribute("content", "NOINDEX,NOFOLLOW");
+            $comment = $dom->createComment(
+                tl('search_controller_cache_comment'));
+            $comment = $head->insertBefore($comment, $robotNode);
+            // make link and script links absolute
+            $head = $this->canonicalizeLinks($head, $url);
+        }
         $body =  $dom->getElementsByTagName('body')->item(0);
         if($body == false) {
             $body_tags = "<frameset><frame><noscript><img><span><b><i><em>".
@@ -842,7 +917,11 @@ class SearchController extends Controller implements CrawlConstants
             @$dom->loadHTML($cache_file);
             $body =  $dom->getElementsByTagName('body')->item(0);
         }
+        //make tags in body absolute
+        $body = $this->canonicalizeLinks($body, $url);
         $first_child = $body->firstChild;
+
+        // add information about what was extracted from page
         $summaryNode = $dom->createElement('pre');
         $summaryNode = $body->insertBefore($summaryNode, $first_child);
         $summaryNode->setAttributeNS("","style", "border-color: black; ".

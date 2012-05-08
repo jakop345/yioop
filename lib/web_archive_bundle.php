@@ -243,6 +243,9 @@ class WebArchiveBundle
      */
     function getPartition($index, $fast_construct = true)
     {
+        if(!is_int($index)) {
+            $index = 0;
+        }
         if(!isset($this->partition[$index])) { 
             //this might not have been open yet
             $create_flag = false;
@@ -257,7 +260,7 @@ class WebArchiveBundle
             $this->partition[$index] = 
                 new WebArchive($archive_name, 
                     new $compressor(), $fast_construct);
-            if($create_flag) {
+            if($create_flag && file_exists($archive_name)) {
                 chmod($archive_name, 0777);
             }
         }

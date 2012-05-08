@@ -53,8 +53,9 @@ class ProfileModel extends Model
             'DEFAULT_LOCALE', 'DEBUG_LEVEL', 'DBMS','DB_HOST', 
             'DB_NAME', 'DB_USER', 'DB_PASSWORD', 
             'NAME_SERVER', 'AUTH_KEY', "ROBOT_DESCRIPTION", 'WEB_URI',
-            'USE_MEMCACHE', 'MEMCACHE_SERVERS', 'USE_FILECACHE', 'CACHE_LINK', 
-            'SIMILAR_LINK', 'IN_LINK', 'IP_LINK', 'SIGNIN_LINK',
+            'USE_MEMCACHE', 'MEMCACHE_SERVERS', 'USE_FILECACHE', 
+            'WORD_SUGGEST', 'CACHE_LINK', 'SIMILAR_LINK', 
+            'IN_LINK', 'IP_LINK', 'SIGNIN_LINK',
             'ROBOT_INSTANCE', "WEB_ACCESS", "RSS_ACCESS", "API_ACCESS",
             'TITLE_WEIGHT','DESCRIPTION_WEIGHT','LINK_WEIGHT');
     /**
@@ -79,7 +80,8 @@ class ProfileModel extends Model
 
         $to_make_dirs = array($directory, "$directory/locale",
             "$directory/cache", "$directory/schedules", 
-            "$directory/log", "$directory/data", "$directory/app");
+            "$directory/log", "$directory/data", "$directory/app",
+            "$directory/prepare");
         $dir_status = array();
         foreach($to_make_dirs as $dir) {
             $dir_status[$dir] = $this->createIfNecessaryDirectory($dir);

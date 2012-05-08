@@ -86,6 +86,12 @@ class Model implements CrawlConstants
      *  @var string
      */
     var $db_name;
+    /**
+     * Associative array of page summaries which might be used to
+     * override default page summaries if set.
+     * @var array
+     */
+    var $editedPageSummaries = NULL;
 
 
     /**
@@ -129,6 +135,25 @@ class Model implements CrawlConstants
         }
         for($i = 0; $i < $num_pages; $i++) {
             $page = $pages[$i];
+            if($this->editedPageSummaries != NULL) {
+                $url_parts = explode("|", $page[self::URL]);
+                if(count($url_parts) > 1) {
+                    $url = trim($url_parts[1]);
+                } else {
+                    $url = $page[self::URL];
+                }
+                $hash_url = crawlHash($url, true);
+                if(isset($this->editedPageSummaries[$hash_url])) {
+                    $summary = $this->editedPageSummaries[$hash_url];
+                    $page[self::URL] = $url;
+                    foreach(array(self::TITLE, self::DESCRIPTION) as $field) {
+                        if(isset($summary[$field])) {
+                            $page[$field] = $summary[$field];
+                        }
+                    }
+                
+                }
+            }
             if(!isset($page[self::TITLE])) {
                 $page[self::TITLE] = "";
             }

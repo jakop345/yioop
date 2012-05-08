@@ -51,18 +51,14 @@ require_once BASE_DIR."/lib/url_parser.php";
 
 /**
  *  The maximum length of description
- *
- *  @const integer MAX_DESCRIPTION_LEN
-*/
+ */
 const MAX_DESCRIPTION_LEN = 2000;
     
 /**
  * The constant represents the number of
  * child levels at which the data is present in
  * the content.opf file.
- *
- *  @const integer MAX_DOM_LEVEL
-*/
+ */
 const MAX_DOM_LEVEL = 15;
 
  /**

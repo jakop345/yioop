@@ -190,6 +190,9 @@ class PhraseFilterIterator extends IndexBundleIterator
 
                     if($found == true) {
                         $doc_info["WEIGHT"] = $this->weight;
+                        $doc_info[self::DOC_RANK] *= $this->weight;
+                        $doc_info[self::RELEVANCE] *= $this->weight;
+                        $doc_info[self::PROXIMITY] *= $this->weight;
                         $doc_info[self::SCORE] *= $this->weight;
                         $out_pages[$doc_key] = $doc_info;
                     }

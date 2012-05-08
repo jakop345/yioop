@@ -593,9 +593,10 @@ class QueueServer implements CrawlConstants, Join
     function &getDataArchiveFileData($file)
     {
         crawlLog("Processing File: $file");
-
-        $sites = unserialize(gzuncompress(webdecode(file_get_contents($file) ))
-            );
+        $decode = file_get_contents($file);
+        $decode = webdecode($decode);
+        $decode = gzuncompress($decode);
+        $sites = unserialize($decode);
 
         return $sites;
     }
@@ -1935,6 +1936,8 @@ class QueueServer implements CrawlConstants, Join
                     $robots_okay = $this->web_queue->checkRobotOkay($url);
 
                     if(!$robots_okay) {
+                        $delete_urls[$i] = $url;
+                        $this->web_queue->addSeenUrlFilter($url);
                         $i++;
                         continue;
                     }
@@ -2207,11 +2210,9 @@ class QueueServer implements CrawlConstants, Join
                 break;
             }
 
+            $flag = UrlParser::isPathMemberRegexPaths($url, array($site));
+            if($flag) break;
 
-            if(mb_strstr($url, $site)) { 
-                $flag = true;
-                break;
-            }
         }
         if($return_rule && $flag) {
             $flag = $site;
