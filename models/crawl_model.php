@@ -466,7 +466,6 @@ class CrawlModel extends Model implements CrawlConstants
         }
 
         return $info;
-
     }
 
     /**
@@ -517,6 +516,8 @@ EOT;
         $n[] = "crawl_order = '".$info['general']['crawl_order']."';";
         $n[] = "crawl_type = '".$info['general']['crawl_type']."';";
         $n[] = "crawl_index = '".$info['general']['crawl_index']."';";
+        $n[] = "arc_dir = '".$info['general']['arc_dir']."';";
+        $n[] = "arc_type = '".$info['general']['arc_type']."';";
         $n[] = "page_recrawl_frequency = '".
             $info['general']['page_recrawl_frequency']."';";
         $n[] = "page_range_request = '".
@@ -898,50 +899,67 @@ EOT;
             }
             return $list;
         }
+
         $list = array();
-        $dirs = glob(CRAWL_DIR.'/cache/*', GLOB_ONLYDIR);
+        $dirs = glob(CRAWL_DIR.'/cache/'.self::index_data_base_name.
+            '*', GLOB_ONLYDIR);
 
         foreach($dirs as $dir) {
-            if(strlen($pre_timestamp = 
-                strstr($dir, self::index_data_base_name)) > 0) {
+            $crawl = array();
+            $pre_timestamp = strstr($dir, self::index_data_base_name);
+            $crawl['CRAWL_TIME'] = 
+                substr($pre_timestamp, strlen(self::index_data_base_name));
+            $info = IndexArchiveBundle::getArchiveInfo($dir);
+            $index_info = @unserialize($info['DESCRIPTION']);
+            $crawl['DESCRIPTION'] = "";
+            if(!$return_recrawls && 
+                isset($index_info[self::CRAWL_TYPE]) && 
+                $index_info[self::CRAWL_TYPE] == self::ARCHIVE_CRAWL) {
+                continue;
+            } else if($return_recrawls  && 
+                isset($index_info[self::CRAWL_TYPE]) && 
+                $index_info[self::CRAWL_TYPE] == self::ARCHIVE_CRAWL) {
+                $crawl['DESCRIPTION'] = "RECRAWL::";
+            }
+            $schedules = glob(CRAWL_DIR.'/schedules/'.
+                self::schedule_data_base_name.$crawl['CRAWL_TIME'].
+                '/*/At*.txt');
+            $crawl['RESUMABLE'] = (count($schedules) > 0) ? true: false;
+            if(isset($index_info['DESCRIPTION'])) {
+                $crawl['DESCRIPTION'] .= $index_info['DESCRIPTION'];
+            }
+            $crawl['VISITED_URLS_COUNT'] = 
+                isset($info['VISITED_URLS_COUNT']) ?
+                $info['VISITED_URLS_COUNT'] : 0;
+            $crawl['COUNT'] = (isset($info['COUNT'])) ? $info['COUNT'] :0;
+            $crawl['NUM_DOCS_PER_PARTITION'] = 
+                (isset($info['NUM_DOCS_PER_PARTITION'])) ?
+                $info['NUM_DOCS_PER_PARTITION'] : 0;
+            $crawl['WRITE_PARTITION'] = 
+                (isset($info['WRITE_PARTITION'])) ?
+                $info['WRITE_PARTITION'] : 0;
+            $list[] = $crawl;
+        }
+
+        if($return_arc_bundles) {
+            $dirs = glob(CRAWL_DIR.'/cache/archives/*', GLOB_ONLYDIR);
+            foreach($dirs as $dir) {
                 $crawl = array();
-                $crawl['CRAWL_TIME'] = 
-                    substr($pre_timestamp, strlen(self::index_data_base_name));
-                $info = IndexArchiveBundle::getArchiveInfo($dir);
-                $index_info = @unserialize($info['DESCRIPTION']);
-                $crawl['DESCRIPTION'] = "";
-                if(!$return_arc_bundles && isset($index_info['ARCFILE'])) {
+                $crawl['CRAWL_TIME'] = strval(filectime($dir));
+                $crawl['DESCRIPTION'] = "ARCFILE::";
+                $crawl['ARC_DIR'] = $dir;
+                $ini_file = "$dir/arc_description.ini";
+                if(!file_exists($ini_file)) {
                     continue;
-                } else if ($return_arc_bundles
-                    && isset($index_info['ARCFILE'])) {
-                    $crawl['DESCRIPTION'] = "ARCFILE::";
+                } else {
+                    $ini = parse_ini_file($ini_file);
+                    $crawl['ARC_TYPE'] = $ini['arc_type'];
+                    $crawl['DESCRIPTION'] .= $ini['description'];
                 }
-                if(!$return_recrawls && 
-                    isset($index_info[self::CRAWL_TYPE]) && 
-                    $index_info[self::CRAWL_TYPE] == self::ARCHIVE_CRAWL) {
-                    continue;
-                } else if($return_recrawls  && 
-                    isset($index_info[self::CRAWL_TYPE]) && 
-                    $index_info[self::CRAWL_TYPE] == self::ARCHIVE_CRAWL) {
-                    $crawl['DESCRIPTION'] = "RECRAWL::";
-                }
-                $schedules = glob(CRAWL_DIR.'/schedules/'.
-                    self::schedule_data_base_name.$crawl['CRAWL_TIME'].
-                    '/*/At*.txt');
-                $crawl['RESUMABLE'] = (count($schedules) > 0) ? true: false;
-                if(isset($index_info['DESCRIPTION'])) {
-                    $crawl['DESCRIPTION'] .= $index_info['DESCRIPTION'];
-                }
-                $crawl['VISITED_URLS_COUNT'] = 
-                    isset($info['VISITED_URLS_COUNT']) ?
-                    $info['VISITED_URLS_COUNT'] : 0;
-                $crawl['COUNT'] = (isset($info['COUNT'])) ? $info['COUNT'] :0;
-                $crawl['NUM_DOCS_PER_PARTITION'] = 
-                    (isset($info['NUM_DOCS_PER_PARTITION'])) ?
-                    $info['NUM_DOCS_PER_PARTITION'] : 0;
-                $crawl['WRITE_PARTITION'] = 
-                    (isset($info['WRITE_PARTITION'])) ?
-                    $info['WRITE_PARTITION'] : 0;
+                $crawl['VISITED_URLS_COUNT'] = 0;
+                $crawl['COUNT'] = 0;
+                $crawl['NUM_DOCS_PER_PARTITION'] = 0;
+                $crawl['WRITE_PARTITION'] = 0;
                 $list[] = $crawl;
             }
         }
@@ -990,6 +1008,7 @@ EOT;
         $list = array_values($pre_list);
         return $list;
     }
+
     /**
      * Determines if the length of time since any of the fetchers has spoken
      * with any of the queue_servers has exceeded CRAWL_TIME_OUT. If so,

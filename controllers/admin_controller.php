@@ -54,14 +54,14 @@ require_once BASE_DIR."/lib/url_parser.php";
 class AdminController extends Controller implements CrawlConstants
 {
     /**
-     * Says which models to load for this controller
+     * Says which views to load for this controller
      * admin is the main one, signin has the login screen crawlstatus
      * is used to see how many pages crawled by the current crawl
      * @var array
      */
     var $views = array("admin", "signin", "crawlstatus", "machinestatus");
     /**
-     * Says which views to load for this controller.
+     * Says which models to load for this controller.
      * @var array
      */
     var $models = array(
@@ -743,6 +743,14 @@ class AdminController extends Controller implements CrawlConstants
                         (isset($seed_info['general']['crawl_index'])) ?
                         $seed_info['general']['crawl_index'] :
                         '';
+                    $crawl_params[self::ARC_DIR] = 
+                        (isset($seed_info['general']['arc_dir'])) ?
+                        $seed_info['general']['arc_dir'] :
+                        '';
+                    $crawl_params[self::ARC_TYPE] = 
+                        (isset($seed_info['general']['arc_type'])) ?
+                        $seed_info['general']['arc_type'] :
+                        '';
                     $crawl_params[self::PAGE_RANGE_REQUEST] = 
                         (isset($seed_info['general']['page_range_request'])) ?
                         intval($seed_info['general']['page_range_request']) :
@@ -782,14 +790,29 @@ class AdminController extends Controller implements CrawlConstants
                     }
                     $crawl_params['DESCRIPTION'] = $description;
 
+                    // Write the new crawl parameters to the name server, so
+                    // that it can pass them along in the case of a new archive
+                    // crawl.
+                    $filename = CRAWL_DIR.
+                        "/schedules/name_server_messages.txt";
+                    file_put_contents($filename, serialize($crawl_params));
+                    chmod($filename, 0777);
+
                     $this->crawlModel->sendStartCrawlMessage($crawl_params, 
                         $seed_info, $machine_urls);
-
                 break;
 
                 case "stop":
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('admin_controller_stop_crawl')."</h1>')";
+                    @unlink(CRAWL_DIR."/schedules/crawl_params.txt");
+
+                    $info = array();
+                    $info[self::STATUS] = "STOP_CRAWL";
+                    $filename = CRAWL_DIR.
+                        "/schedules/name_server_messages.txt";
+                    file_put_contents($filename, serialize($info));
+
                     $this->crawlModel->sendStopCrawlMessage($machine_urls);
                 break;
 
@@ -843,6 +866,7 @@ class AdminController extends Controller implements CrawlConstants
                         $machine_urls);
                     $indexes = $this->crawlModel->getCrawlList(true, true,
                         $machine_urls);
+                    $indexes_by_crawl_time = array();
                     $update_flag = false;
                     $data['available_options'] = array(
                         tl('admin_controller_use_below'),
@@ -855,9 +879,11 @@ class AdminController extends Controller implements CrawlConstants
                             $crawl['DESCRIPTION'];
 
                     }
-                    foreach($indexes as $crawl) {
+                    foreach($indexes as $i => $crawl) {
                         $data['available_crawl_indexes'][$crawl['CRAWL_TIME']]
                             = $crawl['DESCRIPTION'];
+                        $indexes_by_crawl_time[$crawl['CRAWL_TIME']] =&
+                            $indexes[$i];
                     }
                     $no_further_changes = false;
                     if(isset($_REQUEST['load_option']) && 
@@ -904,6 +930,17 @@ class AdminController extends Controller implements CrawlConstants
                         array_keys($data['available_crawl_indexes']))) {
                         $seed_info['general']['crawl_index'] = 
                             $_REQUEST['crawl_indexes'];
+                        $index_data = $indexes_by_crawl_time[
+                            $_REQUEST['crawl_indexes']];
+                        if(isset($index_data['ARC_DIR'])) {
+                            $seed_info['general']['arc_dir'] =
+                                $index_data['ARC_DIR'];
+                            $seed_info['general']['arc_type'] =
+                                $index_data['ARC_TYPE'];
+                        } else {
+                            $seed_info['general']['arc_dir'] = '';
+                            $seed_info['general']['arc_type'] = '';
+                        }
                         $update_flag = true;
                     }
                     $data['crawl_index'] = 

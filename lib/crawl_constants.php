@@ -196,6 +196,9 @@ interface CrawlConstants
     const DNS_TIME = "by";
     const AGENT_LIST = "bz";
     const ROBOT_METAS = "ca";
+    const ARC_DIR = "cb";
+    const ARC_TYPE = "cc";
+    const ARC_DATA = "cd";
 
     const NEEDS_OFFSET_FLAG = 0x7FFFFFFF;
 

@@ -93,6 +93,7 @@ abstract class ArchiveBundleIterator implements CrawlConstants
      *      ranking method
      */
     abstract function weight(&$site);
+
     /**
      * Gets the next $num many docs from the iterator
      * @param int $num number of docs to get

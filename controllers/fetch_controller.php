@@ -38,6 +38,12 @@ require_once BASE_DIR."/controllers/controller.php";
 /** Loads common constants for web crawling*/
 require_once BASE_DIR."/lib/crawl_constants.php";
 
+/** get available archive iterators */
+foreach(glob(BASE_DIR."/lib/archive_bundle_iterators/*_bundle_iterator.php") 
+    as $filename) { 
+    require_once $filename;
+}
+
 /**
  * This class handles data coming to a queue_server from a fetcher
  * Basically, it receives the data from the fetcher and saves it into
@@ -64,13 +70,13 @@ class FetchController extends Controller implements CrawlConstants
      * These are the activities supported by this controller
      * @var array
      */
-    var $activities = array("schedule", "update", "crawlTime");
+    var $activities = array("schedule", "archiveSchedule", "update",
+        "crawlTime");
 
     /**
      * Checks that the request seems to be coming from a legitimate fetcher then
      * determines which activity the fetcher is requesting and calls that
      * activity for processing.
-     *
      */
     function processRequest() 
     {
@@ -150,6 +156,89 @@ class FetchController extends Controller implements CrawlConstants
             $info = array();
             $info[self::STATUS] = self::NO_DATA_STATE;
             $data['MESSAGE'] = base64_encode(serialize($info))."\n";
+        }
+
+        $this->displayView($view, $data);
+    }
+
+    function archiveSchedule()
+    {
+        $view = "fetch";
+
+        if(isset($_REQUEST['crawl_time'])) {;
+            $crawl_time = $this->clean($_REQUEST['crawl_time'], 'int');
+        } else {
+            $crawl_time = 0;
+        }
+
+        $messages_filename = CRAWL_DIR.'/schedules/name_server_messages.txt';
+        $lock_filename = WORK_DIRECTORY."/schedules/name_server_lock.txt";
+        if($crawl_time > 0 && file_exists($messages_filename)) {
+            $fetch_pages = true;
+            $info = unserialize(file_get_contents($messages_filename));
+            if($info[self::STATUS] == 'STOP_CRAWL') {
+                @unlink($messages_filename);
+                @unlink($lock_filename);
+                $fetch_pages = false;
+                $info = array();
+            }
+        } else {
+            $fetch_pages = false;
+            $info = array();
+        }
+
+        if($fetch_pages) {
+            $archive_iterator = NULL;
+            $pages = array();
+
+            $lock_fd = fopen($lock_filename, 'w');
+            $have_lock = flock($lock_fd, LOCK_EX);
+            if(file_exists($info[self::ARC_DIR]) && $have_lock) {
+                $iterate_timestamp = $info[self::CRAWL_INDEX];
+                $iterate_dir = $info[self::ARC_DIR];
+                $result_timestamp = $crawl_time;
+                $result_dir = WORK_DIRECTORY.
+                    "/schedules/ArchiveIterator{$crawl_time}";
+
+                if(!file_exists($result_dir)) {
+                    mkdir($result_dir);
+                }
+
+                $arctype = $info[self::ARC_TYPE];
+                $iterator_name = $arctype."Iterator";
+
+                $time = time();
+                $archive_iterator = 
+                    new $iterator_name(
+                        $iterate_timestamp,
+                        $iterate_dir,
+                        $result_timestamp,
+                        $result_dir);
+            }
+
+            if($archive_iterator && !$archive_iterator->end_of_iterator) {
+                if($archive_iterator->end_of_iterator) {
+                    // Stop crawl here.
+                } else {
+                    $info[self::SITES] = array();
+                    $pages = $archive_iterator->nextPages(
+                        500);
+                    $delta = time() - $time;
+                    debugLogFile("fetch took $delta seconds", "nameserver");
+                }
+            } 
+
+            if($have_lock) {
+                flock($lock_fd, LOCK_UN);
+            }
+            fclose($lock_fd);
+
+            $info_string = serialize($info);
+            $pages_string = gzcompress(serialize($pages));
+            $data['MESSAGE'] = $info_string."\n".$pages_string;
+        } else {
+            $info[self::STATUS] = self::NO_DATA_STATE;
+            $data['MESSAGE'] = serialize($info)."\n";
         }
 
         $this->displayView($view, $data);
@@ -261,10 +350,9 @@ class FetchController extends Controller implements CrawlConstants
     }
 
     /**
-     * Returns the time in seconds from the start of the current epoch of the 
-     * active crawl if it exists; 0 otherwise
-     * 
-     * @return int  time of active crawl
+     * Checks for the crawl time according either to crawl_status.txt or to 
+     * network_status.txt, and presents it to the requesting fetcher, along 
+     * with a list of available queue servers.
      */
     function crawlTime()
     {
@@ -272,27 +360,51 @@ class FetchController extends Controller implements CrawlConstants
         $info[self::STATUS] = self::CONTINUE_STATE;
         $view = "fetch";
 
+        if(isset($_REQUEST['crawl_time'])) {;
+            $prev_crawl_time = $this->clean($_REQUEST['crawl_time'], 'int');
+        } else {
+            $prev_crawl_time = 0;
+        }
+
         if(file_exists(CRAWL_DIR."/schedules/crawl_status.txt")) {
             $crawl_status = unserialize(file_get_contents(
                 CRAWL_DIR."/schedules/crawl_status.txt"));
-            $info[self::CRAWL_TIME] = (isset($crawl_status["CRAWL_TIME"])) ?
+            $crawl_time = (isset($crawl_status["CRAWL_TIME"])) ?
                 $crawl_status["CRAWL_TIME"] : 0;
         } else if(file_exists(CRAWL_DIR."/schedules/network_status.txt")){
-            $info[self::CRAWL_TIME] = unserialize(file_get_contents(
+            $crawl_time = unserialize(file_get_contents(
                 CRAWL_DIR."/schedules/network_status.txt"));
         } else {
-            $info[self::CRAWL_TIME] = 0;
+            $crawl_time = 0;
+        }
+        $info[self::CRAWL_TIME] = $crawl_time;
+
+        $status_filename = CRAWL_DIR."/schedules/name_server_messages.txt";
+        if($crawl_time != 0 && $crawl_time != $prev_crawl_time &&
+                file_exists($status_filename)) {
+            $status = unserialize(file_get_contents($status_filename));
+            if($status[self::STATUS] != 'STOP_CRAWL') {
+                if(isset($status[self::CRAWL_TYPE])) {
+                    $info[self::CRAWL_TYPE] = $status[self::CRAWL_TYPE];
+                }
+                if(isset($status[self::ARC_DIR])) {
+                    $info[self::ARC_DIR] = $status[self::ARC_DIR];
+                }
+                if(isset($status[self::ARC_TYPE])) {
+                    $info[self::ARC_TYPE] = $status[self::ARC_TYPE];
+                }
+            }
         }
 
         $info[self::QUEUE_SERVERS] = $this->machineModel->getQueueServerUrls();
-        if($info[self::QUEUE_SERVERS] == array()) {
+        if(count($info[self::QUEUE_SERVERS]) == 0) {
             $info[self::QUEUE_SERVERS] = array(NAME_SERVER);
         }
+
         $data = array();
         $data['MESSAGE'] = serialize($info);
 
         $this->displayView($view, $data);
     }
-
 }
 ?>

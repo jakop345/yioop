@@ -95,7 +95,7 @@ class WebArchiveBundleIterator extends ArchiveBundleIterator
      *
      * @param string $prefix fetcher number this bundle is associated with
      * @param string $iterate_timestamp timestamp of the web archive bundle to 
-     *      iterate  over the pages of
+     *      iterate over the pages of
      * @param string $result_timestamp timestamp of the web archive bundle
      *      results are being stored in
      */
