@@ -500,6 +500,45 @@ p
     font-weight:normal;
 }
 
+.html-ltr .video-link
+{
+    padding-top: 0.05in;
+    float:left;
+    margin:0;
+    width: 128px;
+    height:80px;
+}
+
+.video-link .thumb
+{
+    width: 120px;
+    height: 80px;
+}
+.html-ltr .video-play
+{
+    position: relative;
+    left: 40px;
+    top: -60px;
+    width: 40px;
+}
+
+.html-rtl .video-link
+{
+    padding-top: 0.05in;
+    float:right;
+    margin:0;
+    width: 128px;
+    height:80px;
+}
+
+.html-rtl .video-play
+{
+    position: relative;
+    right: 40px;
+    top: -60px;
+    width: 40px;
+}
+
 .echolink
 {
     color:green

@@ -51,7 +51,8 @@ class SearchView extends View implements CrawlConstants
     /** Names of helper objects that the view uses to help draw itself 
      *  @var array
      */
-    var $helpers = array("pagination", "filetype", "displayresults");
+    var $helpers = array("pagination", "filetype", "displayresults",
+        "videourl");
     /** Names of element objects that the view uses to display itself 
      *  @var array
      */
@@ -133,13 +134,19 @@ class SearchView extends View implements CrawlConstants
                  if(isset($page[self::THUMB]) && $page[self::THUMB] != 'NULL') {
                     ?><img src="<?php e($page[self::THUMB]); ?>" alt="<?php 
                         e($page[self::TITLE]); ?>"  /> <?php
+                    $check_video = false;
                  } else {
                     echo $page[self::TITLE];
                     if(isset($page[self::TYPE])) {
                         $this->filetypeHelper->render($page[self::TYPE]);
                     }
+                    $check_video = true;
                 }
                 ?></a></h2>
+                <?php if($check_video) {
+                    $this->videourlHelper->render($page[self::URL]);
+                }
+                ?>
                 <p><?php if(!isset($page[self::ROBOT_METAS]) || 
                     !in_array("NOSNIPPET", $page[self::ROBOT_METAS])) {
                         echo $this->displayresultsHelper->
