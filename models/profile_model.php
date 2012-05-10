@@ -58,7 +58,7 @@ class ProfileModel extends Model
             'IN_LINK', 'IP_LINK', 'SIGNIN_LINK',
             'ROBOT_INSTANCE', "WEB_ACCESS", "RSS_ACCESS", "API_ACCESS",
             'TITLE_WEIGHT','DESCRIPTION_WEIGHT','LINK_WEIGHT',
-            'POSTING_INDEX','QSERVER_INDEX');
+            'MIN_RESULTS_TO_GROUP','SERVER_ALPHA');
     /**
      *  {@inheritdoc}
      */

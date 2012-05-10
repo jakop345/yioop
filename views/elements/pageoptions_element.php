@@ -120,18 +120,18 @@ class PageOptionsElement extends Element
                 name="LINK_WEIGHT" 
                 value="<?php  e($data['LINK_WEIGHT']); ?>" /></td></tr>
         </table>
-        <h2><?php e(tl('pageoptions_element_posting_options'))?></h2>
+        <h2><?php e(tl('pageoptions_element_results_grouping_options'))?></h2>
         <table class="weightstable" >
-        <tr><th><label for="posting-index"><?php 
-            e(tl('pageoptions_element_posting_index'))?></label></th><td>
-            <input type="text" id="posting-index" size="3" maxlength="6"
-                name="POSTING_INDEX" 
-                value="<?php  e($data['POSTING_INDEX']); ?>" /></td></tr>
-        <tr><th><label for="qserver-index"><?php 
-            e(tl('pageoptions_element_qserver_index'))?></label></th><td>
-            <input type="text" id="qserver-index" size="3" maxlength="6"
-                name="QSERVER_INDEX" 
-                value="<?php  e($data['QSERVER_INDEX']); ?>" /></td></tr>
+        <tr><th><label for="min-results-to-group"><?php 
+            e(tl('pageoptions_element_min_results_to_group'))?></label></th><td>
+            <input type="text" id="min-results-to-group" size="3" maxlength="6"
+                name="MIN_RESULTS_TO_GROUP" 
+                value="<?php  e($data['MIN_RESULTS_TO_GROUP']); ?>" /></td></tr>
+        <tr><th><label for="server-alpha"><?php 
+            e(tl('pageoptions_element_server_alpha'))?></label></th><td>
+            <input type="text" id="server-alpha" size="3" maxlength="6"
+                name="SERVER_ALPHA" 
+                value="<?php e($data['SERVER_ALPHA']); ?>" /></td></tr>
         </table>
         <div class="center slightpad"><button class="buttonbox" 
             type="submit"><?php e(tl('pageoptions_element_save_options')); 

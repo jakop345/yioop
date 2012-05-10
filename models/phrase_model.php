@@ -1036,10 +1036,10 @@ class PhraseModel extends Model
                 new GroupIterator($union_iterator, $total_iterators);
         }
 
-    
         if($network_flag) {
             $union_iterator->results_per_block = 
-                ceil(QSERVER_INDEX* $group_iterator->results_per_block/$num_servers);
+                ceil(SERVER_ALPHA * 
+                    $group_iterator->results_per_block/$num_servers);
         }
 
         return $group_iterator;
