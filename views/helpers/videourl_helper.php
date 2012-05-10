@@ -55,7 +55,13 @@ class VideourlHelper extends Helper
      *  @param string $url to check if of a video site
      */
     public function render($url)
-    { 
+    {
+        if(substr($url, 0, 3) == "url") {
+            $link_url_parts = explode("|", $url);
+            if(count($link_url_parts) > 1) {
+                $url = $link_url_parts[1];
+            }
+        }
         if(stripos($url, "http://www.youtube.com/watch?v=") !== false) {
             $id = substr($url, 31, 11);
             ?><a class="video-link" href="<?php e($url); ?>"><img 
