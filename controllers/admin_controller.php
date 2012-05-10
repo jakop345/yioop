@@ -1351,7 +1351,8 @@ class AdminController extends Controller implements CrawlConstants
         $data['SCRIPT'] = "";
         $profile =  $this->profileModel->getProfile(WORK_DIRECTORY);
         $weights = array('TITLE_WEIGHT' => 4, 
-            'DESCRIPTION_WEIGHT' => 1, 'LINK_WEIGHT' => 2);
+            'DESCRIPTION_WEIGHT' => 1, 'LINK_WEIGHT' => 2,
+            'POSTING_INDEX' => 200, 'QSERVER_INDEX' => 1.6);
         $change = false;
         foreach($weights as $weight => $value) {
             if(isset($_REQUEST[$weight])) {

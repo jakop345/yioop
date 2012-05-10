@@ -133,6 +133,11 @@ if(file_exists(WORK_DIRECTORY."/profile.php")) {
     define ('DESCRIPTION_WEIGHT', 1);
     /** BM25F weight for other text within links to a doc*/
     define ('LINK_WEIGHT', 2);
+    /** How far to go into posting list*/
+    define ('POSTING_INDEX', 200);
+    /** How to distribute number of results among
+        network of queue servers*/
+    define ('QSERVER_INDEX', 1.6);
     $INDEXING_PLUGINS = array();
 
 }
