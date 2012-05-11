@@ -87,6 +87,8 @@ class FetchUrl implements CrawlConstants
         //Set-up requests
         for($i = 0; $i < count($sites); $i++) {
             if(isset($sites[$i][$key])) {
+                list($sites[$i][$key], $url, $headers) = 
+                    self::prepareUrlHeaders($sites[$i][$key], $minimal);
                 $sites[$i][0] = curl_init();
                 if(!$minimal) {
                     $ip_holder[$i] = fopen("$temp_dir/tmp$i.txt", 'w+');
@@ -94,10 +96,12 @@ class FetchUrl implements CrawlConstants
                     curl_setopt($sites[$i][0], CURLOPT_VERBOSE, true);
                 }
                 curl_setopt($sites[$i][0], CURLOPT_USERAGENT, USER_AGENT);
-                list($sites[$i][$key], $url, $headers) = 
-                    self::prepareUrlHeaders($sites[$i][$key], $minimal);
                 curl_setopt($sites[$i][0], CURLOPT_URL, $url);
-                curl_setopt($sites[$i][0], CURLOPT_FOLLOWLOCATION, false);
+                $follow = false;
+                if(strcmp(substr($url,-10), "robots.txt") == 0 ) {
+                    $follow = true; //wikipedia redirects their robot page. grr
+                }
+                curl_setopt($sites[$i][0], CURLOPT_FOLLOWLOCATION, $follow);
                 curl_setopt($sites[$i][0], CURLOPT_AUTOREFERER, true);
                 curl_setopt($sites[$i][0], CURLOPT_RETURNTRANSFER, true);
                 curl_setopt($sites[$i][0], CURLOPT_CONNECTTIMEOUT,PAGE_TIMEOUT);

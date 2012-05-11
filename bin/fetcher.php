@@ -1005,9 +1005,12 @@ class Fetcher implements CrawlConstants
             }
 
             $handled = false;
-            //deals with short URLs and directs them to the original link
+            /*deals with short URLs and directs them to the original link
+              for robots.txt don't want to introduce stuff that can be 
+              mis-parsed (we follow redirects in this case anyway) */
             if(isset($site[self::LOCATION]) && 
-                count($site[self::LOCATION]) > 0) {
+                count($site[self::LOCATION]) > 0 
+                && strcmp($type,"text/robot") != 0) {
                 array_unshift($site[self::LOCATION], $site[self::URL]);
                 $tmp_loc = array_pop($site[self::LOCATION]);
                 $tmp_loc = UrlParser::canonicalLink(
@@ -1168,6 +1171,12 @@ class Fetcher implements CrawlConstants
                 if(isset($site[self::DOC_INFO][self::SUBDOCS])) {
                     $this->processSubdocs($i, $site, $summarized_site_pages,
                        $stored_site_pages);
+                }
+                if(isset($summarized_site_pages[$i][self::LINKS])) {
+                    $summarized_site_pages[$i][self::LINKS] =
+                        UrlParser::cleanRedundantLinks(
+                            $summarized_site_pages[$i][self::LINKS],
+                            $summarized_site_pages[$i][self::URL]);
                 }
                 $i++;
             }
@@ -1623,7 +1632,7 @@ class Fetcher implements CrawlConstants
                 memory_get_peak_usage());
         } while(!isset($info[self::STATUS]) || 
             $info[self::STATUS] != self::CONTINUE_STATE);
-        crawlLog("...  Current Memory G:".memory_get_usage());
+        crawlLog("...  Current Memory:".memory_get_usage());
         if($this->crawl_type == self::WEB_CRAWL) {
             $dir = CRAWL_DIR."/schedules";
             file_put_contents("$dir/$prefix".self::fetch_batch_name.

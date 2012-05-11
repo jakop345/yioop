@@ -1677,6 +1677,7 @@ class QueueServer implements CrawlConstants, Join
             }
             foreach($to_crawl_sites as $triple) {
                 $url = & $triple[0];
+                if(strlen($url) < 7) continue; // strlen("http://")
                 $weight = $triple[1];
                 $this->web_queue->addSeenUrlFilter($triple[2]); //add for dedup
                 unset($triple[2]); // so triple is now a pair
