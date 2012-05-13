@@ -75,12 +75,16 @@ class SearchView extends View implements CrawlConstants
     public function renderView($data) 
     {
         $this->signinElement->render($data);
+        $logo = "resources/yioop.png";
         if(!isset($data['PAGES'])) {
             e('<div class="landing">');
-        } ?>
+        } else if(MOBILE) {
+            $logo = "resources/m-yioop.png";
+        }
+        ?>
         <h1 class="logo"><a href="./?YIOOP_TOKEN=<?php 
             e($data['YIOOP_TOKEN'])?>"><img 
-            src="resources/yioop.png" alt="<?php e(tl('search_view_title')); ?>"
+            src="<?php e($logo); ?>" alt="<?php e(tl('search_view_title')); ?>"
             /></a></h1>
         <?php
         if(isset($data['PAGES'])) {
@@ -100,8 +104,10 @@ class SearchView extends View implements CrawlConstants
             id="search-name" name="q" value="<?php if(isset($data['QUERY'])) {
             e(urldecode($data['QUERY']));} ?>" 
             placeholder="<?php e(tl('search_view_input_placeholder')); ?>" />
-        <button class="buttonbox" type="submit"><?php 
-            e(tl('search_view_search')); ?></button>
+        <button class="buttonbox" type="submit"><?php if(MOBILE) {
+                e('>');
+            } else {
+            e(tl('search_view_search')); } ?></button>
         </p>
         </form>
             </div>
@@ -114,13 +120,17 @@ class SearchView extends View implements CrawlConstants
             ?>
             </div>
             <div class="serp-results">
-            <h2><?php e(tl('search_view_query_results')); ?> (<?php 
+            <h2><?php 
+                if(MOBILE) {
+                } else {
+                e(tl('search_view_query_results')); ?> (<?php 
                 e(tl('search_view_calculated', $data['ELAPSED_TIME']));?> <?php
                 e(tl('search_view_results', $data['LIMIT'], 
                     min($data['TOTAL_ROWS'], 
                     $data['LIMIT'] + $data['RESULTS_PER_PAGE']), 
-                    $data['TOTAL_ROWS'])); 
-            ?> )</h2>
+                    $data['TOTAL_ROWS']." )"));
+                }
+            ?></h2>
             <?php
             foreach($data['PAGES'] as $page) {?>
                 <div class='result'> 

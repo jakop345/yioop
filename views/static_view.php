@@ -67,9 +67,13 @@ class StaticView extends View
      *  the view
      */
     function renderView($data) {
+    $logo = "resources/yioop.png";
+    if(MOBILE) {
+        $logo = "resources/m-yioop.png";
+    }
 ?>
-<div class="center">
-<h1 class="logo"><a href="."><img src="resources/yioop.png" 
+<div class="non-search center">
+<h1 class="logo"><a href="."><img src="<?php e($logo); ?>" 
     alt="<?php e(tl('static_view_title')); ?>" /></a><span><?php 
     e($data['subtitle']);?></span></h1>
 </div>

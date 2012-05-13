@@ -68,15 +68,19 @@ class SettingsView extends View
      *      the language info and the current and possible per page settings
      */
     public function renderView($data) {
+    $logo = "resources/yioop.png";
+    if(MOBILE) {
+        $logo = "resources/m-yioop.png";
+    }
 ?>
-<div class="landing">
+<div class="landing non-search">
 <h1 class="logo"><a href="./?YIOOP_TOKEN=<?php 
     e($data['YIOOP_TOKEN'])?>&amp;its=<?php 
     e($data['its'])?>"><img 
-    src="resources/yioop.png" alt="Yioop!" /></a><span> - <?php 
+    src="<?php e($logo); ?>" alt="Yioop!" /></a><span> - <?php 
     e(tl('settings_view_settings')); ?></span></h1>
 <div class="settings">
-<form class="user_settings" method="get" action="">
+<form class="user_settings" method="get" action=".">
 <table>
 <tr>
 <td class="table-label"><label for="per-page"><b><?php 
@@ -88,6 +92,7 @@ class SettingsView extends View
     e(tl('settings_view_language_label')); ?></b></label></td><td 
     class="table-input"><?php $this->languageElement->render($data); ?>
 </td></tr>
+<tr>
 <td class="table-label"><label for="index-ts"><b><?php 
     e(tl('settings_view_search_index')); ?></b></label></td><td 
     class="table-input"><?php $this->optionsHelper->render(
