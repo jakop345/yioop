@@ -161,10 +161,6 @@ body.mobile
     min-width: 0;
 }
 
-.mobile .userNav
-{
-}
-
 .html-rtl .userNav ul li
 {
     display:inline;

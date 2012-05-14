@@ -129,7 +129,8 @@ if(!PROFILE ) {
 //check if mobile should be used or not
 $agent = $_SERVER['HTTP_USER_AGENT'];
 if((stristr($agent, "mobile") || stristr($agent, "fennec")) && 
-    !stristr($agent, "ipad") && strcmp($controller_name, "admin") != 0) {
+    !stristr($agent, "ipad") && (strcmp($controller_name, "admin") != 0
+    || !isset($_REQUEST['a']) || strcmp($_REQUEST['a'], "signin") !=0 )) {
     define("MOBILE", true);
 } else {
     define("MOBILE", false);
