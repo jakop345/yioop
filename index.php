@@ -126,6 +126,18 @@ if(!PROFILE ) {
     $controller_name = "admin";
 }
 
+//check if mobile css and formatting should be used or not
+$agent = $_SERVER['HTTP_USER_AGENT'];
+$is_admin = strcmp($controller_name, "admin") == 0;
+if((stristr($agent, "mobile") || stristr($agent, "fennec")) && 
+    !stristr($agent, "ipad") && (!$is_admin || ($is_admin &&
+    !(isset($_REQUEST['a']) || isset($_REQUEST['u']) ||
+        isset($_SESSION['USER_ID'] ))))) {
+    define("MOBILE", true);
+} else {
+    define("MOBILE", false);
+}
+
 $locale_tag = guessLocale();
 
 if(upgradeDatabaseWorkDirectoryCheck()) {

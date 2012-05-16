@@ -112,7 +112,8 @@ class UrlParserTest extends UnitTest
                 "http://www.example.com/b?a=1#1", "fragment 2"),
             array("b?a=1#1#2", "http://www.example.com/", 
                 "http://www.example.com/b?a=1#1#2", "fragment 3"),
-
+            array("#a", "http://www.example.com/c:d", 
+                "http://www.example.com/c:d#a", "fragment 4"),
         );
 
         foreach($test_links as $test_link) {

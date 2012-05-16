@@ -554,9 +554,31 @@ class Fetcher implements CrawlConstants
         
         $prefix = $this->fetcher_num."-";
         $tmp_dir = CRAWL_DIR."/{$prefix}temp";
-        $site_pages = FetchUrl::getPages($sites, true, 
-            $this->page_range_request, $tmp_dir
-            );
+        $filtered_sites = array();
+        $site_pages = array();
+        foreach($sites as $site) {
+            $hard_coded_parts = explode("###!", $site[self::URL]);
+            if(count($hard_coded_parts) > 1) {
+                if(!isset($hard_coded_parts[2])) $hard_coded_parts[2] = "";
+                $site[self::URL] = $hard_coded_parts[0];
+                $title = urldecode($hard_coded_parts[1]);
+                $description = urldecode($hard_coded_parts[2]);
+                $site[self::PAGE] = "<html><head><title>{$title}".
+                    "</title></head><body><h1>{$title}</h1>".
+                    "<p>{$description}</p></body></html>";
+                $site[self::HTTP_CODE] = 200;
+                $site[self::TYPE] = "text/html";
+                $site[self::ENCODING] = "UTF-8";
+                $site[self::IP_ADDRESSES] = array("0.0.0.0");
+                $site[self::TIMESTAMP] = time();
+                $site_pages[] = $site;
+            } else {
+                $filtered_sites[] = $site;
+            }
+        }
+        $site_pages = array_merge($site_pages,
+            FetchUrl::getPages($filtered_sites, true, 
+                $this->page_range_request, $tmp_dir));
 
         list($downloaded_pages, $schedule_again_pages) = 
             $this->reschedulePages($site_pages);
@@ -1112,9 +1134,12 @@ class Fetcher implements CrawlConstants
             }
 
             $handled = false;
-            // deals with short URLs and directs them to the original link
+            /*deals with short URLs and directs them to the original link
+              for robots.txt don't want to introduce stuff that can be 
+              mis-parsed (we follow redirects in this case anyway) */
             if(isset($site[self::LOCATION]) && 
-                count($site[self::LOCATION]) > 0) {
+                count($site[self::LOCATION]) > 0 
+                && strcmp($type,"text/robot") != 0) {
                 array_unshift($site[self::LOCATION], $site[self::URL]);
                 $tmp_loc = array_pop($site[self::LOCATION]);
                 $tmp_loc = UrlParser::canonicalLink(
@@ -1275,6 +1300,12 @@ class Fetcher implements CrawlConstants
                 if(isset($site[self::DOC_INFO][self::SUBDOCS])) {
                     $this->processSubdocs($i, $site, $summarized_site_pages,
                        $stored_site_pages);
+                }
+                if(isset($summarized_site_pages[$i][self::LINKS])) {
+                    $summarized_site_pages[$i][self::LINKS] =
+                        UrlParser::cleanRedundantLinks(
+                            $summarized_site_pages[$i][self::LINKS],
+                            $summarized_site_pages[$i][self::URL]);
                 }
                 $i++;
             }
@@ -1730,7 +1761,7 @@ class Fetcher implements CrawlConstants
                 memory_get_peak_usage());
         } while(!isset($info[self::STATUS]) || 
             $info[self::STATUS] != self::CONTINUE_STATE);
-        crawlLog("...  Current Memory G:".memory_get_usage());
+        crawlLog("...  Current Memory:".memory_get_usage());
         if($this->crawl_type == self::WEB_CRAWL) {
             $dir = CRAWL_DIR."/schedules";
             file_put_contents("$dir/$prefix".self::fetch_batch_name.

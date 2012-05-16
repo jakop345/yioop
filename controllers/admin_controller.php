@@ -1389,7 +1389,8 @@ class AdminController extends Controller implements CrawlConstants
         $data['SCRIPT'] = "";
         $profile =  $this->profileModel->getProfile(WORK_DIRECTORY);
         $weights = array('TITLE_WEIGHT' => 4, 
-            'DESCRIPTION_WEIGHT' => 1, 'LINK_WEIGHT' => 2);
+            'DESCRIPTION_WEIGHT' => 1, 'LINK_WEIGHT' => 2,
+            'MIN_RESULTS_TO_GROUP' => 200, 'SERVER_ALPHA' => 1.6);
         $change = false;
         foreach($weights as $weight => $value) {
             if(isset($_REQUEST[$weight])) {
@@ -1449,6 +1450,7 @@ class AdminController extends Controller implements CrawlConstants
                 if(isset($_REQUEST["filetype"][$filetype])) {
                     $filetypes[] = $filetype;
                     $ison = true;
+                    $change = true;
                 }
             } else {
                 if(in_array($filetype, 
@@ -1462,7 +1464,10 @@ class AdminController extends Controller implements CrawlConstants
         }
         $seed_info["indexed_file_types"]["extensions"] = $filetypes;
         $this->crawlModel->setSeedInfo($seed_info);
-
+        if($change == true) {
+            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                tl('admin_controller_page_options_updated')."</h1>')";
+        }
         return $data;
     }
 

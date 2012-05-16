@@ -1677,6 +1677,7 @@ class QueueServer implements CrawlConstants, Join
             }
             foreach($to_crawl_sites as $triple) {
                 $url = & $triple[0];
+                if(strlen($url) < 7) continue; // strlen("http://")
                 $weight = $triple[1];
                 $this->web_queue->addSeenUrlFilter($triple[2]); //add for dedup
                 unset($triple[2]); // so triple is now a pair
@@ -1883,10 +1884,19 @@ class QueueServer implements CrawlConstants, Join
             }
 
             $no_flags = false;
+            $hard_coded = false;
             if($flag ==  WebQueueBundle::NO_FLAGS) {
                 $host_url = UrlParser::getHost($url);
-                $has_robots = $this->web_queue->containsGotRobotTxt($host_url);
-                $is_robot = (strcmp($host_url."/robots.txt", $url) == 0);
+                $hard_coded_description_parts = explode("###!", $url);
+                if(count($hard_coded_description_parts) > 1 ) {
+                    $has_robots = true;
+                    $hard_coded = true;
+                    $is_robot = false;
+                } else {
+                    $has_robots = 
+                        $this->web_queue->containsGotRobotTxt($host_url);
+                    $is_robot = (strcmp($host_url."/robots.txt", $url) == 0);
+                }
                 $no_flags = true;
             } else {
                 $is_robot = ($flag == WebQueueBundle::ROBOT);
@@ -1933,8 +1943,11 @@ class QueueServer implements CrawlConstants, Join
 
             if($has_robots) {
                 if($no_flags) {
-                    $robots_okay = $this->web_queue->checkRobotOkay($url);
-
+                    if(!isset($hard_coded) || !$hard_coded) {
+                        $robots_okay = $this->web_queue->checkRobotOkay($url);
+                    } else {
+                        $robots_okay = true;
+                    }
                     if(!$robots_okay) {
                         $delete_urls[$i] = $url;
                         $this->web_queue->addSeenUrlFilter($url);
@@ -2065,6 +2078,7 @@ class QueueServer implements CrawlConstants, Join
             fwrite($fh, $first_line);
             foreach($sites as $site) {
                 list($url, $weight, $delay) = $site;
+echo $url;
                 $host_url = UrlParser::getHost($url);
                 $dns_lookup = $this->web_queue->dnsLookup($host_url);
                 if($dns_lookup) {

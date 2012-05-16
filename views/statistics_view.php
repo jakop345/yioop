@@ -69,12 +69,16 @@ class StatisticsView extends View
      *      statistics info about a web crawl
      */
     public function renderView($data) {
+        $logo = "resources/yioop.png";
+        if(MOBILE) {
+            $logo = "resources/m-yioop.png";
+        }
         if(isset($data["UNFINISHED"])) {
             e('<div class="landing" style="clear:both">');
         } ?>
-        <h1 class="logo"><a href="./?YIOOP_TOKEN=<?php 
+        <h1 class="stats logo"><a href="./?YIOOP_TOKEN=<?php 
             e($data['YIOOP_TOKEN'])?>"><img 
-            src="resources/yioop.png" alt="Yioop!" /></a><span> - <?php 
+            src="<?php e($logo);?>" alt="Yioop!" /></a><span> - <?php 
             e(tl('statistics_view_statistics')); ?></span></h1>
         <div class="statistics">
         <?php

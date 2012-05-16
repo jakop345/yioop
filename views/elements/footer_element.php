@@ -59,8 +59,10 @@ class FooterElement extends Element
         <a href="./privacy.php"><?php 
         e(tl('footer_element_privacy')); ?></a> -
         <a href="./bot.php"><?php 
-        e(tl('footer_element_bot')); ?></a> -
-        <a href="http://www.seekquarry.com/"><?php
+        e(tl('footer_element_bot')); ?></a> - <?php if(MOBILE) {
+            e('<br /> - ');
+        }
+        ?><a href="http://www.seekquarry.com/"><?php
         e(tl('footer_element_developed_seek_quarry')); ?></a> -
         </div>
         <div>

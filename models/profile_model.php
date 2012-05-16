@@ -57,7 +57,8 @@ class ProfileModel extends Model
             'WORD_SUGGEST', 'CACHE_LINK', 'SIMILAR_LINK', 
             'IN_LINK', 'IP_LINK', 'SIGNIN_LINK',
             'ROBOT_INSTANCE', "WEB_ACCESS", "RSS_ACCESS", "API_ACCESS",
-            'TITLE_WEIGHT','DESCRIPTION_WEIGHT','LINK_WEIGHT');
+            'TITLE_WEIGHT','DESCRIPTION_WEIGHT','LINK_WEIGHT',
+            'MIN_RESULTS_TO_GROUP','SERVER_ALPHA');
     /**
      *  {@inheritdoc}
      */

@@ -133,6 +133,14 @@ if(file_exists(WORK_DIRECTORY."/profile.php")) {
     define ('DESCRIPTION_WEIGHT', 1);
     /** BM25F weight for other text within links to a doc*/
     define ('LINK_WEIGHT', 2);
+    /** If that many exist, the minimum number of results to get
+        and group before trying to compute the top x (say 10) results
+     */
+    define ('MIN_RESULTS_TO_GROUP', 200);
+    /** For a given number of search results total to return (total_num)
+        server_alpha*total_num/num_servers will be returned any a given
+        queue server machine*/
+    define ('SERVER_ALPHA', 1.6);
     $INDEXING_PLUGINS = array();
 
 }

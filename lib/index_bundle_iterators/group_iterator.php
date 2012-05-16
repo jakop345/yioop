@@ -126,7 +126,7 @@ class GroupIterator extends IndexBundleIterator
      * the minimum number of pages to group from a block;
      * this trumps $this->index_bundle_iterator->results_per_block
      */
-    const MIN_FIND_RESULTS_PER_BLOCK = 200;
+    const MIN_FIND_RESULTS_PER_BLOCK = MIN_RESULTS_TO_GROUP;
 
     /**
      * the minimum length of a description before we stop appending

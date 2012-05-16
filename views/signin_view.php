@@ -57,10 +57,14 @@ class SigninView extends View
      *  the view
      */
     public function renderView($data) {
+    $logo = "resources/yioop.png";
+    if(MOBILE) {
+        $logo = "resources/m-yioop.png";
+    }
 ?>
-<div class="landing">
-    <h1 class="logo"><a href="./?YIOOP_TOKEN=<?php 
-        e($data['YIOOP_TOKEN'])?>"><img src="resources/yioop.png" alt="Yioop!" 
+<div class="landing non-search">
+<h1 class="logo"><a href="./?YIOOP_TOKEN=<?php 
+    e($data['YIOOP_TOKEN'])?>"><img src="<?php e($logo); ?>" alt="Yioop!" 
         /></a><span> - <?php e(tl('signin_view_signin')); ?></span></h1>
 <form class="user_settings" method="post" action="#">
 <div class="login">

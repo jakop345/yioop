@@ -77,10 +77,12 @@ class WebLayout extends Layout
                     e($this->view->head_objects[$data['page']]['description']);
                     else e(tl('web_layout_description')); ?>" />
             <meta name="Author" content="Christopher Pollett" />
-
             <meta name="description" content="<?php 
                 e(tl('web_layout_description')); ?>" />
             <meta charset="utf-8" />
+            <?php if(MOBILE) {?>
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <?php } ?>
             <link rel="shortcut icon"   href="favicon.ico" />
             <link rel="stylesheet" type="text/css" href="css/search.css" />
             <link rel="search" type="application/opensearchdescription+xml" 
@@ -88,9 +90,12 @@ class WebLayout extends Layout
                 title="Content search" />
 
         </head>
+        <?php 
+            $data['MOBILE'] = (MOBILE) ? 'mobile': '';
+        ?>
         <body class="html-<?php e($data['BLOCK_PROGRESSION']);?> html-<?php 
-            e($data['LOCALE_DIR']);?> html-<?php e($data['WRITING_MODE']);?>" 
-            >
+            e($data['LOCALE_DIR']);?> html-<?php e($data['WRITING_MODE'].' '.
+            $data['MOBILE']);?>" >
             <div id="message" ></div>
             <?php
                 $this->view->renderView($data);

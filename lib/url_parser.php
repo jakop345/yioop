@@ -240,7 +240,6 @@ class UrlParser
         if(!isset($url_parts['path'])) {
             return NULL;
         }
-
         return $url_parts['path'];
     }
 
@@ -568,9 +567,7 @@ class UrlParser
 
             if($link !=NULL && $link[0] =="/") {
                 $path = $link;
-
             } else {
-
                 $site_path = self::getPath($site);
                 $site_path_parts = pathinfo($site_path);
 
@@ -584,7 +581,10 @@ class UrlParser
                     $pre_path .="/".$site_path_parts['basename'];
                 }
 
-                if(strlen($link) > 0 ) {$pre_path .="/".$link;}
+                if(strlen($link) > 0) {
+                     $pre_path = ($link[0] !="#") ? $pre_path."/".$link :
+                        $pre_path . $link;
+                }
                 $path = self::getPath($pre_path);
                 $so_far_link = $host . $pre_path;
                 $query = self::getQuery($so_far_link);
@@ -620,7 +620,7 @@ class UrlParser
         if($path == "." || substr($path, -2) == "/.") {
             $path = "/";
         }
-        if($path == "") {
+        if($path == "" && !(isset($fragment) && $fragment !== "")) {
             $path = "/";
         }
 
@@ -737,6 +737,27 @@ class UrlParser
             }
         }
         return false;
+    }
+
+    /**
+     *  Used to delete links from array of links $links based on whether
+     *  they are the same as the site they came from (or otherwise judged
+     *  irrelevant)
+     *
+     *  @param array $links pairs of the form $link =>$text
+     *  @param string $parent_url a site that the links were found on
+     *  @return array just those links which pass the relevancy test
+     */
+    static function cleanRedundantLinks($links, $parent_url)
+    {
+        $out_links = array();
+        foreach($links as $url => $text) {
+            //ignore links back to oneself (too easy to spam)
+            if(strcmp($parent_url, $url) != 0) {
+                $out_links[$url] = $text;
+            }
+        }
+        return $out_links;
     }
 }
 
