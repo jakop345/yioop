@@ -183,33 +183,39 @@ class Fetcher implements CrawlConstants
      * @var array
      */
     var $meta_words;
+
     /**
      * WebArchiveBundle  used to store complete web pages and auxiliary data
      * @var object
      */
     var $web_archive;
+
     /**
      * Timestamp of the current crawl
      * @var int
      */
     var $crawl_time;
+
     /**
      * Contains the list of web pages to crawl from a queue_server
      * @var array
      */
     var $to_crawl;
+
     /**
      * Contains the list of web pages to crawl that failed on first attempt
      * (we give them one more try before bailing on them)
      * @var array
      */
     var $to_crawl_again;
+
     /**
      * Summary information for visited sites that the fetcher hasn't sent to 
      * a queue_server yet
      * @var array
      */
     var $found_sites;
+
     /**
      * Timestamp from a queue_server of the current schedule of sites to
      * download. This is sent back to the server once this schedule is completed
@@ -217,24 +223,28 @@ class Fetcher implements CrawlConstants
      * @var int
      */
     var $schedule_time;
+
     /**
      * The sum of the number of words of all the page description for the current
      * crawl. This is used in computing document statistics.
      * @var int
      */
     var $sum_seen_site_description_length;
+
     /**
      * The sum of the number of words of all the page titles for the current
      * crawl. This is used in computing document statistics.
      * @var int
      */
     var $sum_seen_title_length;
+
     /**
      * The sum of the number of words in all the page links for the current
      * crawl. This is used in computing document statistics.
      * @var int
      */
     var $sum_seen_site_link_length;
+
     /**
      * Number of sites crawled in the current crawl
      * @var int
@@ -257,14 +267,25 @@ class Fetcher implements CrawlConstants
     var $crawl_type;
 
     /**
-     * Maximum number of bytes to download of a webpage
-     * @var int
+     * For an archive crawl, holds the name of the type of archive being 
+     * iterated over (this is the class name of the iterator, without the word 
+     * 'Iterator')
+     * @var string
      */
-    var $page_range_request;
+    var $arc_type;
 
     /**
-     * If self::ARCHIVE_CRAWL is being down, then this field holds the iterator
-     * object used to iterate over the archive
+     * For a non-web archive crawl, holds the path to the directory that 
+     * contains the archive files and their description (web archives have a 
+     * different structure and are already distributed across machines and 
+     * fetchers)
+     * @var string
+     */
+    var $arc_dir;
+
+    /**
+     * If an web archive crawl (i.e. a re-crawl) is active then this field 
+     * holds the iterator object used to iterate over the archive
      * @var object
      */
     var $archive_iterator;
@@ -289,6 +310,12 @@ class Fetcher implements CrawlConstants
      * @var string
      */
     var $fetcher_num;
+
+    /**
+     * Maximum number of bytes to download of a webpage
+     * @var int
+     */
+    var $page_range_request;
 
     /**
      * An array to keep track of hosts which have had a lot of http errors
@@ -401,7 +428,7 @@ class Fetcher implements CrawlConstants
                 if($info[self::CRAWL_TIME] == 0) {
                     $info[self::STATUS] = self::NO_DATA_STATE;
                 }
-            } else if ($this->crawl_type == self::ARCHIVE_CRAWL &&
+            } else if($this->crawl_type == self::ARCHIVE_CRAWL &&
                     !empty($this->arc_dir)) {
                 // An archive crawl with data coming from the name server.
                 $info = $this->checkArchiveScheduler();
@@ -700,6 +727,10 @@ class Fetcher implements CrawlConstants
                 $this->crawl_type = $info[self::CRAWL_TYPE];
                 $this->arc_dir = $info[self::ARC_DIR];
                 $this->arc_type = $info[self::ARC_TYPE];
+            } else {
+                $this->crawl_type = self::WEB_CRAWL;
+                $this->arc_dir = '';
+                $this->arc_type = '';
             }
 
             // Load any batch that might exist for changed-to crawl
@@ -844,8 +875,13 @@ class Fetcher implements CrawlConstants
         }
 
         $end_info = strpos($response_string, "\n");
-        $info_string = substr($response_string, 0, $end_info);
-        $info = unserialize($info_string);
+        if($end_info !== false && ($info_string = 
+                substr($response_string, 0, $end_info)) != '') {
+            $info = unserialize($info_string);
+        } else {
+            $info = array();
+            $info[self::STATUS] = self::NO_DATA_STATE;
+        }
         $this->setCrawlParamsFromArray($info);
 
         if(isset($info[self::SITES])) {

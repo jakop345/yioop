@@ -53,13 +53,11 @@ abstract class ArchiveBundleIterator implements CrawlConstants
      * @var int
      */
      var $iterate_timestamp;
-
     /**
      * Timestamp of the archive that is being used to store results in
      * @var int
      */
      var $result_timestamp;
-
     /**
      * Whether or not the iterator still has more documents
      * @var bool
@@ -67,22 +65,44 @@ abstract class ArchiveBundleIterator implements CrawlConstants
      var $end_of_iterator;
 
     /**
-     * The fetcher prefix associated with this archive.
-     * @var string
+     * Stores the current progress to the file iterate_status.txt in the result 
+     * dir such that a new instance of the iterator could be constructed and 
+     * return the next set of pages without having to process all of the pages 
+     * that came before. Each iterator should make a call to saveCheckpoint 
+     * after extracting a batch of pages.
+     * @param array $info any extra info a subclass wants to save
      */
-    var $fetcher_prefix;
+    function saveCheckpoint($info = array())
+    {
+        $info['end_of_iterator'] = $this->end_of_iterator;
+        $info['current_partition_num'] = $this->current_partition_num;
+        $info['current_page_num'] = $this->current_page_num;
+        $info['current_offset'] = $this->current_offset;
+        file_put_contents("{$this->result_dir}/iterate_status.txt",
+            serialize($info));
+    }
 
     /**
-     * Returns the path to an archive given its timestamp.
-     *
-     * @param string $timestamp the archive timestamp
-     * @return string the path to the archive, based off of the fetcher prefix 
-     *     used when this iterator was constructed
+     * Restores the internal state from the file iterate_status.txt in the 
+     * result dir such that the next call to nextPages will pick up from just 
+     * after the last checkpoint. Each iterator should make a call to 
+     * restoreCheckpoint at the end of the constructor method after the 
+     * instance members have been initialized.
+     * @return array the data serialized when saveCheckpoint was called
      */
-    function get_archive_name($timestamp)
+    function restoreCheckpoint()
     {
-        return CRAWL_DIR.'/cache/'.$this->fetcher_prefix.
-            self::archive_base_name.$timestamp;
+        $info = unserialize(file_get_contents(
+            "{$this->result_dir}/iterate_status.txt"));
+        $this->end_of_iterator = $info['end_of_iterator'];
+        $this->current_partition_num = $info['current_partition_num'];
+        $this->current_offset = $info['current_offset'];
+        if(!$this->end_of_iterator) {
+            $this->fh=gzopen(
+                $this->partitions[$this->current_partition_num], "rb");
+            gzseek($this->fh, $this->current_offset);
+        }
+        return $info;
     }
 
     /**

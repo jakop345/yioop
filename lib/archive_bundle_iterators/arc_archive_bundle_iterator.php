@@ -54,11 +54,21 @@ class ArcArchiveBundleIterator extends ArchiveBundleIterator
     implements CrawlConstants
 {
     /**
+     * The path to the directory containing the archive partitions to be 
+     * iterated over.
+     * @var string
+     */
+    var $iterate_dir;
+    /**
+     * The path to the directory where the iteration status is stored.
+     * @var string
+     */
+    var $result_dir;
+    /**
      * The number of arc files in this arc archive bundle
      *  @var int
      */
     var $num_partitions;
-
     /**
      *  Counting in glob order for this arc archive bundle directory, the 
      *  current active file number of the arc file being process.
@@ -67,7 +77,12 @@ class ArcArchiveBundleIterator extends ArchiveBundleIterator
      */
     var $current_partition_num;
     /**
-        current byte offset into the current arc file
+     *  current number of pages into the current arc file
+     *  @var int
+     */
+    var $current_page_num;
+    /**
+     *  current byte offset into the current arc file
      *  @var int
      */
     var $current_offset;
@@ -82,7 +97,6 @@ class ArcArchiveBundleIterator extends ArchiveBundleIterator
      */
     var $fh;
 
-
     /**
      * Creates a arc archive iterator with the given parameters.
      *
@@ -91,27 +105,21 @@ class ArcArchiveBundleIterator extends ArchiveBundleIterator
      * @param string $result_timestamp timestamp of the arc archive bundle
      *      results are being stored in
      */
-    function __construct($prefix, $iterate_timestamp, $result_timestamp)
+    function __construct($iterate_timestamp, $iterate_dir,
+        $result_timestamp, $result_dir)
     {
-        $this->fetcher_prefix = $prefix;
         $this->iterate_timestamp = $iterate_timestamp;
+        $this->iterate_dir = $iterate_dir;
         $this->result_timestamp = $result_timestamp;
-        $archive_name = $this->get_archive_name($iterate_timestamp);
+        $this->result_dir = $result_dir;
         $this->partitions = array();
-        foreach(glob("$archive_name/*.arc.gz") as $filename) { 
+        foreach(glob("{$this->iterate_dir}/*.arc.gz") as $filename) { 
             $this->partitions[] = $filename;
         }
         $this->num_partitions = count($this->partitions);
 
-        if(file_exists("$archive_name/iterate_status.txt")) {
-            $info = unserialize(file_get_contents(
-                "$archive_name/iterate_status.txt"));
-            $this->end_of_iterator = $info['end_of_iterator'];
-            $this->current_partition_num = $info['current_partition_num'];
-            $this->current_offset = $info['current_offset'];
-            $this->fh=gzopen(
-                $this->partitions[$this->current_partition_num], "rb");
-            gzseek($this->fh, $this->current_offset);
+        if(file_exists("{$this->result_dir}/iterate_status.txt")) {
+            $this->restoreCheckpoint();
         } else {
             $this->reset();
         }
@@ -138,8 +146,7 @@ class ArcArchiveBundleIterator extends ArchiveBundleIterator
         $this->end_of_iterator = false;
         $this->current_offset = 0;
         $this->fh = NULL;
-        $archive_name = $this->get_archive_name($this->result_timestamp);
-        @unlink("$archive_name/iterate_status.txt");
+        @unlink("{$this->result_dir}/iterate_status.txt");
     }
 
     /**
@@ -153,6 +160,7 @@ class ArcArchiveBundleIterator extends ArchiveBundleIterator
     function nextPages($num)
     {
         $pages = array();
+        $page_count = 0;
         for($i = 0; $i < $num; $i++) {
             $page = $this->nextPage();
             if(!$page) {
@@ -168,19 +176,15 @@ class ArcArchiveBundleIterator extends ArchiveBundleIterator
                     $this->partitions[$this->current_partition_num], "rb");
             } else {
                 $pages[] = $page;
+                $page_count++;
             }
         }
         if(is_resource($this->fh)) {
             $this->current_offset = gztell($this->fh);
+            $this->current_page_num += $page_count;
         }
 
-        $archive_name = $this->get_archive_name($this->result_timestamp);
-        $info = array();
-        $info['end_of_iterator'] = $this->end_of_iterator;
-        $info['current_partition_num'] = $this->current_partition_num;
-        $info['current_offset'] = $this->current_offset;
-        file_put_contents("$archive_name/iterate_status.txt",
-            serialize($info));
+        $this->saveCheckpoint();
         return $pages;
     }
 
@@ -213,6 +217,5 @@ class ArcArchiveBundleIterator extends ArchiveBundleIterator
         $site[self::WEIGHT] = 1;
         return $site;
     }
-
 }
 ?>

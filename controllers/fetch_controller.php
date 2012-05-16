@@ -161,9 +161,19 @@ class FetchController extends Controller implements CrawlConstants
         $this->displayView($view, $data);
     }
 
+    /**
+     * Checks to see whether there are more pages to extract from the current 
+     * archive, and if so returns the next batch to the requesting fetcher. The 
+     * iteration progress is automatically saved on each call to nextPages, so 
+     * that the next fetcher will get the next batch of pages. If there is no 
+     * current archive to iterate over, or the iterator has reached the end of 
+     * the archive then indicate that there is no more data by setting the 
+     * status to NO_DATA_STATE.
+     */
     function archiveSchedule()
     {
         $view = "fetch";
+        $request_start = time();
 
         if(isset($_REQUEST['crawl_time'])) {;
             $crawl_time = $this->clean($_REQUEST['crawl_time'], 'int');
@@ -177,6 +187,8 @@ class FetchController extends Controller implements CrawlConstants
             $fetch_pages = true;
             $info = unserialize(file_get_contents($messages_filename));
             if($info[self::STATUS] == 'STOP_CRAWL') {
+                // The stop crawl message gets created by the admin_controller 
+                // when the "stop crawl" button is pressed.
                 @unlink($messages_filename);
                 @unlink($lock_filename);
                 $fetch_pages = false;
@@ -187,13 +199,22 @@ class FetchController extends Controller implements CrawlConstants
             $info = array();
         }
 
+        $pages = array();
         if($fetch_pages) {
             $archive_iterator = NULL;
-            $pages = array();
 
+            // Start by trying to acquire an exclusive lock on the iterator 
+            // lock file, so that the same batch of pages isn't extracted more 
+            // than once.  For now the call to acquire the lock blocks, so that 
+            // fetchers will queue up. If the time between requesting the lock 
+            // and acquiring it is greater than ARCHIVE_LOCK_TIMEOUT then we 
+            // give up on this request and try back later.
             $lock_fd = fopen($lock_filename, 'w');
             $have_lock = flock($lock_fd, LOCK_EX);
-            if(file_exists($info[self::ARC_DIR]) && $have_lock) {
+            $elapsed_time = time() - $request_start;
+
+            if($have_lock && $elapsed_time <= ARCHIVE_LOCK_TIMEOUT &&
+                    file_exists($info[self::ARC_DIR])) {
                 $iterate_timestamp = $info[self::CRAWL_INDEX];
                 $iterate_dir = $info[self::ARC_DIR];
                 $result_timestamp = $crawl_time;
@@ -217,29 +238,27 @@ class FetchController extends Controller implements CrawlConstants
             }
 
             if($archive_iterator && !$archive_iterator->end_of_iterator) {
-                if($archive_iterator->end_of_iterator) {
-                    // Stop crawl here.
-                } else {
-                    $info[self::SITES] = array();
-                    $pages = $archive_iterator->nextPages(
-                        500);
-                    $delta = time() - $time;
-                    debugLogFile("fetch took $delta seconds", "nameserver");
-                }
+                $info[self::SITES] = array();
+                $pages = $archive_iterator->nextPages(
+                    ARCHIVE_BATCH_SIZE);
+                $delta = time() - $time;
             } 
 
             if($have_lock) {
                 flock($lock_fd, LOCK_UN);
             }
             fclose($lock_fd);
+        }
 
-            $info_string = serialize($info);
+        if(!empty($pages)) {
             $pages_string = gzcompress(serialize($pages));
-            $data['MESSAGE'] = $info_string."\n".$pages_string;
         } else {
             $info[self::STATUS] = self::NO_DATA_STATE;
-            $data['MESSAGE'] = serialize($info)."\n";
+            $pages_string = '';
         }
+
+        $info_string = serialize($info);
+        $data['MESSAGE'] = $info_string."\n".$pages_string;
 
         $this->displayView($view, $data);
     }
