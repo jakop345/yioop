@@ -193,8 +193,9 @@ body.mobile
 
 .mobile .userNav
 {
-    position:relative;
-    top: -14px;
+    position:absolute;
+    font-size:11pt;
+    top: -10px;
     left:0px;
     right:0px;
     width:320px;
@@ -227,7 +228,7 @@ body.mobile
 .mobile .subsearch
 {
     position: relative;
-    top: -14px;
+    top: -12px;
     left:-40px;
     right:-40px;
     padding:0px;
@@ -235,6 +236,7 @@ body.mobile
 
 .mobile .subsearch ul li
 {
+    font-size:11pt;
     padding-left:3px;
     padding-right:3px;
 }
@@ -298,6 +300,7 @@ body.mobile
 {
     position:relative;
     top: -14pt;
+    z-index: -1;
 }
 
 
@@ -324,8 +327,8 @@ body.mobile
 .mobile .logo img
 {
     position:relative;
-    top: 0px;
-    left:-50px;
+    top: 15px;
+    left:0px;
     width: 50px;
 }
 
@@ -346,11 +349,10 @@ body.mobile
 .mobile .admin-heading img
 {
     position:relative;
-    top: 0px;
+    top: 30px;
     left:80px;
     right:80px
     width: 50px;
-
 }
 
 .logo span
@@ -363,7 +365,7 @@ body.mobile
 .mobile .admin-heading span
 {
     position:relative;
-    top: -10px;
+    top: 20px;
     left:70px;
     right:70px;
 }
@@ -486,6 +488,7 @@ body.mobile
 {
     clear:both;
     position:relative;
+    top:0px;
     left:0px;
     right:0px;
     width:320px;
@@ -526,17 +529,20 @@ body.mobile
 
 .mobile .serp
 {
+    
     position:relative;
-    left: 0;
-    right:0;
+    top:-70px;
+    left: 50px;
+    right:50px;
+    z-index: -1;
 }
 
 .mobile .serp-results
 {
     position:relative;
     top: -40px;
-    left: -30px;
-    right: -30px;
+    left: 3px;
+    right: 3px;
 }
 
 .searchbox
@@ -950,7 +956,7 @@ p
 {
     position:relative;
     float:none;
-    top:-10px;
+    top:10px;
     width:320px;
     border: 0;
 }
@@ -1049,7 +1055,7 @@ p
 {
     clear:both;
     position: relative;
-    top:0px;
+    top:30px;
     left: 5px;
     right:5px;
     margin:0;
