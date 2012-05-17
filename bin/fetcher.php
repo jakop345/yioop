@@ -183,33 +183,39 @@ class Fetcher implements CrawlConstants
      * @var array
      */
     var $meta_words;
+
     /**
      * WebArchiveBundle  used to store complete web pages and auxiliary data
      * @var object
      */
     var $web_archive;
+
     /**
      * Timestamp of the current crawl
      * @var int
      */
     var $crawl_time;
+
     /**
      * Contains the list of web pages to crawl from a queue_server
      * @var array
      */
     var $to_crawl;
+
     /**
      * Contains the list of web pages to crawl that failed on first attempt
      * (we give them one more try before bailing on them)
      * @var array
      */
     var $to_crawl_again;
+
     /**
      * Summary information for visited sites that the fetcher hasn't sent to 
      * a queue_server yet
      * @var array
      */
     var $found_sites;
+
     /**
      * Timestamp from a queue_server of the current schedule of sites to
      * download. This is sent back to the server once this schedule is completed
@@ -217,24 +223,28 @@ class Fetcher implements CrawlConstants
      * @var int
      */
     var $schedule_time;
+
     /**
      * The sum of the number of words of all the page description for the current
      * crawl. This is used in computing document statistics.
      * @var int
      */
     var $sum_seen_site_description_length;
+
     /**
      * The sum of the number of words of all the page titles for the current
      * crawl. This is used in computing document statistics.
      * @var int
      */
     var $sum_seen_title_length;
+
     /**
      * The sum of the number of words in all the page links for the current
      * crawl. This is used in computing document statistics.
      * @var int
      */
     var $sum_seen_site_link_length;
+
     /**
      * Number of sites crawled in the current crawl
      * @var int
@@ -257,14 +267,25 @@ class Fetcher implements CrawlConstants
     var $crawl_type;
 
     /**
-     * Maximum number of bytes to download of a webpage
-     * @var int
+     * For an archive crawl, holds the name of the type of archive being 
+     * iterated over (this is the class name of the iterator, without the word 
+     * 'Iterator')
+     * @var string
      */
-    var $page_range_request;
+    var $arc_type;
 
     /**
-     * If self::ARCHIVE_CRAWL is being down, then this field holds the iterator
-     * object used to iterate over the archive
+     * For a non-web archive crawl, holds the path to the directory that 
+     * contains the archive files and their description (web archives have a 
+     * different structure and are already distributed across machines and 
+     * fetchers)
+     * @var string
+     */
+    var $arc_dir;
+
+    /**
+     * If an web archive crawl (i.e. a re-crawl) is active then this field 
+     * holds the iterator object used to iterate over the archive
      * @var object
      */
     var $archive_iterator;
@@ -289,6 +310,12 @@ class Fetcher implements CrawlConstants
      * @var string
      */
     var $fetcher_num;
+
+    /**
+     * Maximum number of bytes to download of a webpage
+     * @var int
+     */
+    var $page_range_request;
 
     /**
      * An array to keep track of hosts which have had a lot of http errors
@@ -381,6 +408,7 @@ class Fetcher implements CrawlConstants
         if(!file_exists(CRAWL_DIR."/{$prefix}temp")) {
             mkdir(CRAWL_DIR."/{$prefix}temp");
         }
+
         $info[self::STATUS] = self::CONTINUE_STATE;
         
         while ($info[self::STATUS] != self::STOP_STATE) {
@@ -398,17 +426,29 @@ class Fetcher implements CrawlConstants
             if($switch_to_old_fetch) {
                 $info[self::CRAWL_TIME] = $this->crawl_time;
                 if($info[self::CRAWL_TIME] == 0) {
-                    $info[self::STATUS] =self::NO_DATA_STATE;
+                    $info[self::STATUS] = self::NO_DATA_STATE;
+                }
+            } else if($this->crawl_type == self::ARCHIVE_CRAWL &&
+                    !empty($this->arc_dir)) {
+                // An archive crawl with data coming from the name server.
+                $info = $this->checkArchiveScheduler();
+
+                if($info === false) {
+                    crawlLog("Cannot connect to name server...".
+                        " will try again in ".FETCH_SLEEP_TIME." seconds.");
+                    sleep(FETCH_SLEEP_TIME);
+                    continue;
                 }
             } else {
+                // Either a web crawl or a recrawl of a previous web crawl.
                 $info = $this->checkScheduler();
-            }
 
-            if($info === false) {
-                crawlLog("Cannot connect to queue server...".
-                    " will try again in ".FETCH_SLEEP_TIME." seconds.");
-                sleep(FETCH_SLEEP_TIME);
-                continue;
+                if($info === false) {
+                    crawlLog("Cannot connect to queue server...".
+                        " will try again in ".FETCH_SLEEP_TIME." seconds.");
+                    sleep(FETCH_SLEEP_TIME);
+                    continue;
+                }
             }
 
             if(!isset($info[self::STATUS])) {
@@ -417,7 +457,7 @@ class Fetcher implements CrawlConstants
             }
 
             if($info[self::STATUS] == self::NO_DATA_STATE) {
-                crawlLog("No data from queue server. Sleeping...");
+                crawlLog("No data. Sleeping...");
                 sleep(FETCH_SLEEP_TIME);
                 continue;
             }
@@ -457,11 +497,15 @@ class Fetcher implements CrawlConstants
             switch($this->crawl_type)
             {
                 case self::WEB_CRAWL:
-                    $downloaded_pages =  $this->downloadPagesWebCrawl();
+                    $downloaded_pages = $this->downloadPagesWebCrawl();
                 break;
 
                 case self::ARCHIVE_CRAWL:
-                    $downloaded_pages =  $this->downloadPagesArchiveCrawl();
+                    if (isset($info[self::ARC_DATA])) {
+                        $downloaded_pages = $info[self::ARC_DATA];
+                    } else {
+                        $downloaded_pages = $this->downloadPagesArchiveCrawl();
+                    }
                 break;
             }
 
@@ -559,7 +603,7 @@ class Fetcher implements CrawlConstants
     }
 
     /**
-     * Extracts NUM_MULTI_CURL_PAGES from the cureen Archive Bundle that is 
+     * Extracts NUM_MULTI_CURL_PAGES from the curent Archive Bundle that is 
      * being recrawled.
      *
      * @return array an associative array of web pages and meta data from
@@ -646,16 +690,16 @@ class Fetcher implements CrawlConstants
     }
 
     /**
-     * Makes a request of the queue server machine to get the timestamp of the 
+     * Makes a request of the name server machine to get the timestamp of the 
      * currently running crawl to see if it changed
      *
      * If the timestamp has changed save the rest of the current fetch batch,
-     * then load any existing fetch from the new crawl otherwise set to crawl
+     * then load any existing fetch from the new crawl otherwise set the crawl
      * to empty
      *
      * @return bool true if loaded a fetch batch due to time change
      */
-   function checkCrawlTime()
+    function checkCrawlTime()
     {
         $name_server = $this->name_server;
 
@@ -664,14 +708,14 @@ class Fetcher implements CrawlConstants
         $session = md5($time . AUTH_KEY);
 
         $prefix = $this->fetcher_num."-";
-
-        /* if just restarted, check to make sure the crawl hasn't changed, 
-           if it has bail
-        */
         $robot_instance = $prefix . ROBOT_INSTANCE;
+
+        $crawl_time = !is_null($this->crawl_time) ? $this->crawl_time : 0;
+
         $request =  
             $name_server."?c=fetch&a=crawlTime&time=$time&session=$session".
-            "&robot_instance=".$robot_instance."&machine_uri=".WEB_URI;
+            "&robot_instance=".$robot_instance."&machine_uri=".WEB_URI.
+            "&crawl_time=.$crawl_time";
 
         $info_string = FetchUrl::getPage($request);
         $info = @unserialize(trim($info_string));
@@ -679,10 +723,9 @@ class Fetcher implements CrawlConstants
             && ($info[self::CRAWL_TIME] != $this->crawl_time
             || $info[self::CRAWL_TIME] == 0)) {
             $dir = CRAWL_DIR."/schedules";
-            /*
-               Zero out the crawl. If haven't done crawl before scheduler
-               will be called
-             */
+
+            // Zero out the crawl. If haven't done crawl before, then scheduler
+            // will be called
             $this->to_crawl = array(); 
             $this->to_crawl_again = array();
             $this->found_sites = array();
@@ -693,13 +736,26 @@ class Fetcher implements CrawlConstants
                     $this->current_server = 0;
                 }
             }
-
             if($this->crawl_time > 0) {
                 file_put_contents("$dir/$prefix".self::fetch_closed_name.
                     "{$this->crawl_time}.txt", "1");
             }
+
+            // Update the basic crawl info, so that we can decide between going 
+            // to a queue server for a schedule or to the name server for 
+            // archive data.
             $this->crawl_time = $info[self::CRAWL_TIME];
-            //load any batch that might exist for changed-to crawl
+            if ($this->crawl_time > 0) {
+                $this->crawl_type = $info[self::CRAWL_TYPE];
+                $this->arc_dir = $info[self::ARC_DIR];
+                $this->arc_type = $info[self::ARC_TYPE];
+            } else {
+                $this->crawl_type = self::WEB_CRAWL;
+                $this->arc_dir = '';
+                $this->arc_type = '';
+            }
+
+            // Load any batch that might exist for changed-to crawl
             if(file_exists("$dir/$prefix".self::fetch_crawl_info.
                 "{$this->crawl_time}.txt") && file_exists(
                 "$dir/$prefix".self::fetch_batch_name.
@@ -718,7 +774,7 @@ class Fetcher implements CrawlConstants
                 if(file_exists("$dir/$prefix".self::fetch_closed_name.
                     "{$this->crawl_time}.txt")) {
                     unlink("$dir/$prefix".self::fetch_closed_name.
-                    "{$this->crawl_time}.txt");
+                        "{$this->crawl_time}.txt");
                 } else {
                     $update_num = SEEN_URLS_BEFORE_UPDATE_SCHEDULER;
                     crawlLog("Fetch on crawl {$this->crawl_time} was not ".
@@ -809,6 +865,57 @@ class Fetcher implements CrawlConstants
         }
 
         crawlLog("  Time to check Scheduler ".(changeInMicrotime($start_time)));
+
+        return $info; 
+    }
+
+    function checkArchiveScheduler()
+    {
+        $start_time = microtime();
+
+        // It's still important to switch queue servers in a round robin 
+        // fashion, so that we send new data to each server each time we fetch 
+        // new data from the name server.
+        $this->current_server = ($this->current_server + 1) 
+            % count($this->queue_servers);
+
+        $name_server = $this->name_server;
+        $time = time();
+        $session = md5($time . AUTH_KEY);
+        $prefix = $this->fetcher_num."-";
+
+        $request =  
+            $name_server."?c=fetch&a=archiveSchedule&time=$time".
+            "&session=$session&robot_instance=".$prefix.ROBOT_INSTANCE.
+            "&machine_uri=".WEB_URI."&crawl_time=".$this->crawl_time;
+
+        $response_string = FetchUrl::getPage($request);
+        if($response_string === false) {
+            crawlLog("The following request failed:");
+            crawlLog($request);
+            return false;
+        }
+
+        $end_info = strpos($response_string, "\n");
+        if($end_info !== false && ($info_string = 
+                substr($response_string, 0, $end_info)) != '') {
+            $info = unserialize($info_string);
+        } else {
+            $info = array();
+            $info[self::STATUS] = self::NO_DATA_STATE;
+        }
+        $this->setCrawlParamsFromArray($info);
+
+        if(isset($info[self::SITES])) {
+            // Unpack the archive data and return it in the $info array; also 
+            // write a copy to disk in case something goes wrong.
+            $data_string = substr($response_string, $end_info + 1);
+            $pages = unserialize(gzuncompress($data_string));
+            $info[self::ARC_DATA] = $pages;
+        }
+
+        crawlLog("  Time to fetch archive data from name server ".
+            changeInMicrotime($start_time));
 
         return $info; 
     }
@@ -1018,7 +1125,7 @@ class Fetcher implements CrawlConstants
                 */
             }
 
-            //text/robot is my made up mimetype for robots.txt files
+            // text/robot is my made up mimetype for robots.txt files
             if(isset($site[self::ROBOT_PATHS])) {
                 $site[self::GOT_ROBOT_TXT] = true;
                 $type = "text/robot";
@@ -1382,16 +1489,15 @@ class Fetcher implements CrawlConstants
 
 
         if((count($this->to_crawl) <= 0 && count($this->to_crawl_again) <= 0) ||
-            ( isset($this->found_sites[self::SEEN_URLS]) && 
-            count($this->found_sites[self::SEEN_URLS]) > 
-            SEEN_URLS_BEFORE_UPDATE_SCHEDULER) || 
-            ($this->crawl_type == self::ARCHIVE_CRAWL && 
-            $this->archive_iterator->end_of_iterator)) {
+                ( isset($this->found_sites[self::SEEN_URLS]) && 
+                count($this->found_sites[self::SEEN_URLS]) > 
+                SEEN_URLS_BEFORE_UPDATE_SCHEDULER) || 
+                ($this->archive_iterator && 
+                $this->archive_iterator->end_of_iterator)) {
             $this->updateScheduler();
         }
 
         crawlLog("  Update Found Sites Time ".(changeInMicrotime($start_time)));
-    
     }
 
     /**
@@ -1640,6 +1746,7 @@ class Fetcher implements CrawlConstants
             crawlLog(
                 "Sending Queue Server" .
                 " $bytes_to_send bytes...");
+            crawlLog("Sending to {$queue_server}");
             $info_string = FetchUrl::getPage($queue_server, $post_data);
             crawlLog(
                 "Updated Queue Server, sent approximately" .

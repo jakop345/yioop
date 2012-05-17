@@ -273,6 +273,17 @@ define('MAX_PHRASE_LEN', 2);
 /** number of multi curl page requests in one go */
 define('NUM_MULTI_CURL_PAGES', 100); 
 
+/** number of pages to extract from an archive in one go */
+define('ARCHIVE_BATCH_SIZE', 500);
+
+/**
+    Time in seconds to wait to acquire an exclusive lock before we're no longer
+    allowed to extract the next batch of pages for an archive crawl. This is
+    intended to prevent a fetcher from waiting to acquire the lock, then
+    getting it just before cURL gives up and times out the request.
+ */
+define('ARCHIVE_LOCK_TIMEOUT', 8);
+
 /** time in seconds before we give up on a page */
 define('PAGE_TIMEOUT', 30);
 

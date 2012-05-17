@@ -416,10 +416,10 @@ class IndexArchiveBundle implements CrawlConstants
 
     /**
      * Gets the description, count of summaries, and number of partitions of the
-     * summaries store in the supplied directory. If the file arctype.txt
-     * exist, this is view as a dummy index archive for the sole purpose of
-     * allowing conversions of downloaded data such as arc files into
-     * Yioop! format.
+     * summaries store in the supplied directory. If the file 
+     * arc_description.txt exists, this is viewed as a dummy index archive for 
+     * the sole purpose of allowing conversions of downloaded data such as arc 
+     * files into Yioop! format.
      *
      * @param string path to a directory containing a summaries WebArchiveBundle
      * @return array summary of the given archive
@@ -440,6 +440,7 @@ class IndexArchiveBundle implements CrawlConstants
 
             return $info;
         }
+
         return WebArchiveBundle::getArchiveInfo($dir_name."/summaries");
     }
 

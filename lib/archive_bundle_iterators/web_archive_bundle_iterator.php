@@ -89,13 +89,31 @@ class WebArchiveBundleIterator extends ArchiveBundleIterator
      * @var object
      */
     var $archive;
+    /**
+     * The fetcher prefix associated with this archive.
+     * @var string
+     */
+    var $fetcher_prefix;
+
+    /**
+     * Returns the path to an archive given its timestamp.
+     *
+     * @param string $timestamp the archive timestamp
+     * @return string the path to the archive, based off of the fetcher prefix 
+     *     used when this iterator was constructed
+     */
+    function get_archive_name($timestamp)
+    {
+        return CRAWL_DIR.'/cache/'.$this->fetcher_prefix.
+            self::archive_base_name.$timestamp;
+    }
 
     /**
      * Creates a web archive iterator with the given parameters.
      *
      * @param string $prefix fetcher number this bundle is associated with
      * @param string $iterate_timestamp timestamp of the web archive bundle to 
-     *      iterate  over the pages of
+     *      iterate over the pages of
      * @param string $result_timestamp timestamp of the web archive bundle
      *      results are being stored in
      */
@@ -108,25 +126,50 @@ class WebArchiveBundleIterator extends ArchiveBundleIterator
         $this->archive = new WebArchiveBundle($archive_name);
         $archive_name = $this->get_archive_name($result_timestamp);
         if(file_exists("$archive_name/iterate_status.txt")) {
-            $info = unserialize(file_get_contents(
-                "$archive_name/iterate_status.txt"));
-            $this->count = $this->archive->count;
-            $this->num_partitions = $this->archive->write_partition+1;
-            $this->overall_index = $info['overall_index'];
-            $this->end_of_iterator = $info['end_of_iterator'];
-            $this->partition_index = $info['partition_index'];
-            $this->current_partition_num = $info['current_partition_num'];
-            $this->partition =  $this->archive->getPartition(
-                    $this->current_partition_num, false);
-            $this->partition->iterator_pos = $info['iterator_pos'];
+            $this->restoreCheckpoint();
         } else {
             $this->reset();
         }
-
     }
 
     /**
-     * Estimates the important of the site according to the weighting of
+     * Saves the current state so that a new instantiation can pick up just 
+     * after the last batch of pages extracted.
+     */
+    function saveCheckpoint($info = array())
+    {
+        $info['overall_index'] = $this->overall_index;
+        $info['end_of_iterator'] = $this->end_of_iterator;
+        $info['partition_index'] = $this->partition_index;
+        $info['current_partition_num'] = $this->current_partition_num;
+        $info['iterator_pos'] = $this->partition->iterator_pos;
+        $archive_name = $this->get_archive_name($this->result_timestamp);
+        file_put_contents("$archive_name/iterate_status.txt",
+            serialize($info));
+    }
+
+    /**
+     * Restores state from a previous instantiation, after the last batch of 
+     * pages extracted.
+     */
+    function restoreCheckpoint()
+    {
+        $info = unserialize(file_get_contents(
+            "$archive_name/iterate_status.txt"));
+        $this->count = $this->archive->count;
+        $this->num_partitions = $this->archive->write_partition+1;
+        $this->overall_index = $info['overall_index'];
+        $this->end_of_iterator = $info['end_of_iterator'];
+        $this->partition_index = $info['partition_index'];
+        $this->current_partition_num = $info['current_partition_num'];
+        $this->partition =  $this->archive->getPartition(
+                $this->current_partition_num, false);
+        $this->partition->iterator_pos = $info['iterator_pos'];
+        return $info;
+    }
+
+    /**
+     * Estimates the importance of the site according to the weighting of
      * the particular archive iterator
      * @param $site an associative array containing info about a web page
      * @return bool false we assume files were crawled roughly according to 
@@ -171,16 +214,7 @@ class WebArchiveBundleIterator extends ArchiveBundleIterator
         $this->end_of_iterator = ($this->overall_index >= $this->count ) ?
             true : false;
 
-        $archive_name = $this->get_archive_name($this->result_timestamp);
-        $info = array();
-        $info['overall_index'] = $this->overall_index;
-        $info['end_of_iterator'] = $this->end_of_iterator;
-        $info['partition_index'] = $this->partition_index;
-        $info['current_partition_num'] = $this->current_partition_num;
-        $info['iterator_pos'] =$this->partition->iterator_pos;
-        file_put_contents("$archive_name/iterate_status.txt",
-            serialize($info));
-
+        $this->saveCheckpoint();
         return $objects;
     }
 

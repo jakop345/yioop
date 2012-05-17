@@ -39,6 +39,8 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 require_once BASE_DIR.
     '/lib/archive_bundle_iterators/archive_bundle_iterator.php';
 
+require_once BASE_DIR.'/lib/bzip2_block_iterator.php';
+
 /**
  * Used to iterate through a collection of .xml.bz2  media wiki files 
  * stored in a WebArchiveBundle folder. Here these media wiki files contain the
@@ -54,20 +56,29 @@ class MediaWikiArchiveBundleIterator extends ArchiveBundleIterator
     implements CrawlConstants
 {
     /**
+     * The path to the directory containing the archive partitions to be 
+     * iterated over.
+     * @var string
+     */
+    var $iterate_dir;
+    /**
+     * The path to the directory where the iteration status is stored.
+     * @var string
+     */
+    var $result_dir;
+    /**
      * The number of arc files in this arc archive bundle
      *  @var int
      */
     var $num_partitions;
-
     /**
      *  Counting in glob order for this arc archive bundle directory, the 
-     *  current active file number of the arc file being process.
-     *
+     *  current active file number of the arc file being processed.
      *  @var int
      */
     var $current_partition_num;
     /**
-        current number of wiki pages into the Media Wiki xml.bz2 file
+     *  current number of wiki pages into the Media Wiki xml.bz2 file
      *  @var int
      */
     var $current_page_num;
@@ -84,21 +95,21 @@ class MediaWikiArchiveBundleIterator extends ArchiveBundleIterator
     /**
      * Used to hold data that was in the buffer but before a siteinfo or a page
      * when that data gets parsed out.
-     *
      *  @var string
      */
     var $remainder;
     /**
-     *  Associative array containing global properties like base url of th
+     *  Associative array containing global properties like base url of the
      *  current open wiki media file
      *  @var array
      */
     var $header;
     /**
-     *  File handle for current mediawiki file
-     *  @var resource
+     *  Wrapper for a bzip2 file that decompresses incrementally and can be 
+     *  serialized and restored while maintaining its position.
+     *  @var MicroBzip2
      */
-    var $fh;
+    var $bz2_iterator;
 
     /**
      * Start state of FSA for lexing media wiki docs
@@ -141,32 +152,59 @@ class MediaWikiArchiveBundleIterator extends ArchiveBundleIterator
      * @param string $result_timestamp timestamp of the arc archive bundle
      *      results are being stored in
      */
-    function __construct($prefix, $iterate_timestamp, $result_timestamp)
+    function __construct($iterate_timestamp, $iterate_dir,
+            $result_timestamp, $result_dir)
     {
-        $this->fetcher_prefix = $prefix;
         $this->iterate_timestamp = $iterate_timestamp;
+        $this->iterate_dir = $iterate_dir;
         $this->result_timestamp = $result_timestamp;
-        $archive_name = $this->get_archive_name($iterate_timestamp);
+        $this->result_dir = $result_dir;
         $this->partitions = array();
-        foreach(glob("$archive_name/*.xml.bz2") as $filename) { 
+        foreach(glob("{$this->iterate_dir}/*.xml*.bz2") as $filename) {
             $this->partitions[] = $filename;
         }
         $this->num_partitions = count($this->partitions);
 
-        if(file_exists("$archive_name/iterate_status.txt")) {
-            $info = unserialize(file_get_contents(
-                "$archive_name/iterate_status.txt"));
-            $this->end_of_iterator = $info['end_of_iterator'];
-            $this->current_partition_num = $info['current_partition_num'];
-            $this->current_page_num = $info['current_page_num'];
-            $this->fh=bzopen(
-                $this->partitions[$this->current_partition_num], "r");
-            $this->buffer = "";
-            $this->readMediaWikiHeader();
-            $this->readPages($this->current_page_num, false);
+        if(file_exists("{$this->result_dir}/iterate_status.txt")) {
+            $this->restoreCheckpoint();
         } else {
             $this->reset();
         }
+    }
+
+    /**
+     * Saves the current state so that a new instantiation can pick up just 
+     * after the last batch of pages extracted.
+     */
+    function saveCheckpoint($info = array())
+    {
+        $info['end_of_iterator'] = $this->end_of_iterator;
+        $info['current_partition_num'] = $this->current_partition_num;
+        $info['current_page_num'] = $this->current_page_num;
+        $info['buffer'] = $this->buffer;
+        $info['remainder'] = $this->remainder;
+        $info['header'] = $this->header;
+        $info['bz2_iterator'] = $this->bz2_iterator;
+        file_put_contents("{$this->result_dir}/iterate_status.txt",
+            serialize($info));
+    }
+
+    /**
+     * Restores state from a previous instantiation, after the last batch of 
+     * pages extracted.
+     */
+    function restoreCheckpoint()
+    {
+        $info = unserialize(file_get_contents(
+            "{$this->result_dir}/iterate_status.txt"));
+        $this->end_of_iterator = $info['end_of_iterator'];
+        $this->current_partition_num = $info['current_partition_num'];
+        $this->current_page_num = $info['current_page_num'];
+        $this->buffer = $info['buffer'];
+        $this->remainder = $info['remainder'];
+        $this->header = $info['header'];
+        $this->bz2_iterator = $info['bz2_iterator'];
+        return $info;
     }
 
     /**
@@ -220,10 +258,21 @@ class MediaWikiArchiveBundleIterator extends ArchiveBundleIterator
      */
     function getNextTagData($tag)
     {
-        do {
-            if(!$this->fh || feof($this->fh)) {return false;}
-            $this->buffer .= bzread($this->fh, self::BLOCK_SIZE);
-        } while(!stristr($this->buffer, "</$tag"));
+        while(stripos($this->buffer, "</$tag") === false) {
+            if(is_null($this->bz2_iterator) || $this->bz2_iterator->is_eof()) {
+                return false;
+            }
+            // Get the next block; the block iterator can very occasionally 
+            // return a bad block if a block header pattern happens to show up 
+            // in compressed data, in which case decompression will fail. We 
+            // want to skip over these false blocks and get back to real 
+            // blocks.
+            while(!is_string($block = $this->bz2_iterator->next_block())) {
+                if($this->bz2_iterator->is_eof())
+                    return false;
+            }
+            $this->buffer .= $block;
+        } 
         $start_info = strpos($this->buffer, "<$tag");
         $this->remainder = substr($this->buffer, 0, $start_info);
         $pre_end_info = strpos($this->buffer, "</$tag", $start_info);
@@ -261,10 +310,9 @@ class MediaWikiArchiveBundleIterator extends ArchiveBundleIterator
         $this->current_partition_num = -1;
         $this->end_of_iterator = false;
         $this->current_offset = 0;
-        $this->fh = NULL;
+        $this->bz2_iterator = NULL;
         $this->buffer = "";
-        $archive_name = $this->get_archive_name($this->result_timestamp);
-        @unlink("$archive_name/iterate_status.txt");
+        @unlink("{$this->result_dir}/iterate_status.txt");
     }
 
     /**
@@ -291,22 +339,22 @@ class MediaWikiArchiveBundleIterator extends ArchiveBundleIterator
     {
         $pages = array();
         $page_count = 0;
-        for($i = 0; $i < $num; $i++) {
+        while($page_count < $num) {
             $page = $this->readPage($return_pages);
             if(!$page) {
-                if(is_resource($this->fh)) {
-                    bzclose($this->fh);
+                if(!is_null($this->bz2_iterator)) {
+                    $this->bz2_iterator->close();
                 }
                 $this->current_partition_num++;
                 if($this->current_partition_num >= $this->num_partitions) {
                     $this->end_of_iterator = true;
                     break;
                 }
-                $this->fh = bzopen(
-                    $this->partitions[$this->current_partition_num], "r");
+                $this->bz2_iterator = new BZip2BlockIterator(
+                    $this->partitions[$this->current_partition_num]);
                 $result = $this->readMediaWikiHeader();
                 if(!$result) {
-                    $this->fh = NULL;
+                    $this->bz2_iterator = NULL;
                     break;
                 }
             } else {
@@ -316,17 +364,11 @@ class MediaWikiArchiveBundleIterator extends ArchiveBundleIterator
                 $page_count++;
             }
         }
-        if(is_resource($this->fh)) {
+        if(!is_null($this->bz2_iterator)) {
             $this->current_page_num += $page_count;
         }
 
-        $archive_name = $this->get_archive_name($this->result_timestamp);
-        $info = array();
-        $info['end_of_iterator'] = $this->end_of_iterator;
-        $info['current_partition_num'] = $this->current_partition_num;
-        $info['current_page_num'] = $this->current_page_num;
-        file_put_contents("$archive_name/iterate_status.txt",
-            serialize($info));
+        $this->saveCheckpoint();
         return $pages;
     }
 
@@ -337,7 +379,9 @@ class MediaWikiArchiveBundleIterator extends ArchiveBundleIterator
      */
     function readPage($return_page)
     {
-        if(!is_resource($this->fh)) return NULL;
+        if(is_null($this->bz2_iterator)) {
+            return NULL;
+        }
         $page_info = $this->getNextTagData("page");
         if(!$return_page) {
             return true;
