@@ -277,10 +277,10 @@ define('NUM_MULTI_CURL_PAGES', 100);
 define('ARCHIVE_BATCH_SIZE', 500);
 
 /**
-    Time in seconds to wait to acquire an exclusive lock before we're no longer
-    allowed to extract the next batch of pages for an archive crawl. This is
-    intended to prevent a fetcher from waiting to acquire the lock, then
-    getting it just before cURL gives up and times out the request.
+ *  Time in seconds to wait to acquire an exclusive lock before we're no longer
+ *  allowed to extract the next batch of pages for an archive crawl. This is
+ *  intended to prevent a fetcher from waiting to acquire the lock, then
+ *  getting it just before cURL gives up and times out the request.
  */
 define('ARCHIVE_LOCK_TIMEOUT', 8);
 

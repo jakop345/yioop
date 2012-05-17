@@ -209,6 +209,9 @@ class SearchController extends Controller implements CrawlConstants
         } else if ($index_time_stamp == 0) {
             $index_info = NULL;
         }
+        if(defined("MEDIA")) {
+            $data["MEDIA"] = MEDIA;
+        }
         if(isset($_REQUEST['q']) && strlen($_REQUEST['q']) > 0 
             || $activity != "query") {
             if($activity == "query") {
@@ -372,6 +375,9 @@ class SearchController extends Controller implements CrawlConstants
     function processQuery($query, $activity, $arg, $results_per_page, 
         $limit = 0, $index_name = 0, $raw = 0) 
     {
+        if(defined("MEDIA")) {
+            $data["MEDIA"] = MEDIA;
+        }
         $no_index_given = false;
         if($index_name == 0) {
             $index_name = $this->crawlModel->getCurrentIndexDatabaseName();
@@ -429,7 +435,6 @@ class SearchController extends Controller implements CrawlConstants
 
             $queue_servers = array();
         }
-
         switch($activity)
         {
             case "related":
@@ -456,6 +461,19 @@ class SearchController extends Controller implements CrawlConstants
             case "query":
             default:
                 if(trim($query) != "") {
+                    if(defined("MEDIA")) {
+                        switch(MEDIA)
+                        {
+                            case "Video":
+                                $replace = " media:video";
+                            break;
+                            case "Images":
+                                $replace = " media:image";
+                            break;
+                        }
+                        $query = preg_replace('/\|/', "$replace", $query);
+                        $query .= " $replace";
+                    }
                     $mix_metas = array("m:", "mix:");
                     foreach($mix_metas as $mix_meta) {
                         $pattern = "/(\s)($mix_meta(\S)+)/";
@@ -488,7 +506,7 @@ class SearchController extends Controller implements CrawlConstants
                         $use_cache_if_possible, $raw, $queue_servers);
                     $query = $original_query;
                 }
-                $data['PAGING_QUERY'] = "index.php?q=".urlencode($query);
+                $data['PAGING_QUERY'] = "?q=".urlencode($query);
                 $data['QUERY'] = urlencode($this->clean($query,"string"));
 
             break;
