@@ -69,16 +69,20 @@ class AdminView extends View
      * admin activity. The $data['ELEMENT'] says which activity to render
      */
     public function renderView($data) {
+        $logo = "resources/yioop.png";
+        if(MOBILE) {
+            $logo = "resources/m-yioop.png";
+        }
         if(PROFILE) {
             $this->signinElement->render($data);
         }
         ?>
 
-        <h1 class="logo"><a href="./?YIOOP_TOKEN=<?php 
+        <h1 class="admin-heading logo"><a href="./?YIOOP_TOKEN=<?php 
             e($data['YIOOP_TOKEN'])?>"><img 
-            src="resources/yioop.png" alt="Yioop!" /></a><span> - <?php 
+            src="<?php e($logo); ?>" alt="Yioop!" /></a><span> - <?php 
         e(tl('admin_view_admin')); 
-        e(' ['.$data['CURRENT_ACTIVITY'].']')?></span></h1>
+        if(!MOBILE) {e(' ['.$data['CURRENT_ACTIVITY'].']');}?></span></h1>
 
         <?php
         $this->activityElement->render($data);

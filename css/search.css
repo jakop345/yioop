@@ -112,8 +112,40 @@ body.mobile
     top:0;
     left:0;
     right:0;
+    margin:0;
     width:320px;
 }
+
+.topbar
+{
+    background: #DDD;
+    background: -moz-linear-gradient(top, #FFF 0%,#EEF 30%,#EEF 70%, #FFF 100%);
+    background: -webkit-linear-gradient(top,
+        #FFF 0%,#EEF 30%,#EEF 70%, #FFF 100%);
+    background: linear-gradient(top, #FFF 0%,#EEF 30%,#EEF 70%, #FFF 100%);
+    position:absolute;
+    top:-12px;
+    left:0;
+    right:0;
+    width:100%;
+    height:45px;
+}
+
+.mobile .topbar
+{
+    background: #DDD;
+    background: -moz-linear-gradient(top, #FFF 0%,#EEF 30%,#EEF 70%, #FFF 100%);
+    background: -webkit-linear-gradient(top, 
+        #FFF 0%,#EEF 30%,#EEF 70%, #FFF 100%);
+    background: linear-gradient(top, #FFF 0%,#EEF 30%,#EEF 70%, #FFF 100%);
+    position:absolute;
+    top:-5px;
+    left:0px;
+    right:0px;
+    width:330px;
+    height:30px;
+}
+
 #message
 {
     text-align: center;
@@ -147,28 +179,65 @@ body.mobile
 {
     display: inline;
     list-style-type: none;
-    padding-left: 3px; 
-    border-left: 1px solid #000;
+    padding-left: 20px;
 }
 
-.mobile .userNav
-{
-    position:relative;
-    top: -14px;
-    left:-20px;
-    right:-20px;
-    width:90%;
-    min-width: 0;
-}
 
 .html-rtl .userNav ul li
 {
     display:inline;
     list-style-type: none;
-    padding-right: 3px;
-    border-right: 1px solid #000;
+    padding-right: 20px;
 }
 
+
+.mobile .userNav
+{
+    position:relative;
+    top: -14px;
+    left:0px;
+    right:0px;
+    width:320px;
+    padding: 0px;
+    min-width: 0;
+}
+
+.mobile .userNav ul li
+{
+    padding:1px;
+}
+
+.html-ltr .subsearch ul li
+{
+    float:left;
+    display: inline;
+    list-style-type: none;
+    padding-left: 20px; 
+}
+
+
+.html-rtl .subsearch ul li
+{
+    float:right;
+    display: inline;
+    list-style-type: none;
+    padding-left: 20px; 
+}
+
+.mobile .subsearch
+{
+    position: relative;
+    top: -14px;
+    left:-40px;
+    right:-40px;
+    padding:0px;
+}
+
+.mobile .subsearch ul li
+{
+    padding-left:3px;
+    padding-right:3px;
+}
 .landing-spacer 
 {
     height:6in;
@@ -195,8 +264,8 @@ body.mobile
 {
     position:relative;
     top:10px;
-    left:-40px;
-    right:-40px;
+    left:10px;
+    right:10px;
     min-width:0;
     clear: both;
 }
@@ -204,7 +273,7 @@ body.mobile
 .mobile .non-search
 {
     position:relative;
-    top:10px;
+    top:20px;
     left:0px;
     right:0px;
 }
@@ -217,8 +286,26 @@ body.mobile
     right:-40px;
 }
 
+.logo
+{
+    position:relative;
+    top:14pt;
+    margin:0;
+
+}
+
+.admin-heading
+{
+    position:relative;
+    top: -14pt;
+}
+
+
+
 .landing .logo
 {
+    position:relative;
+    top:0;
     text-align:center;
     min-width: 8in;
 }
@@ -226,12 +313,6 @@ body.mobile
 .mobile .landing .logo
 {
     min-width: 0px;
-}
-
-.logo
-{
-    margin:0;
-
 }
 
 .logo img
@@ -243,7 +324,7 @@ body.mobile
 .mobile .logo img
 {
     position:relative;
-    top: -20px;
+    top: 0px;
     left:-50px;
     width: 50px;
 }
@@ -262,12 +343,30 @@ body.mobile
     width: 200px;
 }
 
+.mobile .admin-heading img
+{
+    position:relative;
+    top: 0px;
+    left:80px;
+    right:80px
+    width: 50px;
+
+}
+
 .logo span
 {
     position:relative;
     top: -.3in;
 }
 
+
+.mobile .admin-heading span
+{
+    position:relative;
+    top: -10px;
+    left:70px;
+    right:70px;
+}
 
 .html-ltr .login, .html-ltr .settings
 {
@@ -287,11 +386,9 @@ body.mobile
 {
     font-size: 14pt;
     position: relative;
-    left: -14%;
-    right: -14%;
+    left: 10px;
+    right: 10px;
 }
-
-
 
 .mobile .stats  span
 {
@@ -312,7 +409,8 @@ body.mobile
 .mobile .non-search .logo span
 {
     position:relative;
-    left:0px;
+    left:20px;
+    right:20px;
     width:200px;
 }
 
@@ -321,9 +419,11 @@ body.mobile
 {
     position:relative;
     top: -20px;
-    left:0px;
+    left:20px;
+    right:20px;
     width: 50px;
 }
+
 
 .mobile .table-input select
 {
@@ -386,8 +486,8 @@ body.mobile
 {
     clear:both;
     position:relative;
-    left:-40px;
-    right:-40px;
+    left:0px;
+    right:0px;
     width:320px;
     margin:3px;
 }
@@ -434,12 +534,15 @@ body.mobile
 .mobile .serp-results
 {
     position:relative;
-    left: -20px;
-    right: -20px;
+    top: -40px;
+    left: -30px;
+    right: -30px;
 }
 
 .searchbox
 {
+    position: relative;
+    top:14pt;
     width:8in;
     padding: 0.1in;
     background-color: #DDF;
@@ -449,16 +552,24 @@ body.mobile
     border-radius: 0.07in;
 }
 
+.landing .searchbox
+{
+    position: relative;
+    top:0;
+}
+
 .mobile .searchbox
 {
     position:relative;
-    top: 10px;
+    top: 50px;
     padding: 3px;
     width:240px;
 }
 
 .mobile .landing .searchbox
 {
+    position:relative;
+    top: 10px;
     width:289px;
 }
 
@@ -783,6 +894,7 @@ p
 {
     background-color: #fff;
     border: 1px solid #ccc;
+    position:relative;
 }
 
 .setting-footer, .signin-exit, .landing-footer
@@ -798,8 +910,8 @@ p
     text-align: center;
     margin-top:0;
     top: -20px;
-    left:-40px;
-    right:-40px;
+    left:-20px;
+    right:-20px;
     width:320px;
 }
 
@@ -818,7 +930,7 @@ p
 
 
 
-.html-ltr .sidemenu
+.html-ltr .activitymenu
 {
     float: left;
     width: 2.5in;
@@ -826,7 +938,7 @@ p
     border-radius: 8px;
 }
 
-.html-rtl .sidemenu
+.html-rtl .activitymenu
 {
     float: right;
     width: 2.5in;
@@ -834,7 +946,16 @@ p
     border-radius: 8px;
 }
 
-.sidemenu h2
+.mobile .activitymenu
+{
+    position:relative;
+    float:none;
+    top:-10px;
+    width:320px;
+    border: 0;
+}
+
+.activitymenu h2
 {
     color: #222;
     background-color:#8A4;
@@ -844,7 +965,18 @@ p
     border-top-left-radius: 8px;
 }
 
-.sidemenu li
+.mobile .activitymenu h2
+{
+    display:none;
+}
+
+.mobile .activitymenu select
+{
+    width:320px;
+    font-size:16pt;
+}
+
+.activitymenu li
 {
     list-style-type:none;
     list-style-position:inside;
@@ -852,24 +984,24 @@ p
     padding: .10in;
 }
 
-.sidemenu li.bottom_border
+.activitymenu li.bottom_border
 {
     border-bottom: 1px solid #ccc;
 }
 
-.sidemenu li a
+.activitymenu li a
 {
     color:#222;
     text-decoration: none;
 }
 
-.sidemenu li a:hover
+.activitymenu li a:hover
 {
     color:#222;
     text-decoration: underline;
 }
 
-.sidemenu ul
+.activitymenu ul
 {
     display: block;
     padding: 0;
@@ -913,6 +1045,27 @@ p
     border-radius: 8px;
 }
 
+.mobile .currentactivity
+{
+    clear:both;
+    position: relative;
+    top:0px;
+    left: 5px;
+    right:5px;
+    margin:0;
+    padding:0;
+    margin-right: 3px;
+    padding-right: 1px;
+    padding-left: 1px;
+    padding-bottom: 1px;
+    width: 310px;
+    min-width: 0;
+    min-height: 200px;
+    font-size:12pt;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
 
 .currentactivity h2
 {
@@ -939,6 +1092,10 @@ p
     font-size:16pt;
 }
 
+.mobile .currentactivity select
+{
+    font-size:12pt;
+}
 .html-ltr .roletable, .html-ltr .roletable th, .html-ltr .roletable td
 {
     margin-left: .2in;
@@ -1027,6 +1184,13 @@ p
 .html-rtl  .filetypestable, .html-rtl .ftypesall td
 {
    margin-right: .3in;
+   vertical-align: top;
+}
+
+.mobile .filetypestable, .mobile .ftypesall td
+{
+   margin-left: 2px;
+   margin-right: 2px;
    vertical-align: top;
 }
 
@@ -1136,14 +1300,29 @@ p
     width:2in;
 }
 
+.mobile .narrowfield
+{
+    width:100px;
+}
+
 .widefield
 {
     width:3in;
 }
 
+.mobile .widefield
+{
+    width:150px;
+}
+
 .extrawidefield
 {
     width:5in;
+}
+
+.mobile .extrawidefield
+{
+    width:200px;
 }
 
 .talltextarea
@@ -1153,10 +1332,20 @@ p
     height:4in;
 }
 
+.mobile .talltextarea
+{
+    width:90%;
+}
+
 .shorttextarea
 {
     width:100%;
     height:1in;
+}
+
+.mobile .shorttextarea
+{
+    width:90%;
 }
 
 .center

@@ -34,7 +34,7 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- * Element responsible for drawing the admin panel login
+ * Element responsible for drawing links to settings and login panels 
  *
  * @author Chris Pollett
  * @package seek_quarry
@@ -45,7 +45,7 @@ class SigninElement extends Element
 {
 
     /**
-     *  Element used to render the login screen for the admin control panel
+     *  Method responsible for drawing links to settings and login panels 
      *
      *  @param array $data makes use of the YIOOP_TOKEN for anti CSRF attacks
      */

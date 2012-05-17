@@ -130,9 +130,7 @@ if(!PROFILE ) {
 $agent = $_SERVER['HTTP_USER_AGENT'];
 $is_admin = strcmp($controller_name, "admin") == 0;
 if((stristr($agent, "mobile") || stristr($agent, "fennec")) && 
-    !stristr($agent, "ipad") && (!$is_admin || ($is_admin &&
-    !(isset($_REQUEST['a']) || isset($_REQUEST['u']) ||
-        isset($_SESSION['USER_ID'] ))))) {
+    !stristr($agent, "ipad") ) {
     define("MOBILE", true);
 } else {
     define("MOBILE", false);

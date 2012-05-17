@@ -54,23 +54,51 @@ class ActivityElement extends Element
     public function render($data) 
     {
     ?>
-        <div class="frame sidemenu">
+        <div class="frame activitymenu">
         <h2><?php e(tl('activity_element_activities')); ?></h2>
         <ul>
         <?php
         if(isset($data['ACTIVITIES'])) {
             $count = count($data['ACTIVITIES']);
-            $activity = $data['ACTIVITIES'];
-            for($i =0 ; $i < $count; $i++) {
-                if($i < $count - 1) {
-                    $class="class='bottom_border'";
-                } else {
-                    $class="";
+            $activities = $data['ACTIVITIES'];
+            if(MOBILE) {
+                $out_activities = array();
+                $base_url = "?c=admin&amp;YIOOP_TOKEN=".$data['YIOOP_TOKEN'].
+                    "&amp;a=";
+                $current = "";
+                foreach($activities as $activity) {
+                    $out_activities[$base_url .
+                        $activity['METHOD_NAME'] ]= $activity['ACTIVITY_NAME'];
+                    if(strcmp($activity['ACTIVITY_NAME'], 
+                        $data['CURRENT_ACTIVITY']) == 0) {
+                        $current = $base_url .$activity['METHOD_NAME'];
+                    }
                 }
-                e("<li $class><a href='?c=admin&amp;YIOOP_TOKEN=".
-                    $data['YIOOP_TOKEN']."&amp;a=".
-                    $activity[$i]['METHOD_NAME']."'>".
-                    $activity[$i]['ACTIVITY_NAME']."</a></li>");
+
+                $this->view->optionsHelper->render(
+                    "activity", "a", $out_activities,  $current);
+                ?>
+                <script type="text/javascript">
+                activity_select = document.getElementById('activity');
+                function activityChange() {
+                    document.location = activity_select.value;
+                }
+
+                activity_select.onchange = activityChange;
+                </script>
+                <?php
+            } else {
+                for($i =0 ; $i < $count; $i++) {
+                    if($i < $count - 1) {
+                        $class="class='bottom_border'";
+                    } else {
+                        $class="";
+                    }
+                    e("<li $class><a href='?c=admin&amp;YIOOP_TOKEN=".
+                        $data['YIOOP_TOKEN']."&amp;a=".
+                        $activities[$i]['METHOD_NAME']."'>".
+                        $activities[$i]['ACTIVITY_NAME']."</a></li>");
+                }
             }
         }
         ?>

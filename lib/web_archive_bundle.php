@@ -342,8 +342,8 @@ class WebArchiveBundle
      */
     static function setArchiveInfo($dir_name, $info)
     {
-        if(file_exists($dir_name."/description.txt") && 
-            !$this->read_only_archive) {
+        if(file_exists($dir_name."/description.txt") && ((isset($this) &&
+            !$this->read_only_archive) || !isset($this))) {
             file_put_contents($dir_name."/description.txt", serialize($info));
         }
     }

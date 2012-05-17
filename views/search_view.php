@@ -56,7 +56,7 @@ class SearchView extends View implements CrawlConstants
     /** Names of element objects that the view uses to display itself 
      *  @var array
      */
-    var $elements = array("signin", "footer");
+    var $elements = array("signin", "subsearch", "footer");
 
     /** This view is drawn on a web layout
      *  @var string
@@ -74,7 +74,12 @@ class SearchView extends View implements CrawlConstants
      */
     public function renderView($data) 
     {
+        ?>
+        <div class="topbar"><?php
+        $this->subsearchElement->render($data);
         $this->signinElement->render($data);
+        ?>
+        </div><?php
         $logo = "resources/yioop.png";
         if(!isset($data['PAGES'])) {
             e('<div class="landing">');
