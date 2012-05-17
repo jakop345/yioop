@@ -74,8 +74,13 @@ class AdminView extends View
             $logo = "resources/m-yioop.png";
         }
         if(PROFILE) {
+        ?>
+        <div class="topbar"><?php
             $this->signinElement->render($data);
+        ?>
+        </div><?php
         }
+
         ?>
 
         <h1 class="admin-heading logo"><a href="./?YIOOP_TOKEN=<?php 

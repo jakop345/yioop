@@ -299,7 +299,7 @@ body.mobile
 .admin-heading
 {
     position:relative;
-    top: -14pt;
+    top: 0;
     z-index: -1;
 }
 
@@ -916,8 +916,8 @@ p
     text-align: center;
     margin-top:0;
     top: -20px;
-    left:-20px;
-    right:-20px;
+    left:0px;
+    right:0px;
     width:320px;
 }
 
@@ -956,7 +956,7 @@ p
 {
     position:relative;
     float:none;
-    top:10px;
+    top:30px;
     width:320px;
     border: 0;
 }
@@ -1055,7 +1055,7 @@ p
 {
     clear:both;
     position: relative;
-    top:30px;
+    top:50px;
     left: 5px;
     right:5px;
     margin:0;
