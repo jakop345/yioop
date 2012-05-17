@@ -227,7 +227,7 @@ body.mobile
 
 .mobile .subsearch
 {
-    z-index:2;
+    z-index:1;
     position: relative;
     top: -12px;
     left:-40px;
@@ -301,7 +301,6 @@ body.mobile
 {
     position:relative;
     top: 30px;
-    z-index: -1;
 }
 
 .mobile .admin-heading
