@@ -227,6 +227,7 @@ body.mobile
 
 .mobile .subsearch
 {
+    z-index:2;
     position: relative;
     top: -12px;
     left:-40px;
@@ -299,11 +300,16 @@ body.mobile
 .admin-heading
 {
     position:relative;
-    top: 0;
+    top: 30px;
     z-index: -1;
 }
 
-
+.mobile .admin-heading
+{
+    position:relative;
+    top: 0;
+    z-index: -1;
+}
 
 .landing .logo
 {
@@ -939,6 +945,8 @@ p
 .html-ltr .activitymenu
 {
     float: left;
+    position:relative;
+    top:30px;
     width: 2.5in;
     padding: 0;
     border-radius: 8px;
@@ -947,6 +955,8 @@ p
 .html-rtl .activitymenu
 {
     float: right;
+    position:relative;
+    top:30px;
     width: 2.5in;
     padding: 0;
     border-radius: 8px;
@@ -1018,7 +1028,7 @@ p
 .html-ltr .currentactivity
 {
     position: relative;
-
+    top:30px;
     margin-left: 2.75in;
     padding-left: .1in;
     padding-right: .1in;
@@ -1036,7 +1046,7 @@ p
 .html-rtl .currentactivity
 {
     position: relative;
-
+    top:30px;
     margin-right: 2.75in;
     padding-right: .1in;
     padding-left: .1in;
@@ -1284,7 +1294,7 @@ p
 
 #query-statistics
 {
-    margin-top: .2in;
+    margin-top: .4in;
     border-top: 2px solid gray;
     color: gray;
 }
