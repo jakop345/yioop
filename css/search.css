@@ -590,7 +590,7 @@ body.mobile
     font-size:16pt;
 }
 
-.searchbox input, .autoresult, .dropdown
+.searchbox input, .autoresult
 {
     width: 6.5in;
     font-size:16pt;
@@ -602,6 +602,28 @@ body.mobile
     padding-right:0;
     padding-left:0;
     margin:0;
+}
+
+.dropdown 
+{   
+    width: 6.55in;
+    margin-left:0.023in;    
+    height: 1.5in;
+    border-color: #AAA;
+    border-width: 0.05in;
+    border-top-style:none;
+    border-right-style:solid;
+    border-bottom-style:solid;
+    border-left-style:solid;
+    border-bottom-right-radius: 0.05in;
+    border-bottom-left-radius: 0.05in;
+    border-top-left-radius: 0.05in;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-bottom:0in;
+    margin-bottom:0in;
+    margin-right:0;
+    padding-top: 0.01in;    
 }
 
 .mobile .searchbox input
@@ -616,47 +638,36 @@ body.mobile
     font-size:12pt;
 }
 
-
 #aslist li
 {
     position:relative;
     top:-0.015in;
     background:#DDF;
-    width: 6.6in;
+    width: 6.5in;
     font-size:16pt;
     margin-right:0in;
     margin-left:0in;
     padding-top:0;
-    padding-right:0;
+    padding-right:0in;
     padding-left:0.1in;
     cursor:pointer;
     list-style:none;
-    border-color: #AAA;
-    border-width: 0.05in;
-    border-top-style:none;
-    border-right-style:solid;
-    border-bottom-style:none;
-    border-left-style:solid;
-}
-
-#aslist li:last-child
-{
-    border-bottom-style:solid;
-    border-bottom-right-radius: 0.05in;
-    border-bottom-left-radius: 0.05in;
-    padding-bottom:0.1in;
 }
 
 #aslist li span
 {
-    background:white;
     width:6.5in;
     padding:0;
     margin:0;
-    display:block
+    display:block;
 }
 
-#aslist li:hover span
+#aslist li span.unselected
+{
+    background:white;
+}
+
+#aslist li span.selected
 {
     background:#AAE;
     color:black;

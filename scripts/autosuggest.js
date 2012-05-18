@@ -32,51 +32,153 @@
 
 /**
  * Steps to follow every time a key is up from the user end
+ * Handles up/dowm arrow keys
+ *
+ * @param Event e current event 
+ * @return String text_field Current value from the search box
+ *
  */
-function askeyup(text_field) {
-    var input_term = text_field.value;
+function askeyup(e,text_field) {
+    var keynum;
+    var term_array;
+    var inputTerm = text_field.value;
     var results_dropdown = document.getElementById("aslist");
-    autosuggest(dictionary, input_term); 
-    results_dropdown.innerHTML = search_list; 
-    search_list = "";
+    var scrollpos = 0;
+    var astobj = document.getElementById("search-name"); 
+    concat_term = "";
+    if(window.event) { // IE8 and earlier
+        keynum = e.keyCode;
+    }
+    else if(e.which) { // IE9/Firefox/Chrome/Opera/Safari
+        keynum = e.which;
+    }
+    term_array = inputTerm.split(" ");
+    concat_array = inputTerm.split(" ",term_array.length-1);          
+    if (inputTerm != "") {
+        for(var i=0; i < concat_array.length ; i++) {
+            concat_term += concat_array[i] + " ";
+        }
+        concat_term = concat_term.trim();
+    }    
+    inputTerm = term_array[term_array.length-1];  
+
+    if (keynum != 40 && keynum != 38) {
+        search_list="";  
+        autosuggest(dictionary, inputTerm);
+        document.getElementById("asdropdown").style.visibility = "visible";
+        document.getElementById("asdropdown").scrollTop =  0;             
+        results_dropdown.innerHTML = search_list;
+        cursor_pos=-1; 
+        if (search_list != "") {
+            results_dropdown.style.visibility = "visible";
+        } 
+        else {  
+            results_dropdown.style.visibility = "hidden";        
+        }
+        items = results_dropdown.children.length;
+        if (items == 0) {
+            document.getElementById("asdropdown").className = "";
+        } else {
+            document.getElementById("asdropdown").className = "dropdown";
+            if (items < 6) {
+                document.getElementById("asdropdown").style.height = "" + items * 0.25 + "in";
+            } else {
+                document.getElementById("asdropdown").style.height = "1.5in";
+            } 
+        }
+    }
+    if (results_dropdown.style.visibility == "visible") {
+        if(keynum == 40) { 
+            if (cursor_pos == -1) { 
+                cursor_pos = 0;                
+                setDisplay(cursor_pos,"selected"); 
+            }
+            else {  
+                setDisplay(cursor_pos,"unselected");                                
+                cursor_pos++;
+                if (cursor_pos == items) {            
+                    cursor_pos=0;
+                }
+                setDisplay(cursor_pos,"selected");                                                       
+            }            
+            scrollpos = (cursor_pos > 2) ? (cursor_pos - 2) : 0;
+            document.getElementById("asdropdown").scrollTop = scrollpos * 26;
+        } else if(keynum == 38) {         
+            if (cursor_pos == -1)
+            {    
+                cursor_pos = items-1;
+                setDisplay(cursor_pos,"selected");                          
+            }
+            else {   
+                setDisplay(cursor_pos,"unselected");                    
+                cursor_pos--;                                      
+                if (cursor_pos == -1) {            
+                    cursor_pos=items-1;
+                }
+                setDisplay(cursor_pos,"selected");                                                         
+            }
+            scrollpos = (cursor_pos > 2) ? (cursor_pos - 2) : 0;
+            document.getElementById("asdropdown").scrollTop = scrollpos * 26;
+        }
+
+    }  
 }
 
 /**
- * To select a value from the dropdownlist and place in the search box 
+ * To select an autosuggest value while up/down arrow keys are being used
+ * and place in the search box
  */
-function aslitem_click(liObj)
-{
-    var results_dropdown = document.getElementById("aslist");
-    var astobj = document.getElementById("search-name"); 
-    astobj.value = liObj.firstChild.innerHTML;
-    results_dropdown.innerHTML = "";
+function setDisplay(cursor_pos, class_name)  {
+    var astobj = document.getElementById("search-name");     
+    astobj.value = document.getElementById(cursor_pos).innerHTML;
+    document.getElementById(cursor_pos).className = class_name;
 }
 
+/**
+ * To select a value onclick from the dropdownlist and place in the search box 
+ */
+function aslitem_click(liObj) {
+    var results_dropdown = document.getElementById("aslist");
+    var astobj = document.getElementById("search-name");
+    astobj.value = liObj.innerHTML;
+    results_dropdown.innerHTML = "";
+    document.getElementById("asdropdown").style.visibility = "hidden";        
+}
+
+/**
+ * To hanble the cursor hover
+ */
+function hover_display(liObj) {
+    if (cursor_pos > -1) { 
+        document.getElementById(cursor_pos).className = "unselected";
+    }
+    cursor_pos = liObj.id;                       
+    liObj.className = "selected";
+}
+    
 /**
  * Fetch words from the Trie and add to seachList with <li> </li> tags
  */
-function getValues(trie_array, parent_word, max_display)
-{
+function getValues(trie_array, parent_word, max_display) {
+    var list_string; 
     // Default to display top 6 words
     max_display = (typeof max_display == 'undefined') ?
         6 : max_display;
     // Default end_marker is ' '
-    if (trie_array != null && last_word == false ) {
+    if (trie_array != null) {
         for (key in trie_array) {
             if (key != end_marker ) {
                 getValues(trie_array[key], parent_word + key);
             } else {
-                search_list += "<li onclick='aslitem_click(this);'><span>"
-                    + decode(parent_word) + "</span></li>";
+                list_string = concat_term.trim() + " " + decode(parent_word);
+                list_string = list_string.trim();
+                search_list += "<li><span id=" + count + " class='unselected' onmouseover=hover_display(this) "; 
+                search_list += "onclick=aslitem_click(this)>" + list_string + "</span></li>";
                 count++;
-                if(count == max_display) {
-                    last_word = true;
-                }
             }
         }
     }
 }
-
 
 /**
  * Returns the sub trie_array under term in
@@ -86,8 +188,7 @@ function getValues(trie_array, parent_word, max_display)
  * @param String term  what to look up
  * @return Array trie_array sub trie_array under term
  */
-function exist(trie_array, term)
-{
+function exist(trie_array, term) {
     for(var i = 1; i< term.length; i++) {
         if(trie_array == null){
             return false;
@@ -117,11 +218,9 @@ function exist(trie_array, term)
  * @param String term - what to look up suggestions for
  * @sideeffect global Array search_list has list of first six entries
  */
-function autosuggest(trie_array, term)
-{
+function autosuggest(trie_array, term) {
     //default end_marker is space
-    end_marker = (typeof end_marker == 'undefined') ?
-        " " : end_marker;
+    end_marker = (typeof end_marker == 'undefined') ? " " : end_marker;
     last_word = false;
     count = 0;
     search_list = "";
@@ -166,8 +265,7 @@ function encode(str)
  * @param int i current offset into str
  * @return Array pair of Unicode character beginning at i and the next offset
  */
-function getUnicodeCharAndNextOffset(str, i) 
-{
+function getUnicodeCharAndNextOffset(str, i) {
     var code = str.charCodeAt(i);
     if (isNaN(code)) {
         return '';
@@ -199,8 +297,7 @@ function getUnicodeCharAndNextOffset(str, i)
  * Load the Trie(compressed with .gz extension) during the launch of website
  * Trie's are represented using nested arrays.
  */
-function loadTrie() 
-{
+function loadTrie() {
     var xmlhttp;
     if (window.XMLHttpRequest) {
         // code for IE7i+, Firefox, Chrome, Opera, Safari

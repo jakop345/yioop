@@ -103,7 +103,7 @@ class SearchView extends View implements CrawlConstants
             e($data['YIOOP_TOKEN']); ?>" />
         <input type="hidden" name="its" value="<?php e($data['its']); ?>" />
         <input type="text" <?php if(WORD_SUGGEST) { ?>
-            autocomplete="off"  onkeyup="askeyup(this)" 
+            autocomplete="off"  onkeyup="askeyup(event,this)" 
             <?php } ?>
             title="<?php e(tl('search_view_input_label')); ?>" 
             id="search-name" name="q" value="<?php if(isset($data['QUERY'])) {
@@ -116,7 +116,7 @@ class SearchView extends View implements CrawlConstants
         </p>
         </form>
             </div>
-        <div class="dropdown"> 
+        <div id="asdropdown"> 
             <ul id="aslist" class="autoresult">
             </ul>
         </div>
