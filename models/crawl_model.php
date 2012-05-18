@@ -240,9 +240,6 @@ class CrawlModel extends Model implements CrawlConstants
 
     }
 
-
-
-
     /**
      * Returns all the files in $dir or its subdirectories with modfied times
      * more recent than timestamp. The file which have
@@ -1028,8 +1025,8 @@ EOT;
         }
 
         if(file_exists(CRAWL_DIR."/schedules/crawl_status.txt")) {
-            //assume if status not updated for CRAWL_TIME_OUT
-            // crawl not active (do check for both scheduler and indexer)
+            /* assume if status not updated for CRAWL_TIME_OUT
+               crawl not active (do check for both scheduler and indexer) */
             if(filemtime(
                 CRAWL_DIR."/schedules/crawl_status.txt") + 
                     CRAWL_TIME_OUT < time() ) { 
@@ -1264,8 +1261,8 @@ EOT;
             chmod($dir, 0777);
         }
         $day = floor($timestamp/86400) - 1; 
-            //want before all other schedules, 
-            // execute next
+            /* want before all other schedules, 
+               execute next */
         $dir .= "/$day";
         if(!file_exists($dir)) {
             mkdir($dir);
