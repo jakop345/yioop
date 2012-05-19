@@ -478,6 +478,12 @@ class CrawlModel extends Model implements CrawlConstants
         if(!isset($info['general']['crawl_index'])) {
             $info['general']['crawl_index']='12345678';
         }
+        if(!isset($info["general"]["arc_dir"])) {
+            $info["general"]["arc_dir"] = "";
+        }
+        if(!isset($info["general"]["arc_type"])) {
+            $info["general"]["arc_type"] = "";
+        }
         $n = array();
         $n[] = <<<EOT
 ; ***** BEGIN LICENSE BLOCK ***** 
@@ -513,8 +519,8 @@ EOT;
         $n[] = "crawl_order = '".$info['general']['crawl_order']."';";
         $n[] = "crawl_type = '".$info['general']['crawl_type']."';";
         $n[] = "crawl_index = '".$info['general']['crawl_index']."';";
-        $n[] = "arc_dir = '".$info['general']['arc_dir']."';";
-        $n[] = "arc_type = '".$info['general']['arc_type']."';";
+        $n[] = 'arc_dir = "'.$info["general"]["arc_dir"].'";';
+        $n[] = 'arc_type = "'.$info["general"]["arc_type"].'";';
         $n[] = "page_recrawl_frequency = '".
             $info['general']['page_recrawl_frequency']."';";
         $n[] = "page_range_request = '".

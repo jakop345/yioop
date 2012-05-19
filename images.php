@@ -39,5 +39,8 @@
  *  Set that want only image results
  */
     define("MEDIA", "Images");
+    if(!isset($_REQUEST['num'])) {
+        $_REQUEST['num']= 50;
+    }
     require_once("index.php");
 ?>

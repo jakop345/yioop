@@ -110,7 +110,6 @@ class SearchController extends Controller implements CrawlConstants
         } else {
             $raw = 0;
         }
-
         if(isset($_REQUEST['num'])) {
             $results_per_page = $this->clean($_REQUEST['num'], "int");
         } else if(isset($_SESSION['MAX_PAGES_TO_SHOW']) ) {
@@ -273,7 +272,9 @@ class SearchController extends Controller implements CrawlConstants
                 $data['its'].".txt";
         $data["HAS_STATISTICS"] = file_exists($stats_file);
         $data['YIOOP_TOKEN'] = $this->generateCSRFToken($user);
-
+        if($view == "search" && $raw == 0 && isset($data['PAGES'])) {
+            $data['PAGES'] = $this->makeImageVideoGroups($data['PAGES']);
+        }
         $data['ELAPSED_TIME'] = changeInMicrotime($start_time);
         if ($view != "serial") {
             $data['INCLUDE_SCRIPTS'] = array("autosuggest");
@@ -520,6 +521,26 @@ class SearchController extends Controller implements CrawlConstants
         $data['RESULTS_PER_PAGE'] = $results_per_page;
         return $data;
 
+    }
+
+    /**
+     */
+    function makeImageVideoGroups($pages)
+    {
+        $first_image = -1;
+        $out_pages = array();
+        foreach($pages as $page) {
+            if(isset($page[self::THUMB]) && $page[self::THUMB] != 'NULL') {
+                if($first_image == -1) {
+                    $first_image = count($out_pages);
+                    $out_pages[$first_image]['IMAGES'] = array();
+                }
+                $out_pages[$first_image]['IMAGES'][] = $page;
+            } else {
+                $out_pages[] = $page;
+            }
+        }
+        return $out_pages;
     }
 
 

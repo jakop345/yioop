@@ -52,7 +52,7 @@ class SearchView extends View implements CrawlConstants
      *  @var array
      */
     var $helpers = array("pagination", "filetype", "displayresults",
-        "videourl");
+        "videourl", "images");
     /** Names of element objects that the view uses to display itself 
      *  @var array
      */
@@ -138,7 +138,13 @@ class SearchView extends View implements CrawlConstants
             ?></h2>
             <?php
             foreach($data['PAGES'] as $page) {?>
-                <div class='result'> 
+                <div class='result'>
+                <?php if(isset($page['IMAGES'])) {
+                    $image_query = "?YIOOP_TOKEN={$data['YIOOP_TOKEN']}".
+                            "&amp;c=search&amp;q={$data['QUERY']}";
+                    $this->imagesHelper->render($page['IMAGES'], $image_query);
+                    continue;
+                }?>
                 <h2>
                 <a href="<?php if(isset($page[self::TYPE]) 
                     && $page[self::TYPE] != "link") {

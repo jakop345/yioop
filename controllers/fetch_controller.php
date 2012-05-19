@@ -187,8 +187,8 @@ class FetchController extends Controller implements CrawlConstants
             $fetch_pages = true;
             $info = unserialize(file_get_contents($messages_filename));
             if($info[self::STATUS] == 'STOP_CRAWL') {
-                // The stop crawl message gets created by the admin_controller 
-                // when the "stop crawl" button is pressed.
+                /* The stop crawl message gets created by the admin_controller 
+                   when the "stop crawl" button is pressed.*/
                 @unlink($messages_filename);
                 @unlink($lock_filename);
                 $fetch_pages = false;
@@ -203,12 +203,13 @@ class FetchController extends Controller implements CrawlConstants
         if($fetch_pages) {
             $archive_iterator = NULL;
 
-            // Start by trying to acquire an exclusive lock on the iterator 
-            // lock file, so that the same batch of pages isn't extracted more 
-            // than once.  For now the call to acquire the lock blocks, so that 
-            // fetchers will queue up. If the time between requesting the lock 
-            // and acquiring it is greater than ARCHIVE_LOCK_TIMEOUT then we 
-            // give up on this request and try back later.
+            /* Start by trying to acquire an exclusive lock on the iterator
+               lock file, so that the same batch of pages isn't extracted more
+               than once.  For now the call to acquire the lock blocks, so that
+                fetchers will queue up. If the time between requesting the lock
+               and acquiring it is greater than ARCHIVE_LOCK_TIMEOUT then we
+               give up on this request and try back later.
+             */
             $lock_fd = fopen($lock_filename, 'w');
             $have_lock = flock($lock_fd, LOCK_EX);
             $elapsed_time = time() - $request_start;

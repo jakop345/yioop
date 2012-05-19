@@ -274,7 +274,7 @@ define('MAX_PHRASE_LEN', 2);
 define('NUM_MULTI_CURL_PAGES', 100); 
 
 /** number of pages to extract from an archive in one go */
-define('ARCHIVE_BATCH_SIZE', 500);
+define('ARCHIVE_BATCH_SIZE', 100);
 
 /**
  *  Time in seconds to wait to acquire an exclusive lock before we're no longer

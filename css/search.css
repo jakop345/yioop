@@ -873,6 +873,25 @@ p
     width: 40px;
 }
 
+.image-list
+{
+    margin-left:10%;
+    margin-right:10%;
+}
+
+.mobile .image-list
+{
+    position:relative;
+    top:15px;
+    margin-left:2px;
+    margin-right:2px;
+}
+
+.image-list-data
+{
+    display:none;
+}
+
 .echolink
 {
     color:green
@@ -932,7 +951,7 @@ p
     position: relative;
     text-align: center;
     margin-top:0;
-    top: -20px;
+    top: 0px;
     left:0px;
     right:0px;
     width:320px;

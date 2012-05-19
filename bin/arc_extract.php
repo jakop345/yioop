@@ -60,11 +60,10 @@ define("NO_CACHE", true);
 define("USE_CACHE", false);
 
 /** Load the iterator classes */
-require_once BASE_DIR."/lib/archive_bundle_iterators/arc_archive_bundle_iterator.php";
-require_once BASE_DIR."/lib/archive_bundle_iterators/archive_bundle_iterator.php";
-require_once BASE_DIR."/lib/archive_bundle_iterators/mediawiki_bundle_iterator.php";
-require_once BASE_DIR."/lib/archive_bundle_iterators/odp_rdf_bundle_iterator.php";
-require_once BASE_DIR."/lib/archive_bundle_iterators/web_archive_bundle_iterator.php";
+foreach(glob(BASE_DIR."/lib/archive_bundle_iterators/*_iterator.php")
+    as $filename) {
+    require_once $filename;
+}
 
 /** Load FetchUrl, used by the MediaWiki archive iterator */
 require_once BASE_DIR."/lib/fetch_url.php";
@@ -201,10 +200,12 @@ class ArcExtractor implements CrawlConstants
     {
         $iterate_timestamp = filectime($archive_name);
         $result_timestamp = strval(time());
-        // Create the result dir under the current directory, and name it after 
-        // the iterate timestamp so that running the tool twice on the same 
-        // archive will result in the second run picking up where the first one 
-        // left off.
+        /*
+            Create the result dir under the current directory, and name it after 
+           the iterate timestamp so that running the tool twice on the same 
+           archive will result in the second run picking up where the first one 
+           left off.
+        */
         $this->result_name = 'ArchiveExtract'.$iterate_timestamp;
         if(!file_exists($this->result_name)) {
             mkdir($this->result_name);
