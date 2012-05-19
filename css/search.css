@@ -535,18 +535,16 @@ body.mobile
 
 .mobile .serp
 {
-    
     position:relative;
     top:-70px;
     left: 50px;
     right:50px;
-    z-index: -1;
 }
 
 .mobile .serp-results
 {
     position:relative;
-    top: -40px;
+    top: -30px;
     left: 3px;
     right: 3px;
 }
@@ -607,7 +605,7 @@ body.mobile
 .dropdown 
 {   
     width: 6.55in;
-    margin-left:0.023in;    
+    margin-left:0.023in;
     height: 1.5in;
     border-color: #AAA;
     border-width: 0.05in;
@@ -623,7 +621,12 @@ body.mobile
     padding-bottom:0in;
     margin-bottom:0in;
     margin-right:0;
-    padding-top: 0.01in;    
+    padding-top: 0.01in;
+}
+
+.mobile .dropdown
+{
+    display:none;
 }
 
 .mobile .searchbox input
