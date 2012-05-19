@@ -306,10 +306,10 @@ body.mobile
 
 .mobile .admin-heading
 {
-    position:relative;
-    top: 0;
-    z-index: -1;
+    position:absolute;
+    top: 20px;
 }
+
 
 .landing .logo
 {
@@ -351,6 +351,7 @@ body.mobile
     left:0px;
     width: 200px;
 }
+
 
 .mobile .admin-heading img
 {
@@ -421,7 +422,6 @@ body.mobile
     right:20px;
     width:200px;
 }
-
 
 .mobile .non-search .logo img
 {
@@ -999,7 +999,7 @@ p
 {
     position:relative;
     float:none;
-    top:30px;
+    top:100px;
     width:320px;
     border: 0;
 }
@@ -1098,7 +1098,7 @@ p
 {
     clear:both;
     position: relative;
-    top:50px;
+    top:120px;
     left: 5px;
     right:5px;
     margin:0;
@@ -1330,6 +1330,12 @@ p
     margin-top: .4in;
     border-top: 2px solid gray;
     color: gray;
+}
+
+.mobile #query-statistics
+{
+    position:relative;
+    top:200px;
 }
 
 .query
