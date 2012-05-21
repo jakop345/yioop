@@ -985,13 +985,14 @@ class SearchController extends Controller implements CrawlConstants
             "border-style:solid; border-width:3px; ".
             "padding: 5px; background-color: white");
         $divNode = $dom->createElement('div');
+
         $divNode = $body->insertBefore($divNode, $preNode);
         $divNode->setAttributeNS("","style", "border-color: black; ".
             "border-style:solid; border-width:3px; ".
             "padding: 5px; background-color: white");
 
         $textNode = $dom->createTextNode(tl('search_controller_cached_version', 
-            "$url", $date));
+            "Z@@Z", $date));
         $divNode->appendChild($textNode);
 
         if(isset($cache_item[self::HEADER])) {
@@ -1019,7 +1020,8 @@ class SearchController extends Controller implements CrawlConstants
         $body = $this->markChildren($body, $words, $dom);
 
         $newDoc = $dom->saveHTML();
-
+        $url = "<a href='$url'>$url</a>";
+        $newDoc = str_replace("Z@@Z", $url, $newDoc);
         $colors = array("yellow", "orange", "grey", "cyan");
         $color_count = count($colors);
 

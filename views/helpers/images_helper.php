@@ -65,30 +65,19 @@ class ImagesHelper extends Helper implements CrawlConstants
         $break_frequency = 5;
         foreach($image_pages as $page) {
             if($i % $break_frequency != 0) {e('.');}
+            if(CACHE_LINK && (!isset($page[self::ROBOT_METAS]) ||
+                !(in_array("NOARCHIVE", $page[self::ROBOT_METAS]) ||
+                  in_array("NONE", $page[self::ROBOT_METAS])))) {
+                $link = $query."&amp;a=cache&amp;arg=".
+                    urlencode($page[self::URL]).
+                    "&amp;its=".$page[self::CRAWL_TIME];
+            } else {
+                $link = $page[self::URL];
+            }
         ?>
-            <a href="<?php e($page[self::URL]); ?>" rel="nofollow"
+            <a href="<?php e($link); ?>" rel="nofollow"
             ><img src="<?php e($page[self::THUMB]); ?>" alt="<?php 
                     e($page[self::TITLE]); ?>"  /></a> 
-            <span class="image-list-data">
-            <?php 
-                if(CACHE_LINK && (!isset($page[self::ROBOT_METAS]) ||
-                    !(in_array("NOARCHIVE", $page[self::ROBOT_METAS]) ||
-                      in_array("NONE", $page[self::ROBOT_METAS])))) {
-                ?>
-                    <a href="<?php e($query);?>a=cache&amp;arg=<?php 
-                        e(urlencode($page[self::URL])); 
-                        ?>&amp;its=<?php e($page[self::CRAWL_TIME]); ?>" 
-                    rel='nofollow'>
-                    <?php
-                    if($page[self::TYPE] == "text/html" || 
-                        stristr($page[self::TYPE], "image")) {
-                        e(tl('search_view_cache'));
-
-                    } else {
-                        e(tl('search_view_as_text'));
-                    }
-                    ?></a>.</span>
-                <?php } ?>
         <?php
             $i++;
             if($i % $break_frequency == 0) {
