@@ -917,7 +917,8 @@ class SearchController extends Controller implements CrawlConstants
         } else {
             $type = $cache_item[self::TYPE];
             $cache_file = "<html><head><title>Yioop! Cache</title></head>".
-                "<body><object data='data:$type;base64,".
+                "<body><object onclick=\"document.location='$url'\"".
+                " data='data:$type;base64,".
                 base64_encode($cache_file)."' type='$type' /></body></html>";
             $words = array();
         }
@@ -971,6 +972,10 @@ class SearchController extends Controller implements CrawlConstants
             "padding: 5px; background-color: white; display:none;");
         $summaryNode->setAttributeNS("","id", "summary-page-id");
 
+
+        if(isset($cache_item[self::HEADER])) {
+            $summary_string = $cache_item[self::HEADER]."\n". $summary_string;
+        }
         $textNode = $dom->createTextNode($summary_string);
         $summaryNode->appendChild($textNode);
 
@@ -979,29 +984,21 @@ class SearchController extends Controller implements CrawlConstants
         $textNode = $dom->createTextNode("var summaryShow = 'none';");
         $scriptNode->appendChild($textNode);
 
-        $preNode = $dom->createElement('pre');
-        $preNode = $body->insertBefore($preNode, $summaryNode);
-        $preNode->setAttributeNS("","style", "border-color: black; ".
-            "border-style:solid; border-width:3px; ".
+        $aDivNode = $dom->createElement('div');
+        $aDivNode = $body->insertBefore($aDivNode, $summaryNode);
+        $aDivNode->setAttributeNS("","style", "border-color: black; ".
+            "border-style:solid; border-width:3px; margin-bottom:10px;".
             "padding: 5px; background-color: white");
         $divNode = $dom->createElement('div');
 
-        $divNode = $body->insertBefore($divNode, $preNode);
+        $divNode = $body->insertBefore($divNode, $aDivNode);
         $divNode->setAttributeNS("","style", "border-color: black; ".
-            "border-style:solid; border-width:3px; ".
+            "border-style:solid; border-width:3px;margin-bottom:10px;".
             "padding: 5px; background-color: white");
 
         $textNode = $dom->createTextNode(tl('search_controller_cached_version', 
             "Z@@Z", $date));
         $divNode->appendChild($textNode);
-
-        if(isset($cache_item[self::HEADER])) {
-            $textNode = $dom->createTextNode($cache_item[self::HEADER]."\n");
-        } else {
-            $textNode = $dom->createTextNode("");
-        }
-
-        $preNode->appendChild($textNode);
 
         $aNode = $dom->createElement("a");
         $aTextNode = $dom->createTextNode(
@@ -1015,7 +1012,7 @@ class SearchController extends Controller implements CrawlConstants
 
         $aNode->appendChild($aTextNode);
 
-        $aNode = $preNode->appendChild($aNode);
+        $aNode = $aDivNode->appendChild($aNode);
 
         $body = $this->markChildren($body, $words, $dom);
 
