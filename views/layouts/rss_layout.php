@@ -80,7 +80,7 @@ xmlns:atom="http://www.w3.org/2005/Atom"
         <opensearch:itemsPerPage><?php e($data['RESULTS_PER_PAGE']); 
         ?></opensearch:itemsPerPage>
         <atom:link rel="search" type="application/opensearchdescription+xml" 
-            href="<?php e(QUEUE_SERVER);?>yioopbar.xml"/>
+            href="<?php e(NAME_SERVER);?>yioopbar.xml"/>
         <opensearch:Query role="request" searchTerms="<?php 
         e($data['QUERY']); ?>"/>
                 <?php
