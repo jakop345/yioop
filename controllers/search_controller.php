@@ -808,7 +808,7 @@ class SearchController extends Controller implements CrawlConstants
    function cacheRequestAndOutput($url, $highlight=true, $terms ="", 
         $crawl_time = 0)
     {
-        global $CACHE;
+        global $CACHE, $IMAGE_TYPES;
 
         $hash_key = crawlHash(
             $terms.$url.serialize($highlight).serialize($crawl_time));
@@ -832,6 +832,16 @@ class SearchController extends Controller implements CrawlConstants
                 in_array("NONE", $crawl_item[self::ROBOT_METAS])) )) {
             $this->displayView("nocache", $data);
             return;
+        }
+        $in_url = "";
+        $image_flag = false;
+        if(isset($crawl_item[self::THUMB])) {
+            $image_flag = true;
+            $inlinks = $this->phraseModel->getPhrasePageResults(
+                "link:$url", 0, 
+                1, true, NULL, false, 0, $queue_servers);
+            $in_url = isset($inlinks["PAGES"][0][self::URL]) ? 
+                $inlinks["PAGES"][0][self::URL] : "";
         }
         $check_fields = array(self::TITLE, self::DESCRIPTION, self::LINKS);
         foreach($check_fields as $field) {
@@ -896,7 +906,7 @@ class SearchController extends Controller implements CrawlConstants
             return;
         }
         $cache_file = $cache_item[self::PAGE];
-        if(!stristr($cache_item[self::TYPE], "image")) {
+        if(!$image_flag) {
 
             $meta_words = $this->phraseModel->meta_words_list;
             foreach($meta_words as $meta_word) {
@@ -916,10 +926,16 @@ class SearchController extends Controller implements CrawlConstants
             }
         } else {
             $type = $cache_item[self::TYPE];
+            $loc_url = ($in_url == "") ? $url : $in_url;
             $cache_file = "<html><head><title>Yioop! Cache</title></head>".
-                "<body><object onclick=\"document.location='$url'\"".
+                "<body><object onclick=\"document.location='$loc_url'\"".
                 " data='data:$type;base64,".
-                base64_encode($cache_file)."' type='$type' /></body></html>";
+                base64_encode($cache_file)."' type='$type' />";
+            if($loc_url != $url) {
+                $cache_file .= "<p>".tl('search_controller_original_page').
+                    "<br /><a href='$loc_url'>$loc_url</a></p>";
+            }
+            $cache_file .= "</body></html>";
             $words = array();
         }
         $date = date ("F d Y H:i:s", $cache_item[self::TIMESTAMP]);
@@ -997,7 +1013,7 @@ class SearchController extends Controller implements CrawlConstants
             "padding: 5px; background-color: white");
 
         $textNode = $dom->createTextNode(tl('search_controller_cached_version', 
-            "Z@@Z", $date));
+            "Z@url@Z", $date));
         $divNode->appendChild($textNode);
 
         $aNode = $dom->createElement("a");

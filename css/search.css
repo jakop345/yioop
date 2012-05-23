@@ -878,6 +878,7 @@ p
 
 .image-list
 {
+    margin-top:10px;
     margin-left:10%;
     margin-right:10%;
 }
@@ -890,10 +891,7 @@ p
     margin-right:2px;
 }
 
-.image-list-data
-{
-    display:none;
-}
+
 
 .echolink
 {
