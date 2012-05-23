@@ -1034,7 +1034,7 @@ class SearchController extends Controller implements CrawlConstants
 
         $newDoc = $dom->saveHTML();
         $url = "<a href='$url'>$url</a>";
-        $newDoc = str_replace("Z@@Z", $url, $newDoc);
+        $newDoc = str_replace("Z@url@Z", $url, $newDoc);
         $colors = array("yellow", "orange", "grey", "cyan");
         $color_count = count($colors);
 
