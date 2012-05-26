@@ -75,7 +75,10 @@ class IntersectIterator extends IndexBundleIterator
     var $to_advance_index;
 
     /**
-     * An array holding iterator no corresponding to the word key
+     * An array holding iterator numbers corresponding to the word key
+     * For instance, if the word "the" appears twice in the query
+     * there would be only one iterator for "the" but two places in
+     * the word_iterator_map refering to it
      * @var array
      */
     var $word_iterator_map;
@@ -102,7 +105,7 @@ class IntersectIterator extends IndexBundleIterator
         $this->results_per_block = 1;
 
         /*
-             We take an initial guess of the num_docs we returns as the sum
+             We take an initial guess of the num_docs we return as the sum
              of the num_docs of the underlying iterators. We are also setting
              up here that we return at most one posting at a time from each
              iterator
@@ -172,7 +175,7 @@ class IntersectIterator extends IndexBundleIterator
             $position_lists[0] = $docs[$key][self::POSITION_LIST];
             $len_lists[0] = count($docs[$key][self::POSITION_LIST]);
             for($i = 1; $i < $this->num_words; $i++) {
-                if($this->word_iterator_map[$i]<$i) {
+                if($this->word_iterator_map[$i] < $i) {
                     $position_lists[] = 
                         $position_lists[$this->word_iterator_map[$i]];
                     $docs[$key][self::RELEVANCE] +=
@@ -231,11 +234,11 @@ class IntersectIterator extends IndexBundleIterator
         $num_words = count($position_list);
         for ($i = 0; $i < $num_words; $i++) {
             $min = array_shift($position_list[$i]);
-            if(isset($min)){
-                array_push($interval,array($min,$i));
-                for($j = 0;$j < $num_words; $j++){
+            if(isset($min)) {
+                array_push($interval, array($min, $i));
+                for($j = 0; $j < $num_words; $j++) {
                     if(isset($position_list[$j][0]) && 
-                        $min == $position_list[$j][0]){
+                        $min == $position_list[$j][0]) {
                         array_shift($position_list[$j]);
                     }
                 }
@@ -249,7 +252,7 @@ class IntersectIterator extends IndexBundleIterator
         $l = array_shift($interval);
         $r = end($interval);
         $stop = false;
-        if(sizeof($position_list[$l[1]])==0){
+        if(count($position_list[$l[1]]) == 0) {
             $stop = true;
         }
         while(!$stop){
@@ -260,22 +263,20 @@ class IntersectIterator extends IndexBundleIterator
                 }
             }
             $q = $interval[0][0];
-            if($p>$r[0]){
+            if($p > $r[0]) {
                 array_push($covers,array($l[0],$r[0]));
                 array_push($interval,array($p,$l[1]));
-            }
-            else{
-                if($p<$q){
-                    array_unshift($interval,array($p,$l[1]));
-                }
-                else{
-                    array_push($interval,array($p,$l[1]));
+            } else {
+                if($p < $q) {
+                    array_unshift($interval, array($p, $l[1]));
+                } else {
+                    array_push($interval, array($p, $l[1]));
                     sort($interval);
                 }
             }
             $l = array_shift($interval);
             $r = end($interval);
-            if(sizeof($position_list[$l[1]]) == 0){
+            if(count($position_list[$l[1]]) == 0){
                 $stop = true;
             }
 
@@ -285,7 +286,7 @@ class IntersectIterator extends IndexBundleIterator
         if($is_doc){
             $weight = TITLE_WEIGHT;
             $cover = array_shift($covers);
-            while(isset($cover[1]) && $cover[1] < AD_HOC_TITLE_LENGTH){
+            while(isset($cover[1]) && $cover[1] < AD_HOC_TITLE_LENGTH) {
                 $score += ($weight/($cover[1] - $cover[0] + 1));
                 $cover = array_shift($covers);
             }

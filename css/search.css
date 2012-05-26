@@ -127,7 +127,6 @@ body.mobile
     top:-12px;
     left:0;
     right:0;
-    width:100%;
     height:45px;
 }
 
@@ -165,7 +164,8 @@ body.mobile
     text-align: right;
     margin:0 0.25in 0 0;
     padding:0;
-    min-width: 9in;
+    min-width: 11in;
+    max-width: 11in;
 }
 
 .html-rtl .userNav
@@ -173,7 +173,8 @@ body.mobile
     text-align: left;
     margin:0 0 0 0.25in;
     padding:0;
-    min-width: 9in;
+    min-width: 11in;
+    max-width: 11in;
 }
 
 .html-ltr .userNav ul li
@@ -511,26 +512,30 @@ body.mobile
     position:relative;
     top: -0.9in;
     left:2.2in;
+    width:8in;
 }
 .html-ltr .serp-results
 {
     position:relative;
-    top: -0.9in;
-    left:1in;
+    top: -0.8in;
+    left:0.5in;
+    width:8in;
 }
 
 
 .html-rtl .serp
 {
     position:relative;
-    top: -1.15in;
+    top: -0.9in;
     right:2.2in;
+    width:8in;
 }
 .html-rtl .serp-results
 {
     position:relative;
-    top: -1in;
-    right:1in;
+    top: -0.8in;
+    right:0.5in;
+    width:8in;
 }
 
 .mobile .serp
@@ -883,6 +888,12 @@ p
     margin-right:10%;
 }
 
+.image-list img
+{
+    width:1in;
+    height:1in;
+}
+
 .mobile .image-list
 {
     position:relative;
@@ -891,6 +902,11 @@ p
     margin-right:2px;
 }
 
+.mobile .image-list img
+{
+    width:50px;
+    height:50px;
+}
 
 
 .echolink
@@ -1064,7 +1080,7 @@ p
     padding-left: .1in;
     padding-right: .1in;
     padding-bottom: .1in;
-    width: 8in;
+    width: 7.5in;
     min-width: 7in;
     min-height: 6in;
     font-size:16pt;
@@ -1082,7 +1098,7 @@ p
     padding-right: .1in;
     padding-left: .1in;
     padding-bottom: .1in;
-    width: 8in;
+    width: 7.5in;
     min-width: 7in;
     min-height: 6in;
     font-size:16pt;

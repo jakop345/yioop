@@ -40,24 +40,15 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 if(!defined("POST_PROCESSING")) {
     define("LOG_TO_FILES", false);
 }
-/** For crawlHash function */
-require_once BASE_DIR."/lib/utility.php";
 
+/** For base class*/
+require_once BASE_DIR."/models/parallel_model.php";
 /** For extractPhrasesAndCount function */
 require_once BASE_DIR."/lib/phrase_parser.php";
-
-
-/**
- * Used to look up words and phrases in the inverted index
- * associated with a given crawl
- */
-require_once BASE_DIR."/lib/index_archive_bundle.php";
-
 /**
  * Load FileCache class in case used
  */
 require_once(BASE_DIR."/lib/file_cache.php");
-
 /**
  * Load iterators to get docs out of index archive
  */
@@ -75,13 +66,8 @@ foreach(glob(BASE_DIR."/lib/index_bundle_iterators/*_iterator.php")
  * @package seek_quarry
  * @subpackage model
  */
-class PhraseModel extends Model
+class PhraseModel extends ParallelModel
 {
-
-    /** used to hold the name of index archive to look summaries up in
-     *  @var string
-     */
-    var $index_name;
 
     /** an associative array of additional meta words and
      * the max description length of results if such a meta word is used
@@ -828,7 +814,8 @@ class PhraseModel extends Model
             $this->isSingleLocalhost($queue_servers);
 
         while($num_retrieved < $to_retrieve && is_object($query_iterator) &&
-            is_array($next_docs = $query_iterator->nextDocsWithWord()) ) {
+            is_array($next_docs = 
+                $query_iterator->nextDocsWithWord(null, false)) ) {
             foreach($next_docs as $doc_key => $doc_info) {
                 if($isLocal) {
                     $summary = & $doc_info[CrawlConstants::SUMMARY];
@@ -1002,7 +989,7 @@ class PhraseModel extends Model
                     $base_iterator = $word_iterators[0];
                 } else {
                     $base_iterator = new IntersectIterator(
-                        $word_iterators,$word_iterator_map);
+                        $word_iterators, $word_iterator_map);
                 }
                 if($restrict_phrases == NULL && $disallow_keys == array() &&
                     $weight == 1) {

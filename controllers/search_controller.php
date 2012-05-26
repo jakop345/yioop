@@ -826,7 +826,9 @@ class SearchController extends Controller implements CrawlConstants
         $this->crawlModel->index_name = $crawl_time;
 
         $data = array();
+
         $crawl_item = $this->crawlModel->getCrawlItem($url, $queue_servers);
+
         if(!$crawl_item || (isset($crawl_item[self::ROBOT_METAS]) &&
                 (in_array("NOARCHIVE", $crawl_item[self::ROBOT_METAS]) ||
                 in_array("NONE", $crawl_item[self::ROBOT_METAS])) )) {
@@ -836,6 +838,7 @@ class SearchController extends Controller implements CrawlConstants
         $in_url = "";
         $image_flag = false;
         if(isset($crawl_item[self::THUMB])) {
+
             $image_flag = true;
             $inlinks = $this->phraseModel->getPhrasePageResults(
                 "link:$url", 0, 

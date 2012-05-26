@@ -179,9 +179,9 @@ abstract class IndexBundleIterator implements CrawlConstants
      *      results
      * @return array doc summaries that match provided keys
      */
-    function getSummariesFromCurrentDocs($keys = NULL) 
+    function getSummariesFromCurrentDocs($keys = NULL, $get_summaries = true) 
     {
-        $index = $this->getIndex(); //objects assgined by ref
+        $index = $this->getIndex(); //objects assigned by ref
 
         if($this->current_block_fresh == false) {
             $pages = $this->currentDocsWithWord();
@@ -198,8 +198,8 @@ abstract class IndexBundleIterator implements CrawlConstants
                 return NULL;
             }
         }
-        $out_pages = array();
 
+        $out_pages = array();
         foreach($keys as $doc_key) {
             if(!isset($pages[$doc_key])) {
                 continue;
@@ -208,10 +208,12 @@ abstract class IndexBundleIterator implements CrawlConstants
             }
             if(isset($doc_info[self::SUMMARY_OFFSET]) &&
                 isset($doc_info[self::GENERATION])) {
-                $index->setCurrentShard($doc_info[self::GENERATION], true);
-                $page = $index->getPage($doc_info[self::SUMMARY_OFFSET]);
                 $out_pages[$doc_key] = $doc_info;
-                $out_pages[$doc_key][self::SUMMARY] = $page;
+                if($get_summaries) {
+                    $index->setCurrentShard($doc_info[self::GENERATION], true);
+                    $page = $index->getPage($doc_info[self::SUMMARY_OFFSET]);
+                    $out_pages[$doc_key][self::SUMMARY] = $page;
+                }
             }
         }
         return $out_pages;
@@ -226,9 +228,9 @@ abstract class IndexBundleIterator implements CrawlConstants
      *      equal to or larger than this value
      * @return array doc summaries matching the $this->restrict_phrases
      */
-    function nextDocsWithWord($doc_offset = null)
+    function nextDocsWithWord($doc_offset = NULL, $get_summaries = true)
     {
-        $doc_block = $this->getSummariesFromCurrentDocs();
+        $doc_block = $this->getSummariesFromCurrentDocs(NULL, $get_summaries);
         
         if($doc_block == -1 || !is_array($doc_block) ) {
             return NULL;

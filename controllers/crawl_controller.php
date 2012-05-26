@@ -251,6 +251,28 @@ class CrawlController extends Controller implements CrawlConstants
             $this->crawlModel->getCrawlItem($url)));
      }
 
+
+    /**
+     * Receives a request to get crawl summary data for an array of urls
+     * from a remote name server and then looks these up on the local 
+     * queue server
+     */
+     function getCrawlItems()
+     {
+        if(!isset($_REQUEST["arg"]) || !isset($_REQUEST["num"])
+            || !isset($_REQUEST["i"])) {
+            return;
+        }
+        $num = $this->clean($_REQUEST["num"], "int");
+        $i = $this->clean($_REQUEST["i"], "int");
+        list($urls, $index_name) = unserialize(webdecode($_REQUEST["arg"]));
+        $urls = partitionByHash($urls, NULL, $num, $i, "UrlParser::getHost");
+        $this->crawlModel->index_name = $index_name;
+        echo webencode(serialize(
+            $this->crawlModel->getCrawlItems($urls)));
+     }
+
+
     /**
      * Receives a request to get counts of the number of occurrences of an
      * array of words a remote name server and then 

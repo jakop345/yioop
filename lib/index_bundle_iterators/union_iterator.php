@@ -190,7 +190,7 @@ class UnionIterator extends IndexBundleIterator
      *      results
      * @return array doc summaries that match provided keys
      */
-    function getSummariesFromCurrentDocs($keys = NULL) 
+    function getSummariesFromCurrentDocs($keys = NULL, $get_summaries = true) 
     {
         if($this->current_block_fresh == false) {
             $result = $this->currentDocsWithWord();
@@ -212,7 +212,7 @@ class UnionIterator extends IndexBundleIterator
                 $out_pages[$doc_key] = $this->index_bundle_iterators[
                     $this->pages[
                         $doc_key]["ITERATOR"]]->getSummariesFromCurrentDocs(
-                            array($doc_key));
+                            array($doc_key), $get_summaries);
             }
         }
         return $out_pages;
