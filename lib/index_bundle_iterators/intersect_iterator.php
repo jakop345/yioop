@@ -255,7 +255,7 @@ class IntersectIterator extends IndexBundleIterator
         if(count($position_list[$l[1]]) == 0) {
             $stop = true;
         }
-        while(!$stop){
+        while(!$stop) {
             $p = array_shift($position_list[$l[1]]);
             for ($i = 0;$i < $num_words; $i++){
                 if(isset($position_list[$i][0]) && $p == $position_list[$i][0]){
@@ -264,8 +264,8 @@ class IntersectIterator extends IndexBundleIterator
             }
             $q = $interval[0][0];
             if($p > $r[0]) {
-                array_push($covers,array($l[0],$r[0]));
-                array_push($interval,array($p,$l[1]));
+                array_push($covers, array($l[0], $r[0]));
+                array_push($interval, array($p, $l[1]));
             } else {
                 if($p < $q) {
                     array_unshift($interval, array($p, $l[1]));
@@ -276,14 +276,14 @@ class IntersectIterator extends IndexBundleIterator
             }
             $l = array_shift($interval);
             $r = end($interval);
-            if(count($position_list[$l[1]]) == 0){
+            if(count($position_list[$l[1]]) == 0) {
                 $stop = true;
             }
 
         }
-        array_push($covers,array($l[0],$r[0]));
+        array_push($covers, array($l[0],$r[0]));
         $score = 0;
-        if($is_doc){
+        if($is_doc) {
             $weight = TITLE_WEIGHT;
             $cover = array_shift($covers);
             while(isset($cover[1]) && $cover[1] < AD_HOC_TITLE_LENGTH) {
@@ -297,7 +297,7 @@ class IntersectIterator extends IndexBundleIterator
         }
         else{
             $weight = LINK_WEIGHT;
-            foreach($covers as $cover){
+            foreach($covers as $cover) {
                 $score += ($weight/($cover[1] - $cover[0] + 1));
             }
         }

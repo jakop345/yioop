@@ -38,7 +38,7 @@
  * @return String text_field Current value from the search box
  *
  */
-function askeyup(e,text_field) {
+function askeyup(e, text_field) {
     var keynum;
     var term_array;
     var inputTerm = text_field.value;
@@ -53,7 +53,7 @@ function askeyup(e,text_field) {
         keynum = e.which;
     }
     term_array = inputTerm.split(" ");
-    concat_array = inputTerm.split(" ",term_array.length-1);          
+    concat_array = inputTerm.split(" ",term_array.length-1);
     if (inputTerm != "") {
         for(var i=0; i < concat_array.length ; i++) {
             concat_term += concat_array[i] + " ";
@@ -63,25 +63,30 @@ function askeyup(e,text_field) {
     inputTerm = term_array[term_array.length-1];  
 
     if (keynum != 40 && keynum != 38) {
-        search_list="";  
+        search_list="";
         autosuggest(dictionary, inputTerm);
+        if(count <= 1) {
+            search_list="";
+        }
         document.getElementById("asdropdown").style.visibility = "visible";
-        document.getElementById("asdropdown").scrollTop =  0;             
+        document.getElementById("asdropdown").scrollTop =  0;
         results_dropdown.innerHTML = search_list;
         cursor_pos=-1; 
         if (search_list != "") {
             results_dropdown.style.visibility = "visible";
         } 
         else {  
-            results_dropdown.style.visibility = "hidden";        
+            results_dropdown.style.visibility = "hidden";
         }
         items = results_dropdown.children.length;
         if (items == 0) {
             document.getElementById("asdropdown").className = "";
+            document.getElementById("asdropdown").style.height = "0";
         } else {
             document.getElementById("asdropdown").className = "dropdown";
             if (items < 6) {
-                document.getElementById("asdropdown").style.height = "" + items * 0.25 + "in";
+                document.getElementById("asdropdown").style.height = ""
+                    + items * 0.25 + "in";
             } else {
                 document.getElementById("asdropdown").style.height = "1.5in";
             } 
@@ -90,32 +95,32 @@ function askeyup(e,text_field) {
     if (results_dropdown.style.visibility == "visible") {
         if(keynum == 40) { 
             if (cursor_pos == -1) { 
-                cursor_pos = 0;                
+                cursor_pos = 0;
                 setDisplay(cursor_pos,"selected"); 
             }
             else {  
-                setDisplay(cursor_pos,"unselected");                                
+                setDisplay(cursor_pos,"unselected");
                 cursor_pos++;
-                if (cursor_pos == items) {            
+                if (cursor_pos == items) {
                     cursor_pos=0;
                 }
-                setDisplay(cursor_pos,"selected");                                                       
-            }            
+                setDisplay(cursor_pos,"selected");
+            }
             scrollpos = (cursor_pos > 2) ? (cursor_pos - 2) : 0;
             document.getElementById("asdropdown").scrollTop = scrollpos * 26;
-        } else if(keynum == 38) {         
+        } else if(keynum == 38) {
             if (cursor_pos == -1)
             {    
                 cursor_pos = items-1;
-                setDisplay(cursor_pos,"selected");                          
+                setDisplay(cursor_pos,"selected");
             }
             else {   
-                setDisplay(cursor_pos,"unselected");                    
-                cursor_pos--;                                      
-                if (cursor_pos == -1) {            
+                setDisplay(cursor_pos,"unselected");
+                cursor_pos--;
+                if (cursor_pos == -1) {
                     cursor_pos=items-1;
                 }
-                setDisplay(cursor_pos,"selected");                                                         
+                setDisplay(cursor_pos,"selected");
             }
             scrollpos = (cursor_pos > 2) ? (cursor_pos - 2) : 0;
             document.getElementById("asdropdown").scrollTop = scrollpos * 26;
@@ -129,7 +134,7 @@ function askeyup(e,text_field) {
  * and place in the search box
  */
 function setDisplay(cursor_pos, class_name)  {
-    var astobj = document.getElementById("search-name");     
+    var astobj = document.getElementById("search-name");
     astobj.value = document.getElementById(cursor_pos).innerHTML;
     document.getElementById(cursor_pos).className = class_name;
 }
@@ -142,7 +147,7 @@ function aslitem_click(liObj) {
     var astobj = document.getElementById("search-name");
     astobj.value = liObj.innerHTML;
     results_dropdown.innerHTML = "";
-    document.getElementById("asdropdown").style.visibility = "hidden";        
+    document.getElementById("asdropdown").style.visibility = "hidden";
 }
 
 /**
@@ -152,7 +157,7 @@ function hover_display(liObj) {
     if (cursor_pos > -1) { 
         document.getElementById(cursor_pos).className = "unselected";
     }
-    cursor_pos = liObj.id;                       
+    cursor_pos = liObj.id;
     liObj.className = "selected";
 }
     
@@ -172,8 +177,10 @@ function getValues(trie_array, parent_word, max_display) {
             } else {
                 list_string = concat_term.trim() + " " + decode(parent_word);
                 list_string = list_string.trim();
-                search_list += "<li><span id=" + count + " class='unselected' onmouseover=hover_display(this) "; 
-                search_list += "onclick=aslitem_click(this)>" + list_string + "</span></li>";
+                search_list += "<li><span id=" + count + 
+                    " class='unselected' onmouseover=hover_display(this) "; 
+                search_list += "onclick=aslitem_click(this)>" + list_string + 
+                    "</span></li>";
                 count++;
             }
         }
@@ -235,7 +242,6 @@ function autosuggest(trie_array, term) {
         [start_char, ] = tmp;
         enc_chr = encode(start_char);
         trie_array = exist(trie_array[enc_chr], term);
-
     } else {
         trie_array = trie_array[term];
     }
