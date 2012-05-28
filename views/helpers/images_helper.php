@@ -64,7 +64,6 @@ class ImagesHelper extends Helper implements CrawlConstants
         $i = 0;
         $break_frequency = 5;
         foreach($image_pages as $page) {
-            if($i % $break_frequency != 0) {e('.');}
             if(CACHE_LINK && (!isset($page[self::ROBOT_METAS]) ||
                 !(in_array("NOARCHIVE", $page[self::ROBOT_METAS]) ||
                   in_array("NONE", $page[self::ROBOT_METAS])))) {
