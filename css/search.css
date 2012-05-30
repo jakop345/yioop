@@ -162,19 +162,17 @@ body.mobile
 .html-ltr .userNav
 {
     text-align: right;
-    margin:0 0.25in 0 0;
+    margin:0 0.5in 0 0;
     padding:0;
-    min-width: 11in;
-    max-width: 11in;
+    min-width: 10in;
 }
 
 .html-rtl .userNav
 {
     text-align: left;
-    margin:0 0 0 0.25in;
+    margin:0 0 0 0.5in;
     padding:0;
-    min-width: 11in;
-    max-width: 11in;
+    min-width: 10in;
 }
 
 .html-ltr .userNav ul li
@@ -252,7 +250,7 @@ body.mobile
 {
     position:absolute;
     top:1.5in;
-    left:12%;
+    left:15%;
     min-width:6in;
     clear: both;
 }
@@ -261,7 +259,7 @@ body.mobile
 {
     position:absolute;
     top:1.5in;
-    right:12%;
+    right:15%;
     min-width:6in;
 }
 
@@ -1085,40 +1083,30 @@ p
     border-radius: 8px;
 }
 
-.html-ltr .currentactivity
+
+.currentactivity
 {
     position: relative;
     top:30px;
-    margin-left: 2.75in;
     padding-left: .1in;
     padding-right: .1in;
     padding-bottom: .1in;
-    width: 7.5in;
-    min-width: 7in;
+    max-width: 9in;
+    min-width: 8.5in;
     min-height: 6in;
     font-size:16pt;
     background-color: #fff;
     border: 1px solid #ccc;
-
     border-radius: 8px;
+}
+.html-ltr .currentactivity
+{
+    margin-left: 2.75in;
 }
 
 .html-rtl .currentactivity
 {
-    position: relative;
-    top:30px;
     margin-right: 2.75in;
-    padding-right: .1in;
-    padding-left: .1in;
-    padding-bottom: .1in;
-    width: 7.5in;
-    min-width: 7in;
-    min-height: 6in;
-    font-size:16pt;
-    background-color: #fff;
-    border: 1px solid #ccc;
-
-    border-radius: 8px;
 }
 
 .mobile .currentactivity
@@ -1138,9 +1126,6 @@ p
     min-width: 0;
     min-height: 200px;
     font-size:12pt;
-    background-color: #fff;
-    border: 1px solid #ccc;
-    border-radius: 8px;
 }
 
 .currentactivity h2
