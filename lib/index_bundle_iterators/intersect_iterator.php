@@ -90,18 +90,35 @@ class IntersectIterator extends IndexBundleIterator
     var $num_words;
 
     /**
+     * This iterator returns only documents containing all the elements of
+     * restrict phrases
+     * @var array
+     */
+    var $restrict_phrases;
+
+    /**
+     * A weighting factor to multiply with each doc SCORE returned from this 
+     * iterator
+     * @var float
+     */
+    var $weight;
+
+    /**
      * Creates an intersect iterator with the given parameters.
      *
      * @param object $index_bundle_iterator to use as a source of documents
      *      to iterate over
      */
-    function __construct($index_bundle_iterators, $word_iterator_map)
+    function __construct($index_bundle_iterators, $word_iterator_map,
+        $restrict_phrases = NULL, $weight = 1)
     {
         $this->index_bundle_iterators = $index_bundle_iterators;
         $this->word_iterator_map  = $word_iterator_map;
         $this->num_words = count($word_iterator_map);
         $this->num_iterators = count($index_bundle_iterators);
         $this->num_docs = 0;
+        $this->restrict_phrases = $restrict_phrases;
+        $this->weight = $weight;
         $this->results_per_block = 1;
 
         /*
@@ -165,7 +182,7 @@ class IntersectIterator extends IndexBundleIterator
         }
         //next we finish computing BM25F
         $docs = $this->index_bundle_iterators[0]->currentDocsWithWord();
-
+        $weight = $this->weight;
         if(is_array($docs) && count($docs) == 1) {
             //we get intersect docs one at a time so should be only one
             $keys = array_keys($docs);
@@ -206,6 +223,12 @@ class IntersectIterator extends IndexBundleIterator
             }
             $docs[$key][self::SCORE] = $docs[$key][self::DOC_RANK] *
                  $docs[$key][self::RELEVANCE] * $docs[$key][self::PROXIMITY];
+            if($weight != 1) {
+                $docs[$key][self::DOC_RANK] *= $weight;
+                $docs[$key][self::RELEVANCE] *= $weight;
+                $docs[$key][self::PROXIMITY] *= $weight;
+                $docs[$key][self::SCORE] *= $weight;
+            }
         }
         $this->count_block = count($docs);
         $this->pages = $docs;
@@ -279,8 +302,8 @@ class IntersectIterator extends IndexBundleIterator
             if(count($position_list[$l[1]]) == 0) {
                 $stop = true;
             }
-
         }
+
         array_push($covers, array($l[0],$r[0]));
         $score = 0;
         if($is_doc) {

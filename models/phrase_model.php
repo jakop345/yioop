@@ -553,6 +553,8 @@ class PhraseModel extends ParallelModel
                 $hashes[] = crawlHash($word);
             }
 
+            $quoteds = array_unique($quoteds);
+            $quoteds = array_filter($quoteds);
             $restrict_phrases = $quoteds;
 
             if(count($hashes) > 0) {
@@ -561,16 +563,15 @@ class PhraseModel extends ParallelModel
                 $word_keys = NULL;
                 $word_struct = NULL;
             }
-            $restrict_phrases = array_unique($restrict_phrases);
-            $restrict_phrases = array_filter($restrict_phrases);
+
             if(!$index_dummy_flag) {
                 $index_archive->setCurrentShard(0, true);
             }
             $disallow_keys = array();
             $num_disallow_keys = min(MAX_QUERY_TERMS, count($disallow_phrases));
             for($i = 0; $i < $num_disallow_keys; $i++) {
-                $disallow_stem=array_keys(PhraseParser::extractPhrasesAndCount(
-                    $disallow_phrases[$i], 2, getLocaleTag()));
+                $disallow_stem = PhraseParser::extractPhrases(
+                    $disallow_phrases[$i], getLocaleTag());
                         //stemmed
                 $disallow_keys[] = crawlHash($disallow_stem[0]);
             }
@@ -592,9 +593,9 @@ class PhraseModel extends ParallelModel
 
 
     /**
-     * The plan is code toguess from the query what the user is 
-     * looking for will be called from here. For now, we are just guessing
-     * when a query term is a url and rewriting it to the appropriate meta
+     * Idealistically, this function tries to guess from the query what the 
+     * user is looking for. For now, we are just guessing  when a query term 
+     * is a url and rewriting it to the appropriate meta
      * meta word.
      *
      *  @param string $phrase input query to guess semantics of
@@ -989,19 +990,13 @@ class PhraseModel extends ParallelModel
                     $base_iterator = $word_iterators[0];
                 } else {
                     $base_iterator = new IntersectIterator(
-                        $word_iterators, $word_iterator_map);
+                        $word_iterators, $word_iterator_map, $restrict_phrases,
+                        $weight);
                 }
-                if($restrict_phrases == NULL && $disallow_keys == array() &&
-                    $weight == 1) {
-                    $iterators[] = $base_iterator;
-                } else {
-                    $iterators[] = new PhraseFilterIterator($base_iterator,
-                        $restrict_phrases, $weight);
-                }
-
+                $iterators[] = $base_iterator;
             }
         }
-        $num_iterators = count($iterators);
+        $num_iterators = count($iterators); //if network_flag should be 1
 
         if( $num_iterators < 1) {
             return NULL;
