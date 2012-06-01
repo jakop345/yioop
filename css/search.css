@@ -77,7 +77,6 @@ body
 body.html-ltr
 {
     margin-left:.5in;
-
 }
 
 body.html-rtl
@@ -116,6 +115,7 @@ body.mobile
     width:320px;
 }
 
+
 .topbar
 {
     background: #DDD;
@@ -128,9 +128,25 @@ body.mobile
     left:0;
     right:0;
     height:45px;
+    min-width:12in;
 }
 
-.mobile .topbar
+.landing-topbar
+{
+    background: #DDD;
+    background: -moz-linear-gradient(top, #FFF 0%,#EEF 30%,#EEF 70%, #FFF 100%);
+    background: -webkit-linear-gradient(top,
+        #FFF 0%,#EEF 30%,#EEF 70%, #FFF 100%);
+    background: linear-gradient(top, #FFF 0%,#EEF 30%,#EEF 70%, #FFF 100%);
+    position:absolute;
+    top:-12px;
+    left:0;
+    right:0;
+    height:45px;
+    width:100%;
+}
+
+.mobile .topbar, .mobile .landing-topbar
 {
     background: #DDD;
     background: -moz-linear-gradient(top, #FFF 0%,#EEF 30%,#EEF 70%, #FFF 100%);
@@ -357,7 +373,7 @@ body.mobile
     position:relative;
     top: 30px;
     left:80px;
-    right:80px
+    right:80px;
     width: 50px;
 }
 
@@ -565,11 +581,13 @@ body.mobile
     border-radius: 0.07in;
 }
 
+
 .landing .searchbox
 {
     position: relative;
     top:0;
 }
+
 
 .mobile .searchbox
 {
@@ -969,13 +987,13 @@ p
 
 .setting-footer, .signin-exit, .landing-footer
 {
+    clear:both;
     margin-top: 0.25in;
     text-align: center;
 }
 
 .mobile .landing-footer
 {
-    clear:both;
     position: relative;
     text-align: center;
     margin-top:0;

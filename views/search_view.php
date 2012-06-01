@@ -74,8 +74,9 @@ class SearchView extends View implements CrawlConstants
      */
     public function renderView($data) 
     {
+        $data['LAND'] = (!isset($data['PAGES'])) ? 'landing-' : '';
         ?>
-        <div class="topbar"><?php
+        <div class="<?php e($data['LAND']);?>topbar"><?php
         $this->subsearchElement->render($data);
         $this->signinElement->render($data);
         ?>
