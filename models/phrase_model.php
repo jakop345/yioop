@@ -457,9 +457,9 @@ class PhraseModel extends ParallelModel
                 $found_metas = array_merge($found_metas, $matches);
             } else if($meta_word == '\-') {
                 if(count($matches[0]) > 0) {
-                    $disallow_phrases =
-                        array_merge($disallow_phrases,
-                            array(substr($matches[2][0],1)));
+                    foreach($matches[2] as $disallowed) {
+                        $disallow_phrases[] = substr($disallowed, 1);
+                    }
                 }
             } else if ($meta_word == 'i:' || $meta_word == 'index:') {
                 if(isset($matches[2][0])) {
@@ -491,7 +491,7 @@ class PhraseModel extends ParallelModel
         }
 
         $phrase_string = mb_ereg_replace("&amp;", "_and_", $phrase_string);
-        
+
         $query_string = mb_ereg_replace(PUNCT, " ", $phrase_string);
         $query_string = preg_replace("/(\s)+/", " ", $query_string);
         $query_string = mb_ereg_replace('_and_', '&', $query_string);
@@ -504,9 +504,44 @@ class PhraseModel extends ParallelModel
         $query_words = explode(" ", $query_string); //not stemmed
 
         $locale_tag = guessLocaleFromString($query_string);
-        $base_words = //still use original phrase string here to handle acronyms
-            //abbreviations and the like that use periods
-            PhraseParser::extractPhrases($phrase_string, $locale_tag); 
+
+        $quote_state = false;
+        $phrase_parts = explode('"', $phrase_string);
+        $base_words = array();
+        $num_words = 0;
+        $quote_positions = array();
+        foreach($phrase_parts as $phrase_part) {
+            /*still use original phrase string here to handle
+               acronyms abbreviations and the like that use periods */
+            if($quote_state) {
+                $sub_parts = explode('*', $phrase_part);
+                $first_part = true;
+                $quote_position = array();
+                foreach($sub_parts as $sub_part) {
+                    if(!$first_part) {
+                        $quote_position["*$num_words"] = "*";
+                    }
+                    $new_words = PhraseParser::extractPhrases(
+                        $sub_part, $locale_tag);
+                    $base_words = array_merge($base_words, $new_words);
+                    foreach($new_words as $new_word) {
+                        $len = substr_count($new_word, " ") + 1;
+                        $quote_position[$num_words] = $len;
+                        $num_words++;
+                    }
+                    $first_part = false;
+                }
+                $quote_positions[] = $quote_position;
+            } else {
+                $new_words = 
+                    PhraseParser::extractPhrases($phrase_part, $locale_tag);
+                $base_words = array_merge($base_words, $new_words);
+            }
+
+            $num_words = count($base_words);
+            $quote_state = ($quote_state) ? false : true;
+        }
+
                 //stemmed, if have stemmer
         $words = array_merge($base_words, $found_metas);
         if(QUERY_STATISTICS) {
@@ -523,27 +558,26 @@ class PhraseModel extends ParallelModel
             foreach($found_metas as $word){
                 $this->query_info['QUERY'] .= "$in4$word<br />";
             }
+            $this->query_info['QUERY'] .= "$in3<i>Quoted Word Locs</i>:<br />";
+            foreach($quote_positions as $quote_position){
+                $this->query_info['QUERY'] .= "$in4(";
+                $comma = "";
+                foreach($quote_position as $pos => $len){
+                    $this->query_info['QUERY'] .= "$comma $pos => $len";
+                    $comma = ",";
+                }
+                $this->query_info['QUERY'] .= ")<br />";
+            }
         }
         if(isset($words) && count($words) == 1 &&
             count($disallow_phrases) < 1) {
             $phrase_string = $words[0];
             $phrase_hash = crawlHash($phrase_string);
             $word_struct = array("KEYS" => array($phrase_hash),
-                "RESTRICT_PHRASES" => NULL, "DISALLOW_KEYS" => array(),
+                "QUOTE_POSITIONS" => NULL, "DISALLOW_KEYS" => array(),
                 "WEIGHT" => $weight, "INDEX_ARCHIVE" => $index_archive
             );
         } else {
-            /*
-                handle strings in quotes
-                (we want an exact match on such quoted strings)
-            */
-            $quoteds =array();
-            $hash_quoteds = array();
-            $num_quotes =
-                preg_match_all('/\"((?:[^\"\\\]|\\\\.)*)\"/', $phrase,$quoteds);
-            if(isset($quoteds[1])) {
-                $quoteds = $quoteds[1];
-            }
 
             //get a raw list of words and their hashes
 
@@ -552,10 +586,6 @@ class PhraseModel extends ParallelModel
             foreach($words as $word) {
                 $hashes[] = crawlHash($word);
             }
-
-            $quoteds = array_unique($quoteds);
-            $quoteds = array_filter($quoteds);
-            $restrict_phrases = $quoteds;
 
             if(count($hashes) > 0) {
                 $word_keys = array_slice($hashes, 0, MAX_QUERY_TERMS);
@@ -569,16 +599,25 @@ class PhraseModel extends ParallelModel
             }
             $disallow_keys = array();
             $num_disallow_keys = min(MAX_QUERY_TERMS, count($disallow_phrases));
+
+            if($num_disallow_keys > 0 && QUERY_STATISTICS) {
+                $this->query_info['QUERY'] .= "$in3<i>Disallowed Words</i>:".
+                    "<br />";
+            }
             for($i = 0; $i < $num_disallow_keys; $i++) {
                 $disallow_stem = PhraseParser::extractPhrases(
                     $disallow_phrases[$i], getLocaleTag());
                         //stemmed
+                if(QUERY_STATISTICS) {
+                    $this->query_info['QUERY'] .= "$in4{$disallow_stem[0]}".
+                        "<br />";
+                }
                 $disallow_keys[] = crawlHash($disallow_stem[0]);
             }
 
             if($word_keys !== NULL) {
                 $word_struct = array("KEYS" => $word_keys,
-                    "RESTRICT_PHRASES" => $restrict_phrases,
+                    "QUOTE_POSITIONS" => $quote_positions,
                     "DISALLOW_KEYS" => $disallow_keys,
                     "WEIGHT" => $weight,
                     "INDEX_ARCHIVE" => $index_archive
@@ -738,7 +777,8 @@ class PhraseModel extends ParallelModel
      * @param array $word_structs an array of word_structs. Here a word_struct
      *      is an associative array with at least the following fields
      *      KEYS -- an array of word keys
-     *      RESTRICT_PHRASES -- an array of phrases the document must contain
+     *      QUOTE_POSITIONS -- an array of positions of words that appreared in
+     *          quotes (so need to be matched exactly)
      *      DISALLOW_PHRASES -- an array of words the document must not contain
      *      WEIGHT -- a weight to multiple scores returned from this iterator by
      *      INDEX_ARCHIVE -- an index_archive object to get results from
@@ -777,7 +817,7 @@ class PhraseModel extends ParallelModel
             $mem_tmp = "";
             foreach($word_structs as $word_struct) {
                 $mem_tmp .= serialize($word_struct["KEYS"]).
-                    serialize($word_struct["RESTRICT_PHRASES"]) .
+                    serialize($word_struct["QUOTE_POSITIONS"]) .
                     serialize($word_struct["DISALLOW_KEYS"]) .
                     $word_struct["WEIGHT"] .
                     $word_struct["INDEX_ARCHIVE"]->dir_name;
@@ -916,7 +956,8 @@ class PhraseModel extends ParallelModel
      * @param array $word_structs an array of word_structs. Here a word_struct
      *      is an associative array with at least the following fields
      *      KEYS -- an array of word keys
-     *      RESTRICT_PHRASES -- an array of phrases the document must contain
+     *      QUOTE_POSITIONS -- an array of positions of words that appreared in
+     *          quotes (so need to be matched exactly)
      *      DISALLOW_PHRASES -- an array of words the document must not contain
      *      WEIGHT -- a weight to multiple scores returned from this iterator by
      *      INDEX_ARCHIVE -- an index_archive object to get results from
@@ -953,7 +994,7 @@ class PhraseModel extends ParallelModel
                 if(!is_array($word_struct)) { continue;}
                 $word_keys = $word_struct["KEYS"];
                 $distinct_word_keys = array_unique($word_keys);
-                $restrict_phrases = $word_struct["RESTRICT_PHRASES"];
+                $quote_positions = $word_struct["QUOTE_POSITIONS"];
                 $disallow_keys = $word_struct["DISALLOW_KEYS"];
                 $index_archive = $word_struct["INDEX_ARCHIVE"];
                 $weight = $word_struct["WEIGHT"];
@@ -990,7 +1031,7 @@ class PhraseModel extends ParallelModel
                     $base_iterator = $word_iterators[0];
                 } else {
                     $base_iterator = new IntersectIterator(
-                        $word_iterators, $word_iterator_map, $restrict_phrases,
+                        $word_iterators, $word_iterator_map, $quote_positions,
                         $weight);
                 }
                 $iterators[] = $base_iterator;

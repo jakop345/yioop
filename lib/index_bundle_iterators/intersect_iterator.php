@@ -90,11 +90,11 @@ class IntersectIterator extends IndexBundleIterator
     var $num_words;
 
     /**
-     * This iterator returns only documents containing all the elements of
-     * restrict phrases
+     * This iterator returns only documents containing quoted terms in
+     * the correct order and adjacency
      * @var array
      */
-    var $restrict_phrases;
+    var $quote_positions;
 
     /**
      * A weighting factor to multiply with each doc SCORE returned from this 
@@ -110,14 +110,14 @@ class IntersectIterator extends IndexBundleIterator
      *      to iterate over
      */
     function __construct($index_bundle_iterators, $word_iterator_map,
-        $restrict_phrases = NULL, $weight = 1)
+        $quote_positions = NULL, $weight = 1)
     {
         $this->index_bundle_iterators = $index_bundle_iterators;
         $this->word_iterator_map  = $word_iterator_map;
         $this->num_words = count($word_iterator_map);
         $this->num_iterators = count($index_bundle_iterators);
         $this->num_docs = 0;
-        $this->restrict_phrases = $restrict_phrases;
+        $this->quote_positions = $quote_positions;
         $this->weight = $weight;
         $this->results_per_block = 1;
 
@@ -215,24 +215,97 @@ class IntersectIterator extends IndexBundleIterator
                 }
             }
             if(count($position_lists) > 1) {
-                $docs[$key][self::PROXIMITY] =
-                    $this->computeProximity($position_lists, $len_lists,
-                        $docs[$key][self::IS_DOC]);
+                if($this->quote_positions === NULL ||
+                    $this->checkQuotes($position_lists)) {
+                    $docs[$key][self::PROXIMITY] =
+                        $this->computeProximity($position_lists, $len_lists,
+                            $docs[$key][self::IS_DOC]);
+                } else {
+                    $docs = array();
+                }
             } else {
                  $docs[$key][self::PROXIMITY] = 1;
             }
-            $docs[$key][self::SCORE] = $docs[$key][self::DOC_RANK] *
-                 $docs[$key][self::RELEVANCE] * $docs[$key][self::PROXIMITY];
-            if($weight != 1) {
-                $docs[$key][self::DOC_RANK] *= $weight;
-                $docs[$key][self::RELEVANCE] *= $weight;
-                $docs[$key][self::PROXIMITY] *= $weight;
-                $docs[$key][self::SCORE] *= $weight;
+            if($docs != array()) {
+                $docs[$key][self::SCORE] = $docs[$key][self::DOC_RANK] *
+                     $docs[$key][self::RELEVANCE]* $docs[$key][self::PROXIMITY];
+                if($weight != 1) {
+                    $docs[$key][self::DOC_RANK] *= $weight;
+                    $docs[$key][self::RELEVANCE] *= $weight;
+                    $docs[$key][self::PROXIMITY] *= $weight;
+                    $docs[$key][self::SCORE] *= $weight;
+                }
             }
         }
         $this->count_block = count($docs);
         $this->pages = $docs;
         return $docs;
+    }
+
+    /**
+     * Used to check if quoted terms in search query appear exactly in
+     * the position lists of the current document
+     *
+     * @param array $position_lists of search terms in the current document
+     * @return bool whether the quoted terms in the search appear exactly
+     */
+    function checkQuotes(&$position_lists)
+    {
+        foreach($this->quote_positions as $qp) {
+            if($this->checkQuote($position_lists, 0, "*", $qp) < 1) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Auxiliary function for @see checkQuotes used to check if quoted terms 
+     * in search query appear exactly in the position lists of the current 
+     * document
+     *
+     * @param array $position_lists of search terms in the current document
+     * @param int $cur_pos to look after in any position list
+     * @param mixed $next_pos * or int if * next_pos must be >= $cur_pos
+     *      +len_search_term. $next_pos represents the position the next
+     *      quoted term should be at
+     * @param $qp $position_list_index => $len_of_list_term pairs
+     * @return -1 on failure, 0 on backtrack, 1 on success
+     */
+    function checkQuote(&$position_lists, $cur_pos, $next_pos, $qp)
+    {
+        if($qp == array() || $qp == NULL) {
+            return 1;
+        }
+        $list_index = key($qp);
+        $len = $qp[$list_index];
+        unset($qp[$list_index]);
+        if(strcmp($len, "*") == 0) { 
+            return $this->checkQuote($position_lists, $cur_pos, "*", $qp);
+        }
+        $list = $position_lists[$list_index];
+        $is_star = (strcmp($next_pos, "*") == 0);
+        $next_pos = ($is_star) ? $cur_pos + $len: $next_pos;
+        while(true) {
+            $found = false;
+            foreach($list as $elt) {
+                if($elt >= $next_pos) {
+                    $found = true;
+                    break;
+                }
+            }
+            if(!$found) {
+                return -1;
+            }
+            if($is_star || $elt == $next_pos) {
+                $check = $this->checkQuote($position_lists, $elt, 
+                    $elt + $len, $qp);
+                if($check != 0) return $check;
+                $next_pos = $elt + $len;
+            } else {
+                return 0;
+            }
+        }
     }
 
     /**
