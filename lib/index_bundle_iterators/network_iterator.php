@@ -291,7 +291,7 @@ class NetworkIterator extends IndexBundleIterator
      *      results
      * @return array doc summaries that match provided keys
      */
-    function getSummariesFromCurrentDocs($keys = NULL, $get_summaries = true) 
+    function getSummariesFromCurrentDocs($keys = NULL, $get_summaries = true)
     {
         if($this->current_block_fresh == false) {
             $pages = $this->currentDocsWithWord();

@@ -1252,54 +1252,5 @@ EOT;
         return $word_counts;
      }
 
-    /**
-     *  This method is invoked by other CrawlModel (for example, CrawlModel) 
-     *  methods when they want to have their method performed 
-     *  on an array of other  Yioop instances. The results returned can then 
-     *  be aggregated.  The invocation sequence is 
-     *  crawlModelMethodA invokes execMachine with a list of 
-     *  urls of other Yioop instances. execMachine makes REST requests of
-     *  those instances of the given command and optional arguments
-     *  This request would be handled by a CrawlController which in turn
-     *  calls crawlModelMethodA on the given Yioop instance, serializes the
-     *  result and gives it back to execMachine and then back to the originally
-     *  calling function.
-     *
-     *  @param string $command the CrawlModel method to invoke on the remote 
-     *      Yioop instances
-     *  @param array $machine_urls machines to invoke this command on
-     *  @param string additional arguments to be passed to the remote machine
-     *  @return array a list of outputs from each machine that was called.
-     */
-    function execMachines($command, $machine_urls, $arg = NULL)
-    {
-        $num_machines = count($machine_urls);
-        $time = time();
-        $session = md5($time . AUTH_KEY);
-        $query = "c=crawl&a=$command&time=$time&session=$session" . 
-            "&num=$num_machines";
-        if($arg != NULL) {
-            $arg = webencode($arg);
-            $query .= "&arg=$arg";
-        }
-
-        $sites = array();
-        $post_data = array();
-        $i = 0;
-        foreach($machine_urls as $machine_url) {
-            $sites[$i][CrawlConstants::URL] =  $machine_url;
-            $post_data[$i] = $query."&i=$i";
-            $i++;
-        }
-
-        $outputs = array();
-        if(count($sites) > 0) {
-            $outputs = FetchUrl::getPages($sites, false, 0, NULL, self::URL,
-                self::PAGE, true, $post_data);
-        }
-
-        return $outputs;
-    }
-
 }
 ?>
