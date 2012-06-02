@@ -67,9 +67,12 @@ class SubsearchElement extends Element
                     e("<li><b>$type</b></li>");
                 } else {
                     $query = "";
-                    if(isset($data['QUERY'])) {
-                        $query .= "?YIOOP_TOKEN={$data['YIOOP_TOKEN']}".
-                        "&amp;c=search&amp;q={$data['QUERY']}";
+                    if(isset($data['YIOOP_TOKEN'])) {
+                        $query .= 
+                            "?YIOOP_TOKEN={$data['YIOOP_TOKEN']}&amp;c=search";
+                        if(isset($data['QUERY'])) {
+                            $query .= "&amp;q={$data['QUERY']}";
+                        }
                     }
                     e("<li><a href='$link$query'>$type</a></li>");
                 }
