@@ -1,5 +1,8 @@
 <?php
 
+/**
+ *
+ */
 function main()
 {
     global $argv;
@@ -15,16 +18,24 @@ function main()
     }
 }
 
+/**
+ *
+ */
 class BZip2BlockIterator
 {
-    const MAGIC           = 'BZh';
-    const BLOCK_HEADER    = "\x31\x41\x59\x26\x53\x59";
-    const BLOCK_ENDMARK   = "\x17\x72\x45\x38\x50\x90";
+    /** */
+    const MAGIC = 'BZh';
+    /** */
+    const BLOCK_HEADER = "\x31\x41\x59\x26\x53\x59";
+    /** */
+    const BLOCK_ENDMARK = "\x17\x72\x45\x38\x50\x90";
 
-    // Blocks are NOT byte-aligned, so the block header (and endmark) may show 
-    // up shifted right by 0-8 bits in various places throughout the file. This 
-    // regular expression matches any of the possible shifts for both the block 
-    // header and the block endmark.
+    /**
+     *  Blocks are NOT byte-aligned, so the block header (and endmark) may show
+     *  up shifted right by 0-8 bits in various places throughout the file. This
+     *  regular expression matches any of the possible shifts for both the block
+     *  header and the block endmark. 
+     */
     const BLOCK_LEADER_RE = '
         /
          \x41\x59\x26\x53\x59 | \xa0\xac\x93\x29\xac | \x50\x56\x49\x94\xd6
@@ -36,6 +47,9 @@ class BZip2BlockIterator
         |\x5d\xc9\x14\xe1\x42 | \x2e\xe4\x8a\x70\xa1
         /x';
 
+    /**
+     *  @var array
+     */
     static $header_info = array(
         "\x41" => array(0,  true), "\xa0" => array(1,  true),
         "\x50" => array(2,  true), "\x28" => array(3,  true),
@@ -48,14 +62,38 @@ class BZip2BlockIterator
         "\x5d" => array(6, false), "\x2e" => array(7, false)
     );
 
+    /**
+     *
+     */
     var $fd = null;
+    /**
+     *
+     */
     var $file_offset = 0;
+    /**
+     *
+     */
     var $buffer = '';
+    /**
+     *
+     */
     var $block = '';
+    /**
+     *
+     */
     var $bits = 0;
+    /**
+     *
+     */
     var $num_extra_bits = 0;
+    /**
+     *
+     */
     var $shift = 0;
 
+    /**
+     * @param string $path
+     */
     function __construct($path)
     {
         $this->path = $path;
@@ -71,22 +109,30 @@ class BZip2BlockIterator
         $this->file_offset = 10;
     }
 
+    /**
+     */
     function __wakeup()
     {
         $this->fd = fopen($this->path, 'rb');
         fseek($this->fd, $this->file_offset);
     }
 
+    /**
+     */
     function is_eof()
     {
         return feof($this->fd);
     }
 
+    /**
+     */
     function close()
     {
         return fclose($this->fd);
     }
 
+    /**
+     */
     function next_block($raw=false)
     {
         $recovered_block = NULL;
@@ -101,8 +147,10 @@ class BZip2BlockIterator
                 $matches,
                 PREG_OFFSET_CAPTURE);
             if($match) {
-                // $pos is the position of the SECOND byte of the magic number
-                // (plus some part of the first byte for a non-zero new_shift).
+                /* 
+                    $pos is the position of the SECOND byte of the magic number
+                    (plus some part of the first byte for a non-zero new_shift).
+                */
                 $pos = $matches[0][1];
 
                 // The new_shift is the number of bits by which the magic 
@@ -110,13 +158,15 @@ class BZip2BlockIterator
                 list($new_shift, $is_start) =
                     self::$header_info[$this->buffer[$pos]];
 
-                // The new number of extra bits is what's left in a byte after 
-                // the new shift. For example, if we have 10|001011 as the byte 
-                // that begins the next block's header, where the vertical bar 
-                // represents the beginning of the header bits, the new shift 
-                // is 2, and after we byte-align the new header to the left 
-                // there will always be 6 extra bits waiting for two bits to 
-                // form a byte to be added to the next block.
+                /*
+                    The new number of extra bits is what's left in a byte after
+                    the new shift. For example, if we have 10|001011 as the byte
+                    that begins the next block's header, where the vertical bar
+                    represents the beginning of the header bits, the new shift
+                    is 2, and after we byte-align the new header to the left
+                    there will always be 6 extra bits waiting for two bits to 
+                    form a byte to be added to the next block.
+                */
                 $new_num_extra_bits = $new_shift == 0 ? 0 : 8 - $new_shift;
 
                 if($new_shift == 0) {
@@ -146,16 +196,20 @@ class BZip2BlockIterator
                     continue;
                 }
 
-                // Copy and shift the last chunk of bytes from the previous 
-                // block before adding the block trailer.
+                /*
+                    Copy and shift the last chunk of bytes from the previous 
+                    block before adding the block trailer.
+                */
                 $block_tail = substr($this->buffer, 0, $pos - 1);
                 self::pack_left($this->block, $this->bits, $block_tail,
                     $this->num_extra_bits);
 
-                // We need to combine the non-header tail bits from the most 
-                // significant end of the last byte before the next block's 
-                // header with whatever extra bits are left over from shifting 
-                // the body of the previous block.
+                /*
+                    We need to combine the non-header tail bits from the most
+                    significant end of the last byte before the next block's
+                    header with whatever extra bits are left over from shifting
+                    the body of the previous block.
+                */
                 $bits_left = 8 - $this->num_extra_bits;
                 if($new_shift >= $bits_left) {
                     $this->bits |= ($tail_bits >> $this->num_extra_bits);
@@ -168,9 +222,11 @@ class BZip2BlockIterator
                         $new_shift;
                 }
 
-                // The last block is marked by a different header (sqrt(pi)), 
-                // and a CRC for the entire "file", which is just the CRC for 
-                // the first block, since there's only one block.
+                /*
+                    The last block is marked by a different header (sqrt(pi)),
+                    and a CRC for the entire "file", which is just the CRC for
+                    the first block, since there's only one block.
+                */
                 $trailer = "\x17\x72\x45\x38\x50\x90".
                     substr($this->block, 6, 4);
                 self::pack_left($this->block, $this->bits, $trailer,
@@ -182,8 +238,10 @@ class BZip2BlockIterator
                 $recovered_block = $this->header.$this->block;
                 $this->block = $new_block;
 
-                // Keep everything after the end of the header for the next 
-                // block in the buffer.
+                /* 
+                    Keep everything after the end of the header for the next
+                    block in the buffer.
+                */
                 $this->buffer = substr($this->buffer, $pos + $header_end);
 
                 $this->bits = $new_bits;
@@ -192,9 +250,11 @@ class BZip2BlockIterator
 
                 break;
             } else {
-                // No match, but we may have just missed a header by a byte, so 
-                // we need to keep the last six bytes in the buffer so that we 
-                // have a chance to get the full header on the next round.
+                /*
+                    No match, but we may have just missed a header by a byte, so
+                    we need to keep the last six bytes in the buffer so that we
+                    have a chance to get the full header on the next round.
+                */
                 $unmatched = substr($this->buffer, 0, -6);
                 self::pack_left($this->block, $this->bits, $unmatched,
                     $this->num_extra_bits);
@@ -209,6 +269,8 @@ class BZip2BlockIterator
         }
     }
 
+    /**
+     */
     static function pack_left(&$block, &$bits, $bytes, $num_extra_bits)
     {
         if($num_extra_bits == 0) {
@@ -224,6 +286,8 @@ class BZip2BlockIterator
         }
     }
 
+    /**
+     */
     static function hexdump($bytes)
     {
         $out = array();

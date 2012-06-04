@@ -246,33 +246,6 @@ class UnionIterator extends IndexBundleIterator
     }
 
     /**
-     * Returns the index associated with this iterator
-     * @return object the index
-     */
-    function getIndex($key = NULL)
-    {
-        if($key != NULL) {
-            if(isset($this->key_iterator_table[$key])) {
-                return $this->index_bundle_iterators[
-                    $this->key_iterator_table[$key]]->getIndex($key);
-            }
-            if($this->current_block_fresh == false ) {
-                $result = $this->currentDocsWithWord();
-                if(!is_array($result)) {
-                    return $this->index_bundle_iterators[0]->getIndex($key);
-                }
-            }
-            if(!isset($this->pages[$key]["ITERATOR"])) {
-                return $this->index_bundle_iterators[0]->getIndex($key);
-            }
-            return $this->index_bundle_iterators[
-                $this->pages[$key]["ITERATOR"]]->getIndex($key);
-        } else {
-            return $this->index_bundle_iterators[0]->getIndex($key);
-        }
-    }
-
-    /**
      * This method is supposed to set
      * the value of the result_per_block field. This field controls
      * the maximum number of results that can be returned in one go by

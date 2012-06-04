@@ -114,12 +114,6 @@ abstract class IndexBundleIterator implements CrawlConstants
     abstract function advance($gen_doc_offset = null);
 
     /**
-     * Returns the index associated with this iterator
-     * @return object the index
-     */
-    abstract function getIndex($key = NULL);
-
-    /**
      * Gets the doc_offset and generation for the next document that 
      * would be return by this iterator
      *
@@ -181,7 +175,8 @@ abstract class IndexBundleIterator implements CrawlConstants
      */
     function getSummariesFromCurrentDocs($keys = NULL, $get_summaries = true) 
     {
-        $index = $this->getIndex(); //objects assigned by ref
+        $index_name = $this->getIndexName(); //objects assigned by ref
+        $index = IndexManager::getIndex($this->index_name);
 
         if($this->current_block_fresh == false) {
             $pages = $this->currentDocsWithWord();
@@ -237,7 +232,7 @@ abstract class IndexBundleIterator implements CrawlConstants
         }
 
         $this->advance($doc_offset);
-        
+
         return $doc_block;
 
     }

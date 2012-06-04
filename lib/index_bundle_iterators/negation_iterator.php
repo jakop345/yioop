@@ -77,7 +77,7 @@ class NegationIterator extends IndexBundleIterator
     {
         $this->index_bundle_iterators[0] = new WordIterator(
             crawlHash("site:all", true), 
-            $index_bundle_iterator->index, true,
+            $index_bundle_iterator->getIndexName(), true,
             $index_bundle_iterator->filter);
         $this->index_bundle_iterators[1] = $index_bundle_iterator;
 
@@ -221,15 +221,6 @@ class NegationIterator extends IndexBundleIterator
     function currentGenDocOffsetWithWord() {
         $this->syncGenDocOffsetsAmongstIterators();
         return $this->index_bundle_iterators[0]->currentGenDocOffsetWithWord();
-    }
-
-    /**
-     * Returns the index associated with this iterator
-     * @return object the index
-     */
-    function getIndex($key = NULL)
-    {
-        return $this->index_bundle_iterators[0]->getIndex($key = NULL);
     }
 
     /**

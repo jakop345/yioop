@@ -473,22 +473,6 @@ class PhraseModel extends ParallelModel
             }
             $phrase_string = preg_replace($pattern, "", $phrase_string);
         }
-        $index_archive_name = self::index_data_base_name . $index_name;
-
-        /* if network query then don't want to create an IndexArchive
-           so create a mock object that suffices till the NetworkIterator
-           is constructed
-         */
-        $index_dummy_flag = false;
-        if($queue_servers != array() &&
-            !$this->isSingleLocalhost($queue_servers)) {
-            $tmp["dir_name"] = CRAWL_DIR.'/cache/'.$index_archive_name;
-            $index_archive = (object) $tmp;
-            $index_dummy_flag = true;
-        } else {
-            $index_archive = new IndexArchiveBundle(
-                CRAWL_DIR.'/cache/'.$index_archive_name);
-        }
 
         $phrase_string = mb_ereg_replace("&amp;", "_and_", $phrase_string);
 
@@ -546,7 +530,7 @@ class PhraseModel extends ParallelModel
         $words = array_merge($base_words, $found_metas);
         if(QUERY_STATISTICS) {
             $this->query_info['QUERY'] .= "$in3<i>Index</i>: ".
-                $index_archive_name."<br />";
+                $index_name."<br />";
             $this->query_info['QUERY'] .= "$in3<i>LocaleTag</i>: ".
                 $locale_tag."<br />";
             $this->query_info['QUERY'] .=
@@ -575,7 +559,7 @@ class PhraseModel extends ParallelModel
             $phrase_hash = crawlHash($phrase_string);
             $word_struct = array("KEYS" => array($phrase_hash),
                 "QUOTE_POSITIONS" => NULL, "DISALLOW_KEYS" => array(),
-                "WEIGHT" => $weight, "INDEX_ARCHIVE" => $index_archive
+                "WEIGHT" => $weight, "INDEX_NAME" => $index_name
             );
         } else {
 
@@ -594,9 +578,6 @@ class PhraseModel extends ParallelModel
                 $word_struct = NULL;
             }
 
-            if(!$index_dummy_flag) {
-                $index_archive->setCurrentShard(0, true);
-            }
             $disallow_keys = array();
             $num_disallow_keys = min(MAX_QUERY_TERMS, count($disallow_phrases));
 
@@ -620,7 +601,7 @@ class PhraseModel extends ParallelModel
                     "QUOTE_POSITIONS" => $quote_positions,
                     "DISALLOW_KEYS" => $disallow_keys,
                     "WEIGHT" => $weight,
-                    "INDEX_ARCHIVE" => $index_archive
+                    "INDEX_NAME" => $index_name
                 );
             }
         }
@@ -781,7 +762,7 @@ class PhraseModel extends ParallelModel
      *          quotes (so need to be matched exactly)
      *      DISALLOW_PHRASES -- an array of words the document must not contain
      *      WEIGHT -- a weight to multiple scores returned from this iterator by
-     *      INDEX_ARCHIVE -- an index_archive object to get results from
+     *      INDEX_NAME -- an index timestamp to get results from
      * @param int $limit number of first document in order to return
      * @param int $num number of documents to return summaries of
      * @param array &$filter an array of hashes of domains to filter from
@@ -820,7 +801,7 @@ class PhraseModel extends ParallelModel
                     serialize($word_struct["QUOTE_POSITIONS"]) .
                     serialize($word_struct["DISALLOW_KEYS"]) .
                     $word_struct["WEIGHT"] .
-                    $word_struct["INDEX_ARCHIVE"]->dir_name;
+                    $word_struct["INDEX_NAME"];
             }
             if($use_cache_if_allowed) {
                 $cache_success = true;
@@ -860,9 +841,9 @@ class PhraseModel extends ParallelModel
             foreach($next_docs as $doc_key => $doc_info) {
                 if($isLocal) {
                     $summary = & $doc_info[CrawlConstants::SUMMARY];
-
-                    $tmp = unserialize($query_iterator->getIndex(
-                        $doc_key)->description);
+                    $index_name = $doc_info[CrawlConstants::INDEX_NAME];
+                    $index = IndexManager::getIndex($index_name);
+                    $tmp = unserialize($index->description);
 
                     $doc_info[self::CRAWL_TIME] = $tmp[self::CRAWL_TIME];
                     unset($doc_info[CrawlConstants::SUMMARY]);
@@ -926,7 +907,6 @@ class PhraseModel extends ParallelModel
             //this is only an approximation
         }
 
-
         if(USE_CACHE && $raw  == 0) {
             for($i = 0; $i < $result_count; $i++){
                 unset($pages[$i][self::LINKS]);
@@ -960,7 +940,7 @@ class PhraseModel extends ParallelModel
      *          quotes (so need to be matched exactly)
      *      DISALLOW_PHRASES -- an array of words the document must not contain
      *      WEIGHT -- a weight to multiple scores returned from this iterator by
-     *      INDEX_ARCHIVE -- an index_archive object to get results from
+     *      INDEX_NAME -- an index timestamp to get results from
      * @param array &$filter an array of hashes of domains to filter from
      *      results
      *      and then potentially restored in cache
@@ -996,7 +976,7 @@ class PhraseModel extends ParallelModel
                 $distinct_word_keys = array_unique($word_keys);
                 $quote_positions = $word_struct["QUOTE_POSITIONS"];
                 $disallow_keys = $word_struct["DISALLOW_KEYS"];
-                $index_archive = $word_struct["INDEX_ARCHIVE"];
+                $index_name = $word_struct["INDEX_NAME"];
                 $weight = $word_struct["WEIGHT"];
                 $num_word_keys = count($word_keys);
                 $total_iterators = count($distinct_word_keys);
@@ -1007,7 +987,7 @@ class PhraseModel extends ParallelModel
                 for($i = 0; $i < $total_iterators; $i++) {
                     $word_iterators[$i] =
                         new WordIterator($distinct_word_keys[$i], 
-                            $index_archive, false, $filter);
+                            $index_name, false, $filter);
                     foreach ($word_keys as $index => $key) {
                         if(isset($distinct_word_keys[$i]) && 
                             $key == $distinct_word_keys[$i]){
@@ -1019,7 +999,7 @@ class PhraseModel extends ParallelModel
                 if($num_disallow_keys > 0) {
                 for($i = 0; $i < $num_disallow_keys; $i++) {
                         $disallow_iterator =
-                            new WordIterator($disallow_keys[$i], $index_archive,
+                            new WordIterator($disallow_keys[$i], $index_name,
                                 false, $filter);
                         $word_iterators[$num_word_keys + $i] =
                             new NegationIterator($disallow_iterator);

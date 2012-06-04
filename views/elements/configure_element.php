@@ -194,6 +194,12 @@ class ConfigureElement extends Element
                         $data['WORD_SUGGEST']){
                         e("checked='checked'");}?> 
                     /><?php e(tl('configure_element_wd_suggest')); ?></label>
+                <label for="subsearch-link"><input id='subsearch-link' 
+                    type="checkbox" name="SUBSEARCH_LINK" value="true" 
+                    <?php if(isset($data['SUBSEARCH_LINK']) && 
+                        $data['SUBSEARCH_LINK']){
+                        e("checked='checked'");}?> 
+                    /><?php e(tl('configure_element_subsearch_link'));?></label>
                 <label for="signin-link"><input id='signin-link' type="checkbox" 
                     name="SIGNIN_LINK" value="true" 
                     <?php if(isset($data['SIGNIN_LINK']) && 

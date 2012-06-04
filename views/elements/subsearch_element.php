@@ -51,6 +51,7 @@ class SubsearchElement extends Element
      */
     public function render($data)
     {
+        if(!SUBSEARCH_LINK) { return; }
         $media_links = array(
             "Web" => "index.php",
             "Images" => "images.php",

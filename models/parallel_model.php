@@ -40,10 +40,10 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  */
 require_once BASE_DIR."/lib/crawl_constants.php";
 /** 
- * Crawl data is stored in an IndexArchiveBundle, 
- * so load the definition of this class
+ * Crawl data is stored in an IndexArchiveBundle, which are managed by the
+ * IndexManager so load the definition of this class
  */
-require_once BASE_DIR."/lib/index_archive_bundle.php";
+require_once BASE_DIR."/lib/index_manager.php";
 /** For crawlHash function */
 require_once BASE_DIR."/lib/utility.php";
 /** 
@@ -126,9 +126,7 @@ class ParallelModel extends Model implements CrawlConstants
             return $summaries;
         }
 
-        $index_archive_name =self::index_data_base_name . $this->index_name;
-        $index_archive = 
-            new IndexArchiveBundle(CRAWL_DIR.'/cache/'.$index_archive_name);
+        $index_archive = IndexManager::getIndex($this->index_name);
 
         foreach($urls as $url) {
             list($summary_offset, $generation, $cache_partition) = 
@@ -153,9 +151,7 @@ class ParallelModel extends Model implements CrawlConstants
     function lookupSummaryOffsetGeneration($url, $index_archive = NULL)
     {
         if($index_archive == NULL) {
-            $index_archive_name =self::index_data_base_name . $this->index_name;
-            $index_archive = new IndexArchiveBundle(
-                CRAWL_DIR.'/cache/'.$index_archive_name);
+            $index_archive = IndexManager::getIndex($this->index_name);
         }
         $num_retrieved = 0;
         $pages = array();

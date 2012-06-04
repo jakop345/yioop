@@ -64,14 +64,6 @@ class NetworkIterator extends IndexBundleIterator
     var $base_query;
 
     /**
-     * When true, tells any parent iterator not to try to call getIndex,
-     * currentGenDocOffsetWithWord, or computeRelevance
-     *
-     * @var bool
-     */
-    var $no_lookup;
-
-    /**
      * Current limit number to be added to base query
      *
      * @var string
@@ -126,7 +118,6 @@ class NetworkIterator extends IndexBundleIterator
      */
     function __construct($query, $queue_servers, $timestamp, &$filter = NULL)
     {
-        $this->no_lookup = true;
         $this->results_per_block = ceil(self::MIN_FIND_RESULTS_PER_BLOCK);
         $this->base_query = "q=".urlencode($query).
             "&f=serial&network=&raw=1&its=$timestamp";
@@ -184,17 +175,6 @@ class NetworkIterator extends IndexBundleIterator
      {
         $this->advanceSeenDocs();
         $this->limit += $this->results_per_block;
-     }
-
-    /**
-     * Returns the index associated with this iterator. As this is not easily 
-     * determined for a network iterator, this method always returns NULL for 
-     * this iterator
-     * @return object the index
-     */
-    function getIndex($key = NULL)
-     {
-        return NULL;
      }
 
     /**
@@ -256,8 +236,8 @@ class NetworkIterator extends IndexBundleIterator
                 }
                 if(isset($pre_result["PAGES"])) {
                     foreach($pre_result["PAGES"] as $page_data) {
-                        if(isset($page_data["KEY"])) {
-                            $results[$page_data["KEY"]] = 
+                        if(isset($page_data[self::KEY])) {
+                            $results[$page_data[self::KEY]] = 
                                 $page_data;
                         }
                     }

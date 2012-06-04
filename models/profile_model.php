@@ -55,7 +55,7 @@ class ProfileModel extends Model
             'NAME_SERVER', 'AUTH_KEY', "ROBOT_DESCRIPTION", 'WEB_URI',
             'USE_MEMCACHE', 'MEMCACHE_SERVERS', 'USE_FILECACHE', 
             'WORD_SUGGEST', 'CACHE_LINK', 'SIMILAR_LINK', 
-            'IN_LINK', 'IP_LINK', 'SIGNIN_LINK',
+            'IN_LINK', 'IP_LINK', 'SIGNIN_LINK', 'SUBSEARCH_LINK',
             'ROBOT_INSTANCE', "WEB_ACCESS", "RSS_ACCESS", "API_ACCESS",
             'TITLE_WEIGHT','DESCRIPTION_WEIGHT','LINK_WEIGHT',
             'MIN_RESULTS_TO_GROUP','SERVER_ALPHA');
@@ -245,6 +245,7 @@ EOT;
             "LOCALE", "TRANSLATION_LOCALE", "ROLE", 
             "ROLE_ACTIVITY", "ACTIVITY", "USER_ROLE", "CURRENT_WEB_INDEX",
             "CRAWL_MIXES", "MIX_GROUPS", "MIX_COMPONENTS");
+        //Don't copy MACHINE table as will be local to installation
         $create_statements = array(
             "CREATE TABLE VERSION( ID INTEGER PRIMARY KEY)",
             "CREATE TABLE USER( USER_ID INTEGER PRIMARY KEY $auto_increment, ".
@@ -273,7 +274,10 @@ EOT;
                 " RESULT_BOUND INT(4))",
             "CREATE TABLE MIX_COMPONENTS (MIX_TIMESTAMP INT(11),".
                 "GROUP_ID INT(4), CRAWL_TIMESTAMP INT(11), WEIGHT REAL,".
-                " KEYWORDS VARCHAR(256))"
+                " KEYWORDS VARCHAR(256))",
+            "CREATE TABLE MACHINE (NAME VARCHAR(16) PRIMARY KEY,".
+                " URL VARCHAR(256) UNIQUE, HAS_QUEUE_SERVER INT,".
+                " NUM_FETCHERS INT(4), PARENT VARCHAR(16) )"
             );
         foreach($create_statements as $statement) {
             if(!$test_dbm->execute($statement)) {return false;}

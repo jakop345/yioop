@@ -1226,10 +1226,7 @@ EOT;
             return $word_counts;
         }
 
-        $index_archive_name = self::index_data_base_name . $this->index_name;
-
-        $index_archive =
-            new IndexArchiveBundle(CRAWL_DIR.'/cache/'.$index_archive_name);
+        $index_archive = IndexManager::getIndex($this->index_name);
 
         $hashes = array();
         $lookup = array();

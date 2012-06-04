@@ -75,12 +75,14 @@ class SearchView extends View implements CrawlConstants
     public function renderView($data) 
     {
         $data['LAND'] = (!isset($data['PAGES'])) ? 'landing-' : '';
-        ?>
-        <div class="<?php e($data['LAND']);?>topbar"><?php
-        $this->subsearchElement->render($data);
-        $this->signinElement->render($data);
-        ?>
-        </div><?php
+        if(SIGNIN_LINK || SUBSEARCH_LINK) {
+            ?>
+            <div class="<?php e($data['LAND']);?>topbar"><?php
+            $this->subsearchElement->render($data);
+            $this->signinElement->render($data);
+            ?>
+            </div><?php
+        }
         $logo = "resources/yioop.png";
         if(!isset($data['PAGES'])) {
             e('<div class="landing">');

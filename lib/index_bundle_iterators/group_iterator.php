@@ -115,14 +115,6 @@ class GroupIterator extends IndexBundleIterator
     var $only_lookup;
 
     /**
-     * When true, tells any parent iterator not to try to call getIndex,
-     * currentGenDocOffsetWithWord, or computeRelevance
-     *
-     * @var bool
-     */
-    var $no_lookup;
-
-    /**
      * the minimum number of pages to group from a block;
      * this trumps $this->index_bundle_iterator->results_per_block
      */
@@ -156,9 +148,6 @@ class GroupIterator extends IndexBundleIterator
             $this->results_per_block /=  ceil($num_iterators/2);
         }
         $this->only_lookup = $only_lookup;
-        $this->no_lookup = 
-            (isset( $this->index_bundle_iterator->no_lookup)) ?
-             $this->index_bundle_iterator->no_lookup : false;
 
         $this->reset();
     }
@@ -210,7 +199,7 @@ class GroupIterator extends IndexBundleIterator
         $this->current_block_hashes = array();
         $this->current_seen_hashes = array();
         if($this->count_block_unfiltered > 0 ) {
-            if($this->only_lookup && !$this->no_lookup) {
+            if($this->only_lookup) {
                 $pages = $this->insertUnseenDocs($pages);
 
                 $this->count_block = count($pages);
@@ -266,7 +255,6 @@ class GroupIterator extends IndexBundleIterator
                 $done = true;
             }
         } while($done != true);
-
         return $pages;
     }
 
@@ -326,8 +314,9 @@ class GroupIterator extends IndexBundleIterator
         foreach($pre_out_pages as $hash_url => $data) {
             $hash = $pre_out_pages[$hash_url][0][self::HASH];
             $is_location = (crawlHash($hash_url. "LOCATION", true) == $hash);
-            if(!$this->no_lookup && (!$data[0][self::IS_DOC] || $is_location)) {
-                $item = $this->lookupDoc($data[0]['KEY'], 
+            if((!$data[0][self::IS_DOC] || $is_location)) {
+                $item = $this->lookupDoc($data[0][self::KEY], 
+                    $data[0][self::INDEX_NAME],
                     $is_location, 3); 
                 if($item != false) {
                     array_unshift($pre_out_pages[$hash_url], $item);
@@ -371,16 +360,15 @@ class GroupIterator extends IndexBundleIterator
      * 
      * @return array consisting of info about the doc
      */
-     function lookupDoc($doc_key, $is_location = false, $depth = 3)
+     function lookupDoc($doc_key, $index_name, $is_location = false, $depth = 3)
      {
         $hash_url = substr($doc_key, 0, IndexShard::DOC_KEY_LEN);
         $prefix = ($is_location) ? "location:" : "info:";
         $hash_info_url=
-            crawlHash($prefix.base64Hash($hash_url), true);
-        $index = $this->getIndex($doc_key);
+            crawlHash($prefix.base64Hash($hash_url), true);;
         $word_iterator =
              new WordIterator($hash_info_url,
-                $index, true);
+                $index_name, true);
         $count = 1;
         if(isset($word_iterator->dictionary_info)) {
             $count = count($word_iterator->dictionary_info);
@@ -409,15 +397,17 @@ class GroupIterator extends IndexBundleIterator
             $is2_location = (crawlHash($hash_url. "LOCATION", true) == $hash);
             if($depth > 0) {
                 if($is2_location) {
-                    return $this->lookupDoc($key, $is2_location, $depth - 1);
+                    return $this->lookupDoc($key, $index_name, $is2_location, 
+                        $depth - 1);
                 } else if(!isset($item[self::IS_DOC]) || !$item[self::IS_DOC]) {
-                    return $this->lookupDoc($key, false, $depth - 1);
+                    return $this->lookupDoc($key, $index_name, false, 
+                        $depth - 1);
                 }
             }
             $item[self::RELEVANCE] = $relevance;
             $item[self::SCORE] = $item[self::DOC_RANK]*pow(1.1, $relevance);
-            $item['KEY'] = $key;
-            $item['INDEX'] = $word_iterator->index;
+            $item[self::KEY] = $key;
+            $item[self::INDEX_NAME] = $index_name;
             $item[self::HASH] = $hash;
             $item[self::INLINKS] = substr($key,
                 2*IndexShard::DOC_KEY_LEN, IndexShard::DOC_KEY_LEN);
@@ -442,8 +432,9 @@ class GroupIterator extends IndexBundleIterator
         $doc_keys = array_keys($pages);
         $need_docs = array();
         foreach($doc_keys as $key) {
-           $hash_url = substr($key, 0, IndexShard::DOC_KEY_LEN);
-           $need_docs[$hash_url] = $key;
+            $hash_url = substr($key, 0, IndexShard::DOC_KEY_LEN);
+            $need_docs[$hash_url] = array($key, 
+                $pages[$doc_keys][self::INDEX_NAME]);
         }
         $need_docs = array_diff_key($need_docs, $this->grouped_keys);
         foreach($pages as $doc_key => $doc_info) {
@@ -464,8 +455,9 @@ class GroupIterator extends IndexBundleIterator
         $item_pages = array();
         if(is_array($need_docs)) {
             $need_docs = array_unique($need_docs);
-            foreach($need_docs as $hash_url => $doc_key) {
-                $item = $this->lookupDoc($doc_key);
+            foreach($need_docs as $hash_url => $pair) {
+                list($doc_key, $index_name) = $pair;
+                $item = $this->lookupDoc($doc_key, $index_name);
                 if($item != false) {
                     $item_pages[$hash_url] = $item;
                 }
@@ -477,8 +469,9 @@ class GroupIterator extends IndexBundleIterator
         foreach($new_pages as $doc_key => $doc_info) {
             $new_pages[$doc_key][self::SUMMARY_OFFSET] = array();
             $new_pages[$doc_key][self::SUMMARY_OFFSET][] = 
-                array($doc_info["KEY"], $doc_info[self::GENERATION],
-                        $doc_info[self::SUMMARY_OFFSET]);
+                array($doc_info[self::KEY], $doc_info[self::INDEX_NAME], 
+                    $doc_info[self::GENERATION],
+                    $doc_info[self::SUMMARY_OFFSET]);
         }
 
         return $new_pages;
@@ -508,7 +501,8 @@ class GroupIterator extends IndexBundleIterator
                 $doc_info = $group_infos[$i];
                 if(isset($doc_info[self::GENERATION])) {
                     $out_pages[$hash_url][self::SUMMARY_OFFSET][] = 
-                        array($doc_info["KEY"], $doc_info[self::GENERATION],
+                        array($doc_info[self::KEY], $doc_info[self::INDEX_NAME],
+                            $doc_info[self::GENERATION],
                             $doc_info[self::SUMMARY_OFFSET]);
                 }
             }
@@ -580,7 +574,7 @@ class GroupIterator extends IndexBundleIterator
     {
         if($this->current_block_fresh == false) {
             $result = $this->currentDocsWithWord();
-            if(!is_array($result) || $this->no_lookup) {
+            if(!is_array($result) ) {
                 return $result;
             }
         }
@@ -602,12 +596,9 @@ class GroupIterator extends IndexBundleIterator
                 is_array($doc_info[self::SUMMARY_OFFSET])) {
                 $out_pages[$doc_key] = $doc_info;
                 foreach($doc_info[self::SUMMARY_OFFSET] as $offset_array) {
-                    list($key, $generation, $summary_offset) = $offset_array;
-                    if(isset($doc_info['INDEX'])) {
-                        $index = $doc_info['INDEX'];
-                    } else {
-                        $index = $this->getIndex($key);
-                    }
+                    list($key, $index_name, $generation, $summary_offset) = 
+                        $offset_array;
+                    $index = IndexManager::getIndex($index_name);
                     $index->setCurrentShard($generation, true);
                     $page = @$index->getPage($summary_offset);
                     if(!$page || $page == array()) {continue;}
@@ -692,14 +683,5 @@ class GroupIterator extends IndexBundleIterator
         $this->index_bundle_iterator->currentGenDocOffsetWithWord();
     }
 
-
-    /**
-     * Returns the index associated with this iterator
-     * @return object the index
-     */
-    function getIndex($key = NULL)
-    {
-        return $this->index_bundle_iterator->getIndex($key);
-    }
 }
 ?>

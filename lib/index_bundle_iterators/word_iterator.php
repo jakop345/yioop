@@ -59,10 +59,10 @@ class WordIterator extends IndexBundleIterator
      */
     var $word_key;
     /**
-     * The IndexArchiveBundle this index is associated with
-     * @var object
+     * The timestamp of the index is associated with this iterator
+     * @var string
      */
-    var $index;
+    var $index_name;
 
     /**
      * The next byte offset in the IndexShard
@@ -138,14 +138,14 @@ class WordIterator extends IndexBundleIterator
      * Creates a word iterator with the given parameters.
      *
      * @param string $word_key hash of word or phrase to iterate docs of 
-     * @param object $index the IndexArchiveBundle to use
+     * @param string $index_name time_stamp of the to use
      * @param int $limit the first element to return from the list of docs
      *      iterated over
      * @param bool $raw whether the $word_key is our variant of base64 encoded
      * @param array $filter an array of hashes of domains to filter from
      *      results
      */
-    function __construct($word_key, $index, $raw = false, &$filter = NULL)
+    function __construct($word_key, $index_name, $raw = false, &$filter = NULL)
     {
         if($raw == false) {
             //get rid of out modfied base64 encoding
@@ -164,7 +164,8 @@ class WordIterator extends IndexBundleIterator
 
         $this->word_key = $word_key;
 
-        $this->index =  $index;
+        $this->index_name =  $index_name;
+        $index = IndexManager::getIndex($index_name);
         $this->current_block_fresh = false;
         $this->dictionary_info = 
             $index->dictionary->getWordInfo($word_key, true);
@@ -199,10 +200,11 @@ class WordIterator extends IndexBundleIterator
     function computeRelevance($generation, $posting_offset)
     {
         $item = array();
-        $this->index->setCurrentShard($generation, true);
+        $index = IndexManager::getIndex($this->index_name);
+        $index->setCurrentShard($generation, true);
         $num_docs_or_links = 
             IndexShard::numDocsOrLinks($this->start_offset, $this->last_offset);
-        $this->index->getCurrentShard()->makeItem($item, 
+        $index->getCurrentShard()->makeItem($item, 
             $posting_offset, $num_docs_or_links, 1);
         return $item[self::RELEVANCE];
     }
@@ -245,10 +247,11 @@ class WordIterator extends IndexBundleIterator
             return -1;
         }
         $this->next_offset = $this->current_offset;
-        $this->index->setCurrentShard($this->current_generation, true);
+        $index = IndexManager::getIndex($this->index_name);
+        $index->setCurrentShard($this->current_generation, true);
 
         //the next call also updates next offset
-        $shard = $this->index->getCurrentShard();
+        $shard = $index->getCurrentShard();
         $pre_results = $shard->getPostingsSlice(
             $this->start_offset,
             $this->next_offset, $this->last_offset, $this->results_per_block);
@@ -258,13 +261,14 @@ class WordIterator extends IndexBundleIterator
             if(in_array($host_key, $filter) ) {
                 continue;
             }
-            $data['KEY'] = $keys;
+            $data[self::KEY] = $keys;
             $hash_url = substr($keys, 0, IndexShard::DOC_KEY_LEN);
             $data[self::HASH] = substr($keys, 
                 IndexShard::DOC_KEY_LEN, IndexShard::DOC_KEY_LEN);
             // inlinks is the domain of the inlink
             $data[self::INLINKS] = substr($keys, 
                 2 * IndexShard::DOC_KEY_LEN, IndexShard::DOC_KEY_LEN);
+            $data[self::INDEX_NAME] = $this->index_name;
             $results[$keys] = $data;
         }
         $this->count_block = count($results);
@@ -301,10 +305,11 @@ class WordIterator extends IndexBundleIterator
                 $this->advanceGeneration($gen_doc_offset[0]);
                 $this->next_offset = $this->current_offset;
             }
-            $this->index->setCurrentShard($this->current_generation, true);
+            $index = IndexManager::getIndex($this->index_name);
+            $index->setCurrentShard($this->current_generation, true);
             if($this->current_generation == $gen_doc_offset[0]) {
                 $this->current_offset =
-                    $this->index->getCurrentShard(
+                    $index->getCurrentShard(
                         )->nextPostingOffsetDocOffset($this->next_offset,
                             $this->last_offset, $gen_doc_offset[1]);
                 if($this->current_offset === false) {
@@ -357,18 +362,11 @@ class WordIterator extends IndexBundleIterator
             $this->generation_pointer >= $this->num_generations) {
             return -1;
         }
-        $this->index->setCurrentShard($this->current_generation, true);
-        return array($this->current_generation, $this->index->getCurrentShard(
+        $index = IndexManager::getIndex($this->index_name);
+        $index->setCurrentShard($this->current_generation, true);
+        return array($this->current_generation, $index->getCurrentShard(
                         )->docOffsetFromPostingOffset($this->current_offset));
     }
 
-    /**
-     * Returns the index associated with this iterator
-     * @return &object the index
-     */
-    function getIndex($key = NULL)
-    {
-        return $this->index;
-    }
 }
 ?>
