@@ -331,12 +331,15 @@ class PhraseModel extends ParallelModel
                 $this->query_info['QUERY'] .=
                     "$in2<b>Presentation Parse time</b>: " .
                     changeInMicrotime($start_time)."<br />";
-                $summaries_time = microtime();
             }
 
             $out_results = $this->getSummariesByHash($word_structs,
                 $low, $phrase_num, $filter, $use_cache_if_allowed, $raw, 
                 $queue_servers, $phrase);
+
+            if(QUERY_STATISTICS) {
+                $format_time = microtime();
+            }
 
             if(isset($out_results['PAGES']) &&
                 count($out_results['PAGES']) != 0) {
@@ -355,11 +358,6 @@ class PhraseModel extends ParallelModel
                 if($phrase == $last_part && isset($out_results['TOTAL_ROWS'])){
                     $total_rows = $out_results['TOTAL_ROWS'];
                 }
-            }
-            if(QUERY_STATISTICS) {
-                $this->query_info['QUERY'] .= "$in2<b>Get Summaries time</b>: ".
-                    changeInMicrotime($summaries_time)."<br />";
-                $format_time = microtime();
             }
         }
 
@@ -787,7 +785,13 @@ class PhraseModel extends ParallelModel
         $original_query = "")
     {
         global $CACHE;
-
+        $indent= "&nbsp;&nbsp;";
+        $in2 = $indent . $indent;
+        $in3 = $in2 . $indent;
+        $in4 = $in2. $in2;
+        if(QUERY_STATISTICS) {
+            $lookup_time = microtime();
+        }
         $pages = array();
         $generation = 0;
         $to_retrieve = ceil(($limit+$num)/self::NUM_CACHE_PAGES) *
@@ -803,25 +807,18 @@ class PhraseModel extends ParallelModel
                     $word_struct["WEIGHT"] .
                     $word_struct["INDEX_NAME"];
             }
+            $summary_hash = crawlHash($mem_tmp.":".$limit.":".$num);
             if($use_cache_if_allowed) {
                 $cache_success = true;
                 $results = array();
                 $results['PAGES'] = array();
-                for($i=$start_slice; $i<$to_retrieve;$i+=self::NUM_CACHE_PAGES){
-                    $summary_hash = crawlHash($mem_tmp.":".$i);
-                    $slice = $CACHE->get($summary_hash);
-                    if($slice === false) {
-                        $cache_success = false;
-                        break;
-                    }
-                    $results['PAGES'] = array_merge($results['PAGES'],
-                        $slice['PAGES']);
-                    $results['TOTAL_ROWS'] = $slice['TOTAL_ROWS'];
+                $results = $CACHE->get($summary_hash);
+                if(QUERY_STATISTICS) {
+                    $this->query_info['QUERY'] .= 
+                        "$in2<b>Cache Lookup Time</b>: ".
+                        changeInMicrotime($lookup_time)."<br />";
                 }
-                if($cache_success) {
-                    $results['PAGES'] =
-                        array_slice($results['PAGES'],
-                            $limit - $start_slice, $num);
+                if($results !== false) {
                     return $results;
                 }
             }
@@ -837,38 +834,12 @@ class PhraseModel extends ParallelModel
 
         while($num_retrieved < $to_retrieve && is_object($query_iterator) &&
             is_array($next_docs = 
-                $query_iterator->nextDocsWithWord(null, false)) ) {
+                $query_iterator->nextDocsWithWord()) ) {
             foreach($next_docs as $doc_key => $doc_info) {
-                if($isLocal) {
-                    $summary = & $doc_info[CrawlConstants::SUMMARY];
-                    $index_name = $doc_info[CrawlConstants::INDEX_NAME];
-                    $index = IndexManager::getIndex($index_name);
-                    $tmp = unserialize($index->description);
-
-                    $doc_info[self::CRAWL_TIME] = $tmp[self::CRAWL_TIME];
-                    unset($doc_info[CrawlConstants::SUMMARY]);
-                    if(is_array($summary)) {
-                        $pre_page = array_merge($doc_info, $summary);
-                        $robots_okay = true;
-                        if(isset($pre_page[CrawlConstants::ROBOT_METAS])) {
-                            if(in_array("NOINDEX", $pre_page[self::ROBOT_METAS])
-                                 || 
-                                in_array("NONE", $pre_page[self::ROBOT_METAS])){
-                                $robots_okay = false;
-                            }
-                        }
-                        if($robots_okay) {
-                            $pages[] = $pre_page;
-                            $num_retrieved++;
-                        }
-                    }
-                } else {
-                    $pages[] = $doc_info;
-                    $num_retrieved++;
-                }
+                $pages[] = $doc_info;
+                $num_retrieved++;
             }
         }
-
         $result_count = count($pages);
         // initialize scores
         for($i = 0; $i < $result_count; $i++) {
@@ -907,27 +878,50 @@ class PhraseModel extends ParallelModel
             //this is only an approximation
         }
 
-        if(USE_CACHE && $raw  == 0) {
-            for($i = 0; $i < $result_count; $i++){
-                unset($pages[$i][self::LINKS]);
+        $pages = array_slice($pages, $start_slice);
+        $pages = array_slice($pages, $limit - $start_slice, $num);
+        $lookups = array();
+        foreach($pages as $page) {
+            if(isset($page[CrawlConstants::SUMMARY_OFFSET])) {
+                $lookups[$page[CrawlConstants::KEY] ] = 
+                    $page[CrawlConstants::SUMMARY_OFFSET];
             }
-            for($i = 0;$i < $to_retrieve;$i+=self::NUM_CACHE_PAGES){
-                $summary_hash = crawlHash($mem_tmp.":".$i);
-                $slice['PAGES'] = array_slice($pages, $i,
-                    self::NUM_CACHE_PAGES);
-                $slice['TOTAL_ROWS'] = $results['TOTAL_ROWS'];
-                $CACHE->set($summary_hash, $slice);
-            }
-
         }
-        $results['PAGES'] = & $pages;
-        $results['PAGES'] = array_slice($results['PAGES'], $start_slice);
-        $results['PAGES'] = array_slice($results['PAGES'], $limit -
-            $start_slice, $num);
+        if(QUERY_STATISTICS) {
+            $this->query_info['QUERY'] .= "$in2<b>Lookup Offsets Time</b>: ".
+                changeInMicrotime($lookup_time)."<br />";
+            $summaries_time = microtime();
+        }
+        $summaries = $this->getCrawlItems($lookups, $queue_servers);
+        $out_pages = array();
+        foreach($pages as $page) {
+            $key = $page[CrawlConstants::KEY];
+            if(isset($summaries[$key])) {
+                $summary= & $summaries[$key];
+                $page[CrawlConstants::CRAWL_TIME] = 
+                    $page[CrawlConstants::INDEX_NAME];
+                $pre_page = array_merge($page, $summary);
+                if(isset($pre_page[CrawlConstants::ROBOT_METAS])) {
+                    if(!in_array("NOINDEX", $pre_page[self::ROBOT_METAS])
+                         && 
+                        !in_array("NONE", $pre_page[self::ROBOT_METAS])){
+                        $out_pages[] = $pre_page;
+                    }
+                }
+            }
+        }
+        if(QUERY_STATISTICS) {
+            $this->query_info['QUERY'] .= "$in2<b>Get Summaries time</b>: ".
+                changeInMicrotime($summaries_time)."<br />";
+            $format_time = microtime();
+        }
+        $results['PAGES'] = & $out_pages;
+        if(USE_CACHE && $raw  == 0) {
+            $CACHE->set($summary_hash, $results);
+        }
 
         return $results;
     }
-
 
     /**
      * Using the supplied $word_structs, contructs an iterator for getting
@@ -1033,10 +1027,12 @@ class PhraseModel extends ParallelModel
             $group_iterator = $union_iterator;
         } else if ($raw == 1) {
             $group_iterator =
-                new GroupIterator($union_iterator, $total_iterators, true);
+                new GroupIterator($union_iterator, $total_iterators, 
+                    $this->current_machine, true);
         } else {
             $group_iterator =
-                new GroupIterator($union_iterator, $total_iterators);
+                new GroupIterator($union_iterator, $total_iterators,
+                    $this->current_machine);
         }
 
         if($network_flag) {

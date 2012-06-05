@@ -249,11 +249,29 @@ class CrawlController extends Controller implements CrawlConstants
         }
         $num = $this->clean($_REQUEST["num"], "int");
         $i = $this->clean($_REQUEST["i"], "int");
-        list($urls, $index_name) = unserialize(webdecode($_REQUEST["arg"]));
-        $urls = partitionByHash($urls, NULL, $num, $i, "UrlParser::getHost");
-        $this->crawlModel->index_name = $index_name;
+        $this->crawlModel->current_machine = $i;
+        $lookups = unserialize(webdecode($_REQUEST["arg"]));
+        $our_lookups = array();
+        foreach($lookups as $lookup => $lookup_info) {
+            if(count($lookup_info) == 2 && $lookup_info[0][0] === 'h') {
+                list($url, $index_name) = $lookup_info;
+                $index = calculatePartition($url, $num_machines, 
+                    "UrlParser::getHost");
+                if($index == $i) {
+                    $our_lookups[$lookup] = $lookup_info;
+                }
+            } else {
+                $our_lookups[$lookup] = array();
+                foreach($lookup_info as $lookup_item) {
+                    list($index, , , , ) = $lookup_info;
+                    if($index == $i) {
+                        $our_lookups[$lookup][] = $lookup_item;
+                    }
+                }
+            }
+        }
         echo webencode(serialize(
-            $this->crawlModel->getCrawlItems($urls)));
+            $this->crawlModel->getCrawlItems($our_lookups)));
      }
 
 

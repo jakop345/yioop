@@ -133,7 +133,6 @@ class WordIterator extends IndexBundleIterator
     /** Length of a doc key*/
     const KEY_LEN = 8;
 
-    static $start_time = 0;
     /**
      * Creates a word iterator with the given parameters.
      *

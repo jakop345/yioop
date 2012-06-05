@@ -543,7 +543,7 @@ function crawlCrypt($string, $salt = NULL)
  * @param int $num_partition number of queue_servers to choose between
  * @param int $instance the id of the particular server we are interested
  *  in
- * @param object $callbackfunction or static method that might be
+ * @param object $callback function or static method that might be
  *      applied to input before deciding the responsible queue_server.
  *      For example, if input was a url we might want to get the host
  *      before deciding on the queue_server

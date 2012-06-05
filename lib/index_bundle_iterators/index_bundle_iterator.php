@@ -173,11 +173,8 @@ abstract class IndexBundleIterator implements CrawlConstants
      *      results
      * @return array doc summaries that match provided keys
      */
-    function getSummariesFromCurrentDocs($keys = NULL, $get_summaries = true) 
+    function getCurrentDocsForKeys($keys = NULL) 
     {
-        $index_name = $this->getIndexName(); //objects assigned by ref
-        $index = IndexManager::getIndex($this->index_name);
-
         if($this->current_block_fresh == false) {
             $pages = $this->currentDocsWithWord();
             if(!is_array($pages)) {
@@ -188,7 +185,7 @@ abstract class IndexBundleIterator implements CrawlConstants
         }
         if($keys == NULL) {
             if(is_array($pages)) {
-                $keys = array_keys($pages);
+                return $pages;
             } else {
                 return NULL;
             }
@@ -204,11 +201,6 @@ abstract class IndexBundleIterator implements CrawlConstants
             if(isset($doc_info[self::SUMMARY_OFFSET]) &&
                 isset($doc_info[self::GENERATION])) {
                 $out_pages[$doc_key] = $doc_info;
-                if($get_summaries) {
-                    $index->setCurrentShard($doc_info[self::GENERATION], true);
-                    $page = $index->getPage($doc_info[self::SUMMARY_OFFSET]);
-                    $out_pages[$doc_key][self::SUMMARY] = $page;
-                }
             }
         }
         return $out_pages;
@@ -216,16 +208,16 @@ abstract class IndexBundleIterator implements CrawlConstants
 
     /**
      * Get the current block of doc summaries for the word iterator and advances
-     * the current pointer to the next blockof documents. If a doc index is
+     * the current pointer to the next block of documents. If a doc index is
      * the next block must be of docs after this doc_index
      *
      * @param $doc_offset if set the next block must all have $doc_offsets 
      *      equal to or larger than this value
      * @return array doc summaries matching the $this->restrict_phrases
      */
-    function nextDocsWithWord($doc_offset = NULL, $get_summaries = true)
+    function nextDocsWithWord($doc_offset = NULL)
     {
-        $doc_block = $this->getSummariesFromCurrentDocs(NULL, $get_summaries);
+        $doc_block = $this->getCurrentDocsForKeys();
         
         if($doc_block == -1 || !is_array($doc_block) ) {
             return NULL;

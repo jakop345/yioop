@@ -208,7 +208,8 @@ class NetworkIterator extends IndexBundleIterator
         $j = 0;
         foreach($this->queue_servers as $server) {
             if($this->more_flags[$i]) {
-                $sites[$j][CrawlConstants::URL] = $server ."?". $query;
+                $sites[$j][CrawlConstants::URL] = $server ."?". $query.
+                    "machine = $i";
                 $lookup[$j] = $i;
                 $j++;
             }
@@ -271,7 +272,7 @@ class NetworkIterator extends IndexBundleIterator
      *      results
      * @return array doc summaries that match provided keys
      */
-    function getSummariesFromCurrentDocs($keys = NULL, $get_summaries = true)
+    function getCurrentDocsForKeys($keys = NULL)
     {
         if($this->current_block_fresh == false) {
             $pages = $this->currentDocsWithWord();

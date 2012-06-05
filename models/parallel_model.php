@@ -71,11 +71,22 @@ class ParallelModel extends Model implements CrawlConstants
      */
     var $index_name;
     /**
+     * If known the id of the queue_server this belongs to
+     * @var int
+     */
+    var $current_machine;
+    /**
+     * the minimum length of a description before we stop appending
+     * additional link doc summaries
+     */
+    const MIN_DESCRIPTION_LENGTH = 100;
+    /**
      *  {@inheritdoc}
      */
     function __construct($db_name = DB_NAME) 
     {
         parent::__construct($db_name);
+        $this->current_machine = 0;//if known, controller will set later
     }
 
     /**
@@ -84,12 +95,17 @@ class ParallelModel extends Model implements CrawlConstants
      *
      * @param string $url of summary we are trying to look-up
      * @param array $machine_urls an array of urls of yioop queue servers
+     * @param string $index_name timestamp of the index to do the lookup in
      * @return array summary data of the matching document
      */
-    function getCrawlItem($url, $machine_urls = NULL)
+    function getCrawlItem($url, $machine_urls = NULL, $index_name = "")
     {
-        $results = $this->getCrawlItems(array($url), $machine_urls);
         $hash_url = crawlHash($url, true);
+        if($index_name == "") {
+            $index_name = $this->index_name;
+        }
+        $results = $this->getCrawlItems(
+            array($hash_url =>array($url, $index_name)), $machine_urls);
         if(isset($results[$hash_url])) {
             return $results[$hash_url];
         }
@@ -97,43 +113,92 @@ class ParallelModel extends Model implements CrawlConstants
     }
 
     /**
-     * Gets summaries for a set of document by their url
+     * Gets summaries for a set of document by their url, or by group of 
+     * 4-tuples of the form (key, index, generation, offset).
      *
-     * @param string $urls whose summaries we are trying to look up
+     * @param string $lookups things whose summaries we are trying to look up
      * @param array $machine_urls an array of urls of yioop queue servers
      * @return array of summary data for the matching documents
      */
-    function getCrawlItems($urls, $machine_urls = NULL)
+    function getCrawlItems($lookups, $machine_urls = NULL)
     {
         $summaries = array();
         if($machine_urls != NULL && !$this->isSingleLocalhost($machine_urls)) {
             $num_machines = count($machine_urls);
             $machines = array();
-            foreach($urls as $url) {
-                $index = calculatePartition($url, $num_machines, 
-                    "UrlParser::getHost");
-                $machines[] = $machine_urls[$index];
+            foreach($lookups as $lookup => $lookup_info) {
+                if(count($lookup_info) == 2 && $lookup_info[0][0] === 'h') {
+                    list($url, $index_name) = $lookup_info;
+                    $index = calculatePartition($url, $num_machines, 
+                        "UrlParser::getHost");
+                } else {
+                    list($index, , , , ) = $lookup_info;
+                }
+                $machines[$index] = $machine_urls[$index];
             }
             $page_set = $this->execMachines("getCrawlItems", 
-                $machines, serialize(array($urls, $this->index_name) ) );
+                $machines, serialize($lookups));
             if(is_array($page_set)) {
-
                 foreach($page_set as $elt) {
-                    $summaries = array_merge($summaries, unserialize(webdecode(
-                        $elt[self::PAGE])));
+                    $result = unserialize(webdecode($elt[self::PAGE]));
+                    foreach($elt[self::PAGE] as $lookup => $summary) {
+                        if(isset($summaries[$lookup])) {
+                            if(isset($summary[self::DESCRIPTION])) {
+                                if(!isset($summaries[$lookup][
+                                    self::DESCRIPTION])){
+                                    $summaries[$lookup][self::DESCRIPTION] = "";
+                                }
+                                $summaries[$lookup][self::DESCRIPTION] = " .. ".
+                                     $summary[self::DESCRIPTION];
+                            }
+                        } else {
+                            $summaries[$lookup] =  $summary;
+                        }
+                    }
                 }
             }
             return $summaries;
         }
-
-        $index_archive = IndexManager::getIndex($this->index_name);
-
-        foreach($urls as $url) {
-            list($summary_offset, $generation, $cache_partition) = 
-                $this->lookupSummaryOffsetGeneration($url, $index_archive);
-            $summary = $index_archive->getPage($summary_offset, $generation);
-            $summary[self::CACHE_PAGE_PARTITION] = $cache_partition;
-            $summaries[crawlHash($url, true)] = $summary;
+        foreach($lookups as $lookup => $lookup_info) {
+            if(count($lookup_info) == 2 && $lookup_info[0][0] === 'h') {
+                list($url, $index_name) = $lookup_info;
+                $index_archive = IndexManager::getIndex($index_name);
+                list($summary_offset, $generation) = 
+                    $this->lookupSummaryOffsetGeneration($url, $index_name);
+                $summary = 
+                    $index_archive->getPage($summary_offset, $generation);
+            } else {
+                $summary = array();
+                foreach($lookup_info as $lookup_item) {
+                    list($machine, $key, $index_name, $generation, 
+                        $summary_offset) = 
+                        $lookup_item;
+                    $index = IndexManager::getIndex($index_name);
+                    $index->setCurrentShard($generation, true);
+                    $page = @$index->getPage($summary_offset);
+                    if(!$page || $page == array()) {continue;}
+                    $ellipsis_used = false;
+                    if($summary == array()) {
+                        $summary = $page;
+                    } else if (isset($page[self::DESCRIPTION])) {
+                        if(!isset($summary[self::DESCRIPTION])) {
+                            $summary[
+                                self::DESCRIPTION] = "";
+                        }
+                        $summary[self::DESCRIPTION].=
+                            " .. ".$page[self::DESCRIPTION];
+                        $ellipsis_used = true;
+                    }
+                    if($ellipsis_used && strlen($summary[self::DESCRIPTION]) > 
+                        self::MIN_DESCRIPTION_LENGTH) {
+                        /* want at least one ellipsis in case terms only
+                           appear in links
+                         */
+                        break;
+                    }
+                }
+            }
+            $summaries[$lookup] = $summary;
         }
 
         return $summaries;
@@ -148,25 +213,26 @@ class ParallelModel extends Model implements CrawlConstants
      * @param object $index_archive
      * @return array (offset, generation) into the web archive bundle
      */
-    function lookupSummaryOffsetGeneration($url, $index_archive = NULL)
+    function lookupSummaryOffsetGeneration($url, $index_name = "")
     {
-        if($index_archive == NULL) {
-            $index_archive = IndexManager::getIndex($this->index_name);
+        if($index_name == "") {
+            $index_name = $this->index_name;
         }
+        $index_archive = IndexManager::getIndex($index_name);
         $num_retrieved = 0;
         $pages = array();
         $summary_offset = NULL;
         $num_generations = $index_archive->generation_info['ACTIVE'];
         $word_iterator =
-            new WordIterator(crawlHash("info:$url"), $index_archive);
+            new WordIterator(crawlHash("info:$url"), $index_name);
 
         if(is_array($next_docs = $word_iterator->nextDocsWithWord())) {
              foreach($next_docs as $doc_key => $doc_info) {
                  $summary_offset =
                     $doc_info[CrawlConstants::SUMMARY_OFFSET];
                  $generation = $doc_info[CrawlConstants::GENERATION];
-                 $cache_partition = $doc_info[CrawlConstants::SUMMARY][
-                    CrawlConstants::CACHE_PAGE_PARTITION];
+                 $index_archive->setCurrentShard($generation, true);
+                 $page = @$index_archive->getPage($summary_offset);
                  $num_retrieved++;
                  if($num_retrieved >=  1) {
                      break;
@@ -178,7 +244,7 @@ class ParallelModel extends Model implements CrawlConstants
         } else {
             return false;
         }
-        return array($summary_offset, $generation, $cache_partition);
+        return array($summary_offset, $generation);
     }
 
 
@@ -216,9 +282,9 @@ class ParallelModel extends Model implements CrawlConstants
         $sites = array();
         $post_data = array();
         $i = 0;
-        foreach($machine_urls as $machine_url) {
+        foreach($machine_urls as $index => $machine_url) {
             $sites[$i][CrawlConstants::URL] =  $machine_url;
-            $post_data[$i] = $query."&i=$i";
+            $post_data[$i] = $query."&i=$index";
             $i++;
         }
 

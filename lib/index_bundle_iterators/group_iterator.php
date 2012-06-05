@@ -113,6 +113,11 @@ class GroupIterator extends IndexBundleIterator
      * @var bool
      */
     var $only_lookup;
+    /**
+     * Id of queue_server this group_iterator lives on
+     * @var int
+     */
+    var $current_machine;
 
     /**
      * the minimum number of pages to group from a block;
@@ -134,7 +139,7 @@ class GroupIterator extends IndexBundleIterator
      * @param bool $only_lookup
      */
     function __construct($index_bundle_iterator, $num_iterators = 1, 
-        $only_lookup = false)
+        $current_machine = 0, $only_lookup = false)
     {
         $this->index_bundle_iterator = $index_bundle_iterator;
         $this->num_docs = $this->index_bundle_iterator->num_docs;
@@ -148,6 +153,7 @@ class GroupIterator extends IndexBundleIterator
             $this->results_per_block /=  ceil($num_iterators/2);
         }
         $this->only_lookup = $only_lookup;
+        $this->current_machine = $current_machine;
 
         $this->reset();
     }
@@ -341,6 +347,7 @@ class GroupIterator extends IndexBundleIterator
                 }
             }
         }
+        // delete all except highest scoring group with given hash
         foreach($this->current_seen_hashes as $hash => $url_data) {
             arsort($url_data);
             array_shift($url_data);
@@ -501,7 +508,8 @@ class GroupIterator extends IndexBundleIterator
                 $doc_info = $group_infos[$i];
                 if(isset($doc_info[self::GENERATION])) {
                     $out_pages[$hash_url][self::SUMMARY_OFFSET][] = 
-                        array($doc_info[self::KEY], $doc_info[self::INDEX_NAME],
+                        array($this->current_machine, $doc_info[self::KEY], 
+                            $doc_info[self::INDEX_NAME],
                             $doc_info[self::GENERATION],
                             $doc_info[self::SUMMARY_OFFSET]);
                 }
@@ -562,76 +570,6 @@ class GroupIterator extends IndexBundleIterator
         $pre_hash_page[0][self::RELEVANCE] = $sum_relevance;
         $pre_hash_page[0][self::PROXIMITY] = $sum_proximity;
     }
-
-    /**
-     * Gets the summaries associated with the keys provided the keys
-     * can be found in the current block of docs returned by this iterator
-     * @param array $keys keys to try to find in the current block of returned
-     *      results
-     * @return array doc summaries that match provided keys
-     */
-    function getSummariesFromCurrentDocs($keys = NULL, $get_summaries = true) 
-    {
-        if($this->current_block_fresh == false) {
-            $result = $this->currentDocsWithWord();
-            if(!is_array($result) ) {
-                return $result;
-            }
-        }
-        if(!is_array($this->pages)) {
-            return $this->pages;
-        }
-        if($keys == NULL) {
-            $keys = array_keys($this->pages);
-        }
-        $out_pages = array();
-        foreach($keys as $doc_key) {
-            if(!isset($this->pages[$doc_key])) {
-                continue;
-            } else {
-                $doc_info = $this->pages[$doc_key];
-            }
-
-            if(isset($doc_info[self::SUMMARY_OFFSET]) && 
-                is_array($doc_info[self::SUMMARY_OFFSET])) {
-                $out_pages[$doc_key] = $doc_info;
-                foreach($doc_info[self::SUMMARY_OFFSET] as $offset_array) {
-                    list($key, $index_name, $generation, $summary_offset) = 
-                        $offset_array;
-                    $index = IndexManager::getIndex($index_name);
-                    $index->setCurrentShard($generation, true);
-                    $page = @$index->getPage($summary_offset);
-                    if(!$page || $page == array()) {continue;}
-                    $ellipsis_used = false;
-                    if(!isset($out_pages[$doc_key][self::SUMMARY])) {
-                        $out_pages[$doc_key][self::SUMMARY] = $page;
-                    } else if (isset($page[self::DESCRIPTION])) {
-                        if(!isset($out_pages[$doc_key][
-                            self::SUMMARY][self::DESCRIPTION])) {
-                            $out_pages[$doc_key][self::SUMMARY][
-                                self::DESCRIPTION] = "";
-                        }
-                        $out_pages[$doc_key][self::SUMMARY][self::DESCRIPTION].=
-                            " .. ".$page[self::DESCRIPTION];
-                        $ellipsis_used = true;
-                    }
-                    if($ellipsis_used && strlen($out_pages[$doc_key][
-                        self::SUMMARY][self::DESCRIPTION]) > 
-                        self::MIN_DESCRIPTION_LENGTH) {
-                        /* want at least one ellipsis in case terms only appear
-                           in links
-                         */
-                        break;
-                    }
-                }
-            }
-        }
-
-        return $out_pages;
-
-    }
-
-
 
     /**
      * Forwards the iterator one group of docs

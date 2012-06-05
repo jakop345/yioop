@@ -158,6 +158,13 @@ class SearchController extends Controller implements CrawlConstants
         if($activity == "query" && $this->checkMirrorHandle()) {return; }
 
         $machine_urls = $this->machineModel->getQueueServerUrls();
+        if(isset($_REQUEST['machine'])) {
+            $current_machine = $this->clean($_REQUEST['machine'], 'int');
+        } else {
+            $current_machine = 0;
+        }
+        $this->phraseModel->current_machine = $current_machine;
+        $this->crawlModel->current_machine = $current_machine;
         $current_its = $this->crawlModel->getCurrentIndexDatabaseName();
 
         if(isset($_REQUEST['its']) || isset($_SESSION['its'])) {
@@ -1003,17 +1010,18 @@ class SearchController extends Controller implements CrawlConstants
         $textNode = $dom->createTextNode("var summaryShow = 'none';");
         $scriptNode->appendChild($textNode);
 
+        $text_align = (getLocaleDirection() == 'ltr') ? "left" : "right";
         $aDivNode = $dom->createElement('div');
         $aDivNode = $body->insertBefore($aDivNode, $summaryNode);
         $aDivNode->setAttributeNS("","style", "border-color: black; ".
             "border-style:solid; border-width:3px; margin-bottom:10px;".
-            "padding: 5px; background-color: white");
+            "padding: 5px; background-color: white; text-align:$text_align;");
         $divNode = $dom->createElement('div');
 
         $divNode = $body->insertBefore($divNode, $aDivNode);
         $divNode->setAttributeNS("","style", "border-color: black; ".
             "border-style:solid; border-width:3px;margin-bottom:10px;".
-            "padding: 5px; background-color: white");
+            "padding: 5px; background-color: white; text-align:$text_align;");
 
         $textNode = $dom->createTextNode(tl('search_controller_cached_version', 
             "Z@url@Z", $date));
