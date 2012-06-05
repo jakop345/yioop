@@ -841,6 +841,7 @@ class PhraseModel extends ParallelModel
             }
         }
         $result_count = count($pages);
+
         // initialize scores
         for($i = 0; $i < $result_count; $i++) {
             $pages[$i]["OUT_SCORE"] = 0;

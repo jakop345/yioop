@@ -95,7 +95,10 @@ class MachineModel extends Model
     {
         $this->db->selectDB(DB_NAME);
 
-        $machines = array();
+        static $machines = array();
+        if($machines != array()) {
+            return $machines;
+        }
 
         $sql = "SELECT URL FROM MACHINE WHERE HAS_QUEUE_SERVER > 0 ".
             "ORDER BY NAME DESC"; 

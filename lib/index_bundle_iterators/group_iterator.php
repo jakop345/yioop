@@ -441,7 +441,7 @@ class GroupIterator extends IndexBundleIterator
         foreach($doc_keys as $key) {
             $hash_url = substr($key, 0, IndexShard::DOC_KEY_LEN);
             $need_docs[$hash_url] = array($key, 
-                $pages[$doc_keys][self::INDEX_NAME]);
+                $pages[$key][self::INDEX_NAME]);
         }
         $need_docs = array_diff_key($need_docs, $this->grouped_keys);
         foreach($pages as $doc_key => $doc_info) {
@@ -476,7 +476,8 @@ class GroupIterator extends IndexBundleIterator
         foreach($new_pages as $doc_key => $doc_info) {
             $new_pages[$doc_key][self::SUMMARY_OFFSET] = array();
             $new_pages[$doc_key][self::SUMMARY_OFFSET][] = 
-                array($doc_info[self::KEY], $doc_info[self::INDEX_NAME], 
+                array($this->current_machine, 
+                    $doc_info[self::KEY], $doc_info[self::INDEX_NAME], 
                     $doc_info[self::GENERATION],
                     $doc_info[self::SUMMARY_OFFSET]);
         }

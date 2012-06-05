@@ -131,17 +131,23 @@ class ParallelModel extends Model implements CrawlConstants
                     list($url, $index_name) = $lookup_info;
                     $index = calculatePartition($url, $num_machines, 
                         "UrlParser::getHost");
+                    $machines[$index] = $machine_urls[$index];
                 } else {
-                    list($index, , , , ) = $lookup_info;
+                    foreach($lookup_info as $lookup_item) {
+                        list($index, , , , ) = $lookup_item;
+                        $machines[$index] = $machine_urls[$index];
+                    }
                 }
-                $machines[$index] = $machine_urls[$index];
+                
             }
+
             $page_set = $this->execMachines("getCrawlItems", 
                 $machines, serialize($lookups));
+
             if(is_array($page_set)) {
                 foreach($page_set as $elt) {
                     $result = unserialize(webdecode($elt[self::PAGE]));
-                    foreach($elt[self::PAGE] as $lookup => $summary) {
+                    foreach($result as $lookup => $summary) {
                         if(isset($summaries[$lookup])) {
                             if(isset($summary[self::DESCRIPTION])) {
                                 if(!isset($summaries[$lookup][
@@ -287,7 +293,6 @@ class ParallelModel extends Model implements CrawlConstants
             $post_data[$i] = $query."&i=$index";
             $i++;
         }
-
         $outputs = array();
         if(count($sites) > 0) {
             $outputs = FetchUrl::getPages($sites, false, 0, NULL, self::URL,

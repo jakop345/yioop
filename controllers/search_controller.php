@@ -158,6 +158,7 @@ class SearchController extends Controller implements CrawlConstants
         if($activity == "query" && $this->checkMirrorHandle()) {return; }
 
         $machine_urls = $this->machineModel->getQueueServerUrls();
+
         if(isset($_REQUEST['machine'])) {
             $current_machine = $this->clean($_REQUEST['machine'], 'int');
         } else {
@@ -440,7 +441,6 @@ class SearchController extends Controller implements CrawlConstants
                 }
             }
         } else {
-
             $queue_servers = array();
         }
         switch($activity)
