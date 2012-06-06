@@ -881,6 +881,12 @@ class PhraseModel extends ParallelModel
 
         $pages = array_slice($pages, $start_slice);
         $pages = array_slice($pages, $limit - $start_slice, $num);
+
+        if(!$isLocal) {
+            $results['PAGES'] = & $pages;
+            return $results;
+        }
+
         $lookups = array();
         foreach($pages as $page) {
             if(isset($page[CrawlConstants::SUMMARY_OFFSET])) {
@@ -899,8 +905,6 @@ class PhraseModel extends ParallelModel
             $key = $page[CrawlConstants::KEY];
             if(isset($summaries[$key])) {
                 $summary= & $summaries[$key];
-                $page[CrawlConstants::CRAWL_TIME] = 
-                    $page[CrawlConstants::INDEX_NAME];
                 $pre_page = array_merge($page, $summary);
                 if(isset($pre_page[CrawlConstants::ROBOT_METAS])) {
                     if(!in_array("NOINDEX", $pre_page[self::ROBOT_METAS])

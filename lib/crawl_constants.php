@@ -199,8 +199,7 @@ interface CrawlConstants
     const ARC_DIR = "cb";
     const ARC_TYPE = "cc";
     const ARC_DATA = "cd";
-    const INDEX_NAME = "ce";
-    const KEY = "cf";
+    const KEY = "ce";
 
     const NEEDS_OFFSET_FLAG = 0x7FFFFFFF;
 

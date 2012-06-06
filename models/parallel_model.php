@@ -157,6 +157,10 @@ class ParallelModel extends Model implements CrawlConstants
                                 $summaries[$lookup][self::DESCRIPTION] = " .. ".
                                      $summary[self::DESCRIPTION];
                             }
+                            if(isset($summary[self::THUMB])) {
+                                $summaries[$lookup][self::THUMB] = 
+                                    $summary[self::THUMB];
+                            }
                         } else {
                             $summaries[$lookup] =  $summary;
                         }

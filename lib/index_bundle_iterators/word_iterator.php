@@ -267,7 +267,7 @@ class WordIterator extends IndexBundleIterator
             // inlinks is the domain of the inlink
             $data[self::INLINKS] = substr($keys, 
                 2 * IndexShard::DOC_KEY_LEN, IndexShard::DOC_KEY_LEN);
-            $data[self::INDEX_NAME] = $this->index_name;
+            $data[self::CRAWL_TIME] = $this->index_name;
             $results[$keys] = $data;
         }
         $this->count_block = count($results);

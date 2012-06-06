@@ -322,7 +322,7 @@ class GroupIterator extends IndexBundleIterator
             $is_location = (crawlHash($hash_url. "LOCATION", true) == $hash);
             if((!$data[0][self::IS_DOC] || $is_location)) {
                 $item = $this->lookupDoc($data[0][self::KEY], 
-                    $data[0][self::INDEX_NAME],
+                    $data[0][self::CRAWL_TIME],
                     $is_location, 3); 
                 if($item != false) {
                     array_unshift($pre_out_pages[$hash_url], $item);
@@ -414,7 +414,7 @@ class GroupIterator extends IndexBundleIterator
             $item[self::RELEVANCE] = $relevance;
             $item[self::SCORE] = $item[self::DOC_RANK]*pow(1.1, $relevance);
             $item[self::KEY] = $key;
-            $item[self::INDEX_NAME] = $index_name;
+            $item[self::CRAWL_TIME] = $index_name;
             $item[self::HASH] = $hash;
             $item[self::INLINKS] = substr($key,
                 2*IndexShard::DOC_KEY_LEN, IndexShard::DOC_KEY_LEN);
@@ -441,7 +441,7 @@ class GroupIterator extends IndexBundleIterator
         foreach($doc_keys as $key) {
             $hash_url = substr($key, 0, IndexShard::DOC_KEY_LEN);
             $need_docs[$hash_url] = array($key, 
-                $pages[$key][self::INDEX_NAME]);
+                $pages[$key][self::CRAWL_TIME]);
         }
         $need_docs = array_diff_key($need_docs, $this->grouped_keys);
         foreach($pages as $doc_key => $doc_info) {
@@ -477,7 +477,7 @@ class GroupIterator extends IndexBundleIterator
             $new_pages[$doc_key][self::SUMMARY_OFFSET] = array();
             $new_pages[$doc_key][self::SUMMARY_OFFSET][] = 
                 array($this->current_machine, 
-                    $doc_info[self::KEY], $doc_info[self::INDEX_NAME], 
+                    $doc_info[self::KEY], $doc_info[self::CRAWL_TIME], 
                     $doc_info[self::GENERATION],
                     $doc_info[self::SUMMARY_OFFSET]);
         }
@@ -510,7 +510,7 @@ class GroupIterator extends IndexBundleIterator
                 if(isset($doc_info[self::GENERATION])) {
                     $out_pages[$hash_url][self::SUMMARY_OFFSET][] = 
                         array($this->current_machine, $doc_info[self::KEY], 
-                            $doc_info[self::INDEX_NAME],
+                            $doc_info[self::CRAWL_TIME],
                             $doc_info[self::GENERATION],
                             $doc_info[self::SUMMARY_OFFSET]);
                 }
