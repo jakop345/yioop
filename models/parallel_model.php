@@ -142,7 +142,7 @@ class ParallelModel extends Model implements CrawlConstants
             }
 
             $page_set = $this->execMachines("getCrawlItems", 
-                $machines, serialize($lookups));
+                $machines, serialize($lookups), $num_machines);
 
             if(is_array($page_set)) {
                 foreach($page_set as $elt) {
@@ -275,11 +275,15 @@ class ParallelModel extends Model implements CrawlConstants
      *      Yioop instances
      *  @param array $machine_urls machines to invoke this command on
      *  @param string additional arguments to be passed to the remote machine
+     *  @param int $num_machines the integer to be used in calculating partition
      *  @return array a list of outputs from each machine that was called.
      */
-    function execMachines($command, $machine_urls, $arg = NULL)
+    function execMachines($command, $machine_urls, $arg = NULL, 
+        $num_machines = 0)
     {
-        $num_machines = count($machine_urls);
+        if($num_machines == 0) {
+            $num_machines = count($machine_urls);
+        }
         $time = time();
         $session = md5($time . AUTH_KEY);
         $query = "c=crawl&a=$command&time=$time&session=$session" . 
