@@ -430,16 +430,6 @@ class SearchController extends Controller implements CrawlConstants
         if($use_network && 
             (!isset($_REQUEST['network']) || $_REQUEST['network'] == "true")) {
             $queue_servers = $this->machineModel->getQueueServerUrls();
-            if($queue_servers != array() && file_exists(
-                CRAWL_DIR.'/cache/'.self::index_data_base_name.
-                $index_name)) {
-                /*  add name_server to look up locations if it has
-                    an IndexArchiveBundle of the correct timestamp 
-                 */
-                if(!in_array(NAME_SERVER, $queue_servers)) {
-                    array_unshift($queue_servers, NAME_SERVER);
-                }
-            }
         } else {
             $queue_servers = array();
         }

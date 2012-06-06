@@ -908,6 +908,8 @@ class PhraseModel extends ParallelModel
                         !in_array("NONE", $pre_page[self::ROBOT_METAS])){
                         $out_pages[] = $pre_page;
                     }
+                } else {
+                    $out_pages[] = $pre_page;
                 }
             }
         }
