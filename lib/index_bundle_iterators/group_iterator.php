@@ -516,7 +516,9 @@ class GroupIterator extends IndexBundleIterator
                                 $doc_info[self::SUMMARY_OFFSET]);
                     } else {
                         $out_pages[$hash_url][self::SUMMARY_OFFSET] = 
-                            $doc_info[self::SUMMARY_OFFSET];
+                            array_merge(
+                                $out_pages[$hash_url][self::SUMMARY_OFFSET],
+                                $doc_info[self::SUMMARY_OFFSET]);
                     }
                 }
             }
