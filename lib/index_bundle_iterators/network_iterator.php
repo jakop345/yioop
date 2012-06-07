@@ -209,7 +209,7 @@ class NetworkIterator extends IndexBundleIterator
         foreach($this->queue_servers as $server) {
             if($this->more_flags[$i]) {
                 $sites[$j][CrawlConstants::URL] = $server ."?". $query.
-                    "machine = $i";
+                    "&machine=$i";
                 $lookup[$j] = $i;
                 $j++;
             }
@@ -221,6 +221,7 @@ class NetworkIterator extends IndexBundleIterator
             $downloads = FetchUrl::getPages($sites, false, 0, NULL, self::URL,
                 self::PAGE, true);
         }
+
         $results = array();
         $count = count($downloads);
         $this->num_docs = 0;

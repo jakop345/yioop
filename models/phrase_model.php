@@ -810,8 +810,6 @@ class PhraseModel extends ParallelModel
             $summary_hash = crawlHash($mem_tmp.":".$limit.":".$num);
             if($use_cache_if_allowed) {
                 $cache_success = true;
-                $results = array();
-                $results['PAGES'] = array();
                 $results = $CACHE->get($summary_hash);
                 if(QUERY_STATISTICS) {
                     $this->query_info['QUERY'] .= 
@@ -882,7 +880,7 @@ class PhraseModel extends ParallelModel
         $pages = array_slice($pages, $start_slice);
         $pages = array_slice($pages, $limit - $start_slice, $num);
 
-        if(!$isLocal) {
+        if($raw == 1) {
             $results['PAGES'] = & $pages;
             return $results;
         }

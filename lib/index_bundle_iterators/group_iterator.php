@@ -508,11 +508,16 @@ class GroupIterator extends IndexBundleIterator
             for($i = 0; $i < $hash_count; $i++) {
                 $doc_info = $group_infos[$i];
                 if(isset($doc_info[self::GENERATION])) {
-                    $out_pages[$hash_url][self::SUMMARY_OFFSET][] = 
-                        array($this->current_machine, $doc_info[self::KEY], 
-                            $doc_info[self::CRAWL_TIME],
-                            $doc_info[self::GENERATION],
-                            $doc_info[self::SUMMARY_OFFSET]);
+                    if(is_int($doc_info[self::SUMMARY_OFFSET])) {
+                        $out_pages[$hash_url][self::SUMMARY_OFFSET][] = 
+                            array($this->current_machine, $doc_info[self::KEY],
+                                $doc_info[self::CRAWL_TIME],
+                                $doc_info[self::GENERATION],
+                                $doc_info[self::SUMMARY_OFFSET]);
+                    } else {
+                        $out_pages[$hash_url][self::SUMMARY_OFFSET] = 
+                            $doc_info[self::SUMMARY_OFFSET];
+                    }
                 }
             }
             $out_pages[$hash_url][self::SCORE] = 
