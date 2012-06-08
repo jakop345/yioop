@@ -33,15 +33,19 @@
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
-/** 
+/**
  *Loads base class for iterating
  */
 require_once BASE_DIR.'/lib/index_bundle_iterators/index_bundle_iterator.php';
 
-/** 
+/**
  * Needed to be able to get pages from remote queue_servers
  */
 require_once BASE_DIR.'/lib/fetch_url.php';
+/**
+ * 
+ */
+require_once BASE_DIR.'/lib/analytics_manager.php';
 
 
 /**
@@ -225,6 +229,10 @@ class NetworkIterator extends IndexBundleIterator
         $results = array();
         $count = count($downloads);
         $this->num_docs = 0;
+        $in4 = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+        $machine_times = AnalyticsManager::get("MACHINE_TIMES");
+        $machine_times = ($machine_times) ? $machine_times . "<br />$in4" : 
+            "$in4";
         for($j = 0; $j < $count; $j++) {
             $download = & $downloads[$j];
             if(isset($download[self::PAGE])) {
@@ -246,8 +254,10 @@ class NetworkIterator extends IndexBundleIterator
                         }
                     }
                 }
+                $machine_times .= $pre_result['ELAPSED_TIME']." ";
             }
         }
+        AnalyticsManager::set("MACHINE_TIMES", $machine_times);
         if($results == array()) {
             $results = -1;
         }

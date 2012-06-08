@@ -50,6 +50,11 @@ require_once BASE_DIR."/lib/phrase_parser.php";
  */
 require_once(BASE_DIR."/lib/file_cache.php");
 /**
+ * 
+ */
+require_once BASE_DIR.'/lib/analytics_manager.php';
+
+/**
  * Load iterators to get docs out of index archive
  */
 foreach(glob(BASE_DIR."/lib/index_bundle_iterators/*_iterator.php")
@@ -894,6 +899,11 @@ class PhraseModel extends ParallelModel
         if(QUERY_STATISTICS) {
             $this->query_info['QUERY'] .= "$in2<b>Lookup Offsets Time</b>: ".
                 changeInMicrotime($lookup_time)."<br />";
+            $machine_times = AnalyticsManager::get("MACHINE_TIMES");
+            if($machine_times) {
+                $this->query_info['QUERY'] .= "$in3<b>Machine Times</b>:<br />".
+                    $machine_times."<br />";
+            }
             $summaries_time = microtime();
         }
         $summaries = $this->getCrawlItems($lookups, $queue_servers);

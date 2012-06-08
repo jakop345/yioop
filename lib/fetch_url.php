@@ -126,7 +126,6 @@ class FetchUrl implements CrawlConstants
                 curl_multi_add_handle($agent_handler, $sites[$i][0]);
             }
         }
-
         if($timer) {
             crawlLog("  Init Get Pages ".(changeInMicrotime($start_time)));
         }
@@ -137,15 +136,15 @@ class FetchUrl implements CrawlConstants
         $running=null;
         do {
             $mrc = curl_multi_exec($agent_handler, $running);
-            $ready=curl_multi_select($agent_handler, 0.02);
+            $ready=curl_multi_select($agent_handler, 0.005);
         } while (time() - $start < PAGE_TIMEOUT &&  $running > 0 && $ready!=-1);
 
         if(time() - $start > PAGE_TIMEOUT) {crawlLog("  TIMED OUT!!!");}
 
         if($timer) {
-
             crawlLog("  Page Request time ".(changeInMicrotime($start_time)));
         }
+
         $start_time = microtime();
 
         //Process returned pages
