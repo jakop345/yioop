@@ -134,19 +134,24 @@ class ParallelModel extends Model implements CrawlConstants
                     $machines[$index] = $machine_urls[$index];
                 } else {
                     foreach($lookup_info as $lookup_item) {
-                        list($index, , , , ) = $lookup_item;
-                        $machines[$index] = $machine_urls[$index];
+                        if(count($lookup_item) == 5) {
+                            list($index, , , , ) = $lookup_item;
+                            $machines[$index] = $machine_urls[$index];
+                        } else {
+                            $machines = $machine_urls;
+                            break;
+                        }
                     }
                 }
                 
             }
-
             $page_set = $this->execMachines("getCrawlItems", 
                 $machines, serialize($lookups), $num_machines);
 
             if(is_array($page_set)) {
                 foreach($page_set as $elt) {
                     $result = unserialize(webdecode($elt[self::PAGE]));
+                    if(!is_array($result)) continue;
                     foreach($result as $lookup => $summary) {
                         if(isset($summaries[$lookup])) {
                             if(isset($summary[self::DESCRIPTION])) {
@@ -182,9 +187,20 @@ class ParallelModel extends Model implements CrawlConstants
             } else {
                 $summary = array();
                 foreach($lookup_info as $lookup_item) {
-                    list($machine, $key, $index_name, $generation, 
-                        $summary_offset) = 
-                        $lookup_item;
+                    if(count($lookup_item) == 2) {
+                        list($word_key, $index_name) = $lookup_item;
+                        $offset_info = 
+                            $this->lookupSummaryOffsetGeneration(
+                                $word_key, $index_name, true);
+                        if(is_array($offset_info)) {
+                            list($summary_offset, $generation) = $offset_info;
+                        } else {
+                            continue;
+                        }
+                    } else {
+                        list($machine, $key, $index_name, $generation, 
+                            $summary_offset) = $lookup_item;
+                    }
                     $index = IndexManager::getIndex($index_name);
                     $index->setCurrentShard($generation, true);
                     $page = @$index->getPage($summary_offset);
@@ -210,7 +226,9 @@ class ParallelModel extends Model implements CrawlConstants
                     }
                 }
             }
-            $summaries[$lookup] = $summary;
+            if($summary != array()) {
+                $summaries[$lookup] = $summary;
+            }
         }
 
         return $summaries;
@@ -223,9 +241,11 @@ class ParallelModel extends Model implements CrawlConstants
      *
      * @param string $url
      * @param object $index_archive
+     * @param bool $is_key
      * @return array (offset, generation) into the web archive bundle
      */
-    function lookupSummaryOffsetGeneration($url, $index_name = "")
+    function lookupSummaryOffsetGeneration($url_or_key, $index_name = "", 
+        $is_key = false)
     {
         if($index_name == "") {
             $index_name = $this->index_name;
@@ -235,8 +255,9 @@ class ParallelModel extends Model implements CrawlConstants
         $pages = array();
         $summary_offset = NULL;
         $num_generations = $index_archive->generation_info['ACTIVE'];
-        $word_iterator =
-            new WordIterator(crawlHash("info:$url"), $index_name);
+        $hash_key = ($is_key) ? crawlHash($url_or_key,true) : 
+            crawlHash("info:$url_or_key");
+        $word_iterator = new WordIterator($hash_key, $index_name);
 
         if(is_array($next_docs = $word_iterator->nextDocsWithWord())) {
              foreach($next_docs as $doc_key => $doc_info) {

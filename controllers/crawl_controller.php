@@ -264,9 +264,13 @@ class CrawlController extends Controller implements CrawlConstants
             } else {
                 $our_lookups[$lookup] = array();
                 foreach($lookup_info as $lookup_item) {
-                    list($index, , , , ) = $lookup_item;
-                    if($index == $i) {
+                    if(count($lookup_item) == 2) {
                         $our_lookups[$lookup][] = $lookup_item;
+                    } else {
+                        list($index, , , , ) = $lookup_item;
+                        if($index == $i) {
+                            $our_lookups[$lookup][] = $lookup_item;
+                        }
                     }
                 }
             }

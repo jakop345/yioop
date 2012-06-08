@@ -204,7 +204,6 @@ class PhraseModel extends ParallelModel
      *      the file cache or memcache. Otherwise, items will be recomputed
      *      and then potentially restored in cache
      * @param int $raw ($raw == 0) normal grouping, ($raw == 1)
-     *      no grouping but page look-up for links, ($raw == 2)
      *      no grouping done on data'
      * @param array $queue_servers a list of urls of yioop machines which might
      *      be used during lookup
@@ -770,7 +769,6 @@ class PhraseModel extends ParallelModel
      *      the file cache or memcache. Otherwise, items will be recomputed
      *      and then potentially restored in cache
      * @param int $raw ($raw == 0) normal grouping, ($raw == 1)
-     *      no grouping but page look-up for links, ($raw == 2)
      *      no grouping done on data. If $raw > 0 no caching is done as will
      *      likely come from a network query
      * @param array $queue_servers a list of urls of yioop machines which might
@@ -892,6 +890,7 @@ class PhraseModel extends ParallelModel
                     $page[CrawlConstants::SUMMARY_OFFSET];
             }
         }
+
         if(QUERY_STATISTICS) {
             $this->query_info['QUERY'] .= "$in2<b>Lookup Offsets Time</b>: ".
                 changeInMicrotime($lookup_time)."<br />";
@@ -944,7 +943,6 @@ class PhraseModel extends ParallelModel
      *      results
      *      and then potentially restored in cache
      * @param int $raw ($raw == 0) normal grouping, ($raw == 1)
-     *      no grouping but page look-up for links, ($raw == 2)
      *      no grouping done on data
      * @param array $queue_servers a list of urls of yioop machines which might
      *      be used during lookup
@@ -1028,16 +1026,12 @@ class PhraseModel extends ParallelModel
 
         $raw = intval($raw);
 
-        if ($raw == 2) {
+        if ($raw > 0 ) {
             $group_iterator = $union_iterator;
-        } else if ($raw == 1) {
-            $group_iterator =
-                new GroupIterator($union_iterator, $total_iterators, 
-                    $this->current_machine, true);
         } else {
             $group_iterator =
                 new GroupIterator($union_iterator, $total_iterators,
-                    $this->current_machine);
+                    $this->current_machine, $network_flag);
         }
 
         if($network_flag) {

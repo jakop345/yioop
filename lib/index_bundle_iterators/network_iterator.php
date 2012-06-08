@@ -225,7 +225,7 @@ class NetworkIterator extends IndexBundleIterator
         $results = array();
         $count = count($downloads);
         $this->num_docs = 0;
-        for($j = 0 ; $j < $count; $j++) {
+        for($j = 0; $j < $count; $j++) {
             $download = & $downloads[$j];
             if(isset($download[self::PAGE])) {
                 $pre_result = @unserialize(webdecode($download[self::PAGE]));
@@ -241,6 +241,8 @@ class NetworkIterator extends IndexBundleIterator
                         if(isset($page_data[self::KEY])) {
                             $results[$page_data[self::KEY]] = 
                                 $page_data;
+                            $results[$page_data[self::KEY]][self::MACHINE_ID] =
+                                $j;
                         }
                     }
                 }
@@ -262,7 +264,6 @@ class NetworkIterator extends IndexBundleIterator
         }
         $this->count_block = count($results);
         $this->pages = $results;
-
         return $results;
      }
 
