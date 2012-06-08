@@ -254,7 +254,8 @@ class NetworkIterator extends IndexBundleIterator
                         }
                     }
                 }
-                $machine_times .= $pre_result['ELAPSED_TIME']." ";
+                $machine_times .= "ID_".$lookup[$j].": ".
+                    $pre_result['ELAPSED_TIME']."&nbsp;&nbsp;";
             }
         }
         AnalyticsManager::set("MACHINE_TIMES", $machine_times);
