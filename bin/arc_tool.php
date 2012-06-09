@@ -61,6 +61,12 @@ require_once BASE_DIR."/lib/web_queue_bundle.php";
 /** Load word->{array of docs with word} index class */
 require_once BASE_DIR."/lib/index_archive_bundle.php";
 
+/** Load the iterator classes for non-yioop archives*/
+foreach(glob(BASE_DIR."/lib/archive_bundle_iterators/*_iterator.php")
+    as $filename) {
+    require_once $filename;
+}
+
 /** Used for manipulating urls*/
 require_once BASE_DIR."/lib/url_parser.php";
 
@@ -69,6 +75,9 @@ require_once BASE_DIR."/lib/utility.php";
 
 /** Get the database library based on the current database type */
 require_once BASE_DIR."/models/datasources/".DBMS."_manager.php";
+
+/** Load FetchUrl, used by the MediaWiki archive iterator */
+require_once BASE_DIR."/lib/fetch_url.php";
 
 /** Loads common constants for web crawling*/
 require_once BASE_DIR."/lib/crawl_constants.php";
@@ -93,7 +102,8 @@ mb_regex_encoding("UTF-8");
  * command like:
  * php arc_tool.php list bundle_name start_doc_num num_results
  *
- * @author Chris Pollett
+ * @author Chris Pollett (non-yioop archive code derived from earlier
+ *      stuff by Shawn Tice)
  * @package seek_quarry
  */
 class ArcTool implements CrawlConstants
@@ -127,6 +137,9 @@ class ArcTool implements CrawlConstants
             $path =  $bundle_name = UrlParser::getDocumentFilename($argv[2]);
             if($path == $argv[2] && !file_exists($path)) {
                 $path = CRAWL_DIR."/cache/".$path;
+                if(!file_exists($path)) {
+                    $path = CRAWL_DIR."/cache/archives/".$argv[2];
+                }
             }
         }
 
@@ -155,6 +168,9 @@ class ArcTool implements CrawlConstants
                 if(!isset($argv[3])) {
                     $this->usageMessageAndExit();
                 }
+                if(!isset($argv[4])) {
+                    $argv[4] = 1;
+                }
                 $this->outputShowPages($path, $argv[3], $argv[4]);
             break;
 
@@ -169,39 +185,81 @@ class ArcTool implements CrawlConstants
      */
      function outputArchiveList()
      {
-        $pattern = CRAWL_DIR."/cache/*-{".self::archive_base_name.",".
+        $yioop_pattern = CRAWL_DIR."/cache/*{".self::archive_base_name.",".
             self::index_data_base_name."}*";
 
-        $archives = glob($pattern, GLOB_BRACE);
-        if(is_array($archives)) {
-            foreach($archives as $archive_name) {
-                echo UrlParser::getDocumentFilename($archive_name)."\n";
+        $archives = glob($yioop_pattern, GLOB_BRACE);
+        $archives_found = false;
+        if(is_array($archives) && count($archives) > 0) {
+            $archives_found = true;
+            echo "\nFound Yioop Archives:\n";
+            echo "=====================\n";
+            foreach($archives as $archive_path) {
+                echo $this->getArchiveName($archive_path)."\n";
             }
-        } else {
+        }
+
+        $nonyioop_pattern = CRAWL_DIR."/cache/archives/*/arc_description.ini";
+        $archives = glob($nonyioop_pattern);
+        if(is_array($archives) && count($archives) > 0 ) {
+            $archives_found = true;
+            echo "\nFound Non-Yioop Archives:\n";
+            echo "=========================\n";
+            foreach($archives as $archive_path) {
+                $len = strlen("/arc_description.ini");
+                $path = substr($archive_path, 0, -$len);
+                echo $this->getArchiveName($path)."\n";
+            }
+        }
+
+        if(!$archives_found) {
             echo "No archives currently in crawl directory \n";
         }
+        echo "\n";
      }
 
     /**
-     * Determines whether the supplied name is a WebArchiveBundle or
-     * an IndexArchiveBundle. Then outputsto stdout header information about the
+     * Determines whether the supplied path is a WebArchiveBundle or
+     * an IndexArchiveBundle or non-Yioop Archive. Then outputs
+     * to stdout header information about the
      * bundle by calling the appropriate sub-function.
      *
-     * @param string $archive_name the name of a directory that holds 
-     *      WebArchiveBundle or IndexArchiveBundle data
+     * @param string $archive_path the oath of a directory that holds 
+     *      WebArchiveBundle,IndexArchiveBundle, or non-Yioop archive data
      */
-    function outputInfo($archive_name)
+    function outputInfo($archive_path)
     {
-        $bundle_name = UrlParser::getDocumentFilename($archive_name);
+        $bundle_name = $this->getArchiveName($archive_path);
         echo "Bundle Name: ".$bundle_name."\n";
-        $archive_type = $this->getArchiveKind($archive_name);
+        $archive_type = $this->getArchiveKind($archive_path);
         echo "Bundle Type: ".$archive_type."\n";
         if($archive_type === false) {
-            $this->badFormatMessageAndExit($archive_name);
+            $this->badFormatMessageAndExit($archive_path);
         }
-        $call = "outputInfo".$archive_type;
-        $info = $archive_type::getArchiveInfo($archive_name);
-        $this->$call($info, $archive_name);
+        if(in_array($archive_type, array("IndexArchiveBundle", 
+            "WebArchiveBundle"))) {
+            $call = "outputInfo".$archive_type;
+            $info = $archive_type::getArchiveInfo($archive_path);
+            $this->$call($info, $archive_path);
+        }
+    }
+
+    /**
+     * Given a complete path to an archive returns its filename
+     *
+     * @param string $archive_path a path to a yioop or non-yioop archive
+     * @return string its filename
+     */
+    function getArchiveName($archive_path)
+    {
+        $start = CRAWL_DIR."/cache/archives/";
+        if(strstr($archive_path, $start)) {
+            $start_len = strlen($start);
+            $name = substr($archive_path, $start_len);
+        } else {
+            $name = UrlParser::getDocumentFilename($archive_path);
+        }
+        return $name;
     }
 
     /**
@@ -263,16 +321,16 @@ class ArcTool implements CrawlConstants
      *
      * @param array $info header info that has already been read from
      *      the description.txt file
-     * @param string $archive_name the name of the folder containing the bundle
+     * @param string $archive_path file path of the folder containing the bundle
      */
-    function outputInfoIndexArchiveBundle($info, $archive_name)
+    function outputInfoIndexArchiveBundle($info, $archive_path)
     {
         $more_info = unserialize($info['DESCRIPTION']);
         unset($info['DESCRIPTION']);
         $info = array_merge($info, $more_info);
         echo "Description: ".$info['DESCRIPTION']."\n";
         $generation_info = unserialize(
-            file_get_contents("$archive_name/generation.txt"));
+            file_get_contents("$archive_path/generation.txt"));
         $num_generations = $generation_info['ACTIVE']+1;
         echo "Number of generations: ".$num_generations."\n";
         echo "Number of stored links and documents: ".$info['COUNT']."\n";
@@ -309,10 +367,10 @@ class ArcTool implements CrawlConstants
      *
      * @param array $info header info that has already been read from
      *      the description.txt file
-     * @param string $archive_name the name of the folder containing the bundle
+     * @param string $archive_path file path of the folder containing the bundle
 
      */
-    function outputInfoWebArchiveBundle($info, $archive_name)
+    function outputInfoWebArchiveBundle($info, $archive_path)
     {
         echo "Description: ".$info['DESCRIPTION']."\n";
         echo "Number of stored documents: ".$info['COUNT']."\n";
@@ -324,14 +382,14 @@ class ArcTool implements CrawlConstants
     }
 
     /**
-     * Used to list out the pages/summaries stored in a bundle
-     * $archive_name. It lists to stdout $num many documents starting at $start.
+     * Used to list out the pages/summaries stored in a bundle at
+     * $archive_path. It lists to stdout $num many documents starting at $start.
      *
-     * @param string $archive_name name of bundle to list documents for
+     * @param string $archive_path path to bundle to list documents for
      * @param int $start first document to list
      * @param int $num number of documents to list
      */
-    function outputShowPages($archive_name, $start, $num)
+    function outputShowPages($archive_path, $start, $num)
     {
         $fields_to_print = array(
             self::URL => "URL",
@@ -342,59 +400,94 @@ class ArcTool implements CrawlConstants
             self::ENCODING => "CHARACTER ENCODING",
             self::DESCRIPTION => "DESCRIPTION",
             self::PAGE => "PAGE DATA");
-        $archive_type = $this->getArchiveKind($archive_name);
+        $archive_type = $this->getArchiveKind($archive_path);
         if($archive_type === false) {
-            $this->badFormatMessageAndExit($archive_name);
+            $this->badFormatMessageAndExit($archive_path);
         }
-        $info = $archive_type::getArchiveInfo($archive_name);
-        $num = min($num, $info["COUNT"] - $start);
 
+        $nonyioop = false;
+        //for yioop archives we set up a dummy iterator
+        $iterator =  (object) array();
+        $iterator->end_of_iterator = false;
         if($archive_type == "IndexArchiveBundle") {
+            $info = $archive_type::getArchiveInfo($archive_path);
+            $num = min($num, $info["COUNT"] - $start);
             $generation_info = unserialize(
-                file_get_contents("$archive_name/generation.txt"));
+                file_get_contents("$archive_path/generation.txt"));
             $num_generations = $generation_info['ACTIVE']+1;
-            $archive = new WebArchiveBundle($archive_name."/summaries");
-        } else {
+            $archive = new WebArchiveBundle($archive_path."/summaries");
+        } else if ($archive_type == "WebArchiveBundle") {
+            $info = $archive_type::getArchiveInfo($archive_path);
+            $num = min($num, $info["COUNT"] - $start);
             $num_generations = $info["WRITE_PARTITION"]+1;
-            $archive = new WebArchiveBundle($archive_name);
+            $archive = new WebArchiveBundle($archive_path);
+        } else {
+            $nonyioop = true;
+            $num_generations = 1;
+            //for non-yioop archives we set up a real iterator
+            $iterator=$this->instantiateIterator($archive_path, $archive_type);
+            if($iterator === false) {
+                $this->badFormatMessageAndExit($archive_path);
+            }
+        }
+        if(!$nonyioop) {
+            if(isset($this->tmp_results)) unset($this->tmp_results);
         }
         $num = max($num, 0);
         $total = $start + $num;
         $seen = 0;
         $generation = 0;
-        while($seen < $total && $generation < $num_generations) {
-            $partition = $archive->getPartition($generation, false);
-            if($partition->count < $start && $seen < $start) {
-                $generation++;
-                $seen += $partition->count;
-                continue;
+        while(!$iterator->end_of_iterator && 
+            $seen < $total && $generation < $num_generations) {
+            if($nonyioop) {
+                $partition = (object) array();
+                $partition->count = 1;
+            } else {
+                $partition = $archive->getPartition($generation, false);
+                if($partition->count < $start && $seen < $start) {
+                    $generation++;
+                    $seen += $partition->count;
+                    continue;
+                }
             }
             $seen_generation = 0;
             while($seen < $total && $seen_generation < $partition->count) {
-                $num_to_get = min($total - $seen,  
-                    $partition->count - $seen_generation, 
-                    self::MAX_BUFFER_DOCS);
-                $objects = $partition->nextObjects($num_to_get);
-                $seen += $num_to_get;
-                $seen_generation += $num_to_get;
-                if($seen > $start) {
+                if($nonyioop) {
+                    $num_to_get = min(self::MAX_BUFFER_DOCS, $total - $seen);
+                    $objects = $iterator->nextPages($num_to_get);
+                    $seen += count($objects);
+                } else {
+                    $num_to_get = min($total - $seen,  
+                        $partition->count - $seen_generation, 
+                        self::MAX_BUFFER_DOCS);
+                    $objects = $partition->nextObjects($num_to_get);
+                    $seen += $num_to_get;
+                    $seen_generation += $num_to_get;
+                }
+                if($seen >= $start) {
                     $num_to_show = min($seen - $start, $num_to_get);
                     $cnt = 0;
                     $first = $num_to_get - $num_to_show;
-                    foreach($objects as $object) {
+                    foreach($objects as $pre_object) {
                         if($cnt >= $first) {
                             $out = "";
-                            if(isset($object[1][self::TIMESTAMP])) {
-                                $object[1][self::TIMESTAMP] = 
-                                    date("r", $object[1][self::TIMESTAMP]);
+                            if($nonyioop) {
+                                $object = $pre_object;
+                            } else {
+                                if(!isset($pre_object[1])) continue;
+                                $object = $pre_object[1];
+                            }
+                            if(isset($object[self::TIMESTAMP])) {
+                                $object[self::TIMESTAMP] = 
+                                    date("r", $object[self::TIMESTAMP]);
                             }
                             foreach($fields_to_print as $key => $name) {
-                                if(isset($object[1][$key])) {
+                                if(isset($object[$key])) {
                                     $out .= "[$name]\n";
                                     if($key != self::IP_ADDRESSES) {
-                                        $out .= $object[1][$key]."\n";
+                                        $out .= $object[$key]."\n";
                                     } else {
-                                        foreach($object[1][$key] as $address) {
+                                        foreach($object[$key] as $address) {
                                             $out .= $address."\n";
                                         }
                                     }
@@ -410,29 +503,77 @@ class ArcTool implements CrawlConstants
             }
             $generation++;
         }
+        if(isset($this->tmp_results)) {
+            //garbage collect savepoint folder for non-yioop archives
+            $dbms_manager = DBMS."Manager";
+            $db = new $dbms_manager();
+            $db->unlinkRecursive($this->tmp_results);
+        }
     }
 
     /**
-     * Given a folder name, determines the kind of bundle (if any) it holds.
-     * It does this based on the expected location of the description.txt file.
+     * Used to create an archive_bundle_iterator for a non-yioop archive
+     * As these iterators sometimes make use of a folder to store savepoints
+     * We create a temporary folder for this purpose in the current directory
+     * This should be garbage collected elsewhere.
      *
-     * @param string $archive_name the name of folder
+     * @param string $archive_path path to non-yioop archive
+     * @param string $iterator_type name of archive_bundle_iterator used to
+     *      iterate over archive.
+     * @param return an ArchiveBundleIterator of the correct type using
+     *      a temporary folder to store savepoints
+     */
+    function instantiateIterator($archive_path, $iterator_type)
+    {
+        $iterate_timestamp = filectime($archive_path);
+        $result_timestamp = strval(time());
+        $this->tmp_results = 'TmpArchiveExtract'.$iterate_timestamp;
+        if(!file_exists($this->tmp_results)) {
+            mkdir($this->tmp_results);
+        } else {
+            $dbms_manager = DBMS."Manager";
+            $db = new $dbms_manager();
+            $db->unlinkRecursive($this->tmp_results);
+        }
+        $iterator_class = "{$iterator_type}Iterator";
+        $iterator = new $iterator_class($iterate_timestamp, $archive_path,
+            $result_timestamp, $this->tmp_results);
+        return $iterator;
+    }
+
+
+    /**
+     * Given a folder name, determines the kind of bundle (if any) it holds.
+     * It does this based on the expected location of the description.txt file,
+     * or arc_description.ini (in the case of a non-yioop archive)
+     *
+     * @param string $archive_path the path to archive folder
      * @return string the archive bundle type, either: WebArchiveBundle or
      *      IndexArchiveBundle
      */
-    function getArchiveKind($archive_name)
+    function getArchiveKind($archive_path)
     {
-        if(file_exists("$archive_name/description.txt")) {
+        if(file_exists("$archive_path/description.txt")) {
             return "WebArchiveBundle";
         }
-        if(file_exists("$archive_name/summaries/description.txt")) {
+        if(file_exists("$archive_path/summaries/description.txt")) {
             return "IndexArchiveBundle";
+        }
+        $desc_path = "$archive_path/arc_description.ini";
+        if(file_exists($desc_path)) {
+            $desc = parse_ini_file($desc_path);
+            if(!isset($desc['arc_type'])) {
+                return false;
+            }
+            return $desc['arc_type'];
         }
         return false;
     }
 
     /**
      * Outputs the "hey, this isn't a known bundle message" and then exit()'s.
+     * @param string $archive_name name or path to what was supposed to be
+     *      an archive
      */
     function badFormatMessageAndExit($archive_name) 
     {
