@@ -472,6 +472,7 @@ class GroupIterator extends IndexBundleIterator
                     array($word_key, $group_infos[0][self::CRAWL_TIME]));
             }
         }
+
         return $out_pages;
     }
 

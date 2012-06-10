@@ -212,12 +212,13 @@ class PhraseModel extends ParallelModel
      *      no grouping done on data'
      * @param array $queue_servers a list of urls of yioop machines which might
      *      be used during lookup
+     * @param bool $guess_semantics whether to do query rewriting before lookup
      * @return array an array of summary data
      */
     function getPhrasePageResults(
         $input_phrase, $low = 0, $results_per_page = NUM_RESULTS_PER_PAGE,
         $format = true, $filter = NULL, $use_cache_if_allowed = true,
-        $raw = 0, $queue_servers = array())
+        $raw = 0, $queue_servers = array(), $guess_semantics = true)
     {
         if(QUERY_STATISTICS) {
             $indent= "&nbsp;&nbsp;";
@@ -326,7 +327,7 @@ class PhraseModel extends ParallelModel
                 }
                 list($word_struct, $format_words) =
                     $this->parseWordStructConjunctiveQuery($disjunct,
-                        $queue_servers);
+                        $queue_servers, $guess_semantics);
                 if($word_struct != NULL) {
                     $word_structs[] = $word_struct;
                 }
@@ -428,16 +429,20 @@ class PhraseModel extends ParallelModel
      * @param string $phrase string to extract struct from
      * @param array $queue_servers a list of urls of yioop machines which might
      *      be used during lookup
+     * @param bool $guess_semantics whether to do query rewriting before parse
      * @return array struct representing the conjunctive query
      */
-    function parseWordStructConjunctiveQuery($phrase, $queue_servers = array())
+    function parseWordStructConjunctiveQuery($phrase, $queue_servers = array(),
+        $guess_semantics = true)
     {
         $indent= "&nbsp;&nbsp;";
         $in2 = $indent . $indent;
         $in3 = $in2 . $indent;
         $in4 = $in2. $in2;
         $phrase = " ".$phrase;
-        $phrase = $this->guessSemantics($phrase);
+        if($guess_semantics) {
+            $phrase = $this->guessSemantics($phrase);
+        }
         $phrase = $this->parseIfConditions($phrase);
         $phrase_string = $phrase;
         $phrase_string = str_replace("&", "&amp;", $phrase_string);
@@ -655,6 +660,7 @@ class PhraseModel extends ParallelModel
      *  @param string $new_prefix what to change $start_with to
      *  @param string $suffix what to tack on to the end of the term if there is
      *      a match
+     *  @param string $not_contain
      *  @param string $lang_tag what language the phrase must be in for the rule
      *      to apply
      *
@@ -841,6 +847,7 @@ class PhraseModel extends ParallelModel
                 $num_retrieved++;
             }
         }
+
         $result_count = count($pages);
 
         // initialize scores
@@ -895,7 +902,6 @@ class PhraseModel extends ParallelModel
                     $page[CrawlConstants::SUMMARY_OFFSET];
             }
         }
-
         if(QUERY_STATISTICS) {
             $this->query_info['QUERY'] .= "$in2<b>Lookup Offsets Time</b>: ".
                 changeInMicrotime($lookup_time)."<br />";

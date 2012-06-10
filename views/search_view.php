@@ -153,7 +153,7 @@ class SearchView extends View implements CrawlConstants
                     && $page[self::TYPE] != "link") {
                         e($page[self::URL]); 
                     } else {
-                        e(strip_tags($page[self::TITLE]));
+                        e( strip_tags($page[self::TITLE]));
                     } ?>" rel="nofollow"><?php
                  if(isset($page[self::THUMB]) && $page[self::THUMB] != 'NULL') {
                     ?><img src="<?php e($page[self::THUMB]); ?>" alt="<?php 

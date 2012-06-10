@@ -315,7 +315,6 @@ class ParallelModel extends Model implements CrawlConstants
             $arg = webencode($arg);
             $query .= "&arg=$arg";
         }
-
         $sites = array();
         $post_data = array();
         $i = 0;

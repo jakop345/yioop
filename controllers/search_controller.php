@@ -422,6 +422,9 @@ class SearchController extends Controller implements CrawlConstants
         $network_work_query = $query;
         $query = preg_replace('/no:network/', "", $query);
         $use_network = ($network_work_query == $query) ? true : false;
+        $guess_query = $query;
+        $query = preg_replace('/no:guess/', "", $query);
+        $guess_semantics = ($guess_query == $query) ? true : false;
         $index_archive_name= self::index_data_base_name.$index_name;
         if(file_exists( CRAWL_DIR."/cache/$index_archive_name/no_network.txt")){
             $_REQUEST['network'] = false;
@@ -432,6 +435,9 @@ class SearchController extends Controller implements CrawlConstants
             $queue_servers = $this->machineModel->getQueueServerUrls();
         } else {
             $queue_servers = array();
+        }
+        if(isset($_REQUEST['guess']) &&  $_REQUEST['guess'] == "false") {
+            $guess_semantics = false;
         }
         switch($activity)
         {
@@ -448,7 +454,8 @@ class SearchController extends Controller implements CrawlConstants
                     $this->searchfiltersModel->getEditedPageSummaries();
                 $phrase_results = $this->phraseModel->getPhrasePageResults(
                     $top_query, $limit, $results_per_page, false, $filter,
-                    $use_cache_if_possible, $raw, $queue_servers);
+                    $use_cache_if_possible, $raw, $queue_servers,
+                    $guess_semantics);
                 $data['PAGING_QUERY'] = "index.php?c=search&a=related&arg=".
                     urlencode($url);
                 
@@ -501,7 +508,8 @@ class SearchController extends Controller implements CrawlConstants
                         $this->searchfiltersModel->getEditedPageSummaries();
                     $phrase_results = $this->phraseModel->getPhrasePageResults(
                         $query, $limit, $results_per_page, true, $filter,
-                        $use_cache_if_possible, $raw, $queue_servers);
+                        $use_cache_if_possible, $raw, $queue_servers,
+                        $guess_semantics);
                     $query = $original_query;
                 }
                 $data['PAGING_QUERY'] = "?q=".urlencode($query);
