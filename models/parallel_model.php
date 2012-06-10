@@ -206,6 +206,7 @@ class ParallelModel extends Model implements CrawlConstants
                     $page = @$index->getPage($summary_offset);
                     if(!$page || $page == array()) {continue;}
                     $ellipsis_used = false;
+                    $copy = false;
                     if($summary == array()) {
                         $summary = $page;
                     } else if (isset($page[self::DESCRIPTION])) {
@@ -216,6 +217,9 @@ class ParallelModel extends Model implements CrawlConstants
                         $summary[self::DESCRIPTION].=
                             " .. ".$page[self::DESCRIPTION];
                         $ellipsis_used = true;
+                        $copy = true;
+                    } else {
+                        $copy = true;
                     }
                     if($ellipsis_used && strlen($summary[self::DESCRIPTION]) > 
                         self::MIN_DESCRIPTION_LENGTH) {
@@ -223,6 +227,14 @@ class ParallelModel extends Model implements CrawlConstants
                            appear in links
                          */
                         break;
+                    }
+                    if($copy) {
+                        foreach($page as $attr => $value){
+                            if($attr !=self::DESCRIPTION && 
+                                !isset($summary[$attr])) {
+                                $summary[$attr] = $value;
+                            }
+                        }
                     }
                 }
             }
