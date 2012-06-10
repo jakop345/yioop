@@ -58,11 +58,14 @@ class ToggleHelper extends Helper
      *  @param string $on_url - url that is sent when one clicks on
      *  @param string $off_url - url that is sent when one clicks off
      */
-    public function render($state, $on_url, $off_url)
+    public function render($state, $on_url, $off_url, $caution = false)
     { 
-        if($state) {?>
+        if($state) {
+            $oncolor = ($caution) ? "backyellow" : "backgreen";
+            ?>
             <table class="toggletable"><tr><td 
-            class="backgreen"><b><?php e(tl('toggle_helper_on'));?></b></td>
+            class="<?php e($oncolor);
+                ?>"><b><?php e(tl('toggle_helper_on'));?></b></td>
             <td><a href="<?php e($off_url);?>"
             ><?php e(tl('toggle_helper_off'));?></a></td></tr></table>
         <?php } else {?>

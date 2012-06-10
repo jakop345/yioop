@@ -38,7 +38,10 @@ define("BASE_DIR", substr(
     dirname(realpath($_SERVER['PHP_SELF'])), 0, 
     -strlen("/bin")));
 
-/** THis tool does not need logging*/
+ini_set("memory_limit","850M"); /* 
+        reindex sometimes takes more than the default 128M, 850 to be safe */
+
+/** This tool does not need logging*/
 define("LOG_TO_FILES", false);
 
 /** Load in global configuration settings */

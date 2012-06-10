@@ -250,6 +250,7 @@ class CrawlController extends Controller implements CrawlConstants
         $num = $this->clean($_REQUEST["num"], "int");
         $i = $this->clean($_REQUEST["i"], "int");
         $this->crawlModel->current_machine = $i;
+        $this->phraseModel->current_machine = $i;
         $lookups = unserialize(webdecode($_REQUEST["arg"]));
 
         $our_lookups = array();
