@@ -22,7 +22,7 @@
  *
  *  END LICENSE
  *
- * Web page used to display information about the crawler component of
+ * Web page used to display information about the web robot used in
  * the SeekQuarry/Yioop Search engine
  *
  * @author Chris Pollett chris@pollett.org

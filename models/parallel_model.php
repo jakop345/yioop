@@ -56,6 +56,7 @@ require_once BASE_DIR.'/lib/url_parser.php';
 require_once BASE_DIR.'/lib/fetch_url.php';
 
 /**
+ * Base class of models that need access to data from multiple queue servers
  *
  * @author Chris Pollett
  *
@@ -114,7 +115,7 @@ class ParallelModel extends Model implements CrawlConstants
 
     /**
      * Gets summaries for a set of document by their url, or by group of 
-     * 4-tuples of the form (key, index, generation, offset).
+     * 5-tuples of the form (machine, key, index, generation, offset).
      *
      * @param string $lookups things whose summaries we are trying to look up
      * @param array $machine_urls an array of urls of yioop queue servers
@@ -247,13 +248,16 @@ class ParallelModel extends Model implements CrawlConstants
     }
 
     /**
-     * Determines the offset into the summaries WebArchiveBundle of the
-     * provided url so that the info:url summary can be retrieved.
-     * This assumes of course that  the info:url meta word has been stored.
+     * Determines the offset into the summaries WebArchiveBundle and generation 
+     * of the provided url (or hash_url) so that the info:url 
+     * (info:base64_hash_url) summary can be retrieved. This assumes of course 
+     * that the info:url  meta word has been stored.
      *
-     * @param string $url
-     * @param object $index_archive
-     * @param bool $is_key
+     * @param string $url_or_key either info:base64_hash_url or just a url to
+     *      lookup
+     * @param string $index_name index into which to do the lookup
+     * @param bool $is_key whether the string is info:base64_hash_url or just a
+     *      url
      * @return array (offset, generation) into the web archive bundle
      */
     function lookupSummaryOffsetGeneration($url_or_key, $index_name = "", 
@@ -294,8 +298,8 @@ class ParallelModel extends Model implements CrawlConstants
 
 
     /**
-     *  This method is invoked by other CrawlModel (for example, CrawlModel) 
-     *  methods when they want to have their method performed 
+     *  This method is invoked by other ParallelModel (@see CrawlModel 
+     *  for examples) methods when they want to have their method performed 
      *  on an array of other  Yioop instances. The results returned can then 
      *  be aggregated.  The invocation sequence is 
      *  crawlModelMethodA invokes execMachine with a list of 
@@ -306,7 +310,7 @@ class ParallelModel extends Model implements CrawlConstants
      *  result and gives it back to execMachine and then back to the originally
      *  calling function.
      *
-     *  @param string $command the CrawlModel method to invoke on the remote 
+     *  @param string $command the ParallelModel method to invoke on the remote 
      *      Yioop instances
      *  @param array $machine_urls machines to invoke this command on
      *  @param string additional arguments to be passed to the remote machine

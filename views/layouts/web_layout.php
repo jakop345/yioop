@@ -100,7 +100,7 @@ class WebLayout extends Layout
             <?php
                 $this->view->renderView($data);
                 if(QUERY_STATISTICS) { ?>
-                <div id="query-statistics">
+                <div class="query-statistics">
                 <?php
                     e("<h1>".tl('web_layout_query_statistics')."</h1>");
                     e("<div><b>".

@@ -22,7 +22,7 @@
  *
  *  END LICENSE
  *
- * Web page used to display information about the crawler component of
+ * Web page used to display information about the privacy policy of
  * the SeekQuarry/Yioop Search engine
  *
  * @author Chris Pollett chris@pollett.org

@@ -56,7 +56,7 @@ class ManagerolesElement extends Element
     {?>
         <div class="currentactivity">
         <h2><?php e(tl('manageroles_element_add_role'))?></h2>
-        <form id="addRoleForm" method="post" action=''>
+        <form id="addRoleForm" method="post" action=#''>
         <input type="hidden" name="c" value="admin" /> 
         <input type="hidden" name="YIOOP_TOKEN" value="<?php 
             e($data['YIOOP_TOKEN']); ?>" /> 
@@ -68,14 +68,14 @@ class ManagerolesElement extends Element
             e(tl('manageroles_element_rolename'))?></label></td>
             <td><input type="text" id="role-name" name="rolename" 
                 maxlength="80" class="narrowfield" /></td><td 
-                class="center"><button class="buttonbox" type="submit"><?php 
+                class="center"> <button class="buttonbox" type="submit"><?php 
                 e(tl('manageroles_element_submit')); ?></button></td>
         </tr>
         </table>
         </form>
 
         <h2><?php e(tl('manageroles_element_delete_role'))?></h2>
-        <form id="deleteRoleForm" method="post" action=''>
+        <form id="deleteRoleForm" method="post" action='#'>
         <input type="hidden" name="c" value="admin" /> 
         <input type="hidden" name="YIOOP_TOKEN" value="<?php 
             e($data['YIOOP_TOKEN']); ?>" />
@@ -93,7 +93,7 @@ class ManagerolesElement extends Element
         </table>
         </form>
         <h2><?php e(tl('manageroles_element_view_role_activities'))?></h2>
-        <form id="viewRoleActivityForm" method="get" action='' >
+        <form id="viewRoleActivityForm" method="get" action='#' >
         <input type="hidden" name="c" value="admin" /> 
         <input type="hidden" name="YIOOP_TOKEN" value="<?php 
             e($data['YIOOP_TOKEN']); ?>" /> 
@@ -111,7 +111,7 @@ class ManagerolesElement extends Element
         if(isset($data['ROLE_ACTIVITIES'])) {
              if(count($data['AVAILABLE_ACTIVITIES']) > 0  && 
                 $data['SELECT_ROLE'] != -1) { ?>
-                <form id="addRoleActivityForm" method="get" action='' >
+                <form id="addRoleActivityForm" method="get" action='#' >
                 <input type="hidden" name="c" value="admin" /> 
                 <input type="hidden" name="YIOOP_TOKEN" value="<?php 
                     e($data['YIOOP_TOKEN']); ?>" />

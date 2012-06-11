@@ -22,10 +22,10 @@
  *
  *  END LICENSE
  *
- * Main web interface entry point for Yioop!
- * search site. Used to both get and display
- * search results. Also used for inter-machine
- * communication during crawling
+ * Images entry point for Yioop!
+ * search site. Used to both get and display image
+ * search results. Makes use of the main index.php
+ * entry point.
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry

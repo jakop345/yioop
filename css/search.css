@@ -38,6 +38,183 @@
     Contributors: Chris Pollett
  */ 
 
+/*
+   We begin with some generic global styles
+   and classes
+ */
+h2
+{
+    margin-bottom:0;
+}
+
+p
+{
+    width: 8.25in;
+    margin:0;
+    padding:0;
+}
+
+.mobile p
+{
+    width:300px;
+}
+
+.result h2
+{
+    font-weight:normal;
+    font-size:14pt;
+}
+
+.echolink
+{
+    color:green
+}
+
+.left
+{
+    float:left;
+}
+
+.right
+{
+    float:right;
+}
+
+.alignRight
+{
+    text-align:right;
+}
+
+.red
+{
+    color:red;
+}
+
+.highlight, .backred
+{
+    background-color:red;
+}
+
+.backgreen
+{
+    background-color:green;
+}
+
+.backgray
+{
+    background-color: lightgray;
+}
+
+.backyellow
+{
+    background-color:yellow;
+}
+
+.frame
+{
+    background-color: #fff;
+    border: 1px solid #ccc;
+    position:relative;
+}
+
+.nametable
+{
+    padding: 5px;
+}
+
+.narrowfield
+{
+    width:2in;
+}
+
+.mobile .narrowfield
+{
+    width:100px;
+}
+
+.widefield
+{
+    width:3in;
+}
+
+.mobile .widefield
+{
+    width:150px;
+}
+
+.extrawidefield
+{
+    width:5in;
+}
+
+.mobile .extrawidefield
+{
+    width:200px;
+}
+
+.talltextarea
+{
+    font-size:16pt;
+    width:100%;
+    height:4in;
+}
+
+.mobile .talltextarea
+{
+    width:90%;
+}
+
+.shorttextarea
+{
+    width:100%;
+    height:1in;
+}
+
+.mobile .shorttextarea
+{
+    width:90%;
+}
+
+.center
+{
+    text-align:center;
+}
+
+.mobile .center
+{
+    position:relative;
+    top:10px;
+    left:-40px;
+    right:-40px;
+}
+
+.topmargin
+{
+    margin-top: .2in;
+}
+
+.nomargin
+{
+    margin: 0;
+}
+
+.box
+{
+    border: 1px ridge #ccc;
+    padding: 3px;
+}
+
+.slightpad
+{
+    padding: .1in;
+}
+
+fieldset
+{
+    border-color:black;
+}
+
+// set up prefixes for left-to-right, right-to-left and vertical text support
 .html-tb
 {
     block-progression: tb;
@@ -67,12 +244,6 @@
 {
     direction: ltr;
     text-align:left;
-}
-
-body
-{
-    font-family:Arial, Helvetica, sans-serif;
-    min-height:16in;
 }
 
 body.html-ltr
@@ -106,6 +277,16 @@ body.html-tb-lr
     writing-mode: tb-lr;
 }
 
+// set up global font preferences
+body
+{
+    font-family:Arial, Helvetica, sans-serif;
+    min-height:16in;
+}
+
+/* .mobile is used for phone devices -- an attempt has been made to
+   make the default non-mobile version of the page work with tablets
+*/
 body.mobile
 {
     position:absolute;
@@ -118,6 +299,10 @@ body.mobile
 }
 
 
+/* bar on which web, images, video subsearches and sign-in stuff live
+   for many of the below things we need to handle them different on the landing
+   page from pages where search results appear
+ */
 .topbar
 {
     background: #DDD;
@@ -163,6 +348,9 @@ body.mobile
     height:30px;
 }
 
+/* this is for informational messages when settings are changed or admin stuff
+   done
+ */
 #message
 {
     z-index:3;
@@ -177,6 +365,9 @@ body.mobile
     width:320px;
 }
 
+/*
+   for the sign-in, settings, admin, logout links on the topbar
+ */
 .html-ltr .userNav
 {
     text-align: right;
@@ -223,9 +414,13 @@ body.mobile
 
 .mobile .userNav ul li
 {
+
     padding:1px;
 }
 
+/*
+   For the web, images, video links on the topbar
+ */
 .html-ltr .subsearch ul li
 {
     float:left;
@@ -251,6 +446,7 @@ body.mobile
     left:-40px;
     right:-40px;
     padding:0px;
+    width:220px;
 }
 
 .mobile .subsearch ul li
@@ -264,6 +460,9 @@ body.mobile
     height:6in;
 }
 
+/*
+   Landing page (www.yioop.com) specific css
+ */
 .html-ltr .landing
 {
     position:absolute;
@@ -291,6 +490,9 @@ body.mobile
     clear: both;
 }
 
+/*
+   Style tweaks for blog, privacy, bot, and admin pages
+ */
 .mobile .non-search
 {
     position:relative;
@@ -299,14 +501,10 @@ body.mobile
     right:0px;
 }
 
-.mobile .center
-{
-    position:relative;
-    top:10px;
-    left:-40px;
-    right:-40px;
-}
 
+/*
+   Styles to control logo (image + adjacent text) on various pages
+ */
 .logo
 {
     position:relative;
@@ -394,44 +592,6 @@ body.mobile
     right:70px;
 }
 
-.html-ltr .login, .html-ltr .settings
-{
-    font-size: 16pt;
-    position:relative;
-    left:2.25in;
-}
-
-.html-rtl .login, .html-rtl .settings
-{
-    font-size: 16pt;
-    position:relative;
-    right:2.25in;
-}
-
-.mobile .login, .mobile .settings, .mobile .statistics
-{
-    font-size: 14pt;
-    position: relative;
-    left: 10px;
-    right: 10px;
-}
-
-.mobile .stats  span
-{
-    position:relative;
-    top: -10px;
-    left:-10px;
-    width:200px;
-}
-
-.mobile .stats  img
-{
-    position:relative;
-    top: 0px;
-    left:0px;
-    width: 50px;
-}
-
 .mobile .non-search .logo span
 {
     position:relative;
@@ -449,40 +609,97 @@ body.mobile
     width: 50px;
 }
 
+/*
+   Styles for footers on various pages
+ */
 
-.mobile .table-input select
+.setting-footer, .signin-exit, .landing-footer
 {
-    width:190px;
+    clear:both;
+    margin-top: 0.25in;
+    text-align: center;
 }
 
-.mobile .table-input input
+.mobile .landing-footer
 {
-    width:150px;
+    position: relative;
+    text-align: center;
+    margin-top:0;
+    top: 0px;
+    left:0px;
+    right:0px;
+    width:320px;
 }
 
-.html-ltr .table-label
+.mobile .setting-footer, 
+.mobile .signin-exit, 
+.mobile .landing .landing-footer
 {
-    text-align: right;
-}
-.html-ltr .table-input
-{
-    text-align: left;
+    position: relative;
+    text-align: center;
+    margin-top:0.4in;
+    top: -20px;
+    left:-20px;
+    right:-20px;
+    width:320px;
 }
 
+/*
+   If query infomation is available then web_layout will
+   render statistics about all the SQL and search engine
+   queries that were executed for a page. These styles
+   control how this diagnostic info renders
+ */
 
-.html-rtl .table-label
+.query-statistics
 {
-    text-align: left;
+    margin-top: .4in;
+    border-top: 2px solid gray;
+    color: gray;
 }
-.html-rtl .table-input
+
+.mobile .query-statistics
 {
-    text-align: right;
+    position:relative;
+    top:200px;
+}
+
+.query
+{
+    margin: .1in;
+    border: 1px solid gray;
+    padding: .05in;
+}
+
+/*
+   Styles for the login and settings pages
+ */
+.html-ltr .login, .html-ltr .settings
+{
+    font-size: 16pt;
+    position:relative;
+    left:2.25in;
+}
+
+.html-rtl .login, .html-rtl .settings
+{
+    font-size: 16pt;
+    position:relative;
+    right:2.25in;
 }
 
 .login input
 {
     margin: 5px;
     font-size:16pt;
+}
+
+.mobile .login, .mobile .settings, .mobile .statistics
+{
+    font-size: 14pt;
+    position: relative;
+    left: 10px;
+    right: 10px;
 }
 
 .settings button, .settings select, .login button
@@ -495,34 +712,28 @@ body.mobile
     font-size: 14pt;
 }
 
-.content
+/*
+   Styles for the statistics for a crawl page
+ */
+.mobile .stats  span
 {
     position:relative;
-    margin-left: .5in;
-    margin-right: .5in;
-    width:8in;
-    min-height:3in;
-    padding: 8px;
-    font-size:12pt;
-    background-color:white;
+    top: -10px;
+    left:-10px;
+    width:200px;
 }
 
-.mobile .content
+.mobile .stats  img
 {
-    clear:both;
     position:relative;
-    top:0px;
+    top: 0px;
     left:0px;
-    right:0px;
-    width:320px;
-    margin:3px;
+    width: 50px;
 }
 
-.content p
-{
-    padding-bottom: 8px;
-}
-
+/*
+  Styles for search and search result pages
+ */
 .html-ltr .serp
 {
     position:relative;
@@ -633,6 +844,9 @@ body.mobile
     font-size:12pt;
 }
 
+/*
+   Styles for the word suggest drop down on search pages
+ */
 .dropdown
 {
     width: 6.5in;
@@ -715,37 +929,10 @@ body.mobile
     display: none;
 }
 
-.html-ltr .buttonbox
-{
-    position:relative;
-    left:-.05in;
-    top:.015in;
-    margin-left: 0pt;
-    text-align: center;
-    text-decoration: none;
-    font-size:16pt;
-    color: black;
-}
-
-
-.html-rtl .buttonbox
-{
-    position:relative;
-    right:-.05in;
-    top:.015in;
-    margin-right: 0;
-    text-align: center;
-    text-decoration: none;
-    font-size:16pt;
-    color: black;
-}
-
-.mobile .buttonbox
-{
-    font-size:12pt;
-    margin-right: 0;
-    margin-left: 0;
-}
+/*
+   Styles for the bottom of search results links to additional
+   pages of search results
+ */
 .pagination
 {
     margin-top: 10px;
@@ -848,29 +1035,9 @@ body.mobile
     margin-left: 10px;
 }
 
-h2
-{
-    margin-bottom:0;
-}
-
-p
-{
-    width: 8.25in;
-    margin:0;
-    padding:0;
-}
-
-.mobile p
-{
-    width:300px;
-}
-
-.result h2
-{
-    font-weight:normal;
-    font-size:14pt;
-}
-
+/*
+   Styles for video subsearch page
+ */
 .html-ltr .video-link
 {
     padding-top: 0.05in;
@@ -910,6 +1077,9 @@ p
     width: 40px;
 }
 
+/*
+   Styles for image subsearch page
+ */
 .image-list
 {
     margin-top:10px;
@@ -939,86 +1109,100 @@ p
     height:50px;
 }
 
-
-.echolink
+/*
+   Styles for tables on login, settings, and admin pages
+ */
+.mobile .table-input select
 {
-    color:green
+    width:190px;
 }
 
-.left
+.mobile .table-input input
 {
-    float:left;
+    width:150px;
 }
 
-.right
+.html-ltr .table-label
 {
-    float:right;
+    text-align: right;
+}
+.html-ltr .table-input
+{
+    text-align: left;
 }
 
-.alignRight
+
+.html-rtl .table-label
 {
-    text-align:right;
+    text-align: left;
+}
+.html-rtl .table-input
+{
+    text-align: right;
 }
 
-.red
+/*
+    Styles for different admin page elements
+ */
+.content
 {
-    color:red;
-}
-
-.highlight, .backred
-{
-    background-color:red;
-}
-
-.backgreen
-{
-    background-color:green;
-}
-
-.backgray
-{
-    background-color: lightgray;
-}
-
-.frame
-{
-    background-color: #fff;
-    border: 1px solid #ccc;
     position:relative;
+    margin-left: .5in;
+    margin-right: .5in;
+    width:8in;
+    min-height:3in;
+    padding: 8px;
+    font-size:12pt;
+    background-color:white;
 }
 
-.setting-footer, .signin-exit, .landing-footer
+.mobile .content
 {
     clear:both;
-    margin-top: 0.25in;
-    text-align: center;
-}
-
-.mobile .landing-footer
-{
-    position: relative;
-    text-align: center;
-    margin-top:0;
-    top: 0px;
+    position:relative;
+    top:0px;
     left:0px;
     right:0px;
     width:320px;
+    margin:3px;
 }
 
-.mobile .setting-footer, 
-.mobile .signin-exit, 
-.mobile .landing .landing-footer
+.content p
 {
-    position: relative;
+    padding-bottom: 8px;
+}
+
+.html-ltr .buttonbox
+{
+    position:relative;
+    left:-.05in;
+    top:.015in;
+    margin-left: 0pt;
     text-align: center;
-    margin-top:0.4in;
-    top: -20px;
-    left:-20px;
-    right:-20px;
-    width:320px;
+    text-decoration: none;
+    font-size:16pt;
+    color: black;
 }
 
 
+.html-rtl .buttonbox
+{
+    position:relative;
+    right:-.05in;
+    top:.015in;
+    margin-right: 0;
+    text-align: center;
+    text-decoration: none;
+    font-size:16pt;
+    color: black;
+}
+
+.mobile .buttonbox
+{
+    font-size:12pt;
+    margin-right: 0;
+    margin-left: 0;
+}
 
 .html-ltr .activitymenu
 {
@@ -1356,117 +1540,7 @@ p
     padding: .1in;
 }
 
-
-#query-statistics
-{
-    margin-top: .4in;
-    border-top: 2px solid gray;
-    color: gray;
-}
-
-.mobile #query-statistics
-{
-    position:relative;
-    top:200px;
-}
-
-.query
-{
-    margin: .1in;
-    border: 1px solid gray;
-    padding: .05in;
-}
-
-.nametable
-{
-    padding: 5px;
-}
-
-.narrowfield
-{
-    width:2in;
-}
-
-.mobile .narrowfield
-{
-    width:100px;
-}
-
-.widefield
-{
-    width:3in;
-}
-
-.mobile .widefield
-{
-    width:150px;
-}
-
-.extrawidefield
-{
-    width:5in;
-}
-
-.mobile .extrawidefield
-{
-    width:200px;
-}
-
-.talltextarea
-{
-    font-size:16pt;
-    width:100%;
-    height:4in;
-}
-
-.mobile .talltextarea
-{
-    width:90%;
-}
-
-.shorttextarea
-{
-    width:100%;
-    height:1in;
-}
-
-.mobile .shorttextarea
-{
-    width:90%;
-}
-
-.center
-{
-    text-align:center;
-}
-
-.topmargin
-{
-    margin-top: .2in;
-}
-
-.nomargin
-{
-    margin: 0;
-}
-
-.box
-{
-    border: 1px ridge #ccc;
-    padding: 3px;
-}
-
-.slightpad
-{
-    padding: .1in;
-}
-
-fieldset
-{
-    border-color:black;
-}
-
-#restrict-sites-by-url
+.restrict-sites-by-url
 {
     width:.25in; 
     height:.25in;
