@@ -37,6 +37,8 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 require_once BASE_DIR."/lib/crawl_constants.php";
 
 /**
+ * Used to set and get SQL query and search query timing statistic
+ * between models and index_bundle_iterators
  *
  * @author Chris Pollett
  *
@@ -45,9 +47,13 @@ require_once BASE_DIR."/lib/crawl_constants.php";
  */
 class AnalyticsManager
 {
+    //where get and set field values are stored
     private static $data = array();
+
     /**
-     *
+     * Used to get the timing statistic associated with $attribute
+     * @param string $attribute to get statistic for
+     * @return whatever was stored for that statistic
      */
     static function get($attribute)
     {
@@ -55,7 +61,10 @@ class AnalyticsManager
     }
 
     /**
-     *
+     * Used to set the timing statistic $value associated with $attribute
+     * @param string $attribute to get statistic for
+     * @param mixed $value whatever timing information is to be associated with
+     *      value
      */
     static function set($attribute, $value)
     {

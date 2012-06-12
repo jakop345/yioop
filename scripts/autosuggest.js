@@ -303,7 +303,8 @@ function getUnicodeCharAndNextOffset(str, i) {
  * Load the Trie(compressed with .gz extension) during the launch of website
  * Trie's are represented using nested arrays.
  */
-function loadTrie() {
+function loadTrie() 
+{
     var xmlhttp;
     if (window.XMLHttpRequest) {
         // code for IE7i+, Firefox, Chrome, Opera, Safari

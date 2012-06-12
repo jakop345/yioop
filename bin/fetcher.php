@@ -869,13 +869,23 @@ class Fetcher implements CrawlConstants
         return $info; 
     }
 
+
+    /**
+     *  During an archive crawl this method is used to get from the name server
+     *  a collection of pages to process. The fetcher will later process these
+     *  and send summaries to various queue_servers.
+     *
+     *  @return array containing archive page data
+     */
     function checkArchiveScheduler()
     {
         $start_time = microtime();
 
-        // It's still important to switch queue servers in a round robin 
-        // fashion, so that we send new data to each server each time we fetch 
-        // new data from the name server.
+        /*
+            It's still important to switch queue servers in a round robin 
+            fashion, so that we send new data to each server each time we fetch
+            new data from the name server.
+        */
         $this->current_server = ($this->current_server + 1) 
             % count($this->queue_servers);
 
@@ -1911,6 +1921,7 @@ class Fetcher implements CrawlConstants
                     } else {
                         $link_meta_ids[] = "media:text";
                     }
+                    $link_meta_ids[] = "link:all";
                     $link_word_lists = 
                         PhraseParser::extractPhrasesInLists($link_text,
                         $lang, true);

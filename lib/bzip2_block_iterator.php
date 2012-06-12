@@ -133,7 +133,7 @@ class BZip2BlockIterator
 
     /**
      */
-    function next_block($raw=false)
+    function next_block($raw = false)
     {
         $recovered_block = NULL;
         while(!feof($this->fd)) {
@@ -147,14 +147,16 @@ class BZip2BlockIterator
                 $matches,
                 PREG_OFFSET_CAPTURE);
             if($match) {
-                /* 
+                /*
                     $pos is the position of the SECOND byte of the magic number
                     (plus some part of the first byte for a non-zero new_shift).
                 */
                 $pos = $matches[0][1];
 
-                // The new_shift is the number of bits by which the magic 
-                // number for the next block has been shifted right.
+                /*
+                     The new_shift is the number of bits by which the magic 
+                      number for the next block has been shifted right.
+                 */
                 list($new_shift, $is_start) =
                     self::$header_info[$this->buffer[$pos]];
 

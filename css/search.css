@@ -214,7 +214,7 @@ fieldset
     border-color:black;
 }
 
-// set up prefixes for left-to-right, right-to-left and vertical text support
+/* set up prefixes for left-to-right, right-to-left and vertical text support*/
 .html-tb
 {
     block-progression: tb;
@@ -277,7 +277,7 @@ body.html-tb-lr
     writing-mode: tb-lr;
 }
 
-// set up global font preferences
+/* set up global font preferences */
 body
 {
     font-family:Arial, Helvetica, sans-serif;
@@ -491,16 +491,22 @@ body.mobile
 }
 
 /*
-   Style tweaks for blog, privacy, bot, and admin pages
+   Style tweaks for blog, privacy, bot, settings, and admin pages
  */
+
 .mobile .non-search
 {
     position:relative;
-    top:20px;
-    left:0px;
-    right:0px;
+    top:10px;
+    left:-10px;
+    right:-10px;
 }
 
+.mobile .non-search .logo
+{
+    position:relative;
+    top:20px;
+}
 
 /*
    Styles to control logo (image + adjacent text) on various pages
@@ -639,8 +645,8 @@ body.mobile
     text-align: center;
     margin-top:0.4in;
     top: -20px;
-    left:-20px;
-    right:-20px;
+    left:-10px;
+    right:-10px;
     width:320px;
 }
 
@@ -924,7 +930,7 @@ body.mobile
     color:black;
 }
 
-.mobile #aslist
+.mobile .autoresult
 {
     display: none;
 }
@@ -939,37 +945,24 @@ body.mobile
     margin-bottom: 10px
 }
 
-.html-ltr .pagination ul, .pagination ul li
+.html-ltr .pagination ul, .html-ltr .pagination ul li
 {
-    font-size: 20pt;
+    font-size: 18pt;
 
     display:inline;
     padding-left: 0px;
     padding-right: 10px;
 }
 
-.html-rtl .pagination ul, .pagination ul li
+.html-rtl .pagination ul, .html-rtl .pagination ul li
 {
-    font-size: 20pt;
+    font-size: 18pt;
 
     display:inline;
     padding-left: 10px;
     padding-right: 0px;
 }
 
-.html-ltr .pagination ul li span.end
-{
-    display:block;
-    float:left;
-    margin-right: 10px;
-}
-
-.html-rtl .pagination ul li span.end
-{
-    display: block;
-    float: right;
-    margin-left: 10px;
-}
 
 .html-ltr .pagination ul li a.item
 {
@@ -1033,6 +1026,25 @@ body.mobile
     border-style: solid;
     border-width: 5px;
     margin-left: 10px;
+}
+
+.html-ltr .pagination ul li span.end
+{
+    display:block;
+    float:left;
+    margin-right: 10px;
+}
+
+.html-rtl .pagination ul li span.end
+{
+    display: block;
+    float: right;
+    margin-left: 10px;
+}
+
+.html-ltr .pagination ul li span.other
+{
+    width: 30px;
 }
 
 /*

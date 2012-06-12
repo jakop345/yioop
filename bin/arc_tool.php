@@ -310,6 +310,7 @@ class ArcTool implements CrawlConstants
             }
             echo "\nFinal Merge Tiers\n";
             $dictionary->mergeAllTiers(NULL, $max_tier);
+            $db->setWorldPermissionsRecursive($path."/dictionary");
             echo "\nReindex complete!!\n";
         } else {
             echo "\n$path ...\n".

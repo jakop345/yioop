@@ -262,11 +262,13 @@ class MediaWikiArchiveBundleIterator extends ArchiveBundleIterator
             if(is_null($this->bz2_iterator) || $this->bz2_iterator->is_eof()) {
                 return false;
             }
-            // Get the next block; the block iterator can very occasionally 
-            // return a bad block if a block header pattern happens to show up 
-            // in compressed data, in which case decompression will fail. We 
-            // want to skip over these false blocks and get back to real 
-            // blocks.
+            /*
+               Get the next block; the block iterator can very occasionally 
+               return a bad block if a block header pattern happens to show up 
+               in compressed data, in which case decompression will fail. We 
+               want to skip over these false blocks and get back to real 
+               blocks.
+            */
             while(!is_string($block = $this->bz2_iterator->next_block())) {
                 if($this->bz2_iterator->is_eof())
                     return false;

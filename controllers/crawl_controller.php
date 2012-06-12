@@ -48,7 +48,8 @@ require_once BASE_DIR."/lib/url_parser.php";
  * there might be mutliple queue_servers and a name_server. Command
  * sent to the nameserver web page are mapped out to queue_servers
  * using this controller. Each method of the controller essentially
- * mimics one method of CrawlModel and is used to proxy that information
+ * mimics one method of CrawlModel, PhraseModel, or in general anything
+ * that extends ParallelModel and is used to proxy that information
  * through a result web page back to the name_server.
  *
  * @author Chris Pollett

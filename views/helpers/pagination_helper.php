@@ -110,7 +110,7 @@ class PaginationHelper extends Helper
         }
         if($num_earlier_pages < $total_pages - 1) {
             $next_limit = ($num_earlier_pages + 1)*$results_per_page;
-            echo "<li><span class='end'><a href='$base_url".
+            echo "<li><span class='other end'><a href='$base_url".
                 "&amp;limit=$next_limit' rel='nofollow'>".
                 tl('pagination_helper_next')."</a>&raquo;</span></li>";
         }

@@ -105,8 +105,8 @@ class SearchController extends Controller implements CrawlConstants
         } else if (!WEB_ACCESS) {
             return;
         }
-        if(isset($_REQUEST['raw']) && in_array($_REQUEST['raw'], array(0,1,2))){
-            $raw = $_REQUEST['raw'];
+        if(isset($_REQUEST['raw'])){
+            $raw = max($this->clean($_REQUEST['raw'], "int"), 0);
         } else {
             $raw = 0;
         }
@@ -281,7 +281,7 @@ class SearchController extends Controller implements CrawlConstants
         $data["HAS_STATISTICS"] = file_exists($stats_file);
         $data['YIOOP_TOKEN'] = $this->generateCSRFToken($user);
         if($view == "search" && $raw == 0 && isset($data['PAGES'])) {
-            $data['PAGES'] = $this->makeImageVideoGroups($data['PAGES']);
+            $data['PAGES'] = $this->makeImageGroups($data['PAGES']);
         }
         $data['ELAPSED_TIME'] = changeInMicrotime($start_time);
         if ($view != "serial") {
@@ -375,10 +375,10 @@ class SearchController extends Controller implements CrawlConstants
      *      for those query terms will be return, then the eleventh, etc.
      * @param int $index_name the timestamp of an index to use, if 0 then 
      *      default used
-     * @param int $raw ($raw == 0) normal grouping, ($raw == 1)
-     *      no grouping but page look-up for links, ($raw == 2) 
-     *      no grouping done on data
-     *
+     * @param int $raw ($raw == 0) normal grouping, $raw > 0
+     *      no grouping done on data. If $raw == 1 no summary returned (used
+     *      with f=serial, end user probably does not want) 
+     *      In this case, will get offset, generation, etc so could later lookup
      * @return array an array of at most results_per_page many search results
      */
     function processQuery($query, $activity, $arg, $results_per_page, 
@@ -529,8 +529,16 @@ class SearchController extends Controller implements CrawlConstants
     }
 
     /**
+     * Groups search result pages together which have thumbnails
+     * from an array of search pages. Grouped thumbnail pages stored at array
+     * index of first thumbnail found, non thumbnail pages stored where were
+     * before
+     *
+     * @param $pages an array of search result pages to group those pages
+     *      with thumbs within
+     * @return array $pages after the grouping has been done
      */
-    function makeImageVideoGroups($pages)
+    function makeImageGroups($pages)
     {
         $first_image = -1;
         $out_pages = array();
@@ -693,6 +701,14 @@ class SearchController extends Controller implements CrawlConstants
         return $node;
     }
 
+    /**
+     * Make relative links canonical with respect to provided $url
+     * for links appear within the Dom node.
+     *
+     * @param object $node dom node to fix links for
+     * @param string $url url to use to canonicalize links
+     * @return object updated dom node
+     */
     function canonicalizeLinks($node, $url)
     {
         if(!isset($node->childNodes->length)) {
@@ -740,18 +756,19 @@ class SearchController extends Controller implements CrawlConstants
      *      cache: queries)
      * @param int $results_per_page number of results to return
      * @param int $limit first result to return from the ordered query results
-     * @param int $raw ($raw == 0) normal grouping, ($raw == 1)
-     *      no grouping but page look-up for links, ($raw == 2) 
+     * @param int $grouping ($grouping == 0) normal grouping of links
+     *      with associated document, ($grouping > 0)
      *      no grouping done on data
      *
      * @return array associative array of results for the query performed
      */
     public function queryRequest($query, $results_per_page, $limit = 0, 
-        $raw = 0)
+        $grouping = 0)
     {
+        $grouping = ($grouping > 0 ) ? 2 : 0;
         return (API_ACCESS) ? 
             $this->processQuery($query, "query", "", $results_per_page, 
-                $limit, $raw) : NULL;
+                $limit, $grouping) : NULL;
     }
 
     /**
@@ -761,15 +778,16 @@ class SearchController extends Controller implements CrawlConstants
      * @param string $url to find related documents for
      * @param int $results_per_page number of results to return
      * @param int $limit first result to return from the ordered query results
-     * @param int $raw ($raw == 0) normal grouping, ($raw == 1)
-     *      no grouping but page look-up for links, ($raw == 2) 
+     * @param int $grouping ($grouping == 0) normal grouping of links
+     *      with associated document, ($grouping > 0)
      *      no grouping done on data
      *
      * @return array associative array of results for the query performed
      */
     public function relatedRequest($url, $results_per_page, $limit = 0, 
-        $crawl_time = 0, $raw = 0)
+        $crawl_time = 0, $grouping = 0)
     {
+        $grouping = ($grouping > 0 ) ? 2 : 0;
         return (API_ACCESS) ? 
             $this->processQuery("", "related", $url, $results_per_page, 
                 $limit, $crawl_time, $raw) : NULL;

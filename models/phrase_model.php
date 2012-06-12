@@ -209,7 +209,8 @@ class PhraseModel extends ParallelModel
      *      the file cache or memcache. Otherwise, items will be recomputed
      *      and then potentially restored in cache
      * @param int $raw ($raw == 0) normal grouping, ($raw == 1)
-     *      no grouping done on data'
+     *      no grouping done on data also no summaries returned (only lookup
+     *      info), $raw > 1 return summaries but no grouping
      * @param array $queue_servers a list of urls of yioop machines which might
      *      be used during lookup
      * @param bool $guess_semantics whether to do query rewriting before lookup
@@ -660,7 +661,7 @@ class PhraseModel extends ParallelModel
      *  @param string $new_prefix what to change $start_with to
      *  @param string $suffix what to tack on to the end of the term if there is
      *      a match
-     *  @param string $not_contain
+     *  @param string $not_contain string match is not allowed to contain
      *  @param string $lang_tag what language the phrase must be in for the rule
      *      to apply
      *
@@ -779,9 +780,9 @@ class PhraseModel extends ParallelModel
      *      an attempt will be made to look up the results in either
      *      the file cache or memcache. Otherwise, items will be recomputed
      *      and then potentially restored in cache
-     * @param int $raw ($raw == 0) normal grouping, ($raw == 1)
-     *      no grouping done on data. If $raw > 0 no caching is done as will
-     *      likely come from a network query
+     * @param int $raw ($raw == 0) normal grouping, ($raw > 0)
+     *      no grouping done on data. if ($raw == 1) no lookups of summaries
+     *      done
      * @param array $queue_servers a list of urls of yioop machines which might
      *      be used during lookup
      * @param string $original_query if set, the original query that corresponds
@@ -807,8 +808,8 @@ class PhraseModel extends ParallelModel
             self::NUM_CACHE_PAGES;
         $start_slice = floor(($limit)/self::NUM_CACHE_PAGES) *
             self::NUM_CACHE_PAGES;
-        if(USE_CACHE && $raw == 0) {
-            $mem_tmp = "";
+        if(USE_CACHE) {
+            $mem_tmp = serialize($raw);
             foreach($word_structs as $word_struct) {
                 $mem_tmp .= serialize($word_struct["KEYS"]).
                     serialize($word_struct["QUOTE_POSITIONS"]) .
@@ -898,8 +899,18 @@ class PhraseModel extends ParallelModel
         $lookups = array();
         foreach($pages as $page) {
             if(isset($page[CrawlConstants::SUMMARY_OFFSET])) {
-                $lookups[$page[CrawlConstants::KEY] ] = 
-                    $page[CrawlConstants::SUMMARY_OFFSET];
+                if(is_array($page[CrawlConstants::SUMMARY_OFFSET])) {
+                    $lookups[$page[CrawlConstants::KEY] ] = 
+                        $page[CrawlConstants::SUMMARY_OFFSET];
+                }else {
+                    $machine_id = (isset($page[self::MACHINE_ID])) ?
+                        $page[self::MACHINE_ID] :$this->current_machine;
+                        $lookups[$page[CrawlConstants::KEY] ][] = 
+                            array($machine_id, $page[self::KEY],
+                                $page[self::CRAWL_TIME],
+                                $page[self::GENERATION],
+                                $page[self::SUMMARY_OFFSET]);
+                }
             }
         }
         if(QUERY_STATISTICS) {
@@ -936,7 +947,7 @@ class PhraseModel extends ParallelModel
             $format_time = microtime();
         }
         $results['PAGES'] = & $out_pages;
-        if(USE_CACHE && $raw  == 0) {
+        if(USE_CACHE) {
             $CACHE->set($summary_hash, $results);
         }
 
@@ -959,7 +970,8 @@ class PhraseModel extends ParallelModel
      *      results
      *      and then potentially restored in cache
      * @param int $raw ($raw == 0) normal grouping, ($raw == 1)
-     *      no grouping done on data
+     *      no grouping done on data also no summaries returned (only lookup
+     *      info), $raw > 1 return summaries but no grouping
      * @param array $queue_servers a list of urls of yioop machines which might
      *      be used during lookup
      * @param string $original_query if set, the orginal query that corresponds

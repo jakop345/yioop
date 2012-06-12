@@ -57,6 +57,7 @@ require_once BASE_DIR.'/lib/fetch_url.php';
 
 /**
  * Base class of models that need access to data from multiple queue servers
+ * Subclasses include @see CrawlModel and @see PhraseModel. 
  *
  * @author Chris Pollett
  *

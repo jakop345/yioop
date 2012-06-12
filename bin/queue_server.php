@@ -2078,7 +2078,6 @@ class QueueServer implements CrawlConstants, Join
             fwrite($fh, $first_line);
             foreach($sites as $site) {
                 list($url, $weight, $delay) = $site;
-echo $url;
                 $host_url = UrlParser::getHost($url);
                 $dns_lookup = $this->web_queue->dnsLookup($host_url);
                 if($dns_lookup) {

@@ -41,6 +41,10 @@ require_once BASE_DIR."/lib/crawl_constants.php";
  */
 require_once BASE_DIR."/lib/index_archive_bundle.php";
 /**
+ * Class used to manage open IndexArchiveBundle's while performing
+ * a query. Ensures an easy place to obtain references to these bundles
+ * and ensures only one object per bundle is instantiated in a Singleton-esque
+ * way.
  *
  * @author Chris Pollett
  *
@@ -50,7 +54,11 @@ require_once BASE_DIR."/lib/index_archive_bundle.php";
 class IndexManager implements CrawlConstants
 {
     /**
+     *  Returns a reference to the managed copy of an IndexArchiveBundle object
+     *  with a given timestamp
      *
+     *  @param string $index_name timestamp of desired IndexArchiveBundle
+     *  @return object the desired IndexArchiveBundle reference
      */
     static function getIndex($index_name)
     {
