@@ -259,7 +259,7 @@ class MediaWikiArchiveBundleIterator extends ArchiveBundleIterator
     function getNextTagData($tag)
     {
         while(stripos($this->buffer, "</$tag") === false) {
-            if(is_null($this->bz2_iterator) || $this->bz2_iterator->is_eof()) {
+            if(is_null($this->bz2_iterator) || $this->bz2_iterator->eof()) {
                 return false;
             }
             /*
@@ -269,8 +269,8 @@ class MediaWikiArchiveBundleIterator extends ArchiveBundleIterator
                want to skip over these false blocks and get back to real 
                blocks.
             */
-            while(!is_string($block = $this->bz2_iterator->next_block())) {
-                if($this->bz2_iterator->is_eof())
+            while(!is_string($block = $this->bz2_iterator->nextBlock())) {
+                if($this->bz2_iterator->eof())
                     return false;
             }
             $this->buffer .= $block;

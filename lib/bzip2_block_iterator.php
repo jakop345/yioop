@@ -1,35 +1,59 @@
 <?php
-
-/**
+/** 
+ *  SeekQuarry/Yioop --
+ *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
+ *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *
+ *  LICENSE:
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *  END LICENSE
+ *
+ * @author Shawn Tice, (docs added by Chris Pollett chris@pollett.org)
+ * @package seek_quarry
+ * @subpackage library
+ * @license http://www.gnu.org/licenses/ GPL3
+ * @link http://www.seekquarry.com/
+ * @copyright 2009 - 2012
+ * @filesource
  */
-function main()
-{
-    global $argv;
-    $path = $argv[1];
-    $prefix = isset($argv[2]) ? $argv[2] : 'rec';
-    $itr = new BZip2BlockIterator($path);
-    $i = 1;
-    while(($block = $itr->next_block($raw=true)) !== NULL) {
-        $rec_name = sprintf("%s%05d.bz2", $prefix, $i);
-        file_put_contents($rec_name, $block);
-        echo "Recoverd block {$i}\n";
-        $i++;
-    }
+
+if(!defined('BASE_DIR') && php_sapi_name() != 'cli') {
+    echo "BAD REQUEST"; exit();
 }
 
 /**
+ * This class is used to allow one to iterate through a Bzip2 file.
+ * The main advantage of using this class over the built-in bzip is that
+ * it can "remember" where it left off between serializations. So can
+ * continue where left off between web invocations. This is used in
+ * doing archive crawls of wiki dumps to allow the name server picks up where 
+ * it left off.
  *
+ * @author Shawn Tice, (some docs added by Chris Pollett chris@pollett.org)
+ * @package seek_quarry
  */
 class BZip2BlockIterator
 {
-    /** */
+    /** String to tell if file is a bz2 file*/
     const MAGIC = 'BZh';
-    /** */
+    /** String at the start of each bz2 block */
     const BLOCK_HEADER = "\x31\x41\x59\x26\x53\x59";
-    /** */
+    /** String at the end of each bz2 block*/
     const BLOCK_ENDMARK = "\x17\x72\x45\x38\x50\x90";
-
     /**
      *  Blocks are NOT byte-aligned, so the block header (and endmark) may show
      *  up shifted right by 0-8 bits in various places throughout the file. This
@@ -46,8 +70,10 @@ class BZip2BlockIterator
         |\xee\x48\xa7\x0a\x12 | \x77\x24\x53\x85\x09 | \xbb\x92\x29\xc2\x84
         |\x5d\xc9\x14\xe1\x42 | \x2e\xe4\x8a\x70\xa1
         /x';
-
     /**
+     *  Lookup table fpr the number of bits by which the magic 
+     *  number for the next block has been shifted right. Second
+     *  components of sub-arrays say whether block header or endmark
      *  @var array
      */
     static $header_info = array(
@@ -61,38 +87,47 @@ class BZip2BlockIterator
         "\x77" => array(4, false), "\xbb" => array(5, false),
         "\x5d" => array(6, false), "\x2e" => array(7, false)
     );
-
     /**
-     *
+     * How many bytes to read into buffer from bz2 stream in one go
      */
-    var $fd = null;
+    const BLOCK_SIZE = 8192;
     /**
-     *
+     * File handle for bz2 file
+     * @var resource
+     */
+    var $fd = NULL;
+    /**
+     * Byte offset into bz2 file
+     * @var int
      */
     var $file_offset = 0;
     /**
-     *
+     * Since block sizes are not constant used to store sufficiently many
+     * bytes so can properly extract next blocks
+     * @var string
      */
     var $buffer = '';
     /**
-     *
+     * Used to build and store a bz2 block from the file stream
+     * @var string
      */
     var $block = '';
     /**
-     *
+     * Stores the left over bits of a bz2 block
+     * @var int
      */
     var $bits = 0;
     /**
-     *
+     * Store how many left-over bits there are
+     * @var int
      */
     var $num_extra_bits = 0;
-    /**
-     *
-     */
-    var $shift = 0;
 
     /**
-     * @param string $path
+     * Creates a new iterator of a bz2 file by opening the file, doing a
+     * sanity check and then setting up the initial file_offset to
+     * where the data starts
+     * @param string $path file path of bz2 file
      */
     function __construct($path)
     {
@@ -110,6 +145,7 @@ class BZip2BlockIterator
     }
 
     /**
+     * Called by unserialize prior to execution
      */
     function __wakeup()
     {
@@ -118,13 +154,17 @@ class BZip2BlockIterator
     }
 
     /**
+     * Checks whether the current Bzip2 file has reached an end of file
+     * @return bool eof or not
      */
-    function is_eof()
+    function eof()
     {
         return feof($this->fd);
     }
 
     /**
+     * Used to close the file associated with this iterator
+     * @return bool whether the file close was successful
      */
     function close()
     {
@@ -132,12 +172,15 @@ class BZip2BlockIterator
     }
 
     /**
+     * Extracts the next bz2 block from the bzip2 file this iterator works
+     * on
+     * @param bool $raw if false then decompress the recovered block
      */
-    function next_block($raw = false)
+    function nextBlock($raw = false)
     {
         $recovered_block = NULL;
         while(!feof($this->fd)) {
-            $next_chunk = fread($this->fd, 8192);
+            $next_chunk = fread($this->fd, self::BLOCK_SIZE);
             $this->file_offset += strlen($next_chunk);
             $this->buffer .= $next_chunk;
 
@@ -150,11 +193,11 @@ class BZip2BlockIterator
                 /*
                     $pos is the position of the SECOND byte of the magic number
                     (plus some part of the first byte for a non-zero new_shift).
-                */
+                 */
                 $pos = $matches[0][1];
 
                 /*
-                     The new_shift is the number of bits by which the magic 
+                     The new_shift is the number of bits by which the magic
                       number for the next block has been shifted right.
                  */
                 list($new_shift, $is_start) =
@@ -184,7 +227,7 @@ class BZip2BlockIterator
                     $header_end = 6;
                     $new_block = '';
                     $new_header = substr($this->buffer, $pos, 6);
-                    self::pack_left($new_block, $new_bits, $new_header,
+                    self::packLeft($new_block, $new_bits, $new_header,
                         $new_num_extra_bits);
                 }
 
@@ -193,7 +236,7 @@ class BZip2BlockIterator
                         !$is_start && $new_block != self::BLOCK_ENDMARK) {
                     $unmatched = substr($this->buffer, 0, $pos + 6);
                     $keep = substr($this->buffer, $pos + 6);
-                    self::pack_left($this->block, $this->bits, $unmatched,
+                    self::packLeft($this->block, $this->bits, $unmatched,
                         $this->num_extra_bits);
                     continue;
                 }
@@ -203,7 +246,7 @@ class BZip2BlockIterator
                     block before adding the block trailer.
                 */
                 $block_tail = substr($this->buffer, 0, $pos - 1);
-                self::pack_left($this->block, $this->bits, $block_tail,
+                $this->packLeft($this->block, $this->bits, $block_tail,
                     $this->num_extra_bits);
 
                 /*
@@ -231,7 +274,7 @@ class BZip2BlockIterator
                 */
                 $trailer = "\x17\x72\x45\x38\x50\x90".
                     substr($this->block, 6, 4);
-                self::pack_left($this->block, $this->bits, $trailer,
+                $this->packLeft($this->block, $this->bits, $trailer,
                     $this->num_extra_bits);
                 if($this->num_extra_bits != 0) {
                     $this->block .= chr($this->bits);
@@ -247,7 +290,6 @@ class BZip2BlockIterator
                 $this->buffer = substr($this->buffer, $pos + $header_end);
 
                 $this->bits = $new_bits;
-                $this->shift = $new_shift;
                 $this->num_extra_bits = $new_num_extra_bits;
 
                 break;
@@ -258,7 +300,7 @@ class BZip2BlockIterator
                     have a chance to get the full header on the next round.
                 */
                 $unmatched = substr($this->buffer, 0, -6);
-                self::pack_left($this->block, $this->bits, $unmatched,
+                $this->packLeft($this->block, $this->bits, $unmatched,
                     $this->num_extra_bits);
                 $this->buffer = substr($this->buffer, -6);
             }
@@ -272,8 +314,15 @@ class BZip2BlockIterator
     }
 
     /**
+     * Computes a new bzip2 block portions and bits left over after adding 
+     * $bytes to the passed $block.
+     * 
+     * @param string &$block the block to add to
+     * @param int &$bits used to hold bits left over
+     * @param string $bytes what to add to the bzip block
+     * @param int $num_extra_bits how many extra bits there are
      */
-    static function pack_left(&$block, &$bits, $bytes, $num_extra_bits)
+    function packLeft(&$block, &$bits, $bytes, $num_extra_bits)
     {
         if($num_extra_bits == 0) {
             $block .= $bytes;
@@ -288,20 +337,30 @@ class BZip2BlockIterator
         }
     }
 
+}
+
+if(!function_exists("main")) {
     /**
+     * Command-line shell for testing the class
      */
-    static function hexdump($bytes)
+    function main()
     {
-        $out = array();
-        $bytes = str_split($bytes);
-        foreach($bytes as $byte) {
-            $out[] = sprintf("%02x", ord($byte));
+        global $argv;
+        $path = $argv[1];
+        $prefix = isset($argv[2]) ? $argv[2] : 'rec';
+        $itr = new BZip2BlockIterator($path);
+        $i = 1;
+        while(($block = $itr->next_block(true)) !== NULL) {
+            $rec_name = sprintf("%s%05d.bz2", $prefix, $i);
+            file_put_contents($rec_name, $block);
+            echo "Recovered block {$i}\n";
+            $i++;
         }
-        return implode(' ', $out);
+    }
+
+    // Only run main if this script is called directly from the command line.
+    if(isset($argv[0]) && realpath($argv[0]) == __FILE__) {
+        main();
     }
 }
 
-// Only run main if this script is called directly from the command line.
-if(isset($argv[0]) && realpath($argv[0]) == __FILE__) {
-    main();
-}
