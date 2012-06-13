@@ -38,7 +38,8 @@
  * @return String text_field Current value from the search box
  *
  */
-function askeyup(e, text_field) {
+function askeyup(e, text_field) 
+{
     var keynum;
     var term_array;
     var inputTerm = text_field.value;
@@ -133,7 +134,8 @@ function askeyup(e, text_field) {
  * To select an autosuggest value while up/down arrow keys are being used
  * and place in the search box
  */
-function setDisplay(cursor_pos, class_name)  {
+function setDisplay(cursor_pos, class_name)  
+{
     var astobj = document.getElementById("search-name");
     astobj.value = document.getElementById(cursor_pos).innerHTML;
     document.getElementById(cursor_pos).className = class_name;
@@ -164,7 +166,8 @@ function hover_display(liObj) {
 /**
  * Fetch words from the Trie and add to seachList with <li> </li> tags
  */
-function getValues(trie_array, parent_word, max_display) {
+function getValues(trie_array, parent_word, max_display) 
+{
     var list_string; 
     // Default to display top 6 words
     max_display = (typeof max_display == 'undefined') ?
@@ -195,7 +198,8 @@ function getValues(trie_array, parent_word, max_display) {
  * @param String term  what to look up
  * @return Array trie_array sub trie_array under term
  */
-function exist(trie_array, term) {
+function exist(trie_array, term)
+{
     for(var i = 1; i< term.length; i++) {
         if(trie_array == null){
             return false;
@@ -225,7 +229,8 @@ function exist(trie_array, term) {
  * @param String term - what to look up suggestions for
  * @sideeffect global Array search_list has list of first six entries
  */
-function autosuggest(trie_array, term) {
+function autosuggest(trie_array, term)
+{
     //default end_marker is space
     end_marker = (typeof end_marker == 'undefined') ? " " : end_marker;
     last_word = false;
@@ -271,7 +276,8 @@ function encode(str)
  * @param int i current offset into str
  * @return Array pair of Unicode character beginning at i and the next offset
  */
-function getUnicodeCharAndNextOffset(str, i) {
+function getUnicodeCharAndNextOffset(str, i)
+{
     var code = str.charCodeAt(i);
     if (isNaN(code)) {
         return '';

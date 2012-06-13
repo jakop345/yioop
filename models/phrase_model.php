@@ -341,7 +341,7 @@ class PhraseModel extends ParallelModel
 
             $out_results = $this->getSummariesByHash($word_structs,
                 $low, $phrase_num, $filter, $use_cache_if_allowed, $raw, 
-                $queue_servers, $phrase);
+                $queue_servers, $disjunct);
 
             if(QUERY_STATISTICS) {
                 $format_time = microtime();
@@ -427,13 +427,15 @@ class PhraseModel extends ParallelModel
      *  phrases, the weight that should be put on these query results, and
      *  which archive to use.
      *
-     * @param string $phrase string to extract struct from
+     * @param string &$phrase string to extract struct from, if the phrase
+     *  semantics is guessed or an if condition is processed the value of 
+     *  phrase will be altered. (Helps for feeding to network queries)
      * @param array $queue_servers a list of urls of yioop machines which might
      *      be used during lookup
      * @param bool $guess_semantics whether to do query rewriting before parse
      * @return array struct representing the conjunctive query
      */
-    function parseWordStructConjunctiveQuery($phrase, $queue_servers = array(),
+    function parseWordStructConjunctiveQuery(&$phrase, $queue_servers = array(),
         $guess_semantics = true)
     {
         $indent= "&nbsp;&nbsp;";
@@ -736,7 +738,7 @@ class PhraseModel extends ParallelModel
 
     /**
      * Evaluates any if: conditional meta-words in the query string to
-     * caluclate a new query string.
+     * calculate a new query string.
      *
      * @param string $phrase original query string
      * @return string query string after if: meta words have been evaluated
