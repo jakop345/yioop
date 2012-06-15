@@ -276,6 +276,22 @@ class SearchController extends Controller implements CrawlConstants
             $data['INDEX_INFO'] = "";
         }
 
+        $data['ELAPSED_TIME'] = changeInMicrotime($start_time);
+        if ($view == "serial") {
+            if(isset($data["PAGES"])) {
+                $count = count($data["PAGES"]);
+                for($i = 0; $i < $count; $i++) {
+                    unset($data["PAGES"][$i]["OUT_SCORE"]);
+                    $data["PAGES"][$i][self::SCORE]= "".
+                        round($data["PAGES"][$i][self::SCORE], 3);
+                    $data["PAGES"][$i][self::DOC_RANK]= "".
+                        round($data["PAGES"][$i][self::DOC_RANK], 3);
+                    $data["PAGES"][$i][self::RELEVANCE]= "".
+                        round($data["PAGES"][$i][self::RELEVANCE], 3);
+                }
+            }
+            echo serialize($data);
+        }
         $stats_file = CRAWL_DIR."/cache/".self::statistics_base_name.
                 $data['its'].".txt";
         $data["HAS_STATISTICS"] = file_exists($stats_file);
@@ -283,19 +299,8 @@ class SearchController extends Controller implements CrawlConstants
         if($view == "search" && $raw == 0 && isset($data['PAGES'])) {
             $data['PAGES'] = $this->makeImageGroups($data['PAGES']);
         }
-        $data['ELAPSED_TIME'] = changeInMicrotime($start_time);
-        if ($view != "serial") {
-            $data['INCLUDE_SCRIPTS'] = array("autosuggest");
-            $this->displayView($view, $data);
-        } else {
-            if(isset($data["PAGES"])) {
-                $count = count($data["PAGES"]);
-                for($i = 0; $i < $count; $i++) {
-                    unset($data["PAGES"][$i]["INDEX"]);
-                }
-            }
-            echo webencode(serialize($data));
-        }
+        $data['INCLUDE_SCRIPTS'] = array("autosuggest");
+        $this->displayView($view, $data);
     }
 
     /**

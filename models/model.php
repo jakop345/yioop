@@ -187,12 +187,9 @@ class Model implements CrawlConstants
                 $page[self::DESCRIPTION] = 
                     $this->getSnippets(strip_tags($page[self::DESCRIPTION]), 
                         $words, $description_length);
-                $page[self::DESCRIPTION] = substr(
-                    $page[self::DESCRIPTION], 0, $description_length);
 
                 $page[self::DESCRIPTION] = 
                     $this->boldKeywords($page[self::DESCRIPTION], $words);
-
             } else {
                 $page[self::DESCRIPTION] = 
                     substr(strip_tags(
@@ -222,67 +219,63 @@ class Model implements CrawlConstants
      *
      *  @param string $text haystack to extract snippet from
      *  @param array $words keywords used to make look in haystack
+     *  @param string $description_length length of the description desired
      *  @return string a concatenation of the extracted snippets of each word
      */
     function getSnippets($text, $words, $description_length)
     {
-        $snippets = array();
         $ellipsis = "";
         $len = mb_strlen($text);
         $offset = 0;
         $words = array_unique($words);
-        $word_locations = array();
-        $out_len = 0;
+        $words = array_filter($words);
+        $snippet_string = "";
         $i = 0;
         do
         {
             $new_offset = $offset;
+            $word_locations = array();
             foreach($words as $word) {
-                if($word != "") {
-                    $pos = mb_stripos($text, $word, $offset);
-                    
-                    if($pos !== false) {
-                        $word_locations[$pos] = $word;
-                        if($new_offset < $pos) {
-                            $new_offset = $pos;
-                        }
-                    } else {
-                        break 2;
+                $pos = mb_stripos($text, $word, $offset);
+                
+                if($pos !== false && $pos >= $offset) {
+                    $word_locations[$pos] = $word;
+                    if($new_offset < $pos) {
+                        $new_offset = $pos;
                     }
-                }
+                } 
             }
-            $offset = $new_offset + 1;
+            $high = 0;
             ksort($word_locations);
             foreach($word_locations as $pos => $word) {
+                if($pos < $high) continue;
                 $pre_low = ($pos >= SNIPPET_LENGTH_LEFT) ? 
                     $pos - SNIPPET_LENGTH_LEFT: 0;
-                if(!($low = mb_stripos($text, " ", $pre_low))) {
+                $low = mb_stripos($text, " ", $pre_low);
+                if($low > $pos) {
                     $low = $pre_low;
                 }
-
                 $pre_high = ($pos + SNIPPET_LENGTH_RIGHT <= $len ) ? 
                     $pos + SNIPPET_LENGTH_RIGHT: $len;
-                if(!($high = mb_stripos($text, " ", $pre_high))) {
+                $high = mb_stripos($text, " ", max($pre_high - 10, $pos));
+                if($high > $pre_high + 10){
                     $high = $pre_high;
                 }
-                
-                if( $out_len  < $description_length) {
-                    
-                    $str = mb_substr($text, $low, $high - $low);
-                    if(isset($snippets[$i]) && $snippets[$i] != "" && 
-                        !mb_stristr($str, $snippets[$i])) {
-                        $i++;
-                    }
-                    $snippets[$i] = $str;
-                    $out_len += strlen($str) + 3;
-                }
+                $snippet_string .= $ellipsis.
+                     mb_substr($text, $low, $high - $low);
+                $ellipsis = " ... ";
+                if(strlen($snippet_string) >= $description_length) break 2;
             }
-        } while($out_len < $description_length && $offset < $len);
+            $words = array_values($word_locations);
+            $offset = $new_offset + 1;
+        } while($offset < $len);
 
-        $snippet_string = implode("...", $snippets);
 
         if(strlen($snippet_string) < MIN_SNIPPET_LENGTH) {
-            $snippet_string = $text;
+            $snippet_string = substr($text, 0, $description_length);
+            if($high = mb_strripos($snippet_string, " ")) {
+                $snippet_string = substr($text, 0, $high);
+            }
         }
 
         return $snippet_string;

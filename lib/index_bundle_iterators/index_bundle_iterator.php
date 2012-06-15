@@ -131,7 +131,11 @@ abstract class IndexBundleIterator implements CrawlConstants
      abstract function findDocsWithWord();
 
     /**
+     *  Compares two arrays each containing a (generation, offset) pair.
      *
+     *  @param array $gen_doc1  first ordered pair
+     *  @param array $gen_doc1  second ordered pair
+     *  @return int -1,0,1 depending on which is bigger
      */
      function genDocOffsetCmp($gen_doc1, $gen_doc2) 
      {

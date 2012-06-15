@@ -343,10 +343,6 @@ class PhraseModel extends ParallelModel
                 $low, $phrase_num, $filter, $use_cache_if_allowed, $raw, 
                 $queue_servers, $disjunct);
 
-            if(QUERY_STATISTICS) {
-                $format_time = microtime();
-            }
-
             if(isset($out_results['PAGES']) &&
                 count($out_results['PAGES']) != 0) {
                 $out_count = 0;
@@ -366,7 +362,9 @@ class PhraseModel extends ParallelModel
                 }
             }
         }
-
+        if(QUERY_STATISTICS) {
+            $format_time = microtime();
+        }
         if(isset($results['PAGES'])){
             ksort($results['PAGES']);
             $results["PAGES"] = array_values($results["PAGES"]);
@@ -811,14 +809,8 @@ class PhraseModel extends ParallelModel
         $start_slice = floor(($limit)/self::NUM_CACHE_PAGES) *
             self::NUM_CACHE_PAGES;
         if(USE_CACHE) {
-            $mem_tmp = serialize($raw);
-            foreach($word_structs as $word_struct) {
-                $mem_tmp .= serialize($word_struct["KEYS"]).
-                    serialize($word_struct["QUOTE_POSITIONS"]) .
-                    serialize($word_struct["DISALLOW_KEYS"]) .
-                    $word_struct["WEIGHT"] .
-                    $word_struct["INDEX_NAME"];
-            }
+            $mem_tmp = serialize($raw).serialize($word_structs);
+
             $summary_hash = crawlHash($mem_tmp.":".$limit.":".$num);
             if($use_cache_if_allowed) {
                 $cache_success = true;
@@ -842,45 +834,47 @@ class PhraseModel extends ParallelModel
         $isLocal = ($queue_servers == array()) ||
             $this->isSingleLocalhost($queue_servers);
 
-        while($num_retrieved < $to_retrieve && is_object($query_iterator) &&
-            is_array($next_docs = 
-                $query_iterator->nextDocsWithWord()) ) {
-            foreach($next_docs as $doc_key => $doc_info) {
-                $pages[] = $doc_info;
-                $num_retrieved++;
+        if(is_object($query_iterator)) {
+            while($num_retrieved < $to_retrieve  &&
+                is_array($next_docs = 
+                    $query_iterator->nextDocsWithWord()) ) {
+                $pages = array_merge($pages, $next_docs);
+                $num_retrieved += count($next_docs);
             }
         }
-
+        $pages = array_values($pages);
         $result_count = count($pages);
 
-        // initialize scores
-        for($i = 0; $i < $result_count; $i++) {
-            $pages[$i]["OUT_SCORE"] = 0;
-        }
-        $subscore_fields = array(self::DOC_RANK, self::RELEVANCE,
-            self::PROXIMITY, self::SCORE);
-        $num_fields = count($subscore_fields);
-        // Compute Reciprocal Rank Fusion Score
-        $alpha = 600/$num_fields;
-        if(isset($pages[0])) {
-            foreach($subscore_fields as $field) {
-                orderCallback($pages[0], $pages[0], $field);
-                usort($pages, "orderCallback");
-                $score = 0;
-                for($i = 0; $i < $result_count; $i++) {
-                    if($i > 0) {
-                        if($pages[$i - 1][$field] != $pages[$i][$field]) {
-                            $score++;
-                        }
-                    }
-                    $pages[$i]["OUT_SCORE"] += $alpha/(60 + $score);
-                }
+        if($raw != 1) {
+            // initialize scores
+            for($i = 0; $i < $result_count; $i++) {
+                $pages[$i]["OUT_SCORE"] = 0;
             }
-            orderCallback($pages[0], $pages[0], "OUT_SCORE");
-        }
-        usort($pages, "orderCallback");
-        for($i = 0; $i < $result_count; $i++) {
-           $pages[$i][self::SCORE] = $pages[$i]["OUT_SCORE"];
+            $subscore_fields = array(self::DOC_RANK, self::RELEVANCE,
+                self::PROXIMITY, self::SCORE);
+            $num_fields = count($subscore_fields);
+            // Compute Reciprocal Rank Fusion Score
+            $alpha = 600/$num_fields;
+            if(isset($pages[0])) {
+                foreach($subscore_fields as $field) {
+                    orderCallback($pages[0], $pages[0], $field);
+                    usort($pages, "orderCallback");
+                    $score = 0;
+                    for($i = 0; $i < $result_count; $i++) {
+                        if($i > 0) {
+                            if($pages[$i - 1][$field] != $pages[$i][$field]) {
+                                $score++;
+                            }
+                        }
+                        $pages[$i]["OUT_SCORE"] += $alpha/(60 + $score);
+                    }
+                }
+                orderCallback($pages[0], $pages[0], "OUT_SCORE");
+            }
+            usort($pages, "orderCallback");
+            for($i = 0; $i < $result_count; $i++) {
+               $pages[$i][self::SCORE] = $pages[$i]["OUT_SCORE"];
+            }
         }
 
         if($num_retrieved < $to_retrieve) {
@@ -897,7 +891,6 @@ class PhraseModel extends ParallelModel
             $results['PAGES'] = & $pages;
             return $results;
         }
-
         $lookups = array();
         foreach($pages as $page) {
             if(isset($page[CrawlConstants::SUMMARY_OFFSET])) {

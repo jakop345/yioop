@@ -225,18 +225,18 @@ class NetworkIterator extends IndexBundleIterator
             $downloads = FetchUrl::getPages($sites, false, 0, NULL, self::URL,
                 self::PAGE, true);
         }
-
         $results = array();
         $count = count($downloads);
         $this->num_docs = 0;
         $in4 = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+
         $machine_times = AnalyticsManager::get("MACHINE_TIMES");
         $machine_times = ($machine_times) ? $machine_times . "<br />$in4" : 
             "$in4";
         for($j = 0; $j < $count; $j++) {
             $download = & $downloads[$j];
             if(isset($download[self::PAGE])) {
-                $pre_result = @unserialize(webdecode($download[self::PAGE]));
+                $pre_result = @unserialize($download[self::PAGE]);
                 if(!isset($pre_result["TOTAL_ROWS"]) || 
                     $pre_result["TOTAL_ROWS"] < $this->results_per_block) {
                     $this->more_flags[$lookup[$j]] = false;

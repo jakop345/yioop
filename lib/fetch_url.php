@@ -85,7 +85,8 @@ class FetchUrl implements CrawlConstants
         }
 
         //Set-up requests
-        for($i = 0; $i < count($sites); $i++) {
+        $num_sites = count($sites);
+        for($i = 0; $i < $num_sites; $i++) {
             if(isset($sites[$i][$key])) {
                 list($sites[$i][$key], $url, $headers) = 
                     self::prepareUrlHeaders($sites[$i][$key], $minimal);
@@ -144,11 +145,10 @@ class FetchUrl implements CrawlConstants
         if($timer) {
             crawlLog("  Page Request time ".(changeInMicrotime($start_time)));
         }
-
         $start_time = microtime();
 
         //Process returned pages
-        for($i = 0; $i < count($sites); $i++) {
+        for($i = 0; $i < $num_sites; $i++) {
             if(!$minimal && isset($ip_holder[$i]) ) {
                 rewind($ip_holder[$i]);
                 $header = fread($ip_holder[$i], 8192);
@@ -214,13 +214,11 @@ class FetchUrl implements CrawlConstants
             } //end big if
 
         } //end for
-
         if($timer) {
             crawlLog("  Get Page Content time ".
                 (changeInMicrotime($start_time)));
         }
         curl_multi_close($agent_handler);
-
         return $sites;
     }
 
