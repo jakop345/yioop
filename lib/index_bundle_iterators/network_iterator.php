@@ -262,11 +262,12 @@ class NetworkIterator extends IndexBundleIterator
                     }
                 }
                 $max_time = max($max_time, $pre_result['ELAPSED_TIME']);
-                $max_machine_times += $max_time;
+
                 $machine_times .= "ID_".$lookup[$j].": ".
                     $pre_result['ELAPSED_TIME']."&nbsp;&nbsp;";
             }
         }
+        $max_machine_times += $max_time;
         AnalyticsManager::set("MACHINE_TIMES", $machine_times);
         AnalyticsManager::set("MAX_MACHINE_TIMES", $max_machine_times);
         if($results == array()) {
