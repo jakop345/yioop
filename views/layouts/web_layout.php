@@ -139,8 +139,7 @@ class WebLayout extends Layout
         ?></script>
 
         </body>
-    </html>
-    <?php
+    </html><?php
     }
 }
 ?>

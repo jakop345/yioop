@@ -219,12 +219,16 @@ class NetworkIterator extends IndexBundleIterator
             }
             $i++;
         }
-
+        $net_times = AnalyticsManager::get("NET_TIMES");
+        $net_times = ($net_times) ? $net_times : 0;
+        $download_time = microtime();
         $downloads = array();
         if(count($sites) > 0) {
             $downloads = FetchUrl::getPages($sites, false, 0, NULL, self::URL,
                 self::PAGE, true);
         }
+        $net_times += changeInMicrotime($download_time);
+        AnalyticsManager::set("NET_TIMES", $net_times);
         $results = array();
         $count = count($downloads);
         $this->num_docs = 0;
@@ -233,6 +237,9 @@ class NetworkIterator extends IndexBundleIterator
         $machine_times = AnalyticsManager::get("MACHINE_TIMES");
         $machine_times = ($machine_times) ? $machine_times . "<br />$in4" : 
             "$in4";
+        $max_machine_times = AnalyticsManager::get("MAX_MACHINE_TIMES");
+        $max_machine_times = ($max_machine_times) ? $max_machine_times : 0;
+        $max_time = 0;
         for($j = 0; $j < $count; $j++) {
             $download = & $downloads[$j];
             if(isset($download[self::PAGE])) {
@@ -254,11 +261,14 @@ class NetworkIterator extends IndexBundleIterator
                         }
                     }
                 }
+                $max_time = max($max_time, $pre_result['ELAPSED_TIME']);
+                $max_machine_times += $max_time;
                 $machine_times .= "ID_".$lookup[$j].": ".
                     $pre_result['ELAPSED_TIME']."&nbsp;&nbsp;";
             }
         }
         AnalyticsManager::set("MACHINE_TIMES", $machine_times);
+        AnalyticsManager::set("MAX_MACHINE_TIMES", $max_machine_times);
         if($results == array()) {
             $results = -1;
         }

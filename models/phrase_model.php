@@ -409,7 +409,7 @@ class PhraseModel extends ParallelModel
         }
 
         if(QUERY_STATISTICS) {
-            $this->query_info['QUERY'] .= "<b>Format time</b>: ".
+            $this->query_info['QUERY'] .= "<b>Format Time</b>: ".
                 changeInMicrotime($format_time)."<br />";
             $this->query_info['ELAPSED_TIME'] = changeInMicrotime($start_time);
             $this->db->total_time += $this->query_info['ELAPSED_TIME'];
@@ -848,6 +848,7 @@ class PhraseModel extends ParallelModel
 
         if($raw != 1) {
             // initialize scores
+            $sort_start = microtime();
             for($i = 0; $i < $result_count; $i++) {
                 $pages[$i]["OUT_SCORE"] = 0;
             }
@@ -876,6 +877,7 @@ class PhraseModel extends ParallelModel
             for($i = 0; $i < $result_count; $i++) {
                $pages[$i][self::SCORE] = $pages[$i]["OUT_SCORE"];
             }
+            $sort_time = changeInMicrotime($sort_start);
         }
 
         if($num_retrieved < $to_retrieve) {
@@ -914,9 +916,23 @@ class PhraseModel extends ParallelModel
                 changeInMicrotime($lookup_time)."<br />";
             $machine_times = AnalyticsManager::get("MACHINE_TIMES");
             if($machine_times) {
-                $this->query_info['QUERY'] .= "$in3<b>Machine Times</b>:<br />".
+                $this->query_info['QUERY'] .= 
+                "$in3<b>Machine Sub-Times</b>:<br />".
                     $machine_times."<br />";
             }
+            $net_times = AnalyticsManager::get("NET_TIMES");
+            $max_machine_times = AnalyticsManager::get("MAX_MACHINE_TIMES");
+            if($net_times && $max_machine_times) {
+                $this->query_info['QUERY'] .= 
+                "$in3<b>Network Overhead Sub-Time</b>: ".
+                    ($net_times - $max_machine_times)."<br />";
+            }
+            if($sort_time) {
+                $this->query_info['QUERY'] .= 
+                "$in3<b>Merge-Rank Sub-Time</b>: ".
+                    $sort_time."<br />";
+            }
+
             $summaries_time = microtime();
         }
 
@@ -939,7 +955,7 @@ class PhraseModel extends ParallelModel
             }
         }
         if(QUERY_STATISTICS) {
-            $this->query_info['QUERY'] .= "$in2<b>Get Summaries time</b>: ".
+            $this->query_info['QUERY'] .= "$in2<b>Get Summaries Time</b>: ".
                 changeInMicrotime($summaries_time)."<br />";
             $format_time = microtime();
         }
