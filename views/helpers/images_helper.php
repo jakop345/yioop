@@ -76,7 +76,7 @@ class ImagesHelper extends Helper implements CrawlConstants
                     urlencode($page[self::URL]).
                     "&amp;its=".$page[self::CRAWL_TIME];
             } else {
-                $link = $page[self::URL];
+                $link = htmlentities($page[self::URL]);
             }
         ?>
             <a href="<?php e($link); ?>" rel="nofollow"

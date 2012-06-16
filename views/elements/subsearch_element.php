@@ -60,9 +60,10 @@ class SubsearchElement extends Element
             $data['MEDIA'] = "Web";
         }
     ?>
+
         <div class="subsearch" >
         <ul>
-        <?php
+            <?php
             foreach($media_links as $type => $link) {
                 if($type == $data['MEDIA']) {
                     e("<li><b>$type</b></li>");
@@ -78,9 +79,11 @@ class SubsearchElement extends Element
                     e("<li><a href='$link$query'>$type</a></li>");
                 }
             }
-        ?>
+            ?>
+
         </ul>
         </div>
+
     <?php
     }
 }

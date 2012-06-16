@@ -52,7 +52,7 @@ class PaginationHelper extends Helper
      * previous links
      *  @var int
      */
-    const MAX_PAGES_TO_SHOW = 11;
+    const MAX_PAGES_TO_SHOW = 10;
 
     /**
      * Draws a strip of links which begins with a previous
@@ -86,36 +86,45 @@ class PaginationHelper extends Helper
             $last_page = $first_page + self::MAX_PAGES_TO_SHOW;
         }
 
-        echo "<div class='pagination'><ul>";
-        if(0 < $num_earlier_pages) {
-            $prev_limit = ($num_earlier_pages - 1)*$results_per_page;
-            echo "<li><span class='end'>&laquo;".
-                "<a href='$base_url&amp;limit=$prev_limit' rel='nofollow'>".
-                tl('pagination_helper_previous')."</a></span></li>";
-        }
-        if(MOBILE) {
-            if(0 < $num_earlier_pages && $num_earlier_pages < $total_pages - 1){
-                e("<li><span class='end'>--</span></li>");
-            }
-        } else {
-            for($i=$first_page; $i < $last_page; $i++) {
-                 if($i == $num_earlier_pages) {
-                    echo "<li><span class='item'>$i</span></li>";
-                 } else {
-                    $cur_limit = $i * $results_per_page;
-                    echo "<li><a class='item' href='$base_url".
-                        "&amp;limit=$cur_limit' rel='nofollow'>$i</a></li>";
-                 }
-            }
-        }
-        if($num_earlier_pages < $total_pages - 1) {
-            $next_limit = ($num_earlier_pages + 1)*$results_per_page;
-            echo "<li><span class='other end'><a href='$base_url".
-                "&amp;limit=$next_limit' rel='nofollow'>".
-                tl('pagination_helper_next')."</a>&raquo;</span></li>";
-        }
+        ?>
 
-        echo "</ul></div>";
+            <div class='pagination'>
+                <ul>
+                    <?php
+            if(0 < $num_earlier_pages) {
+                $prev_limit = ($num_earlier_pages - 1)*$results_per_page;
+                echo "<li><span class='end'>&laquo;".
+                    "<a href='$base_url&amp;limit=$prev_limit' rel='nofollow'>".
+                    tl('pagination_helper_previous')."</a></span></li>";
+            }
+            if(MOBILE) {
+                if(0 < $num_earlier_pages && 
+                    $num_earlier_pages < $total_pages - 1){
+                    e("<li><span class='end'>--</span></li>");
+                }
+            } else {
+                for($i=$first_page; $i < $last_page; $i++) {
+                     $k = $i+1;
+                     if($i == $num_earlier_pages) {
+                        echo "<li><span class='item'>$k</span></li>";
+                     } else {
+                        $cur_limit = $i * $results_per_page;
+                        echo "<li><a class='item' href='$base_url".
+                            "&amp;limit=$cur_limit' rel='nofollow'>$k</a></li>";
+                     }
+                }
+            }
+            if($num_earlier_pages < $total_pages - 1) {
+                $next_limit = ($num_earlier_pages + 1)*$results_per_page;
+                echo "<li><span class='other end'><a href='$base_url".
+                    "&amp;limit=$next_limit' rel='nofollow'>".
+                    tl('pagination_helper_next')."</a>&raquo;</span></li>";
+            }
+            ?>
+
+                </ul>
+            </div>
+        <?php
     }
 
 }

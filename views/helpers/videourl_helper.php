@@ -59,8 +59,10 @@ class VideourlHelper extends Helper
         if(substr($url, 0, 3) == "url") {
             $link_url_parts = explode("|", $url);
             if(count($link_url_parts) > 1) {
-                $url = $link_url_parts[1];
+                $url = htmlentities($link_url_parts[1]);
             }
+        } else {
+            $url = htmlentities($url);
         }
         if(stripos($url, "http://www.youtube.com/watch?v=") !== false) {
             $id = substr($url, 31, 11);

@@ -53,23 +53,26 @@ class FooterElement extends Element
     public function render($data)
     {
     ?>
-        <div>
-        - <a href="./blog.php"><?php 
-        e(tl('footer_element_blog')); ?></a> -
-        <a href="./privacy.php"><?php 
-        e(tl('footer_element_privacy')); ?></a> -
-        <a href="./bot.php"><?php 
-        e(tl('footer_element_bot')); ?></a> - <?php if(MOBILE) {
-            e('<br /> - ');
-        }
-        ?><a href="http://www.seekquarry.com/"><?php
-        e(tl('footer_element_developed_seek_quarry')); ?></a> -
-        </div>
-        <div>
-        (c) 2012 Yioop! - 
-        <a href="http://www.yioop.com/"><?php
-        e(tl('footer_element_php_search_engine')); ?></a>
-        </div>
+
+            <div>
+            - <a href="./blog.php"><?php 
+            e(tl('footer_element_blog')); ?></a> -
+            <a href="./privacy.php"><?php 
+            e(tl('footer_element_privacy')); ?></a> -
+            <a href="./bot.php"><?php 
+            e(tl('footer_element_bot')); ?></a> - <?php if(MOBILE) {
+                e('<br /> - ');
+            }
+            ?>
+
+            <a href="http://www.seekquarry.com/"><?php
+            e(tl('footer_element_developed_seek_quarry')); ?></a> -
+            </div>
+            <div>
+            (c) 2012 Yioop! - <a href="http://www.yioop.com/"><?php
+            e(tl('footer_element_php_search_engine')); 
+            ?></a>
+            </div>
     <?php
     }
 }

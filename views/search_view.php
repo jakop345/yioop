@@ -73,52 +73,65 @@ class SearchView extends View implements CrawlConstants
      *
      */
     public function renderView($data) 
-    {
+    { 
         $data['LAND'] = (!isset($data['PAGES'])) ? 'landing-' : '';
-        if(SIGNIN_LINK || SUBSEARCH_LINK) {
-            ?>
-            <div class="<?php e($data['LAND']);?>topbar"><?php
+        if(SIGNIN_LINK || SUBSEARCH_LINK) {?>
+
+
+        <div class="<?php e($data['LAND']);?>topbar"><?php
             $this->subsearchElement->render($data);
             $this->signinElement->render($data);
             ?>
-            </div><?php
+
+        </div>
+
+        <?php
         }
         $logo = "resources/yioop.png";
-        if(!isset($data['PAGES'])) {
-            e('<div class="landing">');
+        if(!isset($data['PAGES'])) {?>
+
+        <div class="landing">
+        <?php
         } else if(MOBILE) {
             $logo = "resources/m-yioop.png";
         }
         ?>
+
         <h1 class="logo"><a href="./?YIOOP_TOKEN=<?php 
             e($data['YIOOP_TOKEN'])?>"><img 
-            src="<?php e($logo); ?>" alt="<?php e(tl('search_view_title')); ?>"
-            /></a></h1>
+            src="<?php e($logo); ?>" alt="<?php e(tl('search_view_title'));
+                 ?>"
+            /></a>
+        </h1>
         <?php
-        if(isset($data['PAGES'])) {
-            e('<div class="serp">');
+        if(isset($data['PAGES'])) {?>
+
+        <div class="serp">
+        <?php
         }
         ?>
+
         <div class="searchbox">
-        <form id="searchForm" method="get" action='?'>
-        <p>
-        <input type="hidden" name="YIOOP_TOKEN" value="<?php 
-            e($data['YIOOP_TOKEN']); ?>" />
-        <input type="hidden" name="its" value="<?php e($data['its']); ?>" />
-        <input type="text" <?php if(WORD_SUGGEST) { ?>
-            autocomplete="off"  onkeyup="askeyup(event,this)" 
-            <?php } ?>
-            title="<?php e(tl('search_view_input_label')); ?>" 
-            id="search-name" name="q" value="<?php if(isset($data['QUERY'])) {
-            e(urldecode($data['QUERY']));} ?>" 
-            placeholder="<?php e(tl('search_view_input_placeholder')); ?>" />
-        <button class="buttonbox" type="submit"><?php if(MOBILE) {
-                e('>');
-            } else {
-            e(tl('search_view_search')); } ?></button>
-        </p>
-        </form>
-            </div>
+            <form id="searchForm" method="get" action='?'>
+            <p>
+            <input type="hidden" name="YIOOP_TOKEN" value="<?php 
+                e($data['YIOOP_TOKEN']); ?>" />
+            <input type="hidden" name="its" value="<?php e($data['its']); ?>" />
+            <input type="text" <?php if(WORD_SUGGEST) { ?>
+                autocomplete="off"  onkeyup="askeyup(event,this)" 
+                <?php } ?>
+                title="<?php e(tl('search_view_input_label')); ?>" 
+                id="search-name" name="q" value="<?php 
+                if(isset($data['QUERY'])) {
+                    e(urldecode($data['QUERY']));} ?>" 
+                placeholder="<?php e(tl('search_view_input_placeholder')); ?>"/>
+            <button class="buttonbox" type="submit"><?php if(MOBILE) {
+                    e('>');
+                } else {
+                e(tl('search_view_search')); } ?></button>
+            </p>
+            </form>
+        </div>
         <div id="asdropdown"> 
             <ul id="aslist" class="autoresult">
             </ul>
@@ -126,8 +139,10 @@ class SearchView extends View implements CrawlConstants
         <?php
         if(isset($data['PAGES'])) {
             ?>
-            </div>
-            <div class="serp-results">
+
+        </div>
+
+        <div class="serp-results">
             <h2><?php 
                 if(MOBILE) {
                 } else {
@@ -140,18 +155,19 @@ class SearchView extends View implements CrawlConstants
                 }
             ?></h2>
             <?php
-            foreach($data['PAGES'] as $page) {?>
-                <div class='result'>
+            foreach($data['PAGES'] as $page) {
+            ?><div class='result'>
                 <?php if(isset($page['IMAGES'])) {
                     $image_query = "?YIOOP_TOKEN={$data['YIOOP_TOKEN']}".
                             "&amp;c=search&amp;q={$data['QUERY']}";
                     $this->imagesHelper->render($page['IMAGES'], $image_query);
                     continue;
                 }?>
+
                 <h2>
                 <a href="<?php if(isset($page[self::TYPE]) 
                     && $page[self::TYPE] != "link") {
-                        e($page[self::URL]); 
+                        e(htmlentities($page[self::URL])); 
                     } else {
                         e( strip_tags($page[self::TITLE]));
                     } ?>" rel="nofollow"><?php
@@ -166,18 +182,20 @@ class SearchView extends View implements CrawlConstants
                     }
                     $check_video = true;
                 }
-                ?></a></h2>
+                ?></a>
+                </h2>
                 <?php if($check_video) {
                     $this->videourlHelper->render($page[self::URL]);
                 }
                 ?>
+
                 <p><?php if(!isset($page[self::ROBOT_METAS]) || 
                     !in_array("NOSNIPPET", $page[self::ROBOT_METAS])) {
                         echo $this->displayresultsHelper->
                             render($page[self::DESCRIPTION]); 
                     }?></p>
                 <p class="echolink" ><?php if(isset($page[self::URL])){
-                    e(substr($page[self::URL],0, 200)." ");}
+                    e(htmlentities(substr($page[self::URL],0, 200))." ");}
                     e(tl('search_view_rank', 
                         number_format($page[self::DOC_RANK], 2)));
                     e(tl('search_view_relevancy',
@@ -190,7 +208,8 @@ class SearchView extends View implements CrawlConstants
                         !(in_array("NOARCHIVE", $page[self::ROBOT_METAS]) ||
                           in_array("NONE", $page[self::ROBOT_METAS])))) {
                     ?>
-                        <a href="?YIOOP_TOKEN=<?php e($data['YIOOP_TOKEN']);
+
+                    <a href="?YIOOP_TOKEN=<?php e($data['YIOOP_TOKEN']);
                             ?>&amp;c=search&amp;a=cache&amp;q=<?php 
                             e($data['QUERY']); ?>&amp;arg=<?php 
                             e(urlencode($page[self::URL])); 
@@ -208,7 +227,8 @@ class SearchView extends View implements CrawlConstants
                     <?php 
                     }
                     if(SIMILAR_LINK) { 
-                    ?> 
+                    ?>
+
                     <a href="?YIOOP_TOKEN=<?php e($data['YIOOP_TOKEN']);
                         ?>&amp;c=search&amp;a=related&amp;arg=<?php 
                         e(urlencode($page[self::URL])); ?>&amp;<?php
@@ -220,7 +240,8 @@ class SearchView extends View implements CrawlConstants
                     }
                     if(IN_LINK) { 
                     ?>
-                        <a href="?YIOOP_TOKEN=<?php e($data['YIOOP_TOKEN']);
+
+                    <a href="?YIOOP_TOKEN=<?php e($data['YIOOP_TOKEN']);
                         ?>&amp;c=search&amp;q=<?php 
                         e(urlencode("link:".$page[self::URL])); ?>&amp;<?php
                         ?>its=<?php e($page[self::CRAWL_TIME]); ?>" 
@@ -229,42 +250,54 @@ class SearchView extends View implements CrawlConstants
                     ?></a>.
                     <?php 
                     }
-                    if(IP_LINK) { 
-                    ?>
-                    <?php if(isset($page[self::IP_ADDRESSES])){
-                          foreach($page[self::IP_ADDRESSES] as $address) {?> 
-                            <a href="?YIOOP_TOKEN=<?php e($data['YIOOP_TOKEN']);
-                                ?>&amp;c=search&amp;q=<?php
-                                e(urlencode('ip:'.$address));?>&amp;<?php
-                                ?>its=<?php e($data['its']); ?>" 
-                                rel='nofollow'>IP:<?php 
-                                e("$address");?></a>. <?php 
-                          } 
-                        }?></p>
+                    if(IP_LINK && isset($page[self::IP_ADDRESSES])){
+                    foreach($page[self::IP_ADDRESSES] as $address) {?>
+
+                    <a href="?YIOOP_TOKEN=<?php e($data['YIOOP_TOKEN']);
+                            ?>&amp;c=search&amp;q=<?php
+                            e(urlencode('ip:'.$address));?>&amp;<?php
+                            ?>its=<?php e($data['its']); ?>" 
+                            rel='nofollow'>IP:<?php 
+                            e("$address");?></a>. <?php 
+                      } 
+                    }?>
+
+                </p>
                 <?php
-                    }
                 } ?>
-                </div>
+
+            </div>
 
             <?php 
             } //end foreach
             $this->paginationHelper->render(
                 $data['PAGING_QUERY']."&amp;YIOOP_TOKEN=".$data['YIOOP_TOKEN'], 
                 $data['LIMIT'], $data['RESULTS_PER_PAGE'], $data['TOTAL_ROWS']);
-            e("</div>");
+            ?>
+
+        </div>
+        <?php
         }
-        ?><div class="landing-footer">
+        ?>
+
+        <div class="landing-footer">
             <div><b><?php e($data['INDEX_INFO']);?></b> <?php
-            if(isset($data["HAS_STATISTICS"]) && $data["HAS_STATISTICS"]) { ?>
-            [<a href="index.php?YIOOP_TOKEN=<?php e($data['YIOOP_TOKEN']);
+            if(isset($data["HAS_STATISTICS"]) && $data["HAS_STATISTICS"]) { 
+            ?>[<a href="index.php?YIOOP_TOKEN=<?php e($data['YIOOP_TOKEN']);
                 ?>&amp;c=statistics&amp;its=<?php e($data['its']);?>"><?php 
                 e(tl('search_view_more_statistics')); ?></a>]
-            <?php }?>
-            </div>
-            <?php  $this->footerElement->render($data);?>
-        </div><?php
-        if(!isset($data['PAGES'])) {
-            e("</div><div class='landing-spacer'></div>");
+            <?php 
+            }
+            ?></div><?php  $this->footerElement->render($data);?>
+
+        </div>
+        <?php
+        if(!isset($data['PAGES'])) {?>
+
+        </div>
+
+        <div class='landing-spacer'></div>
+        <?php
         }
 
     }

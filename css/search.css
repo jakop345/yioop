@@ -29,14 +29,14 @@
  * @copyright 2009 - 2012
  * @filesource
  */
- 
- /*
+
+/*
     search.css
-    
+
     Main stylesheet for Yioop search engine
     
     Contributors: Chris Pollett
- */ 
+ */
 
 /*
    We begin with some generic global styles
@@ -333,7 +333,8 @@ body.mobile
     width:100%;
 }
 
-.mobile .topbar, .mobile .landing-topbar
+.mobile .topbar,
+.mobile .landing-topbar
 {
     background: #DDD;
     background: -moz-linear-gradient(top, #FFF 0%,#EEF 30%,#EEF 70%, #FFF 100%);
@@ -619,7 +620,9 @@ body.mobile
    Styles for footers on various pages
  */
 
-.setting-footer, .signin-exit, .landing-footer
+.setting-footer,
+.signin-exit,
+.landing-footer
 {
     clear:both;
     margin-top: 0.25in;
@@ -680,14 +683,16 @@ body.mobile
 /*
    Styles for the login and settings pages
  */
-.html-ltr .login, .html-ltr .settings
+.html-ltr .login,
+.html-ltr .settings
 {
     font-size: 16pt;
     position:relative;
     left:2.25in;
 }
 
-.html-rtl .login, .html-rtl .settings
+.html-rtl .login,
+.html-rtl .settings
 {
     font-size: 16pt;
     position:relative;
@@ -700,7 +705,9 @@ body.mobile
     font-size:16pt;
 }
 
-.mobile .login, .mobile .settings, .mobile .statistics
+.mobile .login,
+.mobile .settings,
+.mobile .statistics
 {
     font-size: 14pt;
     position: relative;
@@ -708,12 +715,16 @@ body.mobile
     right: 10px;
 }
 
-.settings button, .settings select, .login button
+.settings button,
+.settings select,
+.login button
 {
     font-size: 16pt;
 }
 
-.mobile .settings button, .mobile .settings select, .mobile .login button
+.mobile .settings button,
+.mobile .settings select,
+.mobile .login button
 {
     font-size: 14pt;
 }
@@ -945,7 +956,8 @@ body.mobile
     margin-bottom: 10px
 }
 
-.html-ltr .pagination ul, .html-ltr .pagination ul li
+.html-ltr .pagination ul,
+.html-ltr .pagination ul li
 {
     font-size: 18pt;
 
@@ -954,7 +966,8 @@ body.mobile
     padding-right: 10px;
 }
 
-.html-rtl .pagination ul, .html-rtl .pagination ul li
+.html-rtl .pagination ul,
+.html-rtl .pagination ul li
 {
     font-size: 18pt;
 
@@ -1373,27 +1386,35 @@ body.mobile
 {
     font-size:12pt;
 }
-.html-ltr .roletable, .html-ltr .roletable th, .html-ltr .roletable td
+.html-ltr .roletable,
+.html-ltr .roletable th,
+.html-ltr .roletable td
 {
     margin-left: .2in;
     padding: 1px;
     border: 1px solid black;
 }
 
-.html-rtl .roletable, .html-rtl .roletable th, .html-rtl .roletable td
+.html-rtl .roletable,
+.html-rtl .roletable th,
+.html-rtl .roletable td
 {
     margin-right: .2in;
     padding: 1px;
     border: 1px solid black;
 }
 
-.html-ltr .localetable, .html-ltr .localetable th, .html-ltr .localetable td
+.html-ltr .localetable,
+.html-ltr .localetable th,
+.html-ltr .localetable td
 {
     margin-left: .2in;
     border: 1px ridge black;
 }
 
-.html-rtl .localetable, .html-rtl .localetable th, .html-rtl .localetable td
+.html-rtl .localetable,
+.html-rtl .localetable th,
+.html-rtl .localetable td
 {
     margin-right: .2in;
     border: 1px ridge black;
@@ -1438,33 +1459,44 @@ body.mobile
     z-index: 2;
 }
 
-.crawlstable, .mixestable, .crawlstable th, .mixestable th, 
-.crawlstable td, .mixestable td, .filetypestable
+.crawlstable,
+.mixestable,
+.crawlstable th,
+.mixestable th,
+.crawlstable td,
+.mixestable td,
+.filetypestable
 {
     border: 1px ridge black;
     padding: 2px;
 }
 
-.crawlstable th,  .mixestable th, .crawlstable td, .mixestable td,
+.crawlstable th,
+.mixestable th,
+.crawlstable td,
+.mixestable td,
 .filetypestable td
 {
     border: 1px ridge black;
     padding: 2px;
 }
 
-.html-ltr .filetypestable, .html-ltr .ftypesall td
+.html-ltr .filetypestable,
+.html-ltr .ftypesall td
 {
    margin-left: .3in;
    vertical-align: top;
 }
 
-.html-rtl  .filetypestable, .html-rtl .ftypesall td
+.html-rtl  .filetypestable,
+.html-rtl .ftypesall td
 {
    margin-right: .3in;
    vertical-align: top;
 }
 
-.mobile .filetypestable, .mobile .ftypesall td
+.mobile .filetypestable,
+.mobile .ftypesall td
 {
    margin-left: 2px;
    margin-right: 2px;
@@ -1481,7 +1513,9 @@ body.mobile
     text-align: left;
 }
 
-.machinetable, .machinetable th, .machinetable td
+.machinetable,
+.machinetable th,
+.machinetable td
 {
     border: 1px ridge black;
     margin: 2px;
@@ -1493,7 +1527,10 @@ body.mobile
     border: 1px ridge black;
 }
 
-.translatetable, .translatetable th, .translatetable td, .filetypestable td
+.translatetable,
+.translatetable th,
+.translatetable td,
+.filetypestable td
 {
     border: 1px ridge black;
 }
@@ -1502,7 +1539,9 @@ body.mobile
 {
    width:100%;
 }
-.metawordstable, .metawordstable th, .metawordstable td
+.metawordstable,
+.metawordstable th,
+.metawordstable td
 {
     border: 1px ridge black;
 }
@@ -1535,7 +1574,9 @@ body.mobile
 {
    width:100%;
 }
-.indexingplugintable, .indexingplugintable th, .indexingplugintable td
+.indexingplugintable,
+.indexingplugintable th,
+.indexingplugintable td
 {
     border: 1px ridge black;
     text-align: center;

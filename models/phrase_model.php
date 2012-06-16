@@ -838,10 +838,11 @@ class PhraseModel extends ParallelModel
             while($num_retrieved < $to_retrieve  &&
                 is_array($next_docs = 
                     $query_iterator->nextDocsWithWord()) ) {
-                $pages = array_merge($pages, $next_docs);
+                $pages += $next_docs;
                 $num_retrieved += count($next_docs);
             }
         }
+
         $pages = array_values($pages);
         $result_count = count($pages);
 
@@ -893,15 +894,15 @@ class PhraseModel extends ParallelModel
         }
         $lookups = array();
         foreach($pages as $page) {
+            $key = $page[CrawlConstants::KEY];
             if(isset($page[CrawlConstants::SUMMARY_OFFSET])) {
                 if(is_array($page[CrawlConstants::SUMMARY_OFFSET])) {
-                    $lookups[$page[CrawlConstants::KEY] ] = 
-                        $page[CrawlConstants::SUMMARY_OFFSET];
+                    $lookups[$key] = $page[CrawlConstants::SUMMARY_OFFSET];
                 }else {
                     $machine_id = (isset($page[self::MACHINE_ID])) ?
                         $page[self::MACHINE_ID] :$this->current_machine;
-                        $lookups[$page[CrawlConstants::KEY] ][] = 
-                            array($machine_id, $page[self::KEY],
+                        $lookups[$key][] = 
+                            array($machine_id, $key,
                                 $page[self::CRAWL_TIME],
                                 $page[self::GENERATION],
                                 $page[self::SUMMARY_OFFSET]);
@@ -918,6 +919,7 @@ class PhraseModel extends ParallelModel
             }
             $summaries_time = microtime();
         }
+
         $summaries = $this->getCrawlItems($lookups, $queue_servers);
         $out_pages = array();
         foreach($pages as $page) {
@@ -945,7 +947,6 @@ class PhraseModel extends ParallelModel
         if(USE_CACHE) {
             $CACHE->set($summary_hash, $results);
         }
-
         return $results;
     }
 

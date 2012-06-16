@@ -52,33 +52,33 @@ class SigninElement extends Element
     public function render($data)
     {
     ?>
+
         <div class="userNav" >
         <ul>
         <?php
-        if(WEB_ACCESS) { ?>
-        <li><a href="?c=settings&amp;YIOOP_TOKEN=<?php 
+        if(WEB_ACCESS) {
+            ?>    <li><a href="?c=settings&amp;YIOOP_TOKEN=<?php 
                 e($data['YIOOP_TOKEN'])?>&amp;l=<?php
                 e(getLocaleTag()); 
                 e((isset($data['its'])) ? '&amp;its='.$data['its'] : '');
                 ?>"><?php 
-            e(tl('signin_element_settings')); ?></a></li>
-        <?php }
+            e(tl('signin_element_settings')); ?></a></li><?php
+        }
         if(SIGNIN_LINK) {
-            if(!isset($_SESSION['USER_ID'])) { ?>
-                <li><a href="?c=admin"><?php 
-                    e(tl('signin_element_signin')); ?></a></li>
-            <?php 
+            if(!isset($_SESSION['USER_ID'])) { 
+                ?><li><a href="?c=admin"><?php 
+                    e(tl('signin_element_signin')); ?></a></li><?php 
             } else {
-            ?>
-                <li><a href="?c=admin&amp;YIOOP_TOKEN=<?php 
+                ?><li><a href="?c=admin&amp;YIOOP_TOKEN=<?php 
                     e($data['YIOOP_TOKEN'])?>"><?php 
-                        e(tl('signin_element_admin')); ?></a></li>  
-                <li><a href="?c=search&amp;a=signout"><?php 
+                        e(tl('signin_element_admin')); ?></a></li><?php
+                ?><li><a href="?c=search&amp;a=signout"><?php 
                     e(tl('signin_element_signout')); ?></a></li>
             <?php 
             }
         } 
         ?>
+
         </ul>
         </div>
     <?php
