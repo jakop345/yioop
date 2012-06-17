@@ -235,8 +235,8 @@ class NetworkIterator extends IndexBundleIterator
         $in4 = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
 
         $machine_times = AnalyticsManager::get("MACHINE_TIMES");
-        $machine_times = ($machine_times) ? $machine_times . "<br />$in4" : 
-            "$in4";
+        $indent = ($machine_times) ? "<br />$in4" : $in4;
+        $machine_times = ($machine_times) ? $machine_times: "";
         $max_machine_times = AnalyticsManager::get("MAX_MACHINE_TIMES");
         $max_machine_times = ($max_machine_times) ? $max_machine_times : 0;
         $max_time = 0;
@@ -263,8 +263,9 @@ class NetworkIterator extends IndexBundleIterator
                 }
                 $max_time = max($max_time, $pre_result['ELAPSED_TIME']);
 
-                $machine_times .= "ID_".$lookup[$j].": ".
+                $machine_times .= $indent. "ID_".$lookup[$j].": ".
                     $pre_result['ELAPSED_TIME']."&nbsp;&nbsp;";
+                $indent = "";
             }
         }
         $max_machine_times += $max_time;
