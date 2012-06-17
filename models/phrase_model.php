@@ -917,19 +917,19 @@ class PhraseModel extends ParallelModel
             $machine_times = AnalyticsManager::get("MACHINE_TIMES");
             if($machine_times) {
                 $this->query_info['QUERY'] .= 
-                "$in3<b>Machine Sub-Times</b>:<br />".
+                "$in3<i>Machine Sub-Times</i>:<br />".
                     $machine_times."<br />";
             }
             $net_times = AnalyticsManager::get("NET_TIMES");
             $max_machine_times = AnalyticsManager::get("MAX_MACHINE_TIMES");
             if($net_times && $max_machine_times) {
                 $this->query_info['QUERY'] .= 
-                "$in3<b>Network Overhead Sub-Time</b>: ".
+                "$in3<i>Network Overhead Sub-Time</i>: ".
                     ($net_times - $max_machine_times)."<br />";
             }
             if($sort_time) {
                 $this->query_info['QUERY'] .= 
-                "$in3<b>Merge-Rank Sub-Time</b>: ".
+                "$in3<i>Merge-Rank Sub-Time</i>: ".
                     $sort_time."<br />";
             }
 

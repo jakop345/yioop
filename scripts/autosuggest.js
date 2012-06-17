@@ -134,7 +134,7 @@ function askeyup(e, text_field)
  * To select an autosuggest value while up/down arrow keys are being used
  * and place in the search box
  */
-function setDisplay(cursor_pos, class_name)  
+function setDisplay(cursor_pos, class_name)
 {
     var astobj = document.getElementById("search-name");
     astobj.value = document.getElementById(cursor_pos).innerHTML;
@@ -144,7 +144,8 @@ function setDisplay(cursor_pos, class_name)
 /**
  * To select a value onclick from the dropdownlist and place in the search box 
  */
-function aslitem_click(liObj) {
+function aslitem_click(liObj)
+{
     var results_dropdown = document.getElementById("aslist");
     var astobj = document.getElementById("search-name");
     astobj.value = liObj.innerHTML;
@@ -153,16 +154,17 @@ function aslitem_click(liObj) {
 }
 
 /**
- * To hanble the cursor hover
+ * To handle the cursor hover
  */
-function hover_display(liObj) {
+function hover_display(liObj)
+{
     if (cursor_pos > -1) { 
         document.getElementById(cursor_pos).className = "unselected";
     }
     cursor_pos = liObj.id;
     liObj.className = "selected";
 }
-    
+
 /**
  * Fetch words from the Trie and add to seachList with <li> </li> tags
  */
@@ -311,26 +313,21 @@ function getUnicodeCharAndNextOffset(str, i)
  */
 function loadTrie() 
 {
-    var xmlhttp;
-    if (window.XMLHttpRequest) {
-        // code for IE7i+, Firefox, Chrome, Opera, Safari
-        xmlhttp=new XMLHttpRequest();
-    } else {
-        // code for IE6, IE5
-        xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-    }
-    xmlhttp.onreadystatechange = function() {
-        if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-            trie = JSON.parse(xmlhttp.responseText);
-            dictionary = trie["trie_array"]
-            end_marker = trie["end_marker"]
+    var request = makeRequest();
+    if(request) {
+        request.onreadystatechange = function() {
+            if (request.readyState == 4 && request.status == 200) {
+                trie = JSON.parse(request.responseText);
+                dictionary = trie["trie_array"]
+                end_marker = trie["end_marker"]
+            }
         }
-    }
-    locale = document.documentElement.lang
-    if(locale) {
-        trie_loc = "./?c=resource&a=suggest&locale="+locale;
-        xmlhttp.open("GET", trie_loc, true);
-        xmlhttp.send();
+        locale = document.documentElement.lang
+        if(locale) {
+            trie_loc = "./?c=resource&a=suggest&locale=" + locale;
+            request.open("GET", trie_loc, true);
+            request.send();
+        }
     }
 }
 document.getElementsByTagName("body")[0].onload = loadTrie;

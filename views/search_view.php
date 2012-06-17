@@ -148,7 +148,7 @@ class SearchView extends View implements CrawlConstants
                 } else {
                 e(tl('search_view_query_results')); ?> (<?php 
                 e(tl('search_view_calculated', $data['ELAPSED_TIME']));?> <?php
-                e(tl('search_view_results', $data['LIMIT'], 
+                e(tl('search_view_results', $data['LIMIT'] + 1, 
                     min($data['TOTAL_ROWS'], 
                     $data['LIMIT'] + $data['RESULTS_PER_PAGE']), 
                     $data['TOTAL_ROWS']." )"));
