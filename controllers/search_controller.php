@@ -299,7 +299,7 @@ class SearchController extends Controller implements CrawlConstants
         if($view == "search" && $raw == 0 && isset($data['PAGES'])) {
             $data['PAGES'] = $this->makeImageGroups($data['PAGES']);
         }
-        $data['INCLUDE_SCRIPTS'] = array("autosuggest");
+        $data['INCLUDE_SCRIPTS'] = array("suggest");
         $this->displayView($view, $data);
     }
 

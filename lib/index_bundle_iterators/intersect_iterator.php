@@ -471,14 +471,15 @@ class IntersectIterator extends IndexBundleIterator
      */
     function advance($gen_doc_offset = null)
     {
-        $this->advanceSeenDocs();
+        $this->current_block_fresh = false;
+        $this->seen_docs += 1;
 
         $this->seen_docs_unfiltered = 0;
 
         //num_docs can change when advance() called so that's why we recompute
         $total_num_docs = 0;
         for($i = 0; $i < $this->num_iterators; $i++) {
-             $this->seen_docs_unfiltered +=
+            $this->seen_docs_unfiltered +=
                 $this->index_bundle_iterators[$i]->seen_docs;
             $total_num_docs += $this->index_bundle_iterators[$i]->num_docs;
         }
