@@ -132,8 +132,8 @@ class SearchView extends View implements CrawlConstants
             </p>
             </form>
         </div>
-        <div id="asdropdown"> 
-            <ul id="aslist" class="autoresult">
+        <div id="suggest-dropdown"> 
+            <ul id="suggest-results" class="suggest-list">
             </ul>
         </div>
         <?php

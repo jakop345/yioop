@@ -43,8 +43,8 @@ function onTypeTerm(event, text_field)
     var key_code_pressed; 
     var term_array;
     var input_term = text_field.value;
-    var results_dropdown = elt("aslist");
-    var asdropdown_object = elt("asdropdown");
+    var suggest_results = elt("suggest-results");
+    var suggest_dropdown = elt("suggest-dropdown");
     var scroll_pos = 0;
 
     concat_term = "";
@@ -61,7 +61,7 @@ function onTypeTerm(event, text_field)
         }
         concat_term = concat_term.trim();
     }    
-    input_term = term_array[term_array.length-1];  
+    input_term = term_array[term_array.length - 1];
 
     if (key_code_pressed != 40 && key_code_pressed != 38) {
         search_list="";
@@ -69,35 +69,35 @@ function onTypeTerm(event, text_field)
         if(count <= 1) {
             search_list = "";
         }
-        asdropdown_object.style.visibility = "visible";
-        asdropdown_object.scrollTop =  0;
-        results_dropdown.innerHTML = search_list;
+        suggest_dropdown.style.visibility = "visible";
+        suggest_dropdown.scrollTop =  0;
+        suggest_results.innerHTML = search_list;
         cursor_pos=-1; 
         if (search_list != "") {
-            results_dropdown.style.visibility = "visible";
+            suggest_results.style.visibility = "visible";
         } 
         else {
-            results_dropdown.style.visibility = "hidden";
+            suggest_results.style.visibility = "hidden";
         }
-        items = results_dropdown.children.length;
+        items = suggest_results.children.length;
         if (items == 0) {
-            asdropdown_object.className = "";
-            asdropdown_object.style.height = "0";
+            suggest_dropdown.className = "";
+            suggest_dropdown.style.height = "0";
         } else {
-            asdropdown_object.className = "dropdown";
+            suggest_dropdown.className = "dropdown";
             if (items < 6) {
-                asdropdown_object.style.height = ""
+                suggest_dropdown.style.height = ""
                     + items * 0.25 + "in";
             } else {
-                asdropdown_object.style.height = "1.5in";
+                suggest_dropdown.style.height = "1.5in";
             }
         }
     }
-    if(results_dropdown.style.visibility == "visible") {
+    if(suggest_results.style.visibility == "visible") {
         if(key_code_pressed == 40) { 
             if (cursor_pos == -1) { 
                 cursor_pos = 0;
-                setDisplay(cursor_pos, "selected"); 
+                setDisplay(cursor_pos, "selected");
             }
             else {
                 setDisplay(cursor_pos, "unselected");
@@ -108,11 +108,11 @@ function onTypeTerm(event, text_field)
                 setDisplay(cursor_pos, "selected");
             }
             scroll_pos = (cursor_pos > 2) ? (cursor_pos - 2) : 0;
-            asdropdown_object.scrollTop = scroll_pos * 26;
+            suggest_dropdown.scrollTop = scroll_pos * 26;
         } else if(key_code_pressed == 38) {
             if (cursor_pos == -1)
             {    
-                cursor_pos = items-1;
+                cursor_pos = items - 1;
                 setDisplay(cursor_pos, "selected");
             }
             else {   
@@ -124,7 +124,7 @@ function onTypeTerm(event, text_field)
                 setDisplay(cursor_pos, "selected");
             }
             scroll_pos = (cursor_pos > 2) ? (cursor_pos - 2) : 0;
-            asdropdown_object.scrollTop = scroll_pos * 26;
+            suggest_dropdown.scrollTop = scroll_pos * 26;
         }
     }
 }
@@ -145,23 +145,23 @@ function setDisplay(cursor_pos, class_name)
  */
 function termClick(term_list_object)
 {
-    var results_dropdown = elt("aslist");
+    var results_dropdown = elt("suggest-results");
     var query_field_object = elt("query-field");
     query_field_object.value = term_list_object.innerHTML;
     results_dropdown.innerHTML = "";
-    elt("asdropdown").style.visibility = "hidden";
+    elt("suggest-dropdown").style.visibility = "hidden";
 }
 
 /**
  * To handle the cursor hover
  */
-function hoverDisplay(term_list_object)
+function hoverDisplay(term_list)
 {
     if (cursor_pos > -1) { 
         elt(cursor_pos).className = "unselected";
     }
-    cursor_pos = term_list_object.id;
-    term_list_object.className = "selected";
+    cursor_pos = term_list.id;
+    term_list.className = "selected";
 }
 
 /**
@@ -317,11 +317,11 @@ function loadTrie()
         request.onreadystatechange = function() {
             if (request.readyState == 4 && request.status == 200) {
                 trie = JSON.parse(request.responseText);
-                dictionary = trie["trie_array"]
-                end_marker = trie["end_marker"]
+                dictionary = trie["trie_array"];
+                end_marker = trie["end_marker"];
             }
         }
-        locale = document.documentElement.lang
+        locale = document.documentElement.lang;
         if(locale) {
             trie_loc = "./?c=resource&a=suggest&locale=" + locale;
             request.open("GET", trie_loc, true);

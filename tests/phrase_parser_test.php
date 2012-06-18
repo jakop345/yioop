@@ -71,7 +71,8 @@ class PhraseParserTest extends UnitTest
         $phrase_string = <<< EOD
 THE THE
 ‘Deep Space nine’ ‘Deep Space’ version of GIANT
-©2012 
+©2012
+reddit: the front page of the internet
 EOD;
         $word_lists = PhraseParser::extractPhrasesInLists($phrase_string,
             "en-US", true);

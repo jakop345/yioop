@@ -888,7 +888,7 @@ body.mobile
     display:none;
 }
 
-.autoresult
+.suggest-list
 {
     position:relative;
     top:0.15in;
@@ -903,12 +903,13 @@ body.mobile
     visibility:hidden;
 }
 
-.landing .autoresult {
+.landing .suggest-list 
+{
     position:relative;
     top:0;
 }
 
-.autoresult li
+.suggest-list li
 {
     width:6.10in;
     background:#DDF;
@@ -922,7 +923,7 @@ body.mobile
     list-style:none;
 }
 
-.autoresult li span
+.suggest-list li span
 {
     padding:0;
     margin:0;
@@ -930,18 +931,18 @@ body.mobile
     display:block;
 }
 
-.autoresult li span.unselected
+.suggest-list li span.unselected
 {
     background:white;
 }
 
-.autoresult li span.selected
+.suggest-list li span.selected
 {
     background:#AAE;
     color:black;
 }
 
-.mobile .autoresult
+.mobile .suggest-list
 {
     display: none;
 }

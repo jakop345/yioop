@@ -254,6 +254,7 @@ class WordIterator extends IndexBundleIterator
         $pre_results = $shard->getPostingsSlice(
             $this->start_offset,
             $this->next_offset, $this->last_offset, $this->results_per_block);
+        $results = array();
         $filter = ($this->filter == NULL) ? array() : $this->filter;
         foreach($pre_results as $keys => $data) {
             $host_key = substr($keys, self::HOST_KEY_POS, self::KEY_LEN);
