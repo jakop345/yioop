@@ -478,7 +478,7 @@ class SearchController extends Controller implements CrawlConstants
                                 $replace = " media:video";
                             break;
                             case "Images":
-                                $replace = " media:image";
+                                $replace = " media:image site:all";
                             break;
                         }
                         $query = preg_replace('/\|/', "$replace", $query);
