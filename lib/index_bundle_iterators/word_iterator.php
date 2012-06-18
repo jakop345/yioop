@@ -276,6 +276,23 @@ class WordIterator extends IndexBundleIterator
         return $results;
     }
 
+    /**
+     * Updates the seen_docs count during an advance() call
+     */
+    function advanceSeenDocs()
+    {
+        if($this->current_block_fresh != true) {
+            $num_docs = min($this->results_per_block,
+                ceil(($this->last_offset - $this->next_offset)/4) );
+            if($num_docs < 0) {
+                return;
+            }
+        } else {
+            $num_docs = $this->count_block;
+        }
+        $this->current_block_fresh = false;
+        $this->seen_docs += $num_docs;
+    }
 
     /**
      * Forwards the iterator one group of docs

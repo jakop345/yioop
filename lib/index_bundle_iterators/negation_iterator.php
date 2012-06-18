@@ -197,7 +197,7 @@ class NegationIterator extends IndexBundleIterator
     }
 
     /**
-     * Forwards the iterator one group of docs
+     * Forwards the iterator one group of docs (must be size 1)
      * @param array $gen_doc_offset a generation, doc_offset pair. If set,
      *      the must be of greater than or equal generation, and if equal the
      *      next block must all have $doc_offsets larger than or equal to 
@@ -205,7 +205,8 @@ class NegationIterator extends IndexBundleIterator
      */
     function advance($gen_doc_offset = null) 
     {
-        $this->advanceSeenDocs();
+        $this->current_block_fresh = false;
+        $this->seen_docs += 1;
 
         $this->index_bundle_iterators[0]->advance($gen_doc_offset);
 

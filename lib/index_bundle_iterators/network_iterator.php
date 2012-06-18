@@ -177,7 +177,7 @@ class NetworkIterator extends IndexBundleIterator
      */
     function advance($gen_doc_offset = null)
      {
-        $this->advanceSeenDocs();
+        $this->current_block_fresh = false;
         $this->limit += $this->results_per_block;
      }
 
