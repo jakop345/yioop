@@ -283,7 +283,10 @@ class WordIterator extends IndexBundleIterator
     {
         if($this->current_block_fresh != true) {
             $num_docs = min($this->results_per_block,
-                ceil(($this->last_offset - $this->next_offset)/4) );
+                IndexShard::numDocsOrLinks($this->next_offset,
+                    $this->last_offset));
+            $this->next_offset = $this->current_offset;
+            $this->next_offset += IndexShard::POSTING_LEN * $num_docs;
             if($num_docs < 0) {
                 return;
             }
@@ -292,7 +295,7 @@ class WordIterator extends IndexBundleIterator
         }
         $this->current_block_fresh = false;
         $this->seen_docs += $num_docs;
-    }
+    } 
 
     /**
      * Forwards the iterator one group of docs
