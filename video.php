@@ -39,5 +39,10 @@
  *  Set that want only video results
  */
     define("MEDIA", "Video");
+    if(isset($_REQUEST['c']) && $_REQUEST['c'] != 'search') {
+        $pathinfo = pathinfo($_SERVER['SCRIPT_FILENAME']);
+        include($pathinfo["dirname"]."/error.php");
+        exit();
+    }
     require_once("index.php");
 ?>

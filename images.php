@@ -42,5 +42,10 @@
     if(!isset($_REQUEST['num'])) {
         $_REQUEST['num']= 50;
     }
+    if(isset($_REQUEST['c']) && $_REQUEST['c'] != 'search') {
+        $pathinfo = pathinfo($_SERVER['SCRIPT_FILENAME']);
+        require_once($pathinfo["dirname"]."/error.php");
+        exit();
+    }
     require_once("index.php");
 ?>
