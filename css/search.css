@@ -866,7 +866,9 @@ body.mobile
  */
 .dropdown
 {
+    position:relative;
     width: 6.5in;
+    top:0.20in;
     margin:0;
     margin-left:0.023in;
     border-color: #AAA;
@@ -883,6 +885,12 @@ body.mobile
     padding-bottom:0in;
 }
 
+.landing .dropdown
+{
+    position:relative;
+    top:0;
+}
+
 .mobile .dropdown
 {
     display:none;
@@ -890,8 +898,6 @@ body.mobile
 
 .suggest-list
 {
-    position:relative;
-    top:0.15in;
     background:#DDF;
     width: 6.30in;
     font-size:16pt;
@@ -899,15 +905,10 @@ body.mobile
     border:0;
     padding:0;
     padding-bottom:0.05in;
-    z-index:-1;
     visibility:hidden;
 }
 
-.landing .suggest-list 
-{
-    position:relative;
-    top:0;
-}
+
 
 .suggest-list li
 {
@@ -929,17 +930,19 @@ body.mobile
     margin:0;
     height:18pt;
     display:block;
+    color:black;
+    text-decoration:none
+    z-index:5;
 }
 
 .suggest-list li span.unselected
 {
-    background:white;
+    background-color:white;
 }
 
 .suggest-list li span.selected
 {
-    background:#AAE;
-    color:black;
+    background-color:#AAE;
 }
 
 .mobile .suggest-list

@@ -112,7 +112,7 @@ class SearchView extends View implements CrawlConstants
         ?>
 
         <div class="searchbox">
-            <form id="searchForm" method="get" action='?'>
+            <form id="search-form" method="get" action='?'>
             <p>
             <input type="hidden" name="YIOOP_TOKEN" value="<?php 
                 e($data['YIOOP_TOKEN']); ?>" />
@@ -146,11 +146,12 @@ class SearchView extends View implements CrawlConstants
             <h2><?php 
                 if(MOBILE) {
                 } else {
+                $num_results = min($data['TOTAL_ROWS'], 
+                    $data['LIMIT'] + $data['RESULTS_PER_PAGE']);
+                $limit = min($data['LIMIT'] + 1, $num_results);
                 e(tl('search_view_query_results')); ?> (<?php 
                 e(tl('search_view_calculated', $data['ELAPSED_TIME']));?> <?php
-                e(tl('search_view_results', $data['LIMIT'] + 1, 
-                    min($data['TOTAL_ROWS'], 
-                    $data['LIMIT'] + $data['RESULTS_PER_PAGE']), 
+                e(tl('search_view_results', $limit, $num_results,
                     $data['TOTAL_ROWS']." )"));
                 }
             ?></h2>

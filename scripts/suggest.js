@@ -21,7 +21,7 @@
  *
  *  END LICENSE
  *
- * @author Sandhya Vissapragada
+ * @author Sandhya Vissapragada, Chris Pollett
  * @package seek_quarry
  * @subpackage javascript
  * @license http://www.gnu.org/licenses/ GPL3
@@ -29,6 +29,28 @@
  * @copyright 2009 - 2012s
  * @filesource
  */
+
+/**
+ *  Constants for key codes will handle
+ */
+KeyCodes = new Object();
+KeyCodes.UP_ARROW = 38;
+KeyCodes.DOWN_ARROW = 40;
+
+/**
+ * Maximum number of search terms to display
+ */
+MAX_DISPLAY = 6;
+/**
+ * Height of a search term in pixels
+ */
+FONT_HEIGHT = 24;
+/**
+ * Used to delimit the end of a term in a trie.
+ * The value below is the default define. Might be set
+ * what the trie object loaded says in loadTrie
+ */
+END_OF_TERM_MARKER = " ";
 
 /**
  * Steps to follow every time a key is up from the user end
@@ -40,12 +62,13 @@
  */
 function onTypeTerm(event, text_field) 
 {
-    var key_code_pressed; 
+    var key_code_pressed;
     var term_array;
     var input_term = text_field.value;
     var suggest_results = elt("suggest-results");
     var suggest_dropdown = elt("suggest-dropdown");
     var scroll_pos = 0;
+    var tmp_pos = 0;
 
     concat_term = "";
     if(window.event) { // IE8 and earlier
@@ -56,135 +79,129 @@ function onTypeTerm(event, text_field)
     term_array = input_term.split(" ");
     concat_array = input_term.split(" ", term_array.length - 1);
     if (input_term != "") {
-        for(var i=0; i < concat_array.length; i++) {
+        for(var i = 0; i < concat_array.length; i++) {
             concat_term += concat_array[i] + " ";
         }
         concat_term = concat_term.trim();
     }    
     input_term = term_array[term_array.length - 1];
 
-    if (key_code_pressed != 40 && key_code_pressed != 38) {
-        search_list="";
+    // behavior if typing keys other than up or down (notice call termSuggest)
+    if (key_code_pressed != KeyCodes.DOWN_ARROW && 
+        key_code_pressed != KeyCodes.UP_ARROW) {
+        search_list = "";
         termSuggest(dictionary, input_term);
         if(count <= 1) {
             search_list = "";
         }
-        suggest_dropdown.style.visibility = "visible";
         suggest_dropdown.scrollTop =  0;
         suggest_results.innerHTML = search_list;
-        cursor_pos=-1; 
-        if (search_list != "") {
-            suggest_results.style.visibility = "visible";
-        } 
-        else {
-            suggest_results.style.visibility = "hidden";
-        }
-        items = suggest_results.children.length;
-        if (items == 0) {
+        cursor_pos = -1; 
+        num_items = count;
+        if (num_items == 0 || search_list == "") {
             suggest_dropdown.className = "";
             suggest_dropdown.style.height = "0";
+            suggest_dropdown.style.visibility = "hidden";
+            suggest_results.style.visibility = "hidden";
         } else {
             suggest_dropdown.className = "dropdown";
-            if (items < 6) {
-                suggest_dropdown.style.height = ""
-                    + items * 0.25 + "in";
-            } else {
-                suggest_dropdown.style.height = "1.5in";
-            }
+            suggest_results.style.visibility = "visible";
+            suggest_dropdown.style.visibility = "visible";
+            suggest_dropdown.style.height = (FONT_HEIGHT * MAX_DISPLAY) + "px";
         }
     }
+    // behavior on up down arrows
     if(suggest_results.style.visibility == "visible") {
-        if(key_code_pressed == 40) { 
-            if (cursor_pos == -1) { 
+        if(key_code_pressed == KeyCodes.DOWN_ARROW) { 
+            if (cursor_pos < 0) { 
                 cursor_pos = 0;
-                setDisplay(cursor_pos, "selected");
-            }
-            else {
-                setDisplay(cursor_pos, "unselected");
-                cursor_pos++;
-                if(cursor_pos == items) {
-                    cursor_pos = 0;
+                setSelectedTerm(cursor_pos, "selected");
+            } else {
+                if(cursor_pos < num_items - 1) {
+                    setSelectedTerm(cursor_pos, "unselected");
+                    cursor_pos++;
                 }
-                setDisplay(cursor_pos, "selected");
+                setSelectedTerm(cursor_pos, "selected");
             }
-            scroll_pos = (cursor_pos > 2) ? (cursor_pos - 2) : 0;
-            suggest_dropdown.scrollTop = scroll_pos * 26;
-        } else if(key_code_pressed == 38) {
-            if (cursor_pos == -1)
-            {    
-                cursor_pos = items - 1;
-                setDisplay(cursor_pos, "selected");
-            }
-            else {   
-                setDisplay(cursor_pos, "unselected");
-                cursor_pos--;
-                if (cursor_pos == -1) {
-                    cursor_pos = items - 1;
+            scroll_pos = (cursor_pos - MAX_DISPLAY > 0) ? 
+                (cursor_pos - MAX_DISPLAY + 1) : 1;
+            suggest_dropdown.scrollTop = scroll_pos * FONT_HEIGHT;
+        } else if(key_code_pressed == KeyCodes.UP_ARROW) {
+            if (cursor_pos < 0) {
+                cursor_pos = 0;
+                setSelectedTerm(cursor_pos, "selected");
+            } else {
+                if(cursor_pos > 0) {
+                    setSelectedTerm(cursor_pos, "unselected");
+                    cursor_pos--;
                 }
-                setDisplay(cursor_pos, "selected");
+                setSelectedTerm(cursor_pos, "selected");
             }
-            scroll_pos = (cursor_pos > 2) ? (cursor_pos - 2) : 0;
-            suggest_dropdown.scrollTop = scroll_pos * 26;
+            scroll_pos = (cursor_pos - MAX_DISPLAY > 0) ? 
+                (cursor_pos - MAX_DISPLAY + 1) : 1;
+            suggest_dropdown.scrollTop = scroll_pos * FONT_HEIGHT;
         }
     }
 }
 
 /**
- * To select an autosuggest value while up/down arrow keys are being used
+ * To select an suggest value while up/down arrow keys are being used
  * and place in the search box
+ *
+ * @param int pos index in the list items of suggest terms
+ * @param String class_value value for CSS class attribute for that list item
  */
-function setDisplay(cursor_pos, class_name)
+function setSelectedTerm(pos, class_value)
 {
     var query_field_object = elt("query-field");
-    query_field_object.value = elt(cursor_pos).innerHTML;
-    elt(cursor_pos).className = class_name;
+    query_field_object.value = elt("term" + pos).title;
+    elt("term" + pos).className = class_value;
 }
 
 /**
- * To select a value onclick from the dropdownlist and place in the search box 
+ * To selects a term from the suggest dropdownlist and performs as search
+ *
+ * @param String term what was clicked on
  */
-function termClick(term_list_object)
+function termClick(term)
 {
     var results_dropdown = elt("suggest-results");
     var query_field_object = elt("query-field");
-    query_field_object.value = term_list_object.innerHTML;
+    query_field_object.value = term;
     results_dropdown.innerHTML = "";
-    elt("suggest-dropdown").style.visibility = "hidden";
+    elt("suggest-dropdown").style.display = "none";
+    elt("search-form").submit();
 }
 
-/**
- * To handle the cursor hover
- */
-function hoverDisplay(term_list)
-{
-    if (cursor_pos > -1) { 
-        elt(cursor_pos).className = "unselected";
-    }
-    cursor_pos = term_list.id;
-    term_list.className = "selected";
-}
 
 /**
  * Fetch words from the Trie and add to seachList with <li> </li> tags
+ *
+ * @param Array trie_array contains all search terms
+ * @param String parent_word the prefix want to find sub-term for in trie
+ * @param String highlighted_word parent_word, root_word + "<b>" + rest of 
+ *   parent
  */
-function getTrieTerms(trie_array, parent_word, max_display) 
+function getTrieTerms(trie_array, parent_word, highlighted_word) 
 {
-    var list_string; 
-    // Default to display top 6 words
-    max_display = (typeof max_display == 'undefined') ?
-        6 : max_display;
-    // Default end_marker is ' '
+    var search_terms;
+    var highlighted_terms;
+
     if (trie_array != null) {
         for (key in trie_array) {
-            if (key != end_marker ) {
-                getTrieTerms(trie_array[key], parent_word + key);
+            if (key != END_OF_TERM_MARKER ) {
+                getTrieTerms(trie_array[key], parent_word + key, 
+                    highlighted_word + key);
             } else {
-                list_string = concat_term.trim() + " " + decode(parent_word);
-                list_string = list_string.trim();
-                search_list += "<li><span id=" + count + 
-                    " class='unselected' onmouseover='hoverDisplay(this)' "; 
-                search_list += "onclick='termClick(this)'>" + list_string + 
-                    "</span></li>";
+                search_terms = concat_term.trim() + " " + decode(parent_word);
+                search_terms = search_terms.trim();
+                highlighted_terms = concat_term.trim() + " " 
+                    + decode(highlighted_word) + "</b>";
+                search_list += "<li><span id='term" +count+
+                    "' class='unselected' onclick = 'void(0)' " +
+                    "title='"+search_terms+"' " +
+                    "onmouseup='termClick(\""+search_terms+"\")'"+
+                    ">" + highlighted_terms + "</span></li>";
                 count++;
             }
         }
@@ -208,7 +225,8 @@ function exist(trie_array, term)
         if (trie_array != 'null') {
             tmp = getUnicodeCharAndNextOffset(term, i);
             if(tmp == false) return false;
-            [next_char, i] = tmp;
+            next_char = tmp[0];
+            i = tmp[1];
             enc_char = encode(next_char);
             if(trie_array[enc_char] != 'null') {
                 trie_array = trie_array[enc_char];
@@ -232,8 +250,6 @@ function exist(trie_array, term)
  */
 function termSuggest(trie_array, term)
 {
-    //default end_marker is space
-    end_marker = (typeof end_marker == 'undefined') ? " " : end_marker;
     last_word = false;
     count = 0;
     search_list = "";
@@ -245,13 +261,17 @@ function termSuggest(trie_array, term)
     if((term.length) > 1) {
         tmp = getUnicodeCharAndNextOffset(term, 0);
         if(tmp == false) return false;
-        [start_char, ] = tmp;
+        start_char = tmp[0];
         enc_chr = encode(start_char);
         trie_array = exist(trie_array[enc_chr], term);
     } else {
         trie_array = trie_array[term];
     }
-    getTrieTerms(trie_array, term);
+    getTrieTerms(trie_array, term, term + "<b>");
+    short_max = MAX_DISPLAY - count;
+    for(var i = 0; i < short_max; i++) {
+        search_list += "<li><span class='unselected'>&nbsp;</span></li>";
+    }
 }
 
 /* wrappers to save typing */
@@ -318,9 +338,12 @@ function loadTrie()
             if (request.readyState == 4 && request.status == 200) {
                 trie = JSON.parse(request.responseText);
                 dictionary = trie["trie_array"];
-                end_marker = trie["end_marker"];
+                END_OF_TERM_MARKER = trie["end_marker"];
             }
+            END_OF_TERM_MARKER = (typeof END_OF_TERM_MARKER == 'undefined') ? 
+                ' ' : END_OF_TERM_MARKER;
         }
+
         locale = document.documentElement.lang;
         if(locale) {
             trie_loc = "./?c=resource&a=suggest&locale=" + locale;
