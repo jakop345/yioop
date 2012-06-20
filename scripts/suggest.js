@@ -123,6 +123,7 @@ function onTypeTerm(event, text_field)
                 }
                 setSelectedTerm(cursor_pos, "selected");
             }
+            scroll_count = 1;
             scroll_pos = (cursor_pos - MAX_DISPLAY > 0) ? 
                 (cursor_pos - MAX_DISPLAY + 1) : 1;
             suggest_dropdown.scrollTop = scroll_pos * FONT_HEIGHT;
@@ -137,8 +138,10 @@ function onTypeTerm(event, text_field)
                 }
                 setSelectedTerm(cursor_pos, "selected");
             }
-            scroll_pos = (cursor_pos - MAX_DISPLAY > 0) ? 
-                (cursor_pos - MAX_DISPLAY + 1) : 1;
+            scroll_pos = (cursor_pos - MAX_DISPLAY + scroll_count > 0) ? 
+                (cursor_pos - MAX_DISPLAY + scroll_count) : 1;
+            scroll_count = (MAX_DISPLAY > scroll_count) ? scroll_count + 1 :
+                MAX_DISPLAY;
             suggest_dropdown.scrollTop = scroll_pos * FONT_HEIGHT;
         }
     }

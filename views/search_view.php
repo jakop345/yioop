@@ -118,7 +118,8 @@ class SearchView extends View implements CrawlConstants
                 e($data['YIOOP_TOKEN']); ?>" />
             <input type="hidden" name="its" value="<?php e($data['its']); ?>" />
             <input type="text" <?php if(WORD_SUGGEST) { ?>
-                autocomplete="off"  onkeyup="onTypeTerm(event, this)" 
+                autocomplete="off"  onkeyup="onTypeTerm(event, this)"
+                onpaste="onTypeTerm(event, this)"
                 <?php } ?>
                 title="<?php e(tl('search_view_input_label')); ?>" 
                 id="query-field" name="q" value="<?php 
@@ -273,7 +274,7 @@ class SearchView extends View implements CrawlConstants
             <?php 
             } //end foreach
             $this->paginationHelper->render(
-                $data['PAGING_QUERY']."&amp;YIOOP_TOKEN=".$data['YIOOP_TOKEN'], 
+                $data['PAGING_QUERY']."&amp;YIOOP_TOKEN=".$data['YIOOP_TOKEN'],
                 $data['LIMIT'], $data['RESULTS_PER_PAGE'], $data['TOTAL_ROWS']);
             ?>
 
