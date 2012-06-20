@@ -272,6 +272,10 @@ class WordIterator extends IndexBundleIterator
             $results[$keys] = $data;
         }
         $this->count_block = count($results);
+        if($this->generation_pointer == $this->num_generations -1 &&
+            $results == array()) {
+            $results = NULL;
+        }
         $this->pages = $results;
 
         return $results;
