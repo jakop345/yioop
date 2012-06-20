@@ -55,7 +55,6 @@ if(!function_exists("e")) {
 }
 //check if mobile css and formatting should be used or not
 $agent = $_SERVER['HTTP_USER_AGENT'];
-$is_admin = strcmp($controller_name, "admin") == 0;
 if((stristr($agent, "mobile") || stristr($agent, "fennec")) && 
     !stristr($agent, "ipad") ) {
     define("MOBILE", true);
