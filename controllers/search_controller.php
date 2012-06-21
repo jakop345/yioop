@@ -177,6 +177,10 @@ class SearchController extends Controller implements CrawlConstants
                 //(some crawlers replay deleted crawls)
                 $crawls = $this->crawlModel->getCrawlList(false,true,
                     $machine_urls,true);
+                $is_mix = false;
+                if($this->crawlModel->isCrawlMix($index_time_stamp)) {
+                    $is_mix = true;
+                }
                 $found_crawl = false;
                 foreach($crawls as $crawl) {
                     if($index_time_stamp == $crawl['CRAWL_TIME']) {
@@ -184,8 +188,8 @@ class SearchController extends Controller implements CrawlConstants
                         break;
                     }
                 }
-                if(!$found_crawl && (isset($_REQUEST['q']) ||
-                    isset($_REQUEST['arg']))) {
+                if(!$is_mix && ( !$found_crawl && (isset($_REQUEST['q']) ||
+                    isset($_REQUEST['arg'])))) {
                     unset($_SESSION['its']);
                     include(BASE_DIR."/error.php");
                     exit();
