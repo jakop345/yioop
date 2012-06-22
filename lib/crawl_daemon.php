@@ -216,7 +216,7 @@ class CrawlDaemon implements CrawlConstants
                 $base_dir."\\bin\\$name.php child %s";
         } else {
             $script = "echo \"php '".
-                BASE_DIR."/bin/$name.php child %s\"' | at now ";
+                BASE_DIR."/bin/$name.php' child %s\" | at now ";
         }
         $total_options = "$subname $options";
         $at_job = sprintf($script, $total_options);
