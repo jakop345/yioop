@@ -215,8 +215,8 @@ class CrawlDaemon implements CrawlConstants
             $script = "psexec -accepteula -d php ".
                 $base_dir."\\bin\\$name.php child %s";
         } else {
-            $script = "echo \"php ".
-                BASE_DIR."/bin/$name.php child %s\" | at now ";
+            $script = "echo \"php '".
+                BASE_DIR."/bin/$name.php child %s\"' | at now ";
         }
         $total_options = "$subname $options";
         $at_job = sprintf($script, $total_options);
