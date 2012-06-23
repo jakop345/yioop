@@ -224,12 +224,17 @@ class Model implements CrawlConstants
      */
     function getSnippets($text, $words, $description_length)
     {
+        if(strlen($text) < $description_length) {
+            return $text;
+        }
+
         $ellipsis = "";
         $len = mb_strlen($text);
         $offset = 0;
         $words = array_unique($words);
         $words = array_filter($words);
         $snippet_string = "";
+        $snippet_hash = array();
         $i = 0;
         do
         {
@@ -261,22 +266,17 @@ class Model implements CrawlConstants
                 if($high > $pre_high + 10){
                     $high = $pre_high;
                 }
-                $snippet_string .= $ellipsis.
-                     mb_substr($text, $low, $high - $low);
-                $ellipsis = " ... ";
+                $cur_snippet = trim(mb_substr($text, $low, $high - $low));
+                if(!isset($snippet_hash[$cur_snippet])) {
+                    $snippet_string .= $ellipsis. $cur_snippet;
+                    $ellipsis = " ... ";
+                    $snippet_hash[$cur_snippet] = true;
+                }
                 if(strlen($snippet_string) >= $description_length) break 2;
             }
             $words = array_values($word_locations);
             $offset = $new_offset + 1;
         } while($offset < $len);
-
-
-        if(strlen($snippet_string) < MIN_SNIPPET_LENGTH) {
-            $snippet_string = substr($text, 0, $description_length);
-            if($high = mb_strripos($snippet_string, " ")) {
-                $snippet_string = substr($text, 0, $high);
-            }
-        }
 
         return $snippet_string;
     }

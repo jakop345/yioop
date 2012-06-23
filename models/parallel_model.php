@@ -124,60 +124,108 @@ class ParallelModel extends Model implements CrawlConstants
      */
     function getCrawlItems($lookups, $machine_urls = NULL)
     {
-        $summaries = array();
         if($machine_urls != NULL && !$this->isSingleLocalhost($machine_urls)) {
-            $num_machines = count($machine_urls);
-            $machines = array();
-            foreach($lookups as $lookup => $lookup_info) {
-                if(count($lookup_info) == 2 && $lookup_info[0][0] === 'h') {
-                    list($url, $index_name) = $lookup_info;
-                    $index = calculatePartition($url, $num_machines, 
-                        "UrlParser::getHost");
-                    $machines[$index] = $machine_urls[$index];
-                } else {
-                    foreach($lookup_info as $lookup_item) {
-                        if(count($lookup_item) == 5) {
-                            list($index, , , , ) = $lookup_item;
-                            $machines[$index] = $machine_urls[$index];
-                        } else {
-                            $machines = $machine_urls;
-                            break;
-                        }
-                    }
-                }
-                
-            }
-            $page_set = $this->execMachines("getCrawlItems", 
-                $machines, serialize($lookups), $num_machines);
-
-            if(is_array($page_set)) {
-                foreach($page_set as $elt) {
-                    $result = unserialize(webdecode($elt[self::PAGE]));
-                    if(!is_array($result)) continue;
-                    foreach($result as $lookup => $summary) {
-                        if(isset($summaries[$lookup])) {
-                            if(isset($summary[self::DESCRIPTION])) {
-                                if(!isset($summaries[$lookup][
-                                    self::DESCRIPTION])){
-                                    $summaries[$lookup][self::DESCRIPTION] = "";
-                                }
-                                $summaries[$lookup][self::DESCRIPTION] = " .. ".
-                                     $summary[self::DESCRIPTION];
-                            }
-                            foreach($summary as $attr => $value){
-                                if($attr !=self::DESCRIPTION && 
-                                    !isset($summaries[$lookup][$attr])) {
-                                    $summaries[$lookup][$attr] = $value;
-                                }
-                            }
-                        } else {
-                            $summaries[$lookup] =  $summary;
-                        }
-                    }
-                }
-            }
-            return $summaries;
+            $summaries = $this->networkGetCrawlItems($lookups, $machine_urls);
+        } else {
+            $summaries = $this->nonNetworkGetCrawlItems($lookups);
         }
+        return $summaries;
+    }
+
+    /**
+     * In a multiple queue server setting, gets summaries for a set of document
+     * by their url, or by group of 5-tuples of the form
+     * (machine, key, index, generation, offset). This makes an execMachines
+     * call to make a network request to the CrawlController's on each machine
+     * which in turn calls getCrawlItems (and thence nonNetworkGetCrawlItems)
+     * on each machine. The results are then sent back to networkGetCrawlItems
+     * and aggregated.
+     *
+     * @param string $lookups things whose summaries we are trying to look up
+     * @param array $machine_urls an array of urls of yioop queue servers
+     * @return array of summary data for the matching documents
+     */
+    function networkGetCrawlItems($lookups, $machine_urls)
+    {
+        //Set-up network request
+        $num_machines = count($machine_urls);
+        $machines = array();
+        foreach($lookups as $lookup => $lookup_info) {
+            if(count($lookup_info) == 2 && $lookup_info[0][0] === 'h') {
+                list($url, $index_name) = $lookup_info;
+                $index = calculatePartition($url, $num_machines, 
+                    "UrlParser::getHost");
+                $machines[$index] = $machine_urls[$index];
+            } else {
+                foreach($lookup_info as $lookup_item) {
+                    if(count($lookup_item) == 5) {
+                        list($index, , , , ) = $lookup_item;
+                        $machines[$index] = $machine_urls[$index];
+                    } else {
+                        $machines = $machine_urls;
+                        break;
+                    }
+                }
+            }
+            
+        }
+        //Make request
+        $page_set = $this->execMachines("getCrawlItems", 
+            $machines, serialize($lookups), $num_machines);
+
+        //Aggregate results
+        $summaries = array();
+        if(is_array($page_set)) {
+            foreach($page_set as $elt) {
+                $description_hash = array();
+                $result = unserialize(webdecode($elt[self::PAGE]));
+                if(!is_array($result)) continue;
+                foreach($result as $lookup => $summary) {
+                    if(isset($summaries[$lookup])) {
+                        if(isset($summary[self::DESCRIPTION])) {
+                            $description = trim($summary[self::DESCRIPTION]);
+                            if(!isset($summaries[$lookup][self::DESCRIPTION])){
+                                $summaries[$lookup][self::DESCRIPTION] = "";
+                            }
+                            if(!isset($description_hash[$description])){
+                                $summaries[$lookup][self::DESCRIPTION] = " .. ".
+                                     $description;
+                                $description_hash[$description] = true;
+                            }
+                        }
+                        foreach($summary as $attr => $value){
+                            if($attr !=self::DESCRIPTION && 
+                                !isset($summaries[$lookup][$attr])) {
+                                $summaries[$lookup][$attr] = $value;
+                            }
+                        }
+                    } else {
+                        $summaries[$lookup] =  $summary;
+                    }
+                }
+            }
+        }
+        return $summaries;
+    }
+
+    /**
+     * Gets summaries on a particular machine for a set of document by 
+     * their url, or by group of 5-tuples of the form
+     * (machine, key, index, generation, offset) 
+     * This may be used in either the single queue_server setting or
+     * it may be called indirectly by a particular machine's 
+     * CrawlController as part of fufilling a network-based getCrawlItems 
+     * request. $lookups contains items which are to be grouped (as came
+     * from same url or site with the same cache). So this function aggregates
+     * their descriptions.
+     *
+     * @param string $lookups things whose summaries we are trying to look up
+     * @param array $machine_urls an array of urls of yioop queue servers
+     * @return array of summary data for the matching documents
+     */
+    function nonNetworkGetCrawlItems($lookups)
+    {
+        $summaries = array();
         foreach($lookups as $lookup => $lookup_info) {
             if(count($lookup_info) == 2 && $lookup_info[0][0] === 'h') {
                 list($url, $index_name) = $lookup_info;
@@ -188,6 +236,7 @@ class ParallelModel extends Model implements CrawlConstants
                     $index_archive->getPage($summary_offset, $generation);
             } else {
                 $summary = array();
+                $description_hash = array();
                 foreach($lookup_info as $lookup_item) {
                     if(count($lookup_item) == 2) {
                         list($word_key, $index_name) = $lookup_item;
@@ -207,27 +256,31 @@ class ParallelModel extends Model implements CrawlConstants
                     $index->setCurrentShard($generation, true);
                     $page = @$index->getPage($summary_offset);
                     if(!$page || $page == array()) {continue;}
-                    $ellipsis_used = false;
                     $copy = false;
                     if($summary == array()) {
+                        if(isset($page[self::DESCRIPTION])) {
+                            $description = trim($page[self::DESCRIPTION]);
+                            $page[self::DESCRIPTION] = $description;
+                            $description_hash[$description] = true;
+                        }
                         $summary = $page;
                     } else if (isset($page[self::DESCRIPTION])) {
+                        $description = trim($page[self::DESCRIPTION]);
                         if(!isset($summary[self::DESCRIPTION])) {
                             $summary[
                                 self::DESCRIPTION] = "";
                         }
-                        $summary[self::DESCRIPTION].=
-                            " .. ".$page[self::DESCRIPTION];
-                        $ellipsis_used = true;
+                        if(!isset($description_hash[$description])){
+                            $summary[self::DESCRIPTION] .=
+                                " .. ".$description;
+                            $description_hash[$description] = true;
+                        }
                         $copy = true;
                     } else {
                         $copy = true;
                     }
-                    if($ellipsis_used && strlen($summary[self::DESCRIPTION]) > 
+                    if(strlen($summary[self::DESCRIPTION]) > 
                         self::MIN_DESCRIPTION_LENGTH) {
-                        /* want at least one ellipsis in case terms only
-                           appear in links
-                         */
                         break;
                     }
                     if($copy) {

@@ -1016,10 +1016,11 @@ class SearchController extends Controller implements CrawlConstants
         $first_child = $body->firstChild;
 
         // add information about what was extracted from page
+        $text_align = (getLocaleDirection() == 'ltr') ? "left" : "right";
         $summaryNode = $dom->createElement('pre');
         $summaryNode = $body->insertBefore($summaryNode, $first_child);
         $summaryNode->setAttributeNS("","style", "border-color: black; ".
-            "border-style:solid; border-width:3px; ".
+            "border-style:solid; border-width:3px; text-align:$text_align;".
             "padding: 5px; background-color: white; display:none;");
         $summaryNode->setAttributeNS("","id", "summary-page-id");
 
@@ -1035,7 +1036,6 @@ class SearchController extends Controller implements CrawlConstants
         $textNode = $dom->createTextNode("var summaryShow = 'none';");
         $scriptNode->appendChild($textNode);
 
-        $text_align = (getLocaleDirection() == 'ltr') ? "left" : "right";
         $aDivNode = $dom->createElement('div');
         $aDivNode = $body->insertBefore($aDivNode, $summaryNode);
         $aDivNode->setAttributeNS("","style", "border-color: black; ".
