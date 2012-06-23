@@ -787,15 +787,14 @@ EOT;
         $machine_urls = NULL, $cache = false)
     {
         if($machine_urls != NULL && !$this->isSingleLocalhost($machine_urls)) {
-            $pre_arg = ($return_arc_bundles && $return_recrawls) ? 3 :
-                ($return_recrawls) ? 2 : ($return_arc_bundles) ? 1 : 0;
+            $arg = ($return_arc_bundles && $return_recrawls) ? 3 :
+                (($return_recrawls) ? 2 : (($return_arc_bundles) ? 1 : 0));
             $cache_file = CRAWL_DIR."/cache/".self::network_crawllist_base_name.
-                "$pre_arg.txt";
+                "$arg.txt";
             if($cache && file_exists($cache_file) && filemtime($cache_file) 
                 + 300 > time() ) {
                 return unserialize(file_get_contents($cache_file));
             }
-            $arg = "arg=$pre_arg";
             $list_strings = $this->execMachines("getCrawlList", 
                 $machine_urls, $arg);
             $list = $this->aggregateCrawlList($list_strings);

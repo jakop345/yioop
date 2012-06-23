@@ -182,7 +182,8 @@ class CrawlController extends Controller implements CrawlConstants
         $return_arc_bundles = false;
         $return_recrawls = false;
         if(isset($_REQUEST["arg"]) ) {
-            $arg = $this->clean($_REQUEST["arg"], "int");
+            $arg = trim(webdecode($_REQUEST["arg"]));
+            $arg = $this->clean($arg, "int");
             if($arg == 3 || $arg == 1) {$return_arc_bundles = true; }
             if($arg == 3 || $arg == 2) {$return_recrawls = true; }
         }
