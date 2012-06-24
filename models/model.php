@@ -230,19 +230,29 @@ class Model implements CrawlConstants
 
         $ellipsis = "";
         $words = array_unique($words);
-        $words = array_filter($words);
+        $start_words = array_filter($words);
         $snippet_string = "";
         $snippet_hash = array();
         $text_sources = explode(" .. ", $text);
         foreach($text_sources as $text_source) {
             $len = mb_strlen($text_source);
             $offset = 0;
+            $words = $start_words;
             if(strlen($text_source) < MIN_SNIPPET_LENGTH) {
                 if(!isset($snippet_hash[$text_source])) {
-                    $snippet_string .= $ellipsis. $text_source;
-                    $ellipsis = " ... ";
-                    $snippet_hash[$text_source] = true;
-                    if(strlen($snippet_string) >= $description_length) break;
+                    $found = false;
+                    foreach($words as $word) {
+                        if(mb_stristr($text_source, $word) !== false) {
+                            $found = true;
+                            break;
+                        }
+                    }
+                    if($found) {
+                        $snippet_string .= $ellipsis. $text_source;
+                        $ellipsis = " ... ";
+                        $snippet_hash[$text_source] = true;
+                        if(strlen($snippet_string)>= $description_length) break;
+                    }
                 }
                 continue;
             }
@@ -287,6 +297,7 @@ class Model implements CrawlConstants
                     if(strlen($snippet_string) >= $description_length) break 3;
                 }
                 $words = array_values($word_locations);
+                if($words == array()) break;
                 $offset = $new_offset + 1;
             } while($offset < $len);
         }

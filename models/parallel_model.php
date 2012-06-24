@@ -180,6 +180,7 @@ class ParallelModel extends Model implements CrawlConstants
                 $description_hash = array();
                 $result = unserialize(webdecode($elt[self::PAGE]));
                 if(!is_array($result)) continue;
+                $ellipsis = "";
                 foreach($result as $lookup => $summary) {
                     if(isset($summaries[$lookup])) {
                         if(isset($summary[self::DESCRIPTION])) {
@@ -188,8 +189,9 @@ class ParallelModel extends Model implements CrawlConstants
                                 $summaries[$lookup][self::DESCRIPTION] = "";
                             }
                             if(!isset($description_hash[$description])){
-                                $summaries[$lookup][self::DESCRIPTION] = " .. ".
-                                     $description;
+                                $summaries[$lookup][self::DESCRIPTION] = 
+                                    $ellipsis . $description;
+                                $ellipsis = " .. ";
                                 $description_hash[$description] = true;
                             }
                         }
@@ -236,6 +238,7 @@ class ParallelModel extends Model implements CrawlConstants
                     $index_archive->getPage($summary_offset, $generation);
             } else {
                 $summary = array();
+                $ellipsis = "";
                 $description_hash = array();
                 foreach($lookup_info as $lookup_item) {
                     if(count($lookup_item) == 2) {
@@ -272,7 +275,8 @@ class ParallelModel extends Model implements CrawlConstants
                         }
                         if(!isset($description_hash[$description])){
                             $summary[self::DESCRIPTION] .=
-                                " .. ".$description;
+                                $ellipsis . $description;
+                            $ellipsis = " .. ";
                             $description_hash[$description] = true;
                         }
                         $copy = true;
