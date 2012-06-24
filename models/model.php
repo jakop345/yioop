@@ -229,55 +229,67 @@ class Model implements CrawlConstants
         }
 
         $ellipsis = "";
-        $len = mb_strlen($text);
-        $offset = 0;
         $words = array_unique($words);
         $words = array_filter($words);
         $snippet_string = "";
         $snippet_hash = array();
-        $i = 0;
-        do
-        {
-            $new_offset = $offset;
-            $word_locations = array();
-            foreach($words as $word) {
-                $pos = mb_stripos($text, $word, $offset);
-                
-                if($pos !== false && $pos >= $offset) {
-                    $word_locations[$pos] = $word;
-                    if($new_offset < $pos) {
-                        $new_offset = $pos;
-                    }
-                } 
-            }
-            $high = 0;
-            ksort($word_locations);
-            foreach($word_locations as $pos => $word) {
-                if($pos < $high) continue;
-                $pre_low = ($pos >= SNIPPET_LENGTH_LEFT) ? 
-                    $pos - SNIPPET_LENGTH_LEFT: 0;
-                $low = mb_stripos($text, " ", $pre_low);
-                if($low > $pos) {
-                    $low = $pre_low;
-                }
-                $pre_high = ($pos + SNIPPET_LENGTH_RIGHT <= $len ) ? 
-                    $pos + SNIPPET_LENGTH_RIGHT: $len;
-                $high = mb_stripos($text, " ", max($pre_high - 10, $pos));
-                if($high > $pre_high + 10){
-                    $high = $pre_high;
-                }
-                $cur_snippet = trim(mb_substr($text, $low, $high - $low));
-                if(!isset($snippet_hash[$cur_snippet])) {
-                    $snippet_string .= $ellipsis. $cur_snippet;
+        $text_sources = explode(" .. ", $text);
+        foreach($text_sources as $text_source) {
+            $len = mb_strlen($text_source);
+            $offset = 0;
+            if(strlen($text_source) < MIN_SNIPPET_LENGTH) {
+                if(!isset($snippet_hash[$text_source])) {
+                    $snippet_string .= $ellipsis. $text_source;
                     $ellipsis = " ... ";
-                    $snippet_hash[$cur_snippet] = true;
+                    $snippet_hash[$text_source] = true;
+                    if(strlen($snippet_string) >= $description_length) break;
                 }
-                if(strlen($snippet_string) >= $description_length) break 2;
+                continue;
             }
-            $words = array_values($word_locations);
-            $offset = $new_offset + 1;
-        } while($offset < $len);
-
+            do
+            {
+                $new_offset = $offset;
+                $word_locations = array();
+                foreach($words as $word) {
+                    $pos = mb_stripos($text_source, $word, $offset);
+                    
+                    if($pos !== false && $pos >= $offset) {
+                        $word_locations[$pos] = $word;
+                        if($new_offset < $pos) {
+                            $new_offset = $pos;
+                        }
+                    } 
+                }
+                $high = 0;
+                ksort($word_locations);
+                foreach($word_locations as $pos => $word) {
+                    if($pos < $high) continue;
+                    $pre_low = ($pos >= SNIPPET_LENGTH_LEFT) ? 
+                        $pos - SNIPPET_LENGTH_LEFT: 0;
+                    $low = mb_stripos($text_source, " ", $pre_low);
+                    if($low > $pos) {
+                        $low = $pre_low;
+                    }
+                    $pre_high = ($pos + SNIPPET_LENGTH_RIGHT <= $len ) ? 
+                        $pos + SNIPPET_LENGTH_RIGHT: $len;
+                    $high = mb_stripos($text_source, " ", 
+                        max($pre_high - 10, $pos));
+                    if($high > $pre_high + 10){
+                        $high = $pre_high;
+                    }
+                    $cur_snippet = trim(
+                        mb_substr($text_source, $low, $high - $low));
+                    if(!isset($snippet_hash[$cur_snippet])) {
+                        $snippet_string .= $ellipsis. $cur_snippet;
+                        $ellipsis = " ... ";
+                        $snippet_hash[$cur_snippet] = true;
+                    }
+                    if(strlen($snippet_string) >= $description_length) break 3;
+                }
+                $words = array_values($word_locations);
+                $offset = $new_offset + 1;
+            } while($offset < $len);
+        }
         return $snippet_string;
     }
 
