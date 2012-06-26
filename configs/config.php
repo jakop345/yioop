@@ -308,6 +308,7 @@ $INDEXED_FILE_TYPES =
     array(  
             "asp",
             "aspx",
+            "bmp",
             "cgi",
             "cfm",
             "cfml",

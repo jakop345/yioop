@@ -336,6 +336,7 @@ body.mobile
 .mobile .topbar,
 .mobile .landing-topbar
 {
+    z-index:1;
     background: #DDD;
     background: -moz-linear-gradient(top, #FFF 0%,#EEF 30%,#EEF 70%, #FFF 100%);
     background: -webkit-linear-gradient(top, 
