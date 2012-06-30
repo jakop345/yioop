@@ -153,7 +153,7 @@ class SearchView extends View implements CrawlConstants
                 e(tl('search_view_query_results')); ?> (<?php 
                 e(tl('search_view_calculated', $data['ELAPSED_TIME']));?> <?php
                 e(tl('search_view_results', $limit, $num_results,
-                    $data['TOTAL_ROWS']." )"));
+                    $data['TOTAL_ROWS'].")"));
                 }
             ?></h2>
             <?php
@@ -217,14 +217,6 @@ class SearchView extends View implements CrawlConstants
                             render($page[self::DESCRIPTION])."</p>"; 
                     }?>
                 <p class="gray"><?php
-                    e(tl('search_view_rank', 
-                        number_format($page[self::DOC_RANK], 2)));
-                    e(tl('search_view_relevancy',
-                        number_format($page[self::RELEVANCE], 2) ));
-                    e(tl('search_view_proximity',
-                        number_format($page[self::PROXIMITY], 2) )." ");
-                    e(tl('search_view_score', $page[self::SCORE]));
-                ?><?php
                 if(isset($page[self::TYPE]) && $page[self::TYPE] != "link") {
                     if(CACHE_LINK && (!isset($page[self::ROBOT_METAS]) ||
                         !(in_array("NOARCHIVE", $page[self::ROBOT_METAS]) ||
@@ -283,8 +275,16 @@ class SearchView extends View implements CrawlConstants
                             rel='nofollow'>IP:<?php 
                             e("$address");?></a>. <?php 
                       } 
-                    }?>
-
+                    }
+                    ?><?php
+                    e(tl('search_view_rank', 
+                        number_format($page[self::DOC_RANK], 2)));
+                    e(tl('search_view_relevancy',
+                        number_format($page[self::RELEVANCE], 2) ));
+                    e(tl('search_view_proximity',
+                        number_format($page[self::PROXIMITY], 2) )." ");
+                    e(tl('search_view_score', $page[self::SCORE]));
+                ?>
                 </p>
                 <?php
                 } ?>
