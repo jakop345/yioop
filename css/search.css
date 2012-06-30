@@ -90,6 +90,11 @@ p
     color:red;
 }
 
+.gray
+{
+    color:#666;
+}
+
 .highlight, .backred
 {
     background-color:red;

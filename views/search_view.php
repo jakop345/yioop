@@ -158,6 +158,19 @@ class SearchView extends View implements CrawlConstants
             ?></h2>
             <?php
             foreach($data['PAGES'] as $page) {
+                if(isset($page[self::URL])) {
+                    if(substr($page[self::URL], 0, 4) == "url|") {
+                        $url_parts = explode("|", $page[self::URL]);
+                        $url = $url_parts[1];
+                        $title = UrlParser::noSchemeUrl($url);
+                    } else {
+                        $url = $page[self::URL];
+                        $title = $page[self::TITLE];
+                    }
+                } else {
+                    $url = "";
+                    $title = $page[self::TITLE];
+                }
             ?><div class='result'>
                 <?php if(isset($page['IMAGES'])) {
                     $image_query = "?YIOOP_TOKEN={$data['YIOOP_TOKEN']}".
@@ -172,14 +185,14 @@ class SearchView extends View implements CrawlConstants
                     && $page[self::TYPE] != "link") {
                         e(htmlentities($page[self::URL])); 
                     } else {
-                        e( strip_tags($page[self::TITLE]));
+                        e( strip_tags($title));
                     } ?>" rel="nofollow"><?php
                  if(isset($page[self::THUMB]) && $page[self::THUMB] != 'NULL') {
                     ?><img src="<?php e($page[self::THUMB]); ?>" alt="<?php 
-                        e($page[self::TITLE]); ?>"  /> <?php
+                        e($title); ?>"  /> <?php
                     $check_video = false;
                  } else {
-                    echo $page[self::TITLE];
+                    echo $title;
                     if(isset($page[self::TYPE])) {
                         $this->filetypeHelper->render($page[self::TYPE]);
                     }
@@ -191,14 +204,16 @@ class SearchView extends View implements CrawlConstants
                     $this->videourlHelper->render($page[self::URL]);
                 }
                 ?>
-
-                <p><?php if(!isset($page[self::ROBOT_METAS]) || 
+                <p class="echolink"><?php 
+                    e(htmlentities(substr(
+                        UrlParser::noSchemeUrl($url),0, 200))." ");
+                ?></p>
+                <?php if(!isset($page[self::ROBOT_METAS]) || 
                     !in_array("NOSNIPPET", $page[self::ROBOT_METAS])) {
-                        echo $this->displayresultsHelper->
-                            render($page[self::DESCRIPTION]); 
-                    }?></p>
-                <p class="echolink" ><?php if(isset($page[self::URL])){
-                    e(htmlentities(substr($page[self::URL],0, 200))." ");}
+                        echo "<p>".$this->displayresultsHelper->
+                            render($page[self::DESCRIPTION])."</p>"; 
+                    }?>
+                <p class="gray"><?php
                     e(tl('search_view_rank', 
                         number_format($page[self::DOC_RANK], 2)));
                     e(tl('search_view_relevancy',
@@ -206,6 +221,7 @@ class SearchView extends View implements CrawlConstants
                     e(tl('search_view_proximity',
                         number_format($page[self::PROXIMITY], 2) )." ");
                     e(tl('search_view_score', $page[self::SCORE]));
+                ?><?php
                 if(isset($page[self::TYPE]) && $page[self::TYPE] != "link") {
                     if(CACHE_LINK && (!isset($page[self::ROBOT_METAS]) ||
                         !(in_array("NOARCHIVE", $page[self::ROBOT_METAS]) ||
@@ -215,7 +231,7 @@ class SearchView extends View implements CrawlConstants
                     <a href="?YIOOP_TOKEN=<?php e($data['YIOOP_TOKEN']);
                             ?>&amp;c=search&amp;a=cache&amp;q=<?php 
                             e($data['QUERY']); ?>&amp;arg=<?php 
-                            e(urlencode($page[self::URL])); 
+                            e(urlencode($url)); 
                             ?>&amp;its=<?php e($page[self::CRAWL_TIME]); ?>" 
                         rel='nofollow'>
                         <?php
@@ -234,7 +250,7 @@ class SearchView extends View implements CrawlConstants
 
                     <a href="?YIOOP_TOKEN=<?php e($data['YIOOP_TOKEN']);
                         ?>&amp;c=search&amp;a=related&amp;arg=<?php 
-                        e(urlencode($page[self::URL])); ?>&amp;<?php
+                        e(urlencode($url)); ?>&amp;<?php
                         ?>its=<?php e($page[self::CRAWL_TIME]); ?>" 
                         rel='nofollow'><?php 
                         e(tl('search_view_similar')); 
@@ -246,7 +262,7 @@ class SearchView extends View implements CrawlConstants
 
                     <a href="?YIOOP_TOKEN=<?php e($data['YIOOP_TOKEN']);
                         ?>&amp;c=search&amp;q=<?php 
-                        e(urlencode("link:".$page[self::URL])); ?>&amp;<?php
+                        e(urlencode("link:".$url)); ?>&amp;<?php
                         ?>its=<?php e($page[self::CRAWL_TIME]); ?>" 
                         rel='nofollow'><?php 
                         e(tl('search_view_inlink')); 

@@ -53,10 +53,10 @@ class DisplayresultsHelper extends Helper
 {
     public function render($data)
     {
-        $recipe = explode("||", $data);
-        $count = count($recipe);
-        if(isset($recipe)){
-            foreach($recipe as $value){
+        $recipe_parts = explode("||", $data);
+        $count = count($recipe_parts);
+        if($count > 1){
+            foreach($recipe_parts as $value){
                 echo $value;
                 print("<br />");
                 

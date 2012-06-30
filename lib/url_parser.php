@@ -53,7 +53,7 @@ class UrlParser
      * @return bool returns true if it is either http or https and false 
      *      otherwise
      */
-    static function isSchemeHttpOrHttps($url) 
+    static function isSchemeHttpOrHttps($url)
     {
         $url_parts = @parse_url($url);
 
@@ -64,6 +64,24 @@ class UrlParser
 
         return true; 
 
+    }
+
+    /**
+     * Converts a url with a scheme into one without. Also removes trailing
+     * slashes from url
+     *
+     * @param string $url  the url to trim
+     * @return string the trimmed url
+     */
+    static function noSchemeUrl($url)
+    {
+        $url = (UrlParser::isSchemeHttpOrHttps($url)) ? substr($url, 7) :
+            substr($url, 8);
+        $len = strlen($url);
+        if(isset($url[$len - 1]) && $url[$len - 1] == "/") {
+            $url = substr($url, 0, $len - 1);
+        }
+        return $url;
     }
 
     /**
