@@ -229,6 +229,7 @@ class SearchView extends View implements CrawlConstants
                     if(CACHE_LINK && (!isset($page[self::ROBOT_METAS]) ||
                         !(in_array("NOARCHIVE", $page[self::ROBOT_METAS]) ||
                           in_array("NONE", $page[self::ROBOT_METAS])))) {
+                        if(MOBILE) {e("<br />");}
                     ?>
 
                     <a href="?YIOOP_TOKEN=<?php e($data['YIOOP_TOKEN']);
