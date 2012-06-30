@@ -163,13 +163,16 @@ class SearchView extends View implements CrawlConstants
                         $url_parts = explode("|", $page[self::URL]);
                         $url = $url_parts[1];
                         $title = UrlParser::noSchemeUrl($url);
+                        $subtitle = "title='".$page[self::URL]."'";
                     } else {
                         $url = $page[self::URL];
                         $title = $page[self::TITLE];
+                        $subtitle = "";
                     }
                 } else {
                     $url = "";
                     $title = $page[self::TITLE];
+                    $subtitle = "";
                 }
             ?><div class='result'>
                 <?php if(isset($page['IMAGES'])) {
@@ -204,7 +207,7 @@ class SearchView extends View implements CrawlConstants
                     $this->videourlHelper->render($page[self::URL]);
                 }
                 ?>
-                <p class="echolink"><?php 
+                <p class="echolink" <?php e($subtitle); ?>><?php 
                     e(htmlentities(substr(
                         UrlParser::noSchemeUrl($url),0, 200))." ");
                 ?></p>
