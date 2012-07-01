@@ -174,7 +174,7 @@ class SearchView extends View implements CrawlConstants
                     }
                 } else {
                     $url = "";
-                    $title = isset($page[self::TITLE]) ? $page[self::TITLE] : "";
+                    $title = isset($page[self::TITLE]) ? $page[self::TITLE] :"";
                     $subtitle = "";
                 }
             ?><div class='result'>
@@ -187,12 +187,7 @@ class SearchView extends View implements CrawlConstants
                 }?>
 
                 <h2>
-                <a href="<?php if(isset($page[self::TYPE]) 
-                    && $page[self::TYPE] != "link") {
-                        e(htmlentities($page[self::URL])); 
-                    } else {
-                        e( strip_tags($title));
-                    } ?>" rel="nofollow"><?php
+                <a href="<?php  e(htmlentities($url));  ?>" rel="nofollow"><?php
                  if(isset($page[self::THUMB]) && $page[self::THUMB] != 'NULL') {
                     ?><img src="<?php e($page[self::THUMB]); ?>" alt="<?php 
                         e($title); ?>"  /> <?php
