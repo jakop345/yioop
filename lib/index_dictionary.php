@@ -69,8 +69,6 @@ class IndexDictionary implements CrawlConstants
      * @var string
      */
     var $dir_name;
-
-    var $hash_name;
     /**
      * Array of file handle for files in the dictionary. Members are used
      * to read files to look up words.
@@ -99,6 +97,17 @@ class IndexDictionary implements CrawlConstants
      * @var int
      */
     var $max_tier;
+
+    /**
+     * Tier currently being used to read dictionary data from
+     * @var int
+     */
+    var $read_tier;
+    /**
+     * Tiers which currently have data for reading
+     * @var array
+     */
+    var $active_tiers;
 
     /**
      * When merging two files on a given dictionary tier. This is the max number
@@ -141,7 +150,6 @@ class IndexDictionary implements CrawlConstants
     function __construct($dir_name)
     {
         $this->dir_name = $dir_name;
-        $this->hash_name = crawlHash($dir_name);
         if(!is_dir($this->dir_name)) {
             mkdir($this->dir_name);
             IndexDictionary::makePrefixLetters($this->dir_name);
@@ -149,11 +157,23 @@ class IndexDictionary implements CrawlConstants
         } else {
             $this->max_tier = unserialize(
                 file_get_contents($this->dir_name."/max_tier.txt"));
+            $this->read_tier = $this->max_tier;
+            $tiers = glob($this->dir_name."/0/*A.dic");
+            natsort($tiers);
+            $this->active_tiers = array();
+            foreach($tiers as $tier) {
+                $path = pathinfo($tier);
+                array_unshift($this->active_tiers,
+                    substr($path["filename"], 0, -1));
+            }
         }
     }
 
     /**
-     *
+     * Makes dictionary sub-directories for each of the 256 possible first 
+     * hash characters that crawHash in raw mode code output.
+     * @param string $dir_name base directory in which these sub-directories 
+     *      should be made
      */
     static function makePrefixLetters($dir_name)
     {
@@ -491,6 +511,32 @@ class IndexDictionary implements CrawlConstants
      */
      function getWordInfo($word_id, $raw = false, $extract = true)
      {
+        $info = array();
+        foreach($this->active_tiers as $tier) {
+            $tier_info =$this->getWordInfoTier($word_id, $raw, $extract, $tier);
+            if(is_array($tier_info)) {
+                $info = array_merge($info, $tier_info);
+            }
+        }
+        return $info;
+     }
+
+     /**
+      *
+      */
+     function getWordInfoTier($word_id, $raw = false, $extract = true, $tier)
+     {
+        if(isset($this->fhs)) {
+            $this->tier_fhs[$this->read_tier] = $this->fhs;
+            if(isset($this->tier_fhs[$tier])) {
+                $this->fhs = $this->tier_fhs[$tier];
+            } else {
+                $this->fhs = array();
+            }
+        } else {
+            $this->fhs = array();
+        }
+        $this->read_tier = $tier;
         if(strlen($word_id) < IndexShard::WORD_KEY_LEN) {
             return false;
         }
@@ -666,7 +712,7 @@ class IndexDictionary implements CrawlConstants
             return $this->blocks[$file_num][$bytes];
         }
         if(!isset($this->fhs[$file_num]) || $this->fhs[$file_num] === NULL) {
-            $file_name = $this->dir_name. "/$file_num/".$this->max_tier."A.dic";
+            $file_name = $this->dir_name."/$file_num/".$this->read_tier."A.dic";
             if(!file_exists($file_name)) return $false;
             $this->fhs[$file_num] = fopen($file_name, "rb");
             if($this->fhs[$file_num] === false) return $false;
