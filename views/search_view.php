@@ -144,7 +144,7 @@ class SearchView extends View implements CrawlConstants
         </div>
 
         <div class="serp-results">
-            <h2><?php 
+            <h2 class="serp-stats"><?php 
                 if(MOBILE) {
                 } else {
                 $num_results = min($data['TOTAL_ROWS'], 
@@ -162,16 +162,19 @@ class SearchView extends View implements CrawlConstants
                     if(substr($page[self::URL], 0, 4) == "url|") {
                         $url_parts = explode("|", $page[self::URL]);
                         $url = $url_parts[1];
-                        $title = UrlParser::noSchemeUrl($url);
+                        $title = UrlParser::simplifyUrl($url, 60);
                         $subtitle = "title='".$page[self::URL]."'";
                     } else {
                         $url = $page[self::URL];
                         $title = $page[self::TITLE];
+                        if(strlen(trim($title)) == 0) {
+                            $title = UrlParser::simplifyUrl($url, 60);
+                        }
                         $subtitle = "";
                     }
                 } else {
                     $url = "";
-                    $title = $page[self::TITLE];
+                    $title = isset($page[self::TITLE]) ? $page[self::TITLE] : "";
                     $subtitle = "";
                 }
             ?><div class='result'>
@@ -208,8 +211,8 @@ class SearchView extends View implements CrawlConstants
                 }
                 ?>
                 <p class="echolink" <?php e($subtitle); ?>><?php 
-                    e(htmlentities(substr(
-                        UrlParser::noSchemeUrl($url),0, 200))." ");
+                    e(htmlentities(
+                        UrlParser::simplifyUrl($url, 100))." ");
                 ?></p>
                 <?php if(!isset($page[self::ROBOT_METAS]) || 
                     !in_array("NOSNIPPET", $page[self::ROBOT_METAS])) {
@@ -221,9 +224,7 @@ class SearchView extends View implements CrawlConstants
                     if(CACHE_LINK && (!isset($page[self::ROBOT_METAS]) ||
                         !(in_array("NOARCHIVE", $page[self::ROBOT_METAS]) ||
                           in_array("NONE", $page[self::ROBOT_METAS])))) {
-                        if(MOBILE) {e("<br />");}
                     ?>
-
                     <a href="?YIOOP_TOKEN=<?php e($data['YIOOP_TOKEN']);
                             ?>&amp;c=search&amp;a=cache&amp;q=<?php 
                             e($data['QUERY']); ?>&amp;arg=<?php 
@@ -277,6 +278,7 @@ class SearchView extends View implements CrawlConstants
                       } 
                     }
                     ?><?php
+                    if(MOBILE) {e("<br />");}
                     e(tl('search_view_rank', 
                         number_format($page[self::DOC_RANK], 2)));
                     e(tl('search_view_relevancy',

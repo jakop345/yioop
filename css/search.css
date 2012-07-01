@@ -790,6 +790,14 @@ body.mobile
     width:8in;
 }
 
+.serp-stats
+{
+    margin:0.2in 0 0 0;
+    padding:0;
+    color:#666;
+    font-size:14pt;
+}
+
 .mobile .serp
 {
     position:relative;

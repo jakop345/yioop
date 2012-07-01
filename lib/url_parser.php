@@ -68,18 +68,25 @@ class UrlParser
 
     /**
      * Converts a url with a scheme into one without. Also removes trailing
-     * slashes from url
+     * slashes from url. Shortens url to desired length by inserting ellipsis
+     * for part of it if necessary
      *
      * @param string $url  the url to trim
+     * @param int $max_len length to shorten url to, 0 = no shortening
      * @return string the trimmed url
      */
-    static function noSchemeUrl($url)
+    static function simplifyUrl($url, $max_len = 0)
     {
         $url = (UrlParser::isSchemeHttpOrHttps($url)) ? substr($url, 7) :
             substr($url, 8);
         $len = strlen($url);
         if(isset($url[$len - 1]) && $url[$len - 1] == "/") {
             $url = substr($url, 0, $len - 1);
+        }
+        if($len > 0 && $len > $max_len) {
+            $front_len = ceil($max_len * 0.8);
+            $end_len = ceil($max_len * 0.2);
+            $url = substr($url, 0, $front_len)."...".substr($url, -$end_len);
         }
         return $url;
     }
