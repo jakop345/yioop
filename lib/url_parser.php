@@ -215,6 +215,7 @@ class UrlParser
             "hk" => 'zh-CN',
             "id" => 'in-ID',
             "il" => 'he',
+            "ir" => 'fa',
             "it" => 'it',
             "jp" => 'ja',
             "kp" => 'ko',
