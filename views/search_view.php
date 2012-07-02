@@ -214,11 +214,13 @@ class SearchView extends View implements CrawlConstants
                         echo "<p>".$this->displayresultsHelper->
                             render($page[self::DESCRIPTION])."</p>"; 
                     }?>
-                <p class="gray"><?php
+                <p class="serp-links-score"><?php
+                $aux_link_flag = false;
                 if(isset($page[self::TYPE]) && $page[self::TYPE] != "link") {
                     if(CACHE_LINK && (!isset($page[self::ROBOT_METAS]) ||
                         !(in_array("NOARCHIVE", $page[self::ROBOT_METAS]) ||
                           in_array("NONE", $page[self::ROBOT_METAS])))) {
+                        $aux_link_flag = true;
                     ?>
                     <a href="?YIOOP_TOKEN=<?php e($data['YIOOP_TOKEN']);
                             ?>&amp;c=search&amp;a=cache&amp;q=<?php 
@@ -237,9 +239,9 @@ class SearchView extends View implements CrawlConstants
                         ?></a>.
                     <?php 
                     }
-                    if(SIMILAR_LINK) { 
+                    if(SIMILAR_LINK) {
+                        $aux_link_flag = true;
                     ?>
-
                     <a href="?YIOOP_TOKEN=<?php e($data['YIOOP_TOKEN']);
                         ?>&amp;c=search&amp;a=related&amp;arg=<?php 
                         e(urlencode($url)); ?>&amp;<?php
@@ -249,9 +251,9 @@ class SearchView extends View implements CrawlConstants
                     ?></a>.
                     <?php 
                     }
-                    if(IN_LINK) { 
+                    if(IN_LINK) {
+                        $aux_link_flag = true;
                     ?>
-
                     <a href="?YIOOP_TOKEN=<?php e($data['YIOOP_TOKEN']);
                         ?>&amp;c=search&amp;q=<?php 
                         e(urlencode("link:".$url)); ?>&amp;<?php
@@ -272,20 +274,19 @@ class SearchView extends View implements CrawlConstants
                             e("$address");?></a>. <?php 
                       } 
                     }
-                    ?><?php
-                    if(MOBILE) {e("<br />");}
-                    e(tl('search_view_rank', 
-                        number_format($page[self::DOC_RANK], 2)));
-                    e(tl('search_view_relevancy',
-                        number_format($page[self::RELEVANCE], 2) ));
-                    e(tl('search_view_proximity',
-                        number_format($page[self::PROXIMITY], 2) )." ");
-                    e(tl('search_view_score', $page[self::SCORE]));
-                ?>
-                </p>
+                    ?>
                 <?php
-                } ?>
-
+                }
+                if(MOBILE && $aux_link_flag) {e("<br />");}
+                e(tl('search_view_rank', 
+                    number_format($page[self::DOC_RANK], 2)));
+                e(tl('search_view_relevancy',
+                    number_format($page[self::RELEVANCE], 2) ));
+                e(tl('search_view_proximity',
+                    number_format($page[self::PROXIMITY], 2) )." ");
+                e(tl('search_view_score', $page[self::SCORE]));
+                 ?>
+                </p>
             </div>
 
             <?php 

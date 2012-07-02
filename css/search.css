@@ -90,10 +90,6 @@ p
     color:red;
 }
 
-.gray
-{
-    color:#666;
-}
 
 .highlight, .backred
 {
@@ -798,6 +794,12 @@ body.mobile
     font-size:14pt;
 }
 
+.serp-links-score
+{
+    color:#666;
+    clear:both;
+}
+
 .mobile .serp
 {
     position:relative;
@@ -1092,7 +1094,7 @@ body.mobile
     float:left;
     margin:0;
     width: 128px;
-    height:80px;
+    height:90px;
 }
 
 .video-link .thumb
@@ -1114,7 +1116,7 @@ body.mobile
     float:right;
     margin:0;
     width: 128px;
-    height:80px;
+    height:90px;
 }
 
 .html-rtl .video-play
