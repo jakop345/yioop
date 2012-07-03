@@ -94,12 +94,8 @@ class FetchController extends Controller implements CrawlConstants
             $robot_table = unserialize(file_get_contents($robot_table_name));
         }
         if(isset($_REQUEST['robot_instance'])) {
-            $machine_uri = $this->clean($_REQUEST['machine_uri'], "string");
-            $path_info = pathinfo($machine_uri);
-            $machine_uri = (isset($path_info["dirname"])) ?
-                $path_info["dirname"] : "";
             $robot_table[$this->clean($_REQUEST['robot_instance'], "string")] = 
-                array($_SERVER['REMOTE_ADDR'], $machine_uri,
+                array($_SERVER['REMOTE_ADDR'], $_REQUEST['machine_uri'],
                 time());
             file_put_contents($robot_table_name, serialize($robot_table));
         }
