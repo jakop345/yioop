@@ -861,16 +861,13 @@ class SearchController extends Controller implements CrawlConstants
 
         $crawl_item = $this->crawlModel->getCrawlItem($url, $queue_servers);
 
-        if(!$crawl_item || (isset($crawl_item[self::ROBOT_METAS]) &&
-                (in_array("NOARCHIVE", $crawl_item[self::ROBOT_METAS]) ||
-                in_array("NONE", $crawl_item[self::ROBOT_METAS])) )) {
+        if(!$crawl_item ) {
             $this->displayView("nocache", $data);
             return;
         }
         $in_url = "";
         $image_flag = false;
         if(isset($crawl_item[self::THUMB])) {
-
             $image_flag = true;
             $inlinks = $this->phraseModel->getPhrasePageResults(
                 "link:$url", 0, 
@@ -940,7 +937,14 @@ class SearchController extends Controller implements CrawlConstants
             $this->displayView("nocache", $data);
             return;
         }
-        $cache_file = $cache_item[self::PAGE];
+        if( isset($crawl_item[self::ROBOT_METAS]) &&
+                (in_array("NOARCHIVE", $crawl_item[self::ROBOT_METAS]) ||
+                in_array("NONE", $crawl_item[self::ROBOT_METAS])) ) {
+            $cache_file = "<div>'.
+                tl('search_controller_no_archive_page').'</div>";
+        } else {
+            $cache_file = $cache_item[self::PAGE];
+        }
         if(!$image_flag) {
 
             $meta_words = $this->phraseModel->meta_words_list;
