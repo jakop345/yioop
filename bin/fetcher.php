@@ -715,8 +715,7 @@ class Fetcher implements CrawlConstants
         $request =  
             $name_server."?c=fetch&a=crawlTime&time=$time&session=$session".
             "&robot_instance=".$robot_instance."&machine_uri=".WEB_URI.
-            "&crawl_time=.$crawl_time";
-
+            "&crawl_time=$crawl_time";
         $info_string = FetchUrl::getPage($request);
         $info = @unserialize(trim($info_string));
         if(isset($info[self::CRAWL_TIME]) 

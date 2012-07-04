@@ -62,12 +62,20 @@ class ToggleHelper extends Helper
     { 
         if($state) {
             $oncolor = ($caution) ? "backyellow" : "backgreen";
-            ?>
-            <table class="toggletable"><tr><td 
-            class="<?php e($oncolor);
-                ?>"><b><?php e(tl('toggle_helper_on'));?></b></td>
-            <td><a href="<?php e($off_url);?>"
-            ><?php e(tl('toggle_helper_off'));?></a></td></tr></table>
+            if($caution) { ?>
+                <table class="toggletable"><tr><td 
+                class="<?php e($oncolor);
+                    ?>"><a href="<?php e($on_url);?>"><?php 
+                e(tl('toggle_helper_on'));?></a></td>
+                <td><a href="<?php e($off_url);?>"
+                ><?php e(tl('toggle_helper_off'));?></a></td></tr></table>
+            <?php } else { ?>
+                <table class="toggletable"><tr><td 
+                class="<?php e($oncolor);
+                    ?>"><b><?php e(tl('toggle_helper_on'));?></b></td>
+                <td><a href="<?php e($off_url);?>"
+                ><?php e(tl('toggle_helper_off'));?></a></td></tr></table>
+            <?php } ?>
         <?php } else {?>
             <table class="toggletable"><tr><td><a href="<?php e($on_url);?>"
             ><?php e(tl('toggle_helper_on'));?></a></td>

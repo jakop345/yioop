@@ -74,7 +74,7 @@ function upgradeDatabaseWorkDirectoryCheck()
     $result = @$model->db->execute($sql);
     if($result !== false) {
         $row = $model->db->fetchArray($result);
-        if($row['ID'] == 7) {
+        if($row['ID'] == 8) {
             return false;
         }
     }
@@ -88,7 +88,7 @@ function upgradeDatabaseWorkDirectoryCheck()
  */
 function upgradeDatabaseWorkDirectory()
 {
-    $versions = array(0, 1, 2, 3, 4, 5, 6, 7);
+    $versions = array(0, 1, 2, 3, 4, 5, 6, 7, 8);
     $model = new Model();
     $model->db->selectDB(DB_NAME);
     $sql = "SELECT ID FROM VERSION";
@@ -283,5 +283,18 @@ function upgradeDatabaseVersion7(&$db)
         "INSERT INTO TRANSLATION_LOCALE VALUES (7, 1, 'Results Editor')");
     $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (7, 5, 
         'Éditeur de résultats')");
+}
+
+function upgradeDatabaseVersion8(&$db)
+{
+    $db->execute("DELETE FROM VERSION WHERE ID=7");
+    $db->execute("INSERT INTO VERSION VALUES (8)");
+    $db->execute("INSERT INTO LOCALE VALUES (20, 'fa', 'فارسی', 'rl-tb')");
+    $db->execute("CREATE TABLE ACTIVE_FETCHER (NAME VARCHAR(16),".
+        " FETCHER_ID INT(4))");
+    $db->execute("CREATE TABLE CRON_TIME (TIMESTAMP INT(11))");
+    $db->execute("INSERT INTO CRON_TIME VALUES ('".time()."')");
+
+    upgradeLocale();
 }
 ?>

@@ -75,12 +75,10 @@ class MachineModel extends Model
 
         $result = $this->db->execute($sql);
         $i = 0;
-
         while($machines[$i] = $this->db->fetchArray($result)) {
             $i++;
         }
         unset($machines[$i]); //last one will be null
-        
 
         return $machines;
 
@@ -186,6 +184,19 @@ class MachineModel extends Model
                 }
             }
         }
+        $sql = "SELECT * FROM ACTIVE_FETCHER"; 
+        $result = $this->db->execute($sql);
+        $active_fetchers = array();
+        while($row = $this->db->fetchArray($result)) {
+            for($i = 0; $i < $num_machines; $i++) {
+                if($machines[$i]['NAME'] == $row['NAME'] &&
+                    !isset($machines[$i]["STATUSES"]["fetcher"][
+                        $row['FETCHER_ID']])) {
+                    $machines[$i]["STATUSES"]["fetcher"][
+                        $row['FETCHER_ID']] = 0;
+                }
+            }
+        }
         return $machines;
     }
 
@@ -245,12 +256,40 @@ class MachineModel extends Model
                 "&session=$session";
             if($fetcher_num !== NULL) {
                 $url .= "&fetcher[$fetcher_num]=$value";
+                $sql = "DELETE FROM ACTIVE_FETCHER WHERE 
+                        NAME='$machine_name' AND FETCHER_ID='$fetcher_num'";
+                $this->db->execute($sql);
+                if($action == "start") {
+                    $sql = "INSERT INTO ACTIVE_FETCHER VALUES ('$machine_name',
+                        '$fetcher_num')";
+                }
+                $this->db->execute($sql);
             } else if($is_mirror) {
                 $url .= "&mirror=$value";
             } else {
                 $url .= "&queue_server=$value";
             }
             echo FetchUrl::getPage($url);
+        }
+    }
+
+    /**
+     * Used to restart any fetchers which the user turned on, but which
+     * happened to have crashed. (Crashes are usually caused by CURL or
+     * memory issues)
+     */
+    function restartCrashedFetchers()
+    {
+        $machines =  $this->getMachineStatuses();
+        foreach($machines as $machine) {
+            if(isset($machine["STATUSES"]["fetcher"])) {
+                $fetchers = $machine["STATUSES"]["fetcher"];
+                foreach($fetchers as $id => $status) {
+                    if($status === 0) {
+                        $this->update($machine["NAME"], "start", $id, false);
+                    }
+                }
+            }
         }
     }
 }

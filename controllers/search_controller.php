@@ -733,6 +733,8 @@ class SearchController extends Controller implements CrawlConstants
                     $href = $clone->getAttribute("href");
                     $href = UrlParser::canonicalLink($href, $url, false);
                     $clone->setAttribute("href", $href);
+                    //an anchor might have an img tag within it so recurse
+                    $clone = $this->canonicalizeLinks($clone, $url);
                     $node->replaceChild($clone, $node->childNodes->item($k));
                 }
             } else if (in_array($tag_name, array("img", "object",

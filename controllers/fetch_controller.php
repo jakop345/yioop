@@ -60,7 +60,7 @@ class FetchController extends Controller implements CrawlConstants
      * No models used by this controller
      * @var array
      */
-    var $models = array("machine", "crawl");
+    var $models = array("machine", "crawl", "cron");
     /**
      * Load FetchView to return results to fetcher
      * @var array
@@ -73,6 +73,12 @@ class FetchController extends Controller implements CrawlConstants
     var $activities = array("schedule", "archiveSchedule", "update",
         "crawlTime");
 
+    /**
+     *  Number of seconds that must elapse after last call before doing
+     *  cron activities (mainly check liveness of fetchers which should be
+     *  alive)
+     */
+    const CRON_INTERVAL = 300;
     /**
      * Checks that the request seems to be coming from a legitimate fetcher then
      * determines which activity the fetcher is requesting and calls that
@@ -386,14 +392,20 @@ class FetchController extends Controller implements CrawlConstants
             $prev_crawl_time = 0;
         }
 
-        if(file_exists(CRAWL_DIR."/schedules/crawl_status.txt")) {
-            $crawl_status = unserialize(file_get_contents(
-                CRAWL_DIR."/schedules/crawl_status.txt"));
+        $cron_time = $this->cronModel->getCronTime();
+        if((time() - $cron_time) > self::CRON_INTERVAL) {
+            $this->cronModel->updateCronTime();
+            $this->doCronTasks();
+        }
+
+        $local_filename = CRAWL_DIR."/schedules/crawl_status.txt";
+        $network_filename = CRAWL_DIR."/schedules/network_status.txt";
+        if(file_exists($local_filename)) {
+            $crawl_status = unserialize(file_get_contents($local_filename));
             $crawl_time = (isset($crawl_status["CRAWL_TIME"])) ?
                 $crawl_status["CRAWL_TIME"] : 0;
-        } else if(file_exists(CRAWL_DIR."/schedules/network_status.txt")){
-            $crawl_time = unserialize(file_get_contents(
-                CRAWL_DIR."/schedules/network_status.txt"));
+        } else if(file_exists($network_filename)){
+            $crawl_time = unserialize(file_get_contents($network_filename));
         } else {
             $crawl_time = 0;
         }
@@ -425,6 +437,16 @@ class FetchController extends Controller implements CrawlConstants
         $data['MESSAGE'] = serialize($info);
 
         $this->displayView($view, $data);
+    }
+
+    /**
+     *  Used to do periodic maintenance tasks for the Name Server.
+     *  For now, just checks if any fetchers which the user turned on
+     *  have crashed and if so restarts them
+     */
+    function doCronTasks()
+    {
+        $this->machineModel->restartCrashedFetchers();
     }
 }
 ?>

@@ -720,9 +720,9 @@ EOT;
     {
         if($machine_urls != NULL && !$this->isSingleLocalhost($machine_urls)) {
             $params = array($crawl_params, $seed_info);
-            $timestamp = $crawl_params[self::CRAWL_TIME];
+            $crawl_time = $crawl_params[self::CRAWL_TIME];
             file_put_contents(CRAWL_DIR."/schedules/network_status.txt",
-                serialize($timestamp));
+                serialize($crawl_time));
             $this->execMachines("sendStartCrawlMessage", 
                 $machine_urls, serialize($params));
             return;

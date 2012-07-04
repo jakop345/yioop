@@ -133,9 +133,14 @@ class MachinestatusView extends View
                 ?>[<a href="<?php e($log_url);?>"><?php 
                     e(tl('machinestatus_view_log'));?></a>]</td>
                 </tr><tr><td><?php 
+                $toggle = false;
+                $caution = false;
+                if(isset($m['STATUSES']["fetcher"][$i])) {
+                    $toggle = true;
+                    $caution = ($m['STATUSES']["fetcher"][$i] == 0);
+                }
                 $this->toggleHelper->render(
-                    isset($m['STATUSES']["fetcher"][$i]), 
-                    $on_fetcher, $off_fetcher);?></td>
+                    $toggle, $on_fetcher, $off_fetcher, $caution);?></td>
                 </tr>
                 </table>
                 <?php if($i % 4  == 3) { ?>

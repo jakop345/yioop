@@ -117,6 +117,7 @@ $db->execute("INSERT INTO LOCALE VALUES (16, 'zh-CN', '中文', 'lr-tb')");
 $db->execute("INSERT INTO LOCALE VALUES (17, 'kn', 'ಕನ್ನಡ', 'lr-tb')");
 $db->execute("INSERT INTO LOCALE VALUES (18, 'hi', 'हिन्दी', 'lr-tb')");
 $db->execute("INSERT INTO LOCALE VALUES (19, 'tr', 'Türkçe', 'lr-tb')");
+$db->execute("INSERT INTO LOCALE VALUES (20, 'fa', 'فارسی', 'rl-tb')");
 
 $db->execute("CREATE TABLE ROLE (ROLE_ID INTEGER PRIMARY KEY ".
     "$auto_increment, NAME VARCHAR(512))");
@@ -244,6 +245,10 @@ $db->execute("CREATE TABLE MIX_COMPONENTS (
 $db->execute("CREATE TABLE MACHINE (
     NAME VARCHAR(16) PRIMARY KEY, URL VARCHAR(256) UNIQUE,
     HAS_QUEUE_SERVER INT, NUM_FETCHERS INT(4), PARENT VARCHAR(16) )");
+$db->execute("CREATE TABLE ACTIVE_FETCHER (NAME VARCHAR(16),
+    FETCHER_ID INT(4))");
+$db->execute("CREATE TABLE CRON_TIME (TIMESTAMP INT(11))");
+$db->execute("INSERT INTO CRON_TIME VALUES ('".time()."')");
 
 $db->disconnect();
 if(in_array(DBMS, array('sqlite','sqlite3' ))){
