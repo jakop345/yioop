@@ -39,7 +39,7 @@
 
 if(php_sapi_name() != 'cli') {echo "BAD REQUEST"; exit();}
 
-ini_set("memory_limit","1024M");
+ini_set("memory_limit","1500M");
 /**
  * Calculate base directory of script
  * @ignore
@@ -96,11 +96,11 @@ line as:
 php token_tool.php filter wiki_file lang locale n extract_type max_to_extract 
 
 where wiki_file is a wikipedia xml file or a bz2  compressed xml file whose urls
-or wiki page count dump file which will be used to determine the n-grams, lang
-is an Wikipedia language tag,  locale is the IANA language tag of locale to 
-store the results for (if different from lang, for example, en-US versus en for 
-lang), n is the number of words in a row to consider, extract_type is where 
-from Wikipedia source to extract:
+or wiki page count dump file (it can also be a folder of these kind of files) 
+which will be used to determine the n-grams, lang is an Wikipedia language tag, 
+locale is the IANA language tag of locale to store the results for (if different
+from lang, for example, en-US versus en for lang), n is the number of words in 
+a row to consider, extract_type is where from Wikipedia source to extract:
 
 0 = title's,
 1 = redirect's,
@@ -201,7 +201,7 @@ function makeNWordGramsFiles($args)
     }
     if(!isset($args[5]) && $args[3] == "all" && 
         $args[2] == NWordGrams::PAGE_COUNT_WIKIPEDIA) {
-        $$args[5] = 400000;
+        $args[5] = 400000;
     } else {
         $args[5] = -1;
     }
@@ -224,7 +224,7 @@ function makeNWordGramsFiles($args)
      *to the filter file name. The count of n word grams in text file is passed
      *as a parameter to set the limit of n word grams in the filter file.
      */
-    NWordGrams::makeNWordGramsFilterFile($argv[3], $argv[4], $num_ngrams, 
+    NWordGrams::makeNWordGramsFilterFile($args[2], $args[3], $num_ngrams, 
         $max_gram_len);
 }
 

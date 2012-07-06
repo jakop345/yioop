@@ -109,7 +109,7 @@ class NWordGrams
      * The n word grams are read from text file, stemmed if a stemmer
      * is available for $lang and then stored in filter file.
      *
-     * @param string $lang language to be used to stem bigrams.
+     * @param string $lang locale to be used to stem n grams.
      * @param int $num_gram number of words in grams we are storing
      * @param int $num_ngrams_found count of n word grams in text file.
      * @param int $max_gram_len value n of longest n gram to be added.
@@ -153,7 +153,8 @@ class NWordGrams
      * the text file.
      *
      * @param string $wiki_file compressed or uncompressed wikipedia
-     *      XML file path to be used to extract bigrams.
+     *      XML file path to be used to extract bigrams. This can also
+     *      be a folder containing such files
      * @param string $lang Language to be used to create n grams.
      * @param string $locale Locale to be used to store results.
      * @param int $num_gram number of words in grams we are looking for
@@ -164,31 +165,6 @@ class NWordGrams
         $locale, $num_gram = 2, $ngram_type = self::PAGE_COUNT_WIKIPEDIA, 
         $max_terms = -1)
     {
-        $wiki_file_path = PREP_DIR."/$wiki_file";
-        if(strpos($wiki_file_path, "bz2") !== false) {
-            $fr = bzopen($wiki_file_path, 'r') or
-                die ("Can't open compressed file");
-            $read = "bzread";
-            $close = "bzclose";
-        } else if (strpos($wiki_file_path, "gz") !== false) {
-            $fr = gzopen($wiki_file_path, 'r') or
-                die ("Can't open compressed file");
-            $read = "gzread";
-            $close = "gzclose";
-        } else {
-            $fr = fopen($wiki_file_path, 'r') or die("Can't open file");
-            $read = "fread";
-            $close = "fclose";
-        }
-        $ngrams_file_path
-            = LOCALE_DIR . "/$locale/resources/" . "{$num_gram}" .
-                self::TEXT_SUFFIX;
-        $ngrams = array();
-        $input_buffer = "";
-        $time = time();
-        echo "Reading wiki file ...\n";
-        $bytes = 0;
-        $bytes_since_last_output = 0;
         $output_message_threshold = self::BLOCK_SIZE*self::BLOCK_SIZE;
         $is_count_type = false;
         switch($ngram_type)
@@ -230,48 +206,82 @@ class NWordGrams
         }
         $pattern .= $pattern_end;
         $replace_types = array(self::WIKI_DUMP_TITLE, self::WIKI_DUMP_REDIRECT);
-        while (!feof($fr)) {
-            $input_text = $read($fr, self::BLOCK_SIZE);
-            $len = strlen($input_text);
-            if($len == 0) break;
-            $bytes += $len;
-            $bytes_since_last_output += $len;
-            if($bytes_since_last_output > $output_message_threshold) {
-                echo "Have now read ".$bytes." many bytes. " .
-                    "Peak memory so far ".memory_get_peak_usage().
-                    " Elapsed time so far:".(time() - $time)."\n";
-                $bytes_since_last_output = 0;
-            }
-            $input_buffer .= mb_strtolower($input_text);
-            $lines = explode("\n", $input_buffer);
-            $input_buffer = array_pop($lines);
-            foreach($lines as $line) {
-                preg_match($pattern, $line, $matches);
-                if(count($matches) > 0) {
-                    if($is_count_type) {
-                        $line_parts = explode(" ", $matches[0]);
-                        if(isset($line_parts[1]) && isset($line_parts[2])) {
-                            $ngram = mb_ereg_replace("_", " ", $line_parts[1]);
-                            $char_grams = 
-                                PhraseParser::getCharGramsTerm(array($ngram), 
-                                    $locale);
-                            $ngram = implode(" ", $char_grams);
-                            $ngram_num_words =  mb_substr_count($ngram, " ")+1;
-                            if(($is_all && $ngram_num_words > 1) ||(!$is_all &&
-                                $ngram_num_words == $num_gram)) {
-                                $ngrams[$ngram] = $line_parts[2];
-                            }
-                        }
-                    } else {
-                        $ngram = mb_ereg_replace(
-                            $replace_array, "", $matches[0]);
-                        $ngram = mb_ereg_replace("_", " ", $ngram);
 
-                        $ngrams[] = $ngram;
-                    }
-                    if($is_all && isset($ngram)) {
-                        $ngram_num_words =  mb_substr_count($ngram, " ") + 1;
-                        $max_gram_len = max($max_gram_len, $ngram_num_words);
+        if(is_dir(PREP_DIR."/$wiki_file") ) {
+            $folder_files = glob(PREP_DIR."/$wiki_file/*.{gz,bz}", GLOB_BRACE);
+        } else {
+            $folder_files = array(PREP_DIR."/$wiki_file");
+        }
+        $ngrams = array();
+        foreach($folder_files as $wiki_file_path) {
+            if(strpos($wiki_file_path, "bz2") !== false) {
+                $fr = bzopen($wiki_file_path, 'r') or
+                    die ("Can't open compressed file");
+                $read = "bzread";
+                $close = "bzclose";
+            } else if (strpos($wiki_file_path, "gz") !== false) {
+                $fr = gzopen($wiki_file_path, 'r') or
+                    die ("Can't open compressed file");
+                $read = "gzread";
+                $close = "gzclose";
+            } else {
+                $fr = fopen($wiki_file_path, 'r') or die("Can't open file");
+                $read = "fread";
+                $close = "fclose";
+            }
+            $ngrams_file_path
+                = LOCALE_DIR . "/$locale/resources/" . "{$num_gram}" .
+                    self::TEXT_SUFFIX;
+
+            $input_buffer = "";
+            $time = time();
+            echo "Reading wiki file ...$wiki_file_path...\n";
+            $bytes = 0;
+            $bytes_since_last_output = 0;
+            while (!feof($fr)) {
+                $input_text = $read($fr, self::BLOCK_SIZE);
+                $len = strlen($input_text);
+                if($len == 0) break;
+                $bytes += $len;
+                $bytes_since_last_output += $len;
+                if($bytes_since_last_output > $output_message_threshold) {
+                    echo "Have now read ".$bytes." many bytes." .
+                        " Peak memory so far: ".memory_get_peak_usage().
+                        ".\n     Number of word grams so far: ".count($ngrams).
+                        ". Elapsed time so far: ".(time() - $time)."s\n";
+                    $bytes_since_last_output = 0;
+                }
+                $input_buffer .= mb_strtolower($input_text);
+                $lines = explode("\n", $input_buffer);
+                $input_buffer = array_pop($lines);
+                foreach($lines as $line) {
+                    preg_match($pattern, $line, $matches);
+                    if(count($matches) > 0) {
+                        if($is_count_type) {
+                            $line_parts = explode(" ", $matches[0]);
+                            if(isset($line_parts[1]) && isset($line_parts[2])) {
+                                $ngram=mb_ereg_replace("_", " ",$line_parts[1]);
+                                $char_grams = 
+                                    PhraseParser::getCharGramsTerm(
+                                        array($ngram),$locale);
+                                $ngram = implode(" ", $char_grams);
+                                $ngram_num_words=mb_substr_count($ngram, " ")+1;
+                                if(($is_all && $ngram_num_words > 1) ||
+                                    (!$is_all &&$ngram_num_words == $num_gram)){
+                                    $ngrams[$ngram] = $line_parts[2];
+                                }
+                            }
+                        } else {
+                            $ngram = mb_ereg_replace(
+                                $replace_array, "", $matches[0]);
+                            $ngram = mb_ereg_replace("_", " ", $ngram);
+
+                            $ngrams[] = $ngram;
+                        }
+                        if($is_all && isset($ngram)) {
+                            $ngram_num_words = mb_substr_count($ngram, " ") + 1;
+                            $max_gram_len = max($max_gram_len,$ngram_num_words);
+                        }
                     }
                 }
             }
