@@ -277,7 +277,8 @@ EOT;
                 " KEYWORDS VARCHAR(256))",
             "CREATE TABLE MACHINE (NAME VARCHAR(16) PRIMARY KEY,".
                 " URL VARCHAR(256) UNIQUE, HAS_QUEUE_SERVER INT,".
-                " NUM_FETCHERS INT(4), PARENT VARCHAR(16) )"
+                " NUM_FETCHERS INT(4), PARENT VARCHAR(16) )",
+            "CREATE TABLE CRON_TIME (TIMESTAMP INT(11))"
             );
         foreach($create_statements as $statement) {
             if(!$test_dbm->execute($statement)) {return false;}
