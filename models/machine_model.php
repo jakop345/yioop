@@ -247,6 +247,7 @@ class MachineModel extends Model
         $value = ($action == "start") ? "true" : "false";
         $time = time();
         $session = md5($time . AUTH_KEY);
+        $this->db->execute("BEGIN");
         $sql = "SELECT URL FROM MACHINE WHERE NAME='$machine_name'"; 
 
         $result = $this->db->execute($sql);
@@ -271,6 +272,7 @@ class MachineModel extends Model
             }
             echo FetchUrl::getPage($url);
         }
+        $this->db->execute("COMMIT");
     }
 
     /**

@@ -358,10 +358,10 @@ class CrawlModel extends ParallelModel implements CrawlConstants
     function getSeedInfo($use_default = false)
     {
         if(file_exists(WORK_DIRECTORY."/crawl.ini") && !$use_default) {
-            $info = parse_ini_file (WORK_DIRECTORY."/crawl.ini", true);
+            $info = parse_ini_file(WORK_DIRECTORY."/crawl.ini", true);
         } else {
             $info =
-                parse_ini_file (BASE_DIR."/configs/default_crawl.ini", true);
+                parse_ini_file(BASE_DIR."/configs/default_crawl.ini", true);
         }
 
         return $info;
@@ -464,6 +464,7 @@ EOT;
         }
 
         $out = implode("\n", $n);
+        $out .= "\n";
         file_put_contents(WORK_DIRECTORY."/crawl.ini", $out);
     }
 

@@ -184,7 +184,7 @@ class LocaleModel extends Model
                 filemtime("$tag_prefix/statistics.txt") <
                 filemtime("$tag_prefix/configure.ini")) {
 
-                $tmp = parse_ini_file ("$tag_prefix/configure.ini", true);
+                $tmp = parse_ini_file("$tag_prefix/configure.ini", true);
                 $num_ids = 0;
                 $num_strings = 0;
                 foreach ($tmp['strings'] as $msg_id => $msg_string) {
@@ -710,6 +710,7 @@ EOT;
         }
 
         $out = implode("\n", $n);
+        $out .= "\n";
         file_put_contents($cur_path.'/configure.ini', $out);
     }
 

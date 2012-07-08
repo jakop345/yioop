@@ -107,7 +107,7 @@ class GroupIterator extends IndexBundleIterator
     var $domain_factors;
 
     /**
-     *
+     * Whether the iterator is being used for a network query
      * @var bool
      */
     var $network_flag;
