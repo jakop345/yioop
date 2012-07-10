@@ -455,7 +455,7 @@ class GroupIterator extends IndexBundleIterator
                                 $doc_info[self::CRAWL_TIME],
                                 $doc_info[self::GENERATION],
                                 $doc_info[self::SUMMARY_OFFSET]);
-                    } else {
+                    } else if(is_array($doc_info[self::SUMMARY_OFFSET])) {
                         $out_pages[$hash_url][self::SUMMARY_OFFSET] = 
                             array_merge(
                                 $out_pages[$hash_url][self::SUMMARY_OFFSET],
