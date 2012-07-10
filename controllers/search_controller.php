@@ -295,6 +295,7 @@ class SearchController extends Controller implements CrawlConstants
                 }
             }
             echo serialize($data);
+            exit();
         }
         $stats_file = CRAWL_DIR."/cache/".self::statistics_base_name.
                 $data['its'].".txt";
