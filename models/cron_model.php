@@ -82,10 +82,8 @@ class CronModel extends Model
     function updateCronTime()
     {
         $this->db->selectDB(DB_NAME);
-        $this->db->execute("BEGIN");
         $this->db->execute("DELETE FROM CRON_TIME");
         $this->db->execute("INSERT INTO CRON_TIME VALUES ('".time()."')");
-        $this->db->execute("COMMIT");
     }
 
 }

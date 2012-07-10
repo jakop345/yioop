@@ -77,8 +77,10 @@ function upgradeDatabaseWorkDirectoryCheck()
         if($row['ID'] == 8) {
             return false;
         }
+        return true
     }
-    return true;
+    // if the database was busy so no result was returned, we don't upgrade
+    return false;
 }
 
 /**
