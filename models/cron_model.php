@@ -68,8 +68,10 @@ class CronModel extends Model
     {
         $this->db->selectDB(DB_NAME);
 
-        $result = $this->db->execute("SELECT TIMESTAMP FROM CRON_TIME");
-        $row = $this->db->fetchArray($result);
+        $result = @$this->db->execute("SELECT TIMESTAMP FROM CRON_TIME");
+        if($result) {
+            $row = $this->db->fetchArray($result);
+        }
         $timestamp = (isset($row['TIMESTAMP'])) ? $row['TIMESTAMP'] : 0;
 
         return $timestamp;
