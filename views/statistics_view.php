@@ -126,9 +126,9 @@ class StatisticsView extends View
         <?php e($data["VISITED_URLS_COUNT"])?></p>
         <p><b><?php e(tl("statistics_view_url")); ?></b>:
         <?php e($data["COUNT"])?></p>
-        <?php if(isset($data["SEEN"]["HOST"]["all"])) { ?>
+        <?php if(isset($data["HOST"]["DATA"]["all"])) { ?>
             <p><b><?php e(tl("statistics_view_number_hosts")); ?></b>:
-            <?php e($data["SEEN"]["HOST"]["all"])?></p>
+            <?php e($data["HOST"]["DATA"]["all"])?></p>
         <?php 
         }
             foreach($headings as $heading => $group_name) {

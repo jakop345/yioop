@@ -1000,11 +1000,17 @@ class PhraseModel extends ParallelModel
         $network_flag = false;
         if($queue_servers != array() &&
             !$this->isSingleLocalhost($queue_servers)) {
-                $network_flag = true;
-                $total_iterators = 1;
-                $num_servers = count($queue_servers);
-                $iterators[0] = new NetworkIterator($original_query, 
-                    $queue_servers, $this->index_name, $filter);
+            $network_flag = true;
+            $total_iterators = 1;
+            $num_servers = count($queue_servers);
+            if( (!isset($this->index_name) || !$this->index_name) &&
+                isset($word_structs[0]["INDEX_NAME"]) ) {
+                $index_name = $word_structs[0]["INDEX_NAME"];
+            } else {
+                $index_name = $this->index_name;
+            }
+            $iterators[0] = new NetworkIterator($original_query,
+                $queue_servers, $index_name, $filter);
         }
         if(!$network_flag) {
             foreach($word_structs as $word_struct) {
