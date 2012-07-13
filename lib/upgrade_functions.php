@@ -309,9 +309,9 @@ function upgradeDatabaseVersion9(&$db)
 
     $db->execute("INSERT INTO ROLE_ACTIVITY VALUES (1, 11)");
 
-    $db->execute("DELETE FROM ACTIVITY WHERE TRANSLATION_ID > 8");
-    $db->execute("DELETE FROM TRANSLATION WHERE TRANSLATION_ID > 8");
-    $db->execute("DELETE FROM TRANSLATION_LOCALE WHERE TRANSLATION_ID > 8");
+    $db->execute("DELETE FROM ACTIVITY WHERE TRANSLATION_ID >= 8");
+    $db->execute("DELETE FROM TRANSLATION WHERE TRANSLATION_ID >= 8");
+    $db->execute("DELETE FROM TRANSLATION_LOCALE WHERE TRANSLATION_ID >+ 8");
     $db->execute("INSERT INTO ACTIVITY VALUES (8, 8, 'searchSources')");
     $db->execute("INSERT INTO ACTIVITY VALUES (9, 9, 'manageMachines')");
     $db->execute("INSERT INTO ACTIVITY VALUES (10, 10, 'manageLocales')");
