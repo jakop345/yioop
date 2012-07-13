@@ -962,7 +962,7 @@ EOT;
      * @param string $data_field field of $stall_statuses to use for data
      *      if NULL then each element of $stall_statuses is a wen encoded
      *      serialized boolean
-     * @return bool true if at list one queue_server has heard from one
+     * @return bool true if no queue_server has heard from one
      *      fetcher within the time out period
      */
     function aggregateStalled($stall_statuses, $data_field = NULL)
@@ -971,12 +971,16 @@ EOT;
             $stall_status = unserialize(webdecode($status[self::PAGE]));
             if($data_field != NULL) {
                 $stall_status = $stall_status[$data_field];
+            } else {
+                /* this case would mean some kind of error occurred, but
+                   don't stop crawl for it */
+                return false;
             }
-            if($stall_status === true) {
-                return true;
+            if($stall_status === false) {
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
     /**

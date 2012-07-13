@@ -1108,6 +1108,7 @@ body.mobile
     left: 40px;
     top: -60px;
     width: 40px;
+    height: 30px;
 }
 
 .html-rtl .video-link
@@ -1125,6 +1126,7 @@ body.mobile
     right: 40px;
     top: -60px;
     width: 40px;
+    height: 30px;
 }
 
 /*

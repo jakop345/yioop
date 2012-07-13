@@ -78,7 +78,14 @@ class SigninModel extends Model
         $sql = "SELECT USER_NAME, PASSWORD FROM USER ".
             "WHERE USER_NAME = '$username' LIMIT 1";
 
-        $result = $this->db->execute($sql);
+        $i = 0;
+        do {
+            if($i > 0) {
+                sleep(3);
+            }
+            $result = $this->db->execute($sql);
+            $i++;
+        } while(!$result && $i < 2);
         if(!$result) {
             return false;
         }

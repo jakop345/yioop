@@ -56,7 +56,7 @@ class ManagerolesElement extends Element
     {?>
         <div class="currentactivity">
         <h2><?php e(tl('manageroles_element_add_role'))?></h2>
-        <form id="addRoleForm" method="post" action=#''>
+        <form id="addRoleForm" method="post" action='#'>
         <input type="hidden" name="c" value="admin" /> 
         <input type="hidden" name="YIOOP_TOKEN" value="<?php 
             e($data['YIOOP_TOKEN']); ?>" /> 

@@ -75,7 +75,7 @@ class AdminController extends Controller implements CrawlConstants
     var $activities = array("signin", "manageAccount", "manageUsers",
         "manageRoles", "manageCrawls", "pageOptions", "resultsEditor", 
         "manageMachines", "manageLocales", "crawlStatus", "mixCrawls",
-        "machineStatus", "configure");
+        "machineStatus", "searchSources", "configure");
     /**
      * An array of activities which are periodically updated within other
      * activities that they live. For example, within manage crawl,
@@ -2059,6 +2059,28 @@ class AdminController extends Controller implements CrawlConstants
         return $out;
 
      }
+
+    /**
+     *
+     */
+    function searchSources()
+    {
+        $data = array();
+        $data["ELEMENT"] = "searchsourcesElement";
+        $data['SCRIPT'] = "";
+        $data['SOURCE_TYPES'] = array(-1 => tl('admin_controller_media_kind'),
+            "video" => tl('admin_controller_video'),
+            "rss" => tl('admin_controller_rss_feed'));
+        $source_type_flag = false;
+        if(isset($_REQUEST['SOURCE_TYPE']) && 
+            in_array($_REQUEST['SOURCE_TYPE'], $data['SOURCE_TYPES'])) {
+            $data['SOURCE_TYPE'] = $_REQUEST['SOURCE_TYPE'];
+            $source_type_flag = true;
+        } else {
+            $data['SOURCE_TYPE'] = -1;
+        }
+        return $data;
+    }
 
     /**
      * Responsible for handling admin request related to the configure activity

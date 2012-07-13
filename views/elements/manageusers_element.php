@@ -56,7 +56,7 @@ class ManageusersElement extends Element
     ?>
         <div class="currentactivity">
         <h2><?php e(tl('manageusers_element_add_user'))?></h2>
-        <form id="addUserForm" method="post" action=''>
+        <form id="addUserForm" method="post" action='#'>
         <input type="hidden" name="c" value="admin" /> 
         <input type="hidden" name="YIOOP_TOKEN" value="<?php 
             e($data['YIOOP_TOKEN']); ?>" />

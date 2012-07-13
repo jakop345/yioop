@@ -142,6 +142,9 @@ class UrlParserTest extends UnitTest
                 "Substring Negative 2"),
             array("/bay/bobby/", array("/bobby/", "/f/g/h/d", "/yo"), false, 
                 "Substring Negative 3 (should match start)"),
+            array("http://test.com/bay/bobby/", 
+                array("/bobby/", "/f/g/h/d", "/yo"), false, 
+                "Substring Negative 4 (should match start)"),
             array("/a/bbbb/c/", array("/bobby/bay", "/a/*/c/", "/yo"), true, 
                 "Star Positive 1"),
             array("/a/bbbb/d/", array("/bobby/bay", "/a/*/c/", "/yo"), false, 
@@ -159,6 +162,9 @@ class UrlParserTest extends UnitTest
             array("http://www.cs.sjsu.edu/faculty/pollett/", 
                  array("http://www.cs.sjsu.edu/faculty/pollett/*/*/"), false, 
                 "URL Case 1"),
+            array("http://www.bing.com/videos/search?q=Angelina+Jolie", 
+                 array("/videos/search?"), true, 
+                "End With Question Regex Case 1"),
         );
         foreach ($tests as $test) {
             list($path, $robot_paths, $result, $description) = $test;

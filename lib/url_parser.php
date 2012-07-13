@@ -258,15 +258,21 @@ class UrlParser
      *  Get the path portion of a url if present; if not return NULL
      *
      *  @param string $url the url to parse
+     *  @param bool $with_query_string (whether to also include the query 
+     *      string at the end of the path)
      *  @return the host portion of the url if present; NULL otherwise
      */
-    static function getPath($url) 
+    static function getPath($url, $with_query_string = false) 
     {
         $url_parts = @parse_url($url);
         if(!isset($url_parts['path'])) {
             return NULL;
         }
-        return $url_parts['path'];
+        $path = $url_parts['path'];
+        if($with_query_string && isset($url_parts['query'])) {
+            $path .= "?".$url_parts['query'];
+        }
+        return $path;
     }
 
     /**
@@ -348,6 +354,10 @@ class UrlParser
     static function isPathMemberRegexPaths($path, $robot_paths) 
     {
         $is_member = false;
+
+        if($host = self::getHost($path)) {
+            $path = substr($path, strlen($host));
+        }
         $len = strlen($path);
         foreach($robot_paths as $robot_path) {
             $rlen = strlen($robot_path);
@@ -364,13 +374,12 @@ class UrlParser
                 $old_part_len = strlen($part);
                 if($part == "") {
                     continue;
-                }
-                else if($offset >= $len) {
+                } else if($offset >= $len) {
                     $is_match = false;
                     break;
                 }
                 $new_offset = stripos($path, $part, $offset);
-                if($new_offset === false ||($offset == 0 && $new_offset !=0)) {
+                if($new_offset === false || ($offset == 0 && $new_offset > 0)) {
                     $is_match = false;
                     break;
                 }

@@ -71,6 +71,8 @@ class CronModel extends Model
         $result = @$this->db->execute("SELECT TIMESTAMP FROM CRON_TIME");
         if($result) {
             $row = $this->db->fetchArray($result);
+        } else {
+            sleep(3);
         }
         $timestamp = (isset($row['TIMESTAMP'])) ? $row['TIMESTAMP'] : 0;
 

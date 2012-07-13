@@ -74,10 +74,12 @@ function upgradeDatabaseWorkDirectoryCheck()
     $result = @$model->db->execute($sql);
     if($result !== false) {
         $row = $model->db->fetchArray($result);
-        if($row['ID'] == 8) {
+        if(!isset($row['ID']) || $row['ID'] >= 8) {
             return false;
         }
         return true;
+    } else {
+        sleep(3);
     }
     // if the database was busy so no result was returned, we don't upgrade
     return false;
@@ -103,7 +105,7 @@ function upgradeDatabaseWorkDirectory()
             $current_version = 0;
         }
     } else {
-        $current_version = 0;
+        return; // maybe someone else has locked DB, so bail
     }
     $key = array_search($current_version, $versions);
     $versions = array_slice($versions, $current_version + 1);
@@ -299,4 +301,5 @@ function upgradeDatabaseVersion8(&$db)
 
     upgradeLocale();
 }
+
 ?>
