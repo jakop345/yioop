@@ -74,7 +74,7 @@ function upgradeDatabaseWorkDirectoryCheck()
     $result = @$model->db->execute($sql);
     if($result !== false) {
         $row = $model->db->fetchArray($result);
-        if(!isset($row['ID']) || $row['ID'] >= 8) {
+        if(!isset($row['ID']) || $row['ID'] >= 9) {
             return false;
         }
         return true;
@@ -92,7 +92,7 @@ function upgradeDatabaseWorkDirectoryCheck()
  */
 function upgradeDatabaseWorkDirectory()
 {
-    $versions = array(0, 1, 2, 3, 4, 5, 6, 7, 8);
+    $versions = array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
     $model = new Model();
     $model->db->selectDB(DB_NAME);
     $sql = "SELECT ID FROM VERSION";
@@ -300,6 +300,58 @@ function upgradeDatabaseVersion8(&$db)
     $db->execute("INSERT INTO CRON_TIME VALUES ('".time()."')");
 
     upgradeLocale();
+}
+
+function upgradeDatabaseVersion9(&$db)
+{
+    $db->execute("DELETE FROM VERSION WHERE ID=8");
+    $db->execute("INSERT INTO VERSION VALUES (9)");
+
+    $db->execute("INSERT INTO ROLE_ACTIVITY VALUES (1, 11)");
+
+    $db->execute("DELETE FROM ACTIVITY WHERE TRANSLATION_ID > 8");
+    $db->execute("DELETE FROM TRANSLATION WHERE TRANSLATION_ID > 8");
+    $db->execute("DELETE FROM TRANSLATION_LOCALE WHERE TRANSLATION_ID > 8");
+    $db->execute("INSERT INTO ACTIVITY VALUES (8, 8, 'searchSources')");
+    $db->execute("INSERT INTO ACTIVITY VALUES (9, 9, 'manageMachines')");
+    $db->execute("INSERT INTO ACTIVITY VALUES (10, 10, 'manageLocales')");
+    $db->execute("INSERT INTO ACTIVITY VALUES (11, 11, 'configure')");
+    $db->execute("INSERT INTO TRANSLATION VALUES(8,
+        'db_activity_search_services')");
+    $db->execute("INSERT INTO TRANSLATION VALUES(9,
+        'db_activity_manage_machines')");
+    $db->execute("INSERT INTO TRANSLATION VALUES (10,
+        'db_activity_manage_locales')");
+    $db->execute("INSERT INTO TRANSLATION VALUES (11,
+        'db_activity_configure')");
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (8, 1, 
+        'Search Sources')");
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (9, 1, 
+        'Manage Machines')");
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (10, 1, 
+        'Manage Locales')");
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (11, 1, 
+        'Configure')");
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (8, 5,
+        'Sources de recherche')");
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (9, 5,
+        'Modifier les ordinateurs')");
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (10, 5,
+        'Modifier les lieux')");
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (11, 5,
+        'Configurer')");
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (10, 9, 
+        'ローケル管理')");
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (11, 9, 
+        '設定')");
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (10, 
+        10, '로케일 관리')");
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (11, 
+        10, '구성')");
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (10, 15, 
+        'Quản lý miền địa phương')");
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (11, 15, 
+        'Sắp xếp hoạt động dựa theo hoạch định')");
 }
 
 ?>
