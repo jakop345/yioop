@@ -2079,6 +2079,9 @@ class AdminController extends Controller implements CrawlConstants
         } else {
             $data['SOURCE_TYPE'] = -1;
         }
+        $data['SCRIPT'] .= "source_type = elt('source-type');".
+            "source_type.onchange = switchSourceType;".
+            "switchSourceType()";
         return $data;
     }
 

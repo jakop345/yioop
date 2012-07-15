@@ -71,18 +71,26 @@ function upgradeDatabaseWorkDirectoryCheck()
     $model->db->selectDB(DB_NAME);
     $sql = "SELECT ID FROM VERSION";
 
-    $result = @$model->db->execute($sql);
-    if($result !== false) {
-        $row = $model->db->fetchArray($result);
-        if(!isset($row['ID']) || $row['ID'] >= 9) {
-            return false;
+    $i = 0;
+    do {
+        $result = @$model->db->execute($sql);
+        if($result !== false) {
+            $row = $model->db->fetchArray($result);
+            if(isset($row['ID']) && $row['ID'] >= 9) {
+                return false;
+            } else if(!isset($row['ID'])) {
+                $i++;
+                sleep(3);
+                continue;
+            }
+            return true;
         }
-        return true;
-    } else {
         sleep(3);
-    }
-    // if the database was busy so no result was returned, we don't upgrade
-    return false;
+        $i++;
+    } while($i < 3);
+
+    // if the database still busy exit()
+    exit();
 }
 
 /**

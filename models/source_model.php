@@ -33,58 +33,64 @@
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
-/** Loads base model class if necessary*/
+/** Loads the base class */
 require_once BASE_DIR."/models/model.php";
-/** For crawlHash function */
-require_once BASE_DIR."/lib/utility.php";
-/** Used to fetches web pages to get statuses of individual machines*/
-require_once BASE_DIR."/lib/fetch_url.php";
+
+/** Used for the crawlHash function */
+require_once BASE_DIR."/lib/utility.php"; 
 
 /**
- * Used to remember the last time the web app ran periodic activities
+ * This class is used 
  *
  * @author Chris Pollett
  * @package seek_quarry
  * @subpackage model
  */
-class CronModel extends Model 
+class SourceModel extends Model 
 {
-
-
     /**
-     *  {@inheritdoc}
+     * Just calls the parent class constructor
      */
     function __construct() 
     {
         parent::__construct();
     }
 
-    /**
-     *  Returns the timestamp of last time cron run
-     *
-     *  @return int a Unix timestamp
-     */
-    function getCronTime()
-    {
-        $this->db->selectDB(DB_NAME);
-        $result = @$this->db->execute("SELECT TIMESTAMP FROM CRON_TIME");
-        if($result) {
-            $row = $this->db->fetchArray($result);
-        }
-        $timestamp = (isset($row['TIMESTAMP'])) ? $row['TIMESTAMP'] : time();
 
-        return $timestamp;
+    /**
+     *  
+     *  @param string $user_id  id of user to get activities fors
+     */
+    function getMediaSources()
+    {
+        $sources = array();
+        $this->db->selectDB(DB_NAME);
+        $sql = "SELECT * FROM MEDIA_SOURCE";
+        $i = 0;
+        while($sources[$i] = $this->db->fetchArray($result)) {
+            $i++;
+        }
+        unset($sources[$i]); //last one will be null
+
+        return $sources;
 
     }
 
     /**
-     * Updates the Cron timestamp to the current time.
+     *
+     * @param int $user_id id of user to get session for
+     * @return array user's session data
      */
-    function updateCronTime()
+    function addMediaSource($name, $source_url, $thumb_url)
     {
         $this->db->selectDB(DB_NAME);
-        $this->db->execute("DELETE FROM CRON_TIME");
-        $this->db->execute("INSERT INTO CRON_TIME VALUES ('".time()."')");
+
+        $sql = "INSERT INTO MEDIA_SOURCE VALUES ('".
+            $this->db->escapeString($name)."','".
+            $this->db->escapeString($source_url)."','".
+            $this->db->escapeString($thumb_url)."')";
+
+        $this->db->execute($sql);
     }
 
 }

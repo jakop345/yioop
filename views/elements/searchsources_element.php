@@ -60,33 +60,27 @@ class SearchsourcesElement extends Element
             e($data['YIOOP_TOKEN']); ?>" /> 
         <input type="hidden" name="a" value="searchSources" />
         <input type="hidden" name="arg" value="addsource" />
-
-        <table class="sourcetable">
-        <tr><td><label for="source-name"><?php 
-            e(tl('searchsources_element_sourcename'))?></label></td>
-            <td><input type="text" id="source-name" name="sourcename" 
-                maxlength="80" class="narrowfield" /></td>
-        </tr>
-        <tr><td><label for="source-type"><?php 
-            e(tl('searchsources_element_sourcetype'))?></label></td>
-            <td><?php $this->view->optionsHelper->render("source-type", 
-            "source_type", $data['SOURCE_TYPES'], 
-                $data['SOURCE_TYPE']); ?></td>
-        </tr>
-        <tr><td><label for="source-url"><?php 
-            e(tl('searchsources_element_url'))?></label></td>
-            <td><input type="text" id="source-url" name="sourceurl" 
-                maxlength="80" class="narrowfield" /></td>
-        </tr>
-        <tr><td><label for="source-thumbnail"><?php 
-            e(tl('searchsources_element_thumbnail'))?></label></td>
-            <td><input type="text" id="source-thumbnail" name="sourcethumbnail" 
-                maxlength="80" class="narrowfield" /></td>
-        </tr>
+        <table class="nametable">
+        <tr><td><label for="source-type"><b><?php 
+            e(tl('searchsources_element_sourcetype'))?></b></label></td><td>
+            <?php $this->view->optionsHelper->render("source-type", 
+            "sourcetype", $data['SOURCE_TYPES'], 
+                $data['SOURCE_TYPE']); ?></td></tr>
+        <tr><td><label for="source-name"><b><?php 
+            e(tl('searchsources_element_sourcename'))?></b></label></td><td>
+            <input type="text" id="source-name" name="sourcename" 
+                maxlength="80" class="narrowfield" /></td></tr>
+        <tr><td><label for="source-url"><b><?php 
+            e(tl('searchsources_element_url'))?></b></label></td><td>
+            <input type="text" id="source-url" name="sourceurl" 
+                maxlength="80" class="narrowfield" /></td></tr>
+        <tr><td><label for="source-thumbnail"><b id="thumb-text"><?php
+            e(tl('searchsources_element_thumbnail'))?></b></label></td><td>
+            <input type="text" id="source-thumbnail" name="sourcethumbnail" 
+                maxlength="80" class="narrowfield" /></td></tr>
         <tr><td></td><td class="center"><button class="buttonbox" 
             type="submit"><?php e(tl('manageusers_element_submit')); 
-            ?></button></td>
-        </tr>
+            ?></button></td></tr>
         </table>
         </form>
         <h2><?php e(tl('searchsources_element_media_sources'))?></h2>
@@ -97,9 +91,22 @@ class SearchsourcesElement extends Element
         <input type="hidden" name="YIOOP_TOKEN" value="<?php 
             e($data['YIOOP_TOKEN']); ?>" /> 
         <input type="hidden" name="a" value="searchSources" />
-        <input type="hidden" name="arg" value="settsource" />
+        <input type="hidden" name="arg" value="setsource" />
         </form>
         </div>
+        <script type= "text/javascript">
+        function switchSourceType()
+        {
+            stype = elt("source-type");
+            if(stype.options[stype.selectedIndex].value == "video") {
+                setDisplay("thumb-text", true);
+                setDisplay("source-thumbnail", true);
+            } else {
+                setDisplay("thumb-text", false);
+                setDisplay("source-thumbnail", false);
+            }
+        }
+        </script>
     <?php
     }
 }
