@@ -120,7 +120,7 @@ mb_internal_encoding("UTF-8");
 mb_regex_encoding("UTF-8");
 
 /**Cached pages part of search API needs global locale functions*/
-require_once BASE_DIR."/locale_functions.php";
+require_once BASE_DIR."/lib/locale_functions.php";
 $locale = NULL;
 setLocaleObject("en-US");
 

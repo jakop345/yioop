@@ -1350,7 +1350,7 @@ class QueueServer implements CrawlConstants, Join
         $pos = 0;
         $num = 0;
         $bad = false;
-        while($pos < $len_urls && $num < 2*SEEN_URLS_BEFORE_UPDATE_SCHEDULER) {
+        while($pos < $len_urls && $num <= SEEN_URLS_BEFORE_UPDATE_SCHEDULER) {
             $len_site = unpackInt(substr($seen_urls_string, $pos ,4));
             if($len_site > 2*$this->page_range_request) {
                 crawlLog("Site string too long, $len_site,".
@@ -1371,7 +1371,7 @@ class QueueServer implements CrawlConstants, Join
             $sites[self::SEEN_URLS][] = $tmp;
             $num++;
         }
-        if($num > 2*SEEN_URLS_BEFORE_UPDATE_SCHEDULER || $bad) {
+        if($num > SEEN_URLS_BEFORE_UPDATE_SCHEDULER || $bad) {
             crawlLog("Index data file len_urls was $len_urls, may be corrupt.");
             unlink($file);
             return;

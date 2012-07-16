@@ -39,6 +39,18 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 require_once BASE_DIR."/lib/utility.php"; 
 
 /**
+ * shorthand for echo
+ *
+ * @param string $text string to send to the current output
+ */
+if(!function_exists("e")) {
+    function e($text)
+    {
+        echo $text;
+    }
+}
+
+/**
  * Base controller class for all controllers on
  * the SeekQuarry site.
  *
@@ -138,8 +150,10 @@ abstract class Controller
         $data['WRITING_MODE'] = getWritingMode();
         if(QUERY_STATISTICS) {
             $data['QUERY_STATISTICS'] = array();
-            $machine =  htmlentities($_SERVER["HTTP_HOST"]);
-            $machine_uri = htmlentities($_SERVER['REQUEST_URI']);
+            $machine =  isset($_SERVER["HTTP_HOST"]) ?
+                htmlentities($_SERVER["HTTP_HOST"]) : "localhost";
+            $machine_uri = isset($_SERVER['REQUEST_URI']) ? 
+                htmlentities($_SERVER['REQUEST_URI']) : "/";
             $protocol = (isset($_SERVER["HTTPS"])) ? "https://" : "http://";
             if($machine == '::1') { //IPv6 :(
                 $machine = "[::1]/"; 
