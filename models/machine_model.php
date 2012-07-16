@@ -186,6 +186,7 @@ class MachineModel extends Model
         }
         $sql = "SELECT * FROM ACTIVE_FETCHER"; 
         $result = $this->db->execute($sql);
+        if(!$result) return $machines;
         $active_fetchers = array();
         while($row = $this->db->fetchArray($result)) {
             for($i = 0; $i < $num_machines; $i++) {

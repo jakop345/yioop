@@ -393,8 +393,7 @@ class FetchController extends Controller implements CrawlConstants
         }
 
         $cron_time = $this->cronModel->getCronTime();
-        // if cron time is 0, db must have been busy, so try later
-        if($cron_time > 0 && (time() - $cron_time) > self::CRON_INTERVAL) {
+        if((time() - $cron_time) > self::CRON_INTERVAL) {
             $this->cronModel->updateCronTime();
             $this->doCronTasks();
         }
