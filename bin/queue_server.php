@@ -1348,7 +1348,8 @@ class QueueServer implements CrawlConstants, Join
 
         $sites[self::SEEN_URLS] = array();
         $pos = 0;
-        while($pos < $len_urls) {
+        $num = 0;
+        while($pos < $len_urls && $num < 2*SEEN_URLS_BEFORE_UPDATE_SCHEDULER) {
             $len_site = unpackInt(substr($seen_urls_string, $pos ,4));
             if($len_site > 2*$this->page_range_request) {
                 crawlLog("Site string too long, $len_site,".
@@ -1365,6 +1366,10 @@ class QueueServer implements CrawlConstants, Join
                 break;
             }
             $sites[self::SEEN_URLS][] = $tmp;
+            $num++;
+        }
+        if($num > 2*SEEN_URLS_BEFORE_UPDATE_SCHEDULER) {
+            crawlLog("Index data file len_urls was $len_urls, may be corrupt.");
         }
 
         $sites[self::INVERTED_INDEX] = IndexShard::load("fetcher_shard", 
@@ -1381,7 +1386,6 @@ class QueueServer implements CrawlConstants, Join
             $seen_sites = $sites[self::SEEN_URLS];
             $seen_sites = array_values($seen_sites);
             $num_seen = count($seen_sites);
- 
         } else {
             $num_seen = 0;
         }

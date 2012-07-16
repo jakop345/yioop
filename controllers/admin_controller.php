@@ -2065,6 +2065,8 @@ class AdminController extends Controller implements CrawlConstants
      */
     function searchSources()
     {
+        $possible_arguments = array("addsource");
+
         $data = array();
         $data["ELEMENT"] = "searchsourcesElement";
         $data['SCRIPT'] = "";
@@ -2078,6 +2080,14 @@ class AdminController extends Controller implements CrawlConstants
             $source_type_flag = true;
         } else {
             $data['SOURCE_TYPE'] = -1;
+        }
+        if(isset($_REQUEST['arg']) && 
+            in_array($_REQUEST['arg'], $possible_arguments)) {
+            switch($_REQUEST['arg'])
+            {
+                case "addsource":
+                break;
+            }
         }
         $data['SCRIPT'] .= "source_type = elt('source-type');".
             "source_type.onchange = switchSourceType;".
