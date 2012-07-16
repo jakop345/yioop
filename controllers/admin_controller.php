@@ -66,7 +66,7 @@ class AdminController extends Controller implements CrawlConstants
      */
     var $models = array(
         "signin", "user", "activity", "crawl", "role", "locale", "profile",
-        "searchfilters", "machine");
+        "searchfilters", "source", "machine");
     /**
      * Says which activities (roughly methods invoke from the web) this 
      * controller will respond to
@@ -2086,6 +2086,21 @@ class AdminController extends Controller implements CrawlConstants
             switch($_REQUEST['arg'])
             {
                 case "addsource":
+                    if(isset($_REQUEST['sourcename'])) {
+                        $source_name = 
+                            $this->clean($_REQUEST['sourcename'], "string" );
+                    } else {
+                        break;
+                    }
+                    if(isset($_REQUEST['sourcetype'])) {
+                        $source_type = 
+                            $this->clean($_REQUEST['sourcetype'], "string" );
+                    } else {
+                        break;
+                    }
+                    $source_name = 
+                    $this->sourceModel->addMediaSource(
+                        $source_name, $source_url, $thumb_url);
                 break;
             }
         }

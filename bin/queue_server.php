@@ -1349,11 +1349,13 @@ class QueueServer implements CrawlConstants, Join
         $sites[self::SEEN_URLS] = array();
         $pos = 0;
         $num = 0;
+        $bad = false;
         while($pos < $len_urls && $num < 2*SEEN_URLS_BEFORE_UPDATE_SCHEDULER) {
             $len_site = unpackInt(substr($seen_urls_string, $pos ,4));
             if($len_site > 2*$this->page_range_request) {
                 crawlLog("Site string too long, $len_site,".
                     " data file may be corrupted? Skip rest.");
+                $bad = true;
                 break;
             }
             $pos += 4;
@@ -1363,13 +1365,16 @@ class QueueServer implements CrawlConstants, Join
             if(!$tmp  || !is_array($tmp)) {
                 crawlLog("Compressed array null,".
                     " data file may be corrupted? Skip rest.");
+                $bad = true;
                 break;
             }
             $sites[self::SEEN_URLS][] = $tmp;
             $num++;
         }
-        if($num > 2*SEEN_URLS_BEFORE_UPDATE_SCHEDULER) {
+        if($num > 2*SEEN_URLS_BEFORE_UPDATE_SCHEDULER || $bad) {
             crawlLog("Index data file len_urls was $len_urls, may be corrupt.");
+            unlink($file);
+            return;
         }
 
         $sites[self::INVERTED_INDEX] = IndexShard::load("fetcher_shard", 
