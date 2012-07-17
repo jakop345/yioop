@@ -140,9 +140,10 @@ $controller = new SearchController($indexing_plugins);
 echo "\n\n\nAn example of a query request with the search API:\n";
 
 $query = "art i:1317414322"; 
-    /* i:1317414322 is the timestamp of the index to use
-       if omit default index is used for query. Query string can be anything
-       you can type into Yioop! search box.
+    /* i:1317414322 is the timestamp of the index to use.
+       API requires that a default index be set even though the query might
+       specify to use a different one. The query string we pass to the
+       API can be anything you can type into Yioop! search box.
      */
 $num_results = 10; // how many results to get back
 $first_result_to_return = 0; 

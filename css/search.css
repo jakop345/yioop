@@ -1488,20 +1488,14 @@ body.mobile
 
 .crawlstable,
 .mixestable,
+.mediasourcestable,
 .crawlstable th,
 .mixestable th,
+.mediasourcestable th,
 .crawlstable td,
 .mixestable td,
-.filetypestable
-{
-    border: 1px ridge black;
-    padding: 2px;
-}
-
-.crawlstable th,
-.mixestable th,
-.crawlstable td,
-.mixestable td,
+.mediasourcestable td,
+.filetypestable,
 .filetypestable td
 {
     border: 1px ridge black;

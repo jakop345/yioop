@@ -79,11 +79,27 @@ class SearchsourcesElement extends Element
             <input type="text" id="source-thumbnail" name="sourcethumbnail" 
                 maxlength="80" class="narrowfield" /></td></tr>
         <tr><td></td><td class="center"><button class="buttonbox" 
-            type="submit"><?php e(tl('manageusers_element_submit')); 
+            type="submit"><?php e(tl('searchsources_element_submit')); 
             ?></button></td></tr>
         </table>
         </form>
         <h2><?php e(tl('searchsources_element_media_sources'))?></h2>
+        <table class="mediasourcestable">
+        <tr><th><?php e(tl('searchsources_element_medianame'));?></th>
+            <th><?php e(tl('searchsources_element_mediatype'));?></th><th><?php
+            e(tl('searchsources_element_mediaurls')); ?></th>
+            <th><?php e(tl('searchsources_element_action'));?></th></tr><?php
+        foreach($data['MEDIA_SOURCES'] as $source) {
+        ?>
+        <tr><td><?php e($source['NAME']); ?></td>
+            <td><?php e($source['TYPE']); ?></td>
+            <td><?php e($source['SOURCE_URL']."<br />".
+                    $source['THUMB_URL']); ?></td>
+            <td><a href=""><?php e(tl('searchsources_element_deletemedia')); 
+            ?></a></td>
+        <?php
+        } ?>
+        </table>
         <h2><?php e(tl('searchsources_element_add_subsearch'))?></h2>
         <h2><?php e(tl('searchsources_element_subsearches'))?></h2>
         <form id="addSearchSourceForm" method="post" action='#'>

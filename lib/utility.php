@@ -799,4 +799,13 @@ function greaterThan($a, $b) {
     return ($a > $b) ? -1 : 1;
 }
 
+/**
+ * shorthand for echo
+ *
+ * @param string $text string to send to the current output
+ */
+function e($text)
+{
+    echo $text;
+}
 ?>

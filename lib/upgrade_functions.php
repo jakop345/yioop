@@ -71,15 +71,19 @@ function upgradeDatabaseWorkDirectoryCheck()
     $model->db->selectDB(DB_NAME);
     $sql = "SELECT ID FROM VERSION";
 
-    $result = @$model->db->execute($sql);
-    if($result !== false) {
-        $row = $model->db->fetchArray($result);
-        if(isset($row['ID']) && $row['ID'] < 9 && $row['ID'] >= 0) {
-            return true;
+    for($i = 0; $i < 3; $i++) {
+        $result = @$model->db->execute($sql);
+        if($result !== false) {
+            $row = $model->db->fetchArray($result);
+            if(isset($row['ID']) && $row['ID'] < 9) {
+                return true;
+            } else if (isset($row['ID'])) {
+                return false;
+            }
         }
-        return false;
+        sleep(3);
     }
-    return false;
+    exit();
 }
 
 /**
@@ -99,10 +103,10 @@ function upgradeDatabaseWorkDirectory()
         if(isset($row['ID']) && in_array($row['ID'], $versions)) {
             $current_version = $row['ID'];
         } else {
-            $current_version = 0;
+            exit();
         }
     } else {
-        return; // maybe someone else has locked DB, so bail
+        exit(); // maybe someone else has locked DB, so bail
     }
     $key = array_search($current_version, $versions);
     $versions = array_slice($versions, $current_version + 1);

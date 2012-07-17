@@ -67,6 +67,7 @@ class SourceModel extends Model
         $this->db->selectDB(DB_NAME);
         $sql = "SELECT * FROM MEDIA_SOURCE";
         $i = 0;
+        $result = $this->db->execute($sql);
         while($sources[$i] = $this->db->fetchArray($result)) {
             $i++;
         }
@@ -78,15 +79,15 @@ class SourceModel extends Model
 
     /**
      *
-     * @param int $user_id id of user to get session for
      * @return array user's session data
      */
-    function addMediaSource($name, $source_url, $thumb_url)
+    function addMediaSource($name, $source_type, $source_url, $thumb_url)
     {
         $this->db->selectDB(DB_NAME);
 
         $sql = "INSERT INTO MEDIA_SOURCE VALUES ('".
             $this->db->escapeString($name)."','".
+            $this->db->escapeString($source_type)."','".
             $this->db->escapeString($source_url)."','".
             $this->db->escapeString($thumb_url)."')";
 

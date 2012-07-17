@@ -39,18 +39,6 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 require_once BASE_DIR."/lib/utility.php"; 
 
 /**
- * shorthand for echo
- *
- * @param string $text string to send to the current output
- */
-if(!function_exists("e")) {
-    function e($text)
-    {
-        echo $text;
-    }
-}
-
-/**
  * Base controller class for all controllers on
  * the SeekQuarry site.
  *
@@ -58,7 +46,6 @@ if(!function_exists("e")) {
  * @package seek_quarry
  * @subpackage controller
  */
-
 abstract class Controller 
 {
     /**

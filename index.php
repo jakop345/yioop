@@ -54,6 +54,10 @@ session_start();
  */
 require_once(BASE_DIR."/models/datasources/".DBMS."_manager.php");
 /**
+ * Load e() function
+ */
+require_once BASE_DIR."/lib/utility.php";
+/**
  * Load global functions related to localization
  */
 require_once BASE_DIR."/lib/locale_functions.php";
@@ -126,20 +130,6 @@ if(!PROFILE ) {
     $controller_name = "admin";
 }
 
-//check if mobile css and formatting should be used or not
-if(isset($_SERVER['HTTP_USER_AGENT'])) {
-    $agent = $_SERVER['HTTP_USER_AGENT'];
-    $is_admin = strcmp($controller_name, "admin") == 0;
-    if((stristr($agent, "mobile") || stristr($agent, "fennec")) && 
-        !stristr($agent, "ipad") ) {
-        define("MOBILE", true);
-    } else {
-        define("MOBILE", false);
-    }
-} else {
-    define("MOBILE", false);
-}
-
 $locale_tag = guessLocale();
 
 if(upgradeDatabaseWorkDirectoryCheck()) {
@@ -187,14 +177,6 @@ function checkAllowedController($controller_name)
     return in_array($controller_name, $available_controllers) ;
 }
 
-/**
- * shorthand for echo
- *
- * @param string $text string to send to the current output
- */
-function e($text)
-{
-    echo $text;
-}
+
 
 ?>

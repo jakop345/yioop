@@ -173,6 +173,19 @@ define('USER_AGENT',
  */
 define ('SESSION_NAME', "yioopbiscuit"); 
 
+//check if mobile css and formatting should be used or not
+if(isset($_SERVER['HTTP_USER_AGENT'])) {
+    $agent = $_SERVER['HTTP_USER_AGENT'];
+    if((stristr($agent, "mobile") || stristr($agent, "fennec")) && 
+        !stristr($agent, "ipad") ) {
+        define("MOBILE", true);
+    } else {
+        define("MOBILE", false);
+    }
+} else {
+    define("MOBILE", false);
+}
+
 /**
  * @global array addresses of memcached servers to use assuming memcached is
  * available

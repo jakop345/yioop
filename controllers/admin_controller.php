@@ -2074,33 +2074,33 @@ class AdminController extends Controller implements CrawlConstants
             "video" => tl('admin_controller_video'),
             "rss" => tl('admin_controller_rss_feed'));
         $source_type_flag = false;
-        if(isset($_REQUEST['SOURCE_TYPE']) && 
-            in_array($_REQUEST['SOURCE_TYPE'], $data['SOURCE_TYPES'])) {
-            $data['SOURCE_TYPE'] = $_REQUEST['SOURCE_TYPE'];
+        if(isset($_REQUEST['sourcetype']) && 
+            in_array($_REQUEST['sourcetype'], $data['SOURCE_TYPES'])) {
+            $data['SOURCE_TYPE'] = $_REQUEST['sourcetype'];
             $source_type_flag = true;
         } else {
             $data['SOURCE_TYPE'] = -1;
         }
+        $data["MEDIA_SOURCES"] = $this->sourceModel->getMediaSources();
         if(isset($_REQUEST['arg']) && 
             in_array($_REQUEST['arg'], $possible_arguments)) {
             switch($_REQUEST['arg'])
             {
                 case "addsource":
-                    if(isset($_REQUEST['sourcename'])) {
-                        $source_name = 
-                            $this->clean($_REQUEST['sourcename'], "string" );
-                    } else {
-                        break;
+                    if(!$source_type_flag) break;
+                    $must_have = array("sourcename",
+                        'sourceurl');
+                    $to_clean = array_merge($must_have, 
+                        array('sourcethumbnail'));
+                    foreach ($to_clean as $clean_me) {
+                        $r[$clean_me] = (isset($_REQUEST[$clean_me])) ?
+                            $this->clean($_REQUEST[$clean_me], "string" ) : "";
+                        if(in_array($clean_me, $must_have) && 
+                            $r[$clean_me] == "" ) break 2;
                     }
-                    if(isset($_REQUEST['sourcetype'])) {
-                        $source_type = 
-                            $this->clean($_REQUEST['sourcetype'], "string" );
-                    } else {
-                        break;
-                    }
-                    $source_name = 
                     $this->sourceModel->addMediaSource(
-                        $source_name, $source_url, $thumb_url);
+                        $r['sourcename'], $r['sourcetype'], $r['sourceurl'], 
+                        $r['sourcethumbnail']);
                 break;
             }
         }

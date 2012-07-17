@@ -36,5 +36,5 @@
 $_REQUEST['c'] = "static";
 $_REQUEST['p'] = "bot";
 
-include("index.php");
+require_once("index.php");
 ?>
