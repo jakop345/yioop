@@ -54,7 +54,7 @@ class VideourlHelper extends Helper
      *  draw a link with a thumbnail from the video.
      *  @param string $url to check if of a video site
      */
-    public function render($url)
+    public function render($url, $video_sources)
     {
         if(substr($url, 0, 3) == "url") {
             $link_url_parts = explode("|", $url);
@@ -64,34 +64,38 @@ class VideourlHelper extends Helper
         } else {
             $url = htmlentities($url);
         }
-        if(stripos($url, "http://www.youtube.com/watch?v=") !== false) {
-            $id = substr($url, 31, 11);
-            ?><a class="video-link" href="<?php e($url); ?>"><img 
-                src="http://img.youtube.com/vi/<?php e($id); ?>/2.jpg"
+        foreach($video_sources as $source) {
+            $url_expression = $source['SOURCE_URL'];
+            $expression_parts = explode("{}", $url_expression);
+            $found_id = false;
+            if(stripos($url, $expression_parts[0]) !== false) {
+                $id = substr($url, strlen($expression_parts[0]));
+                $len = strlen($expression_parts[1]);
+                if(isset($expression_parts[1]) && $len > 0) {
+                    if(($pos = stripos($id, $expression_parts[1])) > 0) {
+                        $id = substr($id, 0, $pos);
+                        $found_id = true;
+                    }
+                } else if ($len == 0) {
+                    $found_id = true;
+                }
+            }
+            if($found_id) {
+                $thumb_expression = $source['THUMB_URL'];
+                $thumb_parts = explode("{}", $thumb_expression);
+                $thumb_url = $thumb_parts[0] . $id;
+                if(isset($thumb_parts[1])) {
+                    $thumb_url .= $thumb_parts[1];
+                }
+                ?><a class="video-link" href="<?php e($url); ?>"><img 
+                class="thumb" src="<?php e($thumb_url); ?>"
                 alt="Thumbnail for <?php e($id); ?>" />
                 <img class="video-play" src="resources/play.png" alt="" />
-              </a>
-            <?php 
-        } else if(stripos($url, "http://www.metacafe.com/watch/") !== false) {
-            $pre_id = substr($url, 30);
-            $parts = explode("/", $pre_id);
-            $id = $parts[0];
-            ?><a class="video-link" href="<?php e($url); ?>"><img class="thumb"
-                src="http://www.metacafe.com/thumb/<?php e($id); ?>.jpg"
-                alt="Thumbnail for <?php e($id); ?>" />
-                <img class="video-play" src="resources/play.png" alt="" />
-              </a>
-            <?php 
-        } else if(stripos($url, "http://www.dailymotion.com/video/") !== false){
-            $rest = substr($url, 26);
-            $thumb_url = "http://www.dailymotion.com/thumbnail".$rest;
-            ?><a class="video-link" href="<?php e($url); ?>"><img class="thumb"
-                src="<?php e($thumb_url); ?>"
-                alt="Thumbnail for DailyMotion" />
-                <img class="video-play" src="resources/play.png" alt="" />
-              </a>
-            <?php 
+                </a>
+                <?php
+            }
         }
+
     }
 
 }

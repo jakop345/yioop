@@ -260,11 +260,19 @@ $db->execute("CREATE TABLE ACTIVE_FETCHER (NAME VARCHAR(16),
 $db->execute("CREATE TABLE CRON_TIME (TIMESTAMP INT(11))");
 $db->execute("INSERT INTO CRON_TIME VALUES ('".time()."')");
 
-$db->execute("CREATE TABLE MEDIA_SOURCE (
+$db->execute("CREATE TABLE MEDIA_SOURCE (TIMESTAMP INT(11) PRIMARY KEY,
     NAME VARCHAR(16) UNIQUE, TYPE VARCHAR(16), 
     SOURCE_URL VARCHAR(256), THUMB_URL VARCHAR(256)
     )");
-
+$db->execute("INSERT INTO MEDIA_SOURCE VALUES ('1342634195',
+    'YouTube', 'video', 'http://www.youtube.com/watch?v={}&',
+    'http://img.youtube.com/vi/{}/2.jpg')");
+$db->execute("INSERT INTO MEDIA_SOURCE VALUES ('1342634196',
+    'MetaCafe', 'video', 'http://www.metacafe.com/watch/{}/',
+    'http://www.metacafe.com/thumb/{}.jpg')");
+$db->execute("INSERT INTO MEDIA_SOURCE VALUES ('1342634197',
+    'DailyMotion', 'video', 'http://www.dailymotion.com/video/{}',
+    'http://www.dailymotion.com/thumbnail/video/{}')");
 
 $db->disconnect();
 if(in_array(DBMS, array('sqlite','sqlite3' ))){

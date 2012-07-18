@@ -70,12 +70,11 @@ function upgradeDatabaseWorkDirectoryCheck()
     $model = new Model();
     $model->db->selectDB(DB_NAME);
     $sql = "SELECT ID FROM VERSION";
-
     for($i = 0; $i < 3; $i++) {
         $result = @$model->db->execute($sql);
         if($result !== false) {
             $row = $model->db->fetchArray($result);
-            if(isset($row['ID']) && $row['ID'] < 9) {
+            if(isset($row['ID']) && $row['ID'] < 10) {
                 return true;
             } else if (isset($row['ID'])) {
                 return false;
@@ -93,7 +92,7 @@ function upgradeDatabaseWorkDirectoryCheck()
  */
 function upgradeDatabaseWorkDirectory()
 {
-    $versions = array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
+    $versions = array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
     $model = new Model();
     $model->db->selectDB(DB_NAME);
     $sql = "SELECT ID FROM VERSION";
@@ -355,4 +354,23 @@ function upgradeDatabaseVersion9(&$db)
         'Sắp xếp hoạt động dựa theo hoạch định')");
 }
 
+function upgradeDatabaseVersion10(&$db)
+{
+    $db->execute("DELETE FROM VERSION WHERE ID=9");
+    $db->execute("INSERT INTO VERSION VALUES (10)");
+
+    $db->execute("CREATE TABLE MEDIA_SOURCE (TIMESTAMP INT(11) PRIMARY KEY,
+        NAME VARCHAR(16) UNIQUE, TYPE VARCHAR(16), 
+        SOURCE_URL VARCHAR(256), THUMB_URL VARCHAR(256)
+        )");
+    $db->execute("INSERT INTO MEDIA_SOURCE VALUES ('1342634195',
+        'YouTube', 'video', 'http://www.youtube.com/watch?v={}&',
+        'http://img.youtube.com/vi/{}/2.jpg')");
+    $db->execute("INSERT INTO MEDIA_SOURCE VALUES ('1342634196',
+        'MetaCafe', 'video', 'http://www.metacafe.com/watch/{}/',
+        'http://www.metacafe.com/thumb/{}.jpg')");
+    $db->execute("INSERT INTO MEDIA_SOURCE VALUES ('1342634197',
+        'DailyMotion', 'video', 'http://www.dailymotion.com/video/{}',
+        'http://www.dailymotion.com/thumbnail/video/{}')");
+}
 ?>

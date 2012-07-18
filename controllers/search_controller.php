@@ -60,7 +60,8 @@ class SearchController extends Controller implements CrawlConstants
      * is used for cached web page requests
      * @var array
      */
-    var $models = array("phrase", "crawl", "searchfilters", "machine");
+    var $models = array("phrase", "crawl", "searchfilters", "machine",
+        "source");
     /**
      * Says which views to load for this controller.
      * The SearchView is used for displaying general search results as well 
@@ -527,6 +528,7 @@ class SearchController extends Controller implements CrawlConstants
 
             break;
         }
+        $data['VIDEO_SOURCES'] = $this->sourceModel->getMediaSources("video");
         $data['PAGES'] = (isset($phrase_results['PAGES'])) ?
              $phrase_results['PAGES']: array();
 

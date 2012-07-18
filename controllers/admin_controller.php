@@ -801,6 +801,14 @@ class AdminController extends Controller implements CrawlConstants
                         $description = tl('admin_controller_no_description');
                     }
                     $crawl_params['DESCRIPTION'] = $description;
+                    $crawl_params[self::VIDEO_SOURCES] = array();
+                    $sources =
+                        $this->sourceModel->getMediaSources('video');
+                    foreach($sources as $source) {
+                        $url = $source['SOURCE_URL'];
+                        $url_parts = explode("{}", $url);
+                        $crawl_params[self::VIDEO_SOURCES][] = $url_parts[0];
+                    }
 
                     // Write the new crawl parameters to the name server, so
                     // that it can pass them along in the case of a new archive
@@ -2065,7 +2073,7 @@ class AdminController extends Controller implements CrawlConstants
      */
     function searchSources()
     {
-        $possible_arguments = array("addsource");
+        $possible_arguments = array("addsource", "deletesource");
 
         $data = array();
         $data["ELEMENT"] = "searchsourcesElement";
@@ -2075,20 +2083,21 @@ class AdminController extends Controller implements CrawlConstants
             "rss" => tl('admin_controller_rss_feed'));
         $source_type_flag = false;
         if(isset($_REQUEST['sourcetype']) && 
-            in_array($_REQUEST['sourcetype'], $data['SOURCE_TYPES'])) {
+            in_array($_REQUEST['sourcetype'], 
+            array_keys($data['SOURCE_TYPES']))) {
             $data['SOURCE_TYPE'] = $_REQUEST['sourcetype'];
             $source_type_flag = true;
         } else {
             $data['SOURCE_TYPE'] = -1;
         }
-        $data["MEDIA_SOURCES"] = $this->sourceModel->getMediaSources();
+
         if(isset($_REQUEST['arg']) && 
             in_array($_REQUEST['arg'], $possible_arguments)) {
             switch($_REQUEST['arg'])
             {
                 case "addsource":
                     if(!$source_type_flag) break;
-                    $must_have = array("sourcename",
+                    $must_have = array("sourcename", "sourcetype",
                         'sourceurl');
                     $to_clean = array_merge($must_have, 
                         array('sourcethumbnail'));
@@ -2101,9 +2110,21 @@ class AdminController extends Controller implements CrawlConstants
                     $this->sourceModel->addMediaSource(
                         $r['sourcename'], $r['sourcetype'], $r['sourceurl'], 
                         $r['sourcethumbnail']);
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('admin_controller_media_source_added').
+                            "</h1>');";
+                break;
+                case "deletesource":
+                    if(!isset($_REQUEST['ts'])) break;
+                    $timestamp = $this->clean($_REQUEST['ts'], "string");
+                    $this->sourceModel->deleteMediaSource($timestamp);
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('admin_controller_media_source_deleted').
+                        "</h1>');";
                 break;
             }
         }
+        $data["MEDIA_SOURCES"] = $this->sourceModel->getMediaSources();
         $data['SCRIPT'] .= "source_type = elt('source-type');".
             "source_type.onchange = switchSourceType;".
             "switchSourceType()";

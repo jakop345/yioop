@@ -185,6 +185,13 @@ class Fetcher implements CrawlConstants
     var $meta_words;
 
     /**
+     * List of video sources mainly to determine the value of the media:
+     * meta word (in particular, if it should be video or not)
+     * @var array
+     */
+    var $video_sources;
+
+    /**
      * WebArchiveBundle  used to store complete web pages and auxiliary data
      * @var object
      */
@@ -343,6 +350,7 @@ class Fetcher implements CrawlConstants
         $this->current_server = 0;
         $this->page_processors = $page_processors;
         $this->meta_words = array();
+        $this->video_sources = array();
         $this->hosts_with_errors = array();
 
         $this->web_archive = NULL;
@@ -963,6 +971,9 @@ class Fetcher implements CrawlConstants
         if(isset($info[self::META_WORDS])) {
             $this->meta_words = $info[self::META_WORDS];
         }
+        if(isset($info[self::VIDEO_SOURCES])) {
+            $this->video_sources = $info[self::VIDEO_SOURCES];
+        }
         if(isset($info[self::INDEXING_PLUGINS])) {
             foreach($info[self::INDEXING_PLUGINS] as $plugin) {
                 $plugin_name = $plugin."Plugin";
@@ -972,6 +983,7 @@ class Fetcher implements CrawlConstants
                 }
             }
         }
+
         if(isset($info[self::SCHEDULE_TIME])) {
               $this->schedule_time = $info[self::SCHEDULE_TIME];
         }
@@ -2035,7 +2047,7 @@ class Fetcher implements CrawlConstants
             $meta_ids[] = 'ip:'.$address;
         }
 
-        if(UrlParser::isVideoUrl($site[self::URL])) {
+        if(UrlParser::isVideoUrl($site[self::URL], $this->video_sources)) {
             $meta_ids[] = "media:video";
         } else {
             $meta_ids[] = (stripos($site[self::TYPE], "image") !== false) ? 

@@ -42,27 +42,6 @@ if(!defined('BASE_DIR')) {
     define("BASE_DIR", $pathinfo["dirname"].'/');
 }
 
-/**
- * shorthand for echo
- *
- * @param string $text string to send to the current output
- */
-if(!function_exists("e")) {
-    function e($text)
-    {
-        echo $text;
-    }
-}
-//check if mobile css and formatting should be used or not
-$agent = $_SERVER['HTTP_USER_AGENT'];
-if(!defined("MOBILE")) {
-    if((stristr($agent, "mobile") || stristr($agent, "fennec")) && 
-        !stristr($agent, "ipad") ) {
-        define("MOBILE", true);
-    } else {
-        define("MOBILE", false);
-    }
-}
 
 /**
  * Load the configuration file

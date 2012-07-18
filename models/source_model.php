@@ -59,13 +59,16 @@ class SourceModel extends Model
 
     /**
      *  
-     *  @param string $user_id  id of user to get activities fors
+     *  @param 
      */
-    function getMediaSources()
+    function getMediaSources($sourcetype = "")
     {
         $sources = array();
         $this->db->selectDB(DB_NAME);
         $sql = "SELECT * FROM MEDIA_SOURCE";
+        if($sourcetype !="") {
+            $sql .= " WHERE TYPE='$sourcetype'";
+        }
         $i = 0;
         $result = $this->db->execute($sql);
         while($sources[$i] = $this->db->fetchArray($result)) {
@@ -79,13 +82,13 @@ class SourceModel extends Model
 
     /**
      *
-     * @return array user's session data
+     * @return
      */
     function addMediaSource($name, $source_type, $source_url, $thumb_url)
     {
         $this->db->selectDB(DB_NAME);
 
-        $sql = "INSERT INTO MEDIA_SOURCE VALUES ('".
+        $sql = "INSERT INTO MEDIA_SOURCE VALUES ('".time()."','".
             $this->db->escapeString($name)."','".
             $this->db->escapeString($source_type)."','".
             $this->db->escapeString($source_url)."','".
@@ -94,6 +97,18 @@ class SourceModel extends Model
         $this->db->execute($sql);
     }
 
+    /**
+     *
+     *
+     */
+    function deleteMediaSource($timestamp)
+    {
+        $this->db->selectDB(DB_NAME);
+
+        $sql = "DELETE FROM MEDIA_SOURCE WHERE TIMESTAMP='$timestamp'";
+
+        $this->db->execute($sql);
+    }
 }
 
  ?>

@@ -50,7 +50,9 @@ class SearchsourcesElement extends Element
      * @param array $data 
      */
     public function render($data) 
-    { 
+    {
+        $base_url = "?YIOOP_TOKEN=".$data['YIOOP_TOKEN']."&c=admin".
+            "&a=searchSources";
     ?>
         <div class="currentactivity">
         <h2><?php e(tl('searchsources_element_add_media_source'))?></h2>
@@ -91,11 +93,13 @@ class SearchsourcesElement extends Element
             <th><?php e(tl('searchsources_element_action'));?></th></tr><?php
         foreach($data['MEDIA_SOURCES'] as $source) {
         ?>
-        <tr><td><?php e($source['NAME']); ?></td>
-            <td><?php e($source['TYPE']); ?></td>
+        <tr><td><b><?php e($source['NAME']); ?></b></td>
+            <td><?php e($data['SOURCE_TYPES'][$source['TYPE']]); ?></td>
             <td><?php e($source['SOURCE_URL']."<br />".
                     $source['THUMB_URL']); ?></td>
-            <td><a href=""><?php e(tl('searchsources_element_deletemedia')); 
+            <td><a href="<?php e($base_url.'&arg=deletesource&ts='.
+                $source['TIMESTAMP']); ?>"><?php 
+                e(tl('searchsources_element_deletemedia')); 
             ?></a></td>
         <?php
         } ?>

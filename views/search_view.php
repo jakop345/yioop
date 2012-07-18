@@ -202,7 +202,8 @@ class SearchView extends View implements CrawlConstants
                 ?></a>
                 </h2>
                 <?php if($check_video) {
-                    $this->videourlHelper->render($page[self::URL]);
+                    $this->videourlHelper->render($page[self::URL],
+                        $data['VIDEO_SOURCES']);
                 }
                 ?>
                 <p class="echolink" <?php e($subtitle); ?>><?php 

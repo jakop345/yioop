@@ -201,6 +201,7 @@ interface CrawlConstants
     const ARC_DATA = "cd";
     const KEY = "ce";
     const MACHINE_ID = 'cf';
+    const VIDEO_SOURCES = 'cg';
 
     const NEEDS_OFFSET_FLAG = 0x7FFFFFFF;
 

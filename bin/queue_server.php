@@ -260,6 +260,13 @@ class QueueServer implements CrawlConstants, Join
     var $indexing_plugins;
 
     /**
+     * List of media sources mainly to determine the value of the media:
+     * meta word (in particular, if it should be video or not)
+     * @var array
+     */
+    var $video_sources;
+
+    /**
      * This is a list of hourly (timestamp, number_of_urls_crawled) data
      * @var array
      */
@@ -300,6 +307,8 @@ class QueueServer implements CrawlConstants, Join
         $this->page_recrawl_frequency = PAGE_RECRAWL_FREQUENCY;
         $this->page_range_request = PAGE_RANGE_REQUEST;
         $this->server_type = self::BOTH;
+        $this->indexing_plugins = array();
+        $this->video_sources = array();
     }
 
     /**
@@ -941,6 +950,7 @@ class QueueServer implements CrawlConstants, Join
             "disallowed_sites" => self::DISALLOWED_SITES,
             "meta_words" => self::META_WORDS,
             "indexing_plugins" => self::INDEXING_PLUGINS,
+            "video_sources" => self::VIDEO_SOURCES,
         );
         $try_to_set_from_old_index = array();
         $update_disallow = false;
@@ -1103,6 +1113,7 @@ class QueueServer implements CrawlConstants, Join
             "disallowed_sites" => self::DISALLOWED_SITES,
             "meta_words" => self::META_WORDS,
             "indexing_plugins" => self::INDEXING_PLUGINS,
+            "video_sources" => self::VIDEO_SOURCES,
         );
         $keys = array_keys($updatable_info);
         $archive_info = IndexArchiveBundle::getArchiveInfo($dir);
@@ -1372,9 +1383,8 @@ class QueueServer implements CrawlConstants, Join
             $num++;
         }
         if($num > SEEN_URLS_BEFORE_UPDATE_SCHEDULER || $bad) {
-            crawlLog("Index data file len_urls was $len_urls, may be corrupt.");
-            unlink($file);
-            return;
+            crawlLog("Index data file len_urls was $len_urls num was $num, ".
+                "may be corrupt.");
         }
 
         $sites[self::INVERTED_INDEX] = IndexShard::load("fetcher_shard", 
@@ -1825,6 +1835,7 @@ class QueueServer implements CrawlConstants, Join
         $sites[self::CRAWL_INDEX] = $this->crawl_index;
         $sites[self::META_WORDS] = $this->meta_words;
         $sites[self::INDEXING_PLUGINS] =  $this->indexing_plugins;
+        $sites[self::VIDEO_SOURCES] = $this->video_sources;
         $sites[self::PAGE_RANGE_REQUEST] = $this->page_range_request;
         $sites[self::SITES] = array();
 

@@ -36,5 +36,5 @@
 $_REQUEST['c'] = "static";
 $_REQUEST['p'] = "blog";
 
-include("index.php");
+require_once("index.php");
 ?>

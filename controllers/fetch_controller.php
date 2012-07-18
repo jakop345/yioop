@@ -304,7 +304,7 @@ class FetchController extends Controller implements CrawlConstants
             $info[self::MEMORY_USAGE] = memory_get_peak_usage();
             $info[self::STATUS] = self::CONTINUE_STATE;
             if(file_exists(CRAWL_DIR."/schedules/crawl_status.txt")) {
-                $change =false;
+                $change = false;
                 $crawl_status = unserialize(
                     file_get_contents(CRAWL_DIR."/schedules/crawl_status.txt"));
                 if(isset($_REQUEST['fetcher_peak_memory'])) {
