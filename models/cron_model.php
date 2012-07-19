@@ -49,42 +49,61 @@ require_once BASE_DIR."/lib/fetch_url.php";
  */
 class CronModel extends Model 
 {
-
-
+    /**
+     *
+     */
+    var $cron_file;
+    /**
+     *
+     */
+    var $cron_table;
     /**
      *  {@inheritdoc}
      */
     function __construct() 
     {
         parent::__construct();
+        $this->cron_table === NULL;
+        $this->cron_file = WORK_DIRECTORY."/data/cron_time.txt";
     }
 
     /**
-     *  Returns the timestamp of last time cron run
+     *  Returns the timestamp of last time cron run. Not using db as sqlite 
+     *  seemed to have locking issues if the transaction takes a while
      *
      *  @return int a Unix timestamp
      */
-    function getCronTime()
+    function getCronTime($key)
     {
-        $this->db->selectDB(DB_NAME);
-        $result = @$this->db->execute("SELECT TIMESTAMP FROM CRON_TIME");
-        if($result) {
-            $row = $this->db->fetchArray($result);
+        if($this->cron_table === NULL) {
+            $this->loadCronTable();
         }
-        $timestamp = (isset($row['TIMESTAMP'])) ? $row['TIMESTAMP'] : time();
+        if(!isset($this->cron_table[$key])) {
+            $this->cron_table[$key] = time();
+        }
+        return $this->cron_table[$key];
+    }
 
-        return $timestamp;
-
+    function loadCronTable()
+    {
+        if(file_exists($this->cron_file)) {
+            $this->cron_table = unserialize(file_get_contents(
+                $this->cron_file));
+        } else {
+            $this->cron_table = array();
+        }
     }
 
     /**
      * Updates the Cron timestamp to the current time.
      */
-    function updateCronTime()
+    function updateCronTime($key)
     {
-        $this->db->selectDB(DB_NAME);
-        $this->db->execute("DELETE FROM CRON_TIME");
-        $this->db->execute("INSERT INTO CRON_TIME VALUES ('".time()."')");
+        if($this->cron_table === NULL) {
+            $this->loadCronTable();
+        }
+        $this->cron_table[$key] = time();
+        file_put_contents($this->cron_file, serialize($this->cron_table));
     }
 
 }

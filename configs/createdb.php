@@ -75,7 +75,7 @@ if(!in_array(DBMS, array('sqlite', 'sqlite3'))) {
 $db->selectDB(DB_NAME);
 
 $db->execute("CREATE TABLE VERSION (ID INTEGER PRIMARY KEY)");
-$db->execute("INSERT INTO VERSION VALUES (9)");
+$db->execute("INSERT INTO VERSION VALUES (10)");
 
 $db->execute("CREATE TABLE USER (USER_ID INTEGER PRIMARY KEY $auto_increment, ".
     "USER_NAME VARCHAR(16) UNIQUE,  PASSWORD VARCHAR(16))");
@@ -257,9 +257,6 @@ $db->execute("CREATE TABLE MACHINE (
     HAS_QUEUE_SERVER INT, NUM_FETCHERS INT(4), PARENT VARCHAR(16) )");
 $db->execute("CREATE TABLE ACTIVE_FETCHER (NAME VARCHAR(16),
     FETCHER_ID INT(4))");
-$db->execute("CREATE TABLE CRON_TIME (TIMESTAMP INT(11))");
-$db->execute("INSERT INTO CRON_TIME VALUES ('".time()."')");
-
 $db->execute("CREATE TABLE MEDIA_SOURCE (TIMESTAMP INT(11) PRIMARY KEY,
     NAME VARCHAR(16) UNIQUE, TYPE VARCHAR(16), 
     SOURCE_URL VARCHAR(256), THUMB_URL VARCHAR(256)
@@ -273,6 +270,14 @@ $db->execute("INSERT INTO MEDIA_SOURCE VALUES ('1342634196',
 $db->execute("INSERT INTO MEDIA_SOURCE VALUES ('1342634197',
     'DailyMotion', 'video', 'http://www.dailymotion.com/video/{}',
     'http://www.dailymotion.com/thumbnail/video/{}')");
+$db->execute("INSERT INTO MEDIA_SOURCE VALUES ('1342634198',
+    'Vimeo', 'video', 'http://player.vimeo.com/video/{}',
+    'http://www.yioop.com/resources/blank.png?{}')");
+$db->execute("INSERT INTO MEDIA_SOURCE VALUES ('1342634199',
+    'Break.com', 'video', 'http://www.break.com/index/{}',
+    'http://www.yioop.com/resources/blank.png?{}')");
+$db->execute("CREATE TABLE SUBSEARCH (
+    NAME VARCHAR(16) PRIMARY KEY, MIX_TIMESTAMP INT(11))");
 
 $db->disconnect();
 if(in_array(DBMS, array('sqlite','sqlite3' ))){

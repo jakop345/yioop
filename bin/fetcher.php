@@ -836,7 +836,6 @@ class Fetcher implements CrawlConstants
             $queue_server."?c=fetch&a=schedule&time=$time&session=$session".
             "&robot_instance=".$prefix.ROBOT_INSTANCE."&machine_uri=".WEB_URI.
             "&crawl_time=".$this->crawl_time;
-
         $info_string = FetchUrl::getPage($request);
         if($info_string === false) {
             crawlLog("The following request failed:");

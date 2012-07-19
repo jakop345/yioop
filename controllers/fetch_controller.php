@@ -392,10 +392,13 @@ class FetchController extends Controller implements CrawlConstants
             $prev_crawl_time = 0;
         }
 
-        $cron_time = $this->cronModel->getCronTime();
-        if((time() - $cron_time) > self::CRON_INTERVAL) {
-            $this->cronModel->updateCronTime();
+        $cron_time = $this->cronModel->getCronTime("fetcher_restart");
+        $delta = time() - $cron_time;
+        if($delta > self::CRON_INTERVAL) {
+            $this->cronModel->updateCronTime("fetcher_restart");
             $this->doCronTasks();
+        } else if ($delta == 0) {
+            $this->cronModel->updateCronTime("fetcher_restart");
         }
 
         $local_filename = CRAWL_DIR."/schedules/crawl_status.txt";

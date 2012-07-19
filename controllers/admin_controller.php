@@ -2073,7 +2073,8 @@ class AdminController extends Controller implements CrawlConstants
      */
     function searchSources()
     {
-        $possible_arguments = array("addsource", "deletesource");
+        $possible_arguments = array("addsource", "deletesource", 
+            "addsubsearch");
 
         $data = array();
         $data["ELEMENT"] = "searchsourcesElement";
@@ -2121,6 +2122,8 @@ class AdminController extends Controller implements CrawlConstants
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('admin_controller_media_source_deleted').
                         "</h1>');";
+                break;
+                case "addsubsearch":
                 break;
             }
         }

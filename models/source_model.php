@@ -109,6 +109,40 @@ class SourceModel extends Model
 
         $this->db->execute($sql);
     }
+
+    /**
+     *
+     */
+    function getSubsearches()
+    {
+        $subsearches = array();
+        $this->db->selectDB(DB_NAME);
+        $sql = "SELECT * FROM SUBSEARCH";
+        $i = 0;
+        $result = $this->db->execute($sql);
+        while($subsearches[$i] = $this->db->fetchArray($result)) {
+            $i++;
+        }
+        unset($subsearches[$i]); //last one will be null
+
+        return $subsearches;
+    }
+
+    /**
+     *
+     * @return
+     */
+    function addSubsearch($name, $mix_timestamp)
+    {
+        $this->db->selectDB(DB_NAME);
+
+        $sql = "INSERT INTO SUBSEARCH VALUES (".
+            $this->db->escapeString($name)."','".
+            $this->db->escapeString($mix_timestamp)."')";
+
+        $this->db->execute($sql);
+    }
+
 }
 
  ?>
