@@ -77,16 +77,17 @@ class UrlParser
      */
     static function simplifyUrl($url, $max_len = 0)
     {
-        $url = (UrlParser::isSchemeHttpOrHttps($url)) ? substr($url, 7) :
-            substr($url, 8);
+        $url = (UrlParser::isSchemeHttpOrHttps($url)) ? mb_substr($url, 7) :
+            mb_substr($url, 8);
         $len = strlen($url);
         if(isset($url[$len - 1]) && $url[$len - 1] == "/") {
-            $url = substr($url, 0, $len - 1);
+            $url = mb_substr($url, 0, $len - 1);
         }
         if($len > 0 && $len > $max_len) {
             $front_len = ceil($max_len * 0.8);
             $end_len = ceil($max_len * 0.2);
-            $url = substr($url, 0, $front_len)."...".substr($url, -$end_len);
+            $url = mb_substr($url, 0, $front_len)."...".
+                mb_substr($url, -$end_len);
         }
         return $url;
     }

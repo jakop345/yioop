@@ -207,8 +207,7 @@ class SearchView extends View implements CrawlConstants
                 }
                 ?>
                 <p class="echolink" <?php e($subtitle); ?>><?php 
-                    e(htmlentities(
-                        UrlParser::simplifyUrl($url, 100))." ");
+                    e(UrlParser::simplifyUrl($url, 100)." ");
                 ?></p>
                 <?php if(!isset($page[self::ROBOT_METAS]) || 
                     !in_array("NOSNIPPET", $page[self::ROBOT_METAS])) {
