@@ -105,6 +105,7 @@ class SearchsourcesElement extends Element
         } ?>
         </table>
         <h2><?php e(tl('searchsources_element_add_subsearch'))?></h2>
+<?php print_r($data["SEARCH_LISTS"]); ?>
         <h2><?php e(tl('searchsources_element_subsearches'))?></h2>
         <form id="addSearchSourceForm" method="post" action='#'>
         <input type="hidden" name="c" value="admin" /> 

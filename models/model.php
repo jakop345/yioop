@@ -171,8 +171,8 @@ class Model implements CrawlConstants
                     }
                 }
                 $page[self::TITLE] = 
-                    substr(strip_tags($page[self::DESCRIPTION]), 0, $end_title).
-                    $ellipsis;
+                    mb_substr(strip_tags($page[self::DESCRIPTION]), 0, 
+                        $end_title).$ellipsis;
                 //still no text revert to url
                 if(strlen($page[self::TITLE]) == 0 && isset($page[self::URL])) {
                     $page[self::TITLE] = $page[self::URL];
@@ -192,11 +192,12 @@ class Model implements CrawlConstants
                     $this->boldKeywords($page[self::DESCRIPTION], $words);
             } else {
                 $page[self::DESCRIPTION] = 
-                    substr(strip_tags(
+                    mb_substr(strip_tags(
                         $page[self::DESCRIPTION]), 0, $description_length);
             }
 
-            $page[self::SCORE] = substr($page[self::SCORE], 0, SCORE_PRECISION);
+            $page[self::SCORE] = mb_substr($page[self::SCORE], 0, 
+                SCORE_PRECISION);
               
             $pages[$i] = $page;
 

@@ -2091,7 +2091,11 @@ class AdminController extends Controller implements CrawlConstants
         } else {
             $data['SOURCE_TYPE'] = -1;
         }
-
+        $machine_urls = $this->machineModel->getQueueServerUrls();
+        $search_lists = $this->crawlModel->getCrawlList(false, true,
+            $machine_urls);
+        $data["SEARCH_LISTS"] = array_merge($search_lists,
+            $this->crawlModel->getMixList());
         if(isset($_REQUEST['arg']) && 
             in_array($_REQUEST['arg'], $possible_arguments)) {
             switch($_REQUEST['arg'])
@@ -2128,6 +2132,7 @@ class AdminController extends Controller implements CrawlConstants
             }
         }
         $data["MEDIA_SOURCES"] = $this->sourceModel->getMediaSources();
+        $data["SUBSEARCHES"] = $this->sourceModel->getSubsearches();
         $data['SCRIPT'] .= "source_type = elt('source-type');".
             "source_type.onchange = switchSourceType;".
             "switchSourceType()";
