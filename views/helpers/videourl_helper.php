@@ -70,8 +70,9 @@ class VideourlHelper extends Helper
             $found_id = false;
             if(stripos($url, $expression_parts[0]) !== false) {
                 $id = substr($url, strlen($expression_parts[0]));
-                $len = strlen($expression_parts[1]);
-                if(isset($expression_parts[1]) && $len > 0) {
+                $len = 0;
+                if(isset($expression_parts[1]) && 
+                    ($len = strlen($expression_parts[1])) > 0) {
                     if(($pos = stripos($id, $expression_parts[1])) > 0) {
                         $id = substr($id, 0, $pos);
                         $found_id = true;
