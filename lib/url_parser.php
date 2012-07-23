@@ -61,9 +61,7 @@ class UrlParser
             $url_parts['scheme'] != "https") {
             return false;
         }
-
-        return true; 
-
+        return true;
     }
 
     /**
@@ -77,8 +75,9 @@ class UrlParser
      */
     static function simplifyUrl($url, $max_len = 0)
     {
-        $url = (UrlParser::isSchemeHttpOrHttps($url)) ? mb_substr($url, 7) :
-            mb_substr($url, 8);
+        $url_parts = @parse_url($url);
+        $scheme_len = strlen($url_parts['scheme']);
+        $url = mb_substr($url, $scheme_len + 3);
         $len = strlen($url);
         if(isset($url[$len - 1]) && $url[$len - 1] == "/") {
             $url = mb_substr($url, 0, $len - 1);

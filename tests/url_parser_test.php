@@ -172,5 +172,27 @@ class UrlParserTest extends UnitTest
                 $robot_paths), $result, $description);
         }
     }
+
+    /**
+     * Tests simplifyUrl function used on SERP pages
+     */
+    public function simplifyUrlTestCase()
+    {
+        $test_urls = array(
+            array("http://www.example.com/", 100,
+                "www.example.com", "HTTP Domain only"),
+            array("https://www.example.com/", 100,
+                "www.example.com", "HTTPS Domain only"),
+            array("http://www.superreallylongexample.com/", 25,
+                "www.superreallylonge...e.com", "Domain truncate"),
+            array("http://www.example.com/word1/word2/word3/word4", 25,
+                "www.example.com/word...word4", "Path truncate"),
+        );
+
+        foreach($test_urls as $test_url) {
+            $result = UrlParser::simplifyUrl($test_url[0], $test_url[1]);
+            $this->assertEqual($result, $test_url[2], $test_url[3]);
+        }
+    }
 }
 ?>
