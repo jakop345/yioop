@@ -1488,13 +1488,13 @@ body.mobile
 
 .crawlstable,
 .mixestable,
-.mediasourcestable,
+.searchsourcestable,
 .crawlstable th,
 .mixestable th,
-.mediasourcestable th,
+.searchsourcestable th,
 .crawlstable td,
 .mixestable td,
-.mediasourcestable td,
+.searchsourcestable td,
 .filetypestable,
 .filetypestable td
 {

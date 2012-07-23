@@ -71,22 +71,22 @@ class SearchsourcesElement extends Element
         <tr><td><label for="source-name"><b><?php 
             e(tl('searchsources_element_sourcename'))?></b></label></td><td>
             <input type="text" id="source-name" name="sourcename" 
-                maxlength="80" class="narrowfield" /></td></tr>
+                maxlength="80" class="widefield" /></td></tr>
         <tr><td><label for="source-url"><b><?php 
             e(tl('searchsources_element_url'))?></b></label></td><td>
             <input type="text" id="source-url" name="sourceurl" 
-                maxlength="80" class="narrowfield" /></td></tr>
+                maxlength="80" class="widefield" /></td></tr>
         <tr><td><label for="source-thumbnail"><b id="thumb-text"><?php
             e(tl('searchsources_element_thumbnail'))?></b></label></td><td>
             <input type="text" id="source-thumbnail" name="sourcethumbnail" 
-                maxlength="80" class="narrowfield" /></td></tr>
+                maxlength="80" class="widefield" /></td></tr>
         <tr><td></td><td class="center"><button class="buttonbox" 
             type="submit"><?php e(tl('searchsources_element_submit')); 
             ?></button></td></tr>
         </table>
         </form>
         <h2><?php e(tl('searchsources_element_media_sources'))?></h2>
-        <table class="mediasourcestable">
+        <table class="searchsourcestable">
         <tr><th><?php e(tl('searchsources_element_medianame'));?></th>
             <th><?php e(tl('searchsources_element_mediatype'));?></th><th><?php
             e(tl('searchsources_element_mediaurls')); ?></th>
@@ -105,15 +105,34 @@ class SearchsourcesElement extends Element
         } ?>
         </table>
         <h2><?php e(tl('searchsources_element_add_subsearch'))?></h2>
-<?php print_r($data["SEARCH_LISTS"]); ?>
-        <h2><?php e(tl('searchsources_element_subsearches'))?></h2>
         <form id="addSearchSourceForm" method="post" action='#'>
         <input type="hidden" name="c" value="admin" /> 
         <input type="hidden" name="YIOOP_TOKEN" value="<?php 
             e($data['YIOOP_TOKEN']); ?>" /> 
         <input type="hidden" name="a" value="searchSources" />
-        <input type="hidden" name="arg" value="setsource" />
-        </form>
+        <input type="hidden" name="arg" value="addsubsearch" />
+        <table class="nametable">
+        <tr><td><label for="subsearch-folder-name"><b><?php 
+            e(tl('searchsources_element_foldername'))?></b></label></td><td>
+            <input type="text" id="subsearch-folder-name" name="foldername" 
+                maxlength="80" class="widefield" /></td></tr>
+        <tr><td><label for="index-source"><b><?php 
+            e(tl('searchsources_element_indexsource'))?></b></label></td><td>
+            <?php $this->view->optionsHelper->render("index-source", 
+            "indexsource", $data['SEARCH_LISTS'], 
+                ""); ?></td></tr>
+        <tr><td></td><td class="center"><button class="buttonbox" 
+            type="submit"><?php e(tl('searchsources_element_submit')); 
+            ?></button></td></tr>
+        </table>
+        <h2><?php e(tl('searchsources_element_subsearches'))?></h2>
+        <table class="searchsourcestable">
+        <tr><th><?php e(tl('searchsources_element_dirname'));?></th>
+            <th><?php e(tl('searchsources_element_localeid'));
+            ?></th><th><?php
+            e(tl('searchsources_element_index')); ?></th>
+            <th><?php e(tl('searchsources_element_action'));?></th></tr>
+        <table>
         </div>
         <script type= "text/javascript">
         function switchSourceType()

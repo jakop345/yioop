@@ -74,7 +74,7 @@ function upgradeDatabaseWorkDirectoryCheck()
         $result = @$model->db->execute($sql);
         if($result !== false) {
             $row = $model->db->fetchArray($result);
-            if(isset($row['ID']) && $row['ID'] < 10) {
+            if(isset($row['ID']) && $row['ID'] > 0 && $row['ID'] < 10) {
                 return true;
             } else if (isset($row['ID'])) {
                 return false;
@@ -92,7 +92,7 @@ function upgradeDatabaseWorkDirectoryCheck()
  */
 function upgradeDatabaseWorkDirectory()
 {
-    $versions = array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+    $versions = array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
     $model = new Model();
     $model->db->selectDB(DB_NAME);
     $sql = "SELECT ID FROM VERSION";
@@ -115,17 +115,6 @@ function upgradeDatabaseWorkDirectory()
     }
 }
 
-/**
- * Upgrades a Version 0 version of the Yioop! database to a Version 1 version
- * @param object $db datasource to use to upgrade 
- */
-function upgradeDatabaseVersion1(&$db)
-{
-    $db->execute("CREATE TABLE VERSION (ID INTEGER PRIMARY KEY)");
-    $db->execute("INSERT INTO VERSION VALUES (1)");
-    $db->execute("CREATE TABLE USER_SESSION( USER_ID INTEGER PRIMARY KEY, ".
-        "SESSION VARCHAR(4096))");
-}
 
 /**
  * Upgrades a Version 1 version of the Yioop! database to a Version 2 version
