@@ -106,11 +106,6 @@ class SearchController extends Controller implements CrawlConstants
         } else if (!WEB_ACCESS) {
             return;
         }
-        if(isset($_REQUEST['raw'])){
-            $raw = max($this->clean($_REQUEST['raw'], "int"), 0);
-        } else {
-            $raw = 0;
-        }
         if(isset($_REQUEST['num'])) {
             $results_per_page = $this->clean($_REQUEST['num'], "int");
         } else if(isset($_SESSION['MAX_PAGES_TO_SHOW']) ) {
@@ -131,6 +126,11 @@ class SearchController extends Controller implements CrawlConstants
         }
         if(isset($_REQUEST['q'])) {
             $_REQUEST['q'] = $this->restrictQueryByUserAgent($_REQUEST['q']);
+        }
+        if(isset($_REQUEST['raw'])){
+            $raw = max($this->clean($_REQUEST['raw'], "int"), 0);
+        } else {
+            $raw = 0;
         }
         if(isset($_REQUEST['a'])) {
             if(in_array($_REQUEST['a'], $this->activities)) {
@@ -428,6 +428,13 @@ class SearchController extends Controller implements CrawlConstants
         $this->crawlModel->index_name = $index_name;
 
         $original_query = $query;
+        $pattern = "/(\s)(raw:(\S)+)/";
+        preg_match_all($pattern, $query, $matches);
+        if(isset($matches[2][0])) {
+            $raw = substr($matches[2][0], 4);
+            $raw = ($raw > 0) ? 2 : 0;
+        }
+        $query = preg_replace($pattern, "", $query);
         $query = preg_replace('/no:cache/', "", $query);
         $use_cache_if_possible = ($original_query == $query) ? true : false;
         $network_work_query = $query;

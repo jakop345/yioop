@@ -435,6 +435,7 @@ class Fetcher implements CrawlConstants
                 $info[self::CRAWL_TIME] = $this->crawl_time;
                 if($info[self::CRAWL_TIME] == 0) {
                     $info[self::STATUS] = self::NO_DATA_STATE;
+                    $this->to_crawl = array();
                 }
             } else if($this->crawl_type == self::ARCHIVE_CRAWL &&
                     !empty($this->arc_dir)) {

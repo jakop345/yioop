@@ -132,17 +132,39 @@ class SourceModel extends Model
      *
      * @return
      */
-    function addSubsearch($name, $mix_timestamp)
+    function addSubsearch($folder_name, $index_identifier)
     {
         $this->db->selectDB(DB_NAME);
+        $locale_string = "db_subsearch_".$folder_name;
 
-        $sql = "INSERT INTO SUBSEARCH VALUES (".
-            $this->db->escapeString($name)."','".
-            $this->db->escapeString($mix_timestamp)."')";
+        $sql = "INSERT INTO SUBSEARCH VALUES ('".
+            $this->db->escapeString($locale_string)."','".
+            $this->db->escapeString($folder_name)."','".
+            $this->db->escapeString($index_identifier)."')";
 
+        $this->db->execute($sql);
+
+        $sql = "INSERT INTO TRANSLATION VALUES ('".
+            time()."','".
+            $this->db->escapeString($locale_string)."')";
         $this->db->execute($sql);
     }
 
+
+    /**
+     *
+     * @return
+     */
+    function deleteSubsearch($folder_name)
+    {
+        $this->db->selectDB(DB_NAME);
+        $sql = "DELETE FROM SUBSEARCH WHERE FOLDER_NAME='$folder_name'";
+        $this->db->execute($sql);
+        $locale_string = "db_subsearch_".$folder_name;
+        $sql = "DELETE FROM TRANSLATION WHERE IDENTIFIER_STRING='".
+            $locale_string."'";
+        $this->db->execute($sql);
+    }
 }
 
  ?>

@@ -76,8 +76,10 @@ class UrlParser
     static function simplifyUrl($url, $max_len = 0)
     {
         $url_parts = @parse_url($url);
-        $scheme_len = strlen($url_parts['scheme']);
-        $url = mb_substr($url, $scheme_len + 3);
+        if(isset($url_parts['scheme'])) {
+            $scheme_len = strlen($url_parts['scheme']);
+            $url = mb_substr($url, $scheme_len + 3);
+        }
         $len = strlen($url);
         if(isset($url[$len - 1]) && $url[$len - 1] == "/") {
             $url = mb_substr($url, 0, $len - 1);

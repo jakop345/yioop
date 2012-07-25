@@ -276,8 +276,9 @@ $db->execute("INSERT INTO MEDIA_SOURCE VALUES ('1342634198',
 $db->execute("INSERT INTO MEDIA_SOURCE VALUES ('1342634199',
     'Break.com', 'video', 'http://www.break.com/index/{}',
     'http://www.yioop.com/resources/blank.png?{}')");
-$db->execute("CREATE TABLE SUBSEARCH (
-    NAME VARCHAR(16) PRIMARY KEY, MIX_TIMESTAMP INT(11))");
+
+$db->execute("CREATE TABLE SUBSEARCH (LOCALE_STRING VARCHAR(16) PRIMARY KEY,
+    FOLDER_NAME VARCHAR(16), INDEX_IDENTIFIER CHAR(13))");
 
 $db->disconnect();
 if(in_array(DBMS, array('sqlite','sqlite3' ))){

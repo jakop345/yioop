@@ -2074,7 +2074,7 @@ class AdminController extends Controller implements CrawlConstants
     function searchSources()
     {
         $possible_arguments = array("addsource", "deletesource", 
-            "addsubsearch");
+            "addsubsearch", "deletesubsearch");
 
         $data = array();
         $data["ELEMENT"] = "searchsourcesElement";
@@ -2097,11 +2097,13 @@ class AdminController extends Controller implements CrawlConstants
         $data["SEARCH_LISTS"] = array(-1 => 
             tl('admin_controller_sources_indexes'));
         foreach($search_lists as $item) {
-            $data["SEARCH_LISTS"][$item["CRAWL_TIME"]] = $item["DESCRIPTION"];
+            $data["SEARCH_LISTS"]["i:".$item["CRAWL_TIME"]] =
+                $item["DESCRIPTION"];
         }
         $search_lists=  $this->crawlModel->getMixList();
         foreach($search_lists as $item) {
-            $data["SEARCH_LISTS"][$item["MIX_TIMESTAMP"]] = $item["MIX_NAME"];
+            $data["SEARCH_LISTS"]["m:".$item["MIX_TIMESTAMP"]] =
+                $item["MIX_NAME"];
         }
         if(isset($_REQUEST['arg']) && 
             in_array($_REQUEST['arg'], $possible_arguments)) {
@@ -2122,9 +2124,9 @@ class AdminController extends Controller implements CrawlConstants
                     $this->sourceModel->addMediaSource(
                         $r['sourcename'], $r['sourcetype'], $r['sourceurl'], 
                         $r['sourcethumbnail']);
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('admin_controller_media_source_added').
-                            "</h1>');";
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('admin_controller_media_source_added').
+                        "</h1>');";
                 break;
                 case "deletesource":
                     if(!isset($_REQUEST['ts'])) break;
@@ -2135,6 +2137,27 @@ class AdminController extends Controller implements CrawlConstants
                         "</h1>');";
                 break;
                 case "addsubsearch":
+                    $to_clean = array("foldername", 'indexsource');
+                    $must_have = $to_clean;
+                    foreach ($to_clean as $clean_me) {
+                        $r[$clean_me] = (isset($_REQUEST[$clean_me])) ?
+                            $this->clean($_REQUEST[$clean_me], "string" ) : "";
+                        if(in_array($clean_me, $must_have) && 
+                            $r[$clean_me] == "" ) break 2;
+                    }
+                    $this->sourceModel->addSubsearch(
+                        $r['foldername'], $r['indexsource']);
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('admin_controller_subsearch_added').
+                        "</h1>');";
+                break;
+                case "deletesubsearch":
+                    if(!isset($_REQUEST['fn'])) break;
+                    $folder_name = $this->clean($_REQUEST['fn'], "string");
+                    $this->sourceModel->deleteSubsearch($folder_name);
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('admin_controller_subsearch_deleted').
+                        "</h1>');";
                 break;
             }
         }

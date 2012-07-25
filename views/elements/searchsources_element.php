@@ -51,8 +51,10 @@ class SearchsourcesElement extends Element
      */
     public function render($data) 
     {
-        $base_url = "?YIOOP_TOKEN=".$data['YIOOP_TOKEN']."&c=admin".
-            "&a=searchSources";
+        $pre_base_url = "?YIOOP_TOKEN=".$data['YIOOP_TOKEN']."&c=admin";
+        $base_url = $pre_base_url . "&a=searchSources";
+        $localize_url = $pre_base_url . "&a=manageLocales".
+            "&arg=editlocale&selectlocale=".$data['LOCALE_TAG'];
     ?>
         <div class="currentactivity">
         <h2><?php e(tl('searchsources_element_add_media_source'))?></h2>
@@ -128,10 +130,30 @@ class SearchsourcesElement extends Element
         <h2><?php e(tl('searchsources_element_subsearches'))?></h2>
         <table class="searchsourcestable">
         <tr><th><?php e(tl('searchsources_element_dirname'));?></th>
-            <th><?php e(tl('searchsources_element_localeid'));
-            ?></th><th><?php
+            <th><?php
             e(tl('searchsources_element_index')); ?></th>
-            <th><?php e(tl('searchsources_element_action'));?></th></tr>
+            <th><?php e(tl('searchsources_element_localestring'));
+            ?></th>
+            <th colspan="2"><?php 
+                e(tl('searchsources_element_actions'));?></th></tr>
+        <?php foreach($data['SUBSEARCHES'] as $search) {
+        ?>
+        <tr><td><b><?php e($search['FOLDER_NAME']); ?></b></td>
+            <td><?php 
+                e("<b>".$data["SEARCH_LISTS"][$search['INDEX_IDENTIFIER']].
+                "</b><br />".$search['INDEX_IDENTIFIER']); ?></td>
+            <td><?php e($search['LOCALE_STRING']);?></td>
+
+            <td><a href='<?php e($localize_url."#".$search['LOCALE_STRING']); 
+                ?>' ><?php 
+                e(tl('searchsources_element_localize')); 
+                ?></a></td>
+            <td><a href="<?php e($base_url.'&arg=deletesubsearch&fn='.
+                $search['FOLDER_NAME']); ?>"><?php 
+                e(tl('searchsources_element_deletesubsearch')); 
+            ?></a></td>
+        <?php
+        } ?>
         <table>
         </div>
         <script type= "text/javascript">
