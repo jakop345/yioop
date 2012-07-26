@@ -74,10 +74,10 @@ function upgradeDatabaseWorkDirectoryCheck()
         $result = @$model->db->execute($sql);
         if($result !== false) {
             $row = $model->db->fetchArray($result);
-            if(isset($row['ID']) && $row['ID'] > 0 && $row['ID'] < 10) {
-                return true;
-            } else if (isset($row['ID'])) {
+            if(isset($row['ID']) && $row['ID'] >= 11) {
                 return false;
+            } else {
+                return true;
             }
         }
         sleep(3);
@@ -92,7 +92,7 @@ function upgradeDatabaseWorkDirectoryCheck()
  */
 function upgradeDatabaseWorkDirectory()
 {
-    $versions = array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+    $versions = array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11);
     $model = new Model();
     $model->db->selectDB(DB_NAME);
     $sql = "SELECT ID FROM VERSION";
@@ -102,7 +102,7 @@ function upgradeDatabaseWorkDirectory()
         if(isset($row['ID']) && in_array($row['ID'], $versions)) {
             $current_version = $row['ID'];
         } else {
-            exit();
+            $current_version = 0;
         }
     } else {
         exit(); // maybe someone else has locked DB, so bail
@@ -115,6 +115,17 @@ function upgradeDatabaseWorkDirectory()
     }
 }
 
+/**
+ * Upgrades a Version 0 version of the Yioop! database to a Version 1 version
+ * @param object $db datasource to use to upgrade
+ */
+function upgradeDatabaseVersion1(&$db)
+{
+    $db->execute("CREATE TABLE VERSION (ID INTEGER PRIMARY KEY)");
+    $db->execute("INSERT INTO VERSION VALUES (1)");
+    $db->execute("CREATE TABLE USER_SESSION( USER_ID INTEGER PRIMARY KEY, ".
+        "SESSION VARCHAR(4096))");
+}
 
 /**
  * Upgrades a Version 1 version of the Yioop! database to a Version 2 version
@@ -122,8 +133,7 @@ function upgradeDatabaseWorkDirectory()
  */
 function upgradeDatabaseVersion2(&$db)
 {
-    $db->execute("DELETE FROM VERSION WHERE ID=1");
-    $db->execute("INSERT INTO VERSION VALUES (2)");
+    $db->execute("UPDATE VERSION SET ID=2 WHERE ID=1");
     $db->execute("ALTER TABLE USER ADD UNIQUE ( USER_NAME )" );
     $db->execute("INSERT INTO LOCALE VALUES (17, 'kn', 'ಕನ್ನಡ', 'lr-tb')");
     $db->execute("INSERT INTO LOCALE VALUES (18, 'hi', 'हिन्दी', 'lr-tb')");
@@ -148,8 +158,7 @@ function upgradeDatabaseVersion2(&$db)
  */
 function upgradeDatabaseVersion3(&$db)
 {
-    $db->execute("DELETE FROM VERSION WHERE ID=2");
-    $db->execute("INSERT INTO VERSION VALUES (3)");
+    $db->execute("UPDATE VERSION SET ID=3 WHERE ID=2");
     $db->execute("INSERT INTO LOCALE VALUES (19, 'tr', 'Türkçe', 'lr-tb')");
 
     $db->execute("INSERT INTO ROLE_ACTIVITY VALUES (1, 10)");
@@ -221,8 +230,7 @@ function upgradeDatabaseVersion3(&$db)
  */
 function upgradeDatabaseVersion4(&$db)
 {
-    $db->execute("DELETE FROM VERSION WHERE ID=3");
-    $db->execute("INSERT INTO VERSION VALUES (4)");
+    $db->execute("UPDATE VERSION SET ID=4 WHERE ID=3");
     $db->execute("ALTER TABLE MACHINE ADD COLUMN PARENT VARCHAR(16)");
 }
 
@@ -232,8 +240,7 @@ function upgradeDatabaseVersion4(&$db)
  */
 function upgradeDatabaseVersion5(&$db)
 {
-    $db->execute("DELETE FROM VERSION WHERE ID=4");
-    $db->execute("INSERT INTO VERSION VALUES (5)");
+    $db->execute("UPDATE VERSION SET ID=5 WHERE ID=4");
 
     $static_page_path = LOCALE_DIR."/".DEFAULT_LOCALE."/pages";
     if(!file_exists($static_page_path)) {
@@ -253,8 +260,7 @@ function upgradeDatabaseVersion5(&$db)
  */
 function upgradeDatabaseVersion6(&$db)
 {
-    $db->execute("DELETE FROM VERSION WHERE ID=5");
-    $db->execute("INSERT INTO VERSION VALUES (6)");
+    $db->execute("UPDATE VERSION SET ID=6 WHERE ID=5");
 
     if(!file_exists(PREP_DIR)) {
         mkdir(PREP_DIR);
@@ -264,8 +270,7 @@ function upgradeDatabaseVersion6(&$db)
 
 function upgradeDatabaseVersion7(&$db)
 {
-    $db->execute("DELETE FROM VERSION WHERE ID=6");
-    $db->execute("INSERT INTO VERSION VALUES (7)");
+    $db->execute("UPDATE VERSION SET ID=7 WHERE ID=6");
     $db->execute("DELETE FROM ACTIVITY WHERE ACTIVITY_ID=7");
     $db->execute("INSERT INTO ACTIVITY VALUES (7, 7, 'resultsEditor')");
     $db->execute("DELETE FROM TRANSLATION WHERE TRANSLATION_ID=7");
@@ -280,8 +285,7 @@ function upgradeDatabaseVersion7(&$db)
 
 function upgradeDatabaseVersion8(&$db)
 {
-    $db->execute("DELETE FROM VERSION WHERE ID=7");
-    $db->execute("INSERT INTO VERSION VALUES (8)");
+    $db->execute("UPDATE VERSION SET ID=8 WHERE ID=7");
     $db->execute("INSERT INTO LOCALE VALUES (20, 'fa', 'فارسی', 'rl-tb')");
     $db->execute("CREATE TABLE ACTIVE_FETCHER (NAME VARCHAR(16),".
         " FETCHER_ID INT(4))");
@@ -293,12 +297,12 @@ function upgradeDatabaseVersion8(&$db)
 
 function upgradeDatabaseVersion9(&$db)
 {
-    $db->execute("DELETE FROM VERSION WHERE ID=8");
-    $db->execute("INSERT INTO VERSION VALUES (9)");
+    $db->execute("DELETE FROM VERSION WHERE ID < 8");
+    $db->execute("UPDATE VERSION SET ID=9 WHERE ID=8");
 
     $db->execute("INSERT INTO ROLE_ACTIVITY VALUES (1, 11)");
 
-    $db->execute("DELETE FROM ACTIVITY WHERE TRANSLATION_ID >= 8");
+    $db->execute("DELETE FROM ACTIVITY WHERE ACTIVITY_ID >= 8");
     $db->execute("DELETE FROM TRANSLATION WHERE TRANSLATION_ID >= 8");
     $db->execute("DELETE FROM TRANSLATION_LOCALE WHERE TRANSLATION_ID >= 8");
     $db->execute("INSERT INTO ACTIVITY VALUES (8, 8, 'searchSources')");
@@ -345,8 +349,10 @@ function upgradeDatabaseVersion9(&$db)
 
 function upgradeDatabaseVersion10(&$db)
 {
-    $db->execute("DELETE FROM VERSION WHERE ID=9");
-    $db->execute("INSERT INTO VERSION VALUES (10)");
+    $db->execute("DELETE FROM VERSION WHERE ID < 9");
+    $db->execute("UPDATE VERSION SET ID=10 WHERE ID=9");
+
+    $db->execute("DROP TABLE CRON_TABLE");
 
     $db->execute("CREATE TABLE MEDIA_SOURCE (TIMESTAMP INT(11) PRIMARY KEY,
         NAME VARCHAR(16) UNIQUE, TYPE VARCHAR(16), 
@@ -361,5 +367,15 @@ function upgradeDatabaseVersion10(&$db)
     $db->execute("INSERT INTO MEDIA_SOURCE VALUES ('1342634197',
         'DailyMotion', 'video', 'http://www.dailymotion.com/video/{}',
         'http://www.dailymotion.com/thumbnail/video/{}')");
+}
+
+function upgradeDatabaseVersion11(&$db)
+{
+    $db->execute("DELETE FROM VERSION WHERE ID < 10");
+    $db->execute("UPDATE VERSION SET ID=11 WHERE ID=10");
+    $db->execute("ALTER TABLE ROLE_ACTIVITY ADD CONSTRAINT 
+        PK_RA PRIMARY KEY(ROLE_ID, ACTIVITY_ID)");
+    $db->execute("CREATE TABLE SUBSEARCH (LOCALE_STRING VARCHAR(16) PRIMARY KEY,
+        FOLDER_NAME VARCHAR(16), INDEX_IDENTIFIER CHAR(13))");
 }
 ?>
