@@ -52,31 +52,39 @@ class SubsearchElement extends Element
     public function render($data)
     {
         if(!SUBSEARCH_LINK) { return; }
-        $media_links = array(
-            "Web" => "index.php",
-            "Images" => "images.php",
-            "Video" =>"video.php");
-        if(!isset($data['MEDIA'])) {
-            $data['MEDIA'] = "Web";
+        if(!isset($data["SUBSEARCHES"]) || $data["SUBSEARCHES"] == NULL) {
+            $data["SUBSEARCHES"] = array();
+        }
+        array_unshift($data["SUBSEARCHES"], array("FOLDER_NAME" => "",
+            "SUBSEARCH_NAME" => tl('subsearch_element_web')));
+        if(!isset($data['SOURCE'])) {
+            $data['SOURCE'] = "";
         }
     ?>
 
         <div class="subsearch" >
         <ul>
             <?php
-            foreach($media_links as $type => $link) {
-                if($type == $data['MEDIA']) {
-                    e("<li><b>$type</b></li>");
+            foreach($data["SUBSEARCHES"] as $search) {
+                $source = "?s={$search["FOLDER_NAME"]}";
+                $delim = "&amp;";
+                if($search["FOLDER_NAME"] == "") {
+                    $source = "";
+                    $delim = "?";
+                }
+                if($search['FOLDER_NAME'] == $data['SOURCE']) {
+                    e("<li><b>{$search['SUBSEARCH_NAME']}</b></li>");
                 } else {
                     $query = "";
                     if(isset($data['YIOOP_TOKEN'])) {
-                        $query .= 
-                            "?YIOOP_TOKEN={$data['YIOOP_TOKEN']}&amp;c=search";
+                        $query .= $delim.
+                            "YIOOP_TOKEN={$data['YIOOP_TOKEN']}&amp;c=search";
                         if(isset($data['QUERY'])) {
                             $query .= "&amp;q={$data['QUERY']}";
                         }
                     }
-                    e("<li><a href='$link$query'>$type</a></li>");
+                    e("<li><a href='$source$query'>".
+                        "{$search['SUBSEARCH_NAME']}</a></li>");
                 }
             }
             ?>

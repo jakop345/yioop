@@ -123,6 +123,13 @@ class SearchsourcesElement extends Element
             <?php $this->view->optionsHelper->render("index-source", 
             "indexsource", $data['SEARCH_LISTS'], 
                 ""); ?></td></tr>
+        <tr>
+        <td class="table-label"><label for="per-page"><b><?php 
+            e(tl('searchsources_element_per_page')); ?></b></label></td>
+            <td><?php
+            $this->view->optionsHelper->render("per-page", "perpage", 
+                $data['PER_PAGE'], $data['PER_PAGE_SELECTED']); ?>
+        </td></tr>
         <tr><td></td><td class="center"><button class="buttonbox" 
             type="submit"><?php e(tl('searchsources_element_submit')); 
             ?></button></td></tr>
@@ -134,16 +141,18 @@ class SearchsourcesElement extends Element
             e(tl('searchsources_element_index')); ?></th>
             <th><?php e(tl('searchsources_element_localestring'));
             ?></th>
+            <th><?php e(tl('searchsources_element_perpage'));
+            ?></th>
             <th colspan="2"><?php 
                 e(tl('searchsources_element_actions'));?></th></tr>
         <?php foreach($data['SUBSEARCHES'] as $search) {
         ?>
         <tr><td><b><?php e($search['FOLDER_NAME']); ?></b></td>
-            <td><?php 
+            <td><?php
                 e("<b>".$data["SEARCH_LISTS"][$search['INDEX_IDENTIFIER']].
                 "</b><br />".$search['INDEX_IDENTIFIER']); ?></td>
             <td><?php e($search['LOCALE_STRING']);?></td>
-
+            <td><?php e($search['PER_PAGE']);?></td>
             <td><a href='<?php e($localize_url."#".$search['LOCALE_STRING']); 
                 ?>' ><?php 
                 e(tl('searchsources_element_localize')); 

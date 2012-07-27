@@ -75,7 +75,7 @@ if(!in_array(DBMS, array('sqlite', 'sqlite3'))) {
 $db->selectDB(DB_NAME);
 
 $db->execute("CREATE TABLE VERSION (ID INTEGER PRIMARY KEY)");
-$db->execute("INSERT INTO VERSION VALUES (10)");
+$db->execute("INSERT INTO VERSION VALUES (12)");
 
 $db->execute("CREATE TABLE USER (USER_ID INTEGER PRIMARY KEY $auto_increment, ".
     "USER_NAME VARCHAR(16) UNIQUE,  PASSWORD VARCHAR(16))");
@@ -247,7 +247,8 @@ $db->execute("CREATE TABLE CRAWL_MIXES (
     MIX_TIMESTAMP INT(11) PRIMARY KEY, MIX_NAME VARCHAR(16) UNIQUE)");
 
 $db->execute("CREATE TABLE MIX_GROUPS (
-    MIX_TIMESTAMP INT(11), GROUP_ID INT(4), RESULT_BOUND INT(4))");
+    MIX_TIMESTAMP INT(11), GROUP_ID INT(4), RESULT_BOUND INT(4),
+    CONSTRAINT PK_MG PRIMARY KEY(MIX_TIMESTAMP, GROUP_ID))");
 
 $db->execute("CREATE TABLE MIX_COMPONENTS (
     MIX_TIMESTAMP INT(11), GROUP_ID INT(4), CRAWL_TIMESTAMP INT(11),
@@ -279,7 +280,25 @@ $db->execute("INSERT INTO MEDIA_SOURCE VALUES ('1342634199',
     'http://www.yioop.com/resources/blank.png?{}')");
 
 $db->execute("CREATE TABLE SUBSEARCH (LOCALE_STRING VARCHAR(16) PRIMARY KEY,
-    FOLDER_NAME VARCHAR(16), INDEX_IDENTIFIER CHAR(13))");
+    FOLDER_NAME VARCHAR(16), INDEX_IDENTIFIER CHAR(13), PER_PAGE INT)");
+
+$db->execute("INSERT INTO CRAWL_MIXES VALUES (2, 'images')");
+$db->execute("INSERT INTO MIX_GROUPS VALUES(2, 0, 1)");
+$db->execute("INSERT INTO MIX_COMPONENTS VALUES(2, 0, 1, 1, 'media:image')");
+$db->execute("INSERT INTO CRAWL_MIXES VALUES (3, 'videos')");
+$db->execute("INSERT INTO MIX_GROUPS VALUES(3, 0, 1)");
+$db->execute("INSERT INTO MIX_COMPONENTS VALUES(3, 0, 1, 1, 'media:video')");
+$db->execute("INSERT INTO SUBSEARCH VALUES('db_subsearch_images',
+    'images','m:2',50)");
+$db->execute("INSERT INTO TRANSLATION VALUES (1002,'db_subsearch_images')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES 
+        (1002, 1, 'Images' )");
+
+$db->execute("INSERT INTO SUBSEARCH VALUES ('db_subsearch_videos',
+    'videos','m:3',10)");
+$db->execute("INSERT INTO TRANSLATION VALUES (1003,'db_subsearch_videos')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES 
+        (1003, 1, 'Videos' )");
 
 $db->disconnect();
 if(in_array(DBMS, array('sqlite','sqlite3' ))){

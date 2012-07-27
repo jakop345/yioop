@@ -114,6 +114,10 @@ class SearchView extends View implements CrawlConstants
         <div class="searchbox">
             <form id="search-form" method="get" action='?'>
             <p>
+            <?php if(isset($data["SOURCE"]) && $data["SOURCE"] != "") { ?>
+            <input type="hidden" name="s" value="<?php 
+                e($data['SOURCE']); ?>" />
+            <?php } ?>
             <input type="hidden" name="YIOOP_TOKEN" value="<?php 
                 e($data['YIOOP_TOKEN']); ?>" />
             <input type="hidden" name="its" value="<?php e($data['its']); ?>" />

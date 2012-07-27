@@ -86,6 +86,11 @@ if(USE_MEMCACHE) {
     define("USE_CACHE", false);
 }
 
+if(!function_exists('mb_internal_encoding')) {
+    echo "PHP Zend Multibyte Support must be enabled for Yioop! to run.";
+    exit();
+}
+
 mb_internal_encoding("UTF-8");
 mb_regex_encoding("UTF-8");
 

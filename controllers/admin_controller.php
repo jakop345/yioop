@@ -1184,10 +1184,12 @@ class AdminController extends Controller implements CrawlConstants
         $data['mix_default'] = 0;
         $crawls = $this->crawlModel->getCrawlList(false, true);
         $data['available_crawls'][0] = tl('admin_controller_select_crawl');
+        $data['available_crawls'][1] = tl('admin_controller_default_crawl');
         $data['SCRIPT'] = "c = [];c[0]='".
             tl('admin_controller_select_crawl')."';";
+        $data['SCRIPT'] .= "c[1]='".
+            tl('admin_controller_default_crawl')."';";
         foreach($crawls as $crawl) {
-        
             $data['available_crawls'][$crawl['CRAWL_TIME']] =
                 $crawl['DESCRIPTION'];
             $data['SCRIPT'] .= 'c['.$crawl['CRAWL_TIME'].']="'.
@@ -2105,6 +2107,16 @@ class AdminController extends Controller implements CrawlConstants
             $data["SEARCH_LISTS"]["m:".$item["MIX_TIMESTAMP"]] =
                 $item["MIX_NAME"];
         }
+        $n = NUM_RESULTS_PER_PAGE;
+        $data['PER_PAGE'] = 
+            array($n => $n, 2*$n => 2*$n, 5*$n=> 5*$n, 10*$n=>10*$n);
+        if(isset($_REQUEST['perpage']) && 
+            in_array($_REQUEST['perpage'], array_keys($data['PER_PAGE']))) {
+            $data['PER_PAGE_SELECTED'] = $_REQUEST['perpage'];
+        } else {
+            $data['PER_PAGE_SELECTED'] = NUM_RESULTS_PER_PAGE;
+        }
+
         if(isset($_REQUEST['arg']) && 
             in_array($_REQUEST['arg'], $possible_arguments)) {
             switch($_REQUEST['arg'])
@@ -2146,7 +2158,8 @@ class AdminController extends Controller implements CrawlConstants
                             $r[$clean_me] == "" ) break 2;
                     }
                     $this->sourceModel->addSubsearch(
-                        $r['foldername'], $r['indexsource']);
+                        $r['foldername'], $r['indexsource'], 
+                        $data['PER_PAGE_SELECTED']);
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('admin_controller_subsearch_added').
                         "</h1>');";
@@ -2162,7 +2175,15 @@ class AdminController extends Controller implements CrawlConstants
             }
         }
         $data["MEDIA_SOURCES"] = $this->sourceModel->getMediaSources();
-        $data["SUBSEARCHES"] = $this->sourceModel->getSubsearches();
+        $subsearches = $this->sourceModel->getSubsearches();
+        $data["SUBSEARCHES"] = array();
+        foreach($subsearches as $search) {
+            if(isset($data["SEARCH_LISTS"][$search['INDEX_IDENTIFIER']])) {
+                $data["SUBSEARCHES"][] = $search;
+            } else {
+           //     $this->sourceModel->deleteSubsearch($search["FOLDER_NAME"]);
+            }
+        }
         $data['SCRIPT'] .= "source_type = elt('source-type');".
             "source_type.onchange = switchSourceType;".
             "switchSourceType()";

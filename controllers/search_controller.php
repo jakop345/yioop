@@ -80,6 +80,15 @@ class SearchController extends Controller implements CrawlConstants
     var $activities = array("query", "cache", "related", "signout");
 
     /**
+     *
+     */
+    var $source_name = "";
+
+    /**
+     *
+     */
+    var $source_identifier = "";
+    /**
      * This is the main entry point for handling a search request.
      *
      * ProcessRequest determines the type of search request (normal request , 
@@ -105,6 +114,26 @@ class SearchController extends Controller implements CrawlConstants
             $web_flag = false;
         } else if (!WEB_ACCESS) {
             return;
+        }
+        $subsearches = $this->sourceModel->getSubsearches();
+        if(isset($_REQUEST["s"])) {
+            $search_found = false;
+            foreach($subsearches as $search) {
+                if($search["FOLDER_NAME"] == $_REQUEST["s"]) {
+                    $search_found = true;
+                    $this->source_name = $_REQUEST["s"];
+                    $this->source_identifier = $search["INDEX_IDENTIFIER"];
+                    if(!isset($_REQUEST['num']) && isset($search["PER_PAGE"])) {
+                        $_REQUEST['num']= $search["PER_PAGE"];
+                    }
+                    break;
+                }
+            }
+            if(!$search_found) {
+                $pathinfo = pathinfo($_SERVER['SCRIPT_FILENAME']);
+                include($pathinfo["dirname"]."/error.php");
+                exit();
+            }
         }
         if(isset($_REQUEST['num'])) {
             $results_per_page = $this->clean($_REQUEST['num'], "int");
@@ -221,9 +250,7 @@ class SearchController extends Controller implements CrawlConstants
         } else if ($index_time_stamp == 0) {
             $index_info = NULL;
         }
-        if(defined("MEDIA")) {
-            $data["MEDIA"] = MEDIA;
-        }
+
         if(isset($_REQUEST['q']) && strlen($_REQUEST['q']) > 0 
             || $activity != "query") {
             if($activity == "query") {
@@ -300,6 +327,10 @@ class SearchController extends Controller implements CrawlConstants
         }
         $stats_file = CRAWL_DIR."/cache/".self::statistics_base_name.
                 $data['its'].".txt";
+        $data["SUBSEARCHES"] = $subsearches;
+        if($this->source_name != "" && $this->source_identifier != "") {
+            $data["SOURCE"] = $this->source_name;
+        }
         $data["HAS_STATISTICS"] = file_exists($stats_file);
         $data['YIOOP_TOKEN'] = $this->generateCSRFToken($user);
         if($view == "search" && $raw == 0 && isset($data['PAGES'])) {
@@ -395,9 +426,6 @@ class SearchController extends Controller implements CrawlConstants
     function processQuery($query, $activity, $arg, $results_per_page, 
         $limit = 0, $index_name = 0, $raw = 0) 
     {
-        if(defined("MEDIA")) {
-            $data["MEDIA"] = MEDIA;
-        }
         $no_index_given = false;
         if($index_name == 0) {
             $index_name = $this->crawlModel->getCurrentIndexDatabaseName();
@@ -484,16 +512,8 @@ class SearchController extends Controller implements CrawlConstants
             case "query":
             default:
                 if(trim($query) != "") {
-                    if(defined("MEDIA")) {
-                        switch(MEDIA)
-                        {
-                            case "Video":
-                                $replace = " media:video";
-                            break;
-                            case "Images":
-                                $replace = " media:image";
-                            break;
-                        }
+                    if($this->source_identifier != "") {
+                        $replace = " {$this->source_identifier}";
                         $query = preg_replace('/\|/', "$replace", $query);
                         $query .= " $replace";
                     }
@@ -505,18 +525,25 @@ class SearchController extends Controller implements CrawlConstants
                             $mix_name = substr($matches[2][0],
                                 strlen($mix_meta));
                             $mix_name = str_replace("+", " ", $mix_name);
+                            break; // only one mix and can't be nested
                         }
-                        $query = preg_replace($pattern, "", $query);
                     }
+                    $query = preg_replace($pattern, "", $query);
                     if(isset($mix_name)) {
-                        $tmp = $this->crawlModel->getCrawlMixTimestamp(
-                            $mix_name);
-                        if($tmp != false) {
-                            $index_name = $tmp;
+                        if(is_numeric($mix_name)) {
                             $is_mix = true;
+                            $index_name = $mix_name;
+                        } else {
+                            $tmp = $this->crawlModel->getCrawlMixTimestamp(
+                                $mix_name);
+                            if($tmp != false) {
+                                $index_name = $tmp;
+                                $is_mix = true;
+                            }
                         }
                     }
                     if($is_mix) {
+
                         $mix = $this->crawlModel->getCrawlMix($index_name);
                         $query = 
                             $this->phraseModel->rewriteMixQuery($query, $mix);

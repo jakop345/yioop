@@ -116,11 +116,44 @@ class SourceModel extends Model
     function getSubsearches()
     {
         $subsearches = array();
-        $this->db->selectDB(DB_NAME);
-        $sql = "SELECT * FROM SUBSEARCH";
+        $db = $this->db;
+        $db->selectDB(DB_NAME);
+        $locale_tag = getLocaleTag();
+
+        $sql = "SELECT LOCALE_ID FROM LOCALE ".
+            "WHERE LOCALE_TAG = '$locale_tag' LIMIT 1";
+        $result = $db->execute($sql);
+        $row = $db->fetchArray($result);
+        
+        $locale_id = $row['LOCALE_ID'];
+        $sql = "SELECT S.LOCALE_STRING AS LOCALE_STRING, ".
+            "S.FOLDER_NAME AS FOLDER_NAME, ".
+            " S.PER_PAGE AS PER_PAGE, ".
+            " S.INDEX_IDENTIFIER AS INDEX_IDENTIFIER, ".
+            " T.TRANSLATION_ID AS TRANSLATION_ID FROM ".
+            " SUBSEARCH S, TRANSLATION T WHERE  ".
+            " T.IDENTIFIER_STRING = S.LOCALE_STRING"; 
         $i = 0;
-        $result = $this->db->execute($sql);
+        $result = $db->execute($sql);
         while($subsearches[$i] = $this->db->fetchArray($result)) {
+            $id = $subsearches[$i]["TRANSLATION_ID"];
+            $sub_sql = "SELECT TRANSLATION AS SUBSEARCH_NAME ".
+                "FROM TRANSLATION_LOCALE ".
+                " WHERE TRANSLATION_ID=$id AND LOCALE_ID=$locale_id LIMIT 1"; 
+                // maybe do left join at some point
+                    
+            $result_sub =  $db->execute($sub_sql);
+            $translate = false;
+            if($result_sub) {
+                $translate = $db->fetchArray($result_sub);
+            }
+            if($translate) {
+                $subsearches[$i]['SUBSEARCH_NAME'] = 
+                    $translate['SUBSEARCH_NAME'];
+            } else {
+                $subsearches[$i]['SUBSEARCH_NAME'] = 
+                    $subsearches[$i]['LOCALE_STRING'];
+            }
             $i++;
         }
         unset($subsearches[$i]); //last one will be null
@@ -132,15 +165,17 @@ class SourceModel extends Model
      *
      * @return
      */
-    function addSubsearch($folder_name, $index_identifier)
+    function addSubsearch($folder_name, $index_identifier, $per_page)
     {
         $this->db->selectDB(DB_NAME);
         $locale_string = "db_subsearch_".$folder_name;
 
+
         $sql = "INSERT INTO SUBSEARCH VALUES ('".
             $this->db->escapeString($locale_string)."','".
             $this->db->escapeString($folder_name)."','".
-            $this->db->escapeString($index_identifier)."')";
+            $this->db->escapeString($index_identifier)."','".
+            $this->db->escapeString($per_page)."')";
 
         $this->db->execute($sql);
 
@@ -158,9 +193,23 @@ class SourceModel extends Model
     function deleteSubsearch($folder_name)
     {
         $this->db->selectDB(DB_NAME);
+        $locale_string = "db_subsearch_".$folder_name;
+
+        $sql = "SELECT * FROM TRANSLATION WHERE IDENTIFIER_STRING =".
+            "'$locale_string'";
+        $result = $this->db->execute($sql);
+        if(isset($result)) {
+            $row = $db->fetchArray($result);
+            if(isset($row["TRANSLATION_ID"])) {
+                $translation_id = $row["TRANSLATION_ID"];
+                $sql = "DELETE FROM TRANSLATION_LOCALE WHERE ".
+                    "TRANSLATION_ID='$translation_id'";
+                $this->db->execute($sql);
+            }
+        }
         $sql = "DELETE FROM SUBSEARCH WHERE FOLDER_NAME='$folder_name'";
         $this->db->execute($sql);
-        $locale_string = "db_subsearch_".$folder_name;
+
         $sql = "DELETE FROM TRANSLATION WHERE IDENTIFIER_STRING='".
             $locale_string."'";
         $this->db->execute($sql);

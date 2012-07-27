@@ -176,9 +176,10 @@ class PhraseModel extends ParallelModel
                             if(isset($component['KEYWORDS'])) {
                                 $disjunct_string .= " ".$component['KEYWORDS'];
                             }
+                            $stamp = ($component['CRAWL_TIMESTAMP'] <=  1) ?
+                                "" : " i:".$component['CRAWL_TIMESTAMP'];
                             $rewrite .= $pipe2.$disjunct_string." w:".
-                                ($component['WEIGHT']*$base_weight)." i:".
-                                $component['CRAWL_TIMESTAMP'];
+                                ($component['WEIGHT'] * $base_weight).$stamp;
                             $pipe2 = ' | ';
                         }
                     }

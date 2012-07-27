@@ -74,7 +74,7 @@ function upgradeDatabaseWorkDirectoryCheck()
         $result = @$model->db->execute($sql);
         if($result !== false) {
             $row = $model->db->fetchArray($result);
-            if(isset($row['ID']) && $row['ID'] >= 11) {
+            if(isset($row['ID']) && $row['ID'] >= 12) {
                 return false;
             } else {
                 return true;
@@ -92,7 +92,7 @@ function upgradeDatabaseWorkDirectoryCheck()
  */
 function upgradeDatabaseWorkDirectory()
 {
-    $versions = array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11);
+    $versions = array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12);
     $model = new Model();
     $model->db->selectDB(DB_NAME);
     $sql = "SELECT ID FROM VERSION";
@@ -352,8 +352,6 @@ function upgradeDatabaseVersion10(&$db)
     $db->execute("DELETE FROM VERSION WHERE ID < 9");
     $db->execute("UPDATE VERSION SET ID=10 WHERE ID=9");
 
-    $db->execute("DROP TABLE CRON_TABLE");
-
     $db->execute("CREATE TABLE MEDIA_SOURCE (TIMESTAMP INT(11) PRIMARY KEY,
         NAME VARCHAR(16) UNIQUE, TYPE VARCHAR(16), 
         SOURCE_URL VARCHAR(256), THUMB_URL VARCHAR(256)
@@ -373,9 +371,33 @@ function upgradeDatabaseVersion11(&$db)
 {
     $db->execute("DELETE FROM VERSION WHERE ID < 10");
     $db->execute("UPDATE VERSION SET ID=11 WHERE ID=10");
+    $db->execute("DROP TABLE CRON_TIME");
     $db->execute("ALTER TABLE ROLE_ACTIVITY ADD CONSTRAINT 
         PK_RA PRIMARY KEY(ROLE_ID, ACTIVITY_ID)");
     $db->execute("CREATE TABLE SUBSEARCH (LOCALE_STRING VARCHAR(16) PRIMARY KEY,
         FOLDER_NAME VARCHAR(16), INDEX_IDENTIFIER CHAR(13))");
+}
+
+function upgradeDatabaseVersion12(&$db)
+{
+    $db->execute("INSERT INTO CRAWL_MIXES VALUES (2, 'images')");
+    $db->execute("INSERT INTO MIX_GROUPS VALUES(2, 0, 1)");
+    $db->execute("INSERT INTO MIX_COMPONENTS VALUES(2, 0, 1, 1, 
+        'media:image')");
+    $db->execute("INSERT INTO CRAWL_MIXES VALUES (3, 'videos')");
+    $db->execute("INSERT INTO MIX_GROUPS VALUES(3, 0, 1)");
+    $db->execute("INSERT INTO MIX_COMPONENTS VALUES(3, 0, 1, 1, 
+        'media:video')");
+    $db->execute("INSERT INTO SUBSEARCH VALUES('db_subsearch_images',
+        'images','m:2',50)");
+    $db->execute("INSERT INTO TRANSLATION VALUES (1002,'db_subsearch_images')");
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES 
+            (1002, 1, 'Images' )");
+
+    $db->execute("INSERT INTO SUBSEARCH VALUES ('db_subsearch_videos',
+        'videos','m:3',10)");
+    $db->execute("INSERT INTO TRANSLATION VALUES (1003,'db_subsearch_videos')");
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES 
+            (1003, 1, 'Videos' )");
 }
 ?>
