@@ -380,6 +380,8 @@ function upgradeDatabaseVersion11(&$db)
 
 function upgradeDatabaseVersion12(&$db)
 {
+    $db->execute("DELETE FROM VERSION WHERE ID < 11");
+    $db->execute("UPDATE VERSION SET ID=12 WHERE ID=11");
     $db->execute("INSERT INTO CRAWL_MIXES VALUES (2, 'images')");
     $db->execute("INSERT INTO MIX_GROUPS VALUES(2, 0, 1)");
     $db->execute("INSERT INTO MIX_COMPONENTS VALUES(2, 0, 1, 1, 
