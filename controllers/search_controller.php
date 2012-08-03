@@ -947,7 +947,7 @@ class SearchController extends Controller implements CrawlConstants
             }
         }
         $robot_instance = $crawl_item[self::ROBOT_INSTANCE];
-        $robot_table_name = CRAWL_DIR."/robot_table.txt";
+        $robot_table_name = CRAWL_DIR."/".self::robot_table_name;
         $robot_table = array();
         if(file_exists($robot_table_name)) {
             $robot_table = unserialize(file_get_contents($robot_table_name));

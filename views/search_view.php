@@ -185,7 +185,8 @@ class SearchView extends View implements CrawlConstants
                 <?php if(isset($page['IMAGES'])) {
                     $image_query = "?YIOOP_TOKEN={$data['YIOOP_TOKEN']}".
                             "&amp;c=search&amp;q={$data['QUERY']}";
-                    $this->imagesHelper->render($page['IMAGES'], $image_query);
+                    $this->imagesHelper->render($page['IMAGES'], $image_query,
+                        $data["SOURCE"]);
                     e( "           </div>");
                     continue;
                 }?>

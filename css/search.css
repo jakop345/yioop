@@ -351,6 +351,7 @@ body.mobile
     height:30px;
 }
 
+
 /* this is for informational messages when settings are changed or admin stuff
    done
  */
@@ -424,18 +425,95 @@ body.mobile
 /*
    For the web, images, video links on the topbar
  */
-.html-ltr .subsearch ul li
+.html-ltr .subsearch ul.out-list
 {
     float:left;
+}
+.html-ltr .subsearch ul.out-list li.outer
+{
     display: inline;
     list-style-type: none;
     padding-left: 20px; 
 }
 
+#more-menu
+{
+    display:none;
+}
 
-.html-rtl .subsearch ul li
+#more-on b
+{
+    position:relative;
+    top:3px;
+    margin-top:2px;
+    margin-left:2px;
+    margin-right:2px;
+    padding:2px;
+    background-color:white;
+    z-index:4;
+}
+
+#more-on
+{
+    display:none;
+}
+
+#more-on
+{
+    background-color:gray;
+}
+
+li.outer div
+{
+    display: block;
+    background-color: gray;
+    padding:2px;
+    width:1.25in;
+    z-index:3;
+}
+
+
+.html-ltr li.outer div
+{
+    position:relative;
+    left: 1.85in;
+}
+
+.html-rtl li.outer div
+{
+    position:relative;
+    left: 1.85in;
+}
+
+.mobile .subsearch ul.out-list li.outer
+{
+    padding-left:3px;
+}
+
+.mobile li.outer div
+{
+    position:relative;
+    left: 110px;
+    right: 110px;
+}
+
+ul.in-list
+{
+    background-color: white;
+}
+
+ul.in-list li
+{
+    list-style-type: none;
+    padding-top: .05in;
+    padding-bottom: .05in;
+}
+.html-rtl .subsearch ul
 {
     float:right;
+}
+.html-rtl .subsearch ul li
+{
     display: inline;
     list-style-type: none;
     padding-left: 20px; 
@@ -952,7 +1030,7 @@ body.mobile
     height:18pt;
     display:block;
     color:black;
-    text-decoration:none
+    text-decoration:none;
     z-index:5;
 }
 

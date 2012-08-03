@@ -2071,7 +2071,14 @@ class AdminController extends Controller implements CrawlConstants
      }
 
     /**
+     * Handles admin request related to the search sources activity
+      *
+     * The search sources activity allows a user to add/delete search sources
+     * for video and news, it also allows a user to control which subsearches
+     * appear on the SearchView page
      *
+     * @return array $data info about current search sources, and current
+     *      sub-searches
      */
     function searchSources()
     {

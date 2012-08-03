@@ -34,7 +34,9 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- *
+ * Contains the forms for managing search sources for video, news, etc.
+ * Also, contains form for managing subsearches which appear in SearchView
+ * 
  * @author Chris Pollett
  *
  * @package seek_quarry
@@ -45,9 +47,9 @@ class SearchsourcesElement extends Element
 {
 
     /**
-     * Draws 
+     * Renders search source and subsearch forms
      *
-     * @param array $data 
+     * @param array $data available Search sources  and subsearches
      */
     public function render($data) 
     {

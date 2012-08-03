@@ -40,7 +40,8 @@ require_once BASE_DIR."/models/model.php";
 require_once BASE_DIR."/lib/utility.php"; 
 
 /**
- * This class is used 
+ * Used to manage data related to video, news, and other search sources
+ * Also, used to manage data about available subsearches seen in SearchView
  *
  * @author Chris Pollett
  * @package seek_quarry
@@ -58,8 +59,12 @@ class SourceModel extends Model
 
 
     /**
-     *  
-     *  @param 
+     *  Returns a list of media sources such as (video, rss sites) and their
+     *  URL and thumb url formats, etc
+     *
+     *  @param string $sourcetype the particular kind of media source to return
+     *      for example, video
+     *  @return array a list of web sites which are either video or news sites
      */
     function getMediaSources($sourcetype = "")
     {
@@ -82,7 +87,11 @@ class SourceModel extends Model
 
     /**
      *
-     * @return
+     *  @param string $name
+     *  @param string $source_type
+     *  @param string $source_url
+     *  @param string $thumb_url
+     *  @return
      */
     function addMediaSource($name, $source_type, $source_url, $thumb_url)
     {
@@ -99,7 +108,7 @@ class SourceModel extends Model
 
     /**
      *
-     *
+     * @param int $timestamp
      */
     function deleteMediaSource($timestamp)
     {
@@ -112,6 +121,7 @@ class SourceModel extends Model
 
     /**
      *
+     * @return array
      */
     function getSubsearches()
     {
@@ -163,7 +173,9 @@ class SourceModel extends Model
 
     /**
      *
-     * @return
+     * @param string $folder_name
+     * @param string $index_identifier
+     * @param int $per_page
      */
     function addSubsearch($folder_name, $index_identifier, $per_page)
     {
@@ -188,7 +200,7 @@ class SourceModel extends Model
 
     /**
      *
-     * @return
+     * @param string $folder_name
      */
     function deleteSubsearch($folder_name)
     {

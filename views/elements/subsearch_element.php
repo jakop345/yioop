@@ -43,7 +43,6 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 class SubsearchElement extends Element
 {
-
     /**
      *  Method responsible for drawing links to common subsearches
      *
@@ -60,39 +59,70 @@ class SubsearchElement extends Element
         if(!isset($data['SOURCE'])) {
             $data['SOURCE'] = "";
         }
-    ?>
+        $drop_threshold = 2;
 
-        <div class="subsearch" >
-        <ul>
-            <?php
-            foreach($data["SUBSEARCHES"] as $search) {
-                $source = "?s={$search["FOLDER_NAME"]}";
-                $delim = "&amp;";
-                if($search["FOLDER_NAME"] == "") {
-                    $source = "";
-                    $delim = "?";
-                }
-                if($search['FOLDER_NAME'] == $data['SOURCE']) {
-                    e("<li><b>{$search['SUBSEARCH_NAME']}</b></li>");
-                } else {
-                    $query = "";
-                    if(isset($data['YIOOP_TOKEN'])) {
-                        $query .= $delim.
-                            "YIOOP_TOKEN={$data['YIOOP_TOKEN']}&amp;c=search";
-                        if(isset($data['QUERY'])) {
-                            $query .= "&amp;q={$data['QUERY']}";
-                        }
+        if(count($data["SUBSEARCHES"]) > $drop_threshold + 1) {
+            $subdropdown = true;
+        } else {
+            $subdropdown = false;
+        }
+        ?>
+
+            <div class="subsearch" >
+            <ul class="out-list">
+                <?php
+                $i = 0;
+                $class= "outer";
+                foreach($data["SUBSEARCHES"] as $search) {
+                    if ($subdropdown && $i > $drop_threshold) {
+                        e("<li class='outer'><span id='more-off'><a ".
+                            " href='#' onclick=\"setDisplay('more-menu',".
+                            " true); setDisplay('more-off',".
+                            " false); setDisplay('more-on', 'inline')\" ><b>".
+                            tl('subsearch_element_more').
+                            "</b></a></span><span ".
+                            "id='more-on'><a href='?' onclick=\"setDisplay(".
+                            "'more-on', false); setDisplay('more-off',".
+                            " 'inline'); setDisplay('more-menu',".
+                            " false)\" \" ><b >"
+                            .tl('subsearch_element_more')."</b>".
+                            "</a></span><div id='more-menu'>".
+                            "<ul class='in-list'>");
+                        $subdropdown = false;
+                        $class= "inner";
                     }
-                    e("<li><a href='$source$query'>".
-                        "{$search['SUBSEARCH_NAME']}</a></li>");
+                    $i++;
+                    $source = "?s={$search["FOLDER_NAME"]}";
+                    $delim = "&amp;";
+                    if($search["FOLDER_NAME"] == "") {
+                        $source = "";
+                        $delim = "?";
+                    }
+                    if($search['FOLDER_NAME'] == $data['SOURCE']) {
+                        e("<li class='$class'><b>".
+                            "{$search['SUBSEARCH_NAME']}</b></li>");
+                    } else {
+                        $query = "";
+                        if(isset($data['YIOOP_TOKEN'])) {
+                            $query .= $delim.
+                                "YIOOP_TOKEN={$data['YIOOP_TOKEN']}".
+                                "&amp;c=search";
+                            if(isset($data['QUERY'])) {
+                                $query .= "&amp;q={$data['QUERY']}";
+                            }
+                        }
+                        e("<li class='$class'><a href='$source$query'>".
+                            "{$search['SUBSEARCH_NAME']}</a></li>");
+                    }
                 }
-            }
-            ?>
+                if($i > $drop_threshold + 1) {
+                    e("</ul></div></li>");
+                }
+                ?>
+            </ul>
+            </div>
 
-        </ul>
-        </div>
-
-    <?php
-    }
+        <?php
+        }
 }
 ?>

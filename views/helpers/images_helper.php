@@ -56,11 +56,12 @@ class ImagesHelper extends Helper implements CrawlConstants
      *
      *  @param array $image_pages page data and thumbnails for images
      *  @param string $query the current search query
+     *  @param string $source name of subsearch page this image group on
      */
-    public function render($image_pages, $query)
+    public function render($image_pages, $query, $source)
     {
-        if(!defined('MEDIA') || MEDIA != 'Images') {?>
-            <h2><a href="images.php<?php e($query)?>"
+        if($source != 'images') {?>
+            <h2><a href="<?php e($query.'&s=images')?>"
                 ><?php e(tl('images_helper_view_image_results'));?></a></h2>
         <?php
         }?>
