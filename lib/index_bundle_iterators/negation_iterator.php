@@ -77,7 +77,7 @@ class NegationIterator extends IndexBundleIterator
     {
         $this->index_bundle_iterators[0] = new WordIterator(
             crawlHash("site:all", true), 
-            $index_bundle_iterator->getIndexName(), true,
+            $index_bundle_iterator->index_name, true,
             $index_bundle_iterator->filter);
         $this->index_bundle_iterators[1] = $index_bundle_iterator;
 
