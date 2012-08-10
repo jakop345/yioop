@@ -207,7 +207,7 @@ class SearchView extends View implements CrawlConstants
                 ?></a>
                 </h2>
                 <?php if($check_video) {
-                    $this->videourlHelper->render($page[self::URL],
+                    $this->videourlHelper->render($url,
                         $data['VIDEO_SOURCES']);
                 }
                 ?>
@@ -283,13 +283,15 @@ class SearchView extends View implements CrawlConstants
                 <?php
                 }
                 if(MOBILE && $aux_link_flag) {e("<br />");}
-                e(tl('search_view_rank', 
-                    number_format($page[self::DOC_RANK], 2)));
-                e(tl('search_view_relevancy',
-                    number_format($page[self::RELEVANCE], 2) ));
-                e(tl('search_view_proximity',
-                    number_format($page[self::PROXIMITY], 2) )." ");
-                e(tl('search_view_score', $page[self::SCORE]));
+                if(isset($page[self::SCORE])) {
+                    e(tl('search_view_rank', 
+                        number_format($page[self::DOC_RANK], 2)));
+                    e(tl('search_view_relevancy',
+                        number_format($page[self::RELEVANCE], 2) ));
+                    e(tl('search_view_proximity',
+                        number_format($page[self::PROXIMITY], 2) )." ");
+                    e(tl('search_view_score', $page[self::SCORE]));
+                }
                  ?>
                 </p>
             </div>
