@@ -216,8 +216,10 @@ class SearchView extends View implements CrawlConstants
                 ?></p>
                 <?php if(!isset($page[self::ROBOT_METAS]) || 
                     !in_array("NOSNIPPET", $page[self::ROBOT_METAS])) {
+                        $description = isset($page[self::DESCRIPTION]) ?
+                            $page[self::DESCRIPTION] : "";
                         echo "<p>".$this->displayresultsHelper->
-                            render($page[self::DESCRIPTION])."</p>"; 
+                            render($description)."</p>"; 
                     }?>
                 <p class="serp-links-score"><?php
                 $aux_link_flag = false;
