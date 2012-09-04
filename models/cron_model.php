@@ -50,11 +50,14 @@ require_once BASE_DIR."/lib/fetch_url.php";
 class CronModel extends Model 
 {
     /**
-     *
+     * File name used to store the cron table associative array
+     * @string
      */
     var $cron_file;
     /**
-     *
+     * An associative array of key_name => timestamps use to indicate
+     * when various cron activities were last performed
+     * @var array
      */
     var $cron_table;
     /**
@@ -84,6 +87,10 @@ class CronModel extends Model
         return $this->cron_table[$key];
     }
 
+    /**
+     * Loads into $this->cron_table the associative array of key =>timestamps
+     * that is a cron table
+     */
     function loadCronTable()
     {
         if(file_exists($this->cron_file)) {
