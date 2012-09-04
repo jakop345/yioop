@@ -74,7 +74,7 @@ function upgradeDatabaseWorkDirectoryCheck()
         $result = @$model->db->execute($sql);
         if($result !== false) {
             $row = $model->db->fetchArray($result);
-            if(isset($row['ID']) && $row['ID'] >= 12) {
+            if(isset($row['ID']) && $row['ID'] >= 13) {
                 return false;
             } else {
                 return true;
@@ -92,7 +92,7 @@ function upgradeDatabaseWorkDirectoryCheck()
  */
 function upgradeDatabaseWorkDirectory()
 {
-    $versions = array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12);
+    $versions = array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13);
     $model = new Model();
     $model->db->selectDB(DB_NAME);
     $sql = "SELECT ID FROM VERSION";
@@ -108,7 +108,7 @@ function upgradeDatabaseWorkDirectory()
         exit(); // maybe someone else has locked DB, so bail
     }
     $key = array_search($current_version, $versions);
-    $versions = array_slice($versions, $current_version + 1);
+    $versions = array_slice($versions, $current_version);
     foreach($versions as $version) {
         $upgradeDB = "upgradeDatabaseVersion$version";
         $upgradeDB($model->db);
@@ -268,6 +268,10 @@ function upgradeDatabaseVersion6(&$db)
     $db->setWorldPermissionsRecursive(PREP_DIR);
 }
 
+/**
+ * Upgrades a Version 6 version of the Yioop! database to a Version 7 version
+ * @param object $db datasource to use to upgrade 
+ */
 function upgradeDatabaseVersion7(&$db)
 {
     $db->execute("UPDATE VERSION SET ID=7 WHERE ID=6");
@@ -283,6 +287,10 @@ function upgradeDatabaseVersion7(&$db)
         'Éditeur de résultats')");
 }
 
+/**
+ * Upgrades a Version 7 version of the Yioop! database to a Version 8 version
+ * @param object $db datasource to use to upgrade 
+ */
 function upgradeDatabaseVersion8(&$db)
 {
     $db->execute("UPDATE VERSION SET ID=8 WHERE ID=7");
@@ -295,6 +303,10 @@ function upgradeDatabaseVersion8(&$db)
     upgradeLocale();
 }
 
+/**
+ * Upgrades a Version 8 version of the Yioop! database to a Version 9 version
+ * @param object $db datasource to use to upgrade 
+ */
 function upgradeDatabaseVersion9(&$db)
 {
     $db->execute("DELETE FROM VERSION WHERE ID < 8");
@@ -347,6 +359,10 @@ function upgradeDatabaseVersion9(&$db)
         'Sắp xếp hoạt động dựa theo hoạch định')");
 }
 
+/**
+ * Upgrades a Version 9 version of the Yioop! database to a Version 10 version
+ * @param object $db datasource to use to upgrade 
+ */
 function upgradeDatabaseVersion10(&$db)
 {
     $db->execute("DELETE FROM VERSION WHERE ID < 9");
@@ -367,6 +383,10 @@ function upgradeDatabaseVersion10(&$db)
         'http://www.dailymotion.com/thumbnail/video/{}')");
 }
 
+/**
+ * Upgrades a Version 10 version of the Yioop! database to a Version 11 version
+ * @param object $db datasource to use to upgrade 
+ */
 function upgradeDatabaseVersion11(&$db)
 {
     $db->execute("DELETE FROM VERSION WHERE ID < 10");
@@ -378,6 +398,10 @@ function upgradeDatabaseVersion11(&$db)
         FOLDER_NAME VARCHAR(16), INDEX_IDENTIFIER CHAR(13))");
 }
 
+/**
+ * Upgrades a Version 11 version of the Yioop! database to a Version 12 version
+ * @param object $db datasource to use to upgrade 
+ */
 function upgradeDatabaseVersion12(&$db)
 {
     $db->execute("DELETE FROM VERSION WHERE ID < 11");
@@ -401,5 +425,22 @@ function upgradeDatabaseVersion12(&$db)
     $db->execute("INSERT INTO TRANSLATION VALUES (1003,'db_subsearch_videos')");
     $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES 
             (1003, 1, 'Videos' )");
+}
+
+/**
+ * Upgrades a Version 12 version of the Yioop! database to a Version 13 version
+ * @param object $db datasource to use to upgrade 
+ */
+function upgradeDatabaseVersion13(&$db)
+{
+    $db->execute("DELETE FROM VERSION WHERE ID < 12");
+    $db->execute("UPDATE VERSION SET ID=13 WHERE ID=12");
+    $db->execute("CREATE TABLE FEED_ITEM (GUID VARCHAR(11) PRIMARY KEY, 
+        TITLE VARCHAR(512), LINK VARCHAR(256), DESCRIPTION VARCHAR(4096), 
+        PUBDATE INT, SOURCE_NAME VARCHAR(16))");
+    if(!file_exists(WORK_DIRECTORY."/feeds")) {
+        mkdir(WORK_DIRECTORY."/feeds");
+    }
+    $this->upgradeLocale(); //force locale upgrade
 }
 ?>

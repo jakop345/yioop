@@ -69,7 +69,7 @@ class ProfileModel extends Model
 
     /**
      * Creates a folder to be used to maintain local information about this 
-     * instance of the Yioop/SeekQuarry engin
+     * instance of the Yioop/SeekQuarry engine
      *
      * Creates the directory provides as well as subdirectories for crawls, 
      * locales, logging, and sqlite DBs.
@@ -79,10 +79,11 @@ class ProfileModel extends Model
     function makeWorkDirectory($directory)
     {
 
-        $to_make_dirs = array($directory, "$directory/locale",
-            "$directory/cache", "$directory/schedules", 
-            "$directory/log", "$directory/data", "$directory/app",
-            "$directory/prepare");
+        $to_make_dirs = array($directory, "$directory/app",
+            "$directory/cache", "$directory/data", "$directory/feeds",
+            "$directory/locale", "$directory/log",
+            "$directory/prepare", "$directory/schedules", 
+            "$directory/search_filters");
         $dir_status = array();
         foreach($to_make_dirs as $dir) {
             $dir_status[$dir] = $this->createIfNecessaryDirectory($dir);
@@ -196,7 +197,7 @@ EOT;
     }
 
     /**
-     * Creates a  directory and sets it to world prermission if it doesn't 
+     * Creates a  directory and sets it to world permission if it doesn't 
      * aleady exist
      *
      * @param string $directory name of directory to create
@@ -244,7 +245,8 @@ EOT;
         $tables = array("VERSION", "USER", "USER_SESSION", "TRANSLATION", 
             "LOCALE", "TRANSLATION_LOCALE", "ROLE", 
             "ROLE_ACTIVITY", "ACTIVITY", "USER_ROLE", "CURRENT_WEB_INDEX",
-            "CRAWL_MIXES", "MIX_GROUPS", "MIX_COMPONENTS");
+            "CRAWL_MIXES", "MIX_GROUPS", "MIX_COMPONENTS", "SUBSEARCH",
+            "SUBSEARCH");
         //Don't copy MACHINE table as will be local to installation
         $create_statements = array(
             "CREATE TABLE VERSION( ID INTEGER PRIMARY KEY)",
@@ -278,7 +280,13 @@ EOT;
             "CREATE TABLE MACHINE (NAME VARCHAR(16) PRIMARY KEY,".
                 " URL VARCHAR(256) UNIQUE, HAS_QUEUE_SERVER INT,".
                 " NUM_FETCHERS INT(4), PARENT VARCHAR(16) )",
-            "CREATE TABLE CRON_TIME (TIMESTAMP INT(11))"
+            "CREATE TABLE CRON_TIME (TIMESTAMP INT(11))",
+            "CREATE TABLE SUBSEARCH (LOCALE_STRING VARCHAR(16) PRIMARY KEY,
+                    FOLDER_NAME VARCHAR(16), INDEX_IDENTIFIER CHAR(13))",
+            "CREATE TABLE FEED_ITEM (GUID VARCHAR(11) PRIMARY KEY, 
+                TITLE VARCHAR(512), LINK VARCHAR(256), 
+                DESCRIPTION VARCHAR(4096),
+                PUBDATE INT, SOURCE_NAME VARCHAR(16))",
             );
         foreach($create_statements as $statement) {
             if(!$test_dbm->execute($statement)) {return false;}
