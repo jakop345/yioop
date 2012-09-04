@@ -98,6 +98,12 @@ class SearchController extends Controller implements CrawlConstants
     const NEWS_UPDATE_INTERVAL = 3600;
 
     /**
+     *  Number of seconds that must elapse after last call before culling
+     *  all news items (to get rid of old ones)
+     */
+    const NEWS_DELETE_INTERVAL = 86400; //one day
+
+    /**
      * This is the main entry point for handling a search request.
      *
      * ProcessRequest determines the type of search request (normal request , 
@@ -580,14 +586,22 @@ class SearchController extends Controller implements CrawlConstants
 
             break;
         }
+        $time = time();
+        $cron_time = $this->cronModel->getCronTime("news_delete");
+        $delta = $time - $cron_time;
+        if($delta == 0) {
+            $this->cronModel->updateCronTime("news_delete");
+        }
+        if(($delta > self::NEWS_DELETE_INTERVAL) && ($raw == 1
+            || $queue_servers == array())) {
+            $this->sourceModel->deleteFeedItems(self::NEWS_DELETE_INTERVAL);
+        }
         $cron_time = $this->cronModel->getCronTime("news_update");
-        $delta = time() - $cron_time;
-        if($delta > self::NEWS_UPDATE_INTERVAL && ($raw == 1
+        $delta = $time - $cron_time;
+        if((false && $delta > self::NEWS_UPDATE_INTERVAL || $delta == 0) && ($raw == 1
             || $queue_servers == array())) {
             $this->cronModel->updateCronTime("news_update");
-            $this->newsUpdate();
-        } else if ($delta == 0) {
-            $this->cronModel->updateCronTime("news_update");
+            $this->sourceModel->updateFeedItems();
         }
         $data['VIDEO_SOURCES'] = $this->sourceModel->getMediaSources("video");
         $data['PAGES'] = (isset($phrase_results['PAGES'])) ?
@@ -1177,9 +1191,5 @@ class SearchController extends Controller implements CrawlConstants
         return;
     }
 
-    function newsUpdate()
-    {
-        $this->sourceModel->updateFeeds();
-    }
 }
 ?>

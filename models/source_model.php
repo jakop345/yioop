@@ -83,12 +83,19 @@ class SourceModel extends Model
     }
 
     /**
+     *  Used to add a new video, rss, or other sources to Yioop
      *
-     *  @param string $name
-     *  @param string $source_type
-     *  @param string $source_url
-     *  @param string $thumb_url
-     *  @return
+     *  @param string $name 
+     *  @param string $source_type whether video, rss, etc
+     *  @param string $source_url url regex of resource (video) or actual 
+     *      resource (rss). Not quite a real regex you add {} to the
+     *      location in the url where the name of the particular video
+     *      should go http://www.youtube.com/watch?v={}&
+     *      (anything after & is ignored, so between = and & will be matched
+     *      as the name of a video)
+     *  @param string $thumb_url regex of where to get thumbnails for videos
+     *      based on match of $source_url, for example,
+     *      http://img.youtube.com/vi/{}/2.jpg
      */
     function addMediaSource($name, $source_type, $source_url, $thumb_url)
     {
@@ -104,8 +111,9 @@ class SourceModel extends Model
     }
 
     /**
+     * Deletes the media source whose id is the given timestamp
      *
-     * @param int $timestamp
+     * @param int $timestamp of media source to be deleted
      */
     function deleteMediaSource($timestamp)
     {
@@ -117,8 +125,11 @@ class SourceModel extends Model
     }
 
     /**
+     * Returns a list of the subsearches used by the current Yioop instances
+     * including their names translated to the current locale
      *
-     * @return array
+     * @return array associative array containing subsearch info name in locale,
+     *     folder name, index, number of results per page
      */
     function getSubsearches()
     {
@@ -142,7 +153,7 @@ class SourceModel extends Model
             " T.IDENTIFIER_STRING = S.LOCALE_STRING"; 
         $i = 0;
         $result = $db->execute($sql);
-        while($subsearches[$i] = $this->db->fetchArray($result)) {
+        while($subsearches[$i] = $db->fetchArray($result)) {
             $id = $subsearches[$i]["TRANSLATION_ID"];
             $sub_sql = "SELECT TRANSLATION AS SUBSEARCH_NAME ".
                 "FROM TRANSLATION_LOCALE ".
@@ -164,15 +175,19 @@ class SourceModel extends Model
             $i++;
         }
         unset($subsearches[$i]); //last one will be null
-
         return $subsearches;
     }
 
     /**
+     * Adds a new subsearch to the list of subsearches. This are displayed 
+     * at the top od the Yioop search pages.
      *
-     * @param string $folder_name
-     * @param string $index_identifier
-     * @param int $per_page
+     * @param string $folder_name name of subsearch in terms of urls
+     *      (not translated name that appears in the subsearch bar)
+     * @param string $index_identifier timestamp of crawl or mix to be
+     *      used for results of subsearch
+     * @param int $per_page number of search results per page when this
+     *      subsearch is used
      */
     function addSubsearch($folder_name, $index_identifier, $per_page)
     {
@@ -196,8 +211,10 @@ class SourceModel extends Model
 
 
     /**
+     * Deletes a subsearch from the subsearch table and removes its
+     * associated translations
      *
-     * @param string $folder_name
+     * @param string $folder_name of subsearch to delete
      */
     function deleteSubsearch($folder_name)
     {
@@ -225,9 +242,10 @@ class SourceModel extends Model
     }
 
     /**
-     *
+     *  For each feed source downloads the feeds, checks which items are
+     *  not in the database, adds them and updates the inverted index for feeds
      */
-    function updateFeeds()
+    function updateFeedItems()
     {
         $feed_shard_name = WORK_DIRECTORY."/feeds/index";
         if(!file_exists($feed_shard_name)) {
@@ -274,7 +292,55 @@ class SourceModel extends Model
     }
 
     /**
+     * Deletes all feed items with a publication date older than $age
+     * seconds ago from FEED_ITEM
      *
+     * @param int $age how many seconds old records should be deleted
+     */
+    function deleteFeedItems($age)
+    {
+        // delete old inverted index and rows older than age
+        $feed_shard_name = WORK_DIRECTORY."/feeds/index";
+        if(file_exists($feed_shard_name)) {
+            unlink($feed_shard_name);
+        }
+        $too_old = time() - $age;
+        $db = $this->db;
+        $sql = "DELETE FROM FEED_ITEM WHERE PUBDATE < '$too_old'";
+        $db->execute($sql);
+        // we now rebuild the inverted index with the remaining items
+        $feed_shard =  new IndexShard($feed_shard_name);
+        $sql = "SELECT * FROM FEED_ITEM";
+        $result = $db->execute($sql);
+        $lang = DEFAULT_LOCALE;
+        if($result) {
+            while($item = $db->fetchArray($result)) {
+                $source_name = $item['SOURCE_NAME'];
+                $phrase_string = $item["TITLE"] . " ". $item["DESCRIPTION"];
+                $word_lists = PhraseParser::extractPhrasesInLists(
+                    $phrase_string, $lang, true);
+                $raw_guid = unbase64Hash($item["GUID"]);
+                $doc_keys = crawlHash($item["LINK"], true) . 
+                    $raw_guid."d". substr(crawlHash(
+                    UrlParser::getHost($item["LINK"])."/",true), 1);
+                $meta_ids = array("media:news", "media:news:".
+                    urlencode($source_name));
+                $feed_shard->addDocumentWords($doc_keys, $item['PUBDATE'], 
+                    $word_lists, $meta_ids, true, false);
+            }
+        }
+        $feed_shard->save();
+    }
+
+    /**
+     * Adds words extracted feed data in $item to $feed_shard and
+     * adds $item to db if it isn't already there
+     *
+     * @param array $item data from a single news feed item
+     * @param object &$feed_shard index_shard to stored extracted words in
+     * @param string $source_name string name of the news feed $item was found
+     *  on
+     * @param string $lang locale-tag of the news feed
      */
     function addFeedItemIfNew($item, &$feed_shard, $source_name, $lang)
     {
