@@ -202,6 +202,8 @@ interface CrawlConstants
     const KEY = "ce";
     const MACHINE_ID = 'cf';
     const VIDEO_SOURCES = 'cg';
+    const IS_FEED = 'ch';
+    const SOURCE_NAME = 'ci';
 
     const NEEDS_OFFSET_FLAG = 0x7FFFFFFF;
 

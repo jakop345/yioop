@@ -194,7 +194,6 @@ abstract class IndexBundleIterator implements CrawlConstants
                 return NULL;
             }
         }
-
         $out_pages = array();
         foreach($keys as $doc_key) {
             if(!isset($pages[$doc_key])) {

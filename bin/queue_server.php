@@ -31,15 +31,22 @@
  * @filesource
  */
 
-if(php_sapi_name() != 'cli') {echo "BAD REQUEST"; exit();}
+if(!defined("UNIT_TEST_MODE")) {
+    if(php_sapi_name() != 'cli') {echo "BAD REQUEST"; exit();}
 
 
-/** Calculate base directory of script 
- * @ignore 
- */
-define("BASE_DIR", substr(
-    dirname(realpath($_SERVER['PHP_SELF'])), 0, 
-    -strlen("/bin")));
+    /** Calculate base directory of script 
+     * @ignore 
+     */
+    define("BASE_DIR", substr(
+        dirname(realpath($_SERVER['PHP_SELF'])), 0, 
+        -strlen("/bin")));
+
+    /** NO_CACHE means don't try to use memcache 
+     * @ignore
+     */
+    define("NO_CACHE", true);
+}
 
 ini_set("memory_limit","1400M"); //so have enough memory to crawl big pages
 
@@ -50,11 +57,6 @@ if(!PROFILE) {
         "by visiting its web interface on localhost.\n";
     exit();
 }
-
-/** NO_CACHE means don't try to use memcache 
- * @ignore
- */
-define("NO_CACHE", true);
 
 /** Get the database library based on the current database type */
 require_once BASE_DIR."/models/datasources/".DBMS."_manager.php";
@@ -2158,7 +2160,7 @@ class QueueServer implements CrawlConstants, Join
 
     /**
      * Checks if url belongs to a list of sites that are allowed to be 
-     * crawled
+     * crawled and that the file type is crawlable
      *
      * @param string $url url to check
      * @return bool whether is allowed to be crawled or not
@@ -2237,13 +2239,18 @@ class QueueServer implements CrawlConstants, Join
         if(!is_array($site_array)) {return false;}
         foreach($site_array as $site) {
             $site_parts = mb_split("domain:", $site);
+            $host = UrlParser::getHost($url);
             if(isset($site_parts[1]) && 
-                mb_strstr(UrlParser::getHost($url), $site_parts[1]) ) {
+                mb_strstr($host, $site_parts[1]) ) {
                 $flag = true;
                 break;
             }
-
-            $flag = UrlParser::isPathMemberRegexPaths($url, array($site));
+            $path = UrlParser::getPath($url, true);
+            $site_host = UrlParser::getHost($site);
+            $site_path = UrlParser::getPath($site, true);
+            $flag = UrlParser::isPathMemberRegexPaths($host, array($site_host));
+            if(!$flag) continue;
+            $flag = UrlParser::isPathMemberRegexPaths($path, array($site_path));
             if($flag) break;
 
         }
@@ -2277,11 +2284,12 @@ class QueueServer implements CrawlConstants, Join
 
 }
 
-/*
- *  Instantiate and runs the QueueSever
- */
-$queue_server =  new QueueServer($INDEXED_FILE_TYPES);
-$queue_server->start();
-
+if(!defined("UNIT_TEST_MODE")) {
+    /*
+     *  Instantiate and runs the QueueSever
+     */
+    $queue_server =  new QueueServer($INDEXED_FILE_TYPES);
+    $queue_server->start();
+}
 
 ?>

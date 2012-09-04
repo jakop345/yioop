@@ -117,5 +117,56 @@ class WebQueueBundleTest extends UnitTest
 
     }
 
+    /**
+     * Checks the two methods addGotRobotTxtFilter($host) and
+     * containsGotRobotTxt($host) properly insert do containment for the
+     * robots.txt Bloom filter
+     */
+    public function addContainsRobotTxtFilterTestCase()
+    {
+        $web_queue = $this->test_objects['FILE1'];
+        $host = "http://www.host.com/";
+        $web_queue->addGotRobotTxtFilter($host);
+        $this->assertTrue(
+            $web_queue->containsGotRobotTxt($host), 
+            "Contains added robots.txt host");
+        $this->assertFalse(
+            $web_queue->containsGotRobotTxt("http://www.bob.com/"), 
+            "Contains added robots.txt host");
+    }
+
+    /**
+     * Tests the methods addRobotPaths and checkRobotOkay
+     */
+    public function addRobotPathsCheckRobotOkayTestCase()
+    {
+        $web_queue = $this->test_objects['FILE1'];
+        $host = "http://www.test.com/";
+        $paths = array(
+            CrawlConstants::ALLOWED_SITES => array("/trapdoor"),
+            CrawlConstants::DISALLOWED_SITES => array("/trap","/*?"),
+        );
+        $web_queue->addRobotPaths($host, $paths);
+
+        $test_urls = array(
+            array("http://www.cs.sjsu.edu/", true, 
+                "url with no stored rules"),
+            array("http://www.test.com/trapdoor", true, 
+                "allowed url"),
+            array("http://www.test.com/trapdoor?b", true, 
+                "allowed overrides all disallows"),
+            array("http://www.test.com/trap", false, 
+                "forbidden url 1"),
+            array("http://www.test.com/abc?", false, 
+                "forbidden url 2"),
+            array("http://www.test.com/a?b", false, 
+                "forbidden url 3"),
+        );
+
+        foreach($test_urls as $test_url) {
+            $result = $web_queue->checkRobotOkay($test_url[0]);
+            $this->assertEqual($result, $test_url[1], $test_url[2]);
+        }
+    }
 }
 ?>

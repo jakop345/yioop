@@ -343,7 +343,6 @@ class PhraseModel extends ParallelModel
             $out_results = $this->getSummariesByHash($word_structs,
                 $low, $phrase_num, $filter, $use_cache_if_allowed, $raw, 
                 $queue_servers, $disjunct);
-
             if(isset($out_results['PAGES']) &&
                 count($out_results['PAGES']) != 0) {
                 $out_count = 0;
@@ -832,11 +831,8 @@ class PhraseModel extends ParallelModel
         $num_retrieved = 0;
         $pages = array();
 
-        $isLocal = ($queue_servers == array()) ||
-            $this->isSingleLocalhost($queue_servers);
-
         if(is_object($query_iterator)) {
-            while($num_retrieved < $to_retrieve  &&
+            while($num_retrieved < $to_retrieve &&
                 is_array($next_docs = 
                     $query_iterator->nextDocsWithWord()) ) {
                 $pages += $next_docs;

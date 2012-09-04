@@ -228,6 +228,8 @@ class ParallelModel extends Model implements CrawlConstants
     function nonNetworkGetCrawlItems($lookups)
     {
         $summaries = array();
+        $db = $this->db;
+        $db->selectDB(DB_NAME);
         foreach($lookups as $lookup => $lookup_info) {
             if(count($lookup_info) == 2 && $lookup_info[0][0] === 'h') {
                 list($url, $index_name) = $lookup_info;
@@ -255,9 +257,28 @@ class ParallelModel extends Model implements CrawlConstants
                         list($machine, $key, $index_name, $generation, 
                             $summary_offset) = $lookup_item;
                     }
-                    $index = IndexManager::getIndex($index_name);
-                    $index->setCurrentShard($generation, true);
-                    $page = @$index->getPage($summary_offset);
+                    if(strcmp($index_name, "feed") != 0) {
+                        $index = IndexManager::getIndex($index_name);
+                        $index->setCurrentShard($generation, true);
+                        $page = @$index->getPage($summary_offset);
+                    } else {
+                        $guid = base64Hash(substr($key, 
+                            IndexShard::DOC_KEY_LEN, 
+                            IndexShard::DOC_KEY_LEN));
+                        $sql = "SELECT * FROM FEED_ITEM WHERE GUID=".
+                            "'$guid'";
+                        $result = $db->execute($sql);
+                        $page = false;
+                        if($result) {
+                            $row = $db->fetchArray($result);
+                            if($row) {
+                                $page[self::TITLE] = $row["TITLE"];
+                                $page[self::DESCRIPTION] = $row["DESCRIPTION"];
+                                $page[self::URL] = $row["LINK"];
+                                $page[self::SOURCE_NAME] = $row["SOURCE_NAME"];
+                            }
+                        }
+                    }
                     if(!$page || $page == array()) {continue;}
                     $copy = false;
                     if($summary == array()) {

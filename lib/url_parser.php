@@ -271,8 +271,11 @@ class UrlParser
             return NULL;
         }
         $path = $url_parts['path'];
+        $len = strlen($url);
         if($with_query_string && isset($url_parts['query'])) {
             $path .= "?".$url_parts['query'];
+        } else if($with_query_string && $url[$len - 1] = "?") {
+            $path .= "?"; //handle blank query string case
         }
         return $path;
     }
@@ -357,9 +360,6 @@ class UrlParser
     {
         $is_member = false;
 
-        if($host = self::getHost($path)) {
-            $path = substr($path, strlen($host));
-        }
         $len = strlen($path);
         foreach($robot_paths as $robot_path) {
             $rlen = strlen($robot_path);

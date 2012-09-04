@@ -243,7 +243,7 @@ class RssProcessor extends TextProcessor
      * @param string $text_name name of text tag to associate with link
      * @param string $site   a string containing a url
      * 
-     * @return array   a url,text pair 
+     * @return array a url,text pair 
      */ 
     static function linkAndTexts($item_node, $link_name, $text_name, $site)
     {

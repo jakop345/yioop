@@ -55,7 +55,8 @@ class IndexManager implements CrawlConstants
 {
     /**
      *  Returns a reference to the managed copy of an IndexArchiveBundle object
-     *  with a given timestamp
+     *  with a given timestamp or an IndexShard in the case where 
+     *  $index_name == "feed" (for handling news feeds)
      *
      *  @param string $index_name timestamp of desired IndexArchiveBundle
      *  @return object the desired IndexArchiveBundle reference
@@ -64,10 +65,21 @@ class IndexManager implements CrawlConstants
     {
         static $indexes = array();
         if(!isset($indexes[$index_name])) {
-            $index_archive_name =self::index_data_base_name . $index_name;
-            $indexes[$index_name] = 
-                new IndexArchiveBundle(CRAWL_DIR.'/cache/'.$index_archive_name);
-            $indexes[$index_name]->setCurrentShard(0, true);
+            if($index_name == "feed") {
+                if(file_exists(WORK_DIRECTORY."/feeds/index")) {
+                    $indexes[$index_name] = new IndexShard(
+                        WORK_DIRECTORY."/feeds/index", 0, 
+                        NUM_DOCS_PER_GENERATION, true);
+                } else {
+                    return false;
+                }
+            } else {
+                $index_archive_name =self::index_data_base_name . $index_name;
+                $indexes[$index_name] = 
+                    new IndexArchiveBundle(
+                        CRAWL_DIR.'/cache/'.$index_archive_name);
+                $indexes[$index_name]->setCurrentShard(0, true);
+            }
         }
         return $indexes[$index_name];
     }

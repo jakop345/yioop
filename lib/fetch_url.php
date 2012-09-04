@@ -57,13 +57,16 @@ class FetchUrl implements CrawlConstants
      * @param bool $timer  flag, true means print timing statistics to log
      * @param int $page_range_request maximum number of bytes to download/page
      *      0 means download all
+     * @param string $temp_dir folder to store temporary ip header info
      * @param string $key  the component of $sites[$i] that has the value of 
      *      a url to get defaults to URL
      * @param string $value component of $sites[$i] in which to store the 
      *      page that was gotten
-     *  @param array $post_data for each site data to be POST'd to that site
+     * @param bool $minimal if true do a faster request of pages by not
+     *      doing things like extract HTTP headers sent, etcs
+     * @param array $post_data data to be POST'd to each site
      *
-     *  @return array an updated array with the contents of those pages
+     * @return array an updated array with the contents of those pages
      */ 
 
     public static function getPages($sites, $timer = false,

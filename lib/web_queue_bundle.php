@@ -616,7 +616,8 @@ class WebQueueBundle implements Notifier
     /**
      * Adds all the paths for a host to the Robots Web Archive.
      * @param string $host name that the paths are to be added for.
-     * @param array an array with two keys ALLOW and DISALLOW. For each key
+     * @param array an array with two keys CrawlConstants::ALLOWED_SITES and 
+     *      CrawlConstants::DISALLOWED_SITES. For each key
      *      one has an array of paths
      */
     function addRobotPaths($host, $paths)

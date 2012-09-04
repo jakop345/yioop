@@ -78,6 +78,15 @@ class WordIterator extends IndexBundleIterator
     var $dictionary_info;
 
     /**
+     *
+     */
+    var $feed_shard_name;
+    /**
+     *
+     */
+    var $feed_info;
+
+    /**
      * The total number of shards that have data for this word
      * @var int
      */
@@ -154,7 +163,7 @@ class WordIterator extends IndexBundleIterator
             $word_key = base64_decode($hash);
 
         }
-        
+
         if($filter != NULL) {
             $this->filter = & $filter;
         } else {
@@ -162,6 +171,34 @@ class WordIterator extends IndexBundleIterator
         }
 
         $this->word_key = $word_key;
+
+        $this->feed_shard_name = WORK_DIRECTORY."/feeds/index";
+        if(file_exists($this->feed_shard_name)) {
+            $this->use_feeds = true;
+        } else {
+            $this->use_feeds = false;
+        }
+        if($this->use_feeds) {
+            $feed_shard = IndexManager::getIndex("feed");
+            $this->feed_info = $feed_shard->getWordInfo($word_key, true);
+            if ($this->feed_info === false) {
+                $this->feed_empty = true;
+            } else {
+                $this->feed_empty = false;
+            }
+        } else {
+            $this->feed_info = false;
+            $this->feed_empty = true;
+        }
+        if(is_array($this->feed_info)) {
+            list($this->feed_start, $this->feed_end, $this->feed_count) =
+                $this->feed_info;
+        } else {
+            $this->feed_start = 0;
+            $this->feed_end = 0;
+            $this->feed_count = 0;
+        }
+        $this->using_feeds = true;
 
         $this->index_name =  $index_name;
         $index = IndexManager::getIndex($index_name);
@@ -176,7 +213,7 @@ class WordIterator extends IndexBundleIterator
             {
                 $this->empty = true;
             } else {
-                $this->num_docs = 0;
+                $this->num_docs = $this->feed_count;
                 for($i = 0; $i < $this->num_generations; $i++) {
                     list(, , , $num_docs) =
                         $this->dictionary_info[$i];
@@ -199,12 +236,22 @@ class WordIterator extends IndexBundleIterator
     function computeRelevance($generation, $posting_offset)
     {
         $item = array();
-        $index = IndexManager::getIndex($this->index_name);
-        $index->setCurrentShard($generation, true);
-        $num_docs_or_links = 
-            IndexShard::numDocsOrLinks($this->start_offset, $this->last_offset);
-        $index->getCurrentShard()->makeItem($item, 
-            $posting_offset, $num_docs_or_links, 1);
+        if($this->using_feeds && $this->use_feeds) {
+            $index = IndexManager::getIndex("feed");
+            $num_docs_or_links = 
+                IndexShard::numDocsOrLinks($this->feed_start, 
+                $this->feed_end);
+            $index->makeItem($item, 
+                $posting_offset, $num_docs_or_links, 1);
+        } else {
+            $index = IndexManager::getIndex($this->index_name);
+            $index->setCurrentShard($generation, true);
+            $num_docs_or_links = 
+                IndexShard::numDocsOrLinks($this->start_offset, 
+                $this->last_offset);
+            $index->getCurrentShard()->makeItem($item, 
+                $posting_offset, $num_docs_or_links, 1);
+        }
         return $item[self::RELEVANCE];
     }
 
@@ -215,6 +262,8 @@ class WordIterator extends IndexBundleIterator
      */
     function reset()
     {
+        $this->using_feeds = true;
+        $no_feeds = $this->feed_empty || !$this->use_feeds;
         if(!$this->empty) {// we shouldn't be called when empty - but to be safe
             list($this->current_generation, $this->start_offset, 
                 $this->last_offset, ) 
@@ -224,7 +273,12 @@ class WordIterator extends IndexBundleIterator
             $this->last_offset = -1;
             $this->num_generations = -1;
         }
-        $this->current_offset = $this->start_offset;
+        if(!$no_feeds) {
+            $this->current_offset = $this->feed_start;
+            $this->current_generation = -1;
+        } else {
+            $this->current_offset = $this->start_offset;
+        }
         $this->generation_pointer = 0;
         $this->count_block = 0;
         $this->seen_docs = 0;
@@ -240,20 +294,46 @@ class WordIterator extends IndexBundleIterator
      */
     function findDocsWithWord()
     {
-        if($this->empty || ($this->generation_pointer >= $this->num_generations)
+        $no_feeds = $this->feed_empty || !$this->use_feeds;
+        $feed_in_use = $this->using_feeds && !$no_feeds;
+
+        if($this->empty && $no_feeds) {
+            return -1;
+        }
+        if(!$feed_in_use&&($this->generation_pointer >= $this->num_generations)
             || ($this->generation_pointer == $this->num_generations -1 &&
             $this->current_offset > $this->last_offset)) {
             return -1;
         }
-        $this->next_offset = $this->current_offset;
-        $index = IndexManager::getIndex($this->index_name);
-        $index->setCurrentShard($this->current_generation, true);
+        $pre_results = array();
+        if($feed_in_use) {
+            $this->next_offset = $this->current_offset;
+            $feed_shard = IndexManager::getIndex("feed");
+            if($feed_shard) {
+                $pre_results = $feed_shard->getPostingsSlice(
+                    $this->feed_start,
+                    $this->next_offset, $this->feed_end, 
+                    $this->results_per_block);
+                $time = time();
+                foreach($pre_results as $keys => $pre_result) {
+                    $pre_results[$keys][self::IS_FEED] = true;
+                    $delta = $time - $pre_result[self::SUMMARY_OFFSET];
+                    $pre_results[$keys][self::DOC_RANK] = 720000 / 
+                        max($delta, 1);
+                }
+            }
+        } else if(!$this->empty) {
+            $this->next_offset = $this->current_offset;
+            $index = IndexManager::getIndex($this->index_name);
+            $index->setCurrentShard($this->current_generation, true);
 
-        //the next call also updates next offset
-        $shard = $index->getCurrentShard();
-        $pre_results = $shard->getPostingsSlice(
-            $this->start_offset,
-            $this->next_offset, $this->last_offset, $this->results_per_block);
+            //the next call also updates next offset
+            $shard = $index->getCurrentShard();
+            $pre_results = $shard->getPostingsSlice(
+                $this->start_offset,
+                $this->next_offset, $this->last_offset, 
+                $this->results_per_block);
+        }
         $results = array();
         $filter = ($this->filter == NULL) ? array() : $this->filter;
         foreach($pre_results as $keys => $data) {
@@ -268,11 +348,15 @@ class WordIterator extends IndexBundleIterator
             // inlinks is the domain of the inlink
             $data[self::INLINKS] = substr($keys, 
                 2 * IndexShard::DOC_KEY_LEN, IndexShard::DOC_KEY_LEN);
-            $data[self::CRAWL_TIME] = $this->index_name;
+            if(isset($data[self::IS_FEED]) && $data[self::IS_FEED]) {
+                $data[self::CRAWL_TIME] = "feed";
+            } else {
+                $data[self::CRAWL_TIME] = $this->index_name;
+            }
             $results[$keys] = $data;
         }
         $this->count_block = count($results);
-        if($this->generation_pointer == $this->num_generations -1 &&
+        if($this->generation_pointer == $this->num_generations - 1 &&
             $results == array()) {
             $results = NULL;
         }
@@ -287,9 +371,15 @@ class WordIterator extends IndexBundleIterator
     function advanceSeenDocs()
     {
         if($this->current_block_fresh != true) {
-            $num_docs = min($this->results_per_block,
-                IndexShard::numDocsOrLinks($this->next_offset,
-                    $this->last_offset));
+            if($this->using_feeds && $this->use_feeds) {
+                $num_docs = min($this->results_per_block,
+                    IndexShard::numDocsOrLinks($this->next_offset,
+                        $this->feed_end));
+            } else {
+                $num_docs = min($this->results_per_block,
+                    IndexShard::numDocsOrLinks($this->next_offset,
+                        $this->last_offset));
+            }
             $this->next_offset = $this->current_offset;
             $this->next_offset += IndexShard::POSTING_LEN * $num_docs;
             if($num_docs < 0) {
@@ -318,24 +408,32 @@ class WordIterator extends IndexBundleIterator
             $this->advanceGeneration();
             $this->next_offset = $this->current_offset;
         }
-        
-        if($this->current_offset > $this->last_offset) {
+        $using_feeds = $this->using_feeds && $this->use_feeds;
+        if(( $using_feeds &&
+            $this->current_offset > $this->feed_end) || (!$using_feeds &&
+            $this->current_offset > $this->last_offset)) {
             $this->advanceGeneration();
             $this->next_offset = $this->current_offset;
         }
         if($gen_doc_offset !== null) {
-            $last_current_generation = -1;
             if($this->current_generation < $gen_doc_offset[0]) {
                 $this->advanceGeneration($gen_doc_offset[0]);
                 $this->next_offset = $this->current_offset;
             }
-            $index = IndexManager::getIndex($this->index_name);
-            $index->setCurrentShard($this->current_generation, true);
+            $using_feeds = $this->using_feeds && $this->use_feeds;
+            if($using_feeds) {
+                $shard = IndexManager::getIndex("feed");
+                $last = $this->feed_end;
+            } else {
+                $index = IndexManager::getIndex($this->index_name);
+                $index->setCurrentShard($this->current_generation, true);
+                $shard = $index->getCurrentShard();
+                $last = $this->last_offset;
+            }
             if($this->current_generation == $gen_doc_offset[0]) {
                 $this->current_offset =
-                    $index->getCurrentShard(
-                        )->nextPostingOffsetDocOffset($this->next_offset,
-                            $this->last_offset, $gen_doc_offset[1]);
+                    $shard->nextPostingOffsetDocOffset($this->next_offset,
+                            $last, $gen_doc_offset[1]);
                 if($this->current_offset === false) {
                     $this->advanceGeneration();
                     $this->next_offset = $this->current_offset;
@@ -356,6 +454,11 @@ class WordIterator extends IndexBundleIterator
      */
     function advanceGeneration($generation = null)
     {
+        $feed_no_advance = false;
+        if($this->using_feeds && $this->use_feeds) {
+            $this->using_feeds = false;
+            $this->generation_pointer = -1;
+        }
         if($generation === null) {
             $generation = $this->current_generation;
         }
@@ -382,12 +485,20 @@ class WordIterator extends IndexBundleIterator
      *  and generation; -1 on fail
      */
     function currentGenDocOffsetWithWord() {
-        if($this->current_offset > $this->last_offset ||
-            $this->generation_pointer >= $this->num_generations) {
+        $feeds = $this->using_feeds && $this->use_feeds && !$this->feed_empty;
+        if( ($feeds && $this->current_offset > $this->feed_end) ||
+            (!$feeds && ($this->current_offset > $this->last_offset||
+            $this->generation_pointer >= $this->num_generations))) {
             return -1;
+        }
+        if($this->using_feeds) {
+            $index = IndexManager::getIndex("feed");
+            return array(-1, $index->docOffsetFromPostingOffset(
+                $this->current_offset));
         }
         $index = IndexManager::getIndex($this->index_name);
         $index->setCurrentShard($this->current_generation, true);
+
         return array($this->current_generation, $index->getCurrentShard(
                         )->docOffsetFromPostingOffset($this->current_offset));
     }

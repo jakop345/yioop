@@ -56,10 +56,10 @@ class SubsearchElement extends Element
         }
         array_unshift($data["SUBSEARCHES"], array("FOLDER_NAME" => "",
             "SUBSEARCH_NAME" => tl('subsearch_element_web')));
-        if(!isset($data['SOURCE'])) {
-            $data['SOURCE'] = "";
+        if(!isset($data['SUBSEARCH'])) {
+            $data['SUBSEARCH'] = "";
         }
-        $drop_threshold = 2;
+        $drop_threshold = 3;
 
         if(count($data["SUBSEARCHES"]) > $drop_threshold + 1) {
             $subdropdown = true;
@@ -74,7 +74,7 @@ class SubsearchElement extends Element
                 $i = 0;
                 $class= "outer";
                 foreach($data["SUBSEARCHES"] as $search) {
-                    if ($subdropdown && $i > $drop_threshold) {
+                    if ($subdropdown && $i >= $drop_threshold) {
                         e("<li class='outer'><span id='more-off'><a ".
                             " href='#' onclick=\"setDisplay('more-menu',".
                             " true); setDisplay('more-off',".
@@ -98,7 +98,7 @@ class SubsearchElement extends Element
                         $source = "";
                         $delim = "?";
                     }
-                    if($search['FOLDER_NAME'] == $data['SOURCE']) {
+                    if($search['FOLDER_NAME'] == $data['SUBSEARCH']) {
                         e("<li class='$class'><b>".
                             "{$search['SUBSEARCH_NAME']}</b></li>");
                     } else {

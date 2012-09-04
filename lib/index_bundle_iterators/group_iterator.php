@@ -152,6 +152,7 @@ class GroupIterator extends IndexBundleIterator
         $this->results_per_block /=  ceil($num_iterators/2);
         $this->network_flag = $network_flag;
         $this->current_machine = $current_machine;
+        $this->is_feed = false;
 
         $this->reset();
     }
@@ -274,6 +275,11 @@ class GroupIterator extends IndexBundleIterator
             if(!is_array($doc_info) || $doc_info[self::SUMMARY_OFFSET] == 
                 self::NEEDS_OFFSET_FLAG) { continue;}
             $hash_url = substr($doc_key, 0, IndexShard::DOC_KEY_LEN);
+            if(isset($doc_info[self::IS_FEED])) {
+                $this->is_feed = true;
+            } else {
+                $this->is_feed = false;
+            }
             // initial aggregate domain score vector for given domain
             if($doc_info[self::IS_DOC]) { 
                 if(!isset($pre_out_pages[$hash_url])) {
@@ -541,7 +547,7 @@ class GroupIterator extends IndexBundleIterator
         $this->seen_docs_unfiltered += $this->count_block_unfiltered;
 
         if($this->seen_docs_unfiltered > 0) {
-            if($this->count_block_unfiltered < $this->results_per_block) {
+            if( $this->count_block_unfiltered < $this->results_per_block) {
                 $this->num_docs = $this->seen_docs;
             } else {
                 $this->num_docs = 

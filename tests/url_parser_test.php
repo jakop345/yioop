@@ -159,11 +159,8 @@ class UrlParserTest extends UnitTest
                 "Degenerate 1"),
             array("/test.html", array("/bobby/bay", "/**.html$", "/yo"), true, 
                 "Degenerate 2"),
-            array("http://www.cs.sjsu.edu/faculty/pollett/", 
-                 array("http://www.cs.sjsu.edu/faculty/pollett/*/*/"), false, 
-                "URL Case 1"),
-            array("http://www.bing.com/videos/search?q=Angelina+Jolie", 
-                 array("/videos/search?"), true, 
+            array("/videos/search?q=Angelina+Jolie", 
+                 array("/videos/search?"), true,
                 "End With Question Regex Case 1"),
         );
         foreach ($tests as $test) {

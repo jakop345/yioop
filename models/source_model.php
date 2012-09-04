@@ -36,9 +36,6 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 /** Loads the base class */
 require_once BASE_DIR."/models/model.php";
 
-/** Used for the crawlHash function */
-require_once BASE_DIR."/lib/utility.php"; 
-
 /**
  * Used to manage data related to video, news, and other search sources
  * Also, used to manage data about available subsearches seen in SearchView
@@ -226,6 +223,103 @@ class SourceModel extends Model
             $locale_string."'";
         $this->db->execute($sql);
     }
-}
 
+    /**
+     *
+     */
+    function updateFeeds()
+    {
+        $feed_shard_name = WORK_DIRECTORY."/feeds/index";
+        if(!file_exists($feed_shard_name)) {
+            $feed_shard =  new IndexShard($feed_shard_name);
+        } else {
+            $feed_shard = IndexShard::load($feed_shard_name);
+        }
+        $feeds = $this->getMediaSources("rss");
+
+        $feeds = FetchUrl::getPages($feeds, false, 0, NULL, "SOURCE_URL",
+            CrawlConstants::PAGE, true);
+        $feed_items = array();
+
+        foreach($feeds as $feed) {
+            $dom = new DOMDocument();
+            @$dom->loadXML($feed[CrawlConstants::PAGE]);
+            $xpath = new DOMXPath($dom);
+            $languages = $xpath->evaluate("/rss/channel/language");
+            if($languages && is_object($languages) && 
+                is_object($languages->item(0))) {
+                $lang = $languages->item(0)->textContent;
+            } else {
+                $lang = DEFAULT_LOCALE;
+            }
+            $xpath = new DOMXPath($dom);
+            $path = "/rss/channel/item";
+            $nodes = $xpath->evaluate($path);
+            $rss_elements = array("title", "description", "link", "guid",
+                "pubDate");
+            foreach($nodes as $node) {
+                $elements = $node->childNodes;
+                $item = array();
+                foreach($elements as $element) {
+                    if(in_array($element->nodeName, $rss_elements)) {
+                        $item[$element->nodeName] = strip_tags(
+                            $element->textContent);
+                    }
+                }
+                $this->addFeedItemIfNew($item, $feed_shard, 
+                    $feed['NAME'], $lang);
+            }
+        }
+        $feed_shard->save();
+    }
+
+    /**
+     *
+     */
+    function addFeedItemIfNew($item, &$feed_shard, $source_name, $lang)
+    {
+        if(!isset($item["link"]) || !isset($item["title"]) ||
+            !isset($item["description"])) return;
+        if(!isset($item["guid"])) {
+            $item["guid"] = crawlHash($item["link"]);
+        } else {
+            $item["guid"] = crawlHash($item["guid"]);
+        }
+        $raw_guid = unbase64Hash($item["guid"]);
+        if(!isset($item["pudDate"])) {
+            $item["pubDate"] = time();
+        } else {
+            $item["pubDate"] = strtotime($item["pubDate"]);
+        }
+        $sql = "SELECT COUNT(*) AS NUMBER FROM FEED_ITEM WHERE GUID=".
+            "'{$item["guid"]}'";
+        $db = $this->db;
+        $result = $db->execute($sql);
+        if($result) {
+            $row = $db->fetchArray($result);
+            if($row["NUMBER"] > 0) {
+                return;
+            }
+        } else {
+            return;
+        }
+        $sql = "INSERT INTO FEED_ITEM VALUES ('{$item['guid']}', 
+            '".$db->escapeString($item['title'])."', '".
+            $db->escapeString($item['link'])."', '".
+            $db->escapeString($item['description'])."', 
+            '{$item['pubDate']}', 
+            '".$db->escapeString($source_name)."')";
+        $result = $db->execute($sql);
+        if(!$result) return;
+        $phrase_string = $item["title"] . " ". $item["description"];
+        $word_lists = PhraseParser::extractPhrasesInLists(
+            $phrase_string, $lang, true);
+        $doc_keys = crawlHash($item["link"], true) . 
+            $raw_guid."d". substr(crawlHash(
+            UrlParser::getHost($item["link"])."/",true), 1);
+        $meta_ids = array("media:news", "media:news:".urlencode($source_name));
+        $feed_shard->addDocumentWords($doc_keys, $item['pubDate'], $word_lists,
+            $meta_ids, true, false);
+    }
+}
  ?>

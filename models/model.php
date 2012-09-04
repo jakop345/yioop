@@ -184,10 +184,11 @@ class Model implements CrawlConstants
                 $page[self::TITLE] = 
                     $this->boldKeywords($page[self::TITLE], $words);
 
-                $page[self::DESCRIPTION] = 
-                    $this->getSnippets(strip_tags($page[self::DESCRIPTION]), 
-                        $words, $description_length);
-
+                if(!isset($page[self::IS_FEED])) {
+                    $page[self::DESCRIPTION] = 
+                        $this->getSnippets(strip_tags($page[self::DESCRIPTION]),
+                            $words, $description_length);
+                }
                 $page[self::DESCRIPTION] = 
                     $this->boldKeywords($page[self::DESCRIPTION], $words);
             } else {

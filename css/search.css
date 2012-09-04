@@ -85,6 +85,18 @@ p
     text-align:right;
 }
 
+.blockquote
+{
+    margin-left:0.3in;
+    margin-right:0.3in;
+}
+
+.mobile .blockquote
+{
+    margin-left:25px;
+    margin-right:25px;
+}
+
 .red
 {
     color:red;
@@ -104,6 +116,22 @@ p
 .backgray
 {
     background-color: lightgray;
+}
+
+.gray
+{
+    color: gray;
+}
+
+.gray-link
+{
+    color: gray;
+    text-decoration: none;
+}
+
+.gray-link:hover
+{
+    text-decoration: underline;
 }
 
 .backyellow

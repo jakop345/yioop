@@ -300,6 +300,10 @@ $db->execute("INSERT INTO TRANSLATION VALUES (1003,'db_subsearch_videos')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES 
         (1003, 1, 'Videos' )");
 
+$db->execute("CREATE TABLE FEED_ITEM (GUID VARCHAR(11) PRIMARY KEY, 
+    TITLE VARCHAR(512), LINK VARCHAR(256), DESCRIPTION VARCHAR(4096), 
+    PUBDATE INT, SOURCE_NAME VARCHAR(16))");
+
 $db->disconnect();
 if(in_array(DBMS, array('sqlite','sqlite3' ))){
     chmod(CRAWL_DIR."/data/".DB_NAME.".db", 0666);

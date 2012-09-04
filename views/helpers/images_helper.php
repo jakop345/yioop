@@ -50,17 +50,17 @@ class ImagesHelper extends Helper implements CrawlConstants
 {
 
     /**
-     *  Takes pages summaries for image pages and the current query
+     *  Takes page summaries for image pages and the current query
      *  and draw a thumbnail strip so that clicking on an image goes to
      *  the cache of that image.
      *
      *  @param array $image_pages page data and thumbnails for images
      *  @param string $query the current search query
-     *  @param string $source name of subsearch page this image group on
+     *  @param string $subsearch name of subsearch page this image group on
      */
-    public function render($image_pages, $query, $source)
+    public function render($image_pages, $query, $subsearch)
     {
-        if($source != 'images') {?>
+        if($subsearch != 'images') {?>
             <h2><a href="<?php e($query.'&s=images')?>"
                 ><?php e(tl('images_helper_view_image_results'));?></a></h2>
         <?php

@@ -61,7 +61,7 @@ class SearchController extends Controller implements CrawlConstants
      * @var array
      */
     var $models = array("phrase", "crawl", "searchfilters", "machine",
-        "source");
+        "source", "cron");
     /**
      * Says which views to load for this controller.
      * The SearchView is used for displaying general search results as well 
@@ -80,14 +80,23 @@ class SearchController extends Controller implements CrawlConstants
     var $activities = array("query", "cache", "related", "signout");
 
     /**
-     *
+     * Name of the sub-search currently in use
+     * @var string
      */
-    var $source_name = "";
+    var $subsearch_name = "";
 
     /**
-     *
+     * The localization identifier for the current subsearch
+     * @var string
      */
-    var $source_identifier = "";
+    var $subsearch_identifier = "";
+
+    /**
+     *  Number of seconds that must elapse after last call before doing
+     *  news cron activities (mainly download most recent feeds)
+     */
+    const NEWS_UPDATE_INTERVAL = 3600;
+
     /**
      * This is the main entry point for handling a search request.
      *
@@ -121,8 +130,8 @@ class SearchController extends Controller implements CrawlConstants
             foreach($subsearches as $search) {
                 if($search["FOLDER_NAME"] == $_REQUEST["s"]) {
                     $search_found = true;
-                    $this->source_name = $_REQUEST["s"];
-                    $this->source_identifier = $search["INDEX_IDENTIFIER"];
+                    $this->subsearch_name = $_REQUEST["s"];
+                    $this->subsearch_identifier = $search["INDEX_IDENTIFIER"];
                     if(!isset($_REQUEST['num']) && isset($search["PER_PAGE"])) {
                         $_REQUEST['num']= $search["PER_PAGE"];
                     }
@@ -328,13 +337,13 @@ class SearchController extends Controller implements CrawlConstants
         $stats_file = CRAWL_DIR."/cache/".self::statistics_base_name.
                 $data['its'].".txt";
         $data["SUBSEARCHES"] = $subsearches;
-        if($this->source_name != "" && $this->source_identifier != "") {
-            $data["SOURCE"] = $this->source_name;
+        if($this->subsearch_name != "" && $this->subsearch_identifier != "") {
+            $data["SUBSEARCH"] = $this->subsearch_name;
         }
         $data["HAS_STATISTICS"] = file_exists($stats_file);
         $data['YIOOP_TOKEN'] = $this->generateCSRFToken($user);
         if($view == "search" && $raw == 0 && isset($data['PAGES'])) {
-            $data['PAGES'] = $this->makeImageGroups($data['PAGES']);
+            $data['PAGES'] = $this->makeMediaGroups($data['PAGES']);
         }
         $data['INCLUDE_SCRIPTS'] = array("suggest");
         $this->displayView($view, $data);
@@ -365,6 +374,7 @@ class SearchController extends Controller implements CrawlConstants
      * Used to check if there are any mirrors of the current server.
      * If so, it tries to distribute the query requests randomly amongst
      * the mirrors
+     * @return bool whether or not a mirror of the current site handled it
      */
     function checkMirrorHandle()
     {
@@ -502,8 +512,12 @@ class SearchController extends Controller implements CrawlConstants
                     $top_query, $limit, $results_per_page, false, $filter,
                     $use_cache_if_possible, $raw, $queue_servers,
                     $guess_semantics);
-                $data['PAGING_QUERY'] = "index.php?c=search&a=related&arg=".
-                    urlencode($url);
+                $data['PAGING_QUERY'] = "index.php?c=search&amp;".
+                    "a=related&amp;arg=".urlencode($url);
+                if(isset($this->subsearch_name) && $this->subsearch_name !="") {
+                    $data['PAGING_QUERY'] .= "&amp;s=".
+                        $this->subsearch_name;
+                }
                 
                 $data['QUERY'] = urlencode($this->clean($data['QUERY'],
                     "string"));
@@ -512,8 +526,8 @@ class SearchController extends Controller implements CrawlConstants
             case "query":
             default:
                 if(trim($query) != "") {
-                    if($this->source_identifier != "") {
-                        $replace = " {$this->source_identifier}";
+                    if($this->subsearch_identifier != "") {
+                        $replace = " {$this->subsearch_identifier}";
                         $query = preg_replace('/\|/', "$replace", $query);
                         $query .= " $replace";
                     }
@@ -558,9 +572,22 @@ class SearchController extends Controller implements CrawlConstants
                     $query = $original_query;
                 }
                 $data['PAGING_QUERY'] = "?q=".urlencode($query);
+                if(isset($this->subsearch_name) && $this->subsearch_name !="") {
+                    $data['PAGING_QUERY'] .= "&amp;s=".
+                        $this->subsearch_name;
+                }
                 $data['QUERY'] = urlencode($this->clean($query,"string"));
 
             break;
+        }
+        $cron_time = $this->cronModel->getCronTime("news_update");
+        $delta = time() - $cron_time;
+        if($delta > self::NEWS_UPDATE_INTERVAL && ($raw == 1
+            || $queue_servers == array())) {
+            $this->cronModel->updateCronTime("news_update");
+            $this->newsUpdate();
+        } else if ($delta == 0) {
+            $this->cronModel->updateCronTime("news_update");
         }
         $data['VIDEO_SOURCES'] = $this->sourceModel->getMediaSources("video");
         $data['PAGES'] = (isset($phrase_results['PAGES'])) ?
@@ -584,9 +611,10 @@ class SearchController extends Controller implements CrawlConstants
      *      with thumbs within
      * @return array $pages after the grouping has been done
      */
-    function makeImageGroups($pages)
+    function makeMediaGroups($pages)
     {
         $first_image = -1;
+        $first_feed_item = -1;
         $out_pages = array();
         foreach($pages as $page) {
             if(isset($page[self::THUMB]) && $page[self::THUMB] != 'NULL') {
@@ -595,6 +623,12 @@ class SearchController extends Controller implements CrawlConstants
                     $out_pages[$first_image]['IMAGES'] = array();
                 }
                 $out_pages[$first_image]['IMAGES'][] = $page;
+            } else if(isset($page[self::IS_FEED]) && $page[self::IS_FEED]) {
+                if($first_feed_item == -1) {
+                    $first_feed_item = count($out_pages);
+                    $out_pages[$first_feed_item]['FEEDS'] = array();
+                }
+                $out_pages[$first_feed_item]['FEEDS'][] = $page;
             } else {
                 $out_pages[] = $page;
             }
@@ -1141,6 +1175,11 @@ class SearchController extends Controller implements CrawlConstants
 
         echo $newDoc;
         return;
+    }
+
+    function newsUpdate()
+    {
+        $this->sourceModel->updateFeeds();
     }
 }
 ?>

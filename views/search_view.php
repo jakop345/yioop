@@ -52,7 +52,7 @@ class SearchView extends View implements CrawlConstants
      *  @var array
      */
     var $helpers = array("pagination", "filetype", "displayresults",
-        "videourl", "images");
+        "videourl", "images", "feeds");
     /** Names of element objects that the view uses to display itself 
      *  @var array
      */
@@ -114,9 +114,9 @@ class SearchView extends View implements CrawlConstants
         <div class="searchbox">
             <form id="search-form" method="get" action='?'>
             <p>
-            <?php if(isset($data["SOURCE"]) && $data["SOURCE"] != "") { ?>
+            <?php if(isset($data["SUBSEARCH"]) && $data["SUBSEARCH"] != "") { ?>
             <input type="hidden" name="s" value="<?php 
-                e($data['SOURCE']); ?>" />
+                e($data['SUBSEARCH']); ?>" />
             <?php } ?>
             <input type="hidden" name="YIOOP_TOKEN" value="<?php 
                 e($data['YIOOP_TOKEN']); ?>" />
@@ -182,14 +182,23 @@ class SearchView extends View implements CrawlConstants
                     $subtitle = "";
                 }
             ?><div class='result'>
-                <?php if(isset($page['IMAGES']) && isset($data["SOURCE"])) {
-                    $image_query = "?YIOOP_TOKEN={$data['YIOOP_TOKEN']}".
-                            "&amp;c=search&amp;q={$data['QUERY']}";
-                    $this->imagesHelper->render($page['IMAGES'], $image_query,
-                        $data["SOURCE"]);
+                <?php
+                $subsearch = (isset($data["SUBSEARCH"])) ? $data["SUBSEARCH"] :
+                    "";
+                $base_query = "?YIOOP_TOKEN={$data['YIOOP_TOKEN']}".
+                        "&amp;c=search";
+                if(isset($page['IMAGES'])) {
+                    $this->imagesHelper->render($page['IMAGES'], 
+                        $base_query."&amp;q={$data['QUERY']}", $subsearch);
                     e( "           </div>");
                     continue;
-                }?>
+                } else if(isset($page['FEEDS'])){
+                    $this->feedsHelper->render($page['FEEDS'], 
+                        $base_query, $data['QUERY'],  $subsearch);
+                    e( "           </div>");
+                    continue;
+                }
+                ?>
 
                 <h2>
                 <a href="<?php  e(htmlentities($url));  ?>" rel="nofollow"><?php
@@ -218,8 +227,8 @@ class SearchView extends View implements CrawlConstants
                     !in_array("NOSNIPPET", $page[self::ROBOT_METAS])) {
                         $description = isset($page[self::DESCRIPTION]) ?
                             $page[self::DESCRIPTION] : "";
-                        echo "<p>".$this->displayresultsHelper->
-                            render($description)."</p>"; 
+                        e("<p>".$this->displayresultsHelper->
+                            render($description)."</p>"); 
                     }?>
                 <p class="serp-links-score"><?php
                 $aux_link_flag = false;
