@@ -258,31 +258,27 @@ class SourceModel extends Model
         $feeds = FetchUrl::getPages($feeds, false, 0, NULL, "SOURCE_URL",
             CrawlConstants::PAGE, true);
         $feed_items = array();
-
         foreach($feeds as $feed) {
             $dom = new DOMDocument();
             @$dom->loadXML($feed[CrawlConstants::PAGE]);
-            $xpath = new DOMXPath($dom);
-            $languages = $xpath->evaluate("/rss/channel/language");
+            $languages = $dom->getElementsByTagName('language');
             if($languages && is_object($languages) && 
                 is_object($languages->item(0))) {
                 $lang = $languages->item(0)->textContent;
             } else {
                 $lang = DEFAULT_LOCALE;
             }
-            $xpath = new DOMXPath($dom);
-            $path = "/rss/channel/item";
-            $nodes = $xpath->evaluate($path);
+            $nodes = $dom->getElementsByTagName('item');
             $rss_elements = array("title", "description", "link", "guid",
                 "pubDate");
             foreach($nodes as $node) {
-                $elements = $node->childNodes;
                 $item = array();
-                foreach($elements as $element) {
-                    if(in_array($element->nodeName, $rss_elements)) {
-                        $item[$element->nodeName] = strip_tags(
-                            $element->textContent);
-                    }
+                foreach($rss_elements as $element) {
+                    $tag_node = $node->getElementsByTagName(
+                            $element)->item(0);
+                    $element_text = (is_object($tag_node)) ?
+                        $tag_node->nodeValue: "";
+                    $item[$element] = strip_tags($element_text);
                 }
                 $this->addFeedItemIfNew($item, $feed_shard, 
                     $feed['NAME'], $lang);
