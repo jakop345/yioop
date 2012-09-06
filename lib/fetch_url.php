@@ -65,6 +65,7 @@ class FetchUrl implements CrawlConstants
      * @param bool $minimal if true do a faster request of pages by not
      *      doing things like extract HTTP headers sent, etcs
      * @param array $post_data data to be POST'd to each site
+     * @param bool $follow whether to follow redirects or not
      *
      * @return array an updated array with the contents of those pages
      */ 
@@ -72,7 +73,7 @@ class FetchUrl implements CrawlConstants
     public static function getPages($sites, $timer = false,
         $page_range_request = PAGE_RANGE_REQUEST, $temp_dir = NULL,
         $key=CrawlConstants::URL, $value = CrawlConstants::PAGE, $minimal=false,
-        $post_data = NULL)
+        $post_data = NULL, $follow = false)
     {
         $agent_handler = curl_multi_init(); 
 
@@ -101,9 +102,10 @@ class FetchUrl implements CrawlConstants
                 }
                 curl_setopt($sites[$i][0], CURLOPT_USERAGENT, USER_AGENT);
                 curl_setopt($sites[$i][0], CURLOPT_URL, $url);
-                $follow = false;
                 if(strcmp(substr($url,-10), "robots.txt") == 0 ) {
-                    $follow = true; //wikipedia redirects their robot page. grr
+                    $follow = true; /*wikipedia redirects their robot page. grr
+                                      want to force this for robots pages
+                                    */
                 }
                 curl_setopt($sites[$i][0], CURLOPT_FOLLOWLOCATION, $follow);
                 curl_setopt($sites[$i][0], CURLOPT_AUTOREFERER, true);

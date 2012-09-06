@@ -256,7 +256,7 @@ class SourceModel extends Model
         $feeds = $this->getMediaSources("rss");
 
         $feeds = FetchUrl::getPages($feeds, false, 0, NULL, "SOURCE_URL",
-            CrawlConstants::PAGE, true);
+            CrawlConstants::PAGE, true, NULL, true);
         $feed_items = array();
         foreach($feeds as $feed) {
             $dom = new DOMDocument();
@@ -342,13 +342,13 @@ class SourceModel extends Model
     {
         if(!isset($item["link"]) || !isset($item["title"]) ||
             !isset($item["description"])) return;
-        if(!isset($item["guid"])) {
+        if(!isset($item["guid"]) || $item["guid"] == "") {
             $item["guid"] = crawlHash($item["link"]);
         } else {
             $item["guid"] = crawlHash($item["guid"]);
         }
         $raw_guid = unbase64Hash($item["guid"]);
-        if(!isset($item["pudDate"])) {
+        if(!isset($item["pubDate"]) || $item["pubDate"] == "") {
             $item["pubDate"] = time();
         } else {
             $item["pubDate"] = strtotime($item["pubDate"]);
