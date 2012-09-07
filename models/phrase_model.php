@@ -481,6 +481,7 @@ class PhraseModel extends ParallelModel
             }
             $phrase_string = preg_replace($pattern, "", $phrase_string);
         }
+        $found_metas = array_unique($found_metas);
 
         $phrase_string = mb_ereg_replace("&amp;", "_and_", $phrase_string);
 
@@ -534,7 +535,7 @@ class PhraseModel extends ParallelModel
             $quote_state = ($quote_state) ? false : true;
         }
 
-                //stemmed, if have stemmer
+        //stemmed, if have stemmer
         $words = array_merge($base_words, $found_metas);
         if(QUERY_STATISTICS) {
             $this->query_info['QUERY'] .= "$in3<i>Index</i>: ".

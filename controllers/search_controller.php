@@ -472,21 +472,9 @@ class SearchController extends Controller implements CrawlConstants
         $this->crawlModel->index_name = $index_name;
 
         $original_query = $query;
-        $pattern = "/(\s)(raw:(\S)+)/";
-        preg_match_all($pattern, $query, $matches);
-        if(isset($matches[2][0])) {
-            $raw = substr($matches[2][0], 4);
-            $raw = ($raw > 0) ? 2 : 0;
-        }
-        $query = preg_replace($pattern, "", $query);
-        $query = preg_replace('/no:cache/', "", $query);
-        $use_cache_if_possible = ($original_query == $query) ? true : false;
-        $network_work_query = $query;
-        $query = preg_replace('/no:network/', "", $query);
-        $use_network = ($network_work_query == $query) ? true : false;
-        $guess_query = $query;
-        $query = preg_replace('/no:guess/', "", $query);
-        $guess_semantics = ($guess_query == $query) ? true : false;
+        list($query, $raw, $use_network, $use_cache_if_possible, 
+            $guess_semantics) = 
+                $this->calculateControlWords($query, $raw, $is_mix);
         $index_archive_name= self::index_data_base_name.$index_name;
         if(file_exists( CRAWL_DIR."/cache/$index_archive_name/no_network.txt")){
             $_REQUEST['network'] = false;
@@ -532,42 +520,6 @@ class SearchController extends Controller implements CrawlConstants
             case "query":
             default:
                 if(trim($query) != "") {
-                    if($this->subsearch_identifier != "") {
-                        $replace = " {$this->subsearch_identifier}";
-                        $query = preg_replace('/\|/', "$replace", $query);
-                        $query .= " $replace";
-                    }
-                    $mix_metas = array("m:", "mix:");
-                    foreach($mix_metas as $mix_meta) {
-                        $pattern = "/(\s)($mix_meta(\S)+)/";
-                        preg_match_all($pattern, $query, $matches);
-                        if(isset($matches[2][0]) && !isset($mix_name)) {
-                            $mix_name = substr($matches[2][0],
-                                strlen($mix_meta));
-                            $mix_name = str_replace("+", " ", $mix_name);
-                            break; // only one mix and can't be nested
-                        }
-                    }
-                    $query = preg_replace($pattern, "", $query);
-                    if(isset($mix_name)) {
-                        if(is_numeric($mix_name)) {
-                            $is_mix = true;
-                            $index_name = $mix_name;
-                        } else {
-                            $tmp = $this->crawlModel->getCrawlMixTimestamp(
-                                $mix_name);
-                            if($tmp != false) {
-                                $index_name = $tmp;
-                                $is_mix = true;
-                            }
-                        }
-                    }
-                    if($is_mix) {
-
-                        $mix = $this->crawlModel->getCrawlMix($index_name);
-                        $query = 
-                            $this->phraseModel->rewriteMixQuery($query, $mix);
-                    }
                     $filter = $this->searchfiltersModel->getFilter();
                     $this->phraseModel->editedPageSummaries = 
                         $this->searchfiltersModel->getEditedPageSummaries();
@@ -612,6 +564,80 @@ class SearchController extends Controller implements CrawlConstants
         $data['RESULTS_PER_PAGE'] = $results_per_page;
         return $data;
 
+    }
+
+    /**
+     *  Extracts from the query string any control words:
+     *  mix:, m:, raw:, no: and returns an array consisting
+     *  of the query with these words removed, and then variables
+     *  for their values.
+     *
+     *  @param string $query original query string
+     *  @param bool $raw the $_REQUEST['raw'] value
+     *  @param bool if the current index name is that of a crawl mix
+     *
+     *  @return array ($query, $raw, $use_network, 
+     *      $use_cache_if_possible, $guess_semantics)
+     */
+    function calculateControlWords($query, $raw, $is_mix)
+    {
+        $original_query = $query;
+        if(trim($query) != "") {
+            if($this->subsearch_identifier != "") {
+                $replace = " {$this->subsearch_identifier}";
+                $query = preg_replace('/\|/', "$replace", $query);
+                $query .= " $replace";
+            }
+        }
+        $mix_metas = array("m:", "mix:");
+        foreach($mix_metas as $mix_meta) {
+            $pattern = "/(\s)($mix_meta(\S)+)/";
+            preg_match_all($pattern, $query, $matches);
+            if(isset($matches[2][0]) && !isset($mix_name)) {
+                $mix_name = substr($matches[2][0],
+                    strlen($mix_meta));
+                $mix_name = str_replace("+", " ", $mix_name);
+                break; // only one mix and can't be nested
+            }
+        }
+        $query = preg_replace($pattern, "", $query);
+        if(isset($mix_name)) {
+            if(is_numeric($mix_name)) {
+                $is_mix = true;
+                $index_name = $mix_name;
+            } else {
+                $tmp = $this->crawlModel->getCrawlMixTimestamp(
+                    $mix_name);
+                if($tmp != false) {
+                    $index_name = $tmp;
+                    $is_mix = true;
+                }
+            }
+        }
+        if($is_mix) {
+            $mix = $this->crawlModel->getCrawlMix($index_name);
+            $query = 
+                $this->phraseModel->rewriteMixQuery($query, $mix);
+        }
+
+        $pattern = "/(\s)(raw:(\S)+)/";
+        preg_match_all($pattern, $query, $matches);
+        if(isset($matches[2][0])) {
+            $raw = substr($matches[2][0], 4);
+            $raw = ($raw > 0) ? 2 : 0;
+        }
+        $query = preg_replace($pattern, "", $query);
+        $query = preg_replace('/no:cache/', "", $query);
+        $use_cache_if_possible = ($original_query == $query) ? true : false;
+        $network_work_query = $query;
+        $query = preg_replace('/no:network/', "", $query);
+        $use_network = ($network_work_query == $query) ? true : false;
+        $guess_query = $query;
+        $query = preg_replace('/no:guess/', "", $query);
+        $guess_semantics = ($guess_query == $query) ? true : false;
+
+        return array($query, $raw, $use_network, 
+            $use_cache_if_possible, $guess_semantics);
     }
 
     /**
