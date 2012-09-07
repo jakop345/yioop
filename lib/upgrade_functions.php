@@ -40,6 +40,7 @@
 function upgradeLocaleCheck()
 {
     global $locale_tag;
+    if(!PROFILE) return;
     $config_name = LOCALE_DIR."/$locale_tag/configure.ini";
     $fallback_config_name = 
         FALLBACK_LOCALE_DIR."/$locale_tag/configure.ini";
@@ -57,6 +58,7 @@ function upgradeLocaleCheck()
 function upgradeLocale()
 {
     global $locale;
+    if(!PROFILE) return;
     $locale = new LocaleModel();
     $locale->extractMergeLocales();
 }

@@ -157,22 +157,10 @@ define('DISPLAY_TESTS', ((DEBUG_LEVEL & TEST_INFO) == TEST_INFO));
 /** if true query statistics are diplayed */
 define('QUERY_STATISTICS', ((DEBUG_LEVEL & QUERY_INFO) == QUERY_INFO));
 
-if(!PROFILE) {
-    return;
-}
-/*+++ End machine generated code, feel free to edit the below as desired +++*/
-
-/** this is the User-Agent names the crawler provides 
- * a web-server it is crawling
- */
-define('USER_AGENT', 
-    'Mozilla/5.0 (compatible; '.USER_AGENT_SHORT.'; +'.NAME_SERVER.'bot.php)');
-
 /** name of the cookie used to manage the session 
  * (store language and perpage settings)
  */
 define ('SESSION_NAME', "yioopbiscuit"); 
-
 //check if mobile css and formatting should be used or not
 if(isset($_SERVER['HTTP_USER_AGENT'])) {
     $agent = $_SERVER['HTTP_USER_AGENT'];
@@ -185,6 +173,19 @@ if(isset($_SERVER['HTTP_USER_AGENT'])) {
 } else {
     define("MOBILE", false);
 }
+
+if(!PROFILE) {
+    return;
+}
+/*+++ End machine generated code, feel free to edit the below as desired +++*/
+
+/** this is the User-Agent names the crawler provides 
+ * a web-server it is crawling
+ */
+define('USER_AGENT', 
+    'Mozilla/5.0 (compatible; '.USER_AGENT_SHORT.'; +'.NAME_SERVER.'bot.php)');
+
+
 
 /**
  * @global array addresses of memcached servers to use assuming memcached is
