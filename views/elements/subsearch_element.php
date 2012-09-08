@@ -107,7 +107,8 @@ class SubsearchElement extends Element
                             $query .= $delim.
                                 "YIOOP_TOKEN={$data['YIOOP_TOKEN']}".
                                 "&amp;c=search";
-                            if(isset($data['QUERY'])) {
+                            if(isset($data['QUERY']) && 
+                                !isset($data['NO_QUERY'])) {
                                 $query .= "&amp;q={$data['QUERY']}";
                             }
                         }
