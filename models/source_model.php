@@ -320,7 +320,12 @@ class SourceModel extends Model
                     $raw_guid."d". substr(crawlHash(
                     UrlParser::getHost($item["LINK"])."/",true), 1);
                 $meta_ids = array("media:news", "media:news:".
-                    urlencode($source_name), "lang:".$lang);
+                    urlencode($source_name));
+                $lang_parts = explode("-", $lang);
+                $meta_ids[] = 'lang:'.$lang_parts[0];
+                if(isset($lang_parts[1])){
+                    $meta_ids[] = 'lang:'.$lang;
+                }
                 $feed_shard->addDocumentWords($doc_keys, $item['PUBDATE'], 
                     $word_lists, $meta_ids, true, false);
             }
@@ -379,8 +384,12 @@ class SourceModel extends Model
         $doc_keys = crawlHash($item["link"], true) . 
             $raw_guid."d". substr(crawlHash(
             UrlParser::getHost($item["link"])."/",true), 1);
-        $meta_ids = array("media:news", "media:news:".urlencode($source_name),
-            "lang:".$lang);
+        $meta_ids = array("media:news", "media:news:".urlencode($source_name));
+        $lang_parts = explode("-", $lang);
+        $meta_ids[] = 'lang:'.$lang_parts[0];
+        if(isset($lang_parts[1])){
+            $meta_ids[] = 'lang:'.$lang;
+        }
         $feed_shard->addDocumentWords($doc_keys, $item['pubDate'], $word_lists,
             $meta_ids, true, false);
     }

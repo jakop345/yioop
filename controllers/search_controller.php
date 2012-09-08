@@ -152,7 +152,12 @@ class SearchController extends Controller implements CrawlConstants
             }
             if($this->subsearch_name == "news" &&
                 (!isset($_REQUEST['q']) || $_REQUEST['q']=="")) {
-                $_REQUEST['q'] = "lang:".getLocaleTag();
+                $lang = getLocaleTag();
+                $lang_parts = explode("-", $lang);
+                if(isset($lang_parts[0])){
+                    $lang = $lang_parts[0];
+                }
+                $_REQUEST['q'] = "lang:".$lang;
                 $no_query = true;
             }
         }

@@ -38,7 +38,6 @@
  */
 require_once BASE_DIR."/models/locale_model.php";
 
-
 /**
  *  Attempts to guess the user's locale based on the request, session,
  *  and user-agent data
