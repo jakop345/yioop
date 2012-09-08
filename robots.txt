@@ -3,3 +3,4 @@
 # are too slow to bother excluding
 User-agent: *
 Disallow: /*?*q=
+Disallow: /*?*s=news

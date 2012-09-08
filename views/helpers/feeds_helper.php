@@ -115,7 +115,7 @@ class FeedsHelper extends Helper implements CrawlConstants
                 <div class="blockquote">
                 <a href="<?php e($page[self::URL]); ?>" rel="nofollow"
                 ><?php  e($page[self::TITLE]); ?></a> 
-                <a class="gray-link" href="<?php e($base_query.
+                <a class="gray-link" rel='nofollow' href="<?php e($base_query.
                     "&amp;q=media:news:".$encode_source.
                     "&amp;s=news");?>" ><?php  e($page[self::SOURCE_NAME]."</a>"
                     ."<span class='gray'> - $pub_date</span>");
@@ -127,7 +127,7 @@ class FeedsHelper extends Helper implements CrawlConstants
                 <div class="results">
                 <h2><a href="<?php e($page[self::URL]); ?>" rel="nofollow"
                 ><?php  e($page[self::TITLE]); ?></a>.
-                <a class="gray-link" href="<?php e($base_query.
+                <a class="gray-link" rel='nofollow' href="<?php e($base_query.
                     "&amp;q=media:news:".$encode_source.
                     "&amp;s=news");?>" ><?php  e($page[self::SOURCE_NAME]."</a>"
                     ."<span class='gray'> - $pub_date</span>");
