@@ -176,7 +176,6 @@ class IntersectIterator extends IndexBundleIterator
     function findDocsWithWord()
     {
         $status = $this->syncGenDocOffsetsAmongstIterators();
-
         if($status == -1) {
             return -1;
         }
@@ -411,7 +410,6 @@ class IntersectIterator extends IndexBundleIterator
                         0]->currentGenDocOffsetWithWord()) == -1) {
             return -1;
         }
-
         $gen_doc_offset[0] = $biggest_gen_offset;
         $all_same = true;
         for($i = 1; $i < $this->num_iterators; $i++) {

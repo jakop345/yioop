@@ -181,7 +181,7 @@ class WordIterator extends IndexBundleIterator
         if($this->use_feeds) {
             $feed_shard = IndexManager::getIndex("feed");
             $this->feed_info = $feed_shard->getWordInfo($word_key, true);
-            if ($this->feed_info === false) {
+            if (!$this->feed_info) {
                 $this->feed_empty = true;
             } else {
                 $this->feed_empty = false;
@@ -491,7 +491,7 @@ class WordIterator extends IndexBundleIterator
             $this->generation_pointer >= $this->num_generations))) {
             return -1;
         }
-        if($this->using_feeds) {
+        if($feeds) {
             $index = IndexManager::getIndex("feed");
             return array(-1, $index->docOffsetFromPostingOffset(
                 $this->current_offset));
