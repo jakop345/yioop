@@ -199,7 +199,7 @@ class WordIterator extends IndexBundleIterator
             $this->feed_count = 0;
         }
         $this->using_feeds = true;
-
+        $this->num_docs = $this->feed_count;
         $this->index_name =  $index_name;
         $index = IndexManager::getIndex($index_name);
         $this->current_block_fresh = false;
@@ -213,7 +213,6 @@ class WordIterator extends IndexBundleIterator
             {
                 $this->empty = true;
             } else {
-                $this->num_docs = $this->feed_count;
                 for($i = 0; $i < $this->num_generations; $i++) {
                     list(, , , $num_docs) =
                         $this->dictionary_info[$i];
@@ -243,6 +242,7 @@ class WordIterator extends IndexBundleIterator
                 $this->feed_end);
             $index->makeItem($item, 
                 $posting_offset, $num_docs_or_links, 1);
+            $item[self::RELEVANCE] *= 10;
         } else {
             $index = IndexManager::getIndex($this->index_name);
             $index->setCurrentShard($generation, true);

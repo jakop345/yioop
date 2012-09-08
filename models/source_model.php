@@ -320,7 +320,7 @@ class SourceModel extends Model
                     $raw_guid."d". substr(crawlHash(
                     UrlParser::getHost($item["LINK"])."/",true), 1);
                 $meta_ids = array("media:news", "media:news:".
-                    urlencode($source_name));
+                    urlencode($source_name), "lang:".$lang);
                 $feed_shard->addDocumentWords($doc_keys, $item['PUBDATE'], 
                     $word_lists, $meta_ids, true, false);
             }
