@@ -149,6 +149,11 @@ class SearchController extends Controller implements CrawlConstants
                 include($pathinfo["dirname"]."/error.php");
                 exit();
             }
+            if($this->subsearch_name == "news" &&
+                (!isset($_REQUEST['q']) || $_REQUEST['q']=="")) {
+                $_REQUEST['q'] = "lang:".getLocaleTag();
+                $no_query = true;
+            }
         }
         if(isset($_REQUEST['num'])) {
             $results_per_page = $this->clean($_REQUEST['num'], "int");
@@ -352,6 +357,7 @@ class SearchController extends Controller implements CrawlConstants
             $data['PAGES'] = $this->makeMediaGroups($data['PAGES']);
         }
         $data['INCLUDE_SCRIPTS'] = array("suggest");
+        if($no_query) $data['NO_QUERY'] = true;
         $this->displayView($view, $data);
     }
 
