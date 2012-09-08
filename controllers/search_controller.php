@@ -131,6 +131,7 @@ class SearchController extends Controller implements CrawlConstants
             return;
         }
         $subsearches = $this->sourceModel->getSubsearches();
+        $no_query = false;
         if(isset($_REQUEST["s"])) {
             $search_found = false;
             foreach($subsearches as $search) {
@@ -357,7 +358,10 @@ class SearchController extends Controller implements CrawlConstants
             $data['PAGES'] = $this->makeMediaGroups($data['PAGES']);
         }
         $data['INCLUDE_SCRIPTS'] = array("suggest");
-        if($no_query) $data['NO_QUERY'] = true;
+        if($no_query || isset($_REQUEST['no_query'])) {
+            $data['NO_QUERY'] = true;
+            $data['PAGING_QUERY'] .= "&no_query=true";
+        }
         $this->displayView($view, $data);
     }
 
@@ -512,7 +516,7 @@ class SearchController extends Controller implements CrawlConstants
                     $top_query, $limit, $results_per_page, false, $filter,
                     $use_cache_if_possible, $raw, $queue_servers,
                     $guess_semantics);
-                $data['PAGING_QUERY'] = "index.php?c=search&amp;".
+                $data['PAGING_QUERY'] = "?c=search&amp;".
                     "a=related&amp;arg=".urlencode($url);
                 if(isset($this->subsearch_name) && $this->subsearch_name !="") {
                     $data['PAGING_QUERY'] .= "&amp;s=".
