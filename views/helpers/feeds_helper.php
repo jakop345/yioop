@@ -76,8 +76,8 @@ class FeedsHelper extends Helper implements CrawlConstants
         $time = time();
         foreach($feed_pages as $page) {
             $pub_date = $page[self::SUMMARY_OFFSET][0][4];
-            $encode_source = urlencode(mb_ereg_replace("\+", "%2B",
-                urlencode($page[self::SOURCE_NAME])));
+            $encode_source = urlencode(
+                urlencode($page[self::SOURCE_NAME]));
             if(isset($page[self::URL])) {
                 if(substr($page[self::URL], 0, 4) == "url|") {
                     $url_parts = explode("|", $page[self::URL]);
