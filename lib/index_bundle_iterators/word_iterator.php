@@ -198,7 +198,11 @@ class WordIterator extends IndexBundleIterator
             $this->feed_end = 0;
             $this->feed_count = 0;
         }
-        $this->using_feeds = true;
+        if($this->feed_count > 0) {
+            $this->using_feeds = true;
+        } else {
+            $this->using_feeds = false;
+        }
         $this->num_docs = $this->feed_count;
         $this->index_name =  $index_name;
         $index = IndexManager::getIndex($index_name);
@@ -262,7 +266,11 @@ class WordIterator extends IndexBundleIterator
      */
     function reset()
     {
-        $this->using_feeds = true;
+        if($this->feed_count > 0) {
+            $this->using_feeds = true;
+        } else {
+            $this->using_feeds = false;
+        }
         $no_feeds = $this->feed_empty || !$this->use_feeds;
         if(!$this->empty) {// we shouldn't be called when empty - but to be safe
             list($this->current_generation, $this->start_offset, 

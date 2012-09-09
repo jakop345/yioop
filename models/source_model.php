@@ -105,7 +105,7 @@ class SourceModel extends Model
             $this->db->escapeString($name)."','".
             $this->db->escapeString($source_type)."','".
             $this->db->escapeString($source_url)."','".
-            $this->db->escapeString($thumb_url)."')";
+            $this->db->escapeString($thumb_url)."', '')";
 
         $this->db->execute($sql);
     }
@@ -265,6 +265,9 @@ class SourceModel extends Model
             if($languages && is_object($languages) && 
                 is_object($languages->item(0))) {
                 $lang = $languages->item(0)->textContent;
+                $sql = "UPDATE MEDIA_SOURCE SET LANGUAGE='$lang' WHERE ".
+                    "TIMESTAMP='".$feed['TIMESTAMP']."'";
+                $this->db->execute($sql);
             } else {
                 $lang = DEFAULT_LOCALE;
             }
@@ -301,6 +304,11 @@ class SourceModel extends Model
             unlink($feed_shard_name);
         }
         $too_old = time() - $age;
+        $pre_feeds = $this->getMediaSources("rss");
+        $feeds = array();
+        foreach($pre_feeds as $pre_feed) {
+            $feed[$pre_feed['SOURCE_NAME']] = $pre_feed;
+        }
         $db = $this->db;
         $sql = "DELETE FROM FEED_ITEM WHERE PUBDATE < '$too_old'";
         $db->execute($sql);
@@ -308,10 +316,15 @@ class SourceModel extends Model
         $feed_shard =  new IndexShard($feed_shard_name);
         $sql = "SELECT * FROM FEED_ITEM";
         $result = $db->execute($sql);
-        $lang = DEFAULT_LOCALE;
+
         if($result) {
             while($item = $db->fetchArray($result)) {
                 $source_name = $item['SOURCE_NAME'];
+                if(isset($feed[$item['SOURCE_NAME']])) {
+                    $lang = $feed[$item['SOURCE_NAME']]['LANGUAGE'];
+                } else {
+                    $lang = DEFAULT_LOCALE;
+                }
                 $phrase_string = $item["TITLE"] . " ". $item["DESCRIPTION"];
                 $word_lists = PhraseParser::extractPhrasesInLists(
                     $phrase_string, $lang, true);

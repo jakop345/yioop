@@ -261,26 +261,29 @@ $db->execute("CREATE TABLE ACTIVE_FETCHER (NAME VARCHAR(16),
     FETCHER_ID INT(4))");
 $db->execute("CREATE TABLE MEDIA_SOURCE (TIMESTAMP INT(11) PRIMARY KEY,
     NAME VARCHAR(16) UNIQUE, TYPE VARCHAR(16), 
-    SOURCE_URL VARCHAR(256), THUMB_URL VARCHAR(256)
+    SOURCE_URL VARCHAR(256), THUMB_URL VARCHAR(256), LANGUAGE VARCHAR(7)
     )");
 $db->execute("INSERT INTO MEDIA_SOURCE VALUES ('1342634195',
     'YouTube', 'video', 'http://www.youtube.com/watch?v={}&',
-    'http://img.youtube.com/vi/{}/2.jpg')");
+    'http://img.youtube.com/vi/{}/2.jpg', '')");
 $db->execute("INSERT INTO MEDIA_SOURCE VALUES ('1342634196',
     'MetaCafe', 'video', 'http://www.metacafe.com/watch/{}/',
-    'http://www.metacafe.com/thumb/{}.jpg')");
+    'http://www.metacafe.com/thumb/{}.jpg', '')");
 $db->execute("INSERT INTO MEDIA_SOURCE VALUES ('1342634197',
     'DailyMotion', 'video', 'http://www.dailymotion.com/video/{}',
-    'http://www.dailymotion.com/thumbnail/video/{}')");
+    'http://www.dailymotion.com/thumbnail/video/{}', '')");
 $db->execute("INSERT INTO MEDIA_SOURCE VALUES ('1342634198',
     'Vimeo', 'video', 'http://player.vimeo.com/video/{}',
-    'http://www.yioop.com/resources/blank.png?{}')");
+    'http://www.yioop.com/resources/blank.png?{}', '')");
 $db->execute("INSERT INTO MEDIA_SOURCE VALUES ('1342634199',
     'Break.com', 'video', 'http://www.break.com/index/{}',
-    'http://www.yioop.com/resources/blank.png?{}')");
+    'http://www.yioop.com/resources/blank.png?{}', '')");
+$db->execute("INSERT INTO MEDIA_SOURCE VALUES ('1342634200',
+    'Yahoo News', 'rss', 'http://news.yahoo.com/rss/',
+    '', 'en')");
 
 $db->execute("CREATE TABLE SUBSEARCH (LOCALE_STRING VARCHAR(16) PRIMARY KEY,
-    FOLDER_NAME VARCHAR(16), INDEX_IDENTIFIER CHAR(13), PER_PAGE INT)");
+    FOLDER_NAME VARCHAR(16), INDEX_IDENTIFIER CHAR(13), PER_PAGE INT )");
 
 $db->execute("INSERT INTO CRAWL_MIXES VALUES (2, 'images')");
 $db->execute("INSERT INTO MIX_GROUPS VALUES(2, 0, 1)");
@@ -288,17 +291,44 @@ $db->execute("INSERT INTO MIX_COMPONENTS VALUES(2, 0, 1, 1, 'media:image')");
 $db->execute("INSERT INTO CRAWL_MIXES VALUES (3, 'videos')");
 $db->execute("INSERT INTO MIX_GROUPS VALUES(3, 0, 1)");
 $db->execute("INSERT INTO MIX_COMPONENTS VALUES(3, 0, 1, 1, 'media:video')");
+$db->execute("INSERT INTO CRAWL_MIXES VALUES (4, 'news')");
+$db->execute("INSERT INTO MIX_GROUPS VALUES(4, 0, 1)");
+$db->execute("INSERT INTO MIX_COMPONENTS VALUES(4, 0, 1, 1, 
+    'media:news no:cache')");
+
 $db->execute("INSERT INTO SUBSEARCH VALUES('db_subsearch_images',
     'images','m:2',50)");
 $db->execute("INSERT INTO TRANSLATION VALUES (1002,'db_subsearch_images')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES 
         (1002, 1, 'Images' )");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES 
+        (1002, 5, 'Images' )");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES 
+        (1002, 16, '图象
+' )");
 
 $db->execute("INSERT INTO SUBSEARCH VALUES ('db_subsearch_videos',
     'videos','m:3',10)");
 $db->execute("INSERT INTO TRANSLATION VALUES (1003,'db_subsearch_videos')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES 
         (1003, 1, 'Videos' )");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES 
+        (1003, 5, 'Vidéos' )");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES 
+        (1003, 16, '录影
+' )");
+
+$db->execute("INSERT INTO SUBSEARCH VALUES ('db_subsearch_news',
+    'news','m:4',20)");
+$db->execute("INSERT INTO TRANSLATION VALUES (1004,'db_subsearch_news')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES 
+        (1004, 1, 'News' )");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES 
+        (1004, 5, 'Actualités' )");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES 
+        (1004, 16, '新闻
+
+' )");
 
 $db->execute("CREATE TABLE FEED_ITEM (GUID VARCHAR(11) PRIMARY KEY, 
     TITLE VARCHAR(512), LINK VARCHAR(256), DESCRIPTION VARCHAR(4096), 
