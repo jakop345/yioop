@@ -600,10 +600,11 @@ class SearchController extends Controller implements CrawlConstants
         if(trim($query) != "") {
             if($this->subsearch_identifier != "") {
                 $replace = " {$this->subsearch_identifier}";
-                $query = preg_replace('/\|/', "$replace", $query);
+                $query = preg_replace('/\|/', "$replace |", $query);
                 $query .= " $replace";
             }
         }
+        $query = " $query";
         $mix_metas = array("m:", "mix:");
         foreach($mix_metas as $mix_meta) {
             $pattern = "/(\s)($mix_meta(\S)+)/";
