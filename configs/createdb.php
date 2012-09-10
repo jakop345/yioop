@@ -75,7 +75,7 @@ if(!in_array(DBMS, array('sqlite', 'sqlite3'))) {
 $db->selectDB(DB_NAME);
 
 $db->execute("CREATE TABLE VERSION (ID INTEGER PRIMARY KEY)");
-$db->execute("INSERT INTO VERSION VALUES (13)");
+$db->execute("INSERT INTO VERSION VALUES (14)");
 
 $db->execute("CREATE TABLE USER (USER_ID INTEGER PRIMARY KEY $auto_increment, ".
     "USER_NAME VARCHAR(16) UNIQUE,  PASSWORD VARCHAR(16))");

@@ -76,7 +76,7 @@ function upgradeDatabaseWorkDirectoryCheck()
         $result = @$model->db->execute($sql);
         if($result !== false) {
             $row = $model->db->fetchArray($result);
-            if(isset($row['ID']) && $row['ID'] >= 13) {
+            if(isset($row['ID']) && $row['ID'] >= 14) {
                 return false;
             } else {
                 return true;
@@ -94,7 +94,7 @@ function upgradeDatabaseWorkDirectoryCheck()
  */
 function upgradeDatabaseWorkDirectory()
 {
-    $versions = array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13);
+    $versions = array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14);
     $model = new Model();
     $model->db->selectDB(DB_NAME);
     $sql = "SELECT ID FROM VERSION";
@@ -444,5 +444,16 @@ function upgradeDatabaseVersion13(&$db)
         mkdir(WORK_DIRECTORY."/feeds");
     }
     $this->upgradeLocale(); //force locale upgrade
+}
+
+/**
+ * Upgrades a Version 12 version of the Yioop! database to a Version 13 version
+ * @param object $db datasource to use to upgrade 
+ */
+function upgradeDatabaseVersion14(&$db)
+{
+    $db->execute("DELETE FROM VERSION WHERE ID < 13");
+    $db->execute("UPDATE VERSION SET ID=14 WHERE ID=12");
+    $db->execute("ALTER TABLE MEDIA_SOURCE ADD LANGUAGE VARCHAR(7)");
 }
 ?>
