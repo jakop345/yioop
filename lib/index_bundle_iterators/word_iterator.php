@@ -223,8 +223,10 @@ class WordIterator extends IndexBundleIterator
                         $this->num_docs += $num_docs;
                 }
                 $this->empty = false;
-                $this->reset();
             }
+        }
+        if($this->dictionary_info !== false || $this->feed_info !== false) {
+            $this->reset();
         }
     }
 
