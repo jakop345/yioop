@@ -84,6 +84,11 @@ class SearchsourcesElement extends Element
             e(tl('searchsources_element_thumbnail'))?></b></label></td><td>
             <input type="text" id="source-thumbnail" name="sourcethumbnail" 
                 maxlength="80" class="widefield" /></td></tr>
+        <tr><td><label for="source-locale-tag"><b id="locale-text"><?php 
+            e(tl('searchsources_element_locale_tag'))?></b></label></td><td>
+            <?php $this->view->optionsHelper->render("source-locale-tag", 
+                "sourcelocaletag", $data['LANGUAGES'], 
+                 $data['SOURCE_LOCALE_TAG']); ?></td></tr>
         <tr><td></td><td class="center"><button class="buttonbox" 
             type="submit"><?php e(tl('searchsources_element_submit')); 
             ?></button></td></tr>
@@ -174,9 +179,13 @@ class SearchsourcesElement extends Element
             if(stype.options[stype.selectedIndex].value == "video") {
                 setDisplay("thumb-text", true);
                 setDisplay("source-thumbnail", true);
+                setDisplay("locale-text", false);
+                setDisplay("source-locale-tag", false);
             } else {
                 setDisplay("thumb-text", false);
                 setDisplay("source-thumbnail", false);
+                setDisplay("locale-text", true);
+                setDisplay("source-locale-tag", true);
             }
         }
         </script>

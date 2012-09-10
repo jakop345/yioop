@@ -2123,6 +2123,19 @@ class AdminController extends Controller implements CrawlConstants
         } else {
             $data['PER_PAGE_SELECTED'] = NUM_RESULTS_PER_PAGE;
         }
+        $locales = $this->localeModel->getLocaleList();
+        $data["LANGUAGES"] = array();
+        foreach($locales as $locale) {
+            $data["LANGUAGES"][$locale['LOCALE_TAG']] = $locale['LOCALE_NAME'];
+        }
+        if(isset($_REQUEST['sourcelocaletag']) && 
+            in_array($_REQUEST['sourcelocaletag'], 
+                array_keys($data["LANGUAGES"]))) {
+            $data['SOURCE_LOCALE_TAG'] = 
+                $_REQUEST['sourcelocaletag'];
+        } else {
+            $data['SOURCE_LOCALE_TAG'] = DEFAULT_LOCALE;
+        }
 
         if(isset($_REQUEST['arg']) && 
             in_array($_REQUEST['arg'], $possible_arguments)) {
@@ -2133,7 +2146,7 @@ class AdminController extends Controller implements CrawlConstants
                     $must_have = array("sourcename", "sourcetype",
                         'sourceurl');
                     $to_clean = array_merge($must_have, 
-                        array('sourcethumbnail'));
+                        array('sourcethumbnail','sourcelocaletag'));
                     foreach ($to_clean as $clean_me) {
                         $r[$clean_me] = (isset($_REQUEST[$clean_me])) ?
                             $this->clean($_REQUEST[$clean_me], "string" ) : "";
@@ -2142,7 +2155,7 @@ class AdminController extends Controller implements CrawlConstants
                     }
                     $this->sourceModel->addMediaSource(
                         $r['sourcename'], $r['sourcetype'], $r['sourceurl'], 
-                        $r['sourcethumbnail']);
+                        $r['sourcethumbnail'], $r['sourcelocaletag']);
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('admin_controller_media_source_added').
                         "</h1>');";

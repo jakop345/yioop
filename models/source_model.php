@@ -96,8 +96,10 @@ class SourceModel extends Model
      *  @param string $thumb_url regex of where to get thumbnails for videos
      *      based on match of $source_url, for example,
      *      http://img.youtube.com/vi/{}/2.jpg
+     * @param string $language the locale tag for the media source (rss)
      */
-    function addMediaSource($name, $source_type, $source_url, $thumb_url)
+    function addMediaSource($name, $source_type, $source_url, $thumb_url,
+        $language = DEFAULT_LOCALE)
     {
         $this->db->selectDB(DB_NAME);
 
@@ -105,7 +107,8 @@ class SourceModel extends Model
             $this->db->escapeString($name)."','".
             $this->db->escapeString($source_type)."','".
             $this->db->escapeString($source_url)."','".
-            $this->db->escapeString($thumb_url)."', '')";
+            $this->db->escapeString($thumb_url)."','".
+            $this->db->escapeString($language)."')";
 
         $this->db->execute($sql);
     }
@@ -118,7 +121,18 @@ class SourceModel extends Model
     function deleteMediaSource($timestamp)
     {
         $this->db->selectDB(DB_NAME);
-
+        $sql = "SELECT * FROM MEDIA_SOURCE WHERE TIMESTAMP='$timestamp'";
+        $result = $this->db->execute($sql);
+        if($result) {
+            $row = $this->db->fetchArray($result);
+            if(isset($row['TYPE']) && $row['TYPE'] == "rss") {
+                if($row['NAME'] != "") {
+                    $sql = "DELETE FROM FEED_ITEM WHERE SOURCE_NAME='".
+                        $this->db->escapeString($row['NAME'])."'";
+                    $this->db->execute($sql);
+                }
+            }
+        }
         $sql = "DELETE FROM MEDIA_SOURCE WHERE TIMESTAMP='$timestamp'";
 
         $this->db->execute($sql);
@@ -261,16 +275,20 @@ class SourceModel extends Model
         foreach($feeds as $feed) {
             $dom = new DOMDocument();
             @$dom->loadXML($feed[CrawlConstants::PAGE]);
-            $languages = $dom->getElementsByTagName('language');
-            if($languages && is_object($languages) && 
-                is_object($languages->item(0))) {
-                $lang = $languages->item(0)->textContent;
-                $sql = "UPDATE MEDIA_SOURCE SET LANGUAGE='$lang' WHERE ".
-                    "TIMESTAMP='".$feed['TIMESTAMP']."'";
-                $this->db->execute($sql);
-            } else {
-                $lang = DEFAULT_LOCALE;
+            $lang = DEFAULT_LOCALE;
+            if(!isset($feed["LANGUAGE"]) || $feed["LANGUAGE"] == "") {
+                $languages = $dom->getElementsByTagName('language');
+                if($languages && is_object($languages) && 
+                    is_object($languages->item(0))) {
+                    $lang = $languages->item(0)->textContent;
+                    $sql = "UPDATE MEDIA_SOURCE SET LANGUAGE='$lang' WHERE ".
+                        "TIMESTAMP='".$feed['TIMESTAMP']."'";
+                    $this->db->execute($sql);
+                }
+            } else if(isset($feed["LANGUAGE"]) && $feed["LANGUAGE"] != "") {
+                $lang = $feed["LANGUAGE"];
             }
+
             $nodes = $dom->getElementsByTagName('item');
             $rss_elements = array("title", "description", "link", "guid",
                 "pubDate");
