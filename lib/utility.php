@@ -409,7 +409,7 @@ function crawlLog($msg, $lname = NULL)
         }
         error_log($out_msg."\n", 3, $logfile);
     } else {
-        error_log($out_msg);
+        echo $out_msg;
     }
 }
 
