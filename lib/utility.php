@@ -408,6 +408,8 @@ function crawlLog($msg, $lname = NULL)
             unlink($logfile);
         }
         error_log($out_msg."\n", 3, $logfile);
+    } else if (php_sapi_name() != 'cli') {
+        error_log($out_msg);
     } else {
         echo $out_msg;
     }
