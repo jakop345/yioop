@@ -453,7 +453,7 @@ function upgradeDatabaseVersion13(&$db)
 function upgradeDatabaseVersion14(&$db)
 {
     $db->execute("DELETE FROM VERSION WHERE ID < 13");
-    $db->execute("UPDATE VERSION SET ID=14 WHERE ID=12");
+    $db->execute("UPDATE VERSION SET ID=14 WHERE ID=13");
     $db->execute("ALTER TABLE MEDIA_SOURCE ADD LANGUAGE VARCHAR(7)");
 }
 ?>
