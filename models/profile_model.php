@@ -83,7 +83,7 @@ class ProfileModel extends Model
             "$directory/cache", "$directory/data", "$directory/feeds",
             "$directory/locale", "$directory/log",
             "$directory/prepare", "$directory/schedules", 
-            "$directory/search_filters");
+            "$directory/search_filters", "$directory/temp");
         $dir_status = array();
         foreach($to_make_dirs as $dir) {
             $dir_status[$dir] = $this->createIfNecessaryDirectory($dir);

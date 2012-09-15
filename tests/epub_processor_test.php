@@ -73,10 +73,9 @@ class EpubProcessorTest extends UnitTest implements CrawlConstants
     public function setUp()
     {
         $epub_object = new EpubProcessor;
-        $url = "http://www.vijethpatil.com/TestandTextbookforyioop.epub";
-        $filename= BASE_DIR."/tests/test_files/TestandTextbookforyioop.epub";
-        $page = file_get_contents($filename);
-        $summary=$epub_object->process($page,$url);
+        $url = "http://www.yioop.com/TestEpubYioop.epub";
+        $filename= BASE_DIR."/tests/test_files/TestEpubYioop.epub";
+        $summary = $epub_object->process($page,$url);
         $this->test_objects['summary'] = $summary;
         $this->testEpubTitleTestCase();
         $this->testEpubLangTestCase();
@@ -101,7 +100,7 @@ class EpubProcessorTest extends UnitTest implements CrawlConstants
         $x = $m[self::TITLE];
         $correct_title = "The Test and Textbook for yioop";
         $description = "Test Passed with correct title";
-        $this->assertEqual($x,$correct_title,$description);
+        $this->assertEqual($x, $correct_title,$description);
     }
     
     /**
@@ -114,7 +113,7 @@ class EpubProcessorTest extends UnitTest implements CrawlConstants
         $x = $m[self::LANG];
         $correct_language = "en";
         $description = "Test Passed with correct Language";
-        $this->assertEqual($x,$correct_language,$description);
+        $this->assertEqual($x, $correct_language,$description);
     }
     
     /**
@@ -126,6 +125,6 @@ class EpubProcessorTest extends UnitTest implements CrawlConstants
         $m = $this->test_objects['summary'] ;
         $x = $m[self::DESCRIPTION];
         $description = "Test Passed with Description information not empty";
-        $this->assertTrue($x,$description);
+        $this->assertTrue($x, $description);
     }
 }
