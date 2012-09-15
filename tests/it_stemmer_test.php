@@ -77,10 +77,10 @@ class ItStemmerTest extends UnitTest
         $stem_dir = BASE_DIR.'/tests/test_files/italian_stemmer';
         
         //Test word set from snowball
-        $test_words = file("$stem_dir/voc2.txt");
+        $test_words = file("$stem_dir/input_vocabulary.txt");
 
         //Stem word set from snowball for comparing results
-        $stem_words = file("$stem_dir/output2.txt");
+        $stem_words = file("$stem_dir/stemmed_result.txt");
 
         /**
          * check if function stem correctly stems the words in $test_words by
