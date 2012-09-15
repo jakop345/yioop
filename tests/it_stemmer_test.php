@@ -78,7 +78,6 @@ class ItStemmerTest extends UnitTest
         
         //Test word set from snowball
         $test_words = file("$stem_dir/input_vocabulary.txt");
-
         //Stem word set from snowball for comparing results
         $stem_words = file("$stem_dir/stemmed_result.txt");
 

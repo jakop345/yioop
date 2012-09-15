@@ -143,7 +143,7 @@ class FetchUrl implements CrawlConstants
         do {
             $mrc = curl_multi_exec($agent_handler, $running);
             $ready=curl_multi_select($agent_handler, 0.005);
-        } while (time() - $start < PAGE_TIMEOUT &&  $running > 0 && $ready!=-1);
+        } while (time() - $start < PAGE_TIMEOUT &&  $running > 0);
 
         if(time() - $start > PAGE_TIMEOUT) {crawlLog("  TIMED OUT!!!");}
 
