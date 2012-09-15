@@ -409,9 +409,9 @@ function crawlLog($msg, $lname = NULL)
         }
         error_log($out_msg."\n", 3, $logfile);
     } else if (php_sapi_name() != 'cli') {
-        error_log($out_msg);
+        error_log($out_msg."\n");
     } else {
-        echo $out_msg;
+        echo $out_msg."\n";
     }
 }
 
