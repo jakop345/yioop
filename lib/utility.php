@@ -815,7 +815,7 @@ function e($text)
  * Used to read a line of input from the command-line
  * @return string from the command-line
  */
-function readLine()
+function readInput()
 {
     $stdin = fopen('php://stdin', 'r');
     $line = fgets($stdin);
@@ -823,7 +823,6 @@ function readLine()
     fclose($stdin);
     return $line;
 }
-
 
 /**
  * Used to read a line of input from the command-line
@@ -833,7 +832,7 @@ function readLine()
 function readPassword()
 {
     system('stty -echo');
-    $line = readLine();
+    $line = readInput();
     if(!strstr(PHP_OS, "WIN")) {
         e(str_repeat("*", strlen($line))."\n");
     }
@@ -853,7 +852,7 @@ function readMessage()
     $line = "";
     do {
         $message .= $line;
-        $line = readLine()."\n";
+        $line = readInput()."\n";
     } while(rtrim($line) != ".");
 
     return rtrim($message);

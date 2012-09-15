@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer

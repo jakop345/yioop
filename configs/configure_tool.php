@@ -164,7 +164,7 @@ class ConfigureTool
         e("Enter a new value:\n");
 
         $this->prepareGlobals($data);
-        $_REQUEST["WORK_DIRECTORY"] = readLine();
+        $_REQUEST["WORK_DIRECTORY"] = readInput();
         $_REQUEST["arg"] = "directory";
 
         $next_menu = $this->confirmChange("configure", "workDirectory");
@@ -409,12 +409,12 @@ class ConfigureTool
 
             case "serverKey":
                 e("Enter a new server key: ");
-                $_REQUEST["AUTH_KEY"] = readLine();
+                $_REQUEST["AUTH_KEY"] = readInput();
             break;
 
             case "nameServer":
                 e("Enter a new name server url: ");
-                $_REQUEST["NAME_SERVER"] = readLine();
+                $_REQUEST["NAME_SERVER"] = readInput();
             break;
 
             case "memcacheServers":
@@ -469,12 +469,12 @@ class ConfigureTool
 
             case "robotName":
                 e("Enter a new robot name: ");
-                $_REQUEST["USER_AGENT_SHORT"] = readLine();
+                $_REQUEST["USER_AGENT_SHORT"] = readInput();
             break;
 
             case "robotInstance":
                 e("Enter a new robot instance value: ");
-                $_REQUEST["ROBOT_INSTANCE"] = readLine();
+                $_REQUEST["ROBOT_INSTANCE"] = readInput();
             break;
 
             case "robotDescription":
@@ -555,7 +555,7 @@ class ConfigureTool
         }
 
         e("\nPlease choose an option:\n");
-        $user_data = strtolower(trim(readLine()));
+        $user_data = strtolower(trim(readInput()));
 
         if($user_data >= 1 && $user_data < $i) {
             $_REQUEST["MESSAGE"] = "";
@@ -594,7 +594,7 @@ class ConfigureTool
                 $_SERVER['REQUEST_URI'] = $data['WEB_URI'];
             } else {
                 e("Enter web path for Yioop instance:\n");
-                $_SERVER['REQUEST_URI'] = readLine();
+                $_SERVER['REQUEST_URI'] = readInput();
             }
         }
     }
