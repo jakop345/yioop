@@ -270,6 +270,9 @@ class UrlParser
         if(!isset($url_parts['path'])) {
             return NULL;
         }
+        // windows hack
+        $url_parts['path'] = str_replace("\/", "/", $url_parts['path']);
+
         $path = $url_parts['path'];
         $len = strlen($url);
         if($with_query_string && isset($url_parts['query'])) {

@@ -34,13 +34,13 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- *  Load the Italian stemmer
+ *  Load the Italian stemmer via phrase_parser (5.4 hack)
  */
-require_once BASE_DIR.'/locale/it/resources/tokenizer.php';
+require_once BASE_DIR."/lib/phrase_parser.php"; 
 /**
  *  Load the run function
  */
-require_once BASE_DIR.'/lib/unit_test.php';
+require_once BASE_DIR.'lib/unit_test.php';
 
 /**
  * My code for testing the Italian stemming algorithm. The inputs for the

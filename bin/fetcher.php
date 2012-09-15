@@ -1128,7 +1128,6 @@ class Fetcher implements CrawlConstants
 
         foreach($site_pages as $site) {
             $response_code = $site[self::HTTP_CODE]; 
-
             if($response_code < 200 || $response_code >= 300) {
                 crawlLog($site[self::URL]." response code $response_code");
                 $host = UrlParser::getHost($site[self::URL]);
@@ -1332,10 +1331,12 @@ class Fetcher implements CrawlConstants
             }
         } // end for
 
-        $cache_page_partition = $this->web_archive->addPages(
-            self::OFFSET, $stored_site_pages);
-
         $num_pages = count($stored_site_pages);
+        
+        if($num_pages > 0) {
+            $cache_page_partition = $this->web_archive->addPages(
+                self::OFFSET, $stored_site_pages);
+        }
 
         for($i = 0; $i < $num_pages; $i++) {
             $summarized_site_pages[$i][self::INDEX] = $num_items + $i;

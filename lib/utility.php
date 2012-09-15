@@ -48,7 +48,7 @@ function charCopy($source, &$destination, $start, $length)
     $endk = $length - 1;
     $end = $start + $endk;
     for($j = $end, $k = $endk; $j >= $start; $j--, $k--) {
-        $destination[$j] = $source[$k]; 
+        $destination[(int)$j] = $source[(int)$k]; 
     }
 }
 
