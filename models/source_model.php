@@ -275,7 +275,7 @@ class SourceModel extends Model
         foreach($feeds as $feed) {
             $dom = new DOMDocument();
             @$dom->loadXML($feed[CrawlConstants::PAGE]);
-            $lang = DEFAULT_LOCALE;
+            $lang = "";
             if(!isset($feed["LANGUAGE"]) || $feed["LANGUAGE"] == "") {
                 $languages = $dom->getElementsByTagName('language');
                 if($languages && is_object($languages) && 
@@ -341,7 +341,7 @@ class SourceModel extends Model
                 if(isset($feed[$item['SOURCE_NAME']])) {
                     $lang = $feed[$item['SOURCE_NAME']]['LANGUAGE'];
                 } else {
-                    $lang = DEFAULT_LOCALE;
+                    $lang = "";
                 }
                 $phrase_string = $item["TITLE"] . " ". $item["DESCRIPTION"];
                 $word_lists = PhraseParser::extractPhrasesInLists(
@@ -352,10 +352,12 @@ class SourceModel extends Model
                     UrlParser::getHost($item["LINK"])."/",true), 1);
                 $meta_ids = array("media:news", "media:news:".
                     urlencode($source_name));
-                $lang_parts = explode("-", $lang);
-                $meta_ids[] = 'lang:'.$lang_parts[0];
-                if(isset($lang_parts[1])){
-                    $meta_ids[] = 'lang:'.$lang;
+                if($lang != "") {
+                    $lang_parts = explode("-", $lang);
+                    $meta_ids[] = 'lang:'.$lang_parts[0];
+                    if(isset($lang_parts[1])){
+                        $meta_ids[] = 'lang:'.$lang;
+                    }
                 }
                 $feed_shard->addDocumentWords($doc_keys, $item['PUBDATE'], 
                     $word_lists, $meta_ids, true, false);
@@ -416,10 +418,12 @@ class SourceModel extends Model
             $raw_guid."d". substr(crawlHash(
             UrlParser::getHost($item["link"])."/",true), 1);
         $meta_ids = array("media:news", "media:news:".urlencode($source_name));
-        $lang_parts = explode("-", $lang);
-        $meta_ids[] = 'lang:'.$lang_parts[0];
-        if(isset($lang_parts[1])){
-            $meta_ids[] = 'lang:'.$lang;
+        if($lang != "") {
+            $lang_parts = explode("-", $lang);
+            $meta_ids[] = 'lang:'.$lang_parts[0];
+            if(isset($lang_parts[1])){
+                $meta_ids[] = 'lang:'.$lang;
+            }
         }
         $feed_shard->addDocumentWords($doc_keys, $item['pubDate'], $word_lists,
             $meta_ids, true, false);

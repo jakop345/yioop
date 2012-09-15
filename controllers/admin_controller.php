@@ -337,9 +337,10 @@ class AdminController extends Controller implements CrawlConstants
             {
                 case "changepassword":
                     if($_REQUEST['retypepassword'] != $_REQUEST['newpassword']){
+                        $data["MESSAGE"] = 
+                            tl('admin_controller_passwords_dont_match');
                         $data['SCRIPT'] .= 
-                            "doMessage('<h1 class=\"red\" >".
-                            tl('admin_controller_passwords_dont_match').
+                            "doMessage('<h1 class=\"red\" >". $data["MESSAGE"].
                             "</h1>')";
                         return $data;
                     }
@@ -348,15 +349,17 @@ class AdminController extends Controller implements CrawlConstants
                     $result = $this->signinModel->checkValidSignin($username, 
                     $this->clean($_REQUEST['oldpassword'], "string") );
                     if(!$result) {
+                        $data["MESSAGE"] = 
+                            tl('admin_controller_invalid_old_password');
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('admin_controller_invalid_old_password').
-                            "</h1>')";
+                            $data["MESSAGE"]."</h1>')";
                         return $data;
                     }
                     $this->signinModel->changePassword($username, 
                         $this->clean($_REQUEST['newpassword'], "string"));
+                    $data["MESSAGE"] = tl('admin_controller_change_password');
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('admin_controller_change_password')."</h1>')";
+                        $data["MESSAGE"]."</h1>')";
                 break;
                 }
         }
@@ -2232,8 +2235,8 @@ class AdminController extends Controller implements CrawlConstants
             $data['LANGUAGES'][$language['LOCALE_TAG']] = 
                 $language['LOCALE_NAME'];
         }
-        if(isset($_POST['lang'])) {
-            $data['lang'] = $this->clean($_POST['lang'], "string");
+        if(isset($_REQUEST['lang'])) {
+            $data['lang'] = $this->clean($_REQUEST['lang'], "string");
             $profile['DEFAULT_LOCALE'] = $data['lang'];
             setLocaleObject($data['lang']);
         }
@@ -2242,7 +2245,7 @@ class AdminController extends Controller implements CrawlConstants
         $data['SCRIPT'] = "";
         
         $data['PROFILE'] = false;
-
+        $data['MESSAGE'] = "";
 
         if(isset($_REQUEST['WORK_DIRECTORY'])) {
             $dir = 
@@ -2258,9 +2261,11 @@ class AdminController extends Controller implements CrawlConstants
                     $data['PROFILE'] = false;
             }
             if($data['PROFILE'] == false) {
+                $data["MESSAGE"] = 
+                    tl('admin_controller_configure_use_absolute_path');
                 $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                    tl('admin_controller_configure_use_absolute_path').
-                    "</h1>');" . "setTimeout('window.location.href= ".
+                    $data["MESSAGE"]. "</h1>');" .
+                    "setTimeout('window.location.href= ".
                     "window.location.href', 3000);";
                 $data['WORK_DIRECTORY'] = $dir;
                 return $data;
@@ -2290,10 +2295,11 @@ class AdminController extends Controller implements CrawlConstants
                             $data['WORK_DIRECTORY']));
                     $this->profileModel->setWorkDirectoryConfigFile(
                         $data['WORK_DIRECTORY']);
+                    $data["MESSAGE"] = 
+                        tl('admin_controller_configure_work_dir_set');
                     $data['SCRIPT'] .= 
                         "doMessage('<h1 class=\"red\" >".
-                        tl('admin_controller_configure_work_dir_set').
-                        "</h1>');setTimeout(".
+                        $data["MESSAGE"]. "</h1>');setTimeout(".
                         "'window.location.href=window.location.href', 3000);";
                 } else if ($data['PROFILE'] && 
                     strlen($data['WORK_DIRECTORY']) > 0) {
@@ -2311,18 +2317,20 @@ class AdminController extends Controller implements CrawlConstants
                             $data['WORK_DIRECTORY'], array(), $profile)) {
                             if($this->profileModel->setWorkDirectoryConfigFile(
                                 $data['WORK_DIRECTORY'])) {
+                        $data["MESSAGE"] = 
+                            tl('admin_controller_configure_work_profile_made');
                                 $data['SCRIPT'] .= 
                                     "doMessage('<h1 class=\"red\" >".
-                             tl('admin_controller_configure_work_profile_made').
-                                    "</h1>');" .
+                                    $data["MESSAGE"]. "</h1>');" .
                                     "setTimeout('window.location.href= ".
                                     "window.location.href', 3000);";
                             } else {
                                 $data['PROFILE'] = false;
+                        $data["MESSAGE"] = 
+                            tl('admin_controller_configure_no_set_config');
                                 $data['SCRIPT'] .= 
                                     "doMessage('<h1 class=\"red\" >".
-                             tl('admin_controller_configure_no_set_config').
-                                    "</h1>');" .
+                                    $data["MESSAGE"] . "</h1>');" .
                                     "setTimeout('window.location.href= ".
                                     "window.location.href', 3000);";
                             }
@@ -2330,18 +2338,21 @@ class AdminController extends Controller implements CrawlConstants
                             $this->profileModel->setWorkDirectoryConfigFile(
                                 $data['WORK_DIRECTORY']);
                             $data['PROFILE'] = false;
+                        $data["MESSAGE"] = 
+                            tl('admin_controller_configure_no_create_profile');
                             $data['SCRIPT'] .= 
                                 "doMessage('<h1 class=\"red\" >".
-                            tl('admin_controller_configure_no_create_profile').
+                                $data["MESSAGE"].
                                 "</h1>'); setTimeout('window.location.href=".
                                 "window.location.href', 3000);";
                         }
                     } else {
                         $this->profileModel->setWorkDirectoryConfigFile(
                             $data['WORK_DIRECTORY']);
+                        $data["MESSAGE"] = 
+                            tl('admin_controller_configure_work_dir_invalid');
                         $data['SCRIPT'] .= 
-                            "doMessage('<h1 class=\"red\" >".
-                        tl('admin_controller_configure_work_dir_invalid').
+                            "doMessage('<h1 class=\"red\" >". $data["MESSAGE"].
                                 "</h1>');".
                             "setTimeout('window.location.href=".
                             "window.location.href', 3000);";
@@ -2350,9 +2361,10 @@ class AdminController extends Controller implements CrawlConstants
                 } else {
                     $this->profileModel->setWorkDirectoryConfigFile(
                         $data['WORK_DIRECTORY']);
+                    $data["MESSAGE"] = 
+                        tl('admin_controller_configure_work_dir_invalid');
                     $data['SCRIPT'] .= 
-                        "doMessage('<h1 class=\"red\" >".
-                            tl('admin_controller_configure_work_dir_invalid').
+                        "doMessage('<h1 class=\"red\" >". $data["MESSAGE"] .
                             "</h1>');" .
                         "setTimeout('window.location.href=".
                         "window.location.href', 3000);";
@@ -2361,13 +2373,13 @@ class AdminController extends Controller implements CrawlConstants
             break;
             case "profile":
                 foreach($this->profileModel->profile_fields as $field) {
-                    if(isset($_POST[$field])) {
+                    if(isset($_REQUEST[$field])) {
                         if($field != "ROBOT_DESCRIPTION" && 
                             $field != "MEMCACHE_SERVERS") {
                             $clean_field = 
-                                $this->clean($_POST[$field], "string");
+                                $this->clean($_REQUEST[$field], "string");
                         } else {
-                            $clean_field = $_POST[$field];
+                            $clean_field = $_REQUEST[$field];
                         }
                         if($field == "NAME_SERVER" &&
                             $clean_field[strlen($clean_field) -1] != "/") {
@@ -2395,11 +2407,11 @@ class AdminController extends Controller implements CrawlConstants
                 }
                 $data['DEBUG_LEVEL'] = 0;
                 $data['DEBUG_LEVEL'] |= 
-                    (isset($_POST["ERROR_INFO"])) ? ERROR_INFO : 0;
+                    (isset($_REQUEST["ERROR_INFO"])) ? ERROR_INFO : 0;
                 $data['DEBUG_LEVEL'] |= 
-                    (isset($_POST["QUERY_INFO"])) ? QUERY_INFO : 0;
+                    (isset($_REQUEST["QUERY_INFO"])) ? QUERY_INFO : 0;
                 $data['DEBUG_LEVEL'] |= 
-                    (isset($_POST["TEST_INFO"])) ? TEST_INFO : 0;
+                    (isset($_REQUEST["TEST_INFO"])) ? TEST_INFO : 0;
                 $profile['DEBUG_LEVEL'] = $data['DEBUG_LEVEL'];
                 
                 $old_profile = 
@@ -2428,9 +2440,10 @@ class AdminController extends Controller implements CrawlConstants
                     }
                 }
                 if($db_problem) {
+                    $data['MESSAGE'] = 
+                        tl('admin_controller_configure_no_change_db');
                     $data['SCRIPT'] .= 
-                        "doMessage('<h1 class=\"red\" >".
-                        tl('admin_controller_configure_no_change_db').
+                        "doMessage('<h1 class=\"red\" >". $data['MESSAGE'].
                         "</h1>');";
                     $data['DBMS'] = $old_profile['DBMS'];
                     $data['DB_NAME'] = $old_profile['DB_NAME'];
@@ -2442,9 +2455,10 @@ class AdminController extends Controller implements CrawlConstants
 
                 if($this->profileModel->updateProfile(
                 $data['WORK_DIRECTORY'], $profile, $old_profile)) {
+                    $data['MESSAGE'] = 
+                        tl('admin_controller_configure_profile_change');
                     $data['SCRIPT'] = 
-                        "doMessage('<h1 class=\"red\" >".
-                        tl('admin_controller_configure_profile_change').
+                        "doMessage('<h1 class=\"red\" >". $data['MESSAGE'].
                         "</h1>');";
                         
                         if($old_profile['DEBUG_LEVEL'] != 
@@ -2456,9 +2470,10 @@ class AdminController extends Controller implements CrawlConstants
                         }
                 } else {
                     $data['PROFILE'] = false;
+                    $data["MESSAGE"] = 
+                        tl('admin_controller_configure_no_change_profile');
                     $data['SCRIPT'] .= 
-                        "doMessage('<h1 class=\"red\" >".
-                        tl('admin_controller_configure_no_change_profile').
+                        "doMessage('<h1 class=\"red\" >". $data["MESSAGE"].
                         "</h1>');";
                     break;
                 }

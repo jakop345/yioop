@@ -810,4 +810,53 @@ function e($text)
 {
     echo $text;
 }
+
+/**
+ * Used to read a line of input from the command-line
+ * @return string from the command-line
+ */
+function readLine()
+{
+    $stdin = fopen('php://stdin', 'r');
+    $line = fgets($stdin);
+    $line = rtrim($line);
+    fclose($stdin);
+    return $line;
+}
+
+
+/**
+ * Used to read a line of input from the command-line
+ * (on unix machines without echoing it)
+ * @return string from the command-line
+ */
+function readPassword()
+{
+    system('stty -echo');
+    $line = readLine();
+    if(!strstr(PHP_OS, "WIN")) {
+        e(str_repeat("*", strlen($line))."\n");
+    }
+    system('stty echo');
+
+    return $line;
+}
+
+/**
+ * Used to read a several lines from the terminal up until
+ * a last line consisting of just a "."
+ * @return string from the command-line
+ */
+function readMessage()
+{
+    $message = "";
+    $line = "";
+    do {
+        $message .= $line;
+        $line = readLine()."\n";
+    } while(rtrim($line) != ".");
+
+    return rtrim($message);
+}
+
 ?>
