@@ -74,7 +74,8 @@ class EpubProcessorTest extends UnitTest implements CrawlConstants
     {
         $epub_object = new EpubProcessor;
         $url = "http://www.yioop.com/TestEpubYioop.epub";
-        $filename= BASE_DIR."/tests/test_files/TestEpubYioop.epub";
+        $filename = BASE_DIR."/tests/test_files/TestEpubYioop.epub";
+        $page = file_get_contents($filename);
         $summary = $epub_object->process($page,$url);
         $this->test_objects['summary'] = $summary;
         $this->testEpubTitleTestCase();
