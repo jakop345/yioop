@@ -559,13 +559,15 @@ class SearchController extends Controller implements CrawlConstants
         if($delta == 0) {
             $this->cronModel->updateCronTime("news_delete");
         }
-        if($delta > self::NEWS_DELETE_INTERVAL) {
+        if($delta > self::NEWS_DELETE_INTERVAL  && defined(SUBSEARCH_LINK)
+          && SUBSEARCH_LINK) {
             $this->cronModel->updateCronTime("news_delete");
             $this->sourceModel->deleteFeedItems(self::NEWS_DELETE_INTERVAL);
         }
         $cron_time = $this->cronModel->getCronTime("news_update");
         $delta = $time - $cron_time;
-        if($delta > self::NEWS_UPDATE_INTERVAL || $delta == 0) {
+        if(($delta > self::NEWS_UPDATE_INTERVAL || $delta == 0) 
+            && defined(SUBSEARCH_LINK) && SUBSEARCH_LINK) {
             $this->cronModel->updateCronTime("news_update");
             $this->sourceModel->updateFeedItems();
         }
