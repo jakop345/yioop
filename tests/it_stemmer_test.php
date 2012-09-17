@@ -50,6 +50,8 @@ require_once BASE_DIR.'lib/unit_test.php';
  * http://snowball.tartarus.org/algorithms/italian/output.txt
  *
  * @author Akshat Kukreti
+ * @package seek_quarry
+ * @subpackage test
  */
 
 class ItStemmerTest extends UnitTest

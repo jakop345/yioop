@@ -645,6 +645,7 @@ class SearchController extends Controller implements CrawlConstants
             $raw = ($raw > 0) ? 2 : 0;
         }
         $query = preg_replace($pattern, "", $query);
+        $original_query = $query;
         $query = preg_replace('/no:cache/', "", $query);
         $use_cache_if_possible = ($original_query == $query) ? true : false;
         $network_work_query = $query;
