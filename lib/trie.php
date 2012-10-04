@@ -53,7 +53,6 @@ class Trie
      * @var string
      */
     var $end_marker;
-
     /**
      * Creates and returnes an empty trie. Sets the end of term character
      * 
@@ -74,18 +73,24 @@ class Trie
     function add($term) 
     {
         $trie_array = & $this->trie_array;
-        for($i = 0; $i < mb_strlen($term); $i++) {
-            $character = mb_substr($term, $i, 1);
-            // If letter doesnt exist then create one by
-            // assigning new array
-            $enc_char = urlencode($character);
-            if(!isset($trie_array[$enc_char])) {
-                $trie_array[$enc_char] = array();
+        for($i = 0; $i < mb_strlen($term,"utf-8"); $i++) {
+            $character = mb_substr($term, $i, 1, "utf-8");
+            $enc_char = rawurlencode($character);
+            // To avoid encoding the linefeed
+            if ($enc_char == "%0A"){
+                continue;
             }
-            $trie_array = & $trie_array[$enc_char];
+            else {
+                // If letter doesnt exist then create one by
+                // assigning new array
+                if(!isset($trie_array[$enc_char])) {
+                $trie_array[$enc_char] = array();
+                }
+                $trie_array = & $trie_array[$enc_char];
+            }
         }
         // Set end of term marker
-        $trie_array[$this->end_marker] = $this->end_marker; 
+        $trie_array[$this->end_marker] = $this->end_marker;
         return $trie_array;
     }
 
@@ -100,14 +105,14 @@ class Trie
     function exists($term)
     {
         $trie_array = & $this->trie_array;
-        $len = mb_strlen($term);
+        $len = mb_strlen($term,"utf-8");
         for($i = 0; $i < $len; $i++) {
             if($trie_array == null){
                 return false;
             }
             if ($trie_array != $this->end_marker) {
-                $character = mb_substr($term, $i, 1);
-                $enc_char = urlencode($character);
+                $character = mb_substr($term, $i, 1, "utf-8");
+                $enc_char = rawurlencode($character);
                 if(!isset($trie_array[$enc_char])) {
                     return false;
                 }

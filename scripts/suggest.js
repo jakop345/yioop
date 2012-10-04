@@ -64,7 +64,7 @@ function onTypeTerm(event, text_field)
 {
     var key_code_pressed;
     var term_array;
-    var input_term = text_field.value;
+    var input_term = text_field.value.trim();
     var suggest_results = elt("suggest-results");
     var suggest_dropdown = elt("suggest-dropdown");
     var scroll_pos = 0;
@@ -84,14 +84,14 @@ function onTypeTerm(event, text_field)
         }
         concat_term = concat_term.trim();
     }    
-    input_term = term_array[term_array.length - 1];
+    input_term = term_array[term_array.length - 1].trim(" ");
 
     // behavior if typing keys other than up or down (notice call termSuggest)
     if (key_code_pressed != KeyCodes.DOWN_ARROW && 
-        key_code_pressed != KeyCodes.UP_ARROW) {
+            key_code_pressed != KeyCodes.UP_ARROW) {
         search_list = "";
         termSuggest(dictionary, input_term);
-        if(count <= 1) {
+        if(count < 1) {
             search_list = "";
         }
         suggest_dropdown.scrollTop =  0;
@@ -166,7 +166,7 @@ function setSelectedTerm(pos, class_value)
  *
  * @param String term what was clicked on
  */
-function termClick(term)
+function termClick(term,termid)
 {
     var results_dropdown = elt("suggest-results");
     var query_field_object = elt("query-field");
@@ -194,7 +194,7 @@ function getTrieTerms(trie_array, parent_word, highlighted_word)
         for (key in trie_array) {
             if (key != END_OF_TERM_MARKER ) {
                 getTrieTerms(trie_array[key], parent_word + key, 
-                    highlighted_word + key);
+                        highlighted_word + key);
             } else {
                 search_terms = concat_term.trim() + " " + decode(parent_word);
                 search_terms = search_terms.trim();
@@ -203,7 +203,9 @@ function getTrieTerms(trie_array, parent_word, highlighted_word)
                 search_list += "<li><span id='term" +count+
                     "' class='unselected' onclick = 'void(0)' " +
                     "title='"+search_terms+"' " +
-                    "onmouseup='termClick(\""+search_terms+"\")'"+
+                    "onmouseover='setSelectedTerm(\""+count+"\",\"selected\")'" +
+                    "onmouseout='setSelectedTerm(\""+count+"\",\"unselected\")'" +
+                    "onmouseup='termClick(\""+search_terms+"\",this.id)'"+
                     ">" + highlighted_terms + "</span></li>";
                 count++;
             }
@@ -221,21 +223,17 @@ function getTrieTerms(trie_array, parent_word, highlighted_word)
  */
 function exist(trie_array, term)
 {
-    for(var i = 1; i< term.length; i++) {
-        if(trie_array == null){
-            return false;
-        }
-        if (trie_array != 'null') {
-            tmp = getUnicodeCharAndNextOffset(term, i);
-            if(tmp == false) return false;
-            next_char = tmp[0];
-            i = tmp[1];
-            enc_char = encode(next_char);
-            if(trie_array[enc_char] != 'null') {
-                trie_array = trie_array[enc_char];
-            }
-        }
-        else {
+    if(trie_array == null) {
+        return false;
+    }
+    for(var i = 1; i < term.length; i++) {
+        tmp = getUnicodeCharAndNextOffset(term, i);
+        if(tmp == false) return false;
+        next_char = tmp[0];
+        i = tmp[1]; 
+        enc_char = encode(next_char);
+        trie_array = trie_array[enc_char];
+        if(trie_array == null) {
             return false;
         }
     }
@@ -256,7 +254,10 @@ function termSuggest(trie_array, term)
     last_word = false;
     count = 0;
     search_list = "";
+    // For US english ignore the case
+    if(locale == 'en-US') {
     term = term.toLowerCase();
+    }
     var tmp;
     if(trie_array == null) {
         return false;
@@ -267,6 +268,9 @@ function termSuggest(trie_array, term)
         start_char = tmp[0];
         enc_chr = encode(start_char);
         trie_array = exist(trie_array[enc_chr], term);
+        if(trie_array == false) {
+            return false;
+        }
     } else {
         trie_array = trie_array[term];
     }
@@ -285,7 +289,9 @@ function decode(str) {
 /* wrappers to save typing */
 function encode(str)
 {
-    return encodeURIComponent(str);
+    str = encodeURIComponent(str);
+    str = str.replace(/\'/g, '%27'); // encodeURIComponent doesnt convert '
+    return str;    
 }
 
 /**

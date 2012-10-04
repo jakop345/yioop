@@ -56,7 +56,7 @@ class LanguageElement extends Element
     {
     ?>
 
-        <select id="locale" name="lang" dir="ltr">
+        <select id="locale" name="lang" dir="ltr" size="4">
         <?php 
         foreach ($data['LANGUAGES'] as $locale_tag => $locale_name) {
             if($data['LOCALE_TAG'] == $locale_tag) {
