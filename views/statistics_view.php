@@ -65,7 +65,7 @@ class StatisticsView extends View
     /**
      * Draws the web page used to display statistics about the default crawl
      *
-     * @param array $data   contains anti CSRF token YIOOP_TOKEN, as well
+     * @param array $data   contains anti CSRF token as well
      *      statistics info about a web crawl
      */
     public function renderView($data) {
@@ -76,13 +76,13 @@ class StatisticsView extends View
         if(isset($data["UNFINISHED"])) {
             e('<div class="landing" style="clear:both">');
         } ?>
-        <h1 class="stats logo"><a href="./?YIOOP_TOKEN=<?php 
-            e($data['YIOOP_TOKEN'])?>"><img 
+        <h1 class="stats logo"><a href="./?<?php 
+            e(CSRF_TOKEN."=".$data[CSRF_TOKEN])?>"><img 
             src="<?php e($logo);?>" alt="Yioop!" /></a><span> - <?php 
             e(tl('statistics_view_statistics')); ?></span></h1>
         <div class="statistics">
         <?php
-        $base_url = "?YIOOP_TOKEN=".$data["YIOOP_TOKEN"]."&its=".$data["its"];
+        $base_url = "?".CSRF_TOKEN."=".$data[CSRF_TOKEN]."&its=".$data["its"];
         if(isset($data["UNFINISHED"])) {
             e("<h1 class='center'>".tl('statistics_view_calculating')."</h1>");
 

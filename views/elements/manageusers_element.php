@@ -58,8 +58,8 @@ class ManageusersElement extends Element
         <h2><?php e(tl('manageusers_element_add_user'))?></h2>
         <form id="addUserForm" method="post" action='#'>
         <input type="hidden" name="c" value="admin" /> 
-        <input type="hidden" name="YIOOP_TOKEN" value="<?php 
-            e($data['YIOOP_TOKEN']); ?>" />
+        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php 
+            e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="manageUsers" />
         <input type="hidden" name="arg" value="adduser" />
 
@@ -87,8 +87,8 @@ class ManageusersElement extends Element
         <h2><?php e(tl('manageusers_element_delete_user'))?></h2>
         <form id="deleteUserForm" method="post" action=''>
         <input type="hidden" name="c" value="admin" />
-        <input type="hidden" name="YIOOP_TOKEN" value="<?php 
-            e($data['YIOOP_TOKEN']); ?>" />
+        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php 
+            e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="manageUsers" />
         <input type="hidden" name="arg" value="deleteuser" />
 
@@ -106,8 +106,8 @@ class ManageusersElement extends Element
         <h2><?php e(tl('manageusers_element_view_user_roles'))?></h2>
         <form id="viewUserRoleForm" method="get" action='' >
         <input type="hidden" name="c" value="admin" /> 
-        <input type="hidden" name="YIOOP_TOKEN" value="<?php 
-            e($data['YIOOP_TOKEN']); ?>" />
+        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php 
+            e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="manageUsers" />
         <input type="hidden" name="arg" value="viewuserroles" />
         <table class="nametable">
@@ -124,8 +124,8 @@ class ManageusersElement extends Element
             ?>
                 <form id="addUserRoleForm" method="get" action='' >
                 <input type="hidden" name="c" value="admin" /> 
-                <input type="hidden" name="YIOOP_TOKEN" value="<?php 
-                    e($data['YIOOP_TOKEN']); ?>" />
+                <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
+                    e($data[CSRF_TOKEN]); ?>" />
                 <input type="hidden" name="a" value="manageUsers" /> 
                 <input type="hidden" name="arg" value="adduserrole" />
                 <input type="hidden" name="selectuser" value="<?php 
@@ -147,10 +147,11 @@ class ManageusersElement extends Element
             <table class="roletable" ><?php
             foreach($data['SELECT_ROLES'] as $role_array) {
                 echo "<tr><td>".$role_array['ROLE_NAME'].
-                    "</td><td><a href='?c=admin&a=manageUsers".
-                    "&arg=deleteuserrole&selectrole=".$role_array['ROLE_ID'];
-                echo "&selectuser=".$data['SELECT_USER'].
-                    "&YIOOP_TOKEN=".$data['YIOOP_TOKEN']."'>Delete</a></td>";
+                    "</td><td><a href='?c=admin&amp;a=manageUsers".
+                    "&amp;arg=deleteuserrole&amp;selectrole=".
+                    $role_array['ROLE_ID'];
+                echo "&amp;selectuser=".$data['SELECT_USER'].
+                    "&".CSRF_TOKEN."=".$data[CSRF_TOKEN]."'>Delete</a></td>";
             }
             ?>
             </table>

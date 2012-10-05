@@ -57,8 +57,8 @@ class ManagecrawlsElement
         <h2><?php e(tl('managecrawls_element_create_crawl'))?></h2>
         <form id="crawlStartForm" method="get" action=''>
         <input type="hidden" name="c" value="admin" /> 
-        <input type="hidden" name="YIOOP_TOKEN" value="<?php 
-            e($data['YIOOP_TOKEN']); ?>" /> 
+        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php 
+            e($data[CSRF_TOKEN]); ?>" /> 
         <input type="hidden" name="a" value="manageCrawls" />
         <input type="hidden" name="arg" value="start" />
 
@@ -71,8 +71,8 @@ class ManagecrawlsElement
             <button class="buttonbox" type="submit"><?php 
                 e(tl('managecrawls_element_start_new_crawl')); ?></button> 
             <a href="?c=admin&amp;a=manageCrawls<?php
-                ?>&amp;arg=options&amp;YIOOP_TOKEN=<?php
-                e($data['YIOOP_TOKEN']) ?>"><?php 
+                ?>&amp;arg=options&amp;<?php
+                e(CSRF_TOKEN."=".$data[CSRF_TOKEN]) ?>"><?php 
                 e(tl('managecrawls_element_options')); ?></a>
         </p>
         </form>
@@ -83,8 +83,8 @@ class ManagecrawlsElement
         var updateId;
         function crawlStatusUpdate()
         {
-            var startUrl = "?c=admin&YIOOP_TOKEN=<?php 
-                e($data['YIOOP_TOKEN']); ?>&a=crawlStatus";
+            var startUrl = "?c=admin&<?php 
+                e(CSRF_TOKEN."=".$data[CSRF_TOKEN]); ?>&a=crawlStatus";
             var crawlTag = elt('crawlstatus');
             getPage(crawlTag, startUrl);
         }

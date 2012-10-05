@@ -54,8 +54,8 @@ class CrawlstatusView extends View
      * @param array $data   info about the current crawl status
      */
     public function renderView($data) {
-        $base_url = "?c=admin&a=manageCrawls&YIOOP_TOKEN=".
-            $data['YIOOP_TOKEN']."&arg=";
+        $base_url = "?c=admin&amp;a=manageCrawls&amp;".
+            CSRF_TOKEN."=".$data[CSRF_TOKEN]."&amp;arg=";
         ?>
 
         <h2><?php e(tl('crawlstatus_view_currently_processing')); ?></h2>
@@ -98,8 +98,8 @@ class CrawlstatusView extends View
                 <?php
             }
             ?><br /><a href="?c=admin&amp;a=manageCrawls<?php
-                ?>&amp;arg=options&amp;YIOOP_TOKEN=<?php
-                e($data['YIOOP_TOKEN']); ?>&amp;ts=<?php 
+                ?>&amp;arg=options&amp;<?php
+                e(CSRF_TOKEN."=".$data[CSRF_TOKEN]); ?>&amp;ts=<?php 
                 e($data['CRAWL_TIME']); ?>"><?php 
                 e(tl('crawlstatus_view_changeoptions')); ?></a><?php
         } else {
@@ -200,8 +200,8 @@ class CrawlstatusView extends View
             foreach($data['RECENT_CRAWLS'] as $crawl) {
             ?>
                 <tr><td><b><?php e($crawl['DESCRIPTION']); ?></b><br />
-                    [<a href="?YIOOP_TOKEN=<?php e(
-                    $data['YIOOP_TOKEN']); ?>&c=statistics&its=<?php 
+                    [<a href="?<?php e(CSRF_TOKEN."=".$data[CSRF_TOKEN]);
+                        ?>&amp;c=statistics&amp;its=<?php 
                     e($crawl['CRAWL_TIME']); ?>"><?php 
                     e(tl('crawlstatus_view_statistics')); ?></a>]</td>
                     <td><?php
@@ -212,7 +212,7 @@ class CrawlstatusView extends View
                     $crawl['VISITED_URLS_COUNT'] : 0) ."/".
                     $crawl['COUNT']); ?></td>
                 <td><?php if($crawl['RESUMABLE']) { ?>
-                    <a href="<?php e($base_url); ?>resume&timestamp=<?php
+                    <a href="<?php e($base_url); ?>resume&amp;timestamp=<?php
                         e($crawl['CRAWL_TIME']); ?>"><?php
                         e(tl('crawlstatus_view_resume'));?></a>
                     <?php } else { 
@@ -221,7 +221,7 @@ class CrawlstatusView extends View
                 <td>
                 <?php
                 if( $crawl['CRAWL_TIME'] != $data['CURRENT_INDEX']) { ?>
-                    <a href="<?php e($base_url); ?>index&timestamp=<?php
+                    <a href="<?php e($base_url); ?>index&amp;timestamp=<?php
                         e($crawl['CRAWL_TIME']); ?>"><?php
                         e(tl('crawlstatus_view_set_index')); ?></a>
                 <?php

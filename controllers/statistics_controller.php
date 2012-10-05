@@ -106,7 +106,7 @@ class StatisticsController extends Controller implements CrawlConstants
         $data = array();
         if(isset($_SESSION['USER_ID'])) {
             $user_id = $_SESSION['USER_ID'];
-            $token_okay = $this->checkCSRFToken('YIOOP_TOKEN', $user_id);
+            $token_okay = $this->checkCSRFToken(CSRF_TOKEN, $user_id);
             if($token_okay === false) {
                 unset($_SESSION['USER_ID']);
                 $user = $_SERVER['REMOTE_ADDR'];
@@ -182,7 +182,7 @@ class StatisticsController extends Controller implements CrawlConstants
             include(BASE_DIR."/error.php");
             exit(); //bail
         }
-        $data['YIOOP_TOKEN'] = $this->generateCSRFToken($user_id);
+        $data[CSRF_TOKEN] = $this->generateCSRFToken($user_id);
         $data["its"] = $this->index_time_stamp;
         $this->statisticsView->head_objects["robots"] = "NOINDEX, NOFOLLOW";
         $this->displayView($view, $data);

@@ -56,19 +56,19 @@ class MachinelogElement extends Element
     ?>
         <div class="currentactivity">
         <div class="<?php e($data['leftorright']);?>">
-        <a href="?c=admin&amp;a=manageMachines&amp;YIOOP_TOKEN=<?php 
-            e($data['YIOOP_TOKEN']) ?>"
+        <a href="?c=admin&amp;a=manageMachines&amp;<?php 
+            e(CSRF_TOKEN."=".$data[CSRF_TOKEN]) ?>"
         ><?php e(tl('machinelog_element_back_to_manage'))?></a>
         </div>
         <h2><?php e(tl('machinelog_element_log_file',$data['LOG_TYPE']));?></h2>
         <?php if(!isset($_REQUEST['NO_REFRESH']) ) {?>
-        <p>[<a href="?c=admin&YIOOP_TOKEN=<?php 
-                e($data['YIOOP_TOKEN']); ?>&a=manageMachines<?php 
-                e($data['REFRESH_LOG']); ?>&NO_REFRESH=true" ><?php 
+        <p>[<a href="?c=admin&amp;<?php 
+                e(CSRF_TOKEN."=".$data[CSRF_TOKEN]);?>&amp;a=manageMachines<?php
+                e($data['REFRESH_LOG']); ?>&amp;NO_REFRESH=true" ><?php 
                 e(tl('machinelog_element_refresh_off') ); ?></a>]</p>
         <?php } else { ?>
-        <p>[<a href="?c=admin&YIOOP_TOKEN=<?php 
-                e($data['YIOOP_TOKEN']); ?>&a=manageMachines<?php 
+        <p>[<a href="?c=admin&amp;<?php 
+                e(CSRF_TOKEN."=".$data[CSRF_TOKEN]);?>&amp;a=manageMachines<?php
                 e($data['REFRESH_LOG']); ?>"><?php 
                 e(tl('machinelog_element_refresh_on')); ?></a>]</p>
         <?php } ?>
@@ -80,8 +80,8 @@ class MachinelogElement extends Element
         var updateId;
         function logUpdate()
         {
-            var refreshUrl= "?c=admin&YIOOP_TOKEN=<?php 
-                e($data['YIOOP_TOKEN']); ?>&a=manageMachines<?php 
+            var refreshUrl= "?c=admin&<?php 
+                e(CSRF_TOKEN."=".$data[CSRF_TOKEN]);?>&a=manageMachines<?php
                 e($data['REFRESH_LOG'].""); ?>";
             document.location = refreshUrl;
         }

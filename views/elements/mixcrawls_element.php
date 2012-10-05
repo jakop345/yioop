@@ -53,15 +53,15 @@ class MixcrawlsElement extends Element
      */
     public function render($data) 
     {
-        $base_url = "?c=admin&a=mixCrawls&YIOOP_TOKEN=".
-            $data['YIOOP_TOKEN']."&arg=";
+        $base_url = "?c=admin&amp;a=mixCrawls&amp;".CSRF_TOKEN."=".
+            $data[CSRF_TOKEN]."&amp;arg=";
         ?>
         <div class="currentactivity">
         <h2><?php e(tl('mixcrawls_element_make_mix'))?></h2>
         <form id="mixForm" method="get" action=''>
         <input type="hidden" name="c" value="admin" /> 
-        <input type="hidden" name="YIOOP_TOKEN" value="<?php 
-            e($data['YIOOP_TOKEN']); ?>" /> 
+        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php 
+            e($data[CSRF_TOKEN]); ?>" /> 
         <input type="hidden" name="a" value="mixCrawls" />
         <input type="hidden" name="arg" value="createmix" />
         <?php if(isset($data['available_mixes'])) { ?>

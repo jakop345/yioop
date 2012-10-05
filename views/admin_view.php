@@ -83,8 +83,8 @@ class AdminView extends View
 
         ?>
 
-        <h1 class="admin-heading logo"><a href="./?YIOOP_TOKEN=<?php 
-            e($data['YIOOP_TOKEN'])?>"><img 
+        <h1 class="admin-heading logo"><a href="./?<?php 
+            e(CSRF_TOKEN."=".$data[CSRF_TOKEN]); ?>"><img 
             src="<?php e($logo); ?>" alt="Yioop!" /></a><span> - <?php 
         e(tl('admin_view_admin')); 
         if(!MOBILE) {e(' ['.$data['CURRENT_ACTIVITY'].']');}?></span></h1>

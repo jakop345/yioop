@@ -171,7 +171,7 @@ class SearchController extends Controller implements CrawlConstants
 
         if(isset($_SESSION['USER_ID'])) {
             $user = $_SESSION['USER_ID'];
-            $token_okay = $this->checkCSRFToken('YIOOP_TOKEN', $user);
+            $token_okay = $this->checkCSRFToken(CSRF_TOKEN, $user);
             if($token_okay === false) {
                 unset($_SESSION['USER_ID']);
                 $user = $_SERVER['REMOTE_ADDR'];
@@ -358,7 +358,7 @@ class SearchController extends Controller implements CrawlConstants
             $data["SUBSEARCH"] = $this->subsearch_name;
         }
         $data["HAS_STATISTICS"] = file_exists($stats_file);
-        $data['YIOOP_TOKEN'] = $this->generateCSRFToken($user);
+        $data[CSRF_TOKEN] = $this->generateCSRFToken($user);
         if($view == "search" && $raw == 0 && isset($data['PAGES'])) {
             $data['PAGES'] = $this->makeMediaGroups($data['PAGES']);
         }

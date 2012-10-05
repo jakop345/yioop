@@ -40,7 +40,6 @@ require_once BASE_DIR."/lib/crawl_constants.php";
 /** Need get host for search filter admin */
 require_once BASE_DIR."/lib/url_parser.php";
 
-
 /**
  * Controller used to handle admin functionalities such as
  * modify login and password, CREATE, UPDATE,DELETE operations
@@ -109,8 +108,8 @@ class AdminController extends Controller implements CrawlConstants
             $user = $_SERVER['REMOTE_ADDR']; 
         }
 
-        $data['YIOOP_TOKEN'] = $this->generateCSRFToken($user);
-        $token_okay = $this->checkCSRFToken('YIOOP_TOKEN', $user);
+        $data[CSRF_TOKEN] = $this->generateCSRFToken($user);
+        $token_okay = $this->checkCSRFToken(CSRF_TOKEN, $user);
 
         if($token_okay) {
             if(isset($_SESSION['USER_ID']) && !isset($_REQUEST['u'])) {
@@ -128,7 +127,7 @@ class AdminController extends Controller implements CrawlConstants
                     $_SESSION = $session;
                 }
                 $_SESSION['USER_ID'] = $user_id;
-                $data['YIOOP_TOKEN'] = $this->generateCSRFToken(
+                $data[CSRF_TOKEN] = $this->generateCSRFToken(
                     $_SESSION['USER_ID']); 
                     // now don't want to use remote address anymore
                 $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
@@ -140,7 +139,7 @@ class AdminController extends Controller implements CrawlConstants
                     tl('admin_controller_login_failed')."</h1>')";
                 unset($_SESSION['USER_ID']);
              }
-        } else if($this->checkCSRFToken('YIOOP_TOKEN', "config")) {
+        } else if($this->checkCSRFToken(CSRF_TOKEN, "config")) {
             $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
                 tl('admin_controller_login_to_config')."</h1>')";
         } else if(isset($_REQUEST['a']) && 
@@ -161,7 +160,7 @@ class AdminController extends Controller implements CrawlConstants
     function configureRequest()
     {
         $data = $this->processSession();
-        $data['YIOOP_TOKEN'] = $this->generateCSRFToken("config");
+        $data[CSRF_TOKEN] = $this->generateCSRFToken("config");
         $this->displayView("admin", $data);
     }
 
@@ -2204,7 +2203,7 @@ class AdminController extends Controller implements CrawlConstants
             if(isset($data["SEARCH_LISTS"][$search['INDEX_IDENTIFIER']])) {
                 $data["SUBSEARCHES"][] = $search;
             } else {
-           //     $this->sourceModel->deleteSubsearch($search["FOLDER_NAME"]);
+                $this->sourceModel->deleteSubsearch($search["FOLDER_NAME"]);
             }
         }
         $data['SCRIPT'] .= "source_type = elt('source-type');".
@@ -2465,8 +2464,8 @@ class AdminController extends Controller implements CrawlConstants
                             $profile['DEBUG_LEVEL']) {
                             $data['SCRIPT'] .= 
                                 "setTimeout('window.location.href=\"".
-                                "?c=admin&a=configure&YIOOP_TOKEN=".
-                                $_REQUEST['YIOOP_TOKEN']."\"', 3*sec);";
+                                "?c=admin&amp;a=configure&amp;".CSRF_TOKEN."=".
+                                $_REQUEST[CSRF_TOKEN]."\"', 3*sec);";
                         }
                 } else {
                     $data['PROFILE'] = false;

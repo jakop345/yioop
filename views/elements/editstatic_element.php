@@ -59,15 +59,15 @@ class EditstaticElement extends Element
     ?>
         <div class="currentactivity">
         <div class="<?php e($data['leftorright']);?>">
-        <a href="?c=admin&amp;a=manageLocales&amp;YIOOP_TOKEN=<?php 
-            e($data['YIOOP_TOKEN']) ?>&selectlocale=<?php 
+        <a href="?c=admin&amp;a=manageLocales&amp;<?php 
+            e(CSRF_TOKEN."=".$data[CSRF_TOKEN]) ?>&amp;selectlocale=<?php 
             e($data['CURRENT_LOCALE_TAG']) ?>&amp;arg=editlocale"
         ><?php e(tl('editlocales_element_back_to_manage'))?></a>
         </div>
         <form id="editstaticForm" method="post" action=''>
             <input type="hidden" name="c" value="admin" />
-            <input type="hidden" name="YIOOP_TOKEN" value="<?php 
-                e($data['YIOOP_TOKEN']); ?>" />
+            <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php 
+                e($data[CSRF_TOKEN]); ?>" />
             <input type="hidden" name="a" value="manageLocales" />
             <input type="hidden" name="arg" value="editlocale" />
             <input type="hidden" name="selectlocale" value="<?php 

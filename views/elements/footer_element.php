@@ -48,7 +48,8 @@ class FooterElement extends Element
     /**
      *  Element used to render the login screen for the admin control panel
      *
-     *  @param array $data makes use of the YIOOP_TOKEN for anti CSRF attacks
+     *  @param array $data many data from the controller for the footer
+     *      (so far none)
      */
     public function render($data)
     {

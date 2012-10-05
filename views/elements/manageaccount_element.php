@@ -57,8 +57,8 @@ class ManageaccountElement extends Element
             <h2><?php e(tl('manageaccount_element_change_password'))?></h2>
             <form id="changePasswordForm" method="post" action=''>
             <input type="hidden" name="c" value="admin" />
-            <input type="hidden" name="YIOOP_TOKEN" value="<?php 
-                e($data['YIOOP_TOKEN']); ?>" /> 
+            <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php 
+                e($data[CSRF_TOKEN]); ?>" /> 
             <input type="hidden" name="a" value="manageAccount" />
             <input type="hidden" name="arg" value="changepassword" />
 

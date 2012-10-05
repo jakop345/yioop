@@ -59,8 +59,8 @@ class ManagemachinesElement extends Element
         <h2><?php e(tl('managemachines_element_add_machine'))?></h2>
         <form id="addMachineForm" method="post" action=''>
         <input type="hidden" name="c" value="admin" /> 
-        <input type="hidden" name="YIOOP_TOKEN" value="<?php 
-            e($data['YIOOP_TOKEN']); ?>" /> 
+        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php 
+            e($data[CSRF_TOKEN]); ?>" /> 
         <input type="hidden" name="a" value="manageMachines" />
         <input type="hidden" name="arg" value="addmachine" />
 
@@ -106,8 +106,8 @@ class ManagemachinesElement extends Element
         <h2><?php e(tl('managemachines_element_delete_machine'))?></h2>
         <form id="deleteMachineForm" method="post" action=''>
         <input type="hidden" name="c" value="admin" /> 
-        <input type="hidden" name="YIOOP_TOKEN" value="<?php 
-            e($data['YIOOP_TOKEN']); ?>" />
+        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php 
+            e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="manageMachines" /> 
         <input type="hidden" name="arg" value="deletemachine" />
         <table class="nametable">
@@ -132,8 +132,8 @@ class ManagemachinesElement extends Element
         var updateId;
         function machineStatusUpdate()
         {
-            var startUrl = "?c=admin&YIOOP_TOKEN=<?php 
-                e($data['YIOOP_TOKEN']); ?>&a=machineStatus";
+            var startUrl = "?c=admin&<?php 
+                e(CSRF_TOKEN."=".$data[CSRF_TOKEN]); ?>&a=machineStatus";
             var machineTag = elt('machinestatus');
             getPage(machineTag, startUrl);
         }

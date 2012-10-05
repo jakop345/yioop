@@ -64,7 +64,7 @@ class SettingsView extends View
     /**
      * sDraws the web page on which users can control their search settings.
      *
-     * @param array $data   contains anti CSRF token YIOOP_TOKEN, as well
+     * @param array $data   contains anti CSRF token as well
      *      the language info and the current and possible per page settings
      */
     public function renderView($data) {
@@ -74,8 +74,8 @@ class SettingsView extends View
     }
 ?>
 <div class="landing non-search">
-<h1 class="logo"><a href="./?YIOOP_TOKEN=<?php 
-    e($data['YIOOP_TOKEN'])?>&amp;its=<?php 
+<h1 class="logo"><a href="./?<?php 
+    e(CSRF_TOKEN."=".$data[CSRF_TOKEN])?>&amp;its=<?php 
     e($data['its'])?>"><img 
     src="<?php e($logo); ?>" alt="Yioop!" /></a><span> - <?php 
     e(tl('settings_view_settings')); ?></span></h1>
@@ -98,8 +98,8 @@ class SettingsView extends View
     class="table-input"><?php $this->optionsHelper->render(
     "index-ts", "index_ts", $data['CRAWLS'], $data['its']); ?>
 </td></tr>
-<tr><td><input type="hidden" name="YIOOP_TOKEN" value="<?php 
-    e($data['YIOOP_TOKEN']); ?>" /><input type="hidden" 
+<tr><td><input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php 
+    e($data[CSRF_TOKEN]); ?>" /><input type="hidden" 
     name="its" value="<?php e($data['its']); ?>" /><button 
     class="topmargin" type="submit" name="c" value="search"><?php 
     e(tl('settings_view_return_yioop')); 

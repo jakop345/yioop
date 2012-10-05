@@ -63,7 +63,7 @@ class StaticView extends View
     /**
      *  Draws the login web page.
      *
-     *  @param array $data  contains the anti CSRF token YIOOP_TOKEN
+     *  @param array $data  contains the static page contents
      *  the view
      */
     function renderView($data) {

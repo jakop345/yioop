@@ -239,7 +239,7 @@ class SourceModel extends Model
             "'$locale_string'";
         $result = $this->db->execute($sql);
         if(isset($result)) {
-            $row = $db->fetchArray($result);
+            $row = $this->db->fetchArray($result);
             if(isset($row["TRANSLATION_ID"])) {
                 $translation_id = $row["TRANSLATION_ID"];
                 $sql = "DELETE FROM TRANSLATION_LOCALE WHERE ".

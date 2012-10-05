@@ -61,8 +61,8 @@ class ResultsEditorElement extends Element
         <div  class="topmargin"><b><label for="edited-result-pages"><?php 
             e(tl('resultseditor_element_edited_pages'))?></label>
         <input type="hidden" name="c" value="admin" /> 
-        <input type="hidden" name="YIOOP_TOKEN" value="<?php 
-            e($data['YIOOP_TOKEN']); ?>" />
+        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php 
+            e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="resultsEditor" /> 
         <input type="hidden" name="arg" value="load_url" />
         <?php $this->view->optionsHelper->render(
@@ -76,8 +76,8 @@ class ResultsEditorElement extends Element
         </form>
 
         <form id="urlUpdateForm" method="post" 
-            action='?c=admin&amp;a=resultsEditor&amp;YIOOP_TOKEN=<?php 
-            e($data['YIOOP_TOKEN']); ?>' >
+            action='?c=admin&amp;a=resultsEditor&amp;<?php 
+            e(CSRF_TOKEN."=".$data[CSRF_TOKEN]); ?>' >
         <div  class="topmargin">
         <input type="hidden" name="arg" value="save_page" />
         <b><label for="urlfield"><?php 
@@ -109,8 +109,8 @@ class ResultsEditorElement extends Element
         <h2><?php e(tl('resultseditor_element_filter_websites'))?></h2>
         <form id="searchfiltersForm" method="post" action='?'>
         <input type="hidden" name="c" value="admin" />
-        <input type="hidden" name="YIOOP_TOKEN" value="<?php 
-            e($data['YIOOP_TOKEN']); ?>" />
+        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php 
+            e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="resultsEditor" />
         <input type="hidden" name="arg" value="urlfilter" />
         <input type="hidden" name="posted" value="posted" />

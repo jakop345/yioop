@@ -58,8 +58,8 @@ class CrawloptionsElement extends Element
     ?>
         <div class="currentactivity">
         <div class="<?php e($data['leftorright']);?>">
-        <a href="?c=admin&amp;a=manageCrawls&amp;YIOOP_TOKEN=<?php 
-            e($data['YIOOP_TOKEN']) ?>"
+        <a href="?c=admin&amp;a=manageCrawls&amp;<?php 
+            e(CSRF_TOKEN."=".$data[CSRF_TOKEN]) ?>"
         ><?php e(tl('crawloptions_element_back_to_manage'))?></a>
         </div>
         <?php if(isset($data['ts'])) { ?>
@@ -69,8 +69,8 @@ class CrawloptionsElement extends Element
         <?php } ?>
         <form id="crawloptionsForm" method="post" action='?'>
         <input type="hidden" name="c" value="admin" />
-        <input type="hidden" name="YIOOP_TOKEN" value="<?php 
-            e($data['YIOOP_TOKEN']); ?>" />
+        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php 
+            e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="manageCrawls" />
         <input type="hidden" name="arg" value="options" />
         <input type="hidden" name="posted" value="posted" />

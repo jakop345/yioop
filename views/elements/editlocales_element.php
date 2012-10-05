@@ -58,8 +58,8 @@ class EditlocalesElement extends Element
     ?>
         <div class="currentactivity">
         <div class="<?php e($data['leftorright']);?>">
-        <a href="?c=admin&amp;a=manageLocales&amp;YIOOP_TOKEN=<?php 
-            e($data['YIOOP_TOKEN']) ?>"
+        <a href="?c=admin&amp;a=manageLocales&amp;<?php 
+            e(CSRF_TOKEN."=".$data[CSRF_TOKEN]) ?>"
         ><?php e(tl('editlocales_element_back_to_manage'))?></a>
         </div>
         <h2><?php e(tl('editlocales_element_edit_locale', 
@@ -67,8 +67,8 @@ class EditlocalesElement extends Element
         <?php if(count($data['STATIC_PAGES']) > 1) {?>
         <form id="staticPageForm" method="post" action='?'>
         <input type="hidden" name="c" value="admin" />
-        <input type="hidden" name="YIOOP_TOKEN" value="<?php 
-            e($data['YIOOP_TOKEN']); ?>" />
+        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php 
+            e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="manageLocales" />
         <input type="hidden" name="arg" value="editlocale" />
         <input type="hidden" name="selectlocale" value="<?php 
@@ -82,8 +82,8 @@ class EditlocalesElement extends Element
         <?php }?>
         <form id="editLocaleForm" method="post" action='?'>
         <input type="hidden" name="c" value="admin" />
-        <input type="hidden" name="YIOOP_TOKEN" value="<?php 
-            e($data['YIOOP_TOKEN']); ?>" />
+        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php 
+            e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="manageLocales" />
         <input type="hidden" name="arg" value="editlocale" />
         <input type="hidden" name="selectlocale" value="<?php 

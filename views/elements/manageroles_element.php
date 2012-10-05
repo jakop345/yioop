@@ -58,8 +58,8 @@ class ManagerolesElement extends Element
         <h2><?php e(tl('manageroles_element_add_role'))?></h2>
         <form id="addRoleForm" method="post" action='#'>
         <input type="hidden" name="c" value="admin" /> 
-        <input type="hidden" name="YIOOP_TOKEN" value="<?php 
-            e($data['YIOOP_TOKEN']); ?>" /> 
+        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php 
+            e($data[CSRF_TOKEN]); ?>" /> 
         <input type="hidden" name="a" value="manageRoles" />
         <input type="hidden" name="arg" value="addrole" />
 
@@ -77,8 +77,8 @@ class ManagerolesElement extends Element
         <h2><?php e(tl('manageroles_element_delete_role'))?></h2>
         <form id="deleteRoleForm" method="post" action='#'>
         <input type="hidden" name="c" value="admin" /> 
-        <input type="hidden" name="YIOOP_TOKEN" value="<?php 
-            e($data['YIOOP_TOKEN']); ?>" />
+        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php 
+            e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="manageRoles" /> 
         <input type="hidden" name="arg" value="deleterole" />
 
@@ -95,8 +95,8 @@ class ManagerolesElement extends Element
         <h2><?php e(tl('manageroles_element_view_role_activities'))?></h2>
         <form id="viewRoleActivityForm" method="get" action='#' >
         <input type="hidden" name="c" value="admin" /> 
-        <input type="hidden" name="YIOOP_TOKEN" value="<?php 
-            e($data['YIOOP_TOKEN']); ?>" /> 
+        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php 
+            e($data[CSRF_TOKEN]); ?>" /> 
         <input type="hidden" name="a" value="manageRoles" /> 
         <input type="hidden" name="arg" value="viewroleactivities" />
         <table class="nametable">
@@ -113,8 +113,8 @@ class ManagerolesElement extends Element
                 $data['SELECT_ROLE'] != -1) { ?>
                 <form id="addRoleActivityForm" method="get" action='#' >
                 <input type="hidden" name="c" value="admin" /> 
-                <input type="hidden" name="YIOOP_TOKEN" value="<?php 
-                    e($data['YIOOP_TOKEN']); ?>" />
+                <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
+                    e($data[CSRF_TOKEN]); ?>" />
                 <input type="hidden" name="a" value="manageRoles" /> 
                 <input type="hidden" name="arg" value="addactivity" />
                 <input type="hidden" name="selectrole" value="<?php 
@@ -139,7 +139,7 @@ class ManagerolesElement extends Element
                     "&amp;arg=deleteactivity&amp;selectrole=".
                     $role_activity['ROLE_ID'].
                     "&amp;selectactivity=".$role_activity['ACTIVITY_ID'].
-                    "&amp;YIOOP_TOKEN=".$data['YIOOP_TOKEN'].
+                    "&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
                     "'>Delete</a></td>");
              }
              ?>

@@ -57,8 +57,8 @@ class SigninElement extends Element
         <ul>
         <?php
         if(WEB_ACCESS) {
-            ?>    <li><a href="./?c=settings&amp;YIOOP_TOKEN=<?php 
-                e($data['YIOOP_TOKEN'])?>&amp;l=<?php
+            ?>    <li><a href="./?c=settings&amp;<?php
+                e(CSRF_TOKEN."=".$data[CSRF_TOKEN])?>&amp;l=<?php
                 e(getLocaleTag()); 
                 e((isset($data['its'])) ? '&amp;its='.$data['its'] : '');
                 ?>"><?php 
@@ -69,8 +69,8 @@ class SigninElement extends Element
                 ?><li><a href="./?c=admin"><?php 
                     e(tl('signin_element_signin')); ?></a></li><?php 
             } else {
-                ?><li><a href="./?c=admin&amp;YIOOP_TOKEN=<?php 
-                    e($data['YIOOP_TOKEN'])?>"><?php 
+                ?><li><a href="./?c=admin&amp;<?php
+                e(CSRF_TOKEN."=".$data[CSRF_TOKEN])?>"><?php 
                         e(tl('signin_element_admin')); ?></a></li><?php
                 ?><li><a href="./?c=search&amp;a=signout"><?php 
                     e(tl('signin_element_signout')); ?></a></li>

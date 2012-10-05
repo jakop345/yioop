@@ -79,8 +79,8 @@ class SettingsController extends Controller
             $user = $_SERVER['REMOTE_ADDR']; 
         }
 
-        $data['YIOOP_TOKEN'] = $this->generateCSRFToken($user);
-        $token_okay = $this->checkCSRFToken('YIOOP_TOKEN', $user);
+        $data[CSRF_TOKEN] = $this->generateCSRFToken($user);
+        $token_okay = $this->checkCSRFToken(CSRF_TOKEN, $user);
 
         $languages = $this->localeModel->getLocaleList();
         foreach($languages as $language) {

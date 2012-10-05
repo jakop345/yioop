@@ -61,8 +61,8 @@ class PageOptionsElement extends Element
         <form id="pageoptionsForm" method="get" action='?'>
         <h2><?php e(tl('pageoptions_element_crawl_time'))?></h2>
         <input type="hidden" name="c" value="admin" />
-        <input type="hidden" name="YIOOP_TOKEN" value="<?php 
-            e($data['YIOOP_TOKEN']); ?>" />
+        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php 
+            e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="pageOptions" />
         <div class="topmargin"><b><label for="page-range-request"><?php 
             e(tl('pageoptions_element_page_range'))?></label></b>

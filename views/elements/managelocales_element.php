@@ -60,8 +60,8 @@ class ManagelocalesElement extends Element
         <h2><?php e(tl('managelocales_element_add_locale'))?></h2>
         <form id="addLocaleForm" method="post" action=''>
         <input type="hidden" name="c" value="admin" />
-        <input type="hidden" name="YIOOP_TOKEN" value="<?php 
-            e($data['YIOOP_TOKEN']); ?>" />
+        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php 
+            e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="manageLocales" />
         <input type="hidden" name="arg" value="addlocale" />
 
@@ -99,8 +99,8 @@ class ManagelocalesElement extends Element
         <h2><?php e(tl('managelocales_element_delete_locale'))?></h2>
         <form id="deleteLocaleForm" method="post" action=''>
         <input type="hidden" name="c" value="admin" />
-        <input type="hidden" name="YIOOP_TOKEN" value="<?php 
-            e($data['YIOOP_TOKEN']); ?>" />
+        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php 
+            e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="manageLocales" />
         <input type="hidden" name="arg" value="deletelocale" />
 
@@ -128,7 +128,7 @@ class ManagelocalesElement extends Element
         foreach($data['LOCALES'] as $locale) {
             e("<tr><td><a href='?c=admin&amp;a=manageLocales".
                 "&amp;arg=editlocale&amp;selectlocale=".$locale['LOCALE_TAG'].
-                "&amp;YIOOP_TOKEN=".$data['YIOOP_TOKEN']."'>".
+                "&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN]."'>".
                 $locale['LOCALE_NAME']."</a></td><td>".
                 $locale['LOCALE_TAG']."</td>");
             e("<td>".$locale['WRITING_MODE']."</td><td class='alignRight' >".

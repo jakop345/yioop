@@ -63,7 +63,7 @@ class ActivityElement extends Element
             $activities = $data['ACTIVITIES'];
             if(MOBILE) {
                 $out_activities = array();
-                $base_url = "?c=admin&amp;YIOOP_TOKEN=".$data['YIOOP_TOKEN'].
+                $base_url = "?c=admin&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
                     "&amp;a=";
                 $current = "";
                 foreach($activities as $activity) {
@@ -94,8 +94,8 @@ class ActivityElement extends Element
                     } else {
                         $class="";
                     }
-                    e("<li $class><a href='?c=admin&amp;YIOOP_TOKEN=".
-                        $data['YIOOP_TOKEN']."&amp;a=".
+                    e("<li $class><a href='?c=admin&amp;".CSRF_TOKEN."=".
+                        $data[CSRF_TOKEN]."&amp;a=".
                         $activities[$i]['METHOD_NAME']."'>".
                         $activities[$i]['ACTIVITY_NAME']."</a></li>");
                 }

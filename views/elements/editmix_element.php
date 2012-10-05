@@ -54,15 +54,15 @@ class EditmixElement extends Element
     {?>
         <div class="currentactivity">
         <div class="<?php e($data['leftorright']);?>">
-        <a href="?c=admin&amp;a=mixCrawls&amp;YIOOP_TOKEN=<?php 
-            e($data['YIOOP_TOKEN']) ?>"
+        <a href="?c=admin&amp;a=mixCrawls&amp;<?php
+            e(CSRF_TOKEN."=".$data[CSRF_TOKEN]); ?>"
         ><?php e(tl('editmix_element_back_to_mix'))?></a>
         </div>
         <h2><?php e(tl('mixcrawls_element_edit_mix'))?></h2>
         <form id="mixForm" method="get" action=''>
         <input type="hidden" name="c" value="admin" /> 
-        <input type="hidden" name="YIOOP_TOKEN" value="<?php 
-            e($data['YIOOP_TOKEN']); ?>" /> 
+        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php 
+            e($data[CSRF_TOKEN]); ?>" /> 
         <input type="hidden" name="a" value="mixCrawls" />
         <input type="hidden" name="arg" value="editmix" />
         <input type="hidden" name="update" value="update" />

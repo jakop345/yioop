@@ -46,7 +46,7 @@ class SubsearchElement extends Element
     /**
      *  Method responsible for drawing links to common subsearches
      *
-     *  @param array $data makes use of the YIOOP_TOKEN for anti CSRF attacks
+     *  @param array $data makes use of the CSRF token for anti CSRF attacks
      */
     public function render($data)
     {
@@ -103,9 +103,9 @@ class SubsearchElement extends Element
                             "{$search['SUBSEARCH_NAME']}</b></li>");
                     } else {
                         $query = "";
-                        if(isset($data['YIOOP_TOKEN'])) {
-                            $query .= $delim.
-                                "YIOOP_TOKEN={$data['YIOOP_TOKEN']}".
+                        if(isset($data[CSRF_TOKEN])) {
+                            $query .= $delim.CSRF_TOKEN.
+                                "=".$data[CSRF_TOKEN].
                                 "&amp;c=search";
                             if(isset($data['QUERY']) && 
                                 !isset($data['NO_QUERY'])) {

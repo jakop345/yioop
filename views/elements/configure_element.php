@@ -70,8 +70,8 @@ class ConfigureElement extends Element
     ?>
         <div class="currentactivity">
         <form id="configureDirectoryForm" method="post" 
-            action='?c=admin&amp;a=configure&amp;YIOOP_TOKEN=<?php 
-            e($data['YIOOP_TOKEN']); ?>' >
+            action='?c=admin&amp;a=configure&amp;<?php 
+            e(CSRF_TOKEN."=".$data[CSRF_TOKEN]); ?>' >
         <?php if(isset($data['lang'])) { ?>
             <input type="hidden" name="lang" value="<?php 
                 e($data['lang']); ?>" />
@@ -93,8 +93,8 @@ class ConfigureElement extends Element
                 e($data['WORK_DIRECTORY']); ?>" />
         <?php }?>
         <input type="hidden" name="c" value="admin" />
-        <input type="hidden" name="YIOOP_TOKEN" value="<?php 
-            e($data['YIOOP_TOKEN']); ?>" />
+        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php 
+            e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="configure" />
         <input type="hidden" name="arg" value="profile" />
         <h2><?php e(tl('configure_element_component_check'))?></h2>

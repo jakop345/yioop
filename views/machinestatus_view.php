@@ -60,8 +60,8 @@ class MachinestatusView extends View
      */
     public function renderView($data) 
     {
-        $base_url = "?c=admin&a=manageMachines&YIOOP_TOKEN=".
-            $data['YIOOP_TOKEN']."&arg=";
+        $base_url = "?c=admin&amp;a=manageMachines&amp;".CSRF_TOKEN."=".
+            $data[CSRF_TOKEN]."&amp;arg=";
         if(count($data['MACHINES']) == 0) {
             e(tl('machinestatus_view_no_monitored'));
         } else {
@@ -69,14 +69,14 @@ class MachinestatusView extends View
             <div class="box">
             <h3 class="nomargin"><?php e($m['NAME']);?></h3>
             <p><?php e($m['URL']);
-                $on_queue_server = $base_url . "update&name={$m['NAME']}".
-                    "&action=start";
-                $off_queue_server = $base_url . "update&name={$m['NAME']}".
-                    "&action=stop";
-                $on_mirror = $base_url . "update&name={$m['NAME']}".
-                    "&action=mirror_start";
-                $off_mirror = $base_url . "update&name={$m['NAME']}".
-                    "&action=mirror_stop";
+                $on_queue_server = $base_url . "update&amp;name={$m['NAME']}".
+                    "&amp;action=start";
+                $off_queue_server = $base_url . "update&amp;name={$m['NAME']}".
+                    "&amp;action=stop";
+                $on_mirror = $base_url . "update&amp;name={$m['NAME']}".
+                    "&amp;action=mirror_start";
+                $off_mirror = $base_url . "update&amp;name={$m['NAME']}".
+                    "&amp;action=mirror_stop";
             ?></p>
             <?php if($m['PARENT'] != "") {
                 $log_url = $base_url . "log&mirror_name={$m['NAME']}"
@@ -115,10 +115,10 @@ class MachinestatusView extends View
                 e("<h3>".tl('machinestatus_view_no_fetchers')."</h3>");
             } else {
             for($i = 0; $i < $m['NUM_FETCHERS']; $i++) {
-                $on_fetcher = $base_url . "update&name={$m['NAME']}".
-                    "&action=start&fetcher_num=$i";
-                $off_fetcher = $base_url . "update&name={$m['NAME']}".
-                    "&action=stop&fetcher_num=$i";
+                $on_fetcher = $base_url . "update&amp;name={$m['NAME']}".
+                    "&amp;action=start&amp;fetcher_num=$i";
+                $off_fetcher = $base_url . "update&amp;name={$m['NAME']}".
+                    "&amp;action=stop&amp;fetcher_num=$i";
                 if($i  == 0) { ?>
                     <table class="machinetable">
                     <th colspan="<?php e(min($m['NUM_FETCHERS'] - $i, 4)); ?>"
@@ -128,7 +128,8 @@ class MachinestatusView extends View
                     <table class="machinetable"><tr>
                 <?php } ?>
                 <td><table><tr><td>#<?php 
-                $log_url = $base_url . "log&name={$m['NAME']}&fetcher_num=$i";
+                $log_url = $base_url . 
+                    "log&amp;name={$m['NAME']}&amp;fetcher_num=$i";
                 if($i <10){e("0");} e($i); 
                 ?>[<a href="<?php e($log_url);?>"><?php 
                     e(tl('machinestatus_view_log'));?></a>]</td>

@@ -53,17 +53,17 @@ class SearchsourcesElement extends Element
      */
     public function render($data) 
     {
-        $pre_base_url = "?YIOOP_TOKEN=".$data['YIOOP_TOKEN']."&c=admin";
-        $base_url = $pre_base_url . "&a=searchSources";
-        $localize_url = $pre_base_url . "&a=manageLocales".
-            "&arg=editlocale&selectlocale=".$data['LOCALE_TAG'];
+        $pre_base_url = "?".CSRF_TOKEN."=".$data[CSRF_TOKEN]."&amp;c=admin";
+        $base_url = $pre_base_url . "&amp;a=searchSources";
+        $localize_url = $pre_base_url . "&amp;a=manageLocales".
+            "&amp;arg=editlocale&amp;selectlocale=".$data['LOCALE_TAG'];
     ?>
         <div class="currentactivity">
         <h2><?php e(tl('searchsources_element_add_media_source'))?></h2>
         <form id="addSearchSourceForm" method="post" action='#'>
         <input type="hidden" name="c" value="admin" /> 
-        <input type="hidden" name="YIOOP_TOKEN" value="<?php 
-            e($data['YIOOP_TOKEN']); ?>" /> 
+        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php 
+            e($data[CSRF_TOKEN]); ?>" /> 
         <input type="hidden" name="a" value="searchSources" />
         <input type="hidden" name="arg" value="addsource" />
         <table class="nametable">
@@ -116,8 +116,8 @@ class SearchsourcesElement extends Element
         <h2><?php e(tl('searchsources_element_add_subsearch'))?></h2>
         <form id="addSearchSourceForm" method="post" action='#'>
         <input type="hidden" name="c" value="admin" /> 
-        <input type="hidden" name="YIOOP_TOKEN" value="<?php 
-            e($data['YIOOP_TOKEN']); ?>" /> 
+        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php 
+            e($data[CSRF_TOKEN]); ?>" /> 
         <input type="hidden" name="a" value="searchSources" />
         <input type="hidden" name="arg" value="addsubsearch" />
         <table class="nametable">
@@ -164,7 +164,7 @@ class SearchsourcesElement extends Element
                 ?>' ><?php 
                 e(tl('searchsources_element_localize')); 
                 ?></a></td>
-            <td><a href="<?php e($base_url.'&arg=deletesubsearch&fn='.
+            <td><a href="<?php e($base_url.'&amp;arg=deletesubsearch&amp;fn='.
                 $search['FOLDER_NAME']); ?>"><?php 
                 e(tl('searchsources_element_deletesubsearch')); 
             ?></a></td>

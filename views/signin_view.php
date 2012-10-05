@@ -53,7 +53,7 @@ class SigninView extends View
     /**
      *  Draws the login web page.
      *
-     *  @param array $data  contains the anti CSRF token YIOOP_TOKEN
+     *  @param array $data  contains the anti CSRF token 
      *  the view
      */
     public function renderView($data) {
@@ -63,8 +63,8 @@ class SigninView extends View
     }
 ?>
 <div class="landing non-search">
-<h1 class="logo"><a href="./?YIOOP_TOKEN=<?php 
-    e($data['YIOOP_TOKEN'])?>"><img src="<?php e($logo); ?>" alt="Yioop!" 
+<h1 class="logo"><a href="./?<?php e(CSRF_TOKEN."=".$data[CSRF_TOKEN])
+        ?>"><img src="<?php e($logo); ?>" alt="Yioop!" 
         /></a><span> - <?php e(tl('signin_view_signin')); ?></span></h1>
 <form class="user_settings" method="post" action="#">
 <div class="login">
@@ -80,8 +80,8 @@ class SigninView extends View
         e(tl('signin_view_password')); ?></label>:</b></td><td 
         class="table-input"><input id="password" type="password" 
         class="narrowfield" maxlength="80" name="p" /></td>
-    <td><input type="hidden" name="YIOOP_TOKEN" value="<?php 
-        e($data['YIOOP_TOKEN']); ?>" />
+    <td><input type="hidden" name="<?php e(CSRF_TOKEN);?>" value="<?php 
+        e($data[CSRF_TOKEN]); ?>" />
     </td>
     </tr>
     <tr><td>&nbsp;</td><td class="center">

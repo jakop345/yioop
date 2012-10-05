@@ -65,12 +65,19 @@ if(!defined('WORK_DIRECTORY')) {
 your own risk, please use configure web page instead +++*/
 define('WORK_DIRECTORY', '');
 /*++++++*/
+// end machine edited code
 }
 
 define('APP_DIR', WORK_DIRECTORY."/app");
 define('PREP_DIR', WORK_DIRECTORY."/prepare");
 
 define('FALLBACK_LOCALE_DIR', BASE_DIR."/locale");
+
+/** name of the cookie used to manage the session 
+ * (store language and perpage settings), define CSRF token
+ */
+define ('SESSION_NAME', "yioopbiscuit");
+define('CSRF_TOKEN', "YIOOP_TOKEN");
 
 if(file_exists(WORK_DIRECTORY."/profile.php")) {
     require_once(WORK_DIRECTORY."/profile.php");
@@ -116,8 +123,6 @@ if(file_exists(WORK_DIRECTORY."/profile.php")) {
     define('LOG_DIR', BASE_DIR."/log");
     define('NAME_SERVER', "http://localhost/");
     define('USER_AGENT_SHORT', "NeedsNameBot");
-    /** @ignore */
-    define('SESSION_NAME', "yioopbiscuit");
     define('DEFAULT_LOCALE', "en-US");
     define('AUTH_KEY', 0);
     define('USE_MEMCACHE', false);
@@ -157,10 +162,7 @@ define('DISPLAY_TESTS', ((DEBUG_LEVEL & TEST_INFO) == TEST_INFO));
 /** if true query statistics are diplayed */
 define('QUERY_STATISTICS', ((DEBUG_LEVEL & QUERY_INFO) == QUERY_INFO));
 
-/** name of the cookie used to manage the session 
- * (store language and perpage settings)
- */
-define ('SESSION_NAME', "yioopbiscuit"); 
+
 //check if mobile css and formatting should be used or not
 if(isset($_SERVER['HTTP_USER_AGENT'])) {
     $agent = $_SERVER['HTTP_USER_AGENT'];

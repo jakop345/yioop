@@ -97,8 +97,8 @@ class SearchView extends View implements CrawlConstants
         }
         ?>
 
-        <h1 class="logo"><a href="./?YIOOP_TOKEN=<?php 
-            e($data['YIOOP_TOKEN'])?>"><img 
+        <h1 class="logo"><a href="./?<?php 
+            e(CSRF_TOKEN."=".$data[CSRF_TOKEN])?>"><img 
             src="<?php e($logo); ?>" alt="<?php e(tl('search_view_title'));
                  ?>"
             /></a>
@@ -118,8 +118,8 @@ class SearchView extends View implements CrawlConstants
             <input type="hidden" name="s" value="<?php 
                 e($data['SUBSEARCH']); ?>" />
             <?php } ?>
-            <input type="hidden" name="YIOOP_TOKEN" value="<?php 
-                e($data['YIOOP_TOKEN']); ?>" />
+            <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php 
+                e($data[CSRF_TOKEN]); ?>" />
             <input type="hidden" name="its" value="<?php e($data['its']); ?>" />
             <input type="text" <?php if(WORD_SUGGEST) { ?>
                 autocomplete="off"  onkeyup="onTypeTerm(event, this)"
@@ -185,7 +185,7 @@ class SearchView extends View implements CrawlConstants
                 <?php
                 $subsearch = (isset($data["SUBSEARCH"])) ? $data["SUBSEARCH"] :
                     "";
-                $base_query = "?YIOOP_TOKEN={$data['YIOOP_TOKEN']}".
+                $base_query = "?".CSRF_TOKEN."=".$data[CSRF_TOKEN].
                         "&amp;c=search";
                 if(isset($page['IMAGES'])) {
                     $this->imagesHelper->render($page['IMAGES'], 
@@ -238,7 +238,7 @@ class SearchView extends View implements CrawlConstants
                           in_array("NONE", $page[self::ROBOT_METAS])))) {
                         $aux_link_flag = true;
                     ?>
-                    <a href="?YIOOP_TOKEN=<?php e($data['YIOOP_TOKEN']);
+                    <a href="?<?php e(CSRF_TOKEN."=".$data[CSRF_TOKEN]);
                             ?>&amp;c=search&amp;a=cache&amp;q=<?php 
                             e($data['QUERY']); ?>&amp;arg=<?php 
                             e(urlencode($url)); 
@@ -258,7 +258,7 @@ class SearchView extends View implements CrawlConstants
                     if(SIMILAR_LINK) {
                         $aux_link_flag = true;
                     ?>
-                    <a href="?YIOOP_TOKEN=<?php e($data['YIOOP_TOKEN']);
+                    <a href="?<?php e(CSRF_TOKEN."=".$data[CSRF_TOKEN]);
                         ?>&amp;c=search&amp;a=related&amp;arg=<?php 
                         e(urlencode($url)); ?>&amp;<?php
                         ?>its=<?php e($page[self::CRAWL_TIME]); ?>" 
@@ -270,7 +270,7 @@ class SearchView extends View implements CrawlConstants
                     if(IN_LINK) {
                         $aux_link_flag = true;
                     ?>
-                    <a href="?YIOOP_TOKEN=<?php e($data['YIOOP_TOKEN']);
+                    <a href="?<?php e(CSRF_TOKEN."=".$data[CSRF_TOKEN]);
                         ?>&amp;c=search&amp;q=<?php 
                         e(urlencode("link:".$url)); ?>&amp;<?php
                         ?>its=<?php e($page[self::CRAWL_TIME]); ?>" 
@@ -282,7 +282,7 @@ class SearchView extends View implements CrawlConstants
                     if(IP_LINK && isset($page[self::IP_ADDRESSES])){
                     foreach($page[self::IP_ADDRESSES] as $address) {?>
 
-                    <a href="?YIOOP_TOKEN=<?php e($data['YIOOP_TOKEN']);
+                    <a href="?<?php e(CSRF_TOKEN."=".$data[CSRF_TOKEN]);
                             ?>&amp;c=search&amp;q=<?php
                             e(urlencode('ip:'.$address));?>&amp;<?php
                             ?>its=<?php e($data['its']); ?>" 
@@ -310,7 +310,8 @@ class SearchView extends View implements CrawlConstants
             <?php 
             } //end foreach
             $this->paginationHelper->render(
-                $data['PAGING_QUERY']."&amp;YIOOP_TOKEN=".$data['YIOOP_TOKEN'],
+                $data['PAGING_QUERY']."&amp;".CSRF_TOKEN."=".
+                    $data[CSRF_TOKEN],
                 $data['LIMIT'], $data['RESULTS_PER_PAGE'], $data['TOTAL_ROWS']);
             ?>
 
@@ -322,7 +323,7 @@ class SearchView extends View implements CrawlConstants
         <div class="landing-footer">
             <div><b><?php e($data['INDEX_INFO']);?></b> <?php
             if(isset($data["HAS_STATISTICS"]) && $data["HAS_STATISTICS"]) { 
-            ?>[<a href="index.php?YIOOP_TOKEN=<?php e($data['YIOOP_TOKEN']);
+            ?>[<a href="index.php?<?php e(CSRF_TOKEN."=".$data[CSRF_TOKEN]);
                 ?>&amp;c=statistics&amp;its=<?php e($data['its']);?>"><?php 
                 e(tl('search_view_more_statistics')); ?></a>]
             <?php 
