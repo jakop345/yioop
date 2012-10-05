@@ -230,7 +230,7 @@ function exist(trie_array, term)
         tmp = getUnicodeCharAndNextOffset(term, i);
         if(tmp == false) return false;
         next_char = tmp[0];
-        i = tmp[1]; 
+        i = tmp[1];
         enc_char = encode(next_char);
         trie_array = trie_array[enc_char];
         if(trie_array == null) {
@@ -291,7 +291,7 @@ function encode(str)
 {
     str = encodeURIComponent(str);
     str = str.replace(/\'/g, '%27'); // encodeURIComponent doesnt convert '
-    return str;    
+    return str;
 }
 
 /**
