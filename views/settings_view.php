@@ -83,6 +83,12 @@ class SettingsView extends View
 <form class="user_settings" method="get" action=".">
 <table>
 <tr>
+<td class="table-label"><label for="index-ts"><b><?php 
+    e(tl('settings_view_search_index')); ?></b></label></td><td 
+    class="table-input"><?php $this->optionsHelper->render(
+    "index-ts", "index_ts", $data['CRAWLS'], $data['its']); ?>
+</td></tr>
+<tr>
 <td class="table-label"><label for="per-page"><b><?php 
     e(tl('settings_view_results_per_page')); ?></b></label></td><td 
     class="table-input"><?php $this->optionsHelper->render(
@@ -92,12 +98,7 @@ class SettingsView extends View
     e(tl('settings_view_language_label')); ?></b></label></td><td 
     class="table-input"><?php $this->languageElement->render($data); ?>
 </td></tr>
-<tr>
-<td class="table-label"><label for="index-ts"><b><?php 
-    e(tl('settings_view_search_index')); ?></b></label></td><td 
-    class="table-input"><?php $this->optionsHelper->render(
-    "index-ts", "index_ts", $data['CRAWLS'], $data['its']); ?>
-</td></tr>
+
 <tr><td><input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php 
     e($data[CSRF_TOKEN]); ?>" /><input type="hidden" 
     name="its" value="<?php e($data['its']); ?>" /><button 
