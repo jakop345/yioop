@@ -82,17 +82,18 @@ class SettingsView extends View
 <div class="settings">
 <form class="user_settings" method="get" action=".">
 <table>
-<tr>
-<td class="table-label"><label for="index-ts"><b><?php 
-    e(tl('settings_view_search_index')); ?></b></label></td><td 
-    class="table-input"><?php $this->optionsHelper->render(
-    "index-ts", "index_ts", $data['CRAWLS'], $data['its']); ?>
-</td></tr>
+
 <tr>
 <td class="table-label"><label for="per-page"><b><?php 
     e(tl('settings_view_results_per_page')); ?></b></label></td><td 
     class="table-input"><?php $this->optionsHelper->render(
     "per-page", "perpage", $data['PER_PAGE'], $data['PER_PAGE_SELECTED']); ?>
+</td></tr>
+<tr>
+<td class="table-label"><label for="index-ts"><b><?php 
+    e(tl('settings_view_search_index')); ?></b></label></td><td 
+    class="table-input"><?php $this->optionsHelper->render(
+    "index-ts", "index_ts", $data['CRAWLS'], $data['its']); ?>
 </td></tr>
 <tr><td class="table-label"><label for="locale"><b><?php 
     e(tl('settings_view_language_label')); ?></b></label></td><td 
