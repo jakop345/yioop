@@ -87,7 +87,7 @@ class ConfigureElement extends Element
                     e(tl('configure_element_load_or_create')); ?></button>
         </div>
         </form>
-        <formid="configureProfileForm" method="post" action=''>
+        <form id="configureProfileForm" method="post" action=''>
         <?php if(isset($data['WORK_DIRECTORY'])) { ?>
             <input type="hidden" name="WORK_DIRECTORY" value="<?php 
                 e($data['WORK_DIRECTORY']); ?>" />
