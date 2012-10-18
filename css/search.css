@@ -208,6 +208,11 @@ p
     text-align:center;
 }
 
+.bold
+{
+    font-weight:bold;
+}
+
 .mobile .center
 {
     position:relative;
@@ -795,7 +800,17 @@ ul.in-list li
 {
     font-size: 16pt;
     position:relative;
-    left:2.25in;
+    left:1.25in;
+}
+
+.html-ltr .cancel
+{
+    text-align:right;
+}
+
+.html-rtl .cancel
+{
+    text-align:left;
 }
 
 .html-rtl .login,
@@ -803,7 +818,7 @@ ul.in-list li
 {
     font-size: 16pt;
     position:relative;
-    right:2.25in;
+    right:1.25in;
 }
 
 .login input

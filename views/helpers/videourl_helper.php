@@ -53,8 +53,11 @@ class VideourlHelper extends Helper
      *  Used to check if a url is the url of a video site and if so
      *  draw a link with a thumbnail from the video.
      *  @param string $url to check if of a video site
+     *  @param array $video_sources video sites url info to check $url against
+     *  @param boolean $open_in_tabs whether new links should be opened in
+     *     tabs
      */
-    public function render($url, $video_sources)
+    public function render($url, $video_sources, $open_in_tabs = false)
     {
         if(substr($url, 0, 3) == "url") {
             $link_url_parts = explode("|", $url);
@@ -88,7 +91,8 @@ class VideourlHelper extends Helper
                 if(isset($thumb_parts[1])) {
                     $thumb_url .= $thumb_parts[1];
                 }
-                ?><a class="video-link" href="<?php e($url); ?>"><img 
+                ?><a class="video-link" href="<?php e($url); ?>" <?php 
+                if($open_in_tabs) { ?> target="_blank" <?php }?>><img 
                 class="thumb" src="<?php e($thumb_url); ?>"
                 alt="Thumbnail for <?php e($id); ?>" />
                 <img class="video-play" src="resources/play.png" alt="" />

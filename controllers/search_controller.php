@@ -313,6 +313,12 @@ class SearchController extends Controller implements CrawlConstants
             }
         }
 
+        if(isset($_SESSION['OPEN_IN_TABS'])) {
+            $data['OPEN_IN_TABS'] = $_SESSION['OPEN_IN_TABS'];
+        } else {
+            $data['OPEN_IN_TABS'] = false;
+        }
+
         $data['its'] = (isset($index_time_stamp)) ? $index_time_stamp : 0;
         if($web_flag && $index_info !== NULL) {
             if(isset($index_info['IS_MIX'])) {
@@ -367,6 +373,7 @@ class SearchController extends Controller implements CrawlConstants
             $data['NO_QUERY'] = true;
             $data['PAGING_QUERY'] .= "&no_query=true";
         }
+
         $this->displayView($view, $data);
     }
 

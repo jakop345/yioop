@@ -58,8 +58,11 @@ class FeedsHelper extends Helper implements CrawlConstants
      *  @param string $base_query the  query_string prefix
      *  @param string $query the current search query
      *  @param string $subsearch name of subsearch page this image group on
+     *  @param boolean $open_in_tabs whether new links should be opened in
+     *     tabs
      */
-    public function render($feed_pages, $base_query, $query, $subsearch)
+    public function render($feed_pages, $base_query, $query, $subsearch,
+        $open_in_tabs = false)
     {
         if($subsearch != 'news') {
             $not_news = true;
@@ -113,8 +116,9 @@ class FeedsHelper extends Helper implements CrawlConstants
             if($not_news) {
         ?>
                 <div class="blockquote">
-                <a href="<?php e($page[self::URL]); ?>" rel="nofollow"
-                ><?php  e($page[self::TITLE]); ?></a> 
+                <a href="<?php e($page[self::URL]); ?>" rel="nofollow" <?php 
+                if($open_in_tabs) {  ?> target="_blank" <?php }
+                ?>><?php  e($page[self::TITLE]); ?></a> 
                 <a class="gray-link" rel='nofollow' href="<?php e($base_query.
                     "&amp;q=media:news:".$encode_source.
                     "&amp;s=news");?>" ><?php  e($page[self::SOURCE_NAME]."</a>"
@@ -125,8 +129,9 @@ class FeedsHelper extends Helper implements CrawlConstants
             } else {
         ?>
                 <div class="results">
-                <h2><a href="<?php e($page[self::URL]); ?>" rel="nofollow"
-                ><?php  e($page[self::TITLE]); ?></a>.
+                <h2><a href="<?php e($page[self::URL]); ?>" rel="nofollow" <?php
+                if($open_in_tabs) { ?> target="_blank" <?php }
+                ?>><?php  e($page[self::TITLE]); ?></a>.
                 <a class="gray-link" rel='nofollow' href="<?php e($base_query.
                     "&amp;q=media:news:".$encode_source.
                     "&amp;s=news");?>" ><?php  e($page[self::SOURCE_NAME]."</a>"

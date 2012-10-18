@@ -89,6 +89,12 @@ class SettingsView extends View
     class="table-input"><?php $this->optionsHelper->render(
     "per-page", "perpage", $data['PER_PAGE'], $data['PER_PAGE_SELECTED']); ?>
 </td></tr>
+<td class="table-label"><label for="open-in-tabs"><b><?php 
+    e(tl('settings_view_open_in_tabs')); ?></b></label></td><td 
+    class="table-input"><input type="checkbox" id="open-in-tabs"
+        name="open_in_tabs" value="true" 
+        <?php  if($data['OPEN_IN_TABS']) {?>checked='checked'<?php } ?> />
+</td></tr>
 <tr>
 <td class="table-label"><label for="index-ts"><b><?php 
     e(tl('settings_view_search_index')); ?></b></label></td><td 
@@ -100,7 +106,8 @@ class SettingsView extends View
     class="table-input"><?php $this->languageElement->render($data); ?>
 </td></tr>
 
-<tr><td><input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php 
+<tr><td class="cancel"><input type="hidden" name="<?php 
+    e(CSRF_TOKEN); ?>" value="<?php 
     e($data[CSRF_TOKEN]); ?>" /><input type="hidden" 
     name="its" value="<?php e($data['its']); ?>" /><button 
     class="topmargin" type="submit" name="c" value="search"><?php 

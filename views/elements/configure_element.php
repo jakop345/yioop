@@ -87,7 +87,7 @@ class ConfigureElement extends Element
                     e(tl('configure_element_load_or_create')); ?></button>
         </div>
         </form>
-        <form id="configureProfileForm" method="post" action=''>
+        <formid="configureProfileForm" method="post" action=''>
         <?php if(isset($data['WORK_DIRECTORY'])) { ?>
             <input type="hidden" name="WORK_DIRECTORY" value="<?php 
                 e($data['WORK_DIRECTORY']); ?>" />
@@ -102,8 +102,11 @@ class ConfigureElement extends Element
         <?php e($data['SYSTEM_CHECK']); ?>
         </div>
         <h2><?php e(tl('configure_element_profile_settings'))?></h2>
-        <div class="topmargin"><b><label for="locale"><b><?php 
-            e(tl('configure_element_default_language')); ?></b>
+        <div class="bold">
+        <div class="topmargin"><span <?php if(!MOBILE) { ?> 
+            style="position:relative; top:-3.2em;" <?php } ?>><label 
+            for="locale"><?php 
+            e(tl('configure_element_default_language')); ?></span>
         <?php $this->view->languageElement->render($data); ?>
         </div>
         <?php if($data['PROFILE']) { ?>
@@ -294,6 +297,7 @@ class ConfigureElement extends Element
             <div class="topmargin center">
             <button class="buttonbox" type="submit"><?php 
                 e(tl('configure_element_submit')); ?></button>
+            </div>
             </div>
         <?php } ?>
         </form>

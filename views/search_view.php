@@ -194,14 +194,17 @@ class SearchView extends View implements CrawlConstants
                     continue;
                 } else if(isset($page['FEEDS'])){
                     $this->feedsHelper->render($page['FEEDS'], 
-                        $base_query, $data['QUERY'],  $subsearch);
+                        $base_query, $data['QUERY'],  $subsearch,
+                        $data['OPEN_IN_TABS']);
                     e( "           </div>");
                     continue;
                 }
                 ?>
 
                 <h2>
-                <a href="<?php  e(htmlentities($url));  ?>" rel="nofollow"><?php
+                <a href="<?php  e(htmlentities($url));  ?>" rel="nofollow"
+                 <?php if($data["OPEN_IN_TABS"]) { 
+                    ?> target="_blank" <?php }?> ><?php
                  if(isset($page[self::THUMB]) && $page[self::THUMB] != 'NULL') {
                     ?><img src="<?php e($page[self::THUMB]); ?>" alt="<?php 
                         e($title); ?>"  /> <?php
@@ -217,7 +220,7 @@ class SearchView extends View implements CrawlConstants
                 </h2>
                 <?php if($check_video) {
                     $this->videourlHelper->render($url,
-                        $data['VIDEO_SOURCES']);
+                        $data['VIDEO_SOURCES'], $data["OPEN_IN_TABS"]);
                 }
                 ?>
                 <p class="echolink" <?php e($subtitle); ?>><?php 

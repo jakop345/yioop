@@ -104,11 +104,20 @@ class SettingsController extends Controller
             $_SESSION['MAX_PAGES_TO_SHOW'] = $_REQUEST['perpage'];
             $changed_settings_flag = true;
         }
-
         if(isset($_SESSION['MAX_PAGES_TO_SHOW'])){
             $data['PER_PAGE_SELECTED'] = $_SESSION['MAX_PAGES_TO_SHOW'];
         } else {
             $data['PER_PAGE_SELECTED'] = NUM_RESULTS_PER_PAGE;
+        }
+
+        if ($token_okay &&  isset($_REQUEST['perpage'])) {
+            $_SESSION['OPEN_IN_TABS'] = (isset($_REQUEST['open_in_tabs'])) ?
+                true : false;
+        }
+        if(isset($_SESSION['OPEN_IN_TABS'])){
+            $data['OPEN_IN_TABS'] = $_SESSION['OPEN_IN_TABS'];
+        } else {
+            $data['OPEN_IN_TABS'] = false;
         }
 
         $machine_urls = $this->machineModel->getQueueServerUrls();
