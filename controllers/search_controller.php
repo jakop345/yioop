@@ -231,34 +231,36 @@ class SearchController extends Controller implements CrawlConstants
             $its = (isset($_REQUEST['its'])) ? $_REQUEST['its'] : 
                 $_SESSION['its'];
             $index_time_stamp = $this->clean($its, "int");
-            if($raw != 1 && $index_time_stamp != 0 ) {
-                //validate timestamp against list 
-                //(some crawlers replay deleted crawls)
-                $crawls = $this->crawlModel->getCrawlList(false,true,
-                    $machine_urls,true);
-                $is_mix = false;
-                if($this->crawlModel->isCrawlMix($index_time_stamp)) {
-                    $is_mix = true;
-                }
-                $found_crawl = false;
-                foreach($crawls as $crawl) {
-                    if($index_time_stamp == $crawl['CRAWL_TIME']) {
-                        $found_crawl = true;
-                        break;
+            if($raw != 1) {
+                if($index_time_stamp != 0 ) {
+                    //validate timestamp against list 
+                    //(some crawlers replay deleted crawls)
+                    $crawls = $this->crawlModel->getCrawlList(false,true,
+                        $machine_urls,true);
+                    $is_mix = false;
+                    if($this->crawlModel->isCrawlMix($index_time_stamp)) {
+                        $is_mix = true;
                     }
+                    $found_crawl = false;
+                    foreach($crawls as $crawl) {
+                        if($index_time_stamp == $crawl['CRAWL_TIME']) {
+                            $found_crawl = true;
+                            break;
+                        }
+                    }
+                    if(!$is_mix && ( !$found_crawl && (isset($_REQUEST['q']) ||
+                        isset($_REQUEST['arg'])))) {
+                        unset($_SESSION['its']);
+                        include(BASE_DIR."/error.php");
+                        exit();
+                    } else if(!$found_crawl) {
+                        unset($_SESSION['its']);
+                        $index_time_stamp = $current_its;
+                    }
+                } else {
+                    $index_time_stamp = $current_its; 
+                        //use the default crawl index
                 }
-                if(!$is_mix && ( !$found_crawl && (isset($_REQUEST['q']) ||
-                    isset($_REQUEST['arg'])))) {
-                    unset($_SESSION['its']);
-                    include(BASE_DIR."/error.php");
-                    exit();
-                } else if(!$found_crawl) {
-                    unset($_SESSION['its']);
-                    $index_time_stamp = $current_its;
-                }
-            } else {
-                $index_time_stamp = $current_its; 
-                    //use the default crawl index
             }
         } else {
             $index_time_stamp = $current_its; 
