@@ -227,11 +227,11 @@ class SearchController extends Controller implements CrawlConstants
         /* The $raw in the next line is because we don't validate its or raw
            (presumably internal) queries
          */
-        if($raw != 1 && (isset($_REQUEST['its']) || isset($_SESSION['its']))) {
+        if((isset($_REQUEST['its']) || isset($_SESSION['its']))) {
             $its = (isset($_REQUEST['its'])) ? $_REQUEST['its'] : 
                 $_SESSION['its'];
             $index_time_stamp = $this->clean($its, "int");
-            if($index_time_stamp != 0 ) {
+            if($raw != 1 && $index_time_stamp != 0 ) {
                 //validate timestamp against list 
                 //(some crawlers replay deleted crawls)
                 $crawls = $this->crawlModel->getCrawlList(false,true,
