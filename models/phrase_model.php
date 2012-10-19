@@ -959,13 +959,14 @@ class PhraseModel extends ParallelModel
 
                 foreach ($summary_times as $summary_time) {
                     $summary_time_info .= "ID_$i: ".$summary_time."$indent";
-                    $max_time = ($summary_time > $summary_time) ?
+                    $max_time = ($summary_time > $max_time) ?
                         $summary_time : $max_time;
                     $i++;
                 }
                 $net_overhead =  $summary_delta_time - $max_time;
                 $summary_time_info .= 
-                    "$in3<i>Network Overhead Sub-Time</i>: ". $net_overhead;
+                    "<br />$in3<i>Network Overhead Sub-Time</i>: ".
+                    $net_overhead;
             } else {
                 $summary_time_info = changeInMicrotime($summaries_time);
             }
