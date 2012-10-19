@@ -952,17 +952,25 @@ class PhraseModel extends ParallelModel
             $summary_times_string = AnalyticsManager::get("SUMMARY_TIMES");
             if($summary_times_string) {
                 $summary_times = unserialize($summary_times_string);
-                $change_summary_time = "<br /> $in2$in2";
+                $summary_delta_time = changeInMicrotime($summaries_time);
+                $summary_time_info = "$summary_delta_time<br /> $in4";
                 $i = 0;
+                $max_time = 0;
+
                 foreach ($summary_times as $summary_time) {
-                    $change_summary_time .= "ID_$i:".$summary_time."$in2";
+                    $summary_time_info .= "ID_$i: ".$summary_time."$indent";
+                    $max_time = ($summary_time > $summary_time) ?
+                        $summary_time : $max_time;
                     $i++;
                 }
+                $net_overhead =  $summary_delta_time - $max_time;
+                $summary_time_info .= 
+                    "$in3<i>Network Overhead Sub-Time</i>: ". $net_overhead;
             } else {
-                $change_summary_time = changeInMicrotime($summaries_time);
+                $summary_time_info = changeInMicrotime($summaries_time);
             }
             $this->query_info['QUERY'] .= "$in2<b>Get Summaries Time</b>: ".
-                $change_summary_time."<br />";
+                $summary_time_info."<br />";
             $format_time = microtime();
         }
         $results['PAGES'] = & $out_pages;
