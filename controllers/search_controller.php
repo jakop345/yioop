@@ -224,7 +224,10 @@ class SearchController extends Controller implements CrawlConstants
         $this->crawlModel->current_machine = $current_machine;
         $current_its = $this->crawlModel->getCurrentIndexDatabaseName();
 
-        if(isset($_REQUEST['its']) || isset($_SESSION['its'])) {
+        /* The $raw in the next line is because we don't validate its or raw
+           (presumably internal) queries
+         */
+        if($raw != 1 && (isset($_REQUEST['its']) || isset($_SESSION['its']))) {
             $its = (isset($_REQUEST['its'])) ? $_REQUEST['its'] : 
                 $_SESSION['its'];
             $index_time_stamp = $this->clean($its, "int");
