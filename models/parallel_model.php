@@ -46,6 +46,10 @@ require_once BASE_DIR."/lib/crawl_constants.php";
 require_once BASE_DIR."/lib/index_manager.php";
 /** For crawlHash function */
 require_once BASE_DIR."/lib/utility.php";
+/**
+ * Used for keeping track of timing statistics
+ */
+require_once BASE_DIR.'/lib/analytics_manager.php';
 /** 
  * Needed for getHost
  */
@@ -175,11 +179,17 @@ class ParallelModel extends Model implements CrawlConstants
 
         //Aggregate results
         $summaries = array();
+        $elapsed_times = array();
         if(is_array($page_set)) {
             foreach($page_set as $elt) {
                 $description_hash = array();
                 $result = unserialize(webdecode($elt[self::PAGE]));
-                if(!is_array($result)) continue;
+                if(!is_array($result)) {
+                    $elapsed_times[] = 0;
+                    continue;
+                }
+                $elapsed_times[] = $result["ELAPSED_TIME"];
+                unset($result["ELAPSED_TIME"]);
                 $ellipsis = "";
                 foreach($result as $lookup => $summary) {
                     if(isset($summaries[$lookup])) {
@@ -206,6 +216,7 @@ class ParallelModel extends Model implements CrawlConstants
                     }
                 }
             }
+            AnalyticsManager::set("SUMMARY_TIMES", serialize($elapsed_times));
         }
         return $summaries;
     }

@@ -245,6 +245,7 @@ class CrawlController extends Controller implements CrawlConstants
      */
      function getCrawlItems()
      {
+        $start_time = microtime();
         if(!isset($_REQUEST["arg"]) || !isset($_REQUEST["num"])
             || !isset($_REQUEST["i"])) {
             return;
@@ -277,8 +278,9 @@ class CrawlController extends Controller implements CrawlConstants
                 }
             }
         }
-        echo webencode(serialize(
-            $this->crawlModel->getCrawlItems($our_lookups)));
+        $items = $this->crawlModel->getCrawlItems($our_lookups);
+        $items["ELAPSED_TIME"] = changeInMicrotime($start_time);
+        echo webencode(serialize($items));
      }
 
 

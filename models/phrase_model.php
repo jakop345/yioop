@@ -49,10 +49,6 @@ require_once BASE_DIR."/lib/phrase_parser.php";
  * Load FileCache class in case used
  */
 require_once(BASE_DIR."/lib/file_cache.php");
-/**
- * 
- */
-require_once BASE_DIR.'/lib/analytics_manager.php';
 
 /**
  * Load iterators to get docs out of index archive
@@ -953,8 +949,20 @@ class PhraseModel extends ParallelModel
             }
         }
         if(QUERY_STATISTICS) {
+            $summary_times_string = AnalyticsManager::get("SUMMARY_TIMES");
+            if($summary_times_string) {
+                $summary_times = unserialize($summary_times_string);
+                $change_summary_time = "<br /> $in2$in2";
+                $i = 0;
+                foreach ($summary_times as $summary_time) {
+                    $change_summary_time .= "ID_$i:".$summary_time."$in2";
+                    $i++;
+                }
+            } else {
+                $change_summary_time = changeInMicrotime($summaries_time);
+            }
             $this->query_info['QUERY'] .= "$in2<b>Get Summaries Time</b>: ".
-                changeInMicrotime($summaries_time)."<br />";
+                $change_summary_time."<br />";
             $format_time = microtime();
         }
         $results['PAGES'] = & $out_pages;
