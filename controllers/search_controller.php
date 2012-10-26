@@ -985,6 +985,9 @@ class SearchController extends Controller implements CrawlConstants
     {
         global $CACHE, $IMAGE_TYPES;
 
+        $flag = 0;
+        $crawl_item = null;
+
         $hash_key = crawlHash(
             $terms.$url.serialize($highlight).serialize($crawl_time));
         if(USE_CACHE) {
@@ -997,8 +1000,44 @@ class SearchController extends Controller implements CrawlConstants
         if($crawl_time == 0) {
             $crawl_time = $this->crawlModel->getCurrentIndexDatabaseName();
         }
-        $this->phraseModel->index_name = $crawl_time;
-        $this->crawlModel->index_name = $crawl_time;
+
+        //Get all crawl times
+        $crawl_times = array();
+        $all_crawl_details = $this->crawlModel->getCrawlList();
+        foreach($all_crawl_details as $crawl_details){
+            if($crawl_details['CRAWL_TIME'] !== null){
+                array_push($crawl_times,$crawl_details['CRAWL_TIME']);
+            }
+        }
+        for($i=0; $i < count($crawl_times); $i++){
+            $crawl_times[$i] = intval($crawl_times[$i]);
+        }
+        asort($crawl_times);
+
+        //Get int value of current crawl time for comparison
+        $crawl_time_int = intval($crawl_time);
+
+        /*Search for the nearest future crawl time containing the cached 
+          version of the page for $url*/
+        foreach($crawl_times as $time){
+            if($time >= $crawl_time_int){
+
+                $crawl_time = (string)$time;
+
+                $this->phraseModel->index_name = $crawl_time;
+                $this->crawlModel->index_name = $crawl_time;
+
+                $crawl_item = $this->crawlModel->
+                    getCrawlItem($url, $queue_servers);
+
+                if($crawl_item !== false){
+                    $flag = 1;
+                    break;
+                } else {
+                    continue;
+                }
+            }
+        }
 
         $data = array();
 

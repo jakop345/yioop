@@ -238,6 +238,8 @@ class ParallelModel extends Model implements CrawlConstants
      */
     function nonNetworkGetCrawlItems($lookups)
     {
+        $summary_offset = null;
+        $generation = null;
         $summaries = array();
         $db = $this->db;
         $db->selectDB(DB_NAME);
@@ -245,8 +247,13 @@ class ParallelModel extends Model implements CrawlConstants
             if(count($lookup_info) == 2 && $lookup_info[0][0] === 'h') {
                 list($url, $index_name) = $lookup_info;
                 $index_archive = IndexManager::getIndex($index_name);
-                list($summary_offset, $generation) = 
+                $offset_gen_arr = 
                     $this->lookupSummaryOffsetGeneration($url, $index_name);
+                if($offset_gen_arr !== false){
+                    list($summary_offset, $generation) = $offset_gen_arr;
+                } else {
+                    return false;
+                }
                 $summary = 
                     $index_archive->getPage($summary_offset, $generation);
             } else {
