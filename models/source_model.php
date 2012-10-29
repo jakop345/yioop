@@ -326,7 +326,7 @@ class SourceModel extends Model
         if(!$pre_feeds) return false;
         $feeds = array();
         foreach($pre_feeds as $pre_feed) {
-            if(isset($pre_feed['SOURCE_NAME'])) continue;
+            if(!isset($pre_feed['SOURCE_NAME'])) continue;
             $feed[$pre_feed['SOURCE_NAME']] = $pre_feed;
         }
         $db = $this->db;
