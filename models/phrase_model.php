@@ -610,8 +610,30 @@ class PhraseModel extends ParallelModel
                 );
             }
         }
-        $format_words = array_merge($query_words, $base_words);
-
+        $pre_format_words = array_values(array_unique(
+            array_merge($query_words, $base_words)));
+        
+        $format_words = array();
+        $count = count($pre_format_words);
+        for($i = 0; $i < $count; $i++) {
+            $flag = true;
+            if($pre_format_words[$i] == "") continue;
+            for($j = 0; $j < $count; $j++) {
+                if($j == $i) continue;
+                $hay = mb_strtolower($pre_format_words[$j]);
+                $needle = mb_strtolower($pre_format_words[$i]);
+                if($hay == $needle && $j > $i) {
+                    continue;
+                }
+                if(mb_strstr($hay, $needle)) {
+                    $flag = false;
+                    break;
+                }
+            }
+            if($flag) {
+                $format_words[] = $pre_format_words[$i];
+            }
+        }
         return array($word_struct, $format_words);
     }
 
@@ -827,7 +849,6 @@ class PhraseModel extends ParallelModel
 
         $num_retrieved = 0;
         $pages = array();
-
         if(is_object($query_iterator)) {
             while($num_retrieved < $to_retrieve &&
                 is_array($next_docs = 
@@ -836,7 +857,6 @@ class PhraseModel extends ParallelModel
                 $num_retrieved += count($next_docs);
             }
         }
-
         $pages = array_values($pages);
         $result_count = count($pages);
 

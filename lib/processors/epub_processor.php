@@ -131,18 +131,21 @@ class EpubProcessor extends TextProcessor
         $epub_subject = '';
         $desc = '';
         $htmlcontent = '';
-        file_put_contents($temp_filename,$page);
-        $zip = new ZipArchive;
+
+        file_put_contents($temp_filename, $page);
+        chmod($temp_filename, 0777);
+        $zip = new ZipArchive();
         if($zip->open($temp_filename)) {
-            for($i = 0; $i < $zip->numFiles; $i++) {
+            $num_files = $zip->numFiles;
+            for($i = 0; $i < $num_files; $i++) {
                 // get the content file names of .epub document
-                $filename[$i] = $zip->getNameIndex($i) ;
-                if(preg_match($opf_pattern,$filename[$i])) {
+                $filename[$i] = $zip->getNameIndex($i);
+                if(preg_match($opf_pattern, $filename[$i])) {
                     // Get the file data from zipped folder
                     $opf_data = $zip->getFromName($filename[$i]);
                     $opf_summary = $this->xmlToObject($opf_data);
-                    for($m = 0;$m <= MAX_DOM_LEVEL; $m++) {
-                        for($n = 0;$n <= MAX_DOM_LEVEL; $n++) {
+                    for($m = 0; $m <= MAX_DOM_LEVEL; $m++) {
+                        for($n = 0; $n <= MAX_DOM_LEVEL; $n++) {
                             if(isset($opf_summary->children[$m]->children[$n])){
                                 $child = $opf_summary->children[$m]->
                                     children[$n];
@@ -170,15 +173,16 @@ class EpubProcessor extends TextProcessor
                             }
                         }
                     }
-                }else if((preg_match($html_pattern,$filename[$i])) ||
-                    (preg_match($xhtml_pattern,$filename[$i]))) {
-                    $html = new HtmlProcessor;
+                } else if((preg_match($html_pattern, $filename[$i])) ||
+                    (preg_match($xhtml_pattern, $filename[$i]))) {
+                    $html = new HtmlProcessor();
                     $html_data = $zip->getFromName($filename[$i]);
-                    $description[$i] = $html->process($html_data,$url);
+                    $description[$i] = $html->process($html_data, $url);
                     $htmlcontent.= $description[$i]['t'];
                 }
             }
         }
+
         if($epub_title != '')
         {
             $desc= " $epub_title .";
@@ -210,19 +214,20 @@ class EpubProcessor extends TextProcessor
         }
         $desc= $desc.$htmlcontent;
         //restrict the length of the description to maximum description length
-        if(strlen($desc) > MAX_DESCRIPTION_LEN)  
-        {
-            $desc= substr($desc, 0, MAX_DESCRIPTION_LEN);
+        if(strlen($desc) > MAX_DESCRIPTION_LEN) {
+            $desc = substr($desc, 0, MAX_DESCRIPTION_LEN);
         }
+
         $summary[self::TITLE] = $epub_title;
         $summary[self::DESCRIPTION] = $desc;
         $summary[self::LANG] = $epub_language;
         $summary[self::LINKS] = $epub_url;
         $summary[self::PAGE] = $page;
+
         if($zip) {
             $zip->close(); 
         }
-        unlink($temp_filename);
+        @unlink($temp_filename);
         return $summary;
     }
 

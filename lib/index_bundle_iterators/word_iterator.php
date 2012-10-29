@@ -213,14 +213,13 @@ class WordIterator extends IndexBundleIterator
             $this->empty = true;
         } else {
             $this->num_generations = count($this->dictionary_info);
-            if($this->num_generations == 0) 
-            {
+            if($this->num_generations == 0) {
                 $this->empty = true;
             } else {
                 for($i = 0; $i < $this->num_generations; $i++) {
                     list(, , , $num_docs) =
                         $this->dictionary_info[$i];
-                        $this->num_docs += $num_docs;
+                    $this->num_docs += $num_docs;
                 }
                 $this->empty = false;
             }
@@ -292,7 +291,6 @@ class WordIterator extends IndexBundleIterator
         $this->generation_pointer = 0;
         $this->count_block = 0;
         $this->seen_docs = 0;
-
     }
 
 
@@ -344,6 +342,7 @@ class WordIterator extends IndexBundleIterator
                 $this->next_offset, $this->last_offset, 
                 $this->results_per_block);
         }
+
         $results = array();
         $filter = ($this->filter == NULL) ? array() : $this->filter;
         foreach($pre_results as $keys => $data) {
@@ -411,6 +410,7 @@ class WordIterator extends IndexBundleIterator
      */
     function advance($gen_doc_offset = null) 
     {
+        $measure = microtime();
         $this->advanceSeenDocs();
         if($this->current_offset < $this->next_offset) {
             $this->current_offset = $this->next_offset;
@@ -456,9 +456,10 @@ class WordIterator extends IndexBundleIterator
 
     }
 
+
     /**
-     * Switches which index shard is being used to return occurences of
-     * the nord to the next shard containing the word
+     * Switches which index shard is being used to return occurrences of
+     * the word to the next shard containing the word
      *
      * @param int $generation generation to advance beyond
      */
@@ -508,7 +509,6 @@ class WordIterator extends IndexBundleIterator
         }
         $index = IndexManager::getIndex($this->index_name);
         $index->setCurrentShard($this->current_generation, true);
-
         return array($this->current_generation, $index->getCurrentShard(
                         )->docOffsetFromPostingOffset($this->current_offset));
     }

@@ -323,8 +323,10 @@ class SourceModel extends Model
         }
         $too_old = time() - $age;
         $pre_feeds = $this->getMediaSources("rss");
+        if(!$pre_feeds) return false;
         $feeds = array();
         foreach($pre_feeds as $pre_feed) {
+            if(isset($pre_feed['SOURCE_NAME'])) continue;
             $feed[$pre_feed['SOURCE_NAME']] = $pre_feed;
         }
         $db = $this->db;
@@ -337,6 +339,7 @@ class SourceModel extends Model
 
         if($result) {
             while($item = $db->fetchArray($result)) {
+                if(!isset($item['SOURCE_NAME'])) continue;
                 $source_name = $item['SOURCE_NAME'];
                 if(isset($feed[$item['SOURCE_NAME']])) {
                     $lang = $feed[$item['SOURCE_NAME']]['LANGUAGE'];
