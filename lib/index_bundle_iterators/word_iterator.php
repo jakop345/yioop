@@ -410,7 +410,6 @@ class WordIterator extends IndexBundleIterator
      */
     function advance($gen_doc_offset = null) 
     {
-        $measure = microtime();
         $this->advanceSeenDocs();
         if($this->current_offset < $this->next_offset) {
             $this->current_offset = $this->next_offset;
@@ -440,6 +439,7 @@ class WordIterator extends IndexBundleIterator
                 $shard = $index->getCurrentShard();
                 $last = $this->last_offset;
             }
+
             if($this->current_generation == $gen_doc_offset[0]) {
                 $this->current_offset =
                     $shard->nextPostingOffsetDocOffset($this->next_offset,
@@ -453,7 +453,6 @@ class WordIterator extends IndexBundleIterator
                 ($this->current_offset - $this->start_offset)/
                     IndexShard::POSTING_LEN;
         }
-
     }
 
 

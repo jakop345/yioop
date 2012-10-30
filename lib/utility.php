@@ -259,26 +259,51 @@ function decodeModified9($input_string, &$offset)
  * @param string $int_string 4 byte string to decode
  * @return array sequence of integers that results from the decoding.
  */
-function unpackListModified9($int_string) 
+function unpackListModified9($int_string, $first_list = false)
 {
     global $MOD9_NUM_BITS_CODES, $MOD9_NUM_ELTS_DECODES;
 
     $first_char = ord($int_string[0]);
-    foreach($MOD9_NUM_BITS_CODES as $code => $num_bits) {
-        if(($first_char & $code) == $code) break;
+    switch($first_char & 48)
+    {
+        case 0:
+            $code = 0;
+            $num_bits = 28;
+        break;
+        case 1:
+            $code = 16;
+            $num_bits = 14;
+        break;
+        case 2:
+            $code = 32;
+            $num_bits = 9;
+        break;
+        default:
+            foreach($MOD9_NUM_BITS_CODES as $code => $num_bits) {
+                if(($first_char & $code) == $code) break;
+            }
     }
     $mask = (2 << ($num_bits - 1)) - 1;
     $num_elts = $MOD9_NUM_ELTS_DECODES[$code];
     $int_string[0] = chr($first_char - $code);
 
     $encoded_list = unpackInt($int_string);
+    if($first_list) {
+        $shift = $num_bits * ($num_elts - 1);
+        do {
+            $tmp = $encoded_list >> $shift;
+            if(($pre_elt = $encoded_list & $mask) != 0) {
+                return $pre_elt;
+            }
+            $shift -= $num_bits;
+        } while($shift > 0);
+    }
     $decoded_list = array();
     for($i = 0; $i < $num_elts; $i++) {
         if(($pre_elt = $encoded_list & $mask) == 0) break;
         array_unshift($decoded_list, $pre_elt);
         $encoded_list >>= $num_bits;
     }
-
     return $decoded_list;
 }
 

@@ -804,61 +804,48 @@ class IndexShard extends PersistentStructure implements
      *      index of end of nearest posting to current
      *  @param bool $just_start only compute start and return first 
      *      self::POSTING_LEN bytes
-     *  @param string $word_docs_string if this string is supplied it will be
-     *      used rather than the index shards word_doc string to do the search
-     *
      *  @return string the substring of word_docs corresponding to the posting
      */
     function getPostingAtOffset($current, &$posting_start, &$posting_end, 
-        $just_start = false, &$word_docs_string = NULL)
+        $just_start = false)
     {
-            if($word_docs_string) {
-                $posting = substr($word_docs_string, $current * 
-                    self::POSTING_LEN, self::POSTING_LEN);
-            } else {
-                $posting = $this->getWordDocsSubstring($current * 
-                    self::POSTING_LEN, self::POSTING_LEN);
-            }
-            $posting_start = $current;
-            $posting_end = $current;
-            if($posting == "") return false;
-            $end_word_start = 0;
-            $chr = (ord($posting[0]) & 192);
-            $first_time = ( $chr == 64);
-            while ($chr == 128 || $first_time ){
-                $first_time = false;
-                $posting_start--;
-                if($word_docs_string) {
-                    $posting = substr($word_docs_string, $posting_start 
-                        * self::POSTING_LEN, $end_word_start + 
-                        self::POSTING_LEN);
-                } else {
-                    $posting = $this->getWordDocsSubstring(
-                        $posting_start * self::POSTING_LEN, $end_word_start + 
-                        self::POSTING_LEN);
-                }
-                $chr = (ord($posting[0]) & 192);
-                $end_word_start += self::POSTING_LEN;
-            }
-            if($just_start) {
-                return $posting;
-            }
-            $chr = ord($posting[$end_word_start]) & 192;
-            while($chr > 64) {
-                $posting_end++;
-                if($word_docs_string) {
-                    $tmp = substr($word_docs_string, $posting_end
-                        * self::POSTING_LEN, self::POSTING_LEN);
-                } else {
-                    $tmp = $this->getWordDocsSubstring(
-                        $posting_end*self::POSTING_LEN, self::POSTING_LEN);
-                }
-                $posting .= $tmp;
-                $end_word_start += self::POSTING_LEN;
-                $chr = ord($posting[$end_word_start]) & 192;
-            }
+        $posting_len = self::POSTING_LEN;
+        $start_offset = $current * $posting_len;
 
+        $posting = $this->getWordDocsSubstring($start_offset, $posting_len);
+        $chr = (ord($posting[0]) & 192);
+
+        $posting_start = $current;
+        $posting_end = $current;
+        $end_word_start = 0;
+        $first_time = ($chr == 64);
+        while ($chr == 128 || $first_time ){
+            $first_time = false;
+            $posting_start--;
+            $start_offset -= $posting_len;
+            if($just_start) {
+                $posting = $this->getWordDocsSubstring($start_offset, 
+                    $posting_len);
+                $chr = (ord($posting[0]) & 192);
+            } else {
+                $pzero = $this->peekWordDocsSubstring($start_offset);
+                $chr = (ord($pzero) & 192);
+            }
+            $end_word_start += $posting_len;
+        }
+        if($just_start) {
             return $posting;
+        }
+        $pend = $this->peekWordDocsSubstring($end_word_start);
+        $chr = ord($pend) & 192;
+        while($chr > 64) {
+            $posting_end++;
+            $end_word_start += $posting_len;
+            $pend = $this->peekWordDocsSubstring($end_word_start);
+            $chr = ord($pend) & 192;
+        }
+        return $this->getWordDocsSubstring($start_offset, 
+            $end_word_start + $posting_len);
     }
 
     /**
@@ -875,8 +862,8 @@ class IndexShard extends PersistentStructure implements
      *  @return int offset to next posting
      */
      function nextPostingOffsetDocOffset($start_offset, $end_offset,
-        $doc_offset) {
-
+        $doc_offset) 
+    {
         $posting_len = self::POSTING_LEN;
         $doc_index = $doc_offset >> 4;
         $current = floor($start_offset/$posting_len);
@@ -891,7 +878,7 @@ class IndexShard extends PersistentStructure implements
             $offset = 0;
             $posting = $this->getPostingAtOffset(
                 $current, $posting_start, $posting_end, true);
-            $post_doc_index = $this->getDocIndexPosting($posting);
+            $post_doc_index = $this->getDocIndexPosting($posting, false);
             if($doc_index > $post_doc_index) {
                 $low = $current;
                 if($gallop_phase) {
@@ -921,9 +908,7 @@ class IndexShard extends PersistentStructure implements
             } else  {
                 return $posting_start * $posting_len;
             }
-
         } while($current <= $end);
-
         return false;
      }
 
@@ -1540,14 +1525,15 @@ class IndexShard extends PersistentStructure implements
         return array($doc_index, $position_list);
     }
 
-    static function getDocIndexPosting($posting)
+    static function getDocIndexPosting($posting, $get_front = true)
     {
-        $delta_list = unpackListModified9(substr($posting, 0, 4));
-        $doc_index = array_shift($delta_list);
+        if($get_front) {
+            $posting = substr($posting, 0, 4);
+        }
+        $doc_index = unpackListModified9($posting, true);
 
         if(($doc_index & (2 << 26)) > 0) {
             $delta0 = ($doc_index & ((2 << 9) - 1));
-            array_unshift($delta_list, $delta0);
             $doc_index -= $delta0;
             $doc_index -= (2 << 26);
             $doc_index >>= 9;
@@ -1599,6 +1585,19 @@ class IndexShard extends PersistentStructure implements
     }
 
     /**
+     *
+     */
+    function peekWordDocsSubstring($offset)
+    {
+        if($this->read_only_from_disk) {
+            $base_offset = self::HEADER_LENGTH + 
+                $this->prefixes_len + $this->words_len;
+            return $this->peekShardSubstring($base_offset + $offset);
+        }
+        return substr($this->word_docs, $offset, 1);
+    }
+
+    /**
      * From disk gets $len many bytes starting from $offset in the doc_infos
      * strings 
      *
@@ -1647,6 +1646,20 @@ class IndexShard extends PersistentStructure implements
         } while (strlen($substring) < $len);
 
         return substr($substring, 0, $len);
+    }
+
+    /**
+     *
+     */
+    function peekShardSubstring($offset)
+    {
+        $sb_power = self::SHARD_BLOCK_POWER;
+        $sb_size = self::SHARD_BLOCK_SIZE;
+        $block_offset =  ($offset >> $sb_power) << $sb_power;
+        $start_loc = $offset - $block_offset;
+        $data = $this->readBlockShardAtOffset($block_offset);
+        if(!isset($data[$start_loc])) return false;
+        return $data[$start_loc];
     }
 
     /**
