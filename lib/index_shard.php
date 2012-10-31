@@ -1656,16 +1656,13 @@ class IndexShard extends PersistentStructure implements
      */
     function getShardWord($offset)
     {
-        $sb_power = self::SHARD_BLOCK_POWER;
-        $sb_size = self::SHARD_BLOCK_SIZE;
-        $block_offset =  ($offset >> $sb_power) << $sb_power;
-        $start_loc = $offset - $block_offset;
-        $start_word = $start_loc >> 2;
+        $block_offset =  ($offset >> self::SHARD_BLOCK_POWER) << 
+            self::SHARD_BLOCK_POWER;
+        $start_word = ($offset - $block_offset) >> 2;
         if(isset($this->blocks_words[$block_offset])) {
-            $pos = $start_loc - (($start_word) << 2);
             return $this->blocks_words[$block_offset][$start_word];
         }
-        $data = $this->readBlockShardAtOffset($block_offset);
+        $this->readBlockShardAtOffset($block_offset);
         return $this->blocks_words[$block_offset][$start_word];
     }
 
