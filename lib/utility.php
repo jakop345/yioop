@@ -259,7 +259,7 @@ function decodeModified9($input_string, &$offset)
  * @param string $int_string 4 byte string to decode
  * @return array sequence of integers that results from the decoding.
  */
-function unpackListModified9($int_string, $first_list = false)
+function unpackListModified9($int_string)
 {
     global $MOD9_NUM_BITS_CODES, $MOD9_NUM_ELTS_DECODES;
 
@@ -269,35 +269,33 @@ function unpackListModified9($int_string, $first_list = false)
         case 0:
             $code = 0;
             $num_bits = 28;
+            $num_elts = 1;
+            $mask = 0xFFFFFFF;
         break;
         case 1:
             $code = 16;
             $num_bits = 14;
+            $num_elts = 2;
+            $mask = 0x3FFF;
         break;
         case 2:
             $code = 32;
             $num_bits = 9;
+            $num_elts = 3;
+            $mask = 0x1FF;
         break;
         default:
             foreach($MOD9_NUM_BITS_CODES as $code => $num_bits) {
                 if(($first_char & $code) == $code) break;
             }
+            $num_elts = $MOD9_NUM_ELTS_DECODES[$code];
+            $mask = (1 << $num_bits) - 1;
     }
-    $mask = (2 << ($num_bits - 1)) - 1;
-    $num_elts = $MOD9_NUM_ELTS_DECODES[$code];
+
     $int_string[0] = chr($first_char - $code);
 
     $encoded_list = unpackInt($int_string);
-    if($first_list) {
-        $shift = $num_bits * ($num_elts - 1);
-        do {
-            $tmp = $encoded_list >> $shift;
-            if(($pre_elt = $encoded_list & $mask) != 0) {
-                return $pre_elt;
-            }
-            $shift -= $num_bits;
-        } while($shift > 0);
-    }
+
     $decoded_list = array();
     for($i = 0; $i < $num_elts; $i++) {
         if(($pre_elt = $encoded_list & $mask) == 0) break;
@@ -307,6 +305,51 @@ function unpackListModified9($int_string, $first_list = false)
     return $decoded_list;
 }
 
+/**
+ *
+ */
+function unpackFirstModified9($int_string)
+{
+    global $MOD9_NUM_BITS_CODES, $MOD9_NUM_ELTS_DECODES;
+
+    $first_char = ord($int_string[0]);
+    switch($first_char & 48)
+    {
+        case 0:
+            return unpackInt($int_string) & 0xFFFFFFF;
+        break;
+        case 1:
+            $int_string[0] = chr($first_char - 16);
+            $num_bits = 14;
+            $mask = 0x3FFF;
+            $shift = 14;
+        break;
+        case 2:
+            $int_string[0] = chr($first_char - 32);
+            $num_bits = 9;
+            $mask = 0x1FF;
+            $shift = 18;
+        break;
+        default:
+            foreach($MOD9_NUM_BITS_CODES as $code => $num_bits) {
+                if(($first_char & $code) == $code) break;
+            }
+            $num_elts = $MOD9_NUM_ELTS_DECODES[$code];
+            $mask = (1 << $num_bits) - 1;
+            $shift = $num_bits * ($num_elts - 1);
+            $int_string[0] = chr($first_char - $code);
+    }
+
+    $encoded_list = unpackInt($int_string);
+    do {
+        $tmp = $encoded_list >> $shift;
+        if($pre_elt = $tmp & $mask) {
+            return $pre_elt;
+        }
+        $shift -= $num_bits;
+    } while($shift > 0);
+    return $pre_elt;//shouldn't get here
+}
 
 /**
  * Unpacks an int from a 4 char string
@@ -633,7 +676,7 @@ function calculatePartition($input, $num_partition, $callback = NULL)
  * @param string $end ending time with microseconds, if null use current time
  * @return float time difference in seconds
  */
-function changeInMicrotime( $start, $end = NULL) 
+function changeInMicrotime($start, $end = NULL) 
 {
     if( !$end ) {
         $end= microtime();
