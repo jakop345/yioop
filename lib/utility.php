@@ -271,12 +271,14 @@ function unpackListModified9($int_string)
         case 0x10000000:
             $encoded_list &= 0xEFFFFFFF;
             $num_bits = 14;
+            $num_elts = 2;
             $mask = 0x3FFF;
             $shift = 14;
         break;
         case 0x20000000:
             $encoded_list &= 0xDFFFFFFF;
             $num_bits = 9;
+            $num_elts = 3;
             $mask = 0x1FF;
             $shift = 18;
         break;

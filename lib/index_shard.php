@@ -802,19 +802,16 @@ class IndexShard extends PersistentStructure implements
      *      index of start of nearest posting to current
      *  @param int &$posting_end after function call will be
      *      index of end of nearest posting to current
-     *  @param bool $just_start only compute start and return first 
-     *      self::POSTING_LEN bytes
      *  @return string the substring of word_docs corresponding to the posting
      */
-    function getPostingAtOffset($current, &$posting_start, &$posting_end, 
-        $just_start = false)
+    function getPostingAtOffset($current, &$posting_start, &$posting_end)
     {
         $posting_start = $current;
         $posting_end = $current;
         $pword = $this->getWordDocsWord($current << 2);
 
         $chr = (ord($pword[0]) & 192);
-        if(!$chr && $just_start) {
+        if(!$chr) {
             return $pword;
         }
 
@@ -828,9 +825,6 @@ class IndexShard extends PersistentStructure implements
             $continue = ($chr == 128);
             $end_word_start += $posting_len;
         }
-        if($just_start) {
-            return $pword;
-        }
         $pword = $this->getWordDocsWord($end_word_start);
         $chr = ord($pword[0]) & 192;
         while($chr > 64) {
@@ -841,6 +835,43 @@ class IndexShard extends PersistentStructure implements
         }
         return $this->getWordDocsSubstring($posting_start << 2, 
             $end_word_start + $posting_len);
+    }
+
+    /**
+     *
+     */
+    function getDocIndexOfPostingAtOffset($current)
+    {
+        $pword = $this->getWordDocsWord($current << 2);
+        $tmp = 2 << 26;
+        $chr = (ord($pword[0]) & 192);
+        if(!$chr) {
+            $doc_index = unpackFirstModified9($pword);
+            if(($doc_index & $tmp) > 0) {
+                $doc_index -= $tmp + ($doc_index & 0x1FF);
+                $doc_index >>= 9;
+            } else {
+                $doc_index--;
+            }
+            return $doc_index;
+        }
+        $posting_len = self::POSTING_LEN;
+        $chr = (ord($pword[0]) & 192);
+        $continue = $chr == 128 || $chr == 64;
+        while ($continue) {
+            $current--;
+            $pword = $this->getWordDocsWord($current << 2);
+            $chr = (ord($pword[0]) & 192);
+            $continue = ($chr == 128);
+        }
+        $doc_index = unpackFirstModified9($pword);
+        if(($doc_index & $tmp) > 0) {
+            $doc_index -= $tmp + ($doc_index & 0x1FF);
+            $doc_index >>= 9;
+        } else {
+            $doc_index--;
+        }
+        return $doc_index;
     }
 
     /**
@@ -871,9 +902,7 @@ class IndexShard extends PersistentStructure implements
         $gallop_phase = true;
         do {
             $offset = 0;
-            $posting = $this->getPostingAtOffset(
-                $current, $posting_start, $posting_end, true);
-            $post_doc_index = $this->getDocIndexPosting($posting, false);
+            $post_doc_index = $this->getDocIndexOfPostingAtOffset($current);
             if($doc_index > $post_doc_index) {
                 $low = $current;
                 if($gallop_phase) {
@@ -894,14 +923,14 @@ class IndexShard extends PersistentStructure implements
                 }
             } else if($doc_index < $post_doc_index) {
                 if($low == $current) {
-                    return $posting_start * $posting_len;
+                    return $current * $posting_len;
                 } else if($gallop_phase) {
                     $gallop_phase = false;
                 }
                 $high = $current;
                 $current = (($low + $high) >> 1);
             } else  {
-                return $posting_start * $posting_len;
+                return $current * $posting_len;
             }
         } while($current <= $end);
         return false;
@@ -916,10 +945,7 @@ class IndexShard extends PersistentStructure implements
      */
     function docOffsetFromPostingOffset($offset) {
         $current = $offset / self::POSTING_LEN;
-        $posting = $this->getPostingAtOffset(
-            $current, $posting_start, $posting_end, true);
-        $doc_index = $this->getDocIndexPosting($posting, false);
-
+        $doc_index = $this->getDocIndexOfPostingAtOffset($current);
         return ($doc_index << 4);
     }
 
@@ -1523,7 +1549,7 @@ class IndexShard extends PersistentStructure implements
     /**
      *
      */
-    static function getDocIndexPosting($posting, $get_front = true)
+    static function getDocIndexPosting($posting)
     {  
         if($get_front) {
             $posting = substr($posting, 0, 4);
