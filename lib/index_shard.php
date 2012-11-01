@@ -811,17 +811,16 @@ class IndexShard extends PersistentStructure implements
     {
         $posting_start = $current;
         $posting_end = $current;
-        $pword = $this->getWordDocsWord($posting_start << 2);
+        $pword = $this->getWordDocsWord($current << 2);
 
         $chr = (ord($pword[0]) & 192);
-        $continue = $chr == 128 || $chr == 64;
-        if(!$continue && $just_start) {
+        if(!$chr && $just_start) {
             return $pword;
         }
 
         $posting_len = self::POSTING_LEN;
         $end_word_start = 0;
-
+        $continue = $chr == 128 || $chr == 64;
         while ($continue) {
             $posting_start--;
             $pword = $this->getWordDocsWord($posting_start << 2);
@@ -1525,7 +1524,7 @@ class IndexShard extends PersistentStructure implements
      *
      */
     static function getDocIndexPosting($posting, $get_front = true)
-    {
+    {  
         if($get_front) {
             $posting = substr($posting, 0, 4);
         }
@@ -1537,6 +1536,7 @@ class IndexShard extends PersistentStructure implements
         } else {
             $doc_index--;
         }
+
         return $doc_index;
     }
 
@@ -1574,10 +1574,6 @@ class IndexShard extends PersistentStructure implements
     function getWordDocsSubstring($offset, $len)
     {
         if($this->read_only_from_disk) {
-            if(!isset($this->word_doc_offset)) {
-                $this->word_doc_offset = self::HEADER_LENGTH + 
-                    $this->prefixes_len + $this->words_len;
-            }
             return $this->getShardSubstring($this->word_doc_offset + $offset, 
                 $len);
         }
@@ -1590,10 +1586,6 @@ class IndexShard extends PersistentStructure implements
     function getWordDocsWord($offset)
     {
         if($this->read_only_from_disk) {
-            if(!isset($this->word_doc_offset)) {
-                $this->word_doc_offset = self::HEADER_LENGTH + 
-                    $this->prefixes_len + $this->words_len;
-            }
             return $this->getShardWord($this->word_doc_offset + $offset);
         }
         return substr($this->word_docs, $offset, 4);
@@ -1611,8 +1603,8 @@ class IndexShard extends PersistentStructure implements
     function getDocInfoSubstring($offset, $len)
     {
         if($this->read_only_from_disk) {
-            $base_offset = $this->file_len - $this->docids_len;
-            return $this->getShardSubstring($base_offset + $offset, $len);
+            return $this->getShardSubstring(
+                $this->doc_info_offset + $offset, $len);
         }
         return substr($this->doc_infos, $offset, $len);
     }
@@ -1708,6 +1700,7 @@ class IndexShard extends PersistentStructure implements
         $info_block = & $this->readBlockShardAtOffset(0);
         $header = substr($info_block, 0, self::HEADER_LENGTH);
         self::headerToShardFields($header, $this);
+        $this->doc_info_offset = $this->file_len - $this->docids_len;
     }
 
 
@@ -1777,6 +1770,9 @@ class IndexShard extends PersistentStructure implements
         $shard->num_link_docs = $header_data[7];
         $shard->len_all_docs = $header_data[8];
         $shard->len_all_link_docs = $header_data[9];
+        $shard->word_doc_offset = self::HEADER_LENGTH + 
+            $shard->prefixes_len + $shard->words_len;
+
     }
 
     /**

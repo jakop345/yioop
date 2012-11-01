@@ -261,38 +261,37 @@ function decodeModified9($input_string, &$offset)
  */
 function unpackListModified9($int_string)
 {
-    $first_char = ord($int_string[0]);
-    switch($first_char & 48)
+    $encoded_list = unpackInt($int_string);
+
+    switch($encoded_list & 0x30000000)
     {
         case 0:
-            $num_bits = 28;
-            $num_elts = 1;
-            $mask = 0xFFFFFFF;
+            return  array($encoded_list & 0x0FFFFFFF); //lop off high nibble
         break;
-        case 1:
+        case 0x10000000:
+            $encoded_list &= 0xEFFFFFFF;
             $num_bits = 14;
-            $num_elts = 2;
             $mask = 0x3FFF;
-            $int_string[0] = chr($first_char - 16);
+            $shift = 14;
         break;
-        case 2:
+        case 0x20000000:
+            $encoded_list &= 0xDFFFFFFF;
             $num_bits = 9;
-            $num_elts = 3;
             $mask = 0x1FF;
-            $int_string[0] = chr($first_char - 32);
+            $shift = 18;
         break;
         default:
             global $MOD9_NUM_BITS_CODES, $MOD9_NUM_ELTS_DECODES;
-
+            $first_char = ord($int_string[0]);
             foreach($MOD9_NUM_BITS_CODES as $code => $num_bits) {
                 if(($first_char & $code) == $code) break;
             }
             $num_elts = $MOD9_NUM_ELTS_DECODES[$code];
             $mask = (1 << $num_bits) - 1;
             $int_string[0] = chr($first_char - $code);
-            
+            $encoded_list = unpackInt($int_string);
     }
-    $encoded_list = unpackInt($int_string);
+
     $decoded_list = array();
     for($i = 0; $i < $num_elts; $i++) {
         if(($pre_elt = $encoded_list & $mask) == 0) break;
@@ -307,28 +306,29 @@ function unpackListModified9($int_string)
  */
 function unpackFirstModified9($int_string)
 {
-    $first_char = ord($int_string[0]);
+    $encoded_array = unpack("N", $int_string);
+    $encoded_list = $encoded_array[1];
 
-    switch($first_char & 48)
+    switch($encoded_list & 0x30000000)
     {
         case 0:
-            return unpackInt($int_string) & 0xFFFFFFF;
+            return  $encoded_list & 0x0FFFFFFF; //lop off high nibble
         break;
-        case 1:
-            $int_string[0] = chr($first_char - 16);
+        case 0x10000000:
+            $encoded_list &= 0xEFFFFFFF;
             $num_bits = 14;
             $mask = 0x3FFF;
             $shift = 14;
         break;
-        case 2:
-            $int_string[0] = chr($first_char - 32);
+        case 0x20000000:
+            $encoded_list &= 0xDFFFFFFF;
             $num_bits = 9;
             $mask = 0x1FF;
             $shift = 18;
         break;
         default:
             global $MOD9_NUM_BITS_CODES, $MOD9_NUM_ELTS_DECODES;
-
+            $first_char = ord($int_string[0]);
             foreach($MOD9_NUM_BITS_CODES as $code => $num_bits) {
                 if(($first_char & $code) == $code) break;
             }
@@ -336,9 +336,8 @@ function unpackFirstModified9($int_string)
             $mask = (1 << $num_bits) - 1;
             $shift = $num_bits * ($num_elts - 1);
             $int_string[0] = chr($first_char - $code);
+            $encoded_list = unpackInt($int_string);
     }
-
-    $encoded_list = unpackInt($int_string);
     do {
         $tmp = $encoded_list >> $shift;
         if($pre_elt = $tmp & $mask) {
@@ -357,9 +356,11 @@ function unpackFirstModified9($int_string)
  */
 function unpackInt($str)
 {
-    if(!is_string($str)) return false;
-    $tmp = unpack("N", $str);
-    return $tmp[1];
+    if(is_string($str)) {
+        $tmp = unpack("N", $str);
+        return $tmp[1];
+    }
+    return false;
 }
 
 /**
