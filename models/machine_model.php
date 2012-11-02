@@ -94,12 +94,12 @@ class MachineModel extends Model
      */
     function getQueueServerUrls($crawl_time = 0)
     {
-        static $machines[$crawl_time] = array();
-        if($machines[$crawl_time] != array()) {
+        static $machines = array();
+        if(isset($machines[$crawl_time])) {
             return $machines[$crawl_time];
         }
         $network_crawl_file = CRAWL_DIR."/cache/".self::network_base_name.
-                    $timestamp.".txt";
+                    $crawl_time.".txt";
         if($crawl_time != 0 && file_exists($network_crawl_file)) {
             $info = unserialize(file_get_contents($cache_file));
             if(isset($info["MACHINE_URLS"])) {
