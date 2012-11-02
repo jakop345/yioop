@@ -63,10 +63,21 @@ class MachineModel extends Model
     /**
      *  Returns all the machine names stored in the DB
      *
+     *  @param string a crawl_time of a crawl to see the machines used in
+     *      that crawl
      *  @return array machine names
      */
-    function getMachineList()
+    function getMachineList($crawl_time = 0)
     {
+        $network_crawl_file = CRAWL_DIR."/cache/".self::network_base_name.
+                    $timestamp.".txt";
+        if($crawl_time != 0 && file_exists($network_crawl_file)) {
+            $info = unserialize(file_get_contents($cache_file));
+            if(isset($info["MACHINE_URLS"])) {
+                return $info["MACHINE_URLS"];
+            }
+        }
+
         $this->db->selectDB(DB_NAME);
 
         $machines = array();

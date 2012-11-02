@@ -444,8 +444,10 @@ EOT;
         $site_types = array('allowed_sites', 'disallowed_sites', 'seed_sites');
         foreach($site_types as $type) {
             $n[] = "[$type]";
-            foreach($info[$type]['url'] as $url) {
-                $n[] = "url[] = '$url';";
+            if(isset($info[$type]['url'])) {
+                foreach($info[$type]['url'] as $url) {
+                    $n[] = "url[] = '$url';";
+                }
             }
             $n[]="";
         }
@@ -613,14 +615,21 @@ EOT;
                 !$this->isSingleLocalhost($machine_urls, $timestamp)) {
                 $cache_file = CRAWL_DIR."/cache/".self::network_base_name.
                     $timestamp.".txt";
-                if(file_exists($cache_file) && filemtime($cache_file) 
-                    + 300 > time() ) {
-                    return unserialize(file_get_contents($cache_file));
+                if(file_exists($cache_file)) {
+                    $old_info = unserialize(file_get_contents($cache_file));
+                }
+                if(isset($old_info) && filemtime($cache_file) 
+                    + 300 > time()) {
+                    return $old_info;
+                }
+                $info = array();
+                if(isset($old_info["MACHINE_URLS"])) {
+                    $info["MACHINE_URLS"] = $old_info["MACHINE_URLS"];
+                } else {
+                    $info["MACHINE_URLS"] = $machine_urls;
                 }
                 $info_lists = $this->execMachines("getInfoTimestamp", 
-                    $machine_urls, serialize($timestamp));
-
-                $info = array();
+                    $info["MACHINE_URLS"], serialize($timestamp));
                 $info['DESCRIPTION'] = "";
                 $info["COUNT"] = 0;
                 $info['VISITED_URLS_COUNT'] = 0;

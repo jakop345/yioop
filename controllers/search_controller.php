@@ -996,7 +996,6 @@ class SearchController extends Controller implements CrawlConstants
                 return;
             }
         }
-        $queue_servers = $this->machineModel->getQueueServerUrls();
         if($crawl_time == 0) {
             $crawl_time = $this->crawlModel->getCurrentIndexDatabaseName();
         }
@@ -1023,6 +1022,8 @@ class SearchController extends Controller implements CrawlConstants
             if($time >= $crawl_time_int){
 
                 $crawl_time = (string)$time;
+                $queue_servers = 
+                    $this->machineModel->getQueueServerUrls($crawl_time);
 
                 $this->phraseModel->index_name = $crawl_time;
                 $this->crawlModel->index_name = $crawl_time;
