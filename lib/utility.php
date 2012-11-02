@@ -306,11 +306,8 @@ function unpackListModified9($int_string)
 /**
  *
  */
-function unpackFirstModified9($int_string)
+function firstModified9($encoded_list)
 {
-    $encoded_array = unpack("N", $int_string);
-    $encoded_list = $encoded_array[1];
-
     switch($encoded_list & 0x30000000)
     {
         case 0:
@@ -330,15 +327,16 @@ function unpackFirstModified9($int_string)
         break;
         default:
             global $MOD9_NUM_BITS_CODES, $MOD9_NUM_ELTS_DECODES;
-            $first_char = ord($int_string[0]);
+            $first_char = $encoded_list >> 24;
             foreach($MOD9_NUM_BITS_CODES as $code => $num_bits) {
                 if(($first_char & $code) == $code) break;
             }
             $num_elts = $MOD9_NUM_ELTS_DECODES[$code];
             $mask = (1 << $num_bits) - 1;
             $shift = $num_bits * ($num_elts - 1);
+            $int_string = packInt($encoded_list);
             $int_string[0] = chr($first_char - $code);
-            $encoded_list = unpackInt($int_string);
+            $encoded_list = (int)hexdec(bin2hex($int_string));
     }
     do {
         $tmp = $encoded_list >> $shift;
@@ -359,8 +357,7 @@ function unpackFirstModified9($int_string)
 function unpackInt($str)
 {
     if(is_string($str)) {
-        $tmp = unpack("N", $str);
-        return $tmp[1];
+        return (int)hexdec(bin2hex($str));
     }
     return false;
 }

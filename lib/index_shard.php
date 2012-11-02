@@ -810,9 +810,9 @@ class IndexShard extends PersistentStructure implements
         $posting_end = $current;
         $pword = $this->getWordDocsWord($current << 2);
 
-        $chr = (ord($pword[0]) & 192);
+        $chr = ($pword >> 24) & 192;
         if(!$chr) {
-            return $pword;
+            return packInt($pword);
         }
 
         $posting_len = self::POSTING_LEN;
@@ -821,17 +821,17 @@ class IndexShard extends PersistentStructure implements
         while ($continue) {
             $posting_start--;
             $pword = $this->getWordDocsWord($posting_start << 2);
-            $chr = (ord($pword[0]) & 192);
+            $chr = ($pword >> 24) & 192;
             $continue = ($chr == 128);
             $end_word_start += $posting_len;
         }
         $pword = $this->getWordDocsWord($end_word_start);
-        $chr = ord($pword[0]) & 192;
+        $chr = ($pword >> 24) & 192;
         while($chr > 64) {
             $posting_end++;
             $end_word_start += $posting_len;
             $pword = $this->getWordDocsWord($end_word_start);
-            $chr = ord($pword[0]) & 192;
+            $chr = ($pword >> 24) & 192;
         }
         return $this->getWordDocsSubstring($posting_start << 2, 
             $end_word_start + $posting_len);
@@ -844,9 +844,9 @@ class IndexShard extends PersistentStructure implements
     {
         $pword = $this->getWordDocsWord($current << 2);
         $tmp = 2 << 26;
-        $chr = (ord($pword[0]) & 192);
+        $chr = (($pword >> 24) & 192);
         if(!$chr) {
-            $doc_index = unpackFirstModified9($pword);
+            $doc_index = firstModified9($pword);
             if(($doc_index & $tmp) > 0) {
                 $doc_index -= $tmp + ($doc_index & 0x1FF);
                 $doc_index >>= 9;
@@ -856,15 +856,14 @@ class IndexShard extends PersistentStructure implements
             return $doc_index;
         }
         $posting_len = self::POSTING_LEN;
-        $chr = (ord($pword[0]) & 192);
         $continue = $chr == 128 || $chr == 64;
         while ($continue) {
             $current--;
             $pword = $this->getWordDocsWord($current << 2);
-            $chr = (ord($pword[0]) & 192);
+            $chr = (($pword >> 24) & 192);
             $continue = ($chr == 128);
         }
-        $doc_index = unpackFirstModified9($pword);
+        $doc_index = firstModified9($pword);
         if(($doc_index & $tmp) > 0) {
             $doc_index -= $tmp + ($doc_index & 0x1FF);
             $doc_index >>= 9;
@@ -890,18 +889,14 @@ class IndexShard extends PersistentStructure implements
      function nextPostingOffsetDocOffset($start_offset, $end_offset,
         $doc_offset) 
     {
-        $posting_len = self::POSTING_LEN;
         $doc_index = $doc_offset >> 4;
-        $current = floor($start_offset/$posting_len);
-        $end = floor($end_offset/$posting_len);
+        $current = $start_offset >> 2;
+        $end = $end_offset >> 2;
         $low = $current;
         $high = $end;
-        $posting_start = $current;
-        $posting_end = $current;
         $stride = 32;
         $gallop_phase = true;
         do {
-            $offset = 0;
             $post_doc_index = $this->getDocIndexOfPostingAtOffset($current);
             if($doc_index > $post_doc_index) {
                 $low = $current;
@@ -923,14 +918,14 @@ class IndexShard extends PersistentStructure implements
                 }
             } else if($doc_index < $post_doc_index) {
                 if($low == $current) {
-                    return $current * $posting_len;
+                    return $current << 2;
                 } else if($gallop_phase) {
                     $gallop_phase = false;
                 }
                 $high = $current;
                 $current = (($low + $high) >> 1);
             } else  {
-                return $current * $posting_len;
+                return $current << 2;
             }
         } while($current <= $end);
         return false;
@@ -1554,7 +1549,8 @@ class IndexShard extends PersistentStructure implements
         if($get_front) {
             $posting = substr($posting, 0, 4);
         }
-        $doc_index = unpackFirstModified9($posting);
+        $tmp = unpackInt($posting);
+        $doc_index = firstModified9($tmp);
         $tmp = 2 << 26;
         if(($doc_index & $tmp) > 0) {
             $doc_index -= $tmp + ($doc_index & 0x1FF);
@@ -1614,7 +1610,7 @@ class IndexShard extends PersistentStructure implements
         if($this->read_only_from_disk) {
             return $this->getShardWord($this->word_doc_offset + $offset);
         }
-        return substr($this->word_docs, $offset, 4);
+        return unpackInt(substr($this->word_docs, $offset, 4));
     }
 
     /**
@@ -1710,7 +1706,8 @@ class IndexShard extends PersistentStructure implements
             return $false;
         }
         $this->blocks[$bytes] = fread($this->fh, self::SHARD_BLOCK_SIZE);
-        $this->blocks_words[$bytes] = str_split($this->blocks[$bytes], 4);
+        $tmp = unpack("N*", $this->blocks[$bytes]);
+        $this->blocks_words[$bytes] = array_values($tmp);
         return $this->blocks[$bytes];
     }
 
