@@ -63,20 +63,10 @@ class MachineModel extends Model
     /**
      *  Returns all the machine names stored in the DB
      *
-     *  @param string a crawl_time of a crawl to see the machines used in
-     *      that crawl
      *  @return array machine names
      */
-    function getMachineList($crawl_time = 0)
+    function getMachineList()
     {
-        $network_crawl_file = CRAWL_DIR."/cache/".self::network_base_name.
-                    $timestamp.".txt";
-        if($crawl_time != 0 && file_exists($network_crawl_file)) {
-            $info = unserialize(file_get_contents($cache_file));
-            if(isset($info["MACHINE_URLS"])) {
-                return $info["MACHINE_URLS"];
-            }
-        }
 
         $this->db->selectDB(DB_NAME);
 
@@ -98,16 +88,26 @@ class MachineModel extends Model
     /**
      *  Returns urls for all the queue_servers stored in the DB
      *
+     *  @param string a crawl_time of a crawl to see the machines used in
+     *      that crawl
      *  @return array machine names
      */
-    function getQueueServerUrls()
+    function getQueueServerUrls($crawl_time = 0)
     {
-        $this->db->selectDB(DB_NAME);
-
-        static $machines = array();
-        if($machines != array()) {
-            return $machines;
+        static $machines[$crawl_time] = array();
+        if($machines[$crawl_time] != array()) {
+            return $machines[$crawl_time];
         }
+        $network_crawl_file = CRAWL_DIR."/cache/".self::network_base_name.
+                    $timestamp.".txt";
+        if($crawl_time != 0 && file_exists($network_crawl_file)) {
+            $info = unserialize(file_get_contents($cache_file));
+            if(isset($info["MACHINE_URLS"])) {
+                $machines[$crawl_time] = $info["MACHINE_URLS"];
+                return $info["MACHINE_URLS"];
+            }
+        }
+        $this->db->selectDB(DB_NAME);
 
         $sql = "SELECT URL FROM MACHINE WHERE HAS_QUEUE_SERVER > 0 ".
             "ORDER BY NAME DESC"; 
@@ -116,12 +116,12 @@ class MachineModel extends Model
         $i = 0;
 
         while($row = $this->db->fetchArray($result)) {
-            $machines[$i] = $row["URL"];
+            $machines[$crawl_time][$i] = $row["URL"];
             $i++;
         }
-        unset($machines[$i]); //last one will be null
+        unset($machines[$crawl_time][$i]); //last one will be null
 
-        return $machines;
+        return $machines[$crawl_time];
     }
 
     /**
