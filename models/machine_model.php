@@ -101,7 +101,7 @@ class MachineModel extends Model
         $network_crawl_file = CRAWL_DIR."/cache/".self::network_base_name.
                     $crawl_time.".txt";
         if($crawl_time != 0 && file_exists($network_crawl_file)) {
-            $info = unserialize(file_get_contents($cache_file));
+            $info = unserialize(file_get_contents($network_crawl_file));
             if(isset($info["MACHINE_URLS"])) {
                 $machines[$crawl_time] = $info["MACHINE_URLS"];
                 return $info["MACHINE_URLS"];

@@ -980,14 +980,13 @@ class SearchController extends Controller implements CrawlConstants
      * @param int $crawl_time the timestamp of the crawl to look up the cached
      *      page in
      */
-   function cacheRequestAndOutput($url, $highlight=true, $terms ="", 
+   function cacheRequestAndOutput($url, $highlight = true, $terms ="", 
         $crawl_time = 0)
     {
         global $CACHE, $IMAGE_TYPES;
 
         $flag = 0;
         $crawl_item = null;
-
         $hash_key = crawlHash(
             $terms.$url.serialize($highlight).serialize($crawl_time));
         if(USE_CACHE) {
