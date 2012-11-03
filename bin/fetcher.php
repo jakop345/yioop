@@ -1216,6 +1216,13 @@ class Fetcher implements CrawlConstants
                     //if HEBREW WINDOWS-1255 use ISO-8859 instead
                     if(stristr($site[self::ENCODING], "1255")) {
                         $site[self::ENCODING]= "ISO-8859-8";
+                        crawlLog("  using encoding ".
+                            $site[self::ENCODING]."...");
+                    }
+                    if(stristr($site[self::ENCODING], "1256")) {
+                        $site[self::ENCODING]= "ISO-8859-6";
+                        crawlLog("  using encoding ".
+                            $site[self::ENCODING]."...");
                     }
                     $site[self::PAGE] = @mb_convert_encoding($site[self::PAGE],
                         "UTF-8", $site[self::ENCODING]);
