@@ -1220,7 +1220,7 @@ class Fetcher implements CrawlConstants
                             $site[self::ENCODING]."...");
                     }
                     if(stristr($site[self::ENCODING], "1256")) {
-                        $site[self::ENCODING]= " ";
+                        $site[self::ENCODING]= "ISO-8859-6";
                         crawlLog("  using encoding ".
                             $site[self::ENCODING]."...");
                     }

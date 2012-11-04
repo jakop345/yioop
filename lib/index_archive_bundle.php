@@ -239,6 +239,7 @@ class IndexArchiveBundle implements CrawlConstants
             if($blocking == true) {
                 return -1;
             }
+            crawlLog("Switching Index Shard...");
             $switch_time = microtime();
             $this->saveAndAddCurrentShardDictionary($callback);
             //Set up new shard

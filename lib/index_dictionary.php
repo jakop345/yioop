@@ -200,19 +200,21 @@ class IndexDictionary implements CrawlConstants
             $out_slot ="B";
         }
         crawlLog("Adding shard data to dictionary files...");
-        $header = $index_shard->getShardHeader();
+        $index_shard->getShardHeader();
         $base_offset = IndexShard::HEADER_LENGTH + $index_shard->prefixes_len;
         $prefix_string = $index_shard->getShardSubstring(
-            IndexShard::HEADER_LENGTH, $index_shard->prefixes_len);
+            IndexShard::HEADER_LENGTH, $index_shard->prefixes_len, false);
         $next_offset = $base_offset;
         $word_item_len = IndexShard::WORD_ITEM_LEN;
-        for($i = 0; $i < self::NUM_PREFIX_LETTERS; $i++) {
+        $num_prefix_letters = self::NUM_PREFIX_LETTERS;
+        $prefix_item_size = self::PREFIX_ITEM_SIZE;
+        for($i = 0; $i < $num_prefix_letters; $i++) {
 
             $last_offset = $next_offset;
             // adjust prefix values 
             $first_offset_flag = true;
             $last_set = -1;
-            for($j = 0; $j < self::NUM_PREFIX_LETTERS; $j++) {
+            for($j = 0; $j < $num_prefix_letters; $j++) {
                 $prefix_info = $this->extractPrefixRecord($prefix_string, 
                         ($i << 8) + $j);
                 if($prefix_info !== false) {
@@ -226,8 +228,8 @@ class IndexDictionary implements CrawlConstants
                     $last_set = $j;
                     $last_out = $prefix_info;
                     charCopy($out, $prefix_string, 
-                        (($i << 8) + $j) * self::PREFIX_ITEM_SIZE,
-                        self::PREFIX_ITEM_SIZE);
+                        (($i << 8) + $j) * $prefix_item_size,
+                        $prefix_item_size);
                 }
             }
             // write prefixes
@@ -239,9 +241,9 @@ class IndexDictionary implements CrawlConstants
             if($last_set >= 0) {
                 list($offset, $count) = $last_out;
                 $next_offset = $base_offset + $offset + 
-                    $count * IndexShard::WORD_ITEM_LEN;
+                    $count * $word_item_len;
                 fwrite($fh, $index_shard->getShardSubstring($last_offset, 
-                    $next_offset - $last_offset));
+                    $next_offset - $last_offset, false));
             } 
             fclose($fh);
         }
@@ -308,24 +310,28 @@ class IndexDictionary implements CrawlConstants
         $prefix_string_b = fread($fhB, self::PREFIX_HEADER_SIZE);
         $prefix_string_out = "";
         $offset = 0;
-        for($j = 0; $j < self::NUM_PREFIX_LETTERS; $j++) {
+        $word_item_len = IndexShard::WORD_ITEM_LEN;
+        $blank = IndexShard::BLANK;
+        $num_prefix_letters = self::NUM_PREFIX_LETTERS;
+
+        for($j = 0; $j < $num_prefix_letters; $j++) {
             $record_a = $this->extractPrefixRecord($prefix_string_a, $j);
             $record_b = $this->extractPrefixRecord($prefix_string_b, $j);
             if($record_a === false && $record_b === false) {
-                $prefix_string_out .= IndexShard::BLANK;
+                $prefix_string_out .= $blank;
             } else if($record_a === false){
                 $prefix_string_out .= 
                     $this->makePrefixRecord($offset, $record_b[1]);
-                $offset += $record_b[1] * IndexShard::WORD_ITEM_LEN;
+                $offset += $record_b[1] * $word_item_len;
             } else if($record_b === false){
                 $prefix_string_out .= 
                     $this->makePrefixRecord($offset, $record_a[1]);
-                $offset += $record_a[1] * IndexShard::WORD_ITEM_LEN;
+                $offset += $record_a[1] * $word_item_len;
             } else {
                 $count = $record_a[1] + $record_b[1];
                 $prefix_string_out .= 
                     $this->makePrefixRecord($offset, $count);
-                $offset += $count * IndexShard::WORD_ITEM_LEN;
+                $offset += $count * $word_item_len;
             }
         }
         fwrite($fhOut, $prefix_string_out);
@@ -340,44 +346,46 @@ class IndexDictionary implements CrawlConstants
         $offset_b = 0;
         $out = "";
         $out_len = 0;
+        $segment_size = self::SEGMENT_SIZE;
+
 
         while($remaining_a > 0 || $remaining_b > 0 ||
             $offset_a < $read_size_a || $offset_b < $read_size_b) {
             if($offset_a >= $read_size_a && $remaining_a > 0) {
-                $read_size_a = min($remaining_a, self::SEGMENT_SIZE);
+                $read_size_a = min($remaining_a, $segment_size);
                 $work_string_a = fread($fhA, $read_size_a);
                 $remaining_a -= $read_size_a;
                 $offset_a = 0;
             }
             if($offset_b >= $read_size_b && $remaining_b > 0) {
-                $read_size_b = min($remaining_b, self::SEGMENT_SIZE);
+                $read_size_b = min($remaining_b, $segment_size);
                 $work_string_b = fread($fhB, $read_size_b);
                 $remaining_b -= $read_size_b;
                 $offset_b = 0;
             }
             if($offset_a < $read_size_a) {
                 $record_a = substr($work_string_a, $offset_a, 
-                    IndexShard::WORD_ITEM_LEN);
+                    $word_item_len);
             }
             if($offset_b < $read_size_b) {
                 $record_b = substr($work_string_b, $offset_b, 
-                    IndexShard::WORD_ITEM_LEN);
+                    $word_item_len);
             }
             if($offset_b >= $read_size_b) {
                 $out .= $record_a;
-                $offset_a += IndexShard::WORD_ITEM_LEN;
+                $offset_a += $word_item_len;
             } else if ($offset_a >= $read_size_a) {
                 $out .= $record_b;
-                $offset_b += IndexShard::WORD_ITEM_LEN;
+                $offset_b += $word_item_len;
             } else if ($this->recordCmp($record_a, $record_b) < 0){
                 $out .= $record_a;
-                $offset_a += IndexShard::WORD_ITEM_LEN;
+                $offset_a += $word_item_len;
             } else {
                 $out .= $record_b;
-                $offset_b += IndexShard::WORD_ITEM_LEN;
+                $offset_b += $word_item_len;
             }
-            $out_len += IndexShard::WORD_ITEM_LEN;
-            if($out_len >=  self::SEGMENT_SIZE) {
+            $out_len += $word_item_len;
+            if($out_len >=  $segment_size) {
                 fwrite($fhOut, $out);
                 $out = "";
                 $out_len = 0;
