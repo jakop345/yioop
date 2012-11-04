@@ -70,7 +70,6 @@ class SearchfiltersModel extends Model implements CrawlConstants
         $this->dir_name = CRAWL_DIR."/search_filters";
         if(!file_exists(CRAWL_DIR."/search_filters")) {
             mkdir($this->dir_name);
-
             $this->db->setWorldPermissionsRecursive(
                 $this->dir_name, true);
         }

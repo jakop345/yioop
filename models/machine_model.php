@@ -115,6 +115,7 @@ class MachineModel extends Model
         $result = $this->db->execute($sql);
         $i = 0;
 
+        $machines[$crawl_time] =array();
         while($row = $this->db->fetchArray($result)) {
             $machines[$crawl_time][$i] = $row["URL"];
             $i++;
