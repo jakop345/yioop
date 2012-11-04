@@ -248,7 +248,7 @@ define('MIN_QUEUE_WEIGHT', 1/100000);
 define('MAX_ARCHIVE_OBJECT_SIZE', 100000000);
 
 /** number of documents before next gen */
-define('NUM_DOCS_PER_GENERATION', 50000);
+define('NUM_DOCS_PER_GENERATION', 40000);
 
 /** precision to round floating points document scores */
 define('PRECISION', 10); 
