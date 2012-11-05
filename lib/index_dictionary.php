@@ -121,6 +121,10 @@ class IndexDictionary implements CrawlConstants
     const DICT_BLOCK_SIZE = 4096;
 
     /**
+     * Disk block size is 1<< this power
+     */
+    const DICT_BLOCK_POWER = 12;
+    /**
      * Size of an item in the prefix index used to look up words. 
      * If the sub-dir was 65 (ASCII A), and the second char  was also
      * ASCII 65, then the corresonding prefix record would be the
@@ -224,7 +228,7 @@ class IndexDictionary implements CrawlConstants
                         $first_offset_flag = false;
                     }
                     $offset -= $first_offset;
-                    $out = packInt($offset) . packInt($count);
+                    $out = pack("N*", $offset, $count);
                     $last_set = $j;
                     $last_out = $prefix_info;
                     charCopy($out, $prefix_string, 
@@ -428,9 +432,9 @@ class IndexDictionary implements CrawlConstants
         if($record == IndexShard::BLANK) {
             return false;
         }
-        $offset = unpackInt(substr($record, 0, 4));
-        $count = unpackInt(substr($record, 4, 4));
-        return array($offset, $count);
+        $offset_count = array_values(unpack("N*", $record));
+
+        return $offset_count;
     }
 
     /**
@@ -443,7 +447,7 @@ class IndexDictionary implements CrawlConstants
      */
     function makePrefixRecord($offset, $count)
     {
-        return pack("N", $offset).pack("N", $count);
+        return pack("N*", $offset, $count);
     }
 
     /**
@@ -545,7 +549,8 @@ class IndexDictionary implements CrawlConstants
             $this->fhs = array();
         }
         $this->read_tier = $tier;
-        if(strlen($word_id) < IndexShard::WORD_KEY_LEN) {
+        $word_key_len = IndexShard::WORD_KEY_LEN;
+        if(strlen($word_id) < $word_key_len) {
             return false;
         }
         if($raw == false) {
@@ -554,7 +559,7 @@ class IndexDictionary implements CrawlConstants
         }
 
         $word_item_len = IndexShard::WORD_ITEM_LEN;
-        $word_data_len = IndexShard::WORD_ITEM_LEN - IndexShard::WORD_KEY_LEN;
+        $word_data_len = $word_item_len - $word_key_len;
         $file_num = ord($word_id[0]);
 
         $prefix = ord($word_id[1]);
@@ -563,9 +568,8 @@ class IndexDictionary implements CrawlConstants
         if($prefix_info == IndexShard::BLANK) {
             return false;
         }
-
-        $offset = unpackInt(substr($prefix_info, 0, 4));
-        $high = unpackInt(substr($prefix_info, 4, 4)) - 1;
+        list(, $offset, $high) = unpack("N*", $prefix_info);
+        $high--;
 
         $start = self::PREFIX_HEADER_SIZE  + $offset;
         $low = 0;
@@ -579,7 +583,7 @@ class IndexDictionary implements CrawlConstants
                 $check_loc * $word_item_len, $word_item_len);
 
             if($word_string == false) {return false;}
-            $id = substr($word_string, 0, IndexShard::WORD_KEY_LEN);
+            $id = substr($word_string, 0, $word_key_len);
             $cmp = strcmp($word_id, $id);
             if($cmp === 0) {
                 $found = true;
@@ -600,7 +604,7 @@ class IndexDictionary implements CrawlConstants
             return false;
         }
         //now extract the info
-        $word_string = substr($word_string, IndexShard::WORD_KEY_LEN);
+        $word_string = substr($word_string, $word_key_len);
         if($extract) {
             $info = array();
             $info[0]=IndexShard::getWordInfoFromString($word_string, true);
@@ -615,11 +619,11 @@ class IndexDictionary implements CrawlConstants
             $word_string = $this->getDictSubstring($file_num, $start + 
                 $test_loc * $word_item_len, $word_item_len);
             if($word_string == "" ) break;
-            $id = substr($word_string, 0, IndexShard::WORD_KEY_LEN);
+            $id = substr($word_string, 0, $word_key_len);
             if(strcmp($word_id, $id) != 0 ) break;
             $start_loc = $test_loc;
             $test_loc--;
-            $ws = substr($word_string, IndexShard::WORD_KEY_LEN);
+            $ws = substr($word_string, $word_key_len);
             if($extract) {
                 $tmp = IndexShard::getWordInfoFromString($ws, true);
                 array_push($info, $tmp);
@@ -635,10 +639,10 @@ class IndexDictionary implements CrawlConstants
             $word_string = $this->getDictSubstring($file_num, $start + 
                 $test_loc * $word_item_len, $word_item_len);
             if($word_string == "" ) break;
-            $id = substr($word_string, 0, IndexShard::WORD_KEY_LEN);
+            $id = substr($word_string, 0, $word_key_len);
             if(strcmp($word_id, $id) != 0 ) break;
             $test_loc++;
-            $ws = substr($word_string, IndexShard::WORD_KEY_LEN);
+            $ws = substr($word_string, $word_key_len);
             if($extract) {
                 $tmp = IndexShard::getWordInfoFromString($ws, true);
                 array_unshift($info, $tmp);
@@ -689,17 +693,28 @@ class IndexDictionary implements CrawlConstants
      */
     function getDictSubstring($file_num, $offset, $len)
     {
-        $block_offset = (floor($offset/self::DICT_BLOCK_SIZE) *
-            self::DICT_BLOCK_SIZE);
+        static $db_power = self::DICT_BLOCK_POWER;
+        static $db_size = self::DICT_BLOCK_SIZE;
+        $block_offset =  ($offset >> $db_power) << $db_power;
+
         $start_loc = $offset - $block_offset;
+
+        //if all in one block do it quickly
+        if($start_loc + $len < $db_size) {
+            $data = $this->readBlockDictAtOffset($file_num, $block_offset);
+            return substr($data, $start_loc, $len);
+        }
+
+        // otherwise, this loop is slower, but handles general case
         $substring = "";
         do {
             $data = $this->readBlockDictAtOffset($file_num, $block_offset);
             if($data === false) {return $substring;}
-            $block_offset += self::DICT_BLOCK_SIZE;
+            $block_offset += $db_size;
             $substring .= substr($data, $start_loc);
             $start_loc = 0;
         } while (strlen($substring) < $len);
+
         return substr($substring, 0, $len);
     }
 

@@ -1552,9 +1552,8 @@ class IndexShard extends PersistentStructure implements
      */
     static function getWordInfoFromString($str, $include_generation = false)
     {
-        $generation = unpackInt(substr($str, 0, 4));
-        $first_offset = unpackInt(substr($str, 4, 4));
-        $len = unpackInt(substr($str, 8, 4));
+        list(, $generation, $first_offset, $len) = unpack("N*", $str);
+
         $last_offset = $first_offset + $len - self::POSTING_LEN;
         $count = floor($len / self::POSTING_LEN);
         if( $include_generation) {
@@ -1669,6 +1668,8 @@ class IndexShard extends PersistentStructure implements
      * at byte offset $bytes
      *
      * @param int $bytes byte offset to start reading from
+     * @param bool $cache whether to cache disk blocks that have been read to
+     *      RAM
      * @return &string data fromIndexShard file
      */
     function &readBlockShardAtOffset($bytes, $cache = true)
@@ -1768,18 +1769,17 @@ class IndexShard extends PersistentStructure implements
      */
     static function headerToShardFields($header, $shard)
     {
-        $header_array = str_split($header, 4);
-        $header_data = array_map('unpackInt', $header_array);
-        $shard->prefixes_len = $header_data[0];
-        $shard->words_len = $header_data[1];
-        $shard->word_docs_len = $header_data[2];
-        $shard->docids_len = $header_data[3];
-        $shard->generation = $header_data[4];
-        $shard->num_docs_per_generation = $header_data[5];
-        $shard->num_docs = $header_data[6];
-        $shard->num_link_docs = $header_data[7];
-        $shard->len_all_docs = $header_data[8];
-        $shard->len_all_link_docs = $header_data[9];
+        $header_data = unpack("N*", $header);
+        $shard->prefixes_len = $header_data[1];
+        $shard->words_len = $header_data[2];
+        $shard->word_docs_len = $header_data[3];
+        $shard->docids_len = $header_data[4];
+        $shard->generation = $header_data[5];
+        $shard->num_docs_per_generation = $header_data[6];
+        $shard->num_docs = $header_data[7];
+        $shard->num_link_docs = $header_data[8];
+        $shard->len_all_docs = $header_data[9];
+        $shard->len_all_link_docs = $header_data[10];
         $shard->word_doc_offset = self::HEADER_LENGTH + 
             $shard->prefixes_len + $shard->words_len;
 
