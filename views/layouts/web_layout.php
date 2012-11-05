@@ -84,7 +84,7 @@ class WebLayout extends Layout
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <?php } ?>
         <link rel="shortcut icon"   href="favicon.ico" />
-        <link rel="stylesheet" type="text/css" href="css/search.css"" />
+        <link rel="stylesheet" type="text/css" href="css/search.css" />
         <link rel="search" type="application/opensearchdescription+xml" 
             href="<?php e(NAME_SERVER."yioopbar.xml");?>"
             title="Content search" />

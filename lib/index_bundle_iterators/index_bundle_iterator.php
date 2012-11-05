@@ -86,7 +86,7 @@ abstract class IndexBundleIterator implements CrawlConstants
      *  Default number of documents returned for each block (at most)
      * @var int
      */
-    const RESULTS_PER_BLOCK = 100;
+    const RESULTS_PER_BLOCK = 200;
 
     /**
      * Computes a relevancy score for a posting offset with respect to this

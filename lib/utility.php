@@ -228,17 +228,17 @@ function packListModified9($continue_bits, $cnt, $pack_list)
  */
 function decodeModified9($input_string, &$offset)
 {
+    if(!isset($input_string[$offset+3])) return array();
     $flag_mask = 192;
     $continue_threshold = 128;
     $first_time = true;
     $decode_list = array();
-    if(($len = strlen($input_string) ) < 4) return array();
     do {
         $int_string = substr($input_string, $offset, 4);
         $ord_first = ord($int_string[0]);
         $flag_bits = ($ord_first & $flag_mask);
         if($first_time) {
-            if($flag_bits != 0 && $flag_bits != $flag_mask) {
+            if($flag_bits && $flag_bits != $flag_mask) {
                 return false;
             }
             $first_time = false;
@@ -247,7 +247,6 @@ function decodeModified9($input_string, &$offset)
         $decode_list = array_merge($decode_list, 
             unpackListModified9($int_string));
         $offset += 4;
-        $len -= 4;
     } while($flag_bits >= $continue_threshold);
 
    return $decode_list;

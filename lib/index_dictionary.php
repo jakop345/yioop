@@ -507,8 +507,8 @@ class IndexDictionary implements CrawlConstants
 
     /**
      * For each index shard generation a word occurred in, return as part of
-     * array, an array entry of the form generation first offset, l
-     * Last offset, and number of documents the
+     * array, an array entry of the form generation, first offset, 
+     * last offset, and number of documents the
      * word occurred in for this shard. The first offset (similarly, the last
      * offset) is the byte offset into the word_docs string of the first
      * (last) record involving that word.
@@ -534,9 +534,28 @@ class IndexDictionary implements CrawlConstants
      }
 
      /**
+      *  This method facilitates query processing of an ongoing crawl.
+      *  During an ongoing crawl, the dictionary is arranged into tiers
+      *  as per the logarithmic merge algortihm rather than just one tier
+      *  as in a crawl that has been stopped.  Word info for more
+      *  recently crawled pages will tend to be in lower tiers than data
+      *  that was crawled earlier. getWordInfoTier gets word info data for
+      *  a specific tier in the index dictionary. Each tier will
+      *  have word info for a specific, disjoint set of shards, so the format of
+      *  how to look up posting lists in a shard can be the same
+      *  regardless of the tier: an array entry is of the form 
+      *  generation, first offset, last offset, and number of documents the
+      *  word occurred in for this shard.
       *
+      *  @param string $word_id id of the word one wants to look up
+      *  @param bool $raw whether the id is our version of base64 encoded or 
+      *  not
+      *  @param int $tier which tier to get word info from
+      *  @return mixed an array of entries of the form 
+      *      generation, first offset, last offset, count or
+      *      just a string of the word_info data if $extract is false 
       */
-     function getWordInfoTier($word_id, $raw = false, $extract = true, $tier)
+     function getWordInfoTier($word_id, $raw, $extract, $tier)
      {
         if(isset($this->fhs)) {
             $this->tier_fhs[$this->read_tier] = $this->fhs;
@@ -604,10 +623,11 @@ class IndexDictionary implements CrawlConstants
             return false;
         }
         //now extract the info
+
         $word_string = substr($word_string, $word_key_len);
         if($extract) {
             $info = array();
-            $info[0]=IndexShard::getWordInfoFromString($word_string, true);
+            $info[0] = IndexShard::getWordInfoFromString($word_string, true);
         } else {
             $info = $word_string;
         }

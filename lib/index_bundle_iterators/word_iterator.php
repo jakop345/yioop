@@ -304,7 +304,6 @@ class WordIterator extends IndexBundleIterator
     {
         $no_feeds = $this->feed_empty || !$this->use_feeds;
         $feed_in_use = $this->using_feeds && !$no_feeds;
-
         if($this->empty && $no_feeds) {
             return -1;
         }
@@ -344,6 +343,7 @@ class WordIterator extends IndexBundleIterator
         }
 
         $results = array();
+        $doc_key_len = IndexShard::DOC_KEY_LEN;
         $filter = ($this->filter == NULL) ? array() : $this->filter;
         foreach($pre_results as $keys => $data) {
             $host_key = substr($keys, self::HOST_KEY_POS, self::KEY_LEN);
@@ -351,12 +351,9 @@ class WordIterator extends IndexBundleIterator
                 continue;
             }
             $data[self::KEY] = $keys;
-            $hash_url = substr($keys, 0, IndexShard::DOC_KEY_LEN);
-            $data[self::HASH] = substr($keys, 
-                IndexShard::DOC_KEY_LEN, IndexShard::DOC_KEY_LEN);
             // inlinks is the domain of the inlink
-            $data[self::INLINKS] = substr($keys, 
-                2 * IndexShard::DOC_KEY_LEN, IndexShard::DOC_KEY_LEN);
+            list($hash_url, $data[self::HASH], $data[self::INLINKS]) = 
+                str_split($keys, $doc_key_len);
             if(isset($data[self::IS_FEED]) && $data[self::IS_FEED]) {
                 $data[self::CRAWL_TIME] = "feed";
             } else {

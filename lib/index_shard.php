@@ -549,7 +549,7 @@ class IndexShard extends PersistentStructure implements
         $wd_len = (isset($this->file_len )) ? 
             $this->file_len - $this->docids_len : $this->word_docs_len;
         $end = min($wd_len, $last_offset);
-
+        $posting_len = self::POSTING_LEN;
         $num_docs_or_links =  
             self::numDocsOrLinks($start_offset, $last_offset);
 
@@ -558,11 +558,11 @@ class IndexShard extends PersistentStructure implements
             $old_next_offset = $next_offset;
 
             $doc_id = 
-                $this->makeItem( // this changes next offst
+                $this->makeItem( // this changes next offset
                     $item, $next_offset, $num_docs_or_links);
             $results[$doc_id] = $item;
-            $num_docs_so_far += ($next_offset - $old_next_offset)
-                / self::POSTING_LEN;
+            $num_docs_so_far += ($next_offset - $old_next_offset) 
+                / $posting_len;
         } while ($next_offset<= $last_offset && $num_docs_so_far < $len
             && $next_offset > $old_next_offset);
 
@@ -601,13 +601,17 @@ class IndexShard extends PersistentStructure implements
     function makeItem(&$item, &$current_offset, $num_doc_or_links,
         $occurs = 0)
     {
-        $current = ($current_offset/self::POSTING_LEN );
+        $posting_len = self::POSTING_LEN;
+        $doc_key_len = self::DOC_KEY_LEN;
+        $current = ($current_offset/$posting_len);
         $posting_start = $current;
         $posting_end = $current;
+
         $posting = $this->getPostingAtOffset(
                 $current, $posting_start, $posting_end);
-        $current_offset = ($posting_end + 1)* self::POSTING_LEN;
+        $current_offset = ($posting_end + 1)* $posting_len;
         $offset = 0;
+
         list($doc_index, $item[self::POSITION_LIST]) = 
             $this->unpackPosting($posting, $offset);
 
@@ -617,13 +621,13 @@ class IndexShard extends PersistentStructure implements
             $doc_depth, PRECISION);
 
         $doc_loc = $doc_index << 4;
+
         $doc_info_string = $this->getDocInfoSubstring($doc_loc, 
-            self::DOC_KEY_LEN); 
+            $doc_key_len); 
         $item[self::SUMMARY_OFFSET] = unpackInt(
             substr($doc_info_string, 0, 4));
         list($doc_len, $num_keys) = 
             $this->unpackDoclenNum(substr($doc_info_string, 4));
-
         $item[self::GENERATION] = $this->generation;
 
         $is_doc = (($doc_len & self::LINK_FLAG) == 0) ? true : false;
@@ -676,7 +680,7 @@ class IndexShard extends PersistentStructure implements
         }
         if(!isset($item['KEY'])) {
             $doc_id = $this->getDocInfoSubstring(
-                $doc_loc + self::DOC_KEY_LEN, $num_keys * self::DOC_KEY_LEN);
+                $doc_loc + $doc_key_len, $num_keys * $doc_key_len);
         } else {
             $doc_id = $item['KEY'];
         }
@@ -707,7 +711,6 @@ class IndexShard extends PersistentStructure implements
             $item[self::SCORE] = $item[self::DOC_RANK]
                 * $item[self::RELEVANCE];
         }
-
         return $doc_id;
 
     }
