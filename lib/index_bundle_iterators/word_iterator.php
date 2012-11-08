@@ -367,7 +367,6 @@ class WordIterator extends IndexBundleIterator
             $results = NULL;
         }
         $this->pages = $results;
-
         return $results;
     }
 

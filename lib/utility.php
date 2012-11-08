@@ -302,15 +302,25 @@ function unpackListModified9($int_string)
     return $decoded_list;
 }
 
+if(!extension_loaded("yioop") ) {
+
 /**
  *
  */
-function firstModified9($encoded_list)
+function docIndexModified9($encoded_list)
 {
+    $t26 = 2 << 26;
     switch($encoded_list & 0x30000000)
     {
         case 0:
-            return  $encoded_list & 0x0FFFFFFF; //lop off high nibble
+            $doc_index = $encoded_list & 0x0FFFFFFF; //lop off high nibble
+            if(($doc_index & $t26) > 0) {
+                $doc_index -= $t26 + ($doc_index & 0x1FF);
+                $doc_index >>= 9;
+            } else {
+                $doc_index--;
+            }
+            return $doc_index;
         break;
         case 0x10000000:
             $encoded_list &= 0xEFFFFFFF;
@@ -339,12 +349,19 @@ function firstModified9($encoded_list)
     }
     do {
         $tmp = $encoded_list >> $shift;
-        if($pre_elt = $tmp & $mask) {
-            return $pre_elt;
+        if($doc_index = $tmp & $mask) {
+            if(($doc_index & $t26) > 0) {
+                $doc_index -= $t26 + ($doc_index & 0x1FF);
+                $doc_index >>= 9;
+            } else {
+                $doc_index--;
+            }
+            return $doc_index;
         }
         $shift -= $num_bits;
     } while($shift > 0);
-    return $pre_elt;//shouldn't get here
+    return $doc_index; //shouldn't get here
+
 }
 
 /**
@@ -359,6 +376,8 @@ function unpackInt($str)
         return (int)hexdec(bin2hex($str));
     }
     return false;
+}
+
 }
 
 /**

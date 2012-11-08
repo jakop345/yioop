@@ -194,7 +194,6 @@ class GroupIterator extends IndexBundleIterator
     function findDocsWithWord()
     {
         // first get a block of documents on which grouping can be done
-
         $pages =  $this->getPagesToGroup();
 
         $this->count_block_unfiltered = count($pages);
@@ -207,12 +206,12 @@ class GroupIterator extends IndexBundleIterator
             /* next we group like documents by url and remember 
                which urls we've seen this block
             */
-
             $pre_out_pages = $this->groupByHashUrl($pages);
 
            /*get doc page for groups of link data if exists and don't have
              also aggregate by hash
            */
+
            $this->groupByHashAndAggregate($pre_out_pages);
            $this->count_block = count($pre_out_pages);
             /*
@@ -222,7 +221,6 @@ class GroupIterator extends IndexBundleIterator
             $pages = $this->computeOutPages($pre_out_pages);
         }
         $this->pages = $pages;
-
         return $pages;
     }
 
