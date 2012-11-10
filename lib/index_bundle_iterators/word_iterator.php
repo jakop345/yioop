@@ -245,8 +245,11 @@ class WordIterator extends IndexBundleIterator
             $num_docs_or_links = 
                 IndexShard::numDocsOrLinks($this->feed_start, 
                 $this->feed_end);
-            $index->makeItem($item, 
-                $posting_offset, $num_docs_or_links, 1);
+            $current = $posting_offset >> 2;
+            $posting = $index->getCurrentShard()->getPostingAtOffset(
+                $current, $posting_start, $posting_end);
+            list( , $item) = $index->getCurrentShard()->makeItem($posting, 
+                $num_docs_or_links, 1);
             $item[self::RELEVANCE] *= 10;
         } else {
             $index = IndexManager::getIndex($this->index_name);
@@ -254,8 +257,11 @@ class WordIterator extends IndexBundleIterator
             $num_docs_or_links = 
                 IndexShard::numDocsOrLinks($this->start_offset, 
                 $this->last_offset);
-            $index->getCurrentShard()->makeItem($item, 
-                $posting_offset, $num_docs_or_links, 1);
+            $current = $posting_offset >> 2;
+            $posting = $index->getCurrentShard()->getPostingAtOffset(
+                $current, $posting_start, $posting_end);
+            list( , $item) = $index->getCurrentShard()->makeItem($posting, 
+                $num_docs_or_links, 1);
         }
         return $item[self::RELEVANCE];
     }

@@ -89,6 +89,80 @@ function vByteDecode(&$str, &$offset)
 }
 
 /**
+ * Makes an packed integer string from a docindex and the number of
+ * occurrences of a word in the document with that docindex.
+ *
+ * @param int $doc_index index (i.e., a count of which document it
+ *      is rather than a byte offset) of a document in the document string
+ * @param array integer positions word occurred in that doc
+ * @param bool $delta if true then stores the position_list as a sequence of
+ *      differences (a delta list)
+ * @return string a modified9 (our compression scheme) packed 
+ *      string containing this info.
+ */
+function packPosting($doc_index, $position_list, $delta = true)
+{
+    if($delta) {
+        $delta_list = deltaList($position_list);
+    } else {
+        $delta_list = $position_list;
+    }
+    if(isset($delta_list[0])){
+        $delta_list[0]++;
+    }
+
+    if( $doc_index >= (2 << 14) && isset($delta_list[0]) 
+        && $delta_list[0] < (2 << 9)  && $doc_index < (2 << 17)) {
+        $delta_list[0] += (((2 << 17) + $doc_index) << 9);
+    } else {
+        // we add 1 to doc_index to make sure not 0 (modified9 needs > 0)
+        array_unshift($delta_list, ($doc_index + 1));
+    }
+    $encoded_list = encodeModified9($delta_list);
+    return $encoded_list;
+}
+
+/**
+ * Given a packed integer string, uses the top three bytes to calculate
+ * a doc_index of a document in the shard, and uses the low order byte
+ * to computer a number of occurences of a word in that document.
+ *
+ * @param string $posting a string containing 
+ *      a doc index position list pair coded encoded using modified9
+ * @param int &offset a offset into the string where the modified9 posting
+ *      is encoded
+ * @param bool $dedelta if true then assumes the list is a sequence of 
+ *      differences (a delta list) and undoes the difference to get 
+ *      the original sequence
+ * @return array consisting of integer doc_index and a subarray consisting
+ *      of integer positions of word in doc.
+ */
+function unpackPosting($posting, &$offset, $dedelta = true)
+{
+    $delta_list = decodeModified9($posting, $offset);
+    $doc_index = array_shift($delta_list);
+
+    if(($doc_index & (2 << 26)) > 0) {
+        $delta0 = ($doc_index & ((2 << 9) - 1));
+        array_unshift($delta_list, $delta0);
+        $doc_index -= $delta0;
+        $doc_index -= (2 << 26);
+        $doc_index >>= 9;
+    } else {
+        $doc_index--;
+    }
+    if(isset($delta_list[0])){
+        $delta_list[0]--;
+    }
+
+    if($dedelta) {
+        deDeltaList($delta_list);
+    }
+
+    return array($doc_index, $delta_list);
+}
+
+/**
  * Computes the difference of a list of integers.
  * i.e., (a1, a2, a3, a4) becomes (a1, a2-a1, a3-a2, a4-a3) 
  *
@@ -115,15 +189,14 @@ function deltaList($list)
  * @param array $delta_list a list of nonegative integers
  * @return array a nondecreasing list of integers
  */
-function deDeltaList($delta_list)
+function deDeltaList(&$delta_list)
 {
     $last = 0;
-    $list = array();
-    foreach($delta_list as $delta) {
-        $last += $delta;
-        $list[] = $last;
+    $num = count($delta_list);
+    for($i = 1; $i < $num; $i++) {
+        $last += $delta_list[$i-1];
+        $delta_list[$i] += $last;
     }
-    return $list;
 }
 
 /**
@@ -216,6 +289,7 @@ function packListModified9($continue_bits, $cnt, $pack_list)
     return $out_string;
 }
 
+
 /**
  * Decoded a sequence of positive integers from a string that has been
  * encoded using Modified 9
@@ -231,26 +305,29 @@ function decodeModified9($input_string, &$offset)
     if(!isset($input_string[$offset+3])) return array();
     $flag_mask = 192;
     $continue_threshold = 128;
-    $first_time = true;
-    $decode_list = array();
-    do {
-        $int_string = substr($input_string, $offset, 4);
-        $ord_first = ord($int_string[0]);
-        $flag_bits = ($ord_first & $flag_mask);
-        if($first_time) {
-            if($flag_bits && $flag_bits != $flag_mask) {
-                return false;
-            }
-            $first_time = false;
-        }
-        $int_string[0] = chr($ord_first - $flag_bits);
-        $decode_list = array_merge($decode_list, 
-            unpackListModified9($int_string));
-        $offset += 4;
-    } while($flag_bits >= $continue_threshold);
+    $len = strlen($input_string);
+    $end = $offset;
+    $flag_bits = (ord($input_string[$end]) & $flag_mask) ;
+    if($flag_bits && $flag_bits != $flag_mask) {
+        return false;
+    }
+    $end += 4;
+    while ($end < $len && 
+            $flag_bits >= $continue_threshold) {
+        $flag_bits = (ord($input_string[$end]) & $flag_mask);
+        $end += 4;
+    }
+    $post_string = substr($input_string, $offset, $end - $offset);
+    $offset = $end;
+    $post_as_ints = unpack("N*", $post_string);
 
-   return $decode_list;
+    $decode_list = call_user_func_array( "array_merge", 
+        array_map("unpackListModified9", $post_as_ints));
+
+    return $decode_list;
 }
+
+if(!extension_loaded("yioop") ) {
 
 /**
  * Decoded a single word with high two bits off according to modified 9
@@ -258,10 +335,8 @@ function decodeModified9($input_string, &$offset)
  * @param string $int_string 4 byte string to decode
  * @return array sequence of integers that results from the decoding.
  */
-function unpackListModified9($int_string)
+function unpackListModified9($encoded_list)
 {
-    $encoded_list = unpackInt($int_string);
-
     switch($encoded_list & 0x30000000)
     {
         case 0:
@@ -283,6 +358,7 @@ function unpackListModified9($int_string)
         break;
         default:
             global $MOD9_NUM_BITS_CODES, $MOD9_NUM_ELTS_DECODES;
+            $int_string = packInt($encoded_list);
             $first_char = ord($int_string[0]);
             foreach($MOD9_NUM_BITS_CODES as $code => $num_bits) {
                 if(($first_char & $code) == $code) break;
@@ -301,8 +377,6 @@ function unpackListModified9($int_string)
     }
     return $decoded_list;
 }
-
-if(!extension_loaded("yioop") ) {
 
 /**
  *
@@ -390,6 +464,7 @@ function packInt($my_int)
 {
     return pack("N", $my_int);
 }
+
 
 /**
  * Unpacks a float from a 4 char string

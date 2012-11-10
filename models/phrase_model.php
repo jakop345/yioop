@@ -849,6 +849,7 @@ class PhraseModel extends ParallelModel
 
         $num_retrieved = 0;
         $pages = array();
+
         if(is_object($query_iterator)) {
             while($num_retrieved < $to_retrieve &&
                 is_array($next_docs = 
@@ -857,6 +858,7 @@ class PhraseModel extends ParallelModel
                 $num_retrieved += count($next_docs);
             }
         }
+
         $pages = array_values($pages);
         $result_count = count($pages);
 
