@@ -83,8 +83,10 @@ class WebLayout extends Layout
         <?php if(MOBILE) {?>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <?php } ?>
-        <link rel="shortcut icon"   href="favicon.ico" />
-        <link rel="stylesheet" type="text/css" href="css/search.css" />
+        <link rel="shortcut icon"
+            href="<?php e($_SERVER["PATH_INFO"]); ?>/favicon.ico" />
+        <link rel="stylesheet" type="text/css" 
+            href="<?php e($_SERVER["PATH_INFO"]); ?>/css/search.css" />
         <link rel="search" type="application/opensearchdescription+xml" 
             href="<?php e(NAME_SERVER."yioopbar.xml");?>"
             title="Content search" />
@@ -125,7 +127,8 @@ class WebLayout extends Layout
         <?php
         if(isset($data['INCLUDE_SCRIPTS'])) {
             foreach($data['INCLUDE_SCRIPTS'] as $script_name) {
-                e('<script type="text/javascript" src="./scripts/'.
+                e('<script type="text/javascript" 
+                    src="'.$_SERVER["PATH_INFO"].'/scripts/'.
                     $script_name.'.js" ></script>');
             }
         }

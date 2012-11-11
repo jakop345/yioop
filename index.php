@@ -54,6 +54,9 @@ if(strcmp($path_name, $s_name) == 0) {
     include(BASE_DIR."/error.php");
     exit();
 }
+if(!isset($_SERVER["PATH_INFO"])) {
+    $_SERVER["PATH_INFO"] = ".";
+}
 
 /**
  * Load the configuration file
