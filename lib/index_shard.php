@@ -470,9 +470,8 @@ class IndexShard extends PersistentStructure implements
             if($prefix_info == self::BLANK) {
                 return false;
             }
-            $offset = unpackInt(substr($prefix_info, 0, 4));
-
-            $high = unpackInt(substr($prefix_info, 4, 4)) - 1;
+            list(,$offset, $high) = unpack("N*", $prefix_info);
+            $high--;
 
             $start = self::HEADER_LENGTH + $this->prefixes_len  + $offset;
         } else {
@@ -582,7 +581,7 @@ class IndexShard extends PersistentStructure implements
      */
     static function numDocsOrLinks($start_offset, $last_offset)
     {
-        return floor(($last_offset - $start_offset) / self::POSTING_LEN);
+        return ($last_offset - $start_offset) >> 2;
     }
 
     /**
@@ -607,7 +606,7 @@ class IndexShard extends PersistentStructure implements
         $offset = 0;
 
         list($doc_index, $position_list) = 
-            unpackPosting($posting, $offset);
+            unpackPosting($posting, $offset, true);
         $item[self::POSITION_LIST] = $position_list;
         $doc_depth = log(10*(($doc_index +1) + 
             $this->num_docs_per_generation*$this->generation), 10);
@@ -615,11 +614,10 @@ class IndexShard extends PersistentStructure implements
 
         $doc_loc = $doc_index << 4;
 
-        list($front, $back) = str_split($this->getDocInfoSubstring($doc_loc, 
-            $doc_key_len), 4);
-
-        $item[self::SUMMARY_OFFSET] = unpackInt($front);
-        list($doc_len, $num_keys) = $this->unpackDoclenNum($back);
+        list(, $item[self::SUMMARY_OFFSET], $doc_int) = 
+            unpack("N*", $this->getDocInfoSubstring($doc_loc, $doc_key_len));
+        $num_keys = $doc_int & 255;
+        $doc_len = ($doc_int >> 8);
         $item[self::GENERATION] = $this->generation;
 
         $is_doc = (($doc_len & self::LINK_FLAG) == 0) ? true : false;
@@ -910,8 +908,7 @@ class IndexShard extends PersistentStructure implements
      *  @return int a document byte/char offset into the doc_infos string
      */
     function docOffsetFromPostingOffset($offset) {
-        $current = $offset / self::POSTING_LEN;
-        $doc_index = $this->getDocIndexOfPostingAtOffset($current);
+        $doc_index = $this->getDocIndexOfPostingAtOffset($offset >> 2);
         return ($doc_index << 4);
     }
 
@@ -1239,8 +1236,7 @@ class IndexShard extends PersistentStructure implements
                 $num_words++;
             } else {
                 if($old_prefix !== false) {
-                    $tmp[$old_prefix] = packInt($offset) .
-                        pack("N", $num_words);
+                    $tmp[$old_prefix] = pack("N*", $offset, $num_words);
                     $offset += $num_words * $word_item_len;
                 }
                 $old_prefix = $prefix;
@@ -1248,7 +1244,7 @@ class IndexShard extends PersistentStructure implements
             }
         }
 
-        $tmp[$old_prefix] = packInt($offset) . packInt($num_words);
+        $tmp[$old_prefix] = pack("N*", $offset, $num_words);
         $num_prefixes = 2 << 16;
         $this->prefixes = "";
         for($i = 0; $i < $num_prefixes; $i++) {
@@ -1448,8 +1444,8 @@ class IndexShard extends PersistentStructure implements
         list(, $generation, $first_offset, $len) = unpack("N*", $str);
 
         $last_offset = $first_offset + $len - self::POSTING_LEN;
-        $count = floor($len / self::POSTING_LEN);
-        if( $include_generation) {
+        $count = $len >> 2;
+        if($include_generation) {
             return array($generation, $first_offset, $last_offset, $count);
         }
         return array($first_offset, $last_offset, $count);
@@ -1517,7 +1513,6 @@ class IndexShard extends PersistentStructure implements
     {
         $block_offset =  ($offset >> self::SHARD_BLOCK_POWER) 
             << self::SHARD_BLOCK_POWER;
-
         $start_loc = $offset - $block_offset;
         //if all in one block do it quickly
         if($start_loc + $len < self::SHARD_BLOCK_SIZE) {
@@ -1525,14 +1520,16 @@ class IndexShard extends PersistentStructure implements
                 $start_loc, $len);
         }
         // otherwise, this loop is slower, but handles general case
-        $substring = "";
-        do {
+        $data = $this->readBlockShardAtOffset($block_offset, $cache);
+        if($data === false) {return "";}
+        $substring = substr($data, $start_loc);
+        $block_size = self::SHARD_BLOCK_SIZE;
+        while (strlen($substring) < $len) {
             $data = $this->readBlockShardAtOffset($block_offset, $cache);
             if($data === false) {return $substring;}
-            $block_offset += self::SHARD_BLOCK_SIZE;
-            $substring .= substr($data, $start_loc);
-            $start_loc = 0; 
-        } while (strlen($substring) < $len);
+            $block_offset += $block_size;
+            $substring .= $data;
+        }
 
         return substr($substring, 0, $len);
     }

@@ -73,7 +73,8 @@ class StaticView extends View
     }
 ?>
 <div class="non-search center">
-<h1 class="logo"><a href="."><img src="<?php e($logo); ?>" 
+<h1 class="logo"><a href="<?php e($_SERVER["PATH_INFO"]) ?>"><img 
+    src="<?php e($_SERVER["PATH_INFO"].$logo); ?>" 
     alt="<?php e(tl('static_view_title')); ?>" /></a><span><?php 
     e($data['subtitle']);?></span></h1>
 </div>

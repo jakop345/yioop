@@ -42,6 +42,19 @@ $pathinfo = pathinfo($_SERVER['SCRIPT_FILENAME']);
 define("BASE_DIR", $pathinfo["dirname"].'/');
 
 /**
+ * Check for paths of the form index.php/something which yioop doesn't support
+ */
+$s_name = $_SERVER['SCRIPT_NAME']."/";
+$path_name = substr($_SERVER["REQUEST_URI"], 0, strlen($s_name));
+if(strcmp($path_name, $s_name) == 0) {
+    $_SERVER["PATH_TRANSLATED"] = BASE_DIR;
+    $scriptinfo = pathinfo($s_name);
+    $_SERVER["PATH_INFO"] = $scriptinfo["dirname"].'/';
+    include(BASE_DIR."/error.php");
+    exit();
+}
+
+/**
  * Load the configuration file
  */
 require_once(BASE_DIR.'configs/config.php');

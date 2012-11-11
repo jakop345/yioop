@@ -713,27 +713,26 @@ class IndexDictionary implements CrawlConstants
      */
     function getDictSubstring($file_num, $offset, $len)
     {
-        static $db_power = self::DICT_BLOCK_POWER;
-        static $db_size = self::DICT_BLOCK_SIZE;
-        $block_offset =  ($offset >> $db_power) << $db_power;
-
+        $block_offset =  ($offset >> self::DICT_BLOCK_POWER) 
+            << self::DICT_BLOCK_POWER;
         $start_loc = $offset - $block_offset;
-
         //if all in one block do it quickly
-        if($start_loc + $len < $db_size) {
+        if($start_loc + $len < self::DICT_BLOCK_SIZE) {
             $data = $this->readBlockDictAtOffset($file_num, $block_offset);
             return substr($data, $start_loc, $len);
         }
 
         // otherwise, this loop is slower, but handles general case
-        $substring = "";
-        do {
+        $data = $this->readBlockDictAtOffset($file_num, $block_offset);
+        if($data === false) {return "";}
+        $substring = substr($data, $start_loc);
+        $db_size = self::DICT_BLOCK_SIZE;
+        while (strlen($substring) < $len) {
             $data = $this->readBlockDictAtOffset($file_num, $block_offset);
             if($data === false) {return $substring;}
             $block_offset += $db_size;
-            $substring .= substr($data, $start_loc);
-            $start_loc = 0;
-        } while (strlen($substring) < $len);
+            $substring .= $data;
+        }
 
         return substr($substring, 0, $len);
     }

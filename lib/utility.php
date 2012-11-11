@@ -137,9 +137,9 @@ function packPosting($doc_index, $position_list, $delta = true)
  * @return array consisting of integer doc_index and a subarray consisting
  *      of integer positions of word in doc.
  */
-function unpackPosting($posting, &$offset, $dedelta = true)
+function unpackPosting($posting, &$offset, $dedelta = true, $exact = false)
 {
-    $delta_list = decodeModified9($posting, $offset);
+    $delta_list = decodeModified9($posting, $offset, $exact);
     $doc_index = array_shift($delta_list);
 
     if(($doc_index & (2 << 26)) > 0) {
@@ -300,31 +300,30 @@ function packListModified9($continue_bits, $cnt, $pack_list)
  * @return array sequence of positive integers that were decoded
  * @see encodeModified9
  */
-function decodeModified9($input_string, &$offset)
+function decodeModified9($input_string, &$offset, $exact = false)
 {
     if(!isset($input_string[$offset+3])) return array();
-    $flag_mask = 192;
-    $continue_threshold = 128;
-    $len = strlen($input_string);
-    $end = $offset;
-    $flag_bits = (ord($input_string[$end]) & $flag_mask) ;
-    if($flag_bits && $flag_bits != $flag_mask) {
-        return false;
-    }
-    $end += 4;
-    while ($end < $len && 
-            $flag_bits >= $continue_threshold) {
-        $flag_bits = (ord($input_string[$end]) & $flag_mask);
+    if(!$exact) {
+        $flag_mask = 192;
+        $continue_threshold = 128;
+        $len = strlen($input_string);
+        $end = $offset;
+        $flag_bits = (ord($input_string[$end]) & $flag_mask) ;
+        if($flag_bits && $flag_bits != $flag_mask) {
+            return false;
+        }
         $end += 4;
+        while ($end < $len && 
+                $flag_bits >= $continue_threshold) {
+            $flag_bits = (ord($input_string[$end]) & $flag_mask);
+            $end += 4;
+        }
+        $post_string = substr($input_string, $offset, $end - $offset);
+        $offset = $end;
     }
-    $post_string = substr($input_string, $offset, $end - $offset);
-    $offset = $end;
-    $post_as_ints = unpack("N*", $post_string);
 
-    $decode_list = call_user_func_array( "array_merge", 
-        array_map("unpackListModified9", $post_as_ints));
-
-    return $decode_list;
+    return call_user_func_array( "array_merge", 
+        array_map("unpackListModified9", unpack("N*", $post_string)));
 }
 
 if(!extension_loaded("yioop") ) {
