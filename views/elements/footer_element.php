@@ -56,11 +56,11 @@ class FooterElement extends Element
     ?>
 
             <div>
-            - <a href="./blog.php"><?php 
+            - <a href="<?php e($_SERVER["PATH_INFO"]); ?>/blog.php"><?php 
             e(tl('footer_element_blog')); ?></a> -
-            <a href="./privacy.php"><?php 
+            <a href="<?php e($_SERVER["PATH_INFO"]); ?>/privacy.php"><?php 
             e(tl('footer_element_privacy')); ?></a> -
-            <a href="./bot.php"><?php 
+            <a href="<?php e($_SERVER["PATH_INFO"]); ?>/bot.php"><?php 
             e(tl('footer_element_bot')); ?></a> - <?php if(MOBILE) {
                 e('<br /> - ');
             }
