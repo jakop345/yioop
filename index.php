@@ -49,7 +49,7 @@ $path_name = substr($_SERVER["REQUEST_URI"], 0, strlen($s_name));
 if(strcmp($path_name, $s_name) == 0) {
     $_SERVER["PATH_TRANSLATED"] = BASE_DIR;
     $scriptinfo = pathinfo($s_name);
-    $_SERVER["PATH_INFO"] = ($scriptinfo["dirname"] == "//") ? "/" :
+    $_SERVER["PATH_INFO"] = ($scriptinfo["dirname"] == "/") ? "" :
         $scriptinfo["dirname"] ;
     include(BASE_DIR."/error.php");
     exit();
