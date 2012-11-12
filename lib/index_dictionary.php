@@ -432,9 +432,7 @@ class IndexDictionary implements CrawlConstants
         if($record == IndexShard::BLANK) {
             return false;
         }
-        $offset_count = array_values(unpack("N*", $record));
-
-        return $offset_count;
+        return array_values(unpack("N*", $record));
     }
 
     /**

@@ -1220,12 +1220,13 @@ class Fetcher implements CrawlConstants
                             $site[self::ENCODING]."...");
                     }
                     if(stristr($site[self::ENCODING], "1256")) {
-                        $site[self::ENCODING]= "ISO-8859-6";
-                        crawlLog("  using encoding ".
-                            $site[self::ENCODING]."...");
+                        $site[self::PAGE] = w1256ToUTF8($site[self::PAGE]);
+                        crawlLog("  using Yioop hack encoding ...");
+                    } else {
+                        $site[self::PAGE] = 
+                             @mb_convert_encoding($site[self::PAGE],
+                                "UTF-8", $site[self::ENCODING]);
                     }
-                    $site[self::PAGE] = @mb_convert_encoding($site[self::PAGE],
-                        "UTF-8", $site[self::ENCODING]);
                 }
                 crawlLog("  Using Processor...".$page_processor);
                 $doc_info = $processor->handle($site[self::PAGE], 

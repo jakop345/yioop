@@ -606,7 +606,7 @@ class IndexShard extends PersistentStructure implements
         $offset = 0;
 
         list($doc_index, $position_list) = 
-            unpackPosting($posting, $offset, true);
+            unpackPosting($posting, $offset);
         $item[self::POSITION_LIST] = $position_list;
         $doc_depth = log(10*(($doc_index +1) + 
             $this->num_docs_per_generation*$this->generation), 10);
@@ -1524,6 +1524,7 @@ class IndexShard extends PersistentStructure implements
         if($data === false) {return "";}
         $substring = substr($data, $start_loc);
         $block_size = self::SHARD_BLOCK_SIZE;
+        $block_offset += $block_size;
         while (strlen($substring) < $len) {
             $data = $this->readBlockShardAtOffset($block_offset, $cache);
             if($data === false) {return $substring;}
