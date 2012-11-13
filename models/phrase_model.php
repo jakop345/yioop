@@ -1052,6 +1052,7 @@ class PhraseModel extends ParallelModel
                 $queue_servers, $index_name, $filter);
         }
         if(!$network_flag) {
+            $doc_iterate_hash = crawlHash("site:any");
             foreach($word_structs as $word_struct) {
                 if(!is_array($word_struct)) { continue;}
                 $word_keys = $word_struct["KEYS"];
@@ -1067,9 +1068,14 @@ class PhraseModel extends ParallelModel
                 if($num_word_keys < 1) {continue;}
 
                 for($i = 0; $i < $total_iterators; $i++) {
-                    $word_iterators[$i] =
-                        new WordIterator($distinct_word_keys[$i], 
-                            $index_name, false, $filter);
+                    if($distinct_word_keys[$i] == $doc_iterate_hash) {
+                        $word_iterators[$i] = new DocIterator(
+                            $index_name, $filter);
+                    } else {
+                        $word_iterators[$i] =
+                            new WordIterator($distinct_word_keys[$i], 
+                                $index_name, false, $filter);
+                    }
                     foreach ($word_keys as $index => $key) {
                         if(isset($distinct_word_keys[$i]) && 
                             $key == $distinct_word_keys[$i]){
