@@ -112,7 +112,7 @@ class SearchView extends View implements CrawlConstants
         ?>
 
         <div class="searchbox">
-            <form id="search-form" method="get" action='?'>
+            <form id="search-form" method="get" action='?' onsubmit="updateLocalStorage()">
             <p>
             <?php if(isset($data["SUBSEARCH"]) && $data["SUBSEARCH"] != "") { ?>
             <input type="hidden" name="s" value="<?php 

@@ -1,4 +1,4 @@
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
@@ -51,16 +51,17 @@ FONT_HEIGHT = 24;
  * what the trie object loaded says in loadTrie
  */
 END_OF_TERM_MARKER = " ";
-
 /**
  * Steps to follow every time a key is up from the user end
  * Handles up/dowm arrow keys
  *
- * @param Event event current event 
+ * @param Event event current event
  * @return String text_field Current value from the search box
  *
  */
-function onTypeTerm(event, text_field) 
+
+
+function onTypeTerm(event, text_field)
 {
     var key_code_pressed;
     var term_array;
@@ -69,7 +70,19 @@ function onTypeTerm(event, text_field)
     var suggest_dropdown = elt("suggest-dropdown");
     var scroll_pos = 0;
     var tmp_pos = 0;
+    locale_terms = new Object();
+    local_terms_present = false;
+    local_suggest = true;
+    search_list_array = new Object();
 
+    //To find the length of an associative array
+    Object.size = function(obj) {
+    var size = 0, key;
+    for (key in obj) {
+        if (obj.hasOwnProperty(key)) size++;
+    }
+    return size;
+    };
     concat_term = "";
     if(window.event) { // IE8 and earlier
         key_code_pressed = event.keyCode;
@@ -83,20 +96,53 @@ function onTypeTerm(event, text_field)
             concat_term += concat_array[i] + " ";
         }
         concat_term = concat_term.trim();
-    }    
+    }
     input_term = term_array[term_array.length - 1].trim(" ");
 
     // behavior if typing keys other than up or down (notice call termSuggest)
-    if (key_code_pressed != KeyCodes.DOWN_ARROW && 
+    if (key_code_pressed != KeyCodes.DOWN_ARROW &&
             key_code_pressed != KeyCodes.UP_ARROW) {
         search_list = "";
-        termSuggest(dictionary, input_term);
+
+    // First search the local storage to fetch the suggestions
+    if (localStorage) {
+         if (localStorage[locale] != null) {
+            split_str = localStorage[locale].split("@@");
+            locale_terms = JSON.parse(split_str[1]);
+            local_dict = JSON.parse(localStorage[locale].split("@@", 1));
+            if (local_dict != null) {
+                termSuggest(local_dict, input_term);
+                local_terms_present = true;
+            }
+         }
+         else  count =0;
+    }
+    var sorted_local = SortLocalTerms();
+    if (Object.size(search_list_array) > 0) {
+        search_list = "";
+         for(var i = 0; i < sorted_local.length ; i++) {
+            var split_array = sorted_local[i].split('*');
+
+            if(search_list_array[split_array[1]] != null)
+            search_list += search_list_array[split_array[1]];
+         }
+     }
+
+     // Now search the actual dictionary trie
+     local_suggest = false;
+     termSuggest(dictionary, input_term);
+
+     // insert nbsp of the number of suggestions are less than MAX_DISPLAY
+     short_max = MAX_DISPLAY - count;
+     for(var i = 0; i < short_max; i++) {
+        search_list += "<li><span class='unselected'>&nbsp;</span></li>";
+    }
         if(count < 1) {
             search_list = "";
         }
         suggest_dropdown.scrollTop =  0;
         suggest_results.innerHTML = search_list;
-        cursor_pos = -1; 
+        cursor_pos = -1;
         num_items = count;
         if (num_items == 0 || search_list == "") {
             suggest_dropdown.className = "";
@@ -112,8 +158,8 @@ function onTypeTerm(event, text_field)
     }
     // behavior on up down arrows
     if(suggest_results.style.visibility == "visible") {
-        if(key_code_pressed == KeyCodes.DOWN_ARROW) { 
-            if (cursor_pos < 0) { 
+        if(key_code_pressed == KeyCodes.DOWN_ARROW) {
+            if (cursor_pos < 0) {
                 cursor_pos = 0;
                 setSelectedTerm(cursor_pos, "selected");
             } else {
@@ -124,7 +170,7 @@ function onTypeTerm(event, text_field)
                 setSelectedTerm(cursor_pos, "selected");
             }
             scroll_count = 1;
-            scroll_pos = (cursor_pos - MAX_DISPLAY > 0) ? 
+            scroll_pos = (cursor_pos - MAX_DISPLAY > 0) ?
                 (cursor_pos - MAX_DISPLAY + 1) : 1;
             suggest_dropdown.scrollTop = scroll_pos * FONT_HEIGHT;
         } else if(key_code_pressed == KeyCodes.UP_ARROW) {
@@ -138,13 +184,97 @@ function onTypeTerm(event, text_field)
                 }
                 setSelectedTerm(cursor_pos, "selected");
             }
-            scroll_pos = (cursor_pos - MAX_DISPLAY + scroll_count > 0) ? 
+            scroll_pos = (cursor_pos - MAX_DISPLAY + scroll_count > 0) ?
                 (cursor_pos - MAX_DISPLAY + scroll_count) : 1;
             scroll_count = (MAX_DISPLAY > scroll_count) ? scroll_count + 1 :
                 MAX_DISPLAY;
             suggest_dropdown.scrollTop = scroll_pos * FONT_HEIGHT;
         }
     }
+}
+
+/**
+ * To update the local storage with the previous query terms and
+ * create a trie on those terms
+ *
+ * @param None *
+ */
+function updateLocalStorage()
+{
+     var trie_to_store;
+     trie_storage = {};
+     var store_term = elt("query-field").value;
+     var freq, k=0;
+     var sorted_locale_terms = new Array();
+     if(localStorage) {
+         if (locale_terms[store_term] == null) {
+            locale_terms[store_term] = 1;
+         } else {
+            freq = parseInt(locale_terms[store_term]);
+            freq++;
+            locale_terms[store_term] = freq;
+         }
+         for(var key in locale_terms) {
+            sorted_locale_terms[k] = key;
+            k++;
+         }
+        sorted_locale_terms.sort();
+
+        // Build the trie
+        for(var i=0; i<sorted_locale_terms.length; i++) {
+        var trie_word = sorted_locale_terms[i];
+        var letters = trie_word.split(""),cur = trie_storage;
+        for (var j=0;j<letters.length;j++) {
+        var letter = encode(letters[j]);
+            var pos = cur[ letter ];
+            if (pos == null) {
+                if (j === letters.length - 1) {
+                    cur = cur[ letter ] = {'$' : '$'};
+                } else {
+                    cur = cur[ letter ] = {};
+                }
+            } else if (pos === 0) {
+                cur = cur[ letter ] = { '$' : '$' };
+            } else {
+                cur = cur[ letter ];
+            }
+        }
+    }
+    }
+    trie_to_store = JSON.stringify( trie_storage );
+    localStorage.setItem(locale,trie_to_store + "@@" + JSON.stringify(locale_terms));
+}
+
+/**
+ * Sort the local storage words based of number of times they are queried
+ */
+
+function SortLocalTerms()
+{
+    var local_storage_array = new Array();
+    if(Object.size(locale_terms) > 0) {
+        var j=0;
+        for(var key in locale_terms) {
+            local_storage_array[j] = locale_terms[key] +"*"+  key;
+            j++;
+        }
+    }
+    local_storage_array.sort(sortFunction);
+    local_storage_array.reverse();
+    return local_storage_array;
+}
+
+/**
+ * Sort function to sort the numbers in ascending order
+ */
+
+function sortFunction(a, b)
+{
+    var split_array1 = a.split('*');
+    var split_array2 = b.split('*');
+    var val1 = parseInt(split_array1[0]);
+    var val2 = parseInt(split_array2[0]);
+    return (val1 - val2);
 }
 
 /**
@@ -182,10 +312,10 @@ function termClick(term,termid)
  *
  * @param Array trie_array contains all search terms
  * @param String parent_word the prefix want to find sub-term for in trie
- * @param String highlighted_word parent_word, root_word + "<b>" + rest of 
+ * @param String highlighted_word parent_word, root_word + "<b>" + rest of
  *   parent
  */
-function getTrieTerms(trie_array, parent_word, highlighted_word) 
+function getTrieTerms(trie_array, parent_word, highlighted_word)
 {
     var search_terms;
     var highlighted_terms;
@@ -193,24 +323,27 @@ function getTrieTerms(trie_array, parent_word, highlighted_word)
     if (trie_array != null) {
         for (key in trie_array) {
             if (key != END_OF_TERM_MARKER ) {
-                getTrieTerms(trie_array[key], parent_word + key, 
+                getTrieTerms(trie_array[key], parent_word + key,
                         highlighted_word + key);
             } else {
-                search_terms = concat_term.trim() + " " + decode(parent_word);
-                search_terms = search_terms.trim();
-                highlighted_terms = concat_term.trim() + " " 
-                    + decode(highlighted_word) + "</b>";
-                search_list += "<li><span id='term" +count+
+                if (local_terms_present == false || (locale_terms[decode(parent_word)] == null && local_terms_present == true)) {
+                    search_terms = concat_term.trim() + " " + decode(parent_word);
+                    search_terms = search_terms.trim();
+                    highlighted_terms = concat_term.trim() + " " + decode(highlighted_word) + "</b>";
+                    search_string =  "<li><span id='term" +count+
                     "' class='unselected' onclick = 'void(0)' " +
                     "title='"+search_terms+"' " +
                     "onmouseover='setSelectedTerm(\""+count+"\",\"selected\")'" +
                     "onmouseout='setSelectedTerm(\""+count+"\",\"unselected\")'" +
                     "onmouseup='termClick(\""+search_terms+"\",this.id)'"+
                     ">" + highlighted_terms + "</span></li>";
-                count++;
+                    search_list += search_string;
+                    search_list_array[decode(parent_word)] = search_string;
+                    count++;
+                }
+                }
             }
         }
-    }
 }
 
 /**
@@ -252,11 +385,13 @@ function exist(trie_array, term)
 function termSuggest(trie_array, term)
 {
     last_word = false;
-    count = 0;
-    search_list = "";
+    if (local_suggest == true) {
+        count = 0;
+        search_list = "";
+    }
     // For US english ignore the case
     if(locale == 'en-US') {
-    term = term.toLowerCase();
+        term = term.toLowerCase();
     }
     var tmp;
     if(trie_array == null) {
@@ -275,10 +410,6 @@ function termSuggest(trie_array, term)
         trie_array = trie_array[term];
     }
     getTrieTerms(trie_array, term, term + "<b>");
-    short_max = MAX_DISPLAY - count;
-    for(var i = 0; i < short_max; i++) {
-        search_list += "<li><span class='unselected'>&nbsp;</span></li>";
-    }
 }
 
 /* wrappers to save typing */
@@ -301,7 +432,7 @@ function encode(str)
  * This is based on code found at:
  * https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects
  * /String/charAt
- * 
+ *
  * @param String str what to get the next character out of
  * @param int i current offset into str
  * @return Array pair of Unicode character beginning at i and the next offset
@@ -318,7 +449,7 @@ function getUnicodeCharAndNextOffset(str, i)
     if (0xD800 <= code && code <= 0xDBFF) {
         if (str.length <= i + 1) {
             return false;
-        }  
+        }
         var next = str.charCodeAt(i + 1);
         if (0xDC00 > next || next > 0xDFFF) {
             return false;
@@ -339,7 +470,7 @@ function getUnicodeCharAndNextOffset(str, i)
  * Load the Trie(compressed with .gz extension) during the launch of website
  * Trie's are represented using nested arrays.
  */
-function loadTrie() 
+function loadTrie()
 {
     var request = makeRequest();
     if(request) {
@@ -349,7 +480,7 @@ function loadTrie()
                 dictionary = trie["trie_array"];
                 END_OF_TERM_MARKER = trie["end_marker"];
             }
-            END_OF_TERM_MARKER = (typeof END_OF_TERM_MARKER == 'undefined') ? 
+            END_OF_TERM_MARKER = (typeof END_OF_TERM_MARKER == 'undefined') ?
                 ' ' : END_OF_TERM_MARKER;
         }
 
@@ -362,3 +493,14 @@ function loadTrie()
     }
 }
 document.getElementsByTagName("body")[0].onload = loadTrie;
+var ip_field = elt("query-field");
+ip_field.onpaste = function(e) {
+    setTimeout(function(){
+        onTypeTerm(e,ip_field);
+    }, 0);
+}
+ip_field.oncut = function(e) {
+    setTimeout(function(){
+        onTypeTerm(e,ip_field);
+    }, 0);
+}
