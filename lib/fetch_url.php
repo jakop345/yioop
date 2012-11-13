@@ -108,6 +108,7 @@ class FetchUrl implements CrawlConstants
                                     */
                 }
                 curl_setopt($sites[$i][0], CURLOPT_FOLLOWLOCATION, $follow);
+                curl_setopt($sites[$i][0], CURLOPT_SSL_VERIFYHOST, 0);
                 curl_setopt($sites[$i][0], CURLOPT_AUTOREFERER, true);
                 curl_setopt($sites[$i][0], CURLOPT_RETURNTRANSFER, true);
                 curl_setopt($sites[$i][0], CURLOPT_CONNECTTIMEOUT,PAGE_TIMEOUT);
@@ -495,6 +496,7 @@ class FetchUrl implements CrawlConstants
 
         curl_setopt($agents[$host], CURLOPT_AUTOREFERER, true);
         curl_setopt($agents[$host], CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($agents[$host], CURLOPT_SSL_VERIFYHOST, 0);
         curl_setopt($agents[$host], CURLOPT_NOSIGNAL, true);
         curl_setopt($agents[$host], CURLOPT_RETURNTRANSFER, true);
         curl_setopt($agents[$host], CURLOPT_FAILONERROR, true);

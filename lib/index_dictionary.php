@@ -110,6 +110,13 @@ class IndexDictionary implements CrawlConstants
     var $active_tiers;
 
     /**
+     * Length of the doc strings for each of the shards that have been added
+     * to the dictionary.
+     * @var array
+     */
+    var $shard_doc_lens;
+
+    /**
      * When merging two files on a given dictionary tier. This is the max number
      * of bytes to read in one go. (Must be divisible by WORD_ITEM_LEN)
      */

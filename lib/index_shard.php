@@ -616,6 +616,7 @@ class IndexShard extends PersistentStructure implements
 
         list(, $item[self::SUMMARY_OFFSET], $doc_int) = 
             unpack("N*", $this->getDocInfoSubstring($doc_loc, $doc_key_len));
+
         $num_keys = $doc_int & 255;
         $doc_len = ($doc_int >> 8);
         $item[self::GENERATION] = $this->generation;
@@ -701,6 +702,7 @@ class IndexShard extends PersistentStructure implements
             $item[self::SCORE] = $item[self::DOC_RANK]
                 * $item[self::RELEVANCE];
         }
+
         return array($doc_id, $item);
 
     }
@@ -805,15 +807,13 @@ class IndexShard extends PersistentStructure implements
         if(!$chr) {
             return packInt($pword);
         }
-
-        $old_pword = $pword;
         $continue = $chr != 192;
         while ($continue) {
             $posting_start--;
-            $pword = $this->getWordDocsWord($posting_start << 2);
-            $continue = ((($pword >> 24) & 192) == 128);
+            $cpword = $this->getWordDocsWord($posting_start << 2);
+            $continue = ((($cpword >> 24) & 192) == 128);
         }
-        $pword = $old_pword;
+
         while((($pword >> 24) & 192) > 64) {
             $posting_end++;
             $pword = $this->getWordDocsWord($posting_end << 2);
@@ -1587,7 +1587,6 @@ class IndexShard extends PersistentStructure implements
         $this->blocks_words += array_combine(
             range($bytes, $bytes + strlen($tmp) -1, 4), 
             unpack("N*", $tmp));
-
         return $tmp;
     }
 

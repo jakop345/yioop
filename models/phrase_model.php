@@ -859,6 +859,7 @@ class PhraseModel extends ParallelModel
             }
         }
 
+
         $pages = array_values($pages);
         $result_count = count($pages);
 
@@ -1000,6 +1001,7 @@ class PhraseModel extends ParallelModel
         if(USE_CACHE) {
             $CACHE->set($summary_hash, $results);
         }
+
         return $results;
     }
 

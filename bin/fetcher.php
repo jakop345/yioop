@@ -453,7 +453,7 @@ class Fetcher implements CrawlConstants
                 $info = $this->checkScheduler();
 
                 if($info === false) {
-                    crawlLog("Cannot connect to queue server...".
+                    crawlLog("Cannot connect to name server...".
                         " will try again in ".FETCH_SLEEP_TIME." seconds.");
                     sleep(FETCH_SLEEP_TIME);
                     continue;
@@ -1209,7 +1209,7 @@ class Fetcher implements CrawlConstants
                     is_subclass_of($page_processor, "TextProcessor"))) {
                     if(!@mb_check_encoding($site[self::PAGE], 
                         $site[self::ENCODING])) {
-                        crawlLog("  NOT VALID ENCODING DETECTED!!");
+                        crawlLog("  MB_CHECK_ENCODING FAILED!!");
                     }
                     crawlLog("  Converting from encoding ".
                         $site[self::ENCODING]."...");

@@ -351,6 +351,7 @@ class WordIterator extends IndexBundleIterator
         $results = array();
         $doc_key_len = IndexShard::DOC_KEY_LEN;
         $filter = ($this->filter == NULL) ? array() : $this->filter;
+
         foreach($pre_results as $keys => $data) {
             $host_key = substr($keys, self::HOST_KEY_POS, self::KEY_LEN);
             if(in_array($host_key, $filter) ) {

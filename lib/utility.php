@@ -378,7 +378,11 @@ function unpackListModified9($encoded_list)
 }
 
 /**
+ *  Given an int encoding encoding a doc_index followed by a position
+ *  list using Modified 9, extracts just the doc_index.
  *
+ *  @param int $encoded_list in the just described format
+ *  @return int a doc index into an index shard document map.
  */
 function docIndexModified9($encoded_list)
 {
@@ -1017,7 +1021,10 @@ function readMessage()
 }
 
 /**
+ * Convert the string $str encoded in Windows-1256 into UTF-8
  *
+ * @param string $str Windows-1256 string to convert
+ * @return string the UTF-8 equivalent
  */
 function w1256ToUTF8($str)
 {
@@ -1062,19 +1069,23 @@ function w1256ToUTF8($str)
 }
 
 /**
- *
+ * Given a unicode codepoint convert it to UTF-8
+ * 
+ * @param int $code  the codepoint to convert
+ * @return string the corresponding UTF-8 string
  */
-function utf8chr($num) {
-    if($num <= 0x7F) 
-        return chr($num);
-    if($num <= 0x7FF) 
-        return pack("C*", ($num >> 6)+192, ($num & 63) + 128);
-    if($num <= 0xFFFF) 
-            return pack("C*", ($num >> 12)+224, (($num>>6) & 63) + 128, 
-                ($num&63)+128);
-    if($num <= 0x1FFFFF) 
-        return pack("C*", ($num >> 18) + 240, (($num >> 12) & 63) + 128,
-            (($num >> 6) & 63) + 128, ($num & 63) + 128);
+function utf8chr($code) 
+{
+    if($code <= 0x7F) 
+        return chr($code);
+    if($code <= 0x7FF) 
+        return pack("C*", ($code >> 6)+192, ($code & 63) + 128);
+    if($code <= 0xFFFF) 
+            return pack("C*", ($code >> 12)+224, (($code>>6) & 63) + 128, 
+                ($code&63)+128);
+    if($code <= 0x1FFFFF) 
+        return pack("C*", ($code >> 18) + 240, (($code >> 12) & 63) + 128,
+            (($code >> 6) & 63) + 128, ($code & 63) + 128);
     return '';
 }
 
