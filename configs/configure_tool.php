@@ -144,7 +144,8 @@ class ConfigureTool
         $check_status = str_replace("<br />", "\n", $data["SYSTEM_CHECK"]);
         e($check_status."\n===============================\n");
 
-        $items = array("workDirectory" => "Create/Set Work Directory");
+        $items = array("workDirectory" => "Create/Set Work Directory",
+            "quit" => "Exit program");
         if($data["PROFILE"]) {
             $items = $this->menu;
         }
@@ -160,9 +161,14 @@ class ConfigureTool
     {
         $this->banner();
         $data = $this->admin->configure();
-        e("CURRENT WORK DIRECTORY: ".$data["WORK_DIRECTORY"]."\n\n");
+        $directory = (isset($data["WORK_DIRECTORY"]) &&
+            $data["WORK_DIRECTORY"] != "") ? $data["WORK_DIRECTORY"]
+            : "No value set yet.";
+        e("CURRENT WORK DIRECTORY: $directory\n\n");
         e("Enter a new value:\n");
-
+        if(!isset($_SERVER['REQUEST_URI'])) {
+            $_SERVER['REQUEST_URI'] = "";
+        }
         $this->prepareGlobals($data);
         $_REQUEST["WORK_DIRECTORY"] = readInput();
         $_REQUEST["arg"] = "directory";
