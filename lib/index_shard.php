@@ -561,7 +561,7 @@ class IndexShard extends PersistentStructure implements
             $posting = $this->getPostingAtOffset(
                 $next, $posting_start, $posting_end);
             $next = $posting_end + 1;
-            list($doc_id, $item) = 
+            list($doc_id, , $item) = 
                 $this->makeItem($posting, $num_docs_or_links);
             $results[$doc_id] = $item;
             $num_docs_so_far += $next - $posting_start;
@@ -703,7 +703,7 @@ class IndexShard extends PersistentStructure implements
                 * $item[self::RELEVANCE];
         }
 
-        return array($doc_id, $item);
+        return array($doc_id, $num_keys, $item);
 
     }
     /**

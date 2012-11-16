@@ -142,17 +142,17 @@ class NetworkIterator extends IndexBundleIterator
     /**
      * Computes a relevancy score for a posting offset with respect to this
      * iterator and generation As this is not easily determined
-     * for a network iterator, this method always returns 1 for this
+     * for a network iterator, this method always returns 1.0 for this
      * iterator
      *
      * @param int $generation the generation the posting offset is for
      * @param int $posting_offset an offset into word_docs to compute the
      *      relevance of
-     * @return float a relevancy score based on BM25F.
+     * @return float a relevancy score based on BM25F -- always 1.0.
      */
     function computeRelevance($generation, $posting_offset)
      {
-        return 1;
+        return 1.0;
      }
 
     /**

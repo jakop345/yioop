@@ -1001,14 +1001,13 @@ class SearchController extends Controller implements CrawlConstants
 
         //Get all crawl times
         $crawl_times = array();
-        $all_crawl_details = $this->crawlModel->getCrawlList();
+        $queue_servers =  $this->machineModel->getQueueServerUrls();
+        $all_crawl_details = $this->crawlModel->getCrawlList(false, true,
+            $queue_servers);
         foreach($all_crawl_details as $crawl_details){
-            if($crawl_details['CRAWL_TIME'] !== null){
-                array_push($crawl_times,$crawl_details['CRAWL_TIME']);
+            if(intval($crawl_details['CRAWL_TIME']) != 0){
+                array_push($crawl_times, intval($crawl_details['CRAWL_TIME']));
             }
-        }
-        for($i=0; $i < count($crawl_times); $i++){
-            $crawl_times[$i] = intval($crawl_times[$i]);
         }
         asort($crawl_times);
 

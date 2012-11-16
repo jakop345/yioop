@@ -109,7 +109,7 @@ function onTypeTerm(event, text_field)
          if (localStorage[locale] != null) {
             split_str = localStorage[locale].split("@@");
             locale_terms = JSON.parse(split_str[1]);
-            local_dict = JSON.parse(localStorage[locale].split("@@", 1));
+            local_dict = JSON.parse(split_str[0]);
             if (local_dict != null) {
                 termSuggest(local_dict, input_term);
                 local_terms_present = true;

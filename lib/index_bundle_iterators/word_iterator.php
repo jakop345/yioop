@@ -123,14 +123,14 @@ class WordIterator extends IndexBundleIterator
     var $last_offset;
 
     /**
-     * Keeps track of whether the word_iterator list is empty becuase the
+     * Keeps track of whether the word_iterator list is empty because the
      * word does not appear in the index shard
      * @var int
      */
     var $empty;
 
     /**
-     * Keeps track of whether the word_iterator list is empty becuase the
+     * Keeps track of whether the word_iterator list is empty because the
      * word does not appear in the index shard
      * @var int
      */
