@@ -823,7 +823,10 @@ class IndexShard extends PersistentStructure implements
     }
 
     /**
-     *
+     *  Returns the document index of the posting at offset $current in 
+     *  word_docs
+     *  @param int $current an offset into the posting lists (word_docs)
+     *  @return int the doc index of the pointed to posting
      */
     function getDocIndexOfPostingAtOffset($current)
     {
@@ -1117,28 +1120,27 @@ class IndexShard extends PersistentStructure implements
             $this->word_docs_packed = false;
         }
         $docids_len = $this->docids_len;
+        $doc_key_len = self::DOC_KEY_LEN;
+        $row_len = $doc_key_len;
+        $posting_len = self::POSTING_LEN;
 
         for($i = 0 ; $i < $docids_len; $i += $row_len) {
             $doc_info_string = $this->getDocInfoSubstring($i, 
-                self::DOC_KEY_LEN);
-            $offset = unpackInt(
-                substr($doc_info_string, 0, self::POSTING_LEN));
-            $doc_len_info = substr($doc_info_string, 
-                    self::POSTING_LEN, self::POSTING_LEN);
+                $doc_key_len);
+            list($offset, $doc_len_info) = array_values(unpack("N*",
+                $doc_info_string));
             list($doc_len, $num_keys) = 
                 $this->unpackDoclenNum($doc_len_info);
             $key_count = ($num_keys % 2 == 0) ? $num_keys + 2: $num_keys + 1;
-            $row_len = self::DOC_KEY_LEN * ($key_count);
-
-            $id = substr($this->doc_infos, $i + self::DOC_KEY_LEN, 
-                $num_keys * self::DOC_KEY_LEN);
-
-            $new_offset = (isset($docid_offsets[$id])) ? 
-                packInt($docid_offsets[$id]) : 
-                packInt($offset);
-
-            charCopy($new_offset, $this->doc_infos, $i, self::POSTING_LEN);
-
+            $row_len = $doc_key_len * ($key_count);
+            $id = substr($this->doc_infos, $i + $doc_key_len, 
+                $num_keys * $doc_key_len);
+            if(isset($docid_offsets[$id])) {
+                charCopy(packInt($docid_offsets[$id]), $this->doc_infos, 
+                    $i, $posting_len);
+            } else if($offset == self::NEEDS_OFFSET_FLAG) {
+                crawlLog("Docuemnt:".toHexSring($id)." still needs offset");
+            }
         }
     }
 
@@ -1414,19 +1416,18 @@ class IndexShard extends PersistentStructure implements
     }
 
     /**
-     * Used to extract from a 4 byte string representing a packed int,
+     * Used to extract from a 32 bit unsigned int,
      * a pair which represents the length of a document together with the
      * number of keys in its doc_id
      *
-     * @param string $doc_len_string string to unpack
+     * @param int $doc_info integer to unpack
      * @return array pair (number of words in the document,
      *      number of keys that are used to make up its doc_id)
      */
-    static function unpackDoclenNum($doc_len_string)
+    static function unpackDoclenNum($doc_info)
     {
-        $doc_int = unpackInt($doc_len_string);
-        $num_keys = $doc_int & 255;
-        $doc_len = ($doc_int >> 8);
+        $num_keys = $doc_info & 255;
+        $doc_len = ($doc_info >> 8);
         return array($doc_len, $num_keys);
     }
 

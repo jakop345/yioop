@@ -224,6 +224,7 @@ class WordIterator extends IndexBundleIterator
                 $this->empty = false;
             }
         }
+
         if($this->dictionary_info !== false || $this->feed_info !== false) {
             $this->reset();
         }

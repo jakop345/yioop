@@ -846,7 +846,6 @@ class PhraseModel extends ParallelModel
         }
         $query_iterator = $this->getQueryIterator($word_structs, $filter, $raw,
              $queue_servers, $original_query);
-
         $num_retrieved = 0;
         $pages = array();
 
@@ -859,11 +858,10 @@ class PhraseModel extends ParallelModel
             }
         }
 
-
         $pages = array_values($pages);
         $result_count = count($pages);
-
-        if($raw != 1) {
+        $sort_time = 0;
+        if($raw == 0) {
             // initialize scores
             $sort_start = microtime();
             for($i = 0; $i < $result_count; $i++) {
@@ -913,10 +911,10 @@ class PhraseModel extends ParallelModel
         }
         $lookups = array();
         foreach($pages as $page) {
-            $key = $page[CrawlConstants::KEY];
-            if(isset($page[CrawlConstants::SUMMARY_OFFSET])) {
-                if(is_array($page[CrawlConstants::SUMMARY_OFFSET])) {
-                    $lookups[$key] = $page[CrawlConstants::SUMMARY_OFFSET];
+            $key = $page[self::KEY];
+            if(isset($page[self::SUMMARY_OFFSET])) {
+                if(is_array($page[self::SUMMARY_OFFSET])) {
+                    $lookups[$key] = $page[self::SUMMARY_OFFSET];
                 }else {
                     $machine_id = (isset($page[self::MACHINE_ID])) ?
                         $page[self::MACHINE_ID] :$this->current_machine;
@@ -928,6 +926,7 @@ class PhraseModel extends ParallelModel
                 }
             }
         }
+
         if(QUERY_STATISTICS) {
             $this->query_info['QUERY'] .= "$in2<b>Lookup Offsets Time</b>: ".
                 changeInMicrotime($lookup_time)."<br />";
@@ -956,11 +955,11 @@ class PhraseModel extends ParallelModel
         $summaries = $this->getCrawlItems($lookups, $queue_servers);
         $out_pages = array();
         foreach($pages as $page) {
-            $key = $page[CrawlConstants::KEY];
+            $key = $page[self::KEY];
             if(isset($summaries[$key])) {
                 $summary= & $summaries[$key];
                 $pre_page = array_merge($page, $summary);
-                if(isset($pre_page[CrawlConstants::ROBOT_METAS])) {
+                if(isset($pre_page[self::ROBOT_METAS])) {
                     if(!in_array("NOINDEX", $pre_page[self::ROBOT_METAS])
                          && 
                         !in_array("NONE", $pre_page[self::ROBOT_METAS])){
@@ -1001,7 +1000,6 @@ class PhraseModel extends ParallelModel
         if(USE_CACHE) {
             $CACHE->set($summary_hash, $results);
         }
-
         return $results;
     }
 

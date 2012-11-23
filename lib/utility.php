@@ -134,6 +134,7 @@ function packPosting($doc_index, $position_list, $delta = true)
  * @param bool $dedelta if true then assumes the list is a sequence of 
  *      differences (a delta list) and undoes the difference to get 
  *      the original sequence
+ * @param bool $exact whether the supplied string is exactly one posting
  * @return array consisting of integer doc_index and a subarray consisting
  *      of integer positions of word in doc.
  */
@@ -297,6 +298,7 @@ function packListModified9($continue_bits, $cnt, $pack_list)
  * @param string $int_string string to decode from
  * @param int &$offset where to string in the string, after decode
  *      points to where one was after decoding.
+ * @param bool $exact whether the supplied string is exactly one posting
  * @return array sequence of positive integers that were decoded
  * @see encodeModified9
  */
@@ -424,9 +426,10 @@ function docIndexModified9($encoded_list)
             $int_string[0] = chr($first_char - $code);
             $encoded_list = (int)hexdec(bin2hex($int_string));
     }
+
     do {
         $tmp = $encoded_list >> $shift;
-        if($doc_index = $tmp & $mask) {
+        if($doc_index = ($tmp & $mask)) {
             if(($doc_index & $t26) > 0) {
                 $doc_index -= $t26 + ($doc_index & 0x1FF);
                 $doc_index >>= 9;
@@ -436,7 +439,7 @@ function docIndexModified9($encoded_list)
             return $doc_index;
         }
         $shift -= $num_bits;
-    } while($shift > 0);
+    } while($shift >= 0);
     return $doc_index; //shouldn't get here
 
 }

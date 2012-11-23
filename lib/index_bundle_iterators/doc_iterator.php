@@ -216,7 +216,7 @@ class DocIterator extends IndexBundleIterator
         $num_docs_so_far = 0;
         do {
             if($this->next_offset >= $this->last_offset) {break;}
-            $posting = packPosting($this->next_offset>>4, array());
+            $posting = packPosting($this->next_offset >> 4, array(1));
             list($doc_id, $num_keys, $item) = 
                 $shard->makeItem($posting, $num_docs_or_links);
             $this->next_offset += ($num_keys + 1)*$doc_key_len;
@@ -339,7 +339,7 @@ class DocIterator extends IndexBundleIterator
      *  and generation; -1 on fail
      */
     function currentGenDocOffsetWithWord() {
-        if(($this->current_offset > $this->last_offset||
+        if(($this->current_offset > $this->last_offset ||
             $this->current_generation >= $this->num_generations)) {
             return -1;
         }

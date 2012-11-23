@@ -1893,6 +1893,10 @@ class Fetcher implements CrawlConstants
             $had_links = false;
             $num_queue_servers = count($this->queue_servers);
 
+            $this->found_sites[self::INVERTED_INDEX][$this->current_server
+                ]->addDocumentWords($doc_keys, self::NEEDS_OFFSET_FLAG, 
+                $word_lists, $meta_ids, true, $doc_rank);
+
             foreach($site[self::LINKS] as $url => $link_text) {
                 $link_meta_ids = array();
                 $location_link = false;
@@ -1954,17 +1958,8 @@ class Fetcher implements CrawlConstants
                         $part_num]->addDocumentWords($link_keys, 
                             self::NEEDS_OFFSET_FLAG, $link_word_lists, 
                                 $link_meta_ids, false, $link_rank);
-
-                    $meta_ids[] = 'link:'.$url;
-                    $meta_ids[] = 'link:'.crawlHash($url);
-
                 }
-
             }
-
-            $this->found_sites[self::INVERTED_INDEX][$this->current_server
-                ]->addDocumentWords($doc_keys, self::NEEDS_OFFSET_FLAG, 
-                $word_lists, $meta_ids, true, $doc_rank);
 
         }
 
@@ -2043,6 +2038,11 @@ class Fetcher implements CrawlConstants
         if(isset($site[self::LINKS])) {
             $num_links = count($site[self::LINKS]);
             $meta_ids[] = "numlinks:$num_links";
+            $link_urls = array_keys($site[self::LINKS]);
+            foreach($link_urls as $url) {
+                    $meta_ids[] = 'link:'.$url;
+                    $meta_ids[] = 'link:'.crawlHash($url);
+            }
         }
         if(isset($site[self::LOCATION]) && count($site[self::LOCATION]) > 0){
             foreach($site[self::LOCATION] as $location) {

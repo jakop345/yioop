@@ -370,7 +370,10 @@ class SearchController extends Controller implements CrawlConstants
         }
         $data["HAS_STATISTICS"] = file_exists($stats_file);
         $data[CSRF_TOKEN] = $this->generateCSRFToken($user);
-        if($view == "search" && $raw == 0 && isset($data['PAGES'])) {
+        if(!isset($data["RAW"])) {
+            $data["RAW"] = $raw;
+        }
+        if($view == "search" && $data["RAW"] == 0 && isset($data['PAGES'])) {
             $data['PAGES'] = $this->makeMediaGroups($data['PAGES']);
         }
         $data['INCLUDE_SCRIPTS'] = array("suggest");
@@ -482,6 +485,7 @@ class SearchController extends Controller implements CrawlConstants
                     "doMessage('<h1 class=\"red\" >".
                     tl('search_controller_no_index_set').
                     "</h1>');";
+            $data['RAW'] = $raw;
             return $data;
         }
 
@@ -584,9 +588,9 @@ class SearchController extends Controller implements CrawlConstants
             $this->sourceModel->updateFeedItems();
         }
         $data['VIDEO_SOURCES'] = $this->sourceModel->getMediaSources("video");
+        $data['RAW'] = $raw;
         $data['PAGES'] = (isset($phrase_results['PAGES'])) ?
              $phrase_results['PAGES']: array();
-
         $data['TOTAL_ROWS'] = (isset($phrase_results['TOTAL_ROWS'])) ? 
             $phrase_results['TOTAL_ROWS'] : 0;
         $data['LIMIT'] = $limit;
