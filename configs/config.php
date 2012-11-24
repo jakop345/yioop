@@ -237,7 +237,7 @@ define('URL_FILTER_SIZE', 20000000);
  * maximum number of urls that will be held in ram
  * (as opposed to in files) in the priority queue
  */
-define('NUM_URLS_QUEUE_RAM', 300000); 
+define('NUM_URLS_QUEUE_RAM', 400000); 
 
 /** Minimum weight in priority queue before rebuilt*/
 define('MIN_QUEUE_WEIGHT', 1/100000);

@@ -456,9 +456,9 @@ class QueueServer implements CrawlConstants, Join
                 $this->processRobotUrls();
 
                 $count = $this->web_queue->to_crawl_queue->count;
-
+                $max_links = max(MAX_LINKS_PER_PAGE, MAX_LINKS_PER_SITEMAP);
                 if($count < NUM_URLS_QUEUE_RAM - 
-                    SEEN_URLS_BEFORE_UPDATE_SCHEDULER * MAX_LINKS_PER_PAGE){
+                    SEEN_URLS_BEFORE_UPDATE_SCHEDULER * $max_links){
                     $info = $this->processQueueUrls();
                 }
 
@@ -1363,7 +1363,9 @@ class QueueServer implements CrawlConstants, Join
         $pos = 0;
         $num = 0;
         $bad = false;
-        while($pos < $len_urls && $num <= SEEN_URLS_BEFORE_UPDATE_SCHEDULER) {
+        $max_batch_sites_and_links = SEEN_URLS_BEFORE_UPDATE_SCHEDULER * 
+            (max(MAX_LINKS_PER_PAGE, MAX_LINKS_PER_SITEMAP) + 1);
+        while($pos < $len_urls && $num <= $max_batch_sites_and_links) {
             $len_site = unpackInt(substr($seen_urls_string, $pos ,4));
             if($len_site > 2*$this->page_range_request) {
                 crawlLog("Site string too long, $len_site,".
@@ -1384,7 +1386,8 @@ class QueueServer implements CrawlConstants, Join
             $sites[self::SEEN_URLS][] = $tmp;
             $num++;
         }
-        if($num > SEEN_URLS_BEFORE_UPDATE_SCHEDULER || $bad) {
+        if($num > $max_batch_sites_and_links * 
+            SEEN_URLS_BEFORE_UPDATE_SCHEDULER || $bad) {
             crawlLog("Index data file len_urls was $len_urls num was $num, ".
                 "may be corrupt.");
         }
@@ -2122,8 +2125,9 @@ class QueueServer implements CrawlConstants, Join
             crawlLog("No fetch batch created!! " .
                 "\nTime failing to make a batch:".
                 (changeInMicrotime($start_time)).". Loop properties:$i $count");
+            $max_links = max(MAX_LINKS_PER_PAGE, MAX_LINKS_PER_SITEMAP);
             if($i >= $count && $count >= NUM_URLS_QUEUE_RAM - 
-                    SEEN_URLS_BEFORE_UPDATE_SCHEDULER * MAX_LINKS_PER_PAGE) {
+                    $max_links) {
                 crawlLog("Queue Full and Couldn't produce Fetch Batch!! ".
                     "Resetting Queue!!!");
                 $this->dumpQueueToSchedules();
