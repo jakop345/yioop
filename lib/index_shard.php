@@ -1139,7 +1139,7 @@ class IndexShard extends PersistentStructure implements
                 charCopy(packInt($docid_offsets[$id]), $this->doc_infos, 
                     $i, $posting_len);
             } else if($offset == self::NEEDS_OFFSET_FLAG) {
-                crawlLog("Docuemnt:".toHexSring($id)." still needs offset");
+                crawlLog("Document:".toHexString($id)." still needs offset");
             }
         }
     }

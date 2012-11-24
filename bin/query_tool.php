@@ -71,7 +71,6 @@ require_once BASE_DIR."/lib/crawl_constants.php";
 /** Loads common constants for web crawling*/
 require_once BASE_DIR."/lib/locale_functions.php";
 
-
 /**Load base controller class, if needed. */
 require_once BASE_DIR."/controllers/search_controller.php";
 
