@@ -102,7 +102,7 @@ class WebArchiveBundleIterator extends ArchiveBundleIterator
      * @return string the path to the archive, based off of the fetcher prefix 
      *     used when this iterator was constructed
      */
-    function get_archive_name($timestamp)
+    function getArchiveName($timestamp)
     {
         return CRAWL_DIR.'/cache/'.$this->fetcher_prefix.
             self::archive_base_name.$timestamp;
@@ -122,9 +122,9 @@ class WebArchiveBundleIterator extends ArchiveBundleIterator
         $this->fetcher_prefix = $prefix;
         $this->iterate_timestamp = $iterate_timestamp;
         $this->result_timestamp = $result_timestamp;
-        $archive_name = $this->get_archive_name($iterate_timestamp);
+        $archive_name = $this->getArchiveName($iterate_timestamp);
         $this->archive = new WebArchiveBundle($archive_name);
-        $archive_name = $this->get_archive_name($result_timestamp);
+        $archive_name = $this->getArchiveName($result_timestamp);
         if(file_exists("$archive_name/iterate_status.txt")) {
             $this->restoreCheckpoint();
         } else {
@@ -143,7 +143,7 @@ class WebArchiveBundleIterator extends ArchiveBundleIterator
         $info['partition_index'] = $this->partition_index;
         $info['current_partition_num'] = $this->current_partition_num;
         $info['iterator_pos'] = $this->partition->iterator_pos;
-        $archive_name = $this->get_archive_name($this->result_timestamp);
+        $archive_name = $this->getArchiveName($this->result_timestamp);
         file_put_contents("$archive_name/iterate_status.txt",
             serialize($info));
     }
@@ -233,7 +233,7 @@ class WebArchiveBundleIterator extends ArchiveBundleIterator
         $this->partition = $this->archive->getPartition(
             $this->current_partition_num, false);
         $this->partition->reset();
-        $archive_name = $this->get_archive_name($this->result_timestamp);
+        $archive_name = $this->getArchiveName($this->result_timestamp);
         @unlink("$archive_name/iterate_status.txt");
     }
 }

@@ -98,12 +98,14 @@ class ArcArchiveBundleIterator extends ArchiveBundleIterator
     var $fh;
 
     /**
-     * Creates a arc archive iterator with the given parameters.
+     * Creates an arc archive iterator with the given parameters.
      *
      * @param string $iterate_timestamp timestamp of the arc archive bundle to 
      *      iterate  over the pages of
+       @param string $iterate_dir
      * @param string $result_timestamp timestamp of the arc archive bundle
      *      results are being stored in
+     * @param string $result_dir
      */
     function __construct($iterate_timestamp, $iterate_dir,
         $result_timestamp, $result_dir)

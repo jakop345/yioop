@@ -204,6 +204,7 @@ interface CrawlConstants
     const VIDEO_SOURCES = 'cg';
     const IS_FEED = 'ch';
     const SOURCE_NAME = 'ci';
+    const LINK_SEEN_URLS = 'cj';
 
     const NEEDS_OFFSET_FLAG = 0x7FFFFFFF;
 

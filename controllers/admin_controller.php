@@ -888,6 +888,16 @@ class AdminController extends Controller implements CrawlConstants
                         $machine_urls);
                     $indexes = $this->crawlModel->getCrawlList(true, true,
                         $machine_urls);
+                    $mixes = $this->crawlModel->getMixList(false);
+                    foreach($mixes as $mix) {
+                        $tmp = array();
+                        $tmp["DESCRIPTION"] = "MIX::".$mix["MIX_NAME"];
+                        $tmp["CRAWL_TIME"] = $mix["MIX_TIMESTAMP"];
+                        $tmp["ARC_DIR"] = "MIX";
+                        $tmp["ARC_TYPE"] = "MixArchiveBundle";
+                        $indexes[] = $tmp;
+                    }
+
                     $indexes_by_crawl_time = array();
                     $update_flag = false;
                     $data['available_options'] = array(

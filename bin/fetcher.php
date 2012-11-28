@@ -418,7 +418,7 @@ class Fetcher implements CrawlConstants
         }
 
         $info[self::STATUS] = self::CONTINUE_STATE;
-        
+        $local_archives = array("", "MIX");
         while ($info[self::STATUS] != self::STOP_STATE) {
             $start_time = microtime();
             $fetcher_message_file = CRAWL_DIR.
@@ -438,7 +438,7 @@ class Fetcher implements CrawlConstants
                     $this->to_crawl = array();
                 }
             } else if($this->crawl_type == self::ARCHIVE_CRAWL &&
-                    !empty($this->arc_dir)) {
+                    !in_array($this->arc_dir, $local_archives )) {
                 // An archive crawl with data coming from the name server.
                 $info = $this->checkArchiveScheduler();
 
@@ -632,15 +632,8 @@ class Fetcher implements CrawlConstants
                     " {$this->crawl_index} does not exist!");
                 return $pages;
             } else {
-                if(file_exists("$base_name/arc_type.txt")) {
-                    $arctype = trim(file_get_contents(
-                        "$base_name/arc_type.txt"));
-                } else {
-                    $arctype = "WebArchiveBundle";
-                }
-                $iterator_name = $arctype."Iterator";
                 $this->archive_iterator = 
-                    new $iterator_name($prefix, $this->crawl_index,
+                    new WebArchiveBundle($prefix, $this->crawl_index,
                         $this->crawl_time);
                 if($this->archive_iterator == NULL) {
                     crawlLog("Error creating archive iterator!!");
@@ -1184,7 +1177,6 @@ class Fetcher implements CrawlConstants
                 } else {
                     $text_data =false;
                 }
-                    
             } else {
                 continue;
             }
@@ -1836,9 +1828,10 @@ class Fetcher implements CrawlConstants
         for($i = 0; $i < $num_seen; $i++) {
             $site = $this->found_sites[self::SEEN_URLS][$i];
             if(!isset($site[self::HASH])) {continue; }
+            $host = UrlParser::getHost($site[self::URL]);
             $doc_keys = crawlHash($site[self::URL], true) . 
                 $site[self::HASH]."d". substr(crawlHash(
-                UrlParser::getHost($site[self::URL])."/",true), 1);
+                $host."/",true), 1);
 
             $doc_rank = false;
             if($this->crawl_type == self::ARCHIVE_CRAWL && 
@@ -1896,36 +1889,42 @@ class Fetcher implements CrawlConstants
             $this->found_sites[self::INVERTED_INDEX][$this->current_server
                 ]->addDocumentWords($doc_keys, self::NEEDS_OFFSET_FLAG, 
                 $word_lists, $meta_ids, true, $doc_rank);
-
+            
             foreach($site[self::LINKS] as $url => $link_text) {
                 $link_meta_ids = array();
                 $location_link = false;
-                // this mysterious if means won't index links from robots.txt
+                // this mysterious check means won't index links from robots.txt
                 // Sitemap will still be in TO_CRAWL, but that's done elsewhere
                 if(strlen($url) > 0 && !is_numeric($url)){
-                    $part_num = calculatePartition($url, 
-                        $num_queue_servers, "UrlParser::getHost");
+                    $link_host = UrlParser::getHost($url);
+                    if(strlen($link_host) == 0) continue;
+                    $part_num = calculatePartition($link_host, 
+                        $num_queue_servers);
                     $summary = array();
+                    if(!isset($this->found_sites[self::LINK_SEEN_URLS][
+                        $part_num])) {
+                        $this->found_sites[self::LINK_SEEN_URLS][$part_num] =
+                            array();
+                    }
                     if(substr($link_text, 0, 9) == "location:") {
                         $location_link = true;
                         $link_meta_ids[] = $link_text;
                         $link_meta_ids[] = "location:".
                             crawlHash($site[self::URL]);
                     }
-                    $elink_flag = (UrlParser::getHost($url) != 
-                        UrlParser::getHost($site[self::URL])) ? true : false;
+                    $elink_flag = ($link_host != $host) ? true : false;
                     $had_links = true;
                     $link_text = strip_tags($link_text);
                     $ref = ($elink_flag) ? "eref" : "iref";
                     $link_id = 
-                        "url|".$url."|text|$link_text|$ref|".$site[self::URL];
+                        "url|".$url."|text|".urlencode($link_text).
+                        "|$ref|".$site[self::URL];
                     $elink_flag_string = ($elink_flag) ? "e" :
                         "i";
                     $link_keys = crawlHash($url, true) .
                         crawlHash($link_id, true) . 
                         $elink_flag_string.
-                        substr(crawlHash(
-                            UrlParser::getHost($site[self::URL])."/", true), 1);
+                        substr(crawlHash($host."/", true), 1);
                     $summary[self::URL] =  $link_id;
                     $summary[self::TITLE] = $url; 
                         // stripping html to be on the safe side
@@ -1935,7 +1934,8 @@ class Fetcher implements CrawlConstants
                     $summary[self::HASH] =  $link_id;
                     $summary[self::TYPE] = "link";
                     $summary[self::HTTP_CODE] = "link";
-                    $this->found_sites[self::SEEN_URLS][] = $summary;
+                    $this->found_sites[self::LINK_SEEN_URLS][$part_num][] = 
+                        $summary;
                     $link_type = UrlParser::getDocumentType($url);
                     if(in_array($link_type, $IMAGE_TYPES)) {
                         $link_meta_ids[] = "media:image";
@@ -1966,6 +1966,16 @@ class Fetcher implements CrawlConstants
         $this->found_sites[self::INVERTED_INDEX][$this->current_server] = 
             $this->found_sites[self::INVERTED_INDEX][
                 $this->current_server]->save(true);
+        if(!isset($this->found_sites[self::LINK_SEEN_URLS][
+            $this->current_server])) {
+            $this->found_sites[self::LINK_SEEN_URLS][$this->current_server] =
+                array();
+        }
+        $this->found_sites[self::SEEN_URLS] = 
+            array_merge($this->found_sites[self::SEEN_URLS],
+            $this->found_sites[self::LINK_SEEN_URLS][$this->current_server]);
+        $this->found_sites[self::LINK_SEEN_URLS][$this->current_server] =
+            array();
 
         if($this->crawl_type == self::ARCHIVE_CRAWL) {
             $this->recrawl_check_scheduler = true;

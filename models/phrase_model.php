@@ -533,6 +533,10 @@ class PhraseModel extends ParallelModel
 
         //stemmed, if have stemmer
         $words = array_merge($base_words, $found_metas);
+        if(count($words) == 0 && count($disallow_phrases) > 0) {
+            $words[] = "site:any";
+        }
+
         if(QUERY_STATISTICS) {
             $this->query_info['QUERY'] .= "$in3<i>Index</i>: ".
                 $index_name."<br />";

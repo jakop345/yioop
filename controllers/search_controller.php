@@ -924,7 +924,7 @@ class SearchController extends Controller implements CrawlConstants
         $grouping = ($grouping > 0 ) ? 2 : 0;
         return (API_ACCESS) ? 
             $this->processQuery($query, "query", "", $results_per_page, 
-                $limit, $grouping) : NULL;
+                $limit, 0, $grouping) : NULL;
     }
 
     /**

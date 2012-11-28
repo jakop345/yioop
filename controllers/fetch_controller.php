@@ -221,9 +221,10 @@ class FetchController extends Controller implements CrawlConstants
             $elapsed_time = time() - $request_start;
 
             if($have_lock && $elapsed_time <= ARCHIVE_LOCK_TIMEOUT &&
-                    file_exists($info[self::ARC_DIR])) {
+                    ($info[self::ARC_DIR] == "MIX" ||
+                    file_exists($info[self::ARC_DIR]))) {
                 $iterate_timestamp = $info[self::CRAWL_INDEX];
-                $iterate_dir = $info[self::ARC_DIR];
+
                 $result_timestamp = $crawl_time;
                 $result_dir = WORK_DIRECTORY.
                     "/schedules/ArchiveIterator{$crawl_time}";
@@ -235,21 +236,20 @@ class FetchController extends Controller implements CrawlConstants
                 $arctype = $info[self::ARC_TYPE];
                 $iterator_name = $arctype."Iterator";
 
-                $time = time();
-                $archive_iterator = 
-                    new $iterator_name(
-                        $iterate_timestamp,
-                        $iterate_dir,
-                        $result_timestamp,
-                        $result_dir);
+                if($info[self::ARC_DIR] == "MIX") {
+                    $archive_iterator = new $iterator_name($iterate_timestamp,
+                        $result_timestamp, $result_dir);
+                } else {
+                    $archive_iterator = new $iterator_name($iterate_timestamp,
+                        $info[self::ARC_DIR], $result_timestamp, $result_dir);
+                }
             }
 
             if($archive_iterator && !$archive_iterator->end_of_iterator) {
                 $info[self::SITES] = array();
                 $pages = $archive_iterator->nextPages(
                     ARCHIVE_BATCH_SIZE);
-                $delta = time() - $time;
-            } 
+            }
 
             if($have_lock) {
                 flock($lock_fd, LOCK_UN);
