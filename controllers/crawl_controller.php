@@ -341,7 +341,7 @@ class CrawlController extends Controller implements CrawlConstants
      */
     function clearQuerySavePoint()
     {
-        if(!isset($_REQUEST["arg"]) {
+        if(!isset($_REQUEST["arg"])) {
             return;
         }
         $save_timestamp = $this->clean($_REQUEST["arg"], "int");
