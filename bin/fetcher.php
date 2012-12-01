@@ -1861,7 +1861,7 @@ class Fetcher implements CrawlConstants
                     $host, $site[self::DESCRIPTION], $link_origin);
             } else {
                 $is_link = false;
-                $site_url = $site[self::URL];
+                $site_url = str_replace('|', "%7C", $site[self::URL]);
                 $host = UrlParser::getHost($site_url);
                 $doc_keys = crawlHash($site_url, true) . 
                     $site[self::HASH]."d". substr(crawlHash(
@@ -1944,9 +1944,10 @@ class Fetcher implements CrawlConstants
                     $elink_flag = ($link_host != $host) ? true : false;
                     $link_text = strip_tags($link_text);
                     $ref = ($elink_flag) ? "eref" : "iref";
+                    $url = str_replace('|', "%7C", $url);
                     $link_id = 
                         "url|".$url."|text|".urlencode($link_text).
-                        "|$ref|".$site[self::URL];
+                        "|$ref|".$site_url;
                     $elink_flag_string = ($elink_flag) ? "e" :
                         "i";
                     $link_keys = crawlHash($url, true) .
