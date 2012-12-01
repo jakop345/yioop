@@ -264,6 +264,7 @@ class RssProcessor extends TextProcessor
                 }
             }
         }
+        if(!isset($url) || $url == "") return false;
         $text = mb_ereg_replace("(\s)+", " ",  $text);
         return array($url, $text);
     }

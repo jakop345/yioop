@@ -393,6 +393,28 @@ class ParallelModel extends Model implements CrawlConstants
         return array($summary_offset, $generation);
     }
 
+    /**
+     *  A save point is used to store to disk a sequence generation-doc-offset 
+     *  pairs of a particular mix query when doing an archive crawl of a crawl 
+     *  mix. This is used so that the mix can remember where it was the next
+     *  time it is invoked by the web app on the machine in question.
+     *  This function deletes such a save point associated with a timestamp
+     *
+     * @param int $save_timestamp timestamp of save point to delete
+     * @param array $machine_urls  machines on which to try to delete savepoint
+     */
+    function clearQuerySavePoint($save_timestamp, $machine_urls = NULL)
+    {
+        if($machine_urls != NULL && !$this->isSingleLocalhost($machine_urls)) {
+            $this->execMachines("clearQuerySavePoint", $machine_urls,
+                $save_timestamp);
+            return;
+        }
+
+        $save_file = CRAWL_DIR.'/cache/queries/savepoint'.
+            $save_timestamp.".txt";
+        @unlink($save_file);
+    }
 
     /**
      *  This method is invoked by other ParallelModel (@see CrawlModel 

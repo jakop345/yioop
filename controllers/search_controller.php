@@ -281,7 +281,11 @@ class SearchController extends Controller implements CrawlConstants
         } else if ($index_time_stamp == 0) {
             $index_info = NULL;
         }
-
+        if(isset($_REQUEST['save_timestamp'])){
+            $save_timestamp = $this->clean($_REQUEST['save_timestamp'], 'int');
+        } else {
+            $save_timestamp = 0;
+        }
         if(isset($_REQUEST['q']) && strlen($_REQUEST['q']) > 0 
             || $activity != "query") {
             if($activity == "query") {
@@ -303,7 +307,8 @@ class SearchController extends Controller implements CrawlConstants
                 $data = 
                     $this->processQuery(
                         $query, $activity, $arg, 
-                        $results_per_page, $limit, $index_time_stamp, $raw); 
+                        $results_per_page, $limit, $index_time_stamp, $raw,
+                        $save_timestamp); 
                         // calculate the results of a search if there is one
             } else {
                 $highlight = true;
@@ -467,10 +472,13 @@ class SearchController extends Controller implements CrawlConstants
      *      no grouping done on data. If $raw == 1 no summary returned (used
      *      with f=serial, end user probably does not want) 
      *      In this case, will get offset, generation, etc so could later lookup
+     * @param int $save_timestamp if this timestamp is nonzero, then save
+     *      iterate position, so can resume on future queries that make
+     *      use of the timestamp
      * @return array an array of at most results_per_page many search results
      */
     function processQuery($query, $activity, $arg, $results_per_page, 
-        $limit = 0, $index_name = 0, $raw = 0) 
+        $limit = 0, $index_name = 0, $raw = 0, $save_timestamp = 0) 
     {
         $no_index_given = false;
         if($index_name == 0) {
@@ -536,7 +544,7 @@ class SearchController extends Controller implements CrawlConstants
                 $phrase_results = $this->phraseModel->getPhrasePageResults(
                     $top_query, $limit, $results_per_page, false, $filter,
                     $use_cache_if_possible, $raw, $queue_servers,
-                    $guess_semantics);
+                    $guess_semantics, $save_timestamp);
                 $data['PAGING_QUERY'] = "?c=search&amp;".
                     "a=related&amp;arg=".urlencode($url);
                 if(isset($this->subsearch_name) && $this->subsearch_name !="") {
@@ -557,7 +565,7 @@ class SearchController extends Controller implements CrawlConstants
                     $phrase_results = $this->phraseModel->getPhrasePageResults(
                         $query, $limit, $results_per_page, true, $filter,
                         $use_cache_if_possible, $raw, $queue_servers,
-                        $guess_semantics);
+                        $guess_semantics, $save_timestamp);
                     $query = $original_query;
                 }
                 $data['PAGING_QUERY'] = "?q=".urlencode($query);
@@ -591,6 +599,8 @@ class SearchController extends Controller implements CrawlConstants
         $data['RAW'] = $raw;
         $data['PAGES'] = (isset($phrase_results['PAGES'])) ?
              $phrase_results['PAGES']: array();
+        $data['SAVE_POINT'] = (isset($phrase_results["SAVE_POINT"])) ?
+             $phrase_results["SAVE_POINT"]: array( 0 => 1);
         $data['TOTAL_ROWS'] = (isset($phrase_results['TOTAL_ROWS'])) ? 
             $phrase_results['TOTAL_ROWS'] : 0;
         $data['LIMIT'] = $limit;
@@ -915,16 +925,27 @@ class SearchController extends Controller implements CrawlConstants
      * @param int $grouping ($grouping == 0) normal grouping of links
      *      with associated document, ($grouping > 0)
      *      no grouping done on data
+     * @param int $save_timestamp if this timestamp is nonzero, then save
+     *      iterate position, so can resume on future queries that make
+     *      use of the timestamp
      *
      * @return array associative array of results for the query performed
      */
     public function queryRequest($query, $results_per_page, $limit = 0, 
-        $grouping = 0)
+        $grouping = 0, $save_timestamp = 0)
     {
         $grouping = ($grouping > 0 ) ? 2 : 0;
         return (API_ACCESS) ? 
             $this->processQuery($query, "query", "", $results_per_page, 
-                $limit, 0, $grouping) : NULL;
+                $limit, 0, $grouping, $save_timestamp) : NULL;
+    }
+
+    /**
+     *
+     */
+    public function clearQuerySavepoint($save_timestamp) 
+    {
+        $this->phraseModel->clearQuerySavePoint($save_timestamp);
     }
 
     /**
@@ -937,16 +958,19 @@ class SearchController extends Controller implements CrawlConstants
      * @param int $grouping ($grouping == 0) normal grouping of links
      *      with associated document, ($grouping > 0)
      *      no grouping done on data
+     * @param int $save_timestamp if this timestamp is nonzero, then save
+     *      iterate position, so can resume on future queries that make
+     *      use of the timestamp
      *
      * @return array associative array of results for the query performed
      */
     public function relatedRequest($url, $results_per_page, $limit = 0, 
-        $crawl_time = 0, $grouping = 0)
+        $crawl_time = 0, $grouping = 0, $save_timestamp = 0)
     {
         $grouping = ($grouping > 0 ) ? 2 : 0;
         return (API_ACCESS) ? 
             $this->processQuery("", "related", $url, $results_per_page, 
-                $limit, $crawl_time, $raw) : NULL;
+                $limit, $crawl_time, $raw, $save_timestamp) : NULL;
     }
 
     /**

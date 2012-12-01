@@ -119,12 +119,19 @@ class NetworkIterator extends IndexBundleIterator
      *      archive bundles that we look in for results
      * @param array $filter an array of hashes of domains to filter from
      *      results
+     * @param int $save_timestamp if this timestamp is nonzero, then when making
+     *      queries to separate machines the save_timestamp is sent so
+     *      the queries on those machine can make savepoints
      */
-    function __construct($query, $queue_servers, $timestamp, &$filter = NULL)
+    function __construct($query, $queue_servers, $timestamp, &$filter = NULL,
+        $save_timestamp = 0)
     {
         $this->results_per_block = ceil(self::MIN_FIND_RESULTS_PER_BLOCK);
         $this->base_query = "q=".urlencode($query).
             "&f=serial&network=false&raw=1&its=$timestamp&guess=false";
+        if($save_timestamp > 0) { // used for archive crawls of crawl mixes
+            $this->base_query .= "&save_timestamp=$save_timestamp";
+        }
         $this->queue_servers = $queue_servers;
         $this->limit = 0;
         $count = count($this->queue_servers);

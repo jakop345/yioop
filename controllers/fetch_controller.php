@@ -224,10 +224,9 @@ class FetchController extends Controller implements CrawlConstants
                     ($info[self::ARC_DIR] == "MIX" ||
                     file_exists($info[self::ARC_DIR]))) {
                 $iterate_timestamp = $info[self::CRAWL_INDEX];
-
                 $result_timestamp = $crawl_time;
                 $result_dir = WORK_DIRECTORY.
-                    "/schedules/ArchiveIterator{$crawl_time}";
+                    "/schedules/".self::archive_iterator.$crawl_time;
 
                 if(!file_exists($result_dir)) {
                     mkdir($result_dir);
@@ -236,10 +235,10 @@ class FetchController extends Controller implements CrawlConstants
                 $arctype = $info[self::ARC_TYPE];
                 $iterator_name = $arctype."Iterator";
 
-                if($info[self::ARC_DIR] == "MIX") {
+                if($info[self::ARC_DIR] == "MIX") { //recrawl of crawl mix case
                     $archive_iterator = new $iterator_name($iterate_timestamp,
-                        $result_timestamp, $result_dir);
-                } else {
+                        $result_timestamp);
+                } else { //any other archive crawl except web archive recrawls
                     $archive_iterator = new $iterator_name($iterate_timestamp,
                         $info[self::ARC_DIR], $result_timestamp, $result_dir);
                 }
@@ -256,16 +255,16 @@ class FetchController extends Controller implements CrawlConstants
             }
             fclose($lock_fd);
         }
-
         if(!empty($pages)) {
-            $pages_string = gzcompress(serialize($pages));
+            $pages_string = webencode(gzcompress(serialize($pages)));
+
         } else {
             $info[self::STATUS] = self::NO_DATA_STATE;
-            $pages_string = '';
+            $pages_string = webencode(gzcompress(serialize($pages)));
         }
-
+        $info[self::DATA] = $pages_string;
         $info_string = serialize($info);
-        $data['MESSAGE'] = $info_string."\n".$pages_string;
+        $data['MESSAGE'] = $info_string;
 
         $this->displayView($view, $data);
     }

@@ -331,6 +331,11 @@ class Fetcher implements CrawlConstants
     var $hosts_with_errors;
 
     /**
+     *
+     */
+    var $no_process_links;
+
+    /**
      * Sets up the field variables so that crawling can begin
      *
      * @param array $page_processors (mimetype => name of processor) pairs
@@ -371,7 +376,8 @@ class Fetcher implements CrawlConstants
         $this->sum_seen_description_length = 0;
         $this->sum_seen_site_link_length = 0;
         $this->num_seen_sites = 0;
-       
+        $this->no_process_links = false;
+
         //we will get the correct crawl order from a queue_server
         $this->crawl_order = self::PAGE_IMPORTANCE;
     }
@@ -418,7 +424,7 @@ class Fetcher implements CrawlConstants
         }
 
         $info[self::STATUS] = self::CONTINUE_STATE;
-        $local_archives = array("", "MIX");
+        $local_archives = array("");
         while ($info[self::STATUS] != self::STOP_STATE) {
             $start_time = microtime();
             $fetcher_message_file = CRAWL_DIR.
@@ -518,9 +524,15 @@ class Fetcher implements CrawlConstants
                 break;
             }
 
-            $summarized_site_pages = 
-                $this->processFetchPages($downloaded_pages);
-
+            if(isset($downloaded_pages["NO_PROCESS"])) {
+                unset($downloaded_pages["NO_PROCESS"]);
+                $summarized_site_pages = array_values($downloaded_pages);
+                $this->no_process_links = true;
+            } else{
+                $summarized_site_pages = 
+                    $this->processFetchPages($downloaded_pages);
+                $this->no_process_links = false;
+            }
             crawlLog("Number of summarized pages ".
                 count($summarized_site_pages));
 
@@ -725,8 +737,8 @@ class Fetcher implements CrawlConstants
             || $info[self::CRAWL_TIME] == 0)) {
             $dir = CRAWL_DIR."/schedules";
 
-            // Zero out the crawl. If haven't done crawl before, then scheduler
-            // will be called
+            /* Zero out the crawl. If haven't done crawl before, then scheduler
+               will be called */
             $this->to_crawl = array(); 
             $this->to_crawl_again = array();
             $this->found_sites = array();
@@ -742,9 +754,9 @@ class Fetcher implements CrawlConstants
                     "{$this->crawl_time}.txt", "1");
             }
 
-            // Update the basic crawl info, so that we can decide between going 
-            // to a queue server for a schedule or to the name server for 
-            // archive data.
+            /* Update the basic crawl info, so that we can decide between going 
+               to a queue server for a schedule or to the name server for 
+               archive data. */
             $this->crawl_time = $info[self::CRAWL_TIME];
             if ($this->crawl_time > 0) {
                 $this->crawl_type = $info[self::CRAWL_TYPE];
@@ -898,7 +910,6 @@ class Fetcher implements CrawlConstants
             $name_server."?c=fetch&a=archiveSchedule&time=$time".
             "&session=$session&robot_instance=".$prefix.ROBOT_INSTANCE.
             "&machine_uri=".WEB_URI."&crawl_time=".$this->crawl_time;
-
         $response_string = FetchUrl::getPage($request);
         if($response_string === false) {
             crawlLog("The following request failed:");
@@ -906,10 +917,8 @@ class Fetcher implements CrawlConstants
             return false;
         }
 
-        $end_info = strpos($response_string, "\n");
-        if($end_info !== false && ($info_string = 
-                substr($response_string, 0, $end_info)) != '') {
-            $info = unserialize($info_string);
+        if($response_string) {
+            $info = unserialize($response_string);
         } else {
             $info = array();
             $info[self::STATUS] = self::NO_DATA_STATE;
@@ -919,8 +928,7 @@ class Fetcher implements CrawlConstants
         if(isset($info[self::SITES])) {
             // Unpack the archive data and return it in the $info array; also 
             // write a copy to disk in case something goes wrong.
-            $data_string = substr($response_string, $end_info + 1);
-            $pages = unserialize(gzuncompress($data_string));
+            $pages = unserialize(gzuncompress(webdecode($info[self::DATA])));
             $info[self::ARC_DATA] = $pages;
         }
 
@@ -1505,7 +1513,12 @@ class Fetcher implements CrawlConstants
                 $this->found_sites[self::TO_CRAWL] = 
                     array_filter($this->found_sites[self::TO_CRAWL]);
             }
-            crawlLog($site[self::INDEX].". ".$site[self::URL]);
+            if(isset($site[self::INDEX])) {
+                $site_index = $site[self::INDEX];
+            } else {
+                $site_index = "[LINK]";
+            }
+            crawlLog($site_index.". ".$site[self::URL]);
          
         } // end for
 
@@ -1809,8 +1822,6 @@ class Fetcher implements CrawlConstants
      */
     function buildMiniInvertedIndex()
     {
-        global $IMAGE_TYPES;
-
         $start_time = microtime();
         crawlLog("  Start building mini inverted index ...  Current Memory:".
             memory_get_usage());
@@ -1828,10 +1839,6 @@ class Fetcher implements CrawlConstants
         for($i = 0; $i < $num_seen; $i++) {
             $site = $this->found_sites[self::SEEN_URLS][$i];
             if(!isset($site[self::HASH])) {continue; }
-            $host = UrlParser::getHost($site[self::URL]);
-            $doc_keys = crawlHash($site[self::URL], true) . 
-                $site[self::HASH]."d". substr(crawlHash(
-                $host."/",true), 1);
 
             $doc_rank = false;
             if($this->crawl_type == self::ARCHIVE_CRAWL && 
@@ -1839,7 +1846,28 @@ class Fetcher implements CrawlConstants
                 $doc_rank = $this->archive_iterator->weight($site);
             }
 
-            $meta_ids = $this->calculateMetas($site);
+            if(isset($site[self::TYPE]) && $site[self::TYPE] == "link") {
+                $is_link = true;
+                $doc_keys = $site[self::HTTP_CODE];
+                $site_url = $site[self::TITLE];
+                $host =  UrlParser::getHost($site_url);
+                $link_parts = explode('|', $site[self::HASH]);
+                if(isset($link_parts[5])) {
+                    $link_origin = $link_parts[5];
+                } else {
+                    $link_origin = $site_url;
+                }
+                $meta_ids = $this->calculateLinkMetas($site_url, 
+                    $host, $site[self::DESCRIPTION], $link_origin);
+            } else {
+                $is_link = false;
+                $site_url = $site[self::URL];
+                $host = UrlParser::getHost($site_url);
+                $doc_keys = crawlHash($site_url, true) . 
+                    $site[self::HASH]."d". substr(crawlHash(
+                    $host."/",true), 1);
+                $meta_ids = $this->calculateMetas($site);
+            }
 
             $word_lists = array();
             /* 
@@ -1848,11 +1876,15 @@ class Fetcher implements CrawlConstants
              */
             $lang = NULL;
             if(!isset($site[self::JUST_METAS])) {
-                $host_words = UrlParser::getWordsIfHostUrl($site[self::URL]);
+                $host_words = UrlParser::getWordsIfHostUrl($site_url);
                 $path_words = UrlParser::getWordsLastPathPartUrl(
-                    $site[self::URL]);
-                $phrase_string = $host_words." ".$site[self::TITLE] . 
-                        " ". $path_words . " ". $site[self::DESCRIPTION];
+                    $site_url);
+                if($is_link) {
+                    $phrase_string = $site[self::DESCRIPTION];
+                } else {
+                    $phrase_string = $host_words." ".$site[self::TITLE] . 
+                            " ". $path_words . " ". $site[self::DESCRIPTION];
+                }
                 if(isset($site[self::LANG])) {
                     $lang = $site[self::LANG];
                 }
@@ -1871,31 +1903,34 @@ class Fetcher implements CrawlConstants
                 }
             }
 
-            $link_phrase_string = "";
-            $link_urls = array(); 
-            //store inlinks so they can be searched by
-            $num_links = count($site[self::LINKS]);
-            if($num_links > 0) {
-                $link_rank = false;
-                if($doc_rank !== false) {
-                    $link_rank = max($doc_rank - 1, 1);
+            if(!$is_link) {
+                $link_phrase_string = "";
+                $link_urls = array(); 
+                //store inlinks so they can be searched by
+                $num_links = count($site[self::LINKS]);
+                if($num_links > 0) {
+                    $link_rank = false;
+                    if($doc_rank !== false) {
+                        $link_rank = max($doc_rank - 1, 1);
+                    }
+                } else {
+                    $link_rank = false;
                 }
-            } else {
-                $link_rank = false;
             }
-            $had_links = false;
+
             $num_queue_servers = count($this->queue_servers);
 
             $this->found_sites[self::INVERTED_INDEX][$this->current_server
                 ]->addDocumentWords($doc_keys, self::NEEDS_OFFSET_FLAG, 
                 $word_lists, $meta_ids, true, $doc_rank);
-            
-            foreach($site[self::LINKS] as $url => $link_text) {
-                $link_meta_ids = array();
-                $location_link = false;
-                // this mysterious check means won't index links from robots.txt
-                // Sitemap will still be in TO_CRAWL, but that's done elsewhere
-                if(strlen($url) > 0 && !is_numeric($url)){
+
+            if(!$this->no_process_links) {
+                foreach($site[self::LINKS] as $url => $link_text) {
+                    /* this mysterious check means won't index links from 
+                      robots.txt. Sitemap will still be in TO_CRAWL, but that's 
+                      done elsewhere
+                     */
+                    if(strlen($url) == 0 || is_numeric($url)) continue;
                     $link_host = UrlParser::getHost($url);
                     if(strlen($link_host) == 0) continue;
                     $part_num = calculatePartition($link_host, 
@@ -1903,17 +1938,10 @@ class Fetcher implements CrawlConstants
                     $summary = array();
                     if(!isset($this->found_sites[self::LINK_SEEN_URLS][
                         $part_num])) {
-                        $this->found_sites[self::LINK_SEEN_URLS][$part_num] =
+                        $this->found_sites[self::LINK_SEEN_URLS][$part_num]=
                             array();
                     }
-                    if(substr($link_text, 0, 9) == "location:") {
-                        $location_link = true;
-                        $link_meta_ids[] = $link_text;
-                        $link_meta_ids[] = "location:".
-                            crawlHash($site[self::URL]);
-                    }
                     $elink_flag = ($link_host != $host) ? true : false;
-                    $had_links = true;
                     $link_text = strip_tags($link_text);
                     $ref = ($elink_flag) ? "eref" : "iref";
                     $link_id = 
@@ -1933,25 +1961,18 @@ class Fetcher implements CrawlConstants
                     $summary[self::ENCODING] = $site[self::ENCODING];
                     $summary[self::HASH] =  $link_id;
                     $summary[self::TYPE] = "link";
-                    $summary[self::HTTP_CODE] = "link";
+                    $summary[self::HTTP_CODE] = $link_keys;
+                    $summary[self::LANG] = $lang;
                     $this->found_sites[self::LINK_SEEN_URLS][$part_num][] = 
                         $summary;
-                    $link_type = UrlParser::getDocumentType($url);
-                    if(in_array($link_type, $IMAGE_TYPES)) {
-                        $link_meta_ids[] = "media:image";
-                        if(isset($safe) && !$safe) {
-                            $link_meta_ids[] = "safe:false";
-                        }
-                    } else {
-                        $link_meta_ids[] = "media:text";
-                    }
-                    $link_meta_ids[] = "link:all";
                     $link_word_lists = 
                         PhraseParser::extractPhrasesInLists($link_text,
                         $lang, true);
+                    $link_meta_ids = $this->calculateLinkMetas($url, 
+                        $link_host, $link_text, $site_url);
                     if(!isset($this->found_sites[self::INVERTED_INDEX][
                         $part_num])) {
-                        $this->found_sites[self::INVERTED_INDEX][$part_num] = 
+                        $this->found_sites[self::INVERTED_INDEX][$part_num]=
                             new IndexShard("fetcher_shard_$part_num");
                     }
                     $this->found_sites[self::INVERTED_INDEX][
@@ -1960,9 +1981,7 @@ class Fetcher implements CrawlConstants
                                 $link_meta_ids, false, $link_rank);
                 }
             }
-
         }
-
         $this->found_sites[self::INVERTED_INDEX][$this->current_server] = 
             $this->found_sites[self::INVERTED_INDEX][
                 $this->current_server]->save(true);
@@ -2062,8 +2081,10 @@ class Fetcher implements CrawlConstants
             }
         }
 
-        foreach($site[self::IP_ADDRESSES] as $address) {
-            $meta_ids[] = 'ip:'.$address;
+        if(isset($site[self::IP_ADDRESSES]) ){ 
+            foreach($site[self::IP_ADDRESSES] as $address) {
+                $meta_ids[] = 'ip:'.$address;
+            }
         }
 
         if(UrlParser::isVideoUrl($site[self::URL], $this->video_sources)) {
@@ -2143,7 +2164,40 @@ class Fetcher implements CrawlConstants
         return $meta_ids;
     }
 
+    /**
+     * Used to compute all the meta ids for a given link with $url
+     * and $link_text that was on a site with $site_url.
+     *
+     * @param string $url url of the link
+     * @param string $link_host url of the host name of the link
+     * @param string $link_text text of the anchor tag link came from
+     * @param string $site_url url of the page link was on
+     */
+    function calculateLinkMetas($url, $link_host, $link_text, $site_url)
+    {
+        global $IMAGE_TYPES;
+        $link_meta_ids = array();
+        if(strlen($link_host) == 0) continue;
+        if(substr($link_text, 0, 9) == "location:") {
+            $location_link = true;
+            $link_meta_ids[] = $link_text;
+            $link_meta_ids[] = "location:".
+                crawlHash($site_url);
+        }
+        $link_type = UrlParser::getDocumentType($url);
+        if(in_array($link_type, $IMAGE_TYPES)) {
+            $link_meta_ids[] = "media:image";
+            if(isset($safe) && !$safe) {
+                $link_meta_ids[] = "safe:false";
+            }
+        } else {
+            $link_meta_ids[] = "media:text";
+        }
+        $link_meta_ids[] = "link:all";
+        return $link_meta_ids;
+    }
 }
+
 
 /*
  *  Instantiate and runs the Fetcher

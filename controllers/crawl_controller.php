@@ -75,7 +75,8 @@ class CrawlController extends Controller implements CrawlConstants
     var $activities = array("sendStartCrawlMessage", "sendStopCrawlMessage", 
         "crawlStalled", "crawlStatus", "deleteCrawl", "injectUrlsCurrentCrawl",
         "getCrawlList", "combinedCrawlInfo", "getInfoTimestamp",
-        "getCrawlSeedInfo", "setCrawlSeedInfo", "getCrawlItems", "countWords");
+        "getCrawlSeedInfo", "setCrawlSeedInfo", "getCrawlItems", "countWords",
+        "clearQuerySavePoint");
 
     /**
      * Checks that the request seems to be coming from a legitimate fetcher then
@@ -331,6 +332,20 @@ class CrawlController extends Controller implements CrawlConstants
             NULL);
     }
 
-
+    /**
+     *  A save point is used to store to disk a sequence generation-doc-offset 
+     *  pairs of a particular mix query when doing an archive crawl of a crawl 
+     *  mix. This is used so that the mix can remember where it was the next
+     *  time it is invoked by the web app on the machine in question.
+     *  This function deletes such a save point associated with a timestamp
+     */
+    function clearQuerySavePoint()
+    {
+        if(!isset($_REQUEST["arg"]) {
+            return;
+        }
+        $save_timestamp = $this->clean($_REQUEST["arg"], "int");
+        $this->crawlModel->clearQuerySavePoint($save_timestamp);
+    }
 }
 ?>

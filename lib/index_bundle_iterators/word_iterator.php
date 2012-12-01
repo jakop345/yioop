@@ -173,7 +173,9 @@ class WordIterator extends IndexBundleIterator
         $this->word_key = $word_key;
 
         $this->feed_shard_name = WORK_DIRECTORY."/feeds/index";
-        if(file_exists($this->feed_shard_name)) {
+        if((!defined('NO_FEEDS') || !NO_FEEDS) 
+            && file_exists($this->feed_shard_name)) {
+            //NO_FEEDS defined true in statistic_controller.php
             $this->use_feeds = true;
         } else {
             $this->use_feeds = false;
@@ -360,8 +362,13 @@ class WordIterator extends IndexBundleIterator
             }
             $data[self::KEY] = $keys;
             // inlinks is the domain of the inlink
-            list($hash_url, $data[self::HASH], $data[self::INLINKS]) = 
-                str_split($keys, $doc_key_len);
+            $key_parts = str_split($keys, $doc_key_len);
+            if(isset($key_parts[2])) {
+                list($hash_url, $data[self::HASH], $data[self::INLINKS]) = 
+                    $key_parts;
+            } else {
+                continue;
+            }
             if(isset($data[self::IS_FEED]) && $data[self::IS_FEED]) {
                 $data[self::CRAWL_TIME] = "feed";
             } else {

@@ -211,12 +211,16 @@ class PhraseModel extends ParallelModel
      * @param array $queue_servers a list of urls of yioop machines which might
      *      be used during lookup
      * @param bool $guess_semantics whether to do query rewriting before lookup
+     * @param int $save_timestamp if this timestamp is nonzero, then save
+     *      iterate position, so can resume on future queries that make
+     *      use of the timestamp
      * @return array an array of summary data
      */
     function getPhrasePageResults(
         $input_phrase, $low = 0, $results_per_page = NUM_RESULTS_PER_PAGE,
         $format = true, $filter = NULL, $use_cache_if_allowed = true,
-        $raw = 0, $queue_servers = array(), $guess_semantics = true)
+        $raw = 0, $queue_servers = array(), $guess_semantics = true,
+        $save_timestamp = 0)
     {
         if(QUERY_STATISTICS) {
             $indent= "&nbsp;&nbsp;";
@@ -338,7 +342,7 @@ class PhraseModel extends ParallelModel
 
             $out_results = $this->getSummariesByHash($word_structs,
                 $low, $phrase_num, $filter, $use_cache_if_allowed, $raw, 
-                $queue_servers, $disjunct);
+                $queue_servers, $disjunct, $save_timestamp);
             if(isset($out_results['PAGES']) &&
                 count($out_results['PAGES']) != 0) {
                 $out_count = 0;
@@ -360,6 +364,13 @@ class PhraseModel extends ParallelModel
         }
         if(QUERY_STATISTICS) {
             $format_time = microtime();
+        }
+        if(isset($out_results['SAVE_POINT'])) { 
+            /*
+              out_result of last used to back-fill earlier ones that are done
+              so on crawl mix archive crawls only look at last
+             */
+            $results['SAVE_POINT'] = $out_results['SAVE_POINT'];
         }
         if(isset($results['PAGES'])){
             ksort($results['PAGES']);
@@ -810,12 +821,15 @@ class PhraseModel extends ParallelModel
      *      be used during lookup
      * @param string $original_query if set, the original query that corresponds
      *      to $word_structs
-     *
+     * @param int $save_timestamp if this timestamp is nonzero, then save
+     *      iterate position, so can resume on future queries that make
+     *      use of the timestamp. If used then $limit ignored and get next $num
+     *      docs after $save_timestamp 's previous iterate position.
      * @return array document summaries
      */
     function getSummariesByHash($word_structs, $limit, $num, &$filter,
         $use_cache_if_allowed = true, $raw = 0, $queue_servers = array(),
-        $original_query = "")
+        $original_query = "", $save_timestamp = 0)
     {
         global $CACHE;
         $indent= "&nbsp;&nbsp;";
@@ -831,7 +845,12 @@ class PhraseModel extends ParallelModel
             self::NUM_CACHE_PAGES;
         $start_slice = floor(($limit)/self::NUM_CACHE_PAGES) *
             self::NUM_CACHE_PAGES;
-        if(USE_CACHE) {
+        if($save_timestamp > 0) {
+            $to_retrieve = $num;
+            $limit = 0;
+            $start_slice = 0;
+        }
+        if(USE_CACHE && $save_timestamp == 0) {
             $mem_tmp = serialize($raw).serialize($word_structs);
 
             $summary_hash = crawlHash($mem_tmp.":".$limit.":".$num);
@@ -849,7 +868,7 @@ class PhraseModel extends ParallelModel
             }
         }
         $query_iterator = $this->getQueryIterator($word_structs, $filter, $raw,
-             $queue_servers, $original_query);
+             $queue_servers, $original_query, $save_timestamp);
         $num_retrieved = 0;
         $pages = array();
 
@@ -861,7 +880,20 @@ class PhraseModel extends ParallelModel
                 $num_retrieved += count($next_docs);
             }
         }
-
+        if($save_timestamp > 0 && ($queue_servers == array() ||
+            $this->isSingleLocalhost($queue_servers))) {
+            // used for archive crawls of crawl mixes
+            $iterators = $query_iterator->save_iterators;
+            $cnt_iterators = count($iterators);
+            $save_point = array();
+            for($i = 0; $i < $cnt_iterators; $i++) {
+                $save_point[$i] = $iterators[$i]->currentGenDocOffsetWithWord();
+            }
+            $save_file = CRAWL_DIR.'/cache/queries/'.self::save_point.
+                $save_timestamp.".txt";
+            $results["SAVE_POINT"] = $save_point;
+            file_put_contents($save_file, serialize($save_point));
+        }
         $pages = array_values($pages);
         $result_count = count($pages);
         $sort_time = 0;
@@ -1001,7 +1033,7 @@ class PhraseModel extends ParallelModel
             $format_time = microtime();
         }
         $results['PAGES'] = & $out_pages;
-        if(USE_CACHE) {
+        if(USE_CACHE && $save_timestamp == 0) {
             $CACHE->set($summary_hash, $results);
         }
         return $results;
@@ -1029,12 +1061,15 @@ class PhraseModel extends ParallelModel
      *      be used during lookup
      * @param string $original_query if set, the orginal query that corresponds
      *      to $word_structs
+     * @param int $save_timestamp if this timestamp is nonzero, then when making
+     *      iterator get sub-iterators to advance to gen doc_offset stored
+     *      with respect to save_timestamp if exists.
      *
      * @return &object an iterator for iterating through results to the
      *  query
      */
     function getQueryIterator($word_structs, &$filter, $raw = 0, 
-        $queue_servers = array(), $original_query = "")
+        $queue_servers = array(), $original_query = "", $save_timestamp = 0)
     {
         $iterators = array();
         $total_iterators = 0;
@@ -1051,10 +1086,19 @@ class PhraseModel extends ParallelModel
                 $index_name = $this->index_name;
             }
             $iterators[0] = new NetworkIterator($original_query,
-                $queue_servers, $index_name, $filter);
+                $queue_servers, $index_name, $filter, $save_timestamp);
         }
         if(!$network_flag) {
             $doc_iterate_hash = crawlHash("site:any");
+            if($save_timestamp > 0) { // used for archive crawls of crawl mixes
+                $save_file = CRAWL_DIR.'/cache/queries/'.self::save_point.
+                    $save_timestamp.".txt";
+                if(file_exists($save_file)) {
+                    $save_point = 
+                        unserialize(file_get_contents($save_file));
+                }
+                $save_count = 0;
+            }
             foreach($word_structs as $word_struct) {
                 if(!is_array($word_struct)) { continue;}
                 $word_keys = $word_struct["KEYS"];
@@ -1104,12 +1148,18 @@ class PhraseModel extends ParallelModel
                         $word_iterators, $word_iterator_map, $quote_positions,
                         $weight);
                 }
+                if($save_timestamp > 0) {
+                    if(isset($save_point[$save_count])) {
+                        $base_iterator->advance($save_point[$save_count]);
+                    }
+                    $save_count++;
+                }
                 $iterators[] = $base_iterator;
             }
         }
         $num_iterators = count($iterators); //if network_flag should be 1
 
-        if( $num_iterators < 1) {
+        if($num_iterators < 1) {
             return NULL;
         } else if($num_iterators == 1) {
             $union_iterator = $iterators[0];
@@ -1131,6 +1181,8 @@ class PhraseModel extends ParallelModel
             $union_iterator->results_per_block = 
                 ceil(SERVER_ALPHA * 
                     $group_iterator->results_per_block/$num_servers);
+        } else if($save_timestamp > 0) {
+            $group_iterator->save_iterators = $iterators;
         }
 
         return $group_iterator;

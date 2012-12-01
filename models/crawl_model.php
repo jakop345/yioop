@@ -703,6 +703,12 @@ EOT;
         $this->db->unlinkRecursive(
             CRAWL_DIR.'/schedules/'.self::robot_data_base_name.
             $timestamp, true);
+        $this->db->unlinkRecursive(
+            CRAWL_DIR.'/schedules/'.self::archive_iterator.
+            $timestamp, true);
+        $save_point_file = CRAWL_DIR.'/cache/queries/'.self::save_point.
+            $timestamp.".txt";
+        @unlink($save_point_file);
 
         $this->db->selectDB(DB_NAME);
         $sql = "SELECT DISTINCT MIX_TIMESTAMP FROM MIX_COMPONENTS WHERE ".

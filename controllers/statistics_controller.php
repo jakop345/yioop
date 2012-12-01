@@ -40,6 +40,8 @@ require_once BASE_DIR."/lib/crawl_constants.php";
 /** Loads url_parser to clean resource name*/
 require_once BASE_DIR."/lib/url_parser.php";
 
+define("NO_FEEDS", true);
+
 /**
  *  Responsible for handling requests about global crawl statistics for
  *  a web crawl. These statistics include: httpd code distribution,

@@ -1430,8 +1430,7 @@ class QueueServer implements CrawlConstants, Join
                 $seen_sites[$i][self::IS_DOC] = true;
                 $visited_urls_count++;
                 array_push($recent_urls, $seen_sites[$i][self::URL]);
-                if($recent_urls_count >= NUM_RECENT_URLS_TO_DISPLAY)
-                {
+                if($recent_urls_count >= NUM_RECENT_URLS_TO_DISPLAY) {
                     array_shift($recent_urls);
                 }
                 $recent_urls_count++;

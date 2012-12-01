@@ -59,6 +59,8 @@ interface CrawlConstants
 
     const queue_base_name = "QueueBundle";
     const archive_base_name = "Archive";
+    const archive_iterator = "ArchiveIterator";
+    const save_point = "SavePoint";
     const schedule_data_base_name = "ScheduleData";
     const schedule_name = "FetchSchedule";
     const robot_data_base_name = "RobotData";
