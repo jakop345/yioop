@@ -925,7 +925,7 @@ class Fetcher implements CrawlConstants
         }
         $this->setCrawlParamsFromArray($info);
 
-        if(isset($info[self::SITES])) {
+        if(isset($info[self::DATA])) {
             // Unpack the archive data and return it in the $info array; also 
             // write a copy to disk in case something goes wrong.
             $pages = unserialize(gzuncompress(webdecode($info[self::DATA])));

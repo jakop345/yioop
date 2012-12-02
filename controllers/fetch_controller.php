@@ -245,7 +245,7 @@ class FetchController extends Controller implements CrawlConstants
             }
 
             if($archive_iterator && !$archive_iterator->end_of_iterator) {
-                $info[self::SITES] = array();
+                $info[self::DATA] = array();
                 $pages = $archive_iterator->nextPages(
                     ARCHIVE_BATCH_SIZE);
             }

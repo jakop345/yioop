@@ -483,11 +483,12 @@ class SearchController extends Controller implements CrawlConstants
         $no_index_given = false;
         if($index_name == 0) {
             $index_name = $this->crawlModel->getCurrentIndexDatabaseName();
-            $no_index_given = true;
+            if(!$index_name) {
+                $no_index_given = true;
+            }
         }
         $is_mix = $this->crawlModel->isCrawlMix($index_name);
-        if($no_index_given && (!$this->phraseModel->indexExists($index_name)
-            && !$is_mix)) {
+        if($no_index_given) {
             $data["ERROR"] = tl('search_controller_no_index_set');
             $data['SCRIPT'] = 
                     "doMessage('<h1 class=\"red\" >".

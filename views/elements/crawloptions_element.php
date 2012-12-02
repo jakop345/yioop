@@ -155,6 +155,10 @@ class CrawloptionsElement extends Element
             $this->view->optionsHelper->render("crawl-indexes", "crawl_indexes",
                 $data['available_crawl_indexes'], $data['crawl_index']);
         ?></div>
+        <?php if(!API_ACCESS) { ?>
+            <div class="center red"><?php 
+            e(tl('crawloptions_element_need_api_for_mix')); ?></div>
+        <?php } ?>
         </div>
         <?php } ?>
         </div>
