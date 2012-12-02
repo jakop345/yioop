@@ -1184,7 +1184,6 @@ class AdminController extends Controller implements CrawlConstants
      * @return array $data info about available crawl mixes and changes to them
      *      as well as any messages about the success or failure of a 
      *      sub activity.
-
      */
     function mixCrawls()
     {
@@ -1194,7 +1193,13 @@ class AdminController extends Controller implements CrawlConstants
         $data["ELEMENT"] = "mixcrawlsElement";
 
         $data['mix_default'] = 0;
-        $crawls = $this->crawlModel->getCrawlList(false, true);
+        $machine_urls = $this->machineModel->getQueueServerUrls();
+        $num_machines = count($machine_urls);
+        if($num_machines <  1 || ($num_machines ==  1 &&
+            UrlParser::isLocalhostUrl($machine_urls[0]))) {
+            $machine_urls = NULL;
+        }
+        $crawls = $this->crawlModel->getCrawlList(false, true, $machine_urls);
         $data['available_crawls'][0] = tl('admin_controller_select_crawl');
         $data['available_crawls'][1] = tl('admin_controller_default_crawl');
         $data['SCRIPT'] = "c = [];c[0]='".
