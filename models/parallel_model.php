@@ -411,7 +411,7 @@ class ParallelModel extends Model implements CrawlConstants
             return;
         }
 
-        $save_file = CRAWL_DIR.'/cache/queries/savepoint'.
+        $save_file = CRAWL_DIR.'/cache/savepoint'.
             $save_timestamp.".txt";
         @unlink($save_file);
     }

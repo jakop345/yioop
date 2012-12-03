@@ -706,7 +706,7 @@ EOT;
         $this->db->unlinkRecursive(
             CRAWL_DIR.'/schedules/'.self::archive_iterator.
             $timestamp, true);
-        $save_point_file = CRAWL_DIR.'/cache/queries/'.self::save_point.
+        $save_point_file = CRAWL_DIR.'/cache/'.self::save_point.
             $timestamp.".txt";
         @unlink($save_point_file);
 

@@ -889,7 +889,7 @@ class PhraseModel extends ParallelModel
             for($i = 0; $i < $cnt_iterators; $i++) {
                 $save_point[$i] = $iterators[$i]->currentGenDocOffsetWithWord();
             }
-            $save_file = CRAWL_DIR.'/cache/queries/'.self::save_point.
+            $save_file = CRAWL_DIR.'/cache/'.self::save_point.
                 $save_timestamp.".txt";
             $results["SAVE_POINT"] = $save_point;
             file_put_contents($save_file, serialize($save_point));
@@ -1091,7 +1091,7 @@ class PhraseModel extends ParallelModel
         if(!$network_flag) {
             $doc_iterate_hash = crawlHash("site:any");
             if($save_timestamp > 0) { // used for archive crawls of crawl mixes
-                $save_file = CRAWL_DIR.'/cache/queries/'.self::save_point.
+                $save_file = CRAWL_DIR.'/cache/'.self::save_point.
                     $save_timestamp.".txt";
                 if(file_exists($save_file)) {
                     $save_point = 
