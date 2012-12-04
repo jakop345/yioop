@@ -888,6 +888,17 @@ class SearchController extends Controller implements CrawlConstants
                 if($clone->hasAttribute("href")) {
                     $href = $clone->getAttribute("href");
                     $href = UrlParser::canonicalLink($href, $url, false);
+
+                    /*Modify links so that they are looked up in the cache
+                     *before going to the live site
+                     */
+                    $href = urlencode($href);
+                    $href = "CACHELINK".$href;
+                    $crawl_time = $this->crawlModel->
+                        getCurrentIndexDatabaseName();
+                    $href = "?c=search&a=cache&q&arg".
+                        "=$href&its=$crawl_time";
+
                     $clone->setAttribute("href", $href);
                     //an anchor might have an img tag within it so recurse
                     $clone = $this->canonicalizeLinks($clone, $url);
@@ -1016,6 +1027,17 @@ class SearchController extends Controller implements CrawlConstants
 
         $flag = 0;
         $crawl_item = null;
+        $all_future_times = array();
+        $all_crawl_times = array();
+        $all_past_times = array();
+        $cached_link = false;
+
+        $pos = strpos($url,"CACHELINK");
+        if($pos !== false) {
+            $cached_link = true;
+            $url = substr_replace($url,"",$pos,strlen("CACHELINK"));
+        }
+
         $hash_key = crawlHash(
             $terms.$url.serialize($highlight).serialize($crawl_time));
         if(USE_CACHE) {
@@ -1024,57 +1046,72 @@ class SearchController extends Controller implements CrawlConstants
                 return;
             }
         }
+        $queue_servers = $this->machineModel->getQueueServerUrls();
         if($crawl_time == 0) {
             $crawl_time = $this->crawlModel->getCurrentIndexDatabaseName();
         }
 
         //Get all crawl times
         $crawl_times = array();
-        $queue_servers =  $this->machineModel->getQueueServerUrls();
-        $all_crawl_details = $this->crawlModel->getCrawlList(false, true,
-            $queue_servers);
-        foreach($all_crawl_details as $crawl_details){
-            if(intval($crawl_details['CRAWL_TIME']) != 0){
-                array_push($crawl_times, intval($crawl_details['CRAWL_TIME']));
+        $all_crawl_details = $this->crawlModel->getCrawlList();
+        foreach($all_crawl_details as $crawl_details) {
+            if($crawl_details['CRAWL_TIME'] !== null) {
+                array_push($crawl_times,$crawl_details['CRAWL_TIME']);
             }
+        }
+        for($i=0; $i < count($crawl_times); $i++) {
+            $crawl_times[$i] = intval($crawl_times[$i]);
         }
         asort($crawl_times);
 
         //Get int value of current crawl time for comparison
         $crawl_time_int = intval($crawl_time);
 
-        /*Search for the nearest future crawl time containing the cached 
+        /*Search for all crawl times containing the cached 
           version of the page for $url*/
-        foreach($crawl_times as $time){
-            if($time >= $crawl_time_int){
-
-                $crawl_time = (string)$time;
-                $queue_servers = 
-                    $this->machineModel->getQueueServerUrls($crawl_time);
-
-                $this->phraseModel->index_name = $crawl_time;
-                $this->crawlModel->index_name = $crawl_time;
-
-                $crawl_item = $this->crawlModel->
-                    getCrawlItem($url, $queue_servers);
-
-                if($crawl_item !== false){
-                    $flag = 1;
-                    break;
-                } else {
-                    continue;
-                }
+        foreach($crawl_times as $time) {
+            $crawl_time = (string)$time;
+            $this->phraseModel->index_name = $crawl_time;
+            $this->crawlModel->index_name = $crawl_time;
+            $crawl_item = $this->crawlModel->
+                getCrawlItem($url, $queue_servers);
+            if($crawl_item !== false) {
+                array_push($all_crawl_times, $crawl_time);
             }
         }
 
+        //Get past and future crawl times
+        foreach($all_crawl_times as $time) {
+            if($time >= $crawl_time_int) {
+                array_push($all_future_times,$time);
+            } else {
+                array_push($all_past_times,$time);
+            }
+        }
+
+        /*Get the nearest timestamp (future or past)
+         *Check in future first and if not found, check in past
+         */
+        $crawl_time = array_shift($all_future_times);
+        array_push($all_future_times,$crawl_time);
+        sort($all_future_times, SORT_STRING);
+        $this->phraseModel->index_name = $crawl_time;
+        $this->crawlModel->index_name = $crawl_time;
+        $crawl_item = $this->crawlModel->
+            getCrawlItem($url, $queue_servers);
+
         $data = array();
 
-        $crawl_item = $this->crawlModel->getCrawlItem($url, $queue_servers);
-
-        if(!$crawl_item ) {
-            $this->displayView("nocache", $data);
-            return;
+        if(!$crawl_item) {
+            if($cached_link === true){
+                header("Location: $url");
+            }
+            else {
+                $this->displayView("nocache", $data);
+                return;
+            }
         }
+
         $in_url = "";
         $image_flag = false;
         if(isset($crawl_item[self::THUMB])) {
@@ -1266,19 +1303,217 @@ class SearchController extends Controller implements CrawlConstants
             "Z@url@Z", $date));
         $divNode->appendChild($textNode);
 
+        //Display links for all cached versions
+        $time_array = array();
+        $time_entry = array();
+        $years = array();
+        $months = array();
+        $time_components = array();
+        $time_ds = array();
+        //Initialize data structure for storing all timestamp details
+        if(!empty($all_crawl_times)){
+            foreach($all_crawl_times as $cache_time) {
+                $date_time_string = date ("F d Y g:ia", $cache_time);
+                $time_components = explode(" ",$date_time_string);
+                $time_ds[$time_components[2]][$time_components[0]] = null;
+            }
+        }
+
+        if(!empty($all_crawl_times)){
+            foreach($all_crawl_times as $cache_time){
+                $date_time_string = date ("F d Y g:ia", $cache_time);
+                $time_components = explode(" ",$date_time_string);
+                if(!in_array($time_components[2],$years)) {
+                    array_push($years,$time_components[2]);
+                }
+                if(!in_array($time_components[0],$months)) {
+                    array_push($months,$time_components[0]);
+                }
+                $temp = "$time_components[0] $time_components[1] ".
+                        "$time_components[3] $url $cache_time";
+                if($time_ds[$time_components[2]][$time_components[0]] 
+                    === null) {
+                    $time_ds[$time_components[2]][$time_components[0]] = 
+                        array($temp);
+                } else {
+                    array_push($time_ds[$time_components[2]]
+                        [$time_components[0]],$temp);
+                }
+            }
+        }
+        $month_json = json_encode($months);
+        $year_json = json_encode($years);
+
+        //UI for selecting year and month
+        $d1 = $dom->createElement('div');
+        $d1->setAttributeNS("","id","#d1");
+        $title = $dom->createElement('font');
+        $title->setAttributeNS("","face","verdana");
+        $title->setAttributeNS("","color","green");
+        $title_text = $dom->createTextNode("All Cached Versions".
+            " - Change Year and/or Month to see links");
+        $br = $dom->createElement('br');
+        $title->appendChild($title_text);
+        $d1->appendChild($title);
+        $d1->appendChild($br);
+        $s1 = $dom->createElement('span');
+        $y = $dom->createElement('select');
+        $y->setAttributeNS("","id","#year");
+        $m = $dom->createElement('select');
+        $m->setAttributeNS("","id","#month");
+        foreach($years as $year) {
+            $o = $dom->createElement('option');
+            $o->setAttributeNS("","id","#$year");
+            $yt = $dom->createTextNode($year);
+            $o->appendChild($yt);
+            $y->appendChild($o);
+        }
+        foreach($months as $month) {
+            $o = $dom->createElement('option');
+            $o->setAttributeNS("","id","#$month");
+            $mt = $dom->createTextNode($month);
+            $o->appendChild($mt);
+            $m->appendChild($o);
+        }
+        $yl = $dom->createTextNode('Year:');
+        $ml = $dom->createTextNode(' Month:');
+        $s1->appendChild($yl);
+        $s1->appendChild($y);
+        $s1->appendChild($ml);
+        $s1->appendChild($m);
+        $d1->appendChild($s1);
+        $d1->setAttributeNS("","style","display:none");
+        $m->setAttributeNS("","onchange","javascript:".
+            "var yearops = document.getElementById('#year');".
+            "var monops = document.getElementById('#month');".
+            "for(i=0;i<yearops.length;i++){
+                for(j=0;j<monops.length;j++){
+                    var y=yearops[i].value;
+                    var m=monops[j].value;
+                    var id='#'+y+m;
+                    var div = document.getElementById(id);
+                    if(div!=null){
+                        div.style.display='none';
+                    }
+                }
+             }".
+            "var m_id = document.getElementById('#month');".
+            "var y_id = document.getElementById('#year');".
+            "var month = m_id.options[m_id.selectedIndex].value;".
+            "var year = y_id.options[y_id.selectedIndex].value;".
+            "var id = '#'+year+month;".
+            "ldiv = document.getElementById(id);".
+            "if((ldiv!==null) && (ldiv.style.display == 'none')){".
+            "ldiv.style.display = 'block';}");
+        $y->setAttributeNS("","onchange","javascript:".
+            "var yearops = document.getElementById('#year');".
+            "var monops = document.getElementById('#month');".
+            "for(i=0;i<yearops.length;i++){
+                for(j=0;j<monops.length;j++){
+                    var y=yearops[i].value;
+                    var m=monops[j].value;
+                    var id='#'+y+m;
+                    var div = document.getElementById(id);
+                    if(div!==null){
+                        div.style.display='none';
+                    }
+                }
+             }".
+            "document.getElementById('#month').options.length=0;".
+            "var monthjs=$month_json;".
+            "var yearjs=$year_json;".
+            "var curyearid = document.getElementById('#year');".
+            "var temp = curyearid.options[curyearid.selectedIndex].value;".
+            "for(j=0;j<monthjs.length;j++){
+                var id=document.getElementById('#'+temp+monthjs[j]);
+                    if(id !== null){
+                        var opt = document.createElement('option');
+                        opt.text = monthjs[j];
+                        var m = document.getElementById('#month');
+                        m.add(opt,null);
+                    }
+                }".
+            "var yearops = document.getElementById('#year');".
+            "var monops = document.getElementById('#month');".
+            "var m_id = document.getElementById('#month');".
+            "var y_id = document.getElementById('#year');".
+            "var month = m_id.options[m_id.selectedIndex].value;".
+            "var year = y_id.options[y_id.selectedIndex].value;".
+            "var id = '#'+year+month;".
+            "ldiv = document.getElementById(id);".
+            "if((ldiv!==null) && (ldiv.style.display == 'none')){".
+            "ldiv.style.display = 'block';}");
+
         $aNode = $dom->createElement("a");
-        $aTextNode = $dom->createTextNode(
-            tl('search_controller_summary_data'));
+        $aTextNode = $dom->createTextNode('View Links to All Cached Versions,
+            Extracted Headers, and Summaries');
         $aNode->setAttributeNS("","onclick", "javascript:".
+            "var m_id = document.getElementById('#month');".
+            "var y_id = document.getElementById('#year');".
+            "var cur_year = y_id.options[y_id.selectedIndex].value;".
+            "var cur_month = m_id.options[m_id.selectedIndex].value;".
+            "cur_div = document.getElementById('#'+cur_year+cur_month);".
             "summaryShow=(summaryShow!='block')?'block':'none';".
             "elt=document.getElementById('summary-page-id');".
-            "elt.style.display=summaryShow;");
+            "elt.style.display=summaryShow;".
+            "document.getElementById('#month').options.length=0;".
+            "var monthjs=$month_json;".
+            "var curyearid = document.getElementById('#year');".
+            "var temp = curyearid.options[curyearid.selectedIndex].value;".
+            "for(j=0;j<monthjs.length;j++){
+                var id=document.getElementById('#'+temp+monthjs[j]);
+                if(id !== null){
+                    var opt = document.createElement('option');
+                    opt.text = monthjs[j];
+                    var m = document.getElementById('#month');
+                    m.add(opt,null);
+                }
+             }".
+            "select=document.getElementById('#d1');".
+            "if(select.style.display=='none'){".
+            "select.style.display='block';".
+            "}else{select.style.display='none';}".
+            "if(cur_div.style.display=='none'){".
+            "cur_div.style.display='block';}".
+            "else{cur_div.style.display='none'}");
+        $aNode->setAttributeNS("","style","zIndex:1");
         $aNode->setAttributeNS("","style", "text-decoration: underline; ".
             "cursor: pointer");
 
         $aNode->appendChild($aTextNode);
 
         $aNode = $aDivNode->appendChild($aNode);
+
+        $d1 = $aDivNode->appendChild($d1);
+
+        /*create divs for all year.month pairs and populate with links
+         */
+        $yrs = array_keys($time_ds);
+        foreach($years as $yr){
+            $mths = array_keys($time_ds[$yr]);
+            foreach($mths as $mth){
+                $yeardiv = $dom->createElement("div");
+                $yeardiv->setAttributeNS("","id","#$yr$mth");
+                $yeardiv->setAttributeNS("","style","display:none");
+                $yeardiv = $d1->appendChild($yeardiv);
+                $list_dom = $dom->createElement("ul");
+                $yeardiv->appendChild($list_dom);
+                foreach($time_ds[$yr][$mth] as $entries){
+                    $list_item = $dom->createElement('li');
+                    $arr = explode(" ",$entries);
+                    $url_encoded = urlencode($arr[3]);
+                    $link = "?c=search&a=cache&q=$terms&arg=$url_encoded".
+                    "&its=$arr[4]";
+                    $link_dom = $dom->createElement("a");
+                    $link_dom->setAttributeNS("","href",$link);
+                    $link_text = $dom->createTextNode("$arr[0] $arr[1] ".
+                        "$arr[2]");
+                    $link_dom->appendChild($link_text);
+                    $list_item->appendChild($link_dom);
+                    $list_dom->appendChild($list_item);
+                }
+            }
+        }
 
         $body = $this->markChildren($body, $words, $dom);
 
