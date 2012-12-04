@@ -281,6 +281,8 @@ class PhraseModel extends ParallelModel
             }
         }
 
+        $qpart = 0;
+        $orig_stimestamp = $save_timestamp;
         foreach($query_parts as $phrase => $pre_result_bounds) {
 
             $phrase_high = $pre_result_bounds[0][1];
@@ -340,6 +342,7 @@ class PhraseModel extends ParallelModel
                     changeInMicrotime($start_time)."<br />";
             }
 
+            $save_timestamp = intval("$orig_stimestamp$qpart");
             $out_results = $this->getSummariesByHash($word_structs,
                 $low, $phrase_num, $filter, $use_cache_if_allowed, $raw, 
                 $queue_servers, $disjunct, $save_timestamp);
@@ -361,6 +364,7 @@ class PhraseModel extends ParallelModel
                     $total_rows = $out_results['TOTAL_ROWS'];
                 }
             }
+            $qpart++;
         }
         if(QUERY_STATISTICS) {
             $format_time = microtime();

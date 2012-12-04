@@ -181,6 +181,10 @@ class MixArchiveBundleIterator extends ArchiveBundleIterator
      */
     function nextPages($num)
     {
+        if($this->end_of_iterator) {
+            $objects = array("NO_PROCESS" => false);
+            return $objects;
+        }
         $results = $this->searchController->queryRequest($this->query, 
             $num, $this->limit, 1, $this->result_timestamp);
         if(isset($results["PAGES"]) && count($results["PAGES"]) > 0 ) {

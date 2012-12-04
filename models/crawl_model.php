@@ -634,7 +634,7 @@ EOT;
                 $info["COUNT"] = 0;
                 $info['VISITED_URLS_COUNT'] = 0;
                 foreach($info_lists as $info_list) {
-                    $a_info = unserialize(webdecode(
+                    $a_info = @unserialize(webdecode(
                         $info_list[self::PAGE]));
                     if(isset($a_info['DESCRIPTION'])) {
                         $info['DESCRIPTION'] = $a_info['DESCRIPTION'];

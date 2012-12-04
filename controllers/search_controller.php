@@ -1053,7 +1053,8 @@ class SearchController extends Controller implements CrawlConstants
 
         //Get all crawl times
         $crawl_times = array();
-        $all_crawl_details = $this->crawlModel->getCrawlList();
+        $all_crawl_details = $this->crawlModel->getCrawlList(false, false,
+            $queue_servers);
         foreach($all_crawl_details as $crawl_details) {
             if($crawl_details['CRAWL_TIME'] !== null) {
                 array_push($crawl_times,$crawl_details['CRAWL_TIME']);
@@ -1321,10 +1322,10 @@ class SearchController extends Controller implements CrawlConstants
 
         if(!empty($all_crawl_times)){
             foreach($all_crawl_times as $cache_time){
-                $date_time_string = date ("F d Y g:ia", $cache_time);
+                $date_time_string = date("F d Y g:ia", $cache_time);
                 $time_components = explode(" ",$date_time_string);
                 if(!in_array($time_components[2],$years)) {
-                    array_push($years,$time_components[2]);
+                    array_push($years, $time_components[2]);
                 }
                 if(!in_array($time_components[0],$months)) {
                     array_push($months,$time_components[0]);
@@ -1350,8 +1351,8 @@ class SearchController extends Controller implements CrawlConstants
         $title = $dom->createElement('font');
         $title->setAttributeNS("","face","verdana");
         $title->setAttributeNS("","color","green");
-        $title_text = $dom->createTextNode("All Cached Versions".
-            " - Change Year and/or Month to see links");
+        $title_text = $dom->createTextNode(
+            tl('search_controller_all_cached'));
         $br = $dom->createElement('br');
         $title->appendChild($title_text);
         $d1->appendChild($title);
@@ -1375,8 +1376,8 @@ class SearchController extends Controller implements CrawlConstants
             $o->appendChild($mt);
             $m->appendChild($o);
         }
-        $yl = $dom->createTextNode('Year:');
-        $ml = $dom->createTextNode(' Month:');
+        $yl = $dom->createTextNode(tl('search_controller_year'));
+        $ml = $dom->createTextNode(tl('search_controller_month'));
         $s1->appendChild($yl);
         $s1->appendChild($y);
         $s1->appendChild($ml);
@@ -1386,8 +1387,8 @@ class SearchController extends Controller implements CrawlConstants
         $m->setAttributeNS("","onchange","javascript:".
             "var yearops = document.getElementById('#year');".
             "var monops = document.getElementById('#month');".
-            "for(i=0;i<yearops.length;i++){
-                for(j=0;j<monops.length;j++){
+            "for(i = 0; i < yearops.length; i++){
+                for(j = 0; j < monops.length; j++){
                     var y=yearops[i].value;
                     var m=monops[j].value;
                     var id='#'+y+m;
