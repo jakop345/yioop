@@ -881,6 +881,8 @@ class PhraseModel extends ParallelModel
             }
         }
         if($save_timestamp > 0) { 
+            $save_file = CRAWL_DIR.'/cache/'.self::save_point.
+                $save_timestamp.".txt";
             if($queue_servers == array() ||
                 $this->isSingleLocalhost($queue_servers)) {
                 // used for archive crawls of crawl mixes
@@ -891,11 +893,11 @@ class PhraseModel extends ParallelModel
                     $save_point[$i] = 
                         $iterators[$i]->currentGenDocOffsetWithWord();
                 }
-                $save_file = CRAWL_DIR.'/cache/'.self::save_point.
-                    $save_timestamp.".txt";
                 $results["SAVE_POINT"] = $save_point;
                 file_put_contents($save_file, serialize($save_point));
-            } else {
+            } else if($num_retrieved < $to_retrieve) {
+                $results["SAVE_POINT"] = array(-1);
+                file_put_contents($save_file, serialize($save_point));
             }
         }
         $pages = array_values($pages);
