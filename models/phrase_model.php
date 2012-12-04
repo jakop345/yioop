@@ -880,19 +880,23 @@ class PhraseModel extends ParallelModel
                 $num_retrieved += count($next_docs);
             }
         }
-        if($save_timestamp > 0 && ($queue_servers == array() ||
-            $this->isSingleLocalhost($queue_servers))) {
-            // used for archive crawls of crawl mixes
-            $iterators = $query_iterator->save_iterators;
-            $cnt_iterators = count($iterators);
-            $save_point = array();
-            for($i = 0; $i < $cnt_iterators; $i++) {
-                $save_point[$i] = $iterators[$i]->currentGenDocOffsetWithWord();
+        if($save_timestamp > 0) { 
+            if($queue_servers == array() ||
+                $this->isSingleLocalhost($queue_servers)) {
+                // used for archive crawls of crawl mixes
+                $iterators = $query_iterator->save_iterators;
+                $cnt_iterators = count($iterators);
+                $save_point = array();
+                for($i = 0; $i < $cnt_iterators; $i++) {
+                    $save_point[$i] = 
+                        $iterators[$i]->currentGenDocOffsetWithWord();
+                }
+                $save_file = CRAWL_DIR.'/cache/'.self::save_point.
+                    $save_timestamp.".txt";
+                $results["SAVE_POINT"] = $save_point;
+                file_put_contents($save_file, serialize($save_point));
+            } else {
             }
-            $save_file = CRAWL_DIR.'/cache/'.self::save_point.
-                $save_timestamp.".txt";
-            $results["SAVE_POINT"] = $save_point;
-            file_put_contents($save_file, serialize($save_point));
         }
         $pages = array_values($pages);
         $result_count = count($pages);
@@ -1149,7 +1153,8 @@ class PhraseModel extends ParallelModel
                         $weight);
                 }
                 if($save_timestamp > 0) {
-                    if(isset($save_point[$save_count])) {
+                    if(isset($save_point[$save_count]) && 
+                        $save_point[$save_count] != -1) {
                         $base_iterator->advance($save_point[$save_count]);
                     }
                     $save_count++;
