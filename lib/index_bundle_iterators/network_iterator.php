@@ -274,6 +274,7 @@ class NetworkIterator extends IndexBundleIterator
                     $pre_result['ELAPSED_TIME']."&nbsp;&nbsp;";
                 $indent = "";
             }
+
         }
         $max_machine_times += $max_time;
         AnalyticsManager::set("MACHINE_TIMES", $machine_times);

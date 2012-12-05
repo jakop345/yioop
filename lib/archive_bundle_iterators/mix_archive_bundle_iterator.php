@@ -187,10 +187,14 @@ class MixArchiveBundleIterator extends ArchiveBundleIterator
         }
         $results = $this->searchController->queryRequest($this->query, 
             $num, $this->limit, 1, $this->result_timestamp);
-        if(isset($results["PAGES"]) && count($results["PAGES"]) > 0 ) {
+        $num_results = count($results["PAGES"]);
+        if(isset($results["PAGES"]) && $num_results > 0 ) {
             $objects = $results["PAGES"];
-            $this->limit += count($objects);
+            $this->limit += $num_results;
             $objects["NO_PROCESS"] = true;
+            if($num_results < $num - 1) {
+                $this->end_of_iterator = true;
+            }
         } else {
             $objects = array("NO_PROCESS" => $results);
         }
@@ -201,6 +205,7 @@ class MixArchiveBundleIterator extends ArchiveBundleIterator
                     $end = false;
                 }
             }
+            $this->save_points = $results["SAVE_POINT"];
             if($end) {
                 $this->end_of_iterator = true;
             }

@@ -376,6 +376,7 @@ class PhraseModel extends ParallelModel
              */
             $results['SAVE_POINT'] = $out_results['SAVE_POINT'];
         }
+
         if(isset($results['PAGES'])){
             ksort($results['PAGES']);
             $results["PAGES"] = array_values($results["PAGES"]);
@@ -884,25 +885,20 @@ class PhraseModel extends ParallelModel
                 $num_retrieved += count($next_docs);
             }
         }
-        if($save_timestamp > 0) { 
+        if($save_timestamp > 0 && $queue_servers == array() ||
+            $this->isSingleLocalhost($queue_servers)) {
+            // used for archive crawls of crawl mixes
             $save_file = CRAWL_DIR.'/cache/'.self::save_point.
-                $save_timestamp.".txt";
-            if($queue_servers == array() ||
-                $this->isSingleLocalhost($queue_servers)) {
-                // used for archive crawls of crawl mixes
-                $iterators = $query_iterator->save_iterators;
-                $cnt_iterators = count($iterators);
-                $save_point = array();
-                for($i = 0; $i < $cnt_iterators; $i++) {
-                    $save_point[$i] = 
-                        $iterators[$i]->currentGenDocOffsetWithWord();
-                }
-                $results["SAVE_POINT"] = $save_point;
-                file_put_contents($save_file, serialize($save_point));
-            } else if($num_retrieved < $to_retrieve) {
-                $results["SAVE_POINT"] = array(-1);
-                file_put_contents($save_file, serialize($save_point));
+            $save_timestamp.".txt";
+            $iterators = $query_iterator->save_iterators;
+            $cnt_iterators = count($iterators);
+            $save_point = array();
+            for($i = 0; $i < $cnt_iterators; $i++) {
+                $save_point[$i] = 
+                    $iterators[$i]->currentGenDocOffsetWithWord();
             }
+            $results["SAVE_POINT"] = $save_point;
+            file_put_contents($save_file, serialize($save_point));
         }
         $pages = array_values($pages);
         $result_count = count($pages);
