@@ -2241,12 +2241,15 @@ class QueueServer implements CrawlConstants, Join
         $flag = false;
         if(!is_array($site_array)) {return false;}
         foreach($site_array as $site) {
-            $site_parts = mb_split("domain:", $site);
+            $site_parts = explode("domain:", $site);
             $host = UrlParser::getHost($url);
-            if(isset($site_parts[1]) && 
-                mb_strstr($host, $site_parts[1]) ) {
-                $flag = true;
-                break;
+            if($site_parts[0] == "" && isset($site_parts[1])) {
+                $pos = strrpos($host, $site_parts[1]);
+                if($pos !== false && 
+                    $pos + strlen($site_parts[1]) == strlen($host) ) {
+                    $flag = true;
+                    break;
+                }
             }
             $path = UrlParser::getPath($url, true);
             $site_host = UrlParser::getHost($site);

@@ -90,7 +90,7 @@ class QueueServerTest extends UnitTest
                 "regex url negative 2"),
             array("http://www.cool.edu/a", false, 
                 "regex url negative 3"),
-            array("http://ucla.edu.com", true, 
+            array("http://ucla.edu.com", false, 
                 "domain test negative"),
             array("http://www.cs.sjsu.edu/faculty/pollett/a/b/c", true, 
                 "regex url positive 1"),
@@ -116,7 +116,8 @@ class QueueServerTest extends UnitTest
     public function allowedToCrawlSiteTestCase()
     {
         $q_server = $this->test_objects['Q_SERVER'];
-        $q_server->allowed_sites = array("http://www.example.com/");
+        $q_server->allowed_sites = array("http://www.example.com/",
+            "domain:ca");
         $test_urls = array(
             array("http://www.yoyo.com/", true,
                 "not restrict by url case", array(
@@ -131,6 +132,12 @@ class QueueServerTest extends UnitTest
                 "not allowed filetype"),
             array("http://www.example.com/a.txt", true,
                 "allowed filetype"),
+            array("http://www.uchicago.com/", false,
+                "domain disallowed", array(
+                "restrict_sites_by_url" => true)),
+            array("http://www.findcan.ca/", true,
+                "domain disallowed", array(
+                "restrict_sites_by_url" => true)),
         );
 
         foreach($test_urls as $test_url) {
