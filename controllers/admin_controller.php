@@ -2284,6 +2284,17 @@ class AdminController extends Controller implements CrawlConstants
                 $data['WORK_DIRECTORY'] = $dir;
                 return $data;
             }
+            if(strstr($dir, substr(BASE_DIR, -1))) {
+                $data['PROFILE'] = false;
+                $data["MESSAGE"] = 
+                    tl('admin_controller_configure_diff_base_dir');
+                $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                    $data["MESSAGE"]. "</h1>');" .
+                    "setTimeout('window.location.href= ".
+                    "window.location.href', 3000);";
+                $data['WORK_DIRECTORY'] = $dir;
+                return $data;
+            }
             $data['WORK_DIRECTORY'] = $dir;
 
         } else if (defined("WORK_DIRECTORY") &&  strlen(WORK_DIRECTORY) > 0 && 

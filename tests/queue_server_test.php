@@ -117,7 +117,7 @@ class QueueServerTest extends UnitTest
     {
         $q_server = $this->test_objects['Q_SERVER'];
         $q_server->allowed_sites = array("http://www.example.com/",
-            "domain:ca");
+            "domain:ca", "domain:somewhere.tv");
         $test_urls = array(
             array("http://www.yoyo.com/", true,
                 "not restrict by url case", array(
@@ -136,6 +136,12 @@ class QueueServerTest extends UnitTest
                 "domain disallowed", array(
                 "restrict_sites_by_url" => true)),
             array("http://www.findcan.ca/", true,
+                "domain disallowed", array(
+                "restrict_sites_by_url" => true)),
+            array("http://somewhere.tv.com/", false,
+                "domain disallowed", array(
+                "restrict_sites_by_url" => true)),
+            array("http://woohoo.somewhere.tv/", true,
                 "domain disallowed", array(
                 "restrict_sites_by_url" => true)),
         );

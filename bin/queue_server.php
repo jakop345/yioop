@@ -603,7 +603,7 @@ class QueueServer implements CrawlConstants, Join
      */
     function &getDataArchiveFileData($file)
     {
-        crawlLog("Processing File: $file");
+        crawlLog("Archive Processing File: $file");
         $decode = file_get_contents($file);
         $decode = webdecode($decode);
         $decode = gzuncompress($decode);
@@ -1489,7 +1489,7 @@ class QueueServer implements CrawlConstants, Join
             " time: ".(changeInMicrotime($start_time)));
 
 
-        crawlLog("Done Processing File: $file");
+        crawlLog("Done Index Processing File: $file");
         if(isset($recent_urls)) {
             $sites[self::RECENT_URLS] = & $recent_urls;
             $this->writeCrawlStatus($sites);
@@ -1568,7 +1568,7 @@ class QueueServer implements CrawlConstants, Join
 
         crawlLog(" time: ".(changeInMicrotime($start_time))."\n");
 
-        crawlLog("Done Processing File: $file");
+        crawlLog("Done Robots Processing File: $file");
 
         unlink($file);
     }
@@ -1747,7 +1747,7 @@ class QueueServer implements CrawlConstants, Join
         }
         crawlLog(" time: ".(changeInMicrotime($start_time)));
 
-        crawlLog("Done Processing File: $file");
+        crawlLog("Done Schedule Processing File: $file");
 
         unlink($file);
 
@@ -1909,10 +1909,10 @@ class QueueServer implements CrawlConstants, Join
 
             $no_flags = false;
             $hard_coded = false;
+            $host_url = UrlParser::getHost($url);
             if($flag ==  WebQueueBundle::NO_FLAGS) {
-                $host_url = UrlParser::getHost($url);
-                $hard_coded_description_parts = explode("###!", $url);
-                if(count($hard_coded_description_parts) > 1 ) {
+                $hard_coded_pos = strpos($url, "###!");
+                if($hard_coded_pos > 0 ) {
                     $has_robots = true;
                     $hard_coded = true;
                     $is_robot = false;
@@ -1928,7 +1928,6 @@ class QueueServer implements CrawlConstants, Join
                     $has_robots = true;
                     if($flag > WebQueueBundle::SCHEDULABLE) {
                         $delay = $flag - WebQueueBundle::SCHEDULABLE;
-                        $host_url = UrlParser::getHost($url);
                     }
                 }
             }
@@ -1940,7 +1939,6 @@ class QueueServer implements CrawlConstants, Join
                 } else {
                     $next_slot = $this->getEarliestSlot($current_crawl_index, 
                         $sites);
-                    
                     if($next_slot < MAX_FETCH_SIZE) {
                         $sites[$next_slot] = 
                             array($url, $weight, 0);
