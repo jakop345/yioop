@@ -685,7 +685,7 @@ class PhraseModel extends ParallelModel
             "/");
 
         $phrase = $this->beginMatch($phrase, "info:", "info:http://", "",
-            "http://");
+            "http");
 
         return $phrase;
     }
@@ -739,7 +739,7 @@ class PhraseModel extends ParallelModel
      *  @param string $end_with what we're looking to see if term ends with
      *  @param string $prefix what to tack on to the start if there is
      *      a match
-     *  @param string $suffix what to change $end_with to
+     *  @param string $new_suffix what to change $end_with to
      *  @param string $lang_tag what language the phrase must be in for the rule
      *      to apply
      *
