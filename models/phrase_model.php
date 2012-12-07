@@ -885,8 +885,8 @@ class PhraseModel extends ParallelModel
                 $num_retrieved += count($next_docs);
             }
         }
-        if($save_timestamp > 0 && $queue_servers == array() ||
-            $this->isSingleLocalhost($queue_servers)) {
+        if($save_timestamp > 0 && ($queue_servers == array() ||
+            $this->isSingleLocalhost($queue_servers))) {
             // used for archive crawls of crawl mixes
             $save_file = CRAWL_DIR.'/cache/'.self::save_point.
             $save_timestamp.".txt";
