@@ -277,9 +277,16 @@ class QueueServer implements CrawlConstants, Join
     /**
      *  Used to say what kind of queue_server this is (one of BOTH, INDEXER,
      *  SCHEDULER)
-     *  @var int
+     *  @var mixed
      */
-     var $servertype;
+    var $server_type;
+
+    /**
+     *  String used to describe this kind of queue server (Indexer, Scheduler,
+     *  etc. in the log files.
+     *  @var mixed
+     */
+    var $server_name;
 
     /**
      * holds the post processors selected in the crawl options page
@@ -311,6 +318,7 @@ class QueueServer implements CrawlConstants, Join
         $this->server_type = self::BOTH;
         $this->indexing_plugins = array();
         $this->video_sources = array();
+        $this->server_name = "IndexerAndScheduler";
     }
 
     /**
@@ -335,9 +343,11 @@ class QueueServer implements CrawlConstants, Join
         }
 
         crawlLog("\n\nInitialize logger..", "queue_server");
+        $this->server_name = "IndexerAndScheduler";
         if(isset($argv[3]) && $argv[1] == "child" && 
             in_array($argv[3], array(self::INDEXER, self::SCHEDULER))) {
             $this->server_type = $argv[3];
+            $this->server_name = $argv[3];
             crawlLog($argv[3]." logging started.");
         } 
         $remove = false;
@@ -368,17 +378,14 @@ class QueueServer implements CrawlConstants, Join
     function loop()
     {
         $info[self::STATUS] = self::WAITING_START_MESSAGE_STATE;
-        $server_name = ($this->server_type != self::BOTH) ? 
-            $this->server_type : "";
-        crawlLog("In queue loop!! $server_name", "queue_server");
+
+        crawlLog("In queue loop!! {$this->server_name}", "queue_server");
 
         if($this->isAIndexer()) {
             $this->deleteOrphanedBundles();
         }
         while ($info[self::STATUS] != self::STOP_STATE) {
-            $server_name = ($this->server_type != self::BOTH) ? 
-                $this->server_type : "Queue server";
-            crawlLog("$server_name peak memory usage so far".
+            crawlLog("{$this->server_name} peak memory usage so far".
                 memory_get_peak_usage()."!!");
 
             $info = $this->handleAdminMessages($info);
@@ -413,7 +420,7 @@ class QueueServer implements CrawlConstants, Join
             }
         }
 
-        crawlLog("$server_name shutting down!!");
+        crawlLog("{$this->server_name} shutting down!!");
     }
 
     /**
@@ -429,9 +436,7 @@ class QueueServer implements CrawlConstants, Join
      */
     function processCrawlData($blocking = false)
     {
-        $server_name = ($this->server_type != self::BOTH) ? $this->server_type :
-            "";
-        crawlLog("$server_name Entering Process Crawl Data Method ");
+        crawlLog("{$this->server_name} Entering Process Crawl Data Method ");
         if($this->isAIndexer()) {
             $this->processIndexData($blocking);
             if(time() - $this->last_index_save_time > FORCE_SAVE_TIME){
@@ -1342,12 +1347,9 @@ class QueueServer implements CrawlConstants, Join
         if(!$blocking) {
             $blocked = false;
         }
-
-        $server_name = ($this->server_type != self::BOTH) ? $this->server_type :
-            "Queue server";
         crawlLog(
-            "$server_name is starting to process index data, memory usage".
-            memory_get_usage() . "...");
+            "{$this->server_name} is starting to process index data,".
+            " memory usage".memory_get_usage() . "...");
         crawlLog("Processing index data in $file...");
 
         $start_time = microtime();
