@@ -2020,13 +2020,12 @@ class QueueServer implements CrawlConstants, Join
                                 $sites)) < MAX_FETCH_SIZE) {
                             $crawl_delay_hosts[$hash_host] = $next_slot;
                             $delete_urls[$i] = $url;
-                            $this->web_queue->addSeenUrlFilter($url);
                             $sites[$next_slot] = 
                                 array($url, $weight, $delay);
-                                /* we might miss some sites by marking them 
-                                   seen after only scheduling them
-                                 */
-
+                            $this->web_queue->addSeenUrlFilter($url);
+                            /* we might miss some sites by marking them 
+                               seen after only scheduling them
+                             */
                             $fetch_size++;
                         } else if ($no_flags) {
                             $this->web_queue->setQueueFlag($url, 
@@ -2124,7 +2123,7 @@ class QueueServer implements CrawlConstants, Join
                 (changeInMicrotime($start_time)).". Loop properties:$i $count");
             $max_links = max(MAX_LINKS_PER_PAGE, MAX_LINKS_PER_SITEMAP);
             if($i >= $count && $count >= NUM_URLS_QUEUE_RAM - 
-                    $max_links) {
+                    SEEN_URLS_BEFORE_UPDATE_SCHEDULER * $max_links) {
                 crawlLog("Queue Full and Couldn't produce Fetch Batch!! ".
                     "Resetting Queue!!!");
                 $this->dumpQueueToSchedules();
