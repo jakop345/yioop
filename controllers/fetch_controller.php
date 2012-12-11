@@ -151,6 +151,7 @@ class FetchController extends Controller implements CrawlConstants
                     $crawl_params = array();
                     $crawl_params[self::STATUS] = "RESUME_CRAWL";
                     $crawl_params[self::CRAWL_TIME] = $crawl_time;
+                    $crawl_params[self::CRAWL_TYPE] = self::WEB_CRAWL;
                     /* 
                         we only set crawl time. Other data such as allowed sites
                         should come from index.
