@@ -87,7 +87,7 @@ class StaticController extends Controller
         $data['VIEW'] = $view;
         $data = array_merge($data, $this->$activity());
 
-        $data['YIOOP_TOKEN'] = $this->generateCSRFToken($user);
+        $data[CSRF_TOKEN] = $this->generateCSRFToken($user);
 
         $this->displayView($view, $data);
 

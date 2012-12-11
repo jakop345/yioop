@@ -98,7 +98,7 @@ class SearchView extends View implements CrawlConstants
         ?>
 
         <h1 class="logo"><a href="./?<?php 
-            e(CSRF_TOKEN."=".$data[CSRF_TOKEN])?>"><img 
+            e(CSRF_TOKEN."=".$data[CSRF_TOKEN]); ?>"><img 
             src="<?php e($logo); ?>" alt="<?php e(tl('search_view_title'));
                  ?>"
             /></a>

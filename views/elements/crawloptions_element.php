@@ -54,7 +54,7 @@ class CrawloptionsElement extends Element
      *      be set in the crawl.ini file
      */
     public function render($data) 
-    { 
+    {
     ?>
         <div class="currentactivity">
         <div class="<?php e($data['leftorright']);?>">

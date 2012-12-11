@@ -173,7 +173,6 @@ class SearchController extends Controller implements CrawlConstants
             $user = $_SESSION['USER_ID'];
             $token_okay = $this->checkCSRFToken(CSRF_TOKEN, $user);
             if($token_okay === false) {
-                unset($_SESSION['USER_ID']);
                 $user = $_SERVER['REMOTE_ADDR'];
             }
         } else {
@@ -385,6 +384,11 @@ class SearchController extends Controller implements CrawlConstants
         if($no_query || isset($_REQUEST['no_query'])) {
             $data['NO_QUERY'] = true;
             $data['PAGING_QUERY'] .= "&no_query=true";
+        }
+        if($token_okay && isset($_SESSION["USER_ID"])) {
+            $data["ADMIN"] = true;
+        } else {
+            $data["ADMIN"] = false;
         }
 
         $this->displayView($view, $data);

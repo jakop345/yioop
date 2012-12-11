@@ -196,7 +196,6 @@ abstract class Controller
         if(isset($_REQUEST[$token_name]) && 
             strlen($_REQUEST[$token_name]) == 22) {
             $token_parts = explode("|", $_REQUEST[$token_name]);
-
             if($token_parts[1] + 3600 > time() && 
                 crawlHash($user.$token_parts[1].AUTH_KEY) == $token_parts[0]) {
                 $token_okay = true;

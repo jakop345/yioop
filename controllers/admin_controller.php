@@ -110,7 +110,6 @@ class AdminController extends Controller implements CrawlConstants
 
         $data[CSRF_TOKEN] = $this->generateCSRFToken($user);
         $token_okay = $this->checkCSRFToken(CSRF_TOKEN, $user);
-
         if($token_okay) {
             if(isset($_SESSION['USER_ID']) && !isset($_REQUEST['u'])) {
                 $data = array_merge($data, $this->processSession());
@@ -147,6 +146,11 @@ class AdminController extends Controller implements CrawlConstants
             e("<p class='red'>".
                 tl('admin_controller_status_updates_stopped')."</p>");
             exit();
+        }
+        if($token_okay && isset($_SESSION["USER_ID"])) {
+            $data["ADMIN"] = true;
+        } else {
+            $data["ADMIN"] = false;
         }
         $this->displayView($view, $data);
     }

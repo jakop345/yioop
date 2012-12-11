@@ -65,7 +65,7 @@ class SigninElement extends Element
             e(tl('signin_element_settings')); ?></a></li><?php
         }
         if(SIGNIN_LINK) {
-            if(!isset($_SESSION['USER_ID'])) { 
+            if(!isset($data["ADMIN"]) && $data["ADMIN"]) { 
                 ?><li><a href="./?c=admin"><?php 
                     e(tl('signin_element_signin')); ?></a></li><?php 
             } else {

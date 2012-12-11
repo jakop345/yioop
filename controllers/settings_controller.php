@@ -143,7 +143,7 @@ class SettingsController extends Controller
         } else if(isset($_REQUEST['its']) && 
             in_array($_REQUEST['its'],$crawl_stamps)){
             $data['its'] = $_REQUEST['its'];
-        }else {
+        } else {
             $data['its'] = $this->crawlModel->getCurrentIndexDatabaseName();
         }
         
