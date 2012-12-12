@@ -73,7 +73,7 @@ class MachinelogElement extends Element
                 e(tl('machinelog_element_refresh_on')); ?></a>]</p>
         <?php } ?>
         <pre><?php
-            e(htmlentities(wordwrap($data["LOG_FILE_DATA"], 60)));
+            e(htmlentities(wordwrap($data["LOG_FILE_DATA"], 60, "\n", true)));
         ?></pre>
         <?php if(!isset($_REQUEST['NO_REFRESH'])) {?>
          <script type="text/javascript" >
