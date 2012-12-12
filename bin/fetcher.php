@@ -743,10 +743,25 @@ class Fetcher implements CrawlConstants
             $this->to_crawl_again = array();
             $this->found_sites = array();
             if(isset($info[self::QUEUE_SERVERS])) {
+                $count_servers = count($info[self::QUEUE_SERVERS]);
+                if(!isset($this->queue_servers) || 
+                    count($this->queue_servers) != $count_servers) {
+                    crawlLog("New Queue Server List:");
+                    $server_num = 0;
+                    foreach($info[self::QUEUE_SERVERS] as $server) {
+                        $server_num++;
+                        crawlLog("($server_num) $server");
+                    }
+                }
                 $this->queue_servers = $info[self::QUEUE_SERVERS];
-                if(!isset($this->current_server) || 
-                    $this->current_server > count($info[self::QUEUE_SERVERS])) {
-                    $this->current_server = 0;
+
+                if(!isset($this->current_server) ||
+                    $this->current_server > $count_servers) {
+                    /*
+                        prevent all fetchers from initially contacting same
+                        queue servers
+                    */
+                    $this->current_server = rand(0, $count_servers - 1);
                 }
             }
             if($this->crawl_time > 0) {
@@ -826,8 +841,7 @@ class Fetcher implements CrawlConstants
             return true; 
         }
 
-        $this->current_server = ($this->current_server + 1) 
-            % count($this->queue_servers);
+        $this->current_server = rand(0, count($this->queue_servers) -1);
         $this->recrawl_check_scheduler = false;
         $queue_server = $this->queue_servers[$this->current_server];
 
@@ -1674,6 +1688,7 @@ class Fetcher implements CrawlConstants
     function updateScheduler() 
     {
         $queue_server = $this->queue_servers[$this->current_server];
+        crawlLog("Updating machine: ".$queue_server);
 
         $prefix = $this->fetcher_num."-";
 
@@ -1696,7 +1711,9 @@ class Fetcher implements CrawlConstants
             $post_data['robot_data'] = webencode(
                 gzcompress(serialize($this->found_sites[self::ROBOT_TXT])));
             unset($this->found_sites[self::ROBOT_TXT]);
-            $bytes_to_send += strlen($post_data['robot_data']);
+            $bytes_robot = strlen($post_data['robot_data']);
+            crawlLog("...".$bytes_robot." bytes of robot data");
+            $bytes_to_send += $bytes_robot;
         }
 
         //handle schedule data
@@ -1724,7 +1741,9 @@ class Fetcher implements CrawlConstants
             }
             $post_data['schedule_data'] = webencode(
                 gzcompress(serialize($schedule_data)));
-            $bytes_to_send += strlen($post_data['schedule_data']);
+            $bytes_schedule = strlen($post_data['schedule_data']);
+            crawlLog("...".$bytes_schedule." bytes of schedule data");
+            $bytes_to_send += $bytes_schedule;
         }
         unset($schedule_data);
         //handle mini inverted index
@@ -1752,7 +1771,9 @@ class Fetcher implements CrawlConstants
             $post_data['index_data'] = webencode($out_string);
                 // don't compress index data
             unset($out_string);
-            $bytes_to_send += strlen($post_data['index_data']);
+            $bytes_index = strlen($post_data['index_data']);
+            crawlLog("...".$bytes_index." bytes of index data");
+            $bytes_to_send += $bytes_index;
         }
 
         if($bytes_to_send <= 0) {
