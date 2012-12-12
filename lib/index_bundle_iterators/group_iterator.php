@@ -493,7 +493,7 @@ class GroupIterator extends IndexBundleIterator
         $sum_score = 0;
         $sum_rank = 0;
         $sum_relevance = 0;
-        $sum_proximity = 0;
+        $max_proximity = 0;
         $min = 1000000; //no score will be this big
         $max = -1;
         $domain_weights = array();
@@ -516,7 +516,8 @@ class GroupIterator extends IndexBundleIterator
                     $hash_page[self::PROXIMITY];
                 $sum_rank += $alpha * $hash_page[self::DOC_RANK];
                 $sum_relevance += $alpha * $hash_page[self::RELEVANCE];
-                $sum_proximity += $alpha * $hash_page[self::PROXIMITY];
+                $max_proximity = max($max_proximity, 
+                    $hash_page[self::PROXIMITY]);
                 $domain_weights[$hash_host] *=  0.5;
             }
         }
@@ -528,7 +529,7 @@ class GroupIterator extends IndexBundleIterator
         $pre_hash_page[0][self::DOC_RANK] = $sum_rank;
         $pre_hash_page[0][self::HASH_URL_COUNT] = count($pre_hash_page);
         $pre_hash_page[0][self::RELEVANCE] = $sum_relevance;
-        $pre_hash_page[0][self::PROXIMITY] = $sum_proximity;
+        $pre_hash_page[0][self::PROXIMITY] = $max_proximity;
     }
 
     /**

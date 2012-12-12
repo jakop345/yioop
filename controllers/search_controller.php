@@ -176,7 +176,8 @@ class SearchController extends Controller implements CrawlConstants
                 $user = $_SERVER['REMOTE_ADDR'];
             }
         } else {
-            $user = $_SERVER['REMOTE_ADDR']; 
+            $user = $_SERVER['REMOTE_ADDR'];
+            $token_okay = true;
         }
         if(isset($_REQUEST['q'])) {
             $_REQUEST['q'] = $this->restrictQueryByUserAgent($_REQUEST['q']);
