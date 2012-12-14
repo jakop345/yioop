@@ -84,8 +84,9 @@ interface CrawlConstants
     const STOP_STATE = -1;
     const CONTINUE_STATE = 1;
     const NO_DATA_STATE = 2;
-    const WAITING_START_MESSAGE_STATE = 3; 
-    
+    const WAITING_START_MESSAGE_STATE = 3;
+    const REDO_STATE = 4; 
+
     const STATUS = 'a';
     const CRAWL_TIME = 'b';
 
@@ -208,6 +209,7 @@ interface CrawlConstants
     const SOURCE_NAME = 'ci';
     const LINK_SEEN_URLS = 'cj';
     const POST_MAX_SIZE = 'ck';
+    const LOGGING = 'cl';
 
     const NEEDS_OFFSET_FLAG = 0x7FFFFFFF;
 

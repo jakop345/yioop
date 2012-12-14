@@ -529,13 +529,18 @@ function toBinString($str)
 }
 
 /**
+ * Converts a string of the form some int followed by K, M, or G.
+ * into its integer equivalent. For example 4K would become 4000,
+ * 16M would become 16000000, and 1G would become 1000000000
  *
+ * @param string $metric_num metric number to convert
+ * @return int number the metric string corresponded to
  */
 function metricToInt($metric_num)
 {
-    $last_char = $metric_num[strlen($metric_num) - 1];
     $num = intval($metric_num);
     if(is_string($metric_num)) {
+        $last_char = $metric_num[strlen($metric_num) - 1];
         switch(strtoupper($last_char))
         {
             case "K":

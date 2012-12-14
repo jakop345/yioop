@@ -2044,7 +2044,7 @@ class AdminController extends Controller implements CrawlConstants
             $br = "<br />";
         }
 
-        if(intval(ini_get("post_max_size")) < 32) {
+        if(intval(ini_get("post_max_size")) < 2) {
             $out .= $br. tl('admin_controller_post_size_small');
             $br = "<br />";
         }

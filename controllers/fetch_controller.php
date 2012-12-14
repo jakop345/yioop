@@ -278,90 +278,153 @@ class FetchController extends Controller implements CrawlConstants
     function update()
     {
         $view = "fetch";
+        $info_flag = false;
+        $necessary_fields = array('byte_counts', 'current_part', 'hash_data',
+            'hash_part', 'num_parts', 'part');
+        $part_flag = true;
+        foreach($necessary_fields as $field) {
+            if(!isset($_REQUEST[$field])) {
+                $part_flag = false;
+            }
+        }
+
+        if($part_flag && crawlHash($_REQUEST['part'])==$_REQUEST['hash_part']) {
+            $upload = false;
+            if(intval($_REQUEST['num_parts']) > 1) {
+                $info_flag = true;
+                if(!file_exists(CRAWL_DIR."/temp")) {
+                    mkdir(CRAWL_DIR."/temp");
+                    $this->db->setWorldPermissionsRecursive(CRAWL_DIR."/temp/");
+                }
+                $filename = CRAWL_DIR."/temp/".$_REQUEST['hash_data'];
+                file_put_contents($filename, $_REQUEST['part'], FILE_APPEND);
+                setWorldPermissions($filename);
+                if($_REQUEST['num_parts'] == $_REQUEST['current_part']) {
+                    $upload = true;
+                }
+            } else if (intval($_REQUEST['num_parts']) == 1) {
+                $info_flag = true;
+                $upload = true;
+                $filename = "";
+            }
+            if($upload) {
+                $logging = $this->handleUploadedData($filename);
+            } else {
+                $logging = "...".(
+                    $_REQUEST['current_part']/$_REQUEST['num_parts']).
+                    " of data uploaded.";
+            }
+        }
+
+        $info =array();
+        if($logging != "") {
+            $info[self::LOGGING] = $logging;
+        }
+        if($info_flag == true) {
+            $info[self::STATUS] = self::CONTINUE_STATE;
+        } else {
+            $info[self::STATUS] = self::REDO_STATE;
+        }
+        $info[self::MEMORY_USAGE] = memory_get_peak_usage();
+        $info[self::POST_MAX_SIZE] = metricToInt(ini_get("post_max_size"));
+
+        if(file_exists(CRAWL_DIR."/schedules/crawl_status.txt")) {
+            $change = false;
+            $crawl_status = unserialize(
+                file_get_contents(CRAWL_DIR."/schedules/crawl_status.txt"));
+            if(isset($_REQUEST['fetcher_peak_memory'])) {
+                if(!isset($crawl_status['FETCHER_MEMORY']) ||
+                    $_REQUEST['fetcher_peak_memory'] > 
+                    $crawl_status['FETCHER_PEAK_MEMORY']
+                ) {
+                    $crawl_status['FETCHER_PEAK_MEMORY'] = 
+                        $_REQUEST['fetcher_peak_memory'];
+                    $change = true;
+                }
+                
+            }
+            if(!isset($crawl_status['WEBAPP_PEAK_MEMORY']) ||
+                $info[self::MEMORY_USAGE] > 
+                $crawl_status['WEBAPP_PEAK_MEMORY']) {
+                $crawl_status['WEBAPP_PEAK_MEMORY'] = 
+                    $info[self::MEMORY_USAGE];
+                $change = true;
+            }
+            if($change == true) {
+                file_put_contents(CRAWL_DIR."/schedules/crawl_status.txt",
+                    serialize($crawl_status));
+            }
+            $info[self::CRAWL_TIME] = $crawl_status['CRAWL_TIME'];
+        } else {
+            $info[self::CRAWL_TIME] = 0;
+        }
+
+        $info[self::MEMORY_USAGE] = memory_get_peak_usage();
+        $data = array();
+        $data['MESSAGE'] = serialize($info);
+
+        $this->displayView($view, $data);
+    }
+
+    /**
+     * After robot, schedule, and index data have been uploaded and reassembled
+     * as one big data file/string, this function splits that string into
+     * each of these data types and then save the result into the appropriate
+     * schedule sub-folder. Any temporary files used during uploading are then
+     * deleted.
+     *
+     * @param string $filename name of temp file used to upload big string.
+     *      If uploaded data was small enough to be uploaded in one go, then
+     *      this should be "" -- the variable $_REQUEST["part"] will be used
+     *      instead
+     * @return string $logging diagnostic info to be sent to fetcher about
+     *      what was done
+     */
+    function handleUploadedData($filename = "")
+    {
+        if($filename == "") {
+            $uploaded = $_REQUEST['part'];
+        } else {
+            $uploaded = file_get_contents($filename);
+            unlink($filename);
+        }
+        $logging = "... Data upload complete\n";
         $address = str_replace(".", "-", $_SERVER['REMOTE_ADDR']); 
         $address = str_replace(":", "_", $address);
         $time = time();
         $day = floor($time/86400);
 
-        $info_flag = false;
-
         $byte_counts = array();
         if(isset($_REQUEST['byte_counts'])) {
             $byte_counts = unserialize(webdecode($_REQUEST['byte_counts']));
         }
-
         $robot_data = "";
         $schedule_data = "";
         $index_data = "";
-        if(isset($_REQUEST['data']) && isset($byte_counts["TOTAL"]) &&
+        if(isset($byte_counts["TOTAL"]) &&
             $byte_counts["TOTAL"] > 0) {
             $pos = 0;
-            $robot_data = substr($_REQUEST['data'], $pos,$byte_counts["ROBOT"]);
+            $robot_data = substr($uploaded, $pos,$byte_counts["ROBOT"]);
             $pos += $byte_counts["ROBOT"];
             $schedule_data = 
-                substr($_REQUEST['data'], $pos, $byte_counts["SCHEDULE"]);
+                substr($uploaded, $pos, $byte_counts["SCHEDULE"]);
             $pos += $byte_counts["SCHEDULE"];
             $index_data = 
-                substr($_REQUEST['data'], $pos);
+                substr($uploaded, $pos);
         }
         if(strlen($robot_data) > 0) {
             $this->addScheduleToScheduleDirectory(self::robot_data_base_name, 
                 $robot_data);
-            $info_flag = true;
         }
         if(strlen($schedule_data) > 0) {
             $this->addScheduleToScheduleDirectory(self::schedule_data_base_name,
                 $schedule_data);
-            $info_flag = true;
         }
         if(strlen($index_data) > 0) {
             $this->addScheduleToScheduleDirectory(self::index_data_base_name,
                 $index_data);
-            $info_flag = true;
         }
-
-        if($info_flag == true) {
-            $info =array();
-            $info[self::MEMORY_USAGE] = memory_get_peak_usage();
-            $info[self::POST_MAX_SIZE] = metricToInt(ini_get("post_max_size"));
-            $info[self::STATUS] = self::CONTINUE_STATE;
-            if(file_exists(CRAWL_DIR."/schedules/crawl_status.txt")) {
-                $change = false;
-                $crawl_status = unserialize(
-                    file_get_contents(CRAWL_DIR."/schedules/crawl_status.txt"));
-                if(isset($_REQUEST['fetcher_peak_memory'])) {
-                    if(!isset($crawl_status['FETCHER_MEMORY']) ||
-                        $_REQUEST['fetcher_peak_memory'] > 
-                        $crawl_status['FETCHER_PEAK_MEMORY']
-                    ) {
-                        $crawl_status['FETCHER_PEAK_MEMORY'] = 
-                            $_REQUEST['fetcher_peak_memory'];
-                        $change = true;
-                    }
-                    
-                }
-                if(!isset($crawl_status['WEBAPP_PEAK_MEMORY']) ||
-                    $info[self::MEMORY_USAGE] > 
-                    $crawl_status['WEBAPP_PEAK_MEMORY']) {
-                    $crawl_status['WEBAPP_PEAK_MEMORY'] = 
-                        $info[self::MEMORY_USAGE];
-                    $change = true;
-                }
-                if($change == true) {
-                    file_put_contents(CRAWL_DIR."/schedules/crawl_status.txt",
-                        serialize($crawl_status));
-                }
-                $info[self::CRAWL_TIME] = $crawl_status['CRAWL_TIME'];
-            } else {
-                $info[self::CRAWL_TIME] = 0;
-            }
-
-            $info[self::MEMORY_USAGE] = memory_get_peak_usage();
-            $data = array();
-            $data['MESSAGE'] = serialize($info);
-
-            $this->displayView($view, $data);
-        }
+        return $logging;
     }
 
     /**

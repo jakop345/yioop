@@ -141,10 +141,12 @@ class FetchUrl implements CrawlConstants
 
         //Wait for responses
         $running=null;
+        $memory_limit = metricToInt(ini_get("memory_limit")) * 0.5;
         do {
             $mrc = curl_multi_exec($agent_handler, $running);
             $ready=curl_multi_select($agent_handler, 0.005);
-        } while (time() - $start < PAGE_TIMEOUT &&  $running > 0);
+        } while (memory_get_usage() < $memory_limit &&
+            time() - $start < PAGE_TIMEOUT &&  $running > 0 );
 
         if(time() - $start > PAGE_TIMEOUT) {crawlLog("  TIMED OUT!!!");}
 
@@ -176,7 +178,7 @@ class FetchUrl implements CrawlConstants
                     $site = self::parseHeaderPage($content, $value);
                     $sites[$i] = array_merge($sites[$i], $site);
                     if(isset($header)) {
-                        $header = substr($header, 0 ,
+                        $header = substr($header, 0,
                             strpos($header, "\x0D\x0A\x0D\x0A") + 4);
                     } else {
                         $header = "";

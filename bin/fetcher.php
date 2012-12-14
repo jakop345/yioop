@@ -331,19 +331,27 @@ class Fetcher implements CrawlConstants
     var $hosts_with_errors;
 
     /**
+     * When processing recrawl data this says to assume the data has
+     * already had its inks extracted into a field and so this doesn't
+     * have to be done in a separate step
      *
+     * @var bool
      */
     var $no_process_links;
 
     /**
+     * Maximum number of bytes which can be uploaded to the current
+     * queue server's web app in one go
      *
+     * @var int
      */
     var $post_max_size;
 
     /**
-     *
+     * Before receiving any data from a queue server's web app this is
+     * the default assumed post_max_size in bytes
      */
-    const DEFAULT_POST_MAX_SIZE = 32;
+    const DEFAULT_POST_MAX_SIZE = 2000000;
 
     /**
      * Sets up the field variables so that crawling can begin
@@ -783,7 +791,7 @@ class Fetcher implements CrawlConstants
                to a queue server for a schedule or to the name server for 
                archive data. */
             $this->crawl_time = $info[self::CRAWL_TIME];
-            if ($this->crawl_time > 0) {
+            if ($this->crawl_time > 0 && isset($info[self::ARC_DIR]) ) {
                 $this->crawl_type = $info[self::CRAWL_TYPE];
                 $this->arc_dir = $info[self::ARC_DIR];
                 $this->arc_type = $info[self::ARC_TYPE];
@@ -940,6 +948,7 @@ class Fetcher implements CrawlConstants
             new data from the name server.
         */
         $i = 0;
+        $num_servers = count($this->queue_servers);
         /*  Make sure no queue server starves if to crawl data available.
             Try to keep memory foot print smaller.
          */
@@ -1577,14 +1586,13 @@ class Fetcher implements CrawlConstants
             crawlLog($site_index.". ".$site[self::URL]);
          
         } // end for
-
         if((count($this->to_crawl) <= 0 && count($this->to_crawl_again) <= 0) ||
                 ( isset($this->found_sites[self::SEEN_URLS]) && 
                 count($this->found_sites[self::SEEN_URLS]) > 
                 SEEN_URLS_BEFORE_UPDATE_SCHEDULER) || 
                 ($this->archive_iterator && 
                 $this->archive_iterator->end_of_iterator) || (memory_get_usage()
-                > metricToInt(ini_get("memory_limit")) * 0.5)) {
+                > (metricToInt(ini_get("memory_limit")) * 0.5) )) {
             $i = 0;
             $first = true;
             $num_servers = count($this->queue_servers);
@@ -1858,7 +1866,11 @@ class Fetcher implements CrawlConstants
     }
 
     /**
+     * Computes a string of compressed urls fromthe seen urls and extracted
+     * links destined for the current queue server. Then unsets these
+     * values from $this->found_sites
      *
+     * @return string of compressed urls
      */
     function compressAndUnsetSeenUrls()
     {
@@ -1892,46 +1904,77 @@ class Fetcher implements CrawlConstants
     }
 
     /**
+     * Sends to crawl, robot, and index data to the current queue server.
+     * If this data is more than post_max_size, it splits it into chunks
+     * which are then reassembled by the queue server web app before being
+     * put into the appropriate schedule sub-directory.
      *
+     * @param string $queue_server url of the current queue server
+     * @param array $byte_counts has four fields: TOTAL, ROBOT, SCHEDULE,
+     *      INDEX. These give the number of bytes overall for the
+     *      'data' field of $post_data and for each of these components.
+     * @param array $post_data data to be uploaded to the queue server web app
      */
     function uploadCrawlData($queue_server, $byte_counts, &$post_data)
     {
-        $sleep = false;
-        do {
-
-            if($sleep == true) {
-                crawlLog("Trouble sending to the scheduler\n $info_string...");
-                crawlLog("Maybe post_max_size too small in php.ini file? ...");
-                crawlLog("Or maybe the queue server url address or server key".
-                    " is wrong?");
-                sleep(5);
-            }
-            $sleep = true;
-
+        $post_data['fetcher_peak_memory'] = memory_get_peak_usage();
+        $post_data['byte_counts'] = webencode(serialize($byte_counts));
+        $len = strlen($post_data['data']);
+        $max_len = $this->post_max_size - 1024; // non-data post vars < 1K
+        $post_data['num_parts'] = ceil($len/$max_len);
+        $num_parts = $post_data['num_parts'];
+        $data = & $post_data['data'];
+        unset($post_data['data']);
+        $post_data['hash_data'] = crawlHash($data);
+        $offset = 0;
+        for($i = 1; $i <= $num_parts; $i++) {
             $time = time();
             $session = md5($time . AUTH_KEY);
             $post_data['time'] = $time;
             $post_data['session'] = $session;
-            $post_data['fetcher_peak_memory'] = memory_get_peak_usage();
-            $post_data['byte_counts'] = webencode(serialize($byte_counts));
-            crawlLog(
-                "Sending Queue Server" .
-                " {$byte_counts['TOTAL']} bytes...");
-            crawlLog("Sending to {$queue_server}");
-            $info_string = FetchUrl::getPage($queue_server, $post_data);
-            crawlLog(
-                "Updated Queue Server, sent approximately" .
-                " {$byte_counts['TOTAL']} bytes:");
-
-            $info = unserialize(trim($info_string));
+            $post_data['part'] = substr($data, $offset, $max_len);
+            $post_data['hash_part'] = crawlHash($post_data['part']);
+            $post_data['current_part'] = $i;
+            $offset += $max_len;
+            $part_len = strlen($post_data['part']);
+            crawlLog("Sending Queue Server Part $i of $num_parts...");
+            crawlLog("...sending about $part_len bytes.");
+            $sleep = false;
+            do {
+                if($sleep == true) {
+                    crawlLog("Trouble sending to the scheduler, response was:");
+                    crawlLog("$info_string");
+                    crawlLog("Trying again in 5 seconds. You might want to");
+                    crawlLog("check the queue server url and server key.");
+                    crawlLog("Queue Server post_max_size is:".
+                        $this->post_max_size);
+                    sleep(5);
+                }
+                    $sleep = true;
+                $info_string = FetchUrl::getPage($queue_server, $post_data);
+                $info = unserialize(trim($info_string));
+                if(isset($info[self::LOGGING])) {
+                    crawlLog("Messages from Fetch Controller:");
+                    crawlLog($info[self::LOGGING]);
+                }
+                if(isset($info[self::POST_MAX_SIZE]) && 
+                    $this->post_max_size != $info[self::POST_MAX_SIZE]) {
+                    $this->post_max_size = $info[self::POST_MAX_SIZE];
+                    crawlLog("post_max_size has changed, bailing...");
+                    return;
+                }
+            } while(!isset($info[self::STATUS]) || 
+                $info[self::STATUS] != self::CONTINUE_STATE);
             crawlLog("Queue Server info response code: ".$info[self::STATUS]);
             crawlLog("Queue Server's crawl time is: ".$info[self::CRAWL_TIME]);
             crawlLog("Web Server peak memory usage: ".
                 $info[self::MEMORY_USAGE]);
             crawlLog("This fetcher peak memory usage: ".
                 memory_get_peak_usage());
-        } while(!isset($info[self::STATUS]) || 
-            $info[self::STATUS] != self::CONTINUE_STATE);
+        }
+        crawlLog(
+            "Updated Queue Server, sent approximately" .
+            " {$byte_counts['TOTAL']} bytes:");
     }
 
     /**
