@@ -529,6 +529,30 @@ function toBinString($str)
 }
 
 /**
+ *
+ */
+function metricToInt($metric_num)
+{
+    $last_char = $metric_num[strlen($metric_num) - 1];
+    $num = intval($metric_num);
+    if(is_string($metric_num)) {
+        switch(strtoupper($last_char))
+        {
+            case "K":
+                $num *= 1000;
+            break;
+            case "M":
+                $num *= 1000000;
+            break;
+            case "G":
+                $num *= 1000000000;
+            break;
+        }
+    }
+    return $num;
+}
+
+/**
  *  Logs a message to a logfile or the screen
  *
  *  @param string $msg message to log

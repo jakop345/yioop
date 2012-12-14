@@ -1843,6 +1843,7 @@ class QueueServer implements CrawlConstants, Join
         $sites[self::INDEXING_PLUGINS] =  $this->indexing_plugins;
         $sites[self::VIDEO_SOURCES] = $this->video_sources;
         $sites[self::PAGE_RANGE_REQUEST] = $this->page_range_request;
+        $sites[self::POST_MAX_SIZE] = intval(ini_get("post_max_size"));
         $sites[self::SITES] = array();
 
         return base64_encode(serialize($sites))."\n";

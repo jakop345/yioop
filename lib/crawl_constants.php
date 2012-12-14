@@ -207,6 +207,7 @@ interface CrawlConstants
     const IS_FEED = 'ch';
     const SOURCE_NAME = 'ci';
     const LINK_SEEN_URLS = 'cj';
+    const POST_MAX_SIZE = 'ck';
 
     const NEEDS_OFFSET_FLAG = 0x7FFFFFFF;
 

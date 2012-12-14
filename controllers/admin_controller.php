@@ -2264,7 +2264,6 @@ class AdminController extends Controller implements CrawlConstants
         
         $data['PROFILE'] = false;
         $data['MESSAGE'] = "";
-
         if(isset($_REQUEST['WORK_DIRECTORY'])) {
             $dir = 
                 $this->clean($_REQUEST['WORK_DIRECTORY'], "string");
@@ -2288,7 +2287,8 @@ class AdminController extends Controller implements CrawlConstants
                 $data['WORK_DIRECTORY'] = $dir;
                 return $data;
             }
-            if(strstr($dir, substr(BASE_DIR, -1))) {
+            if(strcmp($dir."/", BASE_DIR) == 0 || 
+                strstr($dir, BASE_DIR)) {
                 $data['PROFILE'] = false;
                 $data["MESSAGE"] = 
                     tl('admin_controller_configure_diff_base_dir');

@@ -490,7 +490,7 @@ class FetchUrl implements CrawlConstants
                 $agents[$host] = curl_init();
             }
         }
-        crawlLog("Init curl request");
+        crawlLog("Init curl request of a single page");
         curl_setopt($agents[$host], CURLOPT_USERAGENT, USER_AGENT);
         curl_setopt($agents[$host], CURLOPT_URL, $site);
 
@@ -512,7 +512,7 @@ class FetchUrl implements CrawlConstants
             // as post and so query string ignored for get's
             curl_setopt($agents[$host], CURLOPT_HTTPGET, true);
         }
-        crawlLog("Set curl options");
+        crawlLog("Set curl options for single page request");
         $response = curl_exec($agents[$host]);
         curl_setopt($agents[$host], CURLOPT_POSTFIELDS, "");
         crawlLog("Done curl exec");

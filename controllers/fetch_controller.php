@@ -261,6 +261,7 @@ class FetchController extends Controller implements CrawlConstants
 
         } else {
             $info[self::STATUS] = self::NO_DATA_STATE;
+            $info[self::POST_MAX_SIZE] = metricToInt(ini_get("post_max_size"));
             $pages_string = webencode(gzcompress(serialize($pages)));
         }
         $info[self::DATA] = $pages_string;
@@ -283,25 +284,46 @@ class FetchController extends Controller implements CrawlConstants
         $day = floor($time/86400);
 
         $info_flag = false;
-        if(isset($_REQUEST['robot_data'])) {
+
+        $byte_counts = array();
+        if(isset($_REQUEST['byte_counts'])) {
+            $byte_counts = unserialize(webdecode($_REQUEST['byte_counts']));
+        }
+
+        $robot_data = "";
+        $schedule_data = "";
+        $index_data = "";
+        if(isset($_REQUEST['data']) && isset($byte_counts["TOTAL"]) &&
+            $byte_counts["TOTAL"] > 0) {
+            $pos = 0;
+            $robot_data = substr($_REQUEST['data'], $pos,$byte_counts["ROBOT"]);
+            $pos += $byte_counts["ROBOT"];
+            $schedule_data = 
+                substr($_REQUEST['data'], $pos, $byte_counts["SCHEDULE"]);
+            $pos += $byte_counts["SCHEDULE"];
+            $index_data = 
+                substr($_REQUEST['data'], $pos);
+        }
+        if(strlen($robot_data) > 0) {
             $this->addScheduleToScheduleDirectory(self::robot_data_base_name, 
-                $_REQUEST['robot_data']);
+                $robot_data);
             $info_flag = true;
         }
-        if(isset($_REQUEST['schedule_data'])) {
+        if(strlen($schedule_data) > 0) {
             $this->addScheduleToScheduleDirectory(self::schedule_data_base_name,
-                $_REQUEST['schedule_data']);
+                $schedule_data);
             $info_flag = true;
         }
-        if(isset($_REQUEST['index_data'])) {
+        if(strlen($index_data) > 0) {
             $this->addScheduleToScheduleDirectory(self::index_data_base_name,
-                $_REQUEST['index_data']);
+                $index_data);
             $info_flag = true;
         }
 
         if($info_flag == true) {
             $info =array();
             $info[self::MEMORY_USAGE] = memory_get_peak_usage();
+            $info[self::POST_MAX_SIZE] = metricToInt(ini_get("post_max_size"));
             $info[self::STATUS] = self::CONTINUE_STATE;
             if(file_exists(CRAWL_DIR."/schedules/crawl_status.txt")) {
                 $change = false;
@@ -432,6 +454,7 @@ class FetchController extends Controller implements CrawlConstants
         }
 
         $info[self::QUEUE_SERVERS] = $this->machineModel->getQueueServerUrls();
+        $info[self::POST_MAX_SIZE] = metricToInt(ini_get("post_max_size"));
         if(count($info[self::QUEUE_SERVERS]) == 0) {
             $info[self::QUEUE_SERVERS] = array(NAME_SERVER);
         }
