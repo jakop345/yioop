@@ -1058,7 +1058,7 @@ class SearchController extends Controller implements CrawlConstants
 
         //Get all crawl times
         $crawl_times = array();
-        $all_crawl_details = $this->crawlModel->getCrawlList(false, false,
+        $all_crawl_details = $this->crawlModel->getCrawlList(false, true,
             $queue_servers);
         foreach($all_crawl_details as $crawl_details) {
             if($crawl_details['CRAWL_TIME'] !== null) {
@@ -1309,9 +1309,11 @@ class SearchController extends Controller implements CrawlConstants
             "border-style:solid; border-width:3px;margin-bottom:10px;".
             "padding: 5px; background-color: white; text-align:$text_align;");
 
-        $textNode = $dom->createTextNode(tl('search_controller_cached_version', 
+        $textNode = $dom->createTextNode(tl('search_controller_cached_version',
             "Z@url@Z", $date));
         $divNode->appendChild($textNode);
+        $brNode = $dom->createElement('br');
+        $divNode->appendChild($brNode);
 
         //Link for accessing history feature
         $historyLink = $dom->createElement('a');
