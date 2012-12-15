@@ -674,7 +674,8 @@ class PhraseModel extends ParallelModel
         $domain_suffixes = array(".com", ".net", ".edu", ".org", ".gov", 
             ".mil", ".ca", ".uk", ".fr", ".ly");
         foreach($domain_suffixes as $suffix) {
-            $phrase = $this->endMatch($phrase, $suffix, "site:", "", ":");
+            $phrase = $this->endMatch($phrase, $suffix, "site:", "", 
+                array(":","@"));
         }
 
         $phrase = $this->beginMatch($phrase, "www.", "site:www.");
@@ -682,10 +683,10 @@ class PhraseModel extends ParallelModel
         $phrase = $this->beginMatch($phrase, "http:", "site:http:");
 
         $phrase = $this->beginMatch($phrase, "info:", "info:http://", "/",
-            "/");
+            array("/"));
 
         $phrase = $this->beginMatch($phrase, "info:", "info:http://", "",
-            "http");
+            array("http"));
 
         return $phrase;
     }
@@ -707,7 +708,7 @@ class PhraseModel extends ParallelModel
      *  @return string $phrase after modifications have been made
      */
     function beginMatch($phrase, $start_with, $new_prefix, $suffix = "",
-        $not_contain="", $lang_tag = "en-US")
+        $not_contains=array(), $lang_tag = "en-US")
     {
         $phrase .= " ";
         $quote_start_with = preg_quote($start_with, "/");
@@ -718,8 +719,14 @@ class PhraseModel extends ParallelModel
         $result_phrase = preg_replace($pattern, "", $phrase);
         foreach($matches as $match) {
             $tag = guessLocaleFromString($match, $lang_tag, 10);
-            if($tag == $lang_tag && ($not_contain == "" || 
-                !strstr($match, $not_contain))) {
+            $not_check = true;
+            foreach($not_contains as $not_contain) {
+                if(strstr($match, $not_contain)) {
+                    $not_check = false;
+                    break;
+                }
+            }
+            if($tag == $lang_tag && $not_check) {
                 $body = substr($match, $start_pos);
                 $result_phrase .= " ".$new_prefix.$body.$suffix;
             } else {
@@ -746,7 +753,7 @@ class PhraseModel extends ParallelModel
      *  @return string $phrase after modifications have been made
      */
     function endMatch($phrase, $end_with, $prefix, $new_suffix = "",
-        $not_contain="",
+        $not_contains=array(),
         $lang_tag = "en-US")
     {
         $phrase .= " ";
@@ -758,8 +765,14 @@ class PhraseModel extends ParallelModel
         $result_phrase = preg_replace($pattern, " ", $phrase);
         foreach($matches as $match) {
             $tag = guessLocaleFromString($match, $lang_tag, 10);
-            if($tag == $lang_tag && ($not_contain = "" || 
-                !strstr($match, $not_contain))) {
+            $not_check = true;
+            foreach($not_contains as $not_contain) {
+                if(strstr($match, $not_contain)) {
+                    $not_check = false;
+                    break;
+                }
+            }
+            if($tag == $lang_tag && $not_check) {
                 if($new_suffix == "") {
                     $body = $match;
                 } else {
@@ -995,6 +1008,7 @@ class PhraseModel extends ParallelModel
         }
 
         $summaries = $this->getCrawlItems($lookups, $queue_servers);
+
         $out_pages = array();
         foreach($pages as $page) {
             $key = $page[self::KEY];

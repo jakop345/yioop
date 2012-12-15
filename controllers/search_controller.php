@@ -1040,7 +1040,7 @@ class SearchController extends Controller implements CrawlConstants
         $pos = strpos($url,"CACHELINK");
         if($pos !== false) {
             $cached_link = true;
-            $url = substr_replace($url,"",$pos,strlen("CACHELINK"));
+            $url = substr_replace($url, "", $pos, strlen("CACHELINK"));
         }
 
         $hash_key = crawlHash(
@@ -1089,9 +1089,9 @@ class SearchController extends Controller implements CrawlConstants
         //Get past and future crawl times
         foreach($all_crawl_times as $time) {
             if($time >= $crawl_time_int) {
-                array_push($all_future_times,$time);
+                array_push($all_future_times, $time);
             } else {
-                array_push($all_past_times,$time);
+                array_push($all_past_times, $time);
             }
         }
 

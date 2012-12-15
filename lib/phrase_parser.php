@@ -183,7 +183,8 @@ class PhraseParser
         //these obscure statics is because php 5.2 does not garbage collect
         //create_function's
         static $replace_function0, $replace_function1, $replace_function2;
-        $acronym_pattern = "/[A-Za-z]\.(\s*[A-Za-z]\.)+/";
+
+        $acronym_pattern = "/\b[A-Za-z](\.\s*[A-Za-z])+(\.)?/";
         if(!isset($replace_function0)) {
             $replace_function0 = create_function('$matches', '
                 $result = "_".mb_strtolower(
@@ -192,7 +193,6 @@ class PhraseParser
         }
         $string = preg_replace_callback($acronym_pattern, 
             $replace_function0, $string);
-
         $ampersand_pattern = "/[A-Za-z]+(\s*(\s(\'n|\'N)\s|\&)\s*[A-Za-z])+/";
         if(!isset($replace_function1)) {
             $replace_function1 = create_function('$matches', '

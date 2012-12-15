@@ -176,7 +176,6 @@ class ParallelModel extends Model implements CrawlConstants
         //Make request
         $page_set = $this->execMachines("getCrawlItems", 
             $machines, serialize($lookups), $num_machines);
-
         //Aggregate results
         $summaries = array();
         $elapsed_times = array();
@@ -184,13 +183,13 @@ class ParallelModel extends Model implements CrawlConstants
             foreach($page_set as $elt) {
                 $description_hash = array();
                 $result = @unserialize(webdecode($elt[self::PAGE]));
+
                 if(!is_array($result)) {
                     $elapsed_times[] = 0;
                     continue;
                 }
                 $elapsed_times[] = $result["ELAPSED_TIME"];
                 unset($result["ELAPSED_TIME"]);
-                $ellipsis = "";
                 foreach($result as $lookup => $summary) {
                     if(isset($summaries[$lookup])) {
                         if(isset($summary[self::DESCRIPTION])) {
@@ -305,6 +304,7 @@ class ParallelModel extends Model implements CrawlConstants
                             $page[self::DESCRIPTION] = $description;
                             $description_hash[$description] = true;
                         }
+                        $ellipsis = " .. ";
                         $summary = $page;
                     } else if (isset($page[self::DESCRIPTION])) {
                         $description = trim($page[self::DESCRIPTION]);
@@ -463,7 +463,6 @@ class ParallelModel extends Model implements CrawlConstants
             $outputs = FetchUrl::getPages($sites, false, 0, NULL, self::URL,
                 self::PAGE, true, $post_data);
         }
-
         return $outputs;
     }
 

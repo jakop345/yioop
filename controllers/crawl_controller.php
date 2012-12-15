@@ -281,6 +281,7 @@ class CrawlController extends Controller implements CrawlConstants
         }
         $items = $this->crawlModel->getCrawlItems($our_lookups);
         $items["ELAPSED_TIME"] = changeInMicrotime($start_time);
+
         echo webencode(serialize($items));
      }
 
