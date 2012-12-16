@@ -964,23 +964,6 @@ class PhraseModel extends ParallelModel
             $results['PAGES'] = & $pages;
             return $results;
         }
-        $lookups = array();
-        foreach($pages as $page) {
-            $key = $page[self::KEY];
-            if(isset($page[self::SUMMARY_OFFSET])) {
-                if(is_array($page[self::SUMMARY_OFFSET])) {
-                    $lookups[$key] = $page[self::SUMMARY_OFFSET];
-                }else {
-                    $machine_id = (isset($page[self::MACHINE_ID])) ?
-                        $page[self::MACHINE_ID] :$this->current_machine;
-                        $lookups[$key][] = 
-                            array($machine_id, $key,
-                                $page[self::CRAWL_TIME],
-                                $page[self::GENERATION],
-                                $page[self::SUMMARY_OFFSET]);
-                }
-            }
-        }
 
         if(QUERY_STATISTICS) {
             $this->query_info['QUERY'] .= "$in2<b>Lookup Offsets Time</b>: ".
@@ -1007,25 +990,9 @@ class PhraseModel extends ParallelModel
             $summaries_time = microtime();
         }
 
-        $summaries = $this->getCrawlItems($lookups, $queue_servers);
+        $out_pages = $this->getSummariesFromOffsets($pages, $queue_servers, 
+            $raw);
 
-        $out_pages = array();
-        foreach($pages as $page) {
-            $key = $page[self::KEY];
-            if(isset($summaries[$key])) {
-                $summary= & $summaries[$key];
-                $pre_page = array_merge($page, $summary);
-                if(isset($pre_page[self::ROBOT_METAS])) {
-                    if(!in_array("NOINDEX", $pre_page[self::ROBOT_METAS])
-                         && 
-                        !in_array("NONE", $pre_page[self::ROBOT_METAS])){
-                        $out_pages[] = $pre_page;
-                    }
-                } else {
-                    $out_pages[] = $pre_page;
-                }
-            }
-        }
         if(QUERY_STATISTICS) {
             $summary_times_string = AnalyticsManager::get("SUMMARY_TIMES");
             if($summary_times_string) {
@@ -1057,6 +1024,73 @@ class PhraseModel extends ParallelModel
             $CACHE->set($summary_hash, $results);
         }
         return $results;
+    }
+
+    /**
+     *
+     */
+    function getSummariesFromOffsets(&$pages, &$queue_servers, $raw)
+    {
+        $lookups = array();
+        $page_indexes = array();
+        $index = 0;
+        foreach($pages as $page) {
+            $key = $page[self::KEY];
+            if(isset($page[self::SUMMARY_OFFSET])) {
+                if(is_array($page[self::SUMMARY_OFFSET])) {
+                    $lookups[$key] = $page[self::SUMMARY_OFFSET];
+                }else {
+                    $machine_id = (isset($page[self::MACHINE_ID])) ?
+                        $page[self::MACHINE_ID] :$this->current_machine;
+                        $lookups[$key][] = 
+                            array($machine_id, $key,
+                                $page[self::CRAWL_TIME],
+                                $page[self::GENERATION],
+                                $page[self::SUMMARY_OFFSET]);
+                }
+                $page_indexes[$key] = $index;
+            }
+            $index++;
+        }
+
+        $summaries = $this->getCrawlItems($lookups, $queue_servers);
+        if($queue_servers != NULL && !$this->isSingleLocalhost($queue_servers)
+            && $raw == 0){
+            $lookups = array();
+            foreach($summaries as $hash_url => $summary) {
+                $hash_parts = explode('|', $summaries[$hash_url][self::HASH]);
+                if(isset($hash_parts[3]) && substr($hash_parts[3], 0, 11) ==
+                    "location%3A") {
+                    $crawl_time = $pages[$page_indexes[$hash_url]][
+                        self::CRAWL_TIME];
+                    $lookups[$hash_url] = array($hash_parts[1], 
+                        $crawl_time);
+                    unset($summaries[$hash_url]);
+                }
+            }
+            $loc_summaries = $this->getCrawlItems($lookups, $queue_servers);
+            $summaries = array_merge($summaries, $loc_summaries);
+        }
+
+        $out_pages = array();
+        foreach($pages as $page) {
+            $key = $page[self::KEY];
+            if(isset($summaries[$key])) {
+                $summary = & $summaries[$key];
+                $pre_page = array_merge($page, $summary);
+                if(isset($pre_page[self::ROBOT_METAS])) {
+                    if(!in_array("NOINDEX", $pre_page[self::ROBOT_METAS])
+                         && 
+                        !in_array("NONE", $pre_page[self::ROBOT_METAS])){
+                        $out_pages[] = $pre_page;
+                    }
+                } else {
+                    $out_pages[] = $pre_page;
+                }
+            }
+        }
+
+        return $out_pages;
     }
 
     /**
