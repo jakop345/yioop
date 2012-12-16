@@ -1027,7 +1027,15 @@ class PhraseModel extends ParallelModel
     }
 
     /**
+     * Used to lookup summary info for the pages provided (using their)
+     * self::SUMMARY_OFFSET field. If any of the lookupped summaries
+     * are location's then looks these up in turn. This method handles robot
+     * meta tags which might forbid indexing.
      *
+     * @param array &$pages of page data without text summaries
+     * @param array &$queue_servers array of queue server to find data on
+     * @param int $raw only lookup locations if 0
+     * @return array pages with summaries added
      */
     function getSummariesFromOffsets(&$pages, &$queue_servers, $raw)
     {
@@ -1073,10 +1081,13 @@ class PhraseModel extends ParallelModel
         }
 
         $out_pages = array();
+        $seen_hashes = array();
         foreach($pages as $page) {
             $key = $page[self::KEY];
-            if(isset($summaries[$key])) {
+            if(isset($summaries[$key]) && 
+                !in_array($summaries[$key][self::HASH], $seen_hashes)) {
                 $summary = & $summaries[$key];
+                $seen_hashes[] = $summaries[$key][self::HASH];
                 $pre_page = array_merge($page, $summary);
                 if(isset($pre_page[self::ROBOT_METAS])) {
                     if(!in_array("NOINDEX", $pre_page[self::ROBOT_METAS])
