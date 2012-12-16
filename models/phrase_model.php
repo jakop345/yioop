@@ -1087,7 +1087,7 @@ class PhraseModel extends ParallelModel
             if(isset($summaries[$key])&&(!isset($summaries[$key][self::HASH]) ||
                 !in_array($summaries[$key][self::HASH], $seen_hashes))) {
                 $summary = & $summaries[$key];
-                if(isset($summaries[$key][self::HASH]) {
+                if(isset($summaries[$key][self::HASH])) {
                     $seen_hashes[] = $summaries[$key][self::HASH];
                 }
                 $pre_page = array_merge($page, $summary);
