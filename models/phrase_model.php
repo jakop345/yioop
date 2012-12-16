@@ -1084,10 +1084,12 @@ class PhraseModel extends ParallelModel
         $seen_hashes = array();
         foreach($pages as $page) {
             $key = $page[self::KEY];
-            if(isset($summaries[$key]) && 
-                !in_array($summaries[$key][self::HASH], $seen_hashes)) {
+            if(isset($summaries[$key])&&(!isset($summaries[$key][self::HASH]) ||
+                !in_array($summaries[$key][self::HASH], $seen_hashes))) {
                 $summary = & $summaries[$key];
-                $seen_hashes[] = $summaries[$key][self::HASH];
+                if(isset($summaries[$key][self::HASH]) {
+                    $seen_hashes[] = $summaries[$key][self::HASH];
+                }
                 $pre_page = array_merge($page, $summary);
                 if(isset($pre_page[self::ROBOT_METAS])) {
                     if(!in_array("NOINDEX", $pre_page[self::ROBOT_METAS])
