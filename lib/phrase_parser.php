@@ -184,11 +184,11 @@ class PhraseParser
         //create_function's
         static $replace_function0, $replace_function1, $replace_function2;
 
-        $acronym_pattern = "/\b[A-Za-z](\.\s*[A-Za-z])+(\.)?/";
+        $acronym_pattern = "/\b[A-Za-z](\.\s*[A-Za-z])+(\.|\b)/";
         if(!isset($replace_function0)) {
             $replace_function0 = create_function('$matches', '
                 $result = "_".mb_strtolower(
-                    mb_ereg_replace("\.", "", $matches[0]));
+                    mb_ereg_replace("\.\s*", "", $matches[0]));
                 return $result;');
         }
         $string = preg_replace_callback($acronym_pattern, 

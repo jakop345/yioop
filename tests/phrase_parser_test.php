@@ -69,6 +69,16 @@ class PhraseParserTest extends UnitTest
     public function extractPhrasesTestCase()
     {
         $phrase_string = <<< EOD
+Dr. T.Y Lin's home page. J. R. R. Tolkien
+EOD;
+        $word_lists = PhraseParser::extractPhrasesInLists($phrase_string,
+            "en-US", true);
+        $words = array_keys($word_lists);
+        $this->assertTrue(in_array("dr", $words), "Abbreviation 1");
+        $this->assertTrue(in_array("_ty", $words),"Initials 1");
+        $this->assertTrue(in_array("_jrr", $words),"Initials 2");
+
+        $phrase_string = <<< EOD
 THE THE
 ‘Deep Space nine’ ‘Deep Space’ version of GIANT
 ©2012
