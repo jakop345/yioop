@@ -1066,6 +1066,7 @@ class PhraseModel extends ParallelModel
             && $raw == 0){
             $lookups = array();
             foreach($summaries as $hash_url => $summary) {
+                if(!isset($summaries[$hash_url][self::HASH])) continue;
                 $hash_parts = explode('|', $summaries[$hash_url][self::HASH]);
                 if(isset($hash_parts[3]) && substr($hash_parts[3], 0, 11) ==
                     "location%3A") {
