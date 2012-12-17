@@ -1355,11 +1355,11 @@ class SearchController extends Controller implements CrawlConstants
         $divNode->appendChild($brNode);
 
         //UI for showing history
-        $history_div = $this->historyUI($crawl_time, $all_crawl_times, $divNode, 
+        $history_div = $this->historyUI($crawl_time, $all_crawl_times, $divNode,
             $dom, $terms, $myd, $url);
 
         $aNode = $dom->createElement("a");
-        $aTextNode = 
+        $aTextNode =
             $dom->createTextNode(tl('search_controller_header_summaries'));
         $aNode->setAttributeNS("", "onclick", "javascript:".
             "summaryShow = (summaryShow!='block')?'block':'none';".
@@ -1393,7 +1393,7 @@ class SearchController extends Controller implements CrawlConstants
                     "/$word/i", '', $mark_prefix);
                 }
                 $match = $mark_prefix.$word;
-                $newDoc = preg_replace("/$match/i", 
+                $newDoc = preg_replace("/$match/i",
                     '<span style="background-color:'.
                     $colors[$i].'">$0</span>', $newDoc);
                 $i = ($i + 1) % $color_count;
@@ -1409,8 +1409,10 @@ class SearchController extends Controller implements CrawlConstants
         return;
     }
 
-
-    function historyUI($crawl_time, $all_crawl_times, $divNode, $dom, $terms, 
+    /**
+     *
+     */
+    function historyUI($crawl_time, $all_crawl_times, $divNode, $dom, $terms,
         $myd, $url)
     {
         //Guess locale for date localization
@@ -1430,12 +1432,12 @@ class SearchController extends Controller implements CrawlConstants
         $current_month = $current_components[0];
 
         //UI for viewing links by selecting year and month
-        $d1 = $this->viewLinksByYearMonth($years, $months, $current_year, 
+        $d1 = $this->viewLinksByYearMonth($years, $months, $current_year,
         $current_month, $time_ds, $dom);
 
         /*create divs for all year.month pairs and populate with links
          */
-        $d1 = $this->createLinkDivs($time_ds, $current_year, $current_month, 
+        $d1 = $this->createLinkDivs($time_ds, $current_year, $current_month,
             $d1, $dom, $url, $years, $myd, $terms, $crawl_time);
 
         return $d1;
