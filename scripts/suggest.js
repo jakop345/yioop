@@ -717,7 +717,7 @@ function spellCheck()
             var spell_link = "?"+token_name+"="+csrf_token+"&q="
             +corrected_query;
             correctedSpell.innerHTML = "<b>" + local_strings.spell
-            +": <a rel='nofollow' href="+spell_link+">"  + corrected_query
+            +": <a rel='nofollow' href='"+spell_link+"'>"  + corrected_query
             + "</a></b>";
             referenceNode.parentNode.
             insertBefore(correctedSpell, referenceNode.nextSibling);
