@@ -701,6 +701,7 @@ function spellCheck()
         var its_value = elt("its-value").value;
 
         var query = elt("query-field").value;
+        if(query == "") return;
         var ret_array,ret_word;
         var term_array = query.split(" ");
         for(var i =0; i<term_array.length; i++) {
