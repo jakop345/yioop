@@ -73,8 +73,9 @@ class Trie
     function add($term) 
     {
         $trie_array = & $this->trie_array;
-        for($i = 0; $i < mb_strlen($term,"utf-8"); $i++) {
-            $character = mb_substr($term, $i, 1, "utf-8");
+        $term_arr = explode(" ",$term);
+        for($i = 0; $i < mb_strlen($term_arr[0],"utf-8"); $i++) {
+            $character = mb_substr($term_arr[0], $i, 1, "utf-8");
             $enc_char = rawurlencode($character);
             // To avoid encoding the linefeed
             if ($enc_char == "%0A"){
@@ -90,7 +91,8 @@ class Trie
             }
         }
         // Set end of term marker
-        $trie_array[$this->end_marker] = $this->end_marker;
+        $trie_array[$this->end_marker] = $term_arr[1];
+
         return $trie_array;
     }
 

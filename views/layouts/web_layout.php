@@ -72,10 +72,10 @@ class WebLayout extends Layout
             e($this->view->head_objects['robots']) ?>" />
     <?php } ?>
         <meta name="description" content="<?php 
-    if(isset($data['page']) && 
-    isset($this->view->head_objects[$data['page']]['description']))
+        if(isset($data['page']) && 
+            isset($this->view->head_objects[$data['page']]['description']))
                 e($this->view->head_objects[$data['page']]['description']);
-                else e(tl('web_layout_description')); ?>" />
+        else e(tl('web_layout_description')); ?>" />
         <meta name="Author" content="Christopher Pollett" />
         <meta name="description" content="<?php 
             e(tl('web_layout_description')); ?>" />
@@ -135,7 +135,7 @@ class WebLayout extends Layout
 
         if(isset($data['INCLUDE_LOCALE_SCRIPT'])) {
                 e('<script type="text/javascript"
-                    src="locale/'.$data["LOCALE_TAG"].
+                    src="./locale/'.$data["LOCALE_TAG"].
                     '/resources/locale.js" ></script>');
         }
         ?>

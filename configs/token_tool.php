@@ -152,7 +152,7 @@ switch($argv[1])
             $argv[3] = "en-US";
         }
         if(!isset($argv[4])) {
-            $argv[4] = " ";
+            $argv[4] = "$";
         }
         makeSuggestTrie($argv[2], $argv[3], $argv[4]);
     break;

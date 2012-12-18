@@ -148,7 +148,7 @@ function onTypeTerm(event, text_field)
             else if (localStorage[locale_ver] != null) {
                 split_str = localStorage[locale_ver].split("@@");
                 locale_terms = JSON.parse(split_str[1]);
-                local_dict = JSON.parse(localStorage[locale_ver].split("@@", 1));
+                local_dict =JSON.parse(localStorage[locale_ver].split("@@", 1));
                 if (local_dict != null) {
                     local_terms_present = true;
                     termSuggest(local_dict, input_term);
@@ -332,7 +332,7 @@ function edits1(word)
         }
     }
     var set =
-    deletes.concat(transposes).concat(replaces).concat(inserts).unique();
+        deletes.concat(transposes).concat(replaces).concat(inserts).unique();
     return set;
 }
 
@@ -358,7 +358,7 @@ function known(words_ip)
 {
     var known_words = new Array(),j=0;
     var ret_array;
-    for(var i=0;i<words_ip.length;i++) {
+    for(var i=0;i < words_ip.length;i++) {
         ret_array = exist(dictionary, words_ip[i]);
         if(ret_array[END_OF_TERM_MARKER] != null) {
             known_words[j] =  words_ip[i];
@@ -379,7 +379,7 @@ function updateLocalStorage()
     var trie_to_store;
     trie_storage = {};
     var store_term = elt("query-field").value;
-    var freq, k=0;
+    var freq, k = 0;
     var sorted_locale_terms = new Array();
     if(localStorage) {
         if (locale_terms[store_term] == null) {
@@ -505,7 +505,7 @@ function getTrieTerms(trie_array, parent_word, highlighted_word)
                 if( (locale_terms[decode(parent_word)] == null
                      && local_terms_present == false)) {
                     search_terms = concat_term.trim() + " " +
-                    decode(parent_word);
+                        decode(parent_word);
                     search_terms = search_terms.trim();
                     highlighted_terms = concat_term.trim() + " " +
                     decode(highlighted_word) + "</b>";
@@ -520,6 +520,7 @@ function getTrieTerms(trie_array, parent_word, highlighted_word)
                         +"\",this.id)'"+
                         ">" + highlighted_terms + "</span></li>";
                     count++;
+                    //handle long suggests phrases with horizontal scrollbar
                     if (search_terms.length * 24 > 1200 &&  !scroll_horz)
                         scroll_horz = true;
                 } else if (local_terms_present == true) {
@@ -528,8 +529,9 @@ function getTrieTerms(trie_array, parent_word, highlighted_word)
                     search_terms = search_terms.trim();
                     highlighted_terms = concat_term.trim() + " "
                     + decode(highlighted_word) + "</b>";
-                    search_list_array[decode(parent_word)] = search_terms+
+                    search_list_array[decode(parent_word)] = search_terms +
                      "_" +highlighted_terms;
+                    //handle long suggests phrases with horizontal scrollbar
                     if (search_terms.length * 24 > 1200 &&  !scroll_horz)
                         scroll_horz = true;
                 }
