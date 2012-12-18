@@ -500,7 +500,7 @@ li.outer div
     display: block;
     background-color: gray;
     padding:2px;
-    width:1.5in;
+    width:1.25in;
     z-index:3;
 }
 
@@ -912,6 +912,9 @@ ul.in-list li
     padding:0;
     color:#666;
     font-size:14pt;
+    position:relative;
+    top:-12px;
+    left:608px;
 }
 
 .serp-links-score
@@ -937,6 +940,16 @@ ul.in-list li
     right: 3px;
     width: 300px;
     font-size:10pt;
+}
+
+.spell
+{
+    position:relative;
+    top:-47px;
+    left:49px;
+    color:#666666;
+    font-size:14pt;
+    z-index:1;
 }
 
 .searchbox
@@ -1053,7 +1066,7 @@ ul.in-list li
 
 .suggest-list li
 {
-    width:6.10in;
+    width:30.10in;
     background:#DDF;
     font-size:16pt;
     margin-right:0in;

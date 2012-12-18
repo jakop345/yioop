@@ -394,6 +394,11 @@ class SearchController extends Controller implements CrawlConstants
             $data['PAGES'] = $this->makeMediaGroups($data['PAGES']);
         }
         $data['INCLUDE_SCRIPTS'] = array("suggest");
+        $data['SCRIPT'] .= "\nlocal_strings = {'spell':'".
+        tl('search_controller_search')."'};";
+        $data['SCRIPT'] .= "\ncsrf_value ='".CSRF_TOKEN."';";
+        $data['INCLUDE_LOCALE_SCRIPT'] = "locale";
+
         if($no_query || isset($_REQUEST['no_query'])) {
             $data['NO_QUERY'] = true;
             $data['PAGING_QUERY'] .= "&no_query=true";

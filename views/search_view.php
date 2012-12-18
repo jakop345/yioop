@@ -98,7 +98,7 @@ class SearchView extends View implements CrawlConstants
         ?>
 
         <h1 class="logo"><a href="./?<?php 
-            e(CSRF_TOKEN."=".$data[CSRF_TOKEN]); ?>"><img 
+            e(CSRF_TOKEN."=".$data[CSRF_TOKEN])?>"><img 
             src="<?php e($logo); ?>" alt="<?php e(tl('search_view_title'));
                  ?>"
             /></a>
@@ -112,18 +112,17 @@ class SearchView extends View implements CrawlConstants
         ?>
 
         <div class="searchbox">
-            <form id="search-form" method="get" action='?' onsubmit="updateLocalStorage()">
+            <form id="search-form" method="get" action='?' onsubmit="processSubmit()">
             <p>
             <?php if(isset($data["SUBSEARCH"]) && $data["SUBSEARCH"] != "") { ?>
             <input type="hidden" name="s" value="<?php 
                 e($data['SUBSEARCH']); ?>" />
             <?php } ?>
-            <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php 
+            <input id="csrf-token" type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php 
                 e($data[CSRF_TOKEN]); ?>" />
-            <input type="hidden" name="its" value="<?php e($data['its']); ?>" />
+            <input id="its-value" type="hidden" name="its" value="<?php e($data['its']); ?>" />
             <input type="text" <?php if(WORD_SUGGEST) { ?>
                 autocomplete="off"  onkeyup="onTypeTerm(event, this)"
-                onpaste="onTypeTerm(event, this)"
                 <?php } ?>
                 title="<?php e(tl('search_view_input_label')); ?>" 
                 id="query-field" name="q" value="<?php 
@@ -154,10 +153,10 @@ class SearchView extends View implements CrawlConstants
                 $num_results = min($data['TOTAL_ROWS'], 
                     $data['LIMIT'] + $data['RESULTS_PER_PAGE']);
                 $limit = min($data['LIMIT'] + 1, $num_results);
-                e(tl('search_view_query_results')); ?> (<?php 
+                 ?> <?php 
                 e(tl('search_view_calculated', $data['ELAPSED_TIME']));?> <?php
                 e(tl('search_view_results', $limit, $num_results,
-                    $data['TOTAL_ROWS'].")"));
+                    $data['TOTAL_ROWS']));
                 }
             ?></h2>
             <?php

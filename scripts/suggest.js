@@ -30,6 +30,12 @@
  * @filesource
  */
 
+/*
+ * Update the version number manually when ever
+ * suggest.js undergoes changes
+ */
+VERSION_NO = 0;
+
 /**
  *  Constants for key codes will handle
  */
@@ -51,6 +57,27 @@ FONT_HEIGHT = 24;
  * what the trie object loaded says in loadTrie
  */
 END_OF_TERM_MARKER = " ";
+
+/**
+ * Process to follow once onsubmit event is fired
+ *
+ * @param None
+ * @return None
+ */
+corrected_query="";
+function processSubmit()
+{
+    updateLocalStorage();
+}
+
+/*
+ * To check if the given English letter is a vowel
+ */
+
+function isVowel(c) {
+    return ['a', 'e', 'i', 'o', 'u'].indexOf(c) !== -1
+}
+
 /**
  * Steps to follow every time a key is up from the user end
  * Handles up/dowm arrow keys
@@ -60,28 +87,35 @@ END_OF_TERM_MARKER = " ";
  *
  */
 
-
 function onTypeTerm(event, text_field)
 {
     var key_code_pressed;
     var term_array;
+    var chunk_array = new Array();
     var input_term = text_field.value.trim();
     var suggest_results = elt("suggest-results");
     var suggest_dropdown = elt("suggest-dropdown");
     var scroll_pos = 0;
     var tmp_pos = 0;
+    var local_count = 0;
     locale_terms = new Object();
     local_terms_present = false;
     local_suggest = true;
     search_list_array = new Object();
+    scroll_horz = false;
 
+    chunk_array= analyzeQuery();
+    if(chunk_array && chunk_array.length > 0)
+    {
+       input_term = chunk_array.join().replace(/,/g,'').trim();
+    }
     //To find the length of an associative array
     Object.size = function(obj) {
-    var size = 0, key;
-    for (key in obj) {
-        if (obj.hasOwnProperty(key)) size++;
-    }
-    return size;
+        var size = 0, key;
+        for (key in obj) {
+            if (obj.hasOwnProperty(key)) size++;
+        }
+        return size;
     };
     concat_term = "";
     if(window.event) { // IE8 and earlier
@@ -104,39 +138,57 @@ function onTypeTerm(event, text_field)
             key_code_pressed != KeyCodes.UP_ARROW) {
         search_list = "";
 
-    // First search the local storage to fetch the suggestions
-    if (localStorage) {
-         if (localStorage[locale] != null) {
-            split_str = localStorage[locale].split("@@");
-            locale_terms = JSON.parse(split_str[1]);
-            local_dict = JSON.parse(split_str[0]);
-            if (local_dict != null) {
-                termSuggest(local_dict, input_term);
-                local_terms_present = true;
+        // First search the local storage to fetch the suggestions
+        if (localStorage) {
+            var locale_ver = locale+'_'+VERSION_NO;
+            if (localStorage[locale_ver] == null) {
+                localStorage.clear();
+                count=0;
             }
-         }
-         else  count =0;
-    }
-    var sorted_local = SortLocalTerms();
-    if (Object.size(search_list_array) > 0) {
-        search_list = "";
-         for(var i = 0; i < sorted_local.length ; i++) {
-            var split_array = sorted_local[i].split('*');
+            else if (localStorage[locale_ver] != null) {
+                split_str = localStorage[locale_ver].split("@@");
+                locale_terms = JSON.parse(split_str[1]);
+                local_dict = JSON.parse(localStorage[locale_ver].split("@@", 1));
+                if (local_dict != null) {
+                    local_terms_present = true;
+                    termSuggest(local_dict, input_term);
+                    local_terms_present = false;
+                }
+                var sorted_local = SortLocalTerms();
+                if (Object.size(search_list_array) > 0) {
+                    search_list = "";
+                    for(var i = 0; i < sorted_local.length ; i++) {
+                        var split_array = sorted_local[i].split('*');
 
-            if(search_list_array[split_array[1]] != null)
-            search_list += search_list_array[split_array[1]];
-         }
-     }
+                        if(search_list_array[split_array[1]] != null) {
+                            search_split =
+                            search_list_array[split_array[1]].split("_");
+                            search_list +=  "<li><span id='term" +local_count+
+                                "' class='unselected' onclick = 'void(0)' " +
+                                "title='"+search_split[0]+"' " +
+                                "onmouseover='setSelectedTerm(\""+
+                                local_count+"\",\"selected\")'" +
+                                "onmouseout='setSelectedTerm(\""+
+                                local_count+"\",\"unselected\")'" +
+                                "onmouseup='termClick(\""+search_split[0]+
+                                "\",this.id)'"+
+                                ">" + search_split[1] + "</span></li>";
+                            local_count++;
+                        }
 
-     // Now search the actual dictionary trie
-     local_suggest = false;
-     termSuggest(dictionary, input_term);
-
-     // insert nbsp of the number of suggestions are less than MAX_DISPLAY
-     short_max = MAX_DISPLAY - count;
-     for(var i = 0; i < short_max; i++) {
-        search_list += "<li><span class='unselected'>&nbsp;</span></li>";
-    }
+                    }
+                }
+                local_suggest = false;
+            }
+        }
+        count = local_count;
+        // Now search the actual dictionary trie
+        termSuggest(dictionary, input_term);
+        // insert nbsp of the number of suggestions are less than MAX_DISPLAY
+        short_max = MAX_DISPLAY - count;
+        for(var i = 0; i < short_max; i++) {
+            search_list += "<li><span class='unselected'>&nbsp;</span></li>";
+        }
         if(count < 1) {
             search_list = "";
         }
@@ -154,6 +206,10 @@ function onTypeTerm(event, text_field)
             suggest_results.style.visibility = "visible";
             suggest_dropdown.style.visibility = "visible";
             suggest_dropdown.style.height = (FONT_HEIGHT * MAX_DISPLAY) + "px";
+            if (scroll_horz)
+                suggest_dropdown.style.overflowX = "scroll";
+            else
+                suggest_dropdown.style.overflowX = "hidden";
         }
     }
     // behavior on up down arrows
@@ -170,8 +226,8 @@ function onTypeTerm(event, text_field)
                 setSelectedTerm(cursor_pos, "selected");
             }
             scroll_count = 1;
-            scroll_pos = (cursor_pos - MAX_DISPLAY > 0) ?
-                (cursor_pos - MAX_DISPLAY + 1) : 1;
+            scroll_pos = (cursor_pos - MAX_DISPLAY >= 0) ?
+                (cursor_pos - MAX_DISPLAY + 1) : 0;
             suggest_dropdown.scrollTop = scroll_pos * FONT_HEIGHT;
         } else if(key_code_pressed == KeyCodes.UP_ARROW) {
             if (cursor_pos < 0) {
@@ -184,13 +240,132 @@ function onTypeTerm(event, text_field)
                 }
                 setSelectedTerm(cursor_pos, "selected");
             }
-            scroll_pos = (cursor_pos - MAX_DISPLAY + scroll_count > 0) ?
-                (cursor_pos - MAX_DISPLAY + scroll_count) : 1;
+            scroll_pos = (cursor_pos - MAX_DISPLAY + scroll_count >= 0) ?
+                (cursor_pos - MAX_DISPLAY + scroll_count) : 0;
             scroll_count = (MAX_DISPLAY > scroll_count) ? scroll_count + 1 :
                 MAX_DISPLAY;
             suggest_dropdown.scrollTop = scroll_pos * FONT_HEIGHT;
         }
     }
+}
+
+/**
+ * To correct the spelling of the query words
+ *
+ * @param String word Input word
+ * @return String corrected_word Corrected word
+ */
+function correctSpelling(word)
+{
+    var prob=0,ret_array,curr_prob=0;
+    var candidates = known(edits1(word));
+    candidates.push(word);
+    var corrected_word = "";
+    // Use the fequencies to get the best match
+    for(var i=0;i<candidates.length;i++) {
+        ret_array = exist(dictionary, candidates[i]);
+        if(ret_array != false) {
+            curr_prob = parseInt(ret_array[END_OF_TERM_MARKER]);
+        }
+        if (curr_prob > prob) {
+            prob = curr_prob;
+            corrected_word = candidates[i];
+        }
+    }
+    return corrected_word;
+}
+
+/**
+ * To get the candidates for the spell correction with edit
+ * distance 1
+ *
+ * @param String word Input word
+ * @return Array set Words with edit distance - 1
+ */
+
+function edits1(word)
+{
+    var splits = new Object();
+    var deletes = new Array();
+    var transposes =new Array();
+    var replaces = new Array();
+    var inserts = new Array();
+    var j=0;
+
+    splits[""] = word;
+    for(var i=0;i<word.length;i++) {
+        splits[word.substring(0,i+1)] = word.substring(i+1,word.length);
+    }
+    // Deletes
+    for (key in splits) {
+        if (splits[key] != "") {
+            deletes[j] = key + splits[key].substring(1);
+            j++;
+        }
+    }
+    // Transposes
+    j=0;
+    for (key in splits) {
+        if (splits[key].length > 1) {
+            transposes[j] = key + splits[key].substring(1,2) +
+            splits[key].substring(0,1) + splits[key].substring(2);
+            j++;
+        }
+    }
+    // Replaces
+    j=0;
+    for (key in splits) {
+        if (splits[key] != "") {
+            for(var i=0;i<alpha.length;i++) {
+                replaces[j] = key + alpha.substring(i,i+1) +
+                 splits[key].substring(1);
+                j++;
+            }
+        }
+    }
+    // Inserts
+    j=0;
+    for (key in splits) {
+        for(var i=0;i<alpha.length;i++) {
+            inserts[j] = key + alpha.substring(i,i+1) + splits[key];
+            j++;
+        }
+    }
+    var set =
+    deletes.concat(transposes).concat(replaces).concat(inserts).unique();
+    return set;
+}
+
+Array.prototype.unique = function() {
+    var a = this.concat();
+    for(var i=0; i<a.length; ++i) {
+        for(var j=i+1; j<a.length; ++j) {
+            if(a[i] === a[j])
+                a.splice(j, 1);
+        }
+    }
+    return a;
+}
+
+/**
+ * To get the set of words which are known from the dictionary
+ *
+ * @param Array words_ip array of words
+ * @return Array known_words array of known words
+ */
+
+function known(words_ip)
+{
+    var known_words = new Array(),j=0;
+    var ret_array;
+    for(var i=0;i<words_ip.length;i++) {
+        ret_array = exist(dictionary, words_ip[i]);
+        if(ret_array[END_OF_TERM_MARKER] != null) {
+            known_words[j] =  words_ip[i];
+            j++;
+        }
+    }
+    return known_words;
 }
 
 /**
@@ -201,48 +376,49 @@ function onTypeTerm(event, text_field)
  */
 function updateLocalStorage()
 {
-     var trie_to_store;
-     trie_storage = {};
-     var store_term = elt("query-field").value;
-     var freq, k=0;
-     var sorted_locale_terms = new Array();
-     if(localStorage) {
-         if (locale_terms[store_term] == null) {
+    var trie_to_store;
+    trie_storage = {};
+    var store_term = elt("query-field").value;
+    var freq, k=0;
+    var sorted_locale_terms = new Array();
+    if(localStorage) {
+        if (locale_terms[store_term] == null) {
             locale_terms[store_term] = 1;
-         } else {
+        } else {
             freq = parseInt(locale_terms[store_term]);
             freq++;
             locale_terms[store_term] = freq;
-         }
-         for(var key in locale_terms) {
+        }
+        for(var key in locale_terms) {
             sorted_locale_terms[k] = key;
             k++;
-         }
+        }
         sorted_locale_terms.sort();
 
         // Build the trie
         for(var i=0; i<sorted_locale_terms.length; i++) {
-        var trie_word = sorted_locale_terms[i];
-        var letters = trie_word.split(""),cur = trie_storage;
-        for (var j=0;j<letters.length;j++) {
-        var letter = encode(letters[j]);
-            var pos = cur[ letter ];
-            if (pos == null) {
-                if (j === letters.length - 1) {
-                    cur = cur[ letter ] = {'$' : '$'};
+            var trie_word = sorted_locale_terms[i];
+            var letters = trie_word.split(""),cur = trie_storage;
+            for (var j=0;j<letters.length;j++) {
+                var letter = encode(letters[j]);
+                var pos = cur[ letter ];
+                if (pos == null) {
+                    if (j === letters.length - 1) {
+                        cur = cur[ letter ] = {'$' : '$'};
+                    } else {
+                        cur = cur[ letter ] = {};
+                    }
+                } else if (pos === 0) {
+                    cur = cur[ letter ] = { '$' : '$' };
                 } else {
-                    cur = cur[ letter ] = {};
+                    cur = cur[ letter ];
                 }
-            } else if (pos === 0) {
-                cur = cur[ letter ] = { '$' : '$' };
-            } else {
-                cur = cur[ letter ];
             }
         }
     }
-    }
     trie_to_store = JSON.stringify( trie_storage );
-    localStorage.setItem(locale,trie_to_store + "@@" + JSON.stringify(locale_terms));
+    localStorage.setItem(locale+'_'+VERSION_NO,trie_to_store +
+     "@@" + JSON.stringify(locale_terms));
 }
 
 /**
@@ -326,24 +502,40 @@ function getTrieTerms(trie_array, parent_word, highlighted_word)
                 getTrieTerms(trie_array[key], parent_word + key,
                         highlighted_word + key);
             } else {
-                if (local_terms_present == false || (locale_terms[decode(parent_word)] == null && local_terms_present == true)) {
-                    search_terms = concat_term.trim() + " " + decode(parent_word);
+                if( (locale_terms[decode(parent_word)] == null
+                     && local_terms_present == false)) {
+                    search_terms = concat_term.trim() + " " +
+                    decode(parent_word);
                     search_terms = search_terms.trim();
-                    highlighted_terms = concat_term.trim() + " " + decode(highlighted_word) + "</b>";
-                    search_string =  "<li><span id='term" +count+
-                    "' class='unselected' onclick = 'void(0)' " +
-                    "title='"+search_terms+"' " +
-                    "onmouseover='setSelectedTerm(\""+count+"\",\"selected\")'" +
-                    "onmouseout='setSelectedTerm(\""+count+"\",\"unselected\")'" +
-                    "onmouseup='termClick(\""+search_terms+"\",this.id)'"+
-                    ">" + highlighted_terms + "</span></li>";
-                    search_list += search_string;
-                    search_list_array[decode(parent_word)] = search_string;
+                    highlighted_terms = concat_term.trim() + " " +
+                    decode(highlighted_word) + "</b>";
+                    search_list +=  "<li><span id='term" +count+
+                        "' class='unselected' onclick = 'void(0)' " +
+                        "title='"+search_terms+"' " +
+                        "onmouseover='setSelectedTerm(\""
+                        +count+"\",\"selected\")'" +
+                        "onmouseout='setSelectedTerm(\""+count
+                        +"\",\"unselected\")'" +
+                        "onmouseup='termClick(\""+search_terms
+                        +"\",this.id)'"+
+                        ">" + highlighted_terms + "</span></li>";
                     count++;
-                }
+                    if (search_terms.length * 24 > 1200 &&  !scroll_horz)
+                        scroll_horz = true;
+                } else if (local_terms_present == true) {
+                    search_terms = concat_term.trim() + " "
+                     + decode(parent_word);
+                    search_terms = search_terms.trim();
+                    highlighted_terms = concat_term.trim() + " "
+                    + decode(highlighted_word) + "</b>";
+                    search_list_array[decode(parent_word)] = search_terms+
+                     "_" +highlighted_terms;
+                    if (search_terms.length * 24 > 1200 &&  !scroll_horz)
+                        scroll_horz = true;
                 }
             }
         }
+    }
 }
 
 /**
@@ -359,7 +551,7 @@ function exist(trie_array, term)
     if(trie_array == null) {
         return false;
     }
-    for(var i = 1; i < term.length; i++) {
+    for(var i = 0; i < term.length; i++) {
         tmp = getUnicodeCharAndNextOffset(term, i);
         if(tmp == false) return false;
         next_char = tmp[0];
@@ -398,11 +590,7 @@ function termSuggest(trie_array, term)
         return false;
     }
     if((term.length) > 1) {
-        tmp = getUnicodeCharAndNextOffset(term, 0);
-        if(tmp == false) return false;
-        start_char = tmp[0];
-        enc_chr = encode(start_char);
-        trie_array = exist(trie_array[enc_chr], term);
+        trie_array = exist(trie_array, term);
         if(trie_array == false) {
             return false;
         }
@@ -467,10 +655,10 @@ function getUnicodeCharAndNextOffset(str, i)
 }
 
 /**
- * Load the Trie(compressed with .gz extension) during the launch of website
+ * Load the Trie during the launch of website
  * Trie's are represented using nested arrays.
  */
-function loadTrie()
+function loadFiles()
 {
     var request = makeRequest();
     if(request) {
@@ -479,11 +667,12 @@ function loadTrie()
                 trie = JSON.parse(request.responseText);
                 dictionary = trie["trie_array"];
                 END_OF_TERM_MARKER = trie["end_marker"];
+                if(locale=='en-US')
+                    spellCheck();
             }
             END_OF_TERM_MARKER = (typeof END_OF_TERM_MARKER == 'undefined') ?
                 ' ' : END_OF_TERM_MARKER;
         }
-
         locale = document.documentElement.lang;
         if(locale) {
             trie_loc = "./?c=resource&a=suggest&locale=" + locale;
@@ -492,15 +681,55 @@ function loadTrie()
         }
     }
 }
-document.getElementsByTagName("body")[0].onload = loadTrie;
+
+/**
+ * To process spell correction
+ */
+function spellCheck()
+{
+    var referenceNode;
+    if (document.getElementsByClassName) {
+        referenceNode = document.getElementsByClassName("serp")[0];
+    }
+    if (referenceNode) {
+        var correctedSpell = document.createElement("div");
+        correctedSpell.id = "spell-check";
+        correctedSpell.className='spell';
+        var csrf_token = elt("csrf-token").value;
+        var its_value = elt("its-value").value;
+
+        var query = elt("query-field").value;
+        var ret_array,ret_word;
+        var term_array = query.split(" ");
+        for(var i =0; i<term_array.length; i++) {
+            ret_word = "";
+            ret_word = correctSpelling(term_array[i].toLowerCase());
+            if(ret_word.trim(" ") == "") {
+                corrected_query += term_array[i] + " ";
+            } else
+                corrected_query += ret_word + " ";
+        }
+        if (corrected_query.trim() != query) {
+            var token_name = csrf_value;
+            var spell_link = "?"+token_name+"="+csrf_token+"&q="
+            +corrected_query;
+            correctedSpell.innerHTML = "<b>" + local_strings.spell
+            +": <a rel='nofollow' href="+spell_link+">"  + corrected_query
+            + "</a></b>";
+            referenceNode.parentNode.
+            insertBefore(correctedSpell, referenceNode.nextSibling);
+        }
+    }
+}
+document.getElementsByTagName("body")[0].onload = loadFiles;
 var ip_field = elt("query-field");
 ip_field.onpaste = function(e) {
     setTimeout(function(){
-        onTypeTerm(e,ip_field);
-    }, 0);
+            onTypeTerm(e,ip_field);
+            }, 0);
 }
 ip_field.oncut = function(e) {
     setTimeout(function(){
-        onTypeTerm(e,ip_field);
-    }, 0);
+            onTypeTerm(e,ip_field);
+            }, 0);
 }
