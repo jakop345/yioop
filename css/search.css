@@ -1724,6 +1724,96 @@ ul.in-list li
     width: 97%;
 }
 
+.logrecordstable
+{
+   width:100%;
+}
+
+.logrecordstable,
+.logrecordstable th,
+.logrecordstable td
+{
+    border: 1px ridge black;
+}
+
+.logrecordstable th
+{
+    text-align: center;
+    padding: .03in;
+}
+.logrecordstable td.input-field
+{
+    width: 1.3in;
+}
+.logrecordstable td.input-field input
+{
+    width: 1.5in;
+    margin:.05in;
+}
+.logrecordstable td.input-field-name
+{
+    margin:.03in;
+    width: 100%;
+}
+.logrecordstable td.input-field-name input
+{
+    margin:.05in;
+    width: 97%;
+}
+.logrecordstable td.input-field-type
+{
+    margin:.03in;
+    width: 100%;
+}
+.logrecordstable td.input-field-type input
+{
+    margin:.05in;
+    width: 97%;
+}
+.html-rtl .logrecordnewfield
+{
+    position: relative;
+}
+.html-ltr .logrecordnewfield
+{
+    position: relative;
+}
+
+.databaseconnectiondetailstable
+{
+   width:100%;
+}
+
+.databaseconnectiondetailstable,
+.databaseconnectiondetailstable td
+{
+    border: 1px ridge black;
+}
+
+.databaseconnectiondetailstable td.input-name
+{
+    width: 1.3in;
+}
+.databaseconnectiondetailstable td.input-data
+{
+    margin:.03in;
+    width: 100%;
+}
+.databaseconnectiondetailstable td.input-data input
+{
+    margin:.05in;
+    width: 98%;
+}
+.html-rtl .database-connection-details-submit
+{
+    position: relative;
+}
+.html-ltr .database-connection-details-submit
+{
+    position: relative;
+}
+
+
 .indexingplugintable
 {
    width:100%;

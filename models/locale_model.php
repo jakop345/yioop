@@ -625,7 +625,8 @@ class LocaleModel extends Model
         }
         if(file_exists($fallback_path.'/resources')) {
             $this->updateLocaleSubFolder($cur_path.'/resources', 
-                $fallback_path.'/resources', array("php", "ftr", "txt.gz"));
+                $fallback_path.'/resources', array("js", "php", "ftr", 
+                "txt.gz"));
         }
         $n = array();
         $n[] = <<<EOT

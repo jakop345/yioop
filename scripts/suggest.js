@@ -669,7 +669,7 @@ function loadFiles()
                 trie = JSON.parse(request.responseText);
                 dictionary = trie["trie_array"];
                 END_OF_TERM_MARKER = trie["end_marker"];
-                if(locale=='en-US')
+                if(typeof alpha != 'undefined')
                     spellCheck();
             }
             END_OF_TERM_MARKER = (typeof END_OF_TERM_MARKER == 'undefined') ?

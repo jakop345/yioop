@@ -159,6 +159,287 @@ class CrawloptionsElement extends Element
             <div class="center red"><?php 
             e(tl('crawloptions_element_need_api_for_mix')); ?></div>
         <?php } ?>
+
+        <script>
+        obj = document.getElementById("crawl-indexes");
+        obj.onchange = function(){crawloptionsForm.submit();}
+        </script>
+
+        <?php $data['logfields_type'] = array(
+        1=>'IP_Address',
+        2=>'Timestamp',
+        3=>'URL',
+        4=>'Status Code',
+        5=>'User Agent',
+        6=>'Request',
+        7=>'Int');
+
+        $flag = false;
+
+        /* If log files are selected as the option */ 
+        if(isset($_POST['crawl_indexes'])
+            && $data['available_crawl_indexes'][$_POST['crawl_indexes']] 
+            == 'ARCFILE::Log Files') {
+                $LogFolderPath = CRAWL_DIR.'/cache/archives';
+                foreach(glob($LogFolderPath."/*") as $folder){
+                  if(is_dir($folder)){
+                    if(file_exists("$folder/arc_description.ini")){
+                      $contents = 
+                        file_get_contents("$folder/arc_description.ini");
+                      if(strpos($contents,"LogArchiveBundle")
+                        == true){
+                        $flag = true;
+                        $LogFolderPath = $folder;
+                      }
+                    }
+                  }
+                  if($flag == true) {break;}
+                }
+
+        /*Get all the file names into an array*/
+        $filenames = glob($LogFolderPath."/*.log");
+        /*Retrieve the first filename*/
+        $firstFile = $filenames[0];
+        /*Split the file content into an array*/
+        $l_delim = "\n";
+        $file_array = explode($l_delim, file_get_contents($firstFile));
+        echo "<br/><b>".tl('crawloptions_element_first_line_text')."</b><br/>";
+        echo "<br/>".$file_array[0]."<br/>";
+
+        ?>
+
+        <div id="Log_Records" class="topmargin"><b><?php 
+            e(tl('crawloptions_element_log_records_details'))?></b></div>
+
+        <table class="logrecordstable">
+            <tr><th><?php e(tl('crawloptions_element_field'));?></th>
+            <th><?php e(tl('crawloptions_element_field_name')); ?></th>
+            <th><?php e(tl('crawloptions_element_field_type')); ?></th></tr>
+        <?php
+            $i = 0;
+            foreach($data['LOG_RECORDS'] as $field => $field_nt) {
+                $matches = explode("::",$field_nt);
+        ?>
+            <tr><td class="input-field" >
+                <input
+                       title="<?php e(tl('crawloptions_element_field')); ?>" 
+                       name="LOG_RECORDS[<?php e($i); ?>][FIELD]" 
+                       value="<?php e($field); ?>" 
+                />
+                </td>
+                <td class="input-field-name">
+                <input 
+                     title="<?php e(tl('crawloptions_element_field_name')); ?>"
+                     name="LOG_RECORDS[<?php e($i); ?>]['FIELD_NAME']" 
+                     value="<?php e($matches[0]); ?>" 
+                />
+                </td>
+                <td class="input-field-type" >
+                <?php $this->view->optionsHelper->render(
+                        'field-types',
+                        "LOG_RECORDS[$i]['FIELD_TYPE']",
+                        $data['logfields_type'],
+                        $matches[1]);
+                ?>
+                </td>
+            </tr>
+            <?php
+                $i++;
+                }
+                if($i==0){
+            ?>
+            <tr><td class="input-field">
+                <input
+                       type="text" 
+                       title="New Field" 
+                       name="LOG_RECORDS[<?php e($i); ?>][FIELD]" 
+                       value=""
+                />
+                </td>
+                <td class="input-field-name">
+                <input
+                       type="text" 
+                       title="New Field Name" 
+                       name="LOG_RECORDS[<?php e($i); ?>]['FIELD_NAME']" 
+                       value=""
+                />
+                </td>
+                <td class="input-field-type">
+                <?php $this->view->optionsHelper->render(
+                        'field-types',
+                        "LOG_RECORDS[$i]['FIELD_TYPE']",
+                        $data['logfields_type'],
+                        1);
+                ?>
+                </td>
+            </tr>
+
+                <?php } ?>
+
+                <?php
+                    if(isset($_POST['add_fields']) && $i>0){
+                ?>
+            <tr>
+                <td class="input-field">
+                <input
+                       type="text" 
+                       title="New Field" 
+                       name="LOG_RECORDS[<?php e($i); ?>]['FIELD']" 
+                       value=""
+                />
+                </td>
+                <td class="input-field-name">
+                <input
+                       type="text" 
+                       title="New Field Name" 
+                       name="LOG_RECORDS[<?php e($i); ?>]['FIELD_NAME']" 
+                       value=""
+                />
+                </td>
+                <td class="input-field-type">
+                <?php $this->view->optionsHelper->render(
+                        'field-types',
+                        "LOG_RECORDS[$i]['FIELD_TYPE']",
+                        $data['logfields_type'],
+                        1);
+                ?>
+                </td>
+            </tr>
+
+                <?php } ?>
+        </table>
+        <?php
+        if(isset($_POST['save_options']) 
+        && $data['available_crawl_indexes'][$_POST['crawl_indexes']] 
+        == 'ARCFILE::Log Files'){
+            file_put_contents($LogFolderPath."/fields_data.txt",
+                serialize($data['LOG_RECORDS']));
+        }
+        ?>
+        <div class="log-record-new-field">
+        <input
+               type="submit" 
+               id="add-fields" 
+               name="add_fields" 
+               value="<?php e(tl('crawloptions_element_add_new_field')); ?>"
+        />
+        </div>
+        <?php } ?>
+
+        <?php
+        if(isset($_POST['crawl_indexes']) && 
+            $data['available_crawl_indexes'][$_POST['crawl_indexes']] 
+            == 'ARCFILE::Database files') {
+            $flag1 = false;
+            $DatabaseFolderPath = CRAWL_DIR.'/cache/archives';
+            foreach(glob($DatabaseFolderPath."/*") as $folder){
+                if(is_dir($folder)){
+                    if(file_exists("$folder/arc_description.ini")){
+                        $contents = 
+                            file_get_contents("$folder/arc_description.ini");
+                        if(strpos($contents,"Database files") == true){
+                            $flag1 = true;
+                            $DatabaseFolderPath = $folder;
+                        }
+                    }
+                }
+                if($flag1 == true) {break;}
+            }
+        ?>
+
+        <div id="Database_Connection_Details" class="topmargin"><b><?php
+            e(tl('crawloptions_element_database_connection_details'))?></b>
+        </div><br/>
+
+        <table class="databaseconnectiondetailstable">
+           <tr><td class="input-name"><?php 
+                    e(tl('crawloptions_element_hostname'))?>
+                </td>
+                <td class="input-data">
+                <input
+                       title="<?php e(tl('crawloptions_element_hostname')); ?>" 
+                       name="DATABASE_CONNECTION_DETAILS[HOSTNAME]" 
+                       value="" 
+                />
+                </td>
+            </tr>
+            <tr>
+                <td class="input-name"><?php 
+                    e(tl('crawloptions_element_username'))?>
+                </td>
+                <td class="input-data">
+                <input
+                       title="<?php e(tl('crawloptions_element_username')); ?>" 
+                       name="DATABASE_CONNECTION_DETAILS[USERNAME]" 
+                       value="" 
+                />
+                </td>
+            </tr>
+            <tr>
+                <td class="input-name"><?php 
+                    e(tl('crawloptions_element_password'))?>
+                </td>
+                <td class="input-data">
+                <input
+                       title="<?php e(tl('crawloptions_element_password')); ?>" 
+                       name="DATABASE_CONNECTION_DETAILS[PASSWORD]" 
+                       value="" 
+                />
+                </td>
+            </tr>
+            <tr>
+                <td class="input-name"><?php 
+                    e(tl('crawloptions_element_databasename'))?>
+                </td>
+                <td class="input-data">
+                <input
+                   title= "<?php e(tl('crawloptions_element_databasename')); ?>"
+                   name="DATABASE_CONNECTION_DETAILS[DATABASENAME]" 
+                   value="" 
+                />
+                </td>
+            </tr>
+            <tr>
+                <td class="input-name"><?php 
+                    e(tl('crawloptions_element_query'))?>
+                </td>
+                <td class="input-data">
+                <input 
+                       title="<?php e(tl('crawloptions_element_query')); ?>" 
+                       name="DATABASE_CONNECTION_DETAILS[QUERY]" 
+                       value="" 
+                />
+                </td>
+            </tr>
+        </table>
+        <div class="database-connection-details-submit">
+            <input type="submit" 
+                   id="submit-details" 
+                   name="submit_details" 
+                   value="<?php e(tl('crawloptions_element_submit')); ?>"
+            />
+        </div>
+
+        <?php 
+        if(isset($_POST['submit_details'])){
+            file_put_contents($DatabaseFolderPath.
+                "/database_connection_details.txt",
+                serialize($data['DATABASE_CONNECTION_DETAILS']));
+        }
+        ?>
+        <?php
+        if(isset($_POST['save_options']) 
+            && $data['available_crawl_indexes'][$_POST['crawl_indexes']] 
+            == 'ARCFILE::Database files'){
+            file_put_contents($DatabaseFolderPath.
+                "/database_connection_details.txt", 
+                serialize($data['DATABASE_CONNECTION_DETAILS']));
+        }
+        ?>
+
+        <?php } ?>
+
+
         </div>
         <?php } ?>
         </div>
@@ -230,7 +511,8 @@ class CrawloptionsElement extends Element
             
             
         <div class="center slightpad"><button class="buttonbox" 
-            type="submit"><?php e(tl('crawloptions_element_save_options')); 
+            type="submit" name="save_options">
+            <?php e(tl('crawloptions_element_save_options')); 
             ?></button></div>
         </form>
         </div>
