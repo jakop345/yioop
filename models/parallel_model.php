@@ -171,7 +171,6 @@ class ParallelModel extends Model implements CrawlConstants
                     }
                 }
             }
-            
         }
         //Make request
         $page_set = $this->execMachines("getCrawlItems", 

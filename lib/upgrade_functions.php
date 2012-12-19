@@ -443,7 +443,7 @@ function upgradeDatabaseVersion13(&$db)
     if(!file_exists(WORK_DIRECTORY."/feeds")) {
         mkdir(WORK_DIRECTORY."/feeds");
     }
-    $this->upgradeLocale(); //force locale upgrade
+    upgradeLocale(); //force locale upgrade
 }
 
 /**
