@@ -1885,7 +1885,9 @@ class AdminController extends Controller implements CrawlConstants
 
             }
         }
-        $data['SCRIPT'] .= "toggleReplica(false);";
+        if(isset($_REQUEST['arg']) && $_REQUEST['arg'] != 'log') {
+            $data['SCRIPT'] .= "toggleReplica(false);";
+        }
         return $data;
     }
 

@@ -109,7 +109,7 @@ class AdminView extends View
                     e(tl('adminview_auto_logout_one_minute'))?></h2>");
         }
         /*
-            Javscript to perform autologout
+            Javascript to perform autologout
          */
         function autoLogout()
         {
