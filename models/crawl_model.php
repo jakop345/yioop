@@ -841,10 +841,29 @@ EOT;
                 $index_info[self::CRAWL_TYPE] == self::ARCHIVE_CRAWL) {
                 $crawl['DESCRIPTION'] = "RECRAWL::";
             }
-            $schedules = glob(CRAWL_DIR.'/schedules/'.
-                self::schedule_data_base_name.$crawl['CRAWL_TIME'].
-                '/*/At*.txt');
-            $crawl['RESUMABLE'] = (count($schedules) > 0) ? true: false;
+            $sched_path = CRAWL_DIR.'/schedules/'.
+                self::schedule_data_base_name.$crawl['CRAWL_TIME'];
+            $crawl['RESUMABLE'] = false;
+            if(is_dir($sched_path)) {
+
+            $sched_dir = opendir($sched_path);
+                while( ($name = readdir($sched_dir)) !==  false) {
+                    $sub_path = "$sched_path/$name";
+                    if(!is_dir($sub_path) || $name == '.' ||
+                        $name == '..') {continue; }
+                    $sub_dir = opendir($sub_path);
+                    $i = 0;
+                    while(($sub_name = readdir($sub_dir)) !==  false && $i < 5){
+
+                        if($sub_name[0] == 'A' && $sub_name[1] == 't') {
+                            $crawl['RESUMABLE'] = true;
+                            break 2;
+                        }
+                    }
+                    closedir($sub_dir);
+                }
+                closedir($sched_dir);
+            }
             if(isset($index_info['DESCRIPTION'])) {
                 $crawl['DESCRIPTION'] .= $index_info['DESCRIPTION'];
             }
@@ -860,7 +879,6 @@ EOT;
                 $info['WRITE_PARTITION'] : 0;
             $list[] = $crawl;
         }
-
         if($return_arc_bundles) {
             $dirs = glob(CRAWL_DIR.'/cache/archives/*', GLOB_ONLYDIR);
             foreach($dirs as $dir) {
