@@ -141,7 +141,7 @@ class FetchUrl implements CrawlConstants
 
         //Wait for responses
         $running=null;
-        $memory_limit = metricToInt(ini_get("memory_limit")) * 0.5;
+        $memory_limit = metricToInt(ini_get("memory_limit")) * 0.7;
         do {
             $mrc = curl_multi_exec($agent_handler, $running);
             $ready=curl_multi_select($agent_handler, 0.005);

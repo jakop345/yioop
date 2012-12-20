@@ -363,9 +363,15 @@ class ParallelModel extends Model implements CrawlConstants
             $index_name = $this->index_name;
         }
         $index_archive = IndexManager::getIndex($index_name);
+        if(!$index_archive) {
+            return false;
+        }
         $num_retrieved = 0;
         $pages = array();
         $summary_offset = NULL;
+        if(!isset($index_archive->generation_info['ACTIVE'])) {
+            return false;
+        }
         $num_generations = $index_archive->generation_info['ACTIVE'];
         $hash_key = ($is_key) ? crawlHash($url_or_key) : 
             crawlHash("info:$url_or_key");

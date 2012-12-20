@@ -75,9 +75,13 @@ class IndexManager implements CrawlConstants
                 }
             } else {
                 $index_archive_name =self::index_data_base_name . $index_name;
-                $indexes[$index_name] = 
+                $tmp = 
                     new IndexArchiveBundle(
                         CRAWL_DIR.'/cache/'.$index_archive_name);
+                if(!$tmp) {
+                    return false;
+                }
+                $indexes[$index_name] = $tmp;
                 $indexes[$index_name]->setCurrentShard(0, true);
             }
         }

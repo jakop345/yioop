@@ -455,14 +455,14 @@ class Fetcher implements CrawlConstants
             }
 
             $switch_to_old_fetch = $this->checkCrawlTime();
-            if($switch_to_old_fetch) {
+            if($switch_to_old_fetch) {  /* case(1) */
                 $info[self::CRAWL_TIME] = $this->crawl_time;
                 if($info[self::CRAWL_TIME] == 0) {
                     $info[self::STATUS] = self::NO_DATA_STATE;
                     $this->to_crawl = array();
                 }
             } else if($this->crawl_type == self::ARCHIVE_CRAWL &&
-                    !in_array($this->arc_dir, $local_archives)) {
+                    !in_array($this->arc_dir, $local_archives)) { /* case(2) */
                 // An archive crawl with data coming from the name server.
                 $info = $this->checkArchiveScheduler();
 
@@ -472,7 +472,7 @@ class Fetcher implements CrawlConstants
                     sleep(FETCH_SLEEP_TIME);
                     continue;
                 }
-            } else if($this->crawl_time > 0) {
+            } else if($this->crawl_time > 0) { /* case(3) */
                 // Either a web crawl or a recrawl of a previous web crawl.
                 $info = $this->checkScheduler();
 
@@ -486,6 +486,9 @@ class Fetcher implements CrawlConstants
                 $info[self::STATUS] = self::NO_DATA_STATE;
             }
 
+            /* case(2), case(3) might have set info without
+               $info[self::STATUS] being set
+             */
             if(!isset($info[self::STATUS])) {
                 if($info === true) {$info = array();}
                 $info[self::STATUS] = self::CONTINUE_STATE;
@@ -636,6 +639,7 @@ class Fetcher implements CrawlConstants
                             $schedule_again_page[self::CRAWL_DELAY]
                         );
                 }
+                crawlLog("....reschedule count:".count($this->to_crawl_again));
             }
             crawlLog("....done.");
         }
@@ -867,25 +871,9 @@ class Fetcher implements CrawlConstants
             return true; 
         }
 
-        $num_servers = count($this->queue_servers);
-        $this->recrawl_check_scheduler = false;
-        $i = 0;
-        /*  Make sure no queue server starves if to crawl data available.
-            Try to keep memory foot print smaller.
-         */
-        do {
-            $this->current_server = rand(0, $num_servers - 1);
-            $cs = $this->current_server;
-            if((isset($this->found_sites[self::TO_CRAWL][$cs]) &&
-                count($this->found_sites[self::TO_CRAWL][$cs]) > 0) ||
-                isset($this->found_sites[self::INVERTED_INDEX][$cs])) {
-                $this->updateScheduler();
-            }
-            $i++;
-        } while(memory_get_usage() > metricToInt(ini_get("memory_limit")) * 0.5
-            && $i < $num_servers * ceil(log($num_servers)) );
-            //coupon collecting
+        $this->selectCurrentServerAndUpdateIfNeeded(false);
 
+        $this->recrawl_check_scheduler = false;
         $queue_server = $this->queue_servers[$this->current_server];
 
         crawlLog("Checking  $queue_server for a new schedule.");
@@ -938,7 +926,6 @@ class Fetcher implements CrawlConstants
         return $info; 
     }
 
-
     /**
      *  During an archive crawl this method is used to get from the name server
      *  a collection of pages to process. The fetcher will later process these
@@ -955,24 +942,11 @@ class Fetcher implements CrawlConstants
             data to each server each time we fetch
             new data from the name server.
         */
-        $i = 0;
-        $num_servers = count($this->queue_servers);
-        /*  Make sure no queue server starves if to crawl data available.
-            Try to keep memory foot print smaller.
-         */
-        do {
-            $this->current_server = rand(0, $num_servers - 1);
-            $cs = $this->current_server;
-            if((isset($this->found_sites[self::TO_CRAWL][$cs]) &&
-                count($this->found_sites[self::TO_CRAWL][$cs]) > 0) ||
-                isset($this->found_sites[self::INVERTED_INDEX][$cs])) {
-                $this->updateScheduler();
-            }
-            $i++;
-        } while( memory_get_usage() > metricToInt(ini_get("memory_limit")) * 0.5
-            && $i < $num_servers * ceil(log($num_servers)) );
-            //coupon collecting
+        $this->selectCurrentServerAndUpdateIfNeeded(false);
+
+        crawlLog("Fetching Archive data from name server:");
         $name_server = $this->name_server;
+        crawlLog("  $name_server");
         $time = time();
         $session = md5($time . AUTH_KEY);
         $prefix = $this->fetcher_num."-";
@@ -1003,10 +977,40 @@ class Fetcher implements CrawlConstants
             $info[self::ARC_DATA] = $pages;
         }
 
-        crawlLog("  Time to fetch archive data from name server ".
+        crawlLog("Time to fetch archive data from name server ".
             changeInMicrotime($start_time));
 
         return $info; 
+    }
+
+    function exceedMemoryThreshold()
+    {
+       return memory_get_usage() > (metricToInt(ini_get("memory_limit")) * 0.7);
+    }
+
+    function selectCurrentServerAndUpdateIfNeeded($at_least_once)
+    {
+        $i = 0;
+        $num_servers = count($this->queue_servers);
+        /*  Make sure no queue server starves if to crawl data available.
+            Try to keep memory foot print smaller.
+         */
+        do {
+            if(!$at_least_once) {
+                $this->current_server = rand(0, $num_servers - 1);
+            }
+            $cs = $this->current_server;
+            if($at_least_once ||
+                (isset($this->found_sites[self::TO_CRAWL][$cs]) &&
+                count($this->found_sites[self::TO_CRAWL][$cs]) > 0) ||
+                isset($this->found_sites[self::INVERTED_INDEX][$cs])) {
+                $this->updateScheduler();
+                $at_least_once = false;
+            }
+            $i++;
+        } while($this->exceedMemoryThreshold() && 
+            $i < $num_servers * ceil(log($num_servers)) );
+            //coupon collecting expected i before have seen all
     }
 
     /**
@@ -1543,7 +1547,7 @@ class Fetcher implements CrawlConstants
             if(isset($site[self::ROBOT_PATHS])) {
                 $this->found_sites[self::ROBOT_TXT][$host][self::IP_ADDRESSES] =
                     $site[self::IP_ADDRESSES];
-                $this->found_sites[self::ROBOT_TXT][$host][self::ROBOT_PATHS] = 
+                $this->found_sites[self::ROBOT_TXT][$host][self::ROBOT_PATHS] =
                     $site[self::ROBOT_PATHS];
                 if(isset($site[self::CRAWL_DELAY])) {
                     $this->found_sites[self::ROBOT_TXT][$host][
@@ -1600,24 +1604,9 @@ class Fetcher implements CrawlConstants
                 count($this->found_sites[self::SEEN_URLS]) > 
                 SEEN_URLS_BEFORE_UPDATE_SCHEDULER) || 
                 ($this->archive_iterator && 
-                $this->archive_iterator->end_of_iterator) || (memory_get_usage()
-                > (metricToInt(ini_get("memory_limit")) * 0.5) )) {
-            $i = 0;
-            $first = true;
-            $num_servers = count($this->queue_servers);
-            do {
-                $cs = $this->current_server;
-                if($first || (isset($this->found_sites[self::TO_CRAWL][$cs]) &&
-                    count($this->found_sites[self::TO_CRAWL][$cs]) > 0) ||
-                    isset($this->found_sites[self::INVERTED_INDEX][$cs])) {
-                    $this->updateScheduler();
-                    $first = false;
-                }
-                $this->current_server = rand(0, $num_servers - 1);
-                $i++;
-            } while(
-                memory_get_usage() > metricToInt(ini_get("memory_limit")) * 0.5
-                && $i < $num_servers * ceil(log($num_servers)) );
+                $this->archive_iterator->end_of_iterator) || 
+                    $this->exceedMemoryThreshold() ) {
+                $this->selectCurrentServerAndUpdateIfNeeded(true);
         }
 
         crawlLog("  Update Found Sites Time ".(changeInMicrotime($start_time)));

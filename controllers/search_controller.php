@@ -1076,6 +1076,7 @@ class SearchController extends Controller implements CrawlConstants
         $crawl_times = array();
         $all_crawl_details = $this->crawlModel->getCrawlList(false, true,
             $queue_servers);
+
         foreach($all_crawl_details as $crawl_details) {
             if($crawl_details['CRAWL_TIME'] != 0) {
                 array_push($crawl_times, $crawl_details['CRAWL_TIME']);
@@ -1093,9 +1094,14 @@ class SearchController extends Controller implements CrawlConstants
 
         list($network_crawl_times, $network_crawl_items) = $this->
             getCrawlItems($url, $crawl_times, $queue_servers);
-
-        list($nonnet_crawl_times, $nonnet_crawl_items) = $this->
-            getCrawlItems($url, $crawl_times, NULL);
+        $nonnet_crawl_times = array_diff($crawl_times,
+            $network_crawl_times);
+        if(count($nonnet_crawl_times) > 0) {
+            list($nonnet_crawl_times, $nonnet_crawl_items) = $this->
+                getCrawlItems($url, $nonnet_crawl_times, NULL);
+        } else {
+            $nonnet_crawl_items = array();
+        }
         $nonnet_crawl_times = array_diff($nonnet_crawl_times,
             $network_crawl_times);
         $all_crawl_times = array_values(array_merge($nonnet_crawl_times, 
@@ -1405,6 +1411,7 @@ class SearchController extends Controller implements CrawlConstants
         if(USE_CACHE) {
             $CACHE->set($hash_key, $newDoc);
         }
+
         echo $newDoc;
         return;
     }
@@ -1426,15 +1433,13 @@ class SearchController extends Controller implements CrawlConstants
         $all_crawl_items = array();
         $all_crawl_items['queue_servers'] = $queue_servers;
         foreach($crawl_times as $time) {
-          $crawl_time = (string)$time;
-          $this->phraseModel->index_name = $crawl_time;
-          $this->crawlModel->index_name = $crawl_time;
-          $crawl_item = $this->crawlModel->
-              getCrawlItem($url, $queue_servers);
-          if($crawl_item != NULL) {
-            array_push($all_crawl_times, $crawl_time);
-            $all_crawl_items[$crawl_time] = $crawl_item;
-          }
+            $crawl_time = (string)$time;
+            $this->crawlModel->index_name = $crawl_time;
+            $crawl_item = $this->crawlModel->getCrawlItem($url, $queue_servers);
+            if($crawl_item != NULL) {
+                array_push($all_crawl_times, $crawl_time);
+                $all_crawl_items[$crawl_time] = $crawl_item;
+            }
         }
 
         return array($all_crawl_times, $all_crawl_items);

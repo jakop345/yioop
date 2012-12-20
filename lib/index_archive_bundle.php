@@ -151,10 +151,13 @@ class IndexArchiveBundle implements CrawlConstants
 
         $this->dir_name = $dir_name;
         $index_archive_exists = false;
+        $is_dir = is_dir($this->dir_name);
 
-        if(!is_dir($this->dir_name)) {
+        if(!$is_dir && !$read_only_archive) {
             mkdir($this->dir_name);
             mkdir($this->dir_name."/posting_doc_shards");
+        } else if(!$is_dir) {
+            return false;
         } else {
             $index_archive_exists = true;
 
@@ -169,8 +172,9 @@ class IndexArchiveBundle implements CrawlConstants
         }
         $this->summaries = new WebArchiveBundle($dir_name."/summaries",
             $read_only_archive, -1, $description);
-        $this->summaries->initCountIfNotExists("VISITED_URLS_COUNT");
-
+        if(!$read_only_archive) {
+            $this->summaries->initCountIfNotExists("VISITED_URLS_COUNT");
+        }
         $this->description = $this->summaries->description;
 
         $this->num_docs_per_generation = $num_docs_per_generation;
