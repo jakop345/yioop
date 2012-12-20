@@ -462,7 +462,7 @@ class Fetcher implements CrawlConstants
                     $this->to_crawl = array();
                 }
             } else if($this->crawl_type == self::ARCHIVE_CRAWL &&
-                    !in_array($this->arc_dir, $local_archives )) {
+                    !in_array($this->arc_dir, $local_archives)) {
                 // An archive crawl with data coming from the name server.
                 $info = $this->checkArchiveScheduler();
 
@@ -472,7 +472,7 @@ class Fetcher implements CrawlConstants
                     sleep(FETCH_SLEEP_TIME);
                     continue;
                 }
-            } else {
+            } else if($this->crawl_time > 0) {
                 // Either a web crawl or a recrawl of a previous web crawl.
                 $info = $this->checkScheduler();
 
@@ -482,6 +482,8 @@ class Fetcher implements CrawlConstants
                     sleep(FETCH_SLEEP_TIME);
                     continue;
                 }
+            } else {
+                $info[self::STATUS] = self::NO_DATA_STATE;
             }
 
             if(!isset($info[self::STATUS])) {
@@ -743,7 +745,13 @@ class Fetcher implements CrawlConstants
         $robot_instance = $prefix . ROBOT_INSTANCE;
 
         $crawl_time = !is_null($this->crawl_time) ? $this->crawl_time : 0;
-
+        if($crawl_time > 0) {
+            crawlLog("Checking name server:");
+            crawlLog("  $name_server to see if active crawl time has changed.");
+        } else {
+            crawlLog("Checking name server:");
+            crawlLog("  $name_server to see if should start crawling");
+        }
         $request =  
             $name_server."?c=fetch&a=crawlTime&time=$time&session=$session".
             "&robot_instance=".$robot_instance."&machine_uri=".WEB_URI.
@@ -836,7 +844,7 @@ class Fetcher implements CrawlConstants
                 }
             }
         }
-
+        crawlLog("End Name Server Check");
         return (count($this->to_crawl) > 0);
     }
     
@@ -880,6 +888,7 @@ class Fetcher implements CrawlConstants
 
         $queue_server = $this->queue_servers[$this->current_server];
 
+        crawlLog("Checking  $queue_server for a new schedule.");
         // hosts with error counts cleared with each schedule
         $this->hosts_with_errors = array();
 
@@ -926,7 +935,6 @@ class Fetcher implements CrawlConstants
         }
 
         crawlLog("  Time to check Scheduler ".(changeInMicrotime($start_time)));
-
         return $info; 
     }
 
