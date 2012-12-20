@@ -30,23 +30,37 @@
  * @filesource
  */
 
+if(typeof(elt) == "undefined") {
+    /*
+     *  Shorthand for document.getElementById
+     *
+     *  @param String id  the id of the DOM element one wants
+     */
+    function elt(id) 
+    {
+        return document.getElementById(id);
+    }
+}
+
+
+
 /*
  * Handles History toggle in cached pages
  */
-var historylink = document.getElementById('#history');
-historylink.onclick = function()
-{
-    var historylink = document.getElementById('#history');
-    var m_id = document.getElementById('#month');
-    var y_id = document.getElementById('#year');
+var historylink = elt('#history');
+
+historylink.onclick = function() {
+    var historylink = elt('#history');
+    var m_id = elt('#month');
+    var y_id = elt('#year');
     var cur_year = y_id.options[y_id.selectedIndex].value;
     var cur_month = m_id.options[m_id.selectedIndex].value;
-    cur_div = document.getElementById('#'+cur_year+cur_month);
+    cur_div = elt('#'+cur_year+cur_month);
     m_id.options.length = 0;
     var monthjs = historylink.getAttribute("months");
     monthjs = eval(monthjs);
     for(j = 0; j < monthjs.length; j++) {
-        var id = document.getElementById('#'+cur_year+monthjs[j]);
+        var id = elt('#'+cur_year+monthjs[j]);
             if(id !== null) {
                 var opt = document.createElement('option');
                 opt.text = monthjs[j];
@@ -58,7 +72,7 @@ historylink.onclick = function()
             m_id.options[i].defaultSelected = true;
         }
     }
-    select = document.getElementById('#d1');
+    select = elt('#d1');
     if(select.style.display == 'none') {
         select.style.display = 'block';
     } else {
@@ -75,33 +89,33 @@ historylink.onclick = function()
 /*
  * Handles Year selection in History UI
  */
-var year = document.getElementById('#year');
-year.onchange = function()
-{
-    var yearops = document.getElementById('#year');
-    var monops = document.getElementById('#month');
+var year = elt('#year');
+
+year.onchange = function() {
+    var yearops = elt('#year');
+    var monops = elt('#month');
     for(i = 0; i < yearops.length; i++) {
-        for(j = 0; j<monops.length; j++) {
+        for(j = 0; j < monops.length; j++) {
             var y = yearops[i].value;
             var m = monops[j].value;
             var id ='#'+y+m;
-            var div = document.getElementById(id);
+            var div = elt(id);
             if(div !== null){
                 div.style.display = 'none';
             }
         }
     }
-    var m_id = document.getElementById('#month');
-    var y_id = document.getElementById('#year');
-    document.getElementById('#month').options.length=0;
-    var yearmonth = document.getElementById('#d1')
+    var m_id = elt('#month');
+    var y_id = elt('#year');
+    elt('#month').options.length=0;
+    var yearmonth = elt('#d1')
     var monthjs = yearmonth.getAttribute("months");
     monthjs = eval(monthjs);
     var yearjs = yearmonth.getAttribute("years");
     yearjs = eval(yearjs);
     var temp = y_id.options[y_id.selectedIndex].value;
     for(j = 0; j < monthjs.length; j++) {
-        var id = document.getElementById('#'+temp+monthjs[j]);
+        var id = elt('#'+temp+monthjs[j]);
         if(id !== null){
             var opt = document.createElement('option');
             opt.text = monthjs[j];
@@ -111,7 +125,7 @@ year.onchange = function()
     var month = m_id.options[m_id.selectedIndex].value;
     var year = y_id.options[y_id.selectedIndex].value;
     var id = '#'+year+month;
-    ldiv = document.getElementById(id);
+    ldiv = elt(id);
     if((ldiv !== null) && (ldiv.style.display == 'none')) {
         ldiv.style.display = 'block';
     }
@@ -120,17 +134,17 @@ year.onchange = function()
 /*
  * Handles Month selection in History UI
  */
-var month = document.getElementById('#month');
-month.onchange = function()
-{
-    var m_id = document.getElementById('#month');
-    var y_id = document.getElementById('#year');
+var month = elt('#month');
+
+month.onchange = function() {
+    var m_id = elt('#month');
+    var y_id = elt('#year');
     for(i = 0; i < y_id.length; i++) {
         for(j = 0; j < m_id.length; j++) {
             var y = y_id[i].value;
             var m = m_id[j].value;
             var id = '#'+y+m;
-            var div = document.getElementById(id);
+            var div = elt(id);
             if(div!== null) {
                 div.style.display = 'none';
             }
@@ -139,7 +153,7 @@ month.onchange = function()
     var month = m_id.options[m_id.selectedIndex].value;
     var year = y_id.options[y_id.selectedIndex].value;
     var id = '#'+year+month;
-    ldiv = document.getElementById(id);
+    ldiv = elt(id);
     if((ldiv !== null) && (ldiv.style.display == 'none')) {
         ldiv.style.display = 'block';
     }

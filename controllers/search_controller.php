@@ -106,16 +106,6 @@ class SearchController extends Controller implements CrawlConstants
     const NEWS_DELETE_INTERVAL = 86400; //one day
 
     /**
-     * Distinguish links within cached pages
-     */
-    const FROM_CACHE = "from_cache=yes";
-
-    /**
-     * Distinguish links that belong to History UI
-     */
-    const FROM_HISTORY = "hist_ui=yes";
-
-    /**
      * This is the main entry point for handling a search request.
      *
      * ProcessRequest determines the type of search request (normal request , 
@@ -925,7 +915,7 @@ class SearchController extends Controller implements CrawlConstants
                     $csrf_token = $this->generateCSRFToken($user);
 
                     $href = urlencode($href);
-                    $href = self::FROM_CACHE.$href;
+                    $href = $href."&from_cache=true";
                     $crawl_time = $this->crawlModel->
                         getCurrentIndexDatabaseName();
                     $href = "?YIOOP_TOKEN=$csrf_token&c=search&a=cache&q&arg".
@@ -1058,26 +1048,16 @@ class SearchController extends Controller implements CrawlConstants
         global $CACHE, $IMAGE_TYPES;
 
         $flag = 0;
-        $crawl_item = null;
+        $crawl_item = NULL;
         $all_future_times = array();
         $all_crawl_times = array();
         $all_past_times = array();
-        $cached_link = false;
-        $myd = false;
 
         //Check if the URL is from a cached page
-        $pos = strpos($url, self::FROM_CACHE);
-        if($pos !== false) {
-            $cached_link = true;
-            $url = substr_replace($url, "", $pos, strlen(self::FROM_CACHE));
-        }
+        $cached_link = (isset($_REQUEST["from_cache"])) ? true : false;
 
         //Check if it the URL is from the UI
-        $pos = strpos($url, self::FROM_HISTORY);
-        if($pos !== false) {
-            $myd = true;
-            $url = substr_replace($url, "", $pos, strlen(self::FROM_HISTORY));
-        }
+        $hist_ui = isset($_REQUEST["hist_ui"]) ? true : false;
 
         $hash_key = crawlHash(
             $terms.$url.serialize($highlight).serialize($crawl_time));
@@ -1094,10 +1074,10 @@ class SearchController extends Controller implements CrawlConstants
 
         //Get all crawl times
         $crawl_times = array();
-        $all_crawl_details = $this->crawlModel->getCrawlList(false, false,
+        $all_crawl_details = $this->crawlModel->getCrawlList(false, true,
             $queue_servers);
         foreach($all_crawl_details as $crawl_details) {
-            if($crawl_details['CRAWL_TIME'] !== null) {
+            if($crawl_details['CRAWL_TIME'] != 0) {
                 array_push($crawl_times, $crawl_details['CRAWL_TIME']);
             }
         }
@@ -1105,32 +1085,27 @@ class SearchController extends Controller implements CrawlConstants
             $crawl_times[$i] = intval($crawl_times[$i]);
         }
         asort($crawl_times);
-
         //Get int value of current crawl time for comparison
         $crawl_time_int = intval($crawl_time);
 
-        /*Search for all crawl times containing the cached 
-          version of the page for $url for multiple and single queue servers*/
-        $nw_crawl_times = array();
-        $nonw_crawl_times = array();
-        $nw_crawl_items = array();
-        $nonw_crawl_items = array();
-        list($nw_crawl_times, $nw_crawl_items) = $this->
+        /* Search for all crawl times containing the cached 
+          version of the page for $url for multiple and single queue servers */
+
+        list($network_crawl_times, $network_crawl_items) = $this->
             getCrawlItems($url, $crawl_times, $queue_servers);
-        list($nonw_crawl_times, $nonw_crawl_items) = $this->
+
+        list($nonnet_crawl_times, $nonnet_crawl_items) = $this->
             getCrawlItems($url, $crawl_times, NULL);
-        foreach($nw_crawl_times as $time) {
-            array_push($all_crawl_times, $time);
-        }
-        foreach($nonw_crawl_times as $time) {
-            array_push($all_crawl_times, $time);
-        }
+        $nonnet_crawl_times = array_diff($nonnet_crawl_times,
+            $network_crawl_times);
+        $all_crawl_times = array_values(array_merge($nonnet_crawl_times, 
+            $network_crawl_times));
         sort($all_crawl_times, SORT_STRING);
 
         /*Check if a crawl time results in a no cache. If found, remove 
           from crawl times with cache*/
         $no_cache = $this->checkRobotInstanceAndCacheItem($url, 
-            $all_crawl_times, $nw_crawl_items, $nonw_crawl_items);
+            $all_crawl_times, $network_crawl_items, $nonnet_crawl_items);
         $all_crawl_times = array_diff($all_crawl_times, $no_cache);
 
         //Get past and future crawl times
@@ -1149,23 +1124,23 @@ class SearchController extends Controller implements CrawlConstants
             $crawl_time = array_shift($all_future_times);
             array_push($all_future_times, $crawl_time);
             sort($all_future_times, SORT_STRING);
-            if(in_array($crawl_time,$nw_crawl_times)){
-                $queue_servers = $nw_crawl_items['queue_servers'];
+            if(in_array($crawl_time, $network_crawl_times)){
+                $queue_servers = $network_crawl_items['queue_servers'];
             } else {
-                $queue_servers = $nonw_crawl_items['queue_servers'];
+                $queue_servers = $nonnet_crawl_items['queue_servers'];
             }
             $this->phraseModel->index_name = $crawl_time;
             $this->crawlModel->index_name = $crawl_time;
             $crawl_item = $this->crawlModel->
                 getCrawlItem($url, $queue_servers);
-        } else {
+        } else if(!empty($all_past_times)) {
             $crawl_time = array_pop($all_past_times);
             array_push($all_past_times, $crawl_time);
             sort($all_past_times, SORT_STRING);
-            if(in_array($crawl_time,$nw_crawl_times)){
-                $queue_servers = $nw_crawl_items['queue_servers'];
+            if(in_array($crawl_time, $network_crawl_times)){
+                $queue_servers = $network_crawl_items['queue_servers'];
             } else {
-                $queue_servers = $nonw_crawl_items['queue_servers'];
+                $queue_servers = $nonnet_crawl_items['queue_servers'];
             }
             $this->phraseModel->index_name = $crawl_time;
             $this->crawlModel->index_name = $crawl_time;
@@ -1265,8 +1240,8 @@ class SearchController extends Controller implements CrawlConstants
         } else {
             $cache_file = $cache_item[self::PAGE];
         }
-        if(!$image_flag) {
 
+        if(!$image_flag) {
             $meta_words = $this->phraseModel->meta_words_list;
             foreach($meta_words as $meta_word) {
                 $pattern = "/(\s)($meta_word(\S)+)/";
@@ -1382,7 +1357,7 @@ class SearchController extends Controller implements CrawlConstants
 
         //UI for showing history
         $history_div = $this->historyUI($crawl_time, $all_crawl_times, $divNode,
-            $dom, $terms, $myd, $url);
+            $dom, $terms, $hist_ui, $url);
 
         $aNode = $dom->createElement("a");
         $aTextNode =
@@ -1430,18 +1405,20 @@ class SearchController extends Controller implements CrawlConstants
         if(USE_CACHE) {
             $CACHE->set($hash_key, $newDoc);
         }
-
         echo $newDoc;
         return;
     }
 
     /**
-     *Get crawl items based on queue server setting. 
-     *@param string $url is the URL of the cached page
-     *@param array $crawl_times is an array storing crawl times for all indexes
-     *@param array $queue_servers is an array containing URLs for queue servers
-     *@return array($all_crawl_times, $all_crawl_items) is an array containing
-     *an array of crawl times and an array of their respective crawl items.
+     *  Get crawl items based on queue server setting.
+     *
+     *  @param string $url is the URL of the cached page
+     *  @param array $crawl_times is an array storing crawl times for all 
+     *      indexes
+     *  @param array $queue_servers is an array containing URLs for queue 
+     *      servers
+     *  @return array($all_crawl_times, $all_crawl_items) is an array containing
+     *      an array of crawl times and an array of their respective crawl items
      */
     function getCrawlItems($url, $crawl_times, $queue_servers)
     {
@@ -1460,37 +1437,42 @@ class SearchController extends Controller implements CrawlConstants
           }
         }
 
-        return array($all_crawl_times,$all_crawl_items);
+        return array($all_crawl_times, $all_crawl_items);
     }
 
     /**
-     *Function for filtering crawl times that don't have a cache
-     *@param string $url is the URL for the cached page
-     *@param array $all_crawl_times is an URL array containing crawl times for
-     *all indexes.
-     *@param $nw_crawl_times is an array containing all crawl times for 
-     *networked setting
-     *@param $nonw_crawl_times is an array containing all crawl times for 
-     *non-networked setting
-     *@return array $no_cache is an array containing crawl_times for which there
-     *is no cache.
+     *  Function for filtering crawl times that don't have a cache
+     *
+     *  @param string $url is the URL for the cached page
+     *  @param array $all_crawl_times contains crawl times for
+     *      all indexes.
+     *  @param array $network_crawl_times contains all crawl times for 
+     *      networked setting
+     *  @param array $nonnet_crawl_times contains all crawl times for 
+     *      non-networked setting
+     *  @return array $no_cache contains crawl_times for which
+     *      there is no cache.
      */
     function checkRobotInstanceAndCacheItem($url, $all_crawl_times, 
-        $nw_crawl_items, $nonw_crawl_items)
+        $network_crawl_items, $nonnet_crawl_items)
     {
-        $nw_crawl_times = array_keys($nw_crawl_items);
-        $nonw_crawl_times = array_keys($nonw_crawl_items);
+        $network_crawl_times = array_keys($network_crawl_items);
+        unset($network_crawl_times[0]);
+        $network_crawl_times = array_values($network_crawl_times);
+        $nonnet_crawl_times = array_keys($nonnet_crawl_items);
+        unset($nonnet_crawl_times[0]);
+        $nonnet_crawl_times = array_diff($nonnet_crawl_times,
+            $network_crawl_times);
         $no_cache = array();
 
         foreach($all_crawl_times as $crawl_time) {
-            if(in_array($crawl_time, $nw_crawl_times)) {
-                $queue_servers = $nw_crawl_items['queue_servers'];
-                $crawl_item = $nw_crawl_items[$crawl_time];
+            if(in_array($crawl_time, $network_crawl_times)) {
+                $queue_servers = $network_crawl_items['queue_servers'];
+                $crawl_item = $network_crawl_items[$crawl_time];
             } else {
-                $queue_servers = $nonw_crawl_items['queue_servers'];
-                $crawl_item = $nonw_crawl_items[$crawl_time];
+                $queue_servers = $nonnet_crawl_items['queue_servers'];
+                $crawl_item = $nonnet_crawl_items[$crawl_time];
             }
-
             $in_url = "";
             $image_flag = false;
             if(isset($crawl_item[self::THUMB])) {
@@ -1541,19 +1523,21 @@ class SearchController extends Controller implements CrawlConstants
     }
 
     /**
-     * User Interface for history feature
-     * @param long $crawl_time is the crawl time
-     * @param array $all_crawl_times is an array storing all crawl time
-     * @param DOMElement $divNode is the section that contains the History UI
-     * @param DOMDocument $dom is the DOM of the cached page
-     * @param string $terms is a string containing query terms
-     * @param boolean $from_ui is a flag to check if links is from History UI
-     * @param string $url is the URL of the page
-     * @return DOMElement $d1 is the section containing the options for 
-     * selecting year and month
+     *  User Interface for history feature
+     *
+     *  @param long $crawl_time is the crawl time
+     *  @param array $all_crawl_times is an array storing all crawl time
+     *  @param DOMElement $divNode is the section that contains the History UI
+     *  @param DOMDocument $dom is the DOM of the cached page
+     *  @param string $terms is a string containing query terms
+     *  @param boolean $hist_ui is a flag to check if links is from History UI
+     *  @param string $url is the URL of the page
+     *
+     *  @return DOMElement the section containing the options for 
+     *      selecting year and month
      */
     function historyUI($crawl_time, $all_crawl_times, $divNode, $dom, $terms,
-        $myd, $url)
+        $hist_ui, $url)
     {
         //Guess locale for date localization
         $locale_type = guessLocale();
@@ -1578,7 +1562,7 @@ class SearchController extends Controller implements CrawlConstants
         /*create divs for all year.month pairs and populate with links
          */
         $d1 = $this->createLinkDivs($time_ds, $current_year, $current_month,
-            $d1, $dom, $url, $years, $myd, $terms, $crawl_time);
+            $d1, $dom, $url, $years, $hist_ui, $terms, $crawl_time);
 
         return $d1;
     }
@@ -1628,7 +1612,6 @@ class SearchController extends Controller implements CrawlConstants
                 $time_ds[$time_components[2]][$time_components[0]] = null;
             }
         }
-
         //Populate data structure
         if(!empty($all_crawl_times)){
             foreach($all_crawl_times as $cache_time){
@@ -1643,9 +1626,9 @@ class SearchController extends Controller implements CrawlConstants
                 }
                 $temp = "$time_components[0] $time_components[1] ".
                         "$time_components[3] $url $cache_time";
-                if($time_ds[$time_components[2]][$time_components[0]] 
+                if($time_ds[$time_components[2]][$time_components[0]]
                     === null) {
-                    $time_ds[$time_components[2]][$time_components[0]] = 
+                    $time_ds[$time_components[2]][$time_components[0]] =
                         array($temp);
                 } else {
                     array_push($time_ds[$time_components[2]]
@@ -1674,14 +1657,14 @@ class SearchController extends Controller implements CrawlConstants
      * @param DOMDocument $dom is the DOM for the cached page
      * @param string $url is the URL for the cached page
      * @param array years is an array storing years associated with all indexes
-     * @param boolean $from_ui checks if a link is from the History UI
+     * @param boolean $hist_ui checks if a link is from the History UI
      * @param string $terms is a string containing the query terms
      * @param long $crawl_time is the crawl time for the cached page
      * @return DOMElement $d1 is the section containing the options for 
      * selecting year and month
      */
     function createLinkDivs($time_ds, $current_year, $current_month, $d1, $dom,
-        $url, $years, $myd, $terms, $crawl_time)
+        $url, $years, $hist_ui, $terms, $crawl_time)
     {
         $yrs = array_keys($time_ds);
         foreach($years as $yr) {
@@ -1690,7 +1673,7 @@ class SearchController extends Controller implements CrawlConstants
                 $yeardiv = $dom->createElement("div");
                 $yeardiv->setAttributeNS("", "id", "#$yr$mth");
                 $yeardiv->setAttributeNS("", "style", "display:none");
-                if($myd === true){
+                if($hist_ui === true){
                     if(!strcmp($yr, $current_year) && 
                         !strcmp($mth, $current_month)) {
                         $yeardiv->setAttributeNS("", "style", "display:block");
@@ -1705,7 +1688,6 @@ class SearchController extends Controller implements CrawlConstants
                     $list_item = $dom->createElement('li');
                     $arr = explode(" ", $entries);
                     $url_encoded = urlencode($arr[3]);
-                    $url_encoded = self::FROM_HISTORY.$url_encoded;
                     $link_text = $dom->createTextNode("$arr[0] $arr[1] ".
                             "$arr[2]");
                     if(isset($_SESSION['USER_ID'])) {
@@ -1755,9 +1737,8 @@ class SearchController extends Controller implements CrawlConstants
         $d1->setAttributeNS("", "id", "#d1");
         $d1->setAttributeNS("", "years", $year_json);
         $d1->setAttributeNS("", "months", $month_json);
-        $title = $dom->createElement('font');
-        $title->setAttributeNS("", "face", "verdana");
-        $title->setAttributeNS("", "color", "green");
+        $title = $dom->createElement('span');
+        $title->setAttributeNS("", "style", "color:green;");
         $title_text = $dom->createTextNode(
             tl('search_controller_all_cached'));
         $br = $dom->createElement('br');

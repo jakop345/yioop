@@ -355,54 +355,44 @@ function utf8chr($code)
 }
 
 /**
-* Function for formatting a date string based on the locale.
-* @param $timestamp is the crawl time
-* @param $locale_tag is the tag for locale
-* @return string formatted date string
-*/
-function formatDateByLocale($timestamp,$locale_tag)
+ * Function for formatting a date string based on the locale.
+ * @param $timestamp is the crawl time
+ * @param $locale_tag is the tag for locale
+ * @return string formatted date string
+ */
+function formatDateByLocale($timestamp, $locale_tag)
 {
     switch($locale_tag) {
         case 'de':
             setlocale(LC_ALL,'deu');
-            return strftime("%B %#d %Y %H:%M",$timestamp);
-            break;
+            return strftime("%B %d %Y %H:%M",$timestamp);
         case 'en-US':
             setlocale(LC_ALL,'enu');
-            return strftime("%B %#d %Y %H:%M",$timestamp);
-            break;
+            return strftime("%B %d %Y %H:%M",$timestamp);
         case 'es':
             setlocale(LC_ALL,'esp');
-            return strftime("%B %#d %Y %H:%M",$timestamp);
-            break;
+            return strftime("%B %d %Y %H:%M",$timestamp);
         case 'fr-FR':
             setlocale(LC_ALL,'fra');
-            return strftime("%B %#d %Y %H:%M",$timestamp);
-            break;
+            return strftime("%B %d %Y %H:%M",$timestamp);
         case 'it':
             setlocale(LC_ALL,'ita');
-            return strftime("%B %#d %Y %H:%M",$timestamp);
-            break;
+            return strftime("%B %d %Y %H:%M",$timestamp);
         case 'ja':
             setlocale(LC_ALL,'jpn');
-            return strftime("%B %#d %Y %H:%M",$timestamp);
-            break;
+            return strftime("%B %d %Y %H:%M",$timestamp);
         case 'ko':
             setlocale(LC_ALL,'kor');
-            return strftime("%B %#d %Y %H:%M",$timestamp);
-            break;
+            return strftime("%B %d %Y %H:%M",$timestamp);
         case 'pl':
             setlocale(LC_ALL,'plk');
-            return strftime("%B %#d %Y %H:%M",$timestamp);
-            break;
+            return strftime("%B %d %Y %H:%M",$timestamp);
         case 'ru':
             setlocale(LC_ALL,'rus');
-            return strftime("%B %#d %Y %H:%M",$timestamp);
-            break;
+            return strftime("%B %d %Y %H:%M",$timestamp);
         case 'tr':
             setlocale(LC_ALL,'trk');
-            return strftime("%B %#d %Y %H:%M",$timestamp);
-            break;
+            return strftime("%B %d %Y %H:%M",$timestamp);
         default:
             return date("F d Y H:i", intval($timestamp));
     }
