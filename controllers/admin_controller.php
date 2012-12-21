@@ -747,94 +747,7 @@ class AdminController extends Controller implements CrawlConstants
             switch($_REQUEST['arg'])
             {
                 case "start":
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('admin_controller_starting_new_crawl')."</h1>')";
-
-                    $crawl_params = array();
-                    $crawl_params[self::STATUS] = "NEW_CRAWL";
-                    $crawl_params[self::CRAWL_TIME] = time();
-                    $seed_info = $this->crawlModel->getSeedInfo();
-                    $crawl_params[self::CRAWL_TYPE] =
-                        $seed_info['general']['crawl_type'];
-                    $crawl_params[self::CRAWL_INDEX] = 
-                        (isset($seed_info['general']['crawl_index'])) ?
-                        $seed_info['general']['crawl_index'] :
-                        '';
-                    $crawl_params[self::ARC_DIR] = 
-                        (isset($seed_info['general']['arc_dir'])) ?
-                        $seed_info['general']['arc_dir'] :
-                        '';
-                    $crawl_params[self::ARC_TYPE] = 
-                        (isset($seed_info['general']['arc_type'])) ?
-                        $seed_info['general']['arc_type'] :
-                        '';
-                    $crawl_params[self::PAGE_RANGE_REQUEST] = 
-                        (isset($seed_info['general']['page_range_request'])) ?
-                        intval($seed_info['general']['page_range_request']) :
-                        PAGE_RANGE_REQUEST;
-                    $crawl_params[self::PAGE_RECRAWL_FREQUENCY] = 
-                        (isset($seed_info['general']['page_recrawl_frequency']))
-                        ?
-                        intval($seed_info['general']['page_recrawl_frequency']):
-                        PAGE_RECRAWL_FREQUENCY;
-                    $crawl_params[self::TO_CRAWL] = 
-                        $seed_info['seed_sites']['url'];
-                    $crawl_params[self::CRAWL_ORDER] = 
-                        $seed_info['general']['crawl_order'];
-                    $crawl_params[self::RESTRICT_SITES_BY_URL] = 
-                        $seed_info['general']['restrict_sites_by_url'];
-                    $crawl_params[self::ALLOWED_SITES] = 
-                        isset($seed_info['allowed_sites']['url']) ?
-                        $seed_info['allowed_sites']['url'] : array();
-                    $crawl_params[self::DISALLOWED_SITES] = 
-                        isset($seed_info['disallowed_sites']['url']) ?
-                        $seed_info['disallowed_sites']['url'] : array();
-                    $crawl_params[self::META_WORDS] = 
-                        isset($seed_info['meta_words']) ?
-                        $seed_info['meta_words'] : array();
-
-                    $crawl_params[self::LOG_RECORDS] =
-                        isset($seed_info['log_records']) ?
-                        $seed_info['log_records'] : array();
-
-                    $crawl_params[self::DATABASE_CONNECTION_DETAILS] =
-                        isset($seed_info['database_connection_details']) ?
-                        $seed_info['database_connection_details'] : array();
-
-                    if(isset($seed_info['indexing_plugins']['plugins'])) {
-                        $crawl_params[self::INDEXING_PLUGINS] =
-                            $seed_info['indexing_plugins']['plugins'];
-                    }
-                    if(isset($seed_info['indexed_file_types']['extensions'])) {
-                        $crawl_params[self::INDEXED_FILE_TYPES] =
-                            $seed_info['indexed_file_types']['extensions'];
-                    }
-                    if(isset($_REQUEST['description'])) {
-                        $description = 
-                            $this->clean($_REQUEST['description'], "string");
-                    } else {
-                        $description = tl('admin_controller_no_description');
-                    }
-                    $crawl_params['DESCRIPTION'] = $description;
-                    $crawl_params[self::VIDEO_SOURCES] = array();
-                    $sources =
-                        $this->sourceModel->getMediaSources('video');
-                    foreach($sources as $source) {
-                        $url = $source['SOURCE_URL'];
-                        $url_parts = explode("{}", $url);
-                        $crawl_params[self::VIDEO_SOURCES][] = $url_parts[0];
-                    }
-
-                    // Write the new crawl parameters to the name server, so
-                    // that it can pass them along in the case of a new archive
-                    // crawl.
-                    $filename = CRAWL_DIR.
-                        "/schedules/name_server_messages.txt";
-                    file_put_contents($filename, serialize($crawl_params));
-                    chmod($filename, 0777);
-
-                    $this->crawlModel->sendStartCrawlMessage($crawl_params, 
-                        $seed_info, $machine_urls);
+                    $this->startCrawl(&$data, $machine_urls);
                 break;
 
                 case "stop":
@@ -864,7 +777,6 @@ class AdminController extends Controller implements CrawlConstants
                     */
                     $this->crawlModel->sendStartCrawlMessage($crawl_params, 
                         NULL, $machine_urls);
-
                 break;
 
                 case "delete":
@@ -894,294 +806,376 @@ class AdminController extends Controller implements CrawlConstants
                 break;
 
                 case "options":
-                    $data["leftorright"] = 
-                        (getLocaleDirection() == 'ltr') ? "right": "left";
-                    $data["ELEMENT"] = "crawloptionsElement";
-                    $crawls = $this->crawlModel->getCrawlList(false, false,
-                        $machine_urls);
-                    $indexes = $this->crawlModel->getCrawlList(true, true,
-                        $machine_urls);
-                    $mixes = $this->crawlModel->getMixList(false);
-                    foreach($mixes as $mix) {
-                        $tmp = array();
-                        $tmp["DESCRIPTION"] = "MIX::".$mix["MIX_NAME"];
-                        $tmp["CRAWL_TIME"] = $mix["MIX_TIMESTAMP"];
-                        $tmp["ARC_DIR"] = "MIX";
-                        $tmp["ARC_TYPE"] = "MixArchiveBundle";
-                        $indexes[] = $tmp;
-                    }
-
-                    $indexes_by_crawl_time = array();
-                    $update_flag = false;
-                    $data['available_options'] = array(
-                        tl('admin_controller_use_below'),
-                        tl('admin_controller_use_defaults'));
-                    $data['available_crawl_indexes'] = array();
-                    $data['options_default'] = tl('admin_controller_use_below');
-                    foreach($crawls as $crawl) {
-                        $data['available_options'][$crawl['CRAWL_TIME']] =
-                            tl('admin_controller_previous_crawl')." ".
-                            $crawl['DESCRIPTION'];
-
-                    }
-                    foreach($indexes as $i => $crawl) {
-                        $data['available_crawl_indexes'][$crawl['CRAWL_TIME']]
-                            = $crawl['DESCRIPTION'];
-                        $indexes_by_crawl_time[$crawl['CRAWL_TIME']] =&
-                            $indexes[$i];
-                    }
-                    $no_further_changes = false;
-                    if(isset($_REQUEST['load_option']) && 
-                        $_REQUEST['load_option'] == 1) {
-                        $seed_current = $this->crawlModel->getSeedInfo();
-                        $seed_info = $this->crawlModel->getSeedInfo(true);
-                        if(isset(
-                            $seed_current['general']['page_range_request'])) {
-                            $seed_info['general']['page_range_request'] =
-                                $seed_current['general']['page_range_request'];
-                        }
-                        if(isset(
-                            $seed_current['general']['page_recrawl_frequency'])
-                            ){
-                            $seed_info['general']['page_recrawl_frequency'] =
-                            $seed_current['general']['page_recrawl_frequency'];
-                        }
-                        if(isset(
-                            $seed_current['indexed_file_types'])) {
-                            $seed_info['indexed_file_types'] =
-                                $seed_current['indexed_file_types'];
-                        }
-                        $update_flag = true;
-                        $no_further_changes = true;
-                    } else if (isset($_REQUEST['load_option']) && 
-                        $_REQUEST['load_option'] > 1 ) {
-                        $timestamp = 
-                            $this->clean($_REQUEST['load_option'], "int");
-                        $seed_info = $this->crawlModel->getCrawlSeedInfo(
-                            $timestamp, $machine_urls);
-                        $update_flag = true;
-                        $no_further_changes = true;
-                    } else if(isset($_REQUEST['ts'])) {
-                        $timestamp = 
-                            $this->clean($_REQUEST['ts'], "int");
-                        $seed_info = $this->crawlModel->getCrawlSeedInfo(
-                            $timestamp, $machine_urls);
-                        $data['ts'] = $timestamp;
-                    } else {
-                        $seed_info = $this->crawlModel->getSeedInfo();
-                    }
-                    if(!$no_further_changes && isset($_REQUEST['crawl_indexes'])
-                        && in_array($_REQUEST['crawl_indexes'], 
-                        array_keys($data['available_crawl_indexes']))) {
-                        $seed_info['general']['crawl_index'] = 
-                            $_REQUEST['crawl_indexes'];
-                        $index_data = $indexes_by_crawl_time[
-                            $_REQUEST['crawl_indexes']];
-                        if(isset($index_data['ARC_DIR'])) {
-                            $seed_info['general']['arc_dir'] =
-                                $index_data['ARC_DIR'];
-                            $seed_info['general']['arc_type'] =
-                                $index_data['ARC_TYPE'];
-                        } else {
-                            $seed_info['general']['arc_dir'] = '';
-                            $seed_info['general']['arc_type'] = '';
-                        }
-                        $update_flag = true;
-                    }
-                    $data['crawl_index'] = 
-                        (isset($seed_info['general']['crawl_index'])) ?
-                        $seed_info['general']['crawl_index'] : '';
-                    $data['available_crawl_types'] = array(self::WEB_CRAWL,
-                        self::ARCHIVE_CRAWL);
-                    if(!$no_further_changes && isset($_REQUEST['crawl_type']) 
-                        &&  in_array($_REQUEST['crawl_type'], 
-                            $data['available_crawl_types'])) {
-                        $seed_info['general']['crawl_type'] = 
-                            $_REQUEST['crawl_type'];
-                        $update_flag = true;
-                    }
-                    $data['crawl_type'] = $seed_info['general']['crawl_type'];
-                    if($data['crawl_type'] == self::WEB_CRAWL) {
-                        $data['web_crawl_active'] = "active";
-                        $data['archive_crawl_active'] = "";
-                    } else {
-                        $data['archive_crawl_active'] = "active";
-                        $data['web_crawl_active'] = "";
-                    }
-
-                    $data['available_crawl_orders'] = array(
-                        self::BREADTH_FIRST => 
-                            tl('admin_controller_breadth_first'), 
-                        self::PAGE_IMPORTANCE => 
-                            tl('admin_controller_page_importance'));
-
-                    if(!$no_further_changes && isset($_REQUEST['crawl_order']) 
-                        &&  in_array($_REQUEST['crawl_order'], 
-                            array_keys($data['available_crawl_orders']))) {
-                        $seed_info['general']['crawl_order'] = 
-                            $_REQUEST['crawl_order'];
-                        $update_flag = true;
-                    }
-                    $data['crawl_order'] = $seed_info['general']['crawl_order'];
-
-                    if(!$no_further_changes && isset($_REQUEST['posted'])) {
-                        $seed_info['general']['restrict_sites_by_url'] = 
-                            (isset($_REQUEST['restrict_sites_by_url'])) ?
-                            true : false;
-                        $update_flag = true;
-                    }
-                    $data['restrict_sites_by_url'] = 
-                        $seed_info['general']['restrict_sites_by_url'];
-                    $site_types = 
-                        array('allowed_sites','disallowed_sites', 'seed_sites');
-                    foreach($site_types as $type) {
-                        if(!$no_further_changes && isset($_REQUEST[$type])) {
-                            $seed_info[$type]['url'] = 
-                                $this->convertStringCleanUrlsArray(
-                                $_REQUEST[$type]);
-                        }
-                        if(isset($seed_info[$type]['url'])) {
-                            $data[$type] = $this->convertArrayCleanLines(
-                                $seed_info[$type]['url']);
-                        } else {
-                            $data[$type] = "";
-                        }
-                    }
-                    $data['TOGGLE_STATE'] = 
-                        ($data['restrict_sites_by_url']) ? 
-                        "checked='checked'" : "";
-                    $data['META_WORDS'] = array();
-                    if(!$no_further_changes) {
-                        if(isset($_REQUEST["META_WORDS"])){
-                            foreach($_REQUEST["META_WORDS"] as $pair) {
-                                list($word, $url_pattern)=array_values($pair);
-                                $word = $this->clean($word, "string");
-                                $url_pattern = 
-                                    $this->clean($url_pattern, "string");
-                                if(trim($word) != "" &&trim($url_pattern) !=""){
-                                    $data['META_WORDS'][$word] =
-                                        $url_pattern;
-                                }
-                            }
-                            $seed_info['meta_words'] = $data['META_WORDS'];
-                            $update_flag = true;
-                        } else if(isset($seed_info['meta_words'])){
-                            $data['META_WORDS'] = $seed_info['meta_words'];
-                        }
-                    } else if(isset($seed_info['meta_words'])){
-                            $data['META_WORDS'] = $seed_info['meta_words'];
-                    }
-
-                    $data['LOG_RECORDS'] = array();
-                    if(!$no_further_changes) {
-                        if(isset($_REQUEST["LOG_RECORDS"])){
-                            foreach($_REQUEST["LOG_RECORDS"] as $triplet) {
-                                list($field, $field_name,$field_type) =
-                                                        array_values($triplet);
-                                $field = $this->clean($field, "string");
-                                $field_name =
-                                        $this->clean($field_name, "string");
-                                $field_type =
-                                        $this->clean($field_type,"string");
-                                $field_nt = $field_name."::".$field_type;
-                                if(trim($field) != "" &&trim($field_nt) !=""){
-                                      $data['LOG_RECORDS'][$field] = $field_nt;
-                                }
-                            }
-                            $seed_info['log_records'] = $data['LOG_RECORDS'];
-                            $update_flag = true;
-                        } else if(isset($seed_info['log_records'])){
-                            $data['LOG_RECORDS'] = $seed_info['log_records'];
-                        }
-                    } else if(isset($seed_info['log_records'])){
-                            $data['LOG_RECORDS'] = $seed_info['log_records'];
-                    }
-
-                    $data['DATABASE_CONNECTION_DETAILS'] = array();
-                    if(!$no_further_changes) {
-                        if(isset($_REQUEST["DATABASE_CONNECTION_DETAILS"])){
-                            $data['DATABASE_CONNECTION_DETAILS']=
-                                       $_REQUEST["DATABASE_CONNECTION_DETAILS"];
-                            $seed_info['database_connection_details'] = 
-                                       $data['DATABASE_CONNECTION_DETAILS'];
-                            $update_flag = true;
-                        } else if(isset(
-                                $seed_info['database_connection_details'])){
-                            $data['DATABASE_CONNECTION_DETAILS'] = 
-                                     $seed_info['database_connection_details'];
-                        }
-                    } else if(isset($seed_info['database_connection_details'])){
-                            $data['DATABASE_CONNECTION_DETAILS'] = 
-                                     $seed_info['database_connection_details'];
-                    }
-
-                    $data['INDEXING_PLUGINS'] = array();
-                    $included_plugins = array();
-                    if(!$no_further_changes && isset($_REQUEST["posted"])) {
-                        $seed_info['indexing_plugins']['plugins'] =
-                            (isset($_REQUEST["INDEXING_PLUGINS"])) ?
-                            $_REQUEST["INDEXING_PLUGINS"] : array();
-                        $update_flag = true;
-                    } 
-                    $included_plugins = 
-                        (isset($seed_info['indexing_plugins']['plugins'])) ?
-                            $seed_info['indexing_plugins']['plugins'] 
-                            : array();
-
-                    foreach($this->indexing_plugins as $plugin) {
-                        $plugin_name = ucfirst($plugin);
-                        $data['INDEXING_PLUGINS'][$plugin_name] = 
-                            (in_array($plugin_name, $included_plugins)) ? 
-                            "checked='checked'" : "";
-                    }
-
-                    $data['SCRIPT'] = "setDisplay('toggle', ".
-                        "'{$data['restrict_sites_by_url']}');";
-                    if(!isset($_REQUEST['ts'])) {
-                        $data['SCRIPT'] .= 
-                        " elt('load-options').onchange = ".
-                        "function() { if(elt('load-options').selectedIndex !=".
-                        " 0) { elt('crawloptionsForm').submit();  }};";
-                    }
-                    if($data['crawl_type'] == CrawlConstants::WEB_CRAWL) {
-                        $data['SCRIPT'] .=
-                            "switchTab('webcrawltab', 'archivetab');";
-                    } else {
-                        $data['SCRIPT'] .=
-                            "switchTab('archivetab', 'webcrawltab');";
-                    }
-                    $add_message = "";
-                    if(isset($_REQUEST['ts']) &&
-                        isset($_REQUEST['inject_sites'])) {
-                            $timestamp = $this->clean($_REQUEST['ts'], 
-                                "string");
-                            $inject_urls = 
-                                $this->convertStringCleanUrlsArray(
-                                $_REQUEST['inject_sites']);
-                            if($this->crawlModel->injectUrlsCurrentCrawl(
-                                $timestamp, $inject_urls, $machine_urls)) {
-                                $add_message = "<br />".
-                                    tl('admin_controller_urls_injected');
-                            }
-                    }
-                    if($update_flag) {
-                        if(isset($_REQUEST['ts'])) {
-                            $this->crawlModel->setCrawlSeedInfo($timestamp, 
-                                $seed_info, $machine_urls);
-                        } else {
-                            $this->crawlModel->setSeedInfo($seed_info);
-                        }
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('admin_controller_update_seed_info').
-                            "$add_message</h1>');";
-                    }
+                    $this->editCrawlOption($data, $machine_urls);
                 break;
-
-                default:
-
             }
         }
+        return $data;
+    }
 
+    /**
+     *
+     */
+    function startCrawl(&$data, $machine_urls)
+    {
+        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+            tl('admin_controller_starting_new_crawl')."</h1>')";
+
+        $crawl_params = array();
+        $crawl_params[self::STATUS] = "NEW_CRAWL";
+        $crawl_params[self::CRAWL_TIME] = time();
+        $seed_info = $this->crawlModel->getSeedInfo();
+        $crawl_params[self::CRAWL_TYPE] = $seed_info['general']['crawl_type'];
+        $crawl_params[self::CRAWL_INDEX] = 
+            (isset($seed_info['general']['crawl_index'])) ?
+            $seed_info['general']['crawl_index'] : '';
+        $crawl_params[self::ARC_DIR]=(isset($seed_info['general']['arc_dir'])) ?
+            $seed_info['general']['arc_dir'] : '';
+        $crawl_params[self::ARC_TYPE] =
+            (isset($seed_info['general']['arc_type'])) ?
+            $seed_info['general']['arc_type'] : '';
+        $crawl_params[self::PAGE_RANGE_REQUEST] = 
+            (isset($seed_info['general']['page_range_request'])) ?
+            intval($seed_info['general']['page_range_request']) :
+            PAGE_RANGE_REQUEST;
+        $crawl_params[self::PAGE_RECRAWL_FREQUENCY] = 
+            (isset($seed_info['general']['page_recrawl_frequency'])) ?
+            intval($seed_info['general']['page_recrawl_frequency']) :
+            PAGE_RECRAWL_FREQUENCY;
+        $crawl_params[self::TO_CRAWL] = $seed_info['seed_sites']['url'];
+        $crawl_params[self::CRAWL_ORDER] = $seed_info['general']['crawl_order'];
+        $crawl_params[self::RESTRICT_SITES_BY_URL] = 
+            $seed_info['general']['restrict_sites_by_url'];
+        $crawl_params[self::ALLOWED_SITES] = 
+            isset($seed_info['allowed_sites']['url']) ?
+            $seed_info['allowed_sites']['url'] : array();
+        $crawl_params[self::DISALLOWED_SITES] = 
+            isset($seed_info['disallowed_sites']['url']) ?
+            $seed_info['disallowed_sites']['url'] : array();
+        $crawl_params[self::META_WORDS] = isset($seed_info['meta_words']) ?
+            $seed_info['meta_words'] : array();
+
+        $crawl_params[self::LOG_RECORDS] = isset($seed_info['log_records']) ?
+            $seed_info['log_records'] : array();
+
+        $crawl_params[self::DATABASE_CONNECTION_DETAILS] =
+            isset($seed_info['database_connection_details']) ?
+            $seed_info['database_connection_details'] : array();
+
+        if(isset($seed_info['indexing_plugins']['plugins'])) {
+            $crawl_params[self::INDEXING_PLUGINS] =
+                $seed_info['indexing_plugins']['plugins'];
+        }
+        if(isset($seed_info['indexed_file_types']['extensions'])) {
+            $crawl_params[self::INDEXED_FILE_TYPES] =
+                $seed_info['indexed_file_types']['extensions'];
+        }
+        if(isset($_REQUEST['description'])) {
+            $description = $this->clean($_REQUEST['description'], "string");
+        } else {
+            $description = tl('admin_controller_no_description');
+        }
+        $crawl_params['DESCRIPTION'] = $description;
+        $crawl_params[self::VIDEO_SOURCES] = array();
+        $sources =
+            $this->sourceModel->getMediaSources('video');
+        foreach($sources as $source) {
+            $url = $source['SOURCE_URL'];
+            $url_parts = explode("{}", $url);
+            $crawl_params[self::VIDEO_SOURCES][] = $url_parts[0];
+        }
+
+        /*
+           Write the new crawl parameters to the name server, so
+           that it can pass them along in the case of a new archive
+           crawl.
+        */
+        $filename = CRAWL_DIR.
+            "/schedules/name_server_messages.txt";
+        file_put_contents($filename, serialize($crawl_params));
+        chmod($filename, 0777);
+
+        $this->crawlModel->sendStartCrawlMessage($crawl_params, 
+            $seed_info, $machine_urls);
+    }
+
+    /**
+     *
+     */
+    function editCrawlOption(&$data, $machine_urls)
+    {
+        $data["leftorright"] = (getLocaleDirection() == 'ltr') ? 
+            "right": "left";
+        $data["ELEMENT"] = "crawloptionsElement";
+        $crawls = $this->crawlModel->getCrawlList(false, false, $machine_urls);
+        $indexes = $this->crawlModel->getCrawlList(true, true, $machine_urls);
+        $mixes = $this->crawlModel->getMixList(false);
+        foreach($mixes as $mix) {
+            $tmp = array();
+            $tmp["DESCRIPTION"] = "MIX::".$mix["MIX_NAME"];
+            $tmp["CRAWL_TIME"] = $mix["MIX_TIMESTAMP"];
+            $tmp["ARC_DIR"] = "MIX";
+            $tmp["ARC_TYPE"] = "MixArchiveBundle";
+            $indexes[] = $tmp;
+        }
+
+        $indexes_by_crawl_time = array();
+        $update_flag = false;
+        $data['available_options'] = array(
+            tl('admin_controller_use_below'),
+            tl('admin_controller_use_defaults'));
+        $data['available_crawl_indexes'] = array();
+        $data['options_default'] = tl('admin_controller_use_below');
+        foreach($crawls as $crawl) {
+            if(strlen($crawl['DESCRIPTION']) > 0 ) {
+                $data['available_options'][$crawl['CRAWL_TIME']] =
+                    tl('admin_controller_previous_crawl')." ".
+                    $crawl['DESCRIPTION'];
+            }
+        }
+        foreach($indexes as $i => $crawl) {
+            $data['available_crawl_indexes'][$crawl['CRAWL_TIME']]
+                = $crawl['DESCRIPTION'];
+            $indexes_by_crawl_time[$crawl['CRAWL_TIME']] =& $indexes[$i];
+        }
+        $no_further_changes = false;
+        if(isset($_REQUEST['load_option']) && 
+            $_REQUEST['load_option'] == 1) {
+            $seed_current = $this->crawlModel->getSeedInfo();
+            $seed_info = $this->crawlModel->getSeedInfo(true);
+            if(isset(
+                $seed_current['general']['page_range_request'])) {
+                $seed_info['general']['page_range_request'] =
+                    $seed_current['general']['page_range_request'];
+            }
+            if(isset(
+                $seed_current['general']['page_recrawl_frequency'])
+                ){
+                $seed_info['general']['page_recrawl_frequency'] =
+                $seed_current['general']['page_recrawl_frequency'];
+            }
+            if(isset(
+                $seed_current['indexed_file_types'])) {
+                $seed_info['indexed_file_types'] =
+                    $seed_current['indexed_file_types'];
+            }
+            $update_flag = true;
+            $no_further_changes = true;
+        } else if (isset($_REQUEST['load_option']) && 
+            $_REQUEST['load_option'] > 1 ) {
+            $timestamp = 
+                $this->clean($_REQUEST['load_option'], "int");
+            $seed_info = $this->crawlModel->getCrawlSeedInfo(
+                $timestamp, $machine_urls);
+            $update_flag = true;
+            $no_further_changes = true;
+        } else if(isset($_REQUEST['ts'])) {
+            $timestamp = 
+                $this->clean($_REQUEST['ts'], "int");
+            $seed_info = $this->crawlModel->getCrawlSeedInfo(
+                $timestamp, $machine_urls);
+            $data['ts'] = $timestamp;
+        } else {
+            $seed_info = $this->crawlModel->getSeedInfo();
+        }
+        if(!$no_further_changes && isset($_REQUEST['crawl_indexes'])
+            && in_array($_REQUEST['crawl_indexes'], 
+            array_keys($data['available_crawl_indexes']))) {
+            $seed_info['general']['crawl_index'] = $_REQUEST['crawl_indexes'];
+            $index_data = $indexes_by_crawl_time[$_REQUEST['crawl_indexes']];
+            if(isset($index_data['ARC_DIR'])) {
+                $seed_info['general']['arc_dir'] = $index_data['ARC_DIR'];
+                $seed_info['general']['arc_type'] = $index_data['ARC_TYPE'];
+            } else {
+                $seed_info['general']['arc_dir'] = '';
+                $seed_info['general']['arc_type'] = '';
+            }
+            $update_flag = true;
+        }
+        $data['crawl_index'] =  (isset($seed_info['general']['crawl_index'])) ?
+            $seed_info['general']['crawl_index'] : '';
+        $data['available_crawl_types'] = array(self::WEB_CRAWL,
+            self::ARCHIVE_CRAWL);
+        if(!$no_further_changes && isset($_REQUEST['crawl_type']) &&
+            in_array($_REQUEST['crawl_type'], $data['available_crawl_types'])) {
+            $seed_info['general']['crawl_type'] = 
+                $_REQUEST['crawl_type'];
+            $update_flag = true;
+        }
+        $data['crawl_type'] = $seed_info['general']['crawl_type'];
+        if($data['crawl_type'] == self::WEB_CRAWL) {
+            $data['web_crawl_active'] = "active";
+            $data['archive_crawl_active'] = "";
+        } else {
+            $data['archive_crawl_active'] = "active";
+            $data['web_crawl_active'] = "";
+        }
+
+        $data['available_crawl_orders'] = array(
+            self::BREADTH_FIRST => 
+                tl('admin_controller_breadth_first'), 
+            self::PAGE_IMPORTANCE => 
+                tl('admin_controller_page_importance'));
+
+        if(!$no_further_changes && isset($_REQUEST['crawl_order']) 
+            &&  in_array($_REQUEST['crawl_order'], 
+                array_keys($data['available_crawl_orders']))) {
+            $seed_info['general']['crawl_order'] = 
+                $_REQUEST['crawl_order'];
+            $update_flag = true;
+        }
+        $data['crawl_order'] = $seed_info['general']['crawl_order'];
+
+        if(!$no_further_changes && isset($_REQUEST['posted'])) {
+            $seed_info['general']['restrict_sites_by_url'] = 
+                (isset($_REQUEST['restrict_sites_by_url'])) ?
+                true : false;
+            $update_flag = true;
+        }
+        $data['restrict_sites_by_url'] = 
+            $seed_info['general']['restrict_sites_by_url'];
+        $site_types = 
+            array('allowed_sites','disallowed_sites', 'seed_sites');
+        foreach($site_types as $type) {
+            if(!$no_further_changes && isset($_REQUEST[$type])) {
+                $seed_info[$type]['url'] = 
+                    $this->convertStringCleanUrlsArray(
+                    $_REQUEST[$type]);
+            }
+            if(isset($seed_info[$type]['url'])) {
+                $data[$type] = $this->convertArrayCleanLines(
+                    $seed_info[$type]['url']);
+            } else {
+                $data[$type] = "";
+            }
+        }
+        $data['TOGGLE_STATE'] = 
+            ($data['restrict_sites_by_url']) ? 
+            "checked='checked'" : "";
+        $data['META_WORDS'] = array();
+        if(!$no_further_changes) {
+            if(isset($_REQUEST["META_WORDS"])){
+                foreach($_REQUEST["META_WORDS"] as $pair) {
+                    list($word, $url_pattern) = array_values($pair);
+                    $word = $this->clean($word, "string");
+                    $url_pattern = 
+                        $this->clean($url_pattern, "string");
+                    if(trim($word) != "" &&trim($url_pattern) !=""){
+                        $data['META_WORDS'][$word] =
+                            $url_pattern;
+                    }
+                }
+                $seed_info['meta_words'] = $data['META_WORDS'];
+                $update_flag = true;
+            } else if(isset($seed_info['meta_words'])){
+                $data['META_WORDS'] = $seed_info['meta_words'];
+            }
+        } else if(isset($seed_info['meta_words'])){
+                $data['META_WORDS'] = $seed_info['meta_words'];
+        }
+
+        $data['LOG_RECORDS'] = array();
+        if(!$no_further_changes) {
+            if(isset($_REQUEST["LOG_RECORDS"])){
+                foreach($_REQUEST["LOG_RECORDS"] as $triplet) {
+                    list($field, $field_name,$field_type) =
+                        array_values($triplet);
+                    $field = $this->clean($field, "string");
+                    $field_name =
+                            $this->clean($field_name, "string");
+                    $field_type =
+                            $this->clean($field_type,"string");
+                    $field_nt = $field_name."::".$field_type;
+                    if(trim($field) != "" &&trim($field_nt) !=""){
+                          $data['LOG_RECORDS'][$field] = $field_nt;
+                    }
+                }
+                $seed_info['log_records'] = $data['LOG_RECORDS'];
+                $update_flag = true;
+            } else if(isset($seed_info['log_records'])){
+                $data['LOG_RECORDS'] = $seed_info['log_records'];
+            }
+        } else if(isset($seed_info['log_records'])){
+                $data['LOG_RECORDS'] = $seed_info['log_records'];
+        }
+
+        $data['DATABASE_CONNECTION_DETAILS'] = array();
+        if(!$no_further_changes) {
+            if(isset($_REQUEST["DATABASE_CONNECTION_DETAILS"])){
+                $data['DATABASE_CONNECTION_DETAILS']=
+                           $_REQUEST["DATABASE_CONNECTION_DETAILS"];
+                $seed_info['database_connection_details'] = 
+                           $data['DATABASE_CONNECTION_DETAILS'];
+                $update_flag = true;
+            } else if(isset($seed_info['database_connection_details'])) {
+                $data['DATABASE_CONNECTION_DETAILS'] = 
+                    $seed_info['database_connection_details'];
+            }
+        } else if(isset($seed_info['database_connection_details'])) {
+            $data['DATABASE_CONNECTION_DETAILS'] = 
+                $seed_info['database_connection_details'];
+        }
+
+        $data['INDEXING_PLUGINS'] = array();
+        $included_plugins = array();
+        if(!$no_further_changes && isset($_REQUEST["posted"])) {
+            $seed_info['indexing_plugins']['plugins'] =
+                (isset($_REQUEST["INDEXING_PLUGINS"])) ?
+                $_REQUEST["INDEXING_PLUGINS"] : array();
+            $update_flag = true;
+        }
+        $included_plugins = 
+            (isset($seed_info['indexing_plugins']['plugins'])) ?
+                $seed_info['indexing_plugins']['plugins'] 
+                : array();
+
+        foreach($this->indexing_plugins as $plugin) {
+            $plugin_name = ucfirst($plugin);
+            $data['INDEXING_PLUGINS'][$plugin_name] = 
+                (in_array($plugin_name, $included_plugins)) ? 
+                "checked='checked'" : "";
+        }
+
+        $data['SCRIPT'] = "setDisplay('toggle', ".
+            "'{$data['restrict_sites_by_url']}');";
+        if(!isset($_REQUEST['ts'])) {
+            $data['SCRIPT'] .= 
+            " elt('load-options').onchange = ".
+            "function() { if(elt('load-options').selectedIndex !=".
+            " 0) { elt('crawloptionsForm').submit();  }};";
+        }
+        if($data['crawl_type'] == CrawlConstants::WEB_CRAWL) {
+            $data['SCRIPT'] .=
+                "switchTab('webcrawltab', 'archivetab');";
+        } else {
+            $data['SCRIPT'] .=
+                "switchTab('archivetab', 'webcrawltab');";
+        }
+        $add_message = "";
+        if(isset($_REQUEST['ts']) &&
+            isset($_REQUEST['inject_sites'])) {
+                $timestamp = $this->clean($_REQUEST['ts'], 
+                    "string");
+                $inject_urls = 
+                    $this->convertStringCleanUrlsArray(
+                    $_REQUEST['inject_sites']);
+                if($this->crawlModel->injectUrlsCurrentCrawl(
+                    $timestamp, $inject_urls, $machine_urls)) {
+                    $add_message = "<br />".
+                        tl('admin_controller_urls_injected');
+                }
+        }
+        if($update_flag) {
+            if(isset($_REQUEST['ts'])) {
+                $this->crawlModel->setCrawlSeedInfo($timestamp, 
+                    $seed_info, $machine_urls);
+            } else {
+                $this->crawlModel->setSeedInfo($seed_info);
+            }
+            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                tl('admin_controller_update_seed_info').
+                "$add_message</h1>');";
+        }
         return $data;
     }
 

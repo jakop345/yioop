@@ -507,6 +507,11 @@ EOT;
         $seed_info = NULL;
         if(file_exists($dir)) {
             $info = IndexArchiveBundle::getArchiveInfo($dir);
+            if(!isset($info['DESCRIPTION']) ||
+                $info['DESCRIPTION'] == NULL ||
+                strstr($info['DESCRIPTION'], "Archive created") ) {
+                return $seed_info;
+            }
             $index_info = unserialize($info['DESCRIPTION']);
             $seed_info['general']["restrict_sites_by_url"] = 
                 $index_info[self::RESTRICT_SITES_BY_URL];
@@ -836,7 +841,7 @@ EOT;
                 isset($index_info[self::CRAWL_TYPE]) && 
                 $index_info[self::CRAWL_TYPE] == self::ARCHIVE_CRAWL) {
                 continue;
-            } else if($return_recrawls  && 
+            } else if ($return_recrawls  && 
                 isset($index_info[self::CRAWL_TYPE]) && 
                 $index_info[self::CRAWL_TYPE] == self::ARCHIVE_CRAWL) {
                 $crawl['DESCRIPTION'] = "RECRAWL::";

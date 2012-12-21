@@ -454,26 +454,29 @@ class Fetcher implements CrawlConstants
                     $info[self::STATUS] == self::STOP_STATE) {continue;}
             }
 
-            $switch_to_old_fetch = $this->checkCrawlTime();
-            if($switch_to_old_fetch) {  /* case(1) */
+            $switch_fetch_or_no_current = $this->checkCrawlTime();
+            if($switch_fetch_or_no_current) {  /* case(1) */
+                crawlLog("MAIN LOOP CASE 1 --".
+                    " SWITCH CRAWL OR NO CURRENT CRAWL");
                 $info[self::CRAWL_TIME] = $this->crawl_time;
                 if($info[self::CRAWL_TIME] == 0) {
                     $info[self::STATUS] = self::NO_DATA_STATE;
                     $this->to_crawl = array();
                 }
-            } else if($this->crawl_type == self::ARCHIVE_CRAWL &&
+            } else if ($this->crawl_type == self::ARCHIVE_CRAWL &&
                     !in_array($this->arc_dir, $local_archives)) { /* case(2) */
                 // An archive crawl with data coming from the name server.
+                crawlLog("MAIN LOOP CASE 2 -- ARCHIVE SCHEDULER");
                 $info = $this->checkArchiveScheduler();
-
                 if($info === false) {
                     crawlLog("Cannot connect to name server...".
                         " will try again in ".FETCH_SLEEP_TIME." seconds.");
                     sleep(FETCH_SLEEP_TIME);
                     continue;
                 }
-            } else if($this->crawl_time > 0) { /* case(3) */
+            } else if ($this->crawl_time > 0) { /* case(3) */
                 // Either a web crawl or a recrawl of a previous web crawl.
+                crawlLog("MAIN LOOP CASE 3 -- WEB SCHEDULER");
                 $info = $this->checkScheduler();
 
                 if($info === false) {
@@ -483,6 +486,7 @@ class Fetcher implements CrawlConstants
                     continue;
                 }
             } else {
+                crawlLog("MAIN LOOP CASE 4 -- NO CURRENT CRAWL");
                 $info[self::STATUS] = self::NO_DATA_STATE;
             }
 
@@ -588,7 +592,7 @@ class Fetcher implements CrawlConstants
             $can_schedule_again = true;
         }
         $sites = $this->getFetchSites();
-
+        crawlLog("Downloading list of urls...");
         if(!$sites) {
             crawlLog("No seeds to fetch...");
             sleep(max(0, ceil(
@@ -643,7 +647,7 @@ class Fetcher implements CrawlConstants
             }
             crawlLog("....done.");
         }
-
+        crawlLog("Downloading complete");
         return $downloaded_pages;
     }
 
@@ -678,7 +682,9 @@ class Fetcher implements CrawlConstants
             }
         }
         if(!$this->archive_iterator->end_of_iterator) {
+            crawlLog("Getting pages from archive iterator...");
             $pages = $this->archive_iterator->nextPages(NUM_MULTI_CURL_PAGES);
+            crawlLog("...pages get complete.");
         } 
         return $pages;
     }
@@ -732,7 +738,7 @@ class Fetcher implements CrawlConstants
      * currently running crawl to see if it changed
      *
      * If the timestamp has changed save the rest of the current fetch batch,
-     * then load any existing fetch from the new crawl otherwise set the crawl
+     * then load any existing fetch from the new crawl; otherwise, set the crawl
      * to empty
      *
      * @return bool true if loaded a fetch batch due to time change
@@ -747,6 +753,7 @@ class Fetcher implements CrawlConstants
 
         $prefix = $this->fetcher_num."-";
         $robot_instance = $prefix . ROBOT_INSTANCE;
+        $time_change = false;
 
         $crawl_time = !is_null($this->crawl_time) ? $this->crawl_time : 0;
         if($crawl_time > 0) {
@@ -766,7 +773,7 @@ class Fetcher implements CrawlConstants
             && ($info[self::CRAWL_TIME] != $this->crawl_time
             || $info[self::CRAWL_TIME] == 0)) {
             $dir = CRAWL_DIR."/schedules";
-
+            $time_change = true;
             /* Zero out the crawl. If haven't done crawl before, then scheduler
                will be called */
             $this->to_crawl = array(); 
@@ -849,7 +856,7 @@ class Fetcher implements CrawlConstants
             }
         }
         crawlLog("End Name Server Check");
-        return (count($this->to_crawl) > 0);
+        return $time_change;
     }
     
     /**
@@ -866,8 +873,16 @@ class Fetcher implements CrawlConstants
         $prefix = $this->fetcher_num."-";
 
         $info = array();
+        $to_crawl_count = count($this->to_crawl);
+        $to_crawl_again_count = count($this->to_crawl_again);
+        if($this->recrawl_check_scheduler) {
+            crawlLog("Arc Crawl checking scheduler??");
+        }
         if((count($this->to_crawl) > 0 || count($this->to_crawl_again) > 0) &&
            (!$this->recrawl_check_scheduler)) {
+            crawlLog("  Current to crawl count:".$to_crawl_count);
+            crawlLog("  Current to crawl try again count:".$to_crawl_again_count);
+            crawlLog("So not checking scheduler.");
             return true; 
         }
 
@@ -922,7 +937,7 @@ class Fetcher implements CrawlConstants
                 serialize($info));
         }
 
-        crawlLog("  Time to check Scheduler ".(changeInMicrotime($start_time)));
+        crawlLog("Time to check Scheduler ".(changeInMicrotime($start_time)));
         return $info; 
     }
 
@@ -1145,7 +1160,8 @@ class Fetcher implements CrawlConstants
             }
         }
 
-        crawlLog("  Fetch Seed Time ".(changeInMicrotime($start_time)));
+        crawlLog("Fetch url list to download time ".
+            (changeInMicrotime($start_time)));
 
         return $seeds;
     }
@@ -1192,7 +1208,7 @@ class Fetcher implements CrawlConstants
     function processFetchPages($site_pages)
     {
         $PAGE_PROCESSORS = $this->page_processors;
-        crawlLog("  Start process pages... Current Memory:".memory_get_usage());
+        crawlLog("Start process pages... Current Memory:".memory_get_usage());
         $start_time = microtime();
 
         $prefix = $this->fetcher_num."-";
