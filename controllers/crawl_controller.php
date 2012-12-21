@@ -255,15 +255,12 @@ class CrawlController extends Controller implements CrawlConstants
         $i = $this->clean($_REQUEST["i"], "int");
         $this->crawlModel->current_machine = $i;
         $lookups = unserialize(webdecode($_REQUEST["arg"]));
-
         $our_lookups = array();
         foreach($lookups as $lookup => $lookup_info) {
-            if(count($lookup_info) == 2 && $lookup_info[0][0] === 'h') {
-                list($url, $index_name) = $lookup_info;
-                $index = calculatePartition($url, $num, 
-                    "UrlParser::getHost");
+            if(count($lookup_info) == 3 && $lookup_info[0][0] === 'h') {
+                list($url, $index_name, $index) = $lookup_info;
                 if($index == $i) {
-                    $our_lookups[$lookup] = $lookup_info;
+                    $our_lookups[$lookup] = array($url, $index_name);
                 }
             } else {
                 $our_lookups[$lookup] = array();
