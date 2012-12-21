@@ -173,12 +173,7 @@ class ParallelModel extends Model implements CrawlConstants
                     $out_lookup_info = array();
                     if(count($lookup_item) == 5) {
                         list($index, , $index_name, , ) = $lookup_item;
-                        $machines_at_time = $this->getMachinesTimestamp(
-                            $index_name, $machine_urls);
-                        $machine_pos = array_search($machines_at_time[$index],
-                            $machine_urls);
-                        $machines[$machine_pos] = $machine_urls[$machine_pos];
-                        $lookup_item[0] = $machine_pos;
+                        $machines[$index] = $machine_urls[$index];
                         $out_lookup_info[] = $lookup_item;
                     } else {
                         $out_lookup_info[] = $lookup_item;
