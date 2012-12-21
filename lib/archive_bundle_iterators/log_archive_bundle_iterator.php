@@ -141,10 +141,10 @@ class LogArchiveBundleIterator extends ArchiveBundleIterator
      */
     var $regular_exprs = array( 
         'IP_Address' => '/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/',
-        'Timestamp'  => '/\[[^:]+:\d+:\d+:\d+ [^\]]+\]/',
-        'Request'    => '/(GET|HEAD|POST|PUT|DELETE|TRACE|OPTIONS|CONNECT)+[^"]*/',
+        'Timestamp' => '/\[[^:]+:\d+:\d+:\d+ [^\]]+\]/',
+        'Request' => '/(GET|HEAD|POST|PUT|DELETE|TRACE|OPTIONS|CONNECT)+[^"]*/',
         'Status Code'=> '/\s[1-5]\d{2}\s/',
-        'Int'        => '/\s[0-9]+\s/',
+        'Int' => '/\s[0-9]+\s/',
         'URL'        => '/(http|https|ftp):\/\/[A-Za-z0-9][A-Za-z0-9_-]*[\/]*(?:.[A-Za-z0-9][A-Za-z0-9_-]*[\/]*)+:?(d*)[\/]*/',
         'User Agent' => '/"([a-zA-Z0-9][^"]+)"/');
 

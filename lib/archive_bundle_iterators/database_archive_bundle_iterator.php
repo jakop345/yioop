@@ -148,7 +148,7 @@ class DatabaseArchiveBundleIterator extends ArchiveBundleIterator
      */
     var $query;
     /**
-     *  Constants required for log archive_bundle_iterator
+     *  Constants required for database archive_bundle_iterator
      *  @var const
      */
     const DATABASE_CONNECTION_DETAILS_FILE = 'database_connection_details.txt';

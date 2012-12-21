@@ -1905,7 +1905,7 @@ class QueueServer implements CrawlConstants, Join
             // if queue error remove entry any loop
             if($tmp === false || strcmp($url, "LOOKUP ERROR") == 0) {
                 $delete_urls[$i] = $url;
-                crawlLog("Removing lookup error index");
+                crawlLog("Removing lookup error index during produce fetch");
                 $i++;
                 continue;
             }
@@ -2067,13 +2067,13 @@ class QueueServer implements CrawlConstants, Join
         $this->web_queue->closeUrlArchive($fh);
 
         $new_time = microtime();
-        crawlLog("...Done selecting URLS time so far:".
+        crawlLog("...Done selecting URLS for fetch batch time so far:".
             (changeInMicrotime($start_time)));
 
         foreach($delete_urls as $delete_url) {
             $this->web_queue->removeQueue($delete_url);
         }
-        crawlLog("...Removing selected URLS from queue time: ".
+        crawlLog("...Removing selected URLS for fetch batch from queue time: ".
             (changeInMicrotime($new_time)));
         $new_time = microtime();
 
@@ -2122,7 +2122,7 @@ class QueueServer implements CrawlConstants, Join
                 (changeInMicrotime($start_time)));
         } else {
             crawlLog("No fetch batch created!! " .
-                "\nTime failing to make a batch:".
+                "\nTime failing to make a fetch batch:".
                 (changeInMicrotime($start_time)).". Loop properties:$i $count");
             $max_links = max(MAX_LINKS_PER_PAGE, MAX_LINKS_PER_SITEMAP);
             if($i >= $count && $count >= NUM_URLS_QUEUE_RAM - 
