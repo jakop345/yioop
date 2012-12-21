@@ -154,38 +154,27 @@ class ParallelModel extends Model implements CrawlConstants
         //Set-up network request
         $machines = array();
         $indexes = array();
-        $out_lookups = array();
         $num_machines = count($machine_urls);
         foreach($lookups as $lookup => $lookup_info) {
             if(count($lookup_info) == 2 && $lookup_info[0][0] === 'h') {
-                list($url, $index_name) = $lookup_info;
-                $machines_at_time = $this->getMachinesTimestamp($index_name,
-                    $machine_urls);
-                $index = calculatePartition($url, count($machines_at_time), 
-                    "UrlParser::getHost");
-                $machine_pos = array_search($machines_at_time[$index],
-                    $machine_urls);
-                $machines[$machine_pos] = $machine_urls[$machine_pos];
-                $lookup_info[3] = $index;
-                $out_lookups[$lookup] = $lookup_info;
+                $machines = $machine_urls;
+                break;
             } else {
                 foreach($lookup_info as $lookup_item) {
                     $out_lookup_info = array();
                     if(count($lookup_item) == 5) {
-                        list($index, , $index_name, , ) = $lookup_item;
+                        list($index, , , , ) = $lookup_item;
                         $machines[$index] = $machine_urls[$index];
-                        $out_lookup_info[] = $lookup_item;
                     } else {
-                        $out_lookup_info[] = $lookup_item;
                         $machines = $machine_urls;
+                        break;
                     }
                 }
-                $out_lookups[$lookup] = $out_lookup_info;
             }
         }
         //Make request
         $page_set = $this->execMachines("getCrawlItems", 
-            $machines, serialize($out_lookups), $num_machines);
+            $machines, serialize($lookups), $num_machines);
         //Aggregate results
         $summaries = array();
         $elapsed_times = array();
