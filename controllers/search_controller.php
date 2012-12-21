@@ -975,7 +975,11 @@ class SearchController extends Controller implements CrawlConstants
     }
 
     /**
+     * Query timestamps can be used to save an iteration position in a
+     * a set of query results. This method allows one to delete 
+     * the supplied save point.
      *
+     * @param int $save_timestamp deletes a previously query saved timestamp
      */
     public function clearQuerySavepoint($save_timestamp) 
     {
@@ -1042,7 +1046,7 @@ class SearchController extends Controller implements CrawlConstants
      * @param int $crawl_time the timestamp of the crawl to look up the cached
      *      page in
      */
-   function cacheRequestAndOutput($url, $highlight = true, $terms ="", 
+   function cacheRequestAndOutput($url, $highlight = true, $terms ="",
         $crawl_time = 0)
     {
         global $CACHE, $IMAGE_TYPES;
@@ -1055,9 +1059,6 @@ class SearchController extends Controller implements CrawlConstants
 
         //Check if the URL is from a cached page
         $cached_link = (isset($_REQUEST["from_cache"])) ? true : false;
-
-        //Check if it the URL is from the UI
-        $hist_ui = isset($_REQUEST["hist_ui"]) ? true : false;
 
         $hash_key = crawlHash(
             $terms.$url.serialize($highlight).serialize($crawl_time));
@@ -1076,7 +1077,6 @@ class SearchController extends Controller implements CrawlConstants
         $crawl_times = array();
         $all_crawl_details = $this->crawlModel->getCrawlList(false, true,
             $queue_servers);
-
         foreach($all_crawl_details as $crawl_details) {
             if($crawl_details['CRAWL_TIME'] != 0) {
                 array_push($crawl_times, $crawl_details['CRAWL_TIME']);
@@ -1157,7 +1157,7 @@ class SearchController extends Controller implements CrawlConstants
         $data = array();
 
         if($crawl_item == NULL) {
-            if($cached_link == true){
+            if($cached_link == true) {
                 header("Location: $url");
             } else {
                 $this->displayView("nocache", $data);
@@ -1165,48 +1165,14 @@ class SearchController extends Controller implements CrawlConstants
             }
         }
 
-        $in_url = "";
-        $image_flag = false;
-        if(isset($crawl_item[self::THUMB])) {
-            $image_flag = true;
-            $inlinks = $this->phraseModel->getPhrasePageResults(
-                "link:$url", 0, 
-                1, true, NULL, false, 0, $queue_servers);
-            $in_url = isset($inlinks["PAGES"][0][self::URL]) ? 
-                $inlinks["PAGES"][0][self::URL] : "";
-        }
         $check_fields = array(self::TITLE, self::DESCRIPTION, self::LINKS);
         foreach($check_fields as $field) {
             $crawl_item[$field] = (isset($crawl_item[$field])) ?
                 $crawl_item[$field] : "";
         }
-        $summary_string = 
-            tl('search_controller_extracted_title')."\n\n".
-            wordwrap($crawl_item[self::TITLE], 80, "\n")."\n\n" .
-            tl('search_controller_extracted_description')."\n\n".
-            wordwrap($crawl_item[self::DESCRIPTION], 80, "\n")."\n\n".
-            tl('search_controller_extracted_links')."\n\n".
-            wordwrap(print_r($crawl_item[self::LINKS], true), 80, "\n");
-        if(isset($crawl_item[self::ROBOT_PATHS])) {
-            if(isset($crawl_item[self::ROBOT_PATHS][self::ALLOWED_SITES])) {
-                $summary_string = 
-                    tl('search_controller_extracted_allow_paths')."\n\n".
-                    wordwrap(print_r($crawl_item[self::ROBOT_PATHS][
-                        self::ALLOWED_SITES], true),  80, "\n");
-            }
-            if(isset($crawl_item[self::ROBOT_PATHS][self::DISALLOWED_SITES])) {
-                $summary_string = 
-                    tl('search_controller_extracted_disallow_paths')."\n\n".
-                    wordwrap(print_r($crawl_item[self::ROBOT_PATHS][
-                        self::DISALLOWED_SITES], true),  80, "\n");
-            }
-            if(isset($crawl_item[self::CRAWL_DELAY])) {
-                $summary_string = 
-                    tl('search_controller_crawl_delay')."\n\n".
-                    wordwrap(print_r($crawl_item[self::CRAWL_DELAY], true), 
-                        80, "\n") ."\n\n". $summary_string;
-            }
-        }
+
+        $summary_string = $this->crawlItemSummary($crawl_item);
+
         $robot_instance = $crawl_item[self::ROBOT_INSTANCE];
         $robot_table_name = CRAWL_DIR."/".self::robot_table_name;
         $robot_table = array();
@@ -1238,7 +1204,7 @@ class SearchController extends Controller implements CrawlConstants
             $this->displayView("nocache", $data);
             return;
         }
-        if( isset($crawl_item[self::ROBOT_METAS]) &&
+        if(isset($crawl_item[self::ROBOT_METAS]) &&
                 (in_array("NOARCHIVE", $crawl_item[self::ROBOT_METAS]) ||
                 in_array("NONE", $crawl_item[self::ROBOT_METAS])) ) {
             $cache_file = "<div>'.
@@ -1247,45 +1213,119 @@ class SearchController extends Controller implements CrawlConstants
             $cache_file = $cache_item[self::PAGE];
         }
 
-        if(!$image_flag) {
-            $meta_words = $this->phraseModel->meta_words_list;
-            foreach($meta_words as $meta_word) {
-                $pattern = "/(\s)($meta_word(\S)+)/";
-                $terms = preg_replace($pattern, "", $terms);
-            }
-            $terms = str_replace("'", " ", $terms);
-            $terms = str_replace('"', " ", $terms);
-            $terms = str_replace('\\', " ", $terms);
-            $terms = str_replace('|', " ", $terms);
-            $terms = $this->clean($terms, "string");
+        if(isset($crawl_item[self::THUMB])) {
+            $cache_file = $this->imageCachePage($url, $cache_item, $cache_file,
+                $queue_servers);
+            $highlight = false;
+        }
 
-            $phrase_string = mb_ereg_replace("[[:punct:]]", " ", $terms); 
-            $words = mb_split(" ",$phrase_string);
-            if(!$highlight) {
-                $words = array();
+        $newDoc = $this->formatCachePage($cache_item, $cache_file, $url,
+            $summary_string, $crawl_time, $all_crawl_times, $terms, $highlight);
+
+        if(USE_CACHE) {
+            $CACHE->set($hash_key, $newDoc);
+        }
+        echo $newDoc;
+    }
+
+    /**
+     *
+     */
+    function imageCachePage($url, $cache_item, $cache_file, $queue_servers)
+    {
+        $inlinks = $this->phraseModel->getPhrasePageResults(
+            "link:$url", 0, 1, true, NULL, false, 0, $queue_servers);
+        $in_url = isset($inlinks["PAGES"][0][self::URL]) ? 
+            $inlinks["PAGES"][0][self::URL] : "";
+        $type = $cache_item[self::TYPE];
+        $loc_url = ($in_url == "") ? $url : $in_url;
+        $cache_file = "<html><head><title>Yioop! Cache</title></head>".
+            "<body><object onclick=\"document.location='$loc_url'\"".
+            " data='data:$type;base64,".
+            base64_encode($cache_file)."' type='$type' />";
+        if($loc_url != $url) {
+            $cache_file .= "<p>".tl('search_controller_original_page').
+                "<br /><a href='$loc_url'>$loc_url</a></p>";
+        }
+        $cache_file .= "</body></html>";
+        return $cache_file;
+    }
+
+    /**
+     * Generates a string representation of a crawl item suitable for
+     * for output in a cache page
+     *
+     * @param array $crawl_item summary information of a web page (title,
+     *      description, etc)
+     * @return string suitable string formatting of item
+     */
+    function crawlItemSummary($crawl_item)
+    {
+        $summary_string = 
+            tl('search_controller_extracted_title')."\n\n".
+            wordwrap($crawl_item[self::TITLE], 80, "\n")."\n\n" .
+            tl('search_controller_extracted_description')."\n\n".
+            wordwrap($crawl_item[self::DESCRIPTION], 80, "\n")."\n\n".
+            tl('search_controller_extracted_links')."\n\n".
+            wordwrap(print_r($crawl_item[self::LINKS], true), 80, "\n");
+        if(isset($crawl_item[self::ROBOT_PATHS])) {
+            if(isset($crawl_item[self::ROBOT_PATHS][self::ALLOWED_SITES])) {
+                $summary_string = 
+                    tl('search_controller_extracted_allow_paths')."\n\n".
+                    wordwrap(print_r($crawl_item[self::ROBOT_PATHS][
+                        self::ALLOWED_SITES], true),  80, "\n");
             }
-        } else {
-            $type = $cache_item[self::TYPE];
-            $loc_url = ($in_url == "") ? $url : $in_url;
-            $cache_file = "<html><head><title>Yioop! Cache</title></head>".
-                "<body><object onclick=\"document.location='$loc_url'\"".
-                " data='data:$type;base64,".
-                base64_encode($cache_file)."' type='$type' />";
-            if($loc_url != $url) {
-                $cache_file .= "<p>".tl('search_controller_original_page').
-                    "<br /><a href='$loc_url'>$loc_url</a></p>";
+            if(isset($crawl_item[self::ROBOT_PATHS][self::DISALLOWED_SITES])) {
+                $summary_string = 
+                    tl('search_controller_extracted_disallow_paths')."\n\n".
+                    wordwrap(print_r($crawl_item[self::ROBOT_PATHS][
+                        self::DISALLOWED_SITES], true),  80, "\n");
             }
-            $cache_file .= "</body></html>";
+            if(isset($crawl_item[self::CRAWL_DELAY])) {
+                $summary_string = 
+                    tl('search_controller_crawl_delay')."\n\n".
+                    wordwrap(print_r($crawl_item[self::CRAWL_DELAY], true), 
+                        80, "\n") ."\n\n". $summary_string;
+            }
+        }
+        return $summary_string;
+    }
+
+    /**
+     *
+     */
+    function formatCachePage($cache_item, $cache_file, $url,
+        $summary_string, $crawl_time, $all_crawl_times, $terms, $highlight)
+    {
+        //Check if it the URL is from the UI
+        $hist_ui = isset($_REQUEST["hist_ui"]) ? true : false;
+
+        $date = date ("F d Y H:i:s", $cache_item[self::TIMESTAMP]);
+
+        $meta_words = $this->phraseModel->meta_words_list;
+        foreach($meta_words as $meta_word) {
+            $pattern = "/(\b)($meta_word(\S)+)/";
+            $terms = preg_replace($pattern, "", $terms);
+        }
+        $terms = str_replace("'", " ", $terms);
+        $terms = str_replace('"', " ", $terms);
+        $terms = str_replace('\\', " ", $terms);
+        $terms = str_replace('|', " ", $terms);
+        $terms = $this->clean($terms, "string");
+
+        $phrase_string = mb_ereg_replace("[[:punct:]]", " ", $terms); 
+        $words = mb_split(" ",$phrase_string);
+        if(!$highlight) {
             $words = array();
         }
-        $date = date ("F d Y H:i:s", $cache_item[self::TIMESTAMP]);
 
         $dom = new DOMDocument();
 
         $did_dom = @$dom->loadHTML('<?xml encoding="UTF-8">' . $cache_file);
-        foreach ($dom->childNodes as $item)
-        if ($item->nodeType == XML_PI_NODE)
-            $dom->removeChild($item); // remove hack
+        foreach ($dom->childNodes as $item) {
+            if($item->nodeType == XML_PI_NODE)
+                $dom->removeChild($item); // remove hack
+        }
         $dom->encoding = "UTF-8"; // insert proper
 
         $xpath = new DOMXPath($dom);
@@ -1408,12 +1448,7 @@ class SearchController extends Controller implements CrawlConstants
             }
         }
 
-        if(USE_CACHE) {
-            $CACHE->set($hash_key, $newDoc);
-        }
-
-        echo $newDoc;
-        return;
+        return $newDoc;
     }
 
     /**

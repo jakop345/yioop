@@ -794,7 +794,7 @@ EOT;
      * @param array $machine_urls an array of urls of yioop queue servers
      * @param bool $cache whether to try to get/set the data to a cache file
      *
-     * @return array Available IndexArchiveBundle directories and 
+     * @return array available IndexArchiveBundle directories and 
      *      their meta information this meta information includes the time of 
      *      the crawl, its description, the number of pages downloaded, and the 
      *      number of partitions used in storing the inverted index

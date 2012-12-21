@@ -152,14 +152,15 @@ class ParallelModel extends Model implements CrawlConstants
     function networkGetCrawlItems($lookups, $machine_urls)
     {
         //Set-up network request
-        $num_machines = count($machine_urls);
         $machines = array();
         foreach($lookups as $lookup => $lookup_info) {
             if(count($lookup_info) == 2 && $lookup_info[0][0] === 'h') {
                 list($url, $index_name) = $lookup_info;
-                $index = calculatePartition($url, $num_machines, 
+                $machines_at_time = $this->getMachinesTimestamp($index_name, 
+                    $machine_urls);
+                $index = calculatePartition($url, count($machines_at_time), 
                     "UrlParser::getHost");
-                $machines[$index] = $machine_urls[$index];
+                $machines[$index] = $machines_at_time[$index];
             } else {
                 foreach($lookup_info as $lookup_item) {
                     if(count($lookup_item) == 5) {
@@ -174,7 +175,7 @@ class ParallelModel extends Model implements CrawlConstants
         }
         //Make request
         $page_set = $this->execMachines("getCrawlItems", 
-            $machines, serialize($lookups), $num_machines);
+            $machines, serialize($lookups), count($machines));
         //Aggregate results
         $summaries = array();
         $elapsed_times = array();
@@ -217,6 +218,25 @@ class ParallelModel extends Model implements CrawlConstants
             AnalyticsManager::set("SUMMARY_TIMES", serialize($elapsed_times));
         }
         return $summaries;
+    }
+
+    function getMachinesTimestamp($timestamp, $machine_urls)
+    {
+        static $machines = array();
+        if(isset($machines[$timestamp])) {
+            return $machines[$timestamp];
+        }
+        $cache_file = CRAWL_DIR."/cache/".self::network_base_name.
+            $timestamp.".txt";
+        if(file_exists($cache_file)) {
+            $info = unserialize(file_get_contents($cache_file));
+        }
+        if(isset($info["MACHINE_URLS"])) {
+            $machines[$timestamp] = $info["MACHINE_URLS"];
+        } else {
+            $machines[$timestamp] = array(NAME_SERVER);
+        }
+        return $machines[$timestamp];
     }
 
     /**
