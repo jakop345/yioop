@@ -1645,7 +1645,7 @@ class QueueServer implements CrawlConstants, Join
     {
         $sites = & $this->getDataArchiveFileData($file);
 
-        crawlLog("...Updating Delayed Hosts Array ...");
+        crawlLog("...Updating Delayed Hosts Array Queue ...");
         $start_time = microtime();
         if(isset($sites[self::SCHEDULE_TIME])) {
             if(isset($this->waiting_hosts[$sites[self::SCHEDULE_TIME]])) {
@@ -1660,7 +1660,7 @@ class QueueServer implements CrawlConstants, Join
         }
         crawlLog(" time: ".(changeInMicrotime($start_time)));
 
-        crawlLog("...Seen Urls ...");
+        crawlLog("...Remove Seen Urls Queue...");
         $start_time = microtime();
 
         if(isset($sites[self::HASH_SEEN_URLS])) {
@@ -1676,17 +1676,18 @@ class QueueServer implements CrawlConstants, Join
 
         crawlLog(" time: ".(changeInMicrotime($start_time)));
 
-        crawlLog("... To Crawl ...");
+        crawlLog("... Queue To Crawl ...");
         $start_time = microtime();
         
         if(isset($sites[self::TO_CRAWL])) {
 
-            crawlLog("A.. Delete previously seen urls from add set");
+            crawlLog("A.. Queue delete previously seen urls from add set");
             $to_crawl_sites = & $sites[self::TO_CRAWL];
             $this->deleteSeenUrls($to_crawl_sites);
             crawlLog(" time: ".(changeInMicrotime($start_time)));
 
-            crawlLog("B..Insert unseen robots.txt urls;adjust changed weights");
+            crawlLog("B.. Queue insert unseen robots.txt urls;".
+                "adjust changed weights");
             $start_time = microtime();
 
             $added_urls = array();
@@ -1697,7 +1698,7 @@ class QueueServer implements CrawlConstants, Join
             if($this->page_recrawl_frequency > 0 &&
                 $this->web_queue->getUrlFilterAge() > 
                 86400 * $this->page_recrawl_frequency) {
-                crawlLog("Emptying page url filter!!!!!!");
+                crawlLog("Emptying queue page url filter!!!!!!");
                 $this->web_queue->emptyUrlFilter();
             }
             foreach($to_crawl_sites as $triple) {
@@ -1749,7 +1750,7 @@ class QueueServer implements CrawlConstants, Join
         }
         crawlLog(" time: ".(changeInMicrotime($start_time)));
 
-        crawlLog("Done Schedule Processing File: $file");
+        crawlLog("Done queue schedule file: $file");
 
         unlink($file);
 
