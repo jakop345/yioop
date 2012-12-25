@@ -2336,8 +2336,8 @@ class AdminController extends Controller implements CrawlConstants
                 $data['WORK_DIRECTORY'] = $dir;
                 return $data;
             }
-            if(strcmp($dir."/", BASE_DIR) == 0 || 
-                strstr($dir, BASE_DIR)) {
+            
+            if(strstr($dir."/", BASE_DIR."/")) {
                 $data['PROFILE'] = false;
                 $data["MESSAGE"] = 
                     tl('admin_controller_configure_diff_base_dir');
@@ -2619,7 +2619,6 @@ class AdminController extends Controller implements CrawlConstants
         $data['SCRIPT'] .= 
             "elt('locale').onchange = ".
             "function () { elt('configureProfileForm').submit();};\n";
-
         return $data;
     }
 }
