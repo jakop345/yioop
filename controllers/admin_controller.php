@@ -747,7 +747,7 @@ class AdminController extends Controller implements CrawlConstants
             switch($_REQUEST['arg'])
             {
                 case "start":
-                    $this->startCrawl(&$data, $machine_urls);
+                    $this->startCrawl($data, $machine_urls);
                 break;
 
                 case "stop":
