@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,10 +27,10 @@
  * @subpackage element
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
- 
+
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
@@ -51,7 +51,7 @@ class ActivityElement extends Element
      *
      * @param array $data  available activities and CSRF token
      */
-    public function render($data) 
+    function render($data)
     {
     ?>
         <div class="frame activitymenu">
@@ -69,7 +69,7 @@ class ActivityElement extends Element
                 foreach($activities as $activity) {
                     $out_activities[$base_url .
                         $activity['METHOD_NAME'] ]= $activity['ACTIVITY_NAME'];
-                    if(strcmp($activity['ACTIVITY_NAME'], 
+                    if(strcmp($activity['ACTIVITY_NAME'],
                         $data['CURRENT_ACTIVITY']) == 0) {
                         $current = $base_url .$activity['METHOD_NAME'];
                     }

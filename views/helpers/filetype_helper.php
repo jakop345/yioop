@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage helper
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -42,7 +42,7 @@ require_once BASE_DIR."/views/helpers/helper.php";
  * This is a helper class is used to handle
  * used to render the filetype based on
  * the supplied mimetype. It is mainly
- * intended to be used in outputing 
+ * intended to be used in outputing
  * webpage results for non html pages.
  * When a page is downloaded the mime type
  * of the page is obtained from the server.
@@ -64,7 +64,7 @@ class FiletypeHelper extends Helper
      *  @param string $mime_type   the mime type that should
      *  be output as a file extention
      */
-    public function render($mime_type)
+    function render($mime_type)
     {
         switch($mime_type)
         {

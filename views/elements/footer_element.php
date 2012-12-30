@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage element
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -51,16 +51,16 @@ class FooterElement extends Element
      *  @param array $data many data from the controller for the footer
      *      (so far none)
      */
-    public function render($data)
+    function render($data)
     {
     ?>
 
             <div>
-            - <a href="<?php e($_SERVER["PATH_INFO"]); ?>/blog.php"><?php 
+            - <a href="<?php e($_SERVER["PATH_INFO"]); ?>/blog.php"><?php
             e(tl('footer_element_blog')); ?></a> -
-            <a href="<?php e($_SERVER["PATH_INFO"]); ?>/privacy.php"><?php 
+            <a href="<?php e($_SERVER["PATH_INFO"]); ?>/privacy.php"><?php
             e(tl('footer_element_privacy')); ?></a> -
-            <a href="<?php e($_SERVER["PATH_INFO"]); ?>/bot.php"><?php 
+            <a href="<?php e($_SERVER["PATH_INFO"]); ?>/bot.php"><?php
             e(tl('footer_element_bot')); ?></a> - <?php if(MOBILE) {
                 e('<br /> - ');
             }
@@ -70,8 +70,8 @@ class FooterElement extends Element
             e(tl('footer_element_developed_seek_quarry')); ?></a> -
             </div>
             <div>
-            (c) 2012 Yioop! - <a href="http://www.yioop.com/"><?php
-            e(tl('footer_element_php_search_engine')); 
+            (c) 2013 Yioop! - <a href="http://www.yioop.com/"><?php
+            e(tl('footer_element_php_search_engine'));
             ?></a>
             </div>
     <?php

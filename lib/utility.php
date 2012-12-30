@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -29,7 +29,7 @@
  * @subpackage library
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
@@ -43,12 +43,12 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @param int $start starting offset
  * @param int $length number of bytes to copy
  */
-function charCopy($source, &$destination, $start, $length) 
+function charCopy($source, &$destination, $start, $length)
 {
     $endk = $length - 1;
     $end = $start + $endk;
     for($j = $end, $k = $endk; $j >= $start; $j--, $k--) {
-        $destination[(int)$j] = $source[(int)$k]; 
+        $destination[(int)$j] = $source[(int)$k];
     }
 }
 
@@ -58,7 +58,7 @@ function charCopy($source, &$destination, $start, $length)
  *  @param int $pos_int integer to encode
  *  @return string a string of 1-5 chars depending on how bit $pos_int was
  */
-function vByteEncode($pos_int) 
+function vByteEncode($pos_int)
 {
     $result = chr($pos_int & 127);
     $pos_int >>= 7;
@@ -76,7 +76,7 @@ function vByteEncode($pos_int)
  *  @param int $offset byte offset into string when var int stored
  *  @return int the decoded integer
  */
-function vByteDecode(&$str, &$offset) 
+function vByteDecode(&$str, &$offset)
 {
     $pos_int = ord($str[$offset] & 127) ;
     $shift = 7;
@@ -97,7 +97,7 @@ function vByteDecode(&$str, &$offset)
  * @param array integer positions word occurred in that doc
  * @param bool $delta if true then stores the position_list as a sequence of
  *      differences (a delta list)
- * @return string a modified9 (our compression scheme) packed 
+ * @return string a modified9 (our compression scheme) packed
  *      string containing this info.
  */
 function packPosting($doc_index, $position_list, $delta = true)
@@ -111,7 +111,7 @@ function packPosting($doc_index, $position_list, $delta = true)
         $delta_list[0]++;
     }
 
-    if( $doc_index >= (2 << 14) && isset($delta_list[0]) 
+    if( $doc_index >= (2 << 14) && isset($delta_list[0])
         && $delta_list[0] < (2 << 9)  && $doc_index < (2 << 17)) {
         $delta_list[0] += (((2 << 17) + $doc_index) << 9);
     } else {
@@ -127,12 +127,12 @@ function packPosting($doc_index, $position_list, $delta = true)
  * a doc_index of a document in the shard, and uses the low order byte
  * to computer a number of occurences of a word in that document.
  *
- * @param string $posting a string containing 
+ * @param string $posting a string containing
  *      a doc index position list pair coded encoded using modified9
  * @param int &offset a offset into the string where the modified9 posting
  *      is encoded
- * @param bool $dedelta if true then assumes the list is a sequence of 
- *      differences (a delta list) and undoes the difference to get 
+ * @param bool $dedelta if true then assumes the list is a sequence of
+ *      differences (a delta list) and undoes the difference to get
  *      the original sequence
  * @param bool $exact whether the supplied string is exactly one posting
  * @return array consisting of integer doc_index and a subarray consisting
@@ -165,7 +165,7 @@ function unpackPosting($posting, &$offset, $dedelta = true, $exact = false)
 
 /**
  * Computes the difference of a list of integers.
- * i.e., (a1, a2, a3, a4) becomes (a1, a2-a1, a3-a2, a4-a3) 
+ * i.e., (a1, a2, a3, a4) becomes (a1, a2-a1, a3-a2, a4-a3)
  *
  * @param array $list a nondecreasing list of integers
  * @return array the corresponding list of differences of adjacent
@@ -214,7 +214,7 @@ function deDeltaList(&$delta_list)
  * the format of the current word. There are nine possibilities:
  * 00 - 1 28 bit number, 01 - 2 14 bit numbers, 10 - 3 9 bit numbers,
  * 1100 - 4 6 bit numbers, 1101 - 5 5 bit numbers, 1110 6 4 bit numbers,
- * 11110 - 7 3 bit numbers, 111110 - 12 2 bit numbers, 111111 - 24 1 bit 
+ * 11110 - 7 3 bit numbers, 111110 - 12 2 bit numbers, 111111 - 24 1 bit
  * numbers.
  *
  * @param array $list a list of positive integers satsfying above
@@ -242,7 +242,7 @@ function encodeModified9($list)
             $pack_list[] = $elt;
             $cnt++;
         } else {
-            $list_string .= packListModified9($continue_bits, 
+            $list_string .= packListModified9($continue_bits,
                 $MOD9_PACK_POSSIBILITIES[$old_len], $pack_list);
             $continue_bits = 2;
             $pack_list = array($elt);
@@ -257,7 +257,7 @@ function encodeModified9($list)
         }
     }
     $continue_bits = ($continue_bits == 3) ? 0 : 1;
-    $list_string .= packListModified9($continue_bits, 
+    $list_string .= packListModified9($continue_bits,
         $MOD9_PACK_POSSIBILITIES[$cur_len], $pack_list);
 
     return $list_string;
@@ -315,7 +315,7 @@ function decodeModified9($input_string, &$offset, $exact = false)
             return false;
         }
         $end += 4;
-        while ($end < $len && 
+        while ($end < $len &&
                 $flag_bits >= $continue_threshold) {
             $flag_bits = (ord($input_string[$end]) & $flag_mask);
             $end += 4;
@@ -324,7 +324,7 @@ function decodeModified9($input_string, &$offset, $exact = false)
         $offset = $end;
     }
 
-    return call_user_func_array( "array_merge", 
+    return call_user_func_array( "array_merge",
         array_map("unpackListModified9", unpack("N*", $post_string)));
 }
 
@@ -497,7 +497,7 @@ function packFloat($my_float)
 }
 
 /**
- * Converts a string to string where each char has been replaced by its 
+ * Converts a string to string where each char has been replaced by its
  * hexadecimal equivalent
  *
  * @param string $str what we want rewritten in hex
@@ -513,7 +513,7 @@ function toHexString($str)
 }
 
 /**
- * Converts a string to string where each char has been replaced by its 
+ * Converts a string to string where each char has been replaced by its
  * binary equivalent
  *
  * @param string $str what we want rewritten in hex
@@ -562,7 +562,7 @@ function metricToInt($metric_num)
  *
  *  @param string $msg message to log
  *  @param string $lname name of log file in the LOG_DIR directory, rotated logs
- *      will also use this as their basename followed by a number followed by 
+ *      will also use this as their basename followed by a number followed by
  *      bz2 (since they are bzipped).
  */
 
@@ -597,7 +597,7 @@ function crawlLog($msg, $lname = NULL)
                     rename("$logfile.".($i-1).".bz2", "$logfile.$i.bz2");
                 }
             }
-            file_put_contents("$logfile.0.bz2", 
+            file_put_contents("$logfile.0.bz2",
                 bzcompress(file_get_contents($logfile)));
             unlink($logfile);
         }
@@ -623,7 +623,7 @@ function crawlLog($msg, $lname = NULL)
  *  @param bool $raw whether to leave raw or base 64 encode
  *  @return string the hash of $string
  */
-function crawlHash($string, $raw = false) 
+function crawlHash($string, $raw = false)
 {
     $pre_hash = md5($string, true);
 
@@ -639,7 +639,7 @@ function crawlHash($string, $raw = false)
         $hash = $combine;
     }
 
-    return $hash; 
+    return $hash;
 }
 
 /**
@@ -647,13 +647,13 @@ function crawlHash($string, $raw = false)
  * so doesn't get confused in urls or DBs
  *
  *  @param string $string a hash to base64 encode
- *  @return string the encoded hash 
+ *  @return string the encoded hash
  */
 function base64Hash($string)
 {
     $hash = rtrim(base64_encode($string), "=");
     $hash = str_replace("/", "_", $hash);
-    $hash = str_replace("+", "-" , $hash); 
+    $hash = str_replace("+", "-" , $hash);
 
     return $hash;
 }
@@ -663,7 +663,7 @@ function base64Hash($string)
  * Decodes a crawl hash number from base64 to raw ASCII
  *
  *  @param string $base64 a hash to decode
- *  @return string the decoded hash 
+ *  @return string the decoded hash
  */
 function unbase64Hash($base64)
 {
@@ -678,7 +678,7 @@ function unbase64Hash($base64)
 
 /**
  * Encodes a string in a format suitable for post data
- * (mainly, base64, but str_replace data that might mess up post in result) 
+ * (mainly, base64, but str_replace data that might mess up post in result)
  *
  * @param string $str string to encode
  * @return string encoded string
@@ -707,13 +707,13 @@ function webdecode($str)
 }
 
 /**
- * The search engine project's variation on the Unix crypt function using the 
+ * The search engine project's variation on the Unix crypt function using the
  * crawlHash function instead of DES
  *
  * The crawlHash function is used to encrypt passwords stored in the database
  *
  * @param string $string the string to encrypt
- * @param int $salt salt value to be used (needed to verify if a password is 
+ * @param int $salt salt value to be used (needed to verify if a password is
  *      valid)
  * @return string the crypted string where crypting is done using crawlHash
  */
@@ -743,10 +743,10 @@ function crawlCrypt($string, $salt = NULL)
  *      applied to input before deciding the responsible queue_server.
  *      For example, if input was a url we might want to get the host
  *      before deciding on the queue_server
- * @return array the reduced table that the $instance queue_server is 
+ * @return array the reduced table that the $instance queue_server is
  *      responsible for
  */
-function partitionByHash($table, $field, $num_partition, $instance, 
+function partitionByHash($table, $field, $num_partition, $instance,
     $callback = NULL)
 {
     $out_table = array();
@@ -802,7 +802,7 @@ function calculatePartition($input, $num_partition, $callback = NULL)
  * @param string $end ending time with microseconds, if null use current time
  * @return float time difference in seconds
  */
-function changeInMicrotime($start, $end = NULL) 
+function changeInMicrotime($start, $end = NULL)
 {
     if( !$end ) {
         $end= microtime();
@@ -811,11 +811,11 @@ function changeInMicrotime($start, $end = NULL)
     list($end_microseconds, $end_seconds) = explode(" ", $end);
 
     $change_in_seconds = intval($end_seconds) - intval($start_seconds);
-    $change_in_microseconds = 
+    $change_in_microseconds =
         floatval($end_microseconds) - floatval($start_microseconds);
 
     return floatval( $change_in_seconds ) + $change_in_microseconds;
-} 
+}
 
 
 /**
@@ -825,7 +825,7 @@ function changeInMicrotime($start, $end = NULL)
  *  @param string $value  a number followed by a legal CSS unit
  *  @return int a number in pixels
  */
-function convertPixels($value) 
+function convertPixels($value)
 {
     $len = strlen($value);
     if($len < 2) return intval($value);
@@ -869,7 +869,7 @@ function convertPixels($value)
 // callbacks for Model::traverseDirectory
 
 /**
- * This is a callback function used in the process of recursively deleting a 
+ * This is a callback function used in the process of recursively deleting a
  * directory
  *
  * @param string $file_or_dir the filename or directory name to be deleted
@@ -885,7 +885,7 @@ function deleteFileOrDir($file_or_dir)
 }
 
 /**
- * This is a callback function used in the process of recursively chmoding to 
+ * This is a callback function used in the process of recursively chmoding to
  * 777 all files in a folder
  *
  * @param string $file the filename or directory name to be chmod
@@ -932,7 +932,7 @@ function orderCallback($word_doc_a, $word_doc_b, $order_field = NULL)
     if($order_field !== NULL) {
         $field = $order_field;
     }
-    return ((float)$word_doc_a[$field] > 
+    return ((float)$word_doc_a[$field] >
         (float)$word_doc_b[$field]) ? -1 : 1;
 }
 
@@ -953,14 +953,14 @@ function rorderCallback($word_doc_a, $word_doc_b, $order_field = NULL)
     if($order_field !== NULL) {
         $field = $order_field;
     }
-    return ((float)$word_doc_a[$field] > 
+    return ((float)$word_doc_a[$field] >
         (float)$word_doc_b[$field]) ? 1 : -1;
 }
 
 /**
  * Callback to check if $a is less than $b
  *
- * Used to help sort document results returned in PhraseModel called 
+ * Used to help sort document results returned in PhraseModel called
  * in IndexArchiveBundle
  *
  * @param float $a first value to compare
@@ -979,7 +979,7 @@ function lessThan($a, $b) {
 /**
  *  Callback to check if $a is greater than $b
  *
- * Used to help sort document results returned in PhraseModel called in 
+ * Used to help sort document results returned in PhraseModel called in
  * IndexArchiveBundle
  *
  * @param float $a first value to compare

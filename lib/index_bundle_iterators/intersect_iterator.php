@@ -3,7 +3,7 @@
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012 Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013 Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage iterator
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -97,7 +97,7 @@ class IntersectIterator extends IndexBundleIterator
     var $quote_positions;
 
     /**
-     * A weighting factor to multiply with each doc SCORE returned from this 
+     * A weighting factor to multiply with each doc SCORE returned from this
      * iterator
      * @var float
      */
@@ -192,7 +192,7 @@ class IntersectIterator extends IndexBundleIterator
             $len_lists[0] = count($docs[$key][self::POSITION_LIST]);
             for($i = 1; $i < $this->num_words; $i++) {
                 if($this->word_iterator_map[$i] < $i) {
-                    $position_lists[] = 
+                    $position_lists[] =
                         $position_lists[$this->word_iterator_map[$i]];
                     $docs[$key][self::RELEVANCE] +=
                         $docs[$key][self::RELEVANCE];
@@ -259,8 +259,8 @@ class IntersectIterator extends IndexBundleIterator
     }
 
     /**
-     * Auxiliary function for @see checkQuotes used to check if quoted terms 
-     * in search query appear exactly in the position lists of the current 
+     * Auxiliary function for @see checkQuotes used to check if quoted terms
+     * in search query appear exactly in the position lists of the current
      * document
      *
      * @param array $position_lists of search terms in the current document
@@ -279,7 +279,7 @@ class IntersectIterator extends IndexBundleIterator
         $list_index = key($qp);
         $len = $qp[$list_index];
         unset($qp[$list_index]);
-        if(strcmp($len, "*") == 0) { 
+        if(strcmp($len, "*") == 0) {
             return $this->checkQuote($position_lists, $cur_pos, "*", $qp);
         }
         $list = $position_lists[$list_index];
@@ -297,7 +297,7 @@ class IntersectIterator extends IndexBundleIterator
                 return -1;
             }
             if($is_star || $elt == $next_pos) {
-                $check = $this->checkQuote($position_lists, $elt, 
+                $check = $this->checkQuote($position_lists, $elt,
                     $elt + $len, $qp);
                 if($check != 0) return $check;
                 $next_pos = $elt + $len;
@@ -332,7 +332,7 @@ class IntersectIterator extends IndexBundleIterator
             if(isset($min)) {
                 array_push($interval, array($min, $i));
                 for($j = 0; $j < $num_words; $j++) {
-                    if(isset($position_list[$j][0]) && 
+                    if(isset($position_list[$j][0]) &&
                         $min == $position_list[$j][0]) {
                         array_shift($position_list[$j]);
                     }

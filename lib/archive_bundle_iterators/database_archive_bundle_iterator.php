@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,22 +27,22 @@
  * @subpackage iterator
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
-/** 
+/**
  *Loads base class for iterating
  */
 require_once BASE_DIR.
     '/lib/archive_bundle_iterators/archive_bundle_iterator.php';
 
 /**
- * Used to iterate through the records of a database stored in a 
- * DatabaseArchiveBundle folder. Database is a collection of tables with 
- * various rows in each table. Iteration would be for the purpose of making 
+ * Used to iterate through the records of a database stored in a
+ * DatabaseArchiveBundle folder. Database is a collection of tables with
+ * various rows in each table. Iteration would be for the purpose of making
  * an index of each of these records.
  *
  * @author Tanmayee Potluri
@@ -50,11 +50,11 @@ require_once BASE_DIR.
  * @subpackage iterator
  * @see WebArchiveBundle
  */
-class DatabaseArchiveBundleIterator extends ArchiveBundleIterator 
+class DatabaseArchiveBundleIterator extends ArchiveBundleIterator
     implements CrawlConstants
 {
     /**
-     * The path to the directory containing the archive partitions to be 
+     * The path to the directory containing the archive partitions to be
      * iterated over.
      * @var string
      */
@@ -65,20 +65,20 @@ class DatabaseArchiveBundleIterator extends ArchiveBundleIterator
      */
     var $result_dir;
     /**
-     * The path to the directory where all html files are stored 
+     * The path to the directory where all html files are stored
      * and used to point to.
      * @var string
      */
     var $index_dir;
 
     /**
-     * The part of the path to the directory where all html files are stored 
+     * The part of the path to the directory where all html files are stored
      * and used to point to.
      * @var string
      */
     var $path_for_html_files;
     /**
-     *  current number of record in the current database 
+     *  current number of record in the current database
      *  @var int
      */
     var $current_page_num;
@@ -121,12 +121,12 @@ class DatabaseArchiveBundleIterator extends ArchiveBundleIterator
      *  Array of database connection details to connect to database
      *  @var array
      */
-    var $databaseConnectionsArray; 
+    var $databaseConnectionsArray;
     /**
      *  Host name for the database
      *  @var string
      */
-    var $host; 
+    var $host;
     /**
      *  User Name for the localhost
      *  @var string
@@ -143,7 +143,7 @@ class DatabaseArchiveBundleIterator extends ArchiveBundleIterator
      */
     var $database;
     /**
-     *  Query to retrieve the records to be indexed from the database 
+     *  Query to retrieve the records to be indexed from the database
      *  @var array
      */
     var $query;
@@ -155,7 +155,7 @@ class DatabaseArchiveBundleIterator extends ArchiveBundleIterator
 
     /**
      * Creates a database archive iterator with the given parameters.
-     * @param string $iterate_timestamp timestamp of the arc archive bundle to 
+     * @param string $iterate_timestamp timestamp of the arc archive bundle to
      *      iterate  over the pages of
      * @param string $result_timestamp timestamp of the arc archive bundle
      *      results are being stored in
@@ -187,7 +187,7 @@ class DatabaseArchiveBundleIterator extends ArchiveBundleIterator
                (file_get_contents(
                "{$this->iterate_dir}/".self::DATABASE_CONNECTION_DETAILS_FILE));
             file_put_contents("{$this->index_dir}/database_connection_details".
-                $this->result_timestamp.".txt", 
+                $this->result_timestamp.".txt",
                 serialize($database_connection_details_info));
             @unlink("{$this->iterate_dir}/".
                 self::DATABASE_CONNECTION_DETAILS_FILE);
@@ -209,10 +209,10 @@ class DatabaseArchiveBundleIterator extends ArchiveBundleIterator
      * Estimates the important of the site according to the weighting of
      * the particular archive iterator
      * @param $site an associative array containing info about a web page
-     * @return bool false we assume arc files were crawled according to 
+     * @return bool false we assume arc files were crawled according to
      *      OPIC and so we use the default doc_depth to estimate page importance
      */
-    function weight(&$site) 
+    function weight(&$site)
     {
         return false;
     }
@@ -228,7 +228,7 @@ class DatabaseArchiveBundleIterator extends ArchiveBundleIterator
     }
 
     /**
-     * Saves the current state so that a new instantiation can pick up just 
+     * Saves the current state so that a new instantiation can pick up just
      * after the last batch of pages extracted.
      */
     function saveCheckpoint($info = array())
@@ -241,7 +241,7 @@ class DatabaseArchiveBundleIterator extends ArchiveBundleIterator
     }
 
     /**
-     * Restores state from a previous instantiation, after the last batch of 
+     * Restores state from a previous instantiation, after the last batch of
      * pages extracted.
      */
     function restoreCheckpoint()
@@ -287,7 +287,7 @@ class DatabaseArchiveBundleIterator extends ArchiveBundleIterator
         }
     }
     /**
-     * Gets the next at most $num many records from the iterator. It might 
+     * Gets the next at most $num many records from the iterator. It might
      * return less than $num many documents if the end of the bundle is reached.
      * @param int $num number of docs to get
      * @return array associative arrays for $num pages
@@ -306,12 +306,12 @@ class DatabaseArchiveBundleIterator extends ArchiveBundleIterator
                 $pages[] = $page;
             }
         }
-     
+
         $this->saveCheckpoint();
         return $pages;
     }
 
-    
+
     /**
      * Gets the next record from the iterator
      * @return array associative array for record
@@ -369,7 +369,7 @@ class DatabaseArchiveBundleIterator extends ArchiveBundleIterator
         $site[self::WEIGHT] = 1;
 
         return $site;
-        
+
     }
 }
 ?>

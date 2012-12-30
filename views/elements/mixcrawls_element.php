@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage element
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -46,12 +46,12 @@ class MixcrawlsElement extends Element
 {
 
     /**
-     * Draw form to start a new crawl, has div place holder and ajax code to 
+     * Draw form to start a new crawl, has div place holder and ajax code to
      * get info about current crawl
      *
      * @param array $data  form about about a crawl such as its description
      */
-    public function render($data) 
+    function render($data)
     {
         $base_url = "?c=admin&amp;a=mixCrawls&amp;".CSRF_TOKEN."=".
             $data[CSRF_TOKEN]."&amp;arg=";
@@ -59,22 +59,22 @@ class MixcrawlsElement extends Element
         <div class="currentactivity">
         <h2><?php e(tl('mixcrawls_element_make_mix'))?></h2>
         <form id="mixForm" method="get" action=''>
-        <input type="hidden" name="c" value="admin" /> 
-        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php 
-            e($data[CSRF_TOKEN]); ?>" /> 
+        <input type="hidden" name="c" value="admin" />
+        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
+            e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="mixCrawls" />
         <input type="hidden" name="arg" value="createmix" />
         <?php if(isset($data['available_mixes'])) { ?>
         <?php } ?>
-        <div class="topmargin"><label for="mix-name"><?php 
-            e(tl('mixcrawls_element_mix_name')); ?></label> 
-            <input type="text" id="mix-name" name="MIX_NAME" 
-                value="" maxlength="80" 
+        <div class="topmargin"><label for="mix-name"><?php
+            e(tl('mixcrawls_element_mix_name')); ?></label>
+            <input type="text" id="mix-name" name="MIX_NAME"
+                value="" maxlength="80"
                     class="widefield"/>
-           <button class="buttonbox"  type="submit"><?php 
+           <button class="buttonbox"  type="submit"><?php
                 e(tl('mixcrawls_element_create_button')); ?></button></div>
         </form>
-        <?php if(isset($data['available_mixes']) && 
+        <?php if(isset($data['available_mixes']) &&
             count($data['available_mixes']) > 0) { ?>
         <h2><?php e(tl('mixcrawls_element_available_mixes'))?></h2>
         <table class="mixestable">
@@ -110,24 +110,24 @@ class MixcrawlsElement extends Element
                     e(tl('mixcrawls_view_no_components'));
                 }
             ?></td>
-            <td><a href="<?php e($base_url); ?>editmix&timestamp=<?php 
-                e($mix['MIX_TIMESTAMP']); ?>"><?php 
+            <td><a href="<?php e($base_url); ?>editmix&timestamp=<?php
+                e($mix['MIX_TIMESTAMP']); ?>"><?php
                 e(tl('mixcrawls_view_edit'));?></a></td>
             <td>
-            <?php 
+            <?php
             if( $mix['MIX_TIMESTAMP'] != $data['CURRENT_INDEX']) { ?>
-                <a href="<?php e($base_url); ?>index&timestamp=<?php 
-                    e($mix['MIX_TIMESTAMP']); ?>"><?php 
+                <a href="<?php e($base_url); ?>index&timestamp=<?php
+                    e($mix['MIX_TIMESTAMP']); ?>"><?php
                     e(tl('mixcrawls_set_index')); ?></a>
-            <?php 
+            <?php
             } else { ?>
                 <?php e(tl('mixcrawl_search_index')); ?>
             <?php
             }
             ?>
             </td>
-            <td><a href="<?php e($base_url); ?>deletemix&timestamp=<?php 
-                e($mix['MIX_TIMESTAMP']); ?>"><?php 
+            <td><a href="<?php e($base_url); ?>deletemix&timestamp=<?php
+                e($mix['MIX_TIMESTAMP']); ?>"><?php
                 e(tl('mixcrawls_view_delete'));?></a></td>
 
             </tr>
@@ -136,7 +136,7 @@ class MixcrawlsElement extends Element
         ?></table>
         <?php } ?>
         </div>
-    <?php 
+    <?php
     }
 }
 ?>

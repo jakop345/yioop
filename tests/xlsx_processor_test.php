@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage test
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
@@ -39,7 +39,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 require_once BASE_DIR."/lib/processors/xlsx_processor.php";
 
 /**
- * Used to test that the XlsxProcessor class provides the basic functionality 
+ * Used to test that the XlsxProcessor class provides the basic functionality
  * of getting the tile, description, languages and links
  *
  * @author Tarun Ramaswamy
@@ -52,7 +52,7 @@ class XlsxProcessorTest extends UnitTest implements CrawlConstants
      * sets up the initial content for the testcase by extracting
      * it from the xlsx file
      */
-    public function setUp()
+    function setUp()
     {
         $file_name="test_files/test.xlsx";
         $page=file_get_contents($file_name);
@@ -66,54 +66,54 @@ class XlsxProcessorTest extends UnitTest implements CrawlConstants
         $this->test_objects['links'] = $summary[self::LINKS];
     }
 
-    /** 
+    /**
      * Can be used for clenup activity
      */
-    public function tearDown()
+    function tearDown()
     {
-        
+
     }
 
     /**
-     * Tests that the title is correct 
+     * Tests that the title is correct
      */
-    public function titleTestCase()
+    function titleTestCase()
     {
 
         $title = "SampleTitle";
-        
+
         $this->assertEqual($this->test_objects['title'], $title,
             "check for title");
     }
 
     /**
-     * Tests that the description is correct 
+     * Tests that the description is correct
      */
-    public function descriptionTestCase()
+    function descriptionTestCase()
     {
 
         $description = "This is a sample descriptionlink1link2";
-        
+
         $this->assertEqual($this->test_objects['description'], $description,
             "check for description");
     }
-    
+
     /**
-     * Tests that the language is correct 
+     * Tests that the language is correct
      */
-    public function languageTestCase()
+    function languageTestCase()
     {
 
         $language = "en";
-        
+
         $this->assertEqual($this->test_objects['language'], $language,
             "check for language");
     }
-    
+
     /**
-     * Tests that the links are correct 
+     * Tests that the links are correct
      */
-    public function linksTestCase()
+    function linksTestCase()
     {
 
         $sites = array();

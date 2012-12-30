@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,13 +27,13 @@
  * @subpackage iterator
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
-/** 
+/**
  *Loads base class for iterating
  */
 require_once BASE_DIR.
@@ -41,8 +41,8 @@ require_once BASE_DIR.
 
 /**
  * Used to iterate through the records of a collection of arc files stored in
- * a WebArchiveBundle folder. Arc is the file format of the Internet Archive 
- * http://www.archive.org/web/researcher/ArcFileFormat.php. Iteration would be 
+ * a WebArchiveBundle folder. Arc is the file format of the Internet Archive
+ * http://www.archive.org/web/researcher/ArcFileFormat.php. Iteration would be
  * for the purpose making an index of these records
  *
  * @author Chris Pollett
@@ -50,11 +50,11 @@ require_once BASE_DIR.
  * @subpackage iterator
  * @see WebArchiveBundle
  */
-class ArcArchiveBundleIterator extends ArchiveBundleIterator 
+class ArcArchiveBundleIterator extends ArchiveBundleIterator
     implements CrawlConstants
 {
     /**
-     * The path to the directory containing the archive partitions to be 
+     * The path to the directory containing the archive partitions to be
      * iterated over.
      * @var string
      */
@@ -70,7 +70,7 @@ class ArcArchiveBundleIterator extends ArchiveBundleIterator
      */
     var $num_partitions;
     /**
-     *  Counting in glob order for this arc archive bundle directory, the 
+     *  Counting in glob order for this arc archive bundle directory, the
      *  current active file number of the arc file being process.
      *
      *  @var int
@@ -100,7 +100,7 @@ class ArcArchiveBundleIterator extends ArchiveBundleIterator
     /**
      * Creates an arc archive iterator with the given parameters.
      *
-     * @param string $iterate_timestamp timestamp of the arc archive bundle to 
+     * @param string $iterate_timestamp timestamp of the arc archive bundle to
      *      iterate  over the pages of
        @param string $iterate_dir
      * @param string $result_timestamp timestamp of the arc archive bundle
@@ -115,7 +115,7 @@ class ArcArchiveBundleIterator extends ArchiveBundleIterator
         $this->result_timestamp = $result_timestamp;
         $this->result_dir = $result_dir;
         $this->partitions = array();
-        foreach(glob("{$this->iterate_dir}/*.arc.gz") as $filename) { 
+        foreach(glob("{$this->iterate_dir}/*.arc.gz") as $filename) {
             $this->partitions[] = $filename;
         }
         $this->num_partitions = count($this->partitions);
@@ -131,10 +131,10 @@ class ArcArchiveBundleIterator extends ArchiveBundleIterator
      * Estimates the important of the site according to the weighting of
      * the particular archive iterator
      * @param $site an associative array containing info about a web page
-     * @return bool false we assume arc files were crawled according to 
+     * @return bool false we assume arc files were crawled according to
      *      OPIC and so we use the default doc_depth to estimate page importance
      */
-    function weight(&$site) 
+    function weight(&$site)
     {
         return false;
     }
@@ -190,7 +190,7 @@ class ArcArchiveBundleIterator extends ArchiveBundleIterator
         return $pages;
     }
 
-    
+
     /**
      * Gets the next doc from the iterator
      * @return array associative array for doc
@@ -206,7 +206,7 @@ class ArcArchiveBundleIterator extends ArchiveBundleIterator
 
             if(!$object = gzread($this->fh, $length + 1)) return NULL;
         } while(substr($page_info, 0, 3) == 'dns' ||
-            substr($page_info, 0, 8) == 'filedesc'); 
+            substr($page_info, 0, 8) == 'filedesc');
                 //ignore dns entries in arc and ignore first record
         $site = array();
         $site[self::URL] = $info_parts[0];

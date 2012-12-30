@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage model
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -37,7 +37,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 require_once BASE_DIR."/models/model.php";
 
 /** Used for the crawlHash function */
-require_once BASE_DIR."/lib/utility.php"; 
+require_once BASE_DIR."/lib/utility.php";
 
 /**
  * This class is used to handle
@@ -47,14 +47,14 @@ require_once BASE_DIR."/lib/utility.php";
  * @package seek_quarry
  * @subpackage model
  */
-class UserModel extends Model 
+class UserModel extends Model
 {
 
 
     /**
      * Just calls the parent class constructor
      */
-    function __construct() 
+    function __construct()
     {
         parent::__construct();
     }
@@ -63,7 +63,7 @@ class UserModel extends Model
     /**
      *  Get a list of admin activities that a user is allowed to perform.
      *  This includes their name and their associated method.
-     *  
+     *
      *  @param string $user_id  id of user to get activities fors
      */
     function getUserActivities($user_id)
@@ -87,7 +87,7 @@ class UserModel extends Model
             " USER_ROLE UR, ROLE_ACTIVITY RA, TRANSLATION T ".
             "WHERE UR.USER_ID = '$user_id' ".
             "AND UR.ROLE_ID=RA.ROLE_ID AND T.TRANSLATION_ID=A.TRANSLATION_ID ".
-            "AND RA.ACTIVITY_ID = A.ACTIVITY_ID"; 
+            "AND RA.ACTIVITY_ID = A.ACTIVITY_ID";
 
         $result = $this->db->execute($sql);
         $i = 0;
@@ -98,7 +98,7 @@ class UserModel extends Model
             $sub_sql = "SELECT TRANSLATION AS ACTIVITY_NAME ".
                 "FROM TRANSLATION_LOCALE ".
                 "WHERE TRANSLATION_ID=$id AND ".
-                "LOCALE_ID=$locale_id LIMIT 1"; 
+                "LOCALE_ID=$locale_id LIMIT 1";
                 // maybe do left join at some point
 
             $result_sub =  $this->db->execute($sub_sql);
@@ -107,7 +107,7 @@ class UserModel extends Model
             if($translate) {
                 $activities[$i]['ACTIVITY_NAME'] = $translate['ACTIVITY_NAME'];
             } else {
-                $activities[$i]['ACTIVITY_NAME'] = 
+                $activities[$i]['ACTIVITY_NAME'] =
                     $activities[$i]['IDENTIFIER_STRING'];
             }
             $i++;
@@ -178,8 +178,8 @@ class UserModel extends Model
         $result = $this->db->execute($sql);
         $row = $this->db->fetchArray($result);
         $locale_id = $row['LOCALE_ID'];
-        
-        
+
+
         $sql = "SELECT UR.ROLE_ID AS ROLE_ID, R.NAME AS ROLE_NAME ".
             " FROM  USER_ROLE UR, ROLE R WHERE UR.USER_ID = '$user_id' ".
             " AND R.ROLE_ID = UR.ROLE_ID";
@@ -190,7 +190,7 @@ class UserModel extends Model
             $i++;
         }
         unset($roles[$i]); //last one will be null
-        
+
         return $roles;
 
     }
@@ -205,7 +205,7 @@ class UserModel extends Model
     {
         $this->db->selectDB(DB_NAME);
 
-        $sql = "SELECT USER_NAME FROM USER ORDER BY USER_NAME ASC"; 
+        $sql = "SELECT USER_NAME FROM USER ORDER BY USER_NAME ASC";
         $result = $this->db->execute($sql);
         $usernames = array();
         while($row = $this->db->fetchArray($result)) {
@@ -216,7 +216,7 @@ class UserModel extends Model
 
 
     /**
-     * Add a user with a given username and password to the list of users 
+     * Add a user with a given username and password to the list of users
      * that can login to the admin panel
      *
      * @param string $username  the username of the user to be added
@@ -233,7 +233,7 @@ class UserModel extends Model
 
 
     /**
-     * Deletes a user by username from the list of users that can login to 
+     * Deletes a user by username from the list of users that can login to
      * the admin panel
      *
      * @param string $username  the login name of the user to delete

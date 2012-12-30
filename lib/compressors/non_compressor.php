@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,27 +27,27 @@
  * @subpackage library
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- * Loads the base class if needed 
+ * Loads the base class if needed
  */
 require_once "compressor.php";
 
 /**
- * Loads utility class for packInt/unpackInt 
+ * Loads utility class for packInt/unpackInt
  */
 require_once BASE_DIR."/lib/utility.php";
 
 /**
- *  Implementation of a trivial Compressor. 
+ *  Implementation of a trivial Compressor.
  *
  *  NonCompressor's compress and uncompress filter return the string unchanged
- * 
+ *
  * @author Chris Pollett
  * @package seek_quarry
  * @subpackage library
@@ -57,11 +57,11 @@ class NonCompressor implements Compressor
 
     /** Constructor does nothing
      */
-     
+
     function __construct() {}
 
     /**
-     * Applies the Compressor compress filter to a string before it is inserted 
+     * Applies the Compressor compress filter to a string before it is inserted
      * into a WebArchive. In this case, the filter does nothing.
      *
      * @param string $str  string to apply filter to
@@ -73,7 +73,7 @@ class NonCompressor implements Compressor
     }
 
     /**
-     * Used to unapply the compress filter as when data is read out of a 
+     * Used to unapply the compress filter as when data is read out of a
      * WebArchive. In this case, the unapplying filter does nothing.
      *
      * @param string $str  data read from a string archive
@@ -101,7 +101,7 @@ class NonCompressor implements Compressor
      * the compression algorithm underlying the compressor. Since this
      * compressor doesn't compress we just use unpack
      *
-     * @param string $my_compressed_int the fixed length string containing 
+     * @param string $my_compressed_int the fixed length string containing
      *      the packed int to extract
      * @return int the integer contained in that string
 

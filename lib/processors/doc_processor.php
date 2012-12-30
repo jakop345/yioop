@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage processor
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -39,7 +39,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 require_once BASE_DIR."/lib/processors/text_processor.php";
 
 /**
- * Used to create crawl summary information 
+ * Used to create crawl summary information
  * for binary DOC files
  *
  * @author Chris Pollett
@@ -59,12 +59,12 @@ class DocProcessor extends TextProcessor
      *  @return array  a summary of the contents of the page
      *
      */
-    public function process($page, $url)
+    function process($page, $url)
     {
         $text = "";
         if(is_string($page)) {
             $text = self::extractASCIIText($page);
-        }  
+        }
         if($text == "") {
             $text = $url;
         }
@@ -74,13 +74,13 @@ class DocProcessor extends TextProcessor
         return $summary;
 
     }
-    
+
     /**
      * This is the main text from Word doc extractor
      * A Word Doc consists of a FIB, Piece Table, and
      * DocumentStream. The last contains the text.
      * The piece table is supposed to be used to reconstruct
-     * the order of the text from the DocumentStream and the FIB, file 
+     * the order of the text from the DocumentStream and the FIB, file
      * information block,is supposed to tell us where the piece table is.
      * I am not using any of this for now. I am just brute
      * force looking for the text which I know has to be at a page (256 byte)
@@ -90,7 +90,7 @@ class DocProcessor extends TextProcessor
      * @param string $doc string data of a 2004 or earlier Word doc
      */
     static function extractASCIIText($doc) {
-        $len = strlen($doc); 
+        $len = strlen($doc);
 
         $text = "";
         $boundary_change = 0;
@@ -106,7 +106,7 @@ class DocProcessor extends TextProcessor
 
         for($i = $start_text; $i < $len; $i += 8) {
             if(self::checkAllZeros($doc, $i)) {
-                 $end_text =  $i; 
+                 $end_text =  $i;
                  break;
             }
 
@@ -128,7 +128,7 @@ class DocProcessor extends TextProcessor
         $is_text = true;
         for($i = 0; $i < 8; $i++) {
             $ascii = ord($doc[$pos]);
-            if (!((9 <= $ascii && $ascii <= 13) || 
+            if (!((9 <= $ascii && $ascii <= 13) ||
                 (32 <= $ascii && $ascii <= 126)) ){
                 $is_text = false;
                 break;
@@ -155,8 +155,8 @@ class DocProcessor extends TextProcessor
                 $is_zero = false;
                 break;
             }
-            $pos++; 
-        } 
+            $pos++;
+        }
 
         return $is_zero;
     }

@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage library
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -51,7 +51,7 @@ require_once "utility.php";
 require_once "crawl_constants.php";
 
 /**
- * 
+ *
  * Code used to manage a memory efficient priority queue.
  * Weights for the queue must be flaots. The queue itself is
  * implemented using heaps
@@ -60,7 +60,7 @@ require_once "crawl_constants.php";
  *
  * @package seek_quarry
  * @subpackage library
- */ 
+ */
 class PriorityQueue extends StringArray implements CrawlConstants
 {
     /**
@@ -98,7 +98,7 @@ class PriorityQueue extends StringArray implements CrawlConstants
     var $notifier; // who to call if move an item in queue
 
     /**
-     * Makes a priority queue (implemented as an array heap) with the given 
+     * Makes a priority queue (implemented as an array heap) with the given
      * operating parameters
      *
      * @param string $fname filename to store the data associated with the queue
@@ -110,19 +110,19 @@ class PriorityQueue extends StringArray implements CrawlConstants
      * @param int $save_frequency how often the data in the queue should be
      *      save to disk. (It's default location is RAM)
      */
-    function __construct($fname, $num_values, $value_size, 
-        $min_or_max, $notifier = NULL, 
-        $save_frequency = self::DEFAULT_SAVE_FREQUENCY) 
+    function __construct($fname, $num_values, $value_size,
+        $min_or_max, $notifier = NULL,
+        $save_frequency = self::DEFAULT_SAVE_FREQUENCY)
     {
         $this->num_values = $num_values;
         $this->value_size = $value_size;
 
-        $this->min_or_max = $min_or_max; 
+        $this->min_or_max = $min_or_max;
         $this->count = 0;
 
         $this->notifier = $notifier;
 
-        parent::__construct($fname, $num_values, 
+        parent::__construct($fname, $num_values,
             $value_size + $this->weight_size, $save_frequency);
 
     }
@@ -197,8 +197,8 @@ class PriorityQueue extends StringArray implements CrawlConstants
     }
 
     /**
-     * Add $delta to the $ith element in the priority queue and then adjusts 
-     * the queue to store the heap property 
+     * Add $delta to the $ith element in the priority queue and then adjusts
+     * the queue to store the heap property
      *
      * @param int $i element whose weight should be adjusted
      * @param float $delta how much to change the weight by
@@ -222,7 +222,7 @@ class PriorityQueue extends StringArray implements CrawlConstants
             }
         } else {
             if($this->min_or_max == self::MAX) {
-                $this->percolateDown($i);  
+                $this->percolateDown($i);
             } else {
                 $this->percolateUp($i);
             }
@@ -232,7 +232,7 @@ class PriorityQueue extends StringArray implements CrawlConstants
 
     /**
      * Pretty prints the contents of the queue viewed as an array.
-     * 
+     *
      */
     function printContents()
     {
@@ -292,7 +292,7 @@ class PriorityQueue extends StringArray implements CrawlConstants
     /**
      * If the $ith element in the PriorityQueue violates the heap
      * property with its parent node (children should be of lower
-     * priority than the parent), this function 
+     * priority than the parent), this function
      * tries modify the heap to restore the heap property.
      *
      * @param int $i node to consider in restoring the heap property
@@ -326,7 +326,7 @@ class PriorityQueue extends StringArray implements CrawlConstants
     /**
      * If the ith element in the PriorityQueue violates the heap
      * property with some child node (children should be of lower
-     * priority than the parent), this function 
+     * priority than the parent), this function
      * tries modify the heap to restore the heap property.
      *
      * @param int $i node to consider in restoring the heap property
@@ -344,7 +344,7 @@ class PriorityQueue extends StringArray implements CrawlConstants
 
             $left_child_row = $this->getRow($child);
 
-            if($child < $count) { // this 'if' checks if there is a right child 
+            if($child < $count) { // this 'if' checks if there is a right child
                 $right_child_row = $this->getRow($child + 1);
 
                 if($this->compare($left_child_row[1], $right_child_row[1]) < 0){
@@ -358,7 +358,7 @@ class PriorityQueue extends StringArray implements CrawlConstants
                 $this->putRow($parent, $child_row);
 
             } else {
-                $this->putRow($parent, $start_row); 
+                $this->putRow($parent, $start_row);
                 return;
             }
             $parent = $child;
@@ -370,7 +370,7 @@ class PriorityQueue extends StringArray implements CrawlConstants
 
     /**
      * Computes the difference of the two values $value1 and $value2
-     * 
+     *
      * Which is subtracted from which is determined by whether this is
      * a min_or_max priority queue
      *
@@ -401,7 +401,7 @@ class PriorityQueue extends StringArray implements CrawlConstants
 
         $row = $this->get($i);
 
-        $value = substr($row, 0, $value_size); 
+        $value = substr($row, 0, $value_size);
 
         $pre_weight = substr($row, $value_size, $weight_size);
         $weight_array = unpack("f", $pre_weight);

@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,19 +27,19 @@
  * @subpackage model
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 
-/** 
- * Loads common constants for web crawling, used for index_data_base_name and 
- * schedule_data_base_name 
+/**
+ * Loads common constants for web crawling, used for index_data_base_name and
+ * schedule_data_base_name
  */
 require_once BASE_DIR."/lib/crawl_constants.php";
-/** 
+/**
  * Crawl data is stored in an IndexArchiveBundle, which are managed by the
  * IndexManager so load the definition of this class
  */
@@ -50,18 +50,18 @@ require_once BASE_DIR."/lib/utility.php";
  * Used for keeping track of timing statistics
  */
 require_once BASE_DIR.'/lib/analytics_manager.php';
-/** 
+/**
  * Needed for getHost
  */
 require_once BASE_DIR.'/lib/url_parser.php';
-/** 
+/**
  * Needed to be able to send data via http to remote queue_servers
  */
 require_once BASE_DIR.'/lib/fetch_url.php';
 
 /**
  * Base class of models that need access to data from multiple queue servers
- * Subclasses include @see CrawlModel and @see PhraseModel. 
+ * Subclasses include @see CrawlModel and @see PhraseModel.
  *
  * @author Chris Pollett
  *
@@ -71,7 +71,7 @@ require_once BASE_DIR.'/lib/fetch_url.php';
 class ParallelModel extends Model implements CrawlConstants
 {
     /**
-     * Stores the name of the current index archive to use to get search 
+     * Stores the name of the current index archive to use to get search
      * results from
      * @var string
      */
@@ -89,7 +89,7 @@ class ParallelModel extends Model implements CrawlConstants
     /**
      *  {@inheritdoc}
      */
-    function __construct($db_name = DB_NAME) 
+    function __construct($db_name = DB_NAME)
     {
         parent::__construct($db_name);
         $this->current_machine = 0;//if known, controller will set later
@@ -119,7 +119,7 @@ class ParallelModel extends Model implements CrawlConstants
     }
 
     /**
-     * Gets summaries for a set of document by their url, or by group of 
+     * Gets summaries for a set of document by their url, or by group of
      * 5-tuples of the form (machine, key, index, generation, offset).
      *
      * @param string $lookups things whose summaries we are trying to look up
@@ -173,7 +173,7 @@ class ParallelModel extends Model implements CrawlConstants
             }
         }
         //Make request
-        $page_set = $this->execMachines("getCrawlItems", 
+        $page_set = $this->execMachines("getCrawlItems",
             $machines, serialize($lookups), $num_machines);
         //Aggregate results
         $summaries = array();
@@ -197,14 +197,14 @@ class ParallelModel extends Model implements CrawlConstants
                                 $summaries[$lookup][self::DESCRIPTION] = "";
                             }
                             if(!isset($description_hash[$description])){
-                                $summaries[$lookup][self::DESCRIPTION] = 
+                                $summaries[$lookup][self::DESCRIPTION] =
                                     $ellipsis . $description;
                                 $ellipsis = " .. ";
                                 $description_hash[$description] = true;
                             }
                         }
                         foreach($summary as $attr => $value){
-                            if($attr !=self::DESCRIPTION && 
+                            if($attr !=self::DESCRIPTION &&
                                 !isset($summaries[$lookup][$attr])) {
                                 $summaries[$lookup][$attr] = $value;
                             }
@@ -239,12 +239,12 @@ class ParallelModel extends Model implements CrawlConstants
     }
 
     /**
-     * Gets summaries on a particular machine for a set of document by 
+     * Gets summaries on a particular machine for a set of document by
      * their url, or by group of 5-tuples of the form
-     * (machine, key, index, generation, offset) 
+     * (machine, key, index, generation, offset)
      * This may be used in either the single queue_server setting or
-     * it may be called indirectly by a particular machine's 
-     * CrawlController as part of fufilling a network-based getCrawlItems 
+     * it may be called indirectly by a particular machine's
+     * CrawlController as part of fufilling a network-based getCrawlItems
      * request. $lookups contains items which are to be grouped (as came
      * from same url or site with the same cache). So this function aggregates
      * their descriptions.
@@ -264,14 +264,14 @@ class ParallelModel extends Model implements CrawlConstants
             if(count($lookup_info) == 2 && $lookup_info[0][0] === 'h') {
                 list($url, $index_name) = $lookup_info;
                 $index_archive = IndexManager::getIndex($index_name);
-                $offset_gen_arr = 
+                $offset_gen_arr =
                     $this->lookupSummaryOffsetGeneration($url, $index_name);
                 if($offset_gen_arr !== false){
                     list($summary_offset, $generation) = $offset_gen_arr;
                 } else {
                     return false;
                 }
-                $summary = 
+                $summary =
                     $index_archive->getPage($summary_offset, $generation);
             } else {
                 $summary = array();
@@ -280,7 +280,7 @@ class ParallelModel extends Model implements CrawlConstants
                 foreach($lookup_info as $lookup_item) {
                     if(count($lookup_item) == 2) {
                         list($word_key, $index_name) = $lookup_item;
-                        $offset_info = 
+                        $offset_info =
                             $this->lookupSummaryOffsetGeneration(
                                 $word_key, $index_name, true);
                         if(is_array($offset_info)) {
@@ -289,7 +289,7 @@ class ParallelModel extends Model implements CrawlConstants
                             continue;
                         }
                     } else {
-                        list($machine, $key, $index_name, $generation, 
+                        list($machine, $key, $index_name, $generation,
                             $summary_offset) = $lookup_item;
                     }
                     if(strcmp($index_name, "feed") != 0) {
@@ -297,8 +297,8 @@ class ParallelModel extends Model implements CrawlConstants
                         $index->setCurrentShard($generation, true);
                         $page = @$index->getPage($summary_offset);
                     } else {
-                        $guid = base64Hash(substr($key, 
-                            IndexShard::DOC_KEY_LEN, 
+                        $guid = base64Hash(substr($key,
+                            IndexShard::DOC_KEY_LEN,
                             IndexShard::DOC_KEY_LEN));
                         $sql = "SELECT * FROM FEED_ITEM WHERE GUID=".
                             "'$guid'";
@@ -340,13 +340,13 @@ class ParallelModel extends Model implements CrawlConstants
                     } else {
                         $copy = true;
                     }
-                    if(strlen($summary[self::DESCRIPTION]) > 
+                    if(strlen($summary[self::DESCRIPTION]) >
                         self::MIN_DESCRIPTION_LENGTH) {
                         break;
                     }
                     if($copy) {
                         foreach($page as $attr => $value){
-                            if($attr !=self::DESCRIPTION && 
+                            if($attr !=self::DESCRIPTION &&
                                 !isset($summary[$attr])) {
                                 $summary[$attr] = $value;
                             }
@@ -363,9 +363,9 @@ class ParallelModel extends Model implements CrawlConstants
     }
 
     /**
-     * Determines the offset into the summaries WebArchiveBundle and generation 
-     * of the provided url (or hash_url) so that the info:url 
-     * (info:base64_hash_url) summary can be retrieved. This assumes of course 
+     * Determines the offset into the summaries WebArchiveBundle and generation
+     * of the provided url (or hash_url) so that the info:url
+     * (info:base64_hash_url) summary can be retrieved. This assumes of course
      * that the info:url  meta word has been stored.
      *
      * @param string $url_or_key either info:base64_hash_url or just a url to
@@ -375,7 +375,7 @@ class ParallelModel extends Model implements CrawlConstants
      *      url
      * @return array (offset, generation) into the web archive bundle
      */
-    function lookupSummaryOffsetGeneration($url_or_key, $index_name = "", 
+    function lookupSummaryOffsetGeneration($url_or_key, $index_name = "",
         $is_key = false)
     {
         if($index_name == "") {
@@ -392,7 +392,7 @@ class ParallelModel extends Model implements CrawlConstants
             return false;
         }
         $num_generations = $index_archive->generation_info['ACTIVE'];
-        $hash_key = ($is_key) ? crawlHash($url_or_key) : 
+        $hash_key = ($is_key) ? crawlHash($url_or_key) :
             crawlHash("info:$url_or_key");
         $word_iterator = new WordIterator($hash_key, $index_name);
 
@@ -418,8 +418,8 @@ class ParallelModel extends Model implements CrawlConstants
     }
 
     /**
-     *  A save point is used to store to disk a sequence generation-doc-offset 
-     *  pairs of a particular mix query when doing an archive crawl of a crawl 
+     *  A save point is used to store to disk a sequence generation-doc-offset
+     *  pairs of a particular mix query when doing an archive crawl of a crawl
      *  mix. This is used so that the mix can remember where it was the next
      *  time it is invoked by the web app on the machine in question.
      *  This function deletes such a save point associated with a timestamp
@@ -441,11 +441,11 @@ class ParallelModel extends Model implements CrawlConstants
     }
 
     /**
-     *  This method is invoked by other ParallelModel (@see CrawlModel 
-     *  for examples) methods when they want to have their method performed 
-     *  on an array of other  Yioop instances. The results returned can then 
-     *  be aggregated.  The invocation sequence is 
-     *  crawlModelMethodA invokes execMachine with a list of 
+     *  This method is invoked by other ParallelModel (@see CrawlModel
+     *  for examples) methods when they want to have their method performed
+     *  on an array of other  Yioop instances. The results returned can then
+     *  be aggregated.  The invocation sequence is
+     *  crawlModelMethodA invokes execMachine with a list of
      *  urls of other Yioop instances. execMachine makes REST requests of
      *  those instances of the given command and optional arguments
      *  This request would be handled by a CrawlController which in turn
@@ -453,14 +453,14 @@ class ParallelModel extends Model implements CrawlConstants
      *  result and gives it back to execMachine and then back to the originally
      *  calling function.
      *
-     *  @param string $command the ParallelModel method to invoke on the remote 
+     *  @param string $command the ParallelModel method to invoke on the remote
      *      Yioop instances
      *  @param array $machine_urls machines to invoke this command on
      *  @param string additional arguments to be passed to the remote machine
      *  @param int $num_machines the integer to be used in calculating partition
      *  @return array a list of outputs from each machine that was called.
      */
-    function execMachines($command, $machine_urls, $arg = NULL, 
+    function execMachines($command, $machine_urls, $arg = NULL,
         $num_machines = 0)
     {
         if($num_machines == 0) {
@@ -468,7 +468,7 @@ class ParallelModel extends Model implements CrawlConstants
         }
         $time = time();
         $session = md5($time . AUTH_KEY);
-        $query = "c=crawl&a=$command&time=$time&session=$session" . 
+        $query = "c=crawl&a=$command&time=$time&session=$session" .
             "&num=$num_machines";
         if($arg != NULL) {
             $arg = webencode($arg);

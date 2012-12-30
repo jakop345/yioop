@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,19 +27,19 @@
  * @subpackage bin
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
 
 if(php_sapi_name() != 'cli') {echo "BAD REQUEST"; exit();}
 
-/** 
+/**
  * Calculate base directory of script
  * @ignore
  */
 define("BASE_DIR", substr(
-    dirname(realpath($_SERVER['PHP_SELF'])), 0, 
+    dirname(realpath($_SERVER['PHP_SELF'])), 0,
     -strlen("/bin")));
 
 ini_set("memory_limit","850M"); //so have enough memory to crawl big pages
@@ -52,18 +52,18 @@ if(!PROFILE) {
     exit();
 }
 
-/** CRAWLING means don't try to use memcache 
+/** CRAWLING means don't try to use memcache
  * @ignore
  */
 define("NO_CACHE", true);
 
 /** get the database library based on the current database type */
-require_once BASE_DIR."/models/datasources/".DBMS."_manager.php"; 
+require_once BASE_DIR."/models/datasources/".DBMS."_manager.php";
 
 /** for crawlHash and crawlLog */
-require_once BASE_DIR."/lib/utility.php"; 
+require_once BASE_DIR."/lib/utility.php";
 /** for crawlDaemon function */
-require_once BASE_DIR."/lib/crawl_daemon.php"; 
+require_once BASE_DIR."/lib/crawl_daemon.php";
 /** Used to fetches web pages and info from queue server*/
 require_once BASE_DIR."/lib/fetch_url.php";
 /** Loads common constants for web crawling*/
@@ -119,7 +119,7 @@ class Mirror implements CrawlConstants
      * @var string
      */
     var $last_sync_file;
- 
+
     /**
      * Time of start of current sync
      * @var string
@@ -148,7 +148,7 @@ class Mirror implements CrawlConstants
      *
      * @param string $name_server URL or IP address of the name server
      */
-    function __construct($name_server) 
+    function __construct($name_server)
     {
         $db_class = ucfirst(DBMS)."Manager";
         $this->db = new $db_class();
@@ -168,8 +168,8 @@ class Mirror implements CrawlConstants
     }
 
     /**
-     *  This is the function that should be called to get the mirror to start 
-     *  syncing. Calls init to handle the command line arguments then enters 
+     *  This is the function that should be called to get the mirror to start
+     *  syncing. Calls init to handle the command line arguments then enters
      *  the syncer's main loop
      */
     function start()
@@ -192,14 +192,14 @@ class Mirror implements CrawlConstants
         crawlLog("In Sync Loop");
 
         $info[self::STATUS] = self::CONTINUE_STATE;
-        
+
         while ($info[self::STATUS] != self::STOP_STATE) {
             $syncer_message_file = CRAWL_DIR.
                 "/schedules/mirror_messages.txt";
             if(file_exists($syncer_message_file)) {
                 $info = unserialize(file_get_contents($syncer_message_file));
                 unlink($syncer_message_file);
-                if(isset($info[self::STATUS]) && 
+                if(isset($info[self::STATUS]) &&
                     $info[self::STATUS] == self::STOP_STATE) {continue;}
             }
 
@@ -226,15 +226,15 @@ class Mirror implements CrawlConstants
     }
 
     /**
-     * Gets status and, if done processing all other mirroring activities, 
+     * Gets status and, if done processing all other mirroring activities,
      * gets a new list of files that have changed since the last synchronization
      * from the web app of the machine we are mirroring with.
      *
-     * @return mixed array or bool. Returns false if weren't succesful in 
+     * @return mixed array or bool. Returns false if weren't succesful in
      *      contacting web app, otherwise, returns an array with a status
      *      and potentially a list of files ot sync
      */
-    function checkScheduler() 
+    function checkScheduler()
     {
 
         $info = array();
@@ -244,7 +244,7 @@ class Mirror implements CrawlConstants
         $start_time = microtime();
         $time = time();
         $session = md5($time . AUTH_KEY);
-        $request =  
+        $request =
             $name_server.
             "?c=resource&time=$time&session=$session".
             "&robot_instance=".ROBOT_INSTANCE."&machine_uri=".WEB_URI.
@@ -259,7 +259,7 @@ class Mirror implements CrawlConstants
             $info_string = trim($info_string);
 
             $info = unserialize(gzuncompress(base64_decode($info_string)));
-            if(isset($info[self::STATUS]) && 
+            if(isset($info[self::STATUS]) &&
                 $info[self::STATUS] == self::CONTINUE_STATE) {
                 $this->start_sync = time();
                 $this->sync_schedule = $info[self::DATA];
@@ -277,13 +277,13 @@ class Mirror implements CrawlConstants
         if(count($this->sync_schedule) == 0) {
             $this->last_sync = $this->start_sync;
             $this->db->setWorldPermissionsRecursive($this->sync_dir, true);
-            file_put_contents($this->last_sync_file, 
+            file_put_contents($this->last_sync_file,
                 serialize($this->last_sync));
         }
 
         crawlLog("  Time to check Scheduler ".(changeInMicrotime($start_time)));
 
-        return $info; 
+        return $info;
     }
 
     /**
@@ -307,7 +307,7 @@ class Mirror implements CrawlConstants
                 crawlLog(".. {$file['name']} directory exists.");
             }
         } else {
-            $request = 
+            $request =
                 "$name_server?c=resource&a=get&time=$time&session=$session".
                 "&robot_instance=".ROBOT_INSTANCE."&machine_uri=".WEB_URI.
                 "&last_sync=".$this->last_sync."&f=cache&n=".

@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,20 +27,20 @@
  * @subpackage iterator
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
-/** 
+/**
  *Loads base class for iterating
  */
 require_once BASE_DIR.
     '/lib/archive_bundle_iterators/archive_bundle_iterator.php';
 
-/** 
- * Class used to model iterating documents indexed in 
+/**
+ * Class used to model iterating documents indexed in
  * an WebArchiveBundle. This would typically be for the purpose
  * of re-indexing these documents.
  *
@@ -49,7 +49,7 @@ require_once BASE_DIR.
  * @subpackage iterator
  * @see WebArchiveBundle
  */
-class WebArchiveBundleIterator extends ArchiveBundleIterator 
+class WebArchiveBundleIterator extends ArchiveBundleIterator
     implements CrawlConstants
 {
 
@@ -99,7 +99,7 @@ class WebArchiveBundleIterator extends ArchiveBundleIterator
      * Returns the path to an archive given its timestamp.
      *
      * @param string $timestamp the archive timestamp
-     * @return string the path to the archive, based off of the fetcher prefix 
+     * @return string the path to the archive, based off of the fetcher prefix
      *     used when this iterator was constructed
      */
     function getArchiveName($timestamp)
@@ -112,7 +112,7 @@ class WebArchiveBundleIterator extends ArchiveBundleIterator
      * Creates a web archive iterator with the given parameters.
      *
      * @param string $prefix fetcher number this bundle is associated with
-     * @param string $iterate_timestamp timestamp of the web archive bundle to 
+     * @param string $iterate_timestamp timestamp of the web archive bundle to
      *      iterate over the pages of
      * @param string $result_timestamp timestamp of the web archive bundle
      *      results are being stored in
@@ -133,7 +133,7 @@ class WebArchiveBundleIterator extends ArchiveBundleIterator
     }
 
     /**
-     * Saves the current state so that a new instantiation can pick up just 
+     * Saves the current state so that a new instantiation can pick up just
      * after the last batch of pages extracted.
      */
     function saveCheckpoint($info = array())
@@ -149,7 +149,7 @@ class WebArchiveBundleIterator extends ArchiveBundleIterator
     }
 
     /**
-     * Restores state from a previous instantiation, after the last batch of 
+     * Restores state from a previous instantiation, after the last batch of
      * pages extracted.
      */
     function restoreCheckpoint()
@@ -172,10 +172,10 @@ class WebArchiveBundleIterator extends ArchiveBundleIterator
      * Estimates the importance of the site according to the weighting of
      * the particular archive iterator
      * @param $site an associative array containing info about a web page
-     * @return bool false we assume files were crawled roughly according to 
+     * @return bool false we assume files were crawled roughly according to
      *      page importance so we use default estimate of doc rank
      */
-    function weight(&$site) 
+    function weight(&$site)
     {
         return false;
     }
@@ -194,7 +194,7 @@ class WebArchiveBundleIterator extends ArchiveBundleIterator
         $num_to_get = 1;
         $objects = array();
         for($i = 0; $i < $num; $i += $num_to_get) {
-            $num_to_get = min($num, $this->partition->count - 
+            $num_to_get = min($num, $this->partition->count -
                 $this->partition_index);
             $pre_new_objects = $this->partition->nextObjects($num_to_get);
             foreach($pre_new_objects as $object) {

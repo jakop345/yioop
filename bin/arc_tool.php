@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage bin
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -35,10 +35,10 @@ if(php_sapi_name() != 'cli') {echo "BAD REQUEST"; exit();}
 
 /** Calculate base directory of script @ignore*/
 define("BASE_DIR", substr(
-    dirname(realpath($_SERVER['PHP_SELF'])), 0, 
+    dirname(realpath($_SERVER['PHP_SELF'])), 0,
     -strlen("/bin")));
 
-ini_set("memory_limit","850M"); /* 
+ini_set("memory_limit","850M"); /*
         reindex sometimes takes more than the default 128M, 850 to be safe */
 
 /** This tool does not need logging*/
@@ -101,7 +101,7 @@ mb_regex_encoding("UTF-8");
  * command like:
  * php arc_tool.php info bundle_name
  *
- * The latter can be gotten from a bundle by running arc_tool with a 
+ * The latter can be gotten from a bundle by running arc_tool with a
  * command like:
  * php arc_tool.php list bundle_name start_doc_num num_results
  *
@@ -112,7 +112,7 @@ mb_regex_encoding("UTF-8");
 class ArcTool implements CrawlConstants
 {
 
-    /** 
+    /**
      * The maximum number of documents the arc_tool list function
      * will read into memory in one go.
      */
@@ -121,7 +121,7 @@ class ArcTool implements CrawlConstants
     /**
      * Initializes the ArcTool, for now does nothing
      */
-    function __construct() 
+    function __construct()
     {
 
     }
@@ -227,7 +227,7 @@ class ArcTool implements CrawlConstants
      * to stdout header information about the
      * bundle by calling the appropriate sub-function.
      *
-     * @param string $archive_path the oath of a directory that holds 
+     * @param string $archive_path the oath of a directory that holds
      *      WebArchiveBundle,IndexArchiveBundle, or non-Yioop archive data
      */
     function outputInfo($archive_path)
@@ -239,7 +239,7 @@ class ArcTool implements CrawlConstants
         if($archive_type === false) {
             $this->badFormatMessageAndExit($archive_path);
         }
-        if(in_array($archive_type, array("IndexArchiveBundle", 
+        if(in_array($archive_type, array("IndexArchiveBundle",
             "WebArchiveBundle"))) {
             $call = "outputInfo".$archive_type;
             $info = $archive_type::getArchiveInfo($archive_path);
@@ -441,7 +441,7 @@ class ArcTool implements CrawlConstants
         $total = $start + $num;
         $seen = 0;
         $generation = 0;
-        while(!$iterator->end_of_iterator && 
+        while(!$iterator->end_of_iterator &&
             $seen < $total && $generation < $num_generations) {
             if($nonyioop) {
                 $partition = (object) array();
@@ -461,8 +461,8 @@ class ArcTool implements CrawlConstants
                     $objects = $iterator->nextPages($num_to_get);
                     $seen += count($objects);
                 } else {
-                    $num_to_get = min($total - $seen,  
-                        $partition->count - $seen_generation, 
+                    $num_to_get = min($total - $seen,
+                        $partition->count - $seen_generation,
                         self::MAX_BUFFER_DOCS);
                     $objects = $partition->nextObjects($num_to_get);
                     $seen += $num_to_get;
@@ -482,7 +482,7 @@ class ArcTool implements CrawlConstants
                                 $object = $pre_object[1];
                             }
                             if(isset($object[self::TIMESTAMP])) {
-                                $object[self::TIMESTAMP] = 
+                                $object[self::TIMESTAMP] =
                                     date("r", $object[self::TIMESTAMP]);
                             }
                             foreach($fields_to_print as $key => $name) {
@@ -579,7 +579,7 @@ class ArcTool implements CrawlConstants
      * @param string $archive_name name or path to what was supposed to be
      *      an archive
      */
-    function badFormatMessageAndExit($archive_name) 
+    function badFormatMessageAndExit($archive_name)
     {
         echo "$archive_name does not appear to be a web or index ".
         "archive bundle\n";
@@ -589,7 +589,7 @@ class ArcTool implements CrawlConstants
     /**
      * Outputs the "how to use this tool message" and then exit()'s.
      */
-    function usageMessageAndExit() 
+    function usageMessageAndExit()
     {
         echo "\narc_tool is used to look at the contents of\n";
         echo "WebArchiveBundles and IndexArchiveBundles.\n";

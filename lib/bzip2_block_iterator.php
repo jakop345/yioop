@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage library
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -40,7 +40,7 @@ if(!defined('BASE_DIR') && php_sapi_name() != 'cli') {
  * The main advantage of using this class over the built-in bzip is that
  * it can "remember" where it left off between serializations. So can
  * continue where left off between web invocations. This is used in
- * doing archive crawls of wiki dumps to allow the name server picks up where 
+ * doing archive crawls of wiki dumps to allow the name server picks up where
  * it left off.
  *
  * @author Shawn Tice, (some docs added by Chris Pollett chris@pollett.org)
@@ -58,7 +58,7 @@ class BZip2BlockIterator
      *  Blocks are NOT byte-aligned, so the block header (and endmark) may show
      *  up shifted right by 0-8 bits in various places throughout the file. This
      *  regular expression matches any of the possible shifts for both the block
-     *  header and the block endmark. 
+     *  header and the block endmark.
      */
     const BLOCK_LEADER_RE = '
         /
@@ -71,7 +71,7 @@ class BZip2BlockIterator
         |\x5d\xc9\x14\xe1\x42 | \x2e\xe4\x8a\x70\xa1
         /x';
     /**
-     *  Lookup table fpr the number of bits by which the magic 
+     *  Lookup table fpr the number of bits by which the magic
      *  number for the next block has been shifted right. Second
      *  components of sub-arrays say whether block header or endmark
      *  @var array
@@ -209,7 +209,7 @@ class BZip2BlockIterator
                     that begins the next block's header, where the vertical bar
                     represents the beginning of the header bits, the new shift
                     is 2, and after we byte-align the new header to the left
-                    there will always be 6 extra bits waiting for two bits to 
+                    there will always be 6 extra bits waiting for two bits to
                     form a byte to be added to the next block.
                 */
                 $new_num_extra_bits = $new_shift == 0 ? 0 : 8 - $new_shift;
@@ -221,7 +221,7 @@ class BZip2BlockIterator
                     $new_block = $new_header;
                 } else {
                     $byte = ord($this->buffer[$pos-1]);
-                    $tail_bits = $byte & (((0x1 << $new_shift) - 1) << 
+                    $tail_bits = $byte & (((0x1 << $new_shift) - 1) <<
                         (8 - $new_shift));
                     $new_bits = ($byte << $new_shift) & 0xff;
                     $header_end = 6;
@@ -242,7 +242,7 @@ class BZip2BlockIterator
                 }
 
                 /*
-                    Copy and shift the last chunk of bytes from the previous 
+                    Copy and shift the last chunk of bytes from the previous
                     block before adding the block trailer.
                 */
                 $block_tail = substr($this->buffer, 0, $pos - 1);
@@ -263,7 +263,7 @@ class BZip2BlockIterator
                     $this->num_extra_bits = $new_shift - $bits_left;
                 } else {
                     $this->bits |= ($tail_bits >> $this->num_extra_bits);
-                    $this->num_extra_bits = $this->num_extra_bits + 
+                    $this->num_extra_bits = $this->num_extra_bits +
                         $new_shift;
                 }
 
@@ -283,7 +283,7 @@ class BZip2BlockIterator
                 $recovered_block = $this->header.$this->block;
                 $this->block = $new_block;
 
-                /* 
+                /*
                     Keep everything after the end of the header for the next
                     block in the buffer.
                 */
@@ -314,9 +314,9 @@ class BZip2BlockIterator
     }
 
     /**
-     * Computes a new bzip2 block portions and bits left over after adding 
+     * Computes a new bzip2 block portions and bits left over after adding
      * $bytes to the passed $block.
-     * 
+     *
      * @param string &$block the block to add to
      * @param int &$bits used to hold bits left over
      * @param string $bytes what to add to the bzip block
@@ -363,4 +363,3 @@ if(!function_exists("main")) {
         main();
     }
 }
-

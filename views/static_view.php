@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage view
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -40,7 +40,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @author Chris Pollett
  * @package seek_quarry
  * @subpackage view
- */ 
+ */
 
 class StaticView extends View
 {
@@ -50,7 +50,7 @@ class StaticView extends View
      */
     var $pages = array('privacy', 'blog', 'bot', "404", "409");
 
-    /** Names of element objects that the view uses to display itself 
+    /** Names of element objects that the view uses to display itself
      *  @var array
      */
     var $elements = array("footer");
@@ -74,9 +74,9 @@ class StaticView extends View
 ?>
 <div class="non-search center">
 <h1 class="logo"><a href="<?php e($_SERVER["PATH_INFO"]."/?".
-    CSRF_TOKEN."=".$data[CSRF_TOKEN]);?>"><img 
-    src="<?php e($_SERVER["PATH_INFO"]."/".$logo); ?>" 
-    alt="<?php e(tl('static_view_title')); ?>" /></a><span><?php 
+    CSRF_TOKEN."=".$data[CSRF_TOKEN]);?>"><img
+    src="<?php e($_SERVER["PATH_INFO"]."/".$logo); ?>"
+    alt="<?php e(tl('static_view_title')); ?>" /></a><span><?php
     e($data['subtitle']);?></span></h1>
 </div>
 <div class="content">

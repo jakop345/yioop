@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage element
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -53,51 +53,51 @@ class ManagemachinesElement extends Element
      * @param array $data  contains antiCSRF token, as well as data for
      * the select fetcher number element.
      */
-    public function render($data) 
+    function render($data)
     {?>
         <div class="currentactivity">
         <h2><?php e(tl('managemachines_element_add_machine'))?></h2>
         <form id="addMachineForm" method="post" action=''>
-        <input type="hidden" name="c" value="admin" /> 
-        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php 
-            e($data[CSRF_TOKEN]); ?>" /> 
+        <input type="hidden" name="c" value="admin" />
+        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
+            e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="manageMachines" />
         <input type="hidden" name="arg" value="addmachine" />
 
         <table class="nametable">
-        <tr><th><label for="machine-name"><?php 
+        <tr><th><label for="machine-name"><?php
             e(tl('managemachines_element_machine_name'))?></label></th>
-            <td><input type="text" id="machine-name" name="name" 
+            <td><input type="text" id="machine-name" name="name"
                 maxlength="80" class="widefield" /></td>
         </tr>
 
-        <tr><th><label for="machine-url"><?php 
+        <tr><th><label for="machine-url"><?php
             e(tl('managemachines_element_machineurl'))?></label></th>
-            <td><input type="text" id="machine-url" name="url" 
+            <td><input type="text" id="machine-url" name="url"
                 maxlength="80" class="widefield" /></td></tr>
-        <tr><th><label for="is-replica-box"><?php 
+        <tr><th><label for="is-replica-box"><?php
             e(tl('managemachines_element_is_mirror'))?></label></th>
-            <td><input type="checkbox" id="is-replica-box" 
-                name="is_replica" value="true" 
+            <td><input type="checkbox" id="is-replica-box"
+                name="is_replica" value="true"
                 onclick="toggleReplica(this.checked)" /></td></tr>
-         <tr id="m1"><th><label for="parent-machine-name"><?php 
+         <tr id="m1"><th><label for="parent-machine-name"><?php
             e(tl('managemachines_element_parent_name'))?></label></th>
             <td><?php $this->view->optionsHelper->render(
-                "parent-machine-name", "parent", 
-                $data['REPLICATABLE_MACHINES'], 
-                tl('admin_controller_select_machine')); 
+                "parent-machine-name", "parent",
+                $data['REPLICATABLE_MACHINES'],
+                tl('admin_controller_select_machine'));
                 ?></td>
-        </tr> 
-        <tr id="m2"><th><label for="queue-box"><?php 
+        </tr>
+        <tr id="m2"><th><label for="queue-box"><?php
             e(tl('managemachines_element_has_queueserver'))?></label></th>
-            <td><input type="checkbox" id="queue-box" 
+            <td><input type="checkbox" id="queue-box"
                 name="has_queue_server" value="true" /></td></tr>
-        <tr id="m3"><th><label for="fetcher-number"><?php 
+        <tr id="m3"><th><label for="fetcher-number"><?php
             e(tl('managemachines_element_num_fetchers'))?></label></th><td>
-            <?php $this->view->optionsHelper->render("fetcher-number", 
+            <?php $this->view->optionsHelper->render("fetcher-number",
             "num_fetchers", $data['FETCHER_NUMBERS'],$data['FETCHER_NUMBER']);
-            ?></td></tr> 
-        <tr><th></th><td><button class="buttonbox" type="submit"><?php 
+            ?></td></tr>
+        <tr><th></th><td><button class="buttonbox" type="submit"><?php
                 e(tl('managemachines_element_submit')); ?></button></td>
         </tr>
         </table>
@@ -105,19 +105,19 @@ class ManagemachinesElement extends Element
 
         <h2><?php e(tl('managemachines_element_delete_machine'))?></h2>
         <form id="deleteMachineForm" method="post" action=''>
-        <input type="hidden" name="c" value="admin" /> 
-        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php 
+        <input type="hidden" name="c" value="admin" />
+        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />
-        <input type="hidden" name="a" value="manageMachines" /> 
+        <input type="hidden" name="a" value="manageMachines" />
         <input type="hidden" name="arg" value="deletemachine" />
         <table class="nametable">
-         <tr><th><label for="delete-machine-name"><?php 
+         <tr><th><label for="delete-machine-name"><?php
             e(tl('managemachines_element_machine_name'))?></label></th>
             <td><?php $this->view->optionsHelper->render(
-                "delete-machine-name", "name", 
-                $data['DELETABLE_MACHINES'], 
-                tl('admin_controller_select_machine')); 
-                ?></td><td><button class="buttonbox" type="submit"><?php 
+                "delete-machine-name", "name",
+                $data['DELETABLE_MACHINES'],
+                tl('admin_controller_select_machine'));
+                ?></td><td><button class="buttonbox" type="submit"><?php
                 e(tl('managemachines_element_submit')); ?></button></td>
         </tr>
         </table>
@@ -125,14 +125,14 @@ class ManagemachinesElement extends Element
 
         <h2><?php e(tl('managemachines_element_machine_info'))?></h2>
         <div id="machinestatus" >
-        <p class="red"><?php 
+        <p class="red"><?php
             e(tl('managemachines_element_awaiting_status'))?></p>
         </div>
         <script type="text/javascript" >
         var updateId;
         function machineStatusUpdate()
         {
-            var startUrl = "?c=admin&<?php 
+            var startUrl = "?c=admin&<?php
                 e(CSRF_TOKEN."=".$data[CSRF_TOKEN]); ?>&a=machineStatus";
             var machineTag = elt('machinestatus');
             getPage(machineTag, startUrl);
@@ -142,7 +142,7 @@ class ManagemachinesElement extends Element
         {
              clearInterval(updateId );
              var machineTag = elt('machinestatus');
-             machineTag.innerHTML= "<h2 class='red'><?php 
+             machineTag.innerHTML= "<h2 class='red'><?php
                 e(tl('managemachines_element_no_longer_update'))?></h2>";
         }
         function doUpdate()
@@ -171,7 +171,7 @@ class ManagemachinesElement extends Element
         </script>
 
         </div>
-    <?php 
+    <?php
     }
 }
 ?>

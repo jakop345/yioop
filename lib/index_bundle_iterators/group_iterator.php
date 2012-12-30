@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,23 +27,23 @@
  * @subpackage iterator
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
-/** 
+/**
  *Loads base class for iterating
  */
 require_once BASE_DIR.'/lib/index_bundle_iterators/index_bundle_iterator.php';
 
 /**
  * This iterator is used to group together documents or document parts
- * which share the same url. For instance, a link document item and 
+ * which share the same url. For instance, a link document item and
  * the document that it links to will both be stored in the IndexArchiveBundle
  * by the QueueServer. This iterator would combine both these items into
- * a single document result with a sum of their score, and a summary, if 
+ * a single document result with a sum of their score, and a summary, if
  * returned, containing text from both sources. The iterator's purpose is
  * vaguely analagous to a SQL GROUP BY clause
  *
@@ -93,7 +93,7 @@ class GroupIterator extends IndexBundleIterator
     var $grouped_keys;
 
     /**
-     * hashed of document web pages used to keep track of track of 
+     * hashed of document web pages used to keep track of track of
      *  groups seen so far
      * @var array
      */
@@ -133,15 +133,15 @@ class GroupIterator extends IndexBundleIterator
      *
      * @param object $index_bundle_iterator to use as a source of documents
      *      to iterate over
-     * @param int $num_iterators number of word iterators appearing in 
+     * @param int $num_iterators number of word iterators appearing in
      *      in sub-iterators -- if larger than reduce the default grouping
      *      number
      * @param int $current_machine if this iterator is being used in a multi-
-     *      queue_server setting, then this is the id of the current 
+     *      queue_server setting, then this is the id of the current
      *      queue_server
      * @param bool $network_flag
      */
-    function __construct($index_bundle_iterator, $num_iterators = 1, 
+    function __construct($index_bundle_iterator, $num_iterators = 1,
         $current_machine = 0, $network_flag = false)
     {
         $this->index_bundle_iterator = $index_bundle_iterator;
@@ -203,7 +203,7 @@ class GroupIterator extends IndexBundleIterator
         $this->current_block_hashes = array();
         $this->current_seen_hashes = array();
         if($this->count_block_unfiltered > 0 ) {
-            /* next we group like documents by url and remember 
+            /* next we group like documents by url and remember
                which urls we've seen this block
             */
             $pre_out_pages = $this->groupByHashUrl($pages);
@@ -215,7 +215,7 @@ class GroupIterator extends IndexBundleIterator
            $this->groupByHashAndAggregate($pre_out_pages);
            $this->count_block = count($pre_out_pages);
             /*
-                Calculate aggregate values for each field of the groups we 
+                Calculate aggregate values for each field of the groups we
                 found
              */
             $pages = $this->computeOutPages($pre_out_pages);
@@ -226,7 +226,7 @@ class GroupIterator extends IndexBundleIterator
 
     /**
      * Gets a sample of a few hundred pages on which to do grouping by URL
-     * 
+     *
      * @return array of pages of document key --> meta data arrays
      */
     function getPagesToGroup()
@@ -259,8 +259,8 @@ class GroupIterator extends IndexBundleIterator
      * Groups documents as well as mini-pages based on links to documents by
      * url to produce an array of arrays of documents with same url. Since
      * this is called in an iterator, documents which were already returned by
-     * a previous call to currentDocsWithWord() followed by an advance() will 
-     * have been remembered in grouped_keys and will be ignored in the return 
+     * a previous call to currentDocsWithWord() followed by an advance() will
+     * have been remembered in grouped_keys and will be ignored in the return
      * result of this function.
      *
      * @param array &$pages pages to group
@@ -270,7 +270,7 @@ class GroupIterator extends IndexBundleIterator
     {
         $pre_out_pages = array();
         foreach($pages as $doc_key => $doc_info) {
-            if(!is_array($doc_info) || $doc_info[self::SUMMARY_OFFSET] == 
+            if(!is_array($doc_info) || $doc_info[self::SUMMARY_OFFSET] ==
                 self::NEEDS_OFFSET_FLAG) { continue;}
             $hash_url = substr($doc_key, 0, IndexShard::DOC_KEY_LEN);
             if(isset($doc_info[self::IS_FEED])) {
@@ -279,7 +279,7 @@ class GroupIterator extends IndexBundleIterator
                 $this->is_feed = false;
             }
             // initial aggregate domain score vector for given domain
-            if($doc_info[self::IS_DOC]) { 
+            if($doc_info[self::IS_DOC]) {
                 if(!isset($pre_out_pages[$hash_url])) {
                     $pre_out_pages[$hash_url] = array();
                 }
@@ -318,9 +318,9 @@ class GroupIterator extends IndexBundleIterator
             if(!$this->network_flag) {
                 $is_location = (crawlHash($hash_url."LOCATION", true) == $hash);
                 if(!$data[0][self::IS_DOC] || $is_location) {
-                    $item = $this->lookupDoc($data[0][self::KEY], 
+                    $item = $this->lookupDoc($data[0][self::KEY],
                         $data[0][self::CRAWL_TIME],
-                        $is_location, 3); 
+                        $is_location, 3);
                     if($item != false) {
                         array_unshift($pre_out_pages[$hash_url], $item);
                     }
@@ -340,7 +340,7 @@ class GroupIterator extends IndexBundleIterator
                     if(!isset($this->current_seen_hashes[$hash][$hash_url])) {
                         $this->current_seen_hashes[$hash][$hash_url] = 0;
                     }
-                    $this->current_seen_hashes[$hash][$hash_url] += 
+                    $this->current_seen_hashes[$hash][$hash_url] +=
                         $pre_out_pages[$hash_url][0][self::HASH_SUM_SCORE];
                 }
             }
@@ -362,7 +362,7 @@ class GroupIterator extends IndexBundleIterator
      * @param bool $is_location we are doing look up because doc had a refresh
      * @param int $depth max recursion depth to carry out lookup to if need
      *      to follow location redirects
-     * 
+     *
      * @return array consisting of info about the doc
      */
      function lookupDoc($doc_key, $index_name, $is_location = false, $depth = 3)
@@ -378,7 +378,7 @@ class GroupIterator extends IndexBundleIterator
         if(isset($word_iterator->dictionary_info)) {
             $count = count($word_iterator->dictionary_info);
         }
-        if($count > 1) { 
+        if($count > 1) {
             /* if a page is recrawled it gets a second info page,
                this is to ensure we look up the most recent
             */
@@ -397,15 +397,15 @@ class GroupIterator extends IndexBundleIterator
             $keys = array_keys($doc_array);
             $key = $keys[0];
             $item = $doc_array[$key];
-            $hash = substr($key, IndexShard::DOC_KEY_LEN, 
+            $hash = substr($key, IndexShard::DOC_KEY_LEN,
                 IndexShard::DOC_KEY_LEN);
             $is2_location = (crawlHash($hash_url. "LOCATION", true) == $hash);
             if($depth > 0) {
                 if($is2_location) {
-                    return $this->lookupDoc($key, $index_name, $is2_location, 
+                    return $this->lookupDoc($key, $index_name, $is2_location,
                         $depth - 1);
                 } else if(!isset($item[self::IS_DOC]) || !$item[self::IS_DOC]) {
-                    return $this->lookupDoc($key, $index_name, false, 
+                    return $this->lookupDoc($key, $index_name, false,
                         $depth - 1);
                 }
             }
@@ -422,9 +422,9 @@ class GroupIterator extends IndexBundleIterator
 
     /**
      * For a collection of grouped pages generates a grouped summary for each
-     * group and returns an array of out pages consisting 
-     * of single summarized documents for each group. These single summarized 
-     * documents have aggregated scores. 
+     * group and returns an array of out pages consisting
+     * of single summarized documents for each group. These single summarized
+     * documents have aggregated scores.
      *
      * @param array &$pre_out_pages array of groups of pages for which out pages
      *      are to be generated.
@@ -454,25 +454,25 @@ class GroupIterator extends IndexBundleIterator
                     if(is_int($doc_info[self::SUMMARY_OFFSET])) {
                         $machine_id = (isset($doc_info[self::MACHINE_ID])) ?
                             $doc_info[self::MACHINE_ID] :$this->current_machine;
-                        $out_pages[$hash_url][self::SUMMARY_OFFSET][] = 
+                        $out_pages[$hash_url][self::SUMMARY_OFFSET][] =
                             array($machine_id, $doc_info[self::KEY],
                                 $doc_info[self::CRAWL_TIME],
                                 $doc_info[self::GENERATION],
                                 $doc_info[self::SUMMARY_OFFSET]);
                     } else if(is_array($doc_info[self::SUMMARY_OFFSET])) {
-                        $out_pages[$hash_url][self::SUMMARY_OFFSET] = 
+                        $out_pages[$hash_url][self::SUMMARY_OFFSET] =
                             array_merge(
                                 $out_pages[$hash_url][self::SUMMARY_OFFSET],
                                 $doc_info[self::SUMMARY_OFFSET]);
                     }
                 }
             }
-            $out_pages[$hash_url][self::SCORE] = 
+            $out_pages[$hash_url][self::SCORE] =
                 $out_pages[$hash_url][self::HASH_SUM_SCORE];
             if($add_lookup) {
                 $prefix = ($is_location) ? "location:" : "info:";
                 $word_key = $prefix.base64Hash($hash_url);
-                array_unshift($out_pages[$hash_url][self::SUMMARY_OFFSET], 
+                array_unshift($out_pages[$hash_url][self::SUMMARY_OFFSET],
                     array($word_key, $group_infos[0][self::CRAWL_TIME]));
             }
         }
@@ -511,17 +511,17 @@ class GroupIterator extends IndexBundleIterator
                 $min = ($current_rank < $min ) ? $current_rank : $min;
                 $max = ($max < $current_rank ) ? $current_rank : $max;
                 $alpha = $relevance_boost * $domain_weights[$hash_host];
-                $sum_score += $hash_page[self::DOC_RANK] 
+                $sum_score += $hash_page[self::DOC_RANK]
                     * $alpha * pow(1.1,$hash_page[self::RELEVANCE]) *
                     $hash_page[self::PROXIMITY];
                 $sum_rank += $alpha * $hash_page[self::DOC_RANK];
                 $sum_relevance += $alpha * $hash_page[self::RELEVANCE];
-                $max_proximity = max($max_proximity, 
+                $max_proximity = max($max_proximity,
                     $hash_page[self::PROXIMITY]);
                 $domain_weights[$hash_host] *=  0.5;
             }
         }
-        
+
         $pre_hash_page[0][self::MIN] = $min;
         $pre_hash_page[0][self::MAX] = $max;
         $pre_hash_page[0][self::HASH_SUM_SCORE] = $sum_score;
@@ -536,10 +536,10 @@ class GroupIterator extends IndexBundleIterator
      * Forwards the iterator one group of docs
      * @param array $gen_doc_offset a generation, doc_offset pair. If set,
      *      the must be of greater than or equal generation, and if equal the
-     *      next block must all have $doc_offsets larger than or equal to 
+     *      next block must all have $doc_offsets larger than or equal to
      *      this value
      */
-    function advance($gen_doc_offset = NULL) 
+    function advance($gen_doc_offset = NULL)
     {
         $this->advanceSeenDocs();
 
@@ -549,7 +549,7 @@ class GroupIterator extends IndexBundleIterator
             if( $this->count_block_unfiltered < $this->results_per_block) {
                 $this->num_docs = $this->seen_docs;
             } else {
-                $this->num_docs = 
+                $this->num_docs =
                     floor(
                     ($this->seen_docs*$this->index_bundle_iterator->num_docs)/
                     $this->seen_docs_unfiltered);
@@ -557,8 +557,8 @@ class GroupIterator extends IndexBundleIterator
         } else {
             $this->num_docs = 0;
         }
-        
-        
+
+
         foreach($this->current_block_hashes as $hash_url) {
             $this->grouped_keys[$hash_url] = true;
         }
@@ -572,10 +572,10 @@ class GroupIterator extends IndexBundleIterator
     }
 
     /**
-     * Gets the doc_offset and generation for the next document that 
+     * Gets the doc_offset and generation for the next document that
      * would be return by this iterator
      *
-     * @return mixed an array with the desired document offset 
+     * @return mixed an array with the desired document offset
      *  and generation; -1 on fail
      */
     function currentGenDocOffsetWithWord() {

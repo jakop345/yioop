@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage bin
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -35,7 +35,7 @@ if(php_sapi_name() != 'cli') {echo "BAD REQUEST"; exit();}
 
 /** Calculate base directory of script @ignore*/
 define("BASE_DIR", substr(
-    dirname(realpath($_SERVER['PHP_SELF'])), 0, 
+    dirname(realpath($_SERVER['PHP_SELF'])), 0,
     -strlen("/bin")));
 
 /** Load in global configuration settings */
@@ -93,7 +93,7 @@ class QueryTool implements CrawlConstants
     /**
      * Initializes the QueryTool, for now does nothing
      */
-    function __construct() 
+    function __construct()
     {
 
     }
@@ -146,7 +146,7 @@ class QueryTool implements CrawlConstants
             echo "LOW: ".$data['LIMIT']."\n";
         }
         if(isset($data['HIGH'])) {
-            echo "HIGH: ".min($data['TOTAL_ROWS'], 
+            echo "HIGH: ".min($data['TOTAL_ROWS'],
                 $data['LIMIT'] + $data['RESULTS_PER_PAGE'])."\n";
         }
         if(isset($data['TOTAL_ROWS'])) {
@@ -161,7 +161,7 @@ class QueryTool implements CrawlConstants
     /**
      * Outputs the "how to use this tool message" and then exit()'s.
      */
-    function usageMessageAndExit() 
+    function usageMessageAndExit()
     {
         echo "\nquery_tool.php is used to run Yioop!";
         echo " query from the command line.\n For example,\n";

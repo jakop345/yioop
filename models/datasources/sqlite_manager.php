@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage datasource_manager
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -43,9 +43,9 @@ require_once "datasource_manager.php";
  * SQLite DatasourceManager
  *
  * This is concrete class, implementing
- * the abstract class DatasourceManager 
+ * the abstract class DatasourceManager
  * for the Sqlite 2.x DBMS . Method explanations
- * are from the parent class. 
+ * are from the parent class.
 
  * @author Chris Pollett
  *
@@ -71,7 +71,7 @@ class SqliteManager extends DatasourceManager
     var $result;
 
     /** {@inheritdoc} */
-    function __construct() 
+    function __construct()
     {
         parent::__construct();
         if(!file_exists(CRAWL_DIR."/data")) {
@@ -83,19 +83,19 @@ class SqliteManager extends DatasourceManager
         $this->result = NULL;
     }
 
-    /** 
-     * For an Sqlite database no connection needs to be made so this 
+    /**
+     * For an Sqlite database no connection needs to be made so this
      * method does nothing
      * {@inheritdoc}
      */
-    function connect($db_host = DB_HOST, $db_user = DB_USER, 
-        $db_password = DB_PASSWORD) 
+    function connect($db_host = DB_HOST, $db_user = DB_USER,
+        $db_password = DB_PASSWORD)
     {
         return true;
     }
 
     /** {@inheritdoc} */
-    function selectDB($db_name) 
+    function selectDB($db_name)
     {
         if(strcmp($db_name, $this->dbname) == 0) {
             return $this->dbhandle;
@@ -107,13 +107,13 @@ class SqliteManager extends DatasourceManager
     }
 
     /** {@inheritdoc} */
-    function disconnect() 
+    function disconnect()
     {
         sqlite_close($this->dbhandle);
     }
 
     /** {@inheritdoc} */
-    function exec($sql) 
+    function exec($sql)
     {
         $this->result = sqlite_query($this->dbhandle, $sql);
 
@@ -121,19 +121,19 @@ class SqliteManager extends DatasourceManager
     }
 
     /** {@inheritdoc} */
-    function affectedRows() 
+    function affectedRows()
     {
         return sqlite_changes($this->dbhandle);
     }
 
     /** {@inheritdoc} */
-    function insertID() 
+    function insertID()
     {
         return sqlite_insert_id();
     }
 
     /** {@inheritdoc} */
-    function fetchArray($result) 
+    function fetchArray($result)
     {
         $row = sqlite_fetch_array($result, SQLITE_ASSOC);
 
@@ -141,7 +141,7 @@ class SqliteManager extends DatasourceManager
     }
 
     /** {@inheritdoc} */
-    function escapeString($str) 
+    function escapeString($str)
     {
         return sqlite_escape_string($str);
     }

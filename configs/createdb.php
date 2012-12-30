@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -31,7 +31,7 @@
  * @subpackage configs
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -40,14 +40,14 @@ if(isset($_SERVER['DOCUMENT_ROOT']) && strlen($_SERVER['DOCUMENT_ROOT']) > 0) {
     exit();
 }
 
-/** Calculate base directory of script 
- * @ignore 
+/** Calculate base directory of script
+ * @ignore
  */
 define("BASE_DIR", substr(
-    dirname(realpath($_SERVER['PHP_SELF'])), 0, 
+    dirname(realpath($_SERVER['PHP_SELF'])), 0,
     -strlen("/configs")));
 require_once BASE_DIR.'/configs/config.php';
-require_once BASE_DIR."/models/datasources/".DBMS."_manager.php"; 
+require_once BASE_DIR."/models/datasources/".DBMS."_manager.php";
     //get the database library
 require_once BASE_DIR."/lib/utility.php"; //for crawlHash function
 
@@ -61,8 +61,8 @@ if(in_array(DBMS, array("mysql"))) {
     $auto_increment = "AUTO_INCREMENT";
 }
 if(in_array(DBMS, array("sqlite"))) {
-    $auto_increment = ""; 
-    /* in sqlite2 a primary key column will act 
+    $auto_increment = "";
+    /* in sqlite2 a primary key column will act
        as auto_increment if don't give value
      */
 }
@@ -95,7 +95,7 @@ $db->execute("CREATE TABLE LOCALE (LOCALE_ID INTEGER PRIMARY KEY ".
     " WRITING_MODE CHAR(5))");
 $db->execute("CREATE TABLE TRANSLATION_LOCALE (TRANSLATION_ID INTEGER, ".
     "LOCALE_ID INTEGER, TRANSLATION VARCHAR(4096) )");
-/* we insert 1 by 1 rather than comma separate as sqlite 
+/* we insert 1 by 1 rather than comma separate as sqlite
    does not support comma separated inserts
  */
 $db->execute("INSERT INTO LOCALE VALUES (1, 'en-US', 'English', 'lr-tb')");
@@ -219,21 +219,21 @@ $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (4, 10, '크롤 관리')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (10, 10, '로케일 관리')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (11, 10, '구성')");
 
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (1, 15, 
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (1, 15,
     'Quản lý tài khoản' )");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (2, 15, 
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (2, 15,
     'Quản lý tên sử dụng')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (3, 15, 
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (3, 15,
     'Quản lý chức vụ')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (4, 15, 'Quản lý sự bò')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (10, 15, 
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (10, 15,
     'Quản lý miền địa phương')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (11, 15, 
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (11, 15,
     'Sắp xếp hoạt động dựa theo hoạch định')");
 
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (1, 16, 
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (1, 16,
     '管理帳號')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (2, 16, 
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (2, 16,
     '管理使用者')");
 
 
@@ -260,7 +260,7 @@ $db->execute("CREATE TABLE MACHINE (
 $db->execute("CREATE TABLE ACTIVE_FETCHER (NAME VARCHAR(16),
     FETCHER_ID INT(4))");
 $db->execute("CREATE TABLE MEDIA_SOURCE (TIMESTAMP INT(11) PRIMARY KEY,
-    NAME VARCHAR(16) UNIQUE, TYPE VARCHAR(16), 
+    NAME VARCHAR(16) UNIQUE, TYPE VARCHAR(16),
     SOURCE_URL VARCHAR(256), THUMB_URL VARCHAR(256), LANGUAGE VARCHAR(7)
     )");
 $db->execute("INSERT INTO MEDIA_SOURCE VALUES ('1342634195',
@@ -293,51 +293,51 @@ $db->execute("INSERT INTO MIX_GROUPS VALUES(3, 0, 1)");
 $db->execute("INSERT INTO MIX_COMPONENTS VALUES(3, 0, 1, 1, 'media:video')");
 $db->execute("INSERT INTO CRAWL_MIXES VALUES (4, 'news')");
 $db->execute("INSERT INTO MIX_GROUPS VALUES(4, 0, 1)");
-$db->execute("INSERT INTO MIX_COMPONENTS VALUES(4, 0, 1, 1, 
+$db->execute("INSERT INTO MIX_COMPONENTS VALUES(4, 0, 1, 1,
     'media:news no:cache')");
 
 $db->execute("INSERT INTO SUBSEARCH VALUES('db_subsearch_images',
     'images','m:2',50)");
 $db->execute("INSERT INTO TRANSLATION VALUES (1002,'db_subsearch_images')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES 
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
         (1002, 1, 'Images' )");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES 
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
         (1002, 5, 'Images' )");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES 
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
         (1002, 15, 'Hình' )");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES 
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
         (1002, 16, '图象
 ' )");
 
 $db->execute("INSERT INTO SUBSEARCH VALUES ('db_subsearch_videos',
     'videos','m:3',10)");
 $db->execute("INSERT INTO TRANSLATION VALUES (1003,'db_subsearch_videos')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES 
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
         (1003, 1, 'Videos' )");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES 
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
         (1003, 5, 'Vidéos' )");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES 
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
         (1003, 15, 'Thâu hình' )");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES 
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
         (1003, 16, '录影
 ' )");
 
 $db->execute("INSERT INTO SUBSEARCH VALUES ('db_subsearch_news',
     'news','m:4',20)");
 $db->execute("INSERT INTO TRANSLATION VALUES (1004,'db_subsearch_news')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES 
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
         (1004, 1, 'News' )");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES 
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
         (1004, 5, 'Actualités' )");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES 
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
         (1004, 15, 'Tin tức' )");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES 
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
         (1004, 16, '新闻
 
 ' )");
 
-$db->execute("CREATE TABLE FEED_ITEM (GUID VARCHAR(11) PRIMARY KEY, 
-    TITLE VARCHAR(512), LINK VARCHAR(256), DESCRIPTION VARCHAR(4096), 
+$db->execute("CREATE TABLE FEED_ITEM (GUID VARCHAR(11) PRIMARY KEY,
+    TITLE VARCHAR(512), LINK VARCHAR(256), DESCRIPTION VARCHAR(4096),
     PUBDATE INT, SOURCE_NAME VARCHAR(16))");
 
 $db->disconnect();

@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -22,7 +22,7 @@
  *
  *  END LICENSE
  *
- * Web page used to HTTP display error pages for 
+ * Web page used to HTTP display error pages for
  * the SeekQuarry/Yioop Search engine
  *
  * @author Chris Pollett chris@pollett.org
@@ -30,7 +30,7 @@
  * @subpackage static
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -47,7 +47,7 @@ if(!defined('BASE_DIR')) {
  * Load the configuration file
  */
 require_once(BASE_DIR.'configs/config.php');
-/** 
+/**
  * Used to set-up static error pages
  */
 require_once(BASE_DIR."/controllers/static_controller.php");

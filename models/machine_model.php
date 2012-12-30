@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage model
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -48,14 +48,14 @@ require_once BASE_DIR."/lib/fetch_url.php";
  * @package seek_quarry
  * @subpackage model
  */
-class MachineModel extends Model 
+class MachineModel extends Model
 {
 
 
     /**
      *  {@inheritdoc}
      */
-    function __construct() 
+    function __construct()
     {
         parent::__construct();
     }
@@ -72,7 +72,7 @@ class MachineModel extends Model
 
         $machines = array();
 
-        $sql = "SELECT * FROM MACHINE ORDER BY NAME DESC"; 
+        $sql = "SELECT * FROM MACHINE ORDER BY NAME DESC";
 
         $result = $this->db->execute($sql);
         $i = 0;
@@ -110,7 +110,7 @@ class MachineModel extends Model
         $this->db->selectDB(DB_NAME);
 
         $sql = "SELECT URL FROM MACHINE WHERE HAS_QUEUE_SERVER > 0 ".
-            "ORDER BY NAME DESC"; 
+            "ORDER BY NAME DESC";
 
         $result = $this->db->execute($sql);
         $i = 0;
@@ -137,7 +137,7 @@ class MachineModel extends Model
      *  @param string $parent - if this machine replicates some other machine
      *      then the name of the parent
      */
-    function addMachine($name, $url, $has_queue_server, $num_fetchers, 
+    function addMachine($name, $url, $has_queue_server, $num_fetchers,
         $parent = "")
     {
         $this->db->selectDB(DB_NAME);
@@ -158,7 +158,7 @@ class MachineModel extends Model
     /**
      *  Delete a machine by its name
      *
-     *  @param string name - the name of the machine to delete 
+     *  @param string name - the name of the machine to delete
      */
     function deleteMachine($machine_name)
     {
@@ -189,14 +189,14 @@ class MachineModel extends Model
         $statuses = FetchUrl::getPages($machines, true);
         for($i = 0; $i < $num_machines; $i++) {
             foreach($statuses as $status) {
-                if($machines[$i][CrawlConstants::URL] == 
+                if($machines[$i][CrawlConstants::URL] ==
                     $status[CrawlConstants::URL]) {
-                    $machines[$i]["STATUSES"] = 
+                    $machines[$i]["STATUSES"] =
                         json_decode($status[CrawlConstants::PAGE], true);
                 }
             }
         }
-        $sql = "SELECT * FROM ACTIVE_FETCHER"; 
+        $sql = "SELECT * FROM ACTIVE_FETCHER";
         $result = $this->db->execute($sql);
         if(!$result) return $machines;
         $active_fetchers = array();
@@ -226,7 +226,7 @@ class MachineModel extends Model
     {
         $time = time();
         $session = md5($time . AUTH_KEY);
-        $sql = "SELECT URL FROM MACHINE WHERE NAME='$machine_name'"; 
+        $sql = "SELECT URL FROM MACHINE WHERE NAME='$machine_name'";
 
         $result = $this->db->execute($sql);
         $row = $this->db->fetchArray($result);
@@ -254,14 +254,14 @@ class MachineModel extends Model
      * @param bool whether the requested machine is a mirror of another machine
      *
      */
-    function update($machine_name, $action, $fetcher_num = NULL, 
+    function update($machine_name, $action, $fetcher_num = NULL,
         $is_mirror = false)
     {
         $value = ($action == "start") ? "true" : "false";
         $time = time();
         $session = md5($time . AUTH_KEY);
         $this->db->execute("BEGIN");
-        $sql = "SELECT URL FROM MACHINE WHERE NAME='$machine_name'"; 
+        $sql = "SELECT URL FROM MACHINE WHERE NAME='$machine_name'";
 
         $result = $this->db->execute($sql);
         $row = $this->db->fetchArray($result);
@@ -270,7 +270,7 @@ class MachineModel extends Model
                 "&session=$session";
             if($fetcher_num !== NULL) {
                 $url .= "&fetcher[$fetcher_num]=$value";
-                $sql = "DELETE FROM ACTIVE_FETCHER WHERE 
+                $sql = "DELETE FROM ACTIVE_FETCHER WHERE
                         NAME='$machine_name' AND FETCHER_ID='$fetcher_num'";
                 $this->db->execute($sql);
                 if($action == "start") {

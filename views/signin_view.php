@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage view
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -40,7 +40,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @author Chris Pollett
  * @package seek_quarry
  * @subpackage view
- */ 
+ */
 
 class SigninView extends View
 {
@@ -53,10 +53,10 @@ class SigninView extends View
     /**
      *  Draws the login web page.
      *
-     *  @param array $data  contains the anti CSRF token 
+     *  @param array $data  contains the anti CSRF token
      *  the view
      */
-    public function renderView($data) {
+    function renderView($data) {
     $logo = "resources/yioop.png";
     if(MOBILE) {
         $logo = "resources/m-yioop.png";
@@ -64,35 +64,35 @@ class SigninView extends View
 ?>
 <div class="landing non-search">
 <h1 class="logo"><a href="./?<?php e(CSRF_TOKEN."=".$data[CSRF_TOKEN])
-        ?>"><img src="<?php e($logo); ?>" alt="Yioop!" 
+        ?>"><img src="<?php e($logo); ?>" alt="Yioop!"
         /></a><span> - <?php e(tl('signin_view_signin')); ?></span></h1>
 <form class="user_settings" method="post" action="#">
 <div class="login">
     <table>
     <tr>
-    <td class="table-label" ><b><label for="username"><?php 
-        e(tl('signin_view_username')); ?></label>:</b></td><td 
-            class="table-input"><input id="username" type="text" 
+    <td class="table-label" ><b><label for="username"><?php
+        e(tl('signin_view_username')); ?></label>:</b></td><td
+            class="table-input"><input id="username" type="text"
             class="narrowfield" maxlength="80" name="u"/>
     </td><td></td></tr>
     <tr>
-    <td class="table-label" ><b><label for="password"><?php 
-        e(tl('signin_view_password')); ?></label>:</b></td><td 
-        class="table-input"><input id="password" type="password" 
+    <td class="table-label" ><b><label for="password"><?php
+        e(tl('signin_view_password')); ?></label>:</b></td><td
+        class="table-input"><input id="password" type="password"
         class="narrowfield" maxlength="80" name="p" /></td>
-    <td><input type="hidden" name="<?php e(CSRF_TOKEN);?>" value="<?php 
+    <td><input type="hidden" name="<?php e(CSRF_TOKEN);?>" value="<?php
         e($data[CSRF_TOKEN]); ?>" />
     </td>
     </tr>
     <tr><td>&nbsp;</td><td class="center">
-    <button  type="submit" name="c" value="admin"><?php 
+    <button  type="submit" name="c" value="admin"><?php
         e(tl('signin_view_login')); ?></button>
     </td><td>&nbsp;</td></tr>
     </table>
 </div>
 </form>
 
-<div class="signin-exit"><a href="."><?php 
+<div class="signin-exit"><a href="."><?php
     e(tl('signin_view_return_yioop')); ?></a></div>
 </div>
 

@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage helper
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -48,7 +48,7 @@ require_once BASE_DIR."/views/helpers/helper.php";
 class PaginationHelper extends Helper
 {
     /**
-     * The maximum numbered links to pages to show besides the next and 
+     * The maximum numbered links to pages to show besides the next and
      * previous links
      *  @var int
      */
@@ -60,16 +60,16 @@ class PaginationHelper extends Helper
      * ten links to more search result page (if available) followed
      * by a next set of pages link.
      *
-     * @param string $base_url the url together with base query that the 
+     * @param string $base_url the url together with base query that the
      *      search was done on
-     * @param int $limit the number of the first link to display in the 
+     * @param int $limit the number of the first link to display in the
      *      set of search results.
-     * @param int $results_per_page   how many links are displayed on a given 
+     * @param int $results_per_page   how many links are displayed on a given
      *      page of search results
-     * @param int $total_results the total number of search results for the 
+     * @param int $total_results the total number of search results for the
      *      current search term
      */
-    public function render($base_url, $limit, $results_per_page, $total_results)
+    function render($base_url, $limit, $results_per_page, $total_results)
     {
         $num_earlier_pages = ceil($limit/$results_per_page);
         $total_pages = ceil($total_results/$results_per_page);
@@ -98,7 +98,7 @@ class PaginationHelper extends Helper
                     tl('pagination_helper_previous')."</a></span></li>";
             }
             if(MOBILE) {
-                if(0 < $num_earlier_pages && 
+                if(0 < $num_earlier_pages &&
                     $num_earlier_pages < $total_pages - 1){
                     e("<li><span class='end'>--</span></li>");
                 }

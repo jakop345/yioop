@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage datasource_manager
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -37,10 +37,10 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 require_once BASE_DIR."/lib/utility.php";
 
 /**
- * 
+ *
  * This abstract class defines the interface through which
  * the seek_quarry program communicates with a database and the
- * filesystem. 
+ * filesystem.
  *
  * @author Chris Pollett
  * @package seek_quarry
@@ -48,13 +48,13 @@ require_once BASE_DIR."/lib/utility.php";
  */
 abstract class DatasourceManager
 {
-    /** 
-     * Used to store statistics about what queries have been run depending on 
+    /**
+     * Used to store statistics about what queries have been run depending on
      * the debug level
      * @var string
      */
     var $query_log;
-    /** 
+    /**
      * Used to store the total time taken to execute queries
      * @var int
      */
@@ -69,15 +69,15 @@ abstract class DatasourceManager
     /**
      * Connects to a DBMS using data provided or from config.php
      *
-     * @param string $db_host the hostname of where the database is located 
+     * @param string $db_host the hostname of where the database is located
      *      (not used in all dbms's)
      * @param string $db_user the user to connect as
      * @param string $db_password the password of the user to connect as
-     * @return mixed return false if not successful and some kind of 
+     * @return mixed return false if not successful and some kind of
      *      connection object/identifier otherwise
      */
 
-    abstract function connect($db_host = DB_HOST, $db_user = DB_USER, 
+    abstract function connect($db_host = DB_HOST, $db_user = DB_USER,
         $db_password = DB_PASSWORD);
 
     /**
@@ -87,37 +87,9 @@ abstract class DatasourceManager
 
     /**
      *  Closes connections to DBMS
-     * 
+     *
      */
     abstract function disconnect();
-
-
-    /**
-     * Executes the supplied sql command on the database, depending on debug 
-     * levels computes query statistics
-     *
-     * This method operates either query or data manipulation statements
-     *
-     * @param string $sql  SQL statement to execute
-     * @return mixed false if query fails, resource or true otherwise
-
-     */
-    function execute($sql)
-    {
-        if(QUERY_STATISTICS) {
-            $query_info = array();
-            $query_info['QUERY'] = $sql;
-            $start_time = microtime();
-        }
-        $result =$this->exec($sql);
-        if(QUERY_STATISTICS) {
-            $query_info['ELAPSED_TIME'] = changeInMicrotime($start_time);
-            $this->total_time += $query_info['ELAPSED_TIME'];
-            $this->query_log[] = $query_info;
-        }
-        return $result;
-    } 
-
 
     /**
      * Hook Method for execute(). Executes the sql command on the database
@@ -159,22 +131,47 @@ abstract class DatasourceManager
     /**
      * Used to escape strings before insertion in the
      * database to avoid SQL injection
-     * 
+     *
      * @param string $str  string to escape
      * @return string a string which is safe to insert into the db
      */
     abstract function escapeString($str);
 
+    /**
+     * Executes the supplied sql command on the database, depending on debug
+     * levels computes query statistics
+     *
+     * This method operates either query or data manipulation statements
+     *
+     * @param string $sql  SQL statement to execute
+     * @return mixed false if query fails, resource or true otherwise
+
+     */
+    function execute($sql)
+    {
+        if(QUERY_STATISTICS) {
+            $query_info = array();
+            $query_info['QUERY'] = $sql;
+            $start_time = microtime();
+        }
+        $result =$this->exec($sql);
+        if(QUERY_STATISTICS) {
+            $query_info['ELAPSED_TIME'] = changeInMicrotime($start_time);
+            $this->total_time += $query_info['ELAPSED_TIME'];
+            $this->query_log[] = $query_info;
+        }
+        return $result;
+    }
 
     /**
-     * Recursively delete a directory 
+     * Recursively delete a directory
      *
      * @param string $dir Directory name
      * @param boolean $deleteRootToo Delete specified top directory as well
      */
-    function unlinkRecursive($dir, $deleteRootToo = true) 
+    function unlinkRecursive($dir, $deleteRootToo = true)
     {
-        $this->traverseDirectory($dir, "deleteFileOrDir", $deleteRootToo); 
+        $this->traverseDirectory($dir, "deleteFileOrDir", $deleteRootToo);
     }
 
     /**
@@ -183,9 +180,9 @@ abstract class DatasourceManager
      * @param string $dir Directory name
      * @param boolean $chmodRootToo chmod specified top-level directory as well
      */
-    function setWorldPermissionsRecursive($dir, $chmodRootToo = true) 
+    function setWorldPermissionsRecursive($dir, $chmodRootToo = true)
     {
-        $this->traverseDirectory($dir, "setWorldPermissions", $chmodRootToo); 
+        $this->traverseDirectory($dir, "setWorldPermissions", $chmodRootToo);
     }
 
     /**
@@ -194,12 +191,12 @@ abstract class DatasourceManager
      */
     function fileInfoRecursive($dir, $chmodRootToo = true)
     {
-        return $this->traverseDirectory($dir, 
-            "fileInfo", $chmodRootToo); 
+        return $this->traverseDirectory($dir,
+            "fileInfo", $chmodRootToo);
     }
 
     /**
-     * Recursively copies a source directory to a destination directory 
+     * Recursively copies a source directory to a destination directory
      *
      * It would have been cool to use traverseDirectory to implement this, but
      * it was a little bit too much of a stretch to shoehorn the code to match
@@ -207,7 +204,7 @@ abstract class DatasourceManager
      * @param string $source_dir the name of the source directory
      * @param string $desitnation_dir the name of the destination directory
      */
-    function copyRecursive($source_dir, $destination_dir) 
+    function copyRecursive($source_dir, $destination_dir)
     {
         if(!$dh = @opendir($source_dir)) {
             return;
@@ -222,11 +219,11 @@ abstract class DatasourceManager
         while(false !== ( $obj = readdir($dh)) ) {
             if (( $obj != '.' ) && ( $obj != '..' )) {
                 if ( is_dir($source_dir . '/' . $obj) ) {
-                    $this->copyRecursive($source_dir . '/' . 
+                    $this->copyRecursive($source_dir . '/' .
                         $obj, $destination_dir . '/' . $obj);
                 }
                 else {
-                    copy($source_dir . '/' . 
+                    copy($source_dir . '/' .
                         $obj, $destination_dir . '/' . $obj);
                     chmod($destination_dir . '/' . $obj, 0777);
                 }
@@ -243,8 +240,7 @@ abstract class DatasourceManager
      * @param function $callback Function to call as traverse structure
      * @return array results computed by performing the traversal
      */
-
-    public function traverseDirectory($dir, $callback, $rootToo = true) 
+    function traverseDirectory($dir, $callback, $rootToo = true)
     {
         $results = array();
         if(!$dh = @opendir($dir)) {
@@ -256,7 +252,7 @@ abstract class DatasourceManager
                 continue;
             }
             if (is_dir($dir . '/' . $obj)) {
-                $subdir_results = 
+                $subdir_results =
                     $this->traverseDirectory($dir.'/'.$obj, $callback, true);
                 $results = array_merge($results, $subdir_results);
             }
@@ -280,5 +276,5 @@ abstract class DatasourceManager
 
     }
 
-} 
+}
 ?>

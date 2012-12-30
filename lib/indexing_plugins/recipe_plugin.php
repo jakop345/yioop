@@ -1,5 +1,5 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
@@ -73,7 +73,7 @@ require_once BASE_DIR."/lib/crawl_constants.php";
  * http://www.foodnetwork.com/
  * http://www.bettycrocker.com/
  *
- * 
+ *
  * @author Priya Gangaraju, Chris Pollett (reorganized and added documentation)
  * @package seek_quarry
  * @subpackage indexing_plugin
@@ -105,7 +105,7 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
      *      on the given page. Each subdoc array has a self::TITLE and
      *      a self::DESCRIPTION
      */
-    function pageProcessing($page, $url) 
+    function pageProcessing($page, $url)
     {
         $page = preg_replace('@<script[^>]*?>.*?</script>@si', ' ', $page);
         $page = preg_replace('/>/', '> ', $page);
@@ -126,11 +126,11 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
             $titles = $xpath->evaluate(
                 "/html//div[@class='rectitle'] |
                /html//h1[@class = 'fn'] |
-               /html//div[@class = 
+               /html//div[@class =
                 'pod about-recipe clrfix']/p |
                /html//h1[@class = 'recipeTitle']");
             for($i=0; $i < $recipes_count; $i++) {
-                $ingredients = $xpath->evaluate("/html//div[@class = 
+                $ingredients = $xpath->evaluate("/html//div[@class =
                     'ingredients']/ul/li |
                     /html//div[@class = 'body-text']
                     /ul/li[@class = 'ingredient'] |
@@ -179,7 +179,7 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
         $index_archive_name = self::index_data_base_name . $index_name;
         $index_archive = new IndexArchiveBundle(
             CRAWL_DIR.'/cache/'.$index_archive_name);
-        $query_iterator = new WordIterator(crawlHash("recipe:all"), 
+        $query_iterator = new WordIterator(crawlHash("recipe:all"),
             $index_archive);
         $raw_recipes = array();
         while(is_array($next_docs = $query_iterator->nextDocsWithWord())) {
@@ -219,7 +219,7 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
                     if(strlen($ingredient) != 0 && (
                             substr($ingredient,
                                 strlen($ingredient) - 1) != ":")) {
-                        $mainIngredient = 
+                        $mainIngredient =
                             $this->getIngredientName((string)$ingredient);
                         if(strlen($mainIngredient) != 0) {
                             $recipe[1][$index] = $mainIngredient;
@@ -254,7 +254,7 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
                 $recipe1_main_ingredient = "";
                 $recipe1 = $recipes[$i][1];
                 $recipe_name = $recipes[$i][0];
-                $recipe1_title = strtolower($recipes[$i][0]); 
+                $recipe1_title = strtolower($recipes[$i][0]);
                 $distinct_ingredients[$recipe_name] = $recipes[$i][1];
                 $doc_keys[$recipe_name] = $recipes[$i][2];
                 $recipes_summary[$recipe_name] = $recipes[$i][3];
@@ -262,7 +262,7 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
                 for($j = $i + 1; $j < $count; $j++) {
                     $recipe2_main_ingredient = "";
                     $recipe2 = $recipes[$j][1];
-                    $recipe2_title = strtolower($recipes[$j][0]); 
+                    $recipe2_title = strtolower($recipes[$j][0]);
                     $weights[$k][0] = $recipes[$i][0];
                     $weights[$k][1] = $recipes[$j][0];
                     $merge_array = array_merge($recipe1, $recipe2);
@@ -271,7 +271,7 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
                     $recipe1_vector = array_fill_keys($vector_array, 0);
                     $recipe2_vector = array_fill_keys($vector_array, 0);
                     foreach($recipe1 as $ingredient){
-                        if($ingredient != "" && 
+                        if($ingredient != "" &&
                             !in_array($ingredient, $basic_ingredients)) {
                                 if(strstr($recipe1_title, $ingredient)) {
                                     $recipe1_main_ingredient = $ingredient;
@@ -291,7 +291,7 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
                     $edge_weight = 0;
                     $matches = 1;
                     foreach($vector_array as $vector) {
-                        $diff = $recipe1_vector[$vector] - 
+                        $diff = $recipe1_vector[$vector] -
                                     $recipe2_vector[$vector];
                         $vector_diff[$vector] = (pow($diff, 2));
                         if(abs($diff) == 1)
@@ -307,7 +307,7 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
                     $k++;
                 }
             }
-            
+
             $clusters = kruskalClustering($weights,
                 $count, $distinct_ingredients);
             $index_shard = new IndexShard("cluster_shard");
@@ -321,47 +321,47 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
                     $summary = array();
                     $recipe = $cluster[$i];
                     $doc_key = $doc_keys[$recipe];
-                    $summary[self::URL] = 
+                    $summary[self::URL] =
                         $recipes_summary[$recipe][self::URL];
-                    $summary[self::TITLE] = 
-                        $recipes_summary[$recipe][self::TITLE]; 
-                    $summary[self::DESCRIPTION] =  
+                    $summary[self::TITLE] =
+                        $recipes_summary[$recipe][self::TITLE];
+                    $summary[self::DESCRIPTION] =
                         $recipes_summary[$recipe][self::DESCRIPTION];
-                    $summary[self::TIMESTAMP] = 
+                    $summary[self::TIMESTAMP] =
                         $recipes_summary[$recipe][self::TIMESTAMP];
-                    $summary[self::ENCODING] = 
+                    $summary[self::ENCODING] =
                         $recipes_summary[$recipe][self::ENCODING];
-                    $summary[self::HASH] = 
+                    $summary[self::HASH] =
                         $recipes_summary[$recipe][self::HASH];
-                    $summary[self::TYPE] = 
+                    $summary[self::TYPE] =
                         $recipes_summary[$recipe][self::TYPE];
-                    $summary[self::HTTP_CODE] = 
+                    $summary[self::HTTP_CODE] =
                         $recipes_summary[$recipe][self::HTTP_CODE];
                     $recipe_sites[] = $summary;
                     $meta_ids[] = "ingredient:".$cluster["ingredient"];
-                    $index_shard->addDocumentWords($doc_key, 
-                        self::NEEDS_OFFSET_FLAG, 
+                    $index_shard->addDocumentWords($doc_key,
+                        self::NEEDS_OFFSET_FLAG,
                         $word_counts, $meta_ids, true, false);
                     $index_shard->save(true);
                 }
-            
+
             }
 
             $dir = CRAWL_DIR."/cache/".self::index_data_base_name.$index_name;
             $index_archive = new IndexArchiveBundle($dir, false);
             $generation = $index_archive->initGenerationToAdd($index_shard);
             if(isset($recipe_sites)) {
-                $index_archive->addPages($generation, 
+                $index_archive->addPages($generation,
                     self::SUMMARY_OFFSET, $recipe_sites, 0);
             }
             $k = 0;
             foreach($recipe_sites as $site) {
                 $recipe = $site[self::TITLE];
-                $hash = crawlHash($site[self::URL], true). 
-                    $site[self::HASH] . 
+                $hash = crawlHash($site[self::URL], true).
+                    $site[self::HASH] .
                     "r". substr(crawlHash( // r is for recipe
                     UrlParser::getHost($site[self::URL])."/",true), 1);
-                $summary_offsets[$hash] = 
+                $summary_offsets[$hash] =
                     array($site[self::SUMMARY_OFFSET], null);
             }
             $index_shard->changeDocumentOffsets($summary_offsets);
@@ -380,7 +380,7 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
      *  @param string $text ingredient.
      *  @return string $name main ingredient
      */
-    function getIngredientName($text) 
+    function getIngredientName($text)
     {
         $special_chars = array('/\d+/','/\\//');
         $ingredient = preg_replace($special_chars," ", $text);
@@ -405,11 +405,11 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
         $measurements = array('cup','cups','ounces','teaspoon','teaspoons',
             'tablespoon','tablespoons','pound','pounds','tbsp','tsp','lbs',
             'inch','pinch','oz','lb','tbs','can','bag','C','c','tb');
-            
+
         $sizes = array('small','large','thin','less','thick','bunch');
-        
+
         $prepositions = array('into', 'for', 'by','to','of');
-        
+
         $misc = array('hot','cold','room','temperature','plus','stick','pieces',
             "confectioners",'semisweet','white','all-purpose','bittersweet',
             'cut','whole','or','and','french','wedges','package','pkg','shells',
@@ -417,12 +417,12 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
             'cedar','taste','spicy','glaze','crunchy','sharp','chips','juice',
             'optional','fine','regular','dash','overnight','soaked','classic',
             'firm','delicious','prefer','plain');
-            
+
         $attributes = array('boneless','skinless','breast','legs','thighs',
             'washington','fresh','flat','leaf','ground','extra','virgin','dry',
             'cloves','lean','ground','roma','all purpose','light','brown',
             'idaho','kosher','frozen','garnish');
-        
+
         $nouns = array();
         $i = 0;
         $endings = array('/\,/','/\./','/\+/','/\*/',"/'/","/\(/","/\)/");
@@ -434,7 +434,7 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
                             $word = $variety;
                     }
                 $word = preg_replace($endings,"",$word);
-                if(!in_array($word,$measurements) && !in_array($word,$sizes) 
+                if(!in_array($word,$measurements) && !in_array($word,$sizes)
                     && !in_array($word,$prepositions) && !in_array($word,$misc)
                     && !in_array($word,$attributes)) {
                     $ending = substr($word, -2);
@@ -472,8 +472,8 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
      */
     static function getAdditionalMetaWords()
     {
-        
-        return array("recipe:" => HtmlProcessor::MAX_DESCRIPTION_LEN, 
+
+        return array("recipe:" => HtmlProcessor::MAX_DESCRIPTION_LEN,
             "ingredient:" => HtmlProcessor::MAX_DESCRIPTION_LEN);
     }
 }
@@ -501,24 +501,24 @@ class Vertex
 {
     private $label;
     private $visited;
-    
+
     function __construct($label){
         $this->label = $label;
         $this->visited = false;
     }
-    
+
     function getLabel(){
         return $this->label;
     }
-    
+
     function visited(){
         $this->visited = true;
     }
-    
+
     function isVisited(){
         return $this->visited;
     }
-}    
+}
 /**
  * class to define edge
  * @package seek_quarry
@@ -529,23 +529,23 @@ class Edge
     private $start_vertex;
     private $end_vertex;
     private $cost;
-    
+
     function __construct($vertex1,$vertex2,$cost){
         $this->start_vertex = new Vertex($vertex1);
         $this->end_vertex = new Vertex($vertex2);
         $this->cost = $cost;
     }
-    
+
     function getStartVertex()
-    { 
+    {
         return $this->start_vertex;
     }
-    
+
     function getEndVertex()
     {
         return $this->end_vertex;
     }
-    
+
     function getCost()
     {
         return $this->cost;
@@ -553,23 +553,23 @@ class Edge
 }
 
 /**
- * class to define Minimum Spanning tree. constructMST constructs 
- * the minimum spanning tree using heap. formCluster forms clusters by 
- * deleting the most expensive edge. BreadthFirstSearch is used to 
+ * class to define Minimum Spanning tree. constructMST constructs
+ * the minimum spanning tree using heap. formCluster forms clusters by
+ * deleting the most expensive edge. BreadthFirstSearch is used to
  * traverse the MST.
  * @package seek_quarry
  * @subpackage indexing_plugin
- */ 
-class Tree 
+ */
+class Tree
 {
     private $cluster_heap;
     private $vertices;
     private $adjMatrix;
-    
+
     function __construct(){
         $this->cluster_heap = new Cluster();
         $this->vertices = array();
-    } 
+    }
 
    /**
     * constructs the adjacency matrix for the MST.
@@ -582,16 +582,16 @@ class Tree
             $this->cluster_heap->insert($edge);
             $vertex1 = $edge->getStartVertex();
             $vertex2 = $edge->getEndVertex();
-            $this->adjMatrix[$vertex1->getLabel()][$vertex2->getLabel()] = 
+            $this->adjMatrix[$vertex1->getLabel()][$vertex2->getLabel()] =
                 $vertex2->getLabel();
-            $this->adjMatrix[$vertex2->getLabel()][$vertex1->getLabel()] = 
+            $this->adjMatrix[$vertex2->getLabel()][$vertex1->getLabel()] =
                 $vertex1->getLabel();
-            if(empty($this->vertices) || !in_array($vertex1,$this->vertices)) 
+            if(empty($this->vertices) || !in_array($vertex1,$this->vertices))
                 $this->vertices[$vertex1->getLabel()] = $vertex1;
-            if(empty($this->vertices) || !in_array($vertex2,$this->vertices)) 
+            if(empty($this->vertices) || !in_array($vertex2,$this->vertices))
                 $this->vertices[$vertex2->getLabel()] = $vertex2;
         }
-        
+
     }
 
    /**
@@ -638,25 +638,25 @@ class Tree
         }
     return $cluster;
     }
-    
+
    /**
     * gets the next vertex  from the adjacency matrix for a given vertex
     *
-    * @param string $vertex vertex 
+    * @param string $vertex vertex
     * @return adjacent vertex if it has otherwise -1.
     */
     function getNextVertex($vertex)
     {
         foreach($this->adjMatrix[$vertex] as $vert=>$value) {
-            if($value != -1 
+            if($value != -1
                 && ($this->vertices[$value]->isVisited() == false)) {
                 return $this->adjMatrix[$vertex][$vert];
             }
-            
+
         }
         return -1;
     }
-    
+
    /**
     * Finds the common ingredient for each of the clusters.
     *
@@ -683,13 +683,13 @@ class Tree
             $common_ingredients = array();
             for($i = 0; $i < count($cluster); $i++){
                 $recipe_name = $cluster[$i];
-                $main_ingredients = 
+                $main_ingredients =
                     array_diff($ingredients[$recipe_name],$basic_ingredients);
                 $cluster_recipe_ingredients = array_merge(
                     $cluster_recipe_ingredients,
                     array_unique($main_ingredients));
             }
-            $ingredient_occurrence = 
+            $ingredient_occurrence =
                 array_count_values($cluster_recipe_ingredients);
             $max = max($ingredient_occurrence);
             foreach($ingredient_occurrence as $key=>$value){
@@ -703,7 +703,7 @@ class Tree
             $k++;
         }
         return $new_clusters;
-        
+
     }
 }
 /**
@@ -714,7 +714,7 @@ class Tree
 class Cluster extends SplHeap
 {
 
-    public function compare($edge1,$edge2)
+    function compare($edge1,$edge2)
     {
         $values1 = $edge1->getCost();
         $values2 = $edge2->getCost();
@@ -730,7 +730,7 @@ class Cluster extends SplHeap
 class TreeCluster extends SplHeap
 {
 
-    public function compare($edge1,$edge2)
+    function compare($edge1,$edge2)
     {
         $values1 = $edge1->getCost();
         $values2 = $edge2->getCost();
@@ -750,20 +750,20 @@ class Queue
     private $queArray;
     private $front;
     private $rear;
-    
+
     function __construct($size){
         $this->queArray = array();
         $this->front = 0;
         $this->rear = -1;
         $this->size = $size;
     }
-    
+
     function enqueue($i){
         if($this->rear == $this->size-1)
             $this->rear = -1;
         $this->queArray[++$this->rear] = $i;
     }
-    
+
     function dequeue(){
         $temp = $this->queArray[$this->front++];
         if($this->front == $this->size)
@@ -772,18 +772,18 @@ class Queue
     }
 
     function isEmpty(){
-        if(($this->rear + 1)== $this->front || 
+        if(($this->rear + 1)== $this->front ||
             ($this->front + $this->size - 1) == $this->rear)
             return true;
         return false;
     }
-    
+
 }
 /**
  * creates tree from the input and apply Kruskal's algorithm to find MST.
  *
  * @param object array $edges recipes with distances between them.
- * @return object arrat $min_edges MST 
+ * @return object arrat $min_edges MST
  */
 function construct_tree($edges) {
     $vertices = array();
@@ -806,7 +806,7 @@ function construct_tree($edges) {
     $k = 0;
     $tree_heap->top();
     while($k < count($vertices) - 1) {
-        
+
         $min_edge = $tree_heap->extract();
         $vertex1= $min_edge->getStartVertex()->getLabel();
         $vertex2 = $min_edge->getEndVertex()->getLabel();
@@ -830,7 +830,7 @@ function construct_tree($edges) {
     return $min_edges;
 }
 
-/** 
+/**
  * Clusters the recipes by applying Kruskal's algorithm
  * @param array $edges recipes and distances between them.
  *

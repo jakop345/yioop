@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage library
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -45,12 +45,12 @@ require_once BASE_DIR.'/lib/web_archive.php';
 require_once BASE_DIR.'/lib/compressors/gzip_compressor.php';
 
 
- 
+
 /**
- * A web archive bundle is a collection of web archives which are managed 
- * together.It is useful to split data across several archive files rather than 
- * just store it in one, for both read efficiency and to keep filesizes from 
- * getting too big. In some places we are using 4 byte int's to store file 
+ * A web archive bundle is a collection of web archives which are managed
+ * together.It is useful to split data across several archive files rather than
+ * just store it in one, for both read efficiency and to keep filesizes from
+ * getting too big. In some places we are using 4 byte int's to store file
  * offsets which restricts the size of the files we can use for wbe archives.
  *
  * @author Chris Pollett
@@ -58,7 +58,7 @@ require_once BASE_DIR.'/lib/compressors/gzip_compressor.php';
  * @package seek_quarry
  * @subpackage library
  */
-class WebArchiveBundle 
+class WebArchiveBundle
 {
 
     /**
@@ -98,7 +98,7 @@ class WebArchiveBundle
      */
     var $read_only_archive;
     /**
-     * Makes or initializes an existing WebArchiveBundle with the given 
+     * Makes or initializes an existing WebArchiveBundle with the given
      * characteristics
      *
      * @param string $dir_name folder name of the bundle
@@ -106,12 +106,12 @@ class WebArchiveBundle
      *      web archive is changed
      * @param string $description a short text name/description of this
      *      WebArchiveBundle
-     * @param string $compressor the Compressor object used to 
+     * @param string $compressor the Compressor object used to
      *      compress/uncompress data stored in the bundle
      */
     function __construct($dir_name, $read_only_archive = true,
-        $num_docs_per_partition = NUM_DOCS_PER_GENERATION, $description = NULL, 
-        $compressor = "GzipCompressor") 
+        $num_docs_per_partition = NUM_DOCS_PER_GENERATION, $description = NULL,
+        $compressor = "GzipCompressor")
     {
         $this->dir_name = $dir_name;
         $this->num_docs_per_partition = $num_docs_per_partition;
@@ -176,16 +176,16 @@ class WebArchiveBundle
 
         $num_pages = count($pages);
 
-        if($this->num_docs_per_partition > 0 && 
+        if($this->num_docs_per_partition > 0 &&
             $num_pages > $this->num_docs_per_partition) {
-            crawlLog("ERROR! At most ".$this->num_docs_per_partition. 
+            crawlLog("ERROR! At most ".$this->num_docs_per_partition.
                 "many pages can be added in one go!");
             exit();
         }
 
         $partition = $this->getPartition($this->write_partition);
         $part_count = $partition->count;
-        if($this->num_docs_per_partition > 0 && 
+        if($this->num_docs_per_partition > 0 &&
             $num_pages + $part_count > $this->num_docs_per_partition) {
             $this->setWritePartition($this->write_partition + 1);
             $partition = $this->getPartition($this->write_partition);
@@ -200,7 +200,7 @@ class WebArchiveBundle
     }
 
     /**
-     * Advances the index of the write partition by one and creates the 
+     * Advances the index of the write partition by one and creates the
      * corresponding web archive.
      */
     function setWritePartition($i)
@@ -220,7 +220,7 @@ class WebArchiveBundle
      */
     function getPage($offset, $partition, $file_handle = NULL)
     {
-        $page_array = 
+        $page_array =
             $this->getPartition($partition)->getObjects(
                 $offset, 1, true, $file_handle);
 
@@ -246,7 +246,7 @@ class WebArchiveBundle
         if(!is_int($index)) {
             $index = 0;
         }
-        if(!isset($this->partition[$index])) { 
+        if(!isset($this->partition[$index])) {
             //this might not have been open yet
             $create_flag = false;
             $compressor = $this->compressor;
@@ -257,8 +257,8 @@ class WebArchiveBundle
             if(!file_exists($archive_name)) {
                 $create_flag = true;
             }
-            $this->partition[$index] = 
-                new WebArchive($archive_name, 
+            $this->partition[$index] =
+                new WebArchive($archive_name,
                     new $compressor(), $fast_construct);
             if($create_flag && file_exists($archive_name)) {
                 chmod($archive_name, 0777);
@@ -275,7 +275,7 @@ class WebArchiveBundle
      */
     function initCountIfNotExists($field = "COUNT")
     {
-        $info = 
+        $info =
             unserialize(file_get_contents($this->dir_name."/description.txt"));
         if(!isset($info[$field])) {
             $info[$field] = 0;
@@ -289,7 +289,7 @@ class WebArchiveBundle
     /**
      * Updates the description file with the current count for the number of
      * items in the WebArchiveBundle. If the $field item is used counts of
-     * additional properties (visited urls say versus total urls) can be 
+     * additional properties (visited urls say versus total urls) can be
      * maintained.
      *
      * @param int $num number of items to add to current count
@@ -297,7 +297,7 @@ class WebArchiveBundle
      */
     function addCount($num, $field = "COUNT")
     {
-        $info = 
+        $info =
             unserialize(file_get_contents($this->dir_name."/description.txt"));
         $info[$field] += $num;
         if(!$this->read_only_archive) {
@@ -307,7 +307,7 @@ class WebArchiveBundle
     }
 
     /**
-     * Gets information about a WebArchiveBundle out of its description.txt 
+     * Gets information about a WebArchiveBundle out of its description.txt
      * file
      *
      * @param string $dir_name folder name of the WebArchiveBundle to get info
@@ -320,7 +320,7 @@ class WebArchiveBundle
     {
         if(!is_dir($dir_name) || !file_exists($dir_name."/description.txt")) {
             $info = array();
-            $info['DESCRIPTION'] = 
+            $info['DESCRIPTION'] =
                 "Archive does not exist OR Archive description file not found";
             $info['COUNT'] = 0;
             $info['NUM_DOCS_PER_PARTITION'] = -1;
@@ -334,11 +334,11 @@ class WebArchiveBundle
     }
 
     /**
-     * Sets the archive info (DESCRIPTION, COUNT, 
-     * NUM_DOCS_PER_PARTITION) for this web archive 
+     * Sets the archive info (DESCRIPTION, COUNT,
+     * NUM_DOCS_PER_PARTITION) for this web archive
      *
-     * @param string $dir_name folder with archive bundle 
-     * @param array $info struct with above fields 
+     * @param string $dir_name folder with archive bundle
+     * @param array $info struct with above fields
      */
     static function setArchiveInfo($dir_name, $info)
     {

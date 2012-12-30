@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage processor
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -43,7 +43,7 @@ require_once BASE_DIR."/lib/processors/text_processor.php";
 require_once BASE_DIR."/lib/url_parser.php";
 
  /**
- * Used to create crawl summary information 
+ * Used to create crawl summary information
  * for RSS files
  *
  * @author Chris Pollett
@@ -77,8 +77,8 @@ class RssProcessor extends TextProcessor
 
             if($dom !==false) {
                 $summary[self::TITLE] = self::title($dom);
-                $summary[self::DESCRIPTION] = self::description($dom); 
-                $summary[self::LANG] = self::lang($dom, 
+                $summary[self::DESCRIPTION] = self::description($dom);
+                $summary[self::LANG] = self::lang($dom,
                     $summary[self::DESCRIPTION]);
                 $summary[self::LINKS] = self::links($dom, $url);
                 if(strlen($summary[self::DESCRIPTION] . $summary[self::TITLE])
@@ -106,7 +106,7 @@ class RssProcessor extends TextProcessor
     {
         $xpath = new DOMXPath($dom);
         $languages = $xpath->evaluate("/rss/channel/language");
-        if($languages && is_object($languages) && 
+        if($languages && is_object($languages) &&
             is_object($languages->item(0))) {
             return $languages->item(0)->textContent;
         } else {
@@ -116,14 +116,14 @@ class RssProcessor extends TextProcessor
     }
 
     /**
-     * Return a document object based on a string containing the contents of 
+     * Return a document object based on a string containing the contents of
      * an RSS page
      *
      *  @param string $page   a web page
      *
      *  @return object  document object
      */
-    static function dom($page) 
+    static function dom($page)
     {
         $dom = new DOMDocument();
 
@@ -137,10 +137,10 @@ class RssProcessor extends TextProcessor
      *  Returns html head title of a webpage based on its document object
      *
      *  @param object $dom   a document object to extract a title from.
-     *  @return string  a title of the page 
+     *  @return string  a title of the page
      *
      */
-    static function title($dom) 
+    static function title($dom)
     {
         $sites = array();
 
@@ -157,11 +157,11 @@ class RssProcessor extends TextProcessor
     }
 
     /**
-     * Returns descriptive text concerning a webpage based on its document 
+     * Returns descriptive text concerning a webpage based on its document
      * object
      *
      * @param object $dom   a document object to extract a description from.
-     * @return string a description of the page 
+     * @return string a description of the page
      */
     static function description($dom) {
         $sites = array();
@@ -174,7 +174,7 @@ class RssProcessor extends TextProcessor
           concatenate the contents of then additional dom elements up to
           the limit of description length
         */
-        $page_parts = array("/rss/channel/description", 
+        $page_parts = array("/rss/channel/description",
             "/rss/channel/category", "/rss/channel/lastBuildDate",
             "/rss/channel/copyright");
         foreach($page_parts as $part) {
@@ -193,20 +193,20 @@ class RssProcessor extends TextProcessor
      * Returns up to MAX_LINK_PER_PAGE many links from the supplied
      * dom object where links have been canonicalized according to
      * the supplied $site information.
-     * 
+     *
      * @param object $dom   a document object with links on it
      * @param string $site   a string containing a url
-     * 
+     *
      * @return array   links from the $dom object
-     */ 
-    static function links($dom, $site) 
+     */
+    static function links($dom, $site)
     {
         $sites = array();
 
         $xpath = new DOMXPath($dom);
 
-        $link_nodes = array( 
-            "/rss/channel" => array( "url" =>"link", "text" => "title"), 
+        $link_nodes = array(
+            "/rss/channel" => array( "url" =>"link", "text" => "title"),
             "/rss/channel/image" => array( "url" =>"url", "text" => "title"),
             "/rss/channel/item" => array( "url" =>"link", "text" => "title"),
         );
@@ -216,7 +216,7 @@ class RssProcessor extends TextProcessor
         foreach($link_nodes as $path => $url_text_pair) {
             $nodes = $xpath->evaluate($path);
             foreach($nodes as $node) {
-                $result = self::linkAndTexts($node, 
+                $result = self::linkAndTexts($node,
                     $url_text_pair['url'], $url_text_pair['text'], $site);
                 if($result != false) {
                     list($url, $text) = $result;
@@ -237,14 +237,14 @@ class RssProcessor extends TextProcessor
      * Returns a url text pair where the url comes from the link of
      * the given item node and the text comes from the text data for that node.
      * urls are canonicalized according to site.
-     * 
+     *
      * @param object $item_node the DOMNode to get a link and text from
      * @param string $link_name name of link tag
      * @param string $text_name name of text tag to associate with link
      * @param string $site   a string containing a url
-     * 
-     * @return array a url,text pair 
-     */ 
+     *
+     * @return array a url,text pair
+     */
     static function linkAndTexts($item_node, $link_name, $text_name, $site)
     {
         foreach($item_node->childNodes as $node) {

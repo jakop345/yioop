@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage helper
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -46,7 +46,7 @@ require_once BASE_DIR."/views/helpers/helper.php";
  * @package seek_quarry
  * @subpackage helper
  */
- 
+
 class ToggleHelper extends Helper
 {
 
@@ -58,19 +58,19 @@ class ToggleHelper extends Helper
      *  @param string $on_url - url that is sent when one clicks on
      *  @param string $off_url - url that is sent when one clicks off
      */
-    public function render($state, $on_url, $off_url, $caution = false)
-    { 
+    function render($state, $on_url, $off_url, $caution = false)
+    {
         if($state) {
             $oncolor = ($caution) ? "backyellow" : "backgreen";
             if($caution) { ?>
-                <table class="toggletable"><tr><td 
+                <table class="toggletable"><tr><td
                 class="<?php e($oncolor);
-                    ?>"><a href="<?php e($on_url);?>"><?php 
+                    ?>"><a href="<?php e($on_url);?>"><?php
                 e(tl('toggle_helper_on'));?></a></td>
                 <td><a href="<?php e($off_url);?>"
                 ><?php e(tl('toggle_helper_off'));?></a></td></tr></table>
             <?php } else { ?>
-                <table class="toggletable"><tr><td 
+                <table class="toggletable"><tr><td
                 class="<?php e($oncolor);
                     ?>"><b><?php e(tl('toggle_helper_on'));?></b></td>
                 <td><a href="<?php e($off_url);?>"

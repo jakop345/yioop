@@ -3,7 +3,7 @@
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -29,10 +29,10 @@
  * @package seek_quarry
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
- 
+
 /**
  * Used to contain information about the current language and regional settings
  */
@@ -76,9 +76,9 @@ function guessLocale()
     }
 
     if(isset($_SESSION['l']) || isset($_REQUEST['l']) || isset($guess_l)) {
-        $l = (isset($_REQUEST['l'])) ? $_REQUEST['l'] : 
+        $l = (isset($_REQUEST['l'])) ? $_REQUEST['l'] :
             ((isset($_SESSION['l'])) ? $_SESSION['l'] : $guess_l);
-        if(strlen($l) < 10) { 
+        if(strlen($l) < 10) {
             $l= addslashes($l);
             if(is_dir(LOCALE_DIR."/$l")) {
                 $locale_tag = $l;
@@ -160,7 +160,7 @@ function guessLangEncoding($encoding)
     if(in_array($encoding, $lang)) {
         return "ja";
     }
-    $lang = array("EUC-CN", "GBK", "GB2312", "EUC-TW", "HZ", "CP936", 
+    $lang = array("EUC-CN", "GBK", "GB2312", "EUC-TW", "HZ", "CP936",
         "BIG-5", "CP950");
     if(in_array($encoding, $lang)) {
         return "zh-CN";
@@ -335,20 +335,20 @@ function w1256ToUTF8($str)
 
 /**
  * Given a unicode codepoint convert it to UTF-8
- * 
+ *
  * @param int $code  the codepoint to convert
  * @return string the corresponding UTF-8 string
  */
-function utf8chr($code) 
+function utf8chr($code)
 {
-    if($code <= 0x7F) 
+    if($code <= 0x7F)
         return chr($code);
-    if($code <= 0x7FF) 
+    if($code <= 0x7FF)
         return pack("C*", ($code >> 6)+192, ($code & 63) + 128);
-    if($code <= 0xFFFF) 
-            return pack("C*", ($code >> 12)+224, (($code>>6) & 63) + 128, 
+    if($code <= 0xFFFF)
+            return pack("C*", ($code >> 12)+224, (($code>>6) & 63) + 128,
                 ($code&63)+128);
-    if($code <= 0x1FFFFF) 
+    if($code <= 0x1FFFFF)
         return pack("C*", ($code >> 18) + 240, (($code >> 12) & 63) + 128,
             (($code >> 6) & 63) + 128, ($code & 63) + 128);
     return '';

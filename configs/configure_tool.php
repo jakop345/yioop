@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -22,7 +22,7 @@
  *
  *  END LICENSE
  *
- * Used to create and manipulate a profile and work directory from the 
+ * Used to create and manipulate a profile and work directory from the
  * command-line for Yioop.
  *
  * @author Chris Pollett chris@pollett.org
@@ -30,7 +30,7 @@
  * @subpackage configs
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -38,7 +38,7 @@ if(php_sapi_name() != 'cli') {echo "BAD REQUEST"; exit();}
 
 /** Calculate base directory of script @ignore*/
 define("BASE_DIR", substr(
-    dirname(realpath($_SERVER['PHP_SELF'])), 0, 
+    dirname(realpath($_SERVER['PHP_SELF'])), 0,
     -strlen("/configs")));
 
 /** Load in global configuration settings */
@@ -73,7 +73,7 @@ require_once(BASE_DIR."/controllers/admin_controller.php");
 class ConfigureTool
 {
     /**
-     * Used to hold an AdminController object used to manipulate the 
+     * Used to hold an AdminController object used to manipulate the
      * Yioop configuration
      * @var object
      */
@@ -102,7 +102,7 @@ class ConfigureTool
      * To keep things simple this constructor initializes each of the
      * relevant super globals to be empty arrays.
      */
-    function __construct() 
+    function __construct()
     {
         global $INDEXING_PLUGINS;
 
@@ -132,7 +132,7 @@ class ConfigureTool
     }
 
     /**
-     * This is used to draw the main configuration menu and ask for a 
+     * This is used to draw the main configuration menu and ask for a
      * user selection
      */
     function configureMenu()
@@ -202,7 +202,7 @@ class ConfigureTool
     }
 
     /**
-     * Changes the default locale (language) used by Yioop when it cannot 
+     * Changes the default locale (language) used by Yioop when it cannot
      * determine that information from the users browswer
      */
     function defaultLocale()
@@ -274,7 +274,7 @@ class ConfigureTool
             $_SERVER = array();
             return "configureMenu";
         }
-        $flag = constant($choice); 
+        $flag = constant($choice);
         $dlevel = ($dlevel & $flag) ? $dlevel - $flag : $dlevel + $flag;
         if($dlevel & ERROR_INFO) {$_REQUEST["ERROR_INFO"] = true;}
         if($dlevel & QUERY_INFO) {$_REQUEST["QUERY_INFO"] = true;}
@@ -318,7 +318,7 @@ class ConfigureTool
             $_SERVER = array();
             return "configureMenu";
         }
-        $_REQUEST[$choice] = ($data[$choice]) ? false : true; 
+        $_REQUEST[$choice] = ($data[$choice]) ? false : true;
         return "searchAccess";
     }
 
@@ -338,10 +338,10 @@ class ConfigureTool
         e("CURRENT SEARCH PAGE ELEMENTS AND LINKS SETTINGS".
             "\n===================================================\n");
 
-        $settings = array("WORD_SUGGEST" => "Word Suggest", 
-            "SUBSEARCH_LINK"  => "Subsearch Links", 
-            "SIGNIN_LINK" => "Sign-in Links", "CACHE_LINK" => "Cache Link", 
-            "SIMILAR_LINK" => "Similar Link", "IN_LINK" => "Inlinks", 
+        $settings = array("WORD_SUGGEST" => "Word Suggest",
+            "SUBSEARCH_LINK"  => "Subsearch Links",
+            "SIGNIN_LINK" => "Sign-in Links", "CACHE_LINK" => "Cache Link",
+            "SIMILAR_LINK" => "Similar Link", "IN_LINK" => "Inlinks",
             "IP_LINK"=> "IP Links");
         $items = array();
         foreach($settings as $setting => $setting_string) {
@@ -361,7 +361,7 @@ class ConfigureTool
             $_SERVER = array();
             return "configureMenu";
         }
-        $_REQUEST[$choice] = ($data[$choice]) ? false : true; 
+        $_REQUEST[$choice] = ($data[$choice]) ? false : true;
         return "searchPageElementLinks";
     }
 

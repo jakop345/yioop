@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,14 +27,14 @@
  * @subpackage element
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- * Element responsible for displaying info about starting, stopping, deleting, 
+ * Element responsible for displaying info about starting, stopping, deleting,
  * and using a crawl. It makes use of the CrawlStatusView
  *
  * @author Chris Pollett
@@ -46,33 +46,33 @@ class ManagecrawlsElement
 {
 
     /**
-     * Draw form to start a new crawl, has div place holder and ajax code to 
+     * Draw form to start a new crawl, has div place holder and ajax code to
      * get info about current crawl
      *
      * @param array $data  information about a crawl such as its description
      */
-    public function render($data) 
+    function render($data)
     {?>
         <div class="currentactivity">
         <h2><?php e(tl('managecrawls_element_create_crawl'))?></h2>
         <form id="crawlStartForm" method="get" action=''>
-        <input type="hidden" name="c" value="admin" /> 
-        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php 
-            e($data[CSRF_TOKEN]); ?>" /> 
+        <input type="hidden" name="c" value="admin" />
+        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
+            e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="manageCrawls" />
         <input type="hidden" name="arg" value="start" />
 
-        <p><label for="description-name"><?php 
-            e(tl('managecrawls_element_description')); ?></label>: 
-            <input type="text" id="description-name" name="description" 
+        <p><label for="description-name"><?php
+            e(tl('managecrawls_element_description')); ?></label>:
+            <input type="text" id="description-name" name="description"
                 value="<?php if(isset($data['DESCRIPTION'])) {
-                    e($data['DESCRIPTION']); } ?>" maxlength="80" 
+                    e($data['DESCRIPTION']); } ?>" maxlength="80"
                     class="widefield"/>
-            <button class="buttonbox" type="submit"><?php 
-                e(tl('managecrawls_element_start_new_crawl')); ?></button> 
+            <button class="buttonbox" type="submit"><?php
+                e(tl('managecrawls_element_start_new_crawl')); ?></button>
             <a href="?c=admin&amp;a=manageCrawls<?php
                 ?>&amp;arg=options&amp;<?php
-                e(CSRF_TOKEN."=".$data[CSRF_TOKEN]) ?>"><?php 
+                e(CSRF_TOKEN."=".$data[CSRF_TOKEN]) ?>"><?php
                 e(tl('managecrawls_element_options')); ?></a>
         </p>
         </form>
@@ -83,7 +83,7 @@ class ManagecrawlsElement
         var updateId;
         function crawlStatusUpdate()
         {
-            var startUrl = "?c=admin&<?php 
+            var startUrl = "?c=admin&<?php
                 e(CSRF_TOKEN."=".$data[CSRF_TOKEN]); ?>&a=crawlStatus";
             var crawlTag = elt('crawlstatus');
             getPage(crawlTag, startUrl);
@@ -93,7 +93,7 @@ class ManagecrawlsElement
         {
              clearInterval(updateId );
              var crawlTag = elt('crawlstatus');
-             crawlTag.innerHTML= "<h2 class='red'><?php 
+             crawlTag.innerHTML= "<h2 class='red'><?php
                 e(tl('managecrawls_element_up_longer_update'))?></h2>";
         }
         function doUpdate()
@@ -107,7 +107,7 @@ class ManagecrawlsElement
         </script>
 
         </div>
-    <?php 
+    <?php
     }
 }
 ?>

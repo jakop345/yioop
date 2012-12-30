@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,24 +27,24 @@
  * @subpackage library
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- * 
+ *
  * A BloomFilterBundle is a directory of BloomFilterFile.
  * The filter bundle, like a Bloom filter, also acts as a set,
- * but once the active filter in it fills up a new filter is 
+ * but once the active filter in it fills up a new filter is
  * added to the bundle so that more data can be stored.
  *
  * @author Chris Pollett
  * @package seek_quarry
  * @subpackage library
  * @see BloomFilterFile
- */ 
+ */
 class BloomFilterBundle
 {
 
@@ -79,25 +79,25 @@ class BloomFilterBundle
     const default_filter_size = 10000000;
 
     /**
-     * Creates or loads if already exists the directory structure and 
+     * Creates or loads if already exists the directory structure and
      * BloomFilterFiles used by this bundle
      *
      * @param $dir_name directory when this bundles data is stored
      * @param $filter_size the size of an individual filter in this bundle
      *      once a filter is filled a new one is added to the directory
      */
-    function __construct($dir_name, 
-        $filter_size = self::default_filter_size ) 
+    function __construct($dir_name,
+        $filter_size = self::default_filter_size )
     {
         $this->dir_name = $dir_name;
         if(!is_dir($dir_name)) {
             mkdir($dir_name);
         }
-        
+
         $this->loadMetaData();
-        
+
         if($this->num_filters == 0) {
-            $this->current_filter = 
+            $this->current_filter =
                 new BloomFilterFile($dir_name."/filter_0.ftr", $filter_size);
             $this->num_filters++;
             $this->filter_size = $filter_size;
@@ -105,7 +105,7 @@ class BloomFilterBundle
             $this->saveMetaData();
         } else {
             $last_filter = $this->num_filters - 1;
-            $this->current_filter = 
+            $this->current_filter =
                 BloomFilterFile::load($dir_name."/filter_$last_filter.ftr");
         }
 
@@ -127,8 +127,8 @@ class BloomFilterBundle
             $this->current_filter = NULL;
             gc_collect_cycles();
             $last_filter = $this->num_filters;
-            $this->current_filter = 
-                new BloomFilterFile($this->dir_name."/filter_$last_filter.ftr", 
+            $this->current_filter =
+                new BloomFilterFile($this->dir_name."/filter_$last_filter.ftr",
                     $this->filter_size);
             $this->current_filter_count = 0;
             $this->num_filters++;
@@ -146,7 +146,7 @@ class BloomFilterBundle
      * the filter bundle or whose $elt[$field_name] is in the bundle.
      *
      * @param array &$arr the array to remove elements from
-     * @param array $field_names if not NULL an array of field names of $arr 
+     * @param array $field_names if not NULL an array of field names of $arr
      *      to use to do filtering
      */
     function differenceFilter(&$arr, $field_names = NULL)
@@ -158,7 +158,7 @@ class BloomFilterBundle
             if($i == $num_filters - 1) {
                 $tmp_filter = $this->current_filter;
             } else {
-                $tmp_filter = 
+                $tmp_filter =
                     BloomFilterFile::load($this->dir_name."/filter_$i.ftr");
             }
 
@@ -166,9 +166,9 @@ class BloomFilterBundle
                 if($field_names === NULL) {
                     $tmp = & $arr[$j];
                     if($tmp !== false && $tmp_filter->contains($tmp)) {
-                    /* 
+                    /*
                         We deliberately don't try to add anything that has
-                        the hash field set to false. This is our cue to 
+                        the hash field set to false. This is our cue to
                         skip an element such as a link document which we
                         know will almost always be unique and so be unnecessary
                         to de-duplicate
@@ -233,8 +233,8 @@ class BloomFilterBundle
         }
         $this->num_filters = 0;
         $this->current_filter_count = 0;
-        $this->current_filter = 
-            new BloomFilterFile($this->dir_name."/filter_0.ftr", 
+        $this->current_filter =
+            new BloomFilterFile($this->dir_name."/filter_0.ftr",
             $this->filter_size);
         $this->num_filters++;
         $this->current_filter->save();

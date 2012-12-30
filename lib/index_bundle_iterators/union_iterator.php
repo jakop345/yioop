@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,19 +27,19 @@
  * @subpackage iterator
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
-/** 
+/**
  *Loads BloomFilterFile to remember things we've already grouped
  */
 require_once BASE_DIR.'/lib/bloom_filter_file.php';
 
 
-/** 
+/**
  *Loads base class for iterating
  */
 require_once BASE_DIR.'/lib/index_bundle_iterators/index_bundle_iterator.php';
@@ -104,8 +104,8 @@ class UnionIterator extends IndexBundleIterator
         $this->key_iterator_table = array();
         for($i = 0; $i < $this->num_iterators; $i++) {
             $this->num_docs += $this->index_bundle_iterators[$i]->num_docs;
-            /* 
-                result_per_block is at most the sum of 
+            /*
+                result_per_block is at most the sum of
                 results_per_block of things we are iterating. Value
                 is already init'd in base class.
              */
@@ -190,7 +190,7 @@ class UnionIterator extends IndexBundleIterator
      *      results
      * @return array doc summaries that match provided keys
      */
-    function getCurrentDocsForKeys($keys = NULL) 
+    function getCurrentDocsForKeys($keys = NULL)
     {
         if($this->current_block_fresh == false) {
             $result = $this->currentDocsWithWord();
@@ -222,10 +222,10 @@ class UnionIterator extends IndexBundleIterator
      * Forwards the iterator one group of docs
      * @param array $gen_doc_offset a generation, doc_offset pair. If set,
      *      the must be of greater than or equal generation, and if equal the
-     *      next block must all have $doc_offsets larger than or equal to 
+     *      next block must all have $doc_offsets larger than or equal to
      *      this value
      */
-    function advance($gen_doc_offset = null) 
+    function advance($gen_doc_offset = null)
     {
         $this->advanceSeenDocs();
 
@@ -237,7 +237,7 @@ class UnionIterator extends IndexBundleIterator
             $this->index_bundle_iterators[$i]->advance($gen_doc_offset);
         }
         if($this->seen_docs_unfiltered > 0) {
-            $this->num_docs = 
+            $this->num_docs =
                 floor(($this->seen_docs * $total_num_docs) /
                 $this->seen_docs_unfiltered);
         } else {
@@ -271,7 +271,7 @@ class UnionIterator extends IndexBundleIterator
      * is intended to be used when results_per_block is 1, we generate
      * a user defined error.
      *
-     * @return mixed the desired document offset and generation (actually, 
+     * @return mixed the desired document offset and generation (actually,
      *  triggers error).
      */
     function currentGenDocOffsetWithWord() {

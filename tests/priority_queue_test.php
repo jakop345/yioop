@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage test
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -37,10 +37,10 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 require_once BASE_DIR.'/configs/config.php';
 
 /** Load the priority queue class library we'll be testing */
-require_once BASE_DIR."/lib/priority_queue.php"; 
+require_once BASE_DIR."/lib/priority_queue.php";
 
 /**
- * Used to test the PriorityQueue class that is used to figure out which URL 
+ * Used to test the PriorityQueue class that is used to figure out which URL
  * to crawl next
  *
  * @author Chris Pollett
@@ -50,52 +50,52 @@ require_once BASE_DIR."/lib/priority_queue.php";
 class PriorityQueueTest extends UnitTest
 {
     /**
-     * We setup two queue one that always returns the max element, one that 
+     * We setup two queue one that always returns the max element, one that
      * always returns the min element
      */
-    public function setUp()
+    function setUp()
     {
-        $this->test_objects['FILE1'] = 
+        $this->test_objects['FILE1'] =
             new PriorityQueue("queue1.txt", 100, 4, CrawlConstants::MAX);
-        $this->test_objects['FILE2'] = 
+        $this->test_objects['FILE2'] =
             new PriorityQueue("queue2.txt", 100, 4, CrawlConstants::MIN);
     }
 
     /**
-     * Since our queues are persistent structures, we delete files that might be 
+     * Since our queues are persistent structures, we delete files that might be
      * associated with them when we tear down
      */
-    public function tearDown()
+    function tearDown()
     {
         @unlink("queue1.txt");
         @unlink("queue2.txt");
     }
 
     /**
-     * Insert five items into a priority queue. Checks that the resulting heap 
-     * array matches the expected array calculated by hand. Weights of some 
+     * Insert five items into a priority queue. Checks that the resulting heap
+     * array matches the expected array calculated by hand. Weights of some
      * elements of the queue are adjusted and the resulting heap array checked
-     * again. The results of polling the queue and normalizing the queue are 
+     * again. The results of polling the queue and normalizing the queue are
      * tested
      */
-    public function maxQueueTestCase()
+    function maxQueueTestCase()
     {
         $this->test_objects['FILE1']->insert("aaaa", 5.5);
         $this->test_objects['FILE1']->insert("baaa", 6.5);
         $this->test_objects['FILE1']->insert("caaa", 4.5);
         $this->test_objects['FILE1']->insert("daaa", 5.0);
         $this->test_objects['FILE1']->insert("eaaa", 7.5);
-        $expected_array = array(array("eaaa", 7.5), array("baaa", 6.5), 
+        $expected_array = array(array("eaaa", 7.5), array("baaa", 6.5),
             array("caaa", 4.5), array("daaa", 5.0), array("aaaa", 5.5));
         $this->assertEqual(
-            $this->test_objects['FILE1']->getContents(), $expected_array, 
+            $this->test_objects['FILE1']->getContents(), $expected_array,
             "Insert into queue yields expected contents");
 
         $this->test_objects['FILE1']->adjustWeight(3, 4.0);
-        $expected_array = array(array("caaa", 8.5), array("baaa", 6.5), 
+        $expected_array = array(array("caaa", 8.5), array("baaa", 6.5),
             array("eaaa", 7.5), array("daaa", 5.0), array("aaaa", 5.5));
         $this->assertEqual(
-            $this->test_objects['FILE1']->getContents(), $expected_array, 
+            $this->test_objects['FILE1']->getContents(), $expected_array,
             "Adjust elt weight yields expected contents");
 
         $this->test_objects['FILE1']->normalize();
@@ -103,12 +103,12 @@ class PriorityQueueTest extends UnitTest
         $sum = 0;
         $count = count($queue_data);
         for($i = 0; $i < $count; $i++) {
-            $this->assertEqual($queue_data[$i][0], $expected_array[$i][0], 
+            $this->assertEqual($queue_data[$i][0], $expected_array[$i][0],
                 "key of $i th elt of queue unchanged by normalize");
             $sum += $queue_data[$i][1];
         }
 
-        $this->assertEqual(round($sum), NUM_URLS_QUEUE_RAM, 
+        $this->assertEqual(round($sum), NUM_URLS_QUEUE_RAM,
             "Normalizations yields correct sum");
 
 
@@ -125,16 +125,16 @@ class PriorityQueueTest extends UnitTest
         $this->test_objects['FILE1']->normalize();
         $expected_array = array(array("daaa", NUM_URLS_QUEUE_RAM));
         $this->assertEqual(
-            $this->test_objects['FILE1']->getContents(), $expected_array, 
+            $this->test_objects['FILE1']->getContents(), $expected_array,
             "Queue after deletes has expected content");
     }
 
     /**
-     * Inserts five elements inserted into a minimum priority queue. The 
-     * resulting heap array is compared to expected. Then repeated polling is 
+     * Inserts five elements inserted into a minimum priority queue. The
+     * resulting heap array is compared to expected. Then repeated polling is
      * done to make sure the objects come out in the correct order.
      */
-    public function minQueueTestCase()
+    function minQueueTestCase()
     {
         $this->test_objects['FILE2']->insert("aaaa", 5.5);
         $this->test_objects['FILE2']->insert("baaa", 6.5);
@@ -142,10 +142,10 @@ class PriorityQueueTest extends UnitTest
         $this->test_objects['FILE2']->insert("daaa", 5.0);
         $this->test_objects['FILE2']->insert("eaaa", 7.5);
 
-        $expected_array = array(array("caaa", 4.5), array("daaa", 5.0), 
+        $expected_array = array(array("caaa", 4.5), array("daaa", 5.0),
             array("aaaa", 5.5), array("baaa", 6.5), array("eaaa", 7.5));
         $this->assertEqual(
-            $this->test_objects['FILE2']->getContents(), $expected_array, 
+            $this->test_objects['FILE2']->getContents(), $expected_array,
             "Queue has expected order after initial inserts");
 
         $elt = $this->test_objects['FILE2']->poll();
@@ -164,7 +164,7 @@ class PriorityQueueTest extends UnitTest
         $this->assertEqual($elt[0], "eaaa", "Remove eaaa from queue okay");
 
         $this->assertEqual(
-            $this->test_objects['FILE2']->getContents(), 
+            $this->test_objects['FILE2']->getContents(),
             array(), "Queue should be empty after deletes");
 
     }

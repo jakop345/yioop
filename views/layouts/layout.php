@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage layout
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -55,7 +55,7 @@ class Layout
      * Layout.
      *
      */
-    public function __construct($v)
+    function __construct($v)
     {
        $this->view = $v;
     }
@@ -63,13 +63,13 @@ class Layout
     /**
      * The render method of Layout and its subclasses is responsible for drawing
      * the header of the document, calling the renderView method of the
-     * View that lives on the layout and then drawing the footer of 
+     * View that lives on the layout and then drawing the footer of
      * the document.
      *
      * @param array $data   an array of data set up by the controller to be
      * be used in drawing the Layout and its View.
      */
-    public function render($data) {
+    function render($data) {
        $this->view->renderView($data);
     }
 }

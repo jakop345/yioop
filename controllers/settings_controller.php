@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage controller
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -67,7 +67,7 @@ class SettingsController extends Controller
      *  the number of results per page and language options into a sesssion
      *
      */
-    function processRequest() 
+    function processRequest()
     {
         $data = array();
         $view = "settings";
@@ -76,7 +76,7 @@ class SettingsController extends Controller
         if(isset($_SESSION['USER_ID'])) {
             $user = $_SESSION['USER_ID'];
         } else {
-            $user = $_SERVER['REMOTE_ADDR']; 
+            $user = $_SERVER['REMOTE_ADDR'];
         }
 
         $data[CSRF_TOKEN] = $this->generateCSRFToken($user);
@@ -84,11 +84,11 @@ class SettingsController extends Controller
 
         $languages = $this->localeModel->getLocaleList();
         foreach($languages as $language) {
-            $data['LANGUAGES'][$language['LOCALE_TAG']] = 
+            $data['LANGUAGES'][$language['LOCALE_TAG']] =
                 $language['LOCALE_NAME'];
         }
 
-        if($token_okay && isset($_REQUEST['lang']) && 
+        if($token_okay && isset($_REQUEST['lang']) &&
             in_array($_REQUEST['lang'], array_keys($data['LANGUAGES']))) {
             $_SESSION['l'] = $_REQUEST['lang'];
             setLocaleObject( $_SESSION['l']);
@@ -97,9 +97,9 @@ class SettingsController extends Controller
         $data['LOCALE_TAG'] = getLocaleTag();
 
         $n = NUM_RESULTS_PER_PAGE;
-        $data['PER_PAGE'] = 
+        $data['PER_PAGE'] =
             array($n => $n, 2*$n => 2*$n, 5*$n=> 5*$n, 10*$n=>10*$n);
-        if($token_okay && isset($_REQUEST['perpage']) && 
+        if($token_okay && isset($_REQUEST['perpage']) &&
             in_array($_REQUEST['perpage'], array_keys($data['PER_PAGE']))) {
             $_SESSION['MAX_PAGES_TO_SHOW'] = $_REQUEST['perpage'];
             $changed_settings_flag = true;
@@ -140,13 +140,13 @@ class SettingsController extends Controller
             $_SESSION['its'] = $_REQUEST['index_ts'];
             $data['its'] = $_REQUEST['index_ts'];
             $changed_settings_flag = true;
-        } else if(isset($_REQUEST['its']) && 
+        } else if(isset($_REQUEST['its']) &&
             in_array($_REQUEST['its'],$crawl_stamps)){
             $data['its'] = $_REQUEST['its'];
         } else {
             $data['its'] = $this->crawlModel->getCurrentIndexDatabaseName();
         }
-        
+
         if($changed_settings_flag) {
             $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
                 tl('settings_controller_settings_saved')."</h1>')";

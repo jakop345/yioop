@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage element
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -45,12 +45,12 @@ class EditmixElement extends Element
 {
 
     /**
-     * Draw form to start a new crawl, has div place holder and ajax code to 
+     * Draw form to start a new crawl, has div place holder and ajax code to
      * get info about current crawl
      *
      * @param array $data  form about about a crawl such as its description
      */
-    public function render($data) 
+    function render($data)
     {?>
         <div class="currentactivity">
         <div class="<?php e($data['leftorright']);?>">
@@ -60,36 +60,36 @@ class EditmixElement extends Element
         </div>
         <h2><?php e(tl('mixcrawls_element_edit_mix'))?></h2>
         <form id="mixForm" method="get" action=''>
-        <input type="hidden" name="c" value="admin" /> 
-        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php 
-            e($data[CSRF_TOKEN]); ?>" /> 
+        <input type="hidden" name="c" value="admin" />
+        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
+            e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="mixCrawls" />
         <input type="hidden" name="arg" value="editmix" />
         <input type="hidden" name="update" value="update" />
-        <input type="hidden" name="mix[MIX_TIMESTAMP]" 
+        <input type="hidden" name="mix[MIX_TIMESTAMP]"
             value="<?php e($data['MIX']['MIX_TIMESTAMP']);?>" />
-        <div class="topmargin"><label for="mix-name"><?php 
-            e(tl('mixcrawls_element_mix_name')); ?></label> 
-            <input type="text" id="mix-name" name="mix[MIX_NAME]" 
+        <div class="topmargin"><label for="mix-name"><?php
+            e(tl('mixcrawls_element_mix_name')); ?></label>
+            <input type="text" id="mix-name" name="mix[MIX_NAME]"
                 value="<?php if(isset($data['MIX']['MIX_NAME'])) {
-                    e($data['MIX']['MIX_NAME']); } ?>" maxlength="80" 
+                    e($data['MIX']['MIX_NAME']); } ?>" maxlength="80"
                     class="widefield"/>
         </div>
         <h3><?php e(tl('mixcrawls_element_mix_components'))?></h3>
         <div>
-        [<a href='javascript:addGroup(1)'><?php 
+        [<a href='javascript:addGroup(1)'><?php
                 e(tl('mixcrawls_element_add_group')); ?></a>]
         </div>
         <div id="mix-tables" >
         </div>
-        <div class="center slightpad"><button class="buttonbox" 
-            type="submit"><?php 
+        <div class="center slightpad"><button class="buttonbox"
+            type="submit"><?php
                 e(tl('mixcrawls_element_save_button')); ?></button></div>
         </form>
 
 
         </div>
-    <?php 
+    <?php
     }
 }
 ?>

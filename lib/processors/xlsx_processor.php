@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage processor
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -43,7 +43,7 @@ require_once BASE_DIR."/lib/processors/text_processor.php";
 require_once BASE_DIR."/lib/url_parser.php";
 
  /**
- * Used to create crawl summary information 
+ * Used to create crawl summary information
  * for xlsx files
  *
  * @author Tarun Ramaswamy
@@ -54,7 +54,7 @@ require_once BASE_DIR."/lib/url_parser.php";
 class XlsxProcessor extends TextProcessor
 {
     const MAX_DESCRIPTION_LEN = 2000;
-    
+
     /**
      *  Used to extract the title, description and links from
      *  a xlsx file.
@@ -68,13 +68,13 @@ class XlsxProcessor extends TextProcessor
      */
     function process($page, $url)
     {
-    
+
         $summary = NULL;
         $sites = array();
 
         // Create a temporary xlsx file
         $file_name=CRAWL_DIR . "/temp.xlsx";
-        
+
         file_put_contents($file_name, $page);
 
         // Open a zip archive
@@ -107,7 +107,7 @@ class XlsxProcessor extends TextProcessor
                 }
 
                 //Getting the language from xlsx file
-                $summary[self::LANG] = 
+                $summary[self::LANG] =
                     self::calculateLang($summary[self::DESCRIPTION], $url);
             }
 
@@ -135,7 +135,7 @@ class XlsxProcessor extends TextProcessor
         @unlink("$file_name");
         return $summary;
     }
-    
+
     /**
      * Return a document object based on a string containing the contents of
      * a xml file
@@ -152,15 +152,15 @@ class XlsxProcessor extends TextProcessor
 
         return $dom;
     }
-    
+
     /**
      *  Returns title of a xlsx file from each worksheet
      *
      *  @param object $dom   a document object to extract a title from.
-     *  @return string  a title of the xlsx file 
+     *  @return string  a title of the xlsx file
      *
      */
-    static function title($dom) 
+    static function title($dom)
     {
         $properties = $dom->getElementsByTagName("Properties");
         $title = "";
@@ -175,10 +175,10 @@ class XlsxProcessor extends TextProcessor
      *  Returns the count of worksheets in the xlsx file
      *
      *  @param object $dom   a document object to extract a title from.
-     *  @return integer  number of worksheets in the xlsx file  
+     *  @return integer  number of worksheets in the xlsx file
      *
      */
-    static function sheetCount($dom) 
+    static function sheetCount($dom)
     {
         $count = 0;
         $properties = $dom->getElementsByTagName("Properties");
@@ -193,10 +193,10 @@ class XlsxProcessor extends TextProcessor
         }
         return $count;
     }
-    
+
     /**
-     * Returns descriptive text concerning a xlsx file based on its document 
-     * object 
+     * Returns descriptive text concerning a xlsx file based on its document
+     * object
      *
      * @param object $dom   a document object to extract a description from.
      * @return string a description of the slide
@@ -221,31 +221,31 @@ class XlsxProcessor extends TextProcessor
      * Returns up to MAX_LINK_PER_PAGE many links from the supplied
      * dom object where links have been canonicalized according to
      * the supplied $site information.
-     * 
+     *
      * @param object $dom   a document object with links on it
      * @param string $site   a string containing a url
-     * 
+     *
      * @return array   links from the $dom object
-     */ 
-    static function links($dom, $site) 
+     */
+    static function links($dom, $site)
     {
         $sites = array();
         $hyperlink = "http://schemas.openxmlformats.org/officeDocument/2006/".
             "relationships/hyperlink";
         $i = 0;
         $relationships = $dom->getElementsByTagName("Relationships");
-        
+
         foreach ($relationships as $relationship) {
             $relations = $relationship->getElementsByTagName("Relationship");
             foreach ($relations as $relation) {
                 if( strcmp( $relation->getAttribute('Type'),
                     $hyperlink) == 0 ) {
-                
+
                     if($i < MAX_LINKS_PER_PAGE) {
                         $link = $relation->getAttribute('Target');
                         $url = UrlParser::canonicalLink(
                             $link, $site);
-                        if(!UrlParser::checkRecursiveUrl($url)  && 
+                        if(!UrlParser::checkRecursiveUrl($url)  &&
                             strlen($url) < MAX_URL_LENGTH) {
                             if(isset($sites[$url])) {
                                 $sites[$url] .=" ".$link;
@@ -258,10 +258,10 @@ class XlsxProcessor extends TextProcessor
                 }
             }
         }
-        
+
         return $sites;
     }
-    
+
 }
 
 ?>

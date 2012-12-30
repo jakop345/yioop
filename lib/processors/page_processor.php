@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,14 +27,14 @@
  * @subpackage processor
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- * Used by subclasses, so have succinct access (i.e., can use self:: rather 
+ * Used by subclasses, so have succinct access (i.e., can use self:: rather
  * than CrawlConstants::) to constants like:
  * CrawlConstants::TITLE, CrawlConstants::DESCRIPTION, etc.
  */
@@ -82,9 +82,9 @@ abstract class PageProcessor implements CrawlConstants
      * @param string $page string of a web document
      * @param string $url location the document came from
      *
-     * @return array a summary of (title, description,links, and content) of 
+     * @return array a summary of (title, description,links, and content) of
      *      the information in $page also has a subdocs array containing any
-     *      subdocuments returned from a plugin. A subdocumenst might be 
+     *      subdocuments returned from a plugin. A subdocumenst might be
      *      things like recipes that appeared in a page or tweets, etc.
      */
     function handle($page, $url)
@@ -95,15 +95,15 @@ abstract class PageProcessor implements CrawlConstants
             $summary[self::SUBDOCS] = array();
             foreach($this->indexing_plugins as $plugin) {
                 $subdoc = NULL;
-                $plugin_instance_name = 
+                $plugin_instance_name =
                     lcfirst($plugin);
-                $subdocs_description = 
+                $subdocs_description =
                     $this->$plugin_instance_name->pageProcessing($page, $url);
-                if(is_array($subdocs_description) 
+                if(is_array($subdocs_description)
                     && count($subdocs_description) != 0) {
                     foreach($subdocs_description as $subdoc_description) {
                         $subdoc[self::TITLE] = $subdoc_description[self::TITLE];
-                        $subdoc[self::DESCRIPTION] = 
+                        $subdoc[self::DESCRIPTION] =
                             $subdoc_description[self::DESCRIPTION];
                         $subdoc[self::LANG] = $summary[self::LANG];
                         $subdoc[self::LINKS] = $summary[self::LINKS];
@@ -119,14 +119,14 @@ abstract class PageProcessor implements CrawlConstants
     }
 
     /**
-     * Should be implemented to compute a summary based on a 
-     * text string of a document. This method is called from 
+     * Should be implemented to compute a summary based on a
+     * text string of a document. This method is called from
      * @see handle($page, $url)
      *
      * @param string $page string of a document
      * @param string $url location the document came from
      *
-     * @return array a summary of (title, description,links, and content) of 
+     * @return array a summary of (title, description,links, and content) of
      *      the information in $page
      */
     abstract function process($page, $url);

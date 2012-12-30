@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage model
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -44,12 +44,12 @@ require_once BASE_DIR."/models/model.php";
  * @package seek_quarry
  * @subpackage model
  */
-class SourceModel extends Model 
+class SourceModel extends Model
 {
     /**
      * Just calls the parent class constructor
      */
-    function __construct() 
+    function __construct()
     {
         parent::__construct();
     }
@@ -85,9 +85,9 @@ class SourceModel extends Model
     /**
      *  Used to add a new video, rss, or other sources to Yioop
      *
-     *  @param string $name 
+     *  @param string $name
      *  @param string $source_type whether video, rss, etc
-     *  @param string $source_url url regex of resource (video) or actual 
+     *  @param string $source_url url regex of resource (video) or actual
      *      resource (rss). Not quite a real regex you add {} to the
      *      location in the url where the name of the particular video
      *      should go http://www.youtube.com/watch?v={}&
@@ -156,7 +156,7 @@ class SourceModel extends Model
             "WHERE LOCALE_TAG = '$locale_tag' LIMIT 1";
         $result = $db->execute($sql);
         $row = $db->fetchArray($result);
-        
+
         $locale_id = $row['LOCALE_ID'];
         $sql = "SELECT S.LOCALE_STRING AS LOCALE_STRING, ".
             "S.FOLDER_NAME AS FOLDER_NAME, ".
@@ -164,26 +164,26 @@ class SourceModel extends Model
             " S.INDEX_IDENTIFIER AS INDEX_IDENTIFIER, ".
             " T.TRANSLATION_ID AS TRANSLATION_ID FROM ".
             " SUBSEARCH S, TRANSLATION T WHERE  ".
-            " T.IDENTIFIER_STRING = S.LOCALE_STRING"; 
+            " T.IDENTIFIER_STRING = S.LOCALE_STRING";
         $i = 0;
         $result = $db->execute($sql);
         while($subsearches[$i] = $db->fetchArray($result)) {
             $id = $subsearches[$i]["TRANSLATION_ID"];
             $sub_sql = "SELECT TRANSLATION AS SUBSEARCH_NAME ".
                 "FROM TRANSLATION_LOCALE ".
-                " WHERE TRANSLATION_ID=$id AND LOCALE_ID=$locale_id LIMIT 1"; 
+                " WHERE TRANSLATION_ID=$id AND LOCALE_ID=$locale_id LIMIT 1";
                 // maybe do left join at some point
-                    
+
             $result_sub =  $db->execute($sub_sql);
             $translate = false;
             if($result_sub) {
                 $translate = $db->fetchArray($result_sub);
             }
             if($translate) {
-                $subsearches[$i]['SUBSEARCH_NAME'] = 
+                $subsearches[$i]['SUBSEARCH_NAME'] =
                     $translate['SUBSEARCH_NAME'];
             } else {
-                $subsearches[$i]['SUBSEARCH_NAME'] = 
+                $subsearches[$i]['SUBSEARCH_NAME'] =
                     $subsearches[$i]['LOCALE_STRING'];
             }
             $i++;
@@ -193,7 +193,7 @@ class SourceModel extends Model
     }
 
     /**
-     * Adds a new subsearch to the list of subsearches. This are displayed 
+     * Adds a new subsearch to the list of subsearches. This are displayed
      * at the top od the Yioop search pages.
      *
      * @param string $folder_name name of subsearch in terms of urls
@@ -278,7 +278,7 @@ class SourceModel extends Model
             $lang = "";
             if(!isset($feed["LANGUAGE"]) || $feed["LANGUAGE"] == "") {
                 $languages = $dom->getElementsByTagName('language');
-                if($languages && is_object($languages) && 
+                if($languages && is_object($languages) &&
                     is_object($languages->item(0))) {
                     $lang = $languages->item(0)->textContent;
                     $sql = "UPDATE MEDIA_SOURCE SET LANGUAGE='$lang' WHERE ".
@@ -301,7 +301,7 @@ class SourceModel extends Model
                         $tag_node->nodeValue: "";
                     $item[$element] = strip_tags($element_text);
                 }
-                $this->addFeedItemIfNew($item, $feed_shard, 
+                $this->addFeedItemIfNew($item, $feed_shard,
                     $feed['NAME'], $lang);
             }
         }
@@ -350,7 +350,7 @@ class SourceModel extends Model
                 $word_lists = PhraseParser::extractPhrasesInLists(
                     $phrase_string, $lang, true);
                 $raw_guid = unbase64Hash($item["GUID"]);
-                $doc_keys = crawlHash($item["LINK"], true) . 
+                $doc_keys = crawlHash($item["LINK"], true) .
                     $raw_guid."d". substr(crawlHash(
                     UrlParser::getHost($item["LINK"])."/",true), 1);
                 $meta_ids = array("media:news", "media:news:".
@@ -362,7 +362,7 @@ class SourceModel extends Model
                         $meta_ids[] = 'lang:'.$lang;
                     }
                 }
-                $feed_shard->addDocumentWords($doc_keys, $item['PUBDATE'], 
+                $feed_shard->addDocumentWords($doc_keys, $item['PUBDATE'],
                     $word_lists, $meta_ids, true, false);
             }
         }
@@ -406,18 +406,18 @@ class SourceModel extends Model
         } else {
             return;
         }
-        $sql = "INSERT INTO FEED_ITEM VALUES ('{$item['guid']}', 
+        $sql = "INSERT INTO FEED_ITEM VALUES ('{$item['guid']}',
             '".$db->escapeString($item['title'])."', '".
             $db->escapeString($item['link'])."', '".
-            $db->escapeString($item['description'])."', 
-            '{$item['pubDate']}', 
+            $db->escapeString($item['description'])."',
+            '{$item['pubDate']}',
             '".$db->escapeString($source_name)."')";
         $result = $db->execute($sql);
         if(!$result) return;
         $phrase_string = $item["title"] . " ". $item["description"];
         $word_lists = PhraseParser::extractPhrasesInLists(
             $phrase_string, $lang, true);
-        $doc_keys = crawlHash($item["link"], true) . 
+        $doc_keys = crawlHash($item["link"], true) .
             $raw_guid."d". substr(crawlHash(
             UrlParser::getHost($item["link"])."/",true), 1);
         $meta_ids = array("media:news", "media:news:".urlencode($source_name));

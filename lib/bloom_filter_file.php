@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage library
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -52,7 +52,7 @@ require_once "utility.php";
  * @author Chris Pollett
  * @package seek_quarry
  * @subpackage library
- */  
+ */
 class BloomFilterFile extends PersistentStructure
 {
 
@@ -75,24 +75,24 @@ class BloomFilterFile extends PersistentStructure
     var $filter;
 
     /**
-     * Initializes the fields of the BloomFilter and its base 
+     * Initializes the fields of the BloomFilter and its base
      * PersistentStructure.
      *
      * @param string $fname name of the file to store the BloomFilter data in
      * @param int $num_values the maximum number of values that will be stored
-     *      in the BloomFilter. Filter will be sized so the odds of a false 
+     *      in the BloomFilter. Filter will be sized so the odds of a false
      *      positive are roughly one over this value
      * @param int $save_frequency how often to store the BloomFilter to disk
      */
-    function __construct($fname, $num_values, 
-        $save_frequency = self::DEFAULT_SAVE_FREQUENCY) 
+    function __construct($fname, $num_values,
+        $save_frequency = self::DEFAULT_SAVE_FREQUENCY)
     {
         $log2 = log(2);
         $this->num_keys = ceil(log($num_values)/$log2);
         $this->filter_size = ($this->num_keys)*$num_values/$log2;
 
         $mem_before =  memory_get_usage(true);
-        $this->filter = pack("x". ceil(.125*$this->filter_size)); 
+        $this->filter = pack("x". ceil(.125*$this->filter_size));
             // 1/8 =.125 = num bits/bytes, want to make things floats
         $mem = memory_get_usage(true) - $mem_before;
         parent::__construct($fname, $save_frequency);

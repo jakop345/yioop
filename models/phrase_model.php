@@ -3,7 +3,7 @@
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage model
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -276,7 +276,7 @@ class PhraseModel extends ParallelModel
             $num_last_parts = count($query_parts[$last_part]);
             if($query_parts[$last_part][$num_last_parts - 1][0] +
                 $query_parts[$last_part][$num_last_parts - 1][1] < $low) {
-                $query_parts[$last_part][$num_last_parts - 1][1] = 
+                $query_parts[$last_part][$num_last_parts - 1][1] =
                     $results_high;
             }
         }
@@ -344,7 +344,7 @@ class PhraseModel extends ParallelModel
 
             $save_timestamp = intval("$orig_stimestamp$qpart");
             $out_results = $this->getSummariesByHash($word_structs,
-                $low, $phrase_num, $filter, $use_cache_if_allowed, $raw, 
+                $low, $phrase_num, $filter, $use_cache_if_allowed, $raw,
                 $queue_servers, $disjunct, $save_timestamp);
             if(isset($out_results['PAGES']) &&
                 count($out_results['PAGES']) != 0) {
@@ -369,7 +369,7 @@ class PhraseModel extends ParallelModel
         if(QUERY_STATISTICS) {
             $format_time = microtime();
         }
-        if(isset($out_results['SAVE_POINT'])) { 
+        if(isset($out_results['SAVE_POINT'])) {
             /*
               out_result of last used to back-fill earlier ones that are done
               so on crawl mix archive crawls only look at last
@@ -438,7 +438,7 @@ class PhraseModel extends ParallelModel
      *  which archive to use.
      *
      * @param string &$phrase string to extract struct from, if the phrase
-     *  semantics is guessed or an if condition is processed the value of 
+     *  semantics is guessed or an if condition is processed the value of
      *  phrase will be altered. (Helps for feeding to network queries)
      * @param array $queue_servers a list of urls of yioop machines which might
      *      be used during lookup
@@ -538,7 +538,7 @@ class PhraseModel extends ParallelModel
                 }
                 $quote_positions[] = $quote_position;
             } else {
-                $new_words = 
+                $new_words =
                     PhraseParser::extractPhrases($phrase_part, $locale_tag);
                 $base_words = array_merge($base_words, $new_words);
             }
@@ -632,7 +632,7 @@ class PhraseModel extends ParallelModel
         }
         $pre_format_words = array_values(array_unique(
             array_merge($query_words, $base_words)));
-        
+
         $format_words = array();
         $count = count($pre_format_words);
         for($i = 0; $i < $count; $i++) {
@@ -660,8 +660,8 @@ class PhraseModel extends ParallelModel
 
 
     /**
-     * Idealistically, this function tries to guess from the query what the 
-     * user is looking for. For now, we are just guessing  when a query term 
+     * Idealistically, this function tries to guess from the query what the
+     * user is looking for. For now, we are just guessing  when a query term
      * is a url and rewriting it to the appropriate meta
      * meta word.
      *
@@ -671,10 +671,10 @@ class PhraseModel extends ParallelModel
      */
     function guessSemantics($phrase)
     {
-        $domain_suffixes = array(".com", ".net", ".edu", ".org", ".gov", 
+        $domain_suffixes = array(".com", ".net", ".edu", ".org", ".gov",
             ".mil", ".ca", ".uk", ".fr", ".ly");
         foreach($domain_suffixes as $suffix) {
-            $phrase = $this->endMatch($phrase, $suffix, "site:", "", 
+            $phrase = $this->endMatch($phrase, $suffix, "site:", "",
                 array(":","@"));
         }
 
@@ -692,9 +692,9 @@ class PhraseModel extends ParallelModel
     }
 
     /**
-     *  Matches terms (non white-char strings) in the language $lang_tag in 
-     *  $phrase that begin with  $start_with and don't contain  $not_contain, 
-     *  replaces $start_with with $new_prefix and adds $suffix to the end 
+     *  Matches terms (non white-char strings) in the language $lang_tag in
+     *  $phrase that begin with  $start_with and don't contain  $not_contain,
+     *  replaces $start_with with $new_prefix and adds $suffix to the end
      *
      *  @param string $phrase string to look for terms in
      *  @param string $start_with what we're looking to see if term begins with
@@ -737,10 +737,10 @@ class PhraseModel extends ParallelModel
     }
 
     /**
-     *  Matches terms (non white-char strings) in the language $lang_tag in 
-     *  $phrase that end with $end_with and don't contain  $not_contain, 
-     *  replaces $end_with with $new_suffix (if not empty) and adds $prefix to 
-     *  the beginning 
+     *  Matches terms (non white-char strings) in the language $lang_tag in
+     *  $phrase that end with $end_with and don't contain  $not_contain,
+     *  replaces $end_with with $new_suffix (if not empty) and adds $prefix to
+     *  the beginning
      *
      *  @param string $phrase string to look for terms in
      *  @param string $end_with what we're looking to see if term ends with
@@ -876,7 +876,7 @@ class PhraseModel extends ParallelModel
                 $cache_success = true;
                 $results = $CACHE->get($summary_hash);
                 if(QUERY_STATISTICS) {
-                    $this->query_info['QUERY'] .= 
+                    $this->query_info['QUERY'] .=
                         "$in2<b>Cache Lookup Time</b>: ".
                         changeInMicrotime($lookup_time)."<br />";
                 }
@@ -892,7 +892,7 @@ class PhraseModel extends ParallelModel
 
         if(is_object($query_iterator)) {
             while($num_retrieved < $to_retrieve &&
-                is_array($next_docs = 
+                is_array($next_docs =
                     $query_iterator->nextDocsWithWord()) ) {
                 $pages += $next_docs;
                 $num_retrieved += count($next_docs);
@@ -907,7 +907,7 @@ class PhraseModel extends ParallelModel
             $cnt_iterators = count($iterators);
             $save_point = array();
             for($i = 0; $i < $cnt_iterators; $i++) {
-                $save_point[$i] = 
+                $save_point[$i] =
                     $iterators[$i]->currentGenDocOffsetWithWord();
             }
             $results["SAVE_POINT"] = $save_point;
@@ -970,19 +970,19 @@ class PhraseModel extends ParallelModel
                 changeInMicrotime($lookup_time)."<br />";
             $machine_times = AnalyticsManager::get("MACHINE_TIMES");
             if($machine_times) {
-                $this->query_info['QUERY'] .= 
+                $this->query_info['QUERY'] .=
                 "$in3<i>Machine Sub-Times</i>:<br />".
                     $machine_times."<br />";
             }
             $net_times = AnalyticsManager::get("NET_TIMES");
             $max_machine_times = AnalyticsManager::get("MAX_MACHINE_TIMES");
             if($net_times && $max_machine_times) {
-                $this->query_info['QUERY'] .= 
+                $this->query_info['QUERY'] .=
                 "$in3<i>Network Overhead Sub-Time</i>: ".
                     ($net_times - $max_machine_times)."<br />";
             }
             if($sort_time) {
-                $this->query_info['QUERY'] .= 
+                $this->query_info['QUERY'] .=
                 "$in3<i>Merge-Rank Sub-Time</i>: ".
                     $sort_time."<br />";
             }
@@ -990,7 +990,7 @@ class PhraseModel extends ParallelModel
             $summaries_time = microtime();
         }
 
-        $out_pages = $this->getSummariesFromOffsets($pages, $queue_servers, 
+        $out_pages = $this->getSummariesFromOffsets($pages, $queue_servers,
             $raw);
 
         if(QUERY_STATISTICS) {
@@ -1009,7 +1009,7 @@ class PhraseModel extends ParallelModel
                     $i++;
                 }
                 $net_overhead =  $summary_delta_time - $max_time;
-                $summary_time_info .= 
+                $summary_time_info .=
                     "<br />$in3<i>Network Overhead Sub-Time</i>: ".
                     $net_overhead;
             } else {
@@ -1050,7 +1050,7 @@ class PhraseModel extends ParallelModel
                 }else {
                     $machine_id = (isset($page[self::MACHINE_ID])) ?
                         $page[self::MACHINE_ID] :$this->current_machine;
-                        $lookups[$key][] = 
+                        $lookups[$key][] =
                             array($machine_id, $key,
                                 $page[self::CRAWL_TIME],
                                 $page[self::GENERATION],
@@ -1072,7 +1072,7 @@ class PhraseModel extends ParallelModel
                     "location%3A") {
                     $crawl_time = $pages[$page_indexes[$hash_url]][
                         self::CRAWL_TIME];
-                    $lookups[$hash_url] = array($hash_parts[1], 
+                    $lookups[$hash_url] = array($hash_parts[1],
                         $crawl_time);
                     unset($summaries[$hash_url]);
                 }
@@ -1094,7 +1094,7 @@ class PhraseModel extends ParallelModel
                 $pre_page = array_merge($page, $summary);
                 if(isset($pre_page[self::ROBOT_METAS])) {
                     if(!in_array("NOINDEX", $pre_page[self::ROBOT_METAS])
-                         && 
+                         &&
                         !in_array("NONE", $pre_page[self::ROBOT_METAS])){
                         $out_pages[] = $pre_page;
                     }
@@ -1136,7 +1136,7 @@ class PhraseModel extends ParallelModel
      * @return &object an iterator for iterating through results to the
      *  query
      */
-    function getQueryIterator($word_structs, &$filter, $raw = 0, 
+    function getQueryIterator($word_structs, &$filter, $raw = 0,
         $queue_servers = array(), $original_query = "", $save_timestamp = 0)
     {
         $iterators = array();
@@ -1162,7 +1162,7 @@ class PhraseModel extends ParallelModel
                 $save_file = CRAWL_DIR.'/cache/'.self::save_point.
                     $save_timestamp.".txt";
                 if(file_exists($save_file)) {
-                    $save_point = 
+                    $save_point =
                         unserialize(file_get_contents($save_file));
                 }
                 $save_count = 0;
@@ -1187,11 +1187,11 @@ class PhraseModel extends ParallelModel
                             $index_name, $filter);
                     } else {
                         $word_iterators[$i] =
-                            new WordIterator($distinct_word_keys[$i], 
+                            new WordIterator($distinct_word_keys[$i],
                                 $index_name, false, $filter);
                     }
                     foreach ($word_keys as $index => $key) {
-                        if(isset($distinct_word_keys[$i]) && 
+                        if(isset($distinct_word_keys[$i]) &&
                             $key == $distinct_word_keys[$i]){
                             $word_iterator_map[$index] = $i;
                         }
@@ -1217,7 +1217,7 @@ class PhraseModel extends ParallelModel
                         $weight);
                 }
                 if($save_timestamp > 0) {
-                    if(isset($save_point[$save_count]) && 
+                    if(isset($save_point[$save_count]) &&
                         $save_point[$save_count] != -1) {
                         $base_iterator->advance($save_point[$save_count]);
                     }
@@ -1247,8 +1247,8 @@ class PhraseModel extends ParallelModel
         }
 
         if($network_flag) {
-            $union_iterator->results_per_block = 
-                ceil(SERVER_ALPHA * 
+            $union_iterator->results_per_block =
+                ceil(SERVER_ALPHA *
                     $group_iterator->results_per_block/$num_servers);
         } else if($save_timestamp > 0) {
             $group_iterator->save_iterators = $iterators;

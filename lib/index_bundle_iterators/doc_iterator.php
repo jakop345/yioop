@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,13 +27,13 @@
  * @subpackage iterator
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
-/** 
+/**
  *Loads base class for iterating
  */
 require_once BASE_DIR.'/lib/index_bundle_iterators/index_bundle_iterator.php';
@@ -44,8 +44,8 @@ require_once BASE_DIR.'/lib/index_bundle_iterators/index_bundle_iterator.php';
  * the words it contains. It also makes it easy to get the summaries
  * of these documents.
  *
- * A description of how words and the documents containing them are stored 
- * is given in the documentation of IndexArchiveBundle. 
+ * A description of how words and the documents containing them are stored
+ * is given in the documentation of IndexArchiveBundle.
  *
  * @author Chris Pollett
  * @package seek_quarry
@@ -80,7 +80,7 @@ class DocIterator extends IndexBundleIterator
     var $current_offset;
 
     /**
-     * An array of shard docids_lens 
+     * An array of shard docids_lens
      * @var array
      */
     var $shard_lens;
@@ -175,7 +175,7 @@ class DocIterator extends IndexBundleIterator
     /**
      *
      */
-    function getShardInfo($generation) 
+    function getShardInfo($generation)
     {
         if(isset($this->shard_lens[$generation])) {
             $this->last_offset = $this->shard_lens[$generation];
@@ -217,7 +217,7 @@ class DocIterator extends IndexBundleIterator
         do {
             if($this->next_offset >= $this->last_offset) {break;}
             $posting = packPosting($this->next_offset >> 4, array(1));
-            list($doc_id, $num_keys, $item) = 
+            list($doc_id, $num_keys, $item) =
                 $shard->makeItem($posting, $num_docs_or_links);
             $this->next_offset += ($num_keys + 1)*$doc_key_len;
             $pre_results[$doc_id] = $item;
@@ -236,7 +236,7 @@ class DocIterator extends IndexBundleIterator
             }
             $data[self::KEY] = $keys;
             // inlinks is the domain of the inlink
-            list($hash_url, $data[self::HASH], $data[self::INLINKS]) = 
+            list($hash_url, $data[self::HASH], $data[self::INLINKS]) =
                 str_split($keys, $doc_key_len);
             $data[self::CRAWL_TIME] = $this->index_name;
             $results[$keys] = $data;
@@ -269,16 +269,16 @@ class DocIterator extends IndexBundleIterator
         }
         $this->current_block_fresh = false;
         $this->seen_docs += $num_docs;
-    } 
+    }
 
     /**
      * Forwards the iterator one group of docs
      * @param array $gen_doc_offset a generation, doc_offset pair. If set,
      *      the must be of greater than or equal generation, and if equal the
-     *      next block must all have $doc_offsets larger than or equal to 
+     *      next block must all have $doc_offsets larger than or equal to
      *      this value
      */
-    function advance($gen_doc_offset = null) 
+    function advance($gen_doc_offset = null)
     {
         $this->advanceSeenDocs();
         if($this->current_offset < $this->next_offset) {
@@ -305,7 +305,7 @@ class DocIterator extends IndexBundleIterator
                     $this->next_offset = $this->current_offset;
                 }
             }
-            $this->seen_docs = 
+            $this->seen_docs =
                 $this->current_offset/
                     4*IndexShard::DOC_KEY_LEN;
         }
@@ -332,10 +332,10 @@ class DocIterator extends IndexBundleIterator
 
 
     /**
-     * Gets the doc_offset and generation for the next document that 
+     * Gets the doc_offset and generation for the next document that
      * would be return by this iterator
      *
-     * @return mixed an array with the desired document offset 
+     * @return mixed an array with the desired document offset
      *  and generation; -1 on fail
      */
     function currentGenDocOffsetWithWord() {

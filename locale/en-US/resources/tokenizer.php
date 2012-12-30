@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -25,7 +25,7 @@
  *  @subpackage locale
  *  @license http://www.gnu.org/licenses/ GPL3
  *  @link http://www.seekquarry.com/
- *  @copyright 2009 - 2012
+ *  @copyright 2009 - 2013
  *  @filesource
  */
 
@@ -62,7 +62,7 @@ class EnStemmer
      */
     static $k;
     /**
-     * Index to start of the suffix of the word being considered for 
+     * Index to start of the suffix of the word being considered for
      * manipulation
      * @var int
      */
@@ -110,14 +110,14 @@ class EnStemmer
         {
             case 'a': case 'e': case 'i': case 'o': case 'u':
                 return false;
-            case 'y': 
+            case 'y':
                 return ($i== 0 ) ? true : !self::cons($i - 1);
             default:
                 return true;
         }
     }
 
-    /** 
+    /**
      * m() measures the number of consonant sequences between 0 and j. if c is
      * a consonant sequence and v a vowel sequence, and [.] indicates arbitrary
      * presence,
@@ -135,7 +135,7 @@ class EnStemmer
         $i = 0;
         while(true) {
             if ($i > self::$j) return $n;
-            if (!self::cons($i)) break; 
+            if (!self::cons($i)) break;
             $i++;
         }
 
@@ -162,7 +162,7 @@ class EnStemmer
     }
 
     /**
-     * Checks if 0,...$j contains a vowel 
+     * Checks if 0,...$j contains a vowel
      *
      * @return bool whether it does not
      */
@@ -188,10 +188,10 @@ class EnStemmer
         return self::cons($j);
     }
 
-    /** 
+    /**
      * Checks whether the letters at the indices $i-2, $i-1, $i in the buffer
-     * have the form consonant - vowel - consonant and also if the second c is 
-     * not w,x or y. this is used when trying to restore an e at the end of a 
+     * have the form consonant - vowel - consonant and also if the second c is
+     * not w,x or y. this is used when trying to restore an e at the end of a
      * short word. e.g.
      *<pre>
      *    cav(e), lov(e), hop(e), crim(e), but
@@ -202,7 +202,7 @@ class EnStemmer
 
     private static function cvc($i)
     {
-        if ($i < 2 || !self::cons($i) || self::cons($i - 1) || 
+        if ($i < 2 || !self::cons($i) || self::cons($i - 1) ||
             !self::cons($i - 2)) return false;
 
         $ch = self::$buffer[$i];
@@ -213,7 +213,7 @@ class EnStemmer
 
     /**
      * Checks if the buffer currently ends with the string $s
-     * 
+     *
      * @param string $s string to use for check
      * @return bool whether buffer currently ends with $s
      */
@@ -222,8 +222,8 @@ class EnStemmer
     {
         $len = strlen($s);
         $loc = self::$k - $len + 1;
-        
-        if($loc < 0 || 
+
+        if($loc < 0 ||
             substr_compare(self::$buffer, $s, $loc, $len) != 0) return false;
 
         self::$j = self::$k - $len;
@@ -233,7 +233,7 @@ class EnStemmer
 
     /**
      * setto($s) sets (j+1),...k to the characters in the string $s, readjusting
-     * k. 
+     * k.
      *
      * @param string $s string to modify the end of buffer with
      */
@@ -247,12 +247,12 @@ class EnStemmer
     }
 
     /**
-     * Sets the ending in the buffer to $s if the number of consonant sequences 
+     * Sets the ending in the buffer to $s if the number of consonant sequences
      * between $k and $j is positive.
      *
      * @param string $s what to change the suffix to
      */
-    private static function r($s) 
+    private static function r($s)
     {
         if (self::m() > 0) self::setto($s);
     }
@@ -290,17 +290,17 @@ class EnStemmer
                 self::$k--;
             }
         }
-        if (self::ends("eed")) { 
-            if (self::m() > 0) self::$k--; 
-        } else if ((self::ends("ed") || self::ends("ing")) && 
+        if (self::ends("eed")) {
+            if (self::m() > 0) self::$k--;
+        } else if ((self::ends("ed") || self::ends("ing")) &&
             self::vowelinstem()) {
             self::$k = self::$j;
             if (self::ends("at")) {
                 self::setto("ate");
             } else if (self::ends("bl")) {
-                self::setto("ble"); 
+                self::setto("ble");
             } else if (self::ends("iz")) {
-                self::setto("ize"); 
+                self::setto("ize");
             } else if (self::doublec(self::$k)) {
                 self::$k--;
                 $ch = self::$buffer[self::$k];
@@ -312,10 +312,10 @@ class EnStemmer
     }
 
     /**
-     * step1c() turns terminal y to i when there is another vowel in the stem. 
+     * step1c() turns terminal y to i when there is another vowel in the stem.
      */
 
-    private static function step1c() 
+    private static function step1c()
     {
         if (self::ends("y") && self::vowelinstem()) {
             self::$buffer[self::$k] = 'i';
@@ -326,9 +326,9 @@ class EnStemmer
     /**
      * step2() maps double suffices to single ones. so -ization ( = -ize plus
      * -ation) maps to -ize etc.Note that the string before the suffix must give
-     * m() > 0. 
+     * m() > 0.
      */
-    private static function step2() 
+    private static function step2()
     {
         if(self::$k < 1) return;
         switch (self::$buffer[self::$k - 1])
@@ -337,7 +337,7 @@ class EnStemmer
                 if (self::ends("ational")) { self::r("ate"); break; }
                 if (self::ends("tional")) { self::r("tion"); break; }
                 break;
-            case 'c': 
+            case 'c':
                 if (self::ends("enci")) { self::r("ence"); break; }
                 if (self::ends("anci")) { self::r("ance"); break; }
                 break;
@@ -345,18 +345,18 @@ class EnStemmer
                 if (self::ends("izer")) { self::r("ize"); break; }
                 break;
             case 'l':
-                if (self::ends("bli")) { self::r("ble"); break; } 
+                if (self::ends("bli")) { self::r("ble"); break; }
                 if (self::ends("alli")) { self::r("al"); break; }
                 if (self::ends("entli")) { self::r("ent"); break; }
                 if (self::ends("eli")) { self::r("e"); break; }
                 if (self::ends("ousli")) { self::r("ous"); break; }
                 break;
-            case 'o': 
+            case 'o':
                 if (self::ends("ization")) { self::r("ize"); break; }
                 if (self::ends("ation")) { self::r("ate"); break; }
                 if (self::ends("ator")) { self::r("ate"); break; }
                 break;
-            case 's': 
+            case 's':
                 if (self::ends("alism")) { self::r("al"); break; }
                 if (self::ends("iveness")) { self::r("ive"); break; }
                 if (self::ends("fulness")) { self::r("ful"); break; }
@@ -367,46 +367,46 @@ class EnStemmer
                 if (self::ends("iviti")) { self::r("ive"); break; }
                 if (self::ends("biliti")) { self::r("ble"); break; }
                 break;
-            case 'g': 
-                if (self::ends("logi")) { self::r("log"); break; } 
+            case 'g':
+                if (self::ends("logi")) { self::r("log"); break; }
 
-        } 
+        }
     }
 
-    /** 
-     * step3() deals with -ic-, -full, -ness etc. similar strategy to step2. 
+    /**
+     * step3() deals with -ic-, -full, -ness etc. similar strategy to step2.
      */
 
-    private static function step3() 
+    private static function step3()
     {
         switch (self::$buffer[self::$k])
         {
-            case 'e': 
+            case 'e':
                 if (self::ends("icate")) { self::r("ic"); break; }
                 if (self::ends("ative")) { self::r(""); break; }
                 if (self::ends("alize")) { self::r("al"); break; }
                 break;
-            case 'i': 
+            case 'i':
                 if (self::ends("iciti")) { self::r("ic"); break; }
                 break;
-            case 'l': 
+            case 'l':
                 if (self::ends("ical")) { self::r("ic"); break; }
                 if (self::ends("ful")) { self::r(""); break; }
                 break;
-            case 's': 
+            case 's':
                 if (self::ends("ness")) { self::r(""); break; }
                 break;
         }
     }
 
     /**
-     * step4() takes off -ant, -ence etc., in context <c>vcvc<v>. 
+     * step4() takes off -ant, -ence etc., in context <c>vcvc<v>.
      */
     private static function step4()
     {
         if(self::$k < 1) return;
         switch (self::$buffer[self::$k - 1])
-        {  
+        {
             case 'a':
                 if (self::ends("al")) break;
                 return;
@@ -414,13 +414,13 @@ class EnStemmer
                 if (self::ends("ance")) break;
                 if (self::ends("ence")) break;
                 return;
-            case 'e': 
-                if (self::ends("er")) break; 
+            case 'e':
+                if (self::ends("er")) break;
                 return;
-            case 'i': 
+            case 'i':
                 if (self::ends("ic")) break;
                 return;
-            case 'l': 
+            case 'l':
                 if (self::ends("able")) break;
                 if (self::ends("ible")) break;
                 return;
@@ -431,16 +431,16 @@ class EnStemmer
                 if (self::ends("ent")) break;
                 return;
             case 'o':
-                if (self::ends("ion") && self::$j >= 0 && 
-                    (self::$buffer[self::$j] == 's' || 
+                if (self::ends("ion") && self::$j >= 0 &&
+                    (self::$buffer[self::$j] == 's' ||
                     self::$buffer[self::$j] == 't')) break;
                 if (self::ends("ou")) break;
                 return;
             /* takes care of -ous */
-            case 's': 
-                if (self::ends("ism")) break; 
+            case 's':
+                if (self::ends("ism")) break;
                 return;
-            case 't': 
+            case 't':
                 if (self::ends("ate")) break;
                 if (self::ends("iti")) break;
                     return;
@@ -448,7 +448,7 @@ class EnStemmer
                 if (self::ends("ous")) break;
                 return;
             case 'v':
-                if (self::ends("ive")) break; 
+                if (self::ends("ive")) break;
                 return;
             case 'z':
                 if (self::ends("ize")) break;
@@ -466,12 +466,12 @@ class EnStemmer
     private static function step5()
     {
         self::$j = self::$k;
-        
+
         if (self::$buffer[self::$k] == 'e') {
             $a = self::m();
             if ($a > 1 || $a == 1 && !self::cvc(self::$k - 1)) self::$k--;
         }
-        if (self::$buffer[self::$k] == 'l' && 
+        if (self::$buffer[self::$k] == 'l' &&
             self::doublec(self::$k) && self::m() > 1) self::$k--;
     }
 

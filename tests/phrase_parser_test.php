@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage test
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -36,7 +36,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 /**
  *  Load the url parser library we'll be testing
  */
-require_once BASE_DIR."/lib/phrase_parser.php"; 
+require_once BASE_DIR."/lib/phrase_parser.php";
 
 /**
  *  Used to test that the PhraseParser class. Want to make sure bigram
@@ -51,14 +51,14 @@ class PhraseParserTest extends UnitTest
     /**
      * PhraseParser uses static methods so doesn't do anything right now
      */
-    public function setUp()
+    function setUp()
     {
     }
 
     /**
      * PhraseParser uses static methods so doesn't do anything right now
      */
-    public function tearDown()
+    function tearDown()
     {
     }
 
@@ -66,7 +66,7 @@ class PhraseParserTest extends UnitTest
      * Tests the ability of extractPhrasesInLists to extract some hard-case
      * phrases and acronyms
      */
-    public function extractPhrasesTestCase()
+    function extractPhrasesTestCase()
     {
         $phrase_string = <<< EOD
 Dr. T.Y Lin's home page. J. R. R. Tolkien
@@ -104,9 +104,9 @@ EOD;
             "punctuation present");
 
         $phrase_string = <<< EOD
- 百度一下，你就知道 
+ 百度一下，你就知道
  .. 知 道 MP3 图 片 视 频 地 图 输入法 手写
-拼音 关闭 空间 百科 hao123 | 更多>> 
+拼音 关闭 空间 百科 hao123 | 更多>>
 About Baidu
 EOD;
 
@@ -122,11 +122,11 @@ EOD;
         $phrase_string = <<< EOD
 P.O. Box 765,  http://somewhere.edu.au
 
-negative) results.  bigram/trigram 
+negative) results.  bigram/trigram
 
-Simon & Somebody (1880b) analysed roughly 
+Simon & Somebody (1880b) analysed roughly
 
-the U.K. based newspaper, 
+the U.K. based newspaper,
 
 15, 2006, from http://www.yo.org/index.pl?a=b&c=d
 http://yo.lo.edu/faculty_pages/zebra/
@@ -143,25 +143,25 @@ EOD;
         $this->assertTrue(in_array("a_and_w", $words), "Ampersand Test 1");
         $this->assertTrue(in_array("a_and_tt", $words), "Ampersand Test 2");
         $this->assertTrue(in_array("fish_and_chip", $words), "n for and test");
-        $this->assertTrue(in_array("chris_a_pollett_d_org", $words), 
+        $this->assertTrue(in_array("chris_a_pollett_d_org", $words),
             "Email Check 1");
         $this->assertTrue(in_array(
-            "http_c__s__s_www_d_yo_d_org_s_index_d_pl_q_a_e_b_and_c_e_d", 
+            "http_c__s__s_www_d_yo_d_org_s_index_d_pl_q_a_e_b_and_c_e_d",
             $words), "URL Check 1");
         $this->assertTrue(in_array(
-            "http_c__s__s_yo_d_lo_d_edu_s_faculty_pages_s_zebra_s_", 
+            "http_c__s__s_yo_d_lo_d_edu_s_faculty_pages_s_zebra_s_",
             $words), "URL Check 2");
     }
 
     /**
      * Checks whether the same search threshold can classify porn from
      * non-porn sites. Sample were taken from a couple porn sites,
-     * sorted alphabetically by word and then some of the non sensitive words 
+     * sorted alphabetically by word and then some of the non sensitive words
      * were substituted so as to avoid copyright issues. For the safe tests
      * a similar process was done with the Wizard of Oz (now public domain)
      * and with some sexually related Wikipedia articles (Creative Commons SA).
      */
-    public function computeSafeSearchScoreTestCase()
+    function computeSafeSearchScoreTestCase()
     {
         $phrase_string = <<< EOD
 a a a a a a a a a a a a all and and
@@ -206,7 +206,7 @@ ploy precious kitties see she she she sought sizzle so so spent spicy
 started stretch sucking swinging that that that the the the then things
 those those those tit titties titty to to to togo today tramp truly
 us was we we we what what when what wild with with with workout wrap yes
-you 
+you
 EOD;
         $word_lists = PhraseParser::extractPhrasesInLists($phrase_string,
             "en-US", true);

@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage helper
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -45,7 +45,7 @@ require_once BASE_DIR."/views/helpers/helper.php";
  * @package seek_quarry
  * @subpackage helper
  */
- 
+
 class VideourlHelper extends Helper
 {
 
@@ -57,7 +57,7 @@ class VideourlHelper extends Helper
      *  @param boolean $open_in_tabs whether new links should be opened in
      *     tabs
      */
-    public function render($url, $video_sources, $open_in_tabs = false)
+    function render($url, $video_sources, $open_in_tabs = false)
     {
         if(substr($url, 0, 3) == "url") {
             $link_url_parts = explode("|", $url);
@@ -74,7 +74,7 @@ class VideourlHelper extends Helper
             if(stripos($url, $expression_parts[0]) !== false) {
                 $id = substr($url, strlen($expression_parts[0]));
                 $len = 0;
-                if(isset($expression_parts[1]) && 
+                if(isset($expression_parts[1]) &&
                     ($len = strlen($expression_parts[1])) > 0) {
                     if(($pos = stripos($id, $expression_parts[1])) > 0) {
                         $id = substr($id, 0, $pos);
@@ -91,8 +91,8 @@ class VideourlHelper extends Helper
                 if(isset($thumb_parts[1])) {
                     $thumb_url .= $thumb_parts[1];
                 }
-                ?><a class="video-link" href="<?php e($url); ?>" <?php 
-                if($open_in_tabs) { ?> target="_blank" <?php }?>><img 
+                ?><a class="video-link" href="<?php e($url); ?>" <?php
+                if($open_in_tabs) { ?> target="_blank" <?php }?>><img
                 class="thumb" src="<?php e($thumb_url); ?>"
                 alt="Thumbnail for <?php e($id); ?>" />
                 <img class="video-play" src="resources/play.png" alt="" />

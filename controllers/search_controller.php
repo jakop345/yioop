@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage controller
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -58,7 +58,7 @@ class SearchController extends Controller implements CrawlConstants
 {
     /**
      * Says which models to load for this controller.
-     * PhraseModel is used to extract words from the query; CrawlModel 
+     * PhraseModel is used to extract words from the query; CrawlModel
      * is used for cached web page requests
      * @var array
      */
@@ -66,7 +66,7 @@ class SearchController extends Controller implements CrawlConstants
         "source", "cron");
     /**
      * Says which views to load for this controller.
-     * The SearchView is used for displaying general search results as well 
+     * The SearchView is used for displaying general search results as well
      * as the initial search screen; NocacheView
      * is used on a cached web page request that fails; RssView is used
      * to present search results according to the opensearch.org rss results
@@ -75,7 +75,7 @@ class SearchController extends Controller implements CrawlConstants
      */
     var $views = array("search",  "nocache", "rss");
     /**
-     * Says which activities (roughly methods invoke from the web) this 
+     * Says which activities (roughly methods invoke from the web) this
      * controller will respond to
      * @var array
      */
@@ -108,13 +108,13 @@ class SearchController extends Controller implements CrawlConstants
     /**
      * This is the main entry point for handling a search request.
      *
-     * ProcessRequest determines the type of search request (normal request , 
-     * cache request, or related request), or if its a 
-     * user is returning from the admin panel via signout. It then calls the 
-     * appropriate method to handle the given activity.Finally, it draw the 
+     * ProcessRequest determines the type of search request (normal request ,
+     * cache request, or related request), or if its a
+     * user is returning from the admin panel via signout. It then calls the
+     * appropriate method to handle the given activity.Finally, it draw the
      * search screen.
      */
-    function processRequest() 
+    function processRequest()
     {
         $data = array();
         $view = "search";
@@ -230,12 +230,12 @@ class SearchController extends Controller implements CrawlConstants
            (presumably internal) queries
          */
         if((isset($_REQUEST['its']) || isset($_SESSION['its']))) {
-            $its = (isset($_REQUEST['its'])) ? $_REQUEST['its'] : 
+            $its = (isset($_REQUEST['its'])) ? $_REQUEST['its'] :
                 $_SESSION['its'];
             $index_time_stamp = $this->clean($its, "int");
             if($raw != 1) {
                 if($index_time_stamp != 0 ) {
-                    //validate timestamp against list 
+                    //validate timestamp against list
                     //(some crawlers replay deleted crawls)
                     $crawls = $this->crawlModel->getCrawlList(false,true,
                         $machine_urls,true);
@@ -260,18 +260,18 @@ class SearchController extends Controller implements CrawlConstants
                         $index_time_stamp = $current_its;
                     }
                 } else {
-                    $index_time_stamp = $current_its; 
+                    $index_time_stamp = $current_its;
                         //use the default crawl index
                 }
             }
         } else {
-            $index_time_stamp = $current_its; 
+            $index_time_stamp = $current_its;
                 //use the default crawl index
         }
         if($web_flag && $index_time_stamp != 0 ) {
             $index_info =  $this->crawlModel->getInfoTimestamp(
                 $index_time_stamp, $machine_urls);
-            if($index_info == array() || !isset($index_info["COUNT"]) || 
+            if($index_info == array() || !isset($index_info["COUNT"]) ||
                 $index_info["COUNT"] == 0) {
                 if($index_time_stamp != $current_its) {
                     $index_time_stamp = $current_its;
@@ -288,13 +288,13 @@ class SearchController extends Controller implements CrawlConstants
         } else {
             $save_timestamp = 0;
         }
-        if(isset($_REQUEST['q']) && strlen($_REQUEST['q']) > 0 
+        if(isset($_REQUEST['q']) && strlen($_REQUEST['q']) > 0
             || $activity != "query") {
             if($activity == "query") {
                 $activity_array = $this->extractActivityQuery();
                 $query = $activity_array[0]; // dirty
                 $activity = $activity_array[1];
-                $arg = $activity_array[2]; 
+                $arg = $activity_array[2];
             }
 
             if($activity != "cache") {
@@ -306,11 +306,11 @@ class SearchController extends Controller implements CrawlConstants
                 } else {
                     $limit = 0;
                 }
-                $data = 
+                $data =
                     $this->processQuery(
-                        $query, $activity, $arg, 
+                        $query, $activity, $arg,
                         $results_per_page, $limit, $index_time_stamp, $raw,
-                        $save_timestamp); 
+                        $save_timestamp);
                         // calculate the results of a search if there is one
             } else {
                 $highlight = true;
@@ -337,11 +337,11 @@ class SearchController extends Controller implements CrawlConstants
                 $data['INDEX_INFO'] = tl('search_controller_mix_info',
                     $index_info['DESCRIPTION']);
             } else {
-                if(isset($index_info['DESCRIPTION']) && 
-                    isset($index_info['VISITED_URLS_COUNT']) && 
+                if(isset($index_info['DESCRIPTION']) &&
+                    isset($index_info['VISITED_URLS_COUNT']) &&
                     isset($index_info['COUNT']) ) {
                     $data['INDEX_INFO'] = tl('search_controller_crawl_info',
-                        $index_info['DESCRIPTION'], 
+                        $index_info['DESCRIPTION'],
                         $index_info['VISITED_URLS_COUNT'],
                         $index_info['COUNT']);
                 } else {
@@ -408,11 +408,11 @@ class SearchController extends Controller implements CrawlConstants
     /**
      * Sometimes robots disobey the statistics page nofollow meta tag.
      * and need to be stopped before they query the whole index
-     * 
+     *
      * @param string $query  the search request string
      * @param string the search request string if not a bot; "" otherwise
      */
-    function restrictQueryByUserAgent($query) 
+    function restrictQueryByUserAgent($query)
     {
         $bots = array("googlebot", "baidu", "naver", "sogou");
         $query_okay = true;
@@ -469,31 +469,31 @@ class SearchController extends Controller implements CrawlConstants
      * terms. Renders the results to the HTML page.
      *
      * @param string $query a string containing the words to search on
-     * @param string $activity besides a straight search for words query, 
+     * @param string $activity besides a straight search for words query,
      *      one might have other searches, such as a search for related pages.
      *      this argument says what kind of search to do.
-     * @param string $arg for a search other than a straight word query this 
+     * @param string $arg for a search other than a straight word query this
      *      argument provides auxiliary information on how to conduct the
-     *      search. For instance on a related web page search, it might provide 
+     *      search. For instance on a related web page search, it might provide
      *      the url of the site with which to perform the related search.
-     * @param int $results_per_page the maixmum number of search results 
+     * @param int $results_per_page the maixmum number of search results
      *      that can occur on a page
      * @param int $limit the first page of all the pages with the query terms
      *      to return. For instance, if 10 then the tenth highest ranking page
      *      for those query terms will be return, then the eleventh, etc.
-     * @param int $index_name the timestamp of an index to use, if 0 then 
+     * @param int $index_name the timestamp of an index to use, if 0 then
      *      default used
      * @param int $raw ($raw == 0) normal grouping, $raw > 0
      *      no grouping done on data. If $raw == 1 no summary returned (used
-     *      with f=serial, end user probably does not want) 
+     *      with f=serial, end user probably does not want)
      *      In this case, will get offset, generation, etc so could later lookup
      * @param int $save_timestamp if this timestamp is nonzero, then save
      *      iterate position, so can resume on future queries that make
      *      use of the timestamp
      * @return array an array of at most results_per_page many search results
      */
-    function processQuery($query, $activity, $arg, $results_per_page, 
-        $limit = 0, $index_name = 0, $raw = 0, $save_timestamp = 0) 
+    function processQuery($query, $activity, $arg, $results_per_page,
+        $limit = 0, $index_name = 0, $raw = 0, $save_timestamp = 0)
     {
         $no_index_given = false;
         if($index_name == 0) {
@@ -505,7 +505,7 @@ class SearchController extends Controller implements CrawlConstants
         $is_mix = $this->crawlModel->isCrawlMix($index_name);
         if($no_index_given) {
             $data["ERROR"] = tl('search_controller_no_index_set');
-            $data['SCRIPT'] = 
+            $data['SCRIPT'] =
                     "doMessage('<h1 class=\"red\" >".
                     tl('search_controller_no_index_set').
                     "</h1>');";
@@ -519,23 +519,23 @@ class SearchController extends Controller implements CrawlConstants
             $plugin_name = ucfirst($plugin)."Plugin";
             $plugin_obj = new $plugin_name();
             $tmp_meta_words = $plugin_obj->getAdditionalMetaWords();
-            $this->phraseModel->additional_meta_words = 
-                array_merge($this->phraseModel->additional_meta_words, 
+            $this->phraseModel->additional_meta_words =
+                array_merge($this->phraseModel->additional_meta_words,
                     $tmp_meta_words);
         }
 
         $this->crawlModel->index_name = $index_name;
 
         $original_query = $query;
-        list($query, $raw, $use_network, $use_cache_if_possible, 
-            $guess_semantics) = 
+        list($query, $raw, $use_network, $use_cache_if_possible,
+            $guess_semantics) =
                 $this->calculateControlWords($query, $raw, $is_mix);
         $index_archive_name= self::index_data_base_name.$index_name;
         if(file_exists( CRAWL_DIR."/cache/$index_archive_name/no_network.txt")){
             $_REQUEST['network'] = false;
             //if default index says no network queries then no network queries
         }
-        if($use_network && 
+        if($use_network &&
             (!isset($_REQUEST['network']) || $_REQUEST['network'] == "true")) {
             $queue_servers = $this->machineModel->getQueueServerUrls();
         } else {
@@ -549,13 +549,13 @@ class SearchController extends Controller implements CrawlConstants
             case "related":
                 $data['QUERY'] = "related:$arg";
                 $url = $arg;
-                $crawl_item = $this->crawlModel->getCrawlItem($url, 
+                $crawl_item = $this->crawlModel->getCrawlItem($url,
                     $queue_servers);
-                $top_phrases  = 
+                $top_phrases  =
                     $this->getTopPhrases($crawl_item, 3, $index_name);
                 $top_query = implode(" ", $top_phrases);
                 $filter = $this->searchfiltersModel->getFilter();
-                $this->phraseModel->editedPageSummaries = 
+                $this->phraseModel->editedPageSummaries =
                     $this->searchfiltersModel->getEditedPageSummaries();
                 $phrase_results = $this->phraseModel->getPhrasePageResults(
                     $top_query, $limit, $results_per_page, false, $filter,
@@ -567,7 +567,7 @@ class SearchController extends Controller implements CrawlConstants
                     $data['PAGING_QUERY'] .= "&amp;s=".
                         $this->subsearch_name;
                 }
-                
+
                 $data['QUERY'] = urlencode($this->clean($data['QUERY'],
                     "string"));
             break;
@@ -576,7 +576,7 @@ class SearchController extends Controller implements CrawlConstants
             default:
                 if(trim($query) != "") {
                     $filter = $this->searchfiltersModel->getFilter();
-                    $this->phraseModel->editedPageSummaries = 
+                    $this->phraseModel->editedPageSummaries =
                         $this->searchfiltersModel->getEditedPageSummaries();
                     $phrase_results = $this->phraseModel->getPhrasePageResults(
                         $query, $limit, $results_per_page, true, $filter,
@@ -606,7 +606,7 @@ class SearchController extends Controller implements CrawlConstants
         }
         $cron_time = $this->cronModel->getCronTime("news_update");
         $delta = $time - $cron_time;
-        if(($delta > self::NEWS_UPDATE_INTERVAL || $delta == 0) 
+        if(($delta > self::NEWS_UPDATE_INTERVAL || $delta == 0)
             && defined(SUBSEARCH_LINK) && SUBSEARCH_LINK) {
             $this->cronModel->updateCronTime("news_update");
             $this->sourceModel->updateFeedItems();
@@ -617,7 +617,7 @@ class SearchController extends Controller implements CrawlConstants
              $phrase_results['PAGES']: array();
         $data['SAVE_POINT'] = (isset($phrase_results["SAVE_POINT"])) ?
              $phrase_results["SAVE_POINT"]: array( 0 => 1);
-        $data['TOTAL_ROWS'] = (isset($phrase_results['TOTAL_ROWS'])) ? 
+        $data['TOTAL_ROWS'] = (isset($phrase_results['TOTAL_ROWS'])) ?
             $phrase_results['TOTAL_ROWS'] : 0;
         $data['LIMIT'] = $limit;
         $data['RESULTS_PER_PAGE'] = $results_per_page;
@@ -635,7 +635,7 @@ class SearchController extends Controller implements CrawlConstants
      *  @param bool $raw the $_REQUEST['raw'] value
      *  @param bool if the current index name is that of a crawl mix
      *
-     *  @return array ($query, $raw, $use_network, 
+     *  @return array ($query, $raw, $use_network,
      *      $use_cache_if_possible, $guess_semantics)
      */
     function calculateControlWords($query, $raw, $is_mix)
@@ -676,7 +676,7 @@ class SearchController extends Controller implements CrawlConstants
         }
         if($is_mix) {
             $mix = $this->crawlModel->getCrawlMix($index_name);
-            $query = 
+            $query =
                 $this->phraseModel->rewriteMixQuery($query, $mix);
         }
 
@@ -697,7 +697,7 @@ class SearchController extends Controller implements CrawlConstants
         $query = preg_replace('/no:guess/', "", $query);
         $guess_semantics = ($guess_query == $query) ? true : false;
 
-        return array($query, $raw, $use_network, 
+        return array($query, $raw, $use_network,
             $use_cache_if_possible, $guess_semantics);
     }
 
@@ -741,12 +741,12 @@ class SearchController extends Controller implements CrawlConstants
      * Given a page summary extract the words from it and try to find documents
      * which match the most relevant words. The algorithm for "relevant" is
      * pretty weak. For now we pick the $num many words whose ratio
-     * of number of occurences in crawl item/ number of occurences in all 
+     * of number of occurences in crawl item/ number of occurences in all
      * documents is the largest
      *
      * @param string $crawl_item a page summary
      * @param int $num number of key phrase to return
-     * @param int $index_name the timestamp of an index to use, if 0 then 
+     * @param int $index_name the timestamp of an index to use, if 0 then
      *      default used
      * @return array  an array of most selective key phrases
      */
@@ -765,7 +765,7 @@ class SearchController extends Controller implements CrawlConstants
         $crawl_item[self::LANG] = (isset($crawl_item[self::LANG])) ?
             $crawl_item[self::LANG] : DEFAULT_LOCALE;
 
-        $page_word_counts = 
+        $page_word_counts =
             PhraseParser::extractPhrasesAndCount($phrase_string,
                 $crawl_item[self::LANG]);
         $words = array_keys($page_word_counts);
@@ -774,8 +774,8 @@ class SearchController extends Controller implements CrawlConstants
 
         $word_ratios = array();
         foreach($page_word_counts as $word => $count) {
-            $word_ratios[$word] = 
-                (isset($word_counts[$word]) && $word_counts[$word] > 0) ? 
+            $word_ratios[$word] =
+                (isset($word_counts[$word]) && $word_counts[$word] > 0) ?
                 $count/$word_counts[$word] : 0;
             /*discard cases where word only occurs in one doc as want
               to find related relevant documents */
@@ -792,10 +792,10 @@ class SearchController extends Controller implements CrawlConstants
     }
 
     /**
-     * This method is responsible for parsing out the kind of query 
+     * This method is responsible for parsing out the kind of query
      * from the raw query string
      *
-     * This method parses the raw query string for query activities. 
+     * This method parses the raw query string for query activities.
      * It parses the name of each activity and its argument
      *
      * @return array list of search activities parsed out of the search string
@@ -804,10 +804,10 @@ class SearchController extends Controller implements CrawlConstants
 
         $query = mb_ereg_replace("(\s)+", " ", $_REQUEST['q']);
         $query = mb_ereg_replace("\s:\s", ":", $_REQUEST['q']);
-        
+
         $query_parts = mb_split(" ", $query);
         $count = count($query_parts);
-            
+
         $out_query = "";
         $activity = "query";
         $arg = "";
@@ -825,17 +825,17 @@ class SearchController extends Controller implements CrawlConstants
                 }
             }
             $out_query .= $space.$query_parts[$i];
-            $space = " "; 
+            $space = " ";
         }
 
         $activity_array = array($out_query, $activity, $arg);
 
-        return $activity_array; 
+        return $activity_array;
     }
 
     /**
      *  Used in rendering a cached web page to highlight the search terms.
-     * 
+     *
      *  @param object $node DOM object to mark html elements of
      *  @param array $words an array of words to be highlighted
      *  @param object $dom a DOM object for the whole document
@@ -852,7 +852,7 @@ class SearchController extends Controller implements CrawlConstants
 
             $clone = $node->childNodes->item($k)->cloneNode(true);
 
-            if($clone->nodeType == XML_TEXT_NODE) { 
+            if($clone->nodeType == XML_TEXT_NODE) {
                 $text = $clone->textContent;
 
                 foreach($words as $word) {
@@ -877,7 +877,7 @@ class SearchController extends Controller implements CrawlConstants
 
             }
         }
-        
+
         return $node;
     }
 
@@ -952,7 +952,7 @@ class SearchController extends Controller implements CrawlConstants
      * associative array of query results
      *
      * @param string $query this can be any query string that could be
-     *      entered into the search bar on Yioop! (other than related: and 
+     *      entered into the search bar on Yioop! (other than related: and
      *      cache: queries)
      * @param int $results_per_page number of results to return
      * @param int $limit first result to return from the ordered query results
@@ -965,29 +965,29 @@ class SearchController extends Controller implements CrawlConstants
      *
      * @return array associative array of results for the query performed
      */
-    public function queryRequest($query, $results_per_page, $limit = 0, 
+    function queryRequest($query, $results_per_page, $limit = 0,
         $grouping = 0, $save_timestamp = 0)
     {
         $grouping = ($grouping > 0 ) ? 2 : 0;
-        return (API_ACCESS) ? 
-            $this->processQuery($query, "query", "", $results_per_page, 
+        return (API_ACCESS) ?
+            $this->processQuery($query, "query", "", $results_per_page,
                 $limit, 0, $grouping, $save_timestamp) : NULL;
     }
 
     /**
      * Query timestamps can be used to save an iteration position in a
-     * a set of query results. This method allows one to delete 
+     * a set of query results. This method allows one to delete
      * the supplied save point.
      *
      * @param int $save_timestamp deletes a previously query saved timestamp
      */
-    public function clearQuerySavepoint($save_timestamp) 
+    function clearQuerySavepoint($save_timestamp)
     {
         $this->phraseModel->clearQuerySavePoint($save_timestamp);
     }
 
     /**
-     * Part of Yioop! Search API. Performs a related to a given url 
+     * Part of Yioop! Search API. Performs a related to a given url
      * search query and returns associative array of query results
      *
      * @param string $url to find related documents for
@@ -1002,17 +1002,17 @@ class SearchController extends Controller implements CrawlConstants
      *
      * @return array associative array of results for the query performed
      */
-    public function relatedRequest($url, $results_per_page, $limit = 0, 
+    function relatedRequest($url, $results_per_page, $limit = 0,
         $crawl_time = 0, $grouping = 0, $save_timestamp = 0)
     {
         $grouping = ($grouping > 0 ) ? 2 : 0;
-        return (API_ACCESS) ? 
-            $this->processQuery("", "related", $url, $results_per_page, 
+        return (API_ACCESS) ?
+            $this->processQuery("", "related", $url, $results_per_page,
                 $limit, $crawl_time, $raw, $save_timestamp) : NULL;
     }
 
     /**
-     * Part of Yioop! Search API. Performs a related to a given url 
+     * Part of Yioop! Search API. Performs a related to a given url
      * search query and returns associative array of query results
      *
      * @param string $url to get cached page for
@@ -1023,12 +1023,12 @@ class SearchController extends Controller implements CrawlConstants
      *
      * @return string with contents of cached page
      */
-    public function cacheRequest($url, $highlight=true, $terms ="", 
+    function cacheRequest($url, $highlight=true, $terms ="",
         $crawl_time = 0)
     {
         if(!API_ACCESS) return false;
         ob_start();
-        $this->cacheRequestAndOutput($url, $highlight, $terms, 
+        $this->cacheRequestAndOutput($url, $highlight, $terms,
             $crawl_time);
         $cached_page = ob_get_contents();
         ob_end_clean();
@@ -1089,7 +1089,7 @@ class SearchController extends Controller implements CrawlConstants
         //Get int value of current crawl time for comparison
         $crawl_time_int = intval($crawl_time);
 
-        /* Search for all crawl times containing the cached 
+        /* Search for all crawl times containing the cached
           version of the page for $url for multiple and single queue servers */
 
         list($network_crawl_times, $network_crawl_items) = $this->
@@ -1104,13 +1104,13 @@ class SearchController extends Controller implements CrawlConstants
         }
         $nonnet_crawl_times = array_diff($nonnet_crawl_times,
             $network_crawl_times);
-        $all_crawl_times = array_values(array_merge($nonnet_crawl_times, 
+        $all_crawl_times = array_values(array_merge($nonnet_crawl_times,
             $network_crawl_times));
         sort($all_crawl_times, SORT_STRING);
 
-        /*Check if a crawl time results in a no cache. If found, remove 
+        /*Check if a crawl time results in a no cache. If found, remove
           from crawl times with cache*/
-        $no_cache = $this->checkRobotInstanceAndCacheItem($url, 
+        $no_cache = $this->checkRobotInstanceAndCacheItem($url,
             $all_crawl_times, $network_crawl_items, $nonnet_crawl_items);
         $all_crawl_times = array_diff($all_crawl_times, $no_cache);
 
@@ -1196,8 +1196,8 @@ class SearchController extends Controller implements CrawlConstants
         $page = $crawl_item[self::HASH];
         $offset = $crawl_item[self::OFFSET];
         $cache_partition = $crawl_item[self::CACHE_PAGE_PARTITION];
-        $cache_item = $this->crawlModel->getCacheFile($machine, 
-            $machine_uri, $cache_partition, $offset,  $crawl_time, 
+        $cache_item = $this->crawlModel->getCacheFile($machine,
+            $machine_uri, $cache_partition, $offset,  $crawl_time,
             $instance_num);
         if(!isset($cache_item[self::PAGE])) {
             $data["SUMMARY_STRING"] = $summary_string;
@@ -1235,7 +1235,7 @@ class SearchController extends Controller implements CrawlConstants
     {
         $inlinks = $this->phraseModel->getPhrasePageResults(
             "link:$url", 0, 1, true, NULL, false, 0, $queue_servers);
-        $in_url = isset($inlinks["PAGES"][0][self::URL]) ? 
+        $in_url = isset($inlinks["PAGES"][0][self::URL]) ?
             $inlinks["PAGES"][0][self::URL] : "";
         $type = $cache_item[self::TYPE];
         $loc_url = ($in_url == "") ? $url : $in_url;
@@ -1261,7 +1261,7 @@ class SearchController extends Controller implements CrawlConstants
      */
     function crawlItemSummary($crawl_item)
     {
-        $summary_string = 
+        $summary_string =
             tl('search_controller_extracted_title')."\n\n".
             wordwrap($crawl_item[self::TITLE], 80, "\n")."\n\n" .
             tl('search_controller_extracted_description')."\n\n".
@@ -1270,21 +1270,21 @@ class SearchController extends Controller implements CrawlConstants
             wordwrap(print_r($crawl_item[self::LINKS], true), 80, "\n");
         if(isset($crawl_item[self::ROBOT_PATHS])) {
             if(isset($crawl_item[self::ROBOT_PATHS][self::ALLOWED_SITES])) {
-                $summary_string = 
+                $summary_string =
                     tl('search_controller_extracted_allow_paths')."\n\n".
                     wordwrap(print_r($crawl_item[self::ROBOT_PATHS][
                         self::ALLOWED_SITES], true),  80, "\n");
             }
             if(isset($crawl_item[self::ROBOT_PATHS][self::DISALLOWED_SITES])) {
-                $summary_string = 
+                $summary_string =
                     tl('search_controller_extracted_disallow_paths')."\n\n".
                     wordwrap(print_r($crawl_item[self::ROBOT_PATHS][
                         self::DISALLOWED_SITES], true),  80, "\n");
             }
             if(isset($crawl_item[self::CRAWL_DELAY])) {
-                $summary_string = 
+                $summary_string =
                     tl('search_controller_crawl_delay')."\n\n".
-                    wordwrap(print_r($crawl_item[self::CRAWL_DELAY], true), 
+                    wordwrap(print_r($crawl_item[self::CRAWL_DELAY], true),
                         80, "\n") ."\n\n". $summary_string;
             }
         }
@@ -1313,7 +1313,7 @@ class SearchController extends Controller implements CrawlConstants
         $terms = str_replace('|', " ", $terms);
         $terms = $this->clean($terms, "string");
 
-        $phrase_string = mb_ereg_replace("[[:punct:]]", " ", $terms); 
+        $phrase_string = mb_ereg_replace("[[:punct:]]", " ", $terms);
         $words = mb_split(" ",$phrase_string);
         if(!$highlight) {
             $words = array();
@@ -1455,9 +1455,9 @@ class SearchController extends Controller implements CrawlConstants
      *  Get crawl items based on queue server setting.
      *
      *  @param string $url is the URL of the cached page
-     *  @param array $crawl_times is an array storing crawl times for all 
+     *  @param array $crawl_times is an array storing crawl times for all
      *      indexes
-     *  @param array $queue_servers is an array containing URLs for queue 
+     *  @param array $queue_servers is an array containing URLs for queue
      *      servers
      *  @return array($all_crawl_times, $all_crawl_items) is an array containing
      *      an array of crawl times and an array of their respective crawl items
@@ -1486,14 +1486,14 @@ class SearchController extends Controller implements CrawlConstants
      *  @param string $url is the URL for the cached page
      *  @param array $all_crawl_times contains crawl times for
      *      all indexes.
-     *  @param array $network_crawl_times contains all crawl times for 
+     *  @param array $network_crawl_times contains all crawl times for
      *      networked setting
-     *  @param array $nonnet_crawl_times contains all crawl times for 
+     *  @param array $nonnet_crawl_times contains all crawl times for
      *      non-networked setting
      *  @return array $no_cache contains crawl_times for which
      *      there is no cache.
      */
-    function checkRobotInstanceAndCacheItem($url, $all_crawl_times, 
+    function checkRobotInstanceAndCacheItem($url, $all_crawl_times,
         $network_crawl_items, $nonnet_crawl_items)
     {
         $network_crawl_times = array_keys($network_crawl_items);
@@ -1518,9 +1518,9 @@ class SearchController extends Controller implements CrawlConstants
             if(isset($crawl_item[self::THUMB])) {
                 $image_flag = true;
                 $inlinks = $this->phraseModel->getPhrasePageResults(
-                    "link:$url", 0, 
+                    "link:$url", 0,
                     1, true, NULL, false, 0, $queue_servers);
-                $in_url = isset($inlinks["PAGES"][0][self::URL]) ? 
+                $in_url = isset($inlinks["PAGES"][0][self::URL]) ?
                     $inlinks["PAGES"][0][self::URL] : "";
             }
             $check_fields = array(self::TITLE, self::DESCRIPTION, self::LINKS);
@@ -1532,7 +1532,7 @@ class SearchController extends Controller implements CrawlConstants
             $robot_table_name = CRAWL_DIR."/".self::robot_table_name;
             $robot_table = array();
             if(file_exists($robot_table_name)) {
-                $robot_table = 
+                $robot_table =
                     unserialize(file_get_contents($robot_table_name));
             }
 
@@ -1551,8 +1551,8 @@ class SearchController extends Controller implements CrawlConstants
             $page = $crawl_item[self::HASH];
             $offset = $crawl_item[self::OFFSET];
             $cache_partition = $crawl_item[self::CACHE_PAGE_PARTITION];
-            $cache_item = $this->crawlModel->getCacheFile($machine, 
-                $machine_uri, $cache_partition, $offset,  $crawl_time, 
+            $cache_item = $this->crawlModel->getCacheFile($machine,
+                $machine_uri, $cache_partition, $offset,  $crawl_time,
                 $instance_num);
             if(!isset($cache_item[self::PAGE])) {
                 array_push($no_cache, $crawl_time);
@@ -1573,7 +1573,7 @@ class SearchController extends Controller implements CrawlConstants
      *  @param boolean $hist_ui is a flag to check if links is from History UI
      *  @param string $url is the URL of the page
      *
-     *  @return DOMElement the section containing the options for 
+     *  @return DOMElement the section containing the options for
      *      selecting year and month
      */
     function historyUI($crawl_time, $all_crawl_times, $divNode, $dom, $terms,
@@ -1623,12 +1623,12 @@ class SearchController extends Controller implements CrawlConstants
         $historyLabel = $dom->createTextNode(tl('search_controller_history'));
         $historyLink->appendChild($historyLabel);
         $divNode->appendChild($historyLink);
-        $historyLink->setAttributeNS('', 'style', 
+        $historyLink->setAttributeNS('', 'style',
             "text-decoration: underline; cursor: pointer");
     }
 
     /**
-     * Creates a data structure for storing years, months and associated 
+     * Creates a data structure for storing years, months and associated
      * timestamp components
      * @param array $all_crawl_times is an array storing all crawl time
      * @param string $locale_type is the locale tag
@@ -1646,7 +1646,7 @@ class SearchController extends Controller implements CrawlConstants
         //Initialize data structure
         if(!empty($all_crawl_times)){
             foreach($all_crawl_times as $cache_time) {
-                $date_time_string = 
+                $date_time_string =
                     formatDateByLocale($cache_time, $locale_type);
                 $time_components = explode(" ", $date_time_string);
                 $time_ds[$time_components[2]][$time_components[0]] = null;
@@ -1655,7 +1655,7 @@ class SearchController extends Controller implements CrawlConstants
         //Populate data structure
         if(!empty($all_crawl_times)){
             foreach($all_crawl_times as $cache_time){
-                $date_time_string = 
+                $date_time_string =
                     formatDateByLocale($cache_time, $locale_type);
                 $time_components = explode(" ", $date_time_string);
                 if(!in_array($time_components[2], $years)) {
@@ -1688,9 +1688,9 @@ class SearchController extends Controller implements CrawlConstants
     /**
      * Create divs for links based on all (year, month) combinations
      * @param array $time_ds is the data structure for History UI
-     * @param string $current_year is the year associated with the timestamp 
+     * @param string $current_year is the year associated with the timestamp
      * of the cached page
-     * @param string $current_month is the month associated with the timestamp 
+     * @param string $current_month is the month associated with the timestamp
      * of the cached page
      * @param DOMElement $d1 is the section that contains options for years and
      * months
@@ -1700,7 +1700,7 @@ class SearchController extends Controller implements CrawlConstants
      * @param boolean $hist_ui checks if a link is from the History UI
      * @param string $terms is a string containing the query terms
      * @param long $crawl_time is the crawl time for the cached page
-     * @return DOMElement $d1 is the section containing the options for 
+     * @return DOMElement $d1 is the section containing the options for
      * selecting year and month
      */
     function createLinkDivs($time_ds, $current_year, $current_month, $d1, $dom,
@@ -1714,10 +1714,10 @@ class SearchController extends Controller implements CrawlConstants
                 $yeardiv->setAttributeNS("", "id", "#$yr$mth");
                 $yeardiv->setAttributeNS("", "style", "display:none");
                 if($hist_ui === true){
-                    if(!strcmp($yr, $current_year) && 
+                    if(!strcmp($yr, $current_year) &&
                         !strcmp($mth, $current_month)) {
                         $yeardiv->setAttributeNS("", "style", "display:block");
-                        $d1->setAttributeNS("", "style", 
+                        $d1->setAttributeNS("", "style",
                             "display:block");
                     }
                 }
@@ -1759,16 +1759,16 @@ class SearchController extends Controller implements CrawlConstants
      * Display links based on selected year and month in History UI
      * @param array years is an array storing years associated with all indexes
      * @param array months is an array storing months
-     * @param string $current_year is the year associated with the timestamp 
+     * @param string $current_year is the year associated with the timestamp
      * of the cached page
-     * @param string $current_month is the month associated with the timestamp 
+     * @param string $current_month is the month associated with the timestamp
      * of the cached page
      * @param array $time_ds is the data structure for History UI
      * @param DOMDocument $dom is the DOM for the cached page
-     * @return DOMElement $d1 is the section containing the options for 
+     * @return DOMElement $d1 is the section containing the options for
      * selecting year and month
      */
-    function viewLinksByYearMonth($years, $months, $current_year, 
+    function viewLinksByYearMonth($years, $months, $current_year,
         $current_month, $time_ds, $dom)
     {
         $year_json = json_encode($years);

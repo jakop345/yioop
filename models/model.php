@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage model
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -60,10 +60,10 @@ define("MIN_SNIPPET_LENGTH", 100);
 
 
 /**
- * 
+ *
  * This is a base class for all models
  * in the SeekQuarry search engine. It provides
- * support functions for formatting search results 
+ * support functions for formatting search results
  *
  * @author Chris Pollett
  *
@@ -95,12 +95,12 @@ class Model implements CrawlConstants
 
 
     /**
-     * Sets up the database manager that will be used and name of the search 
+     * Sets up the database manager that will be used and name of the search
      * engine database
      *
      * @param string $db_name  the name of the database for the search engine
      */
-    function __construct($db_name = DB_NAME) 
+    function __construct($db_name = DB_NAME)
     {
         $db_class = ucfirst(DBMS)."Manager";
         $this->db = new $db_class();
@@ -112,11 +112,11 @@ class Model implements CrawlConstants
 
 
     /**
-     * Given an array page summarries, for each summary extracts snippets which 
-     * are related to a set of search words. For each snippet, bold faces the 
+     * Given an array page summarries, for each summary extracts snippets which
+     * are related to a set of search words. For each snippet, bold faces the
      * search terms, and then creates a new summary array.
      *
-     * @param array $results web pages summaries (these in turn are 
+     * @param array $results web pages summaries (these in turn are
      *      arrays!)
      * @param array $words keywords (typically what was searched on)
      * @param int $description_length length of the description
@@ -151,7 +151,7 @@ class Model implements CrawlConstants
                             $page[$field] = $summary[$field];
                         }
                     }
-                
+
                 }
             }
             if(!isset($page[self::TITLE])) {
@@ -160,7 +160,7 @@ class Model implements CrawlConstants
             $page[self::TITLE] = strip_tags($page[self::TITLE]);
 
             if(strlen($page[self::TITLE]) == 0 ) {
-                $offset = 
+                $offset =
                     min(mb_strlen($page[self::DESCRIPTION]), TITLE_LENGTH);
                 $end_title = mb_strpos($page[self::DESCRIPTION], " ", $offset);
                 $ellipsis = "";
@@ -170,8 +170,8 @@ class Model implements CrawlConstants
                         $end_title = MAX_TITLE_LENGTH;
                     }
                 }
-                $page[self::TITLE] = 
-                    mb_substr(strip_tags($page[self::DESCRIPTION]), 0, 
+                $page[self::TITLE] =
+                    mb_substr(strip_tags($page[self::DESCRIPTION]), 0,
                         $end_title).$ellipsis;
                 //still no text revert to url
                 if(strlen($page[self::TITLE]) == 0 && isset($page[self::URL])) {
@@ -181,25 +181,25 @@ class Model implements CrawlConstants
             // do a little cleaning on text
 
             if($words != NULL) {
-                $page[self::TITLE] = 
+                $page[self::TITLE] =
                     $this->boldKeywords($page[self::TITLE], $words);
 
                 if(!isset($page[self::IS_FEED])) {
-                    $page[self::DESCRIPTION] = 
+                    $page[self::DESCRIPTION] =
                         $this->getSnippets(strip_tags($page[self::DESCRIPTION]),
                             $words, $description_length);
                 }
-                $page[self::DESCRIPTION] = 
+                $page[self::DESCRIPTION] =
                     $this->boldKeywords($page[self::DESCRIPTION], $words);
             } else {
-                $page[self::DESCRIPTION] = 
+                $page[self::DESCRIPTION] =
                     mb_substr(strip_tags(
                         $page[self::DESCRIPTION]), 0, $description_length);
             }
 
-            $page[self::SCORE] = mb_substr($page[self::SCORE], 0, 
+            $page[self::SCORE] = mb_substr($page[self::SCORE], 0,
                 SCORE_PRECISION);
-              
+
             $pages[$i] = $page;
 
         }
@@ -213,10 +213,10 @@ class Model implements CrawlConstants
 
 
     /**
-     * Given a string, extracts a snippets of text related to a given set of 
-     * key words. For a given word a snippet is a window of characters to its 
-     * left and right that is less than a maximum total number of characters. 
-     * There is also a rule that a snippet should avoid ending in the middle of 
+     * Given a string, extracts a snippets of text related to a given set of
+     * key words. For a given word a snippet is a window of characters to its
+     * left and right that is less than a maximum total number of characters.
+     * There is also a rule that a snippet should avoid ending in the middle of
      * a word
      *
      *  @param string $text haystack to extract snippet from
@@ -264,27 +264,27 @@ class Model implements CrawlConstants
                 $word_locations = array();
                 foreach($words as $word) {
                     $pos = mb_stripos($text_source, $word, $offset);
-                    
+
                     if($pos !== false && $pos >= $offset) {
                         $word_locations[$pos] = $word;
                         if($new_offset < $pos) {
                             $new_offset = $pos;
                         }
-                    } 
+                    }
                 }
                 $high = 0;
                 ksort($word_locations);
                 foreach($word_locations as $pos => $word) {
                     if($pos < $high) continue;
-                    $pre_low = ($pos >= SNIPPET_LENGTH_LEFT) ? 
+                    $pre_low = ($pos >= SNIPPET_LENGTH_LEFT) ?
                         $pos - SNIPPET_LENGTH_LEFT: 0;
                     $low = mb_stripos($text_source, " ", $pre_low);
                     if($low > $pos) {
                         $low = $pre_low;
                     }
-                    $pre_high = ($pos + SNIPPET_LENGTH_RIGHT <= $len ) ? 
+                    $pre_high = ($pos + SNIPPET_LENGTH_RIGHT <= $len ) ?
                         $pos + SNIPPET_LENGTH_RIGHT: $len;
-                    $high = mb_stripos($text_source, " ", 
+                    $high = mb_stripos($text_source, " ",
                         max($pre_high - 10, $pos));
                     if($high > $pre_high + 10){
                         $high = $pre_high;
@@ -340,8 +340,8 @@ class Model implements CrawlConstants
         $data_managers = glob(BASE_DIR.'/models/datasources/*_manager.php');
 
         foreach($data_managers as $data_manager) {
-            $dbms = 
-                substr($data_manager, 
+            $dbms =
+                substr($data_manager,
                     strlen(BASE_DIR.'/models/datasources/'), -
                     strlen("_manager.php"));
             if($dbms != 'datasource') {
@@ -353,11 +353,11 @@ class Model implements CrawlConstants
     }
 
     /**
-     * Returns whether the provided dbms needs a login and password or not 
+     * Returns whether the provided dbms needs a login and password or not
      * (sqlite or sqlite3)
      *
      * @param string $dbms the name of a database management system
-     * @return bool true if needs a login and password; false otherwise 
+     * @return bool true if needs a login and password; false otherwise
      */
     function loginDbms($dbms)
     {
@@ -385,7 +385,7 @@ class Model implements CrawlConstants
                 return true;
             }
         }
-        return count($machine_urls) <= 1 && 
+        return count($machine_urls) <= 1 &&
                     UrlParser::isLocalhostUrl($machine_urls[0]);
     }
 

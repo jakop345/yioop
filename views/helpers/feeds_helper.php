@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage helper
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -45,7 +45,7 @@ require_once BASE_DIR."/views/helpers/helper.php";
  * @package seek_quarry
  * @subpackage helper
  */
- 
+
 class FeedsHelper extends Helper implements CrawlConstants
 {
 
@@ -61,7 +61,7 @@ class FeedsHelper extends Helper implements CrawlConstants
      *  @param boolean $open_in_tabs whether new links should be opened in
      *     tabs
      */
-    public function render($feed_pages, $base_query, $query, $subsearch,
+    function render($feed_pages, $base_query, $query, $subsearch,
         $open_in_tabs = false)
     {
         if($subsearch != 'news') {
@@ -104,10 +104,10 @@ class FeedsHelper extends Helper implements CrawlConstants
             if($delta < 86400) {
                 $num_hours = ceil($delta/3600);
                 if($num_hours <= 1) {
-                    $pub_date = 
+                    $pub_date =
                         tl('feeds_helper_view_onehour');
                 } else {
-                    $pub_date = 
+                    $pub_date =
                         tl('feeds_helper_view_hourdate', $num_hours);
                 }
             } else {
@@ -116,9 +116,9 @@ class FeedsHelper extends Helper implements CrawlConstants
             if($not_news) {
         ?>
                 <div class="blockquote">
-                <a href="<?php e($page[self::URL]); ?>" rel="nofollow" <?php 
+                <a href="<?php e($page[self::URL]); ?>" rel="nofollow" <?php
                 if($open_in_tabs) {  ?> target="_blank" <?php }
-                ?>><?php  e($page[self::TITLE]); ?></a> 
+                ?>><?php  e($page[self::TITLE]); ?></a>
                 <a class="gray-link" rel='nofollow' href="<?php e($base_query.
                     "&amp;q=media:news:".$encode_source.
                     "&amp;s=news");?>" ><?php  e($page[self::SOURCE_NAME]."</a>"
@@ -137,13 +137,13 @@ class FeedsHelper extends Helper implements CrawlConstants
                     "&amp;s=news");?>" ><?php  e($page[self::SOURCE_NAME]."</a>"
                     ."<span class='gray'> - $pub_date</span>");
                  ?></h2>
-                <p class="echolink" <?php e($subtitle); ?>><?php 
+                <p class="echolink" <?php e($subtitle); ?>><?php
                     e(UrlParser::simplifyUrl($url, 100)." ");
                 ?></p>
                 <?php
                 $description = isset($page[self::DESCRIPTION]) ?
                     $page[self::DESCRIPTION] : "";
-                e("<p>$description</p>"); 
+                e("<p>$description</p>");
                 ?>
                 </div>
         <?php

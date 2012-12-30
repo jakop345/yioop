@@ -1,10 +1,10 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2011 - 2012 Priya Gangaraju priya.gangaraju@gmail.com, 
- *                            Chris Pollett
+ *  Copyright (C) 2011 - 2013 Priya Gangaraju priya.gangaraju@gmail.com,
+ *      Chris Pollett
  *
  *  LICENSE:
  *
@@ -28,12 +28,12 @@
  * @subpackage indexing_plugin
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2011 - 2012
+ * @copyright 2011 - 2013
  * @filesource
  */
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
- 
+
 /** Some models might interface with a DBMS so load the DBMS manager*/
 require_once BASE_DIR."/models/datasources/".DBMS."_manager.php";
 
@@ -47,7 +47,7 @@ require_once BASE_DIR."/models/datasources/".DBMS."_manager.php";
  * as clustering the recipe's found and add additional meta words to
  * retrieve recipe's by principle ingredient. Subclasses of IndexingPlugin
  * do in crawl processing by overriding the pageProcessing method, they
- * do post crawl processing by overriding the postProcessing method. In 
+ * do post crawl processing by overriding the postProcessing method. In
  * addition a subclass should override the static functions
  * getProcessors() to say what PageProcessor's the plugin should be
  * associated with as well as getAdditionalMetaWords() to say what
@@ -56,18 +56,18 @@ require_once BASE_DIR."/models/datasources/".DBMS."_manager.php";
  * @author Priya Gangaraju, Chris Pollett
  * @package seek_quarry
  * @subpackage indexing_plugin
- */ 
+ */
 abstract class IndexingPlugin
 {
 
     /**
-     * Array of the PageProcessor classes used by this IndexingPlugin 
+     * Array of the PageProcessor classes used by this IndexingPlugin
      * (contructor loads these)
      * @var array
      */
     var $processors = array();
     /**
-     * Array of the model classes used by this IndexingPlugin 
+     * Array of the model classes used by this IndexingPlugin
      * (contructor loads these)
      * @var array
      */
@@ -80,7 +80,7 @@ abstract class IndexingPlugin
     var $index_archive;
 
     /**
-     * Reference to a database object that might be used by models on this 
+     * Reference to a database object that might be used by models on this
      * plugin
      * @var object
      */
@@ -90,22 +90,22 @@ abstract class IndexingPlugin
      * Builds an IndexingPlugin object. Loads in the appropriate
      * models for the given plugin object
      */
-    function __construct() 
+    function __construct()
     {
         $db_class = ucfirst(DBMS)."Manager";
         $this->db = new $db_class();
-        
+
         require_once BASE_DIR."/models/model.php";
 
         foreach($this->models as $model) {
             require_once BASE_DIR."/models/".$model."_model.php";
-             
+
             $model_name = ucfirst($model)."Model";
             $model_instance_name = lcfirst($model_name);
 
             $this->$model_instance_name = new $model_name();
         }
-        
+
     }
 
     /**
@@ -127,7 +127,7 @@ abstract class IndexingPlugin
 
     /**
      * This method is called by the queue_server with the name of
-     * a completed index. This allows the indexing plugin to 
+     * a completed index. This allows the indexing plugin to
      * perform searches on the index and using the results, inject
      * new page/index data into the index before it becomes available
      * for end use.
@@ -148,7 +148,7 @@ abstract class IndexingPlugin
      *  for each meta word injected by this plugin into an index. The
      *  description length is used to say how the maximum length of
      *  the web snippet show in search results for this meta owrd should be
-     *  
+     *
      *  @return array meta words => description length pairs
      */
     static function getAdditionalMetaWords() {return array();}

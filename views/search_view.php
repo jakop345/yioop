@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage view
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -44,16 +44,16 @@ require_once BASE_DIR."/lib/crawl_constants.php";
  * @author Chris Pollett
  * @package seek_quarry
  * @subpackage view
- */ 
+ */
 
 class SearchView extends View implements CrawlConstants
 {
-    /** Names of helper objects that the view uses to help draw itself 
+    /** Names of helper objects that the view uses to help draw itself
      *  @var array
      */
     var $helpers = array("pagination", "filetype", "displayresults",
         "videourl", "images", "feeds");
-    /** Names of element objects that the view uses to display itself 
+    /** Names of element objects that the view uses to display itself
      *  @var array
      */
     var $elements = array("signin", "subsearch", "footer");
@@ -72,8 +72,8 @@ class SearchView extends View implements CrawlConstants
      *  of results, how to fetch the next results, etc.
      *
      */
-    public function renderView($data) 
-    { 
+    function renderView($data)
+    {
         $data['LAND'] = (!isset($data['PAGES'])) ? 'landing-' : '';
         if(SIGNIN_LINK || SUBSEARCH_LINK) {?>
 
@@ -97,8 +97,8 @@ class SearchView extends View implements CrawlConstants
         }
         ?>
 
-        <h1 class="logo"><a href="./?<?php 
-            e(CSRF_TOKEN."=".$data[CSRF_TOKEN])?>"><img 
+        <h1 class="logo"><a href="./?<?php
+            e(CSRF_TOKEN."=".$data[CSRF_TOKEN])?>"><img
             src="<?php e($logo); ?>" alt="<?php e(tl('search_view_title'));
                  ?>"
             /></a>
@@ -112,22 +112,24 @@ class SearchView extends View implements CrawlConstants
         ?>
 
         <div class="searchbox">
-            <form id="search-form" method="get" action='?' onsubmit="processSubmit()">
+            <form id="search-form" method="get" action='?'
+                onsubmit="processSubmit()">
             <p>
             <?php if(isset($data["SUBSEARCH"]) && $data["SUBSEARCH"] != "") { ?>
-            <input type="hidden" name="s" value="<?php 
+            <input type="hidden" name="s" value="<?php
                 e($data['SUBSEARCH']); ?>" />
             <?php } ?>
-            <input id="csrf-token" type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php 
-                e($data[CSRF_TOKEN]); ?>" />
-            <input id="its-value" type="hidden" name="its" value="<?php e($data['its']); ?>" />
+            <input id="csrf-token" type="hidden" name="<?php e(CSRF_TOKEN); ?>"
+                value="<?php e($data[CSRF_TOKEN]); ?>" />
+            <input id="its-value" type="hidden" name="its" value="<?php 
+                e($data['its']); ?>" />
             <input type="text" <?php if(WORD_SUGGEST) { ?>
                 autocomplete="off"  onkeyup="onTypeTerm(event, this)"
                 <?php } ?>
-                title="<?php e(tl('search_view_input_label')); ?>" 
-                id="query-field" name="q" value="<?php 
+                title="<?php e(tl('search_view_input_label')); ?>"
+                id="query-field" name="q" value="<?php
                 if(isset($data['QUERY']) && !isset($data['NO_QUERY'])) {
-                    e(urldecode($data['QUERY']));} ?>" 
+                    e(urldecode($data['QUERY']));} ?>"
                 placeholder="<?php e(tl('search_view_input_placeholder')); ?>"/>
             <button class="buttonbox" type="submit"><?php if(MOBILE) {
                     e('>');
@@ -136,7 +138,7 @@ class SearchView extends View implements CrawlConstants
             </p>
             </form>
         </div>
-        <div id="suggest-dropdown"> 
+        <div id="suggest-dropdown">
             <ul id="suggest-results" class="suggest-list">
             </ul>
         </div>
@@ -147,13 +149,13 @@ class SearchView extends View implements CrawlConstants
         </div>
 
         <div class="serp-results">
-            <h2 class="serp-stats"><?php 
+            <h2 class="serp-stats"><?php
                 if(MOBILE) {
                 } else {
-                $num_results = min($data['TOTAL_ROWS'], 
+                $num_results = min($data['TOTAL_ROWS'],
                     $data['LIMIT'] + $data['RESULTS_PER_PAGE']);
                 $limit = min($data['LIMIT'] + 1, $num_results);
-                 ?> <?php 
+                 ?> <?php
                 e(tl('search_view_calculated', $data['ELAPSED_TIME']));?> <?php
                 e(tl('search_view_results', $limit, $num_results,
                     $data['TOTAL_ROWS']));
@@ -187,12 +189,12 @@ class SearchView extends View implements CrawlConstants
                 $base_query = "?".CSRF_TOKEN."=".$data[CSRF_TOKEN].
                         "&amp;c=search";
                 if(isset($page['IMAGES'])) {
-                    $this->imagesHelper->render($page['IMAGES'], 
+                    $this->imagesHelper->render($page['IMAGES'],
                         $base_query."&amp;q={$data['QUERY']}", $subsearch);
                     e( "           </div>");
                     continue;
                 } else if(isset($page['FEEDS'])){
-                    $this->feedsHelper->render($page['FEEDS'], 
+                    $this->feedsHelper->render($page['FEEDS'],
                         $base_query, $data['QUERY'],  $subsearch,
                         $data['OPEN_IN_TABS']);
                     e( "           </div>");
@@ -202,10 +204,10 @@ class SearchView extends View implements CrawlConstants
 
                 <h2>
                 <a href="<?php  e(htmlentities($url));  ?>" rel="nofollow"
-                 <?php if($data["OPEN_IN_TABS"]) { 
+                 <?php if($data["OPEN_IN_TABS"]) {
                     ?> target="_blank" <?php }?> ><?php
                  if(isset($page[self::THUMB]) && $page[self::THUMB] != 'NULL') {
-                    ?><img src="<?php e($page[self::THUMB]); ?>" alt="<?php 
+                    ?><img src="<?php e($page[self::THUMB]); ?>" alt="<?php
                         e($title); ?>"  /> <?php
                     $check_video = false;
                  } else {
@@ -222,15 +224,15 @@ class SearchView extends View implements CrawlConstants
                         $data['VIDEO_SOURCES'], $data["OPEN_IN_TABS"]);
                 }
                 ?>
-                <p class="echolink" <?php e($subtitle); ?>><?php 
+                <p class="echolink" <?php e($subtitle); ?>><?php
                     e(UrlParser::simplifyUrl($url, 100)." ");
                 ?></p>
-                <?php if(!isset($page[self::ROBOT_METAS]) || 
+                <?php if(!isset($page[self::ROBOT_METAS]) ||
                     !in_array("NOSNIPPET", $page[self::ROBOT_METAS])) {
                         $description = isset($page[self::DESCRIPTION]) ?
                             $page[self::DESCRIPTION] : "";
                         e("<p>".$this->displayresultsHelper->
-                            render($description)."</p>"); 
+                            render($description)."</p>");
                     }?>
                 <p class="serp-links-score"><?php
                 $aux_link_flag = false;
@@ -241,13 +243,13 @@ class SearchView extends View implements CrawlConstants
                         $aux_link_flag = true;
                     ?>
                     <a href="?<?php e(CSRF_TOKEN."=".$data[CSRF_TOKEN]);
-                            ?>&amp;c=search&amp;a=cache&amp;q=<?php 
-                            e($data['QUERY']); ?>&amp;arg=<?php 
-                            e(urlencode($url)); 
-                            ?>&amp;its=<?php e($page[self::CRAWL_TIME]); ?>" 
+                            ?>&amp;c=search&amp;a=cache&amp;q=<?php
+                            e($data['QUERY']); ?>&amp;arg=<?php
+                            e(urlencode($url));
+                            ?>&amp;its=<?php e($page[self::CRAWL_TIME]); ?>"
                         rel='nofollow'>
                         <?php
-                        if($page[self::TYPE] == "text/html" || 
+                        if($page[self::TYPE] == "text/html" ||
                             stristr($page[self::TYPE], "image")) {
                             e(tl('search_view_cache'));
 
@@ -255,31 +257,31 @@ class SearchView extends View implements CrawlConstants
                             e(tl('search_view_as_text'));
                         }
                         ?></a>.
-                    <?php 
+                    <?php
                     }
                     if(SIMILAR_LINK) {
                         $aux_link_flag = true;
                     ?>
                     <a href="?<?php e(CSRF_TOKEN."=".$data[CSRF_TOKEN]);
-                        ?>&amp;c=search&amp;a=related&amp;arg=<?php 
+                        ?>&amp;c=search&amp;a=related&amp;arg=<?php
                         e(urlencode($url)); ?>&amp;<?php
-                        ?>its=<?php e($page[self::CRAWL_TIME]); ?>" 
-                        rel='nofollow'><?php 
-                        e(tl('search_view_similar')); 
+                        ?>its=<?php e($page[self::CRAWL_TIME]); ?>"
+                        rel='nofollow'><?php
+                        e(tl('search_view_similar'));
                     ?></a>.
-                    <?php 
+                    <?php
                     }
                     if(IN_LINK) {
                         $aux_link_flag = true;
                     ?>
                     <a href="?<?php e(CSRF_TOKEN."=".$data[CSRF_TOKEN]);
-                        ?>&amp;c=search&amp;q=<?php 
+                        ?>&amp;c=search&amp;q=<?php
                         e(urlencode("link:".$url)); ?>&amp;<?php
-                        ?>its=<?php e($page[self::CRAWL_TIME]); ?>" 
-                        rel='nofollow'><?php 
-                        e(tl('search_view_inlink')); 
+                        ?>its=<?php e($page[self::CRAWL_TIME]); ?>"
+                        rel='nofollow'><?php
+                        e(tl('search_view_inlink'));
                     ?></a>.
-                    <?php 
+                    <?php
                     }
                     if(IP_LINK && isset($page[self::IP_ADDRESSES])){
                     foreach($page[self::IP_ADDRESSES] as $address) {?>
@@ -287,17 +289,17 @@ class SearchView extends View implements CrawlConstants
                     <a href="?<?php e(CSRF_TOKEN."=".$data[CSRF_TOKEN]);
                             ?>&amp;c=search&amp;q=<?php
                             e(urlencode('ip:'.$address));?>&amp;<?php
-                            ?>its=<?php e($data['its']); ?>" 
-                            rel='nofollow'>IP:<?php 
-                            e("$address");?></a>. <?php 
-                      } 
+                            ?>its=<?php e($data['its']); ?>"
+                            rel='nofollow'>IP:<?php
+                            e("$address");?></a>. <?php
+                      }
                     }
                     ?>
                 <?php
                 }
                 if(MOBILE && $aux_link_flag) {e("<br />");}
                 if(isset($page[self::SCORE])) {
-                    e(tl('search_view_rank', 
+                    e(tl('search_view_rank',
                         number_format($page[self::DOC_RANK], 2)));
                     e(tl('search_view_relevancy',
                         number_format($page[self::RELEVANCE], 2) ));
@@ -309,7 +311,7 @@ class SearchView extends View implements CrawlConstants
                 </p>
             </div>
 
-            <?php 
+            <?php
             } //end foreach
             $this->paginationHelper->render(
                 $data['PAGING_QUERY']."&amp;".CSRF_TOKEN."=".
@@ -324,11 +326,11 @@ class SearchView extends View implements CrawlConstants
 
         <div class="landing-footer">
             <div><b><?php e($data['INDEX_INFO']);?></b> <?php
-            if(isset($data["HAS_STATISTICS"]) && $data["HAS_STATISTICS"]) { 
+            if(isset($data["HAS_STATISTICS"]) && $data["HAS_STATISTICS"]) {
             ?>[<a href="index.php?<?php e(CSRF_TOKEN."=".$data[CSRF_TOKEN]);
-                ?>&amp;c=statistics&amp;its=<?php e($data['its']);?>"><?php 
+                ?>&amp;c=statistics&amp;its=<?php e($data['its']);?>"><?php
                 e(tl('search_view_more_statistics')); ?></a>]
-            <?php 
+            <?php
             }
             ?></div><?php  $this->footerElement->render($data);?>
 

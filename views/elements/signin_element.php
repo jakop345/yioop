@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,14 +27,14 @@
  * @subpackage element
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- * Element responsible for drawing links to settings and login panels 
+ * Element responsible for drawing links to settings and login panels
  *
  * @author Chris Pollett
  * @package seek_quarry
@@ -45,38 +45,38 @@ class SigninElement extends Element
 {
 
     /**
-     *  Method responsible for drawing links to settings and login panels 
+     *  Method responsible for drawing links to settings and login panels
      *
      *  @param array $data makes use of the YIOOP_TOKEN for anti CSRF attacks
      */
-    public function render($data)
+    function render($data)
     {
     ?>
 
-        <div class="userNav" >
+        <div class="user-nav" >
         <ul>
         <?php
         if(WEB_ACCESS) {
             ?>    <li><a href="./?c=settings&amp;<?php
                 e(CSRF_TOKEN."=".$data[CSRF_TOKEN])?>&amp;l=<?php
-                e(getLocaleTag()); 
+                e(getLocaleTag());
                 e((isset($data['its'])) ? '&amp;its='.$data['its'] : '');
-                ?>"><?php 
+                ?>"><?php
             e(tl('signin_element_settings')); ?></a></li><?php
         }
         if(SIGNIN_LINK) {
-            if(!isset($data["ADMIN"]) || !$data["ADMIN"]) { 
-                ?><li><a href="./?c=admin"><?php 
-                    e(tl('signin_element_signin')); ?></a></li><?php 
+            if(!isset($data["ADMIN"]) || !$data["ADMIN"]) {
+                ?><li><a href="./?c=admin"><?php
+                    e(tl('signin_element_signin')); ?></a></li><?php
             } else {
                 ?><li><a href="./?c=admin&amp;<?php
-                e(CSRF_TOKEN."=".$data[CSRF_TOKEN])?>"><?php 
+                e(CSRF_TOKEN."=".$data[CSRF_TOKEN])?>"><?php
                         e(tl('signin_element_admin')); ?></a></li><?php
-                ?><li><a href="./?c=search&amp;a=signout"><?php 
+                ?><li><a href="./?c=search&amp;a=signout"><?php
                     e(tl('signin_element_signout')); ?></a></li>
-            <?php 
+            <?php
             }
-        } 
+        }
         ?>
 
         </ul>

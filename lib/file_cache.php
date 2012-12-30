@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage library
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -108,12 +108,12 @@ class FileCache
      */
     function set($key, $value)
     {
-        $expire_block = floor(time() / self::SECONDS_IN_A_BIN) 
+        $expire_block = floor(time() / self::SECONDS_IN_A_BIN)
             % self::NUMBER_OF_BINS;
         $checksum_block = $this->checksum($key);
         $checksum_dir = $this->dir_name."/$checksum_block";
         if($expire_block == $checksum_block ) {
-            $last_expired = 
+            $last_expired =
                 unserialize(
                     file_get_contents("$checksum_dir/last_expired.txt"));
             if(time() - $last_expired > self::SECONDS_IN_A_BIN) {
@@ -125,7 +125,7 @@ class FileCache
         if(!file_exists($checksum_dir)) {
             mkdir($checksum_dir);
             $last_expired = time();
-            file_put_contents("$checksum_dir/last_expired.txt", 
+            file_put_contents("$checksum_dir/last_expired.txt",
                 serialize($last_expired));
         }
         $cache_file = "$checksum_dir/".webencode($key);
@@ -135,7 +135,7 @@ class FileCache
     /**
      * Makes a 0 - self::NUMBER_OF_BINS value out of the provided key
      *
-     * @param string $key to convert to a random value between 
+     * @param string $key to convert to a random value between
      *      0 - self::NUMBER_OF_BINS
      * @return int value between 0 and self::NUMBER_OF_BINS
      */

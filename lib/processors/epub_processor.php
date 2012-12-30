@@ -3,7 +3,7 @@
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage processor
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -53,7 +53,7 @@ require_once BASE_DIR."/lib/url_parser.php";
  *  The maximum length of description
  */
 const MAX_DESCRIPTION_LEN = 2000;
-    
+
 /**
  * The constant represents the number of
  * child levels at which the data is present in
@@ -69,8 +69,8 @@ const MAX_DOM_LEVEL = 15;
  * @package seek_quarry
  * @subpackage processor
  */
- 
- 
+
+
 
 class EpubProcessor extends TextProcessor
 {
@@ -192,7 +192,7 @@ class EpubProcessor extends TextProcessor
             $desc = $desc." $epub_author ";
         }
         if($epub_language != '')
-        {  
+        {
             $desc = $desc." $epub_language ";
         }
         if($epub_unique_identifier != '')
@@ -201,15 +201,15 @@ class EpubProcessor extends TextProcessor
             $epub_unique_identifier.".";
         }
         if($epub_publisher != '')
-        {  
+        {
             $desc = $desc." $epub_publisher ";
         }
         if($epub_date != '')
-        {  
+        {
             $desc = $desc." $epub_date ";
         }
         if($epub_subject != '')
-        {  
+        {
             $desc = $desc." $epub_subject ";
         }
         $desc= $desc.$htmlcontent;
@@ -225,7 +225,7 @@ class EpubProcessor extends TextProcessor
         $summary[self::PAGE] = $page;
 
         if($zip) {
-            $zip->close(); 
+            $zip->close();
         }
         @unlink($temp_filename);
         return $summary;

@@ -3,7 +3,7 @@
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage view
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -45,7 +45,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 class MachinestatusView extends View
 {
-    /** 
+    /**
      * Names of helper objects that the view uses to help draw itself
      * toggle is used to draw an On/Off switch
      * @var array
@@ -58,7 +58,7 @@ class MachinestatusView extends View
      * @param array $data  contains on/off status info for each of the machines
      *      managed by this Yioop instance.
      */
-    public function renderView($data) 
+    function renderView($data)
     {
         $base_url = "?c=admin&amp;a=manageMachines&amp;".CSRF_TOKEN."=".
             $data[CSRF_TOKEN]."&amp;arg=";
@@ -84,10 +84,10 @@ class MachinestatusView extends View
                 <table class="machinetable"><tr>
                 <th><?php e(tl('machinestatus_view_mirrors', $m['PARENT'])); ?>
                     </th>
-                <td>[<a href="<?php e($log_url);?>"><?php 
-                    e(tl('machinestatus_view_log'));?>]</td><td><?php 
+                <td>[<a href="<?php e($log_url);?>"><?php
+                    e(tl('machinestatus_view_log'));?>]</td><td><?php
                     $this->toggleHelper->render(
-                        isset($m['STATUSES']["mirror"]) , 
+                        isset($m['STATUSES']["mirror"]) ,
                         $on_mirror, $off_mirror);
                 ?></td>
                 </table>
@@ -99,11 +99,11 @@ class MachinestatusView extends View
             ?>
                 <table class="machinetable">
                 <tr><th><?php e(tl('machinestatus_view_queue_server'));?>
-                </th><td>[<a href="<?php e($log_url);?>"><?php 
+                </th><td>[<a href="<?php e($log_url);?>"><?php
                     e(tl('machinestatus_view_log'));?>]</a>
-                    </td><td><?php 
+                    </td><td><?php
                     $this->toggleHelper->render(
-                        isset($m['STATUSES']["queue_server"]) , 
+                        isset($m['STATUSES']["queue_server"]) ,
                         $on_queue_server, $off_queue_server);
                 ?></td>
                 </tr>
@@ -127,13 +127,13 @@ class MachinestatusView extends View
                 <?php } else if($i % 4 == 0) {?>
                     <table class="machinetable"><tr>
                 <?php } ?>
-                <td><table><tr><td>#<?php 
-                $log_url = $base_url . 
+                <td><table><tr><td>#<?php
+                $log_url = $base_url .
                     "log&amp;name={$m['NAME']}&amp;fetcher_num=$i";
-                if($i <10){e("0");} e($i); 
-                ?>[<a href="<?php e($log_url);?>"><?php 
+                if($i <10){e("0");} e($i);
+                ?>[<a href="<?php e($log_url);?>"><?php
                     e(tl('machinestatus_view_log'));?></a>]</td>
-                </tr><tr><td><?php 
+                </tr><tr><td><?php
                 $toggle = false;
                 $caution = false;
                 if(isset($m['STATUSES']["fetcher"][$i])) {

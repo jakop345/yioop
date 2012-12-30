@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage processor
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -45,7 +45,7 @@ require_once BASE_DIR."/lib/url_parser.php";
 
 
 /**
- * Parent class common to all processors used to create crawl summary 
+ * Parent class common to all processors used to create crawl summary
  * information  that involves basically text data
  *
  * @author Chris Pollett
@@ -63,12 +63,12 @@ class TextProcessor extends PageProcessor
      * Computes a summary based on a text string of a document
      *
      * @param string $page text string of a document
-     * @param string $url location the document came from, not used by 
+     * @param string $url location the document came from, not used by
      *      TextProcessor at this point. Some of its subclasses override
      *      this method and use url to produce complete links for
      *      relative links within a document
      *
-     * @return array a summary of (title, description,links, and content) of 
+     * @return array a summary of (title, description,links, and content) of
      *      the information in $page
      */
     function process($page, $url)
@@ -77,7 +77,7 @@ class TextProcessor extends PageProcessor
 
         if(is_string($page)) {
             $summary[self::TITLE] = "";
-            $summary[self::DESCRIPTION] = mb_substr($page, 0, 
+            $summary[self::DESCRIPTION] = mb_substr($page, 0,
                 self::MAX_DESCRIPTION_LEN);
             $summary[self::LANG] = self::calculateLang(
                 $summary[self::DESCRIPTION]);
@@ -139,23 +139,23 @@ class TextProcessor extends PageProcessor
      * @return array pair consisting of when in the document we are after
      *      the end tag, together with the data between the two tags
      */
-    static function getBetweenTags($string, $cur_pos, $start_tag, $end_tag) 
+    static function getBetweenTags($string, $cur_pos, $start_tag, $end_tag)
     {
         $len = strlen($string);
-        if(($between_start = strpos($string, $start_tag, $cur_pos)) === 
+        if(($between_start = strpos($string, $start_tag, $cur_pos)) ===
             false ) {
             return array($len, "");
         }
 
         $between_start  += strlen($start_tag);
-        if(($between_end = strpos($string, $end_tag, $between_start)) === 
+        if(($between_end = strpos($string, $end_tag, $between_start)) ===
             false ) {
             $between_end = $len;
         }
 
         $cur_pos = $between_end + strlen($end_tag);
 
-        $between_string = substr($string, $between_start, 
+        $between_string = substr($string, $between_start,
             $between_end - $between_start);
         return array($cur_pos, $between_string);
 
@@ -171,7 +171,7 @@ class TextProcessor extends PageProcessor
      */
     static function extractHttpHttpsUrls($page)
     {
-        $pattern = 
+        $pattern =
             '@((http|https)://([^ \t\r\n\v\f\'\"\;\,<>\{\}])*)@i';
         $sites = array();
         preg_match_all($pattern, $page, $matches);

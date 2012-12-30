@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage controller
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -45,7 +45,7 @@ define("NO_FEEDS", true);
 /**
  *  Responsible for handling requests about global crawl statistics for
  *  a web crawl. These statistics include: httpd code distribution,
- *  filetype distribution, num hosts, language distribution, 
+ *  filetype distribution, num hosts, language distribution,
  *  os distribution, server distribution, site distribution, file size
  *  distribution, download time distribution, etc
  *
@@ -54,7 +54,7 @@ define("NO_FEEDS", true);
  * @subpackage controller
  */
 class StatisticsController extends Controller implements CrawlConstants
-{ 
+{
     /**
      * No models used by this controller
      * @var array
@@ -66,7 +66,7 @@ class StatisticsController extends Controller implements CrawlConstants
      */
     var $views = array("statistics");
     /**
-     * Machines (string urls) which may have portions of the web crawl 
+     * Machines (string urls) which may have portions of the web crawl
      * statistics are being generated for
      * @var array
      */
@@ -96,13 +96,13 @@ class StatisticsController extends Controller implements CrawlConstants
     const STATISTIC_REFRESH_RATE = 30;
     /**
      * Main handler for requests coming into this controller for web crawl
-     * statistics. Checks for the presence of a statistics file, if not 
+     * statistics. Checks for the presence of a statistics file, if not
      * found performs the necessary queries to generate crawl statistics and
      * writes that file. Then creates a $data variable which it passes to
      * a StatisticsView to actually render the results
      *
      */
-    function processRequest() 
+    function processRequest()
     {
         $view = "statistics";
         $data = array();
@@ -114,12 +114,12 @@ class StatisticsController extends Controller implements CrawlConstants
                 $user = $_SERVER['REMOTE_ADDR'];
             }
         } else {
-            $user_id = $_SERVER['REMOTE_ADDR']; 
+            $user_id = $_SERVER['REMOTE_ADDR'];
         }
         $this->machine_urls = $this->machineModel->getQueueServerUrls();
         if(isset($_REQUEST['its'])) {
             $this->index_time_stamp = $this->clean($_REQUEST['its'], "string");
-            //validate timestamp against list 
+            //validate timestamp against list
             //(some crawlers replay deleted crawls)
             $crawls = $this->crawlModel->getCrawlList(false,true,
                 $this->machine_urls, true);
@@ -137,7 +137,7 @@ class StatisticsController extends Controller implements CrawlConstants
             }
         }
         if(!isset($this->index_time_stamp) || $this->index_time_stamp == "") {
-            $this->index_time_stamp = 
+            $this->index_time_stamp =
                 $this->crawlModel->getCurrentIndexDatabaseName();
         }
         if($this->index_time_stamp == 0) {
@@ -192,7 +192,7 @@ class StatisticsController extends Controller implements CrawlConstants
 
     /**
      *  Runs the queries necessary to determine httpd code distribution,
-     *  filetype distribution, num hosts, language distribution, 
+     *  filetype distribution, num hosts, language distribution,
      *  os distribution, server distribution, site distribution, file size
      *  distribution, download time distribution, etc for the web crawl
      *  set in $this->index_time_stamp. If these queries take to long it
@@ -231,8 +231,8 @@ class StatisticsController extends Controller implements CrawlConstants
                 503, 504, 505, 506, 507, 508, 509, 510, 511, 598, 599),
             "FILETYPE" => $INDEXED_FILE_TYPES,
             "HOST" => array("all"),
-            "LANG" => array( 'aa', 'ab', 'ae', 'af', 'ak', 'am', 'an', 'ar', 
-                'as', 'av', 'ay', 'az', 'ba', 'be', 'bg', 'bh', 'bi', 'bm', 
+            "LANG" => array( 'aa', 'ab', 'ae', 'af', 'ak', 'am', 'an', 'ar',
+                'as', 'av', 'ay', 'az', 'ba', 'be', 'bg', 'bh', 'bi', 'bm',
                 'bn', 'bo', 'br', 'bs', 'ca', 'ce', 'ch', 'co', 'cr', 'cs',
                 'cu', 'cv', 'cy', 'da', 'de', 'dv', 'dz', 'ee', 'el', 'en',
                 'eo', 'es', 'et', 'eu', 'fa', 'ff', 'fi', 'fj', 'fo', 'fr',
@@ -252,18 +252,18 @@ class StatisticsController extends Controller implements CrawlConstants
                 'uz', 've', 'vi', 'vo', 'wa', 'wo', 'xh', 'yi', 'yo', 'za',
                 'zh', 'zu'),
             "MEDIA" => array("image", "text", "video"),
-            "OS" => array("asianux", "centos", "clearos", "debian", "fedora", 
+            "OS" => array("asianux", "centos", "clearos", "debian", "fedora",
                 "freebsd", "gentoo", "linux", "netware", "solaris", "sunos",
                 "ubuntu", "unix"),
             "SERVER" => array("aolserver", "apache", "bigip", "boa", "caudium",
-                "cherokee", "gws", "goahead-webs", "httpd", "iis", 
-                "ibm_http_server", "jetty", "lighttpd", "litespeed", 
-                "microsoft-iis", "nginx", "resin", "server", "sun-java-system", 
-                "thttpd", "tux", "virtuoso", "webrick", "yaws", "yts", 
+                "cherokee", "gws", "goahead-webs", "httpd", "iis",
+                "ibm_http_server", "jetty", "lighttpd", "litespeed",
+                "microsoft-iis", "nginx", "resin", "server", "sun-java-system",
+                "thttpd", "tux", "virtuoso", "webrick", "yaws", "yts",
                 "zeus", "zope"),
             "SITE" => array(".aero", ".asia", ".biz", ".cat", ".com", ".coop",
                 ".edu", ".gov", ".info", ".int", ".jobs", ".mil", ".mobi",
-                ".museum", ".name", ".net", ".org", ".pro", ".tel", ".travel", 
+                ".museum", ".name", ".net", ".org", ".pro", ".tel", ".travel",
                 ".xxx", ".ac", ".ad", ".ae", ".af", ".ag", ".ai", ".al", ".am",
                 ".ao", ".aq", ".ar", ".as", ".at", ".au", ".aw", ".ax", ".az",
                 ".ba", ".bb", ".bd", ".be", ".bf", ".bg", ".bh", ".bi", ".bj",
@@ -328,7 +328,7 @@ class StatisticsController extends Controller implements CrawlConstants
                     }
                     continue;
                 }
-                $count = 
+                $count =
                     $this->countQuery(strtolower($group_description)
                         .":".$query);
                 $data["SEEN"][$group_description][$query] = true;
@@ -353,7 +353,7 @@ class StatisticsController extends Controller implements CrawlConstants
             $data["OS"]["DATA"]["windows"] = $data["SERVER"]["DATA"]["iis"];
         }
         if(isset($data["SERVER"]["DATA"]["microsoft-iis"])) {
-            $data["OS"]["DATA"]["windows"] += 
+            $data["OS"]["DATA"]["windows"] +=
                 $data["SERVER"]["DATA"]["microsoft-iis"];
         }
         arsort($data["OS"]["DATA"]);
@@ -371,7 +371,7 @@ class StatisticsController extends Controller implements CrawlConstants
     function countQuery($query)
     {
         $results = $this->phraseModel->getPhrasePageResults(
-            "$query i:{$this->index_time_stamp}", 0, 
+            "$query i:{$this->index_time_stamp}", 0,
             1, true, NULL, false, 0, $this->machine_urls);
         return (isset($results["TOTAL_ROWS"])) ? $results["TOTAL_ROWS"] : -1;
     }

@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage helper
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -43,14 +43,14 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @package seek_quarry
  * @subpackage helper
  */
- 
+
 class Helper
 {
 
     /**
      *  The constructor at this point does nothing
      */
-    function __construct() 
+    function __construct()
     {
     }
 }

@@ -1,8 +1,8 @@
- /** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -26,7 +26,7 @@
  * @subpackage javascript
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -43,7 +43,7 @@ function doMessage(msg)
 }
 
 /*
- *  Undisplays the message display in the message div and clears associated 
+ *  Undisplays the message display in the message div and clears associated
  *  message display timer
  */
 function undoMessage()
@@ -105,7 +105,7 @@ function getPage(tag, url)
  *
  *  @param String id  the id of the DOM element one wants
  */
-function elt(id) 
+function elt(id)
 {
     return document.getElementById(id);
 }
@@ -117,7 +117,7 @@ function elt(id)
  *  @param mixed value  true means display block; false display none;
  *      anything else will display that value
  */
-function setDisplay(id, value) 
+function setDisplay(id, value)
 {
     obj = elt(id);
     if(value == true)  {
@@ -128,4 +128,3 @@ function setDisplay(id, value)
     }
     obj.style.display = value;
 }
-

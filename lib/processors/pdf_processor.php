@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage processor
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -40,7 +40,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 require_once BASE_DIR."/lib/processors/text_processor.php";
 
 /**
- * Used to create crawl summary information 
+ * Used to create crawl summary information
  * for PDF files
  *
  * @author Chris Pollett
@@ -61,7 +61,7 @@ class PdfProcessor extends TextProcessor
      *  @return a summary of the contents of the page
      *
      */
-    public function process($page, $url)
+    function process($page, $url)
     {
         $text = "";
         if(is_string($page)) {
@@ -88,21 +88,21 @@ class PdfProcessor extends TextProcessor
         $len = strlen($pdf_string);
         $cur_pos = 0;
         $out = "";
-        
+
         $i = 0;
         while($cur_pos < $len) {
-            list($cur_pos, $object_string) = 
+            list($cur_pos, $object_string) =
                 self::getNextObject($pdf_string, $cur_pos);
             $object_dictionary = self::getObjectDictionary($object_string);
             if(!self::objectDictionaryHas(
                 $object_dictionary, array("Image", "Catalog"))) {
-                $stream_data = 
+                $stream_data =
                     rtrim(ltrim(self::getObjectStream($object_string)));
                 if(self::objectDictionaryHas(
                     $object_dictionary, array("FlateDecode"))) {
                     $stream_data = @gzuncompress($stream_data);
                     if(strpos($stream_data, "PS-AdobeFont")){
-                        $out .= $stream_data; 
+                        $out .= $stream_data;
                         break;
                     }
                     $text = self::parseText($stream_data);
@@ -111,7 +111,7 @@ class PdfProcessor extends TextProcessor
                 } else {
                     $text = self::parseText($stream_data);
                     if(strpos($stream_data, "PS-AdobeFont")){
-                        $out .= $stream_data; 
+                        $out .= $stream_data;
                         break;
                     }
                     $out .= $text;
@@ -126,7 +126,7 @@ class PdfProcessor extends TextProcessor
             $font_pos = strlen($out);
         }
         $out = substr($out, 0, $font_pos);
-        
+
         return $out;
     }
 
@@ -138,9 +138,9 @@ class PdfProcessor extends TextProcessor
      * @param int $cur_pos a integer postion in that string
      * @return string the contents of the PDF object located at $cur_pos
      */
-    static function getNextObject($pdf_string, $cur_pos) 
+    static function getNextObject($pdf_string, $cur_pos)
     {
-        return self::getBetweenTags($pdf_string, $cur_pos, "obj", "endobj"); 
+        return self::getBetweenTags($pdf_string, $cur_pos, "obj", "endobj");
     }
 
     /**
@@ -150,7 +150,7 @@ class PdfProcessor extends TextProcessor
      * @param array $type_array the list of types to check against
      * @return whether it is in or not
      */
-    static function objectDictionaryHas($object_dictionary, $type_array) 
+    static function objectDictionaryHas($object_dictionary, $type_array)
     {
         foreach ($type_array as $type) {
             if(strstr($object_dictionary, $type)) {
@@ -166,10 +166,10 @@ class PdfProcessor extends TextProcessor
      * @param string $object_string represents the contents of a PDF object
      * @return string the object dictionary for the object
      */
-    static function getObjectDictionary($object_string) 
+    static function getObjectDictionary($object_string)
     {
         list( , $object_dictionary) =
-            self::getBetweenTags($object_string, 0, '<<', '>>'); 
+            self::getBetweenTags($object_string, 0, '<<', '>>');
         return $object_dictionary;
     }
 
@@ -179,9 +179,9 @@ class PdfProcessor extends TextProcessor
      * @param string $object_stream represents the contents of a PDF object
      * @return string the object stream for the object
      */
-    static function getObjectStream($object_string) 
+    static function getObjectStream($object_string)
     {
-        list( , $stream_data) = 
+        list( , $stream_data) =
             self::getBetweenTags($object_string, 0, 'stream', 'endstream');
         return $stream_data;
 
@@ -189,7 +189,7 @@ class PdfProcessor extends TextProcessor
 
     /**
      * Extracts ASCII text from PDF data, getting rid of non printable data,
-     * square brackets and parenthesis and converting char codes to their 
+     * square brackets and parenthesis and converting char codes to their
      * values.
      *
      * @param string $data source to extract character data from
@@ -201,11 +201,11 @@ class PdfProcessor extends TextProcessor
 
         //replace ASCII codes in decimal with their value
         $data = preg_replace_callback('/\\\(\d{3})/',
-            create_function( '$matches', 'return chr(intval($matches[1]));'), 
+            create_function( '$matches', 'return chr(intval($matches[1]));'),
             $data);
         //replace ASCII codes in hex with their value
         $data = preg_replace_callback('/\<([0-9A-F]{2})\>/',
-            create_function( '$matches', 'return chr(hexdec($matches[1]));'), 
+            create_function( '$matches', 'return chr(hexdec($matches[1]));'),
             $data);
         $len = strlen($data);
 
@@ -261,9 +261,9 @@ class PdfProcessor extends TextProcessor
         }
 
         if(isset($data[$cur_pos]) && isset($data[$cur_pos + 1]) &&
-            ord($data[$cur_pos]) == ord('T') && 
+            ord($data[$cur_pos]) == ord('T') &&
                 ord($data[$cur_pos + 1]) == ord('J') ) {
-            if(isset($data[$cur_pos + 3]) && 
+            if(isset($data[$cur_pos + 3]) &&
                 ord($data[$cur_pos + 3]) != ord('F')) {
                 $out .= " ";
             } else {
@@ -299,7 +299,7 @@ class PdfProcessor extends TextProcessor
             } else {
                 if($escape_flag || $cur_char !=")"){
                     $ascii = ord($cur_char);
-                    if((9 <= $ascii && $ascii <= 13) || 
+                    if((9 <= $ascii && $ascii <= 13) ||
                         (32 <= $ascii && $ascii <= 126)) {
                         $out .= $cur_char;
                     }

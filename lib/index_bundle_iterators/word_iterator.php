@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,13 +27,13 @@
  * @subpackage iterator
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
-/** 
+/**
  *Loads base class for iterating
  */
 require_once BASE_DIR.'/lib/index_bundle_iterators/index_bundle_iterator.php';
@@ -43,8 +43,8 @@ require_once BASE_DIR.'/lib/index_bundle_iterators/index_bundle_iterator.php';
  * an IndexArchiveBundle. It also makes it easy to get the summaries
  * of these documents.
  *
- * A description of how words and the documents containing them are stored 
- * is given in the documentation of IndexArchiveBundle. 
+ * A description of how words and the documents containing them are stored
+ * is given in the documentation of IndexArchiveBundle.
  *
  * @author Chris Pollett
  * @package seek_quarry
@@ -54,7 +54,7 @@ require_once BASE_DIR.'/lib/index_bundle_iterators/index_bundle_iterator.php';
 class WordIterator extends IndexBundleIterator
 {
     /**
-     * hash of word that the iterator iterates over 
+     * hash of word that the iterator iterates over
      * @var string
      */
     var $word_key;
@@ -145,7 +145,7 @@ class WordIterator extends IndexBundleIterator
     /**
      * Creates a word iterator with the given parameters.
      *
-     * @param string $word_key hash of word or phrase to iterate docs of 
+     * @param string $word_key hash of word or phrase to iterate docs of
      * @param string $index_name time_stamp of the to use
      * @param int $limit the first element to return from the list of docs
      *      iterated over
@@ -173,7 +173,7 @@ class WordIterator extends IndexBundleIterator
         $this->word_key = $word_key;
 
         $this->feed_shard_name = WORK_DIRECTORY."/feeds/index";
-        if((!defined('NO_FEEDS') || !NO_FEEDS) 
+        if((!defined('NO_FEEDS') || !NO_FEEDS)
             && file_exists($this->feed_shard_name)) {
             //NO_FEEDS defined true in statistic_controller.php
             $this->use_feeds = true;
@@ -209,7 +209,7 @@ class WordIterator extends IndexBundleIterator
         $this->index_name =  $index_name;
         $index = IndexManager::getIndex($index_name);
         $this->current_block_fresh = false;
-        $this->dictionary_info = 
+        $this->dictionary_info =
             $index->dictionary->getWordInfo($word_key, true);
         if ($this->dictionary_info === false) {
             $this->empty = true;
@@ -245,25 +245,25 @@ class WordIterator extends IndexBundleIterator
         $item = array();
         if($this->using_feeds && $this->use_feeds) {
             $index = IndexManager::getIndex("feed");
-            $num_docs_or_links = 
-                IndexShard::numDocsOrLinks($this->feed_start, 
+            $num_docs_or_links =
+                IndexShard::numDocsOrLinks($this->feed_start,
                 $this->feed_end);
             $current = $posting_offset >> 2;
             $posting = $index->getCurrentShard()->getPostingAtOffset(
                 $current, $posting_start, $posting_end);
-            list( , $item) = $index->getCurrentShard()->makeItem($posting, 
+            list( , $item) = $index->getCurrentShard()->makeItem($posting,
                 $num_docs_or_links, 1);
             $item[self::RELEVANCE] *= 10;
         } else {
             $index = IndexManager::getIndex($this->index_name);
             $index->setCurrentShard($generation, true);
-            $num_docs_or_links = 
-                IndexShard::numDocsOrLinks($this->start_offset, 
+            $num_docs_or_links =
+                IndexShard::numDocsOrLinks($this->start_offset,
                 $this->last_offset);
             $current = $posting_offset >> 2;
             $posting = $index->getCurrentShard()->getPostingAtOffset(
                 $current, $posting_start, $posting_end);
-            list( , $item) = $index->getCurrentShard()->makeItem($posting, 
+            list( , $item) = $index->getCurrentShard()->makeItem($posting,
                 $num_docs_or_links, 1);
         }
         return $item[self::RELEVANCE];
@@ -283,8 +283,8 @@ class WordIterator extends IndexBundleIterator
         }
         $no_feeds = $this->feed_empty || !$this->use_feeds;
         if(!$this->empty) {// we shouldn't be called when empty - but to be safe
-            list($this->current_generation, $this->start_offset, 
-                $this->last_offset, ) 
+            list($this->current_generation, $this->start_offset,
+                $this->last_offset, )
                 = $this->dictionary_info[0];
         } else {
             $this->start_offset = 0;
@@ -328,13 +328,13 @@ class WordIterator extends IndexBundleIterator
             if($feed_shard) {
                 $pre_results = $feed_shard->getPostingsSlice(
                     $this->feed_start,
-                    $this->next_offset, $this->feed_end, 
+                    $this->next_offset, $this->feed_end,
                     $this->results_per_block);
                 $time = time();
                 foreach($pre_results as $keys => $pre_result) {
                     $pre_results[$keys][self::IS_FEED] = true;
                     $delta = $time - $pre_result[self::SUMMARY_OFFSET];
-                    $pre_results[$keys][self::DOC_RANK] = 720000 / 
+                    $pre_results[$keys][self::DOC_RANK] = 720000 /
                         max($delta, 1);
                 }
             }
@@ -347,7 +347,7 @@ class WordIterator extends IndexBundleIterator
             $shard = $index->getCurrentShard();
             $pre_results = $shard->getPostingsSlice(
                 $this->start_offset,
-                $this->next_offset, $this->last_offset, 
+                $this->next_offset, $this->last_offset,
                 $this->results_per_block);
         }
 
@@ -364,7 +364,7 @@ class WordIterator extends IndexBundleIterator
             // inlinks is the domain of the inlink
             $key_parts = str_split($keys, $doc_key_len);
             if(isset($key_parts[2])) {
-                list($hash_url, $data[self::HASH], $data[self::INLINKS]) = 
+                list($hash_url, $data[self::HASH], $data[self::INLINKS]) =
                     $key_parts;
             } else {
                 continue;
@@ -410,16 +410,16 @@ class WordIterator extends IndexBundleIterator
         }
         $this->current_block_fresh = false;
         $this->seen_docs += $num_docs;
-    } 
+    }
 
     /**
      * Forwards the iterator one group of docs
      * @param array $gen_doc_offset a generation, doc_offset pair. If set,
      *      the must be of greater than or equal generation, and if equal the
-     *      next block must all have $doc_offsets larger than or equal to 
+     *      next block must all have $doc_offsets larger than or equal to
      *      this value
      */
-    function advance($gen_doc_offset = null) 
+    function advance($gen_doc_offset = null)
     {
         $this->advanceSeenDocs();
         if($this->current_offset < $this->next_offset) {
@@ -460,7 +460,7 @@ class WordIterator extends IndexBundleIterator
                     $this->next_offset = $this->current_offset;
                 }
             }
-            $this->seen_docs = 
+            $this->seen_docs =
                 ($this->current_offset - $this->start_offset)/
                     IndexShard::POSTING_LEN;
         }
@@ -488,8 +488,8 @@ class WordIterator extends IndexBundleIterator
                 $this->generation_pointer++;
             }
             if($this->generation_pointer < $this->num_generations) {
-                list($this->current_generation, $this->start_offset, 
-                    $this->last_offset, ) 
+                list($this->current_generation, $this->start_offset,
+                    $this->last_offset, )
                     = $this->dictionary_info[$this->generation_pointer];
                 $this->current_offset = $this->start_offset;
             }
@@ -499,10 +499,10 @@ class WordIterator extends IndexBundleIterator
 
 
     /**
-     * Gets the doc_offset and generation for the next document that 
+     * Gets the doc_offset and generation for the next document that
      * would be return by this iterator
      *
-     * @return mixed an array with the desired document offset 
+     * @return mixed an array with the desired document offset
      *  and generation; -1 on fail
      */
     function currentGenDocOffsetWithWord() {

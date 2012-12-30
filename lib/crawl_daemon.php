@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,10 +27,10 @@
  * @subpackage library
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
- 
+
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
@@ -40,7 +40,7 @@ require_once BASE_DIR."/configs/config.php";
 /**
  * Load the crawlLog function
  */
-require_once BASE_DIR."/lib/utility.php"; 
+require_once BASE_DIR."/lib/utility.php";
 /**
  *  Load common constants for crawling
  */
@@ -95,7 +95,7 @@ class CrawlDaemon implements CrawlConstants
         self::$time = $now;
         $lock_file = CrawlDaemon::getLockFileName(self::$name, self::$subname);
         if(!file_exists($lock_file)) {
-            $name_string = CrawlDaemon::getNameString(self::$name, 
+            $name_string = CrawlDaemon::getNameString(self::$name,
                 self::$subname);
             crawlLog("Stopping $name_string ...");
             exit();
@@ -112,7 +112,7 @@ class CrawlDaemon implements CrawlConstants
      *      start will check if the process control functions exists if these
      *      do they will fork and detach a child process to act as a daemon.
      *      a lock file will be created to prevent additional daemons from
-     *      running. If the message is stop then a message file is written to 
+     *      running. If the message is stop then a message file is written to
      *      tell the daemon to stop. If the argument is terminal then the
      *      program won't be run as a daemon.
      * @param string $name the prefix to use for lock and message files
@@ -127,7 +127,7 @@ class CrawlDaemon implements CrawlConstants
             self::$subname = "";
         }
         //don't let our script be run from apache
-        if(isset($_SERVER['DOCUMENT_ROOT']) && 
+        if(isset($_SERVER['DOCUMENT_ROOT']) &&
             strlen($_SERVER['DOCUMENT_ROOT']) > 0) {
             echo "BAD REQUEST";
             exit();
@@ -177,7 +177,7 @@ class CrawlDaemon implements CrawlConstants
                 $info[self::STATUS] = self::WAITING_START_MESSAGE_STATE;
                 file_put_contents($messages_file, serialize($info));
 
-                define("LOG_TO_FILES", true); 
+                define("LOG_TO_FILES", true);
                     // if false log messages are sent to the console
             break;
 
@@ -301,8 +301,8 @@ class CrawlDaemon implements CrawlConstants
     }
 
     /**
-     * Returns the statuses of the running daemons 
-     * 
+     * Returns the statuses of the running daemons
+     *
      * @return array 2d array active_daemons[name][instance] = true
      */
     static function statuses()
@@ -322,7 +322,7 @@ class CrawlDaemon implements CrawlConstants
                 $pre_name_parts = explode("-", $pre_name);
                 if(count($pre_name_parts) == 1) {
                     $active_daemons[$pre_name][-1] = true;
-                } else { 
+                } else {
                     $first = array_shift($pre_name_parts);
                     $rest = implode("-", $pre_name_parts);
                     $active_daemons[$rest][$first] = true;

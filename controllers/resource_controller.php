@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage controller
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -48,7 +48,7 @@ require_once BASE_DIR."/lib/url_parser.php";
  * @subpackage controller
  */
 class ResourceController extends Controller implements CrawlConstants
-{ 
+{
     /**
      * No models used by this controller
      * @var array
@@ -68,11 +68,11 @@ class ResourceController extends Controller implements CrawlConstants
 
     /**
      * Checks that the request seems to be coming from a legitimate fetcher
-     * or mirror server then determines which activity  is being requested 
+     * or mirror server then determines which activity  is being requested
      * and calls the method for that activity.
      *
      */
-    function processRequest() 
+    function processRequest()
     {
         if(!isset($_REQUEST['a']) ||
             (!in_array($_REQUEST['a'], array("get", "suggest"))
@@ -163,7 +163,7 @@ class ResourceController extends Controller implements CrawlConstants
             if(file_exists($mirror_table_name) ) {
                 $mirror_table = unserialize(
                     file_get_contents($mirror_table_name));
-                if(isset($mirror_table['time']) && 
+                if(isset($mirror_table['time']) &&
                     $mirror_table['time'] - $time > MIRROR_SYNC_FREQUENCY) {
                     $mirror_table = array();
                     // truncate table periodically to get rid of stale entries
@@ -172,9 +172,9 @@ class ResourceController extends Controller implements CrawlConstants
             if(isset($_REQUEST['robot_instance'])) {
                 $mirror_table['time'] = $time;
                 $mirror_table['machines'][
-                    $this->clean($_REQUEST['robot_instance'], "string")] = 
+                    $this->clean($_REQUEST['robot_instance'], "string")] =
                     array($_SERVER['REMOTE_ADDR'], $_REQUEST['machine_uri'],
-                    $time, 
+                    $time,
                     $this->clean($_REQUEST['last_sync'], "int"));
                 file_put_contents($mirror_table_name, serialize($mirror_table));
             }
@@ -196,7 +196,7 @@ class ResourceController extends Controller implements CrawlConstants
         // substrings to exclude from our list
         $excludes = array(".DS", "__MACOSX", "queries", "QueueBundle", "tmp",
             "thumb");
-        $sync_files = $this->crawlModel->getDeltaFileInfo(CRAWL_DIR."/cache", 
+        $sync_files = $this->crawlModel->getDeltaFileInfo(CRAWL_DIR."/cache",
             $last_sync, $excludes);
 
         if (count($sync_files) > 0 ) {

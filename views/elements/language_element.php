@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  * SeekQuarry/Yioop --
  * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- * Copyright (C) 2009 - 2012 Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2013 Chris Pollett chris@pollett.org
  *
  * LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage element
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -48,16 +48,16 @@ class LanguageElement extends Element
     /**
      * Draws a selects tag with a list of available languages
      *
-     * @param array $data this variables LANGUAGES elt contains pairs of 
-     *      IANA tag and language names; its LOCALE_TAG is the current 
+     * @param array $data this variables LANGUAGES elt contains pairs of
+     *      IANA tag and language names; its LOCALE_TAG is the current
      *      IANA locale tag
      */
-    public function render($data)
+    function render($data)
     {
     ?>
 
         <select id="locale" name="lang" dir="ltr" size="4">
-        <?php 
+        <?php
         foreach ($data['LANGUAGES'] as $locale_tag => $locale_name) {
             if($data['LOCALE_TAG'] == $locale_tag) {
                 e('<option value="'.$locale_tag.'"  selected="selected">'.

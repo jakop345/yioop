@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,15 +27,15 @@
  * @subpackage iterator
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- * Abstract classed used to model iterating documents indexed in 
- * an IndexArchiveBundle or set of such bundles. 
+ * Abstract classed used to model iterating documents indexed in
+ * an IndexArchiveBundle or set of such bundles.
  *
  *
  * @author Chris Pollett
@@ -108,16 +108,16 @@ abstract class IndexBundleIterator implements CrawlConstants
      * Forwards the iterator one group of docs
      * @param array $gen_doc_offset a generation, doc_offset pair. If set,
      *      the must be of greater than or equal generation, and if equal the
-     *      next block must all have $doc_offsets larger than or equal to 
+     *      next block must all have $doc_offsets larger than or equal to
      *      this value
      */
     abstract function advance($gen_doc_offset = null);
 
     /**
-     * Gets the doc_offset and generation for the next document that 
+     * Gets the doc_offset and generation for the next document that
      * would be return by this iterator
      *
-     * @return mixed an array with the desired document offset 
+     * @return mixed an array with the desired document offset
      *  and generation; -1 on fail
      */
     abstract function currentGenDocOffsetWithWord();
@@ -137,7 +137,7 @@ abstract class IndexBundleIterator implements CrawlConstants
      *  @param array $gen_doc1  second ordered pair
      *  @return int -1,0,1 depending on which is bigger
      */
-     function genDocOffsetCmp($gen_doc1, $gen_doc2) 
+     function genDocOffsetCmp($gen_doc1, $gen_doc2)
      {
         //less generation
         if($gen_doc1[0] < $gen_doc2[0]) {
@@ -177,7 +177,7 @@ abstract class IndexBundleIterator implements CrawlConstants
      *      results
      * @return array doc summaries that match provided keys
      */
-    function getCurrentDocsForKeys($keys = NULL) 
+    function getCurrentDocsForKeys($keys = NULL)
     {
         if($this->current_block_fresh == false) {
             $pages = $this->currentDocsWithWord();
@@ -214,14 +214,14 @@ abstract class IndexBundleIterator implements CrawlConstants
      * the current pointer to the next block of documents. If a doc index is
      * the next block must be of docs after this doc_index
      *
-     * @param $doc_offset if set the next block must all have $doc_offsets 
+     * @param $doc_offset if set the next block must all have $doc_offsets
      *      equal to or larger than this value
      * @return array doc summaries matching the $this->restrict_phrases
      */
     function nextDocsWithWord($doc_offset = NULL)
     {
         $doc_block = $this->getCurrentDocsForKeys();
-        
+
         if($doc_block == -1 || !is_array($doc_block) ) {
             return NULL;
         }

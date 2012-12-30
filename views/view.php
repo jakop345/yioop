@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage view
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -43,31 +43,31 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  */
 abstract class View
 {
-    /** 
+    /**
      * Names of element objects that the view uses to display itself
      * @var array
      */
     var $elements = array();
 
-    /** 
+    /**
      * Names of helper objects that the view uses to help draw itself
      * @var array
      */
     var $helpers = array();
 
-    /** 
+    /**
      * Localized static page elements used by this view
      * @var array
      */
     var $pages = array();
 
 
-    /** The name of the type of layout object that the view is drawn on 
+    /** The name of the type of layout object that the view is drawn on
      *  @var string
      */
     var $layout = "";
 
-    /** The reference to the layout object that the view is drawn on 
+    /** The reference to the layout object that the view is drawn on
      *  @var object
      */
     var $layout_object;
@@ -78,17 +78,17 @@ abstract class View
      *  the View will be drawn.
      *
      */
-    function __construct() 
+    function __construct()
     {
         //read in and instantiate Element's needed for this View
         require_once BASE_DIR."/views/elements/element.php";
         foreach($this->elements as $element) {
             if(file_exists(
                 APP_DIR."/views/elements/".$element."_element.php")) {
-                require_once 
+                require_once
                     APP_DIR."/views/elements/".$element."_element.php";
             } else {
-                require_once 
+                require_once
                     BASE_DIR."/views/elements/".$element."_element.php";
             }
             $element_name = ucfirst($element)."Element";
@@ -103,7 +103,7 @@ abstract class View
         foreach($this->helpers as $helper) {
             if(file_exists(
                 APP_DIR."/views/helpers/".$helper."_helper.php")) {
-                require_once 
+                require_once
                     APP_DIR."/views/helpers/".$helper."_helper.php";
             } else {
                 require_once BASE_DIR."/views/helpers/".$helper."_helper.php";
@@ -129,7 +129,7 @@ abstract class View
             }
             $page_parts = explode("END_HEAD_VARS", $page_string);
             $this->head_objects[$page] = array();
-            if(count($page_parts) > 1) { 
+            if(count($page_parts) > 1) {
                 $this->page_objects[$page]  = $page_parts[1];
                 $head_lines = explode("\n", $page_parts[0]);
                 foreach($head_lines as $line) {
@@ -155,10 +155,10 @@ abstract class View
         if($this->layout != "") {
             if(file_exists(
                 APP_DIR."/views/layouts/".$this->layout."_layout.php")) {
-                require_once 
+                require_once
                     APP_DIR."/views/layouts/".$this->layout."_layout.php";
             } else {
-                require_once 
+                require_once
                     BASE_DIR."/views/layouts/".$this->layout."_layout.php";
             }
         }
@@ -167,11 +167,11 @@ abstract class View
     }
 
     /**
-     * This method is responsible for drawing both the layout and the view. It 
-     * should not be modified to change the display of then view. Instead, 
+     * This method is responsible for drawing both the layout and the view. It
+     * should not be modified to change the display of then view. Instead,
      * implement renderView.
      *
-     * @param array $data  an array of values set up by a controller to be used 
+     * @param array $data  an array of values set up by a controller to be used
      *      in rendering the view
      */
     function render($data) {
@@ -179,11 +179,11 @@ abstract class View
     }
 
     /**
-     * This abstract method is implemented in sub classes with code which 
-     * actually draws the view. The current layouts render method calls this 
+     * This abstract method is implemented in sub classes with code which
+     * actually draws the view. The current layouts render method calls this
      * function.
      *
-     *  @param array $data  an array of values set up by a controller to be used 
+     *  @param array $data  an array of values set up by a controller to be used
      *      in rendering the view
      */
     abstract function renderView($data);

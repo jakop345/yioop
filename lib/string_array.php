@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,12 +27,12 @@
  * @subpackage library
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
- 
+
 /**
  * Read in base class, if necessary
  */
@@ -54,8 +54,8 @@ require_once "utility.php";
  *
  * @package seek_quarry
  * @subpackage library
- */  
-class StringArray extends PersistentStructure 
+ */
+class StringArray extends PersistentStructure
 {
 
     /**
@@ -82,7 +82,7 @@ class StringArray extends PersistentStructure
 
     /**
      * Initiliazes the fields of the StringArray and its parent class
-     * PersistentStructure. Creates a null filled string array of size 
+     * PersistentStructure. Creates a null filled string array of size
      * $this->string_array_size to stored data in.
      *
      * @param string $fname the name of the file to store data persistently in
@@ -91,8 +91,8 @@ class StringArray extends PersistentStructure
      * @param int $save_frequency how often the StringArray should be stored to
      *      disk
      */
-    public function __construct($fname, $num_values, $data_size, 
-        $save_frequency = self::DEFAULT_SAVE_FREQUENCY) 
+    function __construct($fname, $num_values, $data_size,
+        $save_frequency = self::DEFAULT_SAVE_FREQUENCY)
     {
         $this->num_values = $num_values;
         $this->data_size = $data_size;
@@ -111,12 +111,12 @@ class StringArray extends PersistentStructure
      *  @param string the name of the file to load the StringArray from
      *  @return object the PersistentStructure loaded
      */
-    public static function load($fname)
+    static function load($fname)
     {
         $fh = fopen($fname, "rb");
         $array_size = unpackInt(fread($fh, 4));
         $array = fread($fh, $array_size);
-        $object = unserialize(fread($fh, 
+        $object = unserialize(fread($fh,
             filesize($fname) -4 - $array_size));
         $object->string_array = & $array;
         fclose($fh);
@@ -124,9 +124,9 @@ class StringArray extends PersistentStructure
     }
 
     /**
-     *  Save the StringArray to its filename 
+     *  Save the StringArray to its filename
      */
-    public function save()
+    function save()
     {
         $fh = fopen($this->filename, "wb");
         $tmp = & $this->string_array;
@@ -144,7 +144,7 @@ class StringArray extends PersistentStructure
      *  @param int $i array index of item to look up
      *  @return string the looked-up item of length $this->data_size
      */
-    public function get($i)
+    function get($i)
     {
         $data_size = $this->data_size;
 
@@ -155,10 +155,10 @@ class StringArray extends PersistentStructure
      * Puts data into the ith item of the StringArray
      *
      * @param int $i array index of where to store data
-     * @param string $data at least $this->data_size many bytes of data to 
+     * @param string $data at least $this->data_size many bytes of data to
      *      store
      */
-    public function put($i, $data)
+    function put($i, $data)
     {
         $data_size = $this->data_size;
 

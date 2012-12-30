@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage controller
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -57,7 +57,7 @@ require_once BASE_DIR."/lib/url_parser.php";
  * @subpackage controller
  */
 class CrawlController extends Controller implements CrawlConstants
-{ 
+{
     /**
      * No models used by this controller
      * @var array
@@ -72,7 +72,7 @@ class CrawlController extends Controller implements CrawlConstants
      * These are the activities supported by this controller
      * @var array
      */
-    var $activities = array("sendStartCrawlMessage", "sendStopCrawlMessage", 
+    var $activities = array("sendStartCrawlMessage", "sendStopCrawlMessage",
         "crawlStalled", "crawlStatus", "deleteCrawl", "injectUrlsCurrentCrawl",
         "getCrawlList", "combinedCrawlInfo", "getInfoTimestamp",
         "getCrawlSeedInfo", "setCrawlSeedInfo", "getCrawlItems", "countWords",
@@ -84,11 +84,11 @@ class CrawlController extends Controller implements CrawlConstants
      * activity for processing.
      *
      */
-    function processRequest() 
+    function processRequest()
     {
         $data = array();
 
-        /* do a quick test to see if this is a request seems like 
+        /* do a quick test to see if this is a request seems like
            from a legitimate machine
          */
         if(!$this->checkRequest()) {return; }
@@ -112,7 +112,7 @@ class CrawlController extends Controller implements CrawlConstants
     /**
      * Handles a request for the crawl status (memory use, recent fetchers
      * crawl rate, etc) data from a remote name server
-     * and retrieves that the statistic about this that are held by the 
+     * and retrieves that the statistic about this that are held by the
      * local queue server
      * outputs this info back as body of the http response (url encoded,
      * serialized php data)
@@ -124,7 +124,7 @@ class CrawlController extends Controller implements CrawlConstants
 
     /**
      * Handles a request for the starting parameters of a crawl of a given
-     * timestamp and retrieves that information from the bundle held by the 
+     * timestamp and retrieves that information from the bundle held by the
      * local queue server
      * outputs this info back as body of the http response (url encoded,
      * serialized php data)
@@ -172,8 +172,8 @@ class CrawlController extends Controller implements CrawlConstants
     }
 
     /**
-     * Handles a request for the crawl list (what crawl are stored on the 
-     * machine) data from a remote name server and retrieves the 
+     * Handles a request for the crawl list (what crawl are stored on the
+     * machine) data from a remote name server and retrieves the
      * statistic about this that are held by the local queue server
      * outputs this info back as body of the http response (url encoded,
      * serialized php data)
@@ -219,7 +219,7 @@ class CrawlController extends Controller implements CrawlConstants
     }
 
     /**
-     * Receives a request to inject new urls into the active 
+     * Receives a request to inject new urls into the active
      * crawl from a remote name server and then does this for
      * the local queue server
      */
@@ -231,17 +231,17 @@ class CrawlController extends Controller implements CrawlConstants
         }
         $num = $this->clean($_REQUEST["num"], "int");
         $i = $this->clean($_REQUEST["i"], "int");
-        list($timestamp, $inject_urls) = 
+        list($timestamp, $inject_urls) =
             unserialize(webdecode($_REQUEST["arg"]));
         $inject_urls = partitionByHash($inject_urls,
             NULL, $num, $i, "UrlParser::getHost");
-        $this->crawlModel->injectUrlsCurrentCrawl($timestamp, 
+        $this->crawlModel->injectUrlsCurrentCrawl($timestamp,
             $inject_urls, NULL);
     }
 
     /**
      * Receives a request to get crawl summary data for an array of urls
-     * from a remote name server and then looks these up on the local 
+     * from a remote name server and then looks these up on the local
      * queue server
      */
      function getCrawlItems()
@@ -282,7 +282,7 @@ class CrawlController extends Controller implements CrawlConstants
 
     /**
      * Receives a request to get counts of the number of occurrences of an
-     * array of words a remote name server and then 
+     * array of words a remote name server and then
      * determines and outputs these counts for the local queue server
      */
      function countWords()
@@ -318,18 +318,18 @@ class CrawlController extends Controller implements CrawlConstants
         }
         $num = $this->clean($_REQUEST["num"], "int");
         $i = $this->clean($_REQUEST["i"], "int");
-        list($crawl_params, 
+        list($crawl_params,
             $seed_info) = unserialize(webdecode($_REQUEST["arg"]));
-        $seed_info['seed_sites']['url'] = 
+        $seed_info['seed_sites']['url'] =
             partitionByHash($seed_info['seed_sites']['url'],
             NULL, $num, $i, "UrlParser::getHost");
-        $this->crawlModel->sendStartCrawlMessage($crawl_params, $seed_info, 
+        $this->crawlModel->sendStartCrawlMessage($crawl_params, $seed_info,
             NULL);
     }
 
     /**
-     *  A save point is used to store to disk a sequence generation-doc-offset 
-     *  pairs of a particular mix query when doing an archive crawl of a crawl 
+     *  A save point is used to store to disk a sequence generation-doc-offset
+     *  pairs of a particular mix query when doing an archive crawl of a crawl
      *  mix. This is used so that the mix can remember where it was the next
      *  time it is invoked by the web app on the machine in question.
      *  This function deletes such a save point associated with a timestamp

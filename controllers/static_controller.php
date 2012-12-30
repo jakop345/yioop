@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage controller
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -37,7 +37,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 require_once BASE_DIR."/controllers/controller.php";
 
 /**
- * This controller is  used by the Yioop web site to display static pages. 
+ * This controller is  used by the Yioop web site to display static pages.
  *
  * @author Chris Pollett
  * @package seek_quarry
@@ -56,24 +56,24 @@ class StaticController extends Controller
      */
     var $views = array("static");
     /**
-     * Says which activities (roughly methods invoke from the web) 
+     * Says which activities (roughly methods invoke from the web)
      * this controller will respond to
      * @var array
      */
     var $activities = array("show_page");
 
     /**
-     *  This is the main entry point for handling people arriving to the 
+     *  This is the main entry point for handling people arriving to the
      * SeekQuarry site.
      */
-    function processRequest() 
+    function processRequest()
     {
         $data = array();
         $view = "static";
         if(isset($_SESSION['USER_ID'])) {
             $user = $_SESSION['USER_ID'];
         } else {
-            $user = $_SERVER['REMOTE_ADDR']; 
+            $user = $_SERVER['REMOTE_ADDR'];
         }
         if(isset($_REQUEST['a'])) {
             if(in_array($_REQUEST['a'], $this->activities)) {
@@ -100,10 +100,10 @@ class StaticController extends Controller
      *
      * @return array $data has which static page to display
      */
-    function show_page() 
+    function show_page()
     {
         $data = array();
-        if(isset($_REQUEST['p']) && 
+        if(isset($_REQUEST['p']) &&
             in_array($_REQUEST['p'], $this->staticView->pages)) {
             $data['page'] = $_REQUEST['p'];
         } else {

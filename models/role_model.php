@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage model
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -46,14 +46,14 @@ require_once BASE_DIR."/lib/utility.php";
  * @package seek_quarry
  * @subpackage model
  */
-class RoleModel extends Model 
+class RoleModel extends Model
 {
 
 
     /**
      *  {@inheritdoc}
      */
-    function __construct() 
+    function __construct()
     {
         parent::__construct();
     }
@@ -96,7 +96,7 @@ class RoleModel extends Model
 
             $sub_sql = "SELECT TRANSLATION AS ACTIVITY_NAME ".
                 "FROM TRANSLATION_LOCALE ".
-                "WHERE TRANSLATION_ID=$id AND LOCALE_ID=$locale_id LIMIT 1"; 
+                "WHERE TRANSLATION_ID=$id AND LOCALE_ID=$locale_id LIMIT 1";
                 // maybe do left join at some point
 
             $result_sub =  $this->db->execute($sub_sql);
@@ -105,7 +105,7 @@ class RoleModel extends Model
             if($translate) {
                 $activities[$i]['ACTIVITY_NAME'] = $translate['ACTIVITY_NAME'];
             } else {
-                $activities[$i]['ACTIVITY_NAME'] = 
+                $activities[$i]['ACTIVITY_NAME'] =
                     $activities['IDENTIFIER_STRING'];
             }
             $i++;
@@ -121,7 +121,7 @@ class RoleModel extends Model
      *  Get a list of all roles. Role names are not localized since these are
      *  created by end user admins of the search engine
      *
-     *  @return array an array of role_id, role_name pairs 
+     *  @return array an array of role_id, role_name pairs
      */
     function getRoleList()
     {
@@ -130,7 +130,7 @@ class RoleModel extends Model
         $roles = array();
 
         $sql = "SELECT R.ROLE_ID AS ROLE_ID, R.NAME AS ROLE_NAME ".
-            " FROM ROLE R"; 
+            " FROM ROLE R";
 
         $result = $this->db->execute($sql);
         $i = 0;
@@ -139,7 +139,7 @@ class RoleModel extends Model
             $i++;
         }
         unset($roles[$i]); //last one will be null
-        
+
 
         return $roles;
 
@@ -157,7 +157,7 @@ class RoleModel extends Model
         $this->db->selectDB(DB_NAME);
 
         $sql = "SELECT R.ROLE_ID AS ROLE_ID FROM ".
-            " ROLE R WHERE R.NAME = '".$this->db->escapeString($rolename)."' "; 
+            " ROLE R WHERE R.NAME = '".$this->db->escapeString($rolename)."' ";
         $result = $this->db->execute($sql);
         if(!$row = $this->db->fetchArray($result) ) {
             return -1;
@@ -202,7 +202,7 @@ class RoleModel extends Model
     /**
      *  Delete a role by its roleid
      *
-     *  @param string $roleid - the roleid of the role to delete 
+     *  @param string $roleid - the roleid of the role to delete
      */
     function deleteRole($roleid)
     {
@@ -232,7 +232,7 @@ class RoleModel extends Model
         $this->db->execute($sql);
     }
 }
- 
- 
- 
+
+
+
  ?>

@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage layout
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -48,14 +48,14 @@ class WebLayout extends Layout
     /**
      * Responsible for drawing the header of the document containing
      * Yioop! title and including basic.js. It calls the renderView method of
-     * the View that lives on the layout. If the QUERY_STATISTIC config setting 
-     * is set, it output statistics about each query run on the database. 
+     * the View that lives on the layout. If the QUERY_STATISTIC config setting
+     * is set, it output statistics about each query run on the database.
      * Finally, it draws the footer of the document.
      *
      *  @param array $data  an array of data set up by the controller to be
      *  be used in drawing the WebLayout and its View.
      */
-    public function render($data) {
+    function render($data) {
     ?>
     <!DOCTYPE html>
 
@@ -63,21 +63,21 @@ class WebLayout extends Layout
         ?>" dir="<?php e($data['LOCALE_DIR']);?>">
 
         <head>
-        <title><?php if(isset($data['page']) && 
+        <title><?php if(isset($data['page']) &&
             isset($this->view->head_objects[$data['page']]['title']))
             e($this->view->head_objects[$data['page']]['title']);
         else e(tl('web_layout_title')); ?></title>
     <?php if(isset($this->view->head_objects['robots'])) {?>
-        <meta name="ROBOTS" content="<?php 
+        <meta name="ROBOTS" content="<?php
             e($this->view->head_objects['robots']) ?>" />
     <?php } ?>
-        <meta name="description" content="<?php 
-        if(isset($data['page']) && 
+        <meta name="description" content="<?php
+        if(isset($data['page']) &&
             isset($this->view->head_objects[$data['page']]['description']))
                 e($this->view->head_objects[$data['page']]['description']);
         else e(tl('web_layout_description')); ?>" />
         <meta name="Author" content="Christopher Pollett" />
-        <meta name="description" content="<?php 
+        <meta name="description" content="<?php
             e(tl('web_layout_description')); ?>" />
         <meta charset="utf-8" />
         <?php if(MOBILE) {?>
@@ -85,17 +85,17 @@ class WebLayout extends Layout
         <?php } ?>
         <link rel="shortcut icon"
             href="<?php e($_SERVER["PATH_INFO"]); ?>/favicon.ico" />
-        <link rel="stylesheet" type="text/css" 
+        <link rel="stylesheet" type="text/css"
             href="<?php e($_SERVER["PATH_INFO"]); ?>/css/search.css" />
-        <link rel="search" type="application/opensearchdescription+xml" 
+        <link rel="search" type="application/opensearchdescription+xml"
             href="<?php e(NAME_SERVER."yioopbar.xml");?>"
             title="Content search" />
         </head>
-        <?php 
+        <?php
             $data['MOBILE'] = (MOBILE) ? 'mobile': '';
         ?>
 
-        <body class="html-<?php e($data['BLOCK_PROGRESSION']);?> html-<?php 
+        <body class="html-<?php e($data['BLOCK_PROGRESSION']);?> html-<?php
             e($data['LOCALE_DIR']);?> html-<?php e($data['WRITING_MODE'].' '.
             $data['MOBILE']);?>" >
         <div id="message" ></div><?php
@@ -113,21 +113,21 @@ class WebLayout extends Layout
             foreach($data['QUERY_STATISTICS'] as $query_info) {
                 e("<div class='query'><div>".$query_info['QUERY'].
                     "</div><div><b>".
-                    tl('web_layout_query_time', 
+                    tl('web_layout_query_time',
                         $query_info['ELAPSED_TIME']).
                         "</b></div></div>");
             }
         ?>
 
         </div>
-        <?php 
+        <?php
         } ?>
 
         <script type="text/javascript" src="./scripts/basic.js" ></script>
         <?php
         if(isset($data['INCLUDE_SCRIPTS'])) {
             foreach($data['INCLUDE_SCRIPTS'] as $script_name) {
-                e('<script type="text/javascript" 
+                e('<script type="text/javascript"
                     src="'.$_SERVER["PATH_INFO"].'/scripts/'.
                     $script_name.'.js" ></script>');
             }

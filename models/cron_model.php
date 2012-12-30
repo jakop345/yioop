@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage model
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -47,7 +47,7 @@ require_once BASE_DIR."/lib/fetch_url.php";
  * @package seek_quarry
  * @subpackage model
  */
-class CronModel extends Model 
+class CronModel extends Model
 {
     /**
      * File name used to store the cron table associative array
@@ -63,7 +63,7 @@ class CronModel extends Model
     /**
      *  {@inheritdoc}
      */
-    function __construct() 
+    function __construct()
     {
         parent::__construct();
         $this->cron_table === NULL;
@@ -71,7 +71,7 @@ class CronModel extends Model
     }
 
     /**
-     *  Returns the timestamp of last time cron run. Not using db as sqlite 
+     *  Returns the timestamp of last time cron run. Not using db as sqlite
      *  seemed to have locking issues if the transaction takes a while
      *
      *  @return int a Unix timestamp

@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage test
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -37,11 +37,11 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 require_once BASE_DIR.'configs/config.php';
 
 /** Load PPTX class we'll test */
-require_once BASE_DIR."lib/processors/pptx_processor.php"; 
+require_once BASE_DIR."lib/processors/pptx_processor.php";
 
 /**
- * UnitTest for the PptxProcessor class. It is used to process 
- * pptx files which are xml based zip format 
+ * UnitTest for the PptxProcessor class. It is used to process
+ * pptx files which are xml based zip format
  *
  * @author Nakul Natu
  * @package seek_quarry
@@ -52,7 +52,7 @@ class PptxProcessorTest extends UnitTest implements CrawlConstants
     /**
      *  Creates a summary of pptx document to check
      */
-    public function setUp()
+    function setUp()
     {
         $processor = new PptxProcessor();
         $filename = BASE_DIR . "/tests/test_files/test.pptx";
@@ -66,25 +66,25 @@ class PptxProcessorTest extends UnitTest implements CrawlConstants
     /**
      * Test object is set to null
      */
-    public function tearDown()
+    function tearDown()
     {
         $this->test_objects = NULL;
     }
     /**
-     * Checks title of the pptx is correct or not 
+     * Checks title of the pptx is correct or not
      */
-    public function checkTitleTestCase()
+    function checkTitleTestCase()
     {
         $objects = $this->test_objects['summary'];
         $title="Nakul Natu";
-        $this->assertEqual($objects[self::TITLE], 
+        $this->assertEqual($objects[self::TITLE],
             $title,"Correct Title Retrieved");
     }
 
     /**
-     * Checks Language of pptx is correct or not 
+     * Checks Language of pptx is correct or not
      */
-    public function checkLangTestCase()
+    function checkLangTestCase()
     {
         $objects = $this->test_objects['summary'];
         $lang="en-US";
@@ -93,9 +93,9 @@ class PptxProcessorTest extends UnitTest implements CrawlConstants
     }
 
     /**
-     * Checks the links are correct or not 
+     * Checks the links are correct or not
      */
-    public function checkLinksTestCase()
+    function checkLinksTestCase()
     {
         $objects = $this->test_objects['summary'];
         $testLinks = array();
@@ -114,7 +114,7 @@ class PptxProcessorTest extends UnitTest implements CrawlConstants
     /**
      * Checks if description is not null
      */
-    public function checkDescriptionTestCase()
+    function checkDescriptionTestCase()
     {
         $objects = $this->test_objects['summary'];
         $this->assertTrue(

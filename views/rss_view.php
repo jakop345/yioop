@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage view
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -44,11 +44,11 @@ require_once BASE_DIR."/lib/crawl_constants.php";
  * @author Chris Pollett
  * @package seek_quarry
  * @subpackage view
- */ 
+ */
 
 class RssView extends View implements CrawlConstants
 {
-    /** Names of helper objects that the view uses to help draw itself 
+    /** Names of helper objects that the view uses to help draw itself
      *  @var array
      */
     var $helpers = array("pagination", "filetype", "displayresults");
@@ -67,7 +67,7 @@ class RssView extends View implements CrawlConstants
      *  of results, how to fetch the next results, etc.
      *
      */
-    public function renderView($data) 
+    function renderView($data)
     {
         if(isset($data['PAGES'])) {
         ?>
@@ -80,16 +80,16 @@ class RssView extends View implements CrawlConstants
                         $this->filetypeHelper->render($page[self::TYPE]);
                     }?></title>
 
-                <link><?php if(isset($page[self::TYPE]) 
+                <link><?php if(isset($page[self::TYPE])
                     && $page[self::TYPE] != "link") {
-                        e($page[self::URL]); 
+                        e($page[self::URL]);
                     } else {
                         e(strip_tags($page[self::TITLE]));
                     } ?></link>
-                <description><?php 
+                <description><?php
                 e(strip_tags($page[self::DESCRIPTION]));
-                if(isset($page[self::THUMB]) 
-                    && $page[self::THUMB] != 'NULL') { 
+                if(isset($page[self::THUMB])
+                    && $page[self::THUMB] != 'NULL') {
                     $img = "<img src='{$page[self::THUMB]}' ".
                         "alt='Image' />";
                     e(htmlentities($img));
@@ -97,7 +97,7 @@ class RssView extends View implements CrawlConstants
                 ?></description>
                 </item>
 
-            <?php 
+            <?php
             } //end foreach
         }
     }

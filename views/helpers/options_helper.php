@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage helper
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -46,7 +46,7 @@ require_once BASE_DIR."/views/helpers/helper.php";
  * @package seek_quarry
  * @subpackage helper
  */
- 
+
 class OptionsHelper extends Helper
 {
 
@@ -57,25 +57,25 @@ class OptionsHelper extends Helper
      *  @param string $name   the name this form element should use
      *  @param array $options   an array of key value pairs for the options
      *  tags of this select element
-     *  @param string $selected   which option (note singular -- no support 
-     *  for selecting more than one) should be set as selected 
+     *  @param string $selected   which option (note singular -- no support
+     *  for selecting more than one) should be set as selected
      *  in the select tag
      */
-    public function render($id, $name, $options, $selected)
-    { 
+    function render($id, $name, $options, $selected)
+    {
     ?>
         <select id="<?php e($id);?>" name="<?php e($name);?>" >
         <?php
         foreach($options as $value => $text) {
         ?>
-            <option value="<?php e($value); ?>" <?php 
-                if($value== $selected) { e('selected="selected"'); } 
+            <option value="<?php e($value); ?>" <?php
+                if($value== $selected) { e('selected="selected"'); }
              ?>><?php e($text); ?></option>
         <?php
         }
         ?>
         </select>
-        <?php 
+        <?php
     }
 
 }

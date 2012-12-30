@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage library
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -39,7 +39,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 require_once "utility.php";
 
 /**
- * 
+ *
  * Code used to manage web archive files
  *
  * @author Chris Pollett
@@ -109,8 +109,8 @@ class WebArchive
      * @param bool $is_string says whether the archive stores to string
      *      rather than a file
      */
-    function __construct($fname, $compressor, $fast_construct = false, 
-        $is_string = false) 
+    function __construct($fname, $compressor, $fast_construct = false,
+        $is_string = false)
     {
         $this->filename = $fname;
         $this->compressor = $compressor;
@@ -186,7 +186,7 @@ class WebArchive
         if($data != NULL) {
             $info_block['data'] = & $data;
         }
-        $info_string = 
+        $info_string =
             $this->compressor->compress(serialize($info_block));
         $len = strlen($info_string) + $compressed_int_len;
 
@@ -204,7 +204,7 @@ class WebArchive
     /**
      * Seeks in the WebArchive file to the end of the last Object.
      *
-     * The last $compressed_int_len bytes of a WebArchive say the length 
+     * The last $compressed_int_len bytes of a WebArchive say the length
      * of an info block in bytes
      *
      * @param resource $fh resource for the WebArchive file
@@ -230,9 +230,9 @@ class WebArchive
      * @param string $offset_field field in objects to return the byte offset
      *      at which they were stored
      * @param array &$objects references to objects that will be stored
-     *      the offset field in these references will be adjusted if 
+     *      the offset field in these references will be adjusted if
      * @param array $data data to write in the WebArchive's info block
-     * @param string $callback name of a callback 
+     * @param string $callback name of a callback
      *      $callback($data, $new_objects, $offset_field)
      *      used to modify $data before it is written
      *      to the info block. For instance, we can add offset info to data.
@@ -240,7 +240,7 @@ class WebArchive
      *      reference, create copy objects and adjust their offsets anf return
      * @return mixed adjusted objects or void
      */
-    function addObjects($offset_field, &$objects, 
+    function addObjects($offset_field, &$objects,
         $data = NULL, $callback = NULL, $return_flag = true)
     {
 
@@ -274,7 +274,7 @@ class WebArchive
             $out .= $this->compressor->compressInt($len).$compressed_file;
             $offset += $len + $compressed_int_len;
         }
-        
+
         $this->count += $num_objects;
 
         if($is_string) {
@@ -360,14 +360,14 @@ class WebArchive
                 if($is_string && $offset >= $storage_len) {break; }
 
                 $object = NULL;
-                $compressed_len = ($is_string) 
+                $compressed_len = ($is_string)
                     ? substr($this->storage, $offset, $compressed_int_len)
                     : fread($fh, $compressed_int_len);
 
                 $len = $this->compressor->uncompressInt($compressed_len);
 
                 if($len > 0 && $len < MAX_ARCHIVE_OBJECT_SIZE) {
-                    $compressed_file = ($is_string) 
+                    $compressed_file = ($is_string)
                         ? substr($this->storage, $offset + $compressed_int_len,
                             $len)
                         : fread($fh, $len);
@@ -390,12 +390,12 @@ class WebArchive
         if($open_flag) {
             $this->close($fh);
         }
-        
+
         return $objects;
     }
 
     /**
-     * Returns $num many objects from the web archive starting at the current 
+     * Returns $num many objects from the web archive starting at the current
      * iterator position, leaving the iterator position unchanged
      *
      * @param int $num number of objects to return
@@ -407,8 +407,8 @@ class WebArchive
     }
 
     /**
-     * Returns $num many objects from the web archive starting at the 
-     * current iterator position. The iterator is advance to the object 
+     * Returns $num many objects from the web archive starting at the
+     * current iterator position. The iterator is advance to the object
      * after the last one returned
      *
      * @param int $num number of objects to return
@@ -420,10 +420,10 @@ class WebArchive
     }
 
     /**
-     * Resets the iterator for this web archive to the first object 
+     * Resets the iterator for this web archive to the first object
      * in the archive
      */
-    function reset() 
+    function reset()
     {
         $this->iterator_pos = 0;
     }

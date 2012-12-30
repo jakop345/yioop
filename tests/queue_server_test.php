@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage test
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -40,7 +40,7 @@ define("UNIT_TEST_MODE", true);
 /**
  *  Load the queue server class we'll be testing
  */
-require_once BASE_DIR."/bin/queue_server.php"; 
+require_once BASE_DIR."/bin/queue_server.php";
 
 /**
  *  Used to test functions related to scheduling websites to crawl for
@@ -55,7 +55,7 @@ class QueueServerTest extends UnitTest
     /**
      * Creates a QueueServer object with an initial set of indexed file types
      */
-    public function setUp()
+    function setUp()
     {
         $INDEXED_FILE_TYPES = array("html", "txt");
         $this->test_objects['Q_SERVER'] =  new QueueServer($INDEXED_FILE_TYPES);
@@ -63,9 +63,9 @@ class QueueServerTest extends UnitTest
 
     /**
      * Used to get rid of any object/files we created during a test case.
-     * that need to be disposed of. 
+     * that need to be disposed of.
      */
-    public function tearDown()
+    function tearDown()
     {
         // get rid of the queue_server from previous test case
         $this->test_objects['Q_SERVER'] = null;
@@ -73,10 +73,10 @@ class QueueServerTest extends UnitTest
 
     /**
      * urlMemberSiteArray is a function called by both allowedToCrawlSite
-     * disallowedToCrawlSite to test if a url belongs to alist of 
+     * disallowedToCrawlSite to test if a url belongs to alist of
      * regex's of urls or domain. This test function tests this functionality
      */
-    public function urlMemberSiteArrayTestCase()
+    function urlMemberSiteArrayTestCase()
     {
         $q_server = $this->test_objects['Q_SERVER'];
         $sites = array("http://www.example.com/",
@@ -84,21 +84,21 @@ class QueueServerTest extends UnitTest
             "http://www.bing.com/video/search?*&*&",
             "http://*.cool.*/a/*/", "domain:ucla.edu");
        $test_urls = array(
-            array("http://www.cs.sjsu.edu/faculty/pollett/", false, 
+            array("http://www.cs.sjsu.edu/faculty/pollett/", false,
                 "regex url negative 1"),
-            array("http://www.bing.com/video/search?", false, 
+            array("http://www.bing.com/video/search?", false,
                 "regex url negative 2"),
-            array("http://www.cool.edu/a", false, 
+            array("http://www.cool.edu/a", false,
                 "regex url negative 3"),
-            array("http://ucla.edu.com", false, 
+            array("http://ucla.edu.com", false,
                 "domain test negative"),
-            array("http://www.cs.sjsu.edu/faculty/pollett/a/b/c", true, 
+            array("http://www.cs.sjsu.edu/faculty/pollett/a/b/c", true,
                 "regex url positive 1"),
-            array("http://www.bing.com/video/search?a&b&c", true, 
+            array("http://www.bing.com/video/search?a&b&c", true,
                 "regex url positive 2"),
-            array("http://www.cool.bob.edu/a/b/c", true, 
+            array("http://www.cool.bob.edu/a/b/c", true,
                 "regex url positive 3"),
-            array("http://test.ucla.edu", true, 
+            array("http://test.ucla.edu", true,
                 "domain test positive"),
         );
         foreach($test_urls as $test_url) {
@@ -110,10 +110,10 @@ class QueueServerTest extends UnitTest
     /**
      * allowedToCrawlSite check if a url is  matches a list of url
      * and domains stored in a QueueServer's allowed_sites and that it
-     * is of an allowed to crawl file type. This function tests these 
+     * is of an allowed to crawl file type. This function tests these
      * properties
      */
-    public function allowedToCrawlSiteTestCase()
+    function allowedToCrawlSiteTestCase()
     {
         $q_server = $this->test_objects['Q_SERVER'];
         $q_server->allowed_sites = array("http://www.example.com/",
@@ -159,11 +159,11 @@ class QueueServerTest extends UnitTest
 
     /**
      * disallowedToCrawlSite check if a url is  matches a list of url
-     * and domains stored in a QueueServer's disallowed_sites. This function 
+     * and domains stored in a QueueServer's disallowed_sites. This function
      * tests this properties (The test cases are similar to those of
      * urlMemberSiteArrayTestCase, but are using the disallowed_sites array)
      */
-    public function disallowedToCrawlSiteTestCase()
+    function disallowedToCrawlSiteTestCase()
     {
         $q_server = $this->test_objects['Q_SERVER'];
         $q_server->disallowed_sites = array("http://www.example.com/",
@@ -172,17 +172,17 @@ class QueueServerTest extends UnitTest
             "http://*.cool.*/a/*/");
 
        $test_urls = array(
-            array("http://www.cs.sjsu.edu/faculty/pollett/", false, 
+            array("http://www.cs.sjsu.edu/faculty/pollett/", false,
                 "regex url negative 1"),
-            array("http://www.bing.com/video/search?", false, 
+            array("http://www.bing.com/video/search?", false,
                 "regex url negative 2"),
-            array("http://www.cool.edu/a", false, 
+            array("http://www.cool.edu/a", false,
                 "regex url negative 3"),
-            array("http://www.cs.sjsu.edu/faculty/pollett/a/b/c", true, 
+            array("http://www.cs.sjsu.edu/faculty/pollett/a/b/c", true,
                 "regex url positive 1"),
-            array("http://www.bing.com/video/search?a&b&c", true, 
+            array("http://www.bing.com/video/search?a&b&c", true,
                 "regex url positive 2"),
-            array("http://www.cool.bob.edu/a/b/c", true, 
+            array("http://www.cool.bob.edu/a/b/c", true,
                 "regex url positive 3"),
         );
 

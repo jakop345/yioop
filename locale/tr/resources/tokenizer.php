@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -25,7 +25,7 @@
  *  @subpackage locale
  *  @license http://www.gnu.org/licenses/ GPL3
  *  @link http://www.seekquarry.com/
- *  @copyright 2009 - 2012
+ *  @copyright 2009 - 2013
  *  @filesource
  */
 

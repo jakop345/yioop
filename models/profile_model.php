@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,13 +27,13 @@
  * @subpackage model
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
-/** 
+/**
  * For getPath
  */
 require_once(BASE_DIR.'/lib/url_parser.php');
@@ -49,12 +49,12 @@ require_once(BASE_DIR.'/lib/url_parser.php');
  */
 class ProfileModel extends Model
 {
-    var $profile_fields = array('USER_AGENT_SHORT', 
-            'DEFAULT_LOCALE', 'DEBUG_LEVEL', 'DBMS','DB_HOST', 
-            'DB_NAME', 'DB_USER', 'DB_PASSWORD', 
+    var $profile_fields = array('USER_AGENT_SHORT',
+            'DEFAULT_LOCALE', 'DEBUG_LEVEL', 'DBMS','DB_HOST',
+            'DB_NAME', 'DB_USER', 'DB_PASSWORD',
             'NAME_SERVER', 'AUTH_KEY', "ROBOT_DESCRIPTION", 'WEB_URI',
-            'USE_MEMCACHE', 'MEMCACHE_SERVERS', 'USE_FILECACHE', 
-            'WORD_SUGGEST', 'CACHE_LINK', 'SIMILAR_LINK', 
+            'USE_MEMCACHE', 'MEMCACHE_SERVERS', 'USE_FILECACHE',
+            'WORD_SUGGEST', 'CACHE_LINK', 'SIMILAR_LINK',
             'IN_LINK', 'IP_LINK', 'SIGNIN_LINK', 'SUBSEARCH_LINK',
             'ROBOT_INSTANCE', "WEB_ACCESS", "RSS_ACCESS", "API_ACCESS",
             'TITLE_WEIGHT','DESCRIPTION_WEIGHT','LINK_WEIGHT',
@@ -62,16 +62,16 @@ class ProfileModel extends Model
     /**
      *  {@inheritdoc}
      */
-    function __construct($db_name = DB_NAME) 
+    function __construct($db_name = DB_NAME)
     {
         parent::__construct($db_name);
     }
 
     /**
-     * Creates a folder to be used to maintain local information about this 
+     * Creates a folder to be used to maintain local information about this
      * instance of the Yioop/SeekQuarry engine
      *
-     * Creates the directory provides as well as subdirectories for crawls, 
+     * Creates the directory provides as well as subdirectories for crawls,
      * locales, logging, and sqlite DBs.
      *
      *  @param string $directory parth and name of directory to create
@@ -82,7 +82,7 @@ class ProfileModel extends Model
         $to_make_dirs = array($directory, "$directory/app",
             "$directory/cache", "$directory/data", "$directory/feeds",
             "$directory/locale", "$directory/log",
-            "$directory/prepare", "$directory/schedules", 
+            "$directory/prepare", "$directory/schedules",
             "$directory/search_filters", "$directory/temp");
         $dir_status = array();
         foreach($to_make_dirs as $dir) {
@@ -101,22 +101,22 @@ class ProfileModel extends Model
     }
 
     /**
-     * Outputs a profile.php  file in the given directory containing profile 
+     * Outputs a profile.php  file in the given directory containing profile
      * data based on new and old data sources
      *
-     * This function creates a profile.php file if it doesn't exist. A given 
+     * This function creates a profile.php file if it doesn't exist. A given
      * field is output in the profile
-     * according to the precedence that a new value is preferred to an old 
-     * value is prefered to the value that comes from a currently defined 
-     * constant. It might be the case that a new value for a given field 
+     * according to the precedence that a new value is preferred to an old
+     * value is prefered to the value that comes from a currently defined
+     * constant. It might be the case that a new value for a given field
      * doesn't exist, etc.
      *
-     * @param string $directory the work directory to output the profile.php 
+     * @param string $directory the work directory to output the profile.php
      *      file
-     * @param array $new_profile_data fields and values containing at least 
+     * @param array $new_profile_data fields and values containing at least
      *      some profile information (only $this->profile_fields
      * fields of $new_profile_data will be considered).
-     * @param array $old_profile_data fields and values that come from 
+     * @param array $old_profile_data fields and values that come from
      *      presumably a previously existing profile
      */
     function updateProfile($directory, $new_profile_data, $old_profile_data)
@@ -124,7 +124,7 @@ class ProfileModel extends Model
         $n = array();
         $n[] = <<<EOT
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
@@ -186,7 +186,7 @@ EOT;
             @chmod("$directory/profile.php", 0777);
             if(isset($new_profile_data['ROBOT_DESCRIPTION'])) {
                 $robot_path = LOCALE_DIR."/".DEFAULT_LOCALE."/pages/bot.thtml";
-                file_put_contents($robot_path, 
+                file_put_contents($robot_path,
                     $new_profile_data['ROBOT_DESCRIPTION']);
                 @chmod("$directory/bot.txt", 0777);
             }
@@ -197,7 +197,7 @@ EOT;
     }
 
     /**
-     * Creates a  directory and sets it to world permission if it doesn't 
+     * Creates a  directory and sets it to world permission if it doesn't
      * aleady exist
      *
      * @param string $directory name of directory to create
@@ -218,7 +218,7 @@ EOT;
 
     /**
      * Check if $dbinfo provided the connection details for a Yioop/SeekQuarry
-     * database. If it does provide a valid db connection but no data then try 
+     * database. If it does provide a valid db connection but no data then try
      * to recreate the database from the default copy stored in /data dir.
      *
      * @param array $dbinfo has fields for DBMS, DB_USER, DB_PASSWORD, DB_HOST
@@ -236,14 +236,14 @@ EOT;
             $auto_increment = "AUTO_INCREMENT";
         }
         if(in_array($dbinfo['DBMS'], array("sqlite"))) {
-            $auto_increment = ""; 
-                /* in sqlite2 a primary key column will act 
+            $auto_increment = "";
+                /* in sqlite2 a primary key column will act
                    as auto_increment if don't give value
                  */
         }
 
-        $tables = array("VERSION", "USER", "USER_SESSION", "TRANSLATION", 
-            "LOCALE", "TRANSLATION_LOCALE", "ROLE", 
+        $tables = array("VERSION", "USER", "USER_SESSION", "TRANSLATION",
+            "LOCALE", "TRANSLATION_LOCALE", "ROLE",
             "ROLE_ACTIVITY", "ACTIVITY", "USER_ROLE", "CURRENT_WEB_INDEX",
             "CRAWL_MIXES", "MIX_GROUPS", "MIX_COMPONENTS", "SUBSEARCH",
             "SUBSEARCH");
@@ -283,8 +283,8 @@ EOT;
             "CREATE TABLE CRON_TIME (TIMESTAMP INT(11))",
             "CREATE TABLE SUBSEARCH (LOCALE_STRING VARCHAR(16) PRIMARY KEY,
                     FOLDER_NAME VARCHAR(16), INDEX_IDENTIFIER CHAR(13))",
-            "CREATE TABLE FEED_ITEM (GUID VARCHAR(11) PRIMARY KEY, 
-                TITLE VARCHAR(512), LINK VARCHAR(256), 
+            "CREATE TABLE FEED_ITEM (GUID VARCHAR(11) PRIMARY KEY,
+                TITLE VARCHAR(512), LINK VARCHAR(256),
                 DESCRIPTION VARCHAR(4096),
                 PUBDATE INT, SOURCE_NAME VARCHAR(16))",
             );
@@ -296,26 +296,26 @@ EOT;
 
         $default_dbm = new Sqlite3Manager();
         $default_dbm->dbhandle = new SQLite3(
-            BASE_DIR."/data/default.db", SQLITE3_OPEN_READWRITE); 
+            BASE_DIR."/data/default.db", SQLITE3_OPEN_READWRITE);
             // a little bit hacky
         if(!$default_dbm->dbhandle) {return false;}
         foreach($tables as $table) {
-            if(!$this->copyTable($table, $default_dbm, $test_dbm)) 
+            if(!$this->copyTable($table, $default_dbm, $test_dbm))
                 {return false;}
         }
         return true;
     }
 
     /**
-     * Checks if $dbinfo provides info to connect to an working instance of 
+     * Checks if $dbinfo provides info to connect to an working instance of
      * app db.
      *
      * @param array $dbinfo has field for DBMS, DB_USER, DB_PASSWORD, DB_HOST
      *      and DB_NAME
-     * @return mixed returns true if can connect to DBMS with username and 
+     * @return mixed returns true if can connect to DBMS with username and
      *      password, can select the given database name and that database
      *      seems to be of Yioop/SeekQuarry type. If the connection works
-     *      but database isn't there it attempts to create it. If the 
+     *      but database isn't there it attempts to create it. If the
      *      database is there but no data, then it returns a resource for
      *      the database. Otherwise, it returns false.
      */
@@ -332,7 +332,7 @@ EOT;
             if(isset($dbinfo['DB_USER'])) {
                 if(isset($dbinfo['DB_PASSWORD'])) {
                     $conn = @$test_dbm->connect(
-                        $dbinfo['DB_HOST'], 
+                        $dbinfo['DB_HOST'],
                         $dbinfo['DB_USER'], $dbinfo['DB_PASSWORD']);
                 } else {
                     $conn = @$test_dbm->connect(
@@ -358,7 +358,7 @@ EOT;
             }
         }
 
-        /* check if need to create db contents. 
+        /* check if need to create db contents.
            We check if any locale exists as proxy for contents being okay
          */
 
@@ -367,7 +367,7 @@ EOT;
         if($result !== false && $test_dbm->fetchArray($result) !== false) {
             return true;
         }
-        
+
         return $test_dbm;
     }
 
@@ -399,7 +399,7 @@ EOT;
     }
 
     /**
-     * Modifies the config.php file so the WORK_DIRECTORY define points at 
+     * Modifies the config.php file so the WORK_DIRECTORY define points at
      * $directory
      *
      * @param string $directory folder that WORK_DIRECTORY should be defined to
@@ -440,7 +440,7 @@ EOT;
         $robot_path = LOCALE_DIR."/".DEFAULT_LOCALE."/pages/bot.thtml";
 
         if(file_exists($robot_path)) {
-            $profile['ROBOT_DESCRIPTION'] = 
+            $profile['ROBOT_DESCRIPTION'] =
                 file_get_contents($robot_path);
         }
 
@@ -448,8 +448,8 @@ EOT;
     }
 
     /**
-     * Finds the first occurrence of define('$defined', something) in $string 
-     * and returns something 
+     * Finds the first occurrence of define('$defined', something) in $string
+     * and returns something
      *
      * @param string $defined the constant being defined
      * @param string $string the haystack string to search in
@@ -457,7 +457,7 @@ EOT;
      */
     function matchDefine($defined, $string)
     {
-        preg_match("/define\((?:\"$defined\"|\'$defined\')\,([^\)]*)\)/", 
+        preg_match("/define\((?:\"$defined\"|\'$defined\')\,([^\)]*)\)/",
             $string, $match);
         $match = (isset($match[1])) ? trim($match[1]) : "";
         $len = strlen($match);

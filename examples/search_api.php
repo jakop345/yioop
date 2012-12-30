@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage examples
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -44,7 +44,7 @@ if(php_sapi_name() != 'cli') {echo "BAD REQUEST"; exit();}
  *  You should change BASE_DIR to the location of the Yioop! directory
  */
 define("BASE_DIR", substr(
-    dirname(realpath($_SERVER['PHP_SELF'])), 0, 
+    dirname(realpath($_SERVER['PHP_SELF'])), 0,
     -strlen("/examples")));
 
 
@@ -64,7 +64,7 @@ if(!PROFILE) {
  * but a crawl into the WORK_DIRECTORY and that would be used to make the
  * query.
  */
-if(!file_exists(BASE_DIR."/examples/Archive1317414322.zip") || 
+if(!file_exists(BASE_DIR."/examples/Archive1317414322.zip") ||
    !file_exists(BASE_DIR."/examples/IndexData1317414322.zip")) {
    echo "\nSearch API test index doesn't exist, so can't run demo\n\n";
    exit();
@@ -103,7 +103,7 @@ if(USE_FILECACHE) {
 /* +++++ */
 
 // from here till ###### is boiler-plate you would need to set up a query
-/** 
+/**
     Loads common constants for web crawling --
     we use these constants to get data out of the search response
     we get back.
@@ -139,29 +139,29 @@ $controller = new SearchController($indexing_plugins);
  */
 echo "\n\n\nAn example of a query request with the search API:\n";
 
-$query = "art i:1317414322"; 
+$query = "art i:1317414322";
     /* i:1317414322 is the timestamp of the index to use.
        API requires that a default index be set even though the query might
        specify to use a different one. The query string we pass to the
        API can be anything you can type into Yioop! search box.
      */
 $num_results = 10; // how many results to get back
-$first_result_to_return = 0; 
+$first_result_to_return = 0;
     // what ranked results show be the first to be returned (0 = highest ranked)
-$data = $controller->queryRequest($query, $num_results, 
+$data = $controller->queryRequest($query, $num_results,
     $first_result_to_return);
 outputQueryData($data);
 
-/* 
+/*
    next we do a related search (as our index only has one page in it)
    the only related page is the page itself
  */
 echo "\n\n\nAn example of making a related query request with the search API\n";
 $url = "http://www.ucanbuyart.com/";
 $num_results = 10; // how many results to get back
-$first_result_to_return = 0; 
+$first_result_to_return = 0;
 $index_timestamp = "1317414322";
-$data = $controller->relatedRequest($url, $num_results, 
+$data = $controller->relatedRequest($url, $num_results,
     $first_result_to_return, $index_timestamp);
 outputQueryData($data);
 
@@ -175,7 +175,7 @@ $url = "http://www.ucanbuyart.com/";
 $highlight = true; // says to color the search terms
 $search_terms = "art classifieds"; // these words will be highlighted
 $index_timestamp = "1317414322";
-$data = $controller->cacheRequest($url, $highlight, 
+$data = $controller->cacheRequest($url, $highlight,
     $search_terms, $index_timestamp);
 echo $data;
 
@@ -212,20 +212,20 @@ function outputQueryData($data) {
     echo "QUERY STATISTICS\n";
     echo "============\n";
     echo "LOW: ".$data['LIMIT']."\n";
-    echo "HIGH: ".min($data['TOTAL_ROWS'], 
+    echo "HIGH: ".min($data['TOTAL_ROWS'],
         $data['LIMIT'] + $data['RESULTS_PER_PAGE'])."\n";
     echo "TOTAL ROWS: ".$data['TOTAL_ROWS']."\n";
 }
 
 /**
- * Recursively delete a directory 
+ * Recursively delete a directory
  *
  * @param string $dir Directory name
  * @param boolean $deleteRootToo Delete specified top directory as well
  */
-function unlinkRecursive($dir, $deleteRootToo = true) 
+function unlinkRecursive($dir, $deleteRootToo = true)
 {
-    traverseDirectory($dir, "deleteFileOrDir", $deleteRootToo); 
+    traverseDirectory($dir, "deleteFileOrDir", $deleteRootToo);
 }
 
 /**
@@ -236,7 +236,7 @@ function unlinkRecursive($dir, $deleteRootToo = true)
  * @param boolean $rootToo do op on top-level directory as well
  */
 
-function traverseDirectory($dir, $callback, $rootToo = true) 
+function traverseDirectory($dir, $callback, $rootToo = true)
 {
     if(!$dh = @opendir($dir)) {
         return;

@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage element
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -47,49 +47,49 @@ class EditlocalesElement extends Element
 {
 
     /**
-     * Draws a form with strings to translate and a text field for the 
+     * Draws a form with strings to translate and a text field for the
      * translation into
      * the given locale. Strings with no translations yet appear in red
      *
      * @param array $data  contains msgid and already translated msg_string info
      */
-    public function render($data) 
+    function render($data)
     {
     ?>
         <div class="currentactivity">
         <div class="<?php e($data['leftorright']);?>">
-        <a href="?c=admin&amp;a=manageLocales&amp;<?php 
+        <a href="?c=admin&amp;a=manageLocales&amp;<?php
             e(CSRF_TOKEN."=".$data[CSRF_TOKEN]) ?>"
         ><?php e(tl('editlocales_element_back_to_manage'))?></a>
         </div>
-        <h2><?php e(tl('editlocales_element_edit_locale', 
+        <h2><?php e(tl('editlocales_element_edit_locale',
             $data['CURRENT_LOCALE_NAME']))?></h2>
         <?php if(count($data['STATIC_PAGES']) > 1) {?>
         <form id="staticPageForm" method="post" action='?'>
         <input type="hidden" name="c" value="admin" />
-        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php 
+        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="manageLocales" />
         <input type="hidden" name="arg" value="editlocale" />
-        <input type="hidden" name="selectlocale" value="<?php 
+        <input type="hidden" name="selectlocale" value="<?php
             e($data['CURRENT_LOCALE_TAG']); ?>" />
-        <div class="topmargin"><b><label for="static-pages"><?php 
+        <div class="topmargin"><b><label for="static-pages"><?php
             e(tl('editlocales_element_static_pages'))?></label></b>
-            <?php $this->view->optionsHelper->render("static-pages", 
-            "static_page", $data['STATIC_PAGES'], -1); 
+            <?php $this->view->optionsHelper->render("static-pages",
+            "static_page", $data['STATIC_PAGES'], -1);
             ?></div>
         </form>
         <?php }?>
         <form id="editLocaleForm" method="post" action='?'>
         <input type="hidden" name="c" value="admin" />
-        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php 
+        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="manageLocales" />
         <input type="hidden" name="arg" value="editlocale" />
-        <input type="hidden" name="selectlocale" value="<?php 
+        <input type="hidden" name="selectlocale" value="<?php
             e($data['CURRENT_LOCALE_TAG']); ?>" />
         <table class="translatetable">
-        <?php 
+        <?php
         foreach($data['STRINGS'] as $msg_id => $msg_string) {
             if(strlen($msg_string) > 0) {
                 e("<tr><td><label for='$msg_id'>$msg_id</label>".
@@ -106,8 +106,8 @@ class EditlocalesElement extends Element
         }
         ?>
         </table>
-        <div class="center slightpad"><button class="buttonbox" 
-            type="submit"><?php 
+        <div class="center slightpad"><button class="buttonbox"
+            type="submit"><?php
                 e(tl('editlocales_element_submit')); ?></button></div>
         </form>
         </div>

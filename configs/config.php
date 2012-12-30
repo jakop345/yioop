@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -29,7 +29,7 @@
  * @subpackage configs
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
@@ -61,7 +61,7 @@ if(MAINTENANCE_MODE && $_SERVER["SERVER_ADDR"] != $_SERVER["REMOTE_ADDR"]) {
 }
 
 if(!defined('WORK_DIRECTORY')) {
-/*+++ The next block of code is machine edited, change at 
+/*+++ The next block of code is machine edited, change at
 your own risk, please use configure web page instead +++*/
 define('WORK_DIRECTORY', '/Applications/XAMPP/xamppfiles/htdocs/git/yioop_data');
 /*++++++*/
@@ -73,7 +73,7 @@ define('PREP_DIR', WORK_DIRECTORY."/prepare");
 
 define('FALLBACK_LOCALE_DIR', BASE_DIR."/locale");
 
-/** name of the cookie used to manage the session 
+/** name of the cookie used to manage the session
  * (store language and perpage settings), define CSRF token
  */
 define ('SESSION_NAME', "yioopbiscuit");
@@ -99,7 +99,7 @@ if(file_exists(WORK_DIRECTORY."/profile.php")) {
 } else {
     if((!isset( $_SERVER['SERVER_NAME'])||$_SERVER['SERVER_NAME']!=='localhost')
         && !defined("NO_LOCAL_CHECK") && php_sapi_name() != 'cli' ) {
-        echo "SERVICE AVAILABLE ONLY VIA LOCALHOST UNTIL CONFIGURED"; 
+        echo "SERVICE AVAILABLE ONLY VIA LOCALHOST UNTIL CONFIGURED";
         exit();
     }
     error_reporting(-1);
@@ -166,7 +166,7 @@ define('QUERY_STATISTICS', ((DEBUG_LEVEL & QUERY_INFO) == QUERY_INFO));
 //check if mobile css and formatting should be used or not
 if(isset($_SERVER['HTTP_USER_AGENT'])) {
     $agent = $_SERVER['HTTP_USER_AGENT'];
-    if((stristr($agent, "mobile") || stristr($agent, "fennec")) && 
+    if((stristr($agent, "mobile") || stristr($agent, "fennec")) &&
         !stristr($agent, "ipad") ) {
         define("MOBILE", true);
     } else {
@@ -181,10 +181,10 @@ if(!PROFILE) {
 }
 /*+++ End machine generated code, feel free to edit the below as desired +++*/
 
-/** this is the User-Agent names the crawler provides 
+/** this is the User-Agent names the crawler provides
  * a web-server it is crawling
  */
-define('USER_AGENT', 
+define('USER_AGENT',
     'Mozilla/5.0 (compatible; '.USER_AGENT_SHORT.'; +'.NAME_SERVER.'bot.php)');
 
 
@@ -203,32 +203,32 @@ if(USE_MEMCACHE) {
 }
 
 /** maximum size of a log file before it is rotated */
-define("MAX_LOG_FILE_SIZE", 5000000); 
+define("MAX_LOG_FILE_SIZE", 5000000);
 
 /** number of log files to rotate amongst */
-define("NUMBER_OF_LOG_FILES", 5); 
+define("NUMBER_OF_LOG_FILES", 5);
 
 /**
- * how long in seconds to keep a cache of a robot.txt 
+ * how long in seconds to keep a cache of a robot.txt
  * file before re-requesting it
  */
-define('CACHE_ROBOT_TXT_TIME', 86400); 
+define('CACHE_ROBOT_TXT_TIME', 86400);
 
 /**
- * if the robots.txt has a Crawl-delay larger than this 
+ * if the robots.txt has a Crawl-delay larger than this
  * value don't crawl the site.
  * maximum value for this is 255
  */
 define('MAXIMUM_CRAWL_DELAY', 64);
 
 /** maximum number of active crawl-delayed hosts */
-define('MAX_WAITING_HOSTS', 250); 
+define('MAX_WAITING_HOSTS', 250);
 
- 
-/** 
- * bloom filters are used to keep track of which urls are visited, 
+
+/**
+ * bloom filters are used to keep track of which urls are visited,
  * this parameter determines up to how many
- * urls will be stored in a single filter. Additional filters are 
+ * urls will be stored in a single filter. Additional filters are
  * read to and from disk.
  */
 define('URL_FILTER_SIZE', 20000000);
@@ -237,7 +237,7 @@ define('URL_FILTER_SIZE', 20000000);
  * maximum number of urls that will be held in ram
  * (as opposed to in files) in the priority queue
  */
-define('NUM_URLS_QUEUE_RAM', 300000); 
+define('NUM_URLS_QUEUE_RAM', 300000);
 
 /** Minimum weight in priority queue before rebuilt*/
 define('MIN_QUEUE_WEIGHT', 1/100000);
@@ -251,13 +251,13 @@ define('MAX_ARCHIVE_OBJECT_SIZE', 100000000);
 define('NUM_DOCS_PER_GENERATION', 50000);
 
 /** precision to round floating points document scores */
-define('PRECISION', 10); 
+define('PRECISION', 10);
 
 /** maximum number of links to consider on any given page */
-define('MAX_LINKS_PER_PAGE', 50); 
+define('MAX_LINKS_PER_PAGE', 50);
 
 /** maximum number of links to consider from a sitemap page */
-define('MAX_LINKS_PER_SITEMAP', 200); 
+define('MAX_LINKS_PER_SITEMAP', 200);
 
 /**  maximum number of words from links to consider on any given page */
 define('MAX_LINKS_WORD_TEXT', 100);
@@ -268,26 +268,26 @@ define('MAX_LINKS_WORD_TEXT', 100);
  *   text_processors need to promise to implement this check or rely
  *   on the base class which does implement it in extractHttpHttpsUrls
  */
-define('MAX_URL_LENGTH', 512); 
+define('MAX_URL_LENGTH', 512);
 
 /** request this many bytes out of a page -- this is the default value to
-    use if the user doesn't set this value in the page options GUI 
+    use if the user doesn't set this value in the page options GUI
  */
 define('PAGE_RANGE_REQUEST', 50000);
 
-/** 
-    Allow pages to be recrawled after this many days -- this is the 
-    default value to use if the user doesn't set this value in the page options 
+/**
+    Allow pages to be recrawled after this many days -- this is the
+    default value to use if the user doesn't set this value in the page options
     GUI. What this controls is how often the page url filter is deleted.
     A nonpositive value means the filter will never be deleted.
  */
 define('PAGE_RECRAWL_FREQUENCY', -1);
 
 /** maximum length +1 exact phrase matches */
-define('MAX_PHRASE_LEN', 2); 
+define('MAX_PHRASE_LEN', 2);
 
 /** number of multi curl page requests in one go */
-define('NUM_MULTI_CURL_PAGES', 100); 
+define('NUM_MULTI_CURL_PAGES', 100);
 
 /** number of pages to extract from an archive in one go */
 define('ARCHIVE_BATCH_SIZE', 100);
@@ -314,14 +314,14 @@ define('ERROR_CRAWL_DELAY', 20);
 
 
 /** how often should we make in OPIC the sum of weights totals MAX_URLS */
-define('NORMALIZE_FREQUENCY', 10000); 
+define('NORMALIZE_FREQUENCY', 10000);
 
 /**
- * @global array file extensions which can be handled by the search engine, 
+ * @global array file extensions which can be handled by the search engine,
  * other extensions will be ignored
  */
 $INDEXED_FILE_TYPES =
-    array(  
+    array(
             "asp",
             "aspx",
             "bmp",
@@ -360,10 +360,10 @@ $INDEXED_FILE_TYPES =
 $IMAGE_TYPES = array("gif","jpg", "bmp", "png", "jpeg", "svg");
 
 /**
- * @global array associates mimetypes that can be processed by the search 
+ * @global array associates mimetypes that can be processed by the search
  * engine with the processor class that can process them
  */
-$PAGE_PROCESSORS = array(   "text/html" => "HtmlProcessor", 
+$PAGE_PROCESSORS = array(   "text/html" => "HtmlProcessor",
                             "text/asp" => "HtmlProcessor",
                             "text/xml" => "XmlProcessor",
                             "text/robot" => "RobotProcessor",
@@ -372,7 +372,7 @@ $PAGE_PROCESSORS = array(   "text/html" => "HtmlProcessor",
                             "application/xhtml+xml" => "HtmlProcessor",
 
                             "application/rss+xml" => "RssProcessor",
-                            
+
                             "application/pdf" => "PdfProcessor",
 
                             "application/msword" => "DocProcessor",
@@ -384,11 +384,11 @@ $PAGE_PROCESSORS = array(   "text/html" => "HtmlProcessor",
                                 spreadsheetml.sheet" => "XlsxProcessor",
 
                             "text/rtf" => "RtfProcessor",
-                            "text/plain" => "TextProcessor", 
+                            "text/plain" => "TextProcessor",
                             "text/csv" => "TextProcessor",
                             "text/tab-separated-values" => "TextProcessor",
                             "image/jpeg" => "JpgProcessor",
-                            "image/gif" => "GifProcessor", 
+                            "image/gif" => "GifProcessor",
                             "image/png" => "PngProcessor",
                             "image/bmp" => "BmpProcessor",
                             "image/svg+xml"=> "SvgProcessor"
@@ -405,14 +405,14 @@ $MOD9_PACK_POSSIBILITIES = array(
     2,  1,  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
     1, 1, 1, 1);
 
-$MOD9_NUM_ELTS_CODES = array( 
+$MOD9_NUM_ELTS_CODES = array(
     24 => 63, 12 => 62, 7 => 60, 6 => 56, 5 => 52, 4 => 48, 3 => 32,
     2 => 16, 1 => 0);
 
 $MOD9_NUM_BITS_CODES = array( 63 => 1, 62 => 2, 60 => 3, 56 => 4, 52 => 5,
     48 => 6, 32 => 9, 16 => 14, 0 => 28);
 
-$MOD9_NUM_ELTS_DECODES = array( 
+$MOD9_NUM_ELTS_DECODES = array(
     63 => 24, 62 => 12, 60=> 7, 56 => 6, 52 => 5, 48 => 4, 32 => 3,
     16 => 2, 0 => 1);
 
@@ -443,10 +443,10 @@ define ('SEEN_URLS_BEFORE_UPDATE_SCHEDULER', 500);
 define ('MAX_FETCH_SIZE', 5000);
 
 /** fetcher must wait at least this long between multi-curl requests */
-define ('MINIMUM_FETCH_LOOP_TIME', 5); 
+define ('MINIMUM_FETCH_LOOP_TIME', 5);
 
 /** an idling fetcher sleeps this long between queue_server pings*/
-define ('FETCH_SLEEP_TIME', 15); 
+define ('FETCH_SLEEP_TIME', 15);
 
 /** an a queue_server minimum loop idle time*/
 define ('QUEUE_SLEEP_TIME', 5);
@@ -457,7 +457,7 @@ define ('MIRROR_SYNC_FREQUENCY', 3600);
 is still alive*/
 define ('MIRROR_NOTIFY_FREQUENCY', 60);
 
-/** Max time before dirty index (queue_server) and 
+/** Max time before dirty index (queue_server) and
     filters (fetcher) will be force saved in seconds*/
 define('FORCE_SAVE_TIME', 3600);
 
@@ -465,11 +465,11 @@ define('FORCE_SAVE_TIME', 3600);
 define("CRAWL_TIME_OUT", 1800);
 
 /** maximum number of terms allowed in a conjunctive search query */
-define ('MAX_QUERY_TERMS', 10); 
+define ('MAX_QUERY_TERMS', 10);
 
 /** default number of search results to display per page */
-define ('NUM_RESULTS_PER_PAGE', 10); 
+define ('NUM_RESULTS_PER_PAGE', 10);
 
 /** Number of recently crawled urls to display on admin screen */
-define ('NUM_RECENT_URLS_TO_DISPLAY', 10); 
+define ('NUM_RECENT_URLS_TO_DISPLAY', 10);
 ?>

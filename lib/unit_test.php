@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage test
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -60,7 +60,7 @@ abstract class UnitTest
      * Contructor should be overriden to do any set up that occurs before
      * and test cases
      */
-    public function __construct()
+    function __construct()
     {
     }
 
@@ -68,7 +68,7 @@ abstract class UnitTest
      * Execute each of the test cases of this unit test and return the results
      * @return array test case results
      */
-    public function run()
+    function run()
     {
 
         $test_results = array();
@@ -77,7 +77,7 @@ abstract class UnitTest
             $this->test_objects = NULL;
             $this->setUp();
             $len = strlen($method);
-            
+
             if(substr_compare(
                 $method, self::case_name, $len - strlen(self::case_name)) == 0){
                 $this->test_case_results = array();
@@ -93,11 +93,11 @@ abstract class UnitTest
     /**
      * Checks that $x can coerced to true, the result of the
      * test is added to $this->test_case_results
-     * 
+     *
      * @param mixed $x item to check
      * @param string $description information about this test subcase
      */
-    public function assertTrue($x, $description = "")
+    function assertTrue($x, $description = "")
     {
         $sub_case_num = count($this->test_case_results);
         $test = array();
@@ -113,11 +113,11 @@ abstract class UnitTest
     /**
      * Checks that $x can coerced to false, the result of the
      * test is added to $this->test_case_results
-     * 
+     *
      * @param mixed $x item to check
      * @param string $description information about this test subcase
      */
-    public function assertFalse($x, $description = "")
+    function assertFalse($x, $description = "")
     {
         $sub_case_num = count($this->test_case_results);
         $test = array();
@@ -138,7 +138,7 @@ abstract class UnitTest
      * @param mixed $y a second item to compare
      * @param string $description information about this test subcase
      */
-    public function assertEqual($x, $y, $description = "")
+    function assertEqual($x, $y, $description = "")
     {
         $sub_case_num = count($this->test_case_results);
         $test = array();
@@ -159,7 +159,7 @@ abstract class UnitTest
      * @param mixed $y a second item to compare
      * @param string $description information about this test subcase
      */
-    public function assertNotEqual($x, $y, $description = "")
+    function assertNotEqual($x, $y, $description = "")
     {
         $sub_case_num = count($this->test_case_results);
         $test = array();
@@ -176,12 +176,12 @@ abstract class UnitTest
      * This method is called before each test case is run to set up the
      * given test case
      */
-    abstract public function setUp();
+    abstract function setUp();
 
     /**
      * This method is called after each test case is run to clean up
      */
-    abstract public function tearDown();
+    abstract function tearDown();
 
 }
 ?>

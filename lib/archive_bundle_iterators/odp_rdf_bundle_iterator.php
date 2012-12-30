@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,22 +27,22 @@
  * @subpackage iterator
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
-/** 
+/**
  *Loads base class for iterating
  */
 require_once BASE_DIR.
     '/lib/archive_bundle_iterators/archive_bundle_iterator.php';
 
 /**
- * Used to iterate through the records of a collection of one or more open 
+ * Used to iterate through the records of a collection of one or more open
  * directory RDF files stored in a WebArchiveBundle folder. Open Directory
- * file can be found at http://rdf.dmoz.org/ .  Iteration would be 
+ * file can be found at http://rdf.dmoz.org/ .  Iteration would be
  * for the purpose making an index of these records
  *
  * @author Chris Pollett
@@ -50,11 +50,11 @@ require_once BASE_DIR.
  * @subpackage iterator
  * @see WebArchiveBundle
  */
-class OdpRdfArchiveBundleIterator extends ArchiveBundleIterator 
+class OdpRdfArchiveBundleIterator extends ArchiveBundleIterator
     implements CrawlConstants
 {
     /**
-     * The path to the directory containing the archive partitions to be 
+     * The path to the directory containing the archive partitions to be
      * iterated over.
      * @var string
      */
@@ -70,7 +70,7 @@ class OdpRdfArchiveBundleIterator extends ArchiveBundleIterator
      */
     var $num_partitions;
     /**
-     *  Counting in glob order for this odp rdf archive bundle directory, the 
+     *  Counting in glob order for this odp rdf archive bundle directory, the
      *  current active file number of the file being processed.
      *  @var int
      */
@@ -116,7 +116,7 @@ class OdpRdfArchiveBundleIterator extends ArchiveBundleIterator
     /**
      * Creates an open directory rdf archive iterator with the given parameters.
      *
-     * @param string $iterate_timestamp timestamp of the arc archive bundle to 
+     * @param string $iterate_timestamp timestamp of the arc archive bundle to
      *      iterate  over the pages of
      * @param string $result_timestamp timestamp of the arc archive bundle
      *      results are being stored in
@@ -129,7 +129,7 @@ class OdpRdfArchiveBundleIterator extends ArchiveBundleIterator
         $this->result_timestamp = $result_timestamp;
         $this->result_dir = $result_dir;
         $this->partitions = array();
-        foreach(glob("{$this->iterate_dir}/*.gz") as $filename) { 
+        foreach(glob("{$this->iterate_dir}/*.gz") as $filename) {
             $this->partitions[] = $filename;
         }
         $this->num_partitions = count($this->partitions);
@@ -180,7 +180,7 @@ class OdpRdfArchiveBundleIterator extends ArchiveBundleIterator
      * contents after the close tag.
      *
      * @param array $tags array of tagnames to look for
-     * 
+     *
      * @return string data start tag contents close tag of first tag found
      */
     function getNextTagsData($tags)
@@ -235,7 +235,7 @@ class OdpRdfArchiveBundleIterator extends ArchiveBundleIterator
     }
 
     /**
-     * Gets the value of the attribute $attribute for each dom node 
+     * Gets the value of the attribute $attribute for each dom node
      * satisfying the xpath expression $path in the dom document $dom
      *
      * @param object $dom DOMDocument to get the text from
@@ -261,7 +261,7 @@ class OdpRdfArchiveBundleIterator extends ArchiveBundleIterator
     }
 
     /**
-     * Gets the value of the attribute $attribute of the first dom node 
+     * Gets the value of the attribute $attribute of the first dom node
      * satisfying the xpath expression $path in the dom document $dom
      *
      * @param object $dom DOMDocument to get the text from
@@ -304,7 +304,7 @@ class OdpRdfArchiveBundleIterator extends ArchiveBundleIterator
     }
 
     /**
-     * Reads the next at most $num many wiki pages from the iterator. It might 
+     * Reads the next at most $num many wiki pages from the iterator. It might
      * return less than $num many documents if the partition changes or the end
      * of the bundle is reached.
      *
@@ -347,7 +347,7 @@ class OdpRdfArchiveBundleIterator extends ArchiveBundleIterator
         return $pages;
     }
 
-    
+
     /**
      * Gets the next doc from the iterator
      * @return array associative array for doc
@@ -382,14 +382,14 @@ class OdpRdfArchiveBundleIterator extends ArchiveBundleIterator
         $site[self::SERVER_VERSION] = "unknown";
         $site[self::OPERATING_SYSTEM] = "unknown";
         $this->$processMethod($dom, $site);
- 
+
         $site[self::HASH] = FetchUrl::computePageHash($site[self::PAGE]);
 
         return $site;
     }
 
     /**
-     *  Computes an HTML page for a Topic tag parsed from the ODP RDF 
+     *  Computes an HTML page for a Topic tag parsed from the ODP RDF
      *  document
      *
      *  @param object $dom document object for one Topic tag tag
@@ -405,13 +405,13 @@ class OdpRdfArchiveBundleIterator extends ArchiveBundleIterator
         $title = str_replace("/", " ", $topic_path);
         $links = $this->computeTopicLinks($topic_path);
 
-        $topic_link1 = $this->getAttributeValue($dom, "/Topic/link1", 
+        $topic_link1 = $this->getAttributeValue($dom, "/Topic/link1",
             "resource");
         if($topic_link1) {
             $links[$topic_link1] = $topic_link1." - ".$title;
         }
 
-        $topic_links = $this->getAttributeValueAll($dom, "/Topic/link", 
+        $topic_links = $this->getAttributeValueAll($dom, "/Topic/link",
             "resource");
         if($topic_links != NULL) {
             foreach($topic_links as $topic_link) {
@@ -427,7 +427,7 @@ class OdpRdfArchiveBundleIterator extends ArchiveBundleIterator
     }
 
     /**
-     *  Computes an HTML page for an ExternalPage tag parsed from the ODP RDF 
+     *  Computes an HTML page for an ExternalPage tag parsed from the ODP RDF
      *  document
      *
      *  @param object $dom document object for one Topic tag tag
@@ -436,7 +436,7 @@ class OdpRdfArchiveBundleIterator extends ArchiveBundleIterator
      */
     function processExternalPage($dom, &$site)
     {
-        $site[self::URL] = $this->getAttributeValue($dom, 
+        $site[self::URL] = $this->getAttributeValue($dom,
             "/ExternalPage", "about");
 
         $topic_path = $this->getTextContent($dom, "/ExternalPage/topic");
@@ -466,7 +466,7 @@ class OdpRdfArchiveBundleIterator extends ArchiveBundleIterator
         $links = array();
         $topic_parts = explode("/", $topic_path);
         $path = "";
-        
+
         foreach($topic_parts as $part){
             $path .= "/$part";
             $links[$this->header['base_address'].$path] = $part;
@@ -481,7 +481,7 @@ class OdpRdfArchiveBundleIterator extends ArchiveBundleIterator
      *  @param array $links url=>link_text pairs
      *  @return string containing html for unorderlisted list of links
      */
-    function linksToHtml($links) 
+    function linksToHtml($links)
     {
         $html = "";
         if(count($links) > 0) {

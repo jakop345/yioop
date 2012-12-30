@@ -3,7 +3,7 @@
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -31,7 +31,7 @@
  * @package seek_quarry
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -83,7 +83,7 @@ require_once BASE_DIR."/lib/locale_functions.php";
  * Load global functions related to checking Yioop! version
  */
 require_once BASE_DIR."/lib/upgrade_functions.php";
- 
+
 /**
  * Load FileCache class in case used
  */
@@ -198,7 +198,5 @@ function checkAllowedController($controller_name)
 
     return in_array($controller_name, $available_controllers) ;
 }
-
-
 
 ?>

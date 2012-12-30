@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage view
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -41,7 +41,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @author Chris Pollett
  * @package seek_quarry
  * @subpackage view
- */ 
+ */
 
 class NocacheView extends View
 {
@@ -49,7 +49,7 @@ class NocacheView extends View
      *  @var string
      */
     var $layout = "web";
-    /** Names of element objects that the view uses to display itself 
+    /** Names of element objects that the view uses to display itself
      *  @var array
      */
     var $elements = array("language");
@@ -61,7 +61,7 @@ class NocacheView extends View
      *  @param array $data   at this point this view does not make
      *  use of the $data info passed to it.
      */
-    public function renderView($data) {
+    function renderView($data) {
         ?>
         <h1><?php e(tl('nocache_view_no_cache')); ?></h1>
         <?php if(isset($data["SUMMARY_STRING"])) {?>

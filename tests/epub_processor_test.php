@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,21 +27,21 @@
  * @subpackage test
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- *  Load search engine-wide configuration file 
+ *  Load search engine-wide configuration file
  */
 require_once BASE_DIR.'/configs/config.php';
 
-/** 
+/**
  *  Load the EpubProcessor class we are going to test
  */
-require_once BASE_DIR."/lib/processors/epub_processor.php"; 
+require_once BASE_DIR."/lib/processors/epub_processor.php";
 
 /**
  *  Load the base unit test class
@@ -53,24 +53,24 @@ require_once BASE_DIR."/lib/unit_test.php";
  */
  require_once BASE_DIR."/lib/crawl_constants.php";
 /**
- * UnitTest for the EpubProcessor class. An EpubProcessor is used to process 
- * a .epub (ebook publishing standard) file and extract summary from it. This 
+ * UnitTest for the EpubProcessor class. An EpubProcessor is used to process
+ * a .epub (ebook publishing standard) file and extract summary from it. This
  * class tests the processing of an .epub file format by EpubProcessor.
- * 
+ *
  *
  * @author Vijeth Patil
  * @package seek_quarry
  * @subpackage test
  */
- 
+
 class EpubProcessorTest extends UnitTest implements CrawlConstants
 {
     /**
      * Creates a new EpubProcessor object so that
      * we can process an .epub format file.
      */
-     
-    public function setUp()
+
+    function setUp()
     {
         $epub_object = new EpubProcessor();
         $url = "http://www.yioop.com/TestEpubYioop.epub";
@@ -83,15 +83,15 @@ class EpubProcessorTest extends UnitTest implements CrawlConstants
     /**
      * Delete any files associated with our test on EpubProcessor
      */
-    public function tearDown()
+    function tearDown()
     {
     }
-    
+
     /**
      * Test case to check whether the title of the epub document
      * is retrieved correctly.
-     */ 
-    public function testEpubTitleTestCase()
+     */
+    function testEpubTitleTestCase()
     {
         $m = $this->test_objects['summary'];
         $x = $m[self::TITLE];
@@ -99,12 +99,12 @@ class EpubProcessorTest extends UnitTest implements CrawlConstants
         $description = "Test Passed with correct title";
         $this->assertEqual($x, $correct_title,$description);
     }
-    
+
     /**
-     * Test case to check whether the language of the document is 
+     * Test case to check whether the language of the document is
      * retrieved correctly.
      */
-    public function testEpubLangTestCase()
+    function testEpubLangTestCase()
     {
         $m = $this->test_objects['summary'] ;
         $x = $m[self::LANG];
@@ -112,12 +112,12 @@ class EpubProcessorTest extends UnitTest implements CrawlConstants
         $description = "Test Passed with correct Language";
         $this->assertEqual($x, $correct_language,$description);
     }
-    
+
     /**
-     * Test case to check whether the description of the document is 
+     * Test case to check whether the description of the document is
      * not empty.
      */
-    public function testEpubDescriptionTestCase()
+    function testEpubDescriptionTestCase()
     {
         $m = $this->test_objects['summary'] ;
         $x = $m[self::DESCRIPTION];

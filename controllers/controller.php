@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage controller
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -36,7 +36,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 /**
  * Load crawlHash function
  */
-require_once BASE_DIR."/lib/utility.php"; 
+require_once BASE_DIR."/lib/utility.php";
 
 /**
  * Base controller class for all controllers on
@@ -46,16 +46,16 @@ require_once BASE_DIR."/lib/utility.php";
  * @package seek_quarry
  * @subpackage controller
  */
-abstract class Controller 
+abstract class Controller
 {
     /**
-     * Array of the model classes used by this controller 
+     * Array of the model classes used by this controller
      * (contructor loads these)
      * @var array
      */
     var $models = array();
     /**
-     * Array of the view classes used by this controller 
+     * Array of the view classes used by this controller
      * (contructor loads these)
      * @var array
      */
@@ -67,7 +67,7 @@ abstract class Controller
      */
     var $indexing_plugins = array();
 
-    public function __construct($indexing_plugins = array()) 
+    function __construct($indexing_plugins = array())
     {
 
         require_once BASE_DIR."/models/model.php";
@@ -127,7 +127,7 @@ abstract class Controller
      *  @param string $view   the name of the view to draw
      *  @param array $data   an array of values to use in drawing the view
      */
-    public function displayView($view, $data) 
+    function displayView($view, $data)
     {
         $view_name = ucfirst($view)."View";
         $view_instance_name = lcfirst($view_name);
@@ -139,11 +139,11 @@ abstract class Controller
             $data['QUERY_STATISTICS'] = array();
             $machine =  isset($_SERVER["HTTP_HOST"]) ?
                 htmlentities($_SERVER["HTTP_HOST"]) : "localhost";
-            $machine_uri = isset($_SERVER['REQUEST_URI']) ? 
+            $machine_uri = isset($_SERVER['REQUEST_URI']) ?
                 htmlentities($_SERVER['REQUEST_URI']) : "/";
             $protocol = (isset($_SERVER["HTTPS"])) ? "https://" : "http://";
             if($machine == '::1') { //IPv6 :(
-                $machine = "[::1]/"; 
+                $machine = "[::1]/";
                 //used if the fetching and queue serving were on the same machine
             }
             $data['YIOOP_INSTANCE'] = $protocol . $machine . $machine_uri;
@@ -153,30 +153,30 @@ abstract class Controller
                 $model_instance_name = lcfirst($model_name);
                 $data['QUERY_STATISTICS'] = array_merge(
                     $this->$model_instance_name->db->query_log,
-                    $data['QUERY_STATISTICS'] 
+                    $data['QUERY_STATISTICS']
                     );
-                $data['TOTAL_ELAPSED_TIME'] += 
+                $data['TOTAL_ELAPSED_TIME'] +=
                     $this->$model_instance_name->db->total_time;
             }
             $locale_info = getLocaleQueryStatistics();
             $data['QUERY_STATISTICS'] = array_merge(
                     $locale_info['QUERY_LOG'],
-                    $data['QUERY_STATISTICS'] 
+                    $data['QUERY_STATISTICS']
                     );
-            $data['TOTAL_ELAPSED_TIME'] += 
+            $data['TOTAL_ELAPSED_TIME'] +=
                     $locale_info['TOTAL_ELAPSED_TIME'];
         }
-        $this->$view_instance_name->render($data); 
+        $this->$view_instance_name->render($data);
     }
 
     /**
-     * Generates a cross site request forgery preventing token based on the 
+     * Generates a cross site request forgery preventing token based on the
      * provided user name, the current time and the hidden AUTH_KEY
      *
      * @param string $user   username to use to generate token
      * @return string   a csrf token
      */
-    public function generateCSRFToken($user)
+    function generateCSRFToken($user)
     {
         $time = time();
         return crawlHash($user.$time.AUTH_KEY)."|$time";
@@ -190,13 +190,13 @@ abstract class Controller
      * @param string $user  username
      * @return bool  whether the CSRF token was valid
      */
-    public function checkCSRFToken($token_name, $user)
+    function checkCSRFToken($token_name, $user)
     {
         $token_okay = false;
-        if(isset($_REQUEST[$token_name]) && 
+        if(isset($_REQUEST[$token_name]) &&
             strlen($_REQUEST[$token_name]) == 22) {
             $token_parts = explode("|", $_REQUEST[$token_name]);
-            if($token_parts[1] + 3600 > time() && 
+            if($token_parts[1] + 3600 > time() &&
                 crawlHash($user.$token_parts[1].AUTH_KEY) == $token_parts[0]) {
                 $token_okay = true;
             }
@@ -210,15 +210,15 @@ abstract class Controller
      *
      * @param mixed $value tainted data
      * @param string $type type of data in value: one of int, hash, or string
-     * @param mixed $default if $value is not set default value is returned, 
-     *      this isn't used much since if the error_reporting is E_ALL 
+     * @param mixed $default if $value is not set default value is returned,
+     *      this isn't used much since if the error_reporting is E_ALL
      *      or -1 you would still get a Notice.
      * @return string the clean input matching the type provided
      */
-    public function clean($value, $type, $default = NULL) 
+    function clean($value, $type, $default = NULL)
     {
         $clean_value = NULL;
-        switch($type) 
+        switch($type)
         {
             case "boolean":
             case "bool":
@@ -268,7 +268,7 @@ abstract class Controller
 
             case "hash";
                 if(isset($value)) {
-                    if(strlen($value) == strlen(crawlHash("A")) && 
+                    if(strlen($value) == strlen(crawlHash("A")) &&
                         base64_decode($value)) {
                         $clean_value = $value;
                     }
@@ -291,18 +291,18 @@ abstract class Controller
     }
 
     /**
-     * Checks the request if a request is for a valid activity and if it uses 
-     * the correct authorization key 
+     * Checks the request if a request is for a valid activity and if it uses
+     * the correct authorization key
      *
      * @return bool whether the request was valid or not
      */
     function checkRequest()
     {
-        if(!isset($_REQUEST['time']) || 
-            !isset($_REQUEST['session']) || 
+        if(!isset($_REQUEST['time']) ||
+            !isset($_REQUEST['session']) ||
             !in_array($_REQUEST['a'], $this->activities)) { return; }
 
-        $time = $_REQUEST['time']; 
+        $time = $_REQUEST['time'];
             // request must be within an hour of this machine's clock
 
         if(abs(time() - $time) > 3600) { return false;}

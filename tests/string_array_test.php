@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage test
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -36,7 +36,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 /**
  *  Load the string_array library we'll be testing
  */
-require_once BASE_DIR."/lib/string_array.php"; 
+require_once BASE_DIR."/lib/string_array.php";
 
 /**
  *  Used to test that the StringArray class properly stores/retrieves values,
@@ -49,20 +49,20 @@ require_once BASE_DIR."/lib/string_array.php";
 class StringArrayTest extends UnitTest
 {
     /**
-     * We'll use two different tables one more representative of how the table 
-     * is going to be used by the web_queue_bundle, the other small enough that 
+     * We'll use two different tables one more representative of how the table
+     * is going to be used by the web_queue_bundle, the other small enough that
      * we can manually figure out what the result should be
      */
-    public function setUp()
+    function setUp()
     {
         $this->test_objects['FILE1'] = new StringArray("array.txt", 4, 4, -1);
     }
 
     /**
-     * Since a StringArray is a PersistentStructure it periodically saves 
+     * Since a StringArray is a PersistentStructure it periodically saves
      * itself to a file. To clean up we delete the files that might be created
      */
-    public function tearDown()
+    function tearDown()
     {
         @unlink("array.txt");
     }
@@ -70,7 +70,7 @@ class StringArrayTest extends UnitTest
     /**
      * Check if can put objects into string array and retrieve them
      */
-    public function putGetTestCase()
+    function putGetTestCase()
     {
         $this->test_objects['FILE1']->put(0, pack("N", 5));
         $this->test_objects['FILE1']->put(1, pack("N", 4));
@@ -90,7 +90,7 @@ class StringArrayTest extends UnitTest
      * Check if saving and loading of StringArray's works
      * Also checks that save is nondestructive
      */
-    public function putSaveGetSavedTestCase()
+    function putSaveGetSavedTestCase()
     {
         $this->test_objects['FILE1']->put(0, pack("N", 5));
         $this->test_objects['FILE1']->put(1, pack("N", 4));

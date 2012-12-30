@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -30,14 +30,14 @@
  * @subpackage test
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
-/** Calculate base directory of script 
- * @ignore 
+/** Calculate base directory of script
+ * @ignore
  */
-define("BASE_DIR", substr($_SERVER['SCRIPT_FILENAME'], 0, 
+define("BASE_DIR", substr($_SERVER['SCRIPT_FILENAME'], 0,
     -strlen("tests/index.php")));
 
 header("X-FRAME-OPTIONS: DENY"); //prevent click jacking
@@ -47,8 +47,8 @@ require_once BASE_DIR.'/configs/config.php';
 
 if(!PROFILE || !DISPLAY_TESTS) {echo "BAD REQUEST"; exit();}
 
-/** 
- * NO_CACHE means don't try to use memcache 
+/**
+ * NO_CACHE means don't try to use memcache
  * @ignore
  */
 define("NO_CACHE", true);
@@ -65,7 +65,7 @@ define("NO_CACHE", true);
 
         <meta name="Author" content="Christopher Pollett" />
 
-        <meta name="description" 
+        <meta name="description"
             content="Displays unit tests for search engine" />
         <meta charset="utf-8" />
         <link rel="shortcut icon"   href="../favicon.ico" />
@@ -88,15 +88,15 @@ define("NO_CACHE", true);
  */
 require_once BASE_DIR."/lib/unit_test.php";
 /**
- * Do not send output to log files 
+ * Do not send output to log files
  * @ignore
  */
 define("LOG_TO_FILES", false);
 
 
-$allowed_activities = 
+$allowed_activities =
     array("listTests", "runAllTests", "runTestBasedOnRequest");
-if(isset($_REQUEST['activity']) && 
+if(isset($_REQUEST['activity']) &&
     in_array($_REQUEST['activity'], $allowed_activities)) {
     $activity = $_REQUEST['activity'];
 } else {
@@ -109,7 +109,7 @@ $activity();
 
 
 /**
- * This function is responsible for listing out HTML links to the available 
+ * This function is responsible for listing out HTML links to the available
  * unit tests a user can run
  */
 function listTests()
@@ -128,7 +128,7 @@ function listTests()
     ?>
     </ul>
     <?php
-    
+
 }
 
 /**
@@ -146,8 +146,8 @@ function runAllTests()
 }
 
 /**
- * Run the single unit test whose name is given in $_REQUEST['test'] and 
- * display the results. If the unit test file was blah_test.php, then 
+ * Run the single unit test whose name is given in $_REQUEST['test'] and
+ * display the results. If the unit test file was blah_test.php, then
  * $_REQUEST['test'] should be blah.
  */
 function runTestBasedOnRequest()
@@ -155,7 +155,7 @@ function runTestBasedOnRequest()
     echo "<p><a href='?activity=listTests'>See test case list</a>.</p>";
 
     if(isset($_REQUEST['test'])) {
-        $name = preg_replace("/[^A-Za-z_]/", '', $_REQUEST['test'])."_test.php"; 
+        $name = preg_replace("/[^A-Za-z_]/", '', $_REQUEST['test'])."_test.php";
         if(file_exists($name)) {
             runTest($name);
         }
@@ -163,7 +163,7 @@ function runTestBasedOnRequest()
 }
 
 /**
- * Uses $name to load a unit test class, run the tests in it and display the 
+ * Uses $name to load a unit test class, run the tests in it and display the
  * results
  *
  * @param string $name  the name of a unit test file in the current directory
@@ -229,7 +229,7 @@ function getTestNames()
  * Convert the convention for unit test file names into our convention
  * for unit test class names
  *
- * @param string $name  a file name with words separated by underscores, ending 
+ * @param string $name  a file name with words separated by underscores, ending
  * in .php
  *
  * @return string  a camel-cased name ending with Test

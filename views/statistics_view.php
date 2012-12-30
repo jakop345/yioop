@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage view
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -42,7 +42,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @author Chris Pollett
  * @package seek_quarry
  * @subpackage view
- */ 
+ */
 
 class StatisticsView extends View
 {
@@ -51,12 +51,12 @@ class StatisticsView extends View
      */
     var $layout = "web";
 
-    /** 
-     * Names of element objects that the view uses to display itself 
+    /**
+     * Names of element objects that the view uses to display itself
      * @var array
      */
     var $elements = array();
-    /** 
+    /**
      * Names of helper objects that the view uses to help draw itself
      * @var array
      */
@@ -68,7 +68,7 @@ class StatisticsView extends View
      * @param array $data   contains anti CSRF token as well
      *      statistics info about a web crawl
      */
-    public function renderView($data) {
+    function renderView($data) {
         $logo = "resources/yioop.png";
         if(MOBILE) {
             $logo = "resources/m-yioop.png";
@@ -76,9 +76,9 @@ class StatisticsView extends View
         if(isset($data["UNFINISHED"])) {
             e('<div class="landing" style="clear:both">');
         } ?>
-        <h1 class="stats logo"><a href="./?<?php 
-            e(CSRF_TOKEN."=".$data[CSRF_TOKEN])?>"><img 
-            src="<?php e($logo);?>" alt="Yioop!" /></a><span> - <?php 
+        <h1 class="stats logo"><a href="./?<?php
+            e(CSRF_TOKEN."=".$data[CSRF_TOKEN])?>"><img
+            src="<?php e($logo);?>" alt="Yioop!" /></a><span> - <?php
             e(tl('statistics_view_statistics')); ?></span></h1>
         <div class="statistics">
         <?php
@@ -129,16 +129,16 @@ class StatisticsView extends View
         <?php if(isset($data["HOST"]["DATA"]["all"])) { ?>
             <p><b><?php e(tl("statistics_view_number_hosts")); ?></b>:
             <?php e($data["HOST"]["DATA"]["all"])?></p>
-        <?php 
+        <?php
         }
             foreach($headings as $heading => $group_name) {
                 if(isset($data[$group_name]["TOTAL"])) { ?>
                     <h2><?php e($heading); ?></h2>
                     <table summary= "$heading TABLE" class="box">
-                        <?php 
+                        <?php
                             $total = $data[$group_name]["TOTAL"];
                             $lower_name = strtolower($group_name);
-                            foreach($data[$group_name]["DATA"] as 
+                            foreach($data[$group_name]["DATA"] as
                                 $name => $value) {
                                 $width = round(500*$value/(max($total,1)));
                                 e("<tr><th><a href='".$base_url."&c=search".

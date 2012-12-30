@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage processor
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -55,7 +55,7 @@ require_once BASE_DIR."/lib/processors/html_processor.php";
 require_once BASE_DIR."/lib/url_parser.php";
 
  /**
- * Used to create crawl summary information 
+ * Used to create crawl summary information
  * for XML files (those served as text/xml)
  *
  * @author Chris Pollett
@@ -77,7 +77,7 @@ class XmlProcessor extends TextProcessor
      *
      *  @return array  a summary of the contents of the page
      *
-     */ 
+     */
     function process($page, $url)
     {
         $summary = NULL;
@@ -91,7 +91,7 @@ class XmlProcessor extends TextProcessor
             unset($dom);
             $XML_PROCESSORS = array(
                 "rss" => "RssProcessor", "html" => "HtmlProcessor",
-                "sitemapindex" => "SitemapProcessor", 
+                "sitemapindex" => "SitemapProcessor",
                 "urlset" => "SitemapProcessor", "svg" => "SvgProcessor"
             );
             if(isset($XML_PROCESSORS[$root_name])) {
@@ -110,14 +110,14 @@ class XmlProcessor extends TextProcessor
 
 
     /**
-     * Return a document object based on a string containing the contents of 
+     * Return a document object based on a string containing the contents of
      * an XML page
      *
      *  @param string $page   a web page
      *
      *  @return object  document object
      */
-    static function dom($page) 
+    static function dom($page)
     {
         $dom = new DOMDocument();
 

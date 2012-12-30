@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage test
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -36,11 +36,11 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 /**
  *  Load the Trie class we'll be testing
  */
-require_once BASE_DIR."/lib/trie.php"; 
+require_once BASE_DIR."/lib/trie.php";
 /**
  *  Load the crawlHash function
  */
-require_once BASE_DIR.'/lib/utility.php'; 
+require_once BASE_DIR.'/lib/utility.php';
 
 /**
  *  Used to test that the Trie class properly stores words that
@@ -55,7 +55,7 @@ class TrieTest extends UnitTest
     /**
      * We'll set up one Trie for testing purpose
      */
-    public function setUp()
+    function setUp()
     {
         $this->test_objects["TRIE"] = new Trie();
     }
@@ -64,7 +64,7 @@ class TrieTest extends UnitTest
      * Since a Trie is not a PersistentStructure we don't need to do
      * anything to tear it down
      */
-    public function tearDown()
+    function tearDown()
     {
 
     }
@@ -73,14 +73,14 @@ class TrieTest extends UnitTest
      * Check if we add something into our Trie, add returns the correct
      * sub-tree or false if does not exists
      */
-    public function addTestCase()
+    function addTestCase()
     {
         $this->assertNotEqual(
             $this->test_objects['TRIE']->add(
                 "hello"), false, "Successful add should not return false");
         $this->assertEqual(serialize($this->test_objects['TRIE']->add(
-                "hell")), serialize(array("o" => array(" " => " "), 
-                    " " => " ")), 
+                "hell")), serialize(array("o" => array(" " => NULL),
+                    " " => NULL)),
                 "Add subsequence of an existing string should return subtree");
     }
 
@@ -88,13 +88,13 @@ class TrieTest extends UnitTest
      * Check if we look up something in our Trie, that correct subtree
      * is returned or false if does not exists
      */
-    public function existsTestCase()
+    function existsTestCase()
     {
         $this->test_objects['TRIE']->add("hello");
         $this->test_objects['TRIE']->add("hell");
         $this->assertEqual(serialize($this->test_objects['TRIE']->exists(
-                "hell")), serialize(array("o" => array(" " => " "), 
-                    " " => " ")), 
+                "hell")), serialize(array("o" => array(" " => NULL),
+                    " " => NULL)),
                 "Exists should return correct subtree");
         $this->assertFalse($this->test_objects['TRIE']->exists(
                 "helmut"), "If not in Trie should get false");
@@ -104,7 +104,7 @@ class TrieTest extends UnitTest
      * Check that if we can get all the terms from a trie that begin
      * with a given prefix
      */
-    public function getValuesTestCase()
+    function getValuesTestCase()
     {
         $this->test_objects['TRIE']->add("hello");
         $this->test_objects['TRIE']->add("hell");
@@ -112,7 +112,7 @@ class TrieTest extends UnitTest
         $this->test_objects['TRIE']->add("handsome");
         $this->test_objects['TRIE']->add("hen");
         $this->assertEqual($this->test_objects['TRIE']->getValues("h", 5),
-            array("hello", "hell", "helmut", "hen", "handsome"), 
+            array("hello", "hell", "helmut", "hen", "handsome"),
                 "Returns first all in subtree");
     }
 }

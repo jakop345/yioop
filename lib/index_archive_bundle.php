@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage library
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -36,7 +36,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 /**
  * Summaries and word document list stored in WebArchiveBundle's so load it
  */
-require_once 'web_archive_bundle.php'; 
+require_once 'web_archive_bundle.php';
 /**
  * Used to store word index
  */
@@ -49,7 +49,7 @@ require_once 'index_dictionary.php';
  * Used for crawlLog and crawlHash
  */
 require_once 'utility.php';
-/** 
+/**
  *Loads common constants for web crawling
  */
 require_once 'crawl_constants.php';
@@ -57,11 +57,11 @@ require_once 'crawl_constants.php';
 
 /**
  * Encapsulates a set of web page summaries and an inverted word-index of terms
- * from these summaries which allow one to search for summaries containing a 
+ * from these summaries which allow one to search for summaries containing a
  * particular word.
  *
  * The basic file structures for an IndexArchiveBundle are:
- * <ol> 
+ * <ol>
  * <li>A WebArchiveBundle for web page summaries.</li>
  * <li>A IndexDictionary containing all the words stored in the bundle.
  * Each word entry in the dictionary contains starting and ending
@@ -69,13 +69,13 @@ require_once 'crawl_constants.php';
  * generation.</li>
  * <li>A set of index shard generations. These generations
  *  have names index0, index1,... A shard has word entries, word doc entries
- *  and document entries. For more information see the index shard 
+ *  and document entries. For more information see the index shard
  * documentation.
  * </li>
  * <li>
- * The file generations.txt keeps track of what is the current generation. 
- * A given generation can hold NUM_WORDS_PER_GENERATION words amongst all 
- * its partitions. After which the next generation begins. 
+ * The file generations.txt keeps track of what is the current generation.
+ * A given generation can hold NUM_WORDS_PER_GENERATION words amongst all
+ * its partitions. After which the next generation begins.
  * </li>
  * </ol>
  *
@@ -124,8 +124,8 @@ class IndexArchiveBundle implements CrawlConstants
     /**
      * IndexDictionary for all shards in the IndexArchiveBundle
      * This contains entries of the form (word, num_shards with word,
-     * posting list info 0th shard containing the word, 
-     * posting list info 1st shard containing the word, ...) 
+     * posting list info 0th shard containing the word,
+     * posting list info 1st shard containing the word, ...)
      * @var object
      */
     var $dictionary;
@@ -143,7 +143,7 @@ class IndexArchiveBundle implements CrawlConstants
      * @param int $num_partitions_summaries number of WebArchive partitions
      *      to use in the summmaries WebArchiveBundle
      * @param string $description a text name/serialized info about this
-     *      IndexArchiveBundle 
+     *      IndexArchiveBundle
      */
     function __construct($dir_name, $read_only_archive = true,
         $description = NULL, $num_docs_per_generation = NUM_DOCS_PER_GENERATION)
@@ -167,7 +167,7 @@ class IndexArchiveBundle implements CrawlConstants
                 file_get_contents($this->dir_name."/generation.txt"));
         } else if(!$read_only_archive) {
             $this->generation_info['ACTIVE'] = 0;
-            file_put_contents($this->dir_name."/generation.txt", 
+            file_put_contents($this->dir_name."/generation.txt",
                 serialize($this->generation_info));
         }
         $this->summaries = new WebArchiveBundle($dir_name."/summaries",
@@ -184,8 +184,8 @@ class IndexArchiveBundle implements CrawlConstants
     }
 
     /**
-     * Add the array of $pages to the summaries WebArchiveBundle pages being 
-     * stored in the partition $generation and the field used 
+     * Add the array of $pages to the summaries WebArchiveBundle pages being
+     * stored in the partition $generation and the field used
      * to store the resulting offsets given by $offset_field.
      *
      * @param int $generation field used to select partition
@@ -195,7 +195,7 @@ class IndexArchiveBundle implements CrawlConstants
      *      (visited urls is a smaller number than the total count of objects
      *      stored in the index).
      */
-    function addPages($generation, $offset_field, &$pages, 
+    function addPages($generation, $offset_field, &$pages,
         $visited_urls_count)
     {
         $this->summaries->setWritePartition($generation);
@@ -229,12 +229,12 @@ class IndexArchiveBundle implements CrawlConstants
      * and a log-merge performed if needed
      *
      * @param object $index_shard a mini inverted index of word_key=>doc data
-     * @param object $callback object with join function to be 
+     * @param object $callback object with join function to be
      *      called if process is taking too long
      * @return int the active generation after the check and possible change has
      *      been performed
      */
-    function initGenerationToAdd($index_shard, $callback = NULL, 
+    function initGenerationToAdd($index_shard, $callback = NULL,
         $blocking = false)
     {
         $current_num_docs = $this->getActiveShard()->num_docs;
@@ -248,14 +248,14 @@ class IndexArchiveBundle implements CrawlConstants
             $this->saveAndAddCurrentShardDictionary($callback);
             //Set up new shard
             $this->generation_info['ACTIVE']++;
-            $this->generation_info['CURRENT'] = 
+            $this->generation_info['CURRENT'] =
                 $this->generation_info['ACTIVE'];
             $current_index_shard_file = $this->dir_name.
                 "/posting_doc_shards/index". $this->generation_info['ACTIVE'];
             $this->current_shard = new IndexShard(
-                $current_index_shard_file, $this->generation_info['ACTIVE'], 
+                $current_index_shard_file, $this->generation_info['ACTIVE'],
                     $this->num_docs_per_generation);
-            file_put_contents($this->dir_name."/generation.txt", 
+            file_put_contents($this->dir_name."/generation.txt",
                 serialize($this->generation_info));
             crawlLog("Switch Shard time:".changeInMicrotime($switch_time));
         }
@@ -266,7 +266,7 @@ class IndexArchiveBundle implements CrawlConstants
     /**
      * Saves the active index shard to disk, then adds the words from this
      * shard to the dictionary
-     * @param object $callback object with join function to be 
+     * @param object $callback object with join function to be
      *      called if process is taking too  long
      */
     function saveAndAddCurrentShardDictionary($callback = NULL)
@@ -298,7 +298,7 @@ class IndexArchiveBundle implements CrawlConstants
             $current_index_shard_file = $this->dir_name.
                 "/posting_doc_shards/index". $this->generation_info['CURRENT'];
             $this->current_shard = new IndexShard($current_index_shard_file,
-                $this->generation_info['CURRENT'], 
+                $this->generation_info['CURRENT'],
                 $this->num_docs_per_generation);
         }
         return $this->current_shard;
@@ -316,12 +316,12 @@ class IndexArchiveBundle implements CrawlConstants
      {
         if(!isset($this->current_shard)) {
             if(!isset($this->generation_info['CURRENT'])) {
-                $this->generation_info['CURRENT'] = 
+                $this->generation_info['CURRENT'] =
                     $this->generation_info['ACTIVE'];
             }
             $current_index_shard_file = $this->dir_name.
                 "/posting_doc_shards/index". $this->generation_info['CURRENT'];
-                
+
             if(file_exists($current_index_shard_file)) {
                 if(isset($this->generation_info['DISK_BASED']) &&
                     $this->generation_info['DISK_BASED'] == true) {
@@ -332,7 +332,7 @@ class IndexArchiveBundle implements CrawlConstants
                     $this->current_shard->getShardHeader();
                     $this->current_shard->read_only_from_disk = true;
                 } else {
-                    $this->current_shard = 
+                    $this->current_shard =
                         IndexShard::load($current_index_shard_file);
                 }
             } else {
@@ -354,7 +354,7 @@ class IndexArchiveBundle implements CrawlConstants
      function setCurrentShard($i, $disk_based = false)
      {
         $this->generation_info['DISK_BASED'] = $disk_based;
-        if(isset($this->generation_info['CURRENT']) && 
+        if(isset($this->generation_info['CURRENT']) &&
             ($i == $this->generation_info['CURRENT'] ||
             $i > $this->generation_info['ACTIVE'])) {
             return false;
@@ -366,7 +366,7 @@ class IndexArchiveBundle implements CrawlConstants
      }
 
     /**
-     * Gets the page out of the summaries WebArchiveBundle with the given 
+     * Gets the page out of the summaries WebArchiveBundle with the given
      * offset and generation
      *
      * @param int $offset byte offset in partition of desired page
@@ -392,13 +392,13 @@ class IndexArchiveBundle implements CrawlConstants
 
 
     /**
-     * Computes the number of occurrences of each of the supplied list of 
+     * Computes the number of occurrences of each of the supplied list of
      * word_keys
      *
      * @param array $word_keys keys to compute counts for
      * @return array associative array of key => count values.
      */
-    function countWordKeys($word_keys) 
+    function countWordKeys($word_keys)
         //lessThan is in utility.php
     {
         $words_array = array();
@@ -421,9 +421,9 @@ class IndexArchiveBundle implements CrawlConstants
 
     /**
      * Gets the description, count of summaries, and number of partitions of the
-     * summaries store in the supplied directory. If the file 
-     * arc_description.txt exists, this is viewed as a dummy index archive for 
-     * the sole purpose of allowing conversions of downloaded data such as arc 
+     * summaries store in the supplied directory. If the file
+     * arc_description.txt exists, this is viewed as a dummy index archive for
+     * the sole purpose of allowing conversions of downloaded data such as arc
      * files into Yioop! format.
      *
      * @param string path to a directory containing a summaries WebArchiveBundle
@@ -450,13 +450,13 @@ class IndexArchiveBundle implements CrawlConstants
     }
 
     /**
-     * Sets the archive info (DESCRIPTION, COUNT, 
+     * Sets the archive info (DESCRIPTION, COUNT,
      * NUM_DOCS_PER_PARTITION) for the web archive bundle associated with
      * this bundle. As DESCRIPTION is used to store info about the info
      * bundle this sets the global properties of the info bundle as well.
      *
-     * @param string $dir_name folder with archive bundle 
-     * @param array $info struct with above fields 
+     * @param string $dir_name folder with archive bundle
+     * @param array $info struct with above fields
      */
     static function setArchiveInfo($dir_name, $info)
     {

@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage helper
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -45,7 +45,7 @@ require_once BASE_DIR."/views/helpers/helper.php";
  * @package seek_quarry
  * @subpackage helper
  */
- 
+
 class ImagesHelper extends Helper implements CrawlConstants
 {
 
@@ -58,7 +58,7 @@ class ImagesHelper extends Helper implements CrawlConstants
      *  @param string $query the current search query
      *  @param string $subsearch name of subsearch page this image group on
      */
-    public function render($image_pages, $query, $subsearch)
+    function render($image_pages, $query, $subsearch)
     {
         if($subsearch != 'images') {?>
             <h2><a href="<?php e($query.'&s=images')?>"
@@ -81,8 +81,8 @@ class ImagesHelper extends Helper implements CrawlConstants
             }
         ?>
             <a href="<?php e($link); ?>" rel="nofollow"
-            ><img src="<?php e($page[self::THUMB]); ?>" alt="<?php 
-                    e($page[self::TITLE]); ?>"  /></a> 
+            ><img src="<?php e($page[self::THUMB]); ?>" alt="<?php
+                    e($page[self::TITLE]); ?>"  /></a>
         <?php
             $i++;
             if($i % $break_frequency == 0) {

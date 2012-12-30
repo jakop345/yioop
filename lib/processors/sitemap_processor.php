@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage processor
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -43,7 +43,7 @@ require_once BASE_DIR."/lib/processors/text_processor.php";
 require_once BASE_DIR."/lib/url_parser.php";
 
  /**
- * Used to create crawl summary information 
+ * Used to create crawl summary information
  * for sitemap files
  *
  * @author Chris Pollett
@@ -64,7 +64,7 @@ class SitemapProcessor extends TextProcessor
      *  @return array a summary of the contents of the page
      *
      */
-    public function process($page, $url)
+    function process($page, $url)
     {
         $summary = NULL;
         if(is_string($page)) {
@@ -72,7 +72,7 @@ class SitemapProcessor extends TextProcessor
 
             if($dom !==false) {
                 $summary[self::TITLE] = $url;
-                $summary[self::DESCRIPTION] = "Sitemap of ".$url; 
+                $summary[self::DESCRIPTION] = "Sitemap of ".$url;
                 $summary[self::LINKS] = self::links($dom, $url);
                 if(strlen($summary[self::DESCRIPTION] . $summary[self::TITLE])
                     == 0 && count($summary[self::LINKS]) == 0) {
@@ -93,14 +93,14 @@ class SitemapProcessor extends TextProcessor
 
 
     /**
-     * Return a document object based on a string containing the contents of 
+     * Return a document object based on a string containing the contents of
      * an RSS page
      *
      *  @param string $page   a web page
      *
      *  @return object  document object
      */
-    static function dom($page) 
+    static function dom($page)
     {
         $dom = new DOMDocument();
 
@@ -111,26 +111,26 @@ class SitemapProcessor extends TextProcessor
 
 
     /**
-     * Returns links from the supplied dom object of a sitemap 
+     * Returns links from the supplied dom object of a sitemap
      * where links have been canonicalized according to
      * the supplied $site information. We allow more links from a sitemap
      * than from other kinds of documents. For now we are ignoring weighting
      * info
-     * 
+     *
      * @param object $dom   a document object with links on it
      * @param string $site   a string containing a url
-     * 
+     *
      * @return array   links from the $dom object
-     */ 
-    static function links($dom, $site) 
+     */
+    static function links($dom, $site)
     {
         $sites = array();
 
         $xpath = new DOMXPath($dom);
-        $xpath->registerNamespace('s', 
+        $xpath->registerNamespace('s',
             "http://www.sitemaps.org/schemas/sitemap/0.9");
-        $paths = array( 
-            "/s:urlset/s:url/s:loc", 
+        $paths = array(
+            "/s:urlset/s:url/s:loc",
             "/s:sitemapindex/s:sitemap/s:loc"
         );
 
@@ -143,7 +143,7 @@ class SitemapProcessor extends TextProcessor
                 if($url === NULL || $url === "" ||
                     UrlParser::checkRecursiveUrl($url) ||
                     UrlParser::getDocumentType($url) == "gz" ||
-                    strlen($url) >= MAX_URL_LENGTH) { 
+                    strlen($url) >= MAX_URL_LENGTH) {
                     //at this point we can't handle gzip'd sitemaps
                     continue;
                 }

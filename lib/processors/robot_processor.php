@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage processor
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -60,12 +60,12 @@ class RobotProcessor extends PageProcessor
      * list of all user agent strings seen.
      *
      * @param string $page text string of a document
-     * @param string $url location the document came from, not used by 
+     * @param string $url location the document came from, not used by
      *      TextProcessor at this point. Some of its subclasses override
      *      this method and use url to produce complete links for
      *      relative links within a document
      *
-     * @return array a summary of (title, description, links, and content) of 
+     * @return array a summary of (title, description, links, and content) of
      *      the information in $page
      */
     function process($page, $url)
@@ -104,7 +104,7 @@ class RobotProcessor extends PageProcessor
                 case "user-agent":
                     //we allow * in user agent string
                     $summary[self::AGENT_LIST][] = $value;
-                    $current_specificness = 
+                    $current_specificness =
                         (strcmp($value, USER_AGENT_SHORT) == 0) ? 1 : 0;
                     if($current_specificness < $specificness) break;
                     if($specificness < $current_specificness) {
@@ -139,16 +139,16 @@ class RobotProcessor extends PageProcessor
                 case "allow":
                     if($add_rule_state) {
                         $rule_added_flag = true;
-                        $summary[self::ROBOT_PATHS][self::ALLOWED_SITES][] = 
-                            $this->makeCanonicalRobotPath($value); 
+                        $summary[self::ROBOT_PATHS][self::ALLOWED_SITES][] =
+                            $this->makeCanonicalRobotPath($value);
                     }
                 break;
 
                 case "disallow":
                     if($add_rule_state) {
                         $rule_added_flag = true;
-                        $summary[self::ROBOT_PATHS][self::DISALLOWED_SITES][] = 
-                            $this->makeCanonicalRobotPath($value); 
+                        $summary[self::ROBOT_PATHS][self::DISALLOWED_SITES][] =
+                            $this->makeCanonicalRobotPath($value);
                     }
                 break;
 
@@ -177,7 +177,7 @@ class RobotProcessor extends PageProcessor
     }
 
     /**
-     * For robot paths 
+     * For robot paths
      *     foo
      * is treated the same as
      *     /foo

@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage processor
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -50,9 +50,9 @@ require_once BASE_DIR."/lib/utility.php";
 
 
  /**
- * Used to create crawl summary information 
+ * Used to create crawl summary information
  * for SVG files. This class is a little bit
- * weird in that it generates thumbs like the 
+ * weird in that it generates thumbs like the
  * image processor classes, but when it gives
  * up on the data it falls back to text
  * processor handling.
@@ -79,7 +79,7 @@ class SvgProcessor extends TextProcessor
      *  @return array  a summary of the contents of the page
      *
      */
-    public function process($page, $url)
+    function process($page, $url)
     {
 
         if(is_string($page)) {
@@ -88,9 +88,9 @@ class SvgProcessor extends TextProcessor
 
             if($dom !== false && isset($dom->documentElement)) {
                 $summary[self::TITLE] = "";
-                $summary[self::DESCRIPTION] = self::description($dom); 
+                $summary[self::DESCRIPTION] = self::description($dom);
                 $summary[self::LINKS] = array();
-                $summary[self::PAGE] = 
+                $summary[self::PAGE] =
                     "<html><body><div><img src='data:image/svg+xml;base64," .
                     base64_encode($page)."' alt='".$summary[self::DESCRIPTION].
                     "' /></div></body></html>";
@@ -131,7 +131,7 @@ class SvgProcessor extends TextProcessor
         $svg->setAttributeNS("", "height", "150px");
         if(!$svg->hasAttribute("viewBox")) {
             $svg->setAttributeNS("", "viewBox", "0 0 $width $height");
-        } 
+        }
 
         return $dom->saveXML();
 
@@ -139,14 +139,14 @@ class SvgProcessor extends TextProcessor
 
 
     /**
-     * Return a document object based on a string containing the contents of 
+     * Return a document object based on a string containing the contents of
      * an SVG page
      *
      *  @param string $page   a web page
      *
      *  @return object  document object
      */
-    static function dom($page) 
+    static function dom($page)
     {
         $dom = new DOMDocument();
 
@@ -160,10 +160,10 @@ class SvgProcessor extends TextProcessor
      *  Returns html head title of a webpage based on its document object
      *
      *  @param object $dom   a document object to extract a title from.
-     *  @return string  a title of the page 
+     *  @return string  a title of the page
      *
      */
-    static function title($dom) 
+    static function title($dom)
     {
         $sites = array();
 
@@ -180,11 +180,11 @@ class SvgProcessor extends TextProcessor
     }
 
     /**
-     * Returns descriptive text concerning a svg page based on its document 
+     * Returns descriptive text concerning a svg page based on its document
      * object
      *
      * @param object $dom   a document object to extract a description from.
-     * @return string a description of the page 
+     * @return string a description of the page
      */
     static function description($dom) {
         $sites = array();
@@ -197,7 +197,7 @@ class SvgProcessor extends TextProcessor
           concatenate the contents of then additional dom elements up to
           the limit of description length
         */
-        $page_parts = array("/svg//desc", 
+        $page_parts = array("/svg//desc",
             "/svg//text");
         foreach($page_parts as $part) {
             $doc_nodes = $xpath->evaluate($part);

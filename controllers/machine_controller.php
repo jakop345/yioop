@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage controller
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -50,7 +50,7 @@ require_once BASE_DIR."/lib/crawl_daemon.php";
  * @subpackage controller
  */
 class MachineController extends Controller implements CrawlConstants
-{ 
+{
     /**
      * No models used by this controller
      * @var array
@@ -78,11 +78,11 @@ class MachineController extends Controller implements CrawlConstants
      * activity for processing.
      *
      */
-    function processRequest() 
+    function processRequest()
     {
         $data = array();
 
-        /* do a quick test to see if this is a request seems like 
+        /* do a quick test to see if this is a request seems like
            from a legitimate machine
          */
         if(!$this->checkRequest()) {return; }
@@ -93,7 +93,7 @@ class MachineController extends Controller implements CrawlConstants
     }
 
     /**
-     * Checks the running/non-running status of the 
+     * Checks the running/non-running status of the
      * fetchers and queue_servers of the current Yioop instance
      */
     function statuses()
@@ -110,21 +110,21 @@ class MachineController extends Controller implements CrawlConstants
         $statuses = CrawlDaemon::statuses();
 
         if(isset($_REQUEST['queue_server'])) {
-            if($_REQUEST['queue_server'] == "true" && 
+            if($_REQUEST['queue_server'] == "true" &&
                 !isset($statuses["queue_server"][-1])) {
                 CrawlDaemon::start("queue_server", 'none', self::INDEXER,false);
                 CrawlDaemon::start("queue_server", 'none', self::SCHEDULER);
-            } else if($_REQUEST['queue_server'] == "false" && 
+            } else if($_REQUEST['queue_server'] == "false" &&
                 isset($statuses["queue_server"][-1]) ) {
                 CrawlDaemon::stop("queue_server");
             }
         }
 
         if(isset($_REQUEST['mirror'])) {
-            if($_REQUEST['mirror'] == "true" && 
+            if($_REQUEST['mirror'] == "true" &&
                 !isset($statuses["mirror"][-1])) {
                 CrawlDaemon::start("mirror");
-            } else if($_REQUEST['mirror'] == "false" && 
+            } else if($_REQUEST['mirror'] == "false" &&
                 isset($statuses["mirror"][-1]) ) {
                 CrawlDaemon::stop("mirror");
             }
@@ -134,7 +134,7 @@ class MachineController extends Controller implements CrawlConstants
             foreach($_REQUEST['fetcher'] as $index => $value) {
                 if($value == "true" && !isset($statuses["fetcher"][$index]) ) {
                     CrawlDaemon::start("fetcher", "$index");
-                } else if($value == "false" && 
+                } else if($value == "false" &&
                     isset($statuses["fetcher"][$index]) ) {
                     CrawlDaemon::stop("fetcher", "$index");
                 }

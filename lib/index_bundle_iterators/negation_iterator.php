@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012 Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013 Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,14 +27,14 @@
  * @subpackage iterator
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 
-/** 
+/**
  *Loads base class for iterating
  */
 require_once BASE_DIR.'/lib/index_bundle_iterators/index_bundle_iterator.php';
@@ -75,7 +75,7 @@ class NegationIterator extends IndexBundleIterator
      */
     function __construct($index_bundle_iterator)
     {
-        $this->index_bundle_iterators[0] = new DocIterator( 
+        $this->index_bundle_iterators[0] = new DocIterator(
             $index_bundle_iterator->index_name,
             $index_bundle_iterator->filter);
         $this->index_bundle_iterators[1] = $index_bundle_iterator;
@@ -146,7 +146,7 @@ class NegationIterator extends IndexBundleIterator
             $docs[$key][self::SCORE] = $docs[$key][self::DOC_RANK] *
                  $docs[$key][self::RELEVANCE] * $docs[$key][self::PROXIMITY];
         }
-        $this->count_block = count($docs); 
+        $this->count_block = count($docs);
         $this->pages = $docs;
         return $docs;
     }
@@ -165,19 +165,19 @@ class NegationIterator extends IndexBundleIterator
             $gen_offset_all = $this->index_bundle_iterators[
                 0]->currentGenDocOffsetWithWord();
             if($gen_offset_all == -1 || ($changed_all &&
-                $this->genDocOffsetCmp($gen_offset_all, 
+                $this->genDocOffsetCmp($gen_offset_all,
                 $old_gen_offset_all) == 0)) {
                 return -1;
             }
-            $gen_offset_term = 
+            $gen_offset_term =
                 $this->index_bundle_iterators[
                     1]->currentGenDocOffsetWithWord();
             if($gen_offset_term == -1 || ($changed_term &&
-                $this->genDocOffsetCmp($gen_offset_term, 
+                $this->genDocOffsetCmp($gen_offset_term,
                 $old_gen_offset_term) == 0)) {
                 return -1;
             }
-            $gen_doc_cmp = $this->genDocOffsetCmp($gen_offset_all, 
+            $gen_doc_cmp = $this->genDocOffsetCmp($gen_offset_all,
                 $gen_offset_term);
             if($gen_doc_cmp > 0) {
                 $this->index_bundle_iterators[1]->advance($gen_offset_all);
@@ -199,10 +199,10 @@ class NegationIterator extends IndexBundleIterator
      * Forwards the iterator one group of docs (must be size 1)
      * @param array $gen_doc_offset a generation, doc_offset pair. If set,
      *      the must be of greater than or equal generation, and if equal the
-     *      next block must all have $doc_offsets larger than or equal to 
+     *      next block must all have $doc_offsets larger than or equal to
      *      this value
      */
-    function advance($gen_doc_offset = null) 
+    function advance($gen_doc_offset = null)
     {
         $this->current_block_fresh = false;
         $this->seen_docs += 1;
@@ -212,10 +212,10 @@ class NegationIterator extends IndexBundleIterator
     }
 
     /**
-     * Gets the doc_offset and generation for the next document that 
+     * Gets the doc_offset and generation for the next document that
      * would be return by this iterator
      *
-     * @return mixed an array with the desired document offset 
+     * @return mixed an array with the desired document offset
      *  and generation; -1 on fail
      */
     function currentGenDocOffsetWithWord() {

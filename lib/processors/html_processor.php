@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage processor
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -43,7 +43,7 @@ require_once BASE_DIR."/lib/processors/text_processor.php";
 require_once BASE_DIR."/lib/url_parser.php";
 
  /**
- * Used to create crawl summary information 
+ * Used to create crawl summary information
  * for HTML files
  *
  * @author Chris Pollett
@@ -80,7 +80,7 @@ class HtmlProcessor extends TextProcessor
                 $summary[self::ROBOT_METAS] = self::getMetaRobots($dom);
                 $summary[self::TITLE] = self::title($dom);
                 $summary[self::DESCRIPTION] = self::description($dom);
-                $summary[self::LANG] = self::lang($dom, 
+                $summary[self::LANG] = self::lang($dom,
                     $summary[self::DESCRIPTION], $url);
                 $summary[self::LINKS] = self::links($dom, $url);
                 $location = self::location($dom, $url);
@@ -98,7 +98,7 @@ class HtmlProcessor extends TextProcessor
                     //maybe not html? treat as text still try to get urls
                     $summary = parent::process($page, $url);
                 }
-            } else if( $dom == false ) { 
+            } else if( $dom == false ) {
                 $summary = parent::process($page, $url);
             }
         }
@@ -110,16 +110,16 @@ class HtmlProcessor extends TextProcessor
 
 
     /**
-     * Return a document object based on a string containing the contents of 
+     * Return a document object based on a string containing the contents of
      * a web page
      *
      *  @param string $page   a web page
      *
      *  @return object  document object
      */
-    static function dom($page) 
+    static function dom($page)
     {
-        /* 
+        /*
              first do a crude check to see if we have at least an <html> tag
              otherwise try to make a simplified html document from what we got
          */
@@ -151,10 +151,10 @@ class HtmlProcessor extends TextProcessor
      * meta tags.
      *
      *  @param object $dom - a document object to check the meta tags for
-     * 
+     *
      *  @return array of robot meta instructions
      */
-    static function getMetaRobots($dom) 
+    static function getMetaRobots($dom)
     {
         $xpath = new DOMXPath($dom);
         // we use robot rather than robots just in case people forget the s
@@ -208,10 +208,10 @@ class HtmlProcessor extends TextProcessor
      *  Returns html head title of a webpage based on its document object
      *
      *  @param object $dom   a document object to extract a title from.
-     *  @return string  a title of the page 
+     *  @return string  a title of the page
      *
      */
-    static function title($dom) 
+    static function title($dom)
     {
         $sites = array();
 
@@ -230,7 +230,7 @@ class HtmlProcessor extends TextProcessor
                 $doc_nodes = $xpath->evaluate($part);
                 foreach($doc_nodes as $node) {
                     $title .= " .. ".$node->textContent;
-                    if(strlen($title) > 
+                    if(strlen($title) >
                         self::MAX_TITLE_LEN) { break 2;}
                 }
             }
@@ -240,11 +240,11 @@ class HtmlProcessor extends TextProcessor
     }
 
     /**
-     * Returns descriptive text concerning a webpage based on its document 
+     * Returns descriptive text concerning a webpage based on its document
      * object
      *
      * @param object $dom   a document object to extract a description from.
-     * @return string a description of the page 
+     * @return string a description of the page
      */
     static function description($dom) {
         $sites = array();
@@ -268,7 +268,7 @@ class HtmlProcessor extends TextProcessor
         */
         $page_parts = array("/html//p[1]",
             "/html//div[1]", "/html//p[2]", "/html//div[2]", "/html//p[3]",
-            "/html//div[3]", "/html//p[4]", "/html//div[4]", 
+            "/html//div[3]", "/html//p[4]", "/html//div[4]",
             "/html//td", "/html//li", "/html//dt", "/html//dd", "/html//a");
 
         $para_data = array();
@@ -279,19 +279,19 @@ class HtmlProcessor extends TextProcessor
             foreach($doc_nodes as $node) {
                 if($part == "/html//a") {
                     $content = $node->getAttribute('href')." = ";
-                    $add_len  = min(self::MAX_DESCRIPTION_LEN / 2, 
+                    $add_len  = min(self::MAX_DESCRIPTION_LEN / 2,
                         mb_strlen($content));
                     $para_data[$add_len][] = mb_substr($content, 0, $add_len);
                 }
-                $add_len  = min(self::MAX_DESCRIPTION_LEN / 2, 
+                $add_len  = min(self::MAX_DESCRIPTION_LEN / 2,
                     mb_strlen($node->textContent));
-                $para_data[$add_len][] = mb_substr($node->textContent, 
+                $para_data[$add_len][] = mb_substr($node->textContent,
                     0, $add_len);
                 $len += $add_len;
 
                 if($len > self::MAX_DESCRIPTION_LEN) { break 2;}
-                if(in_array($part, array("/html//p[1]", "/html//div[1]", 
-                    "/html//div[2]", "/html//p[2]", "/html//p[3]", 
+                if(in_array($part, array("/html//p[1]", "/html//div[1]",
+                    "/html//div[2]", "/html//p[2]", "/html//p[3]",
                     "/html//div[3]", "/html//div[4]", "/html//p[4]"))) break;
             }
         }
@@ -340,13 +340,13 @@ class HtmlProcessor extends TextProcessor
      * Returns up to MAX_LINK_PER_PAGE many links from the supplied
      * dom object where links have been canonicalized according to
      * the supplied $site information.
-     * 
+     *
      * @param object $dom   a document object with links on it
      * @param string $site   a string containing a url
-     * 
+     *
      * @return array   links from the $dom object
-     */ 
-    static function links($dom, $site) 
+     */
+    static function links($dom, $site)
     {
         $sites = array();
 
@@ -371,9 +371,9 @@ class HtmlProcessor extends TextProcessor
                 if($rel == "" || !stristr($rel, "nofollow")) {
                     $url = UrlParser::canonicalLink(
                         $href->getAttribute('href'), $site);
-                    if(!UrlParser::checkRecursiveUrl($url)  && 
+                    if(!UrlParser::checkRecursiveUrl($url)  &&
                         strlen($url) < MAX_URL_LENGTH) {
-                        if(isset($sites[$url])) { 
+                        if(isset($sites[$url])) {
                             $sites[$url] .=" .. ".
                                 strip_tags($href->textContent);
                         } else {
@@ -393,9 +393,9 @@ class HtmlProcessor extends TextProcessor
                 $url = UrlParser::canonicalLink(
                     $frame->getAttribute('src'), $site);
 
-                if(!UrlParser::checkRecursiveUrl($url) 
+                if(!UrlParser::checkRecursiveUrl($url)
                     && strlen($url) < MAX_URL_LENGTH) {
-                    if(isset($sites[$url]) ) { 
+                    if(isset($sites[$url]) ) {
                         $sites[$url] .=" .. HTMLframe";
                     } else {
                         $sites[$url] = "HTMLframe";
@@ -418,9 +418,9 @@ class HtmlProcessor extends TextProcessor
 
                 $url = UrlParser::canonicalLink(
                     $img->getAttribute('src'), $site);
-                if(!UrlParser::checkRecursiveUrl($url) 
+                if(!UrlParser::checkRecursiveUrl($url)
                     && strlen($url) < MAX_URL_LENGTH) {
-                    if(isset($sites[$url]) ) { 
+                    if(isset($sites[$url]) ) {
                         $sites[$url] .=" .. ".$alt;
                     } else {
                         $sites[$url] = $alt;

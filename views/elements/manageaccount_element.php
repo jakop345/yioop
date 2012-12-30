@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage element
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -51,35 +51,35 @@ class ManageaccountElement extends Element
      *
      *  @param array $data   anti-CSRF token
      */
-    public function render($data)
+    function render($data)
     {?>
         <div class="currentactivity">
             <h2><?php e(tl('manageaccount_element_change_password'))?></h2>
             <form id="changePasswordForm" method="post" action=''>
             <input type="hidden" name="c" value="admin" />
-            <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php 
-                e($data[CSRF_TOKEN]); ?>" /> 
+            <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
+                e($data[CSRF_TOKEN]); ?>" />
             <input type="hidden" name="a" value="manageAccount" />
             <input type="hidden" name="arg" value="changepassword" />
 
             <table class="nametable">
-            <tr><td><label for="old-password"><?php 
+            <tr><td><label for="old-password"><?php
                 e(tl('manageaccount_element_old_password'))?></label></td>
-                <td><input type="password" id="old-password" 
+                <td><input type="password" id="old-password"
                     name="oldpassword"  maxlength="80" class="narrowfield"/>
                 </td></tr>
-            <tr><td><label for="new-password"><?php 
+            <tr><td><label for="new-password"><?php
                 e(tl('manageaccount_element_new_password'))?></label></td>
-                <td><input type="password" id="new-password" 
+                <td><input type="password" id="new-password"
                     name="newpassword"  maxlength="80" class="narrowfield"/>
                 </td></tr>
-            <tr><td><label for="retype-password"><?php 
+            <tr><td><label for="retype-password"><?php
                 e(tl('manageaccount_element_retype_password'))?></label></td>
-                <td><input type="password" id="retype-password" 
+                <td><input type="password" id="retype-password"
                     name="retypepassword"  maxlength="80" class="narrowfield" />
                 </td></tr>
             <tr><td></td>
-                <td class="center"><button class="buttonbox" type="submit"><?php 
+                <td class="center"><button class="buttonbox" type="submit"><?php
                     e(tl('manageaccount_element_save')); ?></button></td></tr>
             </table>
             </form>

@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage iterator
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -37,8 +37,8 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 require_once BASE_DIR."/lib/crawl_constants.php";
 
 /**
- * Abstract class used to model iterating documents indexed in 
- * an WebArchiveBundle or set of such bundles. 
+ * Abstract class used to model iterating documents indexed in
+ * an WebArchiveBundle or set of such bundles.
  *
  *
  * @author Chris Pollett
@@ -65,10 +65,10 @@ abstract class ArchiveBundleIterator implements CrawlConstants
      var $end_of_iterator;
 
     /**
-     * Stores the current progress to the file iterate_status.txt in the result 
-     * dir such that a new instance of the iterator could be constructed and 
-     * return the next set of pages without having to process all of the pages 
-     * that came before. Each iterator should make a call to saveCheckpoint 
+     * Stores the current progress to the file iterate_status.txt in the result
+     * dir such that a new instance of the iterator could be constructed and
+     * return the next set of pages without having to process all of the pages
+     * that came before. Each iterator should make a call to saveCheckpoint
      * after extracting a batch of pages.
      * @param array $info any extra info a subclass wants to save
      */
@@ -83,10 +83,10 @@ abstract class ArchiveBundleIterator implements CrawlConstants
     }
 
     /**
-     * Restores the internal state from the file iterate_status.txt in the 
-     * result dir such that the next call to nextPages will pick up from just 
-     * after the last checkpoint. Each iterator should make a call to 
-     * restoreCheckpoint at the end of the constructor method after the 
+     * Restores the internal state from the file iterate_status.txt in the
+     * result dir such that the next call to nextPages will pick up from just
+     * after the last checkpoint. Each iterator should make a call to
+     * restoreCheckpoint at the end of the constructor method after the
      * instance members have been initialized.
      * @return array the data serialized when saveCheckpoint was called
      */

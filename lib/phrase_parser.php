@@ -3,7 +3,7 @@
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage library
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -100,7 +100,7 @@ class PhraseParser
     static function extractPhrases($string,$lang = NULL,$orig_and_grams = false)
     {
         self::canonicalizePunctuatedTerms($string, $lang);
-        $phrase_pos = self::extractPhrasesInLists($string, $lang, 
+        $phrase_pos = self::extractPhrasesInLists($string, $lang,
             $orig_and_grams, false);
         $phrases = array_keys($phrase_pos);
         return $phrases;
@@ -117,13 +117,13 @@ class PhraseParser
      *      the original term as well in what's returned
      * @return array pairs of the form (phrase, number of occurrences)
      */
-    static function extractPhrasesAndCount($string, $lang = NULL, 
+    static function extractPhrasesAndCount($string, $lang = NULL,
         $orig_and_grams = false)
     {
 
         self::canonicalizePunctuatedTerms($string, $lang);
 
-        $phrases = self::extractPhrasesInLists($string, $lang, $orig_and_grams, 
+        $phrases = self::extractPhrasesInLists($string, $lang, $orig_and_grams,
             false);
         $phrase_counts = array();
         foreach($phrases as $term => $positions) {
@@ -135,7 +135,7 @@ class PhraseParser
 
     /**
      * Extracts all phrases (sequences of adjacent words) from $string. Does
-     * extract terms within those phrase. 
+     * extract terms within those phrase.
      *
      * @param string $string subject to extract phrases from
      * @param string $lang locale tag for stemming
@@ -149,7 +149,7 @@ class PhraseParser
     {
         $phrase_lists = array();
         self::canonicalizePunctuatedTerms($string, $lang);
-        $pre_phrases = 
+        $pre_phrases =
             self::extractTermsAndFilterPhrases($string, $lang, $orig_and_grams);
         $phrases = array();
         $j = 0;
@@ -175,7 +175,7 @@ class PhraseParser
      * as we extract phrases.
      *
      * @param &$string a string of words, etc which might involve such terms
-     * @param $lang a language tag to use as part of the canonicalization 
+     * @param $lang a language tag to use as part of the canonicalization
      *      process not used right now
      */
     static function canonicalizePunctuatedTerms(&$string, $lang = NULL)
@@ -191,7 +191,7 @@ class PhraseParser
                     mb_ereg_replace("\.\s*", "", $matches[0]));
                 return $result;');
         }
-        $string = preg_replace_callback($acronym_pattern, 
+        $string = preg_replace_callback($acronym_pattern,
             $replace_function0, $string);
         $ampersand_pattern = "/[A-Za-z]+(\s*(\s(\'n|\'N)\s|\&)\s*[A-Za-z])+/";
         if(!isset($replace_function1)) {
@@ -204,7 +204,7 @@ class PhraseParser
         $string = preg_replace_callback($ampersand_pattern,$replace_function1,
             $string);
 
-        $url_or_email_pattern = 
+        $url_or_email_pattern =
             '@((http|https)://([^ \t\r\n\v\f\'\"\;\,<>])*)|'.
             '([A-Z0-9._%-]+\@[A-Z0-9.-]+\.[A-Z]{2,4})@i';
         if(!isset($replace_function2)) {
@@ -224,7 +224,7 @@ class PhraseParser
                 return $result;
             ');
         }
-        $string = preg_replace_callback($url_or_email_pattern, 
+        $string = preg_replace_callback($url_or_email_pattern,
             $replace_function2, $string);
     }
 
@@ -270,7 +270,7 @@ class PhraseParser
                 $terms = $pre_terms;
             }
             $stems = array();
-            if($stem_obj != NULL) { 
+            if($stem_obj != NULL) {
                 foreach($terms as $term) {
                     $pre_stem = mb_strtolower($term);
                     $stems[] = $stem_obj->stem($pre_stem);
@@ -420,7 +420,7 @@ class PhraseParser
     static function computeSafeSearchScore(&$word_lists, $len)
     {
         static $unsafe_phrase = "
-XXX sex slut nymphomaniac MILF lolita lesbian sadomasochism 
+XXX sex slut nymphomaniac MILF lolita lesbian sadomasochism
 bondage fisting erotic vagina Tribadism penis facial hermaphrodite
 transsexual tranny bestiality snuff boob fondle tit
 blowjob lap cock dick hardcore pr0n fuck pussy penetration ass
@@ -434,7 +434,7 @@ mentula cunnus verpa sōpiō pipinna cōleī cunnilingus futuō copulate cēveō
 scortor meretrīx futatrix minchia coglione cornuto culo inocchio frocio puttana
 vaffanculo fok hoer kut lul やりまん 打っ掛け  二形 ふたなりゴックン ゴックン
 ショタコン 全裸 受け 裏本 пизда́ хуй еба́ть блядь елда́ гондо́н хер манда́ му́ди мудя
-пидора́с залу́па жо́па за́дница буфер 
+пидора́с залу́па жо́па за́дница буфер
 雞巴 鷄巴 雞雞 鷄鷄 阴茎 陰莖 胯下物
 屌 吊 小鳥 龟头 龜頭 屄 鸡白 雞白 傻屄 老二 那话儿 那話兒 屄 鸡白 雞白 阴道 陰道
 阴户 陰戶 大姨妈 淫蟲 老嫖 妓女 臭婊子 卖豆腐 賣豆腐 咪咪 大豆腐 爆乳 肏操

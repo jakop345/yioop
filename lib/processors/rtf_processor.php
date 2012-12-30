@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage processor
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -39,7 +39,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 require_once BASE_DIR."/lib/processors/text_processor.php";
 
 /**
- * Used to create crawl summary information 
+ * Used to create crawl summary information
  * for RTF files
  *
  * @author Chris Pollett
@@ -53,10 +53,10 @@ class RtfProcessor extends TextProcessor
      * Computes a summary based on a rtf string of a document
      *
      * @param string $page rtf string of a document
-     * @param string $url location the document came from, not used by 
+     * @param string $url location the document came from, not used by
      *      RTFProcessor at this point.
      *
-     * @return array a summary of (title, description,links, and content) of 
+     * @return array a summary of (title, description,links, and content) of
      *      the information in $page
      */
     function process($page, $url)
@@ -73,7 +73,7 @@ class RtfProcessor extends TextProcessor
         $summary = parent::process($text, $url);
 
         return $summary;
-    
+
     }
 
     /**
@@ -106,7 +106,7 @@ class RtfProcessor extends TextProcessor
      * @param string $rtf_string what to extract plain text out of
      * @return string plain texts
      */
-    static function getText($rtf_string) 
+    static function getText($rtf_string)
     {
         $len = strlen($rtf_string);
         $cur_pos = 0;
@@ -115,7 +115,7 @@ class RtfProcessor extends TextProcessor
         $i = 0;
         while($cur_pos < $len) {
 
-        list($cur_pos, $object_string) = 
+        list($cur_pos, $object_string) =
             self::getNextObject($rtf_string, $cur_pos);
         if(strpos($object_string, "{")) {
             $out .= self::getText($object_string);
@@ -126,7 +126,7 @@ class RtfProcessor extends TextProcessor
                 $text = preg_replace('/\\\(\w)+/', "", $object_string);
                 $out .= $text."\n";
             } else if(preg_match(
-                '/(\\\(title)|\\\(author)|\\\(operator)|\\\(company))/', 
+                '/(\\\(title)|\\\(author)|\\\(operator)|\\\(company))/',
                 $object_string) > 0) {
                 $text = preg_replace('/\\\(\w)+/', "", $object_string);
                 $out .= $text."\n\n";
@@ -146,9 +146,9 @@ class RtfProcessor extends TextProcessor
      * @param int $cur_pos position in $rtf_string at which to get  group
      * @return string contents of rtf groups
      */
-    static function getNextObject($rtf_string, $cur_pos) 
+    static function getNextObject($rtf_string, $cur_pos)
     {
-        return self::getBetweenTags($rtf_string, $cur_pos, '{', '}'); 
+        return self::getBetweenTags($rtf_string, $cur_pos, '{', '}');
     }
 
 

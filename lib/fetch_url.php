@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage library
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -39,7 +39,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 require_once BASE_DIR."/lib/crawl_constants.php";
 
 /**
- * 
+ *
  * Code used to manage HTTP requests from one or more URLS
  *
  * @author Chris Pollett
@@ -58,9 +58,9 @@ class FetchUrl implements CrawlConstants
      * @param int $page_range_request maximum number of bytes to download/page
      *      0 means download all
      * @param string $temp_dir folder to store temporary ip header info
-     * @param string $key  the component of $sites[$i] that has the value of 
+     * @param string $key  the component of $sites[$i] that has the value of
      *      a url to get defaults to URL
-     * @param string $value component of $sites[$i] in which to store the 
+     * @param string $value component of $sites[$i] in which to store the
      *      page that was gotten
      * @param bool $minimal if true do a faster request of pages by not
      *      doing things like extract HTTP headers sent, etcs
@@ -68,14 +68,14 @@ class FetchUrl implements CrawlConstants
      * @param bool $follow whether to follow redirects or not
      *
      * @return array an updated array with the contents of those pages
-     */ 
+     */
 
-    public static function getPages($sites, $timer = false,
+    static function getPages($sites, $timer = false,
         $page_range_request = PAGE_RANGE_REQUEST, $temp_dir = NULL,
         $key=CrawlConstants::URL, $value = CrawlConstants::PAGE, $minimal=false,
         $post_data = NULL, $follow = false)
     {
-        $agent_handler = curl_multi_init(); 
+        $agent_handler = curl_multi_init();
 
         $active = NULL;
 
@@ -92,7 +92,7 @@ class FetchUrl implements CrawlConstants
         $num_sites = count($sites);
         for($i = 0; $i < $num_sites; $i++) {
             if(isset($sites[$i][$key])) {
-                list($sites[$i][$key], $url, $headers) = 
+                list($sites[$i][$key], $url, $headers) =
                     self::prepareUrlHeaders($sites[$i][$key], $minimal);
                 $sites[$i][0] = curl_init();
                 if(!$minimal) {
@@ -117,7 +117,7 @@ class FetchUrl implements CrawlConstants
                     curl_setopt($sites[$i][0], CURLOPT_HEADER, true);
                 }
                 //make lighttpd happier
-                curl_setopt($sites[$i][0], CURLOPT_HTTPHEADER, 
+                curl_setopt($sites[$i][0], CURLOPT_HTTPHEADER,
                     $headers);
                 curl_setopt($sites[$i][0], CURLOPT_ENCODING, "");
                    // ^ need to set for sites like att that use gzip
@@ -127,7 +127,7 @@ class FetchUrl implements CrawlConstants
                 }
                 if($post_data != NULL) {
                     curl_setopt($sites[$i][0], CURLOPT_POST, true);
-                    curl_setopt($sites[$i][0], CURLOPT_POSTFIELDS, 
+                    curl_setopt($sites[$i][0], CURLOPT_POSTFIELDS,
                         $post_data[$i]);
                 }
                 curl_multi_add_handle($agent_handler, $sites[$i][0]);
@@ -163,11 +163,11 @@ class FetchUrl implements CrawlConstants
                 $ip_addresses = self::getCurlIp($header);
                 fclose($ip_holder[$i]);
             }
-            if(isset($sites[$i][0]) && $sites[$i][0]) { 
+            if(isset($sites[$i][0]) && $sites[$i][0]) {
                 // Get Data and Message Code
                 $content = @curl_multi_getcontent($sites[$i][0]);
-                /* 
-                    If the Transfer-encoding was chunked then the Range header 
+                /*
+                    If the Transfer-encoding was chunked then the Range header
                     we sent was ignored. So we manually truncate the data
                     here
                  */
@@ -183,7 +183,7 @@ class FetchUrl implements CrawlConstants
                     } else {
                         $header = "";
                     }
-                    $sites[$i][CrawlConstants::HEADER] = 
+                    $sites[$i][CrawlConstants::HEADER] =
                         $header . $sites[$i][CrawlConstants::HEADER];
                     unset($header);
                 } else {
@@ -196,7 +196,7 @@ class FetchUrl implements CrawlConstants
                         CURLINFO_NAMELOOKUP_TIME);
                     $sites[$i][self::TOTAL_TIME] = @curl_getinfo($sites[$i][0],
                         CURLINFO_TOTAL_TIME);
-                    $sites[$i][self::HTTP_CODE] = 
+                    $sites[$i][self::HTTP_CODE] =
                         curl_getinfo($sites[$i][0], CURLINFO_HTTP_CODE);
                     if(!$sites[$i][self::HTTP_CODE]) {
                         $sites[$i][self::HTTP_CODE] = curl_error($sites[$i][0]);
@@ -210,8 +210,8 @@ class FetchUrl implements CrawlConstants
                     //Get Time, Mime type and Character encoding
                     $sites[$i][self::TIMESTAMP] = time();
 
-                    $type_parts = 
-                        explode(";", curl_getinfo($sites[$i][0], 
+                    $type_parts =
+                        explode(";", curl_getinfo($sites[$i][0],
                             CURLINFO_CONTENT_TYPE));
 
                     $sites[$i][self::TYPE] = strtolower(trim($type_parts[0]));
@@ -259,7 +259,7 @@ class FetchUrl implements CrawlConstants
                     $url_parts = @parse_url($url);
                     if(isset($url_parts['host'])) {
                         $cnt = 1;
-                        $url_with_ip_if_possible = 
+                        $url_with_ip_if_possible =
                             str_replace($url_parts['host'], $ip_address ,$url,
                                  $cnt);
                         if($cnt != 1) {
@@ -289,15 +289,15 @@ class FetchUrl implements CrawlConstants
      *  @param string &$page  web page data
      *  @return string 8 byte hash to identify page contents
      */
-    public static function computePageHash(&$page)
+    static function computePageHash(&$page)
     {
-        /* to do dedup we strip script, noscript, and style tags 
-           as well as their content, then we strip tags, get rid 
+        /* to do dedup we strip script, noscript, and style tags
+           as well as their content, then we strip tags, get rid
            of whitespace and hash
          */
-        $strip_array = 
-            array('@<script[^>]*?>.*?</script>@si', 
-                '@<noscript[^>]*?>.*?</noscript>@si', 
+        $strip_array =
+            array('@<script[^>]*?>.*?</script>@si',
+                '@<noscript[^>]*?>.*?</noscript>@si',
                 '@<style[^>]*?>.*?</style>@si');
         $dedup_string = preg_replace(
             $strip_array, '', $page);
@@ -324,27 +324,27 @@ class FetchUrl implements CrawlConstants
      *      response, as well as parsed from the header the server, server
      *      version, operating system, encoding, and date information.
      */
-    public static function parseHeaderPage(&$header_and_page, 
+    static function parseHeaderPage(&$header_and_page,
         $value=CrawlConstants::PAGE)
-    { 
+    {
         $new_offset = 0;
         // header will include all redirect headers
         $site = array();
         $site[CrawlConstants::LOCATION] = array();
         do {
             $continue = false;
-            $CRLFCRLF = strpos($header_and_page, "\x0D\x0A\x0D\x0A", 
+            $CRLFCRLF = strpos($header_and_page, "\x0D\x0A\x0D\x0A",
                 $new_offset);
             $LFLF = strpos($header_and_page, "\x0A\x0A", $new_offset);
             //either two CRLF (what spec says) or two LF's to be safe
             $old_offset = $new_offset;
             $header_offset = ($CRLFCRLF > 0) ? $CRLFCRLF : $LFLF;
-            $new_offset = ($CRLFCRLF > 0) ? $header_offset + 4 
+            $new_offset = ($CRLFCRLF > 0) ? $header_offset + 4
                 : $header_offset + 2;
             $redirect_pos = stripos($header_and_page, 'Location:', $old_offset);
             $redirect_str = "Location:";
             if($redirect_pos === false) {
-                $redirect_pos = 
+                $redirect_pos =
                     stripos($header_and_page, 'Refresh:', $old_offset);
                 $redirect_str = "Refresh:";
             }
@@ -354,7 +354,7 @@ class FetchUrl implements CrawlConstants
             } else if($redirect_pos !== false && $redirect_pos < $new_offset){
                 $redirect_pos += strlen($redirect_str);
                 $pre_line = substr($header_and_page, $redirect_pos,
-                    strpos($header_and_page, "\n", $redirect_pos) - 
+                    strpos($header_and_page, "\n", $redirect_pos) -
                     $redirect_pos);
                 $loc = @trim($pre_line);
                 if(strlen($loc) > 0) {
@@ -365,7 +365,7 @@ class FetchUrl implements CrawlConstants
         } while($continue);
 
 
-        $site[CrawlConstants::HEADER] = 
+        $site[CrawlConstants::HEADER] =
             substr($header_and_page, 0, $header_offset);
         $site[$value] = ltrim(substr($header_and_page, $header_offset));
 
@@ -382,7 +382,7 @@ class FetchUrl implements CrawlConstants
                 $site[CrawlConstants::SERVER] = @trim($server_name_parts[0]);
                 if(isset($server_name_parts[1])) {
                     $version_parts = explode("(", $server_name_parts[1]);
-                    $site[CrawlConstants::SERVER_VERSION] = 
+                    $site[CrawlConstants::SERVER_VERSION] =
                         @trim($version_parts[0]);
                     if(isset($version_parts[1])) {
                         $os_parts = explode(")", $version_parts[1]);
@@ -393,12 +393,12 @@ class FetchUrl implements CrawlConstants
             }
             if(stristr($line, 'charset=')) {
                 $line_parts = preg_split("/charset\=/i", $line);
-                $site[CrawlConstants::ENCODING] = 
+                $site[CrawlConstants::ENCODING] =
                     strtoupper(@trim($line_parts[1]));
             }
             if(stristr($line, 'Last-Modified:')) {
                 $line_parts = preg_split("/Last\-Modified\:/i", $line);
-                $site[CrawlConstants::MODIFIED] = 
+                $site[CrawlConstants::MODIFIED] =
                     strtotime(@trim($line_parts[1]));
             }
             if(stristr($line, 'X-Robots-Tag:')) {
@@ -436,7 +436,7 @@ class FetchUrl implements CrawlConstants
                         $site[CrawlConstants::ENCODING] = strtoupper(
                             $match[4]);
                         $site[$value] = substr_replace(
-                            $site[$value], "", $start_charset, 
+                            $site[$value], "", $start_charset,
                             $len_c);
                     }
                 }
@@ -460,9 +460,9 @@ class FetchUrl implements CrawlConstants
      * @param string contains complete transcript of HTTP get/response
      * @return string IPv4 address as a string of dot separated quads.
      */
-    static function getCurlIp($header) 
+    static function getCurlIp($header)
     {
-        if (preg_match_all('/Trying\s+(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\b/', 
+        if (preg_match_all('/Trying\s+(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\b/',
             $header, $matches)) {
             return array_unique($matches[1]);
         } else {
@@ -476,10 +476,10 @@ class FetchUrl implements CrawlConstants
      *
      *  @param string $site  url of page to request
      *  @param string $post_data  any data to be POST'd to the URL
-     * 
+     *
      *  @return string the contents of what the curl request fetched
      */
-    public static function getPage($site, $post_data = NULL) 
+    static function getPage($site, $post_data = NULL)
     {
         static $agents = array();
         $MAX_SIZE = 50;

@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage processor
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -40,7 +40,7 @@ require_once BASE_DIR."/lib/processors/page_processor.php";
 
 
 /**
- * Base abstract class common to all processors used to create crawl summary 
+ * Base abstract class common to all processors used to create crawl summary
  * information from images
  *
  * @author Chris Pollett
@@ -50,20 +50,20 @@ require_once BASE_DIR."/lib/processors/page_processor.php";
 class ImageProcessor extends PageProcessor
 {
 
-    
+
     /**
-     * Extract summary data from the image provided in $page together the url 
+     * Extract summary data from the image provided in $page together the url
      *      in $url where it was downloaded from
      *
-     * ImageProcessor class defers a proper implementation of this method to 
+     * ImageProcessor class defers a proper implementation of this method to
      *      subclasses
      * @param string $page  the image represented as a character string
      * @param string $url  the url where the image was downloaded from
      *
-     * @return array summary information including a thumbnail and a 
+     * @return array summary information including a thumbnail and a
      *      description (where the description is just the url)
      */
-    function process($page, $url) { return NULL;} 
+    function process($page, $url) { return NULL;}
 
     /**
      * Used to create a thumbnail from an image object
@@ -78,7 +78,7 @@ class ImageProcessor extends PageProcessor
             $size_x = imagesx($image);
             $size_y = imagesy($image);
 
-            @imagecopyresampled($thumb, 
+            @imagecopyresampled($thumb,
                 $image, 0,0, 0,0, 50, 50, $size_x, $size_y);
             imagedestroy($image);
         }

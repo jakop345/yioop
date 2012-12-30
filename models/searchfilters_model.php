@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage model
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -37,9 +37,9 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 /**  For crawlHash */
 require_once BASE_DIR."/lib/utility.php";
 
-/** 
- * Loads common constants for web crawling, used for index_data_base_name and 
- * schedule_data_base_name 
+/**
+ * Loads common constants for web crawling, used for index_data_base_name and
+ * schedule_data_base_name
  */
 require_once BASE_DIR."/lib/crawl_constants.php";
 
@@ -56,15 +56,15 @@ require_once BASE_DIR."/lib/crawl_constants.php";
 class SearchfiltersModel extends Model implements CrawlConstants
 {
     /**
-     * Directory in which to put filter 
+     * Directory in which to put filter
      * @var string
      */
     var $dir_name;
-    
+
     /**
      *  {@inheritdoc}
      */
-    function __construct($db_name = DB_NAME) 
+    function __construct($db_name = DB_NAME)
     {
         parent::__construct($db_name);
         $this->dir_name = CRAWL_DIR."/search_filters";
@@ -124,7 +124,7 @@ class SearchfiltersModel extends Model implements CrawlConstants
         foreach($urls as $url) {
             $hash_urls[] = substr(crawlHash($url, true), 1);
         }
-        file_put_contents($this->dir_name."/hash_urls.txt", 
+        file_put_contents($this->dir_name."/hash_urls.txt",
             serialize($hash_urls));
 
     }
@@ -152,7 +152,7 @@ class SearchfiltersModel extends Model implements CrawlConstants
             unset($result_pages[$hash_url]);
         } else {
             $result_pages[$hash_url] = array(
-                self::URL => $url, self::TITLE => $title, 
+                self::URL => $url, self::TITLE => $title,
                 self::DESCRIPTION => $description);
         }
         file_put_contents($file_name, serialize($result_pages));

@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage controller
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -41,7 +41,7 @@ require_once BASE_DIR."/lib/web_archive_bundle.php";
 require_once BASE_DIR."/lib/crawl_constants.php";
 
 /**
- * Fetcher machines also act as archives for complete caches of web pages, 
+ * Fetcher machines also act as archives for complete caches of web pages,
  * this controller is used to handle access to these web page caches
  *
  * @author Chris Pollett
@@ -61,25 +61,25 @@ class ArchiveController extends Controller implements CrawlConstants
      */
     var $views = array();
     /**
-     * The only legal activity this controller will accept is a request 
+     * The only legal activity this controller will accept is a request
      * for the cache of a web page
      * @var array
      */
     var $activities = array("cache");
 
     /**
-     * Main method for this controller to handle requests. It first checks 
+     * Main method for this controller to handle requests. It first checks
      * the request is valid, and then handles the corresponding activity
      *
      * For this controller the only activity is to handle a cache request
      */
-    function processRequest() 
+    function processRequest()
     {
 
         $data = array();
 
 
-        /* do a quick test to see if this is a request seems like from a 
+        /* do a quick test to see if this is a request seems like from a
            legitimate machine
          */
         if(!$this->checkRequest()) {return; }
@@ -91,7 +91,7 @@ class ArchiveController extends Controller implements CrawlConstants
 
 
     /**
-     * Retrieves the requested page from the WebArchiveBundle and echo it page, 
+     * Retrieves the requested page from the WebArchiveBundle and echo it page,
      * base64 encoded
      */
     function cache()
@@ -106,7 +106,7 @@ class ArchiveController extends Controller implements CrawlConstants
         $web_archive = new WebArchiveBundle(
             CRAWL_DIR.'/cache/'.$prefix.self::archive_base_name.
                 $crawl_time);
-        $page = $web_archive->getPage($offset, 
+        $page = $web_archive->getPage($offset,
             $partition);
 
         echo base64_encode(serialize($page));

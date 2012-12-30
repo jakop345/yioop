@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage processor
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -39,7 +39,7 @@ require_once BASE_DIR."/lib/url_parser.php";
 require_once BASE_DIR."/lib/processors/image_processor.php";
 
 /**
- * Used to create crawl summary information 
+ * Used to create crawl summary information
  * for BMP and ICO files
  *
  * @author Chris Pollett
@@ -74,14 +74,14 @@ class BmpProcessor extends ImageProcessor
     function process($page, $url)
     {
         if(is_string($page)) {
-            file_put_contents(CRAWL_DIR."/cache/tmp.bmp", $page); 
+            file_put_contents(CRAWL_DIR."/cache/tmp.bmp", $page);
             $image = $this->imagecreatefrombmp(CRAWL_DIR."/cache/tmp.bmp");
             $thumb_string = self::createThumb($image);
             $summary[self::TITLE] = "";
             $summary[self::DESCRIPTION] = "Image of ".
                 UrlParser::getDocumentFilename($url);
             $summary[self::LINKS] = array();
-            $summary[self::PAGE] = 
+            $summary[self::PAGE] =
                 "<html><body><div><img src='data:image/bmp;base64," .
                 base64_encode($page)."' alt='".$summary[self::DESCRIPTION].
                 "' /></div></body></html>";
@@ -92,11 +92,11 @@ class BmpProcessor extends ImageProcessor
     }
 
     /**
-     * Reads in a 32 / 24bit non-palette bmp files from provided filename 
-     * and returns a php  image object corresponding to it. This is a crude 
+     * Reads in a 32 / 24bit non-palette bmp files from provided filename
+     * and returns a php  image object corresponding to it. This is a crude
      * variation of code from imagecreatewbmp function documentation at php.net
      *
-     * @param string $filename = name of 
+     * @param string $filename = name of
      */
     function imagecreatefrombmp($filename)
     {
@@ -121,14 +121,14 @@ class BmpProcessor extends ImageProcessor
             $height = hexdec($header_parts[23] . $header_parts[22]);
             $bits_per_pixel = hexdec($header_parts[29] . $header_parts[28]);
             $can_understand_flag = (($bits_per_pixel == 24) ||
-                ($bits_per_pixel == 32)) && ($width < 
+                ($bits_per_pixel == 32)) && ($width <
                 self::MAX_DIM && $height < self::MAX_DIM );
             unset($header_parts);
         }
 
         $x = 0;
         $y = 1;
-       
+
         /* We're going to manually write pixel info in to the following
             image object
         */

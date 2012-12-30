@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -22,8 +22,8 @@
  *
  *  END LICENSE
  *
- * Test to see how many sockets system can open. On *nix systems, by doing 
- * ulimit -n 
+ * Test to see how many sockets system can open. On *nix systems, by doing
+ * ulimit -n
  * you can find this out,
  * but the number doesn't exactly agree.
  *
@@ -32,7 +32,7 @@
  *
  * <pre>
  * limit maxproc 1024 2048
- * limit maxfiles 2048 2048 
+ * limit maxfiles 2048 2048
  * </pre>
  *
  * @author Chris Pollett chris@pollett.org
@@ -40,7 +40,7 @@
  * @subpackage test
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 

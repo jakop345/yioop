@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage library
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -43,7 +43,7 @@ require_once "string_array.php";
 require_once "utility.php";
 
 /**
- * 
+ *
  * Code used to manage a memory efficient hash table
  * Weights for the queue must be flaots
  *
@@ -51,7 +51,7 @@ require_once "utility.php";
  *
  * @package seek_quarry
  * @subpackage library
- */ 
+ */
 class HashTable extends StringArray
 {
 
@@ -75,7 +75,7 @@ class HashTable extends StringArray
     /**
      * Holds \0\0 followed by an all \FF string of length $this->key_size -1
      * Used to indicate that a slot once held data but that data was deleted.
-     * Such a slot tells a lookup to keep going, but on an insert can be 
+     * Such a slot tells a lookup to keep going, but on an insert can be
      * overwritten in the inserted key is not already in the table
      * @var string
      */
@@ -115,8 +115,8 @@ class HashTable extends StringArray
      * @param int $save_fequency how many non read operation before saving to
      *      disk
      */
-    function __construct($fname, $num_values, $key_size, $value_size, 
-        $save_frequency = self::DEFAULT_SAVE_FREQUENCY) 
+    function __construct($fname, $num_values, $key_size, $value_size,
+        $save_frequency = self::DEFAULT_SAVE_FREQUENCY)
     {
         $this->key_size = $key_size;
         $this->value_size = $value_size;
@@ -125,7 +125,7 @@ class HashTable extends StringArray
 
         $this->count = 0;
 
-        parent::__construct($fname, $num_values, 
+        parent::__construct($fname, $num_values,
             $key_size + $value_size, $save_frequency);
     }
 
@@ -150,7 +150,7 @@ class HashTable extends StringArray
 
         if($probe === false) {
             /* this is a little slow
-               the idea is we can't use deleted slots until we are sure 
+               the idea is we can't use deleted slots until we are sure
                $key isn't in the table
              */
             $probe = $this->lookupArray(
@@ -190,13 +190,13 @@ class HashTable extends StringArray
      * location where it was found or the value associated with the key.
      *
      * @param string $key key to look up in the hash table
-     * @param int $return_probe_value one of self::ALWAYS_RETURN_PROBE, 
-     *      self::RETURN_PROBE_ON_KEY_FOUND, self::RETURN_VALUE, or self::BOTH. 
+     * @param int $return_probe_value one of self::ALWAYS_RETURN_PROBE,
+     *      self::RETURN_PROBE_ON_KEY_FOUND, self::RETURN_VALUE, or self::BOTH.
      *      Here value means the value associated with the key and probe is
      *      either the location in the array where the key was found or
      *      the first location in the array where it was determined the
      *      key could not be found.
-     * @return mixed would be string if the value is being returned, 
+     * @return mixed would be string if the value is being returned,
      *      an int if the probe is being returned, and false if the key
      *      is not found
      */
@@ -210,7 +210,7 @@ class HashTable extends StringArray
      * Tries to lookup the key in the hash table either return the
      * location where it was found or the value associated with the key.
      * If the key is not at the initial probe value, linear search in the
-     * table is done. The values which cut-off the search are stored in 
+     * table is done. The values which cut-off the search are stored in
      * $null_array. Using an array allows for flexibility since a deleted
      * entry needs to be handled different when doing a lookup then when
      * doing an insert.
@@ -218,23 +218,23 @@ class HashTable extends StringArray
      * @param string $key key to look up in the hash table
      * @param array $null_array key values that would cut-off the search
      *      for key if the initial probe failed
-     * @param int $return_probe_value one of self::ALWAYS_RETURN_PROBE, 
+     * @param int $return_probe_value one of self::ALWAYS_RETURN_PROBE,
      *      self::RETURN_PROBE_ON_KEY_FOUND, or self::RETURN_VALUE. Here
      *      value means the value associated with the key and probe is
      *      either the location in the array where the key was found or
      *      the first location in the array where it was determined the
      *      key could not be found.
-     * @return mixed would be string if the value is being returned, 
+     * @return mixed would be string if the value is being returned,
      *      an int if the probe is being returned, and false if the key
      *      is not found
      */
-    function lookupArray($key, $null_array, 
+    function lookupArray($key, $null_array,
         $return_probe_value = self::RETURN_VALUE)
     {
         $index = $this->hash($key);
 
         $num_values = $this->num_values;
-        $probe_array = array(self::RETURN_PROBE_ON_KEY_FOUND, 
+        $probe_array = array(self::RETURN_PROBE_ON_KEY_FOUND,
             self::ALWAYS_RETURN_PROBE);
 
         for($j = 0; $j < $num_values; $j++)  {
@@ -263,7 +263,7 @@ class HashTable extends StringArray
             $result = array($probe, $index_value);
         }
 
-        return $result; 
+        return $result;
 
     }
 

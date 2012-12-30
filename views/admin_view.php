@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage view
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -40,7 +40,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @author Chris Pollett
  * @package seek_quarry
  * @subpackage view
- */ 
+ */
 
 class AdminView extends View
 {
@@ -48,15 +48,15 @@ class AdminView extends View
      *  @var string
      */
     var $layout = "web";
-    /** Names of element objects that the view uses to display itself 
+    /** Names of element objects that the view uses to display itself
      *  @var array
      */
-    var $elements = array("language", "activity", "signin", 
+    var $elements = array("language", "activity", "signin",
         "managecrawls", "manageaccount", "manageusers", "manageroles",
-        "mixcrawls", "managelocales", "editlocales", "crawloptions", 
+        "mixcrawls", "managelocales", "editlocales", "crawloptions",
         "editmix", "pageoptions", "resultseditor", "searchsources",
         "managemachines", "machinelog", "editstatic", "configure");
-    /** Names of helper objects that the view uses to help draw itself 
+    /** Names of helper objects that the view uses to help draw itself
      *  @var array
      */
     var $helpers = array('options');
@@ -68,7 +68,7 @@ class AdminView extends View
      * @param array $data  what is contained in this array depend on the current
      * admin activity. The $data['ELEMENT'] says which activity to render
      */
-    public function renderView($data) {
+    function renderView($data) {
         $logo = "resources/yioop.png";
         if(MOBILE) {
             $logo = "resources/m-yioop.png";
@@ -83,15 +83,15 @@ class AdminView extends View
 
         ?>
 
-        <h1 class="admin-heading logo"><a href="./?<?php 
-            e(CSRF_TOKEN."=".$data[CSRF_TOKEN]); ?>"><img 
-            src="<?php e($logo); ?>" alt="Yioop!" /></a><span> - <?php 
-        e(tl('admin_view_admin')); 
+        <h1 class="admin-heading logo"><a href="./?<?php
+            e(CSRF_TOKEN."=".$data[CSRF_TOKEN]); ?>"><img
+            src="<?php e($logo); ?>" alt="Yioop!" /></a><span> - <?php
+        e(tl('admin_view_admin'));
         if(!MOBILE) {e(' ['.$data['CURRENT_ACTIVITY'].']');}?></span></h1>
 
         <?php
         $this->activityElement->render($data);
-        if(isset($data['ELEMENT'])) { 
+        if(isset($data['ELEMENT'])) {
             $element = $data['ELEMENT'];
 
             $this->$element->render($data);
@@ -105,7 +105,7 @@ class AdminView extends View
         function logoutWarn()
         {
             doMessage(
-                "<h2 class='red'><?php 
+                "<h2 class='red'><?php
                     e(tl('adminview_auto_logout_one_minute'))?></h2>");
         }
         /*
@@ -119,9 +119,9 @@ class AdminView extends View
         //schedule logout warnings
         var sec = 1000;
         var minute = 60*sec;
-        setTimeout("logoutWarn()", 59*minute);
-        setTimeout("autoLogout()", 60*minute);
-        
+        setTimeout("logoutWarn()", 59 * minute);
+        setTimeout("autoLogout()", 60 * minute);
+
         </script>
         <?php
         }

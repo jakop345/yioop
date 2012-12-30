@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,14 +27,14 @@
  * @subpackage element
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- * Used to draw the admin screen on which admin users can create roles, delete 
+ * Used to draw the admin screen on which admin users can create roles, delete
  * roles and add and delete roles from users
  *
  * @author Chris Pollett
@@ -46,29 +46,29 @@ class ManagerolesElement extends Element
 {
 
     /**
-     * renders the screen in which roles can be created, deleted, and added or 
+     * renders the screen in which roles can be created, deleted, and added or
      * deleted from a user
      *
-     * @param array $data  contains antiCSRF token, as well as data on 
+     * @param array $data  contains antiCSRF token, as well as data on
      *      available roles or which user has what role
      */
-    public function render($data) 
+    function render($data)
     {?>
         <div class="currentactivity">
         <h2><?php e(tl('manageroles_element_add_role'))?></h2>
         <form id="addRoleForm" method="post" action='#'>
-        <input type="hidden" name="c" value="admin" /> 
-        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php 
-            e($data[CSRF_TOKEN]); ?>" /> 
+        <input type="hidden" name="c" value="admin" />
+        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
+            e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="manageRoles" />
         <input type="hidden" name="arg" value="addrole" />
 
         <table class="nametable">
-        <tr><td><label for="role-name"><?php 
+        <tr><td><label for="role-name"><?php
             e(tl('manageroles_element_rolename'))?></label></td>
-            <td><input type="text" id="role-name" name="rolename" 
-                maxlength="80" class="narrowfield" /></td><td 
-                class="center"> <button class="buttonbox" type="submit"><?php 
+            <td><input type="text" id="role-name" name="rolename"
+                maxlength="80" class="narrowfield" /></td><td
+                class="center"> <button class="buttonbox" type="submit"><?php
                 e(tl('manageroles_element_submit')); ?></button></td>
         </tr>
         </table>
@@ -76,56 +76,56 @@ class ManagerolesElement extends Element
 
         <h2><?php e(tl('manageroles_element_delete_role'))?></h2>
         <form id="deleteRoleForm" method="post" action='#'>
-        <input type="hidden" name="c" value="admin" /> 
-        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php 
+        <input type="hidden" name="c" value="admin" />
+        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />
-        <input type="hidden" name="a" value="manageRoles" /> 
+        <input type="hidden" name="a" value="manageRoles" />
         <input type="hidden" name="arg" value="deleterole" />
 
         <table class="nametable">
-         <tr><td><label for="delete-rolename"><?php 
+         <tr><td><label for="delete-rolename"><?php
             e(tl('manageusers_element_delete_rolename'))?></label></td>
             <td><?php $this->view->optionsHelper->render(
-                "delete-rolename", "selectrole", $data['ROLE_NAMES'], "-1"); 
-                ?></td><td><button class="buttonbox" type="submit"><?php 
+                "delete-rolename", "selectrole", $data['ROLE_NAMES'], "-1");
+                ?></td><td><button class="buttonbox" type="submit"><?php
                 e(tl('manageroles_element_submit')); ?></button></td>
         </tr>
         </table>
         </form>
         <h2><?php e(tl('manageroles_element_view_role_activities'))?></h2>
         <form id="viewRoleActivityForm" method="get" action='#' >
-        <input type="hidden" name="c" value="admin" /> 
-        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php 
-            e($data[CSRF_TOKEN]); ?>" /> 
-        <input type="hidden" name="a" value="manageRoles" /> 
+        <input type="hidden" name="c" value="admin" />
+        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
+            e($data[CSRF_TOKEN]); ?>" />
+        <input type="hidden" name="a" value="manageRoles" />
         <input type="hidden" name="arg" value="viewroleactivities" />
         <table class="nametable">
-        <tr><td><label for="select-role"><?php 
+        <tr><td><label for="select-role"><?php
             e(tl('manageusers_element_select_role'))?></label></td>
-            <td><?php $this->view->optionsHelper->render("select-role", 
-            "selectrole", $data['ROLE_NAMES'], $data['SELECT_ROLE']); 
+            <td><?php $this->view->optionsHelper->render("select-role",
+            "selectrole", $data['ROLE_NAMES'], $data['SELECT_ROLE']);
             ?></td></tr>
         </table>
         </form>
         <?php
         if(isset($data['ROLE_ACTIVITIES'])) {
-             if(count($data['AVAILABLE_ACTIVITIES']) > 0  && 
+             if(count($data['AVAILABLE_ACTIVITIES']) > 0  &&
                 $data['SELECT_ROLE'] != -1) { ?>
                 <form id="addRoleActivityForm" method="get" action='#' >
-                <input type="hidden" name="c" value="admin" /> 
+                <input type="hidden" name="c" value="admin" />
                 <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
                     e($data[CSRF_TOKEN]); ?>" />
-                <input type="hidden" name="a" value="manageRoles" /> 
+                <input type="hidden" name="a" value="manageRoles" />
                 <input type="hidden" name="arg" value="addactivity" />
-                <input type="hidden" name="selectrole" value="<?php 
+                <input type="hidden" name="selectrole" value="<?php
                     e($data['SELECT_ROLE']);?>" />
                 <table class="nametable">
-                 <tr><td><label for="add-activity"><?php 
+                 <tr><td><label for="add-activity"><?php
                     e(tl('manageusers_element_add_activity'))?></label></td>
-                    <td><?php $this->view->optionsHelper->render("add-activity", 
-                        "selectactivity", $data['AVAILABLE_ACTIVITIES'], 
+                    <td><?php $this->view->optionsHelper->render("add-activity",
+                        "selectactivity", $data['AVAILABLE_ACTIVITIES'],
                         $data['SELECT_ACTIVITY']); ?></td>
-                    <td><button class="buttonbox" type="submit"><?php 
+                    <td><button class="buttonbox" type="submit"><?php
                     e(tl('manageroles_element_submit')); ?></button></td></tr>
                  </table>
                  </form>
@@ -154,7 +154,7 @@ class ManagerolesElement extends Element
         }
         </script>
         </div>
-    <?php 
+    <?php
     }
 }
 ?>

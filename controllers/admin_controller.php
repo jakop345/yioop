@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage controller
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -49,7 +49,7 @@ require_once BASE_DIR."/lib/url_parser.php";
  * @package seek_quarry
  * @subpackage controller
  */
- 
+
 class AdminController extends Controller implements CrawlConstants
 {
     /**
@@ -67,12 +67,12 @@ class AdminController extends Controller implements CrawlConstants
         "signin", "user", "activity", "crawl", "role", "locale", "profile",
         "searchfilters", "source", "machine");
     /**
-     * Says which activities (roughly methods invoke from the web) this 
+     * Says which activities (roughly methods invoke from the web) this
      * controller will respond to
      * @var array
      */
     var $activities = array("signin", "manageAccount", "manageUsers",
-        "manageRoles", "manageCrawls", "pageOptions", "resultsEditor", 
+        "manageRoles", "manageCrawls", "pageOptions", "resultsEditor",
         "manageMachines", "manageLocales", "crawlStatus", "mixCrawls",
         "machineStatus", "searchSources", "configure");
     /**
@@ -89,11 +89,11 @@ class AdminController extends Controller implements CrawlConstants
      * This is the main entry point for handling requests to administer the
      * Yioop/SeekQuarry site
      *
-     * ProcessRequest determines the type of request (signin , manageAccount, 
-     * etc) is being made.  It then calls the appropriate method to handle the 
+     * ProcessRequest determines the type of request (signin , manageAccount,
+     * etc) is being made.  It then calls the appropriate method to handle the
      * given activity. Finally, it draws the relevant admin screen
      */
-    function processRequest() 
+    function processRequest()
     {
         $data = array();
 
@@ -105,7 +105,7 @@ class AdminController extends Controller implements CrawlConstants
         if(isset($_SESSION['USER_ID'])) {
             $user = $_SESSION['USER_ID'];
         } else {
-            $user = $_SERVER['REMOTE_ADDR']; 
+            $user = $_SERVER['REMOTE_ADDR'];
         }
 
         $data[CSRF_TOKEN] = $this->generateCSRFToken($user);
@@ -127,7 +127,7 @@ class AdminController extends Controller implements CrawlConstants
                 }
                 $_SESSION['USER_ID'] = $user_id;
                 $data[CSRF_TOKEN] = $this->generateCSRFToken(
-                    $_SESSION['USER_ID']); 
+                    $_SESSION['USER_ID']);
                     // now don't want to use remote address anymore
                 $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
                     tl('admin_controller_login_successful')."</h1>')";
@@ -141,7 +141,7 @@ class AdminController extends Controller implements CrawlConstants
         } else if($this->checkCSRFToken(CSRF_TOKEN, "config")) {
             $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
                 tl('admin_controller_login_to_config')."</h1>')";
-        } else if(isset($_REQUEST['a']) && 
+        } else if(isset($_REQUEST['a']) &&
             in_array($_REQUEST['a'], $this->status_activities)) {
             e("<p class='red'>".
                 tl('admin_controller_status_updates_stopped')."</p>");
@@ -177,7 +177,7 @@ class AdminController extends Controller implements CrawlConstants
     function checkSignin()
     {
         $result = $this->signinModel->checkValidSignin(
-        $this->clean($_REQUEST['u'], "string"), 
+        $this->clean($_REQUEST['u'], "string"),
         $this->clean($_REQUEST['p'], "string") );
         return $result;
     }
@@ -195,7 +195,7 @@ class AdminController extends Controller implements CrawlConstants
     {
         if(!PROFILE) {
             $activity = "configure";
-        } else if(isset($_REQUEST['a']) &&  
+        } else if(isset($_REQUEST['a']) &&
             in_array($_REQUEST['a'], $this->activities)) {
             $activity = $_REQUEST['a'];
         } else {
@@ -203,10 +203,10 @@ class AdminController extends Controller implements CrawlConstants
         }
         $allowed = false;
         if(!PROFILE) {
-            $allowed_activities = array( array( 
-                "ACTIVITY_NAME" => 
+            $allowed_activities = array( array(
+                "ACTIVITY_NAME" =>
                 $this->activityModel->getActivityNameFromMethodName($activity),
-                'METHOD_NAME' => $activity)); 
+                'METHOD_NAME' => $activity));
             $allowed = true;
         } else {
             $allowed_activities =
@@ -232,14 +232,14 @@ class AdminController extends Controller implements CrawlConstants
             $data['ACTIVITIES'] = $allowed_activities;
         }
         if(!in_array($activity, $this->status_activities)) {
-            $data['CURRENT_ACTIVITY'] = 
+            $data['CURRENT_ACTIVITY'] =
                 $this->activityModel->getActivityNameFromMethodName($activity);
         }
         return $data;
     }
 
     /**
-     * This method is data to signin a user and initialize the data to be 
+     * This method is data to signin a user and initialize the data to be
      * display in a view
      *
      * @return array empty array of data to show so far in view
@@ -247,7 +247,7 @@ class AdminController extends Controller implements CrawlConstants
     function signin()
     {
         $data = array();
-        $_SESSION['USER_ID'] = 
+        $_SESSION['USER_ID'] =
             $this->signinModel->getUserId($_REQUEST['username']);
         return $data;
     }
@@ -256,8 +256,8 @@ class AdminController extends Controller implements CrawlConstants
      * Used to handle crawlStatus REST activities requesting the status of the
      * current web crawl
      *
-     * @return array $data contains crawl status of current crawl as well as 
-     *      info about prior crawls and which crawl is being used for default 
+     * @return array $data contains crawl status of current crawl as well as
+     *      info about prior crawls and which crawl is being used for default
      *      search results
      */
     function crawlStatus()
@@ -273,7 +273,7 @@ class AdminController extends Controller implements CrawlConstants
         }
 
         $machine_urls = $this->machineModel->getQueueServerUrls();
-        list($stalled, $status, $data['RECENT_CRAWLS']) = 
+        list($stalled, $status, $data['RECENT_CRAWLS']) =
             $this->crawlModel->combinedCrawlInfo($machine_urls);
 
         if($stalled) {
@@ -283,11 +283,11 @@ class AdminController extends Controller implements CrawlConstants
         $data = array_merge($data, $status);
 
         $data["CRAWL_RUNNING"] = false;
-        if(isset($data['CRAWL_TIME']) && $data["CRAWL_TIME"] != 0) { 
+        if(isset($data['CRAWL_TIME']) && $data["CRAWL_TIME"] != 0) {
             //erase from previous crawl list any active crawl
             $num_crawls = count($data['RECENT_CRAWLS']);
             for($i = 0; $i < $num_crawls; $i++) {
-                if($data['RECENT_CRAWLS'][$i]['CRAWL_TIME'] == 
+                if($data['RECENT_CRAWLS'][$i]['CRAWL_TIME'] ==
                     $data['CRAWL_TIME']) {
                     $data['RECENT_CRAWLS'][$i] = false;
                 }
@@ -296,7 +296,7 @@ class AdminController extends Controller implements CrawlConstants
             $data['RECENT_CRAWLS']= array_filter($data['RECENT_CRAWLS']);
         }
         if(isset($data['RECENT_CRAWLS'][0])) {
-            rorderCallback($data['RECENT_CRAWLS'][0], $data['RECENT_CRAWLS'][0], 
+            rorderCallback($data['RECENT_CRAWLS'][0], $data['RECENT_CRAWLS'][0],
                 'CRAWL_TIME');
             usort($data['RECENT_CRAWLS'], "rorderCallback");
         }
@@ -334,31 +334,31 @@ class AdminController extends Controller implements CrawlConstants
         $data["ELEMENT"] = "manageaccountElement";
         $data['SCRIPT'] = "";
 
-        if(isset($_REQUEST['arg']) && 
+        if(isset($_REQUEST['arg']) &&
             in_array($_REQUEST['arg'], $possible_arguments)) {
             switch($_REQUEST['arg'])
             {
                 case "changepassword":
                     if($_REQUEST['retypepassword'] != $_REQUEST['newpassword']){
-                        $data["MESSAGE"] = 
+                        $data["MESSAGE"] =
                             tl('admin_controller_passwords_dont_match');
-                        $data['SCRIPT'] .= 
+                        $data['SCRIPT'] .=
                             "doMessage('<h1 class=\"red\" >". $data["MESSAGE"].
                             "</h1>')";
                         return $data;
                     }
-                    $username = 
+                    $username =
                         $this->signinModel->getUserName($_SESSION['USER_ID']);
-                    $result = $this->signinModel->checkValidSignin($username, 
+                    $result = $this->signinModel->checkValidSignin($username,
                     $this->clean($_REQUEST['oldpassword'], "string") );
                     if(!$result) {
-                        $data["MESSAGE"] = 
+                        $data["MESSAGE"] =
                             tl('admin_controller_invalid_old_password');
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             $data["MESSAGE"]."</h1>')";
                         return $data;
                     }
-                    $this->signinModel->changePassword($username, 
+                    $this->signinModel->changePassword($username,
                         $this->clean($_REQUEST['newpassword'], "string"));
                     $data["MESSAGE"] = tl('admin_controller_change_password');
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
@@ -371,9 +371,9 @@ class AdminController extends Controller implements CrawlConstants
     }
 
     /**
-     * Used to handle the manage user activity. 
+     * Used to handle the manage user activity.
      *
-     * This activity allows new users to be added, old users to be 
+     * This activity allows new users to be added, old users to be
      * deleted and allows roles to be added to/deleted from a user
      *
      * @return array $data infomation about users of the system, roles, etc.
@@ -381,11 +381,11 @@ class AdminController extends Controller implements CrawlConstants
      */
     function manageUsers()
     {
-        $possible_arguments = array("adduser", 
+        $possible_arguments = array("adduser",
             "deleteuser", "adduserrole", "deleteuserrole");
 
         $data["ELEMENT"] = "manageusersElement";
-        $data['SCRIPT'] = 
+        $data['SCRIPT'] =
             "selectUser = elt('select-user'); ".
             "selectUser.onchange = submitViewUserRole;";
 
@@ -417,19 +417,19 @@ class AdminController extends Controller implements CrawlConstants
             } else {
                 $select_role = "";
             }
-            
+
             foreach($all_roles as $role) {
                 $role_ids[] = $role['ROLE_ID'];
                 if($select_role == $role['ROLE_ID']) {
                     $select_rolename = $role['ROLE_NAME'];
                 }
-            } 
-            
+            }
+
             $available_roles = array_diff_assoc(
                 $all_roles, $data['SELECT_ROLES']);
 
 
-            $data['AVAILABLE_ROLES'][-1] = 
+            $data['AVAILABLE_ROLES'][-1] =
                 tl('admin_controller_select_rolename');
 
             foreach($available_roles as $role) {
@@ -445,7 +445,7 @@ class AdminController extends Controller implements CrawlConstants
             $data['SELECT_USER'] = -1;
         }
 
-        if(isset($_REQUEST['arg']) && 
+        if(isset($_REQUEST['arg']) &&
             in_array($_REQUEST['arg'], $possible_arguments)) {
 
             switch($_REQUEST['arg'])
@@ -466,7 +466,7 @@ class AdminController extends Controller implements CrawlConstants
                             tl('admin_controller_username_exists')."</h1>')";
                         return $data;
                     }
-                    $this->userModel->addUser($username, 
+                    $this->userModel->addUser($username,
                         $this->clean($_REQUEST['password'], "string"));
                     $data['USER_NAMES'][$username] = $username;
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
@@ -509,7 +509,7 @@ class AdminController extends Controller implements CrawlConstants
                         "</h1>')";
                     unset($data['AVAILABLE_ROLES'][$select_role]);
                     $data['SELECT_ROLE'] = -1;
-                    $data['SELECT_ROLES'] = 
+                    $data['SELECT_ROLES'] =
                         $this->userModel->getUserRoles($userid);
                 break;
 
@@ -527,7 +527,7 @@ class AdminController extends Controller implements CrawlConstants
                         return $data;
                     }
                     $this->userModel->deleteUserRole($userid, $select_role);
-                    $data['SELECT_ROLES'] = 
+                    $data['SELECT_ROLES'] =
                         $this->userModel->getUserRoles($userid);
                     $data['AVAILABLE_ROLES'][$select_role] = $select_rolename;
                     $data['SELECT_ROLE'] = -1;
@@ -541,9 +541,9 @@ class AdminController extends Controller implements CrawlConstants
     }
 
     /**
-     * Used to handle the manage role activity. 
+     * Used to handle the manage role activity.
      *
-     * This activity allows new roles to be added, old roles to be 
+     * This activity allows new roles to be added, old roles to be
      * deleted and allows activities to be added to/deleted from a role
      *
      * @return array $data infomation about roles in the system, activities,etc.
@@ -552,11 +552,11 @@ class AdminController extends Controller implements CrawlConstants
      */
     function manageRoles()
     {
-        $possible_arguments = 
+        $possible_arguments =
             array("addrole", "deleterole", "addactivity", "deleteactivity");
 
         $data["ELEMENT"] = "managerolesElement";
-        $data['SCRIPT'] = 
+        $data['SCRIPT'] =
             "selectRole = elt('select-role'); selectRole.onchange =".
             " submitViewRoleActivities;";
 
@@ -580,33 +580,33 @@ class AdminController extends Controller implements CrawlConstants
         } else {
             $select_role = "";
         }
-        
+
         if($select_role != "" ) {
             $data['SELECT_ROLE'] = $select_role;
-            $data['ROLE_ACTIVITIES'] = 
+            $data['ROLE_ACTIVITIES'] =
                 $this->roleModel->getRoleActivities($select_role);
             $all_activities = $this->activityModel->getActivityList();
             $activity_ids = array();
             $activity_names = array();
             foreach($all_activities as $activity) {
                 $activity_ids[] = $activity['ACTIVITY_ID'];
-                $activity_names[$activity['ACTIVITY_ID']] = 
+                $activity_names[$activity['ACTIVITY_ID']] =
                     $activity['ACTIVITY_NAME'];
             }
 
-            $available_activities = 
+            $available_activities =
                 array_diff_assoc($all_activities, $data['ROLE_ACTIVITIES']);
-            $data['AVAILABLE_ACTIVITIES'][-1] = 
+            $data['AVAILABLE_ACTIVITIES'][-1] =
                 tl('admin_controller_select_activityname');
 
 
             foreach($available_activities as $activity) {
-                $data['AVAILABLE_ACTIVITIES'][$activity['ACTIVITY_ID']] = 
+                $data['AVAILABLE_ACTIVITIES'][$activity['ACTIVITY_ID']] =
                     $activity['ACTIVITY_NAME'];
             }
 
             if(isset($_REQUEST['selectactivity'])) {
-                $select_activity = 
+                $select_activity =
                     $this->clean($_REQUEST['selectactivity'], "int" );
 
             } else {
@@ -618,10 +618,10 @@ class AdminController extends Controller implements CrawlConstants
                 $data['SELECT_ACTIVITY'] = -1;
             }
 
-        } 
-        if(isset($_REQUEST['arg']) && 
+        }
+        if(isset($_REQUEST['arg']) &&
             in_array($_REQUEST['arg'], $possible_arguments)) {
-            
+
             switch($_REQUEST['arg'])
             {
                 case "addrole":
@@ -678,7 +678,7 @@ class AdminController extends Controller implements CrawlConstants
                     $this->roleModel->addActivityRole(
                         $select_role, $select_activity);
                     unset($data['AVAILABLE_ACTIVITIES'][$select_activity]);
-                    $data['ROLE_ACTIVITIES'] = 
+                    $data['ROLE_ACTIVITIES'] =
                         $this->roleModel->getRoleActivities($select_role);
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('admin_controller_activity_added')."</h1>')";
@@ -691,7 +691,7 @@ class AdminController extends Controller implements CrawlConstants
                             "</h1>')";
                         return $data;
                     }
-                    
+
                     if(!in_array($select_activity, $activity_ids)) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('admin_controller_activityname_doesnt_exists').
@@ -700,9 +700,9 @@ class AdminController extends Controller implements CrawlConstants
                     }
                     $this->roleModel->deleteActivityRole(
                         $select_role, $select_activity);
-                    $data['ROLE_ACTIVITIES'] = 
+                    $data['ROLE_ACTIVITIES'] =
                         $this->roleModel->getRoleActivities($select_role);
-                    $data['AVAILABLE_ACTIVITIES'][$select_activity] = 
+                    $data['AVAILABLE_ACTIVITIES'][$select_activity] =
                         $activity_names[$select_activity];
                     $data['SELECT_ACTIVITY'] = -1;
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
@@ -715,10 +715,10 @@ class AdminController extends Controller implements CrawlConstants
     }
 
     /**
-     * Used to handle the manage crawl activity. 
+     * Used to handle the manage crawl activity.
      *
      * This activity allows new crawls to be started, statistics about old
-     * crawls to be seen. It allows a user to stop the current crawl or 
+     * crawls to be seen. It allows a user to stop the current crawl or
      * restart an old crawl. It also allows a user to configure the options
      * by which a crawl is conducted
      *
@@ -728,13 +728,13 @@ class AdminController extends Controller implements CrawlConstants
      */
     function manageCrawls()
     {
-        $possible_arguments = 
+        $possible_arguments =
             array("start", "resume", "delete", "stop", "index", "options");
 
         $data["ELEMENT"] = "managecrawlsElement";
         $data['SCRIPT'] = "doUpdate();";
 
-        if(isset($_REQUEST['arg']) && 
+        if(isset($_REQUEST['arg']) &&
             in_array($_REQUEST['arg'], $possible_arguments)) {
 
             $machine_urls = $this->machineModel->getQueueServerUrls();
@@ -769,23 +769,23 @@ class AdminController extends Controller implements CrawlConstants
                         tl('admin_controller_resume_crawl')."</h1>')";
                     $crawl_params = array();
                     $crawl_params[self::STATUS] = "RESUME_CRAWL";
-                    $crawl_params[self::CRAWL_TIME] = 
+                    $crawl_params[self::CRAWL_TIME] =
                         $this->clean($_REQUEST['timestamp'], "int");
-                    /* 
+                    /*
                         we only set crawl time. Other data such as allowed sites
                         should come from index.
                     */
-                    $this->crawlModel->sendStartCrawlMessage($crawl_params, 
+                    $this->crawlModel->sendStartCrawlMessage($crawl_params,
                         NULL, $machine_urls);
                 break;
 
                 case "delete":
                     if(isset($_REQUEST['timestamp'])) {
-                         $timestamp = 
+                         $timestamp =
                             $this->clean($_REQUEST['timestamp'], "int");
-                         $this->crawlModel->deleteCrawl($timestamp, 
+                         $this->crawlModel->deleteCrawl($timestamp,
                             $machine_urls);
-                         
+
                          $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('admin_controller_delete_crawl_success').
                             "</h1>'); crawlStatusUpdate(); ";
@@ -826,7 +826,7 @@ class AdminController extends Controller implements CrawlConstants
         $crawl_params[self::CRAWL_TIME] = time();
         $seed_info = $this->crawlModel->getSeedInfo();
         $crawl_params[self::CRAWL_TYPE] = $seed_info['general']['crawl_type'];
-        $crawl_params[self::CRAWL_INDEX] = 
+        $crawl_params[self::CRAWL_INDEX] =
             (isset($seed_info['general']['crawl_index'])) ?
             $seed_info['general']['crawl_index'] : '';
         $crawl_params[self::ARC_DIR]=(isset($seed_info['general']['arc_dir'])) ?
@@ -834,22 +834,22 @@ class AdminController extends Controller implements CrawlConstants
         $crawl_params[self::ARC_TYPE] =
             (isset($seed_info['general']['arc_type'])) ?
             $seed_info['general']['arc_type'] : '';
-        $crawl_params[self::PAGE_RANGE_REQUEST] = 
+        $crawl_params[self::PAGE_RANGE_REQUEST] =
             (isset($seed_info['general']['page_range_request'])) ?
             intval($seed_info['general']['page_range_request']) :
             PAGE_RANGE_REQUEST;
-        $crawl_params[self::PAGE_RECRAWL_FREQUENCY] = 
+        $crawl_params[self::PAGE_RECRAWL_FREQUENCY] =
             (isset($seed_info['general']['page_recrawl_frequency'])) ?
             intval($seed_info['general']['page_recrawl_frequency']) :
             PAGE_RECRAWL_FREQUENCY;
         $crawl_params[self::TO_CRAWL] = $seed_info['seed_sites']['url'];
         $crawl_params[self::CRAWL_ORDER] = $seed_info['general']['crawl_order'];
-        $crawl_params[self::RESTRICT_SITES_BY_URL] = 
+        $crawl_params[self::RESTRICT_SITES_BY_URL] =
             $seed_info['general']['restrict_sites_by_url'];
-        $crawl_params[self::ALLOWED_SITES] = 
+        $crawl_params[self::ALLOWED_SITES] =
             isset($seed_info['allowed_sites']['url']) ?
             $seed_info['allowed_sites']['url'] : array();
-        $crawl_params[self::DISALLOWED_SITES] = 
+        $crawl_params[self::DISALLOWED_SITES] =
             isset($seed_info['disallowed_sites']['url']) ?
             $seed_info['disallowed_sites']['url'] : array();
         $crawl_params[self::META_WORDS] = isset($seed_info['meta_words']) ?
@@ -895,7 +895,7 @@ class AdminController extends Controller implements CrawlConstants
         file_put_contents($filename, serialize($crawl_params));
         chmod($filename, 0777);
 
-        $this->crawlModel->sendStartCrawlMessage($crawl_params, 
+        $this->crawlModel->sendStartCrawlMessage($crawl_params,
             $seed_info, $machine_urls);
     }
 
@@ -904,7 +904,7 @@ class AdminController extends Controller implements CrawlConstants
      */
     function editCrawlOption(&$data, $machine_urls)
     {
-        $data["leftorright"] = (getLocaleDirection() == 'ltr') ? 
+        $data["leftorright"] = (getLocaleDirection() == 'ltr') ?
             "right": "left";
         $data["ELEMENT"] = "crawloptionsElement";
         $crawls = $this->crawlModel->getCrawlList(false, false, $machine_urls);
@@ -939,7 +939,7 @@ class AdminController extends Controller implements CrawlConstants
             $indexes_by_crawl_time[$crawl['CRAWL_TIME']] =& $indexes[$i];
         }
         $no_further_changes = false;
-        if(isset($_REQUEST['load_option']) && 
+        if(isset($_REQUEST['load_option']) &&
             $_REQUEST['load_option'] == 1) {
             $seed_current = $this->crawlModel->getSeedInfo();
             $seed_info = $this->crawlModel->getSeedInfo(true);
@@ -961,16 +961,16 @@ class AdminController extends Controller implements CrawlConstants
             }
             $update_flag = true;
             $no_further_changes = true;
-        } else if (isset($_REQUEST['load_option']) && 
+        } else if (isset($_REQUEST['load_option']) &&
             $_REQUEST['load_option'] > 1 ) {
-            $timestamp = 
+            $timestamp =
                 $this->clean($_REQUEST['load_option'], "int");
             $seed_info = $this->crawlModel->getCrawlSeedInfo(
                 $timestamp, $machine_urls);
             $update_flag = true;
             $no_further_changes = true;
         } else if(isset($_REQUEST['ts'])) {
-            $timestamp = 
+            $timestamp =
                 $this->clean($_REQUEST['ts'], "int");
             $seed_info = $this->crawlModel->getCrawlSeedInfo(
                 $timestamp, $machine_urls);
@@ -979,7 +979,7 @@ class AdminController extends Controller implements CrawlConstants
             $seed_info = $this->crawlModel->getSeedInfo();
         }
         if(!$no_further_changes && isset($_REQUEST['crawl_indexes'])
-            && in_array($_REQUEST['crawl_indexes'], 
+            && in_array($_REQUEST['crawl_indexes'],
             array_keys($data['available_crawl_indexes']))) {
             $seed_info['general']['crawl_index'] = $_REQUEST['crawl_indexes'];
             $index_data = $indexes_by_crawl_time[$_REQUEST['crawl_indexes']];
@@ -998,7 +998,7 @@ class AdminController extends Controller implements CrawlConstants
             self::ARCHIVE_CRAWL);
         if(!$no_further_changes && isset($_REQUEST['crawl_type']) &&
             in_array($_REQUEST['crawl_type'], $data['available_crawl_types'])) {
-            $seed_info['general']['crawl_type'] = 
+            $seed_info['general']['crawl_type'] =
                 $_REQUEST['crawl_type'];
             $update_flag = true;
         }
@@ -1012,33 +1012,33 @@ class AdminController extends Controller implements CrawlConstants
         }
 
         $data['available_crawl_orders'] = array(
-            self::BREADTH_FIRST => 
-                tl('admin_controller_breadth_first'), 
-            self::PAGE_IMPORTANCE => 
+            self::BREADTH_FIRST =>
+                tl('admin_controller_breadth_first'),
+            self::PAGE_IMPORTANCE =>
                 tl('admin_controller_page_importance'));
 
-        if(!$no_further_changes && isset($_REQUEST['crawl_order']) 
-            &&  in_array($_REQUEST['crawl_order'], 
+        if(!$no_further_changes && isset($_REQUEST['crawl_order'])
+            &&  in_array($_REQUEST['crawl_order'],
                 array_keys($data['available_crawl_orders']))) {
-            $seed_info['general']['crawl_order'] = 
+            $seed_info['general']['crawl_order'] =
                 $_REQUEST['crawl_order'];
             $update_flag = true;
         }
         $data['crawl_order'] = $seed_info['general']['crawl_order'];
 
         if(!$no_further_changes && isset($_REQUEST['posted'])) {
-            $seed_info['general']['restrict_sites_by_url'] = 
+            $seed_info['general']['restrict_sites_by_url'] =
                 (isset($_REQUEST['restrict_sites_by_url'])) ?
                 true : false;
             $update_flag = true;
         }
-        $data['restrict_sites_by_url'] = 
+        $data['restrict_sites_by_url'] =
             $seed_info['general']['restrict_sites_by_url'];
-        $site_types = 
+        $site_types =
             array('allowed_sites','disallowed_sites', 'seed_sites');
         foreach($site_types as $type) {
             if(!$no_further_changes && isset($_REQUEST[$type])) {
-                $seed_info[$type]['url'] = 
+                $seed_info[$type]['url'] =
                     $this->convertStringCleanUrlsArray(
                     $_REQUEST[$type]);
             }
@@ -1049,8 +1049,8 @@ class AdminController extends Controller implements CrawlConstants
                 $data[$type] = "";
             }
         }
-        $data['TOGGLE_STATE'] = 
-            ($data['restrict_sites_by_url']) ? 
+        $data['TOGGLE_STATE'] =
+            ($data['restrict_sites_by_url']) ?
             "checked='checked'" : "";
         $data['META_WORDS'] = array();
         if(!$no_further_changes) {
@@ -1058,7 +1058,7 @@ class AdminController extends Controller implements CrawlConstants
                 foreach($_REQUEST["META_WORDS"] as $pair) {
                     list($word, $url_pattern) = array_values($pair);
                     $word = $this->clean($word, "string");
-                    $url_pattern = 
+                    $url_pattern =
                         $this->clean($url_pattern, "string");
                     if(trim($word) != "" &&trim($url_pattern) !=""){
                         $data['META_WORDS'][$word] =
@@ -1104,15 +1104,15 @@ class AdminController extends Controller implements CrawlConstants
             if(isset($_REQUEST["DATABASE_CONNECTION_DETAILS"])){
                 $data['DATABASE_CONNECTION_DETAILS']=
                            $_REQUEST["DATABASE_CONNECTION_DETAILS"];
-                $seed_info['database_connection_details'] = 
+                $seed_info['database_connection_details'] =
                            $data['DATABASE_CONNECTION_DETAILS'];
                 $update_flag = true;
             } else if(isset($seed_info['database_connection_details'])) {
-                $data['DATABASE_CONNECTION_DETAILS'] = 
+                $data['DATABASE_CONNECTION_DETAILS'] =
                     $seed_info['database_connection_details'];
             }
         } else if(isset($seed_info['database_connection_details'])) {
-            $data['DATABASE_CONNECTION_DETAILS'] = 
+            $data['DATABASE_CONNECTION_DETAILS'] =
                 $seed_info['database_connection_details'];
         }
 
@@ -1124,22 +1124,22 @@ class AdminController extends Controller implements CrawlConstants
                 $_REQUEST["INDEXING_PLUGINS"] : array();
             $update_flag = true;
         }
-        $included_plugins = 
+        $included_plugins =
             (isset($seed_info['indexing_plugins']['plugins'])) ?
-                $seed_info['indexing_plugins']['plugins'] 
+                $seed_info['indexing_plugins']['plugins']
                 : array();
 
         foreach($this->indexing_plugins as $plugin) {
             $plugin_name = ucfirst($plugin);
-            $data['INDEXING_PLUGINS'][$plugin_name] = 
-                (in_array($plugin_name, $included_plugins)) ? 
+            $data['INDEXING_PLUGINS'][$plugin_name] =
+                (in_array($plugin_name, $included_plugins)) ?
                 "checked='checked'" : "";
         }
 
         $data['SCRIPT'] = "setDisplay('toggle', ".
             "'{$data['restrict_sites_by_url']}');";
         if(!isset($_REQUEST['ts'])) {
-            $data['SCRIPT'] .= 
+            $data['SCRIPT'] .=
             " elt('load-options').onchange = ".
             "function() { if(elt('load-options').selectedIndex !=".
             " 0) { elt('crawloptionsForm').submit();  }};";
@@ -1154,9 +1154,9 @@ class AdminController extends Controller implements CrawlConstants
         $add_message = "";
         if(isset($_REQUEST['ts']) &&
             isset($_REQUEST['inject_sites'])) {
-                $timestamp = $this->clean($_REQUEST['ts'], 
+                $timestamp = $this->clean($_REQUEST['ts'],
                     "string");
-                $inject_urls = 
+                $inject_urls =
                     $this->convertStringCleanUrlsArray(
                     $_REQUEST['inject_sites']);
                 if($this->crawlModel->injectUrlsCurrentCrawl(
@@ -1167,7 +1167,7 @@ class AdminController extends Controller implements CrawlConstants
         }
         if($update_flag) {
             if(isset($_REQUEST['ts'])) {
-                $this->crawlModel->setCrawlSeedInfo($timestamp, 
+                $this->crawlModel->setCrawlSeedInfo($timestamp,
                     $seed_info, $machine_urls);
             } else {
                 $this->crawlModel->setSeedInfo($seed_info);
@@ -1216,7 +1216,7 @@ class AdminController extends Controller implements CrawlConstants
             $pre_url = $this->clean($url, "string");
             if(strlen($pre_url) > 0) {
                 $start_url = substr($pre_url,0, 6);
-                if(!in_array($start_url, 
+                if(!in_array($start_url,
                     array("file:/", "http:/", "domain", "https:"))) {
                     $pre_url = "http://". $pre_url;
                 }
@@ -1233,7 +1233,7 @@ class AdminController extends Controller implements CrawlConstants
      * weighted combinations of search indexes
      *
      * @return array $data info about available crawl mixes and changes to them
-     *      as well as any messages about the success or failure of a 
+     *      as well as any messages about the success or failure of a
      *      sub activity.
      */
     function mixCrawls()
@@ -1273,7 +1273,7 @@ class AdminController extends Controller implements CrawlConstants
         }
 
         $mix = array();
-        if(isset($_REQUEST['arg']) && 
+        if(isset($_REQUEST['arg']) &&
             in_array($_REQUEST['arg'], $possible_arguments)) {
             switch($_REQUEST['arg'])
             {
@@ -1304,7 +1304,7 @@ class AdminController extends Controller implements CrawlConstants
                 break;
 
                 case "deletemix":
-                    if(!isset($_REQUEST['timestamp'])|| !isset($mix_ids) || 
+                    if(!isset($_REQUEST['timestamp'])|| !isset($mix_ids) ||
                         !in_array($_REQUEST['timestamp'], $mix_ids)) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('admin_controller_mix_doesnt_exists').
@@ -1312,7 +1312,7 @@ class AdminController extends Controller implements CrawlConstants
                         return $data;
                     }
                     $this->crawlModel->deleteCrawlMix($_REQUEST['timestamp']);
-                    $data['available_mixes'] = 
+                    $data['available_mixes'] =
                         $this->crawlModel->getMixList(true);
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('admin_controller_mix_deleted')."</h1>')";
@@ -1338,7 +1338,7 @@ class AdminController extends Controller implements CrawlConstants
      */
     function editMix(&$data, &$mix_ids, $mix)
     {
-        $data["leftorright"] = 
+        $data["leftorright"] =
             (getLocaleDirection() == 'ltr') ? "right": "left";
         $data["ELEMENT"] = "editmixElement";
 
@@ -1366,7 +1366,7 @@ class AdminController extends Controller implements CrawlConstants
         if(isset($_REQUEST['update']) && $_REQUEST['update'] ==
             "update") {
             $mix = $_REQUEST['mix'];
-            $mix['MIX_TIMESTAMP'] = 
+            $mix['MIX_TIMESTAMP'] =
                 $this->clean($mix['MIX_TIMESTAMP'], "int");
             $mix['MIX_NAME'] =$this->clean($mix['MIX_NAME'],
                 "string");
@@ -1376,8 +1376,8 @@ class AdminController extends Controller implements CrawlConstants
                 if($mix['GROUPS'] != NULL) {
                     foreach($mix['GROUPS'] as $group_id => $group_data) {
                         if(isset($group_data['RESULT_BOUND'])) {
-                            $mix['GROUPS'][$group_id]['RESULT_BOUND'] = 
-                                $this->clean($group_data['RESULT_BOUND'], 
+                            $mix['GROUPS'][$group_id]['RESULT_BOUND'] =
+                                $this->clean($group_data['RESULT_BOUND'],
                                     "int");
                         } else {
                             $mix['GROUPS']['RESULT_BOUND'] = 0;
@@ -1386,13 +1386,13 @@ class AdminController extends Controller implements CrawlConstants
                             $comp = array();
                             foreach($group_data['COMPONENTS'] as $component) {
                                 $row = array();
-                                $row['CRAWL_TIMESTAMP'] = 
+                                $row['CRAWL_TIMESTAMP'] =
                                     $this->clean($component['CRAWL_TIMESTAMP'],
                                     "int");
                                 $row['WEIGHT'] = $this->clean(
                                     $component['WEIGHT'], "float");
                                 $row['KEYWORDS'] = $this->clean(
-                                    $component['KEYWORDS'], 
+                                    $component['KEYWORDS'],
                                     "string");
                                 $comp[] =$row;
                             }
@@ -1404,7 +1404,7 @@ class AdminController extends Controller implements CrawlConstants
                 } else {
                     $mix['COMPONENTS'] = array();
                 }
-                
+
             } else {
                 $mix['GROUPS'] = $data['MIX']['GROUPS'];
             }
@@ -1466,7 +1466,7 @@ class AdminController extends Controller implements CrawlConstants
         $data["ELEMENT"] = "pageoptionsElement";
         $data['SCRIPT'] = "";
         $profile =  $this->profileModel->getProfile(WORK_DIRECTORY);
-        $weights = array('TITLE_WEIGHT' => 4, 
+        $weights = array('TITLE_WEIGHT' => 4,
             'DESCRIPTION_WEIGHT' => 1, 'LINK_WEIGHT' => 2,
             'MIN_RESULTS_TO_GROUP' => 200, 'SERVER_ALPHA' => 1.6);
         $change = false;
@@ -1485,35 +1485,35 @@ class AdminController extends Controller implements CrawlConstants
             }
         }
         $data['RECRAWL_FREQS'] = array(-1=>tl('admin_controller_recrawl_never'),
-            1=>tl('admin_controller_recrawl_1day'), 
-            2=>tl('admin_controller_recrawl_2day'), 
-            3=>tl('admin_controller_recrawl_3day'), 
-            7=>tl('admin_controller_recrawl_7day'), 
+            1=>tl('admin_controller_recrawl_1day'),
+            2=>tl('admin_controller_recrawl_2day'),
+            3=>tl('admin_controller_recrawl_3day'),
+            7=>tl('admin_controller_recrawl_7day'),
             14=>tl('admin_controller_recrawl_14day'));
-        if(isset($_REQUEST["page_recrawl_frequency"]) && 
-            in_array($_REQUEST["page_recrawl_frequency"], 
+        if(isset($_REQUEST["page_recrawl_frequency"]) &&
+            in_array($_REQUEST["page_recrawl_frequency"],
                 array_keys($data['RECRAWL_FREQS']))) {
-            $seed_info["general"]["page_recrawl_frequency"] =  
+            $seed_info["general"]["page_recrawl_frequency"] =
                 $_REQUEST["page_recrawl_frequency"];
         }
         if(!isset($seed_info["general"]["page_recrawl_frequency"])) {
-            $seed_info["general"]["page_recrawl_frequency"] = 
+            $seed_info["general"]["page_recrawl_frequency"] =
                 PAGE_RECRAWL_FREQUENCY;
         }
-        $data['PAGE_RECRAWL_FREQUENCY'] = 
+        $data['PAGE_RECRAWL_FREQUENCY'] =
             $seed_info["general"]["page_recrawl_frequency"];
 
         if($change == true) {
-            $this->profileModel->updateProfile(WORK_DIRECTORY, array(), 
+            $this->profileModel->updateProfile(WORK_DIRECTORY, array(),
                 $profile);
         }
-        $data['SIZE_VALUES'] = array(10000=>10000, 50000=>50000, 
+        $data['SIZE_VALUES'] = array(10000=>10000, 50000=>50000,
             100000=>100000, 500000=>500000, 1000000=>1000000,
             5000000=>5000000, 10000000=>10000000);
         $data['INDEXED_FILE_TYPES'] = array();
-        if(isset($_REQUEST["page_range_request"]) && 
+        if(isset($_REQUEST["page_range_request"]) &&
             in_array($_REQUEST["page_range_request"], $data['SIZE_VALUES'])) {
-            $seed_info["general"]["page_range_request"] =  
+            $seed_info["general"]["page_range_request"] =
                 $_REQUEST["page_range_request"];
         }
         if(!isset($seed_info["general"]["page_range_request"])) {
@@ -1531,13 +1531,13 @@ class AdminController extends Controller implements CrawlConstants
                     $change = true;
                 }
             } else {
-                if(in_array($filetype, 
+                if(in_array($filetype,
                     $seed_info["indexed_file_types"]["extensions"])) {
                     $filetypes[] = $filetype;
                     $ison = true;
                 }
             }
-            $data['INDEXED_FILE_TYPES'][$filetype] = ($ison) ? 
+            $data['INDEXED_FILE_TYPES'][$filetype] = ($ison) ?
                 "checked='checked'" :'';
         }
         $seed_info["indexed_file_types"]["extensions"] = $filetypes;
@@ -1579,7 +1579,7 @@ class AdminController extends Controller implements CrawlConstants
                 tl('admin_controller_results_editor_update')."</h1>')";
         }
         if(!isset($data['disallowed_sites'])) {
-            $data['disallowed_sites'] = 
+            $data['disallowed_sites'] =
                 implode("\n", $this->searchfiltersModel->getUrls());
         }
         foreach (array("URL", "TITLE", "DESCRIPTION") as $field) {
@@ -1597,7 +1597,7 @@ class AdminController extends Controller implements CrawlConstants
             $data["URL_LIST"][$summary[self::URL]] = $summary[self::URL];
         }
         if(isset($_REQUEST['arg']) ) {
-            switch($_REQUEST['arg']) 
+            switch($_REQUEST['arg'])
             {
                 case "save_page":
                     $missing_page_field = ($data["URL"] == "") ? true: false;
@@ -1641,11 +1641,11 @@ class AdminController extends Controller implements CrawlConstants
      * managed machine, the admin can stop and start fetchers/queue_servers
      * as well as look at their log files
      *
-     * @return array $data MACHINES, their MACHINE_NAMES, data for 
+     * @return array $data MACHINES, their MACHINE_NAMES, data for
      *      FETCHER_NUMBERS drop-down
      */
     function manageMachines()
-    { 
+    {
         $data["ELEMENT"] = "managemachinesElement";
         $possible_arguments = array("addmachine", "deletemachine",
             "log", "update");
@@ -1680,12 +1680,12 @@ class AdminController extends Controller implements CrawlConstants
             $urls[] = $machine["URL"];
             $data['DELETABLE_MACHINES'][$machine["NAME"]] = $machine["NAME"];
             if(!isset($machine["PARENT"]) || $machine["PARENT"] == "") {
-                $data['REPLICATABLE_MACHINES'][$machine["NAME"]] 
+                $data['REPLICATABLE_MACHINES'][$machine["NAME"]]
                     = $machine["NAME"];
             }
         }
 
-        if(!isset($_REQUEST["has_queue_server"]) || 
+        if(!isset($_REQUEST["has_queue_server"]) ||
             isset($_REQUEST['is_replica'])) {
             $_REQUEST["has_queue_server"] = false;
         }
@@ -1715,7 +1715,7 @@ class AdminController extends Controller implements CrawlConstants
                 $allset = false;
             }
         }
-        if(isset($r["num_fetchers"]) && 
+        if(isset($r["num_fetchers"]) &&
             in_array($r["num_fetchers"], $data['FETCHER_NUMBERS'])) {
             $data['FETCHER_NUMBER'] = $r["num_fetchers"];
         } else {
@@ -1724,13 +1724,13 @@ class AdminController extends Controller implements CrawlConstants
                 $r["num_fetchers"] = 0;
             }
         }
-        $machine_exists = (isset($r["name"]) && in_array($r["name"], 
+        $machine_exists = (isset($r["name"]) && in_array($r["name"],
             $data['MACHINE_NAMES']) ) || (isset($r["url"]) &&
             in_array($r["url"], $urls));
 
-        if(isset($_REQUEST['arg']) && 
+        if(isset($_REQUEST['arg']) &&
             in_array($_REQUEST['arg'], $possible_arguments)) {
-            
+
             switch($_REQUEST['arg'])
             {
                 case "addmachine":
@@ -1782,11 +1782,11 @@ class AdminController extends Controller implements CrawlConstants
                         }
                         $this->machineModel->deleteMachine($r["name"]);
                         $tmp_array = array($r["name"]);
-                        $diff = 
+                        $diff =
                             array_diff($data['MACHINE_NAMES'],  $tmp_array);
                         $data['MACHINE_NAMES'] = array_merge($diff);
                         $tmp_array = array($r["name"] => $r["name"]);
-                        $diff = 
+                        $diff =
                             array_diff($data['DELETABLE_MACHINES'], $tmp_array);
                         $data['DELETABLE_MACHINES'] = array_merge($diff);
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
@@ -1796,15 +1796,15 @@ class AdminController extends Controller implements CrawlConstants
 
                 case "log":
                     if(isset($_REQUEST["fetcher_num"])) {
-                        $r["fetcher_num"] = 
+                        $r["fetcher_num"] =
                             $this->clean($_REQUEST["fetcher_num"], "int");
                     }
                     if(isset($_REQUEST["mirror_name"])) {
-                        $r["mirror_name"] = 
+                        $r["mirror_name"] =
                             $this->clean($_REQUEST["mirror_name"], "string");
                     }
                     if(isset($_REQUEST["time"])) {
-                        $data["time"] = 
+                        $data["time"] =
                             $this->clean($_REQUEST["time"], "int") + 30;
                     } else {
                         $data["time"] = 30;
@@ -1835,9 +1835,9 @@ class AdminController extends Controller implements CrawlConstants
                         $data["REFRESH_LOG"] = "";
                     }
 
-                    if(!isset($data["LOG_FILE_DATA"]) 
+                    if(!isset($data["LOG_FILE_DATA"])
                         || $data["LOG_FILE_DATA"] == ""){
-                        $data["LOG_FILE_DATA"] = 
+                        $data["LOG_FILE_DATA"] =
                             tl('admin_controller_no_machine_log');
                     }
                     $lines =array_reverse(explode("\n",$data["LOG_FILE_DATA"]));
@@ -1846,14 +1846,14 @@ class AdminController extends Controller implements CrawlConstants
 
                 case "update":
                     if(isset($_REQUEST["fetcher_num"])) {
-                        $r["fetcher_num"] = 
+                        $r["fetcher_num"] =
                             $this->clean($_REQUEST["fetcher_num"], "int");
                     } else {
                         $r["fetcher_num"] = NULL;
                     }
-                    $available_actions = array("start", "stop", 
+                    $available_actions = array("start", "stop",
                         "mirror_start", "mirror_stop");
-                    if(isset($r["name"]) && isset($_REQUEST["action"]) && 
+                    if(isset($r["name"]) && isset($_REQUEST["action"]) &&
                         in_array($_REQUEST["action"], $available_actions)) {
                         $action = $_REQUEST["action"];
                         $is_mirror = false;
@@ -1892,8 +1892,8 @@ class AdminController extends Controller implements CrawlConstants
      * statistics about a locale as well as edit the string for that locale
      *
      * @return array $data info about current locales, statistics for each
-     *      locale as well as potentially the currently set string of a 
-     *      locale and any messages about the success or failure of a 
+     *      locale as well as potentially the currently set string of a
+     *      locale and any messages about the success or failure of a
      *      sub activity.
      */
     function manageLocales()
@@ -1909,12 +1909,12 @@ class AdminController extends Controller implements CrawlConstants
         $locale_ids = array();
 
         foreach ($data["LOCALES"] as $locale) {
-            $data["LOCALE_NAMES"][$locale["LOCALE_TAG"]] = 
+            $data["LOCALE_NAMES"][$locale["LOCALE_TAG"]] =
                 $locale["LOCALE_NAME"];
             $locale_ids[] = $locale["LOCALE_TAG"];
         }
 
-        if(isset($_REQUEST['arg']) && 
+        if(isset($_REQUEST['arg']) &&
             in_array($_REQUEST['arg'], $possible_arguments)) {
             if(isset($_REQUEST['localename'])) {
                 $localename = $this->clean($_REQUEST['localename'], "string" );
@@ -1927,13 +1927,13 @@ class AdminController extends Controller implements CrawlConstants
                 $localetag = "";
             }
             if(isset($_REQUEST['writingmode'])) {
-                $writingmode = 
+                $writingmode =
                     $this->clean($_REQUEST['writingmode'], "string" );
             } else {
                 $writingmode = "";
             }
             if(isset($_REQUEST['selectlocale'])) {
-                $select_locale = 
+                $select_locale =
                     $this->clean($_REQUEST['selectlocale'], "string" );
             } else {
                 $select_locale = "";
@@ -1969,20 +1969,20 @@ class AdminController extends Controller implements CrawlConstants
 
                 case "editlocale":
                     if(!isset($select_locale)) break;
-                    $data["leftorright"] = 
+                    $data["leftorright"] =
                         (getLocaleDirection() == 'ltr') ? "right": "left";
                     $data["ELEMENT"] = "editlocalesElement";
-                    $data['STATIC_PAGES'][-1]= 
+                    $data['STATIC_PAGES'][-1]=
                         tl('admin_controller_select_staticpages');
-                    $data['STATIC_PAGES'] += 
+                    $data['STATIC_PAGES'] +=
                         $this->localeModel->getStaticPageList($select_locale);
-                    $data['CURRENT_LOCALE_NAME'] = 
+                    $data['CURRENT_LOCALE_NAME'] =
                         $data['LOCALE_NAMES'][$select_locale];
                     $data['CURRENT_LOCALE_TAG'] = $select_locale;
                     $tmp_pages = $data['STATIC_PAGES'];
                     array_shift($tmp_pages);
                     $page_keys = array_keys($tmp_pages);
-                    if(isset($_REQUEST['static_page']) && 
+                    if(isset($_REQUEST['static_page']) &&
                         in_array($_REQUEST['static_page'], $page_keys)) {
                         $data["ELEMENT"] = "editstaticElement";
                         $data['STATIC_PAGE'] = $_REQUEST['static_page'];
@@ -1995,9 +1995,9 @@ class AdminController extends Controller implements CrawlConstants
                                 tl('admin_controller_staticpage_updated').
                                 "</h1>')";
                         }
-                        $data['PAGE_NAME'] = 
+                        $data['PAGE_NAME'] =
                             $data['STATIC_PAGES'][$data['STATIC_PAGE']];
-                        $data['PAGE_DATA'] = 
+                        $data['PAGE_DATA'] =
                             $this->localeModel->getStaticPage(
                                 $_REQUEST['static_page'],
                                 $data['CURRENT_LOCALE_TAG']);
@@ -2024,13 +2024,13 @@ class AdminController extends Controller implements CrawlConstants
                     } else {
                         $this->localeModel->extractMergeLocales();
                     }
-                    $data['STRINGS'] = 
+                    $data['STRINGS'] =
                         $this->localeModel->getStringData($select_locale);
 
                 break;
             }
         }
-        
+
 
         return $data;
     }
@@ -2045,13 +2045,13 @@ class AdminController extends Controller implements CrawlConstants
      function systemCheck()
      {
         $required_items = array(
-            array("name" => "Multi-Curl", 
+            array("name" => "Multi-Curl",
                 "check"=>"curl_multi_init", "type"=>"function"),
-            array("name" => "GD Graphics Library", 
+            array("name" => "GD Graphics Library",
                 "check"=>"imagecreate", "type"=>"function"),
-            array("name" => "SQLite3 Library", 
+            array("name" => "SQLite3 Library",
                 "check"=>"SQLite3|PDO", "type"=>"class"),
-            array("name" => "Multibyte Character Library", 
+            array("name" => "Multibyte Character Library",
                 "check"=>"mb_internal_encoding", "type"=>"function"),
         );
         $optional_items = array(
@@ -2120,9 +2120,9 @@ class AdminController extends Controller implements CrawlConstants
                 $comma = ", ";
             }
         }
-        
+
         if($missing_optional != "") {
-            $out .= $br. 
+            $out .= $br.
                 tl('admin_controller_missing_optional', $missing_optional);
             $br = "<br />";
         }
@@ -2152,7 +2152,7 @@ class AdminController extends Controller implements CrawlConstants
      */
     function searchSources()
     {
-        $possible_arguments = array("addsource", "deletesource", 
+        $possible_arguments = array("addsource", "deletesource",
             "addsubsearch", "deletesubsearch");
 
         $data = array();
@@ -2162,8 +2162,8 @@ class AdminController extends Controller implements CrawlConstants
             "video" => tl('admin_controller_video'),
             "rss" => tl('admin_controller_rss_feed'));
         $source_type_flag = false;
-        if(isset($_REQUEST['sourcetype']) && 
-            in_array($_REQUEST['sourcetype'], 
+        if(isset($_REQUEST['sourcetype']) &&
+            in_array($_REQUEST['sourcetype'],
             array_keys($data['SOURCE_TYPES']))) {
             $data['SOURCE_TYPE'] = $_REQUEST['sourcetype'];
             $source_type_flag = true;
@@ -2173,7 +2173,7 @@ class AdminController extends Controller implements CrawlConstants
         $machine_urls = $this->machineModel->getQueueServerUrls();
         $search_lists = $this->crawlModel->getCrawlList(false, true,
             $machine_urls);
-        $data["SEARCH_LISTS"] = array(-1 => 
+        $data["SEARCH_LISTS"] = array(-1 =>
             tl('admin_controller_sources_indexes'));
         foreach($search_lists as $item) {
             $data["SEARCH_LISTS"]["i:".$item["CRAWL_TIME"]] =
@@ -2185,9 +2185,9 @@ class AdminController extends Controller implements CrawlConstants
                 $item["MIX_NAME"];
         }
         $n = NUM_RESULTS_PER_PAGE;
-        $data['PER_PAGE'] = 
+        $data['PER_PAGE'] =
             array($n => $n, 2*$n => 2*$n, 5*$n=> 5*$n, 10*$n=>10*$n);
-        if(isset($_REQUEST['perpage']) && 
+        if(isset($_REQUEST['perpage']) &&
             in_array($_REQUEST['perpage'], array_keys($data['PER_PAGE']))) {
             $data['PER_PAGE_SELECTED'] = $_REQUEST['perpage'];
         } else {
@@ -2198,16 +2198,16 @@ class AdminController extends Controller implements CrawlConstants
         foreach($locales as $locale) {
             $data["LANGUAGES"][$locale['LOCALE_TAG']] = $locale['LOCALE_NAME'];
         }
-        if(isset($_REQUEST['sourcelocaletag']) && 
-            in_array($_REQUEST['sourcelocaletag'], 
+        if(isset($_REQUEST['sourcelocaletag']) &&
+            in_array($_REQUEST['sourcelocaletag'],
                 array_keys($data["LANGUAGES"]))) {
-            $data['SOURCE_LOCALE_TAG'] = 
+            $data['SOURCE_LOCALE_TAG'] =
                 $_REQUEST['sourcelocaletag'];
         } else {
             $data['SOURCE_LOCALE_TAG'] = DEFAULT_LOCALE;
         }
 
-        if(isset($_REQUEST['arg']) && 
+        if(isset($_REQUEST['arg']) &&
             in_array($_REQUEST['arg'], $possible_arguments)) {
             switch($_REQUEST['arg'])
             {
@@ -2215,16 +2215,16 @@ class AdminController extends Controller implements CrawlConstants
                     if(!$source_type_flag) break;
                     $must_have = array("sourcename", "sourcetype",
                         'sourceurl');
-                    $to_clean = array_merge($must_have, 
+                    $to_clean = array_merge($must_have,
                         array('sourcethumbnail','sourcelocaletag'));
                     foreach ($to_clean as $clean_me) {
                         $r[$clean_me] = (isset($_REQUEST[$clean_me])) ?
                             $this->clean($_REQUEST[$clean_me], "string" ) : "";
-                        if(in_array($clean_me, $must_have) && 
+                        if(in_array($clean_me, $must_have) &&
                             $r[$clean_me] == "" ) break 2;
                     }
                     $this->sourceModel->addMediaSource(
-                        $r['sourcename'], $r['sourcetype'], $r['sourceurl'], 
+                        $r['sourcename'], $r['sourcetype'], $r['sourceurl'],
                         $r['sourcethumbnail'], $r['sourcelocaletag']);
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('admin_controller_media_source_added').
@@ -2244,11 +2244,11 @@ class AdminController extends Controller implements CrawlConstants
                     foreach ($to_clean as $clean_me) {
                         $r[$clean_me] = (isset($_REQUEST[$clean_me])) ?
                             $this->clean($_REQUEST[$clean_me], "string" ) : "";
-                        if(in_array($clean_me, $must_have) && 
+                        if(in_array($clean_me, $must_have) &&
                             $r[$clean_me] == "" ) break 2;
                     }
                     $this->sourceModel->addSubsearch(
-                        $r['foldername'], $r['indexsource'], 
+                        $r['foldername'], $r['indexsource'],
                         $data['PER_PAGE_SELECTED']);
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('admin_controller_subsearch_added').
@@ -2283,7 +2283,7 @@ class AdminController extends Controller implements CrawlConstants
     /**
      * Responsible for handling admin request related to the configure activity
      *
-     * The configure activity allows a user to set the work directory for 
+     * The configure activity allows a user to set the work directory for
      * storing data local to this SeekQuarry/Yioop instance. It also allows one
      * to set the default language of the installation, dbms info, robot info,
      * test info, as well as which machine acts as the queue server.
@@ -2299,7 +2299,7 @@ class AdminController extends Controller implements CrawlConstants
         $data['SYSTEM_CHECK'] = $this->systemCheck();
         $languages = $this->localeModel->getLocaleList();
         foreach($languages as $language) {
-            $data['LANGUAGES'][$language['LOCALE_TAG']] = 
+            $data['LANGUAGES'][$language['LOCALE_TAG']] =
                 $language['LOCALE_NAME'];
         }
         if(isset($_REQUEST['lang'])) {
@@ -2310,11 +2310,11 @@ class AdminController extends Controller implements CrawlConstants
 
         $data["ELEMENT"] = "configureElement";
         $data['SCRIPT'] = "";
-        
+
         $data['PROFILE'] = false;
         $data['MESSAGE'] = "";
         if(isset($_REQUEST['WORK_DIRECTORY'])) {
-            $dir = 
+            $dir =
                 $this->clean($_REQUEST['WORK_DIRECTORY'], "string");
             $data['PROFILE'] = true;
             if(strstr(PHP_OS, "WIN")) {
@@ -2327,7 +2327,7 @@ class AdminController extends Controller implements CrawlConstants
                     $data['PROFILE'] = false;
             }
             if($data['PROFILE'] == false) {
-                $data["MESSAGE"] = 
+                $data["MESSAGE"] =
                     tl('admin_controller_configure_use_absolute_path');
                 $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                     $data["MESSAGE"]. "</h1>');" .
@@ -2336,10 +2336,10 @@ class AdminController extends Controller implements CrawlConstants
                 $data['WORK_DIRECTORY'] = $dir;
                 return $data;
             }
-            
+
             if(strstr($dir."/", BASE_DIR."/")) {
                 $data['PROFILE'] = false;
-                $data["MESSAGE"] = 
+                $data["MESSAGE"] =
                     tl('admin_controller_configure_diff_base_dir');
                 $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                     $data["MESSAGE"]. "</h1>');" .
@@ -2350,7 +2350,7 @@ class AdminController extends Controller implements CrawlConstants
             }
             $data['WORK_DIRECTORY'] = $dir;
 
-        } else if (defined("WORK_DIRECTORY") &&  strlen(WORK_DIRECTORY) > 0 && 
+        } else if (defined("WORK_DIRECTORY") &&  strlen(WORK_DIRECTORY) > 0 &&
             strcmp(realpath(WORK_DIRECTORY), realpath(BASE_DIR)) != 0 &&
             (is_dir(WORK_DIRECTORY) || is_dir(WORK_DIRECTORY."../"))) {
             $data['WORK_DIRECTORY'] = WORK_DIRECTORY;
@@ -2366,20 +2366,20 @@ class AdminController extends Controller implements CrawlConstants
         {
             case "directory":
                 if(!isset($data['WORK_DIRECTORY'])) {break;}
-                if($data['PROFILE'] && 
+                if($data['PROFILE'] &&
                     file_exists($data['WORK_DIRECTORY']."/profile.php")) {
-                    $data = array_merge($data, 
+                    $data = array_merge($data,
                         $this->profileModel->getProfile(
                             $data['WORK_DIRECTORY']));
                     $this->profileModel->setWorkDirectoryConfigFile(
                         $data['WORK_DIRECTORY']);
-                    $data["MESSAGE"] = 
+                    $data["MESSAGE"] =
                         tl('admin_controller_configure_work_dir_set');
-                    $data['SCRIPT'] .= 
+                    $data['SCRIPT'] .=
                         "doMessage('<h1 class=\"red\" >".
                         $data["MESSAGE"]. "</h1>');setTimeout(".
                         "'window.location.href=window.location.href', 3000);";
-                } else if ($data['PROFILE'] && 
+                } else if ($data['PROFILE'] &&
                     strlen($data['WORK_DIRECTORY']) > 0) {
                     if($this->profileModel->makeWorkDirectory(
                         $data['WORK_DIRECTORY'])) {
@@ -2387,26 +2387,26 @@ class AdminController extends Controller implements CrawlConstants
                         $data['DBMS'] = 'sqlite3';
                         $profile['DB_NAME'] = 'default';
                         $data['DB_NAME'] = 'default';
-                        $profile['USER_AGENT_SHORT'] = 
+                        $profile['USER_AGENT_SHORT'] =
                             tl('admin_controller_name_your_bot');
-                        $data['USER_AGENT_SHORT'] = 
+                        $data['USER_AGENT_SHORT'] =
                             $profile['USER_AGENT_SHORT'];
                         if($this->profileModel->updateProfile(
                             $data['WORK_DIRECTORY'], array(), $profile)) {
                             if($this->profileModel->setWorkDirectoryConfigFile(
                                 $data['WORK_DIRECTORY'])) {
-                        $data["MESSAGE"] = 
+                        $data["MESSAGE"] =
                             tl('admin_controller_configure_work_profile_made');
-                                $data['SCRIPT'] .= 
+                                $data['SCRIPT'] .=
                                     "doMessage('<h1 class=\"red\" >".
                                     $data["MESSAGE"]. "</h1>');" .
                                     "setTimeout('window.location.href= ".
                                     "window.location.href', 3000);";
                             } else {
                                 $data['PROFILE'] = false;
-                        $data["MESSAGE"] = 
+                        $data["MESSAGE"] =
                             tl('admin_controller_configure_no_set_config');
-                                $data['SCRIPT'] .= 
+                                $data['SCRIPT'] .=
                                     "doMessage('<h1 class=\"red\" >".
                                     $data["MESSAGE"] . "</h1>');" .
                                     "setTimeout('window.location.href= ".
@@ -2416,9 +2416,9 @@ class AdminController extends Controller implements CrawlConstants
                             $this->profileModel->setWorkDirectoryConfigFile(
                                 $data['WORK_DIRECTORY']);
                             $data['PROFILE'] = false;
-                        $data["MESSAGE"] = 
+                        $data["MESSAGE"] =
                             tl('admin_controller_configure_no_create_profile');
-                            $data['SCRIPT'] .= 
+                            $data['SCRIPT'] .=
                                 "doMessage('<h1 class=\"red\" >".
                                 $data["MESSAGE"].
                                 "</h1>'); setTimeout('window.location.href=".
@@ -2427,9 +2427,9 @@ class AdminController extends Controller implements CrawlConstants
                     } else {
                         $this->profileModel->setWorkDirectoryConfigFile(
                             $data['WORK_DIRECTORY']);
-                        $data["MESSAGE"] = 
+                        $data["MESSAGE"] =
                             tl('admin_controller_configure_work_dir_invalid');
-                        $data['SCRIPT'] .= 
+                        $data['SCRIPT'] .=
                             "doMessage('<h1 class=\"red\" >". $data["MESSAGE"].
                                 "</h1>');".
                             "setTimeout('window.location.href=".
@@ -2439,9 +2439,9 @@ class AdminController extends Controller implements CrawlConstants
                 } else {
                     $this->profileModel->setWorkDirectoryConfigFile(
                         $data['WORK_DIRECTORY']);
-                    $data["MESSAGE"] = 
+                    $data["MESSAGE"] =
                         tl('admin_controller_configure_work_dir_invalid');
-                    $data['SCRIPT'] .= 
+                    $data['SCRIPT'] .=
                         "doMessage('<h1 class=\"red\" >". $data["MESSAGE"] .
                             "</h1>');" .
                         "setTimeout('window.location.href=".
@@ -2452,9 +2452,9 @@ class AdminController extends Controller implements CrawlConstants
             case "profile":
                 foreach($this->profileModel->profile_fields as $field) {
                     if(isset($_REQUEST[$field])) {
-                        if($field != "ROBOT_DESCRIPTION" && 
+                        if($field != "ROBOT_DESCRIPTION" &&
                             $field != "MEMCACHE_SERVERS") {
-                            $clean_field = 
+                            $clean_field =
                                 $this->clean($_REQUEST[$field], "string");
                         } else {
                             $clean_field = $_REQUEST[$field];
@@ -2467,7 +2467,7 @@ class AdminController extends Controller implements CrawlConstants
                         $profile[$field] = $data[$field];
                         if($field == "MEMCACHE_SERVERS") {
                             $mem_array = preg_split("/(\s)+/", $clean_field);
-                            $profile[$field] = 
+                            $profile[$field] =
                                 $this->convertArrayCleanLines(
                                     $mem_array, "|Z|");
                         }
@@ -2484,43 +2484,43 @@ class AdminController extends Controller implements CrawlConstants
                     }
                 }
                 $data['DEBUG_LEVEL'] = 0;
-                $data['DEBUG_LEVEL'] |= 
+                $data['DEBUG_LEVEL'] |=
                     (isset($_REQUEST["ERROR_INFO"])) ? ERROR_INFO : 0;
-                $data['DEBUG_LEVEL'] |= 
+                $data['DEBUG_LEVEL'] |=
                     (isset($_REQUEST["QUERY_INFO"])) ? QUERY_INFO : 0;
-                $data['DEBUG_LEVEL'] |= 
+                $data['DEBUG_LEVEL'] |=
                     (isset($_REQUEST["TEST_INFO"])) ? TEST_INFO : 0;
                 $profile['DEBUG_LEVEL'] = $data['DEBUG_LEVEL'];
-                
-                $old_profile = 
+
+                $old_profile =
                     $this->profileModel->getProfile($data['WORK_DIRECTORY']);
-                
+
                 $db_problem = false;
-                if((isset($profile['DBMS']) && 
-                    $profile['DBMS'] != $old_profile['DBMS']) || 
-                    (isset($profile['DB_NAME']) && 
+                if((isset($profile['DBMS']) &&
+                    $profile['DBMS'] != $old_profile['DBMS']) ||
+                    (isset($profile['DB_NAME']) &&
                     $profile['DB_NAME'] != $old_profile['DB_NAME']) ||
-                    (isset($profile['DB_HOST']) && 
+                    (isset($profile['DB_HOST']) &&
                     $profile['DB_HOST'] != $old_profile['DB_HOST'])) {
-                    
+
                     if(!$this->profileModel->migrateDatabaseIfNecessary(
                         $profile)) {
                         $db_problem = true;
                     }
-                } else if ((isset($profile['DB_USER']) && 
+                } else if ((isset($profile['DB_USER']) &&
                     $profile['DB_USER'] != $old_profile['DB_USER']) ||
-                    (isset($profile['DB_PASSWORD']) && 
+                    (isset($profile['DB_PASSWORD']) &&
                     $profile['DB_PASSWORD'] != $old_profile['DB_PASSWORD'])) {
-                    
+
                     if($this->profileModel->testDatabaseManager(
                         $profile) !== true) {
                         $db_problem = true;
                     }
                 }
                 if($db_problem) {
-                    $data['MESSAGE'] = 
+                    $data['MESSAGE'] =
                         tl('admin_controller_configure_no_change_db');
-                    $data['SCRIPT'] .= 
+                    $data['SCRIPT'] .=
                         "doMessage('<h1 class=\"red\" >". $data['MESSAGE'].
                         "</h1>');";
                     $data['DBMS'] = $old_profile['DBMS'];
@@ -2533,24 +2533,24 @@ class AdminController extends Controller implements CrawlConstants
 
                 if($this->profileModel->updateProfile(
                 $data['WORK_DIRECTORY'], $profile, $old_profile)) {
-                    $data['MESSAGE'] = 
+                    $data['MESSAGE'] =
                         tl('admin_controller_configure_profile_change');
-                    $data['SCRIPT'] = 
+                    $data['SCRIPT'] =
                         "doMessage('<h1 class=\"red\" >". $data['MESSAGE'].
                         "</h1>');";
-                        
-                        if($old_profile['DEBUG_LEVEL'] != 
+
+                        if($old_profile['DEBUG_LEVEL'] !=
                             $profile['DEBUG_LEVEL']) {
-                            $data['SCRIPT'] .= 
+                            $data['SCRIPT'] .=
                                 "setTimeout('window.location.href=\"".
                                 "?c=admin&amp;a=configure&amp;".CSRF_TOKEN."=".
                                 $_REQUEST[CSRF_TOKEN]."\"', 3*sec);";
                         }
                 } else {
                     $data['PROFILE'] = false;
-                    $data["MESSAGE"] = 
+                    $data["MESSAGE"] =
                         tl('admin_controller_configure_no_change_profile');
-                    $data['SCRIPT'] .= 
+                    $data['SCRIPT'] .=
                         "doMessage('<h1 class=\"red\" >". $data["MESSAGE"].
                         "</h1>');";
                     break;
@@ -2559,9 +2559,9 @@ class AdminController extends Controller implements CrawlConstants
             break;
 
             default:
-                if(isset($data['WORK_DIRECTORY']) && 
+                if(isset($data['WORK_DIRECTORY']) &&
                     file_exists($data['WORK_DIRECTORY']."/profile.php")) {
-                    $data = array_merge($data, 
+                    $data = array_merge($data,
                         $this->profileModel->getProfile(
                             $data['WORK_DIRECTORY']));
                     $data['MEMCACHE_SERVERS'] = str_replace(
@@ -2577,20 +2577,20 @@ class AdminController extends Controller implements CrawlConstants
             $data['SCRIPT'] .= "logindbms = Array();\n";
             foreach($this->profileModel->getDbmsList() as $dbms) {
                 $data['DBMSS'][$dbms] = $dbms;
-                if($this->profileModel->loginDbms($dbms)) { 
+                if($this->profileModel->loginDbms($dbms)) {
                     $data['SCRIPT'] .= "logindbms['$dbms'] = true;\n";
                 } else {
                     $data['SCRIPT'] .= "logindbms['$dbms'] = false;\n";
                 }
             }
 
-            if(!isset($data['ROBOT_DESCRIPTION']) || 
+            if(!isset($data['ROBOT_DESCRIPTION']) ||
                 strlen($data['ROBOT_DESCRIPTION']) == 0) {
-                $data['ROBOT_DESCRIPTION'] = 
+                $data['ROBOT_DESCRIPTION'] =
                     tl('admin_controller_describe_robot');
             } else {
                 //since the description might contain tags we apply htmlentities
-                $data['ROBOT_DESCRIPTION'] = 
+                $data['ROBOT_DESCRIPTION'] =
                     $this->clean($data['ROBOT_DESCRIPTION'], "string");
             }
             if(!isset($data['MEMCACHE_SERVERS']) ||
@@ -2598,13 +2598,13 @@ class AdminController extends Controller implements CrawlConstants
                 $data['MEMCACHE_SERVERS'] =
                     "localhost";
             }
-            $data['SCRIPT'] .= 
+            $data['SCRIPT'] .=
                 "elt('database-system').onchange = function () {" .
                 "setDisplay('login-dbms',".
                 "self.logindbms[elt('database-system').value]);};" .
                 "setDisplay('login-dbms', ".
                 "logindbms[elt('database-system').value]);\n";
-            $data['SCRIPT'] .= 
+            $data['SCRIPT'] .=
                 "elt('use-memcache').onchange = function () {" .
                 "setDisplay('filecache',".
                 "(elt('use-memcache').checked) ? false: true);" .
@@ -2616,7 +2616,7 @@ class AdminController extends Controller implements CrawlConstants
                 "(elt('use-memcache').checked) ? true : false);\n";
 
         }
-        $data['SCRIPT'] .= 
+        $data['SCRIPT'] .=
             "elt('locale').onchange = ".
             "function () { elt('configureProfileForm').submit();};\n";
         return $data;

@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,14 +27,14 @@
  * @subpackage library
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
- 
+
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- * Library of functions used to manipulate and to extract components from urls 
+ * Library of functions used to manipulate and to extract components from urls
  *
  *
  * @author Chris Pollett
@@ -42,22 +42,22 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @package seek_quarry
  * @subpackage library
  */
-  
-class UrlParser 
+
+class UrlParser
 {
 
     /**
      * Checks if the url scheme is either http or https.
      *
      * @param string $url  the url to check
-     * @return bool returns true if it is either http or https and false 
+     * @return bool returns true if it is either http or https and false
      *      otherwise
      */
     static function isSchemeHttpOrHttps($url)
     {
         $url_parts = @parse_url($url);
 
-        if(isset($url_parts['scheme']) && $url_parts['scheme'] != "http" && 
+        if(isset($url_parts['scheme']) && $url_parts['scheme'] != "http" &&
             $url_parts['scheme'] != "https") {
             return false;
         }
@@ -99,7 +99,7 @@ class UrlParser
      * @param string $url  the url to check
      * @return bool true if it does; false otherwise
      */
-    static function hasHostUrl($url) 
+    static function hasHostUrl($url)
     {
        $url_parts = @parse_url($url);
 
@@ -113,7 +113,7 @@ class UrlParser
      * @param bool $with_login whether to include user,password,port if present
      * @return the host portion of the url if present; false otherwise
      */
-    static function getHost($url, $with_login_and_port = true) 
+    static function getHost($url, $with_login_and_port = true)
     {
         $url_parts = @parse_url($url);
 
@@ -155,7 +155,7 @@ class UrlParser
      *  @param string $url the url to parse
      *  @return the top level domain if present; false otherwise
      */
-    static function getLang($url) 
+    static function getLang($url)
     {
         $LANG = array(
             "com" => 'en',
@@ -237,7 +237,7 @@ class UrlParser
 
         $host = self::getHost($url, false);
         if(!$host) return false;
-        
+
         $host_parts = explode(".", $host);
         $count = count($host_parts);
         if($count > 0) {
@@ -253,18 +253,18 @@ class UrlParser
 
         return NULL;
     }
-  
+
 
 
     /**
      *  Get the path portion of a url if present; if not return NULL
      *
      *  @param string $url the url to parse
-     *  @param bool $with_query_string (whether to also include the query 
+     *  @param bool $with_query_string (whether to also include the query
      *      string at the end of the path)
      *  @return the host portion of the url if present; NULL otherwise
      */
-    static function getPath($url, $with_query_string = false) 
+    static function getPath($url, $with_query_string = false)
     {
         $url_parts = @parse_url($url);
         if(!isset($url_parts['path'])) {
@@ -284,16 +284,16 @@ class UrlParser
     }
 
     /**
-     * Gets an array of prefix urls from a given url. Each prefix contains at 
+     * Gets an array of prefix urls from a given url. Each prefix contains at
      * least the the hostname of the the start url
      *
-     * http://host.com/b/c/ would yield http://host.com/ , http://host.com/b, 
+     * http://host.com/b/c/ would yield http://host.com/ , http://host.com/b,
      * http://host.com/b/, http://host.com/b/c, http://host.com/b/c/
      *
      * @param string $url the url to extract prefixes from
      * @return array the array of url prefixes
      */
-    static function getHostPaths($url) 
+    static function getHostPaths($url)
     {
         $host_paths = array($url);
 
@@ -334,8 +334,8 @@ class UrlParser
     {
         $subdomains = array();
         $url_parts = @parse_url($url);
-        if(!isset($url_parts['host']) || strlen($url_parts['host']) <= 0) { 
-            return $subdomains; 
+        if(!isset($url_parts['host']) || strlen($url_parts['host']) <= 0) {
+            return $subdomains;
         }
         $host = $url_parts['host'];
         $host_parts = explode(".", $host);
@@ -359,7 +359,7 @@ class UrlParser
      * @param array $robot_paths in format of robots.txt regex paths
      * @return bool whether it is a member or not
      */
-    static function isPathMemberRegexPaths($path, $robot_paths) 
+    static function isPathMemberRegexPaths($path, $robot_paths)
     {
         $is_member = false;
 
@@ -393,7 +393,7 @@ class UrlParser
             if($is_match) {
                 if($end == 0 || strlen($part) + $offset == $len) {
                     $is_member = true;
-                } 
+                }
             }
         }
         return $is_member;
@@ -412,16 +412,16 @@ class UrlParser
      * @return string space separated words extracted.
      *
      */
-    static function getWordsIfHostUrl($url) 
+    static function getWordsIfHostUrl($url)
     {
         $words = array();
         $url_parts = @parse_url($url);
         if(!isset($url_parts['host']) || strlen($url_parts['host']) <= 0
-            || (isset($url_parts['path']) && $url_parts['path'] != "/")|| 
+            || (isset($url_parts['path']) && $url_parts['path'] != "/")||
             isset($url_parts['query'])
             || isset($url_parts['fragment'])) {
             // if no host or has a query string bail
-            return ""; 
+            return "";
         }
         $host = $url_parts['host'];
         $host_parts = explode(".", $host);
@@ -439,7 +439,7 @@ class UrlParser
 
     /**
      * Given a url, extracts the words in the last path part of the url
-     * For example, 
+     * For example,
      * http://us3.php.net/manual/en/function.array-filter.php
      * yields " function array filter "
      *
@@ -448,7 +448,7 @@ class UrlParser
      * @return string space separated words extracted.
      *
      */
-    static function getWordsLastPathPartUrl($url) 
+    static function getWordsLastPathPartUrl($url)
     {
         $words = array();
         $url_parts = @parse_url($url);
@@ -484,10 +484,10 @@ class UrlParser
      * @return string the guessed file type.
      *
      */
-    static function getDocumentType($url) 
+    static function getDocumentType($url)
     {
 
-        $url_parts = @parse_url($url); 
+        $url_parts = @parse_url($url);
 
         if(!isset($url_parts['path'])) {
             return "html"; //we default to html
@@ -506,7 +506,7 @@ class UrlParser
     }
 
     /**
-     * Gets the filename portion of a url if present; 
+     * Gets the filename portion of a url if present;
      * otherwise returns "Some File"
      *
      * @param string $url a url to parse
@@ -515,7 +515,7 @@ class UrlParser
     static function getDocumentFilename($url)
     {
 
-        $url_parts = @parse_url($url); 
+        $url_parts = @parse_url($url);
 
         if(!isset($url_parts['path'])) {
             return "html"; //we default to html
@@ -537,7 +537,7 @@ class UrlParser
      * @param string $url  a url to get the query string out of
      * @return string the query string if present; NULL otherwise
      */
-    static function getQuery($url) 
+    static function getQuery($url)
     {
         $url_parts = @parse_url($url);
         if(isset($url_parts['query'])) {
@@ -555,7 +555,7 @@ class UrlParser
      * @param string $url  a url to get the url fragment string out of
      * @return string the url fragment string if present; NULL otherwise
      */
-    static function getFragment($url) 
+    static function getFragment($url)
     {
         $url_parts = @parse_url($url);
         if(isset($url_parts['fragment'])) {
@@ -568,7 +568,7 @@ class UrlParser
     }
 
     /**
-     * Given a $link that was obtained from a website $site, returns 
+     * Given a $link that was obtained from a website $site, returns
      * a complete URL for that link.
      * For example, the $link
      * some_dir/test.html
@@ -576,21 +576,21 @@ class UrlParser
      * http://www.somewhere.com/bob
      * would yield the complete url
      * http://www.somewhere.com/bob/some_dir/test.html
-     * 
+     *
      * @param string $link  a relative or complete url
      * @param string $site  a base url
      * @param string $no_fragment if false then if the url had a fragment
      *      (#link_within_page) then the fragement will be included
-     * 
+     *
      * @return string a complete url based on these two pieces of information
-     * 
+     *
      */
-    public static function canonicalLink($link, $site, $no_fragment = true) 
+    static function canonicalLink($link, $site, $no_fragment = true)
     {
 
         if(!self::isSchemeHttpOrHttps($link)) {return NULL;}
 
-        if(isset($link[0]) && 
+        if(isset($link[0]) &&
             $link[0] == "/" && isset($link[1]) && $link[1] == "/") {
             $http = ($site[4] == 's') ? "https:" : "http:";
             $link = $http . $link;
@@ -616,7 +616,7 @@ class UrlParser
                 } else {
                     $pre_path = "";
                 }
-                if(isset($site_path_parts['basename']) && 
+                if(isset($site_path_parts['basename']) &&
                     !isset($site_path_parts['extension'])) {
                     $pre_path .="/".$site_path_parts['basename'];
                 }
@@ -636,14 +636,14 @@ class UrlParser
         // take a stab at paths containing ..
         $path = preg_replace('/(\/\w+\/\.\.\/)+/', "/", $path);
 
-            
+
         // if still has .. give up
         if(stristr($path, "../"))
         {
             return NULL;
         }
 
-        // handle paths with dot in it 
+        // handle paths with dot in it
         $path = preg_replace('/(\.\/)+/', "", $path);
         $path = str_replace(" ", "%20", $path);
 
@@ -677,23 +677,23 @@ class UrlParser
     }
 
     /**
-     * Checks if a url has a repeated set of subdirectories, and if the number 
+     * Checks if a url has a repeated set of subdirectories, and if the number
      * of repeats occurs more than some threshold number of times
      *
-     *  A pattern like bob/.../bob counts as own reptition. 
-     * bob/.../alice/.../bob/.../alice would count as two (... should be read 
-     * as ellipsis, not a directory name).If the threshold is three and there 
+     *  A pattern like bob/.../bob counts as own reptition.
+     * bob/.../alice/.../bob/.../alice would count as two (... should be read
+     * as ellipsis, not a directory name).If the threshold is three and there
      * are at least three repeated mathes this function return true; it returns
      * false otherwise.
      *
      * @param string $url the url to check
-     * @param int $repeat_threshold the number of repeats of a subdir name to 
+     * @param int $repeat_threshold the number of repeats of a subdir name to
      *      trigger a true response
      * @return bool whether a repeated subdirectory name with more matches than
      *      the threshold was found
      *
      */
-    static function checkRecursiveUrl($url, $repeat_threshold = 3) 
+    static function checkRecursiveUrl($url, $repeat_threshold = 3)
     {
         $url_parts = mb_split("/", $url);
 
@@ -724,7 +724,7 @@ class UrlParser
     static function isLocalhostUrl($url)
     {
         $host = UrlParser::getHost($url, false);
-        
+
         $localhosts = array("localhost", "127.0.0.1", "::1");
         if(isset($_SERVER["SERVER_NAME"])) {
             $localhosts[] = $_SERVER["SERVER_NAME"];

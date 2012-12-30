@@ -1,8 +1,8 @@
- /** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -26,24 +26,25 @@
  * @subpackage javascript
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012s
+ * @copyright 2009 - 2013s
  * @filesource
  */
 
-/**
- * Contains javascripts used to edit Crawl Mixes
+/*
+ * This file Contains Javascripts used to edit Crawl Mixes
  * A crawl mix consists of a sequence of groups. Each group
  * represents a number of search results to be presented. The
  * sources of these search results is the contents of the group.
  * These sources are a weighted sum of individual crawls and the
  * edit crawl mix page allows you to create both groups and select
- * which individuals crawls they contain. 
+ * which individuals crawls they contain.
  */
+
 /*
  * Used to draw all of the list of groups of crawl results for the
  * current crawl mix
  */
-function drawGroups() 
+function drawGroups()
 {
     var gcnt = 0;
     for(key in groups) {
@@ -71,10 +72,10 @@ function redrawGroups()
 /*
  * Adds a crawl group to the end of the list of crawl groups.
  *
- * @param int num_results the number of results the crawl group should be used 
+ * @param int num_results the number of results the crawl group should be used
  *      for
  */
-function addGroup(num_results) 
+function addGroup(num_results)
 {
 
     num_groups = groups.length;
@@ -90,7 +91,7 @@ function addGroup(num_results)
  * @param int group_num the index of group to draw
  * @param int num_results the number of results to this crawl group
  */
-function drawGroup(group_num, num_results) 
+function drawGroup(group_num, num_results)
 {
     var mts = elt("mix-tables");
     var tbl = document.createElement("table");
@@ -106,12 +107,12 @@ function drawGroup(group_num, num_results)
  *
  * @param Object tbl the table object to store blank mix table in
  * @param int num_groups which group this table will be
- * @param int num_results number of results this crawl group will be used for 
+ * @param int num_results number of results this crawl group will be used for
  */
 function makeBlankMixTable(tbl, num_groups, num_results)
 {
     var tdata = "<tr><td colspan=\"2\"><label for=\"add-crawls-"+num_groups+
-        "\">"+tl['editmix_element_add_crawls']+"</label>"+ 
+        "\">"+tl['editmix_element_add_crawls']+"</label>"+
         drawCrawlSelect(num_groups)+"</td><td><label for=\"num-results-"+
         num_groups+"\">"+tl['editmix_element_num_results']+"</label>"+
         drawNumResultSelect(num_groups, num_results)+
@@ -127,9 +128,9 @@ function makeBlankMixTable(tbl, num_groups, num_results)
 /*
  * Removes the ith group from the current crawl mix and redraws the screen
  *
- * @param int i index of group to delete 
+ * @param int i index of group to delete
  */
-function removeGroup(i) 
+function removeGroup(i)
 {
     num_groups = groups.length;
     for(j = i+1; j < num_groups; j++) {
@@ -144,13 +145,13 @@ function removeGroup(i)
 /*
  * Adds the javascript needed to handle adding a crawl when the crawl
  * selection done
- * 
+ *
  * @param int i the group to add the Javascript handler for
  */
 function addCrawlHandler(i)
 {
-    elt("add-crawls-"+i).onchange = 
-        function () { 
+    elt("add-crawls-"+i).onchange =
+        function () {
             var  ac = elt("add-crawls-"+i);
             var sel = ac.selectedIndex;
             var name = ac.options[sel].text;
@@ -163,13 +164,13 @@ function addCrawlHandler(i)
 /*
  * Adds a crawl to the given crawl group with the listed parameters
  *
- * @param int i crawl group to add to 
+ * @param int i crawl group to add to
  * @param int ts timestamp of crawl that is being added
  * @param String name name of crawl
  * @param float weight the crawl should ahve within group
  * @param String keywords  words to add to search when using this crawl
  */
-function addCrawl(i, ts, name, weight, keywords) 
+function addCrawl(i, ts, name, weight, keywords)
 {
     var grp = groups[i]['components'];
     var j = grp.length;
@@ -185,14 +186,14 @@ function addCrawl(i, ts, name, weight, keywords)
  * @param int ts timestamp of crawl that is being drawn
  * @param String name name of crawl
  * @param float weight the crawl should ahve within group
- * 
+ *
  */
-function drawCrawl(i, j, ts, name, weight, keywords) 
+function drawCrawl(i, j, ts, name, weight, keywords)
 {
     var tr =document.createElement("tr");
     tr.id = i+"-"+j;
     elt("mix-table-"+i).appendChild(tr);
-    tr.innerHTML += 
+    tr.innerHTML +=
         "<td>"+drawWeightSelect(i, j, weight)+"</td><td>"+name+
         "</td><td><input type='hidden' name= \"mix[GROUPS]["+i+
         "][COMPONENTS]["+j+"][CRAWL_TIMESTAMP]\"' value=\""+ts+"\" />"+
@@ -225,7 +226,7 @@ function updateKeywords(i, j, keywords)
  * @param int i group to delete crawl from
  * @param int j index of the crawl within the group to delete
  */
-function removeCrawl(i, j) 
+function removeCrawl(i, j)
 {
 
     var grp = groups[i]['components'];
@@ -244,14 +245,14 @@ function removeCrawl(i, j)
  * a given crawl within a crawl group
  *
  * @param int i which crawl group the crawl belongs to
- * @param int j which crawl index within the group to draw this weight select 
+ * @param int j which crawl index within the group to draw this weight select
  *      for
  * @param int selected_weight the originally selected weight value
  */
 function drawWeightSelect(i, j, selected_weight) {
     var weights = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1,
         2, 3, 4, 5, 6, 7, 8, 9, 10];
-    var select = 
+    var select =
         "<select name=\'mix[GROUPS]["+i+"][COMPONENTS]["+j+"][WEIGHT]\'>";
     for ( wt in weights) {
         if(weights[wt] == selected_weight) {
@@ -295,7 +296,7 @@ function drawCrawlSelect(i) {
 function drawNumResultSelect(i, selected_num) {
     var num_results = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 100];
 
-    var select = "<select id=\'num-results-"+i+ 
+    var select = "<select id=\'num-results-"+i+
         "\' name=\'mix[GROUPS]["+i+"][RESULT_BOUND]\'>";
     for ( nr in num_results) {
         if(num_results[nr] == selected_num) {

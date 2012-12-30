@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage processor
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -41,7 +41,7 @@ require_once BASE_DIR."/lib/url_parser.php";
 require_once BASE_DIR."/lib/processors/image_processor.php";
 
 /**
- * Used to create crawl summary information 
+ * Used to create crawl summary information
  * for JPEG files
  *
  * @author Chris Pollett
@@ -57,14 +57,14 @@ class JpgProcessor extends ImageProcessor
     function process($page, $url)
     {
         if(is_string($page)) {
-            file_put_contents(CRAWL_DIR."/cache/tmp.jpg", $page); 
+            file_put_contents(CRAWL_DIR."/cache/tmp.jpg", $page);
             $image = @imagecreatefromjpeg(CRAWL_DIR."/cache/tmp.jpg");
             $thumb_string = self::createThumb($image);
             $summary[self::TITLE] = "";
             $summary[self::DESCRIPTION] = "Image of ".
                 UrlParser::getDocumentFilename($url);
             $summary[self::LINKS] = array();
-            $summary[self::PAGE] = 
+            $summary[self::PAGE] =
                 "<html><body><div><img src='data:image/jpeg;base64," .
                 base64_encode($page)."' alt='".$summary[self::DESCRIPTION].
                 "' /></div></body></html>";

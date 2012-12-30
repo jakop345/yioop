@@ -3,7 +3,7 @@
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage view
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -53,7 +53,7 @@ class CrawlstatusView extends View
      *
      * @param array $data   info about the current crawl status
      */
-    public function renderView($data) {
+    function renderView($data) {
         $base_url = "?c=admin&amp;a=manageCrawls&amp;".
             CSRF_TOKEN."=".$data[CSRF_TOKEN]."&amp;arg=";
         ?>
@@ -99,8 +99,8 @@ class CrawlstatusView extends View
             }
             ?><br /><a href="?c=admin&amp;a=manageCrawls<?php
                 ?>&amp;arg=options&amp;<?php
-                e(CSRF_TOKEN."=".$data[CSRF_TOKEN]); ?>&amp;ts=<?php 
-                e($data['CRAWL_TIME']); ?>"><?php 
+                e(CSRF_TOKEN."=".$data[CSRF_TOKEN]); ?>&amp;ts=<?php
+                e($data['CRAWL_TIME']); ?>"><?php
                 e(tl('crawlstatus_view_changeoptions')); ?></a><?php
         } else {
             e(tl('crawlstatus_view_no_description'));
@@ -114,7 +114,7 @@ class CrawlstatusView extends View
             <?php e(date("r",$data['CRAWL_TIME']));?> </p>
         <?php
         } ?>
-        <?php if(isset($data['SCHEDULER_PEAK_MEMORY']) && 
+        <?php if(isset($data['SCHEDULER_PEAK_MEMORY']) &&
             isset($data['QUEUE_PEAK_MEMORY'])) { ?>
             <p><b><?php e(tl('crawlstatus_view_indexer_memory')); ?></b>
             <?php e($data['QUEUE_PEAK_MEMORY']); ?></p>
@@ -148,8 +148,8 @@ class CrawlstatusView extends View
         </p>
         <p><b><?php e(tl('crawlstatus_view_urls_per_hour')); ?></b> <?php
             if(isset($data['VISITED_URLS_COUNT_PER_HOUR'])) {
-                e(number_format($data['VISITED_URLS_COUNT_PER_HOUR'], 
-                    2, ".", "")); 
+                e(number_format($data['VISITED_URLS_COUNT_PER_HOUR'],
+                    2, ".", ""));
             } else {
                 e("0.00");
             }
@@ -201,8 +201,8 @@ class CrawlstatusView extends View
             ?>
                 <tr><td><b><?php e($crawl['DESCRIPTION']); ?></b><br />
                     [<a href="?<?php e(CSRF_TOKEN."=".$data[CSRF_TOKEN]);
-                        ?>&amp;c=statistics&amp;its=<?php 
-                    e($crawl['CRAWL_TIME']); ?>"><?php 
+                        ?>&amp;c=statistics&amp;its=<?php
+                    e($crawl['CRAWL_TIME']); ?>"><?php
                     e(tl('crawlstatus_view_statistics')); ?></a>]</td>
                     <td><?php
                     e("<b>{$crawl['CRAWL_TIME']}</b><br />");
@@ -215,7 +215,7 @@ class CrawlstatusView extends View
                     <a href="<?php e($base_url); ?>resume&amp;timestamp=<?php
                         e($crawl['CRAWL_TIME']); ?>"><?php
                         e(tl('crawlstatus_view_resume'));?></a>
-                    <?php } else { 
+                    <?php } else {
                             e(tl('crawlstatus_view_no_resume'));
                           }?></td>
                 <td>

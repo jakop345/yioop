@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage iterator
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -38,7 +38,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  */
 require_once(BASE_DIR."/lib/file_cache.php");
 
-/** 
+/**
  *Loads base class for iterating
  */
 require_once BASE_DIR.
@@ -61,7 +61,7 @@ require_once BASE_DIR."/controllers/search_controller.php";
  * @package seek_quarry
  * @subpackage iterator
  */
-class MixArchiveBundleIterator extends ArchiveBundleIterator 
+class MixArchiveBundleIterator extends ArchiveBundleIterator
     implements CrawlConstants
 {
     /**
@@ -89,11 +89,11 @@ class MixArchiveBundleIterator extends ArchiveBundleIterator
     /**
      * Creates a web archive iterator with the given parameters.
      *
-     * @param string $imix_timestamp timestamp of the crawl mix to 
+     * @param string $imix_timestamp timestamp of the crawl mix to
      *      iterate over the pages of
      * @param string $result_timestamp timestamp of the web archive bundle
      *      results are being stored in
-     * @param 
+     * @param
      */
     function __construct($mix_timestamp, $result_timestamp)
     {
@@ -128,7 +128,7 @@ class MixArchiveBundleIterator extends ArchiveBundleIterator
     }
 
     /**
-     * Saves the current state so that a new instantiation can pick up just 
+     * Saves the current state so that a new instantiation can pick up just
      * after the last batch of pages extracted.
      */
     function saveCheckpoint($info = array())
@@ -143,7 +143,7 @@ class MixArchiveBundleIterator extends ArchiveBundleIterator
     }
 
     /**
-     * Restores state from a previous instantiation, after the last batch of 
+     * Restores state from a previous instantiation, after the last batch of
      * pages extracted.
      */
     function restoreCheckpoint()
@@ -165,10 +165,10 @@ class MixArchiveBundleIterator extends ArchiveBundleIterator
      * Estimates the importance of the site according to the weighting of
      * the particular archive iterator
      * @param $site an associative array containing info about a web page
-     * @return bool false we assume files were crawled roughly according to 
+     * @return bool false we assume files were crawled roughly according to
      *      page importance so we use default estimate of doc rank
      */
-    function weight(&$site) 
+    function weight(&$site)
     {
         return false;
     }
@@ -185,7 +185,7 @@ class MixArchiveBundleIterator extends ArchiveBundleIterator
             $objects = array("NO_PROCESS" => false);
             return $objects;
         }
-        $results = $this->searchController->queryRequest($this->query, 
+        $results = $this->searchController->queryRequest($this->query,
             $num, $this->limit, 1, $this->result_timestamp);
         $num_results = count($results["PAGES"]);
         if(isset($results["PAGES"]) && $num_results > 0 ) {

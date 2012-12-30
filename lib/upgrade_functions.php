@@ -3,7 +3,7 @@
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -29,7 +29,7 @@
  * @package seek_quarry
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -42,7 +42,7 @@ function upgradeLocaleCheck()
     global $locale_tag;
     if(!PROFILE) return;
     $config_name = LOCALE_DIR."/$locale_tag/configure.ini";
-    $fallback_config_name = 
+    $fallback_config_name =
         FALLBACK_LOCALE_DIR."/$locale_tag/configure.ini";
     if(filemtime($fallback_config_name) > filemtime($config_name)) {
         return "locale";
@@ -64,7 +64,7 @@ function upgradeLocale()
 }
 
 /**
- * Checks to see if the database data or work_dir folder of Yioop! is from an 
+ * Checks to see if the database data or work_dir folder of Yioop! is from an
  * older version of Yioop! than the currently running Yioop!
  */
 function upgradeDatabaseWorkDirectoryCheck()
@@ -131,7 +131,7 @@ function upgradeDatabaseVersion1(&$db)
 
 /**
  * Upgrades a Version 1 version of the Yioop! database to a Version 2 version
- * @param object $db datasource to use to upgrade 
+ * @param object $db datasource to use to upgrade
  */
 function upgradeDatabaseVersion2(&$db)
 {
@@ -139,24 +139,24 @@ function upgradeDatabaseVersion2(&$db)
     $db->execute("ALTER TABLE USER ADD UNIQUE ( USER_NAME )" );
     $db->execute("INSERT INTO LOCALE VALUES (17, 'kn', 'ಕನ್ನಡ', 'lr-tb')");
     $db->execute("INSERT INTO LOCALE VALUES (18, 'hi', 'हिन्दी', 'lr-tb')");
-    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (3, 5, 
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (3, 5,
         'Modifier les rôles')");
-    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (4, 5, 
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (4, 5,
         'Modifier les indexes')");
-    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (5, 5, 
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (5, 5,
         'Mélanger les indexes')");
-    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (6, 5, 
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (6, 5,
         'Les filtres de recherche')");
-    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (7, 5, 
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (7, 5,
         'Modifier les lieux')");
-    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (8, 5, 
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (8, 5,
         'Configurer')");
 
 }
 
 /**
  * Upgrades a Version 2 version of the Yioop! database to a Version 3 version
- * @param object $db datasource to use to upgrade 
+ * @param object $db datasource to use to upgrade
  */
 function upgradeDatabaseVersion3(&$db)
 {
@@ -203,15 +203,15 @@ function upgradeDatabaseVersion3(&$db)
     $db->execute(
         "INSERT INTO TRANSLATION_LOCALE VALUES (10, 1, 'Configure')");
 
-    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (6, 5, 
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (6, 5,
         'Options de fichier')");
-    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (7, 5, 
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (7, 5,
         'Les filtres de recherche')");
-    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (8, 5, 
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (8, 5,
         'Modifier les ordinateurs')");
-    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (9, 5, 
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (9, 5,
         'Modifier les lieux')");
-    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (10, 5, 
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (10, 5,
         'Configurer')");
 
     $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (9, 9, 'ローケル管理')");
@@ -220,15 +220,15 @@ function upgradeDatabaseVersion3(&$db)
     $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (9, 10, '로케일 관리')");
     $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (10, 10, '구성')");
 
-    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (9, 15, 
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (9, 15,
         'Quản lý miền địa phương')");
-    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (10, 15, 
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (10, 15,
         'Sắp xếp hoạt động dựa theo hoạch định')");
 
 }
 /**
  * Upgrades a Version 3 version of the Yioop! database to a Version 4 version
- * @param object $db datasource to use to upgrade 
+ * @param object $db datasource to use to upgrade
  */
 function upgradeDatabaseVersion4(&$db)
 {
@@ -238,7 +238,7 @@ function upgradeDatabaseVersion4(&$db)
 
 /**
  * Upgrades a Version 4 version of the Yioop! database to a Version 5 version
- * @param object $db datasource to use to upgrade 
+ * @param object $db datasource to use to upgrade
  */
 function upgradeDatabaseVersion5(&$db)
 {
@@ -258,7 +258,7 @@ function upgradeDatabaseVersion5(&$db)
 
 /**
  * Upgrades a Version 5 version of the Yioop! database to a Version 6 version
- * @param object $db datasource to use to upgrade 
+ * @param object $db datasource to use to upgrade
  */
 function upgradeDatabaseVersion6(&$db)
 {
@@ -272,7 +272,7 @@ function upgradeDatabaseVersion6(&$db)
 
 /**
  * Upgrades a Version 6 version of the Yioop! database to a Version 7 version
- * @param object $db datasource to use to upgrade 
+ * @param object $db datasource to use to upgrade
  */
 function upgradeDatabaseVersion7(&$db)
 {
@@ -285,13 +285,13 @@ function upgradeDatabaseVersion7(&$db)
         "INSERT INTO TRANSLATION VALUES (7,'db_activity_results_editor')");
     $db->execute(
         "INSERT INTO TRANSLATION_LOCALE VALUES (7, 1, 'Results Editor')");
-    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (7, 5, 
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (7, 5,
         'Éditeur de résultats')");
 }
 
 /**
  * Upgrades a Version 7 version of the Yioop! database to a Version 8 version
- * @param object $db datasource to use to upgrade 
+ * @param object $db datasource to use to upgrade
  */
 function upgradeDatabaseVersion8(&$db)
 {
@@ -307,7 +307,7 @@ function upgradeDatabaseVersion8(&$db)
 
 /**
  * Upgrades a Version 8 version of the Yioop! database to a Version 9 version
- * @param object $db datasource to use to upgrade 
+ * @param object $db datasource to use to upgrade
  */
 function upgradeDatabaseVersion9(&$db)
 {
@@ -331,13 +331,13 @@ function upgradeDatabaseVersion9(&$db)
         'db_activity_manage_locales')");
     $db->execute("INSERT INTO TRANSLATION VALUES (11,
         'db_activity_configure')");
-    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (8, 1, 
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (8, 1,
         'Search Sources')");
-    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (9, 1, 
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (9, 1,
         'Manage Machines')");
-    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (10, 1, 
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (10, 1,
         'Manage Locales')");
-    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (11, 1, 
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (11, 1,
         'Configure')");
     $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (8, 5,
         'Sources de recherche')");
@@ -347,23 +347,23 @@ function upgradeDatabaseVersion9(&$db)
         'Modifier les lieux')");
     $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (11, 5,
         'Configurer')");
-    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (10, 9, 
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (10, 9,
         'ローケル管理')");
-    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (11, 9, 
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (11, 9,
         '設定')");
-    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (10, 
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (10,
         10, '로케일 관리')");
-    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (11, 
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (11,
         10, '구성')");
-    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (10, 15, 
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (10, 15,
         'Quản lý miền địa phương')");
-    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (11, 15, 
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (11, 15,
         'Sắp xếp hoạt động dựa theo hoạch định')");
 }
 
 /**
  * Upgrades a Version 9 version of the Yioop! database to a Version 10 version
- * @param object $db datasource to use to upgrade 
+ * @param object $db datasource to use to upgrade
  */
 function upgradeDatabaseVersion10(&$db)
 {
@@ -371,7 +371,7 @@ function upgradeDatabaseVersion10(&$db)
     $db->execute("UPDATE VERSION SET ID=10 WHERE ID=9");
 
     $db->execute("CREATE TABLE MEDIA_SOURCE (TIMESTAMP INT(11) PRIMARY KEY,
-        NAME VARCHAR(16) UNIQUE, TYPE VARCHAR(16), 
+        NAME VARCHAR(16) UNIQUE, TYPE VARCHAR(16),
         SOURCE_URL VARCHAR(256), THUMB_URL VARCHAR(256)
         )");
     $db->execute("INSERT INTO MEDIA_SOURCE VALUES ('1342634195',
@@ -387,14 +387,14 @@ function upgradeDatabaseVersion10(&$db)
 
 /**
  * Upgrades a Version 10 version of the Yioop! database to a Version 11 version
- * @param object $db datasource to use to upgrade 
+ * @param object $db datasource to use to upgrade
  */
 function upgradeDatabaseVersion11(&$db)
 {
     $db->execute("DELETE FROM VERSION WHERE ID < 10");
     $db->execute("UPDATE VERSION SET ID=11 WHERE ID=10");
     $db->execute("DROP TABLE CRON_TIME");
-    $db->execute("ALTER TABLE ROLE_ACTIVITY ADD CONSTRAINT 
+    $db->execute("ALTER TABLE ROLE_ACTIVITY ADD CONSTRAINT
         PK_RA PRIMARY KEY(ROLE_ID, ACTIVITY_ID)");
     $db->execute("CREATE TABLE SUBSEARCH (LOCALE_STRING VARCHAR(16) PRIMARY KEY,
         FOLDER_NAME VARCHAR(16), INDEX_IDENTIFIER CHAR(13))");
@@ -402,7 +402,7 @@ function upgradeDatabaseVersion11(&$db)
 
 /**
  * Upgrades a Version 11 version of the Yioop! database to a Version 12 version
- * @param object $db datasource to use to upgrade 
+ * @param object $db datasource to use to upgrade
  */
 function upgradeDatabaseVersion12(&$db)
 {
@@ -410,35 +410,35 @@ function upgradeDatabaseVersion12(&$db)
     $db->execute("UPDATE VERSION SET ID=12 WHERE ID=11");
     $db->execute("INSERT INTO CRAWL_MIXES VALUES (2, 'images')");
     $db->execute("INSERT INTO MIX_GROUPS VALUES(2, 0, 1)");
-    $db->execute("INSERT INTO MIX_COMPONENTS VALUES(2, 0, 1, 1, 
+    $db->execute("INSERT INTO MIX_COMPONENTS VALUES(2, 0, 1, 1,
         'media:image')");
     $db->execute("INSERT INTO CRAWL_MIXES VALUES (3, 'videos')");
     $db->execute("INSERT INTO MIX_GROUPS VALUES(3, 0, 1)");
-    $db->execute("INSERT INTO MIX_COMPONENTS VALUES(3, 0, 1, 1, 
+    $db->execute("INSERT INTO MIX_COMPONENTS VALUES(3, 0, 1, 1,
         'media:video')");
     $db->execute("INSERT INTO SUBSEARCH VALUES('db_subsearch_images',
         'images','m:2',50)");
     $db->execute("INSERT INTO TRANSLATION VALUES (1002,'db_subsearch_images')");
-    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES 
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
             (1002, 1, 'Images' )");
 
     $db->execute("INSERT INTO SUBSEARCH VALUES ('db_subsearch_videos',
         'videos','m:3',10)");
     $db->execute("INSERT INTO TRANSLATION VALUES (1003,'db_subsearch_videos')");
-    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES 
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
             (1003, 1, 'Videos' )");
 }
 
 /**
  * Upgrades a Version 12 version of the Yioop! database to a Version 13 version
- * @param object $db datasource to use to upgrade 
+ * @param object $db datasource to use to upgrade
  */
 function upgradeDatabaseVersion13(&$db)
 {
     $db->execute("DELETE FROM VERSION WHERE ID < 12");
     $db->execute("UPDATE VERSION SET ID=13 WHERE ID=12");
-    $db->execute("CREATE TABLE FEED_ITEM (GUID VARCHAR(11) PRIMARY KEY, 
-        TITLE VARCHAR(512), LINK VARCHAR(256), DESCRIPTION VARCHAR(4096), 
+    $db->execute("CREATE TABLE FEED_ITEM (GUID VARCHAR(11) PRIMARY KEY,
+        TITLE VARCHAR(512), LINK VARCHAR(256), DESCRIPTION VARCHAR(4096),
         PUBDATE INT, SOURCE_NAME VARCHAR(16))");
     if(!file_exists(WORK_DIRECTORY."/feeds")) {
         mkdir(WORK_DIRECTORY."/feeds");
@@ -448,7 +448,7 @@ function upgradeDatabaseVersion13(&$db)
 
 /**
  * Upgrades a Version 12 version of the Yioop! database to a Version 13 version
- * @param object $db datasource to use to upgrade 
+ * @param object $db datasource to use to upgrade
  */
 function upgradeDatabaseVersion14(&$db)
 {

@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage view
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -42,7 +42,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @author Chris Pollett
  * @package seek_quarry
  * @subpackage view
- */ 
+ */
 
 class SettingsView extends View
 {
@@ -50,12 +50,12 @@ class SettingsView extends View
      *  @var string
      */
     var $layout = "web";
-    /** 
-     * Names of element objects that the view uses to display itself 
+    /**
+     * Names of element objects that the view uses to display itself
      * @var array
      */
     var $elements = array("language");
-    /** 
+    /**
      * Names of helper objects that the view uses to help draw itself
      * @var array
      */
@@ -67,61 +67,61 @@ class SettingsView extends View
      * @param array $data   contains anti CSRF token as well
      *      the language info and the current and possible per page settings
      */
-    public function renderView($data) {
+    function renderView($data) {
     $logo = "resources/yioop.png";
     if(MOBILE) {
         $logo = "resources/m-yioop.png";
     }
 ?>
 <div class="landing non-search">
-<h1 class="logo"><a href="./?<?php 
-    e(CSRF_TOKEN."=".$data[CSRF_TOKEN])?>&amp;its=<?php 
-    e($data['its'])?>"><img 
-    src="<?php e($logo); ?>" alt="Yioop!" /></a><span> - <?php 
+<h1 class="logo"><a href="./?<?php
+    e(CSRF_TOKEN."=".$data[CSRF_TOKEN])?>&amp;its=<?php
+    e($data['its'])?>"><img
+    src="<?php e($logo); ?>" alt="Yioop!" /></a><span> - <?php
     e(tl('settings_view_settings')); ?></span></h1>
 <div class="settings">
 <form class="user_settings" method="get" action=".">
 <table>
 
 <tr>
-<td class="table-label"><label for="per-page"><b><?php 
-    e(tl('settings_view_results_per_page')); ?></b></label></td><td 
+<td class="table-label"><label for="per-page"><b><?php
+    e(tl('settings_view_results_per_page')); ?></b></label></td><td
     class="table-input"><?php $this->optionsHelper->render(
     "per-page", "perpage", $data['PER_PAGE'], $data['PER_PAGE_SELECTED']); ?>
 </td></tr>
-<td class="table-label"><label for="open-in-tabs"><b><?php 
-    e(tl('settings_view_open_in_tabs')); ?></b></label></td><td 
+<td class="table-label"><label for="open-in-tabs"><b><?php
+    e(tl('settings_view_open_in_tabs')); ?></b></label></td><td
     class="table-input"><input type="checkbox" id="open-in-tabs"
-        name="open_in_tabs" value="true" 
+        name="open_in_tabs" value="true"
         <?php  if($data['OPEN_IN_TABS']) {?>checked='checked'<?php } ?> />
 </td></tr>
 <tr>
-<td class="table-label"><label for="index-ts"><b><?php 
-    e(tl('settings_view_search_index')); ?></b></label></td><td 
+<td class="table-label"><label for="index-ts"><b><?php
+    e(tl('settings_view_search_index')); ?></b></label></td><td
     class="table-input"><?php $this->optionsHelper->render(
     "index-ts", "index_ts", $data['CRAWLS'], $data['its']); ?>
 </td></tr>
-<tr><td class="table-label"><label for="locale"><b><?php 
-    e(tl('settings_view_language_label')); ?></b></label></td><td 
+<tr><td class="table-label"><label for="locale"><b><?php
+    e(tl('settings_view_language_label')); ?></b></label></td><td
     class="table-input"><?php $this->languageElement->render($data); ?>
 </td></tr>
 
-<tr><td class="cancel"><input type="hidden" name="<?php 
-    e(CSRF_TOKEN); ?>" value="<?php 
-    e($data[CSRF_TOKEN]); ?>" /><input type="hidden" 
-    name="its" value="<?php e($data['its']); ?>" /><button 
-    class="topmargin" type="submit" name="c" value="search"><?php 
-    e(tl('settings_view_return_yioop')); 
+<tr><td class="cancel"><input type="hidden" name="<?php
+    e(CSRF_TOKEN); ?>" value="<?php
+    e($data[CSRF_TOKEN]); ?>" /><input type="hidden"
+    name="its" value="<?php e($data['its']); ?>" /><button
+    class="topmargin" type="submit" name="c" value="search"><?php
+    e(tl('settings_view_return_yioop'));
     ?></button></td><td class="table-input">
-<button class="topmargin" type="submit" name="c" value="settings"><?php 
+<button class="topmargin" type="submit" name="c" value="settings"><?php
     e(tl('settings_view_save')); ?></button>
 </td></tr>
 </table>
 </form>
 </div>
-<div class="setting-footer"><a 
-            href="javascript:window.external.AddSearchProvider('<?php 
-            e(NAME_SERVER."yioopbar.xml");?>')"><?php 
+<div class="setting-footer"><a
+            href="javascript:window.external.AddSearchProvider('<?php
+            e(NAME_SERVER."yioopbar.xml");?>')"><?php
     e(tl('setting_install_search_plugin'));
 ?></a>.</div>
 </div>

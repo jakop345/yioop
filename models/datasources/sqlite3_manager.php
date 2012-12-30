@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage datasource_manager
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -43,9 +43,9 @@ require_once "datasource_manager.php";
  * SQLite3 DatasourceManager
  *
  * This is concrete class, implementing
- * the abstract class DatasourceManager 
- * for the Sqlite3 DBMS (file format not compatible with versions less than 3). 
- * Method explanations are from the parent class. 
+ * the abstract class DatasourceManager
+ * for the Sqlite3 DBMS (file format not compatible with versions less than 3).
+ * Method explanations are from the parent class.
  *
  * @author Chris Pollett
  *
@@ -72,7 +72,7 @@ class Sqlite3Manager extends DatasourceManager
     var $pdo_flag;
 
     /** {@inheritdoc} */
-    function __construct() 
+    function __construct()
     {
         parent::__construct();
         if(!file_exists(CRAWL_DIR."/data")) {
@@ -81,7 +81,7 @@ class Sqlite3Manager extends DatasourceManager
         }
         if(class_exists("SQLite3")) {
             $this->pdo_flag = false;
-        } else if (class_exists("PDO") && 
+        } else if (class_exists("PDO") &&
             in_array("sqlite", PDO::getAvailableDrivers())) {
             $this->pdo_flag = true;
         } else {
@@ -91,19 +91,19 @@ class Sqlite3Manager extends DatasourceManager
         $this->dbname = NULL;
     }
 
-    /** 
-     * For an Sqlite3 database no connection needs to be made so this 
+    /**
+     * For an Sqlite3 database no connection needs to be made so this
      * method does nothing
      * {@inheritdoc}
      */
-    function connect($db_HOST = DB_HOST, $db_user = DB_USER, 
+    function connect($db_HOST = DB_HOST, $db_user = DB_USER,
         $db_password = DB_PASSWORD)
     {
         return true;
     }
 
     /** {@inheritdoc} */
-    function selectDB($db_name) 
+    function selectDB($db_name)
     {
         if(strcmp($db_name, $this->dbname) == 0) {
             return $this->dbhandle;
@@ -111,7 +111,7 @@ class Sqlite3Manager extends DatasourceManager
 
         $this->dbname = $db_name;
         if(!$this->pdo_flag) {
-            $this->dbhandle = new SQLite3(CRAWL_DIR."/data/$db_name.db", 
+            $this->dbhandle = new SQLite3(CRAWL_DIR."/data/$db_name.db",
                 SQLITE3_OPEN_READWRITE |SQLITE3_OPEN_CREATE);
         } else {
             $this->dbhandle = new PDO("sqlite:".
@@ -121,7 +121,7 @@ class Sqlite3Manager extends DatasourceManager
     }
 
     /** {@inheritdoc} */
-    function disconnect() 
+    function disconnect()
     {
         if(!$this->pdo_flag) {
             $this->dbhandle->close();
@@ -129,7 +129,7 @@ class Sqlite3Manager extends DatasourceManager
     }
 
     /** {@inheritdoc} */
-    function exec($sql) 
+    function exec($sql)
     {
         $result = $this->dbhandle->query($sql);
 
@@ -137,7 +137,7 @@ class Sqlite3Manager extends DatasourceManager
     }
 
     /** {@inheritdoc} */
-    function affectedRows() 
+    function affectedRows()
     {
         if(method_exists($this->dbhandle, "changes")) {
             return $this->dbhandle->changes();
@@ -147,13 +147,13 @@ class Sqlite3Manager extends DatasourceManager
     }
 
     /** {@inheritdoc} */
-    function insertID() 
+    function insertID()
     {
         return $this->dbhandle->lastInsertRowID();
     }
 
     /** {@inheritdoc} */
-    function fetchArray($result) 
+    function fetchArray($result)
     {
         if(!$this->pdo_flag) {
             $row = $result->fetchArray(SQLITE3_ASSOC);
@@ -164,7 +164,7 @@ class Sqlite3Manager extends DatasourceManager
     }
 
     /** {@inheritdoc} */
-    function escapeString($str) 
+    function escapeString($str)
     {
         if(method_exists($this->dbhandle, "escapeString")) {
             return $this->dbhandle->escapeString($str);

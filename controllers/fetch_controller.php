@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage controller
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -39,8 +39,8 @@ require_once BASE_DIR."/controllers/controller.php";
 require_once BASE_DIR."/lib/crawl_constants.php";
 
 /** get available archive iterators */
-foreach(glob(BASE_DIR."/lib/archive_bundle_iterators/*_bundle_iterator.php") 
-    as $filename) { 
+foreach(glob(BASE_DIR."/lib/archive_bundle_iterators/*_bundle_iterator.php")
+    as $filename) {
     require_once $filename;
 }
 
@@ -55,7 +55,7 @@ foreach(glob(BASE_DIR."/lib/archive_bundle_iterators/*_bundle_iterator.php")
  * @subpackage controller
  */
 class FetchController extends Controller implements CrawlConstants
-{ 
+{
     /**
      * No models used by this controller
      * @var array
@@ -84,11 +84,11 @@ class FetchController extends Controller implements CrawlConstants
      * determines which activity the fetcher is requesting and calls that
      * activity for processing.
      */
-    function processRequest() 
+    function processRequest()
     {
         $data = array();
 
-        /* do a quick test to see if this is a request seems like 
+        /* do a quick test to see if this is a request seems like
            from a legitimate machine
          */
         if(!$this->checkRequest()) {return; }
@@ -100,7 +100,7 @@ class FetchController extends Controller implements CrawlConstants
             $robot_table = unserialize(file_get_contents($robot_table_name));
         }
         if(isset($_REQUEST['robot_instance'])) {
-            $robot_table[$this->clean($_REQUEST['robot_instance'], "string")] = 
+            $robot_table[$this->clean($_REQUEST['robot_instance'], "string")] =
                 array($_SERVER['REMOTE_ADDR'], $_REQUEST['machine_uri'],
                 time());
             file_put_contents($robot_table_name, serialize($robot_table));
@@ -152,11 +152,11 @@ class FetchController extends Controller implements CrawlConstants
                     $crawl_params[self::STATUS] = "RESUME_CRAWL";
                     $crawl_params[self::CRAWL_TIME] = $crawl_time;
                     $crawl_params[self::CRAWL_TYPE] = self::WEB_CRAWL;
-                    /* 
+                    /*
                         we only set crawl time. Other data such as allowed sites
                         should come from index.
                     */
-                    $this->crawlModel->sendStartCrawlMessage($crawl_params, 
+                    $this->crawlModel->sendStartCrawlMessage($crawl_params,
                         NULL, NULL);
                 }
             }
@@ -169,12 +169,12 @@ class FetchController extends Controller implements CrawlConstants
     }
 
     /**
-     * Checks to see whether there are more pages to extract from the current 
-     * archive, and if so returns the next batch to the requesting fetcher. The 
-     * iteration progress is automatically saved on each call to nextPages, so 
-     * that the next fetcher will get the next batch of pages. If there is no 
-     * current archive to iterate over, or the iterator has reached the end of 
-     * the archive then indicate that there is no more data by setting the 
+     * Checks to see whether there are more pages to extract from the current
+     * archive, and if so returns the next batch to the requesting fetcher. The
+     * iteration progress is automatically saved on each call to nextPages, so
+     * that the next fetcher will get the next batch of pages. If there is no
+     * current archive to iterate over, or the iterator has reached the end of
+     * the archive then indicate that there is no more data by setting the
      * status to NO_DATA_STATE.
      */
     function archiveSchedule()
@@ -194,7 +194,7 @@ class FetchController extends Controller implements CrawlConstants
             $fetch_pages = true;
             $info = unserialize(file_get_contents($messages_filename));
             if($info[self::STATUS] == 'STOP_CRAWL') {
-                /* The stop crawl message gets created by the admin_controller 
+                /* The stop crawl message gets created by the admin_controller
                    when the "stop crawl" button is pressed.*/
                 @unlink($messages_filename);
                 @unlink($lock_filename);
@@ -334,19 +334,19 @@ class FetchController extends Controller implements CrawlConstants
                 file_get_contents(CRAWL_DIR."/schedules/crawl_status.txt"));
             if(isset($_REQUEST['fetcher_peak_memory'])) {
                 if(!isset($crawl_status['FETCHER_MEMORY']) ||
-                    $_REQUEST['fetcher_peak_memory'] > 
+                    $_REQUEST['fetcher_peak_memory'] >
                     $crawl_status['FETCHER_PEAK_MEMORY']
                 ) {
-                    $crawl_status['FETCHER_PEAK_MEMORY'] = 
+                    $crawl_status['FETCHER_PEAK_MEMORY'] =
                         $_REQUEST['fetcher_peak_memory'];
                     $change = true;
                 }
-                
+
             }
             if(!isset($crawl_status['WEBAPP_PEAK_MEMORY']) ||
-                $info[self::MEMORY_USAGE] > 
+                $info[self::MEMORY_USAGE] >
                 $crawl_status['WEBAPP_PEAK_MEMORY']) {
-                $crawl_status['WEBAPP_PEAK_MEMORY'] = 
+                $crawl_status['WEBAPP_PEAK_MEMORY'] =
                     $info[self::MEMORY_USAGE];
                 $change = true;
             }
@@ -389,7 +389,7 @@ class FetchController extends Controller implements CrawlConstants
             unlink($filename);
         }
         $logging = "... Data upload complete\n";
-        $address = str_replace(".", "-", $_SERVER['REMOTE_ADDR']); 
+        $address = str_replace(".", "-", $_SERVER['REMOTE_ADDR']);
         $address = str_replace(":", "_", $address);
         $time = time();
         $day = floor($time/86400);
@@ -406,14 +406,14 @@ class FetchController extends Controller implements CrawlConstants
             $pos = 0;
             $robot_data = substr($uploaded, $pos,$byte_counts["ROBOT"]);
             $pos += $byte_counts["ROBOT"];
-            $schedule_data = 
+            $schedule_data =
                 substr($uploaded, $pos, $byte_counts["SCHEDULE"]);
             $pos += $byte_counts["SCHEDULE"];
-            $index_data = 
+            $index_data =
                 substr($uploaded, $pos);
         }
         if(strlen($robot_data) > 0) {
-            $this->addScheduleToScheduleDirectory(self::robot_data_base_name, 
+            $this->addScheduleToScheduleDirectory(self::robot_data_base_name,
                 $robot_data);
         }
         if(strlen($schedule_data) > 0) {
@@ -428,18 +428,18 @@ class FetchController extends Controller implements CrawlConstants
     }
 
     /**
-     * Adds a file with contents $data and with name containing $address and 
+     * Adds a file with contents $data and with name containing $address and
      * $time to a subfolder $day of a folder $dir
      *
      * @param string $schedule_name the name of the kind of schedule being saved
-     * @param string &$data_string encoded, compressed, serialized data the 
+     * @param string &$data_string encoded, compressed, serialized data the
      *      schedule is to contain
      */
     function addScheduleToScheduleDirectory($schedule_name, &$data_string)
     {
         $dir = CRAWL_DIR."/schedules/".$schedule_name.$_REQUEST['crawl_time'];
 
-        $address = str_replace(".", "-", $_SERVER['REMOTE_ADDR']); 
+        $address = str_replace(".", "-", $_SERVER['REMOTE_ADDR']);
         $address = str_replace(":", "_", $address);
         $time = time();
         $day = floor($time/86400);
@@ -461,8 +461,8 @@ class FetchController extends Controller implements CrawlConstants
     }
 
     /**
-     * Checks for the crawl time according either to crawl_status.txt or to 
-     * network_status.txt, and presents it to the requesting fetcher, along 
+     * Checks for the crawl time according either to crawl_status.txt or to
+     * network_status.txt, and presents it to the requesting fetcher, along
      * with a list of available queue servers.
      */
     function crawlTime()

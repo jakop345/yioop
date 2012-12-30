@@ -2,7 +2,7 @@
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -26,7 +26,7 @@
  * @subpackage javascript
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012s
+ * @copyright 2009 - 2013s
  * @filesource
  */
 
@@ -36,29 +36,29 @@
  */
 VERSION_NO = 0;
 
-/**
+/*
  *  Constants for key codes will handle
  */
 KeyCodes = new Object();
 KeyCodes.UP_ARROW = 38;
 KeyCodes.DOWN_ARROW = 40;
 
-/**
+/*
  * Maximum number of search terms to display
  */
 MAX_DISPLAY = 6;
-/**
+/*
  * Height of a search term in pixels
  */
 FONT_HEIGHT = 24;
-/**
+/*
  * Used to delimit the end of a term in a trie.
  * The value below is the default define. Might be set
  * what the trie object loaded says in loadTrie
  */
 END_OF_TERM_MARKER = " ";
 
-/**
+/*
  * Process to follow once onsubmit event is fired
  *
  * @param None
@@ -78,7 +78,7 @@ function isVowel(c) {
     return ['a', 'e', 'i', 'o', 'u'].indexOf(c) !== -1
 }
 
-/**
+/*
  * Steps to follow every time a key is up from the user end
  * Handles up/dowm arrow keys
  *
@@ -154,7 +154,7 @@ function onTypeTerm(event, text_field)
                     termSuggest(local_dict, input_term);
                     local_terms_present = false;
                 }
-                var sorted_local = SortLocalTerms();
+                var sorted_local = sortLocalTerms();
                 if (Object.size(search_list_array) > 0) {
                     search_list = "";
                     for(var i = 0; i < sorted_local.length ; i++) {
@@ -249,7 +249,7 @@ function onTypeTerm(event, text_field)
     }
 }
 
-/**
+/*
  * To correct the spelling of the query words
  *
  * @param String word Input word
@@ -275,7 +275,7 @@ function correctSpelling(word)
     return corrected_word;
 }
 
-/**
+/*
  * To get the candidates for the spell correction with edit
  * distance 1
  *
@@ -347,7 +347,7 @@ Array.prototype.unique = function() {
     return a;
 }
 
-/**
+/*
  * To get the set of words which are known from the dictionary
  *
  * @param Array words_ip array of words
@@ -368,7 +368,7 @@ function known(words_ip)
     return known_words;
 }
 
-/**
+/*
  * To update the local storage with the previous query terms and
  * create a trie on those terms
  *
@@ -421,17 +421,17 @@ function updateLocalStorage()
      "@@" + JSON.stringify(locale_terms));
 }
 
-/**
+/*
  * Sort the local storage words based of number of times they are queried
  */
 
-function SortLocalTerms()
+function sortLocalTerms()
 {
     var local_storage_array = new Array();
     if(Object.size(locale_terms) > 0) {
         var j=0;
         for(var key in locale_terms) {
-            local_storage_array[j] = locale_terms[key] +"*"+  key;
+            local_storage_array[j] = locale_terms[key] + "*"+ key;
             j++;
         }
     }
@@ -440,7 +440,7 @@ function SortLocalTerms()
     return local_storage_array;
 }
 
-/**
+/*
  * Sort function to sort the numbers in ascending order
  */
 
@@ -453,7 +453,7 @@ function sortFunction(a, b)
     return (val1 - val2);
 }
 
-/**
+/*
  * To select an suggest value while up/down arrow keys are being used
  * and place in the search box
  *
@@ -467,7 +467,7 @@ function setSelectedTerm(pos, class_value)
     elt("term" + pos).className = class_value;
 }
 
-/**
+/*
  * To selects a term from the suggest dropdownlist and performs as search
  *
  * @param String term what was clicked on
@@ -483,7 +483,7 @@ function termClick(term,termid)
 }
 
 
-/**
+/*
  * Fetch words from the Trie and add to seachList with <li> </li> tags
  *
  * @param Array trie_array contains all search terms
@@ -540,7 +540,7 @@ function getTrieTerms(trie_array, parent_word, highlighted_word)
     }
 }
 
-/**
+/*
  * Returns the sub trie_array under term in
  * trie_array. If term does not exist in the trie_array
  * returns false
@@ -567,7 +567,7 @@ function exist(trie_array, term)
     return trie_array;
 }
 
-/**
+/*
  * Entry point to find word completions/suggestions. Finds the portion of
  * trie_aray beneath term. Then using this subtrie get the first six entries.
  * Six is specified in get values.
@@ -615,7 +615,7 @@ function encode(str)
     return str;
 }
 
-/**
+/*
  * Extract next Unicode Char beginning at offset i in str returns Array
  * with this character and the next offset
  *
@@ -656,7 +656,7 @@ function getUnicodeCharAndNextOffset(str, i)
     return [str.charAt(i + 1), i + 1];
 }
 
-/**
+/*
  * Load the Trie during the launch of website
  * Trie's are represented using nested arrays.
  */
@@ -684,7 +684,7 @@ function loadFiles()
     }
 }
 
-/**
+/*
  * To process spell correction
  */
 function spellCheck()

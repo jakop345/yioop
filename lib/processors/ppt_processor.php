@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage processor
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -40,7 +40,7 @@ require_once BASE_DIR."/lib/processors/text_processor.php";
 
 
 /**
- * Used to create crawl summary information 
+ * Used to create crawl summary information
  * for PPT files
  *
  * @author Chris Pollett
@@ -67,12 +67,12 @@ class PptProcessor extends TextProcessor
      * is used to make a summary
      *
      * @param string $page string of a Powerpoint document
-     * @param string $url location the document came from, not used by 
+     * @param string $url location the document came from, not used by
      *      TextProcessor at this point. Some of its subclasses override
      *      this method and use url to produce complete links for
      *      relative links within a document
      *
-     * @return array a summary of (title, description,links, and content) of 
+     * @return array a summary of (title, description,links, and content) of
      *      the information in $page
      */
     function process($page, $url)
@@ -126,7 +126,7 @@ class PptProcessor extends TextProcessor
 
                     case self::READ_LEN_TEXT_SEG:
                         if($text_len_pos < 4) {
-                            $text_len += ($ascii << ($text_len_pos * 8)); 
+                            $text_len += ($ascii << ($text_len_pos * 8));
                             $text_len_pos++;
                         } else {
                             $state = self::SCAN_TEXT_SEG;
@@ -134,9 +134,9 @@ class PptProcessor extends TextProcessor
                             $out_text = chr($ascii);
                         }
                     break;
-                     
+
                     case self::SCAN_TEXT_SEG:
-                        if(strpos($out_text, 
+                        if(strpos($out_text,
                             "lick to edit Master title style") > 0) {
                             $state = self::ALWAYS_IGNORE;
                         } else if($scan_text_pos < $text_len) {
@@ -148,7 +148,7 @@ class PptProcessor extends TextProcessor
                         } else {
                             $text_objects[$cur_id] = $out_text;
                             $cur_id++;
-                            $state = self::PPT_IGNORING; 
+                            $state = self::PPT_IGNORING;
                         }
                     break;
 

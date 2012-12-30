@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage datasource_manager
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -43,9 +43,9 @@ require_once "datasource_manager.php";
  * Mysql DatasourceManager
  *
  * This is concrete class, implementing
- * the abstract class DatasourceManager 
+ * the abstract class DatasourceManager
  * for the MySql DBMS. Method explanations
- * are from the parent class. 
+ * are from the parent class.
 
  * @author Chris Pollett
  *
@@ -54,39 +54,39 @@ require_once "datasource_manager.php";
  */
 class MysqlManager extends DatasourceManager
 {
-    /** Used when to quote column names of db names that contain a 
+    /** Used when to quote column names of db names that contain a
      *  a keyword or special character
      *  @var string
      */
     var $special_quote = "`";
 
     /** {@inheritdoc} */
-    function __construct() 
+    function __construct()
     {
         parent::__construct();
     }
 
     /** {@inheritdoc} */
-    function connect($db_host = DB_HOST, $db_user = DB_USER, 
-        $db_password = DB_PASSWORD) 
+    function connect($db_host = DB_HOST, $db_user = DB_USER,
+        $db_password = DB_PASSWORD)
     {
         return mysql_connect($db_host, $db_user, $db_password);
     }
 
     /** {@inheritdoc} */
-    function selectDB($db_name) 
+    function selectDB($db_name)
     {
         return mysql_selectDB($db_name);
     }
 
     /** {@inheritdoc} */
-    function disconnect() 
+    function disconnect()
     {
         mysql_close();
     }
 
     /** {@inheritdoc} */
-    function exec($sql) 
+    function exec($sql)
     {
         $result = mysql_query($sql);
 
@@ -94,20 +94,20 @@ class MysqlManager extends DatasourceManager
     }
 
     /** {@inheritdoc} */
-    function affectedRows() 
+    function affectedRows()
     {
         return mysql_affected_rows();
     }
 
 
     /** {@inheritdoc} */
-    function insertID() 
+    function insertID()
     {
         return mysql_insert_id();
     }
 
     /** {@inheritdoc} */
-    function fetchArray($result) 
+    function fetchArray($result)
     {
         $row = mysql_fetch_array($result, MYSQL_ASSOC);
 
@@ -116,7 +116,7 @@ class MysqlManager extends DatasourceManager
 
 
     /** {@inheritdoc} */
-    public function escapeString($str) 
+    function escapeString($str)
     {
         return mysql_real_escape_string($str);
     }

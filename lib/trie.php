@@ -3,7 +3,7 @@
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @package seek_quarry
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -41,7 +41,7 @@
  * @package seek_quarry
  * @subpackage library
  */
-class Trie 
+class Trie
 {
     /**
      * A nested array used to represent the trie
@@ -55,7 +55,7 @@ class Trie
     var $end_marker;
     /**
      * Creates and returnes an empty trie. Sets the end of term character
-     * 
+     *
      * @param string $end_marker end of term marker
      */
     function __construct($end_marker = " ")
@@ -68,12 +68,15 @@ class Trie
      * Adds a term to the Trie
      *
      * @param string $term the term to be inserted
-     * @return array $trie_array benath last letter of term inserted
+     * @return array $trie_array beneath last letter of term inserted
      */
-    function add($term) 
+    function add($term)
     {
         $trie_array = & $this->trie_array;
         $term_arr = explode(" ",$term);
+        if(!isset($term_arr[1])) {
+            $term_arr[1] = NULL;
+        }
         for($i = 0; $i < mb_strlen($term_arr[0],"utf-8"); $i++) {
             $character = mb_substr($term_arr[0], $i, 1, "utf-8");
             $enc_char = rawurlencode($character);
@@ -109,7 +112,7 @@ class Trie
         $trie_array = & $this->trie_array;
         $len = mb_strlen($term,"utf-8");
         for($i = 0; $i < $len; $i++) {
-            if($trie_array == null){
+            if($trie_array == NULL){
                 return false;
             }
             if ($trie_array != $this->end_marker) {
@@ -118,14 +121,14 @@ class Trie
                 if(!isset($trie_array[$enc_char])) {
                     return false;
                 }
-                if($trie_array[$enc_char] != $this->end_marker) { 
+                if($trie_array[$enc_char] != $this->end_marker) {
                     $trie_array = & $trie_array[$enc_char];
                 }
             }
             else {
                 return false;
             }
-        } 
+        }
         return $trie_array;
     }
 
@@ -144,7 +147,7 @@ class Trie
     }
 
     /**
-     * Computes the suffixes $count,...$max_results-$count in the trie_array 
+     * Computes the suffixes $count,...$max_results-$count in the trie_array
      * beneath the provided $find_more is true. Prepends $prefix to each
      * and returns the array of the result.
      *
@@ -156,7 +159,7 @@ class Trie
      * @param bool $find_more whether to try to look up or not (stops recursion)
      * @return array $terms a list of ($prefix.suffix1, $prefix, $suffix2,...)
      */
-    private function getValuesTrieArray($trie_array, $prefix, $max_results, 
+    private function getValuesTrieArray($trie_array, $prefix, $max_results,
         &$count = 0, &$find_more = true)
     {
         $end_marker = $this->end_marker;
@@ -165,8 +168,8 @@ class Trie
             foreach ($trie_array as $character => $subtrie) {
                 if ($character != $end_marker) {
                     $new_terms =
-                        $this->getValuesTrieArray($subtrie, 
-                            $prefix . urldecode($character), 
+                        $this->getValuesTrieArray($subtrie,
+                            $prefix . urldecode($character),
                             $max_results, $count, $find_more);
                     $terms = array_merge($terms, $new_terms);
                 } else {

@@ -2,7 +2,7 @@
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -26,7 +26,7 @@
  * @subpackage javascript
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012s
+ * @copyright 2009 - 2013s
  * @filesource
  */
 
@@ -51,7 +51,7 @@ var roman_array = {
 };
 
 /*
- * To analyze the query and generate actual input query from the 
+ * To analyze the query and generate actual input query from the
  * transliterated query
  */
 function analyzeQuery()
@@ -67,7 +67,7 @@ function analyzeQuery()
         cnt = 0;
         vow_cnt=0;
         cha2='';
-        if (query.length == 1) { 
+        if (query.length == 1) {
             cha2 = query.trim(); i++;
         }
         else {
@@ -86,7 +86,7 @@ function analyzeQuery()
                     vow_cnt++;
                 }
                 if (cons_found == false) {
-                    cha2 += letr;  
+                    cha2 += letr;
                     i++;
                 }
                 if (i >= len) {
@@ -172,4 +172,3 @@ function analyzeQuery()
     }
     return chunk_array;
 }
-

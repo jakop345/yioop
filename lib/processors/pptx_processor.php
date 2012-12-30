@@ -3,7 +3,7 @@
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage processor
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
@@ -109,8 +109,8 @@ class PptxProcessor extends TextProcessor
                     $dom = self::dom($buf);
                     $desc=self::description($dom);
 
-                    if(strlen($summary[self::DESCRIPTION]) 
-                        < self::MAX_DESCRIPTION_LEN) { 
+                    if(strlen($summary[self::DESCRIPTION])
+                        < self::MAX_DESCRIPTION_LEN) {
                             $summary[self::DESCRIPTION]=
                                 $summary[self::DESCRIPTION].$desc;
                     }
@@ -224,7 +224,7 @@ class PptxProcessor extends TextProcessor
         return $number;
     }
 
-    /** 
+    /**
      *  Determines the language of the xml document by looking at the
      *  language attribute of a tag.
      *

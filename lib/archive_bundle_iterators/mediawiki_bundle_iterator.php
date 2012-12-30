@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,13 +27,13 @@
  * @subpackage iterator
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
-/** 
+/**
  *Loads base class for iterating
  */
 require_once BASE_DIR.
@@ -42,9 +42,9 @@ require_once BASE_DIR.
 require_once BASE_DIR.'/lib/bzip2_block_iterator.php';
 
 /**
- * Used to iterate through a collection of .xml.bz2  media wiki files 
+ * Used to iterate through a collection of .xml.bz2  media wiki files
  * stored in a WebArchiveBundle folder. Here these media wiki files contain the
- * kinds of documents used by wikipedia. Iteration would be 
+ * kinds of documents used by wikipedia. Iteration would be
  * for the purpose making an index of these records
  *
  * @author Chris Pollett
@@ -52,11 +52,11 @@ require_once BASE_DIR.'/lib/bzip2_block_iterator.php';
  * @subpackage iterator
  * @see WebArchiveBundle
  */
-class MediaWikiArchiveBundleIterator extends ArchiveBundleIterator 
+class MediaWikiArchiveBundleIterator extends ArchiveBundleIterator
     implements CrawlConstants
 {
     /**
-     * The path to the directory containing the archive partitions to be 
+     * The path to the directory containing the archive partitions to be
      * iterated over.
      * @var string
      */
@@ -72,7 +72,7 @@ class MediaWikiArchiveBundleIterator extends ArchiveBundleIterator
      */
     var $num_partitions;
     /**
-     *  Counting in glob order for this arc archive bundle directory, the 
+     *  Counting in glob order for this arc archive bundle directory, the
      *  current active file number of the arc file being processed.
      *  @var int
      */
@@ -105,7 +105,7 @@ class MediaWikiArchiveBundleIterator extends ArchiveBundleIterator
      */
     var $header;
     /**
-     *  Wrapper for a bzip2 file that decompresses incrementally and can be 
+     *  Wrapper for a bzip2 file that decompresses incrementally and can be
      *  serialized and restored while maintaining its position.
      *  @var MicroBzip2
      */
@@ -147,7 +147,7 @@ class MediaWikiArchiveBundleIterator extends ArchiveBundleIterator
     /**
      * Creates a media wiki archive iterator with the given parameters.
      *
-     * @param string $iterate_timestamp timestamp of the arc archive bundle to 
+     * @param string $iterate_timestamp timestamp of the arc archive bundle to
      *      iterate  over the pages of
      * @param string $result_timestamp timestamp of the arc archive bundle
      *      results are being stored in
@@ -173,7 +173,7 @@ class MediaWikiArchiveBundleIterator extends ArchiveBundleIterator
     }
 
     /**
-     * Saves the current state so that a new instantiation can pick up just 
+     * Saves the current state so that a new instantiation can pick up just
      * after the last batch of pages extracted.
      */
     function saveCheckpoint($info = array())
@@ -190,7 +190,7 @@ class MediaWikiArchiveBundleIterator extends ArchiveBundleIterator
     }
 
     /**
-     * Restores state from a previous instantiation, after the last batch of 
+     * Restores state from a previous instantiation, after the last batch of
      * pages extracted.
      */
     function restoreCheckpoint()
@@ -227,7 +227,7 @@ class MediaWikiArchiveBundleIterator extends ArchiveBundleIterator
     {
         $this->header = array();
         $site_info = $this->getNextTagData("siteinfo");
-        $found_lang = 
+        $found_lang =
             preg_match('/lang\=\"(.*)\"/', $this->remainder, $matches);
         if($found_lang) {
             $this->header['lang'] = $matches[1];
@@ -237,9 +237,9 @@ class MediaWikiArchiveBundleIterator extends ArchiveBundleIterator
         @$dom->loadXML($site_info);
         $this->header['sitename'] = $this->getTextContent($dom,
             "/siteinfo/sitename");
-        $pre_host_name = 
+        $pre_host_name =
             $this->getTextContent($dom, "/siteinfo/base");
-        $this->header['base_address'] = substr($pre_host_name, 0, 
+        $this->header['base_address'] = substr($pre_host_name, 0,
             strrpos($pre_host_name, "/") + 1);
         $url_parts = @parse_url($this->header['base_address']);
         $this->header['ip_address'] = gethostbyname($url_parts['host']);
@@ -253,7 +253,7 @@ class MediaWikiArchiveBundleIterator extends ArchiveBundleIterator
      * contents after the close tag.
      *
      * @param string $tag tagname to extract between
-     * 
+     *
      * @return string data start tag contents close tag
      */
     function getNextTagData($tag)
@@ -263,10 +263,10 @@ class MediaWikiArchiveBundleIterator extends ArchiveBundleIterator
                 return false;
             }
             /*
-               Get the next block; the block iterator can very occasionally 
-               return a bad block if a block header pattern happens to show up 
-               in compressed data, in which case decompression will fail. We 
-               want to skip over these false blocks and get back to real 
+               Get the next block; the block iterator can very occasionally
+               return a bad block if a block header pattern happens to show up
+               in compressed data, in which case decompression will fail. We
+               want to skip over these false blocks and get back to real
                blocks.
             */
             while(!is_string($block = $this->bz2_iterator->nextBlock())) {
@@ -274,12 +274,12 @@ class MediaWikiArchiveBundleIterator extends ArchiveBundleIterator
                     return false;
             }
             $this->buffer .= $block;
-        } 
+        }
         $start_info = strpos($this->buffer, "<$tag");
         $this->remainder = substr($this->buffer, 0, $start_info);
         $pre_end_info = strpos($this->buffer, "</$tag", $start_info);
         $end_info = strpos($this->buffer, ">", $pre_end_info) + 1;
-        $tag_info = substr($this->buffer, $start_info, 
+        $tag_info = substr($this->buffer, $start_info,
             $end_info - $start_info);
         $this->buffer = substr($this->buffer, $end_info);
         return $tag_info;
@@ -328,7 +328,7 @@ class MediaWikiArchiveBundleIterator extends ArchiveBundleIterator
     }
 
     /**
-     * Reads the next at most $num many wiki pages from the iterator. It might 
+     * Reads the next at most $num many wiki pages from the iterator. It might
      * return less than $num many documents if the partition changes or the end
      * of the bundle is reached.
      *
@@ -374,7 +374,7 @@ class MediaWikiArchiveBundleIterator extends ArchiveBundleIterator
         return $pages;
     }
 
-    
+
     /**
      * Gets the next doc from the iterator
      * @return array associative array for doc
@@ -396,7 +396,7 @@ class MediaWikiArchiveBundleIterator extends ArchiveBundleIterator
         $pre_url = str_replace(" ", "_", $pre_url);
         $site[self::URL] = $this->header['base_address'].$pre_url;
         $site[self::IP_ADDRESSES] = array($this->header['ip_address']);
-        $pre_timestamp = $this->getTextContent($dom, 
+        $pre_timestamp = $this->getTextContent($dom,
             "/page/revision/timestamp");
         $site[self::MODIFIED] = date("U", strtotime($pre_timestamp));
         $site[self::TIMESTAMP] = time();
@@ -416,7 +416,7 @@ class MediaWikiArchiveBundleIterator extends ArchiveBundleIterator
             $site[self::PAGE] .= $this->makeHtmlDivision($division);
         }
         $site[self::PAGE] .= "\n</body>\n</html>";
- 
+
         $site[self::HASH] = FetchUrl::computePageHash($site[self::PAGE]);
         $site[self::WEIGHT] = ceil(max(
             log(strlen($site[self::PAGE]) + 1, 2) - 10, 1));
@@ -425,7 +425,7 @@ class MediaWikiArchiveBundleIterator extends ArchiveBundleIterator
 
     /**
      *  Convert the MediaWiki section to an HTML Division (crudely for now)
-     * 
+     *
      *  @param string $division a media wiki section as a string
      *  @return the result of converting this to HTML as a string
      */
@@ -512,7 +512,7 @@ class MediaWikiArchiveBundleIterator extends ArchiveBundleIterator
      *      [ or [[)
      * @param int $pos position in $division we are currently parsing from
      * @param int $len length of $division (save an strlen?)
-     * @return array a pair containing a string an html link corresponding 
+     * @return array a pair containing a string an html link corresponding
      *      to the media wiki link and a position in $division one is at after
      *      parsing
      */
@@ -566,7 +566,7 @@ class MediaWikiArchiveBundleIterator extends ArchiveBundleIterator
 
     /**
      * Parse the next media wiki token from the supplied media wiki section
-     * 
+     *
      * @param string $division a media wiki section
      * @param int $pos an integer position to parse from
      * @param int $len length of $division (save an strlen?)
@@ -628,7 +628,7 @@ class MediaWikiArchiveBundleIterator extends ArchiveBundleIterator
                 default:
                     if($state == self::START) {
                         $state= self::CHARS;
-                    } else if ($state == self::ESCAPE || 
+                    } else if ($state == self::ESCAPE ||
                             $state == self::PRE_HEADING
                         ) {
                         $state = self::CHARS;

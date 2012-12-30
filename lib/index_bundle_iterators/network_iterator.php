@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage iterator
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -43,14 +43,14 @@ require_once BASE_DIR.'/lib/index_bundle_iterators/index_bundle_iterator.php';
  */
 require_once BASE_DIR.'/lib/fetch_url.php';
 /**
- * 
+ *
  */
 require_once BASE_DIR.'/lib/analytics_manager.php';
 
 
 /**
  * This iterator is used to handle querying a network of queue_servers
- * with regard to a query 
+ * with regard to a query
  *
  * @author Chris Pollett
  * @package seek_quarry
@@ -179,7 +179,7 @@ class NetworkIterator extends IndexBundleIterator
      * Forwards the iterator one group of docs
      * @param array $gen_doc_offset a generation, doc_offset pair. If set,
      *      the must be of greater than or equal generation, and if equal the
-     *      next block must all have $doc_offsets larger than or equal to 
+     *      next block must all have $doc_offsets larger than or equal to
      *      this value
      */
     function advance($gen_doc_offset = null)
@@ -189,12 +189,12 @@ class NetworkIterator extends IndexBundleIterator
      }
 
     /**
-     * Gets the doc_offset and generation for the next document that 
+     * Gets the doc_offset and generation for the next document that
      * would be return by this iterator. As this is not easily determined
      * for a network iterator, this method always returns -1 for this
      * iterator
      *
-     * @return mixed an array with the desired document offset 
+     * @return mixed an array with the desired document offset
      *  and generation; -1 on fail
      */
     function currentGenDocOffsetWithWord()
@@ -251,7 +251,7 @@ class NetworkIterator extends IndexBundleIterator
             $download = & $downloads[$j];
             if(isset($download[self::PAGE])) {
                 $pre_result = @unserialize($download[self::PAGE]);
-                if(!isset($pre_result["TOTAL_ROWS"]) || 
+                if(!isset($pre_result["TOTAL_ROWS"]) ||
                     $pre_result["TOTAL_ROWS"] < $this->results_per_block) {
                     $this->more_flags[$lookup[$j]] = false;
                 }
@@ -261,7 +261,7 @@ class NetworkIterator extends IndexBundleIterator
                 if(isset($pre_result["PAGES"])) {
                     foreach($pre_result["PAGES"] as $page_data) {
                         if(isset($page_data[self::KEY])) {
-                            $results[$page_data[self::KEY]] = 
+                            $results[$page_data[self::KEY]] =
                                 $page_data;
                             $results[$page_data[self::KEY]][self::MACHINE_ID] =
                                 $j;
@@ -285,7 +285,7 @@ class NetworkIterator extends IndexBundleIterator
         if($results != -1) {
             if($this->filter != NULL) {
                 foreach($results as $keys => $data) {
-                    $host_key = 
+                    $host_key =
                         substr($keys, self::HOST_KEY_POS, self::KEY_LEN);
                     if(in_array($host_key, $this->filter) ) {
                         unset($results[$keys]);

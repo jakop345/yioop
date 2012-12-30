@@ -3,7 +3,7 @@
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage test
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -36,7 +36,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 /**
  *  Load the Italian stemmer via phrase_parser (5.4 hack)
  */
-require_once BASE_DIR."/lib/phrase_parser.php"; 
+require_once BASE_DIR."/lib/phrase_parser.php";
 /**
  *  Load the run function
  */
@@ -55,12 +55,12 @@ require_once BASE_DIR.'lib/unit_test.php';
  */
 
 class ItStemmerTest extends UnitTest
-{    public function setUp()
+{    function setUp()
     {
         $this->test_objects['FILE1'] = new ItStemmer();
     }
 
-    public function tearDown()
+    function tearDown()
     {
     }
 
@@ -74,10 +74,10 @@ class ItStemmerTest extends UnitTest
      * the snowball web page
      * $stem_words is an array containing the stems for words in $test_words
      */
-    public function stemmerTestCase()
+    function stemmerTestCase()
     {
         $stem_dir = BASE_DIR.'/tests/test_files/italian_stemmer';
-        
+
         //Test word set from snowball
         $test_words = file("$stem_dir/input_vocabulary.txt");
         //Stem word set from snowball for comparing results
@@ -85,7 +85,7 @@ class ItStemmerTest extends UnitTest
 
         /**
          * check if function stem correctly stems the words in $test_words by
-         * comparing results with stem words in $stem_words 
+         * comparing results with stem words in $stem_words
          */
         for($i = 0; $i < count($test_words); $i++){
             $word = trim($test_words[$i]);

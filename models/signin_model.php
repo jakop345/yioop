@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage model
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -47,14 +47,14 @@ require_once BASE_DIR."/lib/utility.php";
  * @package seek_quarry
  * @subpackage model
  */
-class SigninModel extends Model 
+class SigninModel extends Model
 {
 
 
     /**
      * {@inheritdoc}
      */
-    function __construct() 
+    function __construct()
     {
         parent::__construct();
     }
@@ -65,8 +65,8 @@ class SigninModel extends Model
      *
      * @param string $username the username to check
      * @param string $password the password to check
-     * @return bool  where the password is that of the given user 
-     *      (or at least hashes to the same thing) 
+     * @return bool  where the password is that of the given user
+     *      (or at least hashes to the same thing)
      */
     function checkValidSignin($username, $password)
     {
@@ -91,7 +91,7 @@ class SigninModel extends Model
         }
         $row = $this->db->fetchArray($result);
 
-        return ($username == $row['USER_NAME'] && 
+        return ($username == $row['USER_NAME'] &&
             crawlCrypt($password, $row['PASSWORD']) == $row['PASSWORD']) ;
 
     }
@@ -128,7 +128,7 @@ class SigninModel extends Model
 
         $user_id = $this->db->escapeString($user_id);
 
-        $sql = "SELECT USER_NAME FROM USER WHERE USER_ID = '$user_id' LIMIT 1"; 
+        $sql = "SELECT USER_NAME FROM USER WHERE USER_ID = '$user_id' LIMIT 1";
         $result = $this->db->execute($sql);
         $row = $this->db->fetchArray($result);
         $username = $row['USER_NAME'];
@@ -151,7 +151,7 @@ class SigninModel extends Model
         $password = $this->db->escapeString($password);
 
         $sql = "UPDATE USER SET PASSWORD='".
-            crawlCrypt($password)."' WHERE USER_NAME = '$username' "; 
+            crawlCrypt($password)."' WHERE USER_NAME = '$username' ";
 
         $result = $this->db->execute($sql);
         return $result != false;

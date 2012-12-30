@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,35 +27,35 @@
  * @subpackage library
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- * A Compressor is used to apply a filter to objects before they are stored 
- * into a WebArchive. The filter is assumed to be invertible, and the typical 
+ * A Compressor is used to apply a filter to objects before they are stored
+ * into a WebArchive. The filter is assumed to be invertible, and the typical
  * intention is the filter carries out some kind of string compression.
  *
  * @author Chris Pollett
  * @package seek_quarry
  * @subpackage library
- */ 
- 
+ */
+
 interface Compressor
 {
     /**
-     * Applies the Compressor compress filter to a string before it is 
+     * Applies the Compressor compress filter to a string before it is
      * inserted into a WebArchive.
      *
      * @param string $str  string to apply filter to
      * @return string  the result of applying the filter
      */
     function compress($str);
-    
+
     /**
-     * Used to unapply the compress filter as when data is read out of a 
+     * Used to unapply the compress filter as when data is read out of a
      * WebArchive.
      *
      * @param string $str  data read from a string archive
@@ -76,7 +76,7 @@ interface Compressor
      * Used to uncompress an int from a fixed length string in the format of
      * the compression algorithm underlying the compressor.
      *
-     * @param string $my_compressed_int the fixed length string containing 
+     * @param string $my_compressed_int the fixed length string containing
      *      the packed int to extract
      * @return int the integer contained in that string
      */
@@ -94,5 +94,5 @@ interface Compressor
      * @return string name of dos file extension
      */
     static function fileExtension();
-} 
+}
 ?>

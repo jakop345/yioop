@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage test
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -37,13 +37,13 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 require_once BASE_DIR.'/configs/config.php';
 
 /** For unlinkRecursive method */
-require_once(BASE_DIR."/models/datasources/".DBMS."_manager.php"); 
+require_once(BASE_DIR."/models/datasources/".DBMS."_manager.php");
 
 /**   Loads the WebQueueBundle class we are going to test */
 require_once BASE_DIR."/lib/web_queue_bundle.php";
 
 /**
- * UnitTest for the WebQueueBundle class. 
+ * UnitTest for the WebQueueBundle class.
  *
  * @author Chris Pollett
  * @package seek_quarry
@@ -51,51 +51,51 @@ require_once BASE_DIR."/lib/web_queue_bundle.php";
  */
 class WebQueueBundleTest extends UnitTest
 {
-    /** our dbms manager handle so we can call unlinkRecursive 
+    /** our dbms manager handle so we can call unlinkRecursive
      * @var object
      */
     var $db;
 
     /**
-     * Sets up a miminal DBMS manager class so that we will be able to use 
+     * Sets up a miminal DBMS manager class so that we will be able to use
      * unlinkRecursive to tear down own WebQueueBundle
      */
-    public function __construct()
+    function __construct()
     {
         $db_class = ucfirst(DBMS)."Manager";
         $this->db = new $db_class();
     }
     /**
-     * Set up a web queue bundle that can store 1000 urls in ram, has bloom 
-     * filter space for 1000 urls and which uses a maximum value returning 
+     * Set up a web queue bundle that can store 1000 urls in ram, has bloom
+     * filter space for 1000 urls and which uses a maximum value returning
      * priority queue.
      */
-    public function setUp()
+    function setUp()
     {
-        $this->test_objects['FILE1'] = 
+        $this->test_objects['FILE1'] =
             new WebQueueBundle("QueueTest", 1000, 1000, CrawlConstants::MAX);
     }
 
     /**
      *  Delete the directory and files associated with the WebQueueBundle
      */
-    public function tearDown()
+    function tearDown()
     {
         $this->db->unlinkRecursive("QueueTest");
     }
 
     /**
-     * Does two adds to the WebQueueBundle of urls and weight. Then checks the 
-     * contents of the queue to see if as expected. Then does a rebuild on the 
+     * Does two adds to the WebQueueBundle of urls and weight. Then checks the
+     * contents of the queue to see if as expected. Then does a rebuild on the
      * hash table of the queue and checks that the contents have not changed.
      */
-    public function addQueueTestCase()
+    function addQueueTestCase()
     {
-        $urls1 = array(array("http://www.pollett.com/", 10), 
+        $urls1 = array(array("http://www.pollett.com/", 10),
             array("http://www.ucanbuyart.com/", 15));
         $this->test_objects['FILE1']->addUrlsQueue($urls1);
-        $urls2 = array(array("http://www.yahoo.com/", 2), 
-            array("http://www.google.com/", 20), 
+        $urls2 = array(array("http://www.yahoo.com/", 2),
+            array("http://www.google.com/", 20),
             array("http://www.slashdot.org/", 3));
         $this->test_objects['FILE1']->addUrlsQueue($urls2);
 
@@ -107,12 +107,12 @@ class WebQueueBundleTest extends UnitTest
         );
 
         $this->assertEqual(
-            $this->test_objects['FILE1']->getContents(), $expected_array, 
+            $this->test_objects['FILE1']->getContents(), $expected_array,
             "Insert Queue matches predicted");
 
         $this->test_objects['FILE1']->rebuildUrlTable();
         $this->assertEqual(
-            $this->test_objects['FILE1']->getContents(), $expected_array, 
+            $this->test_objects['FILE1']->getContents(), $expected_array,
             "Rebuild table should not affect contents");
 
     }
@@ -122,23 +122,23 @@ class WebQueueBundleTest extends UnitTest
      * containsGotRobotTxt($host) properly insert do containment for the
      * robots.txt Bloom filter
      */
-    public function addContainsRobotTxtFilterTestCase()
+    function addContainsRobotTxtFilterTestCase()
     {
         $web_queue = $this->test_objects['FILE1'];
         $host = "http://www.host.com/";
         $web_queue->addGotRobotTxtFilter($host);
         $this->assertTrue(
-            $web_queue->containsGotRobotTxt($host), 
+            $web_queue->containsGotRobotTxt($host),
             "Contains added robots.txt host");
         $this->assertFalse(
-            $web_queue->containsGotRobotTxt("http://www.bob.com/"), 
+            $web_queue->containsGotRobotTxt("http://www.bob.com/"),
             "Contains added robots.txt host");
     }
 
     /**
      * Tests the methods addRobotPaths and checkRobotOkay
      */
-    public function addRobotPathsCheckRobotOkayTestCase()
+    function addRobotPathsCheckRobotOkayTestCase()
     {
         $web_queue = $this->test_objects['FILE1'];
         $host = "http://www.test.com/";
@@ -149,17 +149,17 @@ class WebQueueBundleTest extends UnitTest
         $web_queue->addRobotPaths($host, $paths);
 
         $test_urls = array(
-            array("http://www.cs.sjsu.edu/", true, 
+            array("http://www.cs.sjsu.edu/", true,
                 "url with no stored rules"),
-            array("http://www.test.com/trapdoor", true, 
+            array("http://www.test.com/trapdoor", true,
                 "allowed url"),
-            array("http://www.test.com/trapdoor?b", true, 
+            array("http://www.test.com/trapdoor?b", true,
                 "allowed overrides all disallows"),
-            array("http://www.test.com/trap", false, 
+            array("http://www.test.com/trap", false,
                 "forbidden url 1"),
-            array("http://www.test.com/abc?", false, 
+            array("http://www.test.com/abc?", false,
                 "forbidden url 2"),
-            array("http://www.test.com/a?b", false, 
+            array("http://www.test.com/a?b", false,
                 "forbidden url 3"),
         );
 

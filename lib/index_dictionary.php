@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,14 +27,14 @@
  * @subpackage library
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 
-/** 
+/**
  *Loads common constants for web crawling
  */
 require_once  BASE_DIR.'/lib/crawl_constants.php';
@@ -48,20 +48,20 @@ require_once  BASE_DIR.'/lib/crawl_constants.php';
  *
  * In terms of file structure, a dictionary is stored a folder consisting of
  * 256 subfolders. Each subfolder is used to store the word_ids beginning with
- * a particular character. Within a folder are files of various tier levels 
+ * a particular character. Within a folder are files of various tier levels
  * representing the data stored. As crawling proceeds words from a shard are
  * added to the dictionary in files of tier level 0 either with suffix A or B.
  * If it is detected that both an A and a B file of a given tier level exist,
- * then the results of these two files are merged to a new file at one tier 
- * level up . The old files are then deleted. This process is applied 
+ * then the results of these two files are merged to a new file at one tier
+ * level up . The old files are then deleted. This process is applied
  * recursively until there is at most an A file on each level.
  *
  * @author Chris Pollett
  *
  * @package seek_quarry
  * @subpackage library
- */ 
- 
+ */
+
 class IndexDictionary implements CrawlConstants
 {
     /**
@@ -132,7 +132,7 @@ class IndexDictionary implements CrawlConstants
      */
     const DICT_BLOCK_POWER = 12;
     /**
-     * Size of an item in the prefix index used to look up words. 
+     * Size of an item in the prefix index used to look up words.
      * If the sub-dir was 65 (ASCII A), and the second char  was also
      * ASCII 65, then the corresonding prefix record would be the
      * offset to the first word_id beginning with AA, followed by the
@@ -146,8 +146,8 @@ class IndexDictionary implements CrawlConstants
     const NUM_PREFIX_LETTERS = 256;
     /**
      * One dictionary file represents the words whose ids begin with a
-     * fixed char. Amongst these id, the prefix index gives offsets for 
-     * where id's with a given second char start. The total length of the 
+     * fixed char. Amongst these id, the prefix index gives offsets for
+     * where id's with a given second char start. The total length of the
      * records needed is PREFIX_ITEM_SIZE * NUM_PREFIX_LETTERS.
      */
     const PREFIX_HEADER_SIZE = 2048;
@@ -181,9 +181,9 @@ class IndexDictionary implements CrawlConstants
     }
 
     /**
-     * Makes dictionary sub-directories for each of the 256 possible first 
+     * Makes dictionary sub-directories for each of the 256 possible first
      * hash characters that crawHash in raw mode code output.
-     * @param string $dir_name base directory in which these sub-directories 
+     * @param string $dir_name base directory in which these sub-directories
      *      should be made
      */
     static function makePrefixLetters($dir_name)
@@ -191,7 +191,7 @@ class IndexDictionary implements CrawlConstants
         for($i = 0; $i < self::NUM_PREFIX_LETTERS; $i++) {
             mkdir($dir_name."/$i");
         }
-        file_put_contents($dir_name."/max_tier.txt", 
+        file_put_contents($dir_name."/max_tier.txt",
             serialize(0));
     }
 
@@ -201,10 +201,10 @@ class IndexDictionary implements CrawlConstants
      *
      * @param object $index_shard the shard to add the word to the dictionary
      *      with
-     * @param object $callback object with join function to be 
+     * @param object $callback object with join function to be
      *      called if process is taking too  long
      */
-    function addShardDictionary($index_shard, $callback = NULL) 
+    function addShardDictionary($index_shard, $callback = NULL)
     {
         $out_slot = "A";
         if(file_exists($this->dir_name."/0/0A.dic")) {
@@ -222,11 +222,11 @@ class IndexDictionary implements CrawlConstants
         for($i = 0; $i < $num_prefix_letters; $i++) {
 
             $last_offset = $next_offset;
-            // adjust prefix values 
+            // adjust prefix values
             $first_offset_flag = true;
             $last_set = -1;
             for($j = 0; $j < $num_prefix_letters; $j++) {
-                $prefix_info = $this->extractPrefixRecord($prefix_string, 
+                $prefix_info = $this->extractPrefixRecord($prefix_string,
                         ($i << 8) + $j);
                 if($prefix_info !== false) {
                     list($offset, $count) = $prefix_info;
@@ -238,24 +238,24 @@ class IndexDictionary implements CrawlConstants
                     $out = pack("N*", $offset, $count);
                     $last_set = $j;
                     $last_out = $prefix_info;
-                    charCopy($out, $prefix_string, 
+                    charCopy($out, $prefix_string,
                         (($i << 8) + $j) * $prefix_item_size,
                         $prefix_item_size);
                 }
             }
             // write prefixes
             $fh = fopen($this->dir_name."/$i/0".$out_slot.".dic", "wb");
-            fwrite($fh, substr($prefix_string, 
+            fwrite($fh, substr($prefix_string,
                 $i*self::PREFIX_HEADER_SIZE, self::PREFIX_HEADER_SIZE));
             $j = self::NUM_PREFIX_LETTERS;
             // write words
             if($last_set >= 0) {
                 list($offset, $count) = $last_out;
-                $next_offset = $base_offset + $offset + 
+                $next_offset = $base_offset + $offset +
                     $count * $word_item_len;
-                fwrite($fh, $index_shard->getShardSubstring($last_offset, 
+                fwrite($fh, $index_shard->getShardSubstring($last_offset,
                     $next_offset - $last_offset, false));
-            } 
+            }
             fclose($fh);
         }
         unset($prefix_string);
@@ -274,7 +274,7 @@ class IndexDictionary implements CrawlConstants
             $tier++;
             if($tier > $this->max_tier) {
                 $this->max_tier = $tier;
-                file_put_contents($this->dir_name."/max_tier.txt", 
+                file_put_contents($this->dir_name."/max_tier.txt",
                     serialize($this->max_tier));
             }
         }
@@ -331,16 +331,16 @@ class IndexDictionary implements CrawlConstants
             if($record_a === false && $record_b === false) {
                 $prefix_string_out .= $blank;
             } else if($record_a === false){
-                $prefix_string_out .= 
+                $prefix_string_out .=
                     $this->makePrefixRecord($offset, $record_b[1]);
                 $offset += $record_b[1] * $word_item_len;
             } else if($record_b === false){
-                $prefix_string_out .= 
+                $prefix_string_out .=
                     $this->makePrefixRecord($offset, $record_a[1]);
                 $offset += $record_a[1] * $word_item_len;
             } else {
                 $count = $record_a[1] + $record_b[1];
-                $prefix_string_out .= 
+                $prefix_string_out .=
                     $this->makePrefixRecord($offset, $count);
                 $offset += $count * $word_item_len;
             }
@@ -375,11 +375,11 @@ class IndexDictionary implements CrawlConstants
                 $offset_b = 0;
             }
             if($offset_a < $read_size_a) {
-                $record_a = substr($work_string_a, $offset_a, 
+                $record_a = substr($work_string_a, $offset_a,
                     $word_item_len);
             }
             if($offset_b < $read_size_b) {
-                $record_b = substr($work_string_b, $offset_b, 
+                $record_b = substr($work_string_b, $offset_b,
                     $word_item_len);
             }
             if($offset_b >= $read_size_b) {
@@ -415,12 +415,12 @@ class IndexDictionary implements CrawlConstants
      *
      * @param string $record_a
      * @param string $record_b
-     * @return int less than 0 if $record_a less than $record_b; 
+     * @return int less than 0 if $record_a less than $record_b;
      *      greater than 0 if $record_b is less than $record_a; 0 otherwise
      */
-    function recordCmp($record_a, $record_b) 
+    function recordCmp($record_a, $record_b)
     {
-        return strcmp(substr($record_a, 0, IndexShard::WORD_KEY_LEN), 
+        return strcmp(substr($record_a, 0, IndexShard::WORD_KEY_LEN),
             substr($record_b, 0,  IndexShard::WORD_KEY_LEN));
     }
 
@@ -443,7 +443,7 @@ class IndexDictionary implements CrawlConstants
     }
 
     /**
-     * Makes a prefix record string out of an offset and count (packs and 
+     * Makes a prefix record string out of an offset and count (packs and
      * concatenates).
      *
      * @param int $offset byte offset into words for the prefix record
@@ -456,13 +456,13 @@ class IndexDictionary implements CrawlConstants
     }
 
     /**
-     * Merges for each tier and for each first letter subdirectory, 
-     * the $tier pair of (A and B) files  of dictionary words. If max_tier has 
-     * not been reached but only one of the two tier files is present then that 
-     * file is renamed with a name one tier higher. The output in all cases is 
+     * Merges for each tier and for each first letter subdirectory,
+     * the $tier pair of (A and B) files  of dictionary words. If max_tier has
+     * not been reached but only one of the two tier files is present then that
+     * file is renamed with a name one tier higher. The output in all cases is
      * stored in file ending with A or B one tier up. B is used if an A file is
      * already present.
-     * @param object $callback object with join function to be 
+     * @param object $callback object with join function to be
      *      called if process is taking too long
      * @param int $max_tier the maximum tier to merge to merge till --
      *      if not set then $this->max_tier used. Otherwise, one would
@@ -493,17 +493,17 @@ class IndexDictionary implements CrawlConstants
                     $this->mergeTierFiles($i, $j, $out_slot);
                     if($j == $max_tier) {$new_tier = true;}
                 } else if ($a_exists && $higher_a) {
-                    rename($this->dir_name."/$i/".$j."A.dic", 
+                    rename($this->dir_name."/$i/".$j."A.dic",
                         $this->dir_name."/$i/".($j + 1)."B.dic");
                 } else if ($a_exists && $j < $max_tier) {
-                    rename($this->dir_name."/$i/".$j."A.dic", 
+                    rename($this->dir_name."/$i/".$j."A.dic",
                         $this->dir_name."/$i/".($j + 1)."A.dic");
                 }
             }
         }
         if($new_tier) {
             $max_tier++;
-            file_put_contents($this->dir_name."/max_tier.txt", 
+            file_put_contents($this->dir_name."/max_tier.txt",
                 serialize($max_tier));
             $this->max_tier = $max_tier;
         }
@@ -512,7 +512,7 @@ class IndexDictionary implements CrawlConstants
 
     /**
      * For each index shard generation a word occurred in, return as part of
-     * array, an array entry of the form generation, first offset, 
+     * array, an array entry of the form generation, first offset,
      * last offset, and number of documents the
      * word occurred in for this shard. The first offset (similarly, the last
      * offset) is the byte offset into the word_docs string of the first
@@ -522,9 +522,9 @@ class IndexDictionary implements CrawlConstants
      * @param bool $raw whether the id is our version of base64 encoded or not
      * @param bool $extract whether to extract an array of entries or to just
      *      return the word info as a string
-     * @return mixed an array of entries of the form 
+     * @return mixed an array of entries of the form
      *      generation, first offset, last offset, count or
-     *      just a string of the word_info data if $extract is false 
+     *      just a string of the word_info data if $extract is false
      */
      function getWordInfo($word_id, $raw = false, $extract = true)
      {
@@ -548,17 +548,17 @@ class IndexDictionary implements CrawlConstants
       *  a specific tier in the index dictionary. Each tier will
       *  have word info for a specific, disjoint set of shards, so the format of
       *  how to look up posting lists in a shard can be the same
-      *  regardless of the tier: an array entry is of the form 
+      *  regardless of the tier: an array entry is of the form
       *  generation, first offset, last offset, and number of documents the
       *  word occurred in for this shard.
       *
       *  @param string $word_id id of the word one wants to look up
-      *  @param bool $raw whether the id is our version of base64 encoded or 
+      *  @param bool $raw whether the id is our version of base64 encoded or
       *  not
       *  @param int $tier which tier to get word info from
-      *  @return mixed an array of entries of the form 
+      *  @return mixed an array of entries of the form
       *      generation, first offset, last offset, count or
-      *      just a string of the word_info data if $extract is false 
+      *      just a string of the word_info data if $extract is false
       */
      function getWordInfoTier($word_id, $raw, $extract, $tier)
      {
@@ -603,7 +603,7 @@ class IndexDictionary implements CrawlConstants
         do {
             $old_check_loc = $check_loc;
 
-            $word_string = $this->getDictSubstring($file_num, $start + 
+            $word_string = $this->getDictSubstring($file_num, $start +
                 $check_loc * $word_item_len, $word_item_len);
 
             if($word_string == false) {return false;}
@@ -636,12 +636,12 @@ class IndexDictionary implements CrawlConstants
         } else {
             $info = $word_string;
         }
-        //up to first record with word id 
+        //up to first record with word id
         $test_loc = $check_loc - 1;
         $start_loc = $check_loc;
 
         while ($test_loc >= $low) {
-            $word_string = $this->getDictSubstring($file_num, $start + 
+            $word_string = $this->getDictSubstring($file_num, $start +
                 $test_loc * $word_item_len, $word_item_len);
             if($word_string == "" ) break;
             $id = substr($word_string, 0, $word_key_len);
@@ -656,12 +656,12 @@ class IndexDictionary implements CrawlConstants
                 $info = $ws . $info;
             }
         }
-        //until last record with word id 
+        //until last record with word id
 
         $test_loc = $check_loc + 1;
 
         while ($test_loc <= $high) {
-            $word_string = $this->getDictSubstring($file_num, $start + 
+            $word_string = $this->getDictSubstring($file_num, $start +
                 $test_loc * $word_item_len, $word_item_len);
             if($word_string == "" ) break;
             $id = substr($word_string, 0, $word_key_len);
@@ -710,7 +710,7 @@ class IndexDictionary implements CrawlConstants
      *  Gets from disk $len many bytes beginning at $offset from the
      *  $file_num prefix file in the index dictionary
      *
-     * @param int $file_num which prefix file to read from (always reads 
+     * @param int $file_num which prefix file to read from (always reads
      *      a file at the max_tier level)
      * @param int $offset byte offset to start reading from
      * @param int $len number of bytes to read
@@ -718,7 +718,7 @@ class IndexDictionary implements CrawlConstants
      */
     function getDictSubstring($file_num, $offset, $len)
     {
-        $block_offset =  ($offset >> self::DICT_BLOCK_POWER) 
+        $block_offset =  ($offset >> self::DICT_BLOCK_POWER)
             << self::DICT_BLOCK_POWER;
         $start_loc = $offset - $block_offset;
         //if all in one block do it quickly
@@ -766,14 +766,14 @@ class IndexDictionary implements CrawlConstants
             $this->file_lens[$file_num] = filesize($file_name);
         }
         if($bytes >= $this->file_lens[$file_num]) {
-            
+
             return $false;
         }
         $seek = fseek($this->fhs[$file_num], $bytes, SEEK_SET);
         if($seek < 0) {
             return $false;
         }
-        $this->blocks[$file_num][$bytes] = fread($this->fhs[$file_num], 
+        $this->blocks[$file_num][$bytes] = fread($this->fhs[$file_num],
             self::DICT_BLOCK_SIZE);
 
         return $this->blocks[$file_num][$bytes];

@@ -3,7 +3,7 @@
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage library
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -59,7 +59,7 @@ class NWordGrams
       */
     static $ngrams = NULL;
      /**
-      * 
+      *
       */
      const BLOCK_SIZE = 8192;
      /**
@@ -87,7 +87,7 @@ class NWordGrams
      */
     static function ngramsContains($phrase, $lang, $num_gram = 2)
     {
-        
+
         if(self::$ngrams == NULL || !isset(self::$ngrams[$num_gram])) {
             $filter_path =
                 LOCALE_DIR . "/$lang/resources/" .
@@ -104,7 +104,7 @@ class NWordGrams
     /**
      * Creates a bloom filter file from a n word gram text file. The
      * path of n word gram text file used is based on the input $lang.
-     * The name of output filter file is based on the $lang and the 
+     * The name of output filter file is based on the $lang and the
      * number n. Size is based on input number of n word grams .
      * The n word grams are read from text file, stemmed if a stemmer
      * is available for $lang and then stored in filter file.
@@ -115,7 +115,7 @@ class NWordGrams
      * @param int $max_gram_len value n of longest n gram to be added.
      * @return none
      */
-    static function makeNWordGramsFilterFile($lang, $num_gram, 
+    static function makeNWordGramsFilterFile($lang, $num_gram,
         $num_ngrams_found, $max_gram_len)
     {
         $filter_path =
@@ -161,8 +161,8 @@ class NWordGrams
      * @param int $ngram_type where in Wiki Dump to extract grams from
      * @return number $num_ngrams_found count of bigrams in text file.
      */
-    static function makeNWordGramsTextFile($wiki_file, $lang, 
-        $locale, $num_gram = 2, $ngram_type = self::PAGE_COUNT_WIKIPEDIA, 
+    static function makeNWordGramsTextFile($wiki_file, $lang,
+        $locale, $num_gram = 2, $ngram_type = self::PAGE_COUNT_WIKIPEDIA,
         $max_terms = -1)
     {
         $output_message_threshold = self::BLOCK_SIZE*self::BLOCK_SIZE;
@@ -261,7 +261,7 @@ class NWordGrams
                             $line_parts = explode(" ", $matches[0]);
                             if(isset($line_parts[1]) && isset($line_parts[2])) {
                                 $ngram=mb_ereg_replace("_", " ",$line_parts[1]);
-                                $char_grams = 
+                                $char_grams =
                                     PhraseParser::getCharGramsTerm(
                                         array($ngram),$locale);
                                 $ngram = implode(" ", $char_grams);

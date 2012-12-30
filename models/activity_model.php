@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage model
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -45,21 +45,21 @@ require_once BASE_DIR."/models/model.php";
  * @package seek_quarry
  * @subpackage model
  */
-class ActivityModel extends Model 
+class ActivityModel extends Model
 {
 
 
     /**
      * {@inheritdoc}
      */
-    function __construct() 
+    function __construct()
     {
        parent::__construct();
     }
 
 
     /**
-     * Given the method name of a method to perform an activity return the 
+     * Given the method name of a method to perform an activity return the
      * translated activity name
      *
      * @param string $method_name  string with the name of the activity method
@@ -79,7 +79,7 @@ class ActivityModel extends Model
             "WHERE LOCALE_TAG = '$locale_tag' LIMIT 1";
         $result = $db->execute($sql);
         $row = $db->fetchArray($result);
-        
+
         $locale_id = $row['LOCALE_ID'];
 
         $sql = "SELECT TL.TRANSLATION AS ACTIVITY_NAME  FROM ".
@@ -87,11 +87,11 @@ class ActivityModel extends Model
             "WHERE A.METHOD_NAME = '$method_name' ".
             "AND TL.TRANSLATION_ID = A.TRANSLATION_ID ".
             "AND L.LOCALE_ID='$locale_id' AND ".
-            "L.LOCALE_ID = TL.LOCALE_ID LIMIT 1"; 
+            "L.LOCALE_ID = TL.LOCALE_ID LIMIT 1";
         $result = $db->execute($sql);
         $row = $db->fetchArray($result);
-        
-        
+
+
         if($row == NULL) {
 
             $sql = "SELECT T.IDENTIFIER_STRING AS ACTIVITY_NAME  FROM ".
@@ -101,7 +101,7 @@ class ActivityModel extends Model
 
             $result = $db->execute($sql);
             $row = $db->fetchArray($result);
-            
+
         }
 
         $activity_name = $row['ACTIVITY_NAME'];
@@ -112,7 +112,7 @@ class ActivityModel extends Model
 
 
     /**
-     * Gets a list of activity ids, method names, and translated 
+     * Gets a list of activity ids, method names, and translated
      * name of each available activity
      *
      * @return array activities
@@ -135,7 +135,7 @@ class ActivityModel extends Model
             "A.METHOD_NAME AS METHOD_NAME, ".
             " T.IDENTIFIER_STRING AS IDENTIFIER_STRING FROM ".
             " ACTIVITY A, TRANSLATION T WHERE  ".
-            " T.TRANSLATION_ID = A.TRANSLATION_ID"; 
+            " T.TRANSLATION_ID = A.TRANSLATION_ID";
 
         $result = $db->execute($sql);
         $i = 0;
@@ -144,21 +144,21 @@ class ActivityModel extends Model
 
             $sub_sql = "SELECT TRANSLATION AS ACTIVITY_NAME ".
                 "FROM TRANSLATION_LOCALE ".
-                " WHERE TRANSLATION_ID=$id AND LOCALE_ID=$locale_id LIMIT 1"; 
+                " WHERE TRANSLATION_ID=$id AND LOCALE_ID=$locale_id LIMIT 1";
                 // maybe do left join at some point
-                    
+
             $result_sub =  $db->execute($sub_sql);
             $translate = $db->fetchArray($result_sub);
 
             if($translate) {
                 $activities[$i]['ACTIVITY_NAME'] = $translate['ACTIVITY_NAME'];
             } else {
-                $activities[$i]['ACTIVITY_NAME'] = 
+                $activities[$i]['ACTIVITY_NAME'] =
                     $activities['IDENTIFIER_STRING'];
             }
             $i++;
         }
-        
+
 
         unset($activities[$i]); //last one will be null
 

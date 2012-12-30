@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage element
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -52,78 +52,78 @@ class ResultsEditorElement extends Element
      *
      * @param array $data keys used to store disallowed_sites
      */
-    public function render($data) 
+    function render($data)
     {
     ?>
         <div class="currentactivity">
         <h2><?php e(tl('resultseditor_element_edit_page'))?></h2>
         <form id="urlLookupForm" method="post" action=''>
-        <div  class="topmargin"><b><label for="edited-result-pages"><?php 
+        <div  class="topmargin"><b><label for="edited-result-pages"><?php
             e(tl('resultseditor_element_edited_pages'))?></label>
-        <input type="hidden" name="c" value="admin" /> 
-        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php 
+        <input type="hidden" name="c" value="admin" />
+        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />
-        <input type="hidden" name="a" value="resultsEditor" /> 
+        <input type="hidden" name="a" value="resultsEditor" />
         <input type="hidden" name="arg" value="load_url" />
         <?php $this->view->optionsHelper->render(
-                "edited-result-pages", "LOAD_URL", 
-                $data['URL_LIST'], 
-                tl('resultseditor_element_url_list')); 
-            ?><button class="buttonbox" type="submit" ><?php 
-            e(tl('resultseditor_element_load_page')); 
+                "edited-result-pages", "LOAD_URL",
+                $data['URL_LIST'],
+                tl('resultseditor_element_url_list'));
+            ?><button class="buttonbox" type="submit" ><?php
+            e(tl('resultseditor_element_load_page'));
             ?></button>
         </div>
         </form>
 
-        <form id="urlUpdateForm" method="post" 
-            action='?c=admin&amp;a=resultsEditor&amp;<?php 
+        <form id="urlUpdateForm" method="post"
+            action='?c=admin&amp;a=resultsEditor&amp;<?php
             e(CSRF_TOKEN."=".$data[CSRF_TOKEN]); ?>' >
         <div  class="topmargin">
         <input type="hidden" name="arg" value="save_page" />
-        <b><label for="urlfield"><?php 
+        <b><label for="urlfield"><?php
             e(tl('resultseditor_element_page_url'))?></label></b>
-        <input type="text" id="urlfield" 
-            name="URL"  class="extrawidefield" value='<?php 
+        <input type="text" id="urlfield"
+            name="URL"  class="extrawidefield" value='<?php
                 e($data["URL"]); ?>' />
         </div>
         <div  class="topmargin">
-        <b><label for="titlefield"><?php 
+        <b><label for="titlefield"><?php
             e(tl('resultseditor_element_page_title'))?></label></b>
-        <input type="text" id="titlefield" 
-            name="TITLE"  class="extrawidefield" value='<?php 
+        <input type="text" id="titlefield"
+            name="TITLE"  class="extrawidefield" value='<?php
                 e($data["TITLE"]); ?>' />
         </div>
-        <div class="topmargin"><label for="descriptionfield"><b><?php 
-            e(tl('resultseditor_element_description')); 
+        <div class="topmargin"><label for="descriptionfield"><b><?php
+            e(tl('resultseditor_element_description'));
                 ?></b></label></div>
-        <textarea class="talltextarea" id="descriptionfield" 
+        <textarea class="talltextarea" id="descriptionfield"
             name="DESCRIPTION" ><?php e($data['DESCRIPTION']);
         ?></textarea>
-        <div class="center slightpad"><button class="buttonbox" 
-            type="reset"><?php e(tl('resultseditor_element_reset')); 
-            ?></button> &nbsp;&nbsp; <button class="buttonbox" 
-            type="submit" ><?php 
-            e(tl('resultseditor_element_save_page')); 
+        <div class="center slightpad"><button class="buttonbox"
+            type="reset"><?php e(tl('resultseditor_element_reset'));
+            ?></button> &nbsp;&nbsp; <button class="buttonbox"
+            type="submit" ><?php
+            e(tl('resultseditor_element_save_page'));
             ?></button></div>
         </form>
         <h2><?php e(tl('resultseditor_element_filter_websites'))?></h2>
         <form id="searchfiltersForm" method="post" action='?'>
         <input type="hidden" name="c" value="admin" />
-        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php 
+        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="resultsEditor" />
         <input type="hidden" name="arg" value="urlfilter" />
         <input type="hidden" name="posted" value="posted" />
 
-        <div class="topmargin"><label for="disallowed-sites"><b><?php 
-            e(tl('resultseditor_element_sites_to_filter')); 
+        <div class="topmargin"><label for="disallowed-sites"><b><?php
+            e(tl('resultseditor_element_sites_to_filter'));
                 ?></b></label></div>
-        <textarea class="talltextarea" id="disallowed-sites" 
+        <textarea class="talltextarea" id="disallowed-sites"
             name="disallowed_sites" ><?php e($data['disallowed_sites']);
         ?></textarea>
 
-        <div class="center slightpad"><button class="buttonbox" 
-            type="submit"><?php e(tl('resultseditor_element_save_filter')); 
+        <div class="center slightpad"><button class="buttonbox"
+            type="submit"><?php e(tl('resultseditor_element_save_filter'));
             ?></button></div>
         </form>
         </div>

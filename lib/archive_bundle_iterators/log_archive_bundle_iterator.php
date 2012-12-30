@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,13 +27,13 @@
  * @subpackage iterator
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
-/** 
+/**
  *Loads base class for iterating
  */
 require_once BASE_DIR.
@@ -41,8 +41,8 @@ require_once BASE_DIR.
 
 /**
  * Used to iterate through the collection of log files stored in
- * a WebArchiveBundle folder. Log is the file format which has the 
- * activities the system or a server performs. Iteration would be 
+ * a WebArchiveBundle folder. Log is the file format which has the
+ * activities the system or a server performs. Iteration would be
  * for the purpose making an index of these files.
  *
  * @author Tanmayee Potluri
@@ -51,11 +51,11 @@ require_once BASE_DIR.
  * @see WebArchiveBundle
  */
 
-class LogArchiveBundleIterator extends ArchiveBundleIterator 
+class LogArchiveBundleIterator extends ArchiveBundleIterator
     implements CrawlConstants
 {
     /**
-     * The path to the directory containing the archive partitions to be 
+     * The path to the directory containing the archive partitions to be
      * iterated over.
      * @var string
      */
@@ -68,14 +68,14 @@ class LogArchiveBundleIterator extends ArchiveBundleIterator
     var $result_dir;
 
     /**
-     * The path to the directory where all html files are stored 
+     * The path to the directory where all html files are stored
      * and used to point to.
      * @var string
      */
     var $index_dir;
 
     /**
-     * The part of the path to the directory where all html files are stored 
+     * The part of the path to the directory where all html files are stored
      * and used to point to.
      * @var string
      */
@@ -110,7 +110,7 @@ class LogArchiveBundleIterator extends ArchiveBundleIterator
      *  @var array
      */
     var $partitions;
-    
+
     /**
      *  Array of fields of log file specified by the user
      *  @var array
@@ -122,7 +122,7 @@ class LogArchiveBundleIterator extends ArchiveBundleIterator
      *  @var array
      */
     var $field_names;
-    
+
     /**
      *  Array of fieldtypes specified by the user
      *  @var array
@@ -139,7 +139,7 @@ class LogArchiveBundleIterator extends ArchiveBundleIterator
      *  Array of regular expressions for all the data types
      *  @var array
      */
-    var $regular_exprs = array( 
+    var $regular_exprs = array(
         'IP_Address' => '/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/',
         'Timestamp' => '/\[[^:]+:\d+:\d+:\d+ [^\]]+\]/',
         'Request' => '/(GET|HEAD|POST|PUT|DELETE|TRACE|OPTIONS|CONNECT)+[^"]*/',
@@ -171,7 +171,7 @@ class LogArchiveBundleIterator extends ArchiveBundleIterator
     /**
      * Creates a log archive iterator with the given parameters.
      *
-     * @param string $iterate_timestamp timestamp of the log archive bundle to 
+     * @param string $iterate_timestamp timestamp of the log archive bundle to
      *      iterate  over the pages of
      * @param string $result_timestamp timestamp of the log archive bundle
      *      results are being stored in
@@ -209,7 +209,7 @@ class LogArchiveBundleIterator extends ArchiveBundleIterator
             mkdir("{$this->index_dir}/HTML_FILES");
         }
         $this->partitions = array();
-        foreach(glob("{$this->iterate_dir}/*.log") as $filename) { 
+        foreach(glob("{$this->iterate_dir}/*.log") as $filename) {
             if(strpos($filename,self::MASTER_LOG_FILE)!= true) {
                 $this->partitions[] = $filename;
             }
@@ -219,7 +219,7 @@ class LogArchiveBundleIterator extends ArchiveBundleIterator
         $this->num_of_records = count($this->records);
         if(file_exists("{$this->result_dir}/iterate_status.txt")){
             $this->restoreCheckpoint();
-        } 
+        }
         else {
             $this->reset();
         }
@@ -229,10 +229,10 @@ class LogArchiveBundleIterator extends ArchiveBundleIterator
      * Estimates the important of the site according to the weighting of
      * the particular archive iterator
      * @param $site an associative array containing info about a web page
-     * @return value 1 we assume all log files crawled have the same 
+     * @return value 1 we assume all log files crawled have the same
      *  page importance
      */
-    function weight(&$site) 
+    function weight(&$site)
     {
         return 1;
     }
@@ -248,7 +248,7 @@ class LogArchiveBundleIterator extends ArchiveBundleIterator
     }
 
     /**
-     * Saves the current state so that a new instantiation can pick up just 
+     * Saves the current state so that a new instantiation can pick up just
      * after the last batch of pages extracted.
      */
     function saveCheckpoint($info = array())
@@ -264,7 +264,7 @@ class LogArchiveBundleIterator extends ArchiveBundleIterator
     }
 
     /**
-     * Restores state from a previous instantiation, after the last batch of 
+     * Restores state from a previous instantiation, after the last batch of
      * pages extracted.
      */
     function restoreCheckpoint()
@@ -291,7 +291,7 @@ class LogArchiveBundleIterator extends ArchiveBundleIterator
             file_put_contents("{$this->iterate_dir}/".self::MASTER_LOG_FILE,
                  $file_data, FILE_APPEND);
         }
-        $recordArray = explode("\n", 
+        $recordArray = explode("\n",
                 file_get_contents("{$this->iterate_dir}/".
                         self::MASTER_LOG_FILE));
 
@@ -334,11 +334,11 @@ class LogArchiveBundleIterator extends ArchiveBundleIterator
             if (count($matches)>0) {
                 $spaces_removed = trim($matches[0]);
                 $record = str_replace($spaces_removed,"",$record);
-                $return_page[$this->logfields_type_ddm[$this->field_types[$j]]] 
+                $return_page[$this->logfields_type_ddm[$this->field_types[$j]]]
                         = $matches[0];
                 }
                 else {
-                $return_page[$this->logfields_type_ddm[$this->field_types[$j]]] 
+                $return_page[$this->logfields_type_ddm[$this->field_types[$j]]]
                         = "-";
                 }
         }
@@ -360,7 +360,7 @@ class LogArchiveBundleIterator extends ArchiveBundleIterator
         $page_count = 0;
         for($i = 0; $i < $num; $i++) {
             $this->current_page_num++;
-            $this->page_info 
+            $this->page_info
                = $this->parseLogRecord($this->records[$this->current_page_num]);
             $page = $this->nextPage();
             if($this->current_page_num >= $this->num_of_records) {
@@ -376,7 +376,7 @@ class LogArchiveBundleIterator extends ArchiveBundleIterator
         return $pages;
     }
 
-    
+
     /**
      * Gets the next doc from the iterator
      * @return array associative array for doc

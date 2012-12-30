@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,14 +27,14 @@
  * @subpackage library
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- * Marker interface used to say that a class has supports a join() 
+ * Marker interface used to say that a class has supports a join()
  * callback method. IndexArchiveBundle has methods which take objects
  * that implement Join. For activities which may take a long time
  * such as index saving index tier merging IndexArchiveBundle will
@@ -46,8 +46,8 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @package seek_quarry
  * @subpackage library
  * @see WebQueueBundle
- */ 
- 
+ */
+
 interface Join
 {
     /**
@@ -55,5 +55,5 @@ interface Join
      * of another object that runs a long time.
      */
     function join();
-} 
+}
 ?>

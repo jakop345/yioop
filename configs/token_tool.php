@@ -3,7 +3,7 @@
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -22,7 +22,7 @@
  *
  *  END LICENSE
  *
- * token_tool is used to create suggest word dictionaries and 'n' word gram 
+ * token_tool is used to create suggest word dictionaries and 'n' word gram
  * filter files for the Yioop! search engine.
  *
  * A description of its usage is given in the $usage global variable
@@ -33,7 +33,7 @@
  * @package seek_quarry
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -64,7 +64,7 @@ require_once BASE_DIR."/lib/trie.php";
 
 /**
  * Used to print out a description of how to use token_tool.php
- * @var string 
+ * @var string
  */
 $usage = <<<EOD
 token_tool.php
@@ -74,32 +74,32 @@ Usage
 =====
 token_tool is used to create suggest word dictionaries and 'n' word gram filter
 files for the Yioop! search engine. To create either of these items, the user
-puts a source file in Yioop's WORK_DIRECTORY/prepare folder. Suggest word 
-dictionaries are used to supply the content of the dropdown of search terms 
-that appears as a user is entering a query in Yioop. To make a suggest 
+puts a source file in Yioop's WORK_DIRECTORY/prepare folder. Suggest word
+dictionaries are used to supply the content of the dropdown of search terms
+that appears as a user is entering a query in Yioop. To make a suggest
 dictionary one can use a command like:
 
 php token_tool.php dictionary filename locale endmarker
 
 Here filename should be in the current folder or PREP_DIR and should consist
 of one word per line, locale is the locale this suggest (for example, en-US)
-file is being made for and where a file suggest-trie.txt.gz will be written, 
-and endmarker is the end of word symbol to use in the trie. For example, 
-$ works pretty well. 
+file is being made for and where a file suggest-trie.txt.gz will be written,
+and endmarker is the end of word symbol to use in the trie. For example,
+$ works pretty well.
 
-token_tool.php can also be used to make filter files. A filter file is used to 
+token_tool.php can also be used to make filter files. A filter file is used to
 detect when words in a language should be treated as a unit when extracting text
 during a crawl. For example, Bill Clinton is 2 word gram which should be treated
 as unit because it is a particular person. ngram_builder is run from the command
 line as:
 
-php token_tool.php filter wiki_file lang locale n extract_type max_to_extract 
+php token_tool.php filter wiki_file lang locale n extract_type max_to_extract
 
 where wiki_file is a wikipedia xml file or a bz2  compressed xml file whose urls
-or wiki page count dump file (it can also be a folder of these kind of files) 
-which will be used to determine the n-grams, lang is an Wikipedia language tag, 
+or wiki page count dump file (it can also be a folder of these kind of files)
+which will be used to determine the n-grams, lang is an Wikipedia language tag,
 locale is the IANA language tag of locale to store the results for (if different
-from lang, for example, en-US versus en for lang), n is the number of words in 
+from lang, for example, en-US versus en for lang), n is the number of words in
 a row to consider, extract_type is where from Wikipedia source to extract:
 
 0 = title's,
@@ -110,7 +110,7 @@ a row to consider, extract_type is where from Wikipedia source to extract:
 
 Obtaining Data
 ==============
-Many word lists are obtainable on the web for free with Creative Commons 
+Many word lists are obtainable on the web for free with Creative Commons
 licenses. A good starting point is:
 http://en.wiktionary.org/wiki/Wiktionary:Frequency_lists
 A little script-fu can generally take such a list and put it into the
@@ -119,18 +119,18 @@ format of one word/term per line which is needed by token_tool.php
 For filter file, Raw page count dumps can be found at
 http://dumps.wikimedia.org/other/pagecounts-raw/
 These probably give the best n-gram or all gram results, usually
-in a matter of minutes; nevertheless, this tool does support trying to extract 
+in a matter of minutes; nevertheless, this tool does support trying to extract
 similar data from Wikipedia dumps. This can take hours.
 
-For Wikipedia dumps, one can go to http://dumps.wikimedia.org/enwiki/ 
-and obtain a dump of the English Wikipedia (similar for other languages). 
-This page lists all the dumps according to date they were taken. Choose any 
-suitable date or the latest. A link with a label such as 20120104/, represents 
+For Wikipedia dumps, one can go to http://dumps.wikimedia.org/enwiki/
+and obtain a dump of the English Wikipedia (similar for other languages).
+This page lists all the dumps according to date they were taken. Choose any
+suitable date or the latest. A link with a label such as 20120104/, represents
 a  dump taken on  01/04/2012.  Click this link to go in turn to a page which has
 many links based on type of content you are looking for. For
 this tool you are interested in files under
 
-"Recombine all pages, current versions only". 
+"Recombine all pages, current versions only".
 
 Beneath this we might find a link with a name like:
 enwiki-20120104-pages-meta-current.xml.bz2
@@ -191,15 +191,15 @@ function makeNWordGramsFiles($args)
         $args[2] = "en-US";
     }
     if(!isset($args[2])) {
-        $args[2] = $args[1]; 
+        $args[2] = $args[1];
     }
     if(!isset($args[3])) {
         $args[3] = 2; // bigrams
     }
     if(!isset($argv[4])) {
-        $args[4] = NWordGrams::PAGE_COUNT_WIKIPEDIA; 
+        $args[4] = NWordGrams::PAGE_COUNT_WIKIPEDIA;
     }
-    if(!isset($args[5]) && $args[3] == "all" && 
+    if(!isset($args[5]) && $args[3] == "all" &&
         $args[2] == NWordGrams::PAGE_COUNT_WIKIPEDIA) {
         $args[5] = 400000;
     } else {
@@ -214,8 +214,8 @@ function makeNWordGramsFiles($args)
      *This call creates a ngrams text file from input xml file and
      *returns the count of ngrams in the text file.
      */
-    list($num_ngrams, $max_gram_len) = 
-        NWordGrams::makeNWordGramsTextFile($args[0], $args[1], $args[2], 
+    list($num_ngrams, $max_gram_len) =
+        NWordGrams::makeNWordGramsTextFile($args[0], $args[1], $args[2],
         $args[3], $args[4], $args[5]);
 
     /*
@@ -224,7 +224,7 @@ function makeNWordGramsFiles($args)
      *to the filter file name. The count of n word grams in text file is passed
      *as a parameter to set the limit of n word grams in the filter file.
      */
-    NWordGrams::makeNWordGramsFilterFile($args[2], $args[3], $num_ngrams, 
+    NWordGrams::makeNWordGramsFilterFile($args[2], $args[3], $num_ngrams,
         $max_gram_len);
 }
 

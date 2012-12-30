@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage helper
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -48,10 +48,10 @@ require_once BASE_DIR."/views/helpers/helper.php";
  * @package seek_quarry
  * @subpackage helper
  */
- 
+
 class DisplayresultsHelper extends Helper
 {
-    public function render($data)
+    function render($data)
     {
         $recipe_parts = explode("||", $data);
         $count = count($recipe_parts);
@@ -59,7 +59,7 @@ class DisplayresultsHelper extends Helper
             foreach($recipe_parts as $value){
                 echo $value;
                 print("<br />");
-                
+
             }
         }
         else {

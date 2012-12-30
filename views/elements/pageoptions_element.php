@@ -1,9 +1,9 @@
 <?php
-/** 
+/**
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage element
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2012
+ * @copyright 2009 - 2013
  * @filesource
  */
 
@@ -53,7 +53,7 @@ class PageOptionsElement extends Element
      * @param array $data used to keep track of page range, recrawl frequency,
      *  and file types of the page
      */
-    public function render($data) 
+    function render($data)
     {
         global $INDEXED_FILE_TYPES;
     ?>
@@ -61,36 +61,36 @@ class PageOptionsElement extends Element
         <form id="pageoptionsForm" method="get" action='?'>
         <h2><?php e(tl('pageoptions_element_crawl_time'))?></h2>
         <input type="hidden" name="c" value="admin" />
-        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php 
+        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="pageOptions" />
-        <div class="topmargin"><b><label for="page-range-request"><?php 
+        <div class="topmargin"><b><label for="page-range-request"><?php
             e(tl('pageoptions_element_page_range'))?></label></b>
-            <?php $this->view->optionsHelper->render("page-range-request", 
-            "page_range_request", $data['SIZE_VALUES'], $data['PAGE_SIZE']); 
+            <?php $this->view->optionsHelper->render("page-range-request",
+            "page_range_request", $data['SIZE_VALUES'], $data['PAGE_SIZE']);
             ?></div>
-        <div class="topmargin"><b><label for="allow-recrawl"><?php 
+        <div class="topmargin"><b><label for="allow-recrawl"><?php
             e(tl('pageoptions_element_allow_recrawl'))?></label></b>
-            <?php $this->view->optionsHelper->render("page-recrawl-frequency", 
-            "page_recrawl_frequency", $data['RECRAWL_FREQS'], 
-                $data['PAGE_RECRAWL_FREQUENCY']); 
+            <?php $this->view->optionsHelper->render("page-recrawl-frequency",
+            "page_recrawl_frequency", $data['RECRAWL_FREQS'],
+                $data['PAGE_RECRAWL_FREQUENCY']);
             ?></div>
-        <div class="topmargin"><b><?php 
+        <div class="topmargin"><b><?php
             e(tl('pageoptions_element_file_types'))?></b>
        </div>
        <table class="ftypesall"><tr>
        <?php $cnt = 0;
-             foreach ($data['INDEXED_FILE_TYPES'] as $filetype => $checked) { 
+             foreach ($data['INDEXED_FILE_TYPES'] as $filetype => $checked) {
                  if($cnt % 10 == 0) {
                     ?><td><table class="filetypestable" ><?php
                  }
        ?>
-            <tr><td><label for="<?php e($filetype); ?>-id"><?php 
+            <tr><td><label for="<?php e($filetype); ?>-id"><?php
                 e($filetype); ?>
             </label></td><td><input type="checkbox" <?php e($checked) ?>
                 name="filetype[<?php  e($filetype); ?>]" value="true" /></td>
             </tr>
-       <?php 
+       <?php
                 $cnt++;
                 if($cnt % 10 == 0) {
                     ?></table></td><?php
@@ -104,37 +104,37 @@ class PageOptionsElement extends Element
         </tr></table>
         <h2><?php e(tl('pageoptions_element_page_scoring'))?></h2>
         <table class="weightstable" >
-        <tr><th><label for="title-weight"><?php 
+        <tr><th><label for="title-weight"><?php
             e(tl('pageoptions_element_title_weight'))?></label></th><td>
             <input type="text" id="title-weight" size="3" maxlength="6"
-                name="TITLE_WEIGHT" 
+                name="TITLE_WEIGHT"
                 value="<?php  e($data['TITLE_WEIGHT']); ?>" /></td></tr>
-        <tr><th><label for="description-weight"><?php 
+        <tr><th><label for="description-weight"><?php
             e(tl('pageoptions_element_description_weight'))?></label></th><td>
             <input type="text" id="description-weight" size="3" maxlength="6"
-                name="DESCRIPTION_WEIGHT" 
+                name="DESCRIPTION_WEIGHT"
                 value="<?php  e($data['DESCRIPTION_WEIGHT']); ?>" /></td></tr>
-        <tr><th><label for="link-weight"><?php 
+        <tr><th><label for="link-weight"><?php
             e(tl('pageoptions_element_link_weight'))?></label></th><td>
             <input type="text" id="link-weight" size="3" maxlength="6"
-                name="LINK_WEIGHT" 
+                name="LINK_WEIGHT"
                 value="<?php  e($data['LINK_WEIGHT']); ?>" /></td></tr>
         </table>
         <h2><?php e(tl('pageoptions_element_results_grouping_options'))?></h2>
         <table class="weightstable" >
-        <tr><th><label for="min-results-to-group"><?php 
+        <tr><th><label for="min-results-to-group"><?php
             e(tl('pageoptions_element_min_results_to_group'))?></label></th><td>
             <input type="text" id="min-results-to-group" size="3" maxlength="6"
-                name="MIN_RESULTS_TO_GROUP" 
+                name="MIN_RESULTS_TO_GROUP"
                 value="<?php  e($data['MIN_RESULTS_TO_GROUP']); ?>" /></td></tr>
-        <tr><th><label for="server-alpha"><?php 
+        <tr><th><label for="server-alpha"><?php
             e(tl('pageoptions_element_server_alpha'))?></label></th><td>
             <input type="text" id="server-alpha" size="3" maxlength="6"
-                name="SERVER_ALPHA" 
+                name="SERVER_ALPHA"
                 value="<?php e($data['SERVER_ALPHA']); ?>" /></td></tr>
         </table>
-        <div class="center slightpad"><button class="buttonbox" 
-            type="submit"><?php e(tl('pageoptions_element_save_options')); 
+        <div class="center slightpad"><button class="buttonbox"
+            type="submit"><?php e(tl('pageoptions_element_save_options'));
             ?></button></div>
         </form>
         </div>
