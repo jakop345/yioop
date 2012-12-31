@@ -33,7 +33,7 @@
 /*
  * The alphabet for this locale
  */
-var alpha = "اب پ ت ث ج چ ح خ د ذ ر ز ژ س ش" + 
+var alpha = "اب پ ت ث ج چ ح خ د ذ ر ز ژ س ش" +
     " ص ض ط ظ ع غ ف ق ک گ ل م ن و ه ی";
 
 /*

@@ -79,7 +79,7 @@ class ToggleHelper extends Helper
         <?php } else {?>
             <table class="toggle-table"><tr><td><a href="<?php e($on_url);?>"
             ><?php e(tl('toggle_helper_on'));?></a></td>
-            <td  class="back-red"><b><?php 
+            <td  class="back-red"><b><?php
                 e(tl('toggle_helper_off'));?></b></td>
             </tr></table>
         <?php }

@@ -121,7 +121,7 @@ class SearchView extends View implements CrawlConstants
             <?php } ?>
             <input id="csrf-token" type="hidden" name="<?php e(CSRF_TOKEN); ?>"
                 value="<?php e($data[CSRF_TOKEN]); ?>" />
-            <input id="its-value" type="hidden" name="its" value="<?php 
+            <input id="its-value" type="hidden" name="its" value="<?php
                 e($data['its']); ?>" />
             <input type="text" <?php if(WORD_SUGGEST) { ?>
                 autocomplete="off"  onkeyup="onTypeTerm(event, this)"

@@ -80,7 +80,7 @@ class ManageaccountElement extends Element
                     class="narrow-field" />
                 </td></tr>
             <tr><td></td>
-                <td class="center"><button 
+                <td class="center"><button
                     class="button-box" type="submit"><?php
                     e(tl('manageaccount_element_save')); ?></button></td></tr>
             </table>

@@ -3,7 +3,7 @@
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -31,7 +31,7 @@
  * @subpackage bin
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2013
+ * @copyright 2009 - 2012
  * @filesource
  */
 
@@ -99,23 +99,23 @@ php code_tool.php replace path pattern replace_string
   or
 php code_tool.php replace path pattern replace_string effect
     prints all lines matching the regular expression pattern followed
-    by the result of replacing pattern with replace_string in the 
+    by the result of replacing pattern with replace_string in the
     folder or file path. Does not change files.
 
 php code_tool.php replace path pattern replace_string interactive
     prints each line matching the regular expression pattern followed
-    by the result of replacing pattern with replace_string in the 
+    by the result of replacing pattern with replace_string in the
     folder or file path. Then it asks if you want to update the line.
     Lines you choose for updating will be modified in the files.
 
 php code_tool.php replace path pattern replace_string change
     Each line matching the regular expression pattern is update
-    by replacing pattern with replace_string in the 
+    by replacing pattern with replace_string in the
     folder or file path. This format doe not echo anything, it does a global
     replace without interaction.
 
 php code_tool.php search path pattern
-    prints all lines matching the regular expression pattern in the 
+    prints all lines matching the regular expression pattern in the
     folder or file path
 
 EOD;
@@ -130,7 +130,7 @@ EOD;
 function clean($args)
 {
     global $num_spaces_tab;
-    
+
     $no_instructions = false;
     if(isset($args[0])) {
         $path = realpath($args[0]);
@@ -157,7 +157,7 @@ function copyright($args)
         $path = realpath($args[0]);
         $year = date("Y");
         $out_year = "2009 - ".$year;
-        replaceFile("", "/2009 \- \d\d\d\d/", $out_year, "change"); 
+        replaceFile("", "/2009 \- \d\d\d\d/", $out_year, "change");
             // initialize callback
         mapPath($path, "replaceFile");
         $no_instructions = true;
@@ -191,10 +191,10 @@ function longlines($args)
 }
 
 /**
- * Performs a search and replace for given pattern in files in supplied 
+ * Performs a search and replace for given pattern in files in supplied
  * sub-folder/file
  *
- * @param array $args $args[0] contains path to sub-folder/file, 
+ * @param array $args $args[0] contains path to sub-folder/file,
  *      $args[1] contains the regex searching for, $args[2] contains
  *      what it should be replaced with, $args[3] (defaults to effect)
  *      controls the mode of operation. One of "effect", "change", or
@@ -235,7 +235,7 @@ function replace($args)
 /**
  * Performs a search for given pattern in files in supplied sub-folder/file
  *
- * @param array $args $args[0] contains path to sub-folder/file, 
+ * @param array $args $args[0] contains path to sub-folder/file,
  *      $args[1] contains the regex searching for
  * @return bool $no_instructions false if should output code_tool.php
  *      instructions
@@ -288,12 +288,19 @@ function changeCopyrightFile($filename, $set_year = false)
         $out_lines = array();
         $num_lines = count($lines);
 
+        $change = false;
         foreach($lines as $line) {
-            $out_lines[] = preg_replace("/2009 \- \d\d\d\d/", $out_year,
+            $new_line = preg_replace("/2009 \- \d\d\d\d/", $out_year,
                 $line);
+            $out_lines[] = $new_line;
+            if(strcmp($new_line, $line) != 0) {
+                $change = true;
+            }
         }
         $out_file = implode("\n", $out_lines);
-        file_put_contents($filename, $out_file);
+        if($change) {
+            file_put_contents($filename, $out_file);
+        }
     }
 }
 
@@ -315,13 +322,19 @@ function cleanLinesFile($filename)
 
         $lines = file($filename);
         $out_lines = array();
+        $change = false;
         foreach($lines as $line) {
             $new_line = preg_replace("/\t/", $spaces, $line);
             $new_line = rtrim($new_line);
             $out_lines[] = $new_line;
+            if(strcmp($new_line."\n", $line) != 0) {
+                $change = true;
+            }
         }
         $out_file = implode("\n", $out_lines);
-        file_put_contents($filename, $out_file);
+        if($change) {
+            file_put_contents($filename, $out_file);
+        }
     }
 }
 
@@ -406,6 +419,7 @@ function replaceFile($filename, $set_pattern = false,
             $silent = true;
         }
         $num = 0;
+        $change = false;
         foreach($lines as $line) {
             $num++;
             $new_line = $line;
@@ -426,11 +440,16 @@ function replaceFile($filename, $set_pattern = false,
                         $new_line = $line;
                     }
                 }
+                if(strcmp($new_line, $line) != 0) {
+                    $change = true;
+                }
             }
             $out_lines .= $new_line;
         }
         if(in_array($mode, array("change", "interactive"))) {
-            file_put_contents($filename, $out_lines);
+            if($change) {
+                file_put_contents($filename, $out_lines);
+            }
         }
     }
 }

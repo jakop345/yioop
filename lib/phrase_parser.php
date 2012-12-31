@@ -433,15 +433,15 @@ puta sapatão foder ferro punheta vadia buceta bucetinha bunda caralho
 mentula cunnus verpa sōpiō pipinna
 cōleī cunnilingus futuō copulate cēveō crīsō
 scortor meretrīx futatrix minchia coglione cornuto culo inocchio frocio puttana
-vaffanculo fok hoer kut lul やりまん 打っ掛け 
+vaffanculo fok hoer kut lul やりまん 打っ掛け
  二形 ふたなりゴックン ゴックン
-ショタコン 全裸 受け 裏本 пизда́ хуй еба́ть 
+ショタコン 全裸 受け 裏本 пизда́ хуй еба́ть
 блядь елда́ гондо́н хер манда́ му́ди мудя
 пидора́с залу́па жо́па за́дница буфер
 雞巴 鷄巴 雞雞 鷄鷄 阴茎 陰莖 胯下物
-屌 吊 小鳥 龟头 龜頭 屄 鸡白 雞白 傻屄 老二 
+屌 吊 小鳥 龟头 龜頭 屄 鸡白 雞白 傻屄 老二
 那话儿 那話兒 屄 鸡白 雞白 阴道 陰道
-阴户 陰戶 大姨妈 淫蟲 老嫖 妓女 臭婊子 卖豆腐 
+阴户 陰戶 大姨妈 淫蟲 老嫖 妓女 臭婊子 卖豆腐
 賣豆腐 咪咪 大豆腐 爆乳 肏操
 炒饭 炒飯 cặc lồn kaltak orospu siktir sıçmak amcık";
         static $unsafe_terms = array();
