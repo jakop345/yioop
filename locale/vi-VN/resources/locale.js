@@ -34,8 +34,12 @@
 /*
  * The alphabet for this locale
  */
-var alpha = "bcdghklmnpqrstvđaáàãảạâấầẫẩậăắằẵẳặeéèẽẻ" + //put consonants then
-    "ẹêếềễểệiíìĩỉịoóòõỏọôốồỗổộơớờỡởợuúùũủụưứừữửựyýỳỹỷỵ"; //vowels
+var alpha = "bcdghklmnpqrstvđaáà" +
+    "ãảạâấầẫẩậăắằẵẳặeéèẽẻ" +
+    "ẹêếềễểệiíìĩỉịoóòõỏọôố" +
+    "ồỗổộơớờỡởợuúùũủụưứừữử" +
+    "ựyýỳỹỷỵ";
+    //put consonants then vowels
 
 /*
  * Transliteration maping for this locale

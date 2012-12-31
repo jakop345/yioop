@@ -54,7 +54,7 @@ class ActivityElement extends Element
     function render($data)
     {
     ?>
-        <div class="frame activitymenu">
+        <div class="frame activity-menu">
         <h2><?php e(tl('activity_element_activities')); ?></h2>
         <ul>
         <?php
@@ -90,7 +90,7 @@ class ActivityElement extends Element
             } else {
                 for($i =0 ; $i < $count; $i++) {
                     if($i < $count - 1) {
-                        $class="class='bottom_border'";
+                        $class="class='bottom-border'";
                     } else {
                         $class="";
                     }

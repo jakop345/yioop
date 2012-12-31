@@ -232,8 +232,8 @@ class Fetcher implements CrawlConstants
     var $schedule_time;
 
     /**
-     * The sum of the number of words of all the page description for the current
-     * crawl. This is used in computing document statistics.
+     * The sum of the number of words of all the page description for the
+     * current crawl. This is used in computing document statistics.
      * @var int
      */
     var $sum_seen_site_description_length;
@@ -881,7 +881,8 @@ class Fetcher implements CrawlConstants
         if((count($this->to_crawl) > 0 || count($this->to_crawl_again) > 0) &&
            (!$this->recrawl_check_scheduler)) {
             crawlLog("  Current to crawl count:".$to_crawl_count);
-            crawlLog("  Current to crawl try again count:".$to_crawl_again_count);
+            crawlLog("  Current to crawl try again count:".
+                $to_crawl_again_count);
             crawlLog("So not checking scheduler.");
             return true;
         }
@@ -2196,6 +2197,7 @@ class Fetcher implements CrawlConstants
         $url_sites = UrlParser::getHostPaths($site[self::URL]);
         $url_sites = array_merge($url_sites,
             UrlParser::getHostSubdomains($site[self::URL]));
+        $meta_ids[] = 'site:all';
         foreach($url_sites as $url_site) {
             if(strlen($url_site) > 0) {
                 $meta_ids[] = 'site:'.$url_site;
@@ -2205,6 +2207,7 @@ class Fetcher implements CrawlConstants
         if(strlen($path) > 0 ) {
             $path_parts = explode("/", $path);
             $pre_path = "";
+            $meta_ids[] = 'path:all';
             $meta_ids[] = 'path:/';
             foreach($path_parts as $part) {
                 if(strlen($part) > 0 ) {
@@ -2213,32 +2216,38 @@ class Fetcher implements CrawlConstants
                 }
             }
         }
+
         $meta_ids[] = 'info:'.$site[self::URL];
         $meta_ids[] = 'info:'.crawlHash($site[self::URL]);
-        $meta_ids[] = 'site:all';
+        $meta_ids[] = 'code:all';
         $meta_ids[] = 'code:'.$site[self::HTTP_CODE];
         if(UrlParser::getHost($site[self::URL])."/" == $site[self::URL]) {
             $meta_ids[] = 'host:all'; //used to count number of distinct hosts
         }
         if(isset($site[self::SIZE])) {
+            $meta_ids[] = "size:all";
             $interval = DOWNLOAD_SIZE_INTERVAL;
             $size = floor($site[self::SIZE]/$interval) * $interval;
             $meta_ids[] = "size:$size";
         }
         if(isset($site[self::TOTAL_TIME])) {
+            $meta_ids[] = "time:all";
             $interval = DOWNLOAD_TIME_INTERVAL;
             $time = floor($site[self::TOTAL_TIME]/$interval) * $interval;
             $meta_ids[] = "time:$time";
         }
         if(isset($site[self::DNS_TIME])) {
+            $meta_ids[] = "dns:all";
             $interval = DOWNLOAD_TIME_INTERVAL;
             $time = floor($site[self::DNS_TIME]/$interval) * $interval;
             $meta_ids[] = "dns:$time";
         }
         if(isset($site[self::LINKS])) {
             $num_links = count($site[self::LINKS]);
+            $meta_ids[] = "numlinks:all";
             $meta_ids[] = "numlinks:$num_links";
             $link_urls = array_keys($site[self::LINKS]);
+            $meta_ids[] = "link:all";
             foreach($link_urls as $url) {
                     $meta_ids[] = 'link:'.$url;
                     $meta_ids[] = 'link:'.crawlHash($url);
@@ -2248,16 +2257,19 @@ class Fetcher implements CrawlConstants
             foreach($site[self::LOCATION] as $location) {
                 $meta_ids[] = 'info:'.$location;
                 $meta_ids[] = 'info:'.crawlHash($location);
+                $meta_ids[] = 'location:all';
                 $meta_ids[] = 'location:'.$location;
             }
         }
 
         if(isset($site[self::IP_ADDRESSES]) ){
+            $meta_ids[] = 'ip:all';
             foreach($site[self::IP_ADDRESSES] as $address) {
                 $meta_ids[] = 'ip:'.$address;
             }
         }
 
+        $meta_ids[] = 'media:all';
         if(UrlParser::isVideoUrl($site[self::URL], $this->video_sources)) {
             $meta_ids[] = "media:video";
         } else {
@@ -2267,26 +2279,32 @@ class Fetcher implements CrawlConstants
         // store the filetype info
         $url_type = UrlParser::getDocumentType($site[self::URL]);
         if(strlen($url_type) > 0) {
+            $meta_ids[] = 'filetype:all';
             $meta_ids[] = 'filetype:'.$url_type;
         }
         if(isset($site[self::SERVER])) {
+            $meta_ids[] = 'server:all';
             $meta_ids[] = 'server:'.strtolower($site[self::SERVER]);
         }
         if(isset($site[self::SERVER_VERSION])) {
+            $meta_ids[] = 'version:all';
             $meta_ids[] = 'version:'.
                 $site[self::SERVER_VERSION];
         }
         if(isset($site[self::OPERATING_SYSTEM])) {
+            $meta_ids[] = 'os:all';
             $meta_ids[] = 'os:'.strtolower($site[self::OPERATING_SYSTEM]);
         }
         if(isset($site[self::MODIFIED])) {
             $modified = $site[self::MODIFIED];
+            $meta_ids[] = 'modified:all';
             $meta_ids[] = 'modified:'.date('Y', $modified);
             $meta_ids[] = 'modified:'.date('Y-m', $modified);
             $meta_ids[] = 'modified:'.date('Y-m-d', $modified);
         }
         if(isset($site[self::TIMESTAMP])) {
             $date = $site[self::TIMESTAMP];
+            $meta_ids[] = 'date:all';
             $meta_ids[] = 'date:'.date('Y', $date);
             $meta_ids[] = 'date:'.date('Y-m', $date);
             $meta_ids[] = 'date:'.date('Y-m-d', $date);
@@ -2295,6 +2313,7 @@ class Fetcher implements CrawlConstants
             $meta_ids[] = 'date:'.date('Y-m-d-H-i-s', $date);
         }
         if(isset($site[self::LANG])) {
+            $meta_ids[] = 'lang:all';
             $lang_parts = explode("-", $site[self::LANG]);
             $meta_ids[] = 'lang:'.$lang_parts[0];
             if(isset($lang_parts[1])){
@@ -2317,6 +2336,7 @@ class Fetcher implements CrawlConstants
             $url = $site[self::URL];
             foreach($this->meta_words as $word => $url_pattern) {
                 $meta_word = 'u:'.$word;
+                $meta_ids[] = 'u:$word:all';
                 if(strlen(stristr($url_pattern, "@")) > 0) {
                     continue; // we are using "@" as delimiter, so bail
                 }
@@ -2327,7 +2347,6 @@ class Fetcher implements CrawlConstants
                         $meta_word .= ":".$match[0];
                         $meta_ids[] = $meta_word;
                     }
-
                 }
             }
         }
@@ -2352,10 +2371,13 @@ class Fetcher implements CrawlConstants
         if(substr($link_text, 0, 9) == "location:") {
             $location_link = true;
             $link_meta_ids[] = $link_text;
+            $link_meta_ids[] = "location:all"
             $link_meta_ids[] = "location:".
                 crawlHash($site_url);
         }
         $link_type = UrlParser::getDocumentType($url);
+        $link_meta_ids[] = "media:all";
+        $link_meta_ids[] = "safe:all";
         if(in_array($link_type, $IMAGE_TYPES)) {
             $link_meta_ids[] = "media:image";
             if(isset($safe) && !$safe) {

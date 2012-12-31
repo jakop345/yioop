@@ -53,7 +53,7 @@ class ManageaccountElement extends Element
      */
     function render($data)
     {?>
-        <div class="currentactivity">
+        <div class="current-activity">
             <h2><?php e(tl('manageaccount_element_change_password'))?></h2>
             <form id="changePasswordForm" method="post" action=''>
             <input type="hidden" name="c" value="admin" />
@@ -62,24 +62,26 @@ class ManageaccountElement extends Element
             <input type="hidden" name="a" value="manageAccount" />
             <input type="hidden" name="arg" value="changepassword" />
 
-            <table class="nametable">
+            <table class="name-table">
             <tr><td><label for="old-password"><?php
                 e(tl('manageaccount_element_old_password'))?></label></td>
                 <td><input type="password" id="old-password"
-                    name="oldpassword"  maxlength="80" class="narrowfield"/>
+                    name="oldpassword"  maxlength="80" class="narrow-field"/>
                 </td></tr>
             <tr><td><label for="new-password"><?php
                 e(tl('manageaccount_element_new_password'))?></label></td>
                 <td><input type="password" id="new-password"
-                    name="newpassword"  maxlength="80" class="narrowfield"/>
+                    name="newpassword"  maxlength="80" class="narrow-field"/>
                 </td></tr>
             <tr><td><label for="retype-password"><?php
                 e(tl('manageaccount_element_retype_password'))?></label></td>
                 <td><input type="password" id="retype-password"
-                    name="retypepassword"  maxlength="80" class="narrowfield" />
+                    name="retypepassword"  maxlength="80"
+                    class="narrow-field" />
                 </td></tr>
             <tr><td></td>
-                <td class="center"><button class="buttonbox" type="submit"><?php
+                <td class="center"><button 
+                    class="button-box" type="submit"><?php
                     e(tl('manageaccount_element_save')); ?></button></td></tr>
             </table>
             </form>

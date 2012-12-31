@@ -57,7 +57,7 @@ class EditstaticElement extends Element
     function render($data)
     {
     ?>
-        <div class="currentactivity">
+        <div class="current-activity">
         <div class="<?php e($data['leftorright']);?>">
         <a href="?c=admin&amp;a=manageLocales&amp;<?php
             e(CSRF_TOKEN."=".$data[CSRF_TOKEN]) ?>&amp;selectlocale=<?php
@@ -74,7 +74,7 @@ class EditstaticElement extends Element
                 e($data['CURRENT_LOCALE_TAG']); ?>" />
             <input type="hidden" name="static_page" value="<?php
                 e($data['STATIC_PAGE']); ?>" />
-            <div class="topmargin">
+            <div class="top-margin">
                 <b><?php
                 e(tl('editstatic_element_locale_name',
                     $data['CURRENT_LOCALE_NAME']));
@@ -82,11 +82,11 @@ class EditstaticElement extends Element
                 <label for="page-data"><b><?php
                 e(tl('editstatic_element_page', $data['PAGE_NAME']));
                 ?></b></label></div>
-            <textarea class="talltextarea"  name="PAGE_DATA" ><?php
+            <textarea class="tall-text-area"  name="PAGE_DATA" ><?php
                 e($data['PAGE_DATA']);
             ?></textarea>
-            <div class="topmargin center">
-            <button class="buttonbox" type="submit"><?php
+            <div class="top-margin center">
+            <button class="button-box" type="submit"><?php
                 e(tl('editstatic_element_savebutton')); ?></button>
             </div>
             </div>

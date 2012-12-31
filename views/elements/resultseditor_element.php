@@ -55,10 +55,10 @@ class ResultsEditorElement extends Element
     function render($data)
     {
     ?>
-        <div class="currentactivity">
+        <div class="current-activity">
         <h2><?php e(tl('resultseditor_element_edit_page'))?></h2>
         <form id="urlLookupForm" method="post" action=''>
-        <div  class="topmargin"><b><label for="edited-result-pages"><?php
+        <div  class="top-margin"><b><label for="edited-result-pages"><?php
             e(tl('resultseditor_element_edited_pages'))?></label>
         <input type="hidden" name="c" value="admin" />
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
@@ -69,7 +69,7 @@ class ResultsEditorElement extends Element
                 "edited-result-pages", "LOAD_URL",
                 $data['URL_LIST'],
                 tl('resultseditor_element_url_list'));
-            ?><button class="buttonbox" type="submit" ><?php
+            ?><button class="button-box" type="submit" ><?php
             e(tl('resultseditor_element_load_page'));
             ?></button>
         </div>
@@ -78,30 +78,30 @@ class ResultsEditorElement extends Element
         <form id="urlUpdateForm" method="post"
             action='?c=admin&amp;a=resultsEditor&amp;<?php
             e(CSRF_TOKEN."=".$data[CSRF_TOKEN]); ?>' >
-        <div  class="topmargin">
+        <div  class="top-margin">
         <input type="hidden" name="arg" value="save_page" />
         <b><label for="urlfield"><?php
             e(tl('resultseditor_element_page_url'))?></label></b>
         <input type="text" id="urlfield"
-            name="URL"  class="extrawidefield" value='<?php
+            name="URL"  class="extra-wide-field" value='<?php
                 e($data["URL"]); ?>' />
         </div>
-        <div  class="topmargin">
+        <div  class="top-margin">
         <b><label for="titlefield"><?php
             e(tl('resultseditor_element_page_title'))?></label></b>
         <input type="text" id="titlefield"
-            name="TITLE"  class="extrawidefield" value='<?php
+            name="TITLE"  class="extra-wide-field" value='<?php
                 e($data["TITLE"]); ?>' />
         </div>
-        <div class="topmargin"><label for="descriptionfield"><b><?php
+        <div class="top-margin"><label for="descriptionfield"><b><?php
             e(tl('resultseditor_element_description'));
                 ?></b></label></div>
-        <textarea class="talltextarea" id="descriptionfield"
+        <textarea class="tall-text-area" id="descriptionfield"
             name="DESCRIPTION" ><?php e($data['DESCRIPTION']);
         ?></textarea>
-        <div class="center slightpad"><button class="buttonbox"
+        <div class="center slight-pad"><button class="button-box"
             type="reset"><?php e(tl('resultseditor_element_reset'));
-            ?></button> &nbsp;&nbsp; <button class="buttonbox"
+            ?></button> &nbsp;&nbsp; <button class="button-box"
             type="submit" ><?php
             e(tl('resultseditor_element_save_page'));
             ?></button></div>
@@ -115,14 +115,14 @@ class ResultsEditorElement extends Element
         <input type="hidden" name="arg" value="urlfilter" />
         <input type="hidden" name="posted" value="posted" />
 
-        <div class="topmargin"><label for="disallowed-sites"><b><?php
+        <div class="top-margin"><label for="disallowed-sites"><b><?php
             e(tl('resultseditor_element_sites_to_filter'));
                 ?></b></label></div>
-        <textarea class="talltextarea" id="disallowed-sites"
+        <textarea class="tall-text-area" id="disallowed-sites"
             name="disallowed_sites" ><?php e($data['disallowed_sites']);
         ?></textarea>
 
-        <div class="center slightpad"><button class="buttonbox"
+        <div class="center slight-pad"><button class="button-box"
             type="submit"><?php e(tl('resultseditor_element_save_filter'));
             ?></button></div>
         </form>

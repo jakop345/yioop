@@ -75,7 +75,7 @@ class AdminView extends View
         }
         if(PROFILE) {
         ?>
-        <div class="topbar"><?php
+        <div class="top-bar"><?php
             $this->signinElement->render($data);
         ?>
         </div><?php

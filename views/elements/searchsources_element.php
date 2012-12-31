@@ -58,7 +58,7 @@ class SearchsourcesElement extends Element
         $localize_url = $pre_base_url . "&amp;a=manageLocales".
             "&amp;arg=editlocale&amp;selectlocale=".$data['LOCALE_TAG'];
     ?>
-        <div class="currentactivity">
+        <div class="current-activity">
         <h2><?php e(tl('searchsources_element_add_media_source'))?></h2>
         <form id="addSearchSourceForm" method="post" action='#'>
         <input type="hidden" name="c" value="admin" />
@@ -66,7 +66,7 @@ class SearchsourcesElement extends Element
             e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="searchSources" />
         <input type="hidden" name="arg" value="addsource" />
-        <table class="nametable">
+        <table class="name-table">
         <tr><td><label for="source-type"><b><?php
             e(tl('searchsources_element_sourcetype'))?></b></label></td><td>
             <?php $this->view->optionsHelper->render("source-type",
@@ -75,27 +75,27 @@ class SearchsourcesElement extends Element
         <tr><td><label for="source-name"><b><?php
             e(tl('searchsources_element_sourcename'))?></b></label></td><td>
             <input type="text" id="source-name" name="sourcename"
-                maxlength="80" class="widefield" /></td></tr>
+                maxlength="80" class="wide-field" /></td></tr>
         <tr><td><label for="source-url"><b><?php
             e(tl('searchsources_element_url'))?></b></label></td><td>
             <input type="text" id="source-url" name="sourceurl"
-                maxlength="80" class="widefield" /></td></tr>
+                maxlength="80" class="wide-field" /></td></tr>
         <tr><td><label for="source-thumbnail"><b id="thumb-text"><?php
             e(tl('searchsources_element_thumbnail'))?></b></label></td><td>
             <input type="text" id="source-thumbnail" name="sourcethumbnail"
-                maxlength="80" class="widefield" /></td></tr>
+                maxlength="80" class="wide-field" /></td></tr>
         <tr><td><label for="source-locale-tag"><b id="locale-text"><?php
             e(tl('searchsources_element_locale_tag'))?></b></label></td><td>
             <?php $this->view->optionsHelper->render("source-locale-tag",
                 "sourcelocaletag", $data['LANGUAGES'],
                  $data['SOURCE_LOCALE_TAG']); ?></td></tr>
-        <tr><td></td><td class="center"><button class="buttonbox"
+        <tr><td></td><td class="center"><button class="button-box"
             type="submit"><?php e(tl('searchsources_element_submit'));
             ?></button></td></tr>
         </table>
         </form>
         <h2><?php e(tl('searchsources_element_media_sources'))?></h2>
-        <table class="searchsourcestable">
+        <table class="search-sources-table">
         <tr><th><?php e(tl('searchsources_element_medianame'));?></th>
             <th><?php e(tl('searchsources_element_mediatype'));?></th><th><?php
             e(tl('searchsources_element_mediaurls')); ?></th>
@@ -120,11 +120,11 @@ class SearchsourcesElement extends Element
             e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="searchSources" />
         <input type="hidden" name="arg" value="addsubsearch" />
-        <table class="nametable">
+        <table class="name-table">
         <tr><td><label for="subsearch-folder-name"><b><?php
             e(tl('searchsources_element_foldername'))?></b></label></td><td>
             <input type="text" id="subsearch-folder-name" name="foldername"
-                maxlength="80" class="widefield" /></td></tr>
+                maxlength="80" class="wide-field" /></td></tr>
         <tr><td><label for="index-source"><b><?php
             e(tl('searchsources_element_indexsource'))?></b></label></td><td>
             <?php $this->view->optionsHelper->render("index-source",
@@ -137,12 +137,12 @@ class SearchsourcesElement extends Element
             $this->view->optionsHelper->render("per-page", "perpage",
                 $data['PER_PAGE'], $data['PER_PAGE_SELECTED']); ?>
         </td></tr>
-        <tr><td></td><td class="center"><button class="buttonbox"
+        <tr><td></td><td class="center"><button class="button-box"
             type="submit"><?php e(tl('searchsources_element_submit'));
             ?></button></td></tr>
         </table>
         <h2><?php e(tl('searchsources_element_subsearches'))?></h2>
-        <table class="searchsourcestable">
+        <table class="search-sources-table">
         <tr><th><?php e(tl('searchsources_element_dirname'));?></th>
             <th><?php
             e(tl('searchsources_element_index')); ?></th>

@@ -65,7 +65,7 @@ class CrawlstatusView extends View
             {
                 case 'BEGIN_CRAWL':
                     e(tl('crawlstatus_view_starting_crawl'));?>&nbsp;&nbsp;
-                <button class="buttonbox" type="button"
+                <button class="button-box" type="button"
                     onclick="javascript:document.location = '<?php
                     e($base_url); ?>stop'" ><?php
                     e(tl('managecrawls_element_stop_crawl'))?></button>
@@ -73,7 +73,7 @@ class CrawlstatusView extends View
                 break;
                 case 'RESUME_CRAWL':
                     e(tl('crawlstatus_view_resuming_crawl'));?>&nbsp;&nbsp;
-                <button class="buttonbox" type="button"
+                <button class="button-box" type="button"
                     onclick="javascript:document.location = '<?php
                     e($base_url); ?>stop'" ><?php
                     e(tl('managecrawls_element_stop_crawl'))?></button>
@@ -91,7 +91,7 @@ class CrawlstatusView extends View
                 default:
                     e($data['DESCRIPTION']);
                 ?>&nbsp;&nbsp;
-                <button class="buttonbox" type="button"
+                <button class="button-box" type="button"
                     onclick="javascript:document.location = '<?php
                     e($base_url); ?>stop'" ><?php
                     e(tl('managecrawls_element_stop_crawl'))?></button>
@@ -191,7 +191,7 @@ class CrawlstatusView extends View
         if(isset($data['RECENT_CRAWLS']) && count($data['RECENT_CRAWLS']) > 0) {
             ?>
 
-            <table class="crawlstable">
+            <table class="crawls-table">
             <tr><th><?php e(tl('crawlstatus_view_description'));?></th><th><?php
                 e(tl('crawlstatus_view_timestamp')); ?></th>
             <th><?php e(tl('crawlstatus_view_url_counts'));?></th>

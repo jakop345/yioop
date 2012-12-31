@@ -57,32 +57,32 @@ class PageOptionsElement extends Element
     {
         global $INDEXED_FILE_TYPES;
     ?>
-        <div class="currentactivity">
+        <div class="current-activity">
         <form id="pageoptionsForm" method="get" action='?'>
         <h2><?php e(tl('pageoptions_element_crawl_time'))?></h2>
         <input type="hidden" name="c" value="admin" />
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="pageOptions" />
-        <div class="topmargin"><b><label for="page-range-request"><?php
+        <div class="top-margin"><b><label for="page-range-request"><?php
             e(tl('pageoptions_element_page_range'))?></label></b>
             <?php $this->view->optionsHelper->render("page-range-request",
             "page_range_request", $data['SIZE_VALUES'], $data['PAGE_SIZE']);
             ?></div>
-        <div class="topmargin"><b><label for="allow-recrawl"><?php
+        <div class="top-margin"><b><label for="allow-recrawl"><?php
             e(tl('pageoptions_element_allow_recrawl'))?></label></b>
             <?php $this->view->optionsHelper->render("page-recrawl-frequency",
             "page_recrawl_frequency", $data['RECRAWL_FREQS'],
                 $data['PAGE_RECRAWL_FREQUENCY']);
             ?></div>
-        <div class="topmargin"><b><?php
+        <div class="top-margin"><b><?php
             e(tl('pageoptions_element_file_types'))?></b>
        </div>
-       <table class="ftypesall"><tr>
+       <table class="file-types-all"><tr>
        <?php $cnt = 0;
              foreach ($data['INDEXED_FILE_TYPES'] as $filetype => $checked) {
                  if($cnt % 10 == 0) {
-                    ?><td><table class="filetypestable" ><?php
+                    ?><td><table class="file-types-table" ><?php
                  }
        ?>
             <tr><td><label for="<?php e($filetype); ?>-id"><?php
@@ -103,7 +103,7 @@ class PageOptionsElement extends Element
         ?>
         </tr></table>
         <h2><?php e(tl('pageoptions_element_page_scoring'))?></h2>
-        <table class="weightstable" >
+        <table class="weights-table" >
         <tr><th><label for="title-weight"><?php
             e(tl('pageoptions_element_title_weight'))?></label></th><td>
             <input type="text" id="title-weight" size="3" maxlength="6"
@@ -121,7 +121,7 @@ class PageOptionsElement extends Element
                 value="<?php  e($data['LINK_WEIGHT']); ?>" /></td></tr>
         </table>
         <h2><?php e(tl('pageoptions_element_results_grouping_options'))?></h2>
-        <table class="weightstable" >
+        <table class="weights-table" >
         <tr><th><label for="min-results-to-group"><?php
             e(tl('pageoptions_element_min_results_to_group'))?></label></th><td>
             <input type="text" id="min-results-to-group" size="3" maxlength="6"
@@ -133,7 +133,7 @@ class PageOptionsElement extends Element
                 name="SERVER_ALPHA"
                 value="<?php e($data['SERVER_ALPHA']); ?>" /></td></tr>
         </table>
-        <div class="center slightpad"><button class="buttonbox"
+        <div class="center slight-pad"><button class="button-box"
             type="submit"><?php e(tl('pageoptions_element_save_options'));
             ?></button></div>
         </form>

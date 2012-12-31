@@ -1,5 +1,7 @@
-title=Confltto
+title=Conflitto
+
 description=La richiesta porter&agrave; ad un conflitto.
 END_HEAD_VARS
-<h2>La richiesta porter&agrave; ad un conflitto, quindi non verr&agrave; processata.
+<h2>La richiesta porter&agrave; ad un conflitto, quindi non verr&agrave;
+processata.
 </h2>

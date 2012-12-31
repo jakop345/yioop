@@ -55,7 +55,7 @@ class ManagemachinesElement extends Element
      */
     function render($data)
     {?>
-        <div class="currentactivity">
+        <div class="current-activity">
         <h2><?php e(tl('managemachines_element_add_machine'))?></h2>
         <form id="addMachineForm" method="post" action=''>
         <input type="hidden" name="c" value="admin" />
@@ -64,17 +64,17 @@ class ManagemachinesElement extends Element
         <input type="hidden" name="a" value="manageMachines" />
         <input type="hidden" name="arg" value="addmachine" />
 
-        <table class="nametable">
+        <table class="name-table">
         <tr><th><label for="machine-name"><?php
             e(tl('managemachines_element_machine_name'))?></label></th>
             <td><input type="text" id="machine-name" name="name"
-                maxlength="80" class="widefield" /></td>
+                maxlength="80" class="wide-field" /></td>
         </tr>
 
         <tr><th><label for="machine-url"><?php
             e(tl('managemachines_element_machineurl'))?></label></th>
             <td><input type="text" id="machine-url" name="url"
-                maxlength="80" class="widefield" /></td></tr>
+                maxlength="80" class="wide-field" /></td></tr>
         <tr><th><label for="is-replica-box"><?php
             e(tl('managemachines_element_is_mirror'))?></label></th>
             <td><input type="checkbox" id="is-replica-box"
@@ -97,7 +97,7 @@ class ManagemachinesElement extends Element
             <?php $this->view->optionsHelper->render("fetcher-number",
             "num_fetchers", $data['FETCHER_NUMBERS'],$data['FETCHER_NUMBER']);
             ?></td></tr>
-        <tr><th></th><td><button class="buttonbox" type="submit"><?php
+        <tr><th></th><td><button class="button-box" type="submit"><?php
                 e(tl('managemachines_element_submit')); ?></button></td>
         </tr>
         </table>
@@ -110,14 +110,14 @@ class ManagemachinesElement extends Element
             e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="manageMachines" />
         <input type="hidden" name="arg" value="deletemachine" />
-        <table class="nametable">
+        <table class="name-table">
          <tr><th><label for="delete-machine-name"><?php
             e(tl('managemachines_element_machine_name'))?></label></th>
             <td><?php $this->view->optionsHelper->render(
                 "delete-machine-name", "name",
                 $data['DELETABLE_MACHINES'],
                 tl('admin_controller_select_machine'));
-                ?></td><td><button class="buttonbox" type="submit"><?php
+                ?></td><td><button class="button-box" type="submit"><?php
                 e(tl('managemachines_element_submit')); ?></button></td>
         </tr>
         </table>

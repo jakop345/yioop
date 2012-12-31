@@ -63,7 +63,7 @@ p
     font-weight: normal;
 }
 
-.echolink
+.echo-link
 {
     color: green;
 }
@@ -78,7 +78,7 @@ p
     float: right;
 }
 
-.alignRight
+.align-right
 {
     text-align: right;
 }
@@ -101,17 +101,17 @@ p
 }
 
 .highlight,
-.backred
+.back-red
 {
     background-color: red;
 }
 
-.backgreen
+.back-green
 {
     background-color: green;
 }
 
-.backgray
+.back-gray
 {
     background-color: lightgray;
 }
@@ -132,7 +132,7 @@ p
     text-decoration: underline;
 }
 
-.backyellow
+.back-yellow
 {
     background-color: yellow;
 }
@@ -144,59 +144,59 @@ p
     position: relative;
 }
 
-.nametable
+.name-table
 {
     padding: 5px;
 }
 
-.narrowfield
+.narrow-field
 {
     width: 2in;
 }
 
-.mobile .narrowfield
+.mobile .narrow-field
 {
     width: 100px;
 }
 
-.widefield
+.wide-field
 {
     width: 3in;
 }
 
-.mobile .widefield
+.mobile .wide-field
 {
     width: 150px;
 }
 
-.extrawidefield
+.extra-wide-field
 {
     width: 5in;
 }
 
-.mobile .extrawidefield
+.mobile .extra-wide-field
 {
     width: 200px;
 }
 
-.talltextarea
+.tall-text-area
 {
     height: 4in;
     width: 100%;
 }
 
-.mobile .talltextarea
+.mobile .tall-text-area
 {
     width: 90%;
 }
 
-.shorttextarea
+.short-text-area
 {
     width: 100%;
     height: 1in;
 }
 
-.mobile .shorttextarea
+.mobile .short-text-area
 {
     width: 90%;
 }
@@ -219,12 +219,12 @@ p
     top: 10px;
 }
 
-.topmargin
+.top-margin
 {
     margin-top: .2in;
 }
 
-.nomargin
+.no-margin
 {
     margin: 0;
 }
@@ -235,7 +235,7 @@ p
     padding: 3px;
 }
 
-.slightpad
+.slight-pad
 {
     padding: 0.1in;
 }
@@ -334,7 +334,7 @@ body.mobile
    for many of the below things we need to handle them different on the landing
    page from pages where search results appear
  */
-.topbar
+.top-bar
 {
     background: #DDD;
     background: -moz-linear-gradient(top, #FFF 0%,#EEF 30%,#EEF 70%, #FFF 100%);
@@ -349,7 +349,7 @@ body.mobile
     top: -12px;
 }
 
-.landing-topbar
+.landing-top-bar
 {
     background: #DDD;
     background: linear-gradient(to top, #FFF 0%, #EEF 30%,#EEF 70%, #FFF 100%);
@@ -364,8 +364,8 @@ body.mobile
     width: 100%;
 }
 
-.mobile .topbar,
-.mobile .landing-topbar
+.mobile .top-bar,
+.mobile .landing-top-bar
 {
     background: #DDD;
     background: linear-gradient(to top, #FFF 0%,#EEF 30%,#EEF 70%, #FFF 100%);
@@ -400,7 +400,7 @@ body.mobile
 }
 
 /*
-   for the sign-in, settings, admin, logout links on the topbar
+   for the sign-in, settings, admin, logout links on the top-bar
  */
 .html-ltr .user-nav
 {
@@ -456,7 +456,7 @@ body.mobile
 }
 
 /*
-   For the web, images, video links on the topbar
+   For the web, images, video links on the top-bar
  */
 .html-ltr .subsearch ul.out-list
 {
@@ -958,7 +958,7 @@ ul.in-list li
     z-index: 1;
 }
 
-.searchbox
+.search-box
 {
     background-color: #DDF;
     border-color: #AAA;
@@ -971,13 +971,13 @@ ul.in-list li
     width: 8in;
 }
 
-.landing .searchbox
+.landing .search-box
 {
     position: relative;
     top: 0;
 }
 
-.mobile .searchbox
+.mobile .search-box
 {
     padding: 3px;
     position: relative;
@@ -985,19 +985,19 @@ ul.in-list li
     width:240px;
 }
 
-.mobile .landing .searchbox
+.mobile .landing .search-box
 {
     position: relative;
     top: 10px;
     width: 289px;
 }
 
-.searchbox p
+.search-box p
 {
     font-size: 16pt;
 }
 
-.searchbox input
+.search-box input
 {
     border: 0;
     font-size: 16pt;
@@ -1007,13 +1007,13 @@ ul.in-list li
     width: 6.5in;
 }
 
-.mobile .searchbox input
+.mobile .search-box input
 {
     font-size: 12pt;
     width: 180px;
 }
 
-.mobile .landing .searchbox input
+.mobile .landing .search-box input
 {
     font-size: 12pt;
     width: 235px;
@@ -1359,7 +1359,7 @@ ul.in-list li
     padding-bottom: 8px;
 }
 
-.html-ltr .buttonbox
+.html-ltr .button-box
 {
     color: black;
     font-size: 16pt;
@@ -1372,7 +1372,7 @@ ul.in-list li
 }
 
 
-.html-rtl .buttonbox
+.html-rtl .button-box
 {
     color: black;
     font-size: 16pt;
@@ -1384,14 +1384,14 @@ ul.in-list li
     top: 0.015in;
 }
 
-.mobile .buttonbox
+.mobile .button-box
 {
     font-size: 12pt;
     margin-left: 0;
     margin-right: 0;
 }
 
-.html-ltr .activitymenu
+.html-ltr .activity-menu
 {
     border-radius: 8px;
     float: left;
@@ -1401,7 +1401,7 @@ ul.in-list li
     width: 2.5in;
 }
 
-.html-rtl .activitymenu
+.html-rtl .activity-menu
 {
     border-radius: 8px;
     float: right;
@@ -1411,7 +1411,7 @@ ul.in-list li
     width: 2.5in;
 }
 
-.mobile .activitymenu
+.mobile .activity-menu
 {
     border: 0;
     float: none;
@@ -1420,7 +1420,7 @@ ul.in-list li
     width:320px;
 }
 
-.activitymenu h2
+.activity-menu h2
 {
     background-color: #8A4;
     border-top-right-radius: 8px;
@@ -1430,18 +1430,18 @@ ul.in-list li
     padding: .05in .15in .05in .15in;
 }
 
-.mobile .activitymenu h2
+.mobile .activity-menu h2
 {
     display: none;
 }
 
-.mobile .activitymenu select
+.mobile .activity-menu select
 {
     font-size:16pt;
     width:320px;
 }
 
-.activitymenu li
+.activity-menu li
 {
     list-style-position: inside;
     list-style-type: none;
@@ -1449,24 +1449,24 @@ ul.in-list li
     padding: 0.10in;
 }
 
-.activitymenu li.bottom_border
+.activity-menu li.bottom-border
 {
     border-bottom: 1px solid #ccc;
 }
 
-.activitymenu li a
+.activity-menu li a
 {
     color: #222;
     text-decoration: none;
 }
 
-.activitymenu li a:hover
+.activity-menu li a:hover
 {
     color: #222;
     text-decoration: underline;
 }
 
-.activitymenu ul
+.activity-menu ul
 {
     border-radius: 8px;
     display: block;
@@ -1475,7 +1475,7 @@ ul.in-list li
 }
 
 
-.currentactivity
+.current-activity
 {
     background-color: #fff;
     border: 1px solid #ccc;
@@ -1491,17 +1491,17 @@ ul.in-list li
     top: 30px;
 }
 
-.html-ltr .currentactivity
+.html-ltr .current-activity
 {
     margin-left: 2.75in;
 }
 
-.html-rtl .currentactivity
+.html-rtl .current-activity
 {
     margin-right: 2.75in;
 }
 
-.mobile .currentactivity
+.mobile .current-activity
 {
     clear:both;
     position: relative;
@@ -1520,71 +1520,71 @@ ul.in-list li
     font-size:12pt;
 }
 
-.currentactivity h2
+.current-activity h2
 {
     margin-top: 0.05in;
     padding-top: 0.05in;
 }
 
-.currentactivity input
+.current-activity input
 {
     font-size: 16pt;
     position: relative;
     top: 2px;
 }
 
-.currentactivity object
+.current-activity object
 {
     height: 2in;
     min-width: 6in;
     width: 8in;
 }
 
-.currentactivity select
+.current-activity select
 {
     font-size: 16pt;
 }
 
-.mobile .currentactivity select
+.mobile .current-activity select
 {
     font-size: 12pt;
 }
 
-.html-ltr .roletable,
-.html-ltr .roletable td,
-.html-ltr .roletable th
+.html-ltr .role-table,
+.html-ltr .role-table td,
+.html-ltr .role-table th
 {
     border: 1px solid black;
     margin-left: 0.2in;
     padding: 1px;
 }
 
-.html-rtl .roletable,
-.html-rtl .roletable td,
-.html-rtl .roletable th
+.html-rtl .role-table,
+.html-rtl .role-table td,
+.html-rtl .role-table th
 {
     border: 1px solid black;
     margin-right: 0.2in;
     padding: 1px;
 }
 
-.html-ltr .localetable,
-.html-ltr .localetable td,
-.html-ltr .localetable th
+.html-ltr .locale-table,
+.html-ltr .locale-table td,
+.html-ltr .locale-table th
 {
     border: 1px ridge black;
     margin-left: 0.2in;
 }
 
-.html-rtl .localetable,
-.html-rtl .localetable td,
-.html-rtl .localetable th
+.html-rtl .locale-table,
+.html-rtl .locale-table td,
+.html-rtl .locale-table th
 {
     border: 1px ridge black;
     margin-right: 0.2in;
 }
 
-.tabmenu-list
+.tab-menu-list
 {
     border-bottom: 2px solid black;
     margin-bottom: 0px;
@@ -1592,13 +1592,13 @@ ul.in-list li
     z-index: 1;
 }
 
-.tabmenu-list li
+.tab-menu-list li
 {
     display: inline;
     list-style-type: none;
 }
 
-.tabmenu-list a
+.tab-menu-list a
 {
     background-color:#EEE;
     border: 1px solid black;
@@ -1609,13 +1609,13 @@ ul.in-list li
     text-decoration: none;
 }
 
-.tabmenu-list a.active
+.tab-menu-list a.active
 {
     background-color: white;
     border-bottom: 3px solid white;
 }
 
-.tabmenu-content
+.tab-menu-content
 {
     border: 1px solid black;
     border-top: none;
@@ -1623,203 +1623,203 @@ ul.in-list li
     z-index: 2;
 }
 
-.crawlstable,
-.crawlstable td,
-.crawlstable th,
-.filetypestable,
-.filetypestable td,
-.mixestable,
-.mixestable td,
-.mixestable th,
-.searchsourcestable,
-.searchsourcestable td,
-.searchsourcestable ths
+.crawls-table,
+.crawls-table td,
+.crawls-table th,
+.file-types-table,
+.file-types-table td,
+.mixes-table,
+.mixes-table td,
+.mixes-table th,
+.search-sources-table,
+.search-sources-table td,
+.search-sources-table th
 {
     border: 1px ridge black;
     padding: 2px;
 }
 
-.html-ltr .filetypestable,
-.html-ltr .ftypesall td
+.html-ltr .file-types-table,
+.html-ltr .file-types-all td
 {
    margin-left: 0.3in;
    vertical-align: top;
 }
 
-.html-rtl  .filetypestable,
-.html-rtl .ftypesall td
+.html-rtl .file-types-table,
+.html-rtl .file-types-all td
 {
    margin-right: 0.3in;
    vertical-align: top;
 }
 
-.mobile .filetypestable,
-.mobile .ftypesall td
+.mobile .file-types-table,
+.mobile .file-types-all td
 {
    margin-left: 2px;
    margin-right: 2px;
    vertical-align: top;
 }
 
-.html-ltr .weightstable th
+.html-ltr .weights-table th
 {
     text-align: right;
 }
 
-.html-rtl .weightstable th
+.html-rtl .weights-table th
 {
     text-align: left;
 }
 
-.machinetable,
-.machinetable td,
-.machinetable th
+.machine-table,
+.machine-table td,
+.machine-table th
 {
     border: 1px ridge black;
     margin: 2px;
     padding: 3px;
 }
 
-.toggletable, 
-.toggletable td
+.toggle-table,
+.toggle-table td
 {
     border: 1px ridge black;
 }
 
-.filetypestable td,
-.translatetable,
-.translatetable td,
-.translatetable th
+.file-types-table td,
+.translate-table,
+.translate-table td,
+.translate-table th
 {
     border: 1px ridge black;
 }
 
-.metawordstable
+.meta-words-table
 {
    width: 100%;
 }
 
-.metawordstable,
-.metawordstable td,
-.metawordstable th
+.meta-words-table,
+.meta-words-table td,
+.meta-words-table th
 {
     border: 1px ridge black;
 }
-.metawordstable th
+.meta-words-table th
 {
     text-align: center;
     padding: 0.04in;
 }
 
-.metawordstable td.input-word
+.meta-words-table td.input-word
 {
     width: 1.5in;
 }
 
-.metawordstable td.input-word input
+.meta-words-table td.input-word input
 {
     margin: 0.05in;
     width: 1.3in;
 }
 
-.metawordstable td.input-url
+.meta-words-table td.input-url
 {
     margin: 0.03in;
     width: 100%;
 }
 
-.metawordstable td.input-url input
+.meta-words-table td.input-url input
 {
     margin: 0.05in;
     width: 97%;
 }
 
-.logrecordstable
+.log-records-table
 {
    width:100%;
 }
 
-.logrecordstable,
-.logrecordstable td,
-.logrecordstable th
+.log-records-table,
+.log-records-table td,
+.log-records-table th
 {
     border: 1px ridge black;
 }
 
-.logrecordstable th
+.log-records-table th
 {
     padding: 0.03in;
     text-align: center;
 }
 
-.logrecordstable td.input-field
+.log-records-table td.input-field
 {
     width: 1.3in;
 }
 
-.logrecordstable td.input-field input
+.log-records-table td.input-field input
 {
     margin: 0.05in;
     width: 1.5in;
 }
 
-.logrecordstable td.input-field-name
+.log-records-table td.input-field-name
 {
     margin: 0.03in;
     width: 100%;
 }
 
-.logrecordstable td.input-field-name input
+.log-records-table td.input-field-name input
 {
     margin: 0.05in;
     width: 97%;
 }
 
-.logrecordstable td.input-field-type
+.log-records-table td.input-field-type
 {
     margin: 0.03in;
     width: 100%;
 }
 
-.logrecordstable td.input-field-type input
+.log-records-table td.input-field-type input
 {
     margin: 0.05in;
     width: 97%;
 }
 
-.html-rtl .logrecordnewfield
+.html-rtl .log-record-new-field
 {
     position: relative;
 }
 
-.html-ltr .logrecordnewfield
+.html-ltr .log-record-new-field
 {
     position: relative;
 }
 
-.databaseconnectiondetailstable
+.database-connection-details-table
 {
    width:100%;
 }
 
-.databaseconnectiondetailstable,
-.databaseconnectiondetailstable td
+.database-connection-details-table,
+.database-connection-details-table td
 {
     border: 1px ridge black;
 }
 
-.databaseconnectiondetailstable td.input-name
+.database-connection-details-table td.input-name
 {
     width: 1.3in;
 }
 
-.databaseconnectiondetailstable td.input-data
+.database-connection-details-table td.input-data
 {
     margin: 0.03in;
     width: 100%;
 }
 
-.databaseconnectiondetailstable td.input-data input
+.database-connection-details-table td.input-data input
 {
     margin: 0.05in;
     width: 98%;
@@ -1835,25 +1835,25 @@ ul.in-list li
     position: relative;
 }
 
-.indexingplugintable
+.indexing-plugin-table
 {
    width:100%;
 }
 
-.indexingplugintable,
-.indexingplugintable td,
-.indexingplugintable th
+.indexing-plugin-table,
+.indexing-plugin-table td,
+.indexing-plugin-table th
 {
     border: 1px ridge black;
     text-align: center;
 }
 
-.indexingplugintable th
+.indexing-plugin-table th
 {
     padding: 0.04in;
 }
 
-.indexingplugintable td.check
+.indexing-plugin-table td.check
 {
     padding: 0.1in;
     text-align: center;

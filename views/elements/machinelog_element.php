@@ -54,7 +54,7 @@ class MachinelogElement extends Element
     function render($data)
     {
     ?>
-        <div class="currentactivity">
+        <div class="current-activity">
         <div class="<?php e($data['leftorright']);?>">
         <a href="?c=admin&amp;a=manageMachines&amp;<?php
             e(CSRF_TOKEN."=".$data[CSRF_TOKEN]) ?>"

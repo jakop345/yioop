@@ -78,7 +78,7 @@ class SearchView extends View implements CrawlConstants
         if(SIGNIN_LINK || SUBSEARCH_LINK) {?>
 
 
-        <div class="<?php e($data['LAND']);?>topbar"><?php
+        <div class="<?php e($data['LAND']);?>top-bar"><?php
             $this->subsearchElement->render($data);
             $this->signinElement->render($data);
             ?>
@@ -111,7 +111,7 @@ class SearchView extends View implements CrawlConstants
         }
         ?>
 
-        <div class="searchbox">
+        <div class="search-box">
             <form id="search-form" method="get" action='?'
                 onsubmit="processSubmit()">
             <p>
@@ -131,7 +131,7 @@ class SearchView extends View implements CrawlConstants
                 if(isset($data['QUERY']) && !isset($data['NO_QUERY'])) {
                     e(urldecode($data['QUERY']));} ?>"
                 placeholder="<?php e(tl('search_view_input_placeholder')); ?>"/>
-            <button class="buttonbox" type="submit"><?php if(MOBILE) {
+            <button class="button-box" type="submit"><?php if(MOBILE) {
                     e('>');
                 } else {
                 e(tl('search_view_search')); } ?></button>
@@ -224,7 +224,7 @@ class SearchView extends View implements CrawlConstants
                         $data['VIDEO_SOURCES'], $data["OPEN_IN_TABS"]);
                 }
                 ?>
-                <p class="echolink" <?php e($subtitle); ?>><?php
+                <p class="echo-link" <?php e($subtitle); ?>><?php
                     e(UrlParser::simplifyUrl($url, 100)." ");
                 ?></p>
                 <?php if(!isset($page[self::ROBOT_METAS]) ||

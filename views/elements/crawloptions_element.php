@@ -56,7 +56,7 @@ class CrawloptionsElement extends Element
     function render($data)
     {
     ?>
-        <div class="currentactivity">
+        <div class="current-activity">
         <div class="<?php e($data['leftorright']);?>">
         <a href="?c=admin&amp;a=manageCrawls&amp;<?php
             e(CSRF_TOKEN."=".$data[CSRF_TOKEN]) ?>"
@@ -80,7 +80,7 @@ class CrawloptionsElement extends Element
             <input type="hidden" name="ts" value="<?php
                 e($data['ts'])?>" />
         <?php } ?>
-        <ul class='tabmenu-list'>
+        <ul class='tab-menu-list'>
         <?php if(!isset($data['ts']) ||
             $data['crawl_type'] == CrawlConstants::WEB_CRAWL) { ?>
         <li><a  <?php if(!isset($data['ts'])) { ?>
@@ -101,22 +101,22 @@ class CrawloptionsElement extends Element
             e(tl('crawloptions_element_archive_crawl'))?></a></li>
         <?php } ?>
         </ul>
-        <div class='tabmenu-content'>
+        <div class='tab-menu-content'>
         <div id='webcrawltab'>
         <?php if(!isset($data['ts'])) { ?>
-        <div class="topmargin"><label for="load-options"><b><?php
+        <div class="top-margin"><label for="load-options"><b><?php
             e(tl('crawloptions_element_load_options'))?></b></label><?php
             $this->view->optionsHelper->render("load-options", "load_option",
                 $data['available_options'], $data['options_default']);
         ?></div>
-        <div class="topmargin"><label for="crawl-order"><b><?php
+        <div class="top-margin"><label for="crawl-order"><b><?php
             e(tl('crawloptions_element_crawl_order'))?></b></label><?php
             $this->view->optionsHelper->render("crawl-order", "crawl_order",
                 $data['available_crawl_orders'], $data['crawl_order']);
         ?>
         </div>
         <?php } ?>
-        <div class="topmargin"><label for="restrict-sites-by-url"><b><?php
+        <div class="top-margin"><label for="restrict-sites-by-url"><b><?php
             e(tl('crawloptions_element_restrict_by_url'))?></b></label>
                 <input type="checkbox" id="restrict-sites-by-url"
                     class="restrict-sites-by-url"
@@ -124,33 +124,33 @@ class CrawloptionsElement extends Element
                     onclick="setDisplay('toggle', this.checked)" <?php
                     e($data['TOGGLE_STATE']); ?> /></div>
         <div id="toggle">
-            <div class="topmargin"><label for="allowed-sites"><b><?php
+            <div class="top-margin"><label for="allowed-sites"><b><?php
             e(tl('crawloptions_element_allowed_to_crawl'))?></b></label></div>
-        <textarea class="shorttextarea" id="allowed-sites"
+        <textarea class="short-text-area" id="allowed-sites"
             name="allowed_sites"><?php e($data['allowed_sites']);
         ?></textarea></div>
-        <div class="topmargin"><label for="disallowed-sites"><b><?php
+        <div class="top-margin"><label for="disallowed-sites"><b><?php
             e(tl('crawloptions_element_disallowed_and_quota_sites'));
                 ?></b></label></div>
-        <textarea class="shorttextarea" id="disallowed-sites"
+        <textarea class="short-text-area" id="disallowed-sites"
             name="disallowed_sites" ><?php e($data['disallowed_sites']);
         ?></textarea>
         <?php if(!isset($data['ts'])) { ?>
-        <div class="topmargin"><label for="seed-sites"><b><?php
+        <div class="top-margin"><label for="seed-sites"><b><?php
             e(tl('crawloptions_element_seed_sites'))?></b></label></div>
-        <textarea class="talltextarea" id="seed-sites" name="seed_sites" ><?php
-            e($data['seed_sites']);
+        <textarea class="tall-text-area" id="seed-sites"
+            name="seed_sites" ><?php e($data['seed_sites']);
         ?></textarea>
         <?php } else { ?>
-        <div class="topmargin"><label for="inject-sites"><b><?php
+        <div class="top-margin"><label for="inject-sites"><b><?php
             e(tl('crawloptions_element_inject_sites'))?></b></label></div>
-        <textarea class="shorttextarea" id="inject-sites"
+        <textarea class="short-text-area" id="inject-sites"
             name="inject_sites" ></textarea>
         <?php } ?>
         </div>
         <div id='archivetab'>
         <?php if(!isset($data['ts'])) { ?>
-        <div class="topmargin"><label for="load-options"><b><?php
+        <div class="top-margin"><label for="load-options"><b><?php
             e(tl('crawloptions_element_reindex_crawl'))?></b></label><?php
             $this->view->optionsHelper->render("crawl-indexes", "crawl_indexes",
                 $data['available_crawl_indexes'], $data['crawl_index']);
@@ -208,10 +208,10 @@ class CrawloptionsElement extends Element
 
         ?>
 
-        <div id="Log_Records" class="topmargin"><b><?php
+        <div id="Log_Records" class="top-margin"><b><?php
             e(tl('crawloptions_element_log_records_details'))?></b></div>
 
-        <table class="logrecordstable">
+        <table class="log-records-table">
             <tr><th><?php e(tl('crawloptions_element_field'));?></th>
             <th><?php e(tl('crawloptions_element_field_name')); ?></th>
             <th><?php e(tl('crawloptions_element_field_type')); ?></th></tr>
@@ -347,11 +347,11 @@ class CrawloptionsElement extends Element
             }
         ?>
 
-        <div id="Database_Connection_Details" class="topmargin"><b><?php
+        <div id="Database_Connection_Details" class="top-margin"><b><?php
             e(tl('crawloptions_element_database_connection_details'))?></b>
         </div><br/>
 
-        <table class="databaseconnectiondetailstable">
+        <table class="database-connection-details-table">
            <tr><td class="input-name"><?php
                     e(tl('crawloptions_element_hostname'))?>
                 </td>
@@ -443,9 +443,9 @@ class CrawloptionsElement extends Element
         </div>
         <?php } ?>
         </div>
-        <div class="topmargin"><b><?php
+        <div class="top-margin"><b><?php
             e(tl('crawloptions_element_meta_words'))?></b></div>
-        <table class="metawordstable">
+        <table class="meta-words-table">
             <tr><th><?php e(tl('crawloptions_element_word'));?></th>
                 <th><?php
                 e(tl('crawloptions_element_url_pattern')); ?></th></tr>
@@ -470,20 +470,20 @@ class CrawloptionsElement extends Element
                 $i++;
             }
             ?>
-            <tr><td class="input-word"><input type="text"  title="New Word"
+            <tr><td class="input-word"><input type="text" title="New Word"
                 name="META_WORDS[<?php e($i); ?>]['WORD']"
                 />
                 </td>
-                <td class="input-url"><input type="text"  title="New URL Pattern"
+                <td class="input-url"><input type="text" title="New URL Pattern"
                    name="META_WORDS[<?php e($i); ?>]['URL_PATTERN']" /></td>
             </tr>
             </table>
 
             <?php if(isset($data['INDEXING_PLUGINS'])) {
             ?>
-                <div class="topmargin"><b><?php
+                <div class="top-margin"><b><?php
                     e(tl("crawloptions_element_indexing_plugins"));?></b></div>
-                <table class="indexingplugintable">
+                <table class="indexing-plugin-table">
                     <tr><th><?php e(tl('crawloptions_element_plugin'));
                                       ?></th>
                     <th><?php
@@ -510,7 +510,7 @@ class CrawloptionsElement extends Element
             ?>
 
 
-        <div class="center slightpad"><button class="buttonbox"
+        <div class="center slight-pad"><button class="button-box"
             type="submit" name="save_options">
             <?php e(tl('crawloptions_element_save_options'));
             ?></button></div>

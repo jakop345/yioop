@@ -139,14 +139,7 @@ class LogArchiveBundleIterator extends ArchiveBundleIterator
      *  Array of regular expressions for all the data types
      *  @var array
      */
-    var $regular_exprs = array(
-        'IP_Address' => '/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/',
-        'Timestamp' => '/\[[^:]+:\d+:\d+:\d+ [^\]]+\]/',
-        'Request' => '/(GET|HEAD|POST|PUT|DELETE|TRACE|OPTIONS|CONNECT)+[^"]*/',
-        'Status Code'=> '/\s[1-5]\d{2}\s/',
-        'Int' => '/\s[0-9]+\s/',
-        'URL'        => '/(http|https|ftp):\/\/[A-Za-z0-9][A-Za-z0-9_-]*[\/]*(?:.[A-Za-z0-9][A-Za-z0-9_-]*[\/]*)+:?(d*)[\/]*/',
-        'User Agent' => '/"([a-zA-Z0-9][^"]+)"/');
+    var $regular_exprs;
 
     /**
      *  Array of log fields type in drop down box in the UI
@@ -168,6 +161,7 @@ class LogArchiveBundleIterator extends ArchiveBundleIterator
     const FIELDS_DATA_FILE = 'fields_data.txt';
     const MASTER_LOG_FILE = 'master.log';
 
+
     /**
      * Creates a log archive iterator with the given parameters.
      *
@@ -179,6 +173,16 @@ class LogArchiveBundleIterator extends ArchiveBundleIterator
     function __construct($iterate_timestamp, $iterate_dir,
         $result_timestamp, $result_dir)
     {
+        $this->regular_exprs = array(
+        'IP_Address' => '/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/',
+        'Timestamp' => '/\[[^:]+:\d+:\d+:\d+ [^\]]+\]/',
+        'Request' => '/(GET|HEAD|POST|PUT|DELETE|TRACE|OPTIONS|CONNECT)+[^"]*/',
+        'Status Code'=> '/\s[1-5]\d{2}\s/',
+        'Int' => '/\s[0-9]+\s/',
+        'User Agent' => '/"([a-zA-Z0-9][^"]+)"/');
+        $this->regular_exprs['URL'] = '/(http|https|ftp):\/\/[A-Za-z0-9]'.
+            '[A-Za-z0-9_-]*[\/]*(?:.[A-Za-z0-9][A-Za-z0-9_-]*'.
+            '[\/]*)+:?(d*)[\/]*/';
         $this->path_for_html_files = "";
         $this->iterate_timestamp = $iterate_timestamp;
         $this->iterate_dir = $iterate_dir;

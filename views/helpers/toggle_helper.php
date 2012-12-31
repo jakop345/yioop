@@ -61,25 +61,26 @@ class ToggleHelper extends Helper
     function render($state, $on_url, $off_url, $caution = false)
     {
         if($state) {
-            $oncolor = ($caution) ? "backyellow" : "backgreen";
+            $oncolor = ($caution) ? "back-yellow" : "back-green";
             if($caution) { ?>
-                <table class="toggletable"><tr><td
+                <table class="toggle-table"><tr><td
                 class="<?php e($oncolor);
                     ?>"><a href="<?php e($on_url);?>"><?php
                 e(tl('toggle_helper_on'));?></a></td>
                 <td><a href="<?php e($off_url);?>"
                 ><?php e(tl('toggle_helper_off'));?></a></td></tr></table>
             <?php } else { ?>
-                <table class="toggletable"><tr><td
+                <table class="toggle-table"><tr><td
                 class="<?php e($oncolor);
                     ?>"><b><?php e(tl('toggle_helper_on'));?></b></td>
                 <td><a href="<?php e($off_url);?>"
                 ><?php e(tl('toggle_helper_off'));?></a></td></tr></table>
             <?php } ?>
         <?php } else {?>
-            <table class="toggletable"><tr><td><a href="<?php e($on_url);?>"
+            <table class="toggle-table"><tr><td><a href="<?php e($on_url);?>"
             ><?php e(tl('toggle_helper_on'));?></a></td>
-            <td  class="backred"><b><?php e(tl('toggle_helper_off'));?></b></td>
+            <td  class="back-red"><b><?php 
+                e(tl('toggle_helper_off'));?></b></td>
             </tr></table>
         <?php }
     }

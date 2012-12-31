@@ -112,10 +112,13 @@ $db->execute("INSERT INTO LOCALE VALUES (11, 'pl', 'Polski', 'lr-tb')");
 $db->execute("INSERT INTO LOCALE VALUES (12, 'pt', 'Português', 'lr-tb')");
 $db->execute("INSERT INTO LOCALE VALUES (13, 'ru', 'Русский', 'lr-tb')");
 $db->execute("INSERT INTO LOCALE VALUES (14, 'th', 'ไทย', 'lr-tb')");
-$db->execute("INSERT INTO LOCALE VALUES (15, 'vi-VN', 'Tiếng Việt', 'lr-tb')");
+$db->execute("INSERT INTO LOCALE VALUES (
+    15, 'vi-VN', 'Tiếng Việt', 'lr-tb')");
 $db->execute("INSERT INTO LOCALE VALUES (16, 'zh-CN', '中文', 'lr-tb')");
-$db->execute("INSERT INTO LOCALE VALUES (17, 'kn', 'ಕನ್ನಡ', 'lr-tb')");
-$db->execute("INSERT INTO LOCALE VALUES (18, 'hi', 'हिन्दी', 'lr-tb')");
+$db->execute("INSERT INTO LOCALE VALUES (
+    17, 'kn', 'ಕನ್ನಡ', 'lr-tb')");
+$db->execute("INSERT INTO LOCALE VALUES (
+    18, 'hi', 'हिन्दी', 'lr-tb')");
 $db->execute("INSERT INTO LOCALE VALUES (19, 'tr', 'Türkçe', 'lr-tb')");
 $db->execute("INSERT INTO LOCALE VALUES (20, 'fa', 'فارسی', 'rl-tb')");
 
@@ -203,21 +206,31 @@ $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (10, 5,
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (11, 5,
     'Configurer')");
 
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (1, 9, 'アカウント管理' )");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (2, 9, 'ユーザー管理')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (3, 9, '役割管理')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (4, 9, '検索管理')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (10, 9, 'ローケル管理')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (11, 9, '設定')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (
+    1, 9, 'アカウント管理' )");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (
+    2, 9, 'ユーザー管理')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (
+    3, 9, '役割管理')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (
+    4, 9, '検索管理')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (
+    10, 9, 'ローケル管理')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (
+    11, 9, '設定')");
 
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (1, 10,
     '사용자 계정 관리' )");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (2, 10, '사용자 관리')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (
+    2, 10, '사용자 관리')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (3, 10,
     '사용자 권한 관리')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (4, 10, '크롤 관리')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (10, 10, '로케일 관리')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (11, 10, '구성')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (
+    4, 10, '크롤 관리')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (
+    10, 10, '로케일 관리')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (
+    11, 10, '구성')");
 
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (1, 15,
     'Quản lý tài khoản' )");
@@ -225,7 +238,8 @@ $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (2, 15,
     'Quản lý tên sử dụng')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (3, 15,
     'Quản lý chức vụ')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (4, 15, 'Quản lý sự bò')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (
+    4, 15, 'Quản lý sự bò')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (10, 15,
     'Quản lý miền địa phương')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (11, 15,

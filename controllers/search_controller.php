@@ -938,7 +938,8 @@ class SearchController extends Controller implements CrawlConstants
                 if($tag_name != -1) {
                     $clone = $this->canonicalizeLinks($clone, $url);
                     if(is_object($clone)) {
-                        $node->replaceChild($clone, $node->childNodes->item($k));
+                        $node->replaceChild($clone,
+                            $node->childNodes->item($k));
                     }
                 }
             }

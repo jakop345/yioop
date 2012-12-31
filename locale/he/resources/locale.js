@@ -33,7 +33,9 @@
 /*
  * The alphabet for this locale
  */
-var alpha = "ת תּ שׂ שׁר ק ץ צף פ פּ עס ן נ םמ ל ך ככּ י ט חז ו ה דג ב בּ א ַ ָ  ֵ  ֶוֹוּ  י   ְ  ּ      ";
+var alpha = "ת תּ שׂ שׁר ק ץ צף פ פּ עס ן נ םמ ל " +
+    "ך ככּ י ט חז ו ה דג ב בּ א " +
+	"ַ ָ  ֵ  ֶוֹוּ  י   ְ  ּ      ";
 
 /*
  * Transliteration maping for this locale

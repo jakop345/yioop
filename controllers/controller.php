@@ -144,7 +144,7 @@ abstract class Controller
             $protocol = (isset($_SERVER["HTTPS"])) ? "https://" : "http://";
             if($machine == '::1') { //IPv6 :(
                 $machine = "[::1]/";
-                //used if the fetching and queue serving were on the same machine
+                //used if the fetching and queue serving on the same machine
             }
             $data['YIOOP_INSTANCE'] = $protocol . $machine . $machine_uri;
             $data['TOTAL_ELAPSED_TIME'] = 0;

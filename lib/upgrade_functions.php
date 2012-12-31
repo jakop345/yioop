@@ -137,8 +137,10 @@ function upgradeDatabaseVersion2(&$db)
 {
     $db->execute("UPDATE VERSION SET ID=2 WHERE ID=1");
     $db->execute("ALTER TABLE USER ADD UNIQUE ( USER_NAME )" );
-    $db->execute("INSERT INTO LOCALE VALUES (17, 'kn', 'ಕನ್ನಡ', 'lr-tb')");
-    $db->execute("INSERT INTO LOCALE VALUES (18, 'hi', 'हिन्दी', 'lr-tb')");
+    $db->execute("INSERT INTO LOCALE VALUES (
+        17, 'kn', 'ಕನ್ನಡ', 'lr-tb')");
+    $db->execute("INSERT INTO LOCALE VALUES (
+        18, 'hi', 'हिन्दी', 'lr-tb')");
     $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (3, 5,
         'Modifier les rôles')");
     $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (4, 5,
@@ -214,10 +216,12 @@ function upgradeDatabaseVersion3(&$db)
     $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (10, 5,
         'Configurer')");
 
-    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (9, 9, 'ローケル管理')");
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (
+        9, 9, 'ローケル管理')");
     $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (10, 9, '設定')");
 
-    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (9, 10, '로케일 관리')");
+    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (
+        9, 10, '로케일 관리')");
     $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (10, 10, '구성')");
 
     $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (9, 15,

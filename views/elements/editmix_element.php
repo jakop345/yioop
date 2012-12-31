@@ -52,7 +52,7 @@ class EditmixElement extends Element
      */
     function render($data)
     {?>
-        <div class="currentactivity">
+        <div class="current-activity">
         <div class="<?php e($data['leftorright']);?>">
         <a href="?c=admin&amp;a=mixCrawls&amp;<?php
             e(CSRF_TOKEN."=".$data[CSRF_TOKEN]); ?>"
@@ -68,12 +68,12 @@ class EditmixElement extends Element
         <input type="hidden" name="update" value="update" />
         <input type="hidden" name="mix[MIX_TIMESTAMP]"
             value="<?php e($data['MIX']['MIX_TIMESTAMP']);?>" />
-        <div class="topmargin"><label for="mix-name"><?php
+        <div class="top-margin"><label for="mix-name"><?php
             e(tl('mixcrawls_element_mix_name')); ?></label>
             <input type="text" id="mix-name" name="mix[MIX_NAME]"
                 value="<?php if(isset($data['MIX']['MIX_NAME'])) {
                     e($data['MIX']['MIX_NAME']); } ?>" maxlength="80"
-                    class="widefield"/>
+                    class="wide-field"/>
         </div>
         <h3><?php e(tl('mixcrawls_element_mix_components'))?></h3>
         <div>
@@ -82,7 +82,7 @@ class EditmixElement extends Element
         </div>
         <div id="mix-tables" >
         </div>
-        <div class="center slightpad"><button class="buttonbox"
+        <div class="center slight-pad"><button class="button-box"
             type="submit"><?php
                 e(tl('mixcrawls_element_save_button')); ?></button></div>
         </form>

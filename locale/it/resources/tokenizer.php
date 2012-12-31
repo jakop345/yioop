@@ -349,9 +349,10 @@ class ItStemmer
      */
     static function acuteByGrave($string)
     {
-        $pattern2 = array("/á/","/é/","/ó/","/ú/","/è/","/ì/","/ò/","/ù/",
-                          "/à/","/í/");
-        $replacement = array("a`","e`","o`","u`","e`","i`","o`","u`","a`","i`");
+        $pattern2 = array("/á/","/é/","/ó/","/ú/","/è/",
+            "/ì/","/ò/","/ù/", "/à/","/í/");
+        $replacement = array("a`","e`","o`","u`","e`",
+            "i`","o`","u`","a`","i`");
         $string = preg_replace($pattern2,$replacement,$string);
         return($string);
     }

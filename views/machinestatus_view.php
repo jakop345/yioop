@@ -81,7 +81,7 @@ class MachinestatusView extends View
             <?php if($m['PARENT'] != "") {
                 $log_url = $base_url . "log&mirror_name={$m['NAME']}"
             ?>
-                <table class="machinetable"><tr>
+                <table class="machine-table"><tr>
                 <th><?php e(tl('machinestatus_view_mirrors', $m['PARENT'])); ?>
                     </th>
                 <td>[<a href="<?php e($log_url);?>"><?php
@@ -97,7 +97,7 @@ class MachinestatusView extends View
             <?php if($m['HAS_QUEUE_SERVER'] == "1") {
                 $log_url = $base_url . "log&name={$m['NAME']}";
             ?>
-                <table class="machinetable">
+                <table class="machine-table">
                 <tr><th><?php e(tl('machinestatus_view_queue_server'));?>
                 </th><td>[<a href="<?php e($log_url);?>"><?php
                     e(tl('machinestatus_view_log'));?>]</a>
@@ -120,12 +120,12 @@ class MachinestatusView extends View
                 $off_fetcher = $base_url . "update&amp;name={$m['NAME']}".
                     "&amp;action=stop&amp;fetcher_num=$i";
                 if($i  == 0) { ?>
-                    <table class="machinetable">
+                    <table class="machine-table">
                     <th colspan="<?php e(min($m['NUM_FETCHERS'] - $i, 4)); ?>"
                     ><?php e(tl('machinestatus_view_fetchers'));?></th></tr>
                     <tr>
                 <?php } else if($i % 4 == 0) {?>
-                    <table class="machinetable"><tr>
+                    <table class="machine-table"><tr>
                 <?php } ?>
                 <td><table><tr><td>#<?php
                 $log_url = $base_url .

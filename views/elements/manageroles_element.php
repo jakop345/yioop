@@ -54,7 +54,7 @@ class ManagerolesElement extends Element
      */
     function render($data)
     {?>
-        <div class="currentactivity">
+        <div class="current-activity">
         <h2><?php e(tl('manageroles_element_add_role'))?></h2>
         <form id="addRoleForm" method="post" action='#'>
         <input type="hidden" name="c" value="admin" />
@@ -63,12 +63,12 @@ class ManagerolesElement extends Element
         <input type="hidden" name="a" value="manageRoles" />
         <input type="hidden" name="arg" value="addrole" />
 
-        <table class="nametable">
+        <table class="name-table">
         <tr><td><label for="role-name"><?php
             e(tl('manageroles_element_rolename'))?></label></td>
             <td><input type="text" id="role-name" name="rolename"
-                maxlength="80" class="narrowfield" /></td><td
-                class="center"> <button class="buttonbox" type="submit"><?php
+                maxlength="80" class="narrow-field" /></td><td
+                class="center"> <button class="button-box" type="submit"><?php
                 e(tl('manageroles_element_submit')); ?></button></td>
         </tr>
         </table>
@@ -82,12 +82,12 @@ class ManagerolesElement extends Element
         <input type="hidden" name="a" value="manageRoles" />
         <input type="hidden" name="arg" value="deleterole" />
 
-        <table class="nametable">
+        <table class="name-table">
          <tr><td><label for="delete-rolename"><?php
             e(tl('manageusers_element_delete_rolename'))?></label></td>
             <td><?php $this->view->optionsHelper->render(
                 "delete-rolename", "selectrole", $data['ROLE_NAMES'], "-1");
-                ?></td><td><button class="buttonbox" type="submit"><?php
+                ?></td><td><button class="button-box" type="submit"><?php
                 e(tl('manageroles_element_submit')); ?></button></td>
         </tr>
         </table>
@@ -99,7 +99,7 @@ class ManagerolesElement extends Element
             e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="manageRoles" />
         <input type="hidden" name="arg" value="viewroleactivities" />
-        <table class="nametable">
+        <table class="name-table">
         <tr><td><label for="select-role"><?php
             e(tl('manageusers_element_select_role'))?></label></td>
             <td><?php $this->view->optionsHelper->render("select-role",
@@ -119,20 +119,20 @@ class ManagerolesElement extends Element
                 <input type="hidden" name="arg" value="addactivity" />
                 <input type="hidden" name="selectrole" value="<?php
                     e($data['SELECT_ROLE']);?>" />
-                <table class="nametable">
+                <table class="name-table">
                  <tr><td><label for="add-activity"><?php
                     e(tl('manageusers_element_add_activity'))?></label></td>
                     <td><?php $this->view->optionsHelper->render("add-activity",
                         "selectactivity", $data['AVAILABLE_ACTIVITIES'],
                         $data['SELECT_ACTIVITY']); ?></td>
-                    <td><button class="buttonbox" type="submit"><?php
+                    <td><button class="button-box" type="submit"><?php
                     e(tl('manageroles_element_submit')); ?></button></td></tr>
                  </table>
                  </form>
              <?php
              }
              ?>
-             <table class="roletable"><?php
+             <table class="role-table"><?php
              foreach($data['ROLE_ACTIVITIES'] as $role_activity) {
                  e("<tr><td>".$role_activity['ACTIVITY_NAME'].
                     "</td><td><a href='?c=admin&amp;a=manageRoles".

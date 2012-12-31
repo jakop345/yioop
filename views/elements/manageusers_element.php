@@ -54,7 +54,7 @@ class ManageusersElement extends Element
     function render($data)
     {
     ?>
-        <div class="currentactivity">
+        <div class="current-activity">
         <h2><?php e(tl('manageusers_element_add_user'))?></h2>
         <form id="addUserForm" method="post" action='#'>
         <input type="hidden" name="c" value="admin" />
@@ -63,21 +63,21 @@ class ManageusersElement extends Element
         <input type="hidden" name="a" value="manageUsers" />
         <input type="hidden" name="arg" value="adduser" />
 
-        <table class="nametable">
+        <table class="name-table">
         <tr><td><label for="user-name"><?php
             e(tl('manageusers_element_username'))?></label></td>
             <td><input type="text" id="user-name"
-                name="username"  maxlength="80" class="narrowfield"/></td></tr>
+                name="username"  maxlength="80" class="narrow-field"/></td></tr>
         <tr><td><label for="pass-word"><?php
              e(tl('manageusers_element_password'))?></label></td>
             <td><input type="password" id="pass-word"
-                name="password"  maxlength="80" class="narrowfield"/></td></tr>
+                name="password"  maxlength="80" class="narrow-field"/></td></tr>
             <td><label for="retype-password"><?php
                 e(tl('manageusers_element_retype_password'))?></label></td>
             <td><input type="password" id="retype-password"
                 name="retypepassword"  maxlength="80"
-                class="narrowfield"/></td></tr>
-        <tr><td></td><td class="center"><button class="buttonbox"
+                class="narrow-field"/></td></tr>
+        <tr><td></td><td class="center"><button class="button-box"
             type="submit"><?php e(tl('manageusers_element_submit'));
             ?></button></td>
         </tr>
@@ -92,12 +92,12 @@ class ManageusersElement extends Element
         <input type="hidden" name="a" value="manageUsers" />
         <input type="hidden" name="arg" value="deleteuser" />
 
-        <table class="nametable">
+        <table class="name-table">
         <tr><td><label for="delete-username"><?php
             e(tl('manageusers_element_delete_username'))?></label></td>
             <td><?php $this->view->optionsHelper->render(
                 "delete-username", "username", $data['USER_NAMES'], "");
-                ?></td><td><button class="buttonbox" type="submit"><?php
+                ?></td><td><button class="button-box" type="submit"><?php
                 e(tl('manageusers_element_submit')); ?></button></td>
         </tr>
         </table>
@@ -110,7 +110,7 @@ class ManageusersElement extends Element
             e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="manageUsers" />
         <input type="hidden" name="arg" value="viewuserroles" />
-        <table class="nametable">
+        <table class="name-table">
         <tr><td><label for="select-user"><?php
             e(tl('manageusers_element_select_user'))?></label></td>
             <td><?php $this->view->optionsHelper->render("select-user",
@@ -137,14 +137,14 @@ class ManageusersElement extends Element
                 <td><?php $this->view->optionsHelper->render("add-userrole",
                     "selectrole", $data['AVAILABLE_ROLES'],
                     $data['SELECT_ROLE']); ?></td>
-                <td><button class="buttonbox" type="submit"><?php
+                <td><button class="button-box" type="submit"><?php
                     e(tl('manageusers_element_submit')); ?></button></td></tr>
                 </table>
                 </form>
             <?php
             }
             ?>
-            <table class="roletable" ><?php
+            <table class="role-table" ><?php
             foreach($data['SELECT_ROLES'] as $role_array) {
                 echo "<tr><td>".$role_array['ROLE_NAME'].
                     "</td><td><a href='?c=admin&amp;a=manageUsers".

@@ -56,7 +56,7 @@ class EditlocalesElement extends Element
     function render($data)
     {
     ?>
-        <div class="currentactivity">
+        <div class="current-activity">
         <div class="<?php e($data['leftorright']);?>">
         <a href="?c=admin&amp;a=manageLocales&amp;<?php
             e(CSRF_TOKEN."=".$data[CSRF_TOKEN]) ?>"
@@ -73,7 +73,7 @@ class EditlocalesElement extends Element
         <input type="hidden" name="arg" value="editlocale" />
         <input type="hidden" name="selectlocale" value="<?php
             e($data['CURRENT_LOCALE_TAG']); ?>" />
-        <div class="topmargin"><b><label for="static-pages"><?php
+        <div class="top-margin"><b><label for="static-pages"><?php
             e(tl('editlocales_element_static_pages'))?></label></b>
             <?php $this->view->optionsHelper->render("static-pages",
             "static_page", $data['STATIC_PAGES'], -1);
@@ -88,7 +88,7 @@ class EditlocalesElement extends Element
         <input type="hidden" name="arg" value="editlocale" />
         <input type="hidden" name="selectlocale" value="<?php
             e($data['CURRENT_LOCALE_TAG']); ?>" />
-        <table class="translatetable">
+        <table class="translate-table">
         <?php
         foreach($data['STRINGS'] as $msg_id => $msg_string) {
             if(strlen($msg_string) > 0) {
@@ -106,7 +106,7 @@ class EditlocalesElement extends Element
         }
         ?>
         </table>
-        <div class="center slightpad"><button class="buttonbox"
+        <div class="center slight-pad"><button class="button-box"
             type="submit"><?php
                 e(tl('editlocales_element_submit')); ?></button></div>
         </form>

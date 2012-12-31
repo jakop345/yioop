@@ -137,7 +137,7 @@ class FeedsHelper extends Helper implements CrawlConstants
                     "&amp;s=news");?>" ><?php  e($page[self::SOURCE_NAME]."</a>"
                     ."<span class='gray'> - $pub_date</span>");
                  ?></h2>
-                <p class="echolink" <?php e($subtitle); ?>><?php
+                <p class="echo-link" <?php e($subtitle); ?>><?php
                     e(UrlParser::simplifyUrl($url, 100)." ");
                 ?></p>
                 <?php

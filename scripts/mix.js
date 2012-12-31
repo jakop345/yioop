@@ -96,7 +96,7 @@ function drawGroup(group_num, num_results)
     var mts = elt("mix-tables");
     var tbl = document.createElement("table");
     tbl.id = "mix-table-"+group_num;
-    tbl.className = "mixestable topmargin";
+    tbl.className = "mixes-table top-margin";
     makeBlankMixTable(tbl, group_num, num_results);
     mts.appendChild(tbl);
     addCrawlHandler(group_num);

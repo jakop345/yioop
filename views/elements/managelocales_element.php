@@ -56,7 +56,7 @@ class ManagelocalesElement extends Element
     function render($data)
     {
     ?>
-        <div class="currentactivity">
+        <div class="current-activity">
         <h2><?php e(tl('managelocales_element_add_locale'))?></h2>
         <form id="addLocaleForm" method="post" action=''>
         <input type="hidden" name="c" value="admin" />
@@ -65,17 +65,17 @@ class ManagelocalesElement extends Element
         <input type="hidden" name="a" value="manageLocales" />
         <input type="hidden" name="arg" value="addlocale" />
 
-        <table class="nametable">
+        <table class="name-table">
             <tr><td><label for="locale-name"><?php
                 e(tl('managelocales_element_localenamelabel'))?></label></td>
                 <td><input type="text" id="locale-name"
-                    name="localename" maxlength="80" class="narrowfield"/>
+                    name="localename" maxlength="80" class="narrow-field"/>
                 </td><td></td>
             </tr>
             <tr><td><label for="locale-tag"><?php
                 e(tl('managelocales_element_localetaglabel'))?></label></td>
                 <td><input type="text" id="locale-tag"
-                name="localetag"  maxlength="80" class="narrowfield"/></td>
+                name="localetag"  maxlength="80" class="narrow-field"/></td>
             </tr>
             <tr><td><?php e(tl('managelocales_element_writingmodelabel'))?></td>
             <td><label for="locale-lr-tb">lr-tb</label><input type="radio"
@@ -89,7 +89,7 @@ class ManagelocalesElement extends Element
                 id="locale-tb-lr" name="writingmode" value="tb-lr" />
             </td>
             </tr>
-            <tr><td></td><td class="center"><button class="buttonbox"
+            <tr><td></td><td class="center"><button class="button-box"
                 type="submit"><?php e(tl('managelocales_element_submit'));
                 ?></button></td>
             </tr>
@@ -104,19 +104,19 @@ class ManagelocalesElement extends Element
         <input type="hidden" name="a" value="manageLocales" />
         <input type="hidden" name="arg" value="deletelocale" />
 
-        <table class="nametable" >
+        <table class="name-table" >
         <tr><td><label for="delete-localename"><?php
             e(tl('managelocales_element_delete_localelabel'))?></label></td>
             <td><?php $this->view->optionsHelper->render("delete-localename",
                 "selectlocale", $data['LOCALE_NAMES'], "-1"); ?></td>
-            <td><button class="buttonbox" type="submit"><?php
+            <td><button class="button-box" type="submit"><?php
                 e(tl('managelocales_element_submit')); ?></button></td>
         </tr>
         </table>
         </form>
 
         <h2><?php e(tl('managelocales_element_locale_list'))?></h2>
-        <table class="localetable">
+        <table class="locale-table">
             <tr>
             <th><?php e(tl('managelocales_element_localename')); ?></th>
             <th><?php e(tl('managelocales_element_localetag'));?></th>
@@ -131,7 +131,7 @@ class ManagelocalesElement extends Element
                 "&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN]."'>".
                 $locale['LOCALE_NAME']."</a></td><td>".
                 $locale['LOCALE_TAG']."</td>");
-            e("<td>".$locale['WRITING_MODE']."</td><td class='alignRight' >".
+            e("<td>".$locale['WRITING_MODE']."</td><td class='align-right' >".
                 $locale['PERCENT_WITH_STRINGS']."</td></tr>");
         }
         ?>

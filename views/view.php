@@ -131,7 +131,7 @@ abstract class View
             $this->head_objects[$page] = array();
             if(count($page_parts) > 1) {
                 $this->page_objects[$page]  = $page_parts[1];
-                $head_lines = explode("\n", $page_parts[0]);
+                $head_lines = explode("\n\n", $page_parts[0]);
                 foreach($head_lines as $line) {
                     $semi_pos =  (strpos($line, ";")) ? strpos($line, ";") :
                         strlen($line);

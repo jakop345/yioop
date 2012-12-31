@@ -814,7 +814,12 @@ class AdminController extends Controller implements CrawlConstants
     }
 
     /**
+     * Called from @see manageCrawls to start a new crawl on the machines
+     * $machine_urls. Updates $data array with crawl start message
      *
+     * @param array &$data an array of info to supply to AdminView
+     * @param array $machine_urls string urls of machines managed by this
+     *  Yioop name server on which to perform the crawl
      */
     function startCrawl(&$data, $machine_urls)
     {
@@ -900,7 +905,13 @@ class AdminController extends Controller implements CrawlConstants
     }
 
     /**
+     * Called from @see manageCrawls to edit the parameters for the next
+     * crawl (or current crawl) to be carried out by the machines
+     * $machine_urls. Updates $data array to be supplied to AdminView
      *
+     * @param array &$data an array of info to supply to AdminView
+     * @param array $machine_urls string urls of machines managed by this
+     *  Yioop name server on which to perform the crawl
      */
     function editCrawlOption(&$data, $machine_urls)
     {
@@ -1351,8 +1362,8 @@ class AdminController extends Controller implements CrawlConstants
 
         //set up an array of translation for javascript-land
         $data['SCRIPT'] .= "tl = {".
-            'editmix_element_add_crawls:"'.tl('editmix_element_add_crawls').'",'.
-            'editmix_element_num_results:"'.
+            'editmix_element_add_crawls:"'. tl('editmix_element_add_crawls') .
+            '",' . 'editmix_element_num_results:"'.
                 tl('editmix_element_num_results').'",'.
             'editmix_element_del_grp:"'.tl('editmix_element_del_grp').'",'.
             'editmix_element_weight:"'.tl('editmix_element_weight').'",'.
@@ -2030,8 +2041,6 @@ class AdminController extends Controller implements CrawlConstants
                 break;
             }
         }
-
-
         return $data;
     }
 

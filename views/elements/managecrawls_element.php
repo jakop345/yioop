@@ -53,7 +53,7 @@ class ManagecrawlsElement
      */
     function render($data)
     {?>
-        <div class="currentactivity">
+        <div class="current-activity">
         <h2><?php e(tl('managecrawls_element_create_crawl'))?></h2>
         <form id="crawlStartForm" method="get" action=''>
         <input type="hidden" name="c" value="admin" />
@@ -67,8 +67,8 @@ class ManagecrawlsElement
             <input type="text" id="description-name" name="description"
                 value="<?php if(isset($data['DESCRIPTION'])) {
                     e($data['DESCRIPTION']); } ?>" maxlength="80"
-                    class="widefield"/>
-            <button class="buttonbox" type="submit"><?php
+                    class="wide-field"/>
+            <button class="button-box" type="submit"><?php
                 e(tl('managecrawls_element_start_new_crawl')); ?></button>
             <a href="?c=admin&amp;a=manageCrawls<?php
                 ?>&amp;arg=options&amp;<?php

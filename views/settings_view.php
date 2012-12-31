@@ -110,10 +110,10 @@ class SettingsView extends View
     e(CSRF_TOKEN); ?>" value="<?php
     e($data[CSRF_TOKEN]); ?>" /><input type="hidden"
     name="its" value="<?php e($data['its']); ?>" /><button
-    class="topmargin" type="submit" name="c" value="search"><?php
+    class="top-margin" type="submit" name="c" value="search"><?php
     e(tl('settings_view_return_yioop'));
     ?></button></td><td class="table-input">
-<button class="topmargin" type="submit" name="c" value="settings"><?php
+<button class="top-margin" type="submit" name="c" value="settings"><?php
     e(tl('settings_view_save')); ?></button>
 </td></tr>
 </table>

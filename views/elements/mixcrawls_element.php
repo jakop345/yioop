@@ -56,7 +56,7 @@ class MixcrawlsElement extends Element
         $base_url = "?c=admin&amp;a=mixCrawls&amp;".CSRF_TOKEN."=".
             $data[CSRF_TOKEN]."&amp;arg=";
         ?>
-        <div class="currentactivity">
+        <div class="current-activity">
         <h2><?php e(tl('mixcrawls_element_make_mix'))?></h2>
         <form id="mixForm" method="get" action=''>
         <input type="hidden" name="c" value="admin" />
@@ -66,18 +66,18 @@ class MixcrawlsElement extends Element
         <input type="hidden" name="arg" value="createmix" />
         <?php if(isset($data['available_mixes'])) { ?>
         <?php } ?>
-        <div class="topmargin"><label for="mix-name"><?php
+        <div class="top-margin"><label for="mix-name"><?php
             e(tl('mixcrawls_element_mix_name')); ?></label>
             <input type="text" id="mix-name" name="MIX_NAME"
                 value="" maxlength="80"
-                    class="widefield"/>
-           <button class="buttonbox"  type="submit"><?php
+                    class="wide-field"/>
+           <button class="button-box"  type="submit"><?php
                 e(tl('mixcrawls_element_create_button')); ?></button></div>
         </form>
         <?php if(isset($data['available_mixes']) &&
             count($data['available_mixes']) > 0) { ?>
         <h2><?php e(tl('mixcrawls_element_available_mixes'))?></h2>
-        <table class="mixestable">
+        <table class="mixes-table">
         <tr><th><?php e(tl('mixcrawls_view_name'));?></th>
         <th><?php e(tl('mixcrawls_view_definition'));?></th>
         <th colspan="3"><?php e(tl('mixcrawls_view_actions'));?></th></tr>

@@ -33,7 +33,8 @@
 /*
  * The alphabet for this locale
  */
-var alpha = "абвгдеёжзийклмнопрстуфхцчшщъыьэюяіѳѣѵ";
+var alpha = "абвгдеёжзийклмнопрс" +
+    "туфхцчшщъыьэюяіѳѣѵ";
 
 /*
  * Transliteration maping for this locale
