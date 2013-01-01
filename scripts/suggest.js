@@ -139,13 +139,12 @@ function onTypeTerm(event, text_field)
         search_list = "";
 
         // First search the local storage to fetch the suggestions
-        if (localStorage) {
+        if(localStorage) {
             var locale_ver = locale+'_'+VERSION_NO;
             if (localStorage[locale_ver] == null) {
                 localStorage.clear();
                 count=0;
-            }
-            else if (localStorage[locale_ver] != null) {
+            } else if (localStorage[locale_ver] != null) {
                 split_str = localStorage[locale_ver].split("@@");
                 locale_terms = JSON.parse(split_str[1]);
                 local_dict =JSON.parse(localStorage[locale_ver].split("@@", 1));
@@ -263,20 +262,19 @@ function correctSpelling(word)
     if(ret_array != false) {
         prob = parseInt(ret_array[END_OF_TERM_MARKER]);
     }
-
-    var ret_array;
+    var trie_subtree;
     var curr_prob = 0;
     var candidates = known(edits1(word));
     
     candidates.push(word);
     var corrected_word = "";
-    var correct_threshold = 25;
+    var correct_threshold = 2;
 
     // Use the frequencies to get the best match
     for(var i = 0; i < candidates.length; i++) {
-        ret_array = exist(dictionary, candidates[i]);
-        if(ret_array != false) {
-            curr_prob = parseInt(ret_array[END_OF_TERM_MARKER]);
+        trie_subtree = exist(dictionary, candidates[i]);
+        if(trie_subtree != false) {
+            curr_prob = parseInt(trie_subtree[END_OF_TERM_MARKER]);
         }
         if (curr_prob > correct_threshold * prob) {
             correct_threshold = 1;
@@ -384,7 +382,6 @@ function known(words_ip)
  * To update the local storage with the previous query terms and
  * create a trie on those terms
  *
- * @param None *
  */
 function updateLocalStorage()
 {
@@ -410,8 +407,9 @@ function updateLocalStorage()
         // Build the trie
         for(var i=0; i<sorted_locale_terms.length; i++) {
             var trie_word = sorted_locale_terms[i];
-            var letters = trie_word.split(""),cur = trie_storage;
-            for (var j=0;j<letters.length;j++) {
+            var letters = trie_word.split("");
+            var cur = trie_storage;
+            for (var j=0; j < letters.length; j++) {
                 var letter = encode(letters[j]);
                 var pos = cur[ letter ];
                 if (pos == null) {
@@ -428,35 +426,43 @@ function updateLocalStorage()
             }
         }
     }
-    trie_to_store = JSON.stringify( trie_storage );
-    localStorage.setItem(locale+'_'+VERSION_NO,trie_to_store +
+    trie_to_store = JSON.stringify(trie_storage);
+    localStorage.setItem(locale + '_' + VERSION_NO, trie_to_store +
      "@@" + JSON.stringify(locale_terms));
 }
 
 /*
  * Sort the local storage words based of number of times they are queried
+ *
+ * @return Array local storage words
  */
 
 function sortLocalTerms()
 {
     var local_storage_array = new Array();
     if(Object.size(locale_terms) > 0) {
-        var j=0;
+        var j = 0;
         for(var key in locale_terms) {
             local_storage_array[j] = locale_terms[key] + "*"+ key;
             j++;
         }
     }
-    local_storage_array.sort(sortFunction);
+    local_storage_array.sort(termFrequencyComparison);
     local_storage_array.reverse();
     return local_storage_array;
 }
 
 /*
- * Sort function to sort the numbers in ascending order
+ * Callback used by a sort call in sortLocalTerms to compare two
+ * string where before the * in the string is a term and after is a frequency
+ *
+ * @param String a in format described above
+ * @param String b in format described above
+ * @return number 0 - if same frequncy, negative if b has larger frequency,
+ *      postive otherwise
  */
 
-function sortFunction(a, b)
+function termFrequencyComparison(a, b)
 {
     var split_array1 = a.split('*');
     var split_array2 = b.split('*');
@@ -714,29 +720,42 @@ function spellCheck()
 
         var query = elt("query-field").value;
         if(query == "") return;
-        var ret_array,ret_word;
+        var ret_array;
+        var ret_word;
+        if(localStorage) {
+            var locale_ver = locale + '_' + VERSION_NO;
+        }
+        if (locale_ver && localStorage[locale_ver] != null) {
+            split_str = localStorage[locale_ver].split("@@");
+            locale_terms = JSON.parse(split_str[1]);
+            if (locale_terms[query] > 5) {
+                return; // search for a lot so don't suggest
+            }
+        }
         var term_array = query.split(" ");
-        for(var i =0; i<term_array.length; i++) {
+        for(var i = 0; i < term_array.length; i++) {
             ret_word = "";
             ret_word = correctSpelling(term_array[i].toLowerCase());
             if(ret_word.trim(" ") == "") {
                 corrected_query += term_array[i] + " ";
-            } else
+            } else {
                 corrected_query += ret_word + " ";
+            }
         }
         if (corrected_query.trim() != query) {
             var token_name = csrf_value;
-            var spell_link = "?"+token_name+"="+csrf_token+"&q="
-            +corrected_query;
+            var spell_link = "?" + token_name + "=" + csrf_token + "&q="
+                +corrected_query;
             correctedSpell.innerHTML = "<b>" + local_strings.spell
-            +": <a rel='nofollow' href='"+spell_link+"'>"  + corrected_query
-            + "</a></b>";
+                +": <a rel='nofollow' href='" + spell_link + 
+                "'>"  + corrected_query + "</a></b>";
             referenceNode.parentNode.
             insertBefore(correctedSpell, referenceNode.nextSibling);
         }
     }
 }
-document.getElementsByTagName("body")[0].onload = loadFiles;
+
+tag("body")[0].onload = loadFiles;
 var ip_field = elt("query-field");
 ip_field.onpaste = function(e) {
     setTimeout(function(){

@@ -111,6 +111,16 @@ function elt(id)
 }
 
 /*
+ *  Shorthand for document.getElementByTagName()
+ *
+ *  @param String name the name of the DOM element one wants
+ */
+function tag(name)
+{
+    return document.getElementsByTagName(name);
+}
+
+/*
  *  Sets whether an elt is styled as display:none or block
  *
  *  @param String id  the id of the DOM element one wants
