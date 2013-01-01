@@ -55,7 +55,8 @@ require_once BASE_DIR.'lib/unit_test.php';
  */
 
 class ItStemmerTest extends UnitTest
-{    function setUp()
+{
+    function setUp()
     {
         $this->test_objects['FILE1'] = new ItStemmer();
     }

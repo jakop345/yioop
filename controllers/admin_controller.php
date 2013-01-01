@@ -1820,6 +1820,12 @@ class AdminController extends Controller implements CrawlConstants
                     } else {
                         $data["time"] = 30;
                     }
+                    if(isset($_REQUEST["NO_REFRESH"])) {
+                        $data["NO_REFRESH"] = $this->clean(
+                            $_REQUEST["NO_REFRESH"], "bool");
+                    } else {
+                        $data["NO_REFRESH"] = false;
+                    }
                     $data["ELEMENT"] = "machinelogElement";
 
                     $data["REFRESH_LOG"] = "&time=".$data["time"];

@@ -61,7 +61,7 @@ class MachinelogElement extends Element
         ><?php e(tl('machinelog_element_back_to_manage'))?></a>
         </div>
         <h2><?php e(tl('machinelog_element_log_file',$data['LOG_TYPE']));?></h2>
-        <?php if(!isset($_REQUEST['NO_REFRESH']) ) {?>
+        <?php if(!$data['NO_REFRESH']) {?>
         <p>[<a href="?c=admin&amp;<?php
                 e(CSRF_TOKEN."=".$data[CSRF_TOKEN]);?>&amp;a=manageMachines<?php
                 e($data['REFRESH_LOG']); ?>&amp;NO_REFRESH=true" ><?php
@@ -75,7 +75,7 @@ class MachinelogElement extends Element
         <pre><?php
             e(htmlentities(wordwrap($data["LOG_FILE_DATA"], 60, "\n", true)));
         ?></pre>
-        <?php if(!isset($_REQUEST['NO_REFRESH'])) {?>
+        <?php if(!$data['NO_REFRESH']) {?>
          <script type="text/javascript" >
         var updateId;
         function logUpdate()

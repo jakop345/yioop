@@ -78,7 +78,8 @@ class SettingsView extends View
     e(CSRF_TOKEN."=".$data[CSRF_TOKEN])?>&amp;its=<?php
     e($data['its'])?>"><img
     src="<?php e($logo); ?>" alt="Yioop!" /></a><span> - <?php
-    e(tl('settings_view_settings')); ?></span></h1>
+    e(tl('settings_view_settings')); ?></span>
+</h1>
 <div class="settings">
 <form class="user_settings" method="get" action=".">
 <table>
@@ -89,6 +90,7 @@ class SettingsView extends View
     class="table-input"><?php $this->optionsHelper->render(
     "per-page", "perpage", $data['PER_PAGE'], $data['PER_PAGE_SELECTED']); ?>
 </td></tr>
+<tr>
 <td class="table-label"><label for="open-in-tabs"><b><?php
     e(tl('settings_view_open_in_tabs')); ?></b></label></td><td
     class="table-input"><input type="checkbox" id="open-in-tabs"
@@ -120,9 +122,9 @@ class SettingsView extends View
 </form>
 </div>
 <div class="setting-footer"><a
-            href="javascript:window.external.AddSearchProvider('<?php
-            e(NAME_SERVER."yioopbar.xml");?>')"><?php
-    e(tl('setting_install_search_plugin'));
+    href="javascript:window.external.AddSearchProvider('<?php
+    e(NAME_SERVER."yioopbar.xml");?>')"><?php
+    e(tl('settings_install_search_plugin'));
 ?></a>.</div>
 </div>
 <div class='landing-spacer'></div>
