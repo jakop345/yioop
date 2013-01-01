@@ -47,17 +47,17 @@ if(typeof(elt) == "undefined") {
 /*
  * Handles History toggle in cached pages
  */
-var historylink = elt('#history');
+var history_link = elt('#history');
 
-historylink.onclick = function() {
-    var historylink = elt('#history');
+history_link.onclick = function() {
+    var history_link = elt('#history');
     var m_id = elt('#month');
     var y_id = elt('#year');
     var cur_year = y_id.options[y_id.selectedIndex].value;
     var cur_month = m_id.options[m_id.selectedIndex].value;
     cur_div = elt('#'+cur_year+cur_month);
     m_id.options.length = 0;
-    var monthjs = historylink.getAttribute("months");
+    var monthjs = history_link.getAttribute("months");
     monthjs = eval(monthjs);
     for(j = 0; j < monthjs.length; j++) {
         var id = elt('#'+cur_year+monthjs[j]);
@@ -98,7 +98,7 @@ year.onchange = function() {
         for(j = 0; j < monops.length; j++) {
             var y = yearops[i].value;
             var m = monops[j].value;
-            var id ='#'+y+m;
+            var id ='#' + y + m;
             var div = elt(id);
             if(div !== null){
                 div.style.display = 'none';
@@ -152,7 +152,7 @@ month.onchange = function() {
     }
     var month = m_id.options[m_id.selectedIndex].value;
     var year = y_id.options[y_id.selectedIndex].value;
-    var id = '#'+year+month;
+    var id = '#' + year + month;
     ldiv = elt(id);
     if((ldiv !== null) && (ldiv.style.display == 'none')) {
         ldiv.style.display = 'block';

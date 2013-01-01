@@ -75,7 +75,7 @@ function processSubmit()
  */
 
 function isVowel(c) {
-    return ['a', 'e', 'i', 'o', 'u'].indexOf(c) !== -1
+    return ['a', 'e', 'i', 'o', 'u'].indexOf(c) !== -1;
 }
 
 /*
@@ -241,7 +241,7 @@ function onTypeTerm(event, text_field)
             }
             scroll_pos = (cursor_pos - MAX_DISPLAY + scroll_count >= 0) ?
                 (cursor_pos - MAX_DISPLAY + scroll_count) : 0;
-            scroll_count = (MAX_DISPLAY > scroll_count) ? scroll_count + 1 :
+            scroll_count = (MAX_DISPLAY > scroll_count) ? scroll_count + 1:
                 MAX_DISPLAY;
             suggest_dropdown.scrollTop = scroll_pos * FONT_HEIGHT;
         }
@@ -258,9 +258,9 @@ function correctSpelling(word)
 {
     var prob = 0;
 
-    ret_array = exist(dictionary, word);
-    if(ret_array != false) {
-        prob = parseInt(ret_array[END_OF_TERM_MARKER]);
+    trie_subtree = exist(dictionary, word);
+    if(trie_subtree != false) {
+        prob = parseInt(trie_subtree[END_OF_TERM_MARKER]);
     }
     var trie_subtree;
     var curr_prob = 0;
@@ -268,7 +268,7 @@ function correctSpelling(word)
     
     candidates.push(word);
     var corrected_word = "";
-    var correct_threshold = 2;
+    var correct_threshold = 25;
 
     // Use the frequencies to get the best match
     for(var i = 0; i < candidates.length; i++) {
@@ -300,11 +300,11 @@ function edits1(word)
     var transposes =new Array();
     var replaces = new Array();
     var inserts = new Array();
-    var j=0;
+    var j = 0;
 
     splits[""] = word;
-    for(var i=0;i<word.length;i++) {
-        splits[word.substring(0,i+1)] = word.substring(i+1,word.length);
+    for(var i = 0; i < word.length; i++) {
+        splits[word.substring(0, i + 1)] = word.substring(i+1, word.length);
     }
     // Deletes
     for (key in splits) {
@@ -314,19 +314,19 @@ function edits1(word)
         }
     }
     // Transposes
-    j=0;
+    j = 0;
     for (key in splits) {
         if (splits[key].length > 1) {
-            transposes[j] = key + splits[key].substring(1,2) +
+            transposes[j] = key + splits[key].substring(1, 2) +
             splits[key].substring(0,1) + splits[key].substring(2);
             j++;
         }
     }
     // Replaces
-    j=0;
+    j = 0;
     for (key in splits) {
         if (splits[key] != "") {
-            for(var i=0;i<alpha.length;i++) {
+            for(var i = 0;i < alpha.length; i++) {
                 replaces[j] = key + alpha.substring(i,i+1) +
                  splits[key].substring(1);
                 j++;
@@ -334,10 +334,10 @@ function edits1(word)
         }
     }
     // Inserts
-    j=0;
+    j = 0;
     for (key in splits) {
-        for(var i=0;i<alpha.length;i++) {
-            inserts[j] = key + alpha.substring(i,i+1) + splits[key];
+        for(var i=0; i < alpha.length; i++) {
+            inserts[j] = key + alpha.substring(i, i + 1) + splits[key];
             j++;
         }
     }
@@ -348,8 +348,8 @@ function edits1(word)
 
 Array.prototype.unique = function() {
     var a = this.concat();
-    for(var i=0; i<a.length; ++i) {
-        for(var j=i+1; j<a.length; ++j) {
+    for(var i = 0; i<a.length; ++i) {
+        for(var j=i+1; j < a.length; ++j) {
             if(a[i] === a[j])
                 a.splice(j, 1);
         }
@@ -371,7 +371,7 @@ function known(words_ip)
     for(var i=0;i < words_ip.length;i++) {
         ret_array = exist(dictionary, words_ip[i]);
         if(ret_array[END_OF_TERM_MARKER] != null) {
-            known_words[j] =  words_ip[i];
+            known_words[j] = words_ip[i];
             j++;
         }
     }
