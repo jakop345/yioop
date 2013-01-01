@@ -1410,9 +1410,9 @@ class SearchController extends Controller implements CrawlConstants
         $aTextNode =
             $dom->createTextNode(tl('search_controller_header_summaries'));
         $aNode->setAttributeNS("", "onclick", "javascript:".
-            "summaryShow = (summaryShow!='block')?'block':'none';".
-            "elt = document.getElementById('summary-page-id');".
-            "elt.style.display = summaryShow;");
+            "summaryShow = (summaryShow != 'block') ? 'block' : 'none';".
+            "summary_pid = elt('summary-page-id');".
+            "summary_pid.style.display = summaryShow;");
         $aNode->setAttributeNS("", "style", "zIndex: 1");
         $aNode->setAttributeNS("", "style", "text-decoration: underline; ".
             "cursor: pointer");
@@ -1820,6 +1820,9 @@ class SearchController extends Controller implements CrawlConstants
         $s1->appendChild($m);
         $d1->appendChild($s1);
         $d1->setAttributeNS("", "style", "display:none");
+        $script = $dom->createElement("script");
+        $script->setAttributeNS("","src","./scripts/basic.js");
+        $d1->appendChild($script);
         $script = $dom->createElement("script");
         $script->setAttributeNS("","src","./scripts/history.js");
         $d1->appendChild($script);
