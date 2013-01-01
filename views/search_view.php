@@ -285,7 +285,6 @@ class SearchView extends View implements CrawlConstants
                     }
                     if(IP_LINK && isset($page[self::IP_ADDRESSES])){
                     foreach($page[self::IP_ADDRESSES] as $address) {?>
-
                     <a href="?<?php e(CSRF_TOKEN."=".$data[CSRF_TOKEN]);
                             ?>&amp;c=search&amp;q=<?php
                             e(urlencode('ip:'.$address));?>&amp;<?php

@@ -257,17 +257,29 @@ function onTypeTerm(event, text_field)
  */
 function correctSpelling(word)
 {
-    var prob=0,ret_array,curr_prob=0;
+    var prob = 0;
+
+    ret_array = exist(dictionary, word);
+    if(ret_array != false) {
+        prob = parseInt(ret_array[END_OF_TERM_MARKER]);
+    }
+
+    var ret_array;
+    var curr_prob = 0;
     var candidates = known(edits1(word));
+    
     candidates.push(word);
     var corrected_word = "";
-    // Use the fequencies to get the best match
-    for(var i=0;i<candidates.length;i++) {
+    var correct_threshold = 25;
+
+    // Use the frequencies to get the best match
+    for(var i = 0; i < candidates.length; i++) {
         ret_array = exist(dictionary, candidates[i]);
         if(ret_array != false) {
             curr_prob = parseInt(ret_array[END_OF_TERM_MARKER]);
         }
-        if (curr_prob > prob) {
+        if (curr_prob > correct_threshold * prob) {
+            correct_threshold = 1;
             prob = curr_prob;
             corrected_word = candidates[i];
         }
