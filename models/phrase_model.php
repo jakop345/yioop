@@ -1039,6 +1039,8 @@ class PhraseModel extends ParallelModel
      * @param array &$pages of page data without text summaries
      * @param array &$queue_servers array of queue server to find data on
      * @param int $raw only lookup locations if 0
+     * @param bool $groups_with_docs whether to return only groups that 
+     *      contain at least one doc as opposed to a groups with only links
      * @return array pages with summaries added
      */
     function getSummariesFromOffsets(&$pages, &$queue_servers, $raw,
@@ -1111,7 +1113,8 @@ class PhraseModel extends ParallelModel
         $cnt = count($out_pages);
         if($groups_with_docs) {
             for($i = 0; $i < $cnt; $i++) {
-                if(!$out_pages[$i][self::IS_DOC]) {
+                if(!$out_pages[$i][self::IS_DOC] ||
+                    $out_pages[$i][self::LOCATION]) {
                     unset($out_pages[$i]);
                 }
             }
