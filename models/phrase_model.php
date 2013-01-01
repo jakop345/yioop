@@ -1142,6 +1142,7 @@ class PhraseModel extends ParallelModel
         $iterators = array();
         $total_iterators = 0;
         $network_flag = false;
+        $groups_with_docs = false;
         if($queue_servers != array() &&
             !$this->isSingleLocalhost($queue_servers)) {
             $network_flag = true;
@@ -1155,9 +1156,13 @@ class PhraseModel extends ParallelModel
             }
             $iterators[0] = new NetworkIterator($original_query,
                 $queue_servers, $index_name, $filter, $save_timestamp);
+            if(preg_match("/\bsite:doc\b/", $original_query)) {
+                $groups_with_docs = true;
+            }
         }
         if(!$network_flag) {
             $doc_iterate_hash = crawlHash("site:any");
+            $doc_iterate_group_hash = crawlHash("site:doc");
             if($save_timestamp > 0) { // used for archive crawls of crawl mixes
                 $save_file = CRAWL_DIR.'/cache/'.self::save_point.
                     $save_timestamp.".txt";
@@ -1182,9 +1187,13 @@ class PhraseModel extends ParallelModel
                 if($num_word_keys < 1) {continue;}
 
                 for($i = 0; $i < $total_iterators; $i++) {
-                    if($distinct_word_keys[$i] == $doc_iterate_hash) {
+                    if($distinct_word_keys[$i] == $doc_iterate_hash
+                        || $distinct_word_keys[$i] == $doc_iterate_group_hash) {
                         $word_iterators[$i] = new DocIterator(
                             $index_name, $filter);
+                        if($distinct_word_keys[$i] == $doc_iterate_group_hash) {
+                            $groups_with_docs = true;
+                        }
                     } else {
                         $word_iterators[$i] =
                             new WordIterator($distinct_word_keys[$i],
@@ -1243,7 +1252,7 @@ class PhraseModel extends ParallelModel
         } else {
             $group_iterator =
                 new GroupIterator($union_iterator, $total_iterators,
-                    $this->current_machine, $network_flag);
+                    $this->current_machine, $network_flag, $groups_with_docs);
         }
 
         if($network_flag) {

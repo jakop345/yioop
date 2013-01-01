@@ -116,6 +116,12 @@ class GroupIterator extends IndexBundleIterator
      * @var int
      */
     var $current_machine;
+    /**
+     * Flag used to say whether to return only groups that contain at least
+     * one doc as opposed to groups with only links.
+     * @var bool
+     */
+    var $groups_with_docs;
 
     /**
      * the minimum number of pages to group from a block;
@@ -139,10 +145,12 @@ class GroupIterator extends IndexBundleIterator
      * @param int $current_machine if this iterator is being used in a multi-
      *      queue_server setting, then this is the id of the current
      *      queue_server
-     * @param bool $network_flag
+     * @param bool $network_flag the iterator is being used for a network query
+     * @param bool $groups_with_docswhether to return only groups that 
+     *      contain at least one doc as opposed to a groups with only links
      */
     function __construct($index_bundle_iterator, $num_iterators = 1,
-        $current_machine = 0, $network_flag = false)
+        $current_machine = 0, $network_flag = false, $groups_with_docs = false)
     {
         $this->index_bundle_iterator = $index_bundle_iterator;
         $this->num_docs = $this->index_bundle_iterator->num_docs;
@@ -152,6 +160,7 @@ class GroupIterator extends IndexBundleIterator
         $this->results_per_block /=  ceil($num_iterators/2);
         $this->network_flag = $network_flag;
         $this->current_machine = $current_machine;
+        $this->groups_with_docs = $groups_with_docs;
         $this->is_feed = false;
 
         $this->reset();
@@ -474,6 +483,13 @@ class GroupIterator extends IndexBundleIterator
                 $word_key = $prefix.base64Hash($hash_url);
                 array_unshift($out_pages[$hash_url][self::SUMMARY_OFFSET],
                     array($word_key, $group_infos[0][self::CRAWL_TIME]));
+            }
+        }
+        if($this->groups_with_docs) {
+            foreach($out_pages as $hash_url => $info) {
+                if(!$out_pages[$hash_url][self::IS_DOC]) {
+                    unset($out_pages[$hash_url][self::IS_DOC]);
+                }
             }
         }
 

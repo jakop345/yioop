@@ -301,10 +301,12 @@ $db->execute("CREATE TABLE SUBSEARCH (LOCALE_STRING VARCHAR(16) PRIMARY KEY,
 
 $db->execute("INSERT INTO CRAWL_MIXES VALUES (2, 'images')");
 $db->execute("INSERT INTO MIX_GROUPS VALUES(2, 0, 1)");
-$db->execute("INSERT INTO MIX_COMPONENTS VALUES(2, 0, 1, 1, 'media:image')");
+$db->execute("INSERT INTO MIX_COMPONENTS VALUES(
+    2, 0, 1, 1, 'media:image site:doc')");
 $db->execute("INSERT INTO CRAWL_MIXES VALUES (3, 'videos')");
 $db->execute("INSERT INTO MIX_GROUPS VALUES(3, 0, 1)");
-$db->execute("INSERT INTO MIX_COMPONENTS VALUES(3, 0, 1, 1, 'media:video')");
+$db->execute("INSERT INTO MIX_COMPONENTS VALUES(
+    3, 0, 1, 1, 'media:video site:doc')");
 $db->execute("INSERT INTO CRAWL_MIXES VALUES (4, 'news')");
 $db->execute("INSERT INTO MIX_GROUPS VALUES(4, 0, 1)");
 $db->execute("INSERT INTO MIX_COMPONENTS VALUES(4, 0, 1, 1,
