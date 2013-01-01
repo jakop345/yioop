@@ -2371,7 +2371,7 @@ class Fetcher implements CrawlConstants
         if(substr($link_text, 0, 9) == "location:") {
             $location_link = true;
             $link_meta_ids[] = $link_text;
-            $link_meta_ids[] = "location:all"
+            $link_meta_ids[] = "location:all";
             $link_meta_ids[] = "location:".
                 crawlHash($site_url);
         }
