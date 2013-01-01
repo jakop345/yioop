@@ -146,7 +146,7 @@ class GroupIterator extends IndexBundleIterator
      *      queue_server setting, then this is the id of the current
      *      queue_server
      * @param bool $network_flag the iterator is being used for a network query
-     * @param bool $groups_with_docswhether to return only groups that 
+     * @param bool $groups_with_docs whether to return only groups that 
      *      contain at least one doc as opposed to a groups with only links
      */
     function __construct($index_bundle_iterator, $num_iterators = 1,
@@ -488,7 +488,7 @@ class GroupIterator extends IndexBundleIterator
         if($this->groups_with_docs) {
             foreach($out_pages as $hash_url => $info) {
                 if(!$out_pages[$hash_url][self::IS_DOC]) {
-                    unset($out_pages[$hash_url][self::IS_DOC]);
+                    unset($out_pages[$hash_url]);
                 }
             }
         }
