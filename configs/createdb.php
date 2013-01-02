@@ -75,7 +75,7 @@ if(!in_array(DBMS, array('sqlite', 'sqlite3'))) {
 $db->selectDB(DB_NAME);
 
 $db->execute("CREATE TABLE VERSION (ID INTEGER PRIMARY KEY)");
-$db->execute("INSERT INTO VERSION VALUES (14)");
+$db->execute("INSERT INTO VERSION VALUES (15)");
 
 $db->execute("CREATE TABLE USER (USER_ID INTEGER PRIMARY KEY $auto_increment, ".
     "USER_NAME VARCHAR(16) UNIQUE,  PASSWORD VARCHAR(16))");
@@ -121,6 +121,7 @@ $db->execute("INSERT INTO LOCALE VALUES (
     18, 'hi', 'हिन्दी', 'lr-tb')");
 $db->execute("INSERT INTO LOCALE VALUES (19, 'tr', 'Türkçe', 'lr-tb')");
 $db->execute("INSERT INTO LOCALE VALUES (20, 'fa', 'فارسی', 'rl-tb')");
+$db->execute("INSERT INTO LOCALE VALUES (21, 'te', 'తెలుగు', 'lr-tb')");
 
 $db->execute("CREATE TABLE ROLE (ROLE_ID INTEGER PRIMARY KEY ".
     "$auto_increment, NAME VARCHAR(512))");

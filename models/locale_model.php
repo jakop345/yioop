@@ -180,6 +180,10 @@ class LocaleModel extends Model
                 what fraction of strings have been translated
              */
             $tag_prefix = LOCALE_DIR."/".$locales[$i]['LOCALE_TAG'];
+            if(!file_exists($tag_prefix)) {
+                mkdir($tag_prefix); //create locale_dirs that are missing
+                $this->db->setWorldPermissionsRecursive($tag_prefix);
+            }
             if(!file_exists("$tag_prefix/statistics.txt") ||
                 filemtime("$tag_prefix/statistics.txt") <
                 filemtime("$tag_prefix/configure.ini")) {
@@ -540,6 +544,8 @@ class LocaleModel extends Model
      */
     function extractMergeLocales()
     {
+        $list = $this->getLocaleList(); 
+            // getLocaleList will also create any missing locale dirs
         $strings =
             $this->getTranslateStrings($this->extract_dirs, $this->extensions);
         $general_ini = parse_ini_file(LOCALE_DIR."/general.ini", true);

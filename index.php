@@ -158,8 +158,8 @@ if(upgradeDatabaseWorkDirectoryCheck()) {
     upgradeDatabaseWorkDirectory();
 }
 
-if(upgradeLocaleCheck()) {
-    upgradeLocale();
+if(upgradeLocalesCheck()) {
+    upgradeLocales();
 }
 
 $locale = NULL;

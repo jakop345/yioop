@@ -37,7 +37,7 @@
  * Checks to see if the locale data of Yioop! in the work dir is older than the
  * currently running Yioop!
  */
-function upgradeLocaleCheck()
+function upgradeLocalesCheck()
 {
     global $locale_tag;
     if(!PROFILE) return;
@@ -55,7 +55,7 @@ function upgradeLocaleCheck()
  * currently running Yioop! then this function is called to at least
  * try to copy the new strings into the old profile.
  */
-function upgradeLocale()
+function upgradeLocales()
 {
     global $locale;
     if(!PROFILE) return;
@@ -94,7 +94,7 @@ function upgradeDatabaseWorkDirectoryCheck()
  */
 function upgradeDatabaseWorkDirectory()
 {
-    $versions = array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14);
+    $versions = array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15);
     $model = new Model();
     $model->db->selectDB(DB_NAME);
     $sql = "SELECT ID FROM VERSION";
@@ -306,7 +306,7 @@ function upgradeDatabaseVersion8(&$db)
     $db->execute("CREATE TABLE CRON_TIME (TIMESTAMP INT(11))");
     $db->execute("INSERT INTO CRON_TIME VALUES ('".time()."')");
 
-    upgradeLocale();
+    upgradeLocales();
 }
 
 /**
@@ -447,11 +447,11 @@ function upgradeDatabaseVersion13(&$db)
     if(!file_exists(WORK_DIRECTORY."/feeds")) {
         mkdir(WORK_DIRECTORY."/feeds");
     }
-    upgradeLocale(); //force locale upgrade
+    upgradeLocales(); //force locale upgrade
 }
 
 /**
- * Upgrades a Version 12 version of the Yioop! database to a Version 13 version
+ * Upgrades a Version 13 version of the Yioop! database to a Version 14 version
  * @param object $db datasource to use to upgrade
  */
 function upgradeDatabaseVersion14(&$db)
@@ -459,5 +459,25 @@ function upgradeDatabaseVersion14(&$db)
     $db->execute("DELETE FROM VERSION WHERE ID < 13");
     $db->execute("UPDATE VERSION SET ID=14 WHERE ID=13");
     $db->execute("ALTER TABLE MEDIA_SOURCE ADD LANGUAGE VARCHAR(7)");
+}
+
+/**
+ * Upgrades a Version 14 version of the Yioop! database to a Version 15 version
+ * @param object $db datasource to use to upgrade
+ */
+function upgradeDatabaseVersion15(&$db)
+{
+    $db->execute("DELETE FROM VERSION WHERE ID < 14");
+    $db->execute("UPDATE VERSION SET ID=15 WHERE ID=14");
+    $db->execute("DELETE FROM MIX_COMPONENTS WHERE MIX_TIMESTAMP=2
+        AND GROUP_ID=0");
+    $db->execute("INSERT INTO MIX_COMPONENTS VALUES(
+        2, 0, 1, 1, 'media:image site:doc')");
+    $db->execute("DELETE FROM MIX_COMPONENTS WHERE MIX_TIMESTAMP=3
+        AND GROUP_ID=0");
+    $db->execute("INSERT INTO MIX_COMPONENTS VALUES(
+        3, 0, 1, 1, 'media:video site:doc')");
+    $db->execute("INSERT INTO LOCALE VALUES (21, 'te', 'తెలుగు', 'lr-tb')");
+    upgradeLocales();
 }
 ?>

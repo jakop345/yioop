@@ -1628,7 +1628,9 @@ class IndexShard extends PersistentStructure implements
         self::headerToShardFields($header, $shard);
 
         if($data === NULL) {
-            fread($fh, $shard->prefixes_len );
+            if(!($shard->prefixes_len > 0 )) return NULL;
+            if(!($shard->words_len > 0 )) return NULL;
+            fread($fh, $shard->prefixes_len);
             $words = fread($fh, $shard->words_len);
             $shard->word_docs = fread($fh, $shard->word_docs_len);
             $shard->doc_infos = fread($fh, $shard->docids_len);
