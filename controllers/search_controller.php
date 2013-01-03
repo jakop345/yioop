@@ -904,22 +904,25 @@ class SearchController extends Controller implements CrawlConstants
                     $href = $clone->getAttribute("href");
                     $href = UrlParser::canonicalLink($href, $url, false);
 
-                    /*Modify links so that they are looked up in the cache
-                     *before going to the live site
+                    /*
+                        Modify non-link tag urls so that they are looked up in
+                        the cache before going to the live site
                      */
-                    if(isset($_SESSION['USER_ID'])) {
-                        $user = $_SESSION['USER_ID'];
-                    } else {
-                        $user = $_SERVER['REMOTE_ADDR'];
+                    if($tag_name != "link") {
+                        if(isset($_SESSION['USER_ID'])) {
+                            $user = $_SESSION['USER_ID'];
+                        } else {
+                            $user = $_SERVER['REMOTE_ADDR'];
+                        }
+                        $csrf_token = $this->generateCSRFToken($user);
+                        $href = urlencode($href);
+                        $href = $href."&from_cache=true";
+                        $crawl_time = $this->crawlModel->
+                            getCurrentIndexDatabaseName();
+                        $href = 
+                            "?YIOOP_TOKEN=$csrf_token&c=search&a=cache&q&arg".
+                            "=$href&its=$crawl_time";
                     }
-                    $csrf_token = $this->generateCSRFToken($user);
-
-                    $href = urlencode($href);
-                    $href = $href."&from_cache=true";
-                    $crawl_time = $this->crawlModel->
-                        getCurrentIndexDatabaseName();
-                    $href = "?YIOOP_TOKEN=$csrf_token&c=search&a=cache&q&arg".
-                        "=$href&its=$crawl_time";
 
                     $clone->setAttribute("href", $href);
                     //an anchor might have an img tag within it so recurse
@@ -1230,7 +1233,14 @@ class SearchController extends Controller implements CrawlConstants
     }
 
     /**
+     *  Makes an HTML web page for an image cache item
      *
+     *  @param string $url original url of the image
+     *  @param array $cache_item details about the image item
+     *  @param string $cache_file string with image
+     *  @param $queue_servers machines used by yioop for the current index
+     *      cache item is from. Used to find out urls on which image occurred
+     *  @return string an HTML page with the image embedded as a data url
      */
     function imageCachePage($url, $cache_item, $cache_file, $queue_servers)
     {
@@ -1293,7 +1303,20 @@ class SearchController extends Controller implements CrawlConstants
     }
 
     /**
+     * Formats a cache of a web page (adds history ui and highlight keywords)
      *
+     * @param array $cache_item details meta information about the cache page
+     * @param string $cache_file contains current web page before formatting
+     * @param string $url that cache web page was originally from
+     * @param string $summary_string summary data that was extracted from the
+     *      web page to be put in the actually inverted index
+     * @param int $crawl_time timestamp of crawl cache page was from
+     * @param array $all_crawl_times timestamps of all crawl times currently
+     *      in Yioop system
+     * @param string $terms from orginal query responsible for cache request
+     * @param bool $highlight whether to mark query term occurences in different
+     *       colors on web page
+     * return string of formatted cached page
      */
     function formatCachePage($cache_item, $cache_file, $url,
         $summary_string, $crawl_time, $all_crawl_times, $terms, $highlight)
@@ -1315,7 +1338,7 @@ class SearchController extends Controller implements CrawlConstants
         $terms = $this->clean($terms, "string");
 
         $phrase_string = mb_ereg_replace("[[:punct:]]", " ", $terms);
-        $words = mb_split(" ",$phrase_string);
+        $words = mb_split(" ", $phrase_string);
         if(!$highlight) {
             $words = array();
         }
