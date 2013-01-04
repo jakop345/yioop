@@ -34,7 +34,7 @@
  * Update the version number manually when ever
  * suggest.js undergoes changes
  */
-VERSION_NO = 0;
+SUGGEST_VERSION_NO = 0;
 
 /*
  *  Constants for key codes will handle
@@ -140,7 +140,7 @@ function onTypeTerm(event, text_field)
 
         // First search the local storage to fetch the suggestions
         if(localStorage) {
-            var locale_ver = locale+'_'+VERSION_NO;
+            var locale_ver = locale+'_' + SUGGEST_VERSION_NO;
             if (localStorage[locale_ver] == null) {
                 localStorage.clear();
                 count=0;
@@ -427,7 +427,7 @@ function updateLocalStorage()
         }
     }
     trie_to_store = JSON.stringify(trie_storage);
-    localStorage.setItem(locale + '_' + VERSION_NO, trie_to_store +
+    localStorage.setItem(locale + '_' + SUGGEST_VERSION_NO, trie_to_store +
      "@@" + JSON.stringify(locale_terms));
 }
 
@@ -723,7 +723,7 @@ function spellCheck()
         var ret_array;
         var ret_word;
         if(localStorage) {
-            var locale_ver = locale + '_' + VERSION_NO;
+            var locale_ver = locale + '_' + SUGGEST_VERSION_NO;
         }
         if (locale_ver && localStorage[locale_ver] != null) {
             split_str = localStorage[locale_ver].split("@@");
