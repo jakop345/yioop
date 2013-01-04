@@ -860,13 +860,6 @@ class AdminController extends Controller implements CrawlConstants
         $crawl_params[self::META_WORDS] = isset($seed_info['meta_words']) ?
             $seed_info['meta_words'] : array();
 
-        $crawl_params[self::LOG_RECORDS] = isset($seed_info['log_records']) ?
-            $seed_info['log_records'] : array();
-
-        $crawl_params[self::DATABASE_CONNECTION_DETAILS] =
-            isset($seed_info['database_connection_details']) ?
-            $seed_info['database_connection_details'] : array();
-
         if(isset($seed_info['indexing_plugins']['plugins'])) {
             $crawl_params[self::INDEXING_PLUGINS] =
                 $seed_info['indexing_plugins']['plugins'];
@@ -1083,48 +1076,6 @@ class AdminController extends Controller implements CrawlConstants
             }
         } else if(isset($seed_info['meta_words'])){
                 $data['META_WORDS'] = $seed_info['meta_words'];
-        }
-
-        $data['LOG_RECORDS'] = array();
-        if(!$no_further_changes) {
-            if(isset($_REQUEST["LOG_RECORDS"])){
-                foreach($_REQUEST["LOG_RECORDS"] as $triplet) {
-                    list($field, $field_name,$field_type) =
-                        array_values($triplet);
-                    $field = $this->clean($field, "string");
-                    $field_name =
-                            $this->clean($field_name, "string");
-                    $field_type =
-                            $this->clean($field_type,"string");
-                    $field_nt = $field_name."::".$field_type;
-                    if(trim($field) != "" &&trim($field_nt) !=""){
-                          $data['LOG_RECORDS'][$field] = $field_nt;
-                    }
-                }
-                $seed_info['log_records'] = $data['LOG_RECORDS'];
-                $update_flag = true;
-            } else if(isset($seed_info['log_records'])){
-                $data['LOG_RECORDS'] = $seed_info['log_records'];
-            }
-        } else if(isset($seed_info['log_records'])){
-                $data['LOG_RECORDS'] = $seed_info['log_records'];
-        }
-
-        $data['DATABASE_CONNECTION_DETAILS'] = array();
-        if(!$no_further_changes) {
-            if(isset($_REQUEST["DATABASE_CONNECTION_DETAILS"])){
-                $data['DATABASE_CONNECTION_DETAILS']=
-                           $_REQUEST["DATABASE_CONNECTION_DETAILS"];
-                $seed_info['database_connection_details'] =
-                           $data['DATABASE_CONNECTION_DETAILS'];
-                $update_flag = true;
-            } else if(isset($seed_info['database_connection_details'])) {
-                $data['DATABASE_CONNECTION_DETAILS'] =
-                    $seed_info['database_connection_details'];
-            }
-        } else if(isset($seed_info['database_connection_details'])) {
-            $data['DATABASE_CONNECTION_DETAILS'] =
-                $seed_info['database_connection_details'];
         }
 
         $data['INDEXING_PLUGINS'] = array();

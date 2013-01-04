@@ -529,7 +529,6 @@ class Fetcher implements CrawlConstants
 
                 crawlLog("New name: ".$this->web_archive->dir_name);
                 crawlLog("Switching archive...");
-
             }
 
             if(isset($info[self::SAVED_CRAWL_TIMES])) {
@@ -661,19 +660,20 @@ class Fetcher implements CrawlConstants
     function downloadPagesArchiveCrawl()
     {
         $prefix = $this->fetcher_num."-";
-        $base_name = CRAWL_DIR."/cache/{$prefix}".self::archive_base_name.
-            $this->crawl_index;
+        $arc_name = "$prefix" . self::archive_base_name . $this->crawl_index;
+        $base_name = CRAWL_DIR."/cache/$arc_name";
         $pages = array();
         if(!isset($this->archive_iterator->iterate_timestamp) ||
             $this->archive_iterator->iterate_timestamp != $this->crawl_index ||
             $this->archive_iterator->result_timestamp != $this->crawl_time) {
             if(!file_exists($base_name)){
-                crawlLog("Recrawl archive with timestamp" .
-                    " {$this->crawl_index} does not exist!");
+                crawlLog("!!Fetcher web archive $arc_name  does not exist.");
+                crawlLog("  Only fetchers involved in original crawl will ");
+                crawlLog("  participate in a web archive recrawl!!");
                 return $pages;
             } else {
                 $this->archive_iterator =
-                    new WebArchiveBundle($prefix, $this->crawl_index,
+                    new WebArchiveBundleIterator($prefix, $this->crawl_index,
                         $this->crawl_time);
                 if($this->archive_iterator == NULL) {
                     crawlLog("Error creating archive iterator!!");
@@ -843,8 +843,9 @@ class Fetcher implements CrawlConstants
                 } else {
                     $update_num = SEEN_URLS_BEFORE_UPDATE_SCHEDULER;
                     crawlLog("Fetch on crawl {$this->crawl_time} was not ".
-                        "halted properly, dumping $update_num from old fetch ".
-                        "to try to make a clean re-start");
+                        "halted properly."); 
+                    crawlLog("  Dumping $update_num from old fetch ".
+                        "to try to make a clean re-start.");
                     $count = count($this->to_crawl);
                     if($count > SEEN_URLS_BEFORE_UPDATE_SCHEDULER) {
                         $this->to_crawl = array_slice($this->to_crawl,

@@ -104,7 +104,10 @@ function onTypeTerm(event, text_field)
     search_list_array = new Object();
     scroll_horz = false;
 
-    out_query = transliterate(query);
+    out_query = false;
+    if(typeof transliterate == 'function') {
+        out_query = transliterate(query);
+    }
     if(out_query && out_query.length > 0)
     {
        input_term = out_query;

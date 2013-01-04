@@ -210,9 +210,6 @@ interface CrawlConstants
     const LINK_SEEN_URLS = 'cj';
     const POST_MAX_SIZE = 'ck';
     const LOGGING = 'cl';
-    const LOG_RECORDS = 'cm';
-    const DATABASE_RECORDS = 'cn';
-    const DATABASE_CONNECTION_DETAILS = 'co';
 
     const NEEDS_OFFSET_FLAG = 0x7FFFFFFF;
 
