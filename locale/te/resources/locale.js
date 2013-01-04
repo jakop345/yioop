@@ -54,27 +54,31 @@ var roman_array = {
 /*
  * To analyze the query and generate actual input query from the
  * transliterated query
+ *
+ * @param String query to transliterate (if possible)
+ * @return Array of transliterated characters
  */
-function analyzeQuery()
+function transliterate(query)
 {
-    var query = elt("query-field").value;
     var chunk_array = new Array();
     var cha2;
     var cha2_array = new Array();
     var len = query.length;
     var ini_chunk = true;
-    for(var i=0;i<len;) {
-        var cons_found = false;vow_found = false;
+    for(var i=0; i < len;) {
+        var cons_found = false;
+        var vow_found = false;
         cnt = 0;
-        vow_cnt=0;
-        cha2='';
+        vow_cnt = 0;
+        cha2 = '';
         if (query.length == 1) {
-            cha2 = query.trim(); i++;
+            cha2 = query.trim();
+            i++;
         }
         else {
-            while (cons_found == false) {
-                letr = query.substring(i,i+1);
-                if (!isVowel(letr)) {
+            while(cons_found == false) {
+                letter = query.substring(i, i + 1);
+                if (!isVowel(letter)) {
                     cnt++;
                     if (cnt > 1) {
                         if (vow_found == true) {
@@ -87,7 +91,7 @@ function analyzeQuery()
                     vow_cnt++;
                 }
                 if (cons_found == false) {
-                    cha2 += letr;
+                    cha2 += letter;
                     i++;
                 }
                 if (i >= len) {
@@ -116,23 +120,23 @@ function analyzeQuery()
         if (cha2_array.length == 2) {
             if (roman_array[cha2] != null) {
                 chunk_array.push(roman_array[cha2]);
-            } else if (roman_array['+'+cha2] != null) {
-                chunk_array.push(roman_array['+'+cha2]);
-            } else if (cha2.substring(0,1) == cha2.substring(1,2))
+            } else if (roman_array['+' + cha2] != null) {
+                chunk_array.push(roman_array['+' + cha2]);
+            } else if (cha2.substring(0,1) == cha2.substring(1, 2))
             {
                 var x = roman_array[cha2.substring(0,1)];
-                chunk_array.push(x+roman_array['*']+x);
+                chunk_array.push(x + roman_array['*'] + x);
             }
             else {
-                for(var j=0;j<2;j++) {
-                    cha1 = cha2.substring(j,j+1);
-                    if (roman_array['+'+cha1] != null && ini_chunk == false) {
-                        chunk_array.push(roman_array['+'+cha1]);
+                for(var j = 0; j < 2; j++) {
+                    cha1 = cha2.substring(j, j + 1);
+                    if (roman_array['+' + cha1] != null && ini_chunk == false) {
+                        chunk_array.push(roman_array['+' + cha1]);
                     } else  if (roman_array[cha1] != null) {
-                        if (j==1 && !isVowel(cha1)) {
+                        if (j == 1 && !isVowel(cha1)) {
                             chunk_array.pop();
-                            chunk_array.push(roman_array[cha2.substring(0,1)]
-                            +roman_array['*']+roman_array[cha1]);
+                            chunk_array.push(roman_array[cha2.substring(0, 1)]
+                            + roman_array['*'] + roman_array[cha1]);
                         }
                         else {
                             chunk_array.push(roman_array[cha1]);
@@ -143,22 +147,22 @@ function analyzeQuery()
             }
         }
         if (cha2_array.length == 3 && vow_cnt == 2) {
-            if(roman_array[cha2.substring(0,1)] != null)
-                chunk_array.push(roman_array[cha2.substring(0,1)]);
-            if(roman_array['+'+cha2.substring(1,3)] != null)
-                chunk_array.push(roman_array['+'+cha2.substring(1,3)]);
+            if(roman_array[cha2.substring(0, 1)] != null)
+                chunk_array.push(roman_array[cha2.substring(0, 1)]);
+            if(roman_array['+'+cha2.substring(1, 3)] != null)
+                chunk_array.push(roman_array['+' + cha2.substring(1, 3)]);
         }
         if (cha2_array.length == 3 && vow_cnt == 1) {
-            if(roman_array[cha2.substring(0,2)] != null) {
-                chunk_array.push(roman_array[cha2.substring(0,2)]);
+            if(roman_array[cha2.substring(0, 2)] != null) {
+                chunk_array.push(roman_array[cha2.substring(0, 2)]);
             } else {
                 for(var j=0;j<2;j++) {
-                    cha1 = cha2.substring(j,j+1);
+                    cha1 = cha2.substring(j, j + 1);
                     if (roman_array[cha1] != null) {
                         if (j==1 && !isVowel(cha1)) {
                             chunk_array.pop();
-                            chunk_array.push(roman_array[cha2.substring(0,1)]
-                            + roman_array['*'] + roman_array[cha1]);
+                            chunk_array.push(roman_array[cha2.substring(0, 1)]
+                                + roman_array['*'] + roman_array[cha1]);
                         }
                         else {
                             chunk_array.push(roman_array[cha1]);
@@ -166,10 +170,11 @@ function analyzeQuery()
                     }
                 }
             }
-            if(roman_array['+' + cha2.substring(2,3)] != null)
-                chunk_array.push(roman_array['+' + cha2.substring(2,3)]);
+            if(roman_array['+' + cha2.substring(2, 3)] != null)
+                chunk_array.push(roman_array['+' + cha2.substring(2, 3)]);
         }
         ini_chunk = false;
     }
-    return chunk_array;
+    out_query = chunk_array.join().replace(/,/g,'').trim();
+    return out_query;
 }

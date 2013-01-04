@@ -91,10 +91,10 @@ function onTypeTerm(event, text_field)
 {
     var key_code_pressed;
     var term_array;
-    var chunk_array = new Array();
     var input_term = text_field.value.trim();
     var suggest_results = elt("suggest-results");
     var suggest_dropdown = elt("suggest-dropdown");
+    var query = elt("query-field").value;
     var scroll_pos = 0;
     var tmp_pos = 0;
     var local_count = 0;
@@ -104,10 +104,10 @@ function onTypeTerm(event, text_field)
     search_list_array = new Object();
     scroll_horz = false;
 
-    chunk_array= analyzeQuery();
-    if(chunk_array && chunk_array.length > 0)
+    out_query = transliterate(query);
+    if(out_query && out_query.length > 0)
     {
-       input_term = chunk_array.join().replace(/,/g,'').trim();
+       input_term = out_query;
     }
     //To find the length of an associative array
     Object.size = function(obj) {

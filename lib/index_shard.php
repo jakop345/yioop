@@ -1631,7 +1631,7 @@ class IndexShard extends PersistentStructure implements
             if(!($shard->prefixes_len > 0 )) return NULL;
             if(!($shard->words_len > 0 )) return NULL;
             if(!($shard->word_docs_len > 0 )) return NULL;
-            if(!($shard->word_docids_len > 0 )) return NULL;
+            if(!($shard->docids_len > 0 )) return NULL;
             fread($fh, $shard->prefixes_len);
             $words = fread($fh, $shard->words_len);
             $shard->word_docs = fread($fh, $shard->word_docs_len);

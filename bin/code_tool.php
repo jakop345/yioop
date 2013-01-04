@@ -83,27 +83,27 @@ if(!$no_instructions) {
 code_tool.php has the following command formats:
 
 php code_tool.php clean path
-    replaces all tabs with four spaces and trims all whitespace off ends of
+    Replaces all tabs with four spaces and trims all whitespace off ends of
     lines in the folder or file path
 
 php code_tool.php copyright path
-    adjusts all lines in the files in the folder at path (or if
+    Adjusts all lines in the files in the folder at path (or if
     path is a file just that) of the form 2009 - \d\d\d\d to
     the form 2009 - this_year where this_year is the current year.
 
 php code_tool.php longlines path
-    prints out all lines in files in the folder or file path which are
+    Prints out all lines in files in the folder or file path which are
     longer than 80 characters.
 
 php code_tool.php replace path pattern replace_string
   or
 php code_tool.php replace path pattern replace_string effect
-    prints all lines matching the regular expression pattern followed
+    Prints all lines matching the regular expression pattern followed
     by the result of replacing pattern with replace_string in the
     folder or file path. Does not change files.
 
 php code_tool.php replace path pattern replace_string interactive
-    prints each line matching the regular expression pattern followed
+    Prints each line matching the regular expression pattern followed
     by the result of replacing pattern with replace_string in the
     folder or file path. Then it asks if you want to update the line.
     Lines you choose for updating will be modified in the files.
@@ -115,8 +115,8 @@ php code_tool.php replace path pattern replace_string change
     replace without interaction.
 
 php code_tool.php search path pattern
-    prints all lines matching the regular expression pattern in the
-    folder or file path
+    Prints all lines matching the regular expression pattern in the
+    folder or file path.
 
 EOD;
 }

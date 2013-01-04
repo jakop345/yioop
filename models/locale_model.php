@@ -438,7 +438,6 @@ class LocaleModel extends Model
         $msg_id = $arr[0];
 
         $args = array_slice($arr, 1);
-
         $msg_string = $this->configure['strings'][$msg_id];
         if($msg_string == "" ) {
             $msg_string = $this->default_configure['strings'][$msg_id];
