@@ -1,7 +1,7 @@
 SeekQuarry/Yioop --
 Open Source Pure PHP Search Engine, Crawler, and Indexer
 
-Copyright (C) 2009 - 2012  Chris Pollett chris@pollett.org
+Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
 
 http://www.seekquarry.com/
 
@@ -14,7 +14,7 @@ the Free Software Foundation, either version 3 of the License, or
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
@@ -35,13 +35,13 @@ point your web browser to the location of Yioop. A
 configuration page should appear and let you set the
 path to the auxiliary folder. For this
 step you must connect via localhost or you must have a 
-configs/local_config.php file with NO_LOCAL_CHECK defined to true. 
+configs/local_config.php file with NO_LOCAL_CHECK defined to true.
 Make sure the web server has permissions on the place where this auxiliary
 folder needs to be created. Once you have set the folder,
 you should see a second form beneath the select-a-path
 form. This form allows you to configure the debug settings,
 database settings, queue server and robot settings.
-After filling in this form and submitting it, 
+After filling in this form and submitting it,
 the installation is complete.
 
 (2) To start the queue server you type:

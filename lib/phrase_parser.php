@@ -33,6 +33,9 @@
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
+/**
+ * Load in locale specific tokenizing code
+ */
 foreach(glob(LOCALE_DIR."/*/resources/tokenizer.php")
     as $filename) {
     require_once $filename;

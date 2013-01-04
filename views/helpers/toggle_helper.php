@@ -54,7 +54,7 @@ class ToggleHelper extends Helper
      *  Draws an On Off switch in HTML where to toggle state one
      *  clicks a link
      *
-     *  @parm bool $state whether the switch is on or off
+     *  @param bool $state whether the switch is on or off
      *  @param string $on_url - url that is sent when one clicks on
      *  @param string $off_url - url that is sent when one clicks off
      */

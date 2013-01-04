@@ -37,7 +37,7 @@
 
 if(php_sapi_name() != 'cli') {echo "BAD REQUEST"; exit();}
 
-/** Calculate base directory of script @ignore*/
+/** Calculate base directory of script @ignore */
 define("BASE_DIR", substr(
     dirname(realpath($_SERVER['PHP_SELF'])), 0,
     -strlen("/bin")));
@@ -84,7 +84,7 @@ code_tool.php has the following command formats:
 
 php code_tool.php clean path
     Replaces all tabs with four spaces and trims all whitespace off ends of
-    lines in the folder or file path
+    lines in the folder or file path.
 
 php code_tool.php copyright path
     Adjusts all lines in the files in the folder at path (or if

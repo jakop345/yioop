@@ -51,7 +51,7 @@ class CronModel extends Model
 {
     /**
      * File name used to store the cron table associative array
-     * @string
+     * @var string
      */
     var $cron_file;
     /**

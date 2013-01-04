@@ -93,7 +93,6 @@ class MixArchiveBundleIterator extends ArchiveBundleIterator
      *      iterate over the pages of
      * @param string $result_timestamp timestamp of the web archive bundle
      *      results are being stored in
-     * @param
      */
     function __construct($mix_timestamp, $result_timestamp)
     {
