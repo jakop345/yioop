@@ -32,7 +32,9 @@
  * @copyright 2009 - 2013
  * @filesource
  */
-if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
+
+if(!defined('BASE_DIR') ||
+    defined('PROFILE_FILE_NAME')) {echo "BAD REQUEST"; exit();}
 
 
 /** Don't display any query info*/
@@ -43,7 +45,6 @@ define('TEST_INFO', 1);
 define('QUERY_INFO', 2);
 /** bit of DEBUG_LEVEL used to indicate php messages should be displayed*/
 define('ERROR_INFO', 4);
-date_default_timezone_set('America/Los_Angeles');
 
 /** Maintenance mode restricts access to local machine*/
 define("MAINTENANCE_MODE", false);
@@ -52,6 +53,23 @@ if(file_exists(BASE_DIR."/configs/local_config.php")) {
     /** Include any locally specified defines (could use as an alternative
         way to set work directory) */
     require_once(BASE_DIR."/configs/local_config.php");
+}
+
+// following two variable might be set in local_config.php
+if(!defined('TIME_ZONE')) {
+    date_default_timezone_set('America/Los_Angeles');
+} else {
+    date_default_timezone_set(TIME_ZONE);
+}
+
+/** setting profile.php to something else in loac_config.php allows one to have
+    two different yioop instances share the same work_directory but maybe have
+    different
+    configuration settings. This might be useful if one was production
+    and one was more dev.
+*/
+if(!defined('PROFILE_FILE_NAME')) {
+    define('PROFILE_FILE_NAME', "/profile.php");
 }
 
 if(MAINTENANCE_MODE && $_SERVER["SERVER_ADDR"] != $_SERVER["REMOTE_ADDR"]) {
@@ -68,6 +86,7 @@ define('WORK_DIRECTORY', '');
 // end machine edited code
 }
 
+
 define('APP_DIR', WORK_DIRECTORY."/app");
 define('PREP_DIR', WORK_DIRECTORY."/prepare");
 
@@ -79,8 +98,8 @@ define('FALLBACK_LOCALE_DIR', BASE_DIR."/locale");
 define ('SESSION_NAME', "yioopbiscuit");
 define('CSRF_TOKEN', "YIOOP_TOKEN");
 
-if(file_exists(WORK_DIRECTORY."/profile.php")) {
-    require_once(WORK_DIRECTORY."/profile.php");
+if(file_exists(WORK_DIRECTORY.PROFILE_FILE_NAME)) {
+    require_once(WORK_DIRECTORY.PROFILE_FILE_NAME);
     define('PROFILE', true);
     define('CRAWL_DIR', WORK_DIRECTORY);
     if(is_dir(WORK_DIRECTORY."/locale")) {
