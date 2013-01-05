@@ -438,8 +438,11 @@ class LocaleModel extends Model
         $msg_id = $arr[0];
 
         $args = array_slice($arr, 1);
-        $msg_string = $this->configure['strings'][$msg_id];
-        if($msg_string == "" ) {
+        $msg_string = "";
+        if(isset($this->configure['strings'][$msg_id])) {
+            $msg_string = $this->configure['strings'][$msg_id];
+        } else if($msg_string == "" &&
+            isset($this->default_configure['strings'][$msg_id])) {
             $msg_string = $this->default_configure['strings'][$msg_id];
         }
 
@@ -607,8 +610,8 @@ class LocaleModel extends Model
      * @param array $strings line array data extracted from files in
      *      directories that have strings in need of translation
      * @param string $dir the directory of all the locales
-     * @param string $locale  the particular locale in $dir to update
-     * @param array $new_configure  translations of identifier strings from
+     * @param string $locale the particular locale in $dir to update
+     * @param array $new_configure translations of identifier strings from
      *      another source such as a localizer using a web form
      */
     function updateLocale($general_ini, $strings,
@@ -662,62 +665,96 @@ EOT;
             if(is_array($general_value)) {
                 $n[] = "[$general_name]";
                 foreach($general_value as $name => $value) {
-                    if(isset($new_configure[$general_name][$name])) {
-                        $n[] = $name.' = "'.
-                            addslashes($new_configure[$general_name][$name]).
-                            '"';
-                    } else if(isset($old_configure[$general_name][$name])) {
-                        $n[] = $name.' = "'.
-                            addslashes($old_configure[$general_name][$name]).
-                            '"';
-                    } else if(isset($fallback_configure[$general_name][$name])){
-                        $n[] = $name.' = "'. addslashes(
-                            $fallback_configure[$general_name][$name]).
-                            '"';
-                    } else {
-                        $n[] = $name.' = "'.$value.'"';
-                    }
+                    $n[] = $this->updateTranslation(
+                        $new_configure[$general_name],
+                        $old_configure[$general_name],
+                        $fallback_configure[$general_name],
+                        $name, $value);
                 }
             } else {
-                if(isset($new_configure[$general_name])) {
-                    $n[] = $general_name.' = "'.
-                        addslashes($new_configure[$general_name]).'"';
-                } else if(isset($old_configure[$general_name])) {
-                    $n[] = $general_name.' = "'.
-                        addslashes($old_configure[$general_name]).'"';
-                } else if(isset($fallback_configure[$general_name])){
-                    $n[] = $name.' = "'. addslashes(
-                        $fallback_configure[$general_name]). '"';
-                } else {
-                    $n[] = $name.' = "'.$value.'"';
-                }
+                $n[] = $this->updateTranslation($new_configure,
+                    $old_configure, $fallback_configure, $general_name);
             }
         }
-
         $n[] = ";\n; Strings to translate on various pages\n;";
         $n[] = "[strings]";
         foreach($strings as $string) {
             if( isset($string[0]) && $string[0] == ";") {
                 $n[] = $string;
             } else {
-                if(isset($new_configure['strings'][$string])) {
-                    $n[] = $string.' = "'.
-                        addslashes($new_configure['strings'][$string]).'"';
-                } else if(isset($old_configure['strings'][$string])) {
-                    $n[] = $string.' = "'.
-                        addslashes($old_configure['strings'][$string]).'"';
-                } else if(isset($fallback_configure['strings'][$string])){
-                    $n[] = $string.' = "'.
-                        addslashes($fallback_configure['strings'][$string]).'"';
-                } else {
-                    $n[] = $string.' = ""';
-                }
+                $n[] = $this->updateTranslation($new_configure['strings'],
+                    $old_configure['strings'], $fallback_configure['strings'],
+                    $string);
             }
         }
-
         $out = implode("\n", $n);
         $out .= "\n";
         file_put_contents($cur_path.'/configure.ini', $out);
+    }
+
+    /**
+     *  Computes a string of the form string_id = 'translation' for a string_id
+     *  from among translation array data in $new_configure (most preferred,
+     *  probably come from recent web form data), $old_configure 
+     *  (probably from work dir), and $fallback_configure (probably from base 
+     *  dir of Yioop instance, least preferred).
+     *
+     *  @param array $new_configure string_id => translation pairs
+     *  @param array $old_configure string_id => translation pairs
+     *  @param array $fallback_configure string_id => translation pairs
+     *  @param string $string_id an id to translate
+     *  @param string $default_value value to use if no configuration
+     *      has a translation for a string_id
+     *  @return string translation in format describe above
+     */
+    function updateTranslation($new_configure, $old_configure, 
+        $fallback_configure, $string_id, $default_value = "")
+    {
+        $translation = $string_id . ' = "'.
+            addslashes($this->lookupTranslation($new_configure, $old_configure,
+            $fallback_configure, $string_id, $default_value)).'"';
+        return $translation;
+    }
+
+    /**
+     *  Translates a string_id from among translation array data in 
+     *  $new_configure (most preferred, probably come from recent web form 
+     *  data), $old_configure  (probably from work dir), and $fallback_configure
+     *  (probably from base  dir of Yioop instance, least preferred).
+     *
+     *  @param array $new_configure string_id => translation pairs
+     *  @param array $old_configure string_id => translation pairs
+     *  @param array $fallback_configure string_id => translation pairs
+     *  @param string $string_id an id to translate
+     *  @param string $default_value value to use if no configuration
+     *      has a translation for a string_id
+     *  @return string translation of string id
+     */
+    function lookupTranslation($new_configure, $old_configure,
+        $fallback_configure, $string_id, $default_value = "")
+    {
+        if($this->isTranslated($new_configure, $string_id)) {
+            $translation = $new_configure[$string_id];
+        } else if($this->isTranslated($old_configure, $string_id)) {
+            $translation = $old_configure[$string_id];
+        } else if($this->isTranslated($fallback_configure, $string_id)) {
+            $translation = $fallback_configure[$string_id];
+        } else {
+            $translation = $default_value;
+        }
+        return $translation;
+    }
+
+    /**
+     * Checks if the given string_id has a translation in translations
+     *
+     * @param array $translations of form string_id => translation
+     * @return bool whether a translation of nonzero length exists
+     */
+    function isTranslated($translations, $string_id)
+    {
+        return isset($translations[$string_id]) && 
+            strlen($translations[$string_id]) > 0;
     }
 
     /**
