@@ -182,8 +182,8 @@ EOT;
             $n[] = "define('$field', {$profile[$field]});";
         }
         $out = implode("\n", $n);
-        if(file_put_contents("$directory/profile.php", $out) !== false) {
-            @chmod("$directory/profile.php", 0777);
+        if(file_put_contents($directory.PROFILE_FILE_NAME, $out) !== false) {
+            @chmod($directory.PROFILE_FILE_NAME, 0777);
             if(isset($new_profile_data['ROBOT_DESCRIPTION'])) {
                 $robot_path = LOCALE_DIR."/".DEFAULT_LOCALE."/pages/bot.thtml";
                 file_put_contents($robot_path,
@@ -429,7 +429,7 @@ EOT;
     function getProfile($work_directory)
     {
         $profile = array();
-        $profile_string = @file_get_contents($work_directory."/profile.php");
+        $profile_string = @file_get_contents($work_directory.PROFILE_FILE_NAME);
 
         foreach($this->profile_fields as $field) {
             if($field != 'ROBOT_DESCRIPTION') {
