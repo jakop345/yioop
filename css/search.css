@@ -1113,25 +1113,25 @@ ul.in-list li
  */
 .pagination
 {
-    margin-bottom: 10px;
-    margin-top: 10px;
+    margin-bottom: 8px;
+    margin-top: 8px;
 }
 
 .html-ltr .pagination ul,
 .html-ltr .pagination ul li
 {
     display: inline;
-    font-size: 18pt;
+    font-size: 14pt;
     padding-left: 0;
-    padding-right: 10px;
+    padding-right: 8px;
 }
 
 .html-rtl .pagination ul,
 .html-rtl .pagination ul li
 {
     display:inline;
-    font-size: 18pt;
-    padding-left: 10px;
+    font-size: 14pt;
+    padding-left: 8px;
     padding-right: 0;
 }
 
@@ -1139,28 +1139,32 @@ ul.in-list li
 {
     border-color: blue;
     border-style: solid;
-    border-width: 3px;
+    border-width: 2px;
     display: block;
     float: left;
-    height: 30px;
-    margin-right: 10px;
+    height: 25px;
+    margin-right: 8px;
+    padding-bottom: 0px;
+    padding-top: 1px;
     text-align: center;
     text-decoration: none;
-    width: 30px;
+    width: 25px;
 }
 
 .html-rtl .pagination ul li a.item
 {
     border-color: blue;
     border-style: solid;
-    border-width: 3px;
+    border-width: 2px;
     display: block;
     float: right;
-    height: 30px;
-    margin-left: 10px;
+    height: 25px;
+    margin-left: 8px;
+    padding-bottom: 0px;
+    padding-top: 1px;
     text-align: center;
     text-decoration: none;
-    width: 30px;
+    width: 25px;
 }
 
 .pagination ul li a.item:hover
@@ -1173,15 +1177,16 @@ ul.in-list li
 {
     border-color: black;
     border-style: solid;
-    border-width: 5px;
+    border-width: 3px;
     display: block;
     float: left;
-    height: 30px;
-    margin-right: 10px;
+    height: 25px;
+    margin-right: 8px;
+    padding-top: 1px;
     position: relative;
     text-align: center;
-    top: -3px;
-    width: 30px;
+    top: -1px;
+    width: 25px;
 }
 
 .html-rtl .pagination ul li span.item
@@ -1191,32 +1196,29 @@ ul.in-list li
     border-width: 5px;
     display: block;
     float: right;
-    height: 30px;
-    margin-left: 10px;
+    height: 25px;
+    margin-left: 8px;
     position: relative;
     text-align: center;
-    top: -3px;
-    width: 30px;
+    top: -1px;
+    width: 25px;
 }
 
 .html-ltr .pagination ul li span.end
 {
     display:block;
     float:left;
-    margin-right: 10px;
+    margin-right: 8px;
+    padding-top: 1px;
 }
 
 .html-rtl .pagination ul li span.end
 {
     display: block;
     float: right;
-    margin-left: 10px;
+    margin-left: 8px;
 }
 
-.html-ltr .pagination ul li span.other
-{
-    width: 30px;
-}
 
 /*
    Styles for video subsearch page
