@@ -91,7 +91,6 @@ class ActivityModel extends Model
         $result = $db->execute($sql);
         $row = $db->fetchArray($result);
 
-
         if($row == NULL) {
 
             $sql = "SELECT T.IDENTIFIER_STRING AS ACTIVITY_NAME  FROM ".

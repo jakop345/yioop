@@ -193,9 +193,9 @@ function tl()
     global $locale;
 
     $args = func_get_args();
-
     $translation = $locale->translate($args);
-    if($translation == "") {
+
+    if($translation === false) {
         $translation = $args[0];
     }
     return $translation;

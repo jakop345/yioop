@@ -106,8 +106,9 @@ class UserModel extends Model
 
             if($translate) {
                 $activities[$i]['ACTIVITY_NAME'] = $translate['ACTIVITY_NAME'];
-            } else {
-                $activities[$i]['ACTIVITY_NAME'] =
+            }
+            if($activities[$i]['ACTIVITY_NAME'] == "") {
+                $activities[$i]['ACTIVITY_NAME'] = 
                     $activities[$i]['IDENTIFIER_STRING'];
             }
             $i++;

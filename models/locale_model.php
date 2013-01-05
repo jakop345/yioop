@@ -427,9 +427,9 @@ class LocaleModel extends Model
      *
      * @param array $arr an array consisting of an identifier string followed
      *      optionally by parameter values.
-     * @return string the translation of the identifier string into the
+     * @return mixed the translation of the identifier string into the
      *      current locale where all %s have been replaced by the corresponding
-     *      parameter values
+     *      parameter values. Returns false if no translation
      */
     function translate($arr) {
         if(!is_array($arr)) {return; }
@@ -438,15 +438,17 @@ class LocaleModel extends Model
         $msg_id = $arr[0];
 
         $args = array_slice($arr, 1);
-        $msg_string = "";
+        $msg_string = false;
         if(isset($this->configure['strings'][$msg_id])) {
             $msg_string = $this->configure['strings'][$msg_id];
-        } else if($msg_string == "" &&
-            isset($this->default_configure['strings'][$msg_id])) {
+        }
+        if($msg_string == "" && $this->default_configure['strings'][$msg_id]) {
             $msg_string = $this->default_configure['strings'][$msg_id];
         }
-
-        return vsprintf($msg_string, $args);
+        if($msg_string !== false) {
+            $msg_string = vsprintf($msg_string, $args);
+        }
+        return $msg_string;
     }
 
 
