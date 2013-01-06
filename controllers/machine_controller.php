@@ -71,7 +71,7 @@ class MachineController extends Controller implements CrawlConstants
      * Number of characters from end of most recent log file to return
      * on a log request
      */
-    const LOG_LISTING_LEN = 100000;
+    const LOG_LISTING_LEN = 200000;
     /**
      * Checks that the request seems to be coming from a legitimate fetcher then
      * determines which activity the fetcher is requesting and calls that
@@ -169,13 +169,16 @@ class MachineController extends Controller implements CrawlConstants
                 $log_data = fread($fh, $len);
                 fclose($fh);
             }
-            if($filter != "") {
+            if($filter != "" && strlen($log_data) > 0) {
                 $log_lines = explode("\n", $log_data);
                 $out_lines = array();
                 foreach($log_lines as $line) {
                     if(stristr($line, $filter)) {
                         $out_lines[] = $line;
                     }
+                }
+                if(count($out_lines) == 0) {
+                    $out_lines[] = tl('machine_controller_nolines');
                 }
                 $log_data = implode("\n", $out_lines);
             }
