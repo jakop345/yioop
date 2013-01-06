@@ -1000,19 +1000,22 @@ class PhraseModel extends ParallelModel
         if(QUERY_STATISTICS) {
             $summary_times_string = AnalyticsManager::get("SUMMARY_TIMES");
             if($summary_times_string) {
-                $summary_times = unserialize($summary_times_string);
+                $round_summary_times = unserialize($summary_times_string);
                 $summary_delta_time = changeInMicrotime($summaries_time);
                 $summary_time_info = "$summary_delta_time<br /> $in4";
-                $i = 0;
-                $max_time = 0;
-
-                foreach ($summary_times as $summary_time) {
-                    $summary_time_info .= "ID_$i: ".$summary_time."$indent";
-                    $max_time = ($summary_time > $max_time) ?
-                        $summary_time : $max_time;
-                    $i++;
+                $sum_max_time = 0;
+                foreach($round_summary_times as $summary_times) {
+                    $i = 0;
+                    $max_time = 0;
+                    foreach ($summary_times as $summary_time) {
+                        $summary_time_info .= "ID_$i: ".$summary_time."$indent";
+                        $max_time = ($summary_time > $max_time) ?
+                            $summary_time : $max_time;
+                        $i++;
+                    }
+                    $sum_max_time += $max_time;
                 }
-                $net_overhead =  $summary_delta_time - $max_time;
+                $net_overhead =  $summary_delta_time - $sum_max_time;
                 $summary_time_info .=
                     "<br />$in3<i>Network Overhead Sub-Time</i>: ".
                     $net_overhead;

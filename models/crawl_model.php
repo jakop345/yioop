@@ -923,7 +923,7 @@ EOT;
     {
         $pre_list = array();
         foreach($list_strings as $list_string) {
-            $a_list = unserialize(webdecode(
+            $a_list = @unserialize(webdecode(
                 $list_string[self::PAGE]));
             if($data_field != NULL) {
                 $a_list = $a_list[$data_field];

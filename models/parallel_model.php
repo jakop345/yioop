@@ -214,7 +214,15 @@ class ParallelModel extends Model implements CrawlConstants
                     }
                 }
             }
-            AnalyticsManager::set("SUMMARY_TIMES", serialize($elapsed_times));
+            $summary_times_string = AnalyticsManager::get("SUMMARY_TIMES");
+            if($summary_times_string) {
+                $all_elapsed_times = unserialize($summary_times_string);
+            } else {
+                $all_elapsed_times = array();
+            }
+            $all_elapsed_times[] = $elapsed_times;
+            AnalyticsManager::set("SUMMARY_TIMES", serialize(
+                $all_elapsed_times));
         }
         return $summaries;
     }

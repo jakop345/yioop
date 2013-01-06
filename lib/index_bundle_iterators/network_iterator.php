@@ -299,7 +299,12 @@ class NetworkIterator extends IndexBundleIterator
      }
 
     /**
+     * Called to make an link for AnalyticsManager about a network query
+     * performed by this iterator.
      *
+     * @param array $sites used by this network iterator
+     * @param int $index which site in array to make link for
+     * @return string html of link
      */
     function makeLookupLink($sites, $index)
     {
