@@ -316,7 +316,7 @@ class NetworkIterator extends IndexBundleIterator
             $url = 'javascript:alert("'.$tmp.'")';
 
         }
-        $link = "<a target="_blank" class='gray-link' href='$url'".
+        $link = "<a target='_blank' class='gray-link' href='$url'".
              " title='$title' >ID_$index</a>:";
         return $link;
     }
