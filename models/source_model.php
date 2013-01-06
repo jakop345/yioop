@@ -268,7 +268,6 @@ class SourceModel extends Model
             $feed_shard = IndexShard::load($feed_shard_name);
         }
         $feeds = $this->getMediaSources("rss");
-
         $feeds = FetchUrl::getPages($feeds, false, 0, NULL, "SOURCE_URL",
             CrawlConstants::PAGE, true, NULL, true);
         $feed_items = array();
@@ -336,7 +335,6 @@ class SourceModel extends Model
         $feed_shard =  new IndexShard($feed_shard_name);
         $sql = "SELECT * FROM FEED_ITEM";
         $result = $db->execute($sql);
-
         if($result) {
             while($item = $db->fetchArray($result)) {
                 if(!isset($item['SOURCE_NAME'])) continue;
@@ -374,12 +372,12 @@ class SourceModel extends Model
      * adds $item to db if it isn't already there
      *
      * @param array $item data from a single news feed item
-     * @param object &$feed_shard index_shard to stored extracted words in
+     * @param object $feed_shard index_shard to stored extracted words in
      * @param string $source_name string name of the news feed $item was found
      *  on
      * @param string $lang locale-tag of the news feed
      */
-    function addFeedItemIfNew($item, &$feed_shard, $source_name, $lang)
+    function addFeedItemIfNew($item, $feed_shard, $source_name, $lang)
     {
         if(!isset($item["link"]) || !isset($item["title"]) ||
             !isset($item["description"])) return;
