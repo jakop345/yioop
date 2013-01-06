@@ -137,6 +137,11 @@ p
     background-color: yellow;
 }
 
+.clear
+{
+    clear: both;
+}
+
 .frame
 {
     background-color: #fff;

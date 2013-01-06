@@ -1966,7 +1966,7 @@ class Fetcher implements CrawlConstants
                         $this->post_max_size);
                     sleep(5);
                 }
-                    $sleep = true;
+                $sleep = true;
                 $info_string = FetchUrl::getPage($queue_server, $post_data);
                 $info = unserialize(trim($info_string));
                 if(isset($info[self::LOGGING])) {

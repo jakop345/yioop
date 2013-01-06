@@ -1778,26 +1778,32 @@ class AdminController extends Controller implements CrawlConstants
                         $data["NO_REFRESH"] = false;
                     }
                     $data["ELEMENT"] = "machinelogElement";
-
-                    $data["REFRESH_LOG"] = "&time=".$data["time"];
+                    $filter= "";
+                    if(isset($_REQUEST['f'])) {
+                        $filter = 
+                            $this->clean($_REQUEST['f'], "string");
+                    } 
+                    $data['filter'] = $filter;
+                    $data["REFRESH_LOG"] = "&time=". $data["time"];
                     $data["LOG_TYPE"] = "";
                     if(isset($r['fetcher_num']) && isset($r['name'])) {
                         $data["LOG_FILE_DATA"] = $this->machineModel->getLog(
-                            $r["name"], $r["fetcher_num"]);
+                            $r["name"], $r["fetcher_num"], $filter);
                         $data["LOG_TYPE"] = $r['name'].
                             " fetcher ".$r["fetcher_num"];
                         $data["REFRESH_LOG"] .= "&arg=log&name=".$r['name'].
-                            "&fetcher_num=". $r['fetcher_num'];
+                            "&f=".urlencode($filter).
+                            "&fetcher_num=".$r['fetcher_num'];
                     } else if(isset($r["mirror_name"])) {
                         $data["LOG_TYPE"] = $r['mirror_name']." mirror";
                         $data["LOG_FILE_DATA"] = $this->machineModel->getLog(
-                            $r["mirror_name"], NULL, true);
-
+                            $r["mirror_name"], NULL, $filter,  true);
                     } else if(isset($r['name'])) {
                         $data["LOG_TYPE"] = $r['name']." queue_server";
                         $data["LOG_FILE_DATA"] = $this->machineModel->getLog(
-                            $r["name"]);
-                        $data["REFRESH_LOG"] .= "&arg=log&name=".$r['name'];
+                            $r["name"], NULL, $filter);
+                        $data["REFRESH_LOG"] .= 
+                            "&arg=log&name=".$r['name'];
                     }
                     if($data["time"] >= 1200) {
                         $data["REFRESH_LOG"] = "";
@@ -1847,7 +1853,7 @@ class AdminController extends Controller implements CrawlConstants
 
             }
         }
-        if(isset($_REQUEST['arg']) && $_REQUEST['arg'] != 'log') {
+        if(!isset($_REQUEST['arg']) || $_REQUEST['arg'] != 'log') {
             $data['SCRIPT'] .= "toggleReplica(false);";
         }
         return $data;

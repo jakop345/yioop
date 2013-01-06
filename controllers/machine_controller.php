@@ -108,7 +108,6 @@ class MachineController extends Controller implements CrawlConstants
     function update()
     {
         $statuses = CrawlDaemon::statuses();
-
         if(isset($_REQUEST['queue_server'])) {
             if($_REQUEST['queue_server'] == "true" &&
                 !isset($statuses["queue_server"][-1])) {
@@ -157,6 +156,10 @@ class MachineController extends Controller implements CrawlConstants
         } else {
             $log_file_name = LOG_DIR . "/queue_server.log";
         }
+        $filter = "";
+        if(isset($_REQUEST["f"])) {
+            $filter = $this->clean($_REQUEST["f"], "string");
+        }
         if(file_exists($log_file_name)) {
             $size = filesize($log_file_name);
             $len = min(self::LOG_LISTING_LEN, $size);
@@ -165,6 +168,16 @@ class MachineController extends Controller implements CrawlConstants
                 fseek($fh, $size - $len);
                 $log_data = fread($fh, $len);
                 fclose($fh);
+            }
+            if($filter != "") {
+                $log_lines = explode("\n", $log_data);
+                $out_lines = array();
+                foreach($log_lines as $line) {
+                    if(stristr($line, $filter)) {
+                        $out_lines[] = $line;
+                    }
+                }
+                $log_data = implode("\n", $out_lines);
             }
         }
         echo json_encode(urlencode($log_data));

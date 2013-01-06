@@ -222,7 +222,8 @@ class MachineModel extends Model
      *  @return string containing the last MachineController::LOG_LISTING_LEN
      *      bytes of the log record
      */
-    function getLog($machine_name, $fetcher_num = NULL, $is_mirror = false)
+    function getLog($machine_name, 
+        $fetcher_num = NULL, $filter="", $is_mirror = false)
     {
         $time = time();
         $session = md5($time . AUTH_KEY);
@@ -232,7 +233,7 @@ class MachineModel extends Model
         $row = $this->db->fetchArray($result);
         if($row) {
             $url = $row["URL"]. "?c=machine&a=log&time=$time".
-                "&session=$session";
+                "&session=$session&f=$filter";
             if($fetcher_num !== NULL) {
                 $url .= "&fetcher_num=$fetcher_num";
             }

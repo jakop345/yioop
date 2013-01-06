@@ -56,9 +56,23 @@ class MachinelogElement extends Element
     ?>
         <div class="current-activity">
         <div class="<?php e($data['leftorright']);?>">
-        <a href="?c=admin&amp;a=manageMachines&amp;<?php
-            e(CSRF_TOKEN."=".$data[CSRF_TOKEN]) ?>"
-        ><?php e(tl('machinelog_element_back_to_manage'))?></a>
+            <div class="<?php e($data['leftorright']);?>">
+            <a href="?c=admin&amp;a=manageMachines&amp;<?php
+                e(CSRF_TOKEN."=".$data[CSRF_TOKEN]) ?>"
+            ><?php e(tl('machinelog_element_back_to_manage'))?></a>
+            </div>
+            <form method="get" action="?c=admin&amp;<?php
+                e(CSRF_TOKEN."=".
+                $data[CSRF_TOKEN]); ?>&amp;a=manageMachines<?php
+                e($data['REFRESH_LOG'].""); ?>" >
+                <table class="clear">
+                <tr><th><label for="set-filter">
+                <?php e(tl('machinelog_element_filter'));?></label></th>
+                 <td><input type="text" class="narrow-field" id="set-filter"
+                    onchange="javascript:logUpdate();"
+                    value="<?php e($data['filter']); ?>" /></td></tr>
+                </table>
+            </form>
         </div>
         <h2><?php e(tl('machinelog_element_log_file',$data['LOG_TYPE']));?></h2>
         <?php if(!$data['NO_REFRESH']) {?>
@@ -80,7 +94,8 @@ class MachinelogElement extends Element
         var updateId;
         function logUpdate()
         {
-            var refreshUrl= "?c=admin&<?php
+            var filter = elt('set-filter').value;
+            var refreshUrl= "?c=admin&f=" + filter + "&<?php
                 e(CSRF_TOKEN."=".$data[CSRF_TOKEN]);?>&a=manageMachines<?php
                 e($data['REFRESH_LOG'].""); ?>";
             document.location = refreshUrl;
