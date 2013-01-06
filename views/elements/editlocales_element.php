@@ -94,13 +94,13 @@ class EditlocalesElement extends Element
             if(strlen($msg_string) > 0) {
                 e("<tr><td><label for='$msg_id'>$msg_id</label>".
                     "</td><td><input type='text' title='".
-                    @tl($msg_id,"%s", "%s", "%s").
+                    $data['DEFAULT_STRINGS'][$msg_id].
                     "' id='$msg_id' name='STRINGS[$msg_id]' ".
                     "value='$msg_string' /></td></tr>");
             } else {
                 e("<tr><td><label for='$msg_id'>$msg_id</label></td><td><input".
                     " class='highlight' type='text' title='".
-                    @tl($msg_id,"%s", "%s", "%s")."' id='$msg_id' ".
+                    $data['DEFAULT_STRINGS'][$msg_id]."' id='$msg_id' ".
                     "name='STRINGS[$msg_id]' value='$msg_string' /></td></tr>");
             }
         }

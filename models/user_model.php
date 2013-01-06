@@ -107,9 +107,10 @@ class UserModel extends Model
             if($translate) {
                 $activities[$i]['ACTIVITY_NAME'] = $translate['ACTIVITY_NAME'];
             }
-            if($activities[$i]['ACTIVITY_NAME'] == "") {
-                $activities[$i]['ACTIVITY_NAME'] = 
-                    $activities[$i]['IDENTIFIER_STRING'];
+            if(!isset($activities[$i]['ACTIVITY_NAME']) || 
+                $activities[$i]['ACTIVITY_NAME'] == "") {
+                $activities[$i]['ACTIVITY_NAME'] = $this->translateDb(
+                    $activities[$i]['IDENTIFIER_STRING'], DEFAULT_LOCALE);
             }
             $i++;
         }

@@ -183,8 +183,8 @@ class SourceModel extends Model
                 $subsearches[$i]['SUBSEARCH_NAME'] =
                     $translate['SUBSEARCH_NAME'];
             } else {
-                $subsearches[$i]['SUBSEARCH_NAME'] =
-                    $subsearches[$i]['LOCALE_STRING'];
+                $subsearches[$i]['SUBSEARCH_NAME'] = $this->translateDb(
+                    $subsearches[$i]['LOCALE_STRING'], DEFAULT_LOCALE);
             }
             $i++;
         }

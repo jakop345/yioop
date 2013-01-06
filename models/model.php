@@ -389,5 +389,36 @@ class Model implements CrawlConstants
                     UrlParser::isLocalhostUrl($machine_urls[0]);
     }
 
+    /**
+     *  Used to get the translation of a string_id stored in the database to
+     *  the given locale.
+     *
+     *  @param string $string_id id to translate
+     *  @param string $locale_tag to translate to
+     *  @return mixed translation if found, $string_id, otherwise
+     */
+    function translateDb($string_id, $locale_tag)
+    {
+        static $lookup = array();
+
+        if(isset($lookup[$string_id])) {
+            return $lookup[$string_id];
+        }
+
+        $sql = <<< EOD
+            SELECT TL.TRANSLATION AS TRANSLATION
+            FROM TRANSLATION T, LOCALE L, TRANSLATION_LOCALE TL
+            WHERE T.IDENTIFIER_STRING = '$string_id' AND
+                L.LOCALE_TAG = '$locale_tag' AND
+                L.LOCALE_ID = TL.LOCALE_ID AND 
+                T.TRANSLATION_ID = TL.TRANSLATION_ID LIMIT 1
+EOD;
+        $result = $this->db->execute($sql);
+        $row = $this->db->fetchArray($result);
+        if(isset($row['TRANSLATION'])) {
+            return $row['TRANSLATION'];
+        }
+        return $string_id;
+    }
 }
 ?>

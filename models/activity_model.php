@@ -90,20 +90,22 @@ class ActivityModel extends Model
             "L.LOCALE_ID = TL.LOCALE_ID LIMIT 1";
         $result = $db->execute($sql);
         $row = $db->fetchArray($result);
+        $activity_name = false;
+        if(isset($row['ACTIVITY_NAME'])) {
+            $activity_name = $row['ACTIVITY_NAME'];
+        }
 
-        if($row == NULL) {
-
-            $sql = "SELECT T.IDENTIFIER_STRING AS ACTIVITY_NAME  FROM ".
+        if(!$activity_name) {
+            $sql = "SELECT T.IDENTIFIER_STRING AS STRING_ID FROM ".
                 " ACTIVITY A, TRANSLATION T ".
                 "WHERE A.METHOD_NAME = '$method_name' ".
                 " AND T.TRANSLATION_ID = A.TRANSLATION_ID LIMIT 1";
 
             $result = $db->execute($sql);
             $row = $db->fetchArray($result);
-
+            $activity_name = $this->translateDb($row['STRING_ID'],
+                DEFAULT_LOCALE);
         }
-
-        $activity_name = $row['ACTIVITY_NAME'];
 
         return $activity_name;
 
@@ -152,8 +154,8 @@ class ActivityModel extends Model
             if($translate) {
                 $activities[$i]['ACTIVITY_NAME'] = $translate['ACTIVITY_NAME'];
             } else {
-                $activities[$i]['ACTIVITY_NAME'] =
-                    $activities['IDENTIFIER_STRING'];
+                $activities[$i]['ACTIVITY_NAME'] = $this->translateDb(
+                    $activities[$i]['IDENTIFIER_STRING'], DEFAULT_LOCALE);
             }
             $i++;
         }

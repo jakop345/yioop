@@ -1994,7 +1994,8 @@ class AdminController extends Controller implements CrawlConstants
                     }
                     $data['STRINGS'] =
                         $this->localeModel->getStringData($select_locale);
-
+                    $data['DEFAULT_STRINGS'] =
+                        $this->localeModel->getStringData(DEFAULT_LOCALE);
                 break;
             }
         }
