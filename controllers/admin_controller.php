@@ -1792,7 +1792,6 @@ class AdminController extends Controller implements CrawlConstants
                         $data["LOG_TYPE"] = $r['name'].
                             " fetcher ".$r["fetcher_num"];
                         $data["REFRESH_LOG"] .= "&arg=log&name=".$r['name'].
-                            "&f=".urlencode($filter).
                             "&fetcher_num=".$r['fetcher_num'];
                     } else if(isset($r["mirror_name"])) {
                         $data["LOG_TYPE"] = $r['mirror_name']." mirror";
