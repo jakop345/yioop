@@ -54,7 +54,6 @@ class FooterElement extends Element
     function render($data)
     {
     ?>
-
             <div>
             - <a href="<?php e($_SERVER["PATH_INFO"]); ?>/blog.php"><?php
             e(tl('footer_element_blog')); ?></a> -
@@ -70,7 +69,8 @@ class FooterElement extends Element
             e(tl('footer_element_developed_seek_quarry')); ?></a> -
             </div>
             <div>
-            (c) 2013 Yioop! - <a href="http://www.yioop.com/"><?php
+            <?php e(tl('footer_element_copyright_yioop')); ?>
+             - <a href="http://www.yioop.com/"><?php
             e(tl('footer_element_php_search_engine'));
             ?></a>
             </div>

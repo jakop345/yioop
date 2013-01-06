@@ -319,6 +319,8 @@ $db->execute("INSERT INTO TRANSLATION VALUES (1002,'db_subsearch_images')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
         (1002, 1, 'Images' )");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
+        (1002, 2, 'الصور' )");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
         (1002, 5, 'Images' )");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
         (1002, 15, 'Hình' )");
@@ -332,6 +334,8 @@ $db->execute("INSERT INTO TRANSLATION VALUES (1003,'db_subsearch_videos')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
         (1003, 1, 'Videos' )");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
+        (1003, 2, 'فيديو' )");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
         (1003, 5, 'Vidéos' )");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
         (1003, 15, 'Thâu hình' )");
@@ -344,6 +348,8 @@ $db->execute("INSERT INTO SUBSEARCH VALUES ('db_subsearch_news',
 $db->execute("INSERT INTO TRANSLATION VALUES (1004,'db_subsearch_news')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
         (1004, 1, 'News' )");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
+        (1004, 2, 'أخبار' )");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
         (1004, 5, 'Actualités' )");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
