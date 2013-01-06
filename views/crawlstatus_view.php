@@ -178,10 +178,11 @@ class CrawlstatusView extends View
         <?php
         if(isset($data['MOST_RECENT_URLS_SEEN']) &&
             count($data['MOST_RECENT_URLS_SEEN']) > 0) {
+            e('<pre>');
             foreach($data['MOST_RECENT_URLS_SEEN'] as $url) {
-                e("<pre>".htmlentities(wordwrap($url, 60, "\n", true)).
-                    "</pre>");
+                e(htmlentities(wordwrap($url, 60, "\n", true))."\n");
             }
+            e('</pre>');
         } else {
             e("<p>".tl('crawlstatus_view_no_recent_urls')."</p>");
         }
