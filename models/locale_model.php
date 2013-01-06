@@ -442,7 +442,8 @@ class LocaleModel extends Model
         if(isset($this->configure['strings'][$msg_id])) {
             $msg_string = $this->configure['strings'][$msg_id];
         }
-        if($msg_string == "" && $this->default_configure['strings'][$msg_id]) {
+        if($msg_string == "" && 
+            isset($this->default_configure['strings'][$msg_id])) {
             $msg_string = $this->default_configure['strings'][$msg_id];
         }
         if($msg_string !== false) {
