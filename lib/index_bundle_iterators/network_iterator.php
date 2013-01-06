@@ -269,8 +269,8 @@ class NetworkIterator extends IndexBundleIterator
                     }
                 }
                 $max_time = max($max_time, $pre_result['ELAPSED_TIME']);
-
-                $machine_times .= $indent. "ID_".$lookup[$j].": ".
+                $lookup_link = $this->makeLookupLink($sites, $lookup[$j]);
+                $machine_times .= $indent . $lookup_link .
                     $pre_result['ELAPSED_TIME']."&nbsp;&nbsp;";
                 $indent = "";
             }
@@ -297,6 +297,29 @@ class NetworkIterator extends IndexBundleIterator
         $this->pages = $results;
         return $results;
      }
+
+    /**
+     *
+     */
+    function makeLookupLink($sites, $index)
+    {
+        if(isset($sites[$index][self::URL])) {
+            $url = $sites[$index][self::URL];
+            $title = $url;
+        } else {
+            $tmp = urlencode(print_r($sites[$index], 
+                true));
+            $title = 'URL not set';
+            if(trim($tmp) == "") {
+                $tmp = 'Site null';
+            }
+            $url = 'javascript:alert("'.$tmp.'")';
+
+        }
+        $link = "<a class='gray-link' href='$url'".
+             " title='$title' >ID_$index</a>:";
+        return $link;
+    }
 
     /**
      * Gets the summaries associated with the keys provided the keys
