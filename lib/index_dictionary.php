@@ -556,6 +556,8 @@ class IndexDictionary implements CrawlConstants
       *  @param bool $raw whether the id is our version of base64 encoded or
       *  not
       *  @param int $tier which tier to get word info from
+      *  @param bool $extract whether the results should be extracted to
+      *     an array or left as a string
       *  @return mixed an array of entries of the form
       *      generation, first offset, last offset, count or
       *      just a string of the word_info data if $extract is false

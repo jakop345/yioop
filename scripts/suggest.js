@@ -208,10 +208,11 @@ function onTypeTerm(event, text_field)
             suggest_results.style.visibility = "visible";
             suggest_dropdown.style.visibility = "visible";
             suggest_dropdown.style.height = (FONT_HEIGHT * MAX_DISPLAY) + "px";
-            if (scroll_horz)
+            if(scroll_horz) {
                 suggest_dropdown.style.overflowX = "scroll";
-            else
+            } else {
                 suggest_dropdown.style.overflowX = "hidden";
+            }
         }
     }
     // behavior on up down arrows
@@ -715,9 +716,7 @@ function spellCheck()
         referenceNode = document.getElementsByClassName("serp")[0];
     }
     if (referenceNode) {
-        var correctedSpell = document.createElement("div");
-        correctedSpell.id = "spell-check";
-        correctedSpell.className='spell';
+        var corrected_spell = elt("spell-check");
         var csrf_token = elt("csrf-token").value;
         var its_value = elt("its-value").value;
 
@@ -746,14 +745,12 @@ function spellCheck()
             }
         }
         if (corrected_query.trim() != query) {
-            var token_name = csrf_value;
+            var token_name = csrf_name;
             var spell_link = "?" + token_name + "=" + csrf_token + "&q="
                 +corrected_query;
-            correctedSpell.innerHTML = "<b>" + local_strings.spell
+            corrected_spell.innerHTML = "<b>" + local_strings.spell
                 +": <a rel='nofollow' href='" + spell_link + 
                 "'>"  + corrected_query + "</a></b>";
-            referenceNode.parentNode.
-            insertBefore(correctedSpell, referenceNode.nextSibling);
         }
     }
 }

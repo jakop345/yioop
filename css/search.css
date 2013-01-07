@@ -68,6 +68,12 @@ p
     color: green;
 }
 
+
+.hidden
+{
+    visibility: hidden;
+}
+
 .left
 {
     float: left;
@@ -895,7 +901,7 @@ ul.in-list li
 {
     left: 0.5in;
     position: relative;
-    top: -0.8in;
+    top: -0.6in;
     width: 8in;
 }
 
@@ -912,20 +918,32 @@ ul.in-list li
 {
     position: relative;
     right: 0.5in;
-    top: -0.8in;
+    top: -0.6in;
     width: 8in;
 }
 
-.serp-stats
+.html-ltr .serp-stats
 {
     color: #666;
     font-size: 14pt;
-    left: 608px;
+    float:right;
+    left: 1.5in;
     margin: 0.2in 0 0 0;
     padding: 0;
     position: relative;
-    top: -12px;
+    top: -0.6in;
+}
 
+.html-rtl .serp-stats
+{
+    color: #666;
+    font-size: 14pt;
+    float: left;
+    margin: 0.2in 0 0 0;
+    padding: 0;
+    position: relative;
+    right:1.5in;
+    top: -0.6in;
 }
 
 .serp-links-score
@@ -953,13 +971,23 @@ ul.in-list li
     font-size:10pt;
 }
 
-.spell
+.html-ltr .spell
 {
     color: #666;
     font-size: 14pt;
     left: 49px;
     position: relative;
-    top: -47px;
+    top: -0.6in;
+    z-index: 1;
+}
+
+.html-rtl .spell
+{
+    color: #666;
+    font-size: 14pt;
+    right: 49px;
+    position: relative;
+    top: -0.6in;
     z-index: 1;
 }
 

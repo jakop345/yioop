@@ -258,14 +258,22 @@ class SourceModel extends Model
     /**
      *  For each feed source downloads the feeds, checks which items are
      *  not in the database, adds them and updates the inverted index for feeds
+     *
+     *  @return bool whther feed item update was successful
      */
     function updateFeedItems()
     {
         $feed_shard_name = WORK_DIRECTORY."/feeds/index";
-        if(!file_exists($feed_shard_name)) {
-            $feed_shard =  new IndexShard($feed_shard_name);
-        } else {
+        $feed_shard = NULL;
+        if(file_exists($feed_shard_name)) {
             $feed_shard = IndexShard::load($feed_shard_name);
+        }
+        if(!$feed_shard) {
+            @unlink($feed_shard_name); //maybe index corrupted?
+            $feed_shard =  new IndexShard($feed_shard_name);
+        }
+        if(!$feed_shard) {
+            return false;
         }
         $feeds = $this->getMediaSources("rss");
         $feeds = FetchUrl::getPages($feeds, false, 0, NULL, "SOURCE_URL",
@@ -305,6 +313,7 @@ class SourceModel extends Model
             }
         }
         $feed_shard->save();
+        return true;
     }
 
     /**

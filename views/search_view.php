@@ -147,7 +147,8 @@ class SearchView extends View implements CrawlConstants
             ?>
 
         </div>
-
+        <div id="spell-check" class="spell"><span class="hidden"
+        >123</span></div>
         <div class="serp-results">
             <h2 class="serp-stats"><?php
                 if(MOBILE) {

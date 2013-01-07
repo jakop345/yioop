@@ -117,10 +117,80 @@ class SearchController extends Controller implements CrawlConstants
     function processRequest()
     {
         $data = array();
-        $view = "search";
-        $web_flag = true;
         $start_time = microtime();
 
+        $format_info = $this->initializeResponseFormat();
+        if(!$format_info) { return;}
+        list($view, $web_flag, $raw, $results_per_page, $limit) = $format_info;
+
+        list($subsearches, $no_query) = $this->initializeSubsearches();
+
+        list($query, $highlight, $activity, $arg) = 
+            $this->initializeUserAndDefaultActivity($data);
+
+        if($activity == "query" && $this->mirrorHandle()) {return; }
+
+        list($index_timestamp, $index_info, $save_timestamp) = 
+            $this->initializeIndexInfo($web_flag, $raw, $data);
+
+        if(isset($_REQUEST['q']) && strlen($_REQUEST['q']) > 0
+            || $activity != "query") {
+            if($activity != "cache") {
+                $this->processQuery($query, $activity, $arg,
+                    $results_per_page, $limit, $index_timestamp, $raw,
+                    $save_timestamp, $data);
+                    // calculate the results of a search if there is one
+            } else {
+                $this->cacheRequestAndOutput($arg,
+                    $highlight, $query, $index_timestamp);
+                return;
+            }
+        }
+
+        $data['ELAPSED_TIME'] = changeInMicrotime($start_time);
+        if ($view == "serial") {
+            if(isset($data["PAGES"])) {
+                $count = count($data["PAGES"]);
+                for($i = 0; $i < $count; $i++) {
+                    unset($data["PAGES"][$i]["OUT_SCORE"]);
+                    $data["PAGES"][$i][self::SCORE]= "".
+                        round($data["PAGES"][$i][self::SCORE], 3);
+                    $data["PAGES"][$i][self::DOC_RANK]= "".
+                        round($data["PAGES"][$i][self::DOC_RANK], 3);
+                    $data["PAGES"][$i][self::RELEVANCE]= "".
+                        round($data["PAGES"][$i][self::RELEVANCE], 3);
+                }
+            }
+            echo serialize($data);
+            exit();
+        }
+
+        if($web_flag) { 
+            $this->addSearchViewData($index_info, $no_query, $raw, $view,
+                $subsearches, $data);
+        }
+
+        $this->displayView($view, $data);
+    }
+
+    /**
+     *  Determines how this query is being run and return variables for the view
+     *
+     *  A query might be run as a web-based where HTML is expected as the 
+     *  output, an RSS query, an API query, or as a serial query from a
+     *  name_server or mirror instance back to one of the other queue servers
+     *  in a Yioop installation. A query might also request different numbers
+     *  of pages back beginning at different starting points in the result.
+     *
+     *  @return array consisting of (view to be used to render results,
+     *      flag for whether html results should be used, int code for what
+     *      kind of group of similar urls should be done on the results,
+     *      number of search results to return, start from which result)
+     */
+    function initializeResponseFormat()
+    {
+        $view = "search";
+        $web_flag = true;
         if(isset($_REQUEST['f']) && $_REQUEST['f']=='rss' &&
             RSS_ACCESS) {
             $view = "rss";
@@ -130,8 +200,40 @@ class SearchController extends Controller implements CrawlConstants
             $view = "serial";
             $web_flag = false;
         } else if (!WEB_ACCESS) {
-            return;
+            return false;
         }
+        if(isset($_REQUEST['num'])) {
+            $results_per_page = $this->clean($_REQUEST['num'], "int");
+        } else if(isset($_SESSION['MAX_PAGES_TO_SHOW']) ) {
+            $results_per_page = $_SESSION['MAX_PAGES_TO_SHOW'];
+        } else {
+            $results_per_page = NUM_RESULTS_PER_PAGE;
+        }
+        if(isset($_REQUEST['raw'])){
+            $raw = max($this->clean($_REQUEST['raw'], "int"), 0);
+        } else {
+            $raw = 0;
+        }
+        if(isset($_REQUEST['limit'])) {
+            $limit = $this->clean($_REQUEST['limit'], "int");
+        } else {
+            $limit = 0;
+        }
+        return array($view, $web_flag, $raw, $results_per_page, $limit);
+    }
+
+    /**
+     *  Determines if query results are using a subsearch, and if so
+     *  initializes them, also it sets up list of subsearches to draw
+     *  at top of screen.
+     *
+     *  @return array (subsearches, no_query) where subsearches is itself
+     *      an array of data about each subsearch to draw, and no_query
+     *      is a bool flag used in the case of a news subsearch when no query
+     *      was entered by the user but still want to display news
+     */
+    function initializeSubsearches()
+    {
         $subsearches = $this->sourceModel->getSubsearches();
         $no_query = false;
         if(isset($_REQUEST["s"])) {
@@ -163,14 +265,26 @@ class SearchController extends Controller implements CrawlConstants
                 $no_query = true;
             }
         }
-        if(isset($_REQUEST['num'])) {
-            $results_per_page = $this->clean($_REQUEST['num'], "int");
-        } else if(isset($_SESSION['MAX_PAGES_TO_SHOW']) ) {
-            $results_per_page = $_SESSION['MAX_PAGES_TO_SHOW'];
-        } else {
-            $results_per_page = NUM_RESULTS_PER_PAGE;
-        }
+        return array($subsearches, $no_query);
+    }
 
+    /**
+     *  Determines the kind of user session that this search request is for
+     *
+     *  This function is called by @see processRequest(). The user session
+     *  might be one without a login, one with a login so need to validate
+     *  against to prevent CSRF attacks, just after someone logged out, or
+     *  a bot session (googlebot, etc) so remove the query request
+     *
+     *  @param array &$data that will eventually be sent to the view. We might
+     *      update with error messages
+     *  @return array consisting of (query based on user info, whether
+     *      if a cache request highlighting should be userd, what activity
+     *      user wants, any arguments to this activity)
+     *
+     */
+    function initializeUserAndDefaultActivity(&$data)
+    {
         if(isset($_SESSION['USER_ID'])) {
             $user = $_SESSION['USER_ID'];
             $token_okay = $this->checkCSRFToken(CSRF_TOKEN, $user);
@@ -181,42 +295,72 @@ class SearchController extends Controller implements CrawlConstants
             $user = $_SERVER['REMOTE_ADDR'];
             $token_okay = true;
         }
+        if($token_okay && isset($_SESSION["USER_ID"])) {
+            $data["ADMIN"] = true;
+        } else {
+            $data["ADMIN"] = false;
+        }
+        $data[CSRF_TOKEN] = $this->generateCSRFToken($user);
+
         if(isset($_REQUEST['q'])) {
             $_REQUEST['q'] = $this->restrictQueryByUserAgent($_REQUEST['q']);
         }
-        if(isset($_REQUEST['raw'])){
-            $raw = max($this->clean($_REQUEST['raw'], "int"), 0);
+
+        $arg = false;
+        if(!isset($_REQUEST['a']) || !in_array($_REQUEST['a'], 
+            $this->activities)) {
+            $activity = "query";
         } else {
-            $raw = 0;
-        }
-        if(isset($_REQUEST['a'])) {
-            if(in_array($_REQUEST['a'], $this->activities)) {
-
-                $activity = $_REQUEST['a'];
-
-                if($activity == "signout") {
-                    unset($_SESSION['USER_ID']);
-                    $user = $_SERVER['REMOTE_ADDR'];
-                    $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
-                        tl('search_controller_logout_successful')."</h1>')";
-                }
-
-                if(isset($_REQUEST['arg'])) {
-                    $arg = $_REQUEST['arg'];
-                } else {
-                    $activity = "query";
-                }
+            $activity = $_REQUEST['a'];
+            if($activity == "signout") {
+                unset($_SESSION['USER_ID']);
+                $user = $_SERVER['REMOTE_ADDR'];
+                $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
+                    tl('search_controller_logout_successful')."</h1>')";
+            }
+            if(isset($_REQUEST['arg'])) {
+                $arg = $_REQUEST['arg'];
             } else {
                 $activity = "query";
             }
+        }
+        if($activity == "query") {
+            $highlight = false;
+            list($query, $activity, $arg) = $this->extractActivityQuery();
         } else {
-            $activity = "query";
+            $highlight = true;
+            $query = isset($_REQUEST['q']) ? $_REQUEST['q'] : "";
+            $query = $this->clean($query, "string");
         }
 
-        if($activity == "query" && $this->checkMirrorHandle()) {return; }
+        if(isset($_SESSION['OPEN_IN_TABS'])) {
+            $data['OPEN_IN_TABS'] = $_SESSION['OPEN_IN_TABS'];
+        } else {
+            $data['OPEN_IN_TABS'] = false;
+        }
 
-        $machine_urls = $this->machineModel->getQueueServerUrls();
+        return array($query, $highlight, $activity, $arg);
+    }
 
+    /**
+     *  Determines which crawl or mix timestamp should be in use for this
+     *  query. It also determines info and returns associated with this 
+     *  timestamp.
+     *
+     *  @param bool $web_flag whether this is a web based query or one from
+     *      the search API
+     *  @param int  and so should validate against list of known crawls or an 
+     *      internal (say network) query that doesn't require validation
+     *      (faster without).
+     *  @param array &$data that will eventually be sent to the view. We set
+     *      the 'its' (index_time_stamp) field here
+     *  @return array consisting of index timestamp of crawl or mix in use,
+     *      $index_info an array of info about that index, and $save_timestamp
+     *      timestamp of last savepoint, used if this query is being is the
+     *      query for a crawl mix archive crawl.
+     */
+    function initializeIndexInfo($web_flag, $raw, &$data)
+    {
         if(isset($_REQUEST['machine'])) {
             $current_machine = $this->clean($_REQUEST['machine'], 'int');
         } else {
@@ -224,28 +368,28 @@ class SearchController extends Controller implements CrawlConstants
         }
         $this->phraseModel->current_machine = $current_machine;
         $this->crawlModel->current_machine = $current_machine;
+
+        $machine_urls = $this->machineModel->getQueueServerUrls();
+
         $current_its = $this->crawlModel->getCurrentIndexDatabaseName();
 
-        /* The $raw in the next line is because we don't validate its or raw
-           (presumably internal) queries
-         */
         if((isset($_REQUEST['its']) || isset($_SESSION['its']))) {
             $its = (isset($_REQUEST['its'])) ? $_REQUEST['its'] :
                 $_SESSION['its'];
-            $index_time_stamp = $this->clean($its, "int");
+            $index_timestamp = $this->clean($its, "int");
             if($raw != 1) {
-                if($index_time_stamp != 0 ) {
+                if($index_timestamp != 0 ) {
                     //validate timestamp against list
                     //(some crawlers replay deleted crawls)
-                    $crawls = $this->crawlModel->getCrawlList(false,true,
-                        $machine_urls,true);
+                    $crawls = $this->crawlModel->getCrawlList(false, true,
+                        $machine_urls, true);
                     $is_mix = false;
-                    if($this->crawlModel->isCrawlMix($index_time_stamp)) {
+                    if($this->crawlModel->isCrawlMix($index_timestamp)) {
                         $is_mix = true;
                     }
                     $found_crawl = false;
                     foreach($crawls as $crawl) {
-                        if($index_time_stamp == $crawl['CRAWL_TIME']) {
+                        if($index_timestamp == $crawl['CRAWL_TIME']) {
                             $found_crawl = true;
                             break;
                         }
@@ -257,82 +401,83 @@ class SearchController extends Controller implements CrawlConstants
                         exit();
                     } else if(!$found_crawl) {
                         unset($_SESSION['its']);
-                        $index_time_stamp = $current_its;
+                        $index_timestamp = $current_its;
                     }
                 } else {
-                    $index_time_stamp = $current_its;
+                    $index_timestamp = $current_its;
                         //use the default crawl index
                 }
             }
         } else {
-            $index_time_stamp = $current_its;
+            $index_timestamp = $current_its;
                 //use the default crawl index
         }
-        if($web_flag && $index_time_stamp != 0 ) {
+
+        $index_info = false;
+        if($web_flag && $index_timestamp != 0 ) {
             $index_info =  $this->crawlModel->getInfoTimestamp(
-                $index_time_stamp, $machine_urls);
+                $index_timestamp, $machine_urls);
             if($index_info == array() || !isset($index_info["COUNT"]) ||
                 $index_info["COUNT"] == 0) {
-                if($index_time_stamp != $current_its) {
-                    $index_time_stamp = $current_its;
+                if($index_timestamp != $current_its) {
+                    $index_timestamp = $current_its;
                     $index_info =  $this->crawlModel->getInfoTimestamp(
-                        $index_time_stamp, $machine_urls);
+                        $index_timestamp, $machine_urls);
                     if($index_info == array()) { $index_info = NULL; }
                 }
             }
-        } else if ($index_time_stamp == 0) {
+        } else if ($index_timestamp == 0) {
             $index_info = NULL;
         }
+
         if(isset($_REQUEST['save_timestamp'])){
             $save_timestamp = $this->clean($_REQUEST['save_timestamp'], 'int');
         } else {
             $save_timestamp = 0;
         }
-        if(isset($_REQUEST['q']) && strlen($_REQUEST['q']) > 0
-            || $activity != "query") {
-            if($activity == "query") {
-                $activity_array = $this->extractActivityQuery();
-                $query = $activity_array[0]; // dirty
-                $activity = $activity_array[1];
-                $arg = $activity_array[2];
-            }
+        $data['its'] = (isset($index_timestamp)) ? $index_timestamp : 0;
 
-            if($activity != "cache") {
-                if(!isset($query)) {
-                    $query = NULL;
-                }
-                if(isset($_REQUEST['limit'])) {
-                    $limit = $this->clean($_REQUEST['limit'], "int");
-                } else {
-                    $limit = 0;
-                }
-                $data =
-                    $this->processQuery(
-                        $query, $activity, $arg,
-                        $results_per_page, $limit, $index_time_stamp, $raw,
-                        $save_timestamp);
-                        // calculate the results of a search if there is one
-            } else {
-                $highlight = true;
-                if(!isset($query)) {
-                    $query = $_REQUEST['q']; //dirty
-                    list(,$query_activity,) = $this->extractActivityQuery();
-                    if($query_activity != "query") {$highlight = false;}
-                }
-                $this->cacheRequestAndOutput($arg,
-                    $highlight, $query, $index_time_stamp);
-                return;
+        return array($index_timestamp, $index_info, $save_timestamp);
+    }
+
+    /**
+     * Sometimes robots disobey the statistics page nofollow meta tag.
+     * and need to be stopped before they query the whole index
+     *
+     * @param string $query  the search request string
+     * @return string the search request string if not a bot; "" otherwise
+     */
+    function restrictQueryByUserAgent($query)
+    {
+        $bots = array("googlebot", "baidu", "naver", "sogou");
+        $query_okay = true;
+        foreach($bots as $bot) {
+            if(!isset($_SERVER["HTTP_USER_AGENT"]) ||
+                stristr($_SERVER["HTTP_USER_AGENT"], $bot)) {
+                $query_okay = false;
             }
         }
+        return ($query_okay) ? $query : "";
+    }
 
-        if(isset($_SESSION['OPEN_IN_TABS'])) {
-            $data['OPEN_IN_TABS'] = $_SESSION['OPEN_IN_TABS'];
-        } else {
-            $data['OPEN_IN_TABS'] = false;
-        }
-
-        $data['its'] = (isset($index_time_stamp)) ? $index_time_stamp : 0;
-        if($web_flag && $index_info !== NULL) {
+    /**
+     *  Prepares the array $data so the SearchView can draw search results
+     *
+     *  @param array $index_info an array of info about that index in use
+     *  @param bool $no_query true in the case of a news subsearch when no query
+     *      was entered by the user but still want to display news
+     *  @param int $raw $raw what kind of grouping of identical results should
+     *      be done (0 is default, 1 and higher used for internal queries)
+     *  @param string $view name of view class search results are for
+     *  @param array $subsearches an array of data about each subsearch to draw
+     *      to the view
+     *  @param array &$data that will eventually be sent to the view for
+     *      rendering. This method adds fields to the array
+     */
+    function addSearchViewData($index_info, $no_query, $raw, $view,
+        $subsearches, &$data)
+    {
+        if($index_info !== NULL) {
             if(isset($index_info['IS_MIX'])) {
                 $data['INDEX_INFO'] = tl('search_controller_mix_info',
                     $index_info['DESCRIPTION']);
@@ -351,24 +496,6 @@ class SearchController extends Controller implements CrawlConstants
         } else {
             $data['INDEX_INFO'] = "";
         }
-
-        $data['ELAPSED_TIME'] = changeInMicrotime($start_time);
-        if ($view == "serial") {
-            if(isset($data["PAGES"])) {
-                $count = count($data["PAGES"]);
-                for($i = 0; $i < $count; $i++) {
-                    unset($data["PAGES"][$i]["OUT_SCORE"]);
-                    $data["PAGES"][$i][self::SCORE]= "".
-                        round($data["PAGES"][$i][self::SCORE], 3);
-                    $data["PAGES"][$i][self::DOC_RANK]= "".
-                        round($data["PAGES"][$i][self::DOC_RANK], 3);
-                    $data["PAGES"][$i][self::RELEVANCE]= "".
-                        round($data["PAGES"][$i][self::RELEVANCE], 3);
-                }
-            }
-            echo serialize($data);
-            exit();
-        }
         $stats_file = CRAWL_DIR."/cache/".self::statistics_base_name.
                 $data['its'].".txt";
         $data["SUBSEARCHES"] = $subsearches;
@@ -376,7 +503,7 @@ class SearchController extends Controller implements CrawlConstants
             $data["SUBSEARCH"] = $this->subsearch_name;
         }
         $data["HAS_STATISTICS"] = file_exists($stats_file);
-        $data[CSRF_TOKEN] = $this->generateCSRFToken($user);
+
         if(!isset($data["RAW"])) {
             $data["RAW"] = $raw;
         }
@@ -388,43 +515,19 @@ class SearchController extends Controller implements CrawlConstants
             $data['SCRIPT'] = "";
         }
         $data['SCRIPT'] .= "\nlocal_strings = {'spell':'".
-        tl('search_controller_search')."'};";
-        $data['SCRIPT'] .= "\ncsrf_value ='".CSRF_TOKEN."';";
+            tl('search_controller_search')."'};";
+        $data['SCRIPT'] .= "\ncsrf_name ='".CSRF_TOKEN."';";
         $data['INCLUDE_LOCALE_SCRIPT'] = "locale";
 
         if($no_query || isset($_REQUEST['no_query'])) {
             $data['NO_QUERY'] = true;
+            if(!isset($data['PAGING_QUERY'])) {
+                $data['PAGING_QUERY'] = "";
+            }
             $data['PAGING_QUERY'] .= "&no_query=true";
         }
-        if($token_okay && isset($_SESSION["USER_ID"])) {
-            $data["ADMIN"] = true;
-        } else {
-            $data["ADMIN"] = false;
-        }
 
-        $this->displayView($view, $data);
     }
-
-    /**
-     * Sometimes robots disobey the statistics page nofollow meta tag.
-     * and need to be stopped before they query the whole index
-     *
-     * @param string $query  the search request string
-     * @param string the search request string if not a bot; "" otherwise
-     */
-    function restrictQueryByUserAgent($query)
-    {
-        $bots = array("googlebot", "baidu", "naver", "sogou");
-        $query_okay = true;
-        foreach($bots as $bot) {
-            if(!isset($_SERVER["HTTP_USER_AGENT"]) ||
-                stristr($_SERVER["HTTP_USER_AGENT"], $bot)) {
-                $query_okay = false;
-            }
-        }
-        return ($query_okay) ? $query : "";
-    }
-
 
     /**
      * Used to check if there are any mirrors of the current server.
@@ -432,7 +535,7 @@ class SearchController extends Controller implements CrawlConstants
      * the mirrors
      * @return bool whether or not a mirror of the current site handled it
      */
-    function checkMirrorHandle()
+    function mirrorHandle()
     {
         $mirror_table_name = CRAWL_DIR."/".self::mirror_table_name;
         $handled = false;
@@ -490,16 +593,23 @@ class SearchController extends Controller implements CrawlConstants
      * @param int $save_timestamp if this timestamp is nonzero, then save
      *      iterate position, so can resume on future queries that make
      *      use of the timestamp
-     * @return array an array of at most results_per_page many search results
+     * @param array &$data an array of view data that will be updated to include
+     *      at most results_per_page many search results
      */
     function processQuery($query, $activity, $arg, $results_per_page,
-        $limit = 0, $index_name = 0, $raw = 0, $save_timestamp = 0)
+        $limit = 0, $index_name = 0, $raw = 0, $save_timestamp = 0, &$data)
     {
         $no_index_given = false;
         if($index_name == 0) {
             $index_name = $this->crawlModel->getCurrentIndexDatabaseName();
             if(!$index_name) {
-                $no_index_given = true;
+                $pattern = "/(\s)((i:|index:)(\S)+)/";
+                $indexes = preg_grep($pattern, array($query));
+                if(isset($indexes[0])) {
+                    $index_name = $indexes[0];
+                } else {
+                    $no_index_given = true;
+                }
             }
         }
         $is_mix = $this->crawlModel->isCrawlMix($index_name);
@@ -593,24 +703,9 @@ class SearchController extends Controller implements CrawlConstants
 
             break;
         }
-        $time = time();
-        $cron_time = $this->cronModel->getCronTime("news_delete");
-        $delta = $time - $cron_time;
-        if($delta == 0) {
-            $this->cronModel->updateCronTime("news_delete");
-        }
-        if($delta > self::NEWS_DELETE_INTERVAL  && defined(SUBSEARCH_LINK)
-          && SUBSEARCH_LINK) {
-            $this->cronModel->updateCronTime("news_delete");
-            $this->sourceModel->deleteFeedItems(self::NEWS_DELETE_INTERVAL);
-        }
-        $cron_time = $this->cronModel->getCronTime("news_update");
-        $delta = $time - $cron_time;
-        if(($delta > self::NEWS_UPDATE_INTERVAL || $delta == 0)
-            && defined(SUBSEARCH_LINK) && SUBSEARCH_LINK) {
-            $this->cronModel->updateCronTime("news_update");
-            $this->sourceModel->updateFeedItems();
-        }
+
+        $this->newsUpdate($data);
+
         $data['VIDEO_SOURCES'] = $this->sourceModel->getMediaSources("video");
         $data['RAW'] = $raw;
         $data['PAGES'] = (isset($phrase_results['PAGES'])) ?
@@ -621,8 +716,6 @@ class SearchController extends Controller implements CrawlConstants
             $phrase_results['TOTAL_ROWS'] : 0;
         $data['LIMIT'] = $limit;
         $data['RESULTS_PER_PAGE'] = $results_per_page;
-        return $data;
-
     }
 
     /**
@@ -699,6 +792,43 @@ class SearchController extends Controller implements CrawlConstants
 
         return array($query, $raw, $use_network,
             $use_cache_if_possible, $guess_semantics);
+    }
+
+    /**
+     *  If news_update time has passed, then updates news feeds associated with
+     *  this Yioop instance
+     *
+     *  @param array $data used by view to render itself. In this case, if there
+     *      is a problem updating the news then we will flash a message
+     */
+    function newsUpdate(&$data)
+    {
+        $time = time();
+        $cron_time = $this->cronModel->getCronTime("news_delete");
+        $delta = $time - $cron_time;
+        if($delta == 0) {
+            $this->cronModel->updateCronTime("news_delete");
+        }
+        if($delta > self::NEWS_DELETE_INTERVAL  && defined(SUBSEARCH_LINK)
+          && SUBSEARCH_LINK) {
+            $this->cronModel->updateCronTime("news_delete");
+            $this->sourceModel->deleteFeedItems(self::NEWS_DELETE_INTERVAL);
+        }
+        $cron_time = $this->cronModel->getCronTime("news_update");
+        $delta = $time - $cron_time;
+        if(($delta > self::NEWS_UPDATE_INTERVAL || $delta == 0)
+            && defined(SUBSEARCH_LINK) && SUBSEARCH_LINK) {
+            $this->cronModel->updateCronTime("news_update");
+            if(!$this->sourceModel->updateFeedItems()) {
+                if(!isset($data['SCRIPT'])) {
+                    $data['SCRIPT'] = "";
+                }
+                $data['SCRIPT'] .=
+                        "doMessage('<h1 class=\"red\" >".
+                        tl('search_controller_news_update_fail').
+                        "</h1>');";
+            }
+        }
     }
 
     /**
@@ -802,8 +932,10 @@ class SearchController extends Controller implements CrawlConstants
      */
     function extractActivityQuery() {
 
-        $query = mb_ereg_replace("(\s)+", " ", $_REQUEST['q']);
-        $query = mb_ereg_replace("\s:\s", ":", $_REQUEST['q']);
+        $query = (isset($_REQUEST['q'])) ? $_REQUEST['q'] : "";
+        $query = mb_ereg_replace("(\s)+", " ", $query);
+        $query = mb_ereg_replace("\s:", ":", $query);
+        $query = mb_ereg_replace(":\s", ":", $query);
 
         $query_parts = mb_split(" ", $query);
         $count = count($query_parts);
@@ -828,9 +960,7 @@ class SearchController extends Controller implements CrawlConstants
             $space = " ";
         }
 
-        $activity_array = array($out_query, $activity, $arg);
-
-        return $activity_array;
+        return array($out_query, $activity, $arg);
     }
 
     /**
@@ -912,7 +1042,8 @@ class SearchController extends Controller implements CrawlConstants
                         if(isset($_SESSION['USER_ID'])) {
                             $user = $_SESSION['USER_ID'];
                         } else {
-                            $user = $_SERVER['REMOTE_ADDR'];
+                            $user = isset($_SERVER['REMOTE_ADDR']) ?
+                                $_SERVER['REMOTE_ADDR'] : "0.0.0.0";
                         }
                         $csrf_token = $this->generateCSRFToken($user);
                         $href = urlencode($href);
@@ -972,10 +1103,13 @@ class SearchController extends Controller implements CrawlConstants
     function queryRequest($query, $results_per_page, $limit = 0,
         $grouping = 0, $save_timestamp = 0)
     {
+        if(!API_ACCESS) {return NULL; }
         $grouping = ($grouping > 0 ) ? 2 : 0;
-        return (API_ACCESS) ?
-            $this->processQuery($query, "query", "", $results_per_page,
-                $limit, 0, $grouping, $save_timestamp) : NULL;
+
+        $data = array();
+        $this->processQuery($query, "query", "", $results_per_page,
+                $limit, 0, $grouping, $save_timestamp, $data);
+        return $data;
     }
 
     /**
