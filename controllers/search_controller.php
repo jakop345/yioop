@@ -119,11 +119,11 @@ class SearchController extends Controller implements CrawlConstants
         $data = array();
         $start_time = microtime();
 
+        list($subsearches, $no_query) = $this->initializeSubsearches();
+
         $format_info = $this->initializeResponseFormat();
         if(!$format_info) { return;}
         list($view, $web_flag, $raw, $results_per_page, $limit) = $format_info;
-
-        list($subsearches, $no_query) = $this->initializeSubsearches();
 
         list($query, $highlight, $activity, $arg) = 
             $this->initializeUserAndDefaultActivity($data);
