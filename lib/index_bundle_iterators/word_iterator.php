@@ -209,8 +209,12 @@ class WordIterator extends IndexBundleIterator
         $this->index_name =  $index_name;
         $index = IndexManager::getIndex($index_name);
         $this->current_block_fresh = false;
-        $this->dictionary_info =
-            $index->dictionary->getWordInfo($word_key, true);
+        if($index->dictionary) {
+            $this->dictionary_info =
+                $index->dictionary->getWordInfo($word_key, true);
+        } else {
+            $this->dictionary_info = false;
+        }
         if ($this->dictionary_info === false) {
             $this->empty = true;
         } else {

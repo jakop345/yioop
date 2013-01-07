@@ -149,19 +149,20 @@ class SearchView extends View implements CrawlConstants
         </div>
         <div id="spell-check" class="spell"><span class="hidden"
         >123</span></div>
+        <h2 class="serp-stats"><?php
+            if(MOBILE) {
+            } else {
+            $num_results = min($data['TOTAL_ROWS'],
+                $data['LIMIT'] + $data['RESULTS_PER_PAGE']);
+            $limit = min($data['LIMIT'] + 1, $num_results);
+             ?> <?php
+            e(tl('search_view_calculated', $data['ELAPSED_TIME']));?> <?php
+            e(tl('search_view_results', $limit, $num_results,
+                $data['TOTAL_ROWS']));
+            }
+        ?></h2>
         <div class="serp-results">
-            <h2 class="serp-stats"><?php
-                if(MOBILE) {
-                } else {
-                $num_results = min($data['TOTAL_ROWS'],
-                    $data['LIMIT'] + $data['RESULTS_PER_PAGE']);
-                $limit = min($data['LIMIT'] + 1, $num_results);
-                 ?> <?php
-                e(tl('search_view_calculated', $data['ELAPSED_TIME']));?> <?php
-                e(tl('search_view_results', $limit, $num_results,
-                    $data['TOTAL_ROWS']));
-                }
-            ?></h2>
+
             <?php
             foreach($data['PAGES'] as $page) {
                 if(isset($page[self::URL])) {

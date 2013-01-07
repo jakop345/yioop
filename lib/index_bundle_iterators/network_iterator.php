@@ -312,6 +312,9 @@ class NetworkIterator extends IndexBundleIterator
             $url = $sites[$index][self::URL];
             $title = $url;
         } else {
+            if(!isset($sites[$index])) {
+                $sites[$index] = array();
+            }
             $tmp = urlencode(print_r($sites[$index], 
                 true));
             $title = 'URL not set';

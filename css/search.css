@@ -57,12 +57,6 @@ p
     width: 300px;
 }
 
-.result h2
-{
-    font-size: 14pt;
-    font-weight: normal;
-}
-
 .echo-link
 {
     color: green;
@@ -901,7 +895,7 @@ ul.in-list li
 {
     left: 0.5in;
     position: relative;
-    top: -0.6in;
+    top: -0.8in;
     width: 8in;
 }
 
@@ -918,7 +912,7 @@ ul.in-list li
 {
     position: relative;
     right: 0.5in;
-    top: -0.6in;
+    top: -0.8in;
     width: 8in;
 }
 
@@ -927,11 +921,11 @@ ul.in-list li
     color: #666;
     font-size: 14pt;
     float:right;
-    left: 1.5in;
     margin: 0.2in 0 0 0;
     padding: 0;
+    right: 1.5in;
     position: relative;
-    top: -0.6in;
+    top: -1in;
 }
 
 .html-rtl .serp-stats
@@ -939,11 +933,22 @@ ul.in-list li
     color: #666;
     font-size: 14pt;
     float: left;
+    left:1.5in;
     margin: 0.2in 0 0 0;
     padding: 0;
     position: relative;
-    right:1.5in;
-    top: -0.6in;
+    top: -1in;
+}
+
+.result
+{
+    clear: both;
+}
+
+.result h2
+{
+    font-size: 14pt;
+    font-weight: normal;
 }
 
 .serp-links-score
