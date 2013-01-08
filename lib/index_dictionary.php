@@ -642,12 +642,25 @@ class IndexDictionary implements CrawlConstants
         $test_loc = $check_loc - 1;
         $start_loc = $check_loc;
 
+        /*
+           break_count is used to allow for some fault tolerance in the case
+           single records get corrupted.
+         */
+        $break_count = 0;
         while ($test_loc >= $low) {
             $word_string = $this->getDictSubstring($file_num, $start +
                 $test_loc * $word_item_len, $word_item_len);
             if($word_string == "" ) break;
             $id = substr($word_string, 0, $word_key_len);
-            if(strcmp($word_id, $id) != 0 ) break;
+            if(strcmp($word_id, $id) != 0 ) {
+                $break_count++;
+                if($break_count > 1) {
+                    break;
+                }
+                $start_loc = $test_loc;
+                $test_loc--;
+                continue;
+            }
             $start_loc = $test_loc;
             $test_loc--;
             $ws = substr($word_string, $word_key_len);
@@ -662,12 +675,20 @@ class IndexDictionary implements CrawlConstants
 
         $test_loc = $check_loc + 1;
 
+        $break_count = 0;
         while ($test_loc <= $high) {
             $word_string = $this->getDictSubstring($file_num, $start +
                 $test_loc * $word_item_len, $word_item_len);
             if($word_string == "" ) break;
             $id = substr($word_string, 0, $word_key_len);
-            if(strcmp($word_id, $id) != 0 ) break;
+            if(strcmp($word_id, $id) != 0 ) {
+                $break_count++;
+                if($break_count > 1) {
+                    break;
+                }
+                $test_loc++;
+                continue;
+            }
             $test_loc++;
             $ws = substr($word_string, $word_key_len);
             if($extract) {
