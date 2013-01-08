@@ -195,8 +195,7 @@ function deDeltaList(&$delta_list)
     $last = 0;
     $num = count($delta_list);
     for($i = 1; $i < $num; $i++) {
-        $last += $delta_list[$i-1];
-        $delta_list[$i] += $last;
+        $delta_list[$i] += $delta_list[$i - 1];
     }
 }
 

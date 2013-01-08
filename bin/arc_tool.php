@@ -140,7 +140,8 @@ class ArcTool implements CrawlConstants
         global $argv;
 
         if(!isset($argv[1]) || (!isset($argv[2]) && $argv[1] != "list") ||
-            (!isset($argv[3]) && $argv[1] == "dict")) {
+            (!isset($argv[3]) &&
+            ($argv[1] == "dict" || $argv[1] == "posting"))) {
             $this->usageMessageAndExit();
         }
         if($argv[1] != "list") {
@@ -165,6 +166,11 @@ class ArcTool implements CrawlConstants
 
             case "dict":
                 $this->outputDictInfo($path, $argv[3]);
+            break;
+
+            case "posting":
+                $num = (isset($argv[5])) ? $argv[5] : 1;
+                $this->outputPostingInfo($path, $argv[3], $argv[4], $num);
             break;
 
             case "reindex":
@@ -294,6 +300,113 @@ class ArcTool implements CrawlConstants
             echo "NUMBER OF POSTINGS: {$record[3]}\n\n";
             $i++;
         }
+    }
+
+    /**
+     * Prints information about $num many postings beginning at the
+     * provided $generation and $offset
+     *
+     *  @param string $archive_path the path of a directory that holds
+     *      an IndexArchiveBundle
+     *  @param int $generation which index shard to use
+     *  @param int $offset offset into posting lists for that shard
+     *  @param int $num how many postings to print info for
+     */
+    function outputPostingInfo($archive_path, $generation, $offset, $num = 1)
+    {
+        $bundle_name = $this->getArchiveName($archive_path);
+        echo "\nBundle Name: $bundle_name\n";
+        $archive_type = $this->getArchiveKind($archive_path);
+        echo "Bundle Type: $archive_type\n";
+        echo "Generation: $generation\n";
+        echo "Offset: $offset\n";
+
+        if(strcmp($archive_type,"IndexArchiveBundle") != 0) {
+            $this->badFormatMessageAndExit($archive_path, "index");
+        }
+        $index_timestamp = substr($archive_path,
+            strpos($archive_path, self::index_data_base_name) +
+            strlen(self::index_data_base_name));
+        $index = IndexManager::getIndex($index_timestamp);
+        $index->setCurrentShard($generation, true);
+
+        $shard = $index->getCurrentShard();
+        $next = $offset >> 2;
+        $raw_postings = array();
+        $doc_indexes = array();
+        $documents = array();
+        for($i = 0; $i < $num; $i++) {
+            $dummy_offset = 0;
+            $posting_start = $next;
+            $posting_end = $next;
+            $old_offset = $next << 2;
+            $old_start = $next << 2;
+            $old_end = $next << 2;
+            $tmp = $shard->getPostingAtOffset(
+                $next, $posting_start, $posting_end);
+            $next = $posting_end + 1;
+            if(!$tmp) break;
+            $documents = array_merge($documents,
+                $shard->getPostingsSlice($old_offset, $old_start, $old_end, 1));
+            $raw_postings[] = $tmp;
+            $post_array = unpackPosting($tmp, $dummy_offset);
+            $doc_indexes[] = $post_array[0];
+        }
+        $end_offset = $next << 2;
+        echo "Offset After Returned Results: $end_offset\n\n";
+        if(!$documents || ($count = count($documents)) < 1) {
+            echo "No documents correspond to generation and offset given\n\n";
+            exit();
+        };
+        $document_word = ($count == 1) ? "Document" : "Documents";
+        echo "$count $document_word Found:\n";
+        echo str_pad("", $count + 1, "=")."================\n";
+        $j = 0;
+        foreach($documents as $key => $document) {
+            echo "\nDOC ID: ".toHexString($key);
+            echo "\nTYPE: ".(($document[self::IS_DOC]) ? "Document" : "Link");
+            echo "\nDOC INDEX: ".$doc_indexes[$j];
+            $summary_offset = $document[self::SUMMARY_OFFSET];
+            echo "\nSUMMARY OFFSET: ".$summary_offset;
+            echo "\nSCORE: ".$document[self::SCORE];
+            echo "\nDOC RANK: ".$document[self::DOC_RANK];
+            echo "\nRELEVANCE: ".$document[self::RELEVANCE];
+            echo "\nPROXIMITY: ".$document[self::PROXIMITY];
+            echo "\nHEX POSTING:\n";
+            echo "------------\n";
+            echo wordwrap(toHexString($raw_postings[$j]), 80);
+            if(isset($document[self::POSITION_LIST])) {
+                echo "\nTERM OCCURRENCES IN DOCUMENT (Count starts at title):";
+                echo "\n-------------------------".
+                    "----------------------------\n";
+                $i = 0;
+                foreach($document[self::POSITION_LIST] as $position) {
+                    printf("%09d ",$position);
+                    $i++;
+                    if($i >= 5) {
+                        echo "\n";
+                        $i = 0;
+                    }
+                }
+                if($i != 0) { echo "\n"; }
+            }
+            $page = @$index->getPage($summary_offset);
+
+            if(isset($page[self::TITLE])) {
+                echo "SUMMARY TITLE:\n";
+                echo "--------------\n";
+                echo wordwrap($page[self::TITLE],80)."\n";
+            }
+
+            if(isset($page[self::DESCRIPTION])) {
+                echo "SUMMARY DESCRIPTION:\n";
+                echo "--------------\n";
+                echo $page[self::DESCRIPTION]."\n";
+                }
+            $j++;
+
+        }
+
     }
 
     /**
@@ -652,11 +765,11 @@ will check in the Yioop! crawl directory as a fall back.
 
 The available commands for arc_tool are:
 
-php arc_tool.php info bundle_name
-    // return info about documents stored in archive.
-
 php arc_tool.php dict bundle_name word
     // returns index dictionary records for word stored in index archive bundle.
+
+php arc_tool.php info bundle_name
+    // return info about documents stored in archive.
 
 php arc_tool.php list
     /* returns a list of all the archives in the Yioop! crawl directory,
@@ -664,6 +777,12 @@ php arc_tool.php list
 
 php arc_tool.php mergetiers bundle_name max_tier
     // merges tiers of word dictionary into one tier up to max_tier
+
+php arc_tool.php posting bundle_name generation offset
+    or
+php arc_tool.php posting bundle_name generation offset num
+    /* returns info about the posting (num many postings) in bundle_name at 
+       the given generation and offset */
 
 php arc_tool.php reindex bundle_name
     // reindex the word dictionary in bundle_name
