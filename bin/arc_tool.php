@@ -289,7 +289,13 @@ class ArcTool implements CrawlConstants
             echo "\n$word does not appear in bundle!\n\n";
             exit();
         }
-        echo "Bundle Dictionary Entries for '$word':\n";
+        echo "Dictionary Tiers: ";
+        $index = IndexManager::getIndex($index_timestamp);
+        $tiers = $index->dictionary->active_tiers;
+        foreach($tiers as $tier) {
+            echo " $tier";
+        }
+        echo "\nBundle Dictionary Entries for '$word':\n";
         echo "====================================\n";
         $i = 1;
         foreach($word_iterator->dictionary_info as $record) {
