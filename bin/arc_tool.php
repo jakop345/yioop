@@ -64,6 +64,12 @@ require_once BASE_DIR."/lib/web_queue_bundle.php";
 /** Load word->{array of docs with word} index class */
 require_once BASE_DIR."/lib/index_archive_bundle.php";
 
+/** To be able to determine info about word in a index dictionary*/
+require_once BASE_DIR."/lib/index_bundle_iterators/word_iterator.php";
+
+/** Used by word_iterator.php*/
+require_once BASE_DIR."/lib/index_manager.php";
+
 /** Load the iterator classes for non-yioop archives*/
 foreach(glob(BASE_DIR."/lib/archive_bundle_iterators/*_iterator.php")
     as $filename) {
@@ -133,7 +139,8 @@ class ArcTool implements CrawlConstants
     {
         global $argv;
 
-        if(!isset($argv[1]) || (!isset($argv[2]) && $argv[1] != "list")) {
+        if(!isset($argv[1]) || (!isset($argv[2]) && $argv[1] != "list") ||
+            (!isset($argv[3]) && $argv[1] == "dict")) {
             $this->usageMessageAndExit();
         }
         if($argv[1] != "list") {
@@ -154,6 +161,10 @@ class ArcTool implements CrawlConstants
 
             case "info":
                 $this->outputInfo($path);
+            break;
+
+            case "dict":
+                $this->outputDictInfo($path, $argv[3]);
             break;
 
             case "reindex":
@@ -227,7 +238,7 @@ class ArcTool implements CrawlConstants
      * to stdout header information about the
      * bundle by calling the appropriate sub-function.
      *
-     * @param string $archive_path the oath of a directory that holds
+     * @param string $archive_path the path of a directory that holds
      *      WebArchiveBundle,IndexArchiveBundle, or non-Yioop archive data
      */
     function outputInfo($archive_path)
@@ -244,6 +255,44 @@ class ArcTool implements CrawlConstants
             $call = "outputInfo".$archive_type;
             $info = $archive_type::getArchiveInfo($archive_path);
             $this->$call($info, $archive_path);
+        }
+    }
+
+    /**
+     * Prints the IndexDictionary records for a word in an IndexArchiveBundle
+     *
+     * @param string $archive_path the path of a directory that holds
+     *      an IndexArchiveBundle
+     * @param string $word to look up dictionary record for
+     */
+    function outputDictInfo($archive_path, $word)
+    {
+        $bundle_name = $this->getArchiveName($archive_path);
+        echo "\nBundle Name: $bundle_name\n";
+        $archive_type = $this->getArchiveKind($archive_path);
+        echo "Bundle Type: $archive_type\n";
+
+        if(strcmp($archive_type,"IndexArchiveBundle") != 0) {
+            $this->badFormatMessageAndExit($archive_path, "index");
+        }
+        $index_timestamp = substr($archive_path,
+            strpos($archive_path, self::index_data_base_name) +
+            strlen(self::index_data_base_name));
+        $word_iterator = new WordIterator(crawlHash($word), $index_timestamp);
+        if(!$word_iterator->dictionary_info) {
+            echo "\n$word does not appear in bundle!\n\n";
+            exit();
+        }
+        echo "Bundle Dictionary Entries for '$word':\n";
+        echo "====================================\n";
+        $i = 1;
+        foreach($word_iterator->dictionary_info as $record) {
+            echo "RECORD: $i\n";
+            echo "GENERATION: {$record[0]}\n";
+            echo "FIRST WORD OFFSET: {$record[1]}\n";
+            echo "LAST WORD OFFSET: {$record[2]}\n";
+            echo "NUMBER OF POSTINGS: {$record[3]}\n\n";
+            $i++;
         }
     }
 
@@ -579,10 +628,14 @@ class ArcTool implements CrawlConstants
      * @param string $archive_name name or path to what was supposed to be
      *      an archive
      */
-    function badFormatMessageAndExit($archive_name)
+    function badFormatMessageAndExit($archive_name, 
+        $allowed_archives = "web or index")
     {
-        echo "$archive_name does not appear to be a web or index ".
-        "archive bundle\n";
+        echo <<< EOD
+
+$archive_name does not appear to be a $allowed_archives archive bundle
+
+EOD;
         exit();
     }
 
@@ -591,23 +644,36 @@ class ArcTool implements CrawlConstants
      */
     function usageMessageAndExit()
     {
-        echo "\narc_tool is used to look at the contents of\n";
-        echo "WebArchiveBundles and IndexArchiveBundles.\n";
-        echo "It will look for these using the path provided or \n";
-        echo "will check in the Yioop! crawl directory as a fall back\n\n";
-        echo "The available commands for arc_tool are:\n\n";
-        echo "php arc_tool.php info bundle_name //return info about\n".
-            "//documents stored in archive.\n\n";
-        echo "php arc_tool.php list //returns a list \n".
-            "//of all the archives in the Yioop! crawl directory, including\n".
-            "//non-Yioop! archives in the cache/archives sub-folder.\n\n";
-        echo "php arc_tool.php mergetiers bundle_name max_tier\n".
-            "//merges tiers of word dictionary into one tier up to max_tier\n";
-        echo "\nphp arc_tool.php reindex bundle_name \n".
-            "//reindex the word dictionary in bundle_name\n\n";
-        echo "php arc_tool.php show bundle_name start num //outputs\n".
-            "//items start through num from bundle_name\n".
-            "//or name of non-Yioop archive crawl folder.\n\n";
+        echo  <<< EOD
+
+arc_tool is used to look at the contents of WebArchiveBundles and
+IndexArchiveBundles. It will look for these using the path provided or
+will check in the Yioop! crawl directory as a fall back.
+
+The available commands for arc_tool are:
+
+php arc_tool.php info bundle_name
+    // return info about documents stored in archive.
+
+php arc_tool.php dict bundle_name word
+    // returns index dictionary records for word stored in index archive bundle.
+
+php arc_tool.php list
+    /* returns a list of all the archives in the Yioop! crawl directory,
+       including non-Yioop! archives in the cache/archives sub-folder.*/
+
+php arc_tool.php mergetiers bundle_name max_tier
+    // merges tiers of word dictionary into one tier up to max_tier
+
+php arc_tool.php reindex bundle_name
+    // reindex the word dictionary in bundle_name
+
+php arc_tool.php show bundle_name start num
+    /* outputs items start through num from bundle_name or name of 
+       non-Yioop archive crawl folder */
+
+
+EOD;
         exit();
     }
 }

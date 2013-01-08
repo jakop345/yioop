@@ -209,7 +209,6 @@ class FetchController extends Controller implements CrawlConstants
         $pages = array();
         if($fetch_pages) {
             $archive_iterator = NULL;
-
             /* Start by trying to acquire an exclusive lock on the iterator
                lock file, so that the same batch of pages isn't extracted more
                than once.  For now the call to acquire the lock blocks, so that
