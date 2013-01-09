@@ -931,7 +931,6 @@ class PhraseModel extends ParallelModel
             if($use_proximity) {
                 $subscore_fields[] = self::PROXIMITY;
             }
-            $subscore_fields[] = self::SCORE;
             $num_fields = count($subscore_fields);
             // Compute Reciprocal Rank Fusion Score
             $alpha = 600/$num_fields;
