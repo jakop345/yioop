@@ -857,6 +857,11 @@ class PhraseModel extends ParallelModel
         if(QUERY_STATISTICS) {
             $lookup_time = microtime();
         }
+        $use_proximity = false;
+        if(count($word_structs) > 1 || (isset($word_structs[0]["KEYS"])
+            && count($word_structs[0]["KEYS"]) > 1)) {
+            $use_proximity = true;
+        }
         $pages = array();
         $generation = 0;
         $to_retrieve = ceil(($limit+$num)/self::NUM_CACHE_PAGES) *
@@ -922,8 +927,11 @@ class PhraseModel extends ParallelModel
             for($i = 0; $i < $result_count; $i++) {
                 $pages[$i]["OUT_SCORE"] = 0;
             }
-            $subscore_fields = array(self::DOC_RANK, self::RELEVANCE,
-                self::PROXIMITY, self::SCORE);
+            $subscore_fields = array(self::DOC_RANK, self::RELEVANCE);
+            if($use_proximity) {
+                $subscore_fields[] = self::PROXIMITY;
+            }
+            $subscore_fields[] = self::SCORE;
             $num_fields = count($subscore_fields);
             // Compute Reciprocal Rank Fusion Score
             $alpha = 600/$num_fields;
@@ -944,8 +952,15 @@ class PhraseModel extends ParallelModel
                 orderCallback($pages[0], $pages[0], "OUT_SCORE");
             }
             usort($pages, "orderCallback");
-            for($i = 0; $i < $result_count; $i++) {
-               $pages[$i][self::SCORE] = $pages[$i]["OUT_SCORE"];
+            if($use_proximity) {
+                for($i = 0; $i < $result_count; $i++) {
+                   $pages[$i][self::SCORE] = $pages[$i]["OUT_SCORE"];
+                }
+            } else {
+                for($i = 0; $i < $result_count; $i++) {
+                   $pages[$i][self::PROXIMITY] = 1;
+                   $pages[$i][self::SCORE] = $pages[$i]["OUT_SCORE"];
+                }
             }
             $sort_time = changeInMicrotime($sort_start);
         }
