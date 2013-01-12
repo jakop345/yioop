@@ -47,25 +47,26 @@ define("BASE_DIR", substr(
     dirname(realpath($_SERVER['PHP_SELF'])), 0,
     -strlen("/configs")));
 require_once BASE_DIR.'/configs/config.php';
+
+/* get the database library */
 require_once BASE_DIR."/models/datasources/".DBMS."_manager.php";
-    //get the database library
-require_once BASE_DIR."/lib/utility.php"; //for crawlHash function
 
+/** Get base class for profile_model.php*/
+require_once BASE_DIR."/models/model.php";
 
+/** For ProfileModel::createDatabaseTables method*/
+require_once BASE_DIR."/models/profile_model.php";
+
+/** For crawlHash function */
+require_once BASE_DIR."/lib/utility.php";
+
+$profile_model = new ProfileModel();
 $db_class = ucfirst(DBMS)."Manager";
 $db = new $db_class();
 $db->connect();
 
-$auto_increment = "AUTOINCREMENT";
-if(in_array(DBMS, array("mysql"))) {
-    $auto_increment = "AUTO_INCREMENT";
-}
-if(in_array(DBMS, array("sqlite"))) {
-    $auto_increment = "";
-    /* in sqlite2 a primary key column will act
-       as auto_increment if don't give value
-     */
-}
+$dbinfo = array("DBMS" => DBMS, "DB_HOST" => DB_HOST, "DB_NAME" => DB_NAME,
+    "DB_PASSWORD" => DB_PASSWORD);
 if(!in_array(DBMS, array('sqlite', 'sqlite3'))) {
     $db->execute("DROP DATABASE IF EXISTS ".DB_NAME);
     $db->execute("CREATE DATABASE ".DB_NAME);
@@ -74,27 +75,17 @@ if(!in_array(DBMS, array('sqlite', 'sqlite3'))) {
 }
 $db->selectDB(DB_NAME);
 
-$db->execute("CREATE TABLE VERSION (ID INTEGER PRIMARY KEY)");
+if(!$profile_model->createDatabaseTables($db, $dbinfo)) {
+    echo "\n\nCouldn't create database tables!!!\n\n";
+    exit();
+}
+
 $db->execute("INSERT INTO VERSION VALUES (15)");
-
-$db->execute("CREATE TABLE USER (USER_ID INTEGER PRIMARY KEY $auto_increment, ".
-    "USER_NAME VARCHAR(16) UNIQUE,  PASSWORD VARCHAR(16))");
-
-$db->execute("CREATE TABLE USER_SESSION( USER_ID INTEGER PRIMARY KEY, ".
-    "SESSION VARCHAR(4096))");
 
 //default account is root without a password
 $sql ="INSERT INTO USER VALUES (1, 'root', '".crawlCrypt('')."' ) ";
 $db->execute($sql);
 
-$db->execute("CREATE TABLE TRANSLATION (TRANSLATION_ID INTEGER PRIMARY KEY ".
-    "$auto_increment, IDENTIFIER_STRING VARCHAR(512) UNIQUE)");
-
-$db->execute("CREATE TABLE LOCALE (LOCALE_ID INTEGER PRIMARY KEY ".
-    "$auto_increment, LOCALE_TAG VARCHAR(16), LOCALE_NAME VARCHAR(256),".
-    " WRITING_MODE CHAR(5))");
-$db->execute("CREATE TABLE TRANSLATION_LOCALE (TRANSLATION_ID INTEGER, ".
-    "LOCALE_ID INTEGER, TRANSLATION VARCHAR(4096) )");
 /* we insert 1 by 1 rather than comma separate as sqlite
    does not support comma separated inserts
  */
@@ -123,14 +114,9 @@ $db->execute("INSERT INTO LOCALE VALUES (19, 'tr', 'Türkçe', 'lr-tb')");
 $db->execute("INSERT INTO LOCALE VALUES (20, 'fa', 'فارسی', 'rl-tb')");
 $db->execute("INSERT INTO LOCALE VALUES (21, 'te', 'తెలుగు', 'lr-tb')");
 
-$db->execute("CREATE TABLE ROLE (ROLE_ID INTEGER PRIMARY KEY ".
-    "$auto_increment, NAME VARCHAR(512))");
 $sql ="INSERT INTO ROLE VALUES (1, 'Admin' ) ";
 $db->execute($sql);
 
-$db->execute("CREATE TABLE ROLE_ACTIVITY (ROLE_ID INTEGER,
-    ACTIVITY_ID INTEGER,
-    CONSTRAINT PK_RA PRIMARY KEY(ROLE_ID, ACTIVITY_ID))");
 $db->execute("INSERT INTO ROLE_ACTIVITY VALUES (1, 1)");
 $db->execute("INSERT INTO ROLE_ACTIVITY VALUES (1, 2)");
 $db->execute("INSERT INTO ROLE_ACTIVITY VALUES (1, 3)");
@@ -143,9 +129,6 @@ $db->execute("INSERT INTO ROLE_ACTIVITY VALUES (1, 9)");
 $db->execute("INSERT INTO ROLE_ACTIVITY VALUES (1, 10)");
 $db->execute("INSERT INTO ROLE_ACTIVITY VALUES (1, 11)");
 
-$db->execute(
-    "CREATE TABLE ACTIVITY (ACTIVITY_ID INTEGER PRIMARY KEY $auto_increment,".
-    " TRANSLATION_ID INTEGER, METHOD_NAME VARCHAR(256))");
 $db->execute("INSERT INTO ACTIVITY VALUES (1, 1, 'manageAccount')");
 $db->execute("INSERT INTO ACTIVITY VALUES (2, 2, 'manageUsers')");
 $db->execute("INSERT INTO ACTIVITY VALUES (3, 3, 'manageRoles')");
@@ -252,32 +235,8 @@ $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (2, 16,
     '管理使用者')");
 
 
-$db->execute("CREATE TABLE USER_ROLE (USER_ID INTEGER, ROLE_ID INTEGER)");
-$sql ="INSERT INTO USER_ROLE VALUES (1, 1)";
-$db->execute($sql);
+$db->execute("INSERT INTO USER_ROLE VALUES (1, 1)");
 
-$db->execute("CREATE TABLE CURRENT_WEB_INDEX (CRAWL_TIME INT(11) )");
-
-$db->execute("CREATE TABLE CRAWL_MIXES (
-    MIX_TIMESTAMP INT(11) PRIMARY KEY, MIX_NAME VARCHAR(16) UNIQUE)");
-
-$db->execute("CREATE TABLE MIX_GROUPS (
-    MIX_TIMESTAMP INT(11), GROUP_ID INT(4), RESULT_BOUND INT(4),
-    CONSTRAINT PK_MG PRIMARY KEY(MIX_TIMESTAMP, GROUP_ID))");
-
-$db->execute("CREATE TABLE MIX_COMPONENTS (
-    MIX_TIMESTAMP INT(11), GROUP_ID INT(4), CRAWL_TIMESTAMP INT(11),
-    WEIGHT REAL, KEYWORDS VARCHAR(256))");
-
-$db->execute("CREATE TABLE MACHINE (
-    NAME VARCHAR(16) PRIMARY KEY, URL VARCHAR(256) UNIQUE,
-    HAS_QUEUE_SERVER INT, NUM_FETCHERS INT(4), PARENT VARCHAR(16) )");
-$db->execute("CREATE TABLE ACTIVE_FETCHER (NAME VARCHAR(16),
-    FETCHER_ID INT(4))");
-$db->execute("CREATE TABLE MEDIA_SOURCE (TIMESTAMP INT(11) PRIMARY KEY,
-    NAME VARCHAR(16) UNIQUE, TYPE VARCHAR(16),
-    SOURCE_URL VARCHAR(256), THUMB_URL VARCHAR(256), LANGUAGE VARCHAR(7)
-    )");
 $db->execute("INSERT INTO MEDIA_SOURCE VALUES ('1342634195',
     'YouTube', 'video', 'http://www.youtube.com/watch?v={}&',
     'http://img.youtube.com/vi/{}/2.jpg', '')");
@@ -296,9 +255,6 @@ $db->execute("INSERT INTO MEDIA_SOURCE VALUES ('1342634199',
 $db->execute("INSERT INTO MEDIA_SOURCE VALUES ('1342634200',
     'Yahoo News', 'rss', 'http://news.yahoo.com/rss/',
     '', 'en')");
-
-$db->execute("CREATE TABLE SUBSEARCH (LOCALE_STRING VARCHAR(16) PRIMARY KEY,
-    FOLDER_NAME VARCHAR(16), INDEX_IDENTIFIER CHAR(13), PER_PAGE INT )");
 
 $db->execute("INSERT INTO CRAWL_MIXES VALUES (2, 'images')");
 $db->execute("INSERT INTO MIX_GROUPS VALUES(2, 0, 1)");
@@ -358,10 +314,6 @@ $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
         (1004, 16, '新闻
 
 ' )");
-
-$db->execute("CREATE TABLE FEED_ITEM (GUID VARCHAR(11) PRIMARY KEY,
-    TITLE VARCHAR(512), LINK VARCHAR(256), DESCRIPTION VARCHAR(4096),
-    PUBDATE INT, SOURCE_NAME VARCHAR(16))");
 
 $db->disconnect();
 if(in_array(DBMS, array('sqlite','sqlite3' ))){

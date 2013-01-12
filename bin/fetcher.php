@@ -980,7 +980,7 @@ class Fetcher implements CrawlConstants
         }
 
         if($response_string) {
-            $info = unserialize($response_string);
+            $info = @unserialize($response_string);
         } else {
             $info = array();
             $info[self::STATUS] = self::NO_DATA_STATE;

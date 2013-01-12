@@ -1232,6 +1232,7 @@ class SearchController extends Controller implements CrawlConstants
 
         list($network_crawl_times, $network_crawl_items) = $this->
             getCrawlItems($url, $crawl_times, $queue_servers);
+
         $nonnet_crawl_times = array_diff($crawl_times,
             $network_crawl_times);
         if(count($nonnet_crawl_times) > 0) {
@@ -1584,7 +1585,9 @@ class SearchController extends Controller implements CrawlConstants
         $body = $this->markChildren($body, $words, $dom);
 
         $newDoc = $dom->saveHTML();
-        $url = "<a href='$url'>$url</a>";
+        if(substr($url, 0, 7) != "record:") {
+            $url = "<a href='$url'>$url</a>";
+        }
         $newDoc = str_replace("Z@url@Z", $url, $newDoc);
         $colors = array("yellow", "orange", "gray", "cyan");
         $color_count = count($colors);

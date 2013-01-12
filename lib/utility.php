@@ -35,6 +35,25 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
+ * Adds delimiters to a regex that may or may not have them
+ *
+ * @param string $expression a regex
+ * @return string rgex with delimiters if not there
+ */
+function addRegexDelimiters($expression)
+{
+    $first = $expression;
+    $len = strlen($expression);
+    $last = $expression[$len - 1];
+    if(($first != $last && $len > 1) || $len == 1) {
+        $expression = ($first != '/' ) ?
+            "/".$expression."/"
+            : "@".$expression."@";
+    }
+    return $expression;
+}
+
+/**
  * Copies from $source string beginning at position $start, $length many
  * bytes to destination string
  *

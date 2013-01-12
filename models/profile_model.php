@@ -229,79 +229,96 @@ EOT;
     function migrateDatabaseIfNecessary($dbinfo)
     {
         $test_dbm = $this->testDatabaseManager($dbinfo);
+
         if($test_dbm === false || $test_dbm === true) {return $test_dbm;}
 
-        $auto_increment = "AUTOINCREMENT";
-        if(in_array($dbinfo['DBMS'], array("mysql"))) {
-            $auto_increment = "AUTO_INCREMENT";
-        }
-        if(in_array($dbinfo['DBMS'], array("sqlite"))) {
-            $auto_increment = "";
-                /* in sqlite2 a primary key column will act
-                   as auto_increment if don't give value
-                 */
-        }
-
-        $tables = array("VERSION", "USER", "USER_SESSION", "TRANSLATION",
+        /*
+            Don't copy MACHINE table as will be local to installation
+         */
+        $copy_tables = array("VERSION", "USER", "USER_SESSION", "TRANSLATION",
             "LOCALE", "TRANSLATION_LOCALE", "ROLE",
             "ROLE_ACTIVITY", "ACTIVITY", "USER_ROLE", "CURRENT_WEB_INDEX",
-            "CRAWL_MIXES", "MIX_GROUPS", "MIX_COMPONENTS", "SUBSEARCH",
-            "SUBSEARCH");
-        //Don't copy MACHINE table as will be local to installation
-        $create_statements = array(
-            "CREATE TABLE VERSION( ID INTEGER PRIMARY KEY)",
-            "CREATE TABLE USER( USER_ID INTEGER PRIMARY KEY $auto_increment, ".
-                "USER_NAME VARCHAR(16) UNIQUE,  PASSWORD VARCHAR(16))",
-            "CREATE TABLE USER_SESSION( USER_ID INTEGER PRIMARY KEY, ".
-                "SESSION VARCHAR(4096))",
-            "CREATE TABLE TRANSLATION (TRANSLATION_ID INTEGER PRIMARY KEY ".
-                "$auto_increment, IDENTIFIER_STRING VARCHAR(512) UNIQUE)",
-            "CREATE TABLE LOCALE(LOCALE_ID INTEGER PRIMARY KEY ".
-                "$auto_increment, LOCALE_TAG VARCHAR(16), ".
-                "LOCALE_NAME VARCHAR(256)," .
-                "WRITING_MODE CHAR(5))",
-            "CREATE TABLE TRANSLATION_LOCALE (TRANSLATION_ID INTEGER, ".
-                "LOCALE_ID INTEGER, TRANSLATION VARCHAR(4096) )",
-            "CREATE TABLE ROLE (ROLE_ID INTEGER PRIMARY KEY $auto_increment, ".
-                "NAME VARCHAR(512))",
-            "CREATE TABLE ROLE_ACTIVITY (ROLE_ID INTEGER, ACTIVITY_ID INTEGER)",
-            "CREATE TABLE ACTIVITY (ACTIVITY_ID INTEGER PRIMARY KEY ".
-                "$auto_increment, TRANSLATION_ID INTEGER, ".
-                "METHOD_NAME VARCHAR(256))",
-            "CREATE TABLE USER_ROLE (USER_ID INTEGER, ROLE_ID INTEGER)",
-            "CREATE TABLE CURRENT_WEB_INDEX (CRAWL_TIME INT(11) )",
-            "CREATE TABLE CRAWL_MIXES (MIX_TIMESTAMP INT(11) PRIMARY KEY,".
-                " MIX_NAME VARCHAR(16) UNIQUE)",
-            "CREATE TABLE MIX_GROUPS (MIX_TIMESTAMP INT(11), GROUP_ID INT(4),".
-                " RESULT_BOUND INT(4))",
-            "CREATE TABLE MIX_COMPONENTS (MIX_TIMESTAMP INT(11),".
-                "GROUP_ID INT(4), CRAWL_TIMESTAMP INT(11), WEIGHT REAL,".
-                " KEYWORDS VARCHAR(256))",
-            "CREATE TABLE MACHINE (NAME VARCHAR(16) PRIMARY KEY,".
-                " URL VARCHAR(256) UNIQUE, HAS_QUEUE_SERVER INT,".
-                " NUM_FETCHERS INT(4), PARENT VARCHAR(16) )",
-            "CREATE TABLE CRON_TIME (TIMESTAMP INT(11))",
-            "CREATE TABLE SUBSEARCH (LOCALE_STRING VARCHAR(16) PRIMARY KEY,
-                    FOLDER_NAME VARCHAR(16), INDEX_IDENTIFIER CHAR(13))",
-            "CREATE TABLE FEED_ITEM (GUID VARCHAR(11) PRIMARY KEY,
-                TITLE VARCHAR(512), LINK VARCHAR(256),
-                DESCRIPTION VARCHAR(4096),
-                PUBDATE INT, SOURCE_NAME VARCHAR(16))",
-            );
-        foreach($create_statements as $statement) {
-            if(!$test_dbm->execute($statement)) {return false;}
+            "CRAWL_MIXES", "MIX_GROUPS", "MIX_COMPONENTS", "MEDIA_SOURCE",
+            "SUBSEARCH", "FEED_ITEM");
+
+        if(!($create_ok = $this->createDatabaseTables($test_dbm, $dbinfo))) {
+            return false;
         }
 
         require_once(BASE_DIR."/models/datasources/sqlite3_manager.php");
 
         $default_dbm = new Sqlite3Manager();
+
         $default_dbm->dbhandle = new SQLite3(
             BASE_DIR."/data/default.db", SQLITE3_OPEN_READWRITE);
             // a little bit hacky
         if(!$default_dbm->dbhandle) {return false;}
-        foreach($tables as $table) {
+        foreach($copy_tables as $table) {
             if(!$this->copyTable($table, $default_dbm, $test_dbm))
                 {return false;}
+        }
+        return true;
+    }
+
+    /**
+     * On a blank database this method create all the tables necessary for
+     * Yioop
+     *
+     * @param object $dbm a DatabaseManager open to some DBMS and with a
+     *      blank database selected
+     * @return bool whether all of the creates were sucessful or not
+     */
+    function createDatabaseTables($dbm, $dbinfo)
+    {
+        $auto_increment = $dbm->autoIncrement($dbinfo);
+
+        $create_statements = array(
+            "CREATE TABLE VERSION(ID INTEGER PRIMARY KEY)",
+            "CREATE TABLE USER(USER_ID INTEGER PRIMARY KEY $auto_increment,
+                USER_NAME VARCHAR(16) UNIQUE,  PASSWORD VARCHAR(16))",
+            "CREATE TABLE USER_SESSION(USER_ID INTEGER PRIMARY KEY,
+                SESSION VARCHAR(4096))",
+            "CREATE TABLE TRANSLATION (TRANSLATION_ID INTEGER PRIMARY KEY 
+                $auto_increment, IDENTIFIER_STRING VARCHAR(512) UNIQUE)",
+            "CREATE TABLE LOCALE(LOCALE_ID INTEGER PRIMARY KEY
+                $auto_increment, LOCALE_TAG VARCHAR(16),
+                LOCALE_NAME VARCHAR(256),
+                WRITING_MODE CHAR(5))",
+            "CREATE TABLE TRANSLATION_LOCALE (TRANSLATION_ID INTEGER, 
+                LOCALE_ID INTEGER, TRANSLATION VARCHAR(4096) )",
+            "CREATE TABLE ROLE (ROLE_ID INTEGER PRIMARY KEY $auto_increment,
+                NAME VARCHAR(512))",
+            "CREATE TABLE ROLE_ACTIVITY (ROLE_ID INTEGER, ACTIVITY_ID INTEGER)",
+            "CREATE TABLE ACTIVITY (ACTIVITY_ID INTEGER PRIMARY KEY 
+                $auto_increment, TRANSLATION_ID INTEGER, 
+                METHOD_NAME VARCHAR(256))",
+            "CREATE TABLE USER_ROLE (USER_ID INTEGER, ROLE_ID INTEGER)",
+            "CREATE TABLE CURRENT_WEB_INDEX (CRAWL_TIME INT(11) )",
+            "CREATE TABLE CRAWL_MIXES (MIX_TIMESTAMP INT(11) PRIMARY KEY,
+                MIX_NAME VARCHAR(16) UNIQUE)",
+            "CREATE TABLE MIX_GROUPS (MIX_TIMESTAMP INT(11), GROUP_ID INT(4),
+                RESULT_BOUND INT(4))",
+            "CREATE TABLE MIX_COMPONENTS (MIX_TIMESTAMP INT(11),
+                GROUP_ID INT(4), CRAWL_TIMESTAMP INT(11), WEIGHT REAL,
+                KEYWORDS VARCHAR(256))",
+            "CREATE TABLE MACHINE (NAME VARCHAR(16) PRIMARY KEY,
+                URL VARCHAR(256) UNIQUE, HAS_QUEUE_SERVER INT,
+                NUM_FETCHERS INT(4), PARENT VARCHAR(16) )",
+            "CREATE TABLE ACTIVE_FETCHER (NAME VARCHAR(16), FETCHER_ID INT(4))",
+            "CREATE TABLE SUBSEARCH (LOCALE_STRING VARCHAR(16) PRIMARY KEY,
+                FOLDER_NAME VARCHAR(16), INDEX_IDENTIFIER CHAR(13),
+                PER_PAGE INT)",
+            "CREATE TABLE MEDIA_SOURCE (TIMESTAMP INT(11) PRIMARY KEY,
+                NAME VARCHAR(16) UNIQUE, TYPE VARCHAR(16),
+                SOURCE_URL VARCHAR(256), THUMB_URL VARCHAR(256),
+                LANGUAGE VARCHAR(7))",
+            "CREATE TABLE FEED_ITEM (GUID VARCHAR(11) PRIMARY KEY,
+                TITLE VARCHAR(512), LINK VARCHAR(256),
+                DESCRIPTION VARCHAR(4096),
+                PUBDATE INT, SOURCE_NAME VARCHAR(16))",
+            );
+        foreach($create_statements as $statement) {;
+            if(!$dbm->execute($statement)) {return false;}
         }
         return true;
     }
@@ -327,7 +344,9 @@ EOT;
         require_once(
             BASE_DIR."/models/datasources/".$dbinfo['DBMS']."_manager.php");
         $dbms_manager = ucfirst($dbinfo['DBMS'])."Manager";
+
         $test_dbm = new $dbms_manager();
+
         if(isset($dbinfo['DB_HOST'])) {
             if(isset($dbinfo['DB_USER'])) {
                 if(isset($dbinfo['DB_PASSWORD'])) {
@@ -363,11 +382,10 @@ EOT;
          */
 
         $sql = "SELECT LOCALE_ID FROM LOCALE";
-        $result = @$test_dbm->execute($sql);
+        $result = $test_dbm->execute($sql);
         if($result !== false && $test_dbm->fetchArray($result) !== false) {
             return true;
         }
-
         return $test_dbm;
     }
 
@@ -394,7 +412,6 @@ EOT;
             $statement .= ")";
             if(($to_dbm->execute($statement)) === false) {return false;}
         }
-
         return true;
     }
 

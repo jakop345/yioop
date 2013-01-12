@@ -276,5 +276,42 @@ abstract class DatasourceManager
 
     }
 
+    /**
+     * Returns string for given DBMS CREATE TABLE equivalent to auto_increment
+     * (at least as far as Yioop requires).
+     *
+     * @param array $dbinfo contains strings DBMS, DB_HOST, DB_USER, DB_PASSWORD
+     * @return string to achieve auto_increment function for the given DBMS
+     */
+    function autoIncrement($dbinfo)
+    {
+        $auto_increment = "AUTOINCREMENT";
+        if(in_array($dbinfo['DBMS'], array("mysql"))) {
+            $auto_increment = "AUTO_INCREMENT";
+        }
+        if(in_array($dbinfo['DBMS'], array("sqlite"))) {
+            $auto_increment = "";
+                /* in sqlite2 a primary key column will act
+                   as auto_increment if don't give value
+                 */
+        }
+        if($dbinfo['DBMS'] == 'pdo') {
+            if(stristr($dbinfo['DB_HOST'], 'SQLITE')) {
+                $auto_increment = "";
+            } else if(stristr($dbinfo['DB_HOST'], 'PGSQL')) { //POSTGRES
+                $auto_increment = "SERIAL";
+            } else if(stristr($dbinfo['DB_HOST'], 'OCI')) { // ORACLE
+                $auto_increment = "DEFAULT SYS_GUID()";
+            } else if(stristr($dbinfo['DB_HOST'], 'IBM')) { //DB2
+                $auto_increment = "GENERATED ALWAYS AS IDENTITY ".
+                    "(START WITH 1 INCREMENT BY 1)";
+            } else if(stristr($dbinfo['DB_HOST'], 'DBLIB')) { //MS SQL
+                $auto_increment = "IDENTITY (1,1)";
+            }
+        }
+
+        return $auto_increment;
+    }
+
 }
 ?>

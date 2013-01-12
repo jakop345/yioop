@@ -342,7 +342,7 @@ class SourceModel extends Model
         $db->execute($sql);
         // we now rebuild the inverted index with the remaining items
         $feed_shard =  new IndexShard($feed_shard_name);
-        $sql = "SELECT * FROM FEED_ITEM";
+        $sql = "SELECT * FROM FEED_ITEM ORDER BY PUBDATE DESC";
         $result = $db->execute($sql);
         if($result) {
             while($item = $db->fetchArray($result)) {

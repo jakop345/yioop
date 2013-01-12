@@ -102,10 +102,10 @@ class ArcArchiveBundleIterator extends ArchiveBundleIterator
      *
      * @param string $iterate_timestamp timestamp of the arc archive bundle to
      *      iterate  over the pages of
-       @param string $iterate_dir
+     * @param string $iterate_dir folder of files to iterate over
      * @param string $result_timestamp timestamp of the arc archive bundle
      *      results are being stored in
-     * @param string $result_dir
+     * @param string $result_dir where to write last position checkpoints to
      */
     function __construct($iterate_timestamp, $iterate_dir,
         $result_timestamp, $result_dir)

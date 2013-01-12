@@ -2474,7 +2474,6 @@ class AdminController extends Controller implements CrawlConstants
                     $profile['DB_NAME'] != $old_profile['DB_NAME']) ||
                     (isset($profile['DB_HOST']) &&
                     $profile['DB_HOST'] != $old_profile['DB_HOST'])) {
-
                     if(!$this->profileModel->migrateDatabaseIfNecessary(
                         $profile)) {
                         $db_problem = true;

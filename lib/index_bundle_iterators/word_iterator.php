@@ -320,9 +320,9 @@ class WordIterator extends IndexBundleIterator
         if($this->empty && $no_feeds) {
             return -1;
         }
-        if(!$feed_in_use&&($this->generation_pointer >= $this->num_generations)
-            || ($this->generation_pointer == $this->num_generations -1 &&
-            $this->current_offset > $this->last_offset)) {
+        if(!$feed_in_use &&(($this->generation_pointer>=$this->num_generations)
+            || ($this->generation_pointer == $this->num_generations - 1 &&
+            $this->current_offset > $this->last_offset))) {
             return -1;
         }
         $pre_results = array();
@@ -485,7 +485,7 @@ class WordIterator extends IndexBundleIterator
             $this->generation_pointer = -1;
         }
         if($generation === null) {
-            $generation = $this->current_generation;
+            $generation = $this->current_generation + 1;
         }
         do {
             if($this->generation_pointer < $this->num_generations) {

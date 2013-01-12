@@ -98,7 +98,7 @@ abstract class ArchiveBundleIterator implements CrawlConstants
         $this->current_partition_num = $info['current_partition_num'];
         $this->current_offset = $info['current_offset'];
         if(!$this->end_of_iterator) {
-            $this->fh=gzopen(
+            $this->fh = gzopen(
                 $this->partitions[$this->current_partition_num], "rb");
             gzseek($this->fh, $this->current_offset);
         }

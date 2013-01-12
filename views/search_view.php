@@ -169,10 +169,19 @@ class SearchView extends View implements CrawlConstants
                     if(substr($page[self::URL], 0, 4) == "url|") {
                         $url_parts = explode("|", $page[self::URL]);
                         $url = $url_parts[1];
+                        $link_url = $url;
                         $title = UrlParser::simplifyUrl($url, 60);
                         $subtitle = "title='".$page[self::URL]."'";
                     } else {
                         $url = $page[self::URL];
+                        if(substr($url, 0, 7) == "record:") {
+                            $link_url="?".CSRF_TOKEN."=".$data[CSRF_TOKEN].
+                            "&c=search&a=cache&q=".$data['QUERY'].
+                            "&arg=".urlencode($url)."&its=".
+                            $page[self::CRAWL_TIME];
+                        } else {
+                            $link_url = $url;
+                        }
                         $title = $page[self::TITLE];
                         if(strlen(trim($title)) == 0) {
                             $title = UrlParser::simplifyUrl($url, 60);
@@ -181,6 +190,7 @@ class SearchView extends View implements CrawlConstants
                     }
                 } else {
                     $url = "";
+                    $link_url = $url;
                     $title = isset($page[self::TITLE]) ? $page[self::TITLE] :"";
                     $subtitle = "";
                 }
@@ -205,7 +215,7 @@ class SearchView extends View implements CrawlConstants
                 ?>
 
                 <h2>
-                <a href="<?php  e(htmlentities($url));  ?>" rel="nofollow"
+                <a href="<?php  e(htmlentities($link_url));  ?>" rel="nofollow"
                  <?php if($data["OPEN_IN_TABS"]) {
                     ?> target="_blank" <?php }?> ><?php
                  if(isset($page[self::THUMB]) && $page[self::THUMB] != 'NULL') {

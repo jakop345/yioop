@@ -89,7 +89,7 @@ class MixArchiveBundleIterator extends ArchiveBundleIterator
     /**
      * Creates a web archive iterator with the given parameters.
      *
-     * @param string $imix_timestamp timestamp of the crawl mix to
+     * @param string $mix_timestamp timestamp of the crawl mix to
      *      iterate over the pages of
      * @param string $result_timestamp timestamp of the web archive bundle
      *      results are being stored in

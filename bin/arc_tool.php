@@ -597,7 +597,8 @@ class ArcTool implements CrawlConstants
             $nonyioop = true;
             $num_generations = 1;
             //for non-yioop archives we set up a real iterator
-            $iterator=$this->instantiateIterator($archive_path, $archive_type);
+            $iterator = $this->instantiateIterator($archive_path,
+                $archive_type);
             if($iterator === false) {
                 $this->badFormatMessageAndExit($archive_path);
             }
@@ -636,6 +637,7 @@ class ArcTool implements CrawlConstants
                     $seen += $num_to_get;
                     $seen_generation += $num_to_get;
                 }
+                $num_to_get = count($objects);
                 if($seen >= $start) {
                     $num_to_show = min($seen - $start, $num_to_get);
                     $cnt = 0;
@@ -672,6 +674,7 @@ class ArcTool implements CrawlConstants
                         $cnt++;
                     }
                 }
+                if($objects == NULL) break;
             }
             $generation++;
         }
@@ -699,7 +702,8 @@ class ArcTool implements CrawlConstants
     {
         $iterate_timestamp = filectime($archive_path);
         $result_timestamp = strval(time());
-        $this->tmp_results = 'TmpArchiveExtract'.$iterate_timestamp;
+        $this->tmp_results = WORK_DIRECTORY.'/temp/TmpArchiveExtract'.
+            $iterate_timestamp;
         if(!file_exists($this->tmp_results)) {
             mkdir($this->tmp_results);
         } else {

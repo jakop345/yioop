@@ -269,7 +269,10 @@ class ParallelModel extends Model implements CrawlConstants
         $db = $this->db;
         $db->selectDB(DB_NAME);
         foreach($lookups as $lookup => $lookup_info) {
-            if(count($lookup_info) == 2 && $lookup_info[0][0] === 'h') {
+            $scheme = (is_string($lookup_info[0])) ?
+                substr($lookup_info[0], 0, 3) : "";
+            if(count($lookup_info) == 2 && ($scheme == 'htt' ||
+                $scheme == 'rec')) {
                 list($url, $index_name) = $lookup_info;
                 $index_archive = IndexManager::getIndex($index_name);
                 $offset_gen_arr =
