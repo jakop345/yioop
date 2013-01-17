@@ -322,7 +322,7 @@ class HashTable extends StringArray
         $seed = unpackInt($hash);
 
         mt_srand($seed);
-        $index = mt_rand(0, $this->num_values -1);
+        $index = mt_rand(0, $this->num_values - 1);
 
         return $index;
     }

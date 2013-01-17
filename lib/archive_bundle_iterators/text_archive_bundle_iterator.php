@@ -96,10 +96,15 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
      */
     var $partitions;
     /**
-     *  File handle for current arc file
+     *  File handle for current archive file
      *  @var resource
      */
     var $fh;
+    /**
+     *  Used to buffer data from the currently opened file
+     *  @var string
+     */
+    var $buffer;
 
     /**
      *  Starting delimiters for records
@@ -112,8 +117,53 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
      *  @var string
      */
     var $end_delimiter;
+
     /**
-     * Creates an text archive archive iterator with the given parameters.
+     *  File name to write this archive iterator status messages to
+     *  @var string
+     */
+    var $status_filename;
+
+    /**
+     * If gzip is being used a buffer file is also employed to
+     * try to reduce the number of calls to gzseek. $gzh is a
+     * filehandle for the buffer file
+     *
+     * @var resource
+     */
+    var $gzh;
+
+    /**
+     * Which block of self::GZ_BUFFER_SIZE from the current archive
+     * file is stored in the file $this->gz_buffer_filename
+     *
+     * @var int
+     */
+    var $gz_block_num;
+
+    /**
+     * Name of a buffer file to be used to reduce gzseek calls in the
+     * case where gzip compression is being used
+     *
+     * @var string
+     */
+    var $gz_buffer_filename;
+
+    /**
+     * Name of 
+     *
+     * @var string
+     */
+    var $switch_partition_callback_name = NULL;
+
+    /**
+     * How many bytes at a time should be read from the current archive
+     * file into the gz buffer file when gzip is being used
+     */
+    const GZ_BUFFER_SIZE = 32000000;
+
+    /**
+     * Creates an text archive iterator with the given parameters.
      *
      * @param string $iterate_timestamp timestamp of the arc archive bundle to
      *      iterate  over the pages of
@@ -121,16 +171,20 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
      * @param string $result_timestamp timestamp of the arc archive bundle
      *      results are being stored in
      * @param string $result_dir where to write last position checkpoints to
+     * @param array $ini describes start_ and end_delimiter, file_extension,
+     *      encoding, and compression method used for pages in this archive
      */
     function __construct($iterate_timestamp, $iterate_dir,
-        $result_timestamp, $result_dir)
+        $result_timestamp, $result_dir, $ini = array())
     {
         $this->iterate_timestamp = $iterate_timestamp;
         $this->iterate_dir = $iterate_dir;
         $this->result_timestamp = $result_timestamp;
         $this->result_dir = $result_dir;
         $this->partitions = array();
-        $ini = parse_ini_file("{$this->iterate_dir}/arc_description.ini");
+        if($ini == array()) {
+            $ini = parse_ini_file("{$this->iterate_dir}/arc_description.ini");
+        }
         $extension = $ini['file_extension'];
         if(isset($ini['compression'])) {
             $this->compression = $ini['compression'];
@@ -165,8 +219,11 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
             $this->partitions[] = $filename;
         }
         $this->num_partitions = count($this->partitions);
+        $this->status_filename = "{$this->result_dir}/iterate_status.txt";
+        $this->gz_buffer_filename = $this->result_dir."/gz_buffer.txt";
 
-        if(file_exists("{$this->result_dir}/iterate_status.txt")) {
+
+        if(file_exists($this->status_filename)) {
             $this->restoreCheckpoint();
         } else {
             $this->reset();
@@ -193,11 +250,15 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
         $this->current_partition_num = -1;
         $this->end_of_iterator = false;
         $this->current_offset = 0;
+        $this->gz_offset = 0;
         $this->fh = NULL;
+        $this->gzh = NULL;
+        $this->gz_block_num = 0;
         $this->bz2_iterator = NULL;
         $this->buffer = "";
         $this->remainder = "";
-        @unlink("{$this->result_dir}/iterate_status.txt");
+        @unlink($this->status_filename);
+        @unlink($this->gz_buffer_filename);
     }
 
     /**
@@ -206,14 +267,16 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
      * bundle is reached.
      *
      * @param int $num number of docs to get
+     * @param bool $no_process if true then just an array of page strings found
+     *      not any additional meta data.
      * @return array associative arrays for $num pages
      */
-    function nextPages($num)
+    function nextPages($num, $no_process = false)
     {
         $pages = array();
         $page_count = 0;
         for($i = 0; $i < $num; $i++) {
-            $page = $this->nextPage();
+            $page = $this->nextPage($no_process);
             if(!$page) {
                 if($this->checkFileHandle()) {
                     $this->fileClose();
@@ -225,13 +288,17 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
                 }
                 $this->fileOpen(
                     $this->partitions[$this->current_partition_num]);
-                $page = $this->nextPage();
-                $pages[] = $page;
-                $page_count++;
-            } else {
-                $pages[] = $page;
-                $page_count++;
+
+                if($this->switch_partition_callback_name != NULL) {
+                    $callback_name = $this->switch_partition_callback_name;
+                    $result = $this->$callback_name();
+                    if(!$result) { break; }
+                }
+                $page = $this->nextPage($no_process);
+                if(!$page) {continue; }
             }
+            $pages[] = $page;
+            $page_count++;
         }
         if($this->checkFileHandle()) {
             $this->current_offset = $this->fileTell();
@@ -242,116 +309,15 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
         return $pages;
     }
 
-    /**
-     *  Checks if have a valid handle to object's archive's current partition
-     *
-     *  @return bool whether it has or not (true -it has)
-     */
-    function checkFileHandle()
-    {
-        if($this->compression != "bzip2") {
-            return is_resource($this->fh);
-        } else {
-            return !is_null($this->bz2_iterator);
-        }
-    }
-
-    /**
-     *  Checks if this object's archive's current partition is at an end of file
-     *
-     *  @return bool whether end of file has been reached (true -it has)
-     */
-    function checkEof()
-    {
-        switch($this->compression)
-        {
-            case 'bzip2':
-                $eof = $this->bz2_iterator->eof();
-            break;
-
-            case 'gzip':
-                $eof = feof($this->fh);
-            break;
-
-            case 'plain':
-                $eof = gzeof($this->fh);
-            break;
-        }
-    }
-
-    /**
-     *  Wrapper around particular compression scheme fopen function
-     *
-     *  @param string filename to open
-     */
-    function fileOpen($filename)
-    {
-        switch($this->compression)
-        {
-            case 'bzip2':
-                $this->bz2_iterator = new BZip2BlockIterator($filename);
-            break;
-
-            case 'gzip':
-                $this->fh = gzopen($filename, "rb");
-            break;
-
-            case 'plain':
-                $this->fh = fopen($filename, "rb");
-            break;
-        }
-    }
-
-    /**
-     *  Wrapper around particular compression scheme fclose function
-     */
-    function fileClose()
-    {
-        switch($this->compression)
-        {
-            case 'bzip2':
-                $this->bz2_iterator->close();
-            break;
-
-            case 'gzip':
-                gzclose($this->fh);
-            break;
-
-            case 'plain':
-                fclose($this->fh);
-            break;
-        }
-    }
-
-    /**
-     *  Returns the current position in the current iterator partition file
-     *  for the given compression scheme.
-     *  @return int a position into the currently being processed file of the
-     *      iterator
-     */
-    function fileTell()
-    {
-        switch($this->compression)
-        {
-            case 'bzip2':
-                return ($this->bz2_iterator) ? 1 : -1;
-            break;
-
-            case 'gzip':
-                return gztell($this->fh);
-            break;
-
-            case 'plain':
-                return ftell($this->fh);
-            break;
-        }
-    }
 
     /**
      * Gets the next doc from the iterator
-     * @return array associative array for doc
+     * @param bool $no_process if true then just return page string found
+     *      not any additional meta data.
+     * @return mixed associative array for doc or just string of doc
+     *  
      */
-    function nextPage()
+    function nextPage($no_process = false)
     {
         if(!$this->checkFileHandle()) return NULL;
         $matches = array();
@@ -382,6 +348,8 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
                 }
             }
         }
+        if($no_process == true) {return $page; }
+
         $site = array();
         $site[self::HEADER] = "text_archive_bundle_iterator extractor";
         $site[self::IP_ADDRESSES] = array("0.0.0.0");
@@ -399,6 +367,7 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
         $site[self::WEIGHT] = 1;
         return $site;
     }
+
 
     /**
      * Reads and return the block of data from the current partition
@@ -418,7 +387,7 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
             break;
 
             case 'gzip':
-                $block = gzgets($this->fh); // very slow for large files!
+                $block = $this->gzFileGets();
             break;
 
             case 'plain':
@@ -427,6 +396,186 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
         }
         return $block;
     }
+
+    /**
+     * Acts as gzread($num_bytes, $archive_file), hiding the fact that 
+     * buffering of the archive_file is being done to a buffer file
+     *
+     * @param int $num_bytes to read from archive file
+     * @return string of length up to $num_bytes (less if eof occurs)
+     */
+    function gzFileRead($num_bytes)
+    {
+        $len = 0;
+        $read_string = "";
+        do {
+            $read_string .= fread($this->gzh, $num_bytes - $len);
+            $len += strlen($read_string);
+        } while($len < $num_bytes && $this->updateGzBuffer());
+        return $read_string;
+    }
+
+    /**
+     * Acts as gzgets(), hiding the fact that 
+     * buffering of the archive_file is being done to a buffer file
+     *
+     * @return string from archive file up to next line ending or eof
+     */
+    function gzFileGets()
+    {
+        $len = 0;
+        $read_string = "";
+        do {
+            $read_string .= fgets($this->gzh);
+        } while(feof($this->gzh) && $this->updateGzBuffer());
+        return $read_string;
+    }
+
+    /**
+     *  If reading from a gzbuffer file goes off the end of the current
+     *  buffer, reads in the next block from archive file.
+     *
+     *  @return bool whether successfully read in next block or not
+     */
+    function updateGzBuffer()
+    {
+        $this->gz_block_num++;
+        return $this->makeGzBufferFile();
+    }
+
+    /**
+     *  Reads in block $this->gz_block_num of size self::GZ_BUFFER_SIZE from
+     *  the archive file
+     *
+     *  @return bool whether successfully read in block or not
+     */
+    function makeGzBufferFile()
+    {
+        if(!$this->checkFileHandle()) { return false; }
+        $success = gzseek($this->fh, $this->gz_block_num * 
+            self::GZ_BUFFER_SIZE);
+        if($success == -1 || !$this->checkFileHandle() 
+            || $this->checkEof()) { return false; }
+        if(is_resource($this->gzh)) {
+            fclose($this->gzh);
+        }
+        $gz_buffer = gzread($this->fh, self::GZ_BUFFER_SIZE);
+        file_put_contents($this->gz_buffer_filename, $gz_buffer);
+        $this->gzh = fopen($this->gz_buffer_filename, "rb");
+        return true;
+    }
+
+    /**
+     *  Checks if have a valid handle to object's archive's current partition
+     *
+     *  @return bool whether it has or not (true -it has)
+     */
+    function checkFileHandle()
+    {
+        if($this->compression != "bzip2") {
+            return is_resource($this->fh);
+        } else {
+            return !is_null($this->bz2_iterator);
+        }
+    }
+
+    /**
+     *  Checks if this object's archive's current partition is at an end of file
+     *
+     *  @return bool whether end of file has been reached (true -it has)
+     */
+    function checkEof()
+    {
+        switch($this->compression)
+        {
+            case 'bzip2':
+                $eof = $this->bz2_iterator->eof();
+            break;
+
+            case 'gzip':
+                $eof = gzeof($this->fh);
+            break;
+
+            case 'plain':
+                $eof = feof($this->fh);
+            break;
+        }
+    }
+
+    /**
+     *  Wrapper around particular compression scheme fopen function
+     *
+     *  @param string filename to open
+     */
+    function fileOpen($filename)
+    {
+        switch($this->compression)
+        {
+            case 'bzip2':
+                $this->bz2_iterator = new BZip2BlockIterator($filename);
+            break;
+
+            case 'gzip':
+                $this->fh = gzopen($filename, "rb");
+                if(!file_exists($this->gz_buffer_filename)) {
+                    $this->makeGzBufferFile();
+                } else {
+                    $this->gzh = fopen($this->gz_buffer_filename, "rb");
+                }
+            break;
+
+            case 'plain':
+                $this->fh = fopen($filename, "rb");
+            break;
+        }
+    }
+
+    /**
+     *  Wrapper around particular compression scheme fclose function
+     */
+    function fileClose()
+    {
+        switch($this->compression)
+        {
+            case 'bzip2':
+                $this->bz2_iterator->close();
+            break;
+
+            case 'gzip':
+                gzclose($this->fh);
+                fclose($this->gzh);
+            break;
+
+            case 'plain':
+                fclose($this->fh);
+            break;
+        }
+    }
+
+    /**
+     *  Returns the current position in the current iterator partition file
+     *  for the given compression scheme.
+     *  @return int a position into the currently being processed file of the
+     *      iterator
+     */
+    function fileTell()
+    {
+        switch($this->compression)
+        {
+            case 'bzip2':
+                return ($this->bz2_iterator) ? 1 : -1;
+            break;
+
+            case 'gzip':
+                return ftell($this->gzh);
+            break;
+
+            case 'plain':
+                return ftell($this->fh);
+            break;
+        }
+    }
+
 
     /**
      * Stores the current progress to the file iterate_status.txt in the result
@@ -440,6 +589,7 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
     {
         if($this->compression != "bzip2") {
             $info['buffer'] = $this->buffer;
+            $info['gz_block_num'] = $this->gz_block_num; //used gzip case; else0
             parent::saveCheckpoint($info);
             return;
         }
@@ -450,7 +600,7 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
         $info['remainder'] = $this->remainder;
         $info['header'] = $this->header;
         $info['bz2_iterator'] = $this->bz2_iterator;
-        file_put_contents("{$this->result_dir}/iterate_status.txt",
+        file_put_contents($this->status_filename,
             serialize($info));
     }
 
@@ -466,10 +616,11 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
      */
     function restoreCheckPoint()
     {
-        $info = unserialize(file_get_contents(
-            "{$this->result_dir}/iterate_status.txt"));
+        $info = unserialize(file_get_contents($this->status_filename));
         $this->end_of_iterator = $info['end_of_iterator'];
         $this->current_partition_num = $info['current_partition_num'];
+        $this->buffer = (isset($info['buffer'])) ? $info['buffer'] : "";
+        $this->remainder = (isset($info['remainder'])) ? $info['remainder']:"";
         $restore_function = $this->compression . "RestoreCheckpoint";
         return $this->$restore_function($info);
     }
@@ -486,9 +637,9 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
     {
         $this->current_offset = $info['current_offset'];
         if(!$this->end_of_iterator) {
-            $this->fh = fopen(
-                $this->partitions[$this->current_partition_num], "rb");
-            fseek($this->fh, $this->current_offset);
+            $this->fileOpen($this->partitions[$this->current_partition_num]);
+            $success = fseek($this->fh, $this->current_offset);
+            if($success == -1) { $this->fh = NULL; }
         }
         return $info;
     }
@@ -505,9 +656,9 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
     {
         $this->current_offset = $info['current_offset'];
         if(!$this->end_of_iterator) {
-            $this->fh = gzopen(
-                $this->partitions[$this->current_partition_num], "rb");
-            gzseek($this->fh, $this->current_offset);
+            $this->fileOpen($this->partitions[$this->current_partition_num]);
+            $success = fseek($this->gzh, $this->current_offset);
+            if($success == -1) { $this->gzh = NULL; }
         }
         return $info;
     }
@@ -528,6 +679,67 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
         $this->bz2_iterator = $info['bz2_iterator'];
 
         return $info;
+    }
+
+
+    /**
+     * Used to extract data between two tags. After operation $this->buffer has
+     * contents after the close tag.
+     *
+     * @param string $tag tag name to look for
+     *
+     * @return string data start tag contents close tag of name $tag
+     */
+    function getNextTagData($tag)
+    {
+        $info = $this->getNextTagsData(array($tag));
+        if(!isset($info[1])) {return $info; }
+        return $info[0];
+    }
+
+    /**
+     * Used to extract data between two tags for the first tag found
+     * amongst the array of tags $tags. After operation $this->buffer has
+     * contents after the close tag.
+     *
+     * @param array $tags array of tagnames to look for
+     *
+     * @return array of two elements: the first element is a string consisting
+     *      of start tag contents close tag of first tag found, the second
+     *      has the name of the tag amongst $tags found
+     */
+    function getNextTagsData($tags)
+    {
+        $close_regex = '@</('.implode('|', $tags).')[^>]*?>@';
+
+        $offset = 0;
+        while(!preg_match($close_regex, $this->buffer, $matches,
+                    PREG_OFFSET_CAPTURE, $offset)) {
+            if(!$this->checkFileHandle() || $this->checkEof()) {
+                return false;
+            }
+            /*
+               Get the next block; the block iterator can very occasionally
+               return a bad block if a block header pattern happens to show up
+               in compressed data, in which case decompression will fail. We
+               want to skip over these false blocks and get back to real
+               blocks.
+            */
+            while(!is_string($block = $this->getFileBlock())) {
+                if($this->checkEof())
+                    return false;
+            }
+            $this->buffer .= $block;
+        }
+        $tag = $matches[1][0];
+        $start_info = strpos($this->buffer, "<$tag");
+        $this->remainder = substr($this->buffer, 0, $start_info);
+        $pre_end_info = strpos($this->buffer, "</$tag", $start_info);
+        $end_info = strpos($this->buffer, ">", $pre_end_info) + 1;
+        $tag_info = substr($this->buffer, $start_info,
+            $end_info - $start_info);
+        $this->buffer = substr($this->buffer, $end_info);
+        return array($tag_info, $tag);
     }
 }
 ?>

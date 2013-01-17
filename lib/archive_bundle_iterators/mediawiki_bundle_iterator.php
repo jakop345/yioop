@@ -37,10 +37,43 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  *Loads base class for iterating
  */
 require_once BASE_DIR.
-    '/lib/archive_bundle_iterators/archive_bundle_iterator.php';
+    '/lib/archive_bundle_iterators/text_archive_bundle_iterator.php';
 
 /** Wikipedia is usually bzip2 compressed*/
 require_once BASE_DIR.'/lib/bzip2_block_iterator.php';
+
+/**
+ * Used to define the styles we put on cache wiki pages
+ */
+define('WIKI_PAGE_STYLES', <<<EOD
+<style type="text/css">
+table.wikitable
+{
+    background:white;
+    border:1px #aaa solid;
+    border-collapse: scollapse
+    margin:1em 0;
+}
+table.wikitable > tr > th,table.wikitable > tr > td,
+table.wikitable > * > tr > th,table.wikitable > * > tr > td
+{
+    border:1px #aaa solid;
+    padding:0.2em;
+}
+table.wikitable > tr > th,
+table.wikitable > * > tr > th
+{
+    text-align:center;
+    background:white;
+    font-weight:bold
+}
+table.wikitable > caption
+{
+    font-weight:bold;
+}
+</style>
+EOD
+);
 
 /**
  * Used to iterate through a collection of .xml.bz2  media wiki files
@@ -53,97 +86,11 @@ require_once BASE_DIR.'/lib/bzip2_block_iterator.php';
  * @subpackage iterator
  * @see WebArchiveBundle
  */
-class MediaWikiArchiveBundleIterator extends ArchiveBundleIterator
+class MediaWikiArchiveBundleIterator extends TextArchiveBundleIterator
     implements CrawlConstants
 {
-    /**
-     * The path to the directory containing the archive partitions to be
-     * iterated over.
-     * @var string
-     */
-    var $iterate_dir;
-    /**
-     * The path to the directory where the iteration status is stored.
-     * @var string
-     */
-    var $result_dir;
-    /**
-     * The number of arc files in this arc archive bundle
-     *  @var int
-     */
-    var $num_partitions;
-    /**
-     *  Counting in glob order for this arc archive bundle directory, the
-     *  current active file number of the arc file being processed.
-     *  @var int
-     */
-    var $current_partition_num;
-    /**
-     *  current number of wiki pages into the Media Wiki xml.bz2 file
-     *  @var int
-     */
-    var $current_page_num;
-    /**
-     *  Array of filenames of arc files in this directory (glob order)
-     *  @var array
-     */
-    var $partitions;
-    /**
-     *  Used to buffer data from the currently opened media wiki file
-     *  @var string
-     */
-    var $buffer;
-    /**
-     * Used to hold data that was in the buffer but before a siteinfo or a page
-     * when that data gets parsed out.
-     *  @var string
-     */
-    var $remainder;
-    /**
-     *  Associative array containing global properties like base url of the
-     *  current open wiki media file
-     *  @var array
-     */
-    var $header;
-    /**
-     *  Wrapper for a bzip2 file that decompresses incrementally and can be
-     *  serialized and restored while maintaining its position.
-     *  @var MicroBzip2
-     */
-    var $bz2_iterator;
 
-    /**
-     * Start state of FSA for lexing media wiki docs
-     */
-    const START = 0;
-    /**
-     * Reading an open link state of FSA for lexing media wiki docs
-     */
-    const OPEN_LINK = 1;
-    /**
-     * Reading a close link state of FSA for lexing media wiki docs
-     */
-    const CLOSE_LINK = 2;
-    /**
-     * Reading a string of chars state of FSA for lexing media wiki docs
-     */
-    const CHARS = 3;
-    /**
-     * Might be reading a heading state of FSA for lexing media wiki docs
-     */
-    const PRE_HEADING = 4;
-    /**
-     * Reading a heading state of FSA for lexing media wiki docs
-     */
-    const HEADING = 5;
-    /**
-     * Escape char state of FSA for lexing media wiki docs
-     */
-    const ESCAPE = 6;
-    /**
-     * How many bytes to read into buffer from bz2 stream in one go
-     */
-    const BLOCK_SIZE = 8192;
+
 
     /**
      * Creates a media wiki archive iterator with the given parameters.
@@ -158,64 +105,22 @@ class MediaWikiArchiveBundleIterator extends ArchiveBundleIterator
     function __construct($iterate_timestamp, $iterate_dir,
             $result_timestamp, $result_dir)
     {
-        $this->iterate_timestamp = $iterate_timestamp;
-        $this->iterate_dir = $iterate_dir;
-        $this->result_timestamp = $result_timestamp;
-        $this->result_dir = $result_dir;
-        $this->partitions = array();
-        foreach(glob("{$this->iterate_dir}/*.xml*.bz2") as $filename) {
-            $this->partitions[] = $filename;
-        }
-        $this->num_partitions = count($this->partitions);
-
-        if(file_exists("{$this->result_dir}/iterate_status.txt")) {
-            $this->restoreCheckpoint();
-        } else {
-            $this->reset();
-        }
+        $ini = array( 'compression' => 'bzip2',
+            'file_extension' => 'bz2',
+            'encoding' => 'UTF-8',
+            'start_delimiter' => '@page@');
+        parent::__construct($iterate_timestamp, $iterate_dir,
+            $result_timestamp, $result_dir, $ini);
+        $this->switch_partition_callback_name = "readMediaWikiHeader";
     }
 
-    /**
-     * Saves the current state so that a new instantiation can pick up just
-     * after the last batch of pages extracted.
-     */
-    function saveCheckpoint($info = array())
-    {
-        $info['end_of_iterator'] = $this->end_of_iterator;
-        $info['current_partition_num'] = $this->current_partition_num;
-        $info['current_page_num'] = $this->current_page_num;
-        $info['buffer'] = $this->buffer;
-        $info['remainder'] = $this->remainder;
-        $info['header'] = $this->header;
-        $info['bz2_iterator'] = $this->bz2_iterator;
-        file_put_contents("{$this->result_dir}/iterate_status.txt",
-            serialize($info));
-    }
-
-    /**
-     * Restores state from a previous instantiation, after the last batch of
-     * pages extracted.
-     */
-    function restoreCheckpoint()
-    {
-        $info = unserialize(file_get_contents(
-            "{$this->result_dir}/iterate_status.txt"));
-        $this->end_of_iterator = $info['end_of_iterator'];
-        $this->current_partition_num = $info['current_partition_num'];
-        $this->current_page_num = $info['current_page_num'];
-        $this->buffer = $info['buffer'];
-        $this->remainder = $info['remainder'];
-        $this->header = $info['header'];
-        $this->bz2_iterator = $info['bz2_iterator'];
-        return $info;
-    }
 
     /**
      * Estimates the important of the site according to the weighting of
      * the particular archive iterator
      * @param $site an associative array containing info about a web page
      * @return int a 4-bit number based on the log_2 size - 10 of the wiki
-     *      entry (@see readPage).
+     *      entry (@see nextPage).
      */
     function weight(&$site)
     {
@@ -235,7 +140,10 @@ class MediaWikiArchiveBundleIterator extends ArchiveBundleIterator
         if($found_lang) {
             $this->header['lang'] = $matches[1];
         }
-        if($site_info === false) return false;
+        if($site_info === false) {
+            $this->bz2_iterator = NULL;
+            return false;
+        }
         $dom = new DOMDocument();
         @$dom->loadXML($site_info);
         $this->header['sitename'] = $this->getTextContent($dom,
@@ -246,46 +154,164 @@ class MediaWikiArchiveBundleIterator extends ArchiveBundleIterator
             strrpos($pre_host_name, "/") + 1);
         $url_parts = @parse_url($this->header['base_address']);
         $this->header['ip_address'] = gethostbyname($url_parts['host']);
+        $this->initializeSubstitutions();
         return true;
     }
 
     /**
-     * Used to extract data between two tags such as siteinfo or page from
-     * an media wiki file. Stores contents in $this->buffer from before
-     * open tag into $this->remainder. After operation $this->buffer has
-     * contents after the close tag.
-     *
-     * @param string $tag tagname to extract between
-     *
-     * @return string data start tag contents close tag
+     * Used to initialize the arrays of match/replacements used to format
+     * wikimedia syntax into HTML (not perfectly since we are only doing
+     * regexes)
      */
-    function getNextTagData($tag)
+    function initializeSubstitutions()
     {
-        while(stripos($this->buffer, "</$tag") === false) {
-            if(is_null($this->bz2_iterator) || $this->bz2_iterator->eof()) {
-                return false;
-            }
-            /*
-               Get the next block; the block iterator can very occasionally
-               return a bad block if a block header pattern happens to show up
-               in compressed data, in which case decompression will fail. We
-               want to skip over these false blocks and get back to real
-               blocks.
-            */
-            while(!is_string($block = $this->bz2_iterator->nextBlock())) {
-                if($this->bz2_iterator->eof())
-                    return false;
-            }
-            $this->buffer .= $block;
+        $base_address = $this->header['base_address'];
+
+        $substitutions = array(
+            array('/{{([^}]*)({{([^{}]*)}})/', '{{$1$3' ),
+            array('/{{([^}]*)({{([^{}]*)}})/', '{{$1$3' ),
+            array('/{{([^}]*)({{([^{}]*)}})/', '{{$1$3' ),
+            array('/{{([^}]*)({{([^{}]*)}})/', '{{$1$3' ),
+            array('/{{([^}]*)({{([^{}]*)}})/', '{{$1$3' ),
+            array('/{{([^}]*)({{([^{}]*)}})/', '{{$1$3' ),
+            array('/\[\[([^\]]*)(\[\[([^\[\]]*)\]\])/', "[[$1$3"),
+            array('/\[\[([^\]]*)(\[\[([^\[\]]*)\]\])/', "[[$1$3"),
+            array('/\[\[([^\]]*)(\[\[([^\[\]]*)\]\])/', "[[$1$3"),
+            array('/\[\[([^\]]*)(\[\[([^\[\]]*)\]\])/', "[[$1$3"),
+            array('/\[\[([^\]]*)(\[\[([^\[\]]*)\]\])/', "[[$1$3"),
+            array('/\[\[([^\]]*)(\[\[([^\[\]]*)\]\])/', "[[$1$3"),
+            array('/(\A|\n)=\s*([^=]+)\s*=/',
+                "\n<h1 id='$2'>$2</h1><hr />"),
+            array('/(\A|\n)==\s*([^=]+)\s*==/',
+                "\n<h2 id='$2'>$2</h2><hr />"),
+            array('/(\A|\n)===\s*([^=]+)\s*===/',
+                "\n<h3 id='$2'>$2</h3>"),
+            array('/(\A|\n)====\s*([^=]+)\s*====/',
+                "\n<h4 id='$2'>$2</h4>"),
+            array('/(\A|\n)=====\s*([^=]+)\s*=====/',
+                "\n<h5 id='$2'>$2</h5>"),
+            array('/(\A|\n)======\s*([^=]+)\s*======/',
+                "\n<h6 id='$2'>$2</h6>"),
+            array("/{{Main\s*\|(.+?)(\|.+)?}}/i",
+                "<div class='indent'>(<a href=\"".
+                $base_address."$1\">$1</a>)</div>"),
+            array("/{{See also\s*\|(.+?)(\|.+)?}}/i",
+                "<div class='indent'>(<a href=\"".
+                $base_address."$1\">$1</a>)</div>"),
+            array("/{{See\s*\|(.+?)(\|.+)?}}/i",
+                "<div class='indent'>(<a href=\"".
+                $base_address."$1\">$1</a>)</div>"),
+            array("/{{\s*Related articles\s*\|(.+?)\|(.+?)}}/si",
+                "<div class='indent'>(<a href=\"".
+                $base_address . "$1\">$1?</a>)</div>"),
+            array("/\[\[Image:(.+?)(right\|)(.+?)\]\]/s",
+                "[[Image:$1$3]]"),
+            array("/\[\[Image:(.+?)(left\|)(.+?)\]\]/s",
+                "[[Image:$1$3]]"),
+            array("/\[\[Image:(.+?)(\|left)\]\]/s",
+                "[[Image:$1]]"),
+            array("/\[\[Image:(.+?)(\|right)\]\]/s",
+                "[[Image:$1]]"),
+            array("/\[\[Image:(.+?)(thumb\|)(.+?)\]\]/s",
+                "[[Image:$1$3]]"),
+            array("/\[\[Image:(.+?)(live\|)(.+?)\]\]/s",
+                "[[Image:$1$3]]"),
+            array("/\[\[Image:(.+?)(\s*\d*\s*(px|in|cm|".
+                "pt|ex|em)\s*\|)(.+?)\]\]/s","[[Image:$1$4]]"),
+            array("/\[\[Image:([^\|]+?)\]\]/s",
+                "(<a href=\"{$base_address}File:$1\" >Image:$1</a>)"),
+            array("/\[\[Image:(.+?)\|(.+?)\]\]/s",
+                "(<a href=\"{$base_address}File:$1\">Image:$2</a>)"),
+            array("/\[\[File:(.+?)\|(right\|)?thumb(.+?)\]\]/s",
+                "(<a href=\"{$base_address}File:$1\">Image:$1</a>)"),
+            array("/{{Redirect2?\|([^{}\|]+)\|([^{}\|]+)\|([^{}\|]+)}}/i",
+                "<div class='indent'>\"$1\". ($2 &rarr;<a href=\"".
+                $base_address."$3\">$3</a>)</div>"),
+            array("/{{Redirect\|([^{}\|]+)}}/i", 
+                "<div class='indent'>\"$1\". (<a href=\"".
+                $base_address. "$1_(disambiguation)\">$1???</a>)</div>"),
+            array("/#REDIRECT:\s+\[\[(.+?)\]\]/",
+                "<a href='{$base_address}$1'>$1</a>"),
+            array('/\[\[([^\[\]]+?)\|([^\[\]]+?)\]\]/s',
+                "<a href=\"{$base_address}$1\">$2</a>"),
+            array('/\[\[([^\[\]]+?)\]\]/s',
+                "<a href=\"{$base_address}$1\">$1</a>"),
+            array("/\[(http[^\s\]]+)\s+(.+?)\]/s",
+                "[<a href=\"$1\">$2</a>]"),
+            array("/\[(http[^\]\s]+)\s*\]/","(<a href=\"$1\">&rarr;</a>)"), 
+            array("/'''''(.+?)'''''/s", "<b><i>$1</i></b>"),
+            array("/'''(.+?)'''/s", "<b>$1</b>"),
+            array("/''(.+?)''/s", "<i>$1</i>"),
+            array('/{{smallcaps\|(.+?)}}/s', "<small>$1</small>"),
+            array('/{{Hatnote\|(.+?)}}/si', "($1)"),
+            array("/{{pp-(.+?)}}/s", ""),
+            array("/{{bot(.*?)}}/si", ""),
+            array('/{{Infobox.*?\n}}/si', ""),
+            array('/{{Clear.*?\n}}/si', ""),
+            array("/{{dablink\|(.+?)}}/si", "($1)"),
+            array("/{{clarify\|(.+?)}}/si", ""),
+            array("/{{fraction\|(.+?)\|(.+?)}}/si", "<small>$1/$2</small>"),
+            array("/{{lang[\||\-](.+?)\|(.+?)}}/si", "$1 &rarr; $2"),
+            array("/{{convert\|(.+?)\|(.+?)\|(.+?)}}/si", "$1$2"),
+            array("/{{IPA-(.+?)\|(.+?)}}/si", "(IPA $2)"),
+            array('/(\A|\n)\*(.+)(\n|\Z)/', "\n<li>$2</li>\n"),
+            array('/(\A|\n)\*(.+)(\n|\Z)/', "\n<li>$2</li>\n"),
+            array('/(\A|[^>])\n<li>/', "$1\n<ul>\n<li>"),
+            array('@</li>\n(\Z|[^<])@', "</li>\n</ul>\n$1"),
+            array('@</li>\n<li>\*@', "\n**"),
+            array('/\n\*\*(.+?)(\n|\Z)/s', "\n<li>$1</li>\n"),
+            array('/\n\*\*(.+?)(\n|\Z)/s', "\n<li>$1</li>\n"),
+            array('/([^>])\n<li>/', "$1\n<ul>\n<li>"),
+            array('@</li></li>@', "</li>\n</ul>\n</li>"),
+            array('/(\A|\n)\#(.+?)(\n|\Z)/s', "\n<li>$2</li>\n"),
+            array('/(\A|\n)\#(.+?)(\n|\Z)/s', "\n<li>$2</li>\n"),
+            array('/(\A|[^>])\n<li>/', "$1\n<ol>\n<li>"),
+            array('@</li>\n(\Z|[^<])@',
+                "</li>\n</ol>\n$1"),
+            array('@</li>\n<li>\#@', "\n##"),
+            array('/\n\#\#(.+?)(\n|\Z)/s', "\n<li>$1</li>\n"),
+            array('/\n\#\#(.+?)(\n|\Z)/s', "\n<li>$1</li>\n"),
+            array('/([^>])\n<li>/', "$1\n<ol>\n<li>"),
+            array('@</li></li>@', "</li>\n</ol>\n</li>"),
+            array('@</li>\n<li>\*@', "\n**"),
+            array('/\n\*\*(.+?)(\n|\Z)/s', "\n<li>$1</li>\n"),
+            array('/\n\*\*(.+?)(\n|\Z)/s', "\n<li>$1</li>\n"),
+            array('/([^>])\n<li>/', "$1\n<ul>\n<li>"),
+            array('@</li></li>@', "</li>\n</ul>\n</li>"),
+            array('@</li>\n<li>\#@', "\n##"),
+            array('/\n\#\#(.+?)(\n|\Z)/s', "\n<li>$1</li>\n"),
+            array('/\n\#\#(.+?)(\n|\Z)/s', "\n<li>$1</li>\n"),
+            array('/([^>])\n<li>/', "$1\n<ol>\n<li>"),
+            array('@</li></li>@', "</li>\n</ol>\n</li>"),
+            array('/(\A|\n);([^:]+):([^\n]+)/',
+                "<dl><dt>$2</dt>\n<dd>$3</dd></dl>\n"),
+            array('/(\A|\n)----/', "$1<hr />"),
+            array('/(\A|\n)[ \t]([^\n]+)/', "$1<pre>\n$2</pre>"),
+            array('/(\A|\n):\s+([^\n]+)/', "$1<div class='indent'>$2</div>"),
+            array('/(.+?)(\n\n|\Z)/s', "<div>$1</div>"),
+            array('/<\/pre>\n<pre>/', ""),
+            array('/{{[^}]*}}/s', ""),
+        );
+
+        $this->matches = array();
+        $this->replaces = array();
+        foreach($substitutions as $substitution) {
+            list($this->matches[], $this->replaces[]) = $substitution;
         }
-        $start_info = strpos($this->buffer, "<$tag");
-        $this->remainder = substr($this->buffer, 0, $start_info);
-        $pre_end_info = strpos($this->buffer, "</$tag", $start_info);
-        $end_info = strpos($this->buffer, ">", $pre_end_info) + 1;
-        $tag_info = substr($this->buffer, $start_info,
-            $end_info - $start_info);
-        $this->buffer = substr($this->buffer, $end_info);
-        return $tag_info;
+    }
+
+    /**
+     * Restores the internal state from the file iterate_status.txt in the
+     * result dir such that the next call to nextPages will pick up from just
+     * after the last checkpoint. We also reset up our regex substitutions
+     *
+     * @return array the data serialized when saveCheckpoint was called
+     */
+    function restoreCheckPoint()
+    {
+        $info = parent::restoreCheckPoint();
+        $this->initializeSubstitutions();
+        return $info;
     }
 
     /**
@@ -307,90 +333,20 @@ class MediaWikiArchiveBundleIterator extends ArchiveBundleIterator
         return "";
     }
 
-    /**
-     * Resets the iterator to the start of the archive bundle
-     */
-    function reset()
-    {
-        $this->current_partition_num = -1;
-        $this->end_of_iterator = false;
-        $this->current_offset = 0;
-        $this->bz2_iterator = NULL;
-        $this->buffer = "";
-        @unlink("{$this->result_dir}/iterate_status.txt");
-    }
-
-    /**
-     * Gets the next $num many wiki pages from the iterator
-     * @param int $num number of docs to get
-     * @return array associative arrays of data for $num pages
-     */
-    function nextPages($num)
-    {
-        return $this->readPages($num, true);
-    }
-
-    /**
-     * Reads the next at most $num many wiki pages from the iterator. It might
-     * return less than $num many documents if the partition changes or the end
-     * of the bundle is reached.
-     *
-     * @param int $num number of pages to get
-     * @param bool $return_pages whether to return all of the pages or
-     *      not. If not, then doesn't bother storing them
-     * @return array associative arrays for $num pages
-     */
-    function readPages($num, $return_pages)
-    {
-        $pages = array();
-        $page_count = 0;
-        while($page_count < $num) {
-            $page = $this->readPage($return_pages);
-            if(!$page) {
-                if(!is_null($this->bz2_iterator)) {
-                    $this->bz2_iterator->close();
-                }
-                $this->current_partition_num++;
-                if($this->current_partition_num >= $this->num_partitions) {
-                    $this->end_of_iterator = true;
-                    break;
-                }
-                $this->bz2_iterator = new BZip2BlockIterator(
-                    $this->partitions[$this->current_partition_num]);
-                $result = $this->readMediaWikiHeader();
-                if(!$result) {
-                    $this->bz2_iterator = NULL;
-                    break;
-                }
-            } else {
-                if($return_pages) {
-                    $pages[] = $page;
-                }
-                $page_count++;
-            }
-        }
-        if(!is_null($this->bz2_iterator)) {
-            $this->current_page_num += $page_count;
-        }
-
-        $this->saveCheckpoint();
-        return $pages;
-    }
-
 
     /**
      * Gets the next doc from the iterator
-     * @return array associative array for doc
+     * @param bool $no_process do not do any processing on page data
+     * @return array associative array for doc or string if no_process true
      */
-    function readPage($return_page)
+    function nextPage($no_process = false)
     {
+        static $i = 0;
         if(is_null($this->bz2_iterator)) {
             return NULL;
         }
         $page_info = $this->getNextTagData("page");
-        if(!$return_page) {
-            return true;
-        }
+        if($no_process) { return $page_info; }
         $dom = new DOMDocument();
         @$dom->loadXML($page_info);
         $site = array();
@@ -411,13 +367,24 @@ class MediaWikiArchiveBundleIterator extends ArchiveBundleIterator
         $site[self::SERVER_VERSION] = "unknown";
         $site[self::OPERATING_SYSTEM] = "unknown";
         $site[self::PAGE] = "<html lang='".$this->header['lang']."' >\n".
-            "<head><title>$pre_url</title></head>\n".
+            "<head><title>$pre_url</title>\n".
+            WIKI_PAGE_STYLES . "\n</head>\n".
             "<body><h1>$pre_url</h1>\n";
         $pre_page = $this->getTextContent($dom, "/page/revision/text");
-        $divisions = explode("\n\n", $pre_page);
-        foreach($divisions as $division) {
-            $site[self::PAGE] .= $this->makeHtmlDivision($division);
-        }
+        $toc = $this->makeTableOfContents($pre_page);
+        list($pre_page, $references) = $this->makeReferences($pre_page);
+        $pre_page = preg_replace_callback('/(\A|\n){\|(.*?)\n\|}/s',
+            "makeTableCallback", $pre_page);
+        $pre_page = preg_replace($this->matches, $this->replaces, $pre_page);
+        $pre_page = preg_replace("/{{Other uses}}/i", 
+                "<div class='indent'>\"$1\". (<a href='".
+                $site[self::URL]. "_(disambiguation)'>$pre_url</a>)</div>",
+                $pre_page);
+        $pre_page = preg_replace_callback("/((href=)\"([^\"]+)\")/",
+            "fixLinksCallback", $pre_page);
+        $pre_page = $this->insertTableOfContents($pre_page, $toc);
+        $pre_page = $this->insertReferences($pre_page, $references);
+        $site[self::PAGE] .= $pre_page;
         $site[self::PAGE] .= "\n</body>\n</html>";
 
         $site[self::HASH] = FetchUrl::computePageHash($site[self::PAGE]);
@@ -427,225 +394,289 @@ class MediaWikiArchiveBundleIterator extends ArchiveBundleIterator
     }
 
     /**
-     *  Convert the MediaWiki section to an HTML Division (crudely for now)
+     * Used to make a table of contents for a wiki page based on the
+     * level two headings on that page.
      *
-     *  @param string $division a media wiki section as a string
-     *  @return the result of converting this to HTML as a string
+     *  @param string $page a wiki document
+     *  @return string HTML table of contents to be inserted after wiki
+     *      page processed
      */
-    function makeHtmlDivision($division)
+    function makeTableOfContents($page)
     {
-        $out = "\n<div>\n";
-        $len = strlen($division);
-        $pos = 0;
-
-        while($pos < $len) {
-            list($token, $type, $pos) =$this->getNextWikiToken(
-                $division, $pos, $len);
-            switch($type)
-            {
-                case self::HEADING:
-                    list($result, $pos) = $this->makeHeadingWiki(
-                        $division, $token, $pos, $len);
-                    $out .= $result;
-                break;
-                case self::OPEN_LINK:
-                    list($result, $pos) = $this->makeLinkWiki(
-                        $division, $token, $pos, $len);
-                    $out .= $result;
-                break;
-                case self::CHARS:
-                default:
-                    $out .= $token;
-                break;
+        $toc= "";
+        $matches = array();
+        preg_match_all('/(\A|\n)==\s*([^=]+)\s*==/', $page, $matches);
+        if(isset($matches[2]) && count($matches[2] > 2)) {
+            $toc .= "<div style='border: 1px ridge #000; width:280px;".
+                "background-color:#EEF; padding: 3px; margin:6px;'><ol>\n";
+            foreach($matches[2] as $section) {
+                $toc .= "<li><a href='#".addslashes($section)."'>".
+                    $section."</a></li>\n";
             }
+            $toc .= "</ol></div>\n";
         }
-        $out .= "\n</div>\n";
-        return $out;
+        return $toc;
     }
 
     /**
-     * Convert a media wiki section heading into the appropriate html heading
-     * tags.
+     * Used to make a reference list for a wiki page based on the
+     * cite tags on that page.
      *
-     * @param string $division content of media wiki section
-     * @param string $token the last token read, an open section heading of
-     *      some type (==, ===, ====, etc.)
-     * @param int $pos position inf $division we are at.
-     * @param int $len length of $division (save an strlen?)
-     * @return array pair consisting of html heading string and a new position
-     *      after parsing the media wiki heading in $division
+     *  @param string $page a wiki document
+     *  @return string HTML reference list to be inserted after wiki
+     *      page processed
      */
-    function makeHeadingWiki($division, $token, $pos, $len)
+    function makeReferences($page)
     {
-        $token_len = strlen($token);
-        $out = "\n<h$token_len>";
-        $continue = true;
-        do {
-            list($token, $type, $pos) =$this->getNextWikiToken(
-                $division, $pos, $len);
-            switch($type)
-            {
-                case self::CHARS:
-                    $out .= $token;
-                break;
+        $base_address = $this->header['base_address'];
+        $references= "\n";
+        $matches = array();
+        preg_match_all('/{{v?cite(.+?)}}/si', $page, $matches);
+        citeCallback(NULL, 1);
+        $page = preg_replace_callback('/{{v?cite?a?t?i?o?n?(.+?)}}/si',
+            "citeCallback", $page);
+        if(isset($matches[1])) {
+            $i = 1;
+            $wiki_fields = array("title", "publisher", "author", "journal",
+                "book", "quote");
+            foreach($matches[1] as $reference) {
+                $ref_parts = explode("|", $reference);
+                $references .= "<div id=\"ref_$i\">$i.".
+                    "<a href=\"#cite_$i\">^</a>.";
+                if(count($ref_parts) > 0) {
+                    $ref_data = array();
+                    $type = trim(strtolower($ref_parts[0]));
+                    array_shift($ref_parts);
+                    foreach($ref_parts as $part) {
+                        $part_parts = explode("=", $part);
+                        if(isset($part_parts[1])){
+                            $field = strtolower(trim($part_parts[0]));
+                            $value = trim($part_parts[1]);
+                            if(in_array($field, $wiki_fields)) {
+                                $value = preg_replace($this->matches,
+                                    $this->replaces, $value);
+                                $value = strip_tags($value, 
+                                    '<a><b><i><span><img>');
+                            }
+                            $ref_data[$field] = $value;
+                        }
+                    }
+                    if(!isset($ref_data['author']) && isset($ref_data['last'])
+                        && isset($ref_data['first'])) {
+                        $ref_data['author'] = $ref_data['last'].", ".
+                            $ref_data['first'];
+                    }
+                    if(isset($ref_data['authorlink']) ) {
+                        if(!isset($ref_data['author'])) {
+                            $ref_data['author'] = $ref_data['authorlink'];
+                        }
+                        $ref_data['author'] = "<a href=\"$base_address".
+                            $ref_data['author']."\">{$ref_data['author']}</a>";
+                    }
+                    if(!isset($ref_data['title']) && isset($ref_data['url'])) {
+                        $ref_data['title'] = $ref_data['url'];
+                    }
+                    if(isset($ref_data['title']) && isset($ref_data['url'])) {
+                        $ref_data['title'] = "<a href=\"{$ref_data['url']}\">".
+                            "{$ref_data['title']}</a>";
+                    }
+                    if(isset($ref_data['quote'])) {
+                        $references .= '"'.$ref_data['quote'].'". ';
+                    }
+                    if(isset($ref_data['author'])) {
+                        $references .= $ref_data['author'].". ";
+                    }
+                    if(isset($ref_data['title'])) {
+                        $references .= '"'.$ref_data['title'].'". ';
+                    }
 
-                case self::HEADING:
-                    $out .= "</h$token_len>\n";
-                    $continue = false;
-                break;
-                case self::OPEN_LINK:
-                    list($result, $pos) = $this->makeLinkWiki(
-                        $division, $token, $pos, $len);
-                    $out .= $result;
-                break;
+                    if(isset($ref_data['accessdate']) &&
+                        !isset($ref_data['archivedate'])) {
+                        $references .= '('.$ref_data['accessdate'].') ';
+                    }
+                    if(isset($ref_data['archivedate'])) {
+                        if(isset($ref_data['archiveurl'])) {
+                            $ref_data['archivedate'] = "<a href=\"".
+                                $ref_data['archiveurl']."\">".
+                                $ref_data['archivedate']."</a>";
+                        }
+                        $references .= '('.$ref_data['archivedate'].') ';
+                    }
+                    if(isset($ref_data['journal'])) {
+                         $references .= "<i>{$ref_data['journal']}</i> ";
+                    }
+                    if(isset($ref_data['location'])) {
+                         $references .= $ref_data['location'].". ";
+                    }
+                    if(isset($ref_data['publisher'])) {
+                         $references .= $ref_data['publisher'].". ";
+                    }
+                    if(isset($ref_data['doi'])) {
+                         $references .= "doi:".$ref_data['doi'].". ";
+                    }
+                    if(isset($ref_data['isbn'])) {
+                         $references .= "ISBN:".$ref_data['isbn'].". ";
+                    }
+                    if(isset($ref_data['jstor'])) {
+                         $references .= "JSTOR:".$ref_data['jstor'].". ";
+                    }
+                    if(isset($ref_data['oclc'])) {
+                         $references .= "OCLC:".$ref_data['oclc'].". ";
+                    }
+                    if(isset($ref_data['volume'])) {
+                         $references .= "<b>".$ref_data['volume'].
+                            "</b> ";
+                    }
+                    if(isset($ref_data['issue'])) {
+                         $references .= "#".$ref_data['issue'].". ";
+                    }
+                    if(isset($ref_data['date'])) {
+                         $references .= $ref_data['date'].". ";
+                    }
+                    if(isset($ref_data['year'])) {
+                         $references .= $ref_data['year'].". ";
+                    }
+                    if(isset($ref_data['page'])) {
+                         $references .= "p.".$ref_data['page'].". ";
+                    }
+                    if(isset($ref_data['pages'])) {
+                         $references .= "pp.".$ref_data['pages'].". ";
+                    }
+                }
+                $references .="</div>\n";
+                $i++;
             }
-        } while ($pos < $len);
-        //close heading if reached end of input
-        if($type != self::HEADING) {
-            $out .= "</h$token_len>\n";
         }
-        return array($out, $pos);
+        return array($page, $references);
     }
 
     /**
-     * Parses a media wiki link into a canonical html link.
+     *  After regex processing has been done on a wiki page this function
+     *  inserts into the resulting page a table of contents just before
+     *  the first h2 tag, then returns the result page
      *
-     * @param string $division media wiki section containing the link to convert
-     * @param string $open_token the media wiki open tag for the link (either
-     *      [ or [[)
-     * @param int $pos position in $division we are currently parsing from
-     * @param int $len length of $division (save an strlen?)
-     * @return array a pair containing a string an html link corresponding
-     *      to the media wiki link and a position in $division one is at after
-     *      parsing
+     *  @param string $page page in which to insert table of contents
+     *  @param string $toc HTML table of contents
+     *  @return string resulting page after insert
      */
-    function makeLinkWiki($division, $open_token, $pos, $len)
+    function insertTableOfContents($page, $toc)
     {
-        $open_len = strlen($open_token);
-        if($open_len > 2) { //hmm, not a wiki link
-            return array($open_token, $pos);
+        $pos = strpos($page, "<h2");
+        if($pos !== false) {
+            $start = substr($page, 0, $pos);
+            $end = substr($page, $pos);
+            $page = $start . $toc. $end;
         }
-
-        $out = "<a href='";
-
-        list($link_data, $type, $pos) =$this->getNextWikiToken(
-            $division, $pos, $len);
-        if($type != self::CHARS) { //that's weird, so bail
-            $out = $open_token . $link_data;
-            return array($out, $pos);
-        }
-
-        list($close_token, $type, $pos) =$this->getNextWikiToken(
-            $division, $pos, $len);
-
-        if($type != self::CLOSE_LINK || strlen($close_token)
-            != $open_len) { //that's weird, so bail
-            $out = $open_token . $link_data .$close_token;
-            return array($out, $pos);
-        }
-
-        if($open_len == 1) { //external link
-            $link_parts = explode(' ', $link_data);
-            $out .= $link_parts[0]."'>";
-            if(isset($link_parts[1])) {
-                $out .= $link_parts[1]."</a>";
-            } else {
-                $out .= $link_parts[0]."</a>";
-            }
-        }
-
-        if($open_len == 2) { //internal link
-            $link_parts = explode('|', $link_data);
-            $anchor = preg_replace("/\s/", "_", $link_parts[0]);
-            $out .= $this->header['base_address'].$anchor."'>";
-            if(isset($link_parts[1])) {
-                $out .= $link_parts[1]."</a>";
-            } else {
-                $out .= $link_parts[0]."</a>";
-            }
-        }
-        return array($out, $pos);
+        return $page;
     }
 
     /**
-     * Parse the next media wiki token from the supplied media wiki section
+     *  After regex processing has been done on a wiki page this function
+     *  inserts into the resulting page a reference at
+     *  {{reflist locations, then returns the result page
      *
-     * @param string $division a media wiki section
-     * @param int $pos an integer position to parse from
-     * @param int $len length of $division (save an strlen?)
-     * @return array a triple containing a string media wiki token, the type of
-     *      token that was found, and a position in $division one is at after
-     *      lexing
+     *  @param string $page page in which to insert the reference lists
+     *  @param string $toc HTML table of contents
+     *  @return string resulting page after insert
      */
-    function getNextWikiToken($division, $pos, $len)
+    function insertReferences($page, $references)
     {
-        $token = "";
-        $state = self::START;
-        $continue = true;
-        if($pos >= $len) {
-            return array($token, self::CHARS, $pos);
-        }
-        do {
-            switch($division[$pos])
-            {
-                case "=":
-                    if($state == self::START) {
-                        $state= self::PRE_HEADING;
-                    } else if ($state == self::ESCAPE) {
-                        $state = self::CHARS;
-                    } else if ($state == self::PRE_HEADING) {
-                        $state = self::HEADING;
-                    } else if ($state != self::HEADING){
-                        $continue = false;
-                    }
-                break;
+        $page = preg_replace('/{{reflist(.+?)}}/si', $references, $page);
 
-                case "\\":
-                    if($state == self::ESCAPE) {
-                        $state = self::CHARS;
-                    } else {
-                        $state = self::ESCAPE;
-                    }
-                break;
-
-                case "[";
-                    if($state == self::START) {
-                        $state= self::OPEN_LINK;
-                    } else if ($state == self::ESCAPE) {
-                        $state = self::CHARS;
-                    } else if ($state != self::OPEN_LINK){
-                        $continue = false;
-                    }
-                break;
-
-                case "]";
-                    if($state == self::START) {
-                        $state= self::CLOSE_LINK;
-                    } else if ($state == self::ESCAPE) {
-                        $state = self::CHARS;
-                    } else if ($state != self::CLOSE_LINK){
-                        $continue = false;
-                    }
-                break;
-
-                default:
-                    if($state == self::START) {
-                        $state= self::CHARS;
-                    } else if ($state == self::ESCAPE ||
-                            $state == self::PRE_HEADING
-                        ) {
-                        $state = self::CHARS;
-                    } else if ($state != self::CHARS){
-                        $continue = false;
-                    }
-            }
-            if($continue) {
-                $token .= $division[$pos];
-                $pos++;
-            }
-        } while($continue && $pos < $len);
-        return array($token, $state, $pos);
+        return $page;
     }
 
 }
+
+/**
+ */
+function makeTableCallback($matches)
+{
+    $table = str_replace("\n!","\n|#",$matches[2]);
+    $table = str_replace("!!","\n||#",$table);
+    $row_data = explode("|", $table);
+    $first = true;
+    $out = $matches[1];
+    $state = "";
+    $type = "td";
+    $old_type = "td";
+    foreach($row_data as $item) {
+        if($first) {
+            $item = trim(str_replace("\n", " ", $item));
+            $out .= "<table $item>\n<tr>";
+            $first = false;
+            $old_line = true;
+            continue;
+        }
+        if($item == "" || $item[0] == "-") {
+            if($out[strlen($out) - 2] != "r") {
+                $out .= "</$old_type>";
+            }
+            $out .= "</tr>\n<tr>";
+            continue;
+        }
+
+        if($item[0] == "+") {
+            $type= "caption";
+            $old_type = $type;
+            $item = substr($item, 1);
+        }
+        if($item[0] == "#") {
+            $type= "th";
+            $old_type = $type;
+            $item = substr($item, 1);
+        }
+        $trim_item = trim($item);
+        $start = substr($trim_item, 0, 5);
+        if($start == "align" || $start== "colsp" ||$start == "style" ||
+            $start == "scope" ||  $start== "rowsp"|| $start == "valig") {
+            $old_type = $type;
+            $state = str_replace("\n", " ", $trim_item);
+            continue;
+        }
+        if($out[strlen($out) - 2] != "r") {
+            $out .= "</$old_type>";
+        }
+        $out .= "<$type $state>\n$trim_item";
+        $state = "";
+        $old_type = $type;
+        $type = "td";
+    }
+    $out .= "</$old_type></tr></table>";
+    return $out;
+}
+
+/**
+ * Used to convert {{cite }} to a numbered link to a citation
+ *
+ * @param array $matches from regular expression to check for {{cite }}
+ * @param int init used to initialize counter for citations
+ * @return string a HTML link to citation in current document
+ */
+function citeCallback($matches, $init = -1)
+{
+    static $ref_count = 1;
+    if($init != -1) {
+        $ref_count = $init;
+        return "";
+    }
+    $out = "<sup>(<a id=\"cite_$ref_count\" ".
+        "href=\"#ref_$ref_count\">$ref_count</a>)</sup>";
+    $ref_count++;
+    return $out;
+}
+
+/**
+ * Used to changes spaces to underscores in links generated from our earlier
+ * matching rules
+ *
+ * @param array $matches from regular expression to check for links
+ * @return string result of correcting link
+ */
+function fixLinksCallback($matches)
+{
+    $out = $matches[2].'"'.str_replace(" ", "_", $matches[3]).'"';
+    return $out;
+}
+
 ?>

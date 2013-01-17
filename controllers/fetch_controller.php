@@ -245,7 +245,6 @@ class FetchController extends Controller implements CrawlConstants
             }
 
             if($archive_iterator && !$archive_iterator->end_of_iterator) {
-                $info[self::DATA] = array();
                 $pages = $archive_iterator->nextPages(
                     ARCHIVE_BATCH_SIZE);
             }
@@ -257,10 +256,10 @@ class FetchController extends Controller implements CrawlConstants
         }
         if(!empty($pages)) {
             $pages_string = webencode(gzcompress(serialize($pages)));
-
         } else {
             $info[self::STATUS] = self::NO_DATA_STATE;
             $info[self::POST_MAX_SIZE] = metricToInt(ini_get("post_max_size"));
+            $pages = array();
             $pages_string = webencode(gzcompress(serialize($pages)));
         }
         $info[self::DATA] = $pages_string;
@@ -281,9 +280,11 @@ class FetchController extends Controller implements CrawlConstants
         $necessary_fields = array('byte_counts', 'current_part', 'hash_data',
             'hash_part', 'num_parts', 'part');
         $part_flag = true;
+        $missing = "";
         foreach($necessary_fields as $field) {
             if(!isset($_REQUEST[$field])) {
                 $part_flag = false;
+                $missing = $field;
             }
         }
 
@@ -323,6 +324,13 @@ class FetchController extends Controller implements CrawlConstants
             $info[self::STATUS] = self::CONTINUE_STATE;
         } else {
             $info[self::STATUS] = self::REDO_STATE;
+            if(!$part_flag) {
+                $info[self::SUMMARY] = "Missing request field: $missing.";
+            } else {
+                $info[self::SUMMARY] = "Hash of uploaded data was:".
+                    crawlHash($_REQUEST['part']).". Sent checksum was:".
+                    $_REQUEST['hash_part'];
+            }
         }
         $info[self::MEMORY_USAGE] = memory_get_peak_usage();
         $info[self::POST_MAX_SIZE] = metricToInt(ini_get("post_max_size"));

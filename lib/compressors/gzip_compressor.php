@@ -95,7 +95,7 @@ class GzipCompressor implements Compressor
      */
     function compressInt($my_int)
     {
-        return "\x1f\x8b\x08\x00".packInt($my_int) .
+        return "\x1f\x8b\x08\x00". packInt($my_int) .
             "\x00\x03\x03\x00\x00\x00\x00\x00\x00\x00\x00\x00";
     }
 
@@ -113,7 +113,7 @@ class GzipCompressor implements Compressor
      */
     function uncompressInt($my_compressed_int)
     {
-        return unpackInt(substr($my_compressed_int,4,4));
+        return unpackInt(substr($my_compressed_int, 4, 4));
     }
 
     /**

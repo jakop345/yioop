@@ -615,6 +615,9 @@ class ArcTool implements CrawlConstants
             if($nonyioop) {
                 $partition = (object) array();
                 $partition->count = 1;
+                $iterator->seekPage($start);
+                if($iterator->end_of_iterator) { break; }
+                $seen += $start;
             } else {
                 $partition = $archive->getPartition($generation, false);
                 if($partition->count < $start && $seen < $start) {
@@ -704,16 +707,16 @@ class ArcTool implements CrawlConstants
         $result_timestamp = strval(time());
         $this->tmp_results = WORK_DIRECTORY.'/temp/TmpArchiveExtract'.
             $iterate_timestamp;
-        if(!file_exists($this->tmp_results)) {
-            mkdir($this->tmp_results);
-        } else {
-            $dbms_manager = DBMS."Manager";
-            $db = new $dbms_manager();
+        $dbms_manager = DBMS."Manager";
+        $db = new $dbms_manager();
+        if(file_exists($this->tmp_results)) {
             $db->unlinkRecursive($this->tmp_results);
         }
+        @mkdir($this->tmp_results);
         $iterator_class = "{$iterator_type}Iterator";
         $iterator = new $iterator_class($iterate_timestamp, $archive_path,
             $result_timestamp, $this->tmp_results);
+        $db->setWorldPermissionsRecursive($this->tmp_results);
         return $iterator;
     }
 

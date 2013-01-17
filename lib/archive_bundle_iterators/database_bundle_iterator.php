@@ -175,9 +175,10 @@ class DatabaseBundleIterator extends ArchiveBundleIterator
      * bundle is reached.
      *
      * @param int $num number of docs to get
+     * @param bool $no_process do not do any processing on page data
      * @return array associative arrays for $num pages
      */
-    function nextPages($num)
+    function nextPages($num, $no_process = false)
     {
         $pages = array();
         $page_count = 0;
@@ -190,22 +191,25 @@ class DatabaseBundleIterator extends ArchiveBundleIterator
                 $page .= "$key\n{$this->field_value_separator}\n".
                     "$value\n{$this->record_separator}\n";
             }
-            $site = array();
-            $site[self::HEADER] = "database_bundle_iterator extractor";
-            $site[self::IP_ADDRESSES] = array("0.0.0.0");
-            $site[self::TIMESTAMP] = date("U", time());
-            $site[self::TYPE] = "text/plain";
-            $site[self::PAGE] = $page;
-            $site[self::HASH] = FetchUrl::computePageHash($page);
-            $site[self::URL] = "record:".webencode($site[self::HASH]);
-            $site[self::HTTP_CODE] = 200;
-            $site[self::ENCODING] = $this->encoding;
-            $site[self::SERVER] = "unknown";
-            $site[self::SERVER_VERSION] = "unknown";
-            $site[self::OPERATING_SYSTEM] = "unknown";
-            $site[self::WEIGHT] = 1;
-
-            $pages[] = $site;
+            if($no_process) {
+                $pages[] = $page;
+            } else {
+                $site = array();
+                $site[self::HEADER] = "database_bundle_iterator extractor";
+                $site[self::IP_ADDRESSES] = array("0.0.0.0");
+                $site[self::TIMESTAMP] = date("U", time());
+                $site[self::TYPE] = "text/plain";
+                $site[self::PAGE] = $page;
+                $site[self::HASH] = FetchUrl::computePageHash($page);
+                $site[self::URL] = "record:".webencode($site[self::HASH]);
+                $site[self::HTTP_CODE] = 200;
+                $site[self::ENCODING] = $this->encoding;
+                $site[self::SERVER] = "unknown";
+                $site[self::SERVER_VERSION] = "unknown";
+                $site[self::OPERATING_SYSTEM] = "unknown";
+                $site[self::WEIGHT] = 1;
+                $pages[] = $site;
+            }
             $page_count++;
         }
         $this->limit += $page_count;
@@ -215,6 +219,18 @@ class DatabaseBundleIterator extends ArchiveBundleIterator
 
         $this->saveCheckpoint();
         return $pages;
+    }
+
+    /**
+     * Advances the iterator to the $limit page, with as little
+     * additional processing as possible
+     *
+     * @param $limit page to advance to
+     */
+    function seekPage($limit)
+    {
+        $this->reset();
+        $this->limit = $limit;
     }
 
     /**

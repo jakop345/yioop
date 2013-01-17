@@ -1032,13 +1032,15 @@ class SearchController extends Controller implements CrawlConstants
             if(in_array($tag_name, array("a", "link"))) {
                 if($clone->hasAttribute("href")) {
                     $href = $clone->getAttribute("href");
-                    $href = UrlParser::canonicalLink($href, $url, false);
+                    if($href !="" && $href[0] != "#") {
+                        $href = UrlParser::canonicalLink($href, $url, false);
+                    }
 
                     /*
                         Modify non-link tag urls so that they are looked up in
                         the cache before going to the live site
                      */
-                    if($tag_name != "link") {
+                    if($tag_name != "link" && ($href =="" || $href[0] != "#")) {
                         if(isset($_SESSION['USER_ID'])) {
                             $user = $_SESSION['USER_ID'];
                         } else {
@@ -1056,7 +1058,7 @@ class SearchController extends Controller implements CrawlConstants
                     }
 
                     $clone->setAttribute("href", $href);
-                    //an anchor might have an img tag within it so recurse
+                    //an anchor might have an img tag within it so recurses
                     $clone = $this->canonicalizeLinks($clone, $url);
                     $node->replaceChild($clone, $node->childNodes->item($k));
                 }

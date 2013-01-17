@@ -184,9 +184,11 @@ class WebArchiveBundleIterator extends ArchiveBundleIterator
      * Gets the next $num many docs from the iterator
      *
      * @param int $num number of docs to get
+     * @param bool $no_process this flag is inherited from base class but
+     *      does not do anything in this case
      * @return array associative arrays for $num pages
      */
-    function nextPages($num)
+    function nextPages($num, $no_process= false)
     {
         if($num + $this->overall_index >= $this->count) {
             $num = max($this->count - $this->overall_index, 0);
@@ -217,6 +219,7 @@ class WebArchiveBundleIterator extends ArchiveBundleIterator
         $this->saveCheckpoint();
         return $objects;
     }
+
 
     /**
      * Resets the iterator to the start of the archive bundle

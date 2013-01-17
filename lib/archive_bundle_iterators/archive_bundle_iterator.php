@@ -97,12 +97,22 @@ abstract class ArchiveBundleIterator implements CrawlConstants
         $this->end_of_iterator = $info['end_of_iterator'];
         $this->current_partition_num = $info['current_partition_num'];
         $this->current_offset = $info['current_offset'];
-        if(!$this->end_of_iterator) {
-            $this->fh = gzopen(
-                $this->partitions[$this->current_partition_num], "rb");
-            gzseek($this->fh, $this->current_offset);
-        }
         return $info;
+    }
+
+
+    /**
+     * Advances the iterator to the $limit page, with as little
+     * additional processing as possible
+     *
+     * @param $limit page to advance to
+     */
+    function seekPage($limit)
+    {
+        $this->reset();
+        if($limit > 0 ) {
+            $this->nextPages($limit, true);
+        }
     }
 
     /**
@@ -117,13 +127,15 @@ abstract class ArchiveBundleIterator implements CrawlConstants
     /**
      * Gets the next $num many docs from the iterator
      * @param int $num number of docs to get
+     * @param bool $no_process do not do any processing on page data
      * @return array associative arrays for $num pages
      */
-    abstract function nextPages($num);
+    abstract function nextPages($num, $no_process=false);
 
     /**
      * Resets the iterator to the start of the archive bundle
      */
     abstract function reset();
+
 }
 ?>

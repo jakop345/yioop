@@ -37,7 +37,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  *Loads base class for iterating
  */
 require_once BASE_DIR.
-    '/lib/archive_bundle_iterators/archive_bundle_iterator.php';
+    '/lib/archive_bundle_iterators/text_archive_bundle_iterator.php';
 
 /**
  * Used to iterate through the records of a collection of one or more open
@@ -50,62 +50,16 @@ require_once BASE_DIR.
  * @subpackage iterator
  * @see WebArchiveBundle
  */
-class OdpRdfArchiveBundleIterator extends ArchiveBundleIterator
+class OdpRdfArchiveBundleIterator extends TextArchiveBundleIterator
     implements CrawlConstants
 {
-    /**
-     * The path to the directory containing the archive partitions to be
-     * iterated over.
-     * @var string
-     */
-    var $iterate_dir;
-    /**
-     * The path to the directory where the iteration status is stored.
-     * @var string
-     */
-    var $result_dir;
-    /**
-     * The number of odp rdf files in this archive bundle
-     *  @var int
-     */
-    var $num_partitions;
-    /**
-     *  Counting in glob order for this odp rdf archive bundle directory, the
-     *  current active file number of the file being processed.
-     *  @var int
-     */
-    var $current_partition_num;
-    /**
-     *  current number of pages into the current odp rdf file
-     *  @var int
-     */
-    var $current_page_num;
-    /**
-     *  Array of filenames of odp rdf files in this directory (glob order)
-     *  @var array
-     */
-    var $partitions;
-    /**
-     *  Used to buffer data from the currently opened odp rdf file
-     *  @var string
-     */
-    var $buffer;
     /**
      *  Associative array containing global properties like base url of the
      *  current open odp rdf file
      *  @var array
      */
     var $header;
-    /**
-     *  File handle for current odp rdf file
-     *  @var resource
-     */
-    var $fh;
-    /**
-     *  Offset into the current odp rdf file
-     *  @var int
-     */
-    var $current_offset;
+
 
     /**
      * How many bytes to read into buffer from gzip stream in one go
@@ -126,42 +80,16 @@ class OdpRdfArchiveBundleIterator extends ArchiveBundleIterator
     function __construct($iterate_timestamp, $iterate_dir,
             $result_timestamp, $result_dir)
     {
-        $this->iterate_timestamp = $iterate_timestamp;
-        $this->iterate_dir = $iterate_dir;
-        $this->result_timestamp = $result_timestamp;
-        $this->result_dir = $result_dir;
-        $this->partitions = array();
-        foreach(glob("{$this->iterate_dir}/*.gz") as $filename) {
-            $this->partitions[] = $filename;
-        }
-        $this->num_partitions = count($this->partitions);
+        $ini = array( 'compression' => 'gzip',
+            'file_extension' => 'gz',
+            'encoding' => 'UTF-8',
+            'start_delimiter' => '@Topic|ExternalPage@',
+            'end_delimiter' => '@/Topic|/ExternalPage@');
+        parent::__construct($iterate_timestamp, $iterate_dir,
+            $result_timestamp, $result_dir, $ini);
         $this->header['base_address'] = "http://www.dmoz.org/";
         $url_parts = @parse_url($this->header['base_address']);
         $this->header['ip_address'] = gethostbyname($url_parts['host']);
-
-        if(file_exists("{$this->result_dir}/iterate_status.txt")) {
-            $this->restoreCheckpoint();
-        } else {
-            $this->reset();
-        }
-    }
-
-    /**
-     * Add the buffer contents to the standard gzip archive checkpoint.
-     */
-    function saveCheckpoint($info = array())
-    {
-        $info['buffer'] = $this->buffer;
-        parent::saveCheckpoint($info);
-    }
-
-    /**
-     * Restore the buffer from the checkpoint info.
-     */
-    function restoreCheckpoint()
-    {
-        $info = parent::restoreCheckpoint();
-        $this->buffer = $info['buffer'];
     }
 
     /**
@@ -176,46 +104,6 @@ class OdpRdfArchiveBundleIterator extends ArchiveBundleIterator
         return min($site[self::WEIGHT], 15);
     }
 
-    /**
-     * Used to extract data between two tags for the first tag found
-     * amongst the array of tags $tags. After operation $this->buffer has
-     * contents after the close tag.
-     *
-     * @param array $tags array of tagnames to look for
-     *
-     * @return string data start tag contents close tag of first tag found
-     */
-    function getNextTagsData($tags)
-    {
-        $max_tag_len = 0;
-        $regex = '@<('.implode('|', $tags).')[^>]*?>.*?</\1[^>]*?>@si';
-        foreach($tags as $tag) {
-            $max_tag_len = max(strlen($tag) + 2, $max_tag_len);
-        }
-        $done = false;
-        $search_failed = false;
-        $offset = 0;
-        do {
-            if($search_failed && (!$this->fh || feof($this->fh))) {
-                return false;
-            }
-            $this->buffer .= gzread($this->fh, self::BLOCK_SIZE);
-            if(preg_match($regex, $this->buffer, $matches,
-                    PREG_OFFSET_CAPTURE, $offset)) {
-                $done = true;
-                $search_failed = false;
-            } else {
-                $search_failed = true;
-            }
-            $offset = max(0, strlen($this->buffer) - $max_tag_len);
-        } while(!$done);
-        $found_tag = $matches[1][0];
-        $start = $matches[0][1];
-        $length = strlen($matches[0][0]);
-        $tag_info = substr($this->buffer, $start, $length);
-        $this->buffer = substr($this->buffer, $start + $length);
-        return array($tag_info, $found_tag);
-    }
 
     /**
      * Gets the text content of the first dom node satisfying the
@@ -283,89 +171,20 @@ class OdpRdfArchiveBundleIterator extends ArchiveBundleIterator
     }
 
     /**
-     * Resets the iterator to the start of the archive bundle
-     */
-    function reset()
-    {
-        $this->current_partition_num = -1;
-        $this->end_of_iterator = false;
-        $this->fh = NULL;
-        $this->current_offset = 0;
-        $this->buffer = "";
-        @unlink("{$this->result_dir}/iterate_status.txt");
-    }
-
-    /**
-     * Gets the next $num many Topic or ExternalPage pages from the iterator
-     * @param int $num number of docs to get
-     * @return array associative arrays of data for $num pages
-     */
-    function nextPages($num)
-    {
-        return $this->readPages($num, true);
-    }
-
-    /**
-     * Reads the next at most $num many wiki pages from the iterator. It might
-     * return less than $num many documents if the partition changes or the end
-     * of the bundle is reached.
-     *
-     * @param int $num number of pages to get
-     * @param bool $return_pages whether to return all of the pages or
-     *      not. If not, then doesn't bother storing them
-     * @return array associative arrays for $num pages
-     */
-    function readPages($num, $return_pages)
-    {
-        $pages = array();
-        $page_count = 0;
-        for($i = 0; $i < $num; $i++) {
-            $page = $this->readPage($return_pages);
-            if(!$page) {
-                if(is_resource($this->fh)) {
-                    gzclose($this->fh);
-                }
-                $this->current_partition_num++;
-                if($this->current_partition_num >= $this->num_partitions) {
-                    $this->end_of_iterator = true;
-                    break;
-                }
-                $this->fh = gzopen(
-                    $this->partitions[$this->current_partition_num], "r");
-                $this->current_offset = 0;
-            } else {
-                if($return_pages) {
-                    $pages[] = $page;
-                }
-                $page_count++;
-            }
-        }
-        if(is_resource($this->fh)) {
-            $this->current_offset = gztell($this->fh);
-            $this->current_page_num += $page_count;
-        }
-
-        $this->saveCheckpoint();
-        return $pages;
-    }
-
-
-    /**
      * Gets the next doc from the iterator
-     * @return array associative array for doc
+     * @param bool $no_process do not do any processing on page data
+     * @return array associative array for doc or string if no_process true
      */
-    function readPage($return_page)
+    function nextPage($no_process = false)
     {
-        if(!is_resource($this->fh)) return NULL;
+        if(!$this->checkFileHandle()) return NULL;
         $tag_data = $this->getNextTagsData(
             array("Topic","ExternalPage"));
         if(!$tag_data) {
             return false;
         }
         list($page_info, $tag) = $tag_data;
-        if(!$return_page) {
-            return true;
-        }
+        if($no_process) { return $page_info; }
         $page_info = str_replace("r:id","id", $page_info);
         $page_info = str_replace("r:resource","resource", $page_info);
         $page_info = str_replace("d:Title","Title", $page_info);

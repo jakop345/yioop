@@ -1960,10 +1960,20 @@ class Fetcher implements CrawlConstants
                 if($sleep == true) {
                     crawlLog("Trouble sending to the scheduler, response was:");
                     crawlLog("$info_string");
-                    crawlLog("Trying again in 5 seconds. You might want to");
-                    crawlLog("check the queue server url and server key.");
-                    crawlLog("Queue Server post_max_size is:".
-                        $this->post_max_size);
+                    $info = unserialize($info_string);
+                    if(isset($info[self::STATUS]) && 
+                        $info[self::STATUS] == self::REDO_STATE) {
+                        crawlLog("Server requested last item to be re-sent...");
+                        if(isset($info[self::SUMMARY])) {
+                            crawLog($info[self::SUMMARY]);
+                        }
+                        crawlLog("Trying again in 5 seconds...");
+                    } else {
+                        crawlLog("Trying again in 5 seconds. You might want");
+                        crawlLog("to check the queue server url and server");
+                        crawlLog("key. Queue Server post_max_size is:".
+                            $this->post_max_size);
+                    }
                     sleep(5);
                 }
                 $sleep = true;

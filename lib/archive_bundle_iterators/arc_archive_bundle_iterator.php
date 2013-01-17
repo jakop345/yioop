@@ -37,7 +37,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  *Loads base class for iterating
  */
 require_once BASE_DIR.
-    '/lib/archive_bundle_iterators/archive_bundle_iterator.php';
+    '/lib/archive_bundle_iterators/text_archive_bundle_iterator.php';
 
 /**
  * Used to iterate through the records of a collection of arc files stored in
@@ -50,53 +50,9 @@ require_once BASE_DIR.
  * @subpackage iterator
  * @see WebArchiveBundle
  */
-class ArcArchiveBundleIterator extends ArchiveBundleIterator
+class ArcArchiveBundleIterator extends TextArchiveBundleIterator
     implements CrawlConstants
 {
-    /**
-     * The path to the directory containing the archive partitions to be
-     * iterated over.
-     * @var string
-     */
-    var $iterate_dir;
-    /**
-     * The path to the directory where the iteration status is stored.
-     * @var string
-     */
-    var $result_dir;
-    /**
-     * The number of arc files in this arc archive bundle
-     *  @var int
-     */
-    var $num_partitions;
-    /**
-     *  Counting in glob order for this arc archive bundle directory, the
-     *  current active file number of the arc file being process.
-     *
-     *  @var int
-     */
-    var $current_partition_num;
-    /**
-     *  current number of pages into the current arc file
-     *  @var int
-     */
-    var $current_page_num;
-    /**
-     *  current byte offset into the current arc file
-     *  @var int
-     */
-    var $current_offset;
-    /**
-     *  Array of filenames of arc files in this directory (glob order)
-     *  @var array
-     */
-    var $partitions;
-    /**
-     *  File handle for current arc file
-     *  @var resource
-     */
-    var $fh;
-
     /**
      * Creates an arc archive iterator with the given parameters.
      *
@@ -110,110 +66,41 @@ class ArcArchiveBundleIterator extends ArchiveBundleIterator
     function __construct($iterate_timestamp, $iterate_dir,
         $result_timestamp, $result_dir)
     {
-        $this->iterate_timestamp = $iterate_timestamp;
-        $this->iterate_dir = $iterate_dir;
-        $this->result_timestamp = $result_timestamp;
-        $this->result_dir = $result_dir;
-        $this->partitions = array();
-        foreach(glob("{$this->iterate_dir}/*.arc.gz") as $filename) {
-            $this->partitions[] = $filename;
-        }
-        $this->num_partitions = count($this->partitions);
-
-        if(file_exists("{$this->result_dir}/iterate_status.txt")) {
-            $this->restoreCheckpoint();
-        } else {
-            $this->reset();
-        }
+        $ini = array( 'compression' => 'gzip',
+            'file_extension' => 'arc.gz',
+            'encoding' => 'UTF-8',
+            'start_delimiter' => '/dns|filedesc/');
+        parent::__construct($iterate_timestamp, $iterate_dir,
+            $result_timestamp, $result_dir, $ini);
     }
-
-    /**
-     * Estimates the important of the site according to the weighting of
-     * the particular archive iterator
-     * @param $site an associative array containing info about a web page
-     * @return bool false we assume arc files were crawled according to
-     *      OPIC and so we use the default doc_depth to estimate page importance
-     */
-    function weight(&$site)
-    {
-        return false;
-    }
-
-    /**
-     * Resets the iterator to the start of the archive bundle
-     */
-    function reset()
-    {
-        $this->current_partition_num = -1;
-        $this->end_of_iterator = false;
-        $this->current_offset = 0;
-        $this->fh = NULL;
-        @unlink("{$this->result_dir}/iterate_status.txt");
-    }
-
-    /**
-     * Gets the next at most $num many docs from the iterator. It might return
-     * less than $num many documents if the partition changes or the end of the
-     * bundle is reached.
-     *
-     * @param int $num number of docs to get
-     * @return array associative arrays for $num pages
-     */
-    function nextPages($num)
-    {
-        $pages = array();
-        $page_count = 0;
-        for($i = 0; $i < $num; $i++) {
-            $page = $this->nextPage();
-            if(!$page) {
-                if(is_resource($this->fh)) {
-                    gzclose($this->fh);
-                }
-                $this->current_partition_num++;
-                if($this->current_partition_num >= $this->num_partitions) {
-                    $this->end_of_iterator = true;
-                    break;
-                }
-                $this->fh = gzopen(
-                    $this->partitions[$this->current_partition_num], "rb");
-            } else {
-                $pages[] = $page;
-                $page_count++;
-            }
-        }
-        if(is_resource($this->fh)) {
-            $this->current_offset = gztell($this->fh);
-            $this->current_page_num += $page_count;
-        }
-
-        $this->saveCheckpoint();
-        return $pages;
-    }
-
 
     /**
      * Gets the next doc from the iterator
-     * @return array associative array for doc
+     * @param bool $no_process do not do any processing on page data
+     * @return array associative array for doc or string if no_process true
      */
-    function nextPage()
+    function nextPage($no_process=false)
     {
-        if(!is_resource($this->fh)) return NULL;
+        if(!$this->checkFileHandle() ) { return NULL; }
         do {
-            if(!$page_info = gzgets($this->fh) ) return NULL;
+            $page_info = $this->gzFileGets();
+            if(trim($page_info) == "") { return NULL; }
             $info_parts = explode(" ", $page_info);
             $num_parts = count($info_parts);
-            $length = $info_parts[$num_parts - 1];
+            $length = intval($info_parts[$num_parts - 1]);
 
-            if(!$object = gzread($this->fh, $length + 1)) return NULL;
+            $header_and_page = $this->gzFileRead($length + 1);
+            if(!$header_and_page) { return NULL; }
         } while(substr($page_info, 0, 3) == 'dns' ||
             substr($page_info, 0, 8) == 'filedesc');
                 //ignore dns entries in arc and ignore first record
+        if($no_process) { return $header_and_page; }
         $site = array();
         $site[self::URL] = $info_parts[0];
         $site[self::IP_ADDRESSES] = array($info_parts[1]);
         $site[self::TIMESTAMP] = date("U", strtotime($info_parts[2]));
         $site[self::TYPE] = $info_parts[3];
-        $site_contents = FetchUrl::parseHeaderPage($object);
+        $site_contents = FetchUrl::parseHeaderPage($header_and_page);
         $site = array_merge($site, $site_contents);
         $site[self::HASH] = FetchUrl::computePageHash($site[self::PAGE]);
         $site[self::WEIGHT] = 1;
