@@ -816,8 +816,8 @@ class SearchController extends Controller implements CrawlConstants
         }
         $cron_time = $this->cronModel->getCronTime("news_try_again");
         $delta = $time - $cron_time;
-        if($delta > self::NEWS_UPDATE_INTERVAL/4 && 
-            $delta < self::NEWS_UPDATE_INTERVAL
+        if(($delta > self::NEWS_UPDATE_INTERVAL/4 && 
+            $delta < self::NEWS_UPDATE_INTERVAL || $delta == 0)
             && defined(SUBSEARCH_LINK) && SUBSEARCH_LINK) {
             $this->cronModel->updateCronTime("news_try_again");
             $this->sourceModel->updateFeedItems(self::NEWS_DELETE_INTERVAL,
