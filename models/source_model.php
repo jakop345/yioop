@@ -46,6 +46,16 @@ require_once BASE_DIR."/models/model.php";
  */
 class SourceModel extends Model
 {
+
+    /** Mamimum number of feeds to download in one try */
+    const MAX_FEEDS_ONE_GO = 20;
+
+    /** Number of seconds in a week*/
+    const ONE_WEEK_SECONDS = 604800;
+
+    /** Number of seconds in an hour */
+    const ONE_HOUR_SECONDS = 3600;
+
     /**
      * Just calls the parent class constructor
      */
@@ -276,10 +286,12 @@ class SourceModel extends Model
      *      feeds for which we have no items
      *  @return bool whether feed item update was successful
      */
-    function updateFeedItems($age = 172800, $try_again = false)
+    function updateFeedItems($age = self::ONE_WEEK_SECONDS, $try_again = false)
     {
+        $this->db->selectDB(DB_NAME);
         $feed_shard_name = WORK_DIRECTORY."/feeds/index";
         $feed_shard = NULL;
+        $feeds_one_go = self::MAX_FEEDS_ONE_GO;
         if(file_exists($feed_shard_name)) {
             $feed_shard = IndexShard::load($feed_shard_name);
         }
@@ -291,6 +303,21 @@ class SourceModel extends Model
             return false;
         }
         $feeds = $this->getMediaSources("rss", $try_again);
+        if(!$try_again && count($feeds) > $feeds_one_go) {
+            $sql = <<< EOD
+            SELECT * FROM MEDIA_SOURCE M
+            WHERE M.NAME IN (
+            SELECT F.SOURCE_NAME FROM FEED_ITEM F
+            GROUP BY SOURCE_NAME
+            ORDER BY MAX(PUBDATE) ASC LIMIT $feeds_one_go);
+EOD;
+            $i = 0;
+            $result = $this->db->execute($sql);
+            while($feeds[$i] = $this->db->fetchArray($result)) {
+                $i++;
+            }
+            unset($feeds[$i]); //last one will be null
+        }
         $feeds = FetchUrl::getPages($feeds, false, 0, NULL, "SOURCE_URL",
             CrawlConstants::PAGE, true, NULL, true);
         $feed_items = array();
