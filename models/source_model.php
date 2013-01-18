@@ -59,17 +59,29 @@ class SourceModel extends Model
      *  Returns a list of media sources such as (video, rss sites) and their
      *  URL and thumb url formats, etc
      *
-     *  @param string $sourcetype the particular kind of media source to return
+     *  @param string $source_type the particular kind of media source to return
      *      for example, video
+     *  @param bool $has_feed_no_items if true returns only those items which
+     *      have not feed_items associated with them.
      *  @return array a list of web sites which are either video or news sites
      */
-    function getMediaSources($sourcetype = "")
+    function getMediaSources($source_type = "", $has_no_feed_items = false)
     {
         $sources = array();
         $this->db->selectDB(DB_NAME);
-        $sql = "SELECT * FROM MEDIA_SOURCE";
-        if($sourcetype !="") {
-            $sql .= " WHERE TYPE='$sourcetype'";
+        $sql = "SELECT M.* FROM MEDIA_SOURCE M";
+        if($source_type !="") {
+            $sql .= " WHERE TYPE='$source_type'";
+        }
+        if($has_no_feed_items) {
+            if($source_type == "") {
+                $sql .= " WHERE ";
+            } else {
+                $sql .= " AND ";
+            }
+            $sql .= " NOT EXISTS 
+                (SELECT * FROM FEED_ITEM F
+                WHERE F.SOURCE_NAME = M.NAME)";
         }
         $i = 0;
         $result = $this->db->execute($sql);
@@ -259,9 +271,12 @@ class SourceModel extends Model
      *  For each feed source downloads the feeds, checks which items are
      *  not in the database, adds them and updates the inverted index for feeds
      *
-     *  @return bool whther feed item update was successful
+     *  @param int $age how many seconds old records should be ignored
+     *  @param bool $try_again whether to update everything or just those
+     *      feeds for which we have no items
+     *  @return bool whether feed item update was successful
      */
-    function updateFeedItems()
+    function updateFeedItems($age = 172800, $try_again = false)
     {
         $feed_shard_name = WORK_DIRECTORY."/feeds/index";
         $feed_shard = NULL;
@@ -275,7 +290,7 @@ class SourceModel extends Model
         if(!$feed_shard) {
             return false;
         }
-        $feeds = $this->getMediaSources("rss");
+        $feeds = $this->getMediaSources("rss", $try_again);
         $feeds = FetchUrl::getPages($feeds, false, 0, NULL, "SOURCE_URL",
             CrawlConstants::PAGE, true, NULL, true);
         $feed_items = array();
@@ -309,7 +324,7 @@ class SourceModel extends Model
                     $item[$element] = strip_tags($element_text);
                 }
                 $this->addFeedItemIfNew($item, $feed_shard,
-                    $feed['NAME'], $lang);
+                    $feed['NAME'], $lang, $age);
             }
         }
         $feed_shard->save();
@@ -384,9 +399,10 @@ class SourceModel extends Model
      * @param object $feed_shard index_shard to stored extracted words in
      * @param string $source_name string name of the news feed $item was found
      *  on
+     * @param int $age how many seconds old records should be ignored
      * @param string $lang locale-tag of the news feed
      */
-    function addFeedItemIfNew($item, $feed_shard, $source_name, $lang)
+    function addFeedItemIfNew($item, $feed_shard, $source_name, $lang, $age)
     {
         if(!isset($item["link"]) || !isset($item["title"]) ||
             !isset($item["description"])) return;
@@ -400,6 +416,9 @@ class SourceModel extends Model
             $item["pubDate"] = time();
         } else {
             $item["pubDate"] = strtotime($item["pubDate"]);
+        }
+        if(time() - $item["pubDate"] > $age) {
+            return;
         }
         $sql = "SELECT COUNT(*) AS NUMBER FROM FEED_ITEM WHERE GUID=".
             "'{$item["guid"]}'";

@@ -103,7 +103,7 @@ class SearchController extends Controller implements CrawlConstants
      *  Number of seconds that must elapse after last call before culling
      *  all news items (to get rid of old ones)
      */
-    const NEWS_DELETE_INTERVAL = 86400; //one day
+    const NEWS_DELETE_INTERVAL = 172800; //one day
 
     /**
      * This is the main entry point for handling a search request.
@@ -814,12 +814,22 @@ class SearchController extends Controller implements CrawlConstants
             $this->cronModel->updateCronTime("news_delete");
             $this->sourceModel->deleteFeedItems(self::NEWS_DELETE_INTERVAL);
         }
+        $cron_time = $this->cronModel->getCronTime("news_try_again");
+        $delta = $time - $cron_time;
+        if($delta > self::NEWS_UPDATE_INTERVAL/4 && 
+            $delta < self::NEWS_UPDATE_INTERVAL
+            && defined(SUBSEARCH_LINK) && SUBSEARCH_LINK) {
+            $this->cronModel->updateCronTime("news_try_again");
+            $this->sourceModel->updateFeedItems(self::NEWS_DELETE_INTERVAL,
+                true);
+        }
         $cron_time = $this->cronModel->getCronTime("news_update");
         $delta = $time - $cron_time;
         if(($delta > self::NEWS_UPDATE_INTERVAL || $delta == 0)
             && defined(SUBSEARCH_LINK) && SUBSEARCH_LINK) {
             $this->cronModel->updateCronTime("news_update");
-            if(!$this->sourceModel->updateFeedItems()) {
+            if(!$this->sourceModel->updateFeedItems(
+                self::NEWS_DELETE_INTERVAL)) {
                 if(!isset($data['SCRIPT'])) {
                     $data['SCRIPT'] = "";
                 }
