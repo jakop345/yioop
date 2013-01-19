@@ -655,6 +655,7 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
     function gzipRestoreCheckpoint($info)
     {
         $this->current_offset = $info['current_offset'];
+        $this->gz_block_num = $info['gz_block_num'];
         if(!$this->end_of_iterator) {
             $this->fileOpen($this->partitions[$this->current_partition_num]);
             $success = fseek($this->gzh, $this->current_offset);
