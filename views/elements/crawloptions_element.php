@@ -162,71 +162,41 @@ class CrawloptionsElement extends Element
         </div>
         <?php } ?>
         </div>
-        <div class="top-margin"><b><?php
-            e(tl('crawloptions_element_meta_words'))?></b></div>
-        <table class="meta-words-table">
-            <tr><th><?php e(tl('crawloptions_element_word'));?></th>
-                <th><?php
-                e(tl('crawloptions_element_url_pattern')); ?></th></tr>
-            <?php
-            $i = 0;
-            foreach($data['META_WORDS'] as $word => $url) {
-            ?>
-                <tr><td class="input-word" ><input
-                    title="<?php e(tl('crawloptions_element_word')); ?>"
-                    name="META_WORDS[<?php e($i); ?>]['WORD']"
-                    value="<?php e($word); ?>"
-                    />
-                </td>
-                <td class="input-url"><input
-                    title="<?php e(tl('crawloptions_element_url_pattern')); ?>"
-                    name="META_WORDS[<?php e($i); ?>]['URL_PATTERN']"
-                    value="<?php e($url); ?>"
-                     />
-                </td>
-                </tr>
-            <?php
-                $i++;
-            }
-            ?>
-            <tr><td class="input-word"><input type="text" title="New Word"
-                name="META_WORDS[<?php e($i); ?>]['WORD']"
-                />
-                </td>
-                <td class="input-url"><input type="text" title="New URL Pattern"
-                   name="META_WORDS[<?php e($i); ?>]['URL_PATTERN']" /></td>
-            </tr>
-            </table>
+        <div class="top-margin"><label for="page-rules"><b><?php
+            e(tl('crawloptions_element_page_rules'))?></b></label></div>
+        <textarea class="short-text-area" id="page-rules"
+            name="page_rules" ><?php e($data['page_rules']);
+        ?></textarea>
 
-            <?php if(isset($data['INDEXING_PLUGINS'])) {
-            ?>
-                <div class="top-margin"><b><?php
-                    e(tl("crawloptions_element_indexing_plugins"));?></b></div>
-                <table class="indexing-plugin-table">
-                    <tr><th><?php e(tl('crawloptions_element_plugin'));
-                                      ?></th>
-                    <th><?php
-                        e(tl('crawloptions_element_plugin_include'));
-                            ?></th></tr>
-                    <?php
-                    $k = 0;
-                    foreach($data['INDEXING_PLUGINS'] as
-                        $plugin => $toggleState) {
-                    ?>
-                    <tr><td><?php e($plugin. "Plugin"); ?></td>
-                    <td class="check"><input type="checkbox"
-                        name="INDEXING_PLUGINS[<?php e($k); ?>]"
-                        value = "<?php e($plugin) ?>"
-                        <?php e($toggleState); ?>
-                        /></td></tr>
+        <?php if(isset($data['INDEXING_PLUGINS'])) {
+        ?>
+            <div class="top-margin"><b><?php
+                e(tl("crawloptions_element_indexing_plugins"));?></b></div>
+            <table class="indexing-plugin-table">
+                <tr><th><?php e(tl('crawloptions_element_plugin'));
+                                  ?></th>
+                <th><?php
+                    e(tl('crawloptions_element_plugin_include'));
+                        ?></th></tr>
                 <?php
-                    $k++;
-                }
+                $k = 0;
+                foreach($data['INDEXING_PLUGINS'] as
+                    $plugin => $toggleState) {
                 ?>
-                </table>
+                <tr><td><?php e($plugin. "Plugin"); ?></td>
+                <td class="check"><input type="checkbox"
+                    name="INDEXING_PLUGINS[<?php e($k); ?>]"
+                    value = "<?php e($plugin) ?>"
+                    <?php e($toggleState); ?>
+                    /></td></tr>
             <?php
+                $k++;
             }
             ?>
+            </table>
+        <?php
+        }
+        ?>
 
 
         <div class="center slight-pad"><button class="button-box"

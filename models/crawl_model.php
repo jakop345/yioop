@@ -441,20 +441,15 @@ EOT;
         }
         $n[] = "";
 
-        $site_types = array('allowed_sites', 'disallowed_sites', 'seed_sites');
-        foreach($site_types as $type) {
+        $site_types =
+            array('allowed_sites' => 'url', 'disallowed_sites' => 'url',
+                'seed_sites' => 'url', 'page_rules'=>'rule');
+        foreach($site_types as $type => $field) {
             $n[] = "[$type]";
-            if(isset($info[$type]['url'])) {
-                foreach($info[$type]['url'] as $url) {
-                    $n[] = "url[] = '$url';";
+            if(isset($info[$type][$field])) {
+                foreach($info[$type][$field] as $field_value) {
+                    $n[] = $field . "[] = '$field_value';";
                 }
-            }
-            $n[]="";
-        }
-        $n[] = "[meta_words]";
-        if(isset($info["meta_words"])) {
-            foreach($info["meta_words"] as $word_pattern => $url_pattern) {
-                $n[] = "$word_pattern = '$url_pattern';";
             }
             $n[]="";
         }

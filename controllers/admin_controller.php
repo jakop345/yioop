@@ -1039,16 +1039,18 @@ class AdminController extends Controller implements CrawlConstants
         $data['restrict_sites_by_url'] =
             $seed_info['general']['restrict_sites_by_url'];
         $site_types =
-            array('allowed_sites','disallowed_sites', 'seed_sites');
-        foreach($site_types as $type) {
+            array('allowed_sites' => 'url', 'disallowed_sites' => 'url',
+                'seed_sites' => 'url', 'page_rules'=>'rule');
+        foreach($site_types as $type => $field) {
             if(!$no_further_changes && isset($_REQUEST[$type])) {
-                $seed_info[$type]['url'] =
-                    $this->convertStringCleanUrlsArray(
-                    $_REQUEST[$type]);
+                $seed_info[$type][$field] =
+                    $this->convertStringCleanArray(
+                    $_REQUEST[$type], $field);
+                    $update_flag = true;
             }
-            if(isset($seed_info[$type]['url'])) {
+            if(isset($seed_info[$type][$field])) {
                 $data[$type] = $this->convertArrayCleanLines(
-                    $seed_info[$type]['url']);
+                    $seed_info[$type][$field]);
             } else {
                 $data[$type] = "";
             }
@@ -1056,27 +1058,7 @@ class AdminController extends Controller implements CrawlConstants
         $data['TOGGLE_STATE'] =
             ($data['restrict_sites_by_url']) ?
             "checked='checked'" : "";
-        $data['META_WORDS'] = array();
-        if(!$no_further_changes) {
-            if(isset($_REQUEST["META_WORDS"])){
-                foreach($_REQUEST["META_WORDS"] as $pair) {
-                    list($word, $url_pattern) = array_values($pair);
-                    $word = $this->clean($word, "string");
-                    $url_pattern =
-                        $this->clean($url_pattern, "string");
-                    if(trim($word) != "" &&trim($url_pattern) !=""){
-                        $data['META_WORDS'][$word] =
-                            $url_pattern;
-                    }
-                }
-                $seed_info['meta_words'] = $data['META_WORDS'];
-                $update_flag = true;
-            } else if(isset($seed_info['meta_words'])){
-                $data['META_WORDS'] = $seed_info['meta_words'];
-            }
-        } else if(isset($seed_info['meta_words'])){
-                $data['META_WORDS'] = $seed_info['meta_words'];
-        }
+
 
         $data['INDEXING_PLUGINS'] = array();
         $included_plugins = array();
@@ -1119,7 +1101,7 @@ class AdminController extends Controller implements CrawlConstants
                 $timestamp = $this->clean($_REQUEST['ts'],
                     "string");
                 $inject_urls =
-                    $this->convertStringCleanUrlsArray(
+                    $this->convertStringCleanArray(
                     $_REQUEST['inject_sites']);
                 if($this->crawlModel->injectUrlsCurrentCrawl(
                     $timestamp, $inject_urls, $machine_urls)) {
@@ -1164,23 +1146,29 @@ class AdminController extends Controller implements CrawlConstants
     }
 
     /**
-     * Cleans a string consisting of lines of urls into an array of urls. This
-     * is used in handling data from the crawl options text areas.
+     * Cleans a string consisting of lines, typically of urls into an array of
+     * clean lines. This is used in handling data from the crawl options 
+     * text areas.
      *
      * @param string $str contains the url data
-     * @return $url an array of urls
+     * @param string $line_type does additional cleaning depending on the type
+     *      of the lines. For instance, if is "url" then a line not beginning
+     *      with a url scheme will have http:// prepended.
+     * @return $url an array of clean lines
      */
-    function convertStringCleanUrlsArray($str)
+    function convertStringCleanArray($str, $line_type="url")
     {
         $pre_urls = preg_split("/(\s)+/", $str);
         $urls = array();
         foreach($pre_urls as $url) {
             $pre_url = $this->clean($url, "string");
             if(strlen($pre_url) > 0) {
-                $start_url = substr($pre_url,0, 6);
-                if(!in_array($start_url,
-                    array("file:/", "http:/", "domain", "https:"))) {
-                    $pre_url = "http://". $pre_url;
+                if($line_type == "url") {
+                    $start_url = substr($pre_url, 0, 6);
+                    if(!in_array($start_url,
+                        array("file:/", "http:/", "domain", "https:"))) {
+                        $pre_url = "http://". $pre_url;
+                    }
                 }
                 $urls[] =$pre_url;
             }
@@ -1526,7 +1514,7 @@ class AdminController extends Controller implements CrawlConstants
         $data['SCRIPT'] = "";
 
         if(isset($_REQUEST['disallowed_sites'])) {
-            $sites = $this->convertStringCleanUrlsArray(
+            $sites = $this->convertStringCleanArray(
                 $_REQUEST['disallowed_sites']);
             $disallowed_sites = array();
             foreach($sites as $site) {
