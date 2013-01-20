@@ -50,6 +50,9 @@ class SourceModel extends Model
     /** Mamimum number of feeds to download in one try */
     const MAX_FEEDS_ONE_GO = 20;
 
+    /** Number of seconds in a day*/
+    const ONE_DAY_SECONDS = 86400;
+
     /** Number of seconds in a week*/
     const ONE_WEEK_SECONDS = 604800;
 

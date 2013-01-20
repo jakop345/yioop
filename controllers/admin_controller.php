@@ -1154,26 +1154,30 @@ class AdminController extends Controller implements CrawlConstants
      * @param string $line_type does additional cleaning depending on the type
      *      of the lines. For instance, if is "url" then a line not beginning
      *      with a url scheme will have http:// prepended.
-     * @return $url an array of clean lines
+     * @return $lines an array of clean lines
      */
     function convertStringCleanArray($str, $line_type="url")
     {
-        $pre_urls = preg_split("/(\s)+/", $str);
-        $urls = array();
-        foreach($pre_urls as $url) {
-            $pre_url = $this->clean($url, "string");
-            if(strlen($pre_url) > 0) {
+        if($line_type == "url") {
+            $pre_lines = preg_split("/(\s)+/", $str);
+        } else {
+            $pre_lines = preg_split('/\n+/', $str);
+        }
+        $lines = array();
+        foreach($pre_lines as $line) {
+            $pre_line = trim($this->clean($line, "string"));
+            if(strlen($pre_line) > 0) {
                 if($line_type == "url") {
-                    $start_url = substr($pre_url, 0, 6);
-                    if(!in_array($start_url,
+                    $start_line = substr($pre_line, 0, 6);
+                    if(!in_array($start_line,
                         array("file:/", "http:/", "domain", "https:"))) {
-                        $pre_url = "http://". $pre_url;
+                        $pre_line = "http://". $pre_line;
                     }
                 }
-                $urls[] =$pre_url;
+                $lines[] = $pre_line;
             }
         }
-        return $urls;
+        return $lines;
     }
 
     /**
