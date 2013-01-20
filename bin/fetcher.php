@@ -178,11 +178,9 @@ class Fetcher implements CrawlConstants
     var $plugin_processors;
 
     /**
-     * Holds an array of word -> url patterns which are used to
-     * add meta words to the words that are extracted from any given doc
      * @var array
      */
-    var $meta_words;
+    var $page_rules;
 
     /**
      * List of video sources mainly to determine the value of the media:
@@ -372,7 +370,7 @@ class Fetcher implements CrawlConstants
         $this->queue_servers = array($name_server);
         $this->current_server = 0;
         $this->page_processors = $page_processors;
-        $this->meta_words = array();
+        $this->page_rules = array();
         $this->video_sources = array();
         $this->hosts_with_errors = array();
 
@@ -1061,8 +1059,8 @@ class Fetcher implements CrawlConstants
         if(isset($info[self::CRAWL_ORDER])) {
             $this->crawl_order = $info[self::CRAWL_ORDER];
         }
-        if(isset($info[self::META_WORDS])) {
-            $this->meta_words = $info[self::META_WORDS];
+        if(isset($info[self::PAGE_RULES])) {
+            $this->page_rules = $info[self::PAGE_RULES];
         }
         if(isset($info[self::VIDEO_SOURCES])) {
             $this->video_sources = $info[self::VIDEO_SOURCES];
@@ -2342,24 +2340,8 @@ class Fetcher implements CrawlConstants
         }
 
         // handles user added meta words
-        if(isset($this->meta_words)) {
-            $matches = array();
-            $url = $site[self::URL];
-            foreach($this->meta_words as $word => $url_pattern) {
-                $meta_word = 'u:'.$word;
-                $meta_ids[] = 'u:$word:all';
-                if(strlen(stristr($url_pattern, "@")) > 0) {
-                    continue; // we are using "@" as delimiter, so bail
-                }
-                preg_match_all("@".$url_pattern."@", $url, $matches);
-                if(isset($matches[0][0]) && strlen($matches[0][0]) > 0){
-                    unset($matches[0]);
-                    foreach($matches as $match) {
-                        $meta_word .= ":".$match[0];
-                        $meta_ids[] = $meta_word;
-                    }
-                }
-            }
+        if(isset($this->page_rules)) {
+// add parsing code for page rules
         }
 
         return $meta_ids;

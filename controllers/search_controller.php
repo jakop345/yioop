@@ -642,6 +642,9 @@ class SearchController extends Controller implements CrawlConstants
         if(isset($_REQUEST['guess']) &&  $_REQUEST['guess'] == "false") {
             $guess_semantics = false;
         }
+
+        $this->newsUpdate($data);
+
         switch($activity)
         {
             case "related":
@@ -691,8 +694,6 @@ class SearchController extends Controller implements CrawlConstants
 
             break;
         }
-
-        $this->newsUpdate($data);
 
         $data['VIDEO_SOURCES'] = $this->sourceModel->getMediaSources("video");
         $data['RAW'] = $raw;
@@ -806,8 +807,8 @@ class SearchController extends Controller implements CrawlConstants
         $cron_time = $this->cronModel->getCronTime("news_try_again");
         $delta = $time - $cron_time;
         // each 15 minutes try to re-get feeds that have no items
-        if(($delta > SourceModel::ONE_HOUR_SECONDS/4 && 
-            $delta < SourceModel::ONE_HOUR_SECONDS || $delta == 0)
+        if((($delta > SourceModel::ONE_HOUR_SECONDS/4 && 
+            $delta < SourceModel::ONE_HOUR_SECONDS) || $delta == 0)
             && defined(SUBSEARCH_LINK) && SUBSEARCH_LINK) {
             $this->cronModel->updateCronTime("news_try_again");
             $this->sourceModel->updateFeedItems(SourceModel::ONE_WEEK_SECONDS,

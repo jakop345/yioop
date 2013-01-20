@@ -196,11 +196,10 @@ class QueueServer implements CrawlConstants, Join
      */
     var $indexed_file_types;
     /**
-     * Holds an array of word -> url patterns which are used to
-     * add meta words to the words that are extracted from any given doc
+     *
      * @var array
      */
-    var $meta_words;
+    var $page_rules;
     /**
      * Holds the WebQueueBundle for the crawl. This bundle encapsulates
      * the priority queue of urls that specifies what to crawl next
@@ -307,7 +306,7 @@ class QueueServer implements CrawlConstants, Join
         $this->quota_sites = array();
         $this->quota_sites_keys = array();
         $this->quota_clear_time = time();
-        $this->meta_words = array();
+        $this->page_rules = array();
         $this->last_index_save_time = 0;
         $this->index_dirty = false;
         $this->hourly_crawl_data = array();
@@ -955,7 +954,7 @@ class QueueServer implements CrawlConstants, Join
             "restrict_sites_by_url" => self::RESTRICT_SITES_BY_URL,
             "allowed_sites" => self::ALLOWED_SITES,
             "disallowed_sites" => self::DISALLOWED_SITES,
-            "meta_words" => self::META_WORDS,
+            "page_rules" => self::PAGE_RULES,
             "indexing_plugins" => self::INDEXING_PLUGINS,
             "video_sources" => self::VIDEO_SOURCES,
         );
@@ -1118,7 +1117,7 @@ class QueueServer implements CrawlConstants, Join
             "restrict_sites_by_url" => self::RESTRICT_SITES_BY_URL,
             "allowed_sites" => self::ALLOWED_SITES,
             "disallowed_sites" => self::DISALLOWED_SITES,
-            "meta_words" => self::META_WORDS,
+            "page_rules" => self::PAGE_RULES,
             "indexing_plugins" => self::INDEXING_PLUGINS,
             "video_sources" => self::VIDEO_SOURCES,
         );
@@ -1840,7 +1839,7 @@ class QueueServer implements CrawlConstants, Join
         $sites[self::CRAWL_ORDER] = $this->crawl_order;
         $sites[self::CRAWL_TYPE] = $this->crawl_type;
         $sites[self::CRAWL_INDEX] = $this->crawl_index;
-        $sites[self::META_WORDS] = $this->meta_words;
+        $sites[self::PAGE_RULES] = $this->page_rules;
         $sites[self::INDEXING_PLUGINS] =  $this->indexing_plugins;
         $sites[self::VIDEO_SOURCES] = $this->video_sources;
         $sites[self::PAGE_RANGE_REQUEST] = $this->page_range_request;

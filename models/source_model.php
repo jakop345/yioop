@@ -406,7 +406,8 @@ EOD;
                     $raw_guid."d". substr(crawlHash(
                     UrlParser::getHost($item["LINK"])."/",true), 1);
                 $meta_ids = array("media:news", "media:news:".
-                    urlencode($source_name));
+                    urlencode($source_name), "guid:".
+                    strtolower($item["GUID"]));
                 if($lang != "") {
                     $lang_parts = explode("-", $lang);
                     $meta_ids[] = 'lang:'.$lang_parts[0];
@@ -476,7 +477,8 @@ EOD;
         $doc_keys = crawlHash($item["link"], true) .
             $raw_guid."d". substr(crawlHash(
             UrlParser::getHost($item["link"])."/",true), 1);
-        $meta_ids = array("media:news", "media:news:".urlencode($source_name));
+        $meta_ids = array("media:news", "media:news:".urlencode($source_name),
+            "guid:".strtolower($item["guid"]));
         if($lang != "") {
             $lang_parts = explode("-", $lang);
             $meta_ids[] = 'lang:'.$lang_parts[0];

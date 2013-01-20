@@ -160,7 +160,7 @@ interface CrawlConstants
     const MEMORY_USAGE ='al';
     const DOC_ID ='am';
     const RELEVANCE ='an';
-    const META_WORDS ='ao';
+    const PAGE_RULES ='ao';
     const CACHE_PAGE_PARTITION = 'ap';
     const GENERATION = 'aq';
     const HASH_SUM_SCORE = 'ar';

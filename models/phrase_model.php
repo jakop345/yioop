@@ -92,7 +92,7 @@ class PhraseModel extends ParallelModel
             'filetype:', 'info:', '\-', 'os:', 'server:', 'date:', "numlinks:",
             'index:', 'i:', 'ip:', 'weight:', 'w:', 'u:', 'time:', 'code:',
             'lang:', 'media:', 'elink:', 'location:', 'size:', 'host:', 'dns:',
-            'path:', 'robot:', 'safe:');
+            'path:', 'robot:', 'safe:', 'guid:');
 
     /**
      * Number of pages to cache in one go in memcache or filecache

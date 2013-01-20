@@ -235,6 +235,29 @@ $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (2, 16,
     '管理使用者')");
 
 
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (1, 20,
+     'مدیریت حساب' )");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (2, 20,
+    'مدیریت کاربران')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (3, 20,
+    'مدیریت نقش‌ها')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (4, 20,
+'مدیریت خزش‌ها')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (5, 20,
+    'ترکیب‌های خزش‌ها')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (6, 20,
+    'تنظیمات صفحه')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (7, 20,
+    'ویرایشگر نتایج')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (8, 20,
+'منابع جستجو')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (9, 20,
+    'مدیریت دستگاه‌ها')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (10, 20,
+    'مدیریت زبان‌ها')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (11, 20,
+    'پیکربندی')");
+
 $db->execute("INSERT INTO USER_ROLE VALUES (1, 1)");
 
 $db->execute("INSERT INTO MEDIA_SOURCE VALUES ('1342634195',
@@ -283,6 +306,8 @@ $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
         (1002, 16, '图象
 ' )");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
+        (1002, 20, 'تصاویر' )");
 
 $db->execute("INSERT INTO SUBSEARCH VALUES ('db_subsearch_videos',
     'videos','m:3',10)");
@@ -298,6 +323,8 @@ $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
         (1003, 16, '录影
 ' )");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
+        (1003, 20, 'ویدیوها' )");
 
 $db->execute("INSERT INTO SUBSEARCH VALUES ('db_subsearch_news',
     'news','m:4',20)");
@@ -314,6 +341,8 @@ $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
         (1004, 16, '新闻
 
 ' )");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
+        (1004, 20, 'اخبار' )");
 
 $db->disconnect();
 if(in_array(DBMS, array('sqlite','sqlite3' ))){

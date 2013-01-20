@@ -857,8 +857,8 @@ class AdminController extends Controller implements CrawlConstants
         $crawl_params[self::DISALLOWED_SITES] =
             isset($seed_info['disallowed_sites']['url']) ?
             $seed_info['disallowed_sites']['url'] : array();
-        $crawl_params[self::META_WORDS] = isset($seed_info['meta_words']) ?
-            $seed_info['meta_words'] : array();
+        $crawl_params[self::PAGE_RULES] = isset($seed_info['page_rules']) ?
+            $seed_info['page_rules'] : array();
 
         if(isset($seed_info['indexing_plugins']['plugins'])) {
             $crawl_params[self::INDEXING_PLUGINS] =
