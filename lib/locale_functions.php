@@ -95,7 +95,7 @@ function guessLocale()
 
 
 /**
- *  Attempts to guess the user's locale based on a string sample
+ * Attempts to guess the user's locale based on a string sample
  *
  * @param string $phrase_string used to make guess
  * @param string $locale_tag language tag to use if can't guess -- if not

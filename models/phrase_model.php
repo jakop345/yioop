@@ -661,8 +661,8 @@ class PhraseModel extends ParallelModel
 
     /**
      * Idealistically, this function tries to guess from the query what the
-     * user is looking for. For now, we are just guessing  when a query term
-     * is a url and rewriting it to the appropriate meta
+     * user is looking for. For now, we are just doing simple things like 
+     * when a query term is a url and rewriting it to the appropriate meta
      * meta word.
      *
      *  @param string $phrase input query to guess semantics of
@@ -673,20 +673,69 @@ class PhraseModel extends ParallelModel
     {
         $domain_suffixes = array(".com", ".net", ".edu", ".org", ".gov",
             ".mil", ".ca", ".uk", ".fr", ".ly");
-        foreach($domain_suffixes as $suffix) {
-            $phrase = $this->endMatch($phrase, $suffix, "site:", "",
-                array(":","@"));
+
+        $len = mb_strlen(trim($phrase));
+        if($len > 4) {
+            foreach($domain_suffixes as $suffix) {
+                $phrase = $this->endMatch($phrase, $suffix, "site:", "",
+                    array(":","@"));
+            }
+
+            $phrase = $this->beginMatch($phrase, "www.", "site:www.");
+
+            $phrase = $this->beginMatch($phrase, "http:", "site:http:");
+
+            $phrase = $this->beginMatch($phrase, "info:", "info:http://", "/",
+                array("/"));
+
+            $phrase = $this->beginMatch($phrase, "info:", "info:http://", "",
+                array("http"));
         }
 
-        $phrase = $this->beginMatch($phrase, "www.", "site:www.");
-
-        $phrase = $this->beginMatch($phrase, "http:", "site:http:");
-
-        $phrase = $this->beginMatch($phrase, "info:", "info:http://", "/",
-            array("/"));
-
-        $phrase = $this->beginMatch($phrase, "info:", "info:http://", "",
-            array("http"));
+        if($len == 1) {
+            $tag = guessLocale();
+            $main_tag = substr($tag, 0, 2);
+            switch($main_tag)
+            {
+                case 'ar':
+                    $letter = "سالة";
+                break;
+                case 'de':
+                    $letter = "Buchstabe";
+                break;
+                case 'en':
+                    $letter = "letter";
+                break;
+                case 'es':
+                    $letter = "letra";
+                break;
+                case 'fa':
+                    $letter = "نامه";
+                break;
+                case 'fr':
+                    $letter = "lettre";
+                break;
+                case 'it':
+                    $letter = "lettera";
+                break;
+                case 'po':
+                    $letter = "literą";
+                break;
+                case 'pt':
+                    $letter = "letra";
+                break;
+                case 'tr':
+                    $letter = "harfi";
+                break;
+                case 'ru':
+                    $letter = "буква";
+                break;
+                case 'vi':
+                    $letter = "thư";
+                break;
+            }
+            $phrase = $letter." ".$phrase;
+        }
 
         return $phrase;
     }
