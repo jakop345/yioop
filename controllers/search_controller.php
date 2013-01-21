@@ -792,6 +792,9 @@ class SearchController extends Controller implements CrawlConstants
      */
     function newsUpdate(&$data)
     {
+        if(!defined(SUBSEARCH_LINK)|| !SUBSEARCH_LINK) {
+            return;
+        }
         $time = time();
         $cron_time = $this->cronModel->getCronTime("news_delete");
         $delta = $time - $cron_time;
@@ -810,8 +813,8 @@ class SearchController extends Controller implements CrawlConstants
 
         // each day delete everything older than a week and rebuild index
         if($delta > SourceModel::ONE_DAY && 
-          $start_delta > SourceModel::ONE_HOUR/6 && defined(SUBSEARCH_LINK)
-          && SUBSEARCH_LINK && $lock_delta > SourceModel::TWO_MINUTES) {
+          $start_delta > SourceModel::ONE_HOUR/6 && 
+          $lock_delta > SourceModel::TWO_MINUTES) {
             $this->cronModel->updateCronTime("news_lock");
             $this->cronModel->updateCronTime("news_start_delete", true);
             $full_update = $delta > SourceModel::ONE_DAY;
@@ -827,8 +830,7 @@ class SearchController extends Controller implements CrawlConstants
         // each 15 minutes try to re-get feeds that have no items
         if((($delta > SourceModel::ONE_HOUR/4 && 
             $delta < SourceModel::ONE_HOUR) || $delta == 0) &&
-            $lock_delta > SourceModel::TWO_MINUTES
-            && defined(SUBSEARCH_LINK) && SUBSEARCH_LINK) {
+            $lock_delta > SourceModel::TWO_MINUTES) {
             $this->cronModel->updateCronTime("news_lock");
             $this->cronModel->updateCronTime("news_try_again", true);
             $this->sourceModel->updateFeedItems(SourceModel::ONE_WEEK,
@@ -840,7 +842,6 @@ class SearchController extends Controller implements CrawlConstants
         $delta = $time - $cron_time;
         // every hour get items from twenty feeds whose newest items are oldest
         if(($delta > SourceModel::ONE_HOUR || $delta == 0)
-            && defined(SUBSEARCH_LINK) && SUBSEARCH_LINK
             && $lock_delta > SourceModel::TWO_MINUTES) {
             $this->cronModel->updateCronTime("news_lock");
             $this->cronModel->updateCronTime("news_update", true);
