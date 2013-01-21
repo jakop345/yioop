@@ -50,14 +50,17 @@ class SourceModel extends Model
     /** Mamimum number of feeds to download in one try */
     const MAX_FEEDS_ONE_GO = 20;
 
+    /** Number of seconds in a two minutes*/
+    const TWO_MINUTES = 120;
+
     /** Number of seconds in a day*/
-    const ONE_DAY_SECONDS = 86400;
+    const ONE_DAY = 86400;
 
     /** Number of seconds in a week*/
-    const ONE_WEEK_SECONDS = 604800;
+    const ONE_WEEK = 604800;
 
     /** Number of seconds in an hour */
-    const ONE_HOUR_SECONDS = 3600;
+    const ONE_HOUR = 3600;
 
     /**
      * Just calls the parent class constructor
@@ -289,8 +292,9 @@ class SourceModel extends Model
      *      feeds for which we have no items
      *  @return bool whether feed item update was successful
      */
-    function updateFeedItems($age = self::ONE_WEEK_SECONDS, $try_again = false)
+    function updateFeedItems($age = self::ONE_WEEK, $try_again = false)
     {
+        $time = time();
         $this->db->selectDB(DB_NAME);
         $feed_shard_name = WORK_DIRECTORY."/feeds/index";
         $feed_shard = NULL;
@@ -355,6 +359,9 @@ EOD;
                 }
                 $this->addFeedItemIfNew($item, $feed_shard,
                     $feed['NAME'], $lang, $age);
+                if(time() - $time > ini_get('max_execution_time')/2) {
+                    break 2; // running out of time better save shard
+                }
             }
         }
         $feed_shard->save();
@@ -362,34 +369,65 @@ EOD;
     }
 
     /**
-     * Deletes all feed items with a publication date older than $age
-     * seconds ago from FEED_ITEM
+     * Copies all feeds items newer than $age to a new shard, then deletes
+     * old index shard and database entries older than $age. Finally sets copied
+     * shard to be active. If this method is going to take max_execution_time/2
+     * it returns false, so an additional job can be schedules; otherwise
+     * it returns true
      *
      * @param int $age how many seconds old records should be deleted
+     * @return bool whether job executed to complete
      */
-    function deleteFeedItems($age)
+    function deleteFeedItems($age, $full_update = true)
     {
-        // delete old inverted index and rows older than age
+        $time = time();
         $feed_shard_name = WORK_DIRECTORY."/feeds/index";
-        if(file_exists($feed_shard_name)) {
-            unlink($feed_shard_name);
+        $prune_shard_name = WORK_DIRECTORY."/feeds/prune_index";
+        $prune_info_file = WORK_DIRECTORY."/feeds/prune_info.txt";
+        $has_prune_shard = file_exists($prune_shard_name);
+        $has_prune_info = file_exists($prune_info_file);
+        $info = array();
+        if(!$has_prune_shard || !$has_prune_info) {
+            @unlink($prune_shard_name);
+            @unlink($prune_info_file);
+            $prune_shard =  new IndexShard($prune_shard_name);
+            $info['start_pubdate'] = $time;
         }
-        $too_old = time() - $age;
+        if($has_prune_shard && $has_prune_info) {
+            $info = unserialize(file_get_contents($prune_info_file));
+            if(!isset($info['start_pubdate'])) {
+                @unlink($prune_info_file);
+                return false;
+            }
+            $prune_shard = IndexShard::load($prune_shard_name);
+            if(!$prune_shard) {
+                @unlink($prune_shard_name); //maybe index corrupted?
+                $prune_shard =  new IndexShard($prune_shard_name);
+                return false;
+            }
+        }
+        $too_old = $time - $age;
+        if(!$prune_shard) {
+            return false;
+        }
+
         $pre_feeds = $this->getMediaSources("rss");
-        if(!$pre_feeds) return false;
+        if(!$pre_feeds) { return false; }
         $feeds = array();
         foreach($pre_feeds as $pre_feed) {
             if(!isset($pre_feed['SOURCE_NAME'])) continue;
             $feed[$pre_feed['SOURCE_NAME']] = $pre_feed;
         }
         $db = $this->db;
-        $sql = "DELETE FROM FEED_ITEM WHERE PUBDATE < '$too_old'";
-        $db->execute($sql);
+
         // we now rebuild the inverted index with the remaining items
-        $feed_shard =  new IndexShard($feed_shard_name);
-        $sql = "SELECT * FROM FEED_ITEM ORDER BY PUBDATE DESC";
+        $sql = "SELECT * FROM FEED_ITEM ".
+            "WHERE PUBDATE < {$info['start_pubdate']} AND ".
+            "PUBDATE >= $too_old ".
+            "ORDER BY PUBDATE DESC";
         $result = $db->execute($sql);
         if($result) {
+            $completed = true;
             while($item = $db->fetchArray($result)) {
                 if(!isset($item['SOURCE_NAME'])) continue;
                 $source_name = $item['SOURCE_NAME'];
@@ -415,11 +453,27 @@ EOD;
                         $meta_ids[] = 'lang:'.$lang;
                     }
                 }
-                $feed_shard->addDocumentWords($doc_keys, $item['PUBDATE'],
+                $prune_shard->addDocumentWords($doc_keys, $item['PUBDATE'],
                     $word_lists, $meta_ids, true, false);
+                if(time() - $time > ini_get('max_execution_time')/2) {
+                    $info['start_pubdate'] = $item['PUBDATE'];
+                    $completed = false;
+                    break; // running out of time better save progress
+                }
             }
         }
-        $feed_shard->save();
+        $prune_shard->save();
+        if(!$completed) {
+            file_put_contents($prune_info_file, serialize($info));
+            return false;
+        }
+
+        @rename($prune_shard_name, $feed_shard_name);
+        $sql = "DELETE FROM FEED_ITEM WHERE PUBDATE < '$too_old'";
+        $db->execute($sql);
+        @unlink($prune_info_file);
+
+        return true;
     }
 
     /**

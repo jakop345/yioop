@@ -796,32 +796,56 @@ class SearchController extends Controller implements CrawlConstants
         $cron_time = $this->cronModel->getCronTime("news_delete");
         $delta = $time - $cron_time;
         if($delta == 0) {
-            $this->cronModel->updateCronTime("news_delete");
+            $this->cronModel->updateCronTime("news_delete", true);
         }
+        $start_delete_time = $this->cronModel->getCronTime("news_start_delete");
+        $start_delta = $time - $start_delete_time;
+        if($start_delta == 0) {
+            $this->cronModel->updateCronTime("news_start_delete", true);
+        }
+        // news lock is two minutes > max_execution_time = 30 seconds web script
+        $lock_time = $this->cronModel->getCronTime("news_lock");
+        $lock_delta = $time - $lock_time;
+        if($lock_delta == 0) {$lock_delta = 2 * SourceModel::TWO_MINUTES; }
+
         // each day delete everything older than a week and rebuild index
-        if($delta > SourceModel::ONE_DAY_SECONDS && defined(SUBSEARCH_LINK)
-          && SUBSEARCH_LINK) {
-            $this->cronModel->updateCronTime("news_delete");
-            $this->sourceModel->deleteFeedItems(SourceModel::ONE_WEEK_SECONDS);
+        if($delta > SourceModel::ONE_DAY && 
+          $start_delta > SourceModel::ONE_HOUR/6 && defined(SUBSEARCH_LINK)
+          && SUBSEARCH_LINK && $lock_delta > SourceModel::TWO_MINUTES) {
+            $this->cronModel->updateCronTime("news_lock");
+            $this->cronModel->updateCronTime("news_start_delete", true);
+            $full_update = $delta > SourceModel::ONE_DAY;
+            if($this->sourceModel->deleteFeedItems(SourceModel::ONE_WEEK,
+                $full_update)) {
+                $this->cronModel->updateCronTime("news_delete", true);
+            }
+            $this->cronModel->saveCronTable();
+            return;
         }
         $cron_time = $this->cronModel->getCronTime("news_try_again");
         $delta = $time - $cron_time;
         // each 15 minutes try to re-get feeds that have no items
-        if((($delta > SourceModel::ONE_HOUR_SECONDS/4 && 
-            $delta < SourceModel::ONE_HOUR_SECONDS) || $delta == 0)
+        if((($delta > SourceModel::ONE_HOUR/4 && 
+            $delta < SourceModel::ONE_HOUR) || $delta == 0) &&
+            $lock_delta > SourceModel::TWO_MINUTES
             && defined(SUBSEARCH_LINK) && SUBSEARCH_LINK) {
-            $this->cronModel->updateCronTime("news_try_again");
-            $this->sourceModel->updateFeedItems(SourceModel::ONE_WEEK_SECONDS,
+            $this->cronModel->updateCronTime("news_lock");
+            $this->cronModel->updateCronTime("news_try_again", true);
+            $this->sourceModel->updateFeedItems(SourceModel::ONE_WEEK,
                 true);
+            $this->cronModel->saveCronTable();
+            return;
         }
         $cron_time = $this->cronModel->getCronTime("news_update");
         $delta = $time - $cron_time;
         // every hour get items from twenty feeds whose newest items are oldest
-        if(($delta > SourceModel::ONE_HOUR_SECONDS || $delta == 0)
-            && defined(SUBSEARCH_LINK) && SUBSEARCH_LINK) {
-            $this->cronModel->updateCronTime("news_update");
+        if(($delta > SourceModel::ONE_HOUR || $delta == 0)
+            && defined(SUBSEARCH_LINK) && SUBSEARCH_LINK
+            && $lock_delta > SourceModel::TWO_MINUTES) {
+            $this->cronModel->updateCronTime("news_lock");
+            $this->cronModel->updateCronTime("news_update", true);
             if(!$this->sourceModel->updateFeedItems(
-                SourceModel::ONE_WEEK_SECONDS)) {
+                SourceModel::ONE_WEEK)) {
                 if(!isset($data['SCRIPT'])) {
                     $data['SCRIPT'] = "";
                 }
@@ -831,6 +855,7 @@ class SearchController extends Controller implements CrawlConstants
                         "</h1>');";
             }
         }
+        $this->cronModel->saveCronTable();
     }
 
     /**

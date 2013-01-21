@@ -103,16 +103,29 @@ class CronModel extends Model
 
     /**
      * Updates the Cron timestamp to the current time.
+     * @param bool $transaction if you are doing a sequence of cron updates
+     *      you can set this value to true so data is not immediately
+     *      written to disk. Then you can write to disk using saveCronTable
+     *      so only do one write.
      */
-    function updateCronTime($key)
+    function updateCronTime($key, $transaction = false)
     {
         if($this->cron_table === NULL) {
             $this->loadCronTable();
         }
         $this->cron_table[$key] = time();
-        file_put_contents($this->cron_file, serialize($this->cron_table));
+        if(!$transaction) {
+            file_put_contents($this->cron_file, serialize($this->cron_table));
+        }
     }
 
+    /**
+     * Saerializes and save the current cron table to disk
+     */
+    function saveCronTable()
+    {
+        file_put_contents($this->cron_file, serialize($this->cron_table));
+    }
 }
 
  ?>
