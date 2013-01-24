@@ -415,8 +415,8 @@ EOD;
         if(!$pre_feeds) { return false; }
         $feeds = array();
         foreach($pre_feeds as $pre_feed) {
-            if(!isset($pre_feed['SOURCE_NAME'])) continue;
-            $feed[$pre_feed['SOURCE_NAME']] = $pre_feed;
+            if(!isset($pre_feed['NAME'])) continue;
+            $feeds[$pre_feed['NAME']] = $pre_feed;
         }
         $db = $this->db;
 
@@ -431,8 +431,8 @@ EOD;
             while($item = $db->fetchArray($result)) {
                 if(!isset($item['SOURCE_NAME'])) continue;
                 $source_name = $item['SOURCE_NAME'];
-                if(isset($feed[$item['SOURCE_NAME']])) {
-                    $lang = $feed[$item['SOURCE_NAME']]['LANGUAGE'];
+                if(isset($feeds[$source_name])) {
+                    $lang = $feeds[$source_name]['LANGUAGE'];
                 } else {
                     $lang = "";
                 }
@@ -443,16 +443,8 @@ EOD;
                 $doc_keys = crawlHash($item["LINK"], true) .
                     $raw_guid."d". substr(crawlHash(
                     UrlParser::getHost($item["LINK"])."/",true), 1);
-                $meta_ids = array("media:news", "media:news:".
-                    urlencode($source_name), "guid:".
-                    strtolower($item["GUID"]));
-                if($lang != "") {
-                    $lang_parts = explode("-", $lang);
-                    $meta_ids[] = 'lang:'.$lang_parts[0];
-                    if(isset($lang_parts[1])){
-                        $meta_ids[] = 'lang:'.$lang;
-                    }
-                }
+                $meta_ids = $this->calculateMetas($lang, $item['PUBDATE'],
+                    $source_name, $item["GUID"]);
                 $prune_shard->addDocumentWords($doc_keys, $item['PUBDATE'],
                     $word_lists, $meta_ids, true, false);
                 if(time() - $time > ini_get('max_execution_time')/2) {
@@ -531,8 +523,32 @@ EOD;
         $doc_keys = crawlHash($item["link"], true) .
             $raw_guid."d". substr(crawlHash(
             UrlParser::getHost($item["link"])."/",true), 1);
+        $meta_ids = $this->calculateMetas($lang, $item['pubDate'],
+            $source_name, $item["guid"]);
+        $feed_shard->addDocumentWords($doc_keys, $item['pubDate'], $word_lists,
+            $meta_ids, true, false);
+    }
+
+    /**
+     *  Used to calculate the meta words for RSS feed items
+     *
+     *  @param string $lang the locale_tag of the feed item
+     *  @param int $pubdate UNIX timestamp publication date of item
+     *  @param string $source_name the name of the news feed
+     *  @param string $guid the guid of the news item
+     *
+     *  @return array $meta_ids meta words found
+     */
+    function calculateMetas($lang, $pubdate, $source_name, $guid)
+    {
         $meta_ids = array("media:news", "media:news:".urlencode($source_name),
-            "guid:".strtolower($item["guid"]));
+            "guid:".strtolower($guid));
+        $meta_ids[] = 'date:'.date('Y', $pubdate);
+        $meta_ids[] = 'date:'.date('Y-m', $pubdate);
+        $meta_ids[] = 'date:'.date('Y-m-d', $pubdate);
+        $meta_ids[] = 'date:'.date('Y-m-d-H', $pubdate);
+        $meta_ids[] = 'date:'.date('Y-m-d-H-i', $pubdate);
+        $meta_ids[] = 'date:'.date('Y-m-d-H-i-s', $pubdate);
         if($lang != "") {
             $lang_parts = explode("-", $lang);
             $meta_ids[] = 'lang:'.$lang_parts[0];
@@ -540,8 +556,7 @@ EOD;
                 $meta_ids[] = 'lang:'.$lang;
             }
         }
-        $feed_shard->addDocumentWords($doc_keys, $item['pubDate'], $word_lists,
-            $meta_ids, true, false);
+        return $meta_ids;
     }
 }
  ?>

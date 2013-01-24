@@ -1049,7 +1049,7 @@ class AdminController extends Controller implements CrawlConstants
                     $update_flag = true;
             }
             if(isset($seed_info[$type][$field])) {
-                $data[$type] = $this->convertArrayCleanLines(
+                $data[$type] = $this->convertArrayLines(
                     $seed_info[$type][$field]);
             } else {
                 $data[$type] = "";
@@ -1123,28 +1123,34 @@ class AdminController extends Controller implements CrawlConstants
         return $data;
     }
 
+
+
     /**
-     * Cleans a potentially tainted set of user input which are presented as
-     * an array of lines. This is used to handle data from the crawl options
-     * textareas. It is also used
+     * Converts an array of lines of strings into a single string with
+     * proper newlines, each line having been trimmed and potentially
+     * cleaned
      *
-     * @param array $arr the array of lines to be cleaned
+     * @param array $arr the array of lines to be process
      * @param string $endline_string what string should be used to indicate
      *      the end of a line
+     * @param bool $clean whether tot clean each line
      * @return string a concatenated string of cleaned lines
      */
-    function convertArrayCleanLines($arr, $endline_string="\n")
+    function convertArrayLines($arr, $endline_string="\n", $clean = false)
     {
         $output = "";
         $eol = "";
         foreach($arr as $line) {
             $output .= $eol;
-            $output .= trim($this->clean($line, 'string'));
+            $out_line = trim($line);
+            if($clean) {
+                $out_line = $this->clean($out_line, "string");
+            }
+            $output .= trim($out_line);
             $eol = $endline_string;
         }
         return $output;
     }
-
     /**
      * Cleans a string consisting of lines, typically of urls into an array of
      * clean lines. This is used in handling data from the crawl options 
@@ -2432,8 +2438,8 @@ class AdminController extends Controller implements CrawlConstants
                         if($field == "MEMCACHE_SERVERS") {
                             $mem_array = preg_split("/(\s)+/", $clean_field);
                             $profile[$field] =
-                                $this->convertArrayCleanLines(
-                                    $mem_array, "|Z|");
+                                $this->convertArrayLines(
+                                    $mem_array, "|Z|", true);
                         }
                     }
                     if(!isset($data[$field])) {
