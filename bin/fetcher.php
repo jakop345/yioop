@@ -88,6 +88,8 @@ foreach(glob(BASE_DIR."/lib/indexing_plugins/*_plugin.php") as $filename) {
 require_once BASE_DIR."/lib/url_parser.php";
 /** Used to extract summaries from web pages*/
 require_once BASE_DIR."/lib/phrase_parser.php";
+/** For user-defined processing on page summaries*/
+require_once BASE_DIR."/lib/page_rule_parser.php";
 /** for crawlHash and crawlLog */
 require_once BASE_DIR."/lib/utility.php";
 /** for crawlDaemon function */
@@ -96,7 +98,7 @@ require_once BASE_DIR."/lib/crawl_daemon.php";
 require_once BASE_DIR."/lib/fetch_url.php";
 /** Loads common constants for web crawling*/
 require_once BASE_DIR."/lib/crawl_constants.php";
-/** used to build miniinverted index*/
+/** used to build mini-inverted index*/
 require_once BASE_DIR."/lib/index_shard.php";
 
 /*
@@ -180,7 +182,7 @@ class Fetcher implements CrawlConstants
     /**
      * @var array
      */
-    var $page_rules;
+    var $page_rule_parser;
 
     /**
      * List of video sources mainly to determine the value of the media:
@@ -370,7 +372,7 @@ class Fetcher implements CrawlConstants
         $this->queue_servers = array($name_server);
         $this->current_server = 0;
         $this->page_processors = $page_processors;
-        $this->page_rules = array();
+        $this->page_rule_parser = NULL;
         $this->video_sources = array();
         $this->hosts_with_errors = array();
 
@@ -1059,8 +1061,11 @@ class Fetcher implements CrawlConstants
         if(isset($info[self::CRAWL_ORDER])) {
             $this->crawl_order = $info[self::CRAWL_ORDER];
         }
-        if(isset($info[self::PAGE_RULES])) {
-            $this->page_rules = $info[self::PAGE_RULES];
+        if(isset($info[self::PAGE_RULES]['rule']) ){
+            $rule_string = implode("\n", $info[self::PAGE_RULES]['rule']);
+            $rule_string = html_entity_decode($rule_string, ENT_QUOTES);
+            $this->page_rule_parser = 
+                new PageRuleParser($rule_string);
         }
         if(isset($info[self::VIDEO_SOURCES])) {
             $this->video_sources = $info[self::VIDEO_SOURCES];
@@ -1428,6 +1433,10 @@ class Fetcher implements CrawlConstants
                         UrlParser::cleanRedundantLinks(
                             $summarized_site_pages[$i][self::LINKS],
                             $summarized_site_pages[$i][self::URL]);
+                }
+                if($this->page_rule_parser != NULL) {
+                    $this->page_rule_parser->executeRuleTrees(
+                        $summarized_site_pages[$i]);
                 }
                 $i++;
             }
@@ -2198,6 +2207,11 @@ class Fetcher implements CrawlConstants
     {
         $meta_ids = array();
 
+        // handles user added meta words
+        if(isset($site[self::META_WORDS])) {
+            $meta_ids = $site[self::META_WORDS];
+        }
+
         /*
             Handle the built-in meta words. For example
             store the sites the doc_key belongs to,
@@ -2337,11 +2351,6 @@ class Fetcher implements CrawlConstants
         //Add all meta word for subdoctype
         if(isset($site[self::SUBDOCTYPE])){
             $meta_ids[] = $site[self::SUBDOCTYPE].':all';
-        }
-
-        // handles user added meta words
-        if(isset($this->page_rules)) {
-// add parsing code for page rules
         }
 
         return $meta_ids;

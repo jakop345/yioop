@@ -62,6 +62,9 @@ class SourceModel extends Model
     /** Number of seconds in an hour */
     const ONE_HOUR = 3600;
 
+    /** Maximum number of tries to completely copy over old shard on delete */
+    const MAX_COPY_TRIES = 5;
+
     /**
      * Just calls the parent class constructor
      */
@@ -392,6 +395,7 @@ EOD;
             @unlink($prune_info_file);
             $prune_shard =  new IndexShard($prune_shard_name);
             $info['start_pubdate'] = $time;
+            $info['copy_tries'] = 0;
         }
         if($has_prune_shard && $has_prune_info) {
             $info = unserialize(file_get_contents($prune_info_file));
@@ -447,9 +451,15 @@ EOD;
                     $source_name, $item["GUID"]);
                 $prune_shard->addDocumentWords($doc_keys, $item['PUBDATE'],
                     $word_lists, $meta_ids, true, false);
-                if(time() - $time > ini_get('max_execution_time')/2) {
+                if(time() - $time > ini_get('max_execution_time')/3) {
                     $info['start_pubdate'] = $item['PUBDATE'];
-                    $completed = false;
+                    $info['copy_tries']++;
+                    if($info['copy_tries'] < self::MAX_COPY_TRIES) {
+                        $completed = false;
+                    } else {
+                        $completed = true;
+                        $too_old = $item['PUBDATE'] - 1;
+                    }
                     break; // running out of time better save progress
                 }
             }
