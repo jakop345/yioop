@@ -362,7 +362,7 @@ EOD;
                 }
                 $this->addFeedItemIfNew($item, $feed_shard,
                     $feed['NAME'], $lang, $age);
-                if(time() - $time > ini_get('max_execution_time')/2) {
+                if(time() - $time > ini_get('max_execution_time')/3) {
                     break 2; // running out of time better save shard
                 }
             }
