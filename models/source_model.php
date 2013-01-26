@@ -184,7 +184,7 @@ class SourceModel extends Model
         $locale_tag = getLocaleTag();
 
         $sql = "SELECT LOCALE_ID FROM LOCALE ".
-            "WHERE LOCALE_TAG = '$locale_tag' LIMIT 1";
+            "WHERE LOCALE_TAG = '$locale_tag' LIMIT 0, 1";
         $result = $db->execute($sql);
         $row = $db->fetchArray($result);
 
@@ -202,7 +202,7 @@ class SourceModel extends Model
             $id = $subsearches[$i]["TRANSLATION_ID"];
             $sub_sql = "SELECT TRANSLATION AS SUBSEARCH_NAME ".
                 "FROM TRANSLATION_LOCALE ".
-                " WHERE TRANSLATION_ID=$id AND LOCALE_ID=$locale_id LIMIT 1";
+                " WHERE TRANSLATION_ID=$id AND LOCALE_ID=$locale_id LIMIT 0, 1";
                 // maybe do left join at some point
 
             $result_sub =  $db->execute($sub_sql);
@@ -314,12 +314,13 @@ class SourceModel extends Model
         }
         $feeds = $this->getMediaSources("rss", $try_again);
         if(!$try_again && count($feeds) > $feeds_one_go) {
+            $feeds = array();
             $sql = <<< EOD
             SELECT * FROM MEDIA_SOURCE M
             WHERE M.NAME IN (
             SELECT F.SOURCE_NAME FROM FEED_ITEM F
             GROUP BY SOURCE_NAME
-            ORDER BY MAX(PUBDATE) ASC LIMIT $feeds_one_go);
+            ORDER BY MAX(PUBDATE) ASC LIMIT 0, $feeds_one_go);
 EOD;
             $i = 0;
             $result = $this->db->execute($sql);
