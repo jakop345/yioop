@@ -59,11 +59,31 @@ class PageOptionsElement extends Element
     ?>
         <div class="current-activity">
         <form id="pageoptionsForm" method="get" action='?'>
-        <h2><?php e(tl('pageoptions_element_crawl_time'))?></h2>
+        <ul class='tab-menu-list'>
+        <li><a href="javascript:
+                switchTab('crawltimetab', 'searchtimetab', 'testoptionstab');"
+            id='crawltimetabitem'
+            class="<?php e($data['crawl_time_active']); ?>"><?php
+            e(tl('pageoptions_element_crawl_time'))?></a></li>
+        <li><a href="javascript:
+                switchTab('searchtimetab', 'crawltimetab', 'testoptionstab');"
+            id='searchtimetabitem'
+            class="<?php e($data['search_time_active']); ?>"><?php
+            e(tl('pageoptions_element_search_time'))?></a></li>
+        <li><a href="javascript:
+                switchTab('testoptionstab', 'crawltimetab', 'searchtimetab');"
+            id='testoptionstabitem'
+            class="<?php e($data['test_options_active']); ?>"><?php
+            e(tl('pageoptions_element_test_options'))?></a></li>
+        </ul>
+        <div class='tab-menu-content'>
         <input type="hidden" name="c" value="admin" />
+        <input type="hidden" id='option-type' name="option_type" value="<?php
+            e($data['option_type'])?>" />
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="pageOptions" />
+        <div id='crawltimetab'>
         <div class="top-margin"><b><label for="page-range-request"><?php
             e(tl('pageoptions_element_page_range'))?></label></b>
             <?php $this->view->optionsHelper->render("page-range-request",
@@ -102,7 +122,15 @@ class PageOptionsElement extends Element
             }
         ?>
         </tr></table>
-        <h2><?php e(tl('pageoptions_element_page_scoring'))?></h2>
+        <div class="top-margin"><label for="page-rules"><b><?php
+            e(tl('pageoptions_element_page_rules'));?></b></label>
+        </div>
+        <textarea class="short-text-area" id="page-rules"
+            name="page_rules" ><?php e($data['page_rules']);
+        ?></textarea>
+        </div>
+
+        <div id='searchtimetab'>
         <table class="weights-table" >
         <tr><th><label for="title-weight"><?php
             e(tl('pageoptions_element_title_weight'))?></label></th><td>
@@ -133,12 +161,46 @@ class PageOptionsElement extends Element
                 name="SERVER_ALPHA"
                 value="<?php e($data['SERVER_ALPHA']); ?>" /></td></tr>
         </table>
+        </div>
+
+        <div id='testoptionstab'>
+        </div>
+
+        </div>
+
         <div class="center slight-pad"><button class="button-box"
             type="submit"><?php e(tl('pageoptions_element_save_options'));
             ?></button></div>
         </form>
         </div>
 
+        <script type="text/javascript">
+
+        function switchTab(newtab, oldtab, oldtab2)
+        {
+            setDisplay(newtab, true);
+            setDisplay(oldtab, false);
+            setDisplay(oldtab2, false);
+            ntab = elt(newtab + "item");
+            if(ntab) {
+                ntab.className = 'active';
+            }
+            otab = elt(oldtab + "item");
+            if(otab) {
+                otab.className = '';
+            }
+            otab2 = elt(oldtab2 + "item");
+            if(otab2) {
+                otab2.className = '';
+            }
+            ctype = elt('option-type');
+            if(ctype) {
+                ctype.value = (newtab == 'crawltimetab')
+                    ? 'crawl_time' : ((newtab == 'searchtimetab') ?
+                    'search_time' : 'test_options' );
+            }
+        }
+        </script>
     <?php
     }
 }

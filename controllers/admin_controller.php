@@ -1040,7 +1040,7 @@ class AdminController extends Controller implements CrawlConstants
             $seed_info['general']['restrict_sites_by_url'];
         $site_types =
             array('allowed_sites' => 'url', 'disallowed_sites' => 'url',
-                'seed_sites' => 'url', 'page_rules'=>'rule');
+                'seed_sites' => 'url');
         foreach($site_types as $type => $field) {
             if(!$no_further_changes && isset($_REQUEST[$type])) {
                 $seed_info[$type][$field] =
@@ -1501,6 +1501,39 @@ class AdminController extends Controller implements CrawlConstants
                 "checked='checked'" :'';
         }
         $seed_info["indexed_file_types"]["extensions"] = $filetypes;
+
+        if(isset($_REQUEST['page_rules'])) {
+            $seed_info['page_rules']['rule'] =
+                $this->convertStringCleanArray(
+                $_REQUEST['page_rules'], 'rule');
+                $update_flag = true;
+        }
+        if(isset($seed_info['page_rules']['rule'])) {
+            $data['page_rules'] = $this->convertArrayLines(
+                $seed_info['page_rules']['rule']);
+        } else {
+            $data['page_rules'] = "";
+        }
+        $allowed_options = array('crawl_time', 'search_time', 'test_options');
+        if(isset($_REQUEST['option_type']) &&
+            in_array($_REQUEST['option_type'], $allowed_options)) {
+            $data['option_type'] = $_REQUEST['option_type'];
+        } else {
+            $data['option_type'] = 'crawl_time';
+        }
+        if($data['option_type'] == 'crawl_time') {
+            $data['crawl_time_active'] = "active";
+            $data['search_time_active'] = "";
+            $data['test_options_active'] = "";
+        } else if($data['option_type'] == 'search_time') {
+            $data['search_time_active'] = "active";
+            $data['crawl_time_active'] = "";
+            $data['test_options_active'] = "";
+        } else {
+            $data['search_time_active'] = "";
+            $data['crawl_time_active'] = "";
+            $data['test_options_active'] = "active";
+        }
         $this->crawlModel->setSeedInfo($seed_info);
         if($change == true) {
             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".

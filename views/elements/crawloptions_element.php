@@ -162,12 +162,6 @@ class CrawloptionsElement extends Element
         </div>
         <?php } ?>
         </div>
-        <div class="top-margin"><label for="page-rules"><b><?php
-            e(tl('crawloptions_element_page_rules'))?></b></label></div>
-        <textarea class="short-text-area" id="page-rules"
-            name="page_rules" ><?php e($data['page_rules']);
-        ?></textarea>
-
         <?php if(isset($data['INDEXING_PLUGINS'])) {
         ?>
             <div class="top-margin"><b><?php

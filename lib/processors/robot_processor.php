@@ -164,7 +164,7 @@ class RobotProcessor extends PageProcessor
 
         if($delay_flag) {
             if($delay > MAXIMUM_CRAWL_DELAY)  {
-                $summary[self::ROBOT_PATHS][] = "/";
+               $summary[self::ROBOT_PATHS][self::DISALLOWED_SITES][] = "/";
             } else {
                 $summary[self::CRAWL_DELAY] = $delay;
             }
@@ -172,7 +172,6 @@ class RobotProcessor extends PageProcessor
 
         $summary[self::PAGE] = "<html><body><pre>".
                 strip_tags($page)."</pre></body></html>";
-
         return $summary;
     }
 

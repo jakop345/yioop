@@ -1572,6 +1572,11 @@ class Fetcher implements CrawlConstants
             if(isset($site[self::ROBOT_PATHS])) {
                 $this->found_sites[self::ROBOT_TXT][$host][self::IP_ADDRESSES] =
                     $site[self::IP_ADDRESSES];
+                if($site[self::IP_ADDRESSES] == array("0.0.0.0")) {
+                    //probably couldn't find site so this will block from crawl
+                    $site[self::ROBOT_PATHS][self::DISALLOWED_SITES] =
+                        array("/");
+                }
                 $this->found_sites[self::ROBOT_TXT][$host][self::ROBOT_PATHS] =
                     $site[self::ROBOT_PATHS];
                 if(isset($site[self::CRAWL_DELAY])) {
