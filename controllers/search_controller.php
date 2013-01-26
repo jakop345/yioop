@@ -825,8 +825,10 @@ class SearchController extends Controller implements CrawlConstants
             $this->cronModel->saveCronTable();
             return;
         }
-        $cron_time = $this->cronModel->getCronTime("news_try_again");
-        $delta = $time - $cron_time;
+        $update_cron_time = $this->cronModel->getCronTime("news_update");
+        $try_cron_time = $this->cronModel->getCronTime("news_try_again");
+        
+        $delta = $time - max($update_cron_time, $try_cron_time);
         // each 15 minutes try to re-get feeds that have no items
         if((($delta > SourceModel::ONE_HOUR/4 && 
             $delta < SourceModel::ONE_HOUR) || $delta == 0) &&
@@ -838,8 +840,8 @@ class SearchController extends Controller implements CrawlConstants
             $this->cronModel->saveCronTable();
             return;
         }
-        $cron_time = $this->cronModel->getCronTime("news_update");
-        $delta = $time - $cron_time;
+        
+        $delta = $time - $update_cron_time;
         // every hour get items from twenty feeds whose newest items are oldest
         if(($delta > SourceModel::ONE_HOUR || $delta == 0)
             && $lock_delta > SourceModel::TWO_MINUTES) {
