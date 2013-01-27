@@ -312,18 +312,22 @@ class SourceModel extends Model
         if(!$feed_shard) {
             return false;
         }
-        $feeds = $this->getMediaSources("rss", $try_again);
-        if(!$try_again && count($feeds) > $feeds_one_go) {
+        if($try_again) {
+            $feeds = $this->getMediaSources("rss", $try_again);
+        } else {
             $feeds = array();
-            $sql = <<< EOD
-            SELECT * FROM MEDIA_SOURCE M
-            WHERE M.NAME IN (
-            SELECT F.SOURCE_NAME FROM FEED_ITEM F
-            GROUP BY SOURCE_NAME
-            ORDER BY MAX(PUBDATE) ASC LIMIT 0, $feeds_one_go);
-EOD;
-            $i = 0;
+            $sql = "SELECT COUNT(*) AS CNT FROM MEDIA_SOURCE WHERE TYPE='rss'";
             $result = $this->db->execute($sql);
+            $row = $this->db->fetchArray($result);
+            $num_feeds = (isset($row['CNT'])) ? $row['CNT'] : 0;
+            $num_bins = floor($num_feeds/$feeds_one_go) + 1;
+            $hour = date('H', $time);
+            $current_bin = $hour % $num_bins;
+            $limit = $current_bin * $feeds_one_go;
+            $sql = "SELECT * FROM MEDIA_SOURCE WHERE TYPE='rss' LIMIT ".
+                "$limit, $feeds_one_go";
+            $result = $this->db->execute($sql);
+            $i = 0;
             while($feeds[$i] = $this->db->fetchArray($result)) {
                 $i++;
             }
