@@ -164,12 +164,29 @@ class PageOptionsElement extends Element
         </div>
 
         <div id='testoptionstab'>
+         <h2><?php e(tl('pageoptions_element_test_page'))?></h2>
+        <div class="top-margin"><b><label for="page-type"><?php
+            e(tl('pageoptions_element_page_type'))?></label></b>
+            <?php 
+            $types = array_keys($data['INDEXED_FILE_TYPES']);
+            $this->view->optionsHelper->render("page-type",
+            "page_type", array_combine($types, $types),
+            "html");
+            ?></div>
+        <textarea class="tall-text-area" id="testpage"
+            name="TESTPAGE" ><?php e($data['TESTPAGE']);
+        ?></textarea>
         </div>
 
         </div>
 
-        <div class="center slight-pad"><button class="button-box"
-            type="submit"><?php e(tl('pageoptions_element_save_options'));
+        <div class="center slight-pad"><button class="button-box" 
+            id="page-button"
+            type="submit"><?php if($data['test_options_active'] == "") {
+                e(tl('pageoptions_element_save_options'));
+            } else {
+                e(tl('pageoptions_element_run_tests'));
+            }
             ?></button></div>
         </form>
         </div>
@@ -198,6 +215,13 @@ class PageOptionsElement extends Element
                 ctype.value = (newtab == 'crawltimetab')
                     ? 'crawl_time' : ((newtab == 'searchtimetab') ?
                     'search_time' : 'test_options' );
+                if(ctype.value == 'test_options') {
+                    elt('page-button').innerHTML =
+                        '<?php e(tl('pageoptions_element_run_tests')); ?>';
+                } else {
+                    elt('page-button').innerHTML =
+                        '<?php e(tl('pageoptions_element_save_options')); ?>';
+                }
             }
         }
         </script>

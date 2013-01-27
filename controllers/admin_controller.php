@@ -1525,19 +1525,32 @@ class AdminController extends Controller implements CrawlConstants
             $data['crawl_time_active'] = "active";
             $data['search_time_active'] = "";
             $data['test_options_active'] = "";
+            $data['SCRIPT'] .= "\nswitchTab('crawltimetab',".
+                "'searchtimetab', 'testoptionstab')\n";
         } else if($data['option_type'] == 'search_time') {
             $data['search_time_active'] = "active";
             $data['crawl_time_active'] = "";
             $data['test_options_active'] = "";
+            $data['SCRIPT'] .= "\nswitchTab('searchtimetab',".
+                "'crawltimetab', 'testoptionstab')\n";
         } else {
             $data['search_time_active'] = "";
             $data['crawl_time_active'] = "";
             $data['test_options_active'] = "active";
+            $data['SCRIPT'] .= "\nswitchTab('testoptionstab',".
+                "'crawltimetab', 'searchtimetab');\n";
         }
+        
         $this->crawlModel->setSeedInfo($seed_info);
-        if($change == true) {
+        if($change == true && $data['option_type'] != 'test_options') {
             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                 tl('admin_controller_page_options_updated')."</h1>')";
+        }
+        $data['TESTPAGE'] = (isset($_REQUEST['TESTPAGE'])) ?
+            $this->clean($_REQUEST['TESTPAGE'], 'string') : "";
+        if($data['option_type'] == 'test_options' && $data['TESTPAGE'] !="") {
+            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                tl('admin_controller_page_options_running_tests')."</h1>')";
         }
         return $data;
     }

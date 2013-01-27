@@ -811,8 +811,10 @@ class SearchController extends Controller implements CrawlConstants
         $lock_delta = $time - $lock_time;
         if($lock_delta == 0) {$lock_delta = 2 * SourceModel::TWO_MINUTES; }
 
-        // each day delete everything older than a week and rebuild index
-        if($delta > SourceModel::ONE_DAY && 
+        /*  each day delete everything older than a week and rebuild index
+            do this every four hours so news articles tend to stay in order
+         */
+        if($delta > SourceModel::ONE_DAY/6 && 
           $start_delta > SourceModel::ONE_HOUR/6 && 
           $lock_delta > SourceModel::TWO_MINUTES) {
             $this->cronModel->updateCronTime("news_lock");
