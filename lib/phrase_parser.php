@@ -53,6 +53,17 @@ require_once BASE_DIR."/lib/nword_grams.php";
 require_once BASE_DIR."/lib/crawl_constants.php";
 
 /**
+ * Needed for calculateMetas and calculateLinkMetas (used in Fetcher and
+ * pageOptions in AdminController)
+ */
+require_once BASE_DIR."/lib/url_parser.php";
+
+/**
+ * For crawlHash
+ */
+require_once BASE_DIR."/lib/utility.php";
+
+/**
  * Library of functions used to manipulate words and phrases
  *
  * @author Chris Pollett
@@ -411,6 +422,215 @@ class PhraseParser
         }
         return $stem_obj;
     }
+
+    /**
+     * Calculates the meta words to be associated with a given downloaded
+     * document. These words will be associated with the document in the
+     * index for (server:apache) even if the document itself did not contain
+     * them.
+     *
+     * @param array &$site associated array containing info about a downloaded
+     *      (or read from archive) document.
+     * @return array of meta words to be associate with this document
+     */
+    static function calculateMetas(&$site, $video_sources = array())
+    {
+        $meta_ids = array();
+
+        // handles user added meta words
+        if(isset($site[CrawlConstants::META_WORDS])) {
+            $meta_ids = $site[CrawlConstants::META_WORDS];
+        }
+
+        /*
+            Handle the built-in meta words. For example
+            store the sites the doc_key belongs to,
+            so you can search by site
+        */
+        $url_sites = UrlParser::getHostPaths($site[CrawlConstants::URL]);
+        $url_sites = array_merge($url_sites,
+            UrlParser::getHostSubdomains($site[CrawlConstants::URL]));
+        $meta_ids[] = 'site:all';
+        foreach($url_sites as $url_site) {
+            if(strlen($url_site) > 0) {
+                $meta_ids[] = 'site:'.$url_site;
+            }
+        }
+        $path =  UrlParser::getPath($site[CrawlConstants::URL]);
+        if(strlen($path) > 0 ) {
+            $path_parts = explode("/", $path);
+            $pre_path = "";
+            $meta_ids[] = 'path:all';
+            $meta_ids[] = 'path:/';
+            foreach($path_parts as $part) {
+                if(strlen($part) > 0 ) {
+                    $pre_path .= "/$part";
+                    $meta_ids[] = 'path:'.$pre_path;
+                }
+            }
+        }
+
+        $meta_ids[] = 'info:'.$site[CrawlConstants::URL];
+        $meta_ids[] = 'info:'.crawlHash($site[CrawlConstants::URL]);
+        $meta_ids[] = 'code:all';
+        $meta_ids[] = 'code:'.$site[CrawlConstants::HTTP_CODE];
+        if(UrlParser::getHost($site[CrawlConstants::URL])."/" == 
+            $site[CrawlConstants::URL]) {
+            $meta_ids[] = 'host:all'; //used to count number of distinct hosts
+        }
+        if(isset($site[CrawlConstants::SIZE])) {
+            $meta_ids[] = "size:all";
+            $interval = DOWNLOAD_SIZE_INTERVAL;
+            $size = floor($site[CrawlConstants::SIZE]/$interval) * $interval;
+            $meta_ids[] = "size:$size";
+        }
+        if(isset($site[CrawlConstants::TOTAL_TIME])) {
+            $meta_ids[] = "time:all";
+            $interval = DOWNLOAD_TIME_INTERVAL;
+            $time = floor(
+                $site[CrawlConstants::TOTAL_TIME]/$interval) * $interval;
+            $meta_ids[] = "time:$time";
+        }
+        if(isset($site[CrawlConstants::DNS_TIME])) {
+            $meta_ids[] = "dns:all";
+            $interval = DOWNLOAD_TIME_INTERVAL;
+            $time = floor(
+                $site[CrawlConstants::DNS_TIME]/$interval) * $interval;
+            $meta_ids[] = "dns:$time";
+        }
+        if(isset($site[CrawlConstants::LINKS])) {
+            $num_links = count($site[CrawlConstants::LINKS]);
+            $meta_ids[] = "numlinks:all";
+            $meta_ids[] = "numlinks:$num_links";
+            $link_urls = array_keys($site[CrawlConstants::LINKS]);
+            $meta_ids[] = "link:all";
+            foreach($link_urls as $url) {
+                    $meta_ids[] = 'link:'.$url;
+                    $meta_ids[] = 'link:'.crawlHash($url);
+            }
+        }
+        if(isset($site[CrawlConstants::LOCATION]) && 
+            count($site[CrawlConstants::LOCATION]) > 0){
+            foreach($site[CrawlConstants::LOCATION] as $location) {
+                $meta_ids[] = 'info:'.$location;
+                $meta_ids[] = 'info:'.crawlHash($location);
+                $meta_ids[] = 'location:all';
+                $meta_ids[] = 'location:'.$location;
+            }
+        }
+
+        if(isset($site[CrawlConstants::IP_ADDRESSES]) ){
+            $meta_ids[] = 'ip:all';
+            foreach($site[CrawlConstants::IP_ADDRESSES] as $address) {
+                $meta_ids[] = 'ip:'.$address;
+            }
+        }
+
+        $meta_ids[] = 'media:all';
+        if($video_sources != array()) {
+            if(UrlParser::isVideoUrl($site[CrawlConstants::URL], 
+                $video_sources)) {
+                $meta_ids[] = "media:video";
+            } else {
+                $meta_ids[] = (stripos($site[CrawlConstants::TYPE],
+                    "image") !== false) ? 'media:image' : 'media:text';
+            }
+        }
+        // store the filetype info
+        $url_type = UrlParser::getDocumentType($site[CrawlConstants::URL]);
+        if(strlen($url_type) > 0) {
+            $meta_ids[] = 'filetype:all';
+            $meta_ids[] = 'filetype:'.$url_type;
+        }
+        if(isset($site[CrawlConstants::SERVER])) {
+            $meta_ids[] = 'server:all';
+            $meta_ids[] = 'server:'.strtolower($site[CrawlConstants::SERVER]);
+        }
+        if(isset($site[CrawlConstants::SERVER_VERSION])) {
+            $meta_ids[] = 'version:all';
+            $meta_ids[] = 'version:'.
+                $site[CrawlConstants::SERVER_VERSION];
+        }
+        if(isset($site[CrawlConstants::OPERATING_SYSTEM])) {
+            $meta_ids[] = 'os:all';
+            $meta_ids[] = 'os:'.strtolower(
+                $site[CrawlConstants::OPERATING_SYSTEM]);
+        }
+        if(isset($site[CrawlConstants::MODIFIED])) {
+            $modified = $site[CrawlConstants::MODIFIED];
+            $meta_ids[] = 'modified:all';
+            $meta_ids[] = 'modified:'.date('Y', $modified);
+            $meta_ids[] = 'modified:'.date('Y-m', $modified);
+            $meta_ids[] = 'modified:'.date('Y-m-d', $modified);
+        }
+        if(isset($site[CrawlConstants::TIMESTAMP])) {
+            $date = $site[CrawlConstants::TIMESTAMP];
+            $meta_ids[] = 'date:all';
+            $meta_ids[] = 'date:'.date('Y', $date);
+            $meta_ids[] = 'date:'.date('Y-m', $date);
+            $meta_ids[] = 'date:'.date('Y-m-d', $date);
+            $meta_ids[] = 'date:'.date('Y-m-d-H', $date);
+            $meta_ids[] = 'date:'.date('Y-m-d-H-i', $date);
+            $meta_ids[] = 'date:'.date('Y-m-d-H-i-s', $date);
+        }
+        if(isset($site[CrawlConstants::LANG])) {
+            $meta_ids[] = 'lang:all';
+            $lang_parts = explode("-", $site[CrawlConstants::LANG]);
+            $meta_ids[] = 'lang:'.$lang_parts[0];
+            if(isset($lang_parts[1])){
+                $meta_ids[] = 'lang:'.$site[CrawlConstants::LANG];
+            }
+        }
+        if(isset($site[CrawlConstants::AGENT_LIST])) {
+            foreach($site[CrawlConstants::AGENT_LIST] as $agent) {
+                $meta_ids[] = 'robot:'.strtolower($agent);
+            }
+        }
+        //Add all meta word for subdoctype
+        if(isset($site[CrawlConstants::SUBDOCTYPE])){
+            $meta_ids[] = $site[CrawlConstants::SUBDOCTYPE].':all';
+        }
+
+        return $meta_ids;
+    }
+
+
+    /**
+     * Used to compute all the meta ids for a given link with $url
+     * and $link_text that was on a site with $site_url.
+     *
+     * @param string $url url of the link
+     * @param string $link_host url of the host name of the link
+     * @param string $link_text text of the anchor tag link came from
+     * @param string $site_url url of the page link was on
+     */
+    static function calculateLinkMetas($url, $link_host, $link_text, $site_url)
+    {
+        global $IMAGE_TYPES;
+        $link_meta_ids = array();
+        if(strlen($link_host) == 0) continue;
+        if(substr($link_text, 0, 9) == "location:") {
+            $location_link = true;
+            $link_meta_ids[] = $link_text;
+            $link_meta_ids[] = "location:all";
+            $link_meta_ids[] = "location:".
+                crawlHash($site_url);
+        }
+        $link_type = UrlParser::getDocumentType($url);
+        $link_meta_ids[] = "media:all";
+        $link_meta_ids[] = "safe:all";
+        if(in_array($link_type, $IMAGE_TYPES)) {
+            $link_meta_ids[] = "media:image";
+            if(isset($safe) && !$safe) {
+                $link_meta_ids[] = "safe:false";
+            }
+        } else {
+            $link_meta_ids[] = "media:text";
+        }
+        $link_meta_ids[] = "link:all";
+        return $link_meta_ids;
+    }
+
 
     /**
      *  Scores documents according to the lack or nonlack of sexually explicit

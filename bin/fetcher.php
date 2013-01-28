@@ -2065,7 +2065,7 @@ class Fetcher implements CrawlConstants
                 } else {
                     $link_origin = $site_url;
                 }
-                $meta_ids = $this->calculateLinkMetas($site_url,
+                $meta_ids = PhraseParser::calculateLinkMetas($site_url,
                     $host, $site[self::DESCRIPTION], $link_origin);
             } else {
                 $is_link = false;
@@ -2074,7 +2074,8 @@ class Fetcher implements CrawlConstants
                 $doc_keys = crawlHash($site_url, true) .
                     $site[self::HASH]."d". substr(crawlHash(
                     $host."/",true), 1);
-                $meta_ids = $this->calculateMetas($site);
+                $meta_ids =  PhraseParser::calculateMetas($site,
+                    $this->video_sources);
             }
 
             $word_lists = array();
@@ -2083,7 +2084,8 @@ class Fetcher implements CrawlConstants
                 popular words
              */
             $lang = NULL;
-            if(!isset($site[self::JUST_METAS])) {
+            if(!isset($site[self::JUST_METAS]) || $site[self::JUST_METAS] !=
+                true) {
                 $host_words = UrlParser::getWordsIfHostUrl($site_url);
                 $path_words = UrlParser::getWordsLastPathPartUrl(
                     $site_url);
@@ -2177,7 +2179,7 @@ class Fetcher implements CrawlConstants
                     $link_word_lists =
                         PhraseParser::extractPhrasesInLists($link_text,
                         $lang, true);
-                    $link_meta_ids = $this->calculateLinkMetas($url,
+                    $link_meta_ids =  PhraseParser::calculateLinkMetas($url,
                         $link_host, $link_text, $site_url);
                     if(!isset($this->found_sites[self::INVERTED_INDEX][
                         $part_num])) {
@@ -2198,204 +2200,6 @@ class Fetcher implements CrawlConstants
             (changeInMicrotime($start_time)));
     }
 
-    /**
-     * Calculates the meta words to be associated with a given downloaded
-     * document. These words will be associated with the document in the
-     * index for (server:apache) even if the document itself did not contain
-     * them.
-     *
-     * @param array &$site associated array containing info about a downloaded
-     *      (or read from archive) document.
-     * @return array of meta words to be associate with this document
-     */
-    function calculateMetas(&$site)
-    {
-        $meta_ids = array();
-
-        // handles user added meta words
-        if(isset($site[self::META_WORDS])) {
-            $meta_ids = $site[self::META_WORDS];
-        }
-
-        /*
-            Handle the built-in meta words. For example
-            store the sites the doc_key belongs to,
-            so you can search by site
-        */
-        $url_sites = UrlParser::getHostPaths($site[self::URL]);
-        $url_sites = array_merge($url_sites,
-            UrlParser::getHostSubdomains($site[self::URL]));
-        $meta_ids[] = 'site:all';
-        foreach($url_sites as $url_site) {
-            if(strlen($url_site) > 0) {
-                $meta_ids[] = 'site:'.$url_site;
-            }
-        }
-        $path =  UrlParser::getPath($site[self::URL]);
-        if(strlen($path) > 0 ) {
-            $path_parts = explode("/", $path);
-            $pre_path = "";
-            $meta_ids[] = 'path:all';
-            $meta_ids[] = 'path:/';
-            foreach($path_parts as $part) {
-                if(strlen($part) > 0 ) {
-                    $pre_path .= "/$part";
-                    $meta_ids[] = 'path:'.$pre_path;
-                }
-            }
-        }
-
-        $meta_ids[] = 'info:'.$site[self::URL];
-        $meta_ids[] = 'info:'.crawlHash($site[self::URL]);
-        $meta_ids[] = 'code:all';
-        $meta_ids[] = 'code:'.$site[self::HTTP_CODE];
-        if(UrlParser::getHost($site[self::URL])."/" == $site[self::URL]) {
-            $meta_ids[] = 'host:all'; //used to count number of distinct hosts
-        }
-        if(isset($site[self::SIZE])) {
-            $meta_ids[] = "size:all";
-            $interval = DOWNLOAD_SIZE_INTERVAL;
-            $size = floor($site[self::SIZE]/$interval) * $interval;
-            $meta_ids[] = "size:$size";
-        }
-        if(isset($site[self::TOTAL_TIME])) {
-            $meta_ids[] = "time:all";
-            $interval = DOWNLOAD_TIME_INTERVAL;
-            $time = floor($site[self::TOTAL_TIME]/$interval) * $interval;
-            $meta_ids[] = "time:$time";
-        }
-        if(isset($site[self::DNS_TIME])) {
-            $meta_ids[] = "dns:all";
-            $interval = DOWNLOAD_TIME_INTERVAL;
-            $time = floor($site[self::DNS_TIME]/$interval) * $interval;
-            $meta_ids[] = "dns:$time";
-        }
-        if(isset($site[self::LINKS])) {
-            $num_links = count($site[self::LINKS]);
-            $meta_ids[] = "numlinks:all";
-            $meta_ids[] = "numlinks:$num_links";
-            $link_urls = array_keys($site[self::LINKS]);
-            $meta_ids[] = "link:all";
-            foreach($link_urls as $url) {
-                    $meta_ids[] = 'link:'.$url;
-                    $meta_ids[] = 'link:'.crawlHash($url);
-            }
-        }
-        if(isset($site[self::LOCATION]) && count($site[self::LOCATION]) > 0){
-            foreach($site[self::LOCATION] as $location) {
-                $meta_ids[] = 'info:'.$location;
-                $meta_ids[] = 'info:'.crawlHash($location);
-                $meta_ids[] = 'location:all';
-                $meta_ids[] = 'location:'.$location;
-            }
-        }
-
-        if(isset($site[self::IP_ADDRESSES]) ){
-            $meta_ids[] = 'ip:all';
-            foreach($site[self::IP_ADDRESSES] as $address) {
-                $meta_ids[] = 'ip:'.$address;
-            }
-        }
-
-        $meta_ids[] = 'media:all';
-        if(UrlParser::isVideoUrl($site[self::URL], $this->video_sources)) {
-            $meta_ids[] = "media:video";
-        } else {
-            $meta_ids[] = (stripos($site[self::TYPE], "image") !== false) ?
-                'media:image' : 'media:text';
-        }
-        // store the filetype info
-        $url_type = UrlParser::getDocumentType($site[self::URL]);
-        if(strlen($url_type) > 0) {
-            $meta_ids[] = 'filetype:all';
-            $meta_ids[] = 'filetype:'.$url_type;
-        }
-        if(isset($site[self::SERVER])) {
-            $meta_ids[] = 'server:all';
-            $meta_ids[] = 'server:'.strtolower($site[self::SERVER]);
-        }
-        if(isset($site[self::SERVER_VERSION])) {
-            $meta_ids[] = 'version:all';
-            $meta_ids[] = 'version:'.
-                $site[self::SERVER_VERSION];
-        }
-        if(isset($site[self::OPERATING_SYSTEM])) {
-            $meta_ids[] = 'os:all';
-            $meta_ids[] = 'os:'.strtolower($site[self::OPERATING_SYSTEM]);
-        }
-        if(isset($site[self::MODIFIED])) {
-            $modified = $site[self::MODIFIED];
-            $meta_ids[] = 'modified:all';
-            $meta_ids[] = 'modified:'.date('Y', $modified);
-            $meta_ids[] = 'modified:'.date('Y-m', $modified);
-            $meta_ids[] = 'modified:'.date('Y-m-d', $modified);
-        }
-        if(isset($site[self::TIMESTAMP])) {
-            $date = $site[self::TIMESTAMP];
-            $meta_ids[] = 'date:all';
-            $meta_ids[] = 'date:'.date('Y', $date);
-            $meta_ids[] = 'date:'.date('Y-m', $date);
-            $meta_ids[] = 'date:'.date('Y-m-d', $date);
-            $meta_ids[] = 'date:'.date('Y-m-d-H', $date);
-            $meta_ids[] = 'date:'.date('Y-m-d-H-i', $date);
-            $meta_ids[] = 'date:'.date('Y-m-d-H-i-s', $date);
-        }
-        if(isset($site[self::LANG])) {
-            $meta_ids[] = 'lang:all';
-            $lang_parts = explode("-", $site[self::LANG]);
-            $meta_ids[] = 'lang:'.$lang_parts[0];
-            if(isset($lang_parts[1])){
-                $meta_ids[] = 'lang:'.$site[self::LANG];
-            }
-        }
-        if(isset($site[self::AGENT_LIST])) {
-            foreach($site[self::AGENT_LIST] as $agent) {
-                $meta_ids[] = 'robot:'.strtolower($agent);
-            }
-        }
-        //Add all meta word for subdoctype
-        if(isset($site[self::SUBDOCTYPE])){
-            $meta_ids[] = $site[self::SUBDOCTYPE].':all';
-        }
-
-        return $meta_ids;
-    }
-
-    /**
-     * Used to compute all the meta ids for a given link with $url
-     * and $link_text that was on a site with $site_url.
-     *
-     * @param string $url url of the link
-     * @param string $link_host url of the host name of the link
-     * @param string $link_text text of the anchor tag link came from
-     * @param string $site_url url of the page link was on
-     */
-    function calculateLinkMetas($url, $link_host, $link_text, $site_url)
-    {
-        global $IMAGE_TYPES;
-        $link_meta_ids = array();
-        if(strlen($link_host) == 0) continue;
-        if(substr($link_text, 0, 9) == "location:") {
-            $location_link = true;
-            $link_meta_ids[] = $link_text;
-            $link_meta_ids[] = "location:all";
-            $link_meta_ids[] = "location:".
-                crawlHash($site_url);
-        }
-        $link_type = UrlParser::getDocumentType($url);
-        $link_meta_ids[] = "media:all";
-        $link_meta_ids[] = "safe:all";
-        if(in_array($link_type, $IMAGE_TYPES)) {
-            $link_meta_ids[] = "media:image";
-            if(isset($safe) && !$safe) {
-                $link_meta_ids[] = "safe:false";
-            }
-        } else {
-            $link_meta_ids[] = "media:text";
-        }
-        $link_meta_ids[] = "link:all";
-        return $link_meta_ids;
-    }
 }
 
 

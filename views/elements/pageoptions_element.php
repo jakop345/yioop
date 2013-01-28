@@ -58,7 +58,7 @@ class PageOptionsElement extends Element
         global $INDEXED_FILE_TYPES;
     ?>
         <div class="current-activity">
-        <form id="pageoptionsForm" method="get" action='?'>
+        <form id="pageoptionsForm" method="post" action='?'>
         <ul class='tab-menu-list'>
         <li><a href="javascript:
                 switchTab('crawltimetab', 'searchtimetab', 'testoptionstab');"
@@ -168,10 +168,10 @@ class PageOptionsElement extends Element
         <div class="top-margin"><b><label for="page-type"><?php
             e(tl('pageoptions_element_page_type'))?></label></b>
             <?php 
-            $types = array_keys($data['INDEXED_FILE_TYPES']);
+            $types = $data['MIME_TYPES'];
             $this->view->optionsHelper->render("page-type",
             "page_type", array_combine($types, $types),
-            "html");
+            $data["page_type"]);
             ?></div>
         <textarea class="tall-text-area" id="testpage"
             name="TESTPAGE" ><?php e($data['TESTPAGE']);
@@ -189,6 +189,29 @@ class PageOptionsElement extends Element
             }
             ?></button></div>
         </form>
+        <?php if($data['test_options_active'] != "") { ?>
+            <div id="test-results">
+            <h2><?php e(tl('pageoptions_element_test_results'))?></h2>
+            <?php
+            if(isset($data["AFTER_PAGE_PROCESS"])) {
+                e("<h3>".tl('pageoptions_element_after_process')."</h3>");
+                e("<pre>\n{$data['AFTER_PAGE_PROCESS']}\n</pre>");
+            }
+            if(isset($data["AFTER_RULE_PROCESS"])) {
+                e("<h3>".tl('pageoptions_element_after_rules')."</h3>");
+                e("<pre>\n{$data['AFTER_RULE_PROCESS']}\n</pre>");
+            }
+            if(isset($data["EXTRACTED_WORDS"])) {
+                e("<h3>".tl('pageoptions_element_extracted_words')."</h3>");
+                e("<pre>\n{$data['EXTRACTED_WORDS']}\n</pre>");
+            }
+            if(isset($data["EXTRACTED_META_WORDS"])) {
+                e("<h3>".tl('pageoptions_element_extracted_metas')."</h3>");
+                e("<pre>\n{$data['EXTRACTED_META_WORDS']}\n</pre>");
+            } ?>
+            </div>
+        <?php 
+        } ?>
         </div>
 
         <script type="text/javascript">
@@ -218,9 +241,11 @@ class PageOptionsElement extends Element
                 if(ctype.value == 'test_options') {
                     elt('page-button').innerHTML =
                         '<?php e(tl('pageoptions_element_run_tests')); ?>';
+                    elt('test-results').style.display = 'block';
                 } else {
                     elt('page-button').innerHTML =
                         '<?php e(tl('pageoptions_element_save_options')); ?>';
+                    elt('test-results').style.display = 'none';
                 }
             }
         }

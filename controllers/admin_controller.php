@@ -39,7 +39,12 @@ require_once BASE_DIR."/controllers/controller.php";
 require_once BASE_DIR."/lib/crawl_constants.php";
 /** Need get host for search filter admin */
 require_once BASE_DIR."/lib/url_parser.php";
-
+/** Used in rule parser test in page options */
+require_once BASE_DIR."/lib/page_rule_parser.php";
+/** get processors for different file types */
+foreach(glob(BASE_DIR."/lib/processors/*_processor.php") as $filename) {
+    require_once $filename;
+}
 /**
  * Controller used to handle admin functionalities such as
  * modify login and password, CREATE, UPDATE,DELETE operations
@@ -1546,11 +1551,115 @@ class AdminController extends Controller implements CrawlConstants
             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                 tl('admin_controller_page_options_updated')."</h1>')";
         }
+        $test_processors = array(
+            "text/html" => "HtmlProcessor",
+            "text/asp" => "HtmlProcessor",
+            "text/xml" => "XmlProcessor",
+            "text/robot" => "RobotProcessor",
+            "application/xml" => "XmlProcessor",
+            "application/xhtml+xml" => "HtmlProcessor",
+            "application/rss+xml" => "RssProcessor",
+            "text/rtf" => "RtfProcessor",
+            "text/plain" => "TextProcessor",
+            "text/csv" => "TextProcessor",
+            "text/tab-separated-values" => "TextProcessor",
+        );
+        $data['MIME_TYPES'] = array_keys($test_processors);
+        $data['page_type'] = "text/html";
+        if(isset($_REQUEST['page_type']) && in_array($_REQUEST['page_type'],
+            $data['MIME_TYPES'])) {
+            $data['page_type'] = $_REQUEST['page_type'];
+        }
         $data['TESTPAGE'] = (isset($_REQUEST['TESTPAGE'])) ?
             $this->clean($_REQUEST['TESTPAGE'], 'string') : "";
         if($data['option_type'] == 'test_options' && $data['TESTPAGE'] !="") {
             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                 tl('admin_controller_page_options_running_tests')."</h1>')";
+            $site = array();
+            $site[self::ENCODING] = "UTF-8";
+            $site[self::URL] = "http://test-site.yioop.com/";
+            $site[self::IP_ADDRESSES] = array("1.1.1.1");
+            $site[self::HTTP_CODE] = 200;
+            $site[self::MODIFIED] = date("U", strtotime(time()));
+            $site[self::TIMESTAMP] = time();
+            $site[self::TYPE] = "text/html";
+            $site[self::HEADER] = "page options test extractor";
+            $site[self::SERVER] = "unknown";
+            $site[self::SERVER_VERSION] = "unknown";
+            $site[self::OPERATING_SYSTEM] = "unknown";
+            $site[self::LANG] = 'en';
+            $site[self::JUST_METAS] = false;
+            if(isset($_REQUEST['page_type']) && 
+                in_array($_REQUEST['page_type'], $data['MIME_TYPES'])) {
+                $site[self::TYPE] = $_REQUEST['page_type'];
+            }
+            $processor_name = $test_processors[$site[self::TYPE]];
+            $page_processor = new $processor_name();
+            $doc_info = $page_processor->handle($_REQUEST['TESTPAGE'],
+                $site[self::URL]);
+            foreach($doc_info as $key => $value) {
+                $site[$key] = $value;
+            }
+            if(isset($site[self::PAGE])) {
+                unset($site[self::PAGE]);
+            }
+            if(isset($site[self::ROBOT_PATHS])) {
+                $site[self::JUST_METAS] = true;
+            }
+            $reflect = new ReflectionClass("CrawlConstants");
+            $crawl_constants = $reflect->getConstants();
+            $crawl_keys = array_keys($crawl_constants);
+            $crawl_values = array_values($crawl_constants);
+            $inverse_constants = array_combine($crawl_values, $crawl_keys);
+            $after_process = array();
+            foreach($site as $key => $value) {
+                $out_key = (isset($inverse_constants[$key])) ?
+                    $inverse_constants[$key] : $key;
+                $after_process[$out_key] = $value;
+            }
+            $data["AFTER_PAGE_PROCESS"] = wordwrap($this->clean(
+                print_r($after_process, true), "string"), 75, "\n", true);
+            $rule_string = implode("\n", $seed_info['page_rules']['rule']);
+            $rule_string = html_entity_decode($rule_string, ENT_QUOTES);
+            $page_rule_parser = 
+                new PageRuleParser($rule_string);
+            $page_rule_parser->executeRuleTrees($site);
+            $after_process = array();
+            foreach($site as $key => $value) {
+                $out_key = (isset($inverse_constants[$key])) ?
+                    $inverse_constants[$key] : $key;
+                $after_process[$out_key] = $value;
+            }
+            $data["AFTER_RULE_PROCESS"] = wordwrap($this->clean(
+                print_r($after_process, true), "string"), 75, "\n", true);
+            $lang = NULL;
+            if(isset($site[self::LANG])) {
+                $lang = $site[self::LANG];
+            }
+            $meta_ids = PhraseParser::calculateMetas($site);
+            if(!$site[self::JUST_METAS]) {
+                $host_words = UrlParser::getWordsIfHostUrl($site[self::URL]);
+                $path_words = UrlParser::getWordsLastPathPartUrl(
+                    $site[self::URL]);
+                $phrase_string = $host_words." ".$site[self::TITLE] .
+                    " ". $path_words . " ". $site[self::DESCRIPTION];
+                $word_lists =
+                    PhraseParser::extractPhrasesInLists($phrase_string,
+                        $lang, true);
+                $len = strlen($phrase_string);
+                if(PhraseParser::computeSafeSearchScore($word_lists, $len) <
+                    0.012) {
+                    $meta_ids[] = "safe:true";
+                    $safe = true;
+                } else {
+                    $meta_ids[] = "safe:false";
+                    $safe = false;
+                }
+            }
+            $data["EXTRACTED_WORDS"] = wordwrap($this->clean(
+                print_r($word_lists, true), "string"), 75, "\n", true);;
+            $data["EXTRACTED_META_WORDS"] = wordwrap($this->clean(
+                print_r($meta_ids, true), "string"), 75, "\n", true);
         }
         return $data;
     }

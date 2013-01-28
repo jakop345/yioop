@@ -1589,6 +1589,11 @@ ul.in-list li
     font-size: 12pt;
 }
 
+.current-activity pre
+{
+    font-size: 10pt;
+}
+
 .html-ltr .role-table,
 .html-ltr .role-table td,
 .html-ltr .role-table th
