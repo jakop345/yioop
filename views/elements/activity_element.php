@@ -79,7 +79,7 @@ class ActivityElement extends Element
                     "activity", "a", $out_activities,  $current);
                 ?>
                 <script type="text/javascript">
-                activity_select = elt('activity');
+                activity_select = document.getElementById('activity');
                 function activityChange() {
                     document.location = activity_select.value;
                 }

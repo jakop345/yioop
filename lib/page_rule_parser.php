@@ -235,7 +235,8 @@ class PageRuleParser implements CrawlConstants
 
     /**
      *  Unsets the key $field (or the crawl constant it corresponds to) 
-     *  in $page_data
+     *  in $page_data. If it is a crawlconstant it doesn't unset it --
+     *  it just sets it to the empty string
      *
      *  @param $field the key in $page_data to use
      *  @param array &$page_data an associative array of containing summary
@@ -243,7 +244,12 @@ class PageRuleParser implements CrawlConstants
      */
     function unsetVariable($field, &$page_data)
     {
-        unset($page_data[$this->getVarField($field)]);
+        $var_field = $this->getVarField($field);
+        if($var_field == $field) {
+            unset($page_data[$var_field]);
+        } else {
+            $page_data[$var_field] = "";
+        }
     }
 
     /**

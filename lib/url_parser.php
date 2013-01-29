@@ -486,7 +486,7 @@ class UrlParser
      */
     static function getDocumentType($url)
     {
-
+        if($url == "") { return "html"; }
         $url_parts = @parse_url($url);
 
         if(!isset($url_parts['path'])) {

@@ -1580,7 +1580,7 @@ class AdminController extends Controller implements CrawlConstants
             $site[self::URL] = "http://test-site.yioop.com/";
             $site[self::IP_ADDRESSES] = array("1.1.1.1");
             $site[self::HTTP_CODE] = 200;
-            $site[self::MODIFIED] = date("U", strtotime(time()));
+            $site[self::MODIFIED] = date("U", time());
             $site[self::TIMESTAMP] = time();
             $site[self::TYPE] = "text/html";
             $site[self::HEADER] = "page options test extractor";
