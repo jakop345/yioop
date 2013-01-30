@@ -587,6 +587,14 @@ class IndexDictionary implements CrawlConstants
         $word_item_len = IndexShard::WORD_ITEM_LEN;
         $word_data_len = $word_item_len - $word_key_len;
         $file_num = ord($word_id[0]);
+        /*
+            Entries for a particular shard have postings for both
+            docs and links. If an entry has more than max_entry_len
+            we will assume entry somehow got corrupted and skip that
+            generation for that word. Because we are including link have
+            set threshold to 5 * number of docs that could be in a shard
+         */
+        $max_entry_count = 5 * NUM_DOCS_PER_GENERATION;
 
         $prefix = ord($word_id[1]);
         $prefix_info = $this->getDictSubstring($file_num,
@@ -634,7 +642,10 @@ class IndexDictionary implements CrawlConstants
         $word_string = substr($word_string, $word_key_len);
         if($extract) {
             $info = array();
-            $info[0] = IndexShard::getWordInfoFromString($word_string, true);
+            $tmp = IndexShard::getWordInfoFromString($word_string, true);
+            if($tmp[3] < $max_entry_count) {
+                $info[0] = $tmp;
+            }
         } else {
             $info = $word_string;
         }
@@ -666,7 +677,9 @@ class IndexDictionary implements CrawlConstants
             $ws = substr($word_string, $word_key_len);
             if($extract) {
                 $tmp = IndexShard::getWordInfoFromString($ws, true);
-                array_push($info, $tmp);
+                if($tmp[3] < $max_entry_count) {
+                    array_push($info, $tmp);
+                }
             } else {
                 $info = $ws . $info;
             }
@@ -693,7 +706,9 @@ class IndexDictionary implements CrawlConstants
             $ws = substr($word_string, $word_key_len);
             if($extract) {
                 $tmp = IndexShard::getWordInfoFromString($ws, true);
-                array_unshift($info, $tmp);
+                if($tmp[3] < $max_entry_count) {
+                    array_unshift($info, $tmp);
+                }
             } else {
                 $info .= $ws;
             }

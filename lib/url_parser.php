@@ -491,7 +491,7 @@ class UrlParser
 
         if(!isset($url_parts['path'])) {
             return "html"; //we default to html
-        } else if ($url[strlen($url) - 1] == "/"||$url[strlen($url) - 1]=="\\"){
+        } else if ($url[strlen($url)-1] == "/" || $url[strlen($url)-1] == "\\"){
             return "html";
         } else {
             $path_parts = pathinfo($url_parts['path']);
