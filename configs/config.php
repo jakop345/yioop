@@ -322,9 +322,6 @@ define('ARCHIVE_LOCK_TIMEOUT', 8);
 /** time in seconds before we give up on multi page requests*/
 define('PAGE_TIMEOUT', 30);
 
-/** time in seconds before we give up on a page */
-define('SINGLE_PAGE_TIMEOUT', 60);
-
 /**
  *  Number of error page 400 or greater seen from a host before crawl-delay
  *  host and dump remainder from current schedule

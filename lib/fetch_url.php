@@ -502,7 +502,7 @@ class FetchUrl implements CrawlConstants
         curl_setopt($agents[$host], CURLOPT_NOSIGNAL, true);
         curl_setopt($agents[$host], CURLOPT_RETURNTRANSFER, true);
         curl_setopt($agents[$host], CURLOPT_FAILONERROR, true);
-        curl_setopt($agents[$host], CURLOPT_TIMEOUT, SINGLE_PAGE_TIMEOUT);
+        curl_setopt($agents[$host], CURLOPT_TIMEOUT, PAGE_TIMEOUT);
         curl_setopt($agents[$host], CURLOPT_CONNECTTIMEOUT, PAGE_TIMEOUT);
         //make lighttpd happier
         curl_setopt($agents[$host], CURLOPT_HTTPHEADER, array('Expect:'));

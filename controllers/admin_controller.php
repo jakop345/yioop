@@ -776,6 +776,10 @@ class AdminController extends Controller implements CrawlConstants
                     $crawl_params[self::STATUS] = "RESUME_CRAWL";
                     $crawl_params[self::CRAWL_TIME] =
                         $this->clean($_REQUEST['timestamp'], "int");
+                    $seed_info = $this->crawlModel->getCrawlSeedInfo(
+                        $crawl_params[self::CRAWL_TIME], $machine_urls);
+                    $this->getCrawlParametersFromSeedInfo($crawl_params,
+                        $seed_info);
                     /*
                         we only set crawl time. Other data such as allowed sites
                         should come from index.
@@ -826,7 +830,7 @@ class AdminController extends Controller implements CrawlConstants
      * @param array $machine_urls string urls of machines managed by this
      *  Yioop name server on which to perform the crawl
      */
-    function startCrawl(&$data, $machine_urls)
+    function startCrawl(&$data, $machine_urls, $seed_info = NULL)
     {
         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
             tl('admin_controller_starting_new_crawl')."</h1>')";
@@ -835,6 +839,38 @@ class AdminController extends Controller implements CrawlConstants
         $crawl_params[self::STATUS] = "NEW_CRAWL";
         $crawl_params[self::CRAWL_TIME] = time();
         $seed_info = $this->crawlModel->getSeedInfo();
+        $this->getCrawlParametersFromSeedInfo($crawl_params, $seed_info);
+        if(isset($_REQUEST['description'])) {
+            $description = $this->clean($_REQUEST['description'], "string");
+        } else {
+            $description = tl('admin_controller_no_description');
+        }
+        $crawl_params['DESCRIPTION'] = $description;
+        $crawl_params[self::VIDEO_SOURCES] = array();
+        $sources =
+            $this->sourceModel->getMediaSources('video');
+        foreach($sources as $source) {
+            $url = $source['SOURCE_URL'];
+            $url_parts = explode("{}", $url);
+            $crawl_params[self::VIDEO_SOURCES][] = $url_parts[0];
+        }
+
+        /*
+           Write the new crawl parameters to the name server, so
+           that it can pass them along in the case of a new archive
+           crawl.
+        */
+        $filename = CRAWL_DIR.
+            "/schedules/name_server_messages.txt";
+        file_put_contents($filename, serialize($crawl_params));
+        chmod($filename, 0777);
+
+        $this->crawlModel->sendStartCrawlMessage($crawl_params,
+            $seed_info, $machine_urls);
+    }
+
+    function getCrawlParametersFromSeedInfo(&$crawl_params, $seed_info)
+    {
         $crawl_params[self::CRAWL_TYPE] = $seed_info['general']['crawl_type'];
         $crawl_params[self::CRAWL_INDEX] =
             (isset($seed_info['general']['crawl_index'])) ?
@@ -873,33 +909,6 @@ class AdminController extends Controller implements CrawlConstants
             $crawl_params[self::INDEXED_FILE_TYPES] =
                 $seed_info['indexed_file_types']['extensions'];
         }
-        if(isset($_REQUEST['description'])) {
-            $description = $this->clean($_REQUEST['description'], "string");
-        } else {
-            $description = tl('admin_controller_no_description');
-        }
-        $crawl_params['DESCRIPTION'] = $description;
-        $crawl_params[self::VIDEO_SOURCES] = array();
-        $sources =
-            $this->sourceModel->getMediaSources('video');
-        foreach($sources as $source) {
-            $url = $source['SOURCE_URL'];
-            $url_parts = explode("{}", $url);
-            $crawl_params[self::VIDEO_SOURCES][] = $url_parts[0];
-        }
-
-        /*
-           Write the new crawl parameters to the name server, so
-           that it can pass them along in the case of a new archive
-           crawl.
-        */
-        $filename = CRAWL_DIR.
-            "/schedules/name_server_messages.txt";
-        file_put_contents($filename, serialize($crawl_params));
-        chmod($filename, 0777);
-
-        $this->crawlModel->sendStartCrawlMessage($crawl_params,
-            $seed_info, $machine_urls);
     }
 
     /**

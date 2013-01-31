@@ -708,8 +708,9 @@ class QueueServer implements CrawlConstants, Join
 
                 case "RESUME_CRAWL":
                     if(isset($info[self::CRAWL_TIME]) &&
-                        file_exists(CRAWL_DIR.'/cache/'.
-                            self::queue_base_name.$info[self::CRAWL_TIME])) {
+                        (file_exists(CRAWL_DIR.'/cache/'.
+                        self::queue_base_name.$info[self::CRAWL_TIME]) ||
+                        $info[self::CRAWL_TYPE] == self::ARCHIVE_CRAWL) ) {
                         if($old_info[self::STATUS] == self::CONTINUE_STATE) {
                             if(!$is_scheduler) {
                                 crawlLog("Resuming old crawl...".

@@ -957,10 +957,10 @@ class WebQueueBundle implements Notifier
     {
         $robot_archive_name = $this->dir_name."/robot_archive".
             NonCompressor::fileExtension();
-        unlink($this->dir_name."/got_robottxt.ftr");
-        unlink($this->dir_name."/crawl_delay.ftr");
-        unlink($this->dir_name."/robot.dat");
-        unlink($robot_archive_name);
+        @unlink($this->dir_name."/got_robottxt.ftr");
+        @unlink($this->dir_name."/crawl_delay.ftr");
+        @unlink($this->dir_name."/robot.dat");
+        @unlink($robot_archive_name);
         $this->crawl_delay_table = array();
 
         file_put_contents($this->dir_name."/robot_timestamp.txt", time());

@@ -90,7 +90,13 @@ class MediaWikiArchiveBundleIterator extends TextArchiveBundleIterator
     implements CrawlConstants
 {
 
-
+   /**
+    * Used to store the hash of the last page processed. If see hash
+    * assume there was a problem with processing all the regexes in the
+    * last nextPage call and so this time do less regexes.
+    * @var string
+    */
+    var $last_hash = "";
 
     /**
      * Creates a media wiki archive iterator with the given parameters.
@@ -310,8 +316,25 @@ class MediaWikiArchiveBundleIterator extends TextArchiveBundleIterator
     function restoreCheckPoint()
     {
         $info = parent::restoreCheckPoint();
+        if(isset($info["last_hash"])) {
+            $this->last_hash = $info["last_hash"];
+        }
         $this->initializeSubstitutions();
         return $info;
+    }
+
+    /**
+     * Stores the current progress to the file iterate_status.txt in the result
+     * dir such that a new instance of the iterator could be constructed and
+     * return the next set of pages without having to process all of the pages
+     * that came before. Each iterator should make a call to saveCheckpoint
+     * after extracting a batch of pages.
+     * @param array $info any extra info a subclass wants to save
+     */
+    function saveCheckPoint($info=array())
+    {
+        $info["last_hash"] = $this->last_hash;
+        parent::saveCheckPoint($info);
     }
 
     /**
@@ -341,7 +364,8 @@ class MediaWikiArchiveBundleIterator extends TextArchiveBundleIterator
      */
     function nextPage($no_process = false)
     {
-        static $i = 0;
+        static $minimal_regexes = false;
+        
         if(is_null($this->bz2_iterator)) {
             return NULL;
         }
@@ -371,19 +395,26 @@ class MediaWikiArchiveBundleIterator extends TextArchiveBundleIterator
             WIKI_PAGE_STYLES . "\n</head>\n".
             "<body><h1>$pre_url</h1>\n";
         $pre_page = $this->getTextContent($dom, "/page/revision/text");
+        $current_hash = crawlHash($pre_page);
+        if($this->last_hash == $current_hash) {
+            $minimal_regexes = true;
+        }
+        $this->last_hash = $current_hash;
         $toc = $this->makeTableOfContents($pre_page);
+        if(!$minimal_regexes) {
         list($pre_page, $references) = $this->makeReferences($pre_page);
-        $pre_page = preg_replace_callback('/(\A|\n){\|(.*?)\n\|}/s',
-            "makeTableCallback", $pre_page);
-        $pre_page = preg_replace($this->matches, $this->replaces, $pre_page);
-        $pre_page = preg_replace("/{{Other uses}}/i", 
-                "<div class='indent'>\"$1\". (<a href='".
-                $site[self::URL]. "_(disambiguation)'>$pre_url</a>)</div>",
-                $pre_page);
-        $pre_page = preg_replace_callback("/((href=)\"([^\"]+)\")/",
-            "fixLinksCallback", $pre_page);
+            $pre_page = preg_replace_callback('/(\A|\n){\|(.*?)\n\|}/s',
+                "makeTableCallback", $pre_page);
+            $pre_page = preg_replace($this->matches, $this->replaces,$pre_page);
+            $pre_page = preg_replace("/{{Other uses}}/i", 
+                    "<div class='indent'>\"$1\". (<a href='".
+                    $site[self::URL]. "_(disambiguation)'>$pre_url</a>)</div>",
+                    $pre_page);
+            $pre_page = preg_replace_callback("/((href=)\"([^\"]+)\")/",
+                "fixLinksCallback", $pre_page);
+            $pre_page = $this->insertReferences($pre_page, $references);
+        }
         $pre_page = $this->insertTableOfContents($pre_page, $toc);
-        $pre_page = $this->insertReferences($pre_page, $references);
         $site[self::PAGE] .= $pre_page;
         $site[self::PAGE] .= "\n</body>\n</html>";
 
@@ -589,6 +620,8 @@ class MediaWikiArchiveBundleIterator extends TextArchiveBundleIterator
 }
 
 /**
+ * Callback used by a preg_replace_callback in nextPage to make a table
+ * @param array $matches of table cells
  */
 function makeTableCallback($matches)
 {
