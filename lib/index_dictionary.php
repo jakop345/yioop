@@ -645,6 +645,8 @@ class IndexDictionary implements CrawlConstants
             $tmp = IndexShard::getWordInfoFromString($word_string, true);
             if($tmp[3] < $max_entry_count) {
                 $info[0] = $tmp;
+                $previous_generation = $tmp[0];
+                $remember_generation = $previous_generation;
             }
         } else {
             $info = $word_string;
@@ -677,8 +679,23 @@ class IndexDictionary implements CrawlConstants
             $ws = substr($word_string, $word_key_len);
             if($extract) {
                 $tmp = IndexShard::getWordInfoFromString($ws, true);
-                if($tmp[3] < $max_entry_count) {
+                /*
+                   In the extract case we are doing two checks designed to
+                   enhance fault tolerance. Both rely on the fact we have
+                   parsed the word string. The first check is that the number
+                   of entries for the word id is fewer than what could be stored
+                   in a shard (sanity check). The second is that the generation
+                   of one entry for a word id is always different from the next.
+                   If they are the same it means the crawl was stopped several
+                   times within one shard and each time merged with the
+                   dictionary. Only the last such save has useful data.
+                 */
+                if($tmp[3] < $max_entry_count ) {
+                    if($previous_generation == $tmp[0]) {
+                        array_pop($info);
+                    }
                     array_push($info, $tmp);
+                    $previous_generation = $tmp[0];
                 }
             } else {
                 $info = $ws . $info;
@@ -687,6 +704,7 @@ class IndexDictionary implements CrawlConstants
         //until last record with word id
 
         $test_loc = $check_loc + 1;
+        $previous_generation = $remember_generation;
 
         $break_count = 0;
         while ($test_loc <= $high) {
@@ -706,8 +724,10 @@ class IndexDictionary implements CrawlConstants
             $ws = substr($word_string, $word_key_len);
             if($extract) {
                 $tmp = IndexShard::getWordInfoFromString($ws, true);
-                if($tmp[3] < $max_entry_count) {
+                if($tmp[3] < $max_entry_count && 
+                    $previous_generation != $tmp[0]) {
                     array_unshift($info, $tmp);
+                    $previous_generation = $tmp[0];
                 }
             } else {
                 $info .= $ws;

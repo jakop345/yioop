@@ -1193,7 +1193,8 @@ class QueueServer implements CrawlConstants, Join
         }
         $files = glob(CRAWL_DIR.'/schedules/*');
         $names_dir = array(self::schedule_data_base_name,
-            self::index_data_base_name, self::robot_data_base_name);
+            self::index_data_base_name, self::robot_data_base_name,
+            self::archive_iterator);
         $name_files = array(self::schedule_name, self::index_closed_name);
         $names = array_merge($name_files, $names_dir);
         foreach($files as $file) {

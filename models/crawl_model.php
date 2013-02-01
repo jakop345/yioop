@@ -518,6 +518,12 @@ EOT;
                 $index_info[self::CRAWL_INDEX] : '';
             $seed_info['general']["crawl_order"] =
                 $index_info[self::CRAWL_ORDER];
+            $seed_info['general']["arc_dir"] = 
+                (isset($index_info[self::ARC_DIR])) ?
+                $index_info[self::ARC_DIR] : '';
+            $seed_info['general']["arc_type"] = 
+                (isset($index_info[self::ARC_TYPE])) ?
+                $index_info[self::ARC_TYPE] : '';
             $site_types = array(
                 "allowed_sites" => self::ALLOWED_SITES,
                 "disallowed_sites" => self::DISALLOWED_SITES,

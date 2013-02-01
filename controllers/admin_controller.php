@@ -780,10 +780,15 @@ class AdminController extends Controller implements CrawlConstants
                         $crawl_params[self::CRAWL_TIME], $machine_urls);
                     $this->getCrawlParametersFromSeedInfo($crawl_params,
                         $seed_info);
-                    /*
-                        we only set crawl time. Other data such as allowed sites
-                        should come from index.
+                   /*
+                       Write the new crawl parameters to the name server, so
+                       that it can pass them along in the case of a new archive
+                       crawl.
                     */
+                    $filename = CRAWL_DIR.
+                        "/schedules/name_server_messages.txt";
+                    file_put_contents($filename, serialize($crawl_params));
+                    chmod($filename, 0777);
                     $this->crawlModel->sendStartCrawlMessage($crawl_params,
                         NULL, $machine_urls);
                 break;
@@ -869,6 +874,9 @@ class AdminController extends Controller implements CrawlConstants
             $seed_info, $machine_urls);
     }
 
+    /**
+     *
+     */
     function getCrawlParametersFromSeedInfo(&$crawl_params, $seed_info)
     {
         $crawl_params[self::CRAWL_TYPE] = $seed_info['general']['crawl_type'];

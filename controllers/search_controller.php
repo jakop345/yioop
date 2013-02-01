@@ -1724,7 +1724,8 @@ class SearchController extends Controller implements CrawlConstants
                 $crawl_item[$field] = (isset($crawl_item[$field])) ?
                     $crawl_item[$field] : "";
             }
-            $robot_instance = $crawl_item[self::ROBOT_INSTANCE];
+            $robot_instance = isset($crawl_item[self::ROBOT_INSTANCE]) ?
+                $crawl_item[self::ROBOT_INSTANCE]: '';
             $robot_table_name = CRAWL_DIR."/".self::robot_table_name;
             $robot_table = array();
             if(file_exists($robot_table_name)) {

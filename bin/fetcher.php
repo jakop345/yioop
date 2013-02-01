@@ -453,7 +453,6 @@ class Fetcher implements CrawlConstants
                 if(isset($info[self::STATUS]) &&
                     $info[self::STATUS] == self::STOP_STATE) {continue;}
             }
-
             $switch_fetch_or_no_current = $this->checkCrawlTime();
             if($switch_fetch_or_no_current) {  /* case(1) */
                 crawlLog("MAIN LOOP CASE 1 --".
@@ -972,6 +971,7 @@ class Fetcher implements CrawlConstants
             $name_server."?c=fetch&a=archiveSchedule&time=$time".
             "&session=$session&robot_instance=".$prefix.ROBOT_INSTANCE.
             "&machine_uri=".WEB_URI."&crawl_time=".$this->crawl_time;
+
         $response_string = FetchUrl::getPage($request);
         if($response_string === false) {
             crawlLog("The following request failed:");
