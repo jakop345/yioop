@@ -515,7 +515,13 @@ class FetchUrl implements CrawlConstants
             curl_setopt($agents[$host], CURLOPT_HTTPGET, true);
         }
         crawlLog("  Set curl options for single page request");
+        $time = time();
         $response = curl_exec($agents[$host]);
+        if(time() - $time > PAGE_TIMEOUT) {
+            crawlLog("  Request took longer than page timeout!!");
+            crawlLog("  Either could not reach URL or website took too");
+            crawlLog("  long to respond.");
+        }
         curl_setopt($agents[$host], CURLOPT_POSTFIELDS, "");
         crawlLog("  Done curl exec");
         return $response;

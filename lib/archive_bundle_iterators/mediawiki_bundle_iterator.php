@@ -365,7 +365,8 @@ class MediaWikiArchiveBundleIterator extends TextArchiveBundleIterator
     function nextPage($no_process = false)
     {
         static $minimal_regexes = false;
-        
+        static $first_call = true;
+
         if(is_null($this->bz2_iterator)) {
             return NULL;
         }
@@ -400,6 +401,10 @@ class MediaWikiArchiveBundleIterator extends TextArchiveBundleIterator
             $minimal_regexes = true;
         }
         $this->last_hash = $current_hash;
+        if($first_call) {
+            $this->saveCheckPoint(); //ensure we remember to advance one on fail
+            $first_call = false;
+        }
         $toc = $this->makeTableOfContents($pre_page);
         if(!$minimal_regexes) {
         list($pre_page, $references) = $this->makeReferences($pre_page);
