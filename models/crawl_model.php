@@ -889,7 +889,7 @@ EOT;
             $dirs = glob(CRAWL_DIR.'/cache/archives/*', GLOB_ONLYDIR);
             foreach($dirs as $dir) {
                 $crawl = array();
-                $crawl['CRAWL_TIME'] = strval(filectime($dir));
+                $crawl['CRAWL_TIME'] = crc32($dir);
                 $crawl['DESCRIPTION'] = "ARCFILE::";
                 $crawl['ARC_DIR'] = $dir;
                 $ini_file = "$dir/arc_description.ini";
@@ -907,7 +907,6 @@ EOT;
                 $list[] = $crawl;
             }
         }
-
         return $list;
     }
 

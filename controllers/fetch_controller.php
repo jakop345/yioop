@@ -207,22 +207,18 @@ class FetchController extends Controller implements CrawlConstants
         }
 
         $pages = array();
-        if($fetch_pages) {
+        $got_lock = true;
+        if(file_exists($lock_filename)) {
+            $lock_time = unserialize(file_get_contents($lock_filename));
+            if($request_start - $lock_time < 2 * ini_get('max_execution_time')){
+                $got_lock = false;
+            }
+        }
+        if($fetch_pages && $got_lock) {
+            file_put_contents($lock_filename, serialize($request_start));
             $archive_iterator = NULL;
-            /* Start by trying to acquire an exclusive lock on the iterator
-               lock file, so that the same batch of pages isn't extracted more
-               than once.  For now the call to acquire the lock blocks, so that
-                fetchers will queue up. If the time between requesting the lock
-               and acquiring it is greater than ARCHIVE_LOCK_TIMEOUT then we
-               give up on this request and try back later.
-             */
-            $lock_fd = fopen($lock_filename, 'w');
-            $have_lock = flock($lock_fd, LOCK_EX);
-            $elapsed_time = time() - $request_start;
-
-            if($have_lock && $elapsed_time <= ARCHIVE_LOCK_TIMEOUT &&
-                    ($info[self::ARC_DIR] == "MIX" ||
-                    file_exists($info[self::ARC_DIR]))) {
+            if($info[self::ARC_DIR] == "MIX" ||
+                    file_exists($info[self::ARC_DIR])) {
                 $iterate_timestamp = $info[self::CRAWL_INDEX];
                 $result_timestamp = $crawl_time;
                 $result_dir = WORK_DIRECTORY.
@@ -248,11 +244,7 @@ class FetchController extends Controller implements CrawlConstants
                 $pages = $archive_iterator->nextPages(
                     ARCHIVE_BATCH_SIZE);
             }
-
-            if($have_lock) {
-                flock($lock_fd, LOCK_UN);
-            }
-            fclose($lock_fd);
+            @unlink($lock_filename);
         }
         if(!empty($pages)) {
             $pages_string = webencode(gzcompress(serialize($pages)));
