@@ -210,7 +210,7 @@ class FetchController extends Controller implements CrawlConstants
         $got_lock = true;
         if(file_exists($lock_filename)) {
             $lock_time = unserialize(file_get_contents($lock_filename));
-            if($request_start - $lock_time < 2 * ini_get('max_execution_time')){
+            if($request_start - $lock_time < ini_get('max_execution_time')){
                 $got_lock = false;
             }
         }
