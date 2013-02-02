@@ -347,10 +347,22 @@ class GroupIterator extends IndexBundleIterator
         }
         // delete all except highest scoring group with given hash
         foreach($this->current_seen_hashes as $hash => $url_data) {
+            if(count($url_data) == 1) continue;
             arsort($url_data);
-            array_shift($url_data);
+            $first_time = true;
             foreach($url_data as $hash_url => $value) {
-                unset($pre_out_pages[$hash_url]);
+                if($first_time) {
+                    $first_hash_url = $hash_url;
+                } else {
+                    $pre_out_pages[$first_hash_url][0][self::DOC_RANK] +=
+                        $pre_out_pages[$hash_url][0][self::DOC_RANK];
+                    $pre_out_pages[$first_hash_url][0][self::RELEVANCE] +=
+                        $pre_out_pages[$hash_url][0][self::RELEVANCE];
+                    $pre_out_pages[$first_hash_url][0][self::PROXIMITY] = max(
+                        $pre_out_pages[$first_hash_url][0][self::PROXIMITY],
+                        $pre_out_pages[$hash_url][0][self::PROXIMITY]);
+                    unset($pre_out_pages[$hash_url]);
+                }
             }
         }
     }
@@ -511,9 +523,8 @@ class GroupIterator extends IndexBundleIterator
                 $min = ($current_rank < $min ) ? $current_rank : $min;
                 $max = ($max < $current_rank ) ? $current_rank : $max;
                 $alpha = $relevance_boost * $domain_weights[$hash_host];
-                $sum_score += $hash_page[self::DOC_RANK]
-                    * $alpha * pow(1.1,$hash_page[self::RELEVANCE]) *
-                    $hash_page[self::PROXIMITY];
+                $sum_score += $alpha * $hash_page[self::DOC_RANK];
+                    
                 $sum_rank += $alpha * $hash_page[self::DOC_RANK];
                 $sum_relevance += $alpha * $hash_page[self::RELEVANCE];
                 $max_proximity = max($max_proximity,
@@ -524,6 +535,11 @@ class GroupIterator extends IndexBundleIterator
 
         $pre_hash_page[0][self::MIN] = $min;
         $pre_hash_page[0][self::MAX] = $max;
+        /* if two pages have the same hash HASH_SUM_SCORE used to determine
+           which url is assumed to be the correct one (the other will be
+           deleted). It doesn't show up as part of the final scores one
+           sees on SERP pages.
+         */
         $pre_hash_page[0][self::HASH_SUM_SCORE] = $sum_score;
 
         $pre_hash_page[0][self::DOC_RANK] = $sum_rank;
