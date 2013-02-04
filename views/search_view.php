@@ -84,7 +84,6 @@ class SearchView extends View implements CrawlConstants
             ?>
 
         </div>
-
         <?php
         }
         $logo = "resources/yioop.png";

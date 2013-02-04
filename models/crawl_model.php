@@ -508,38 +508,39 @@ EOT;
                 return $seed_info;
             }
             $index_info = unserialize($info['DESCRIPTION']);
-            $seed_info['general']["restrict_sites_by_url"] =
-                $index_info[self::RESTRICT_SITES_BY_URL];
-            $seed_info['general']["crawl_type"] =
-                (isset($index_info[self::CRAWL_TYPE])) ?
-                $index_info[self::CRAWL_TYPE] : self::WEB_CRAWL;
-            $seed_info['general']["crawl_index"] =
-                (isset($index_info[self::CRAWL_INDEX])) ?
-                $index_info[self::CRAWL_INDEX] : '';
-            $seed_info['general']["crawl_order"] =
-                $index_info[self::CRAWL_ORDER];
-            $seed_info['general']["arc_dir"] = 
-                (isset($index_info[self::ARC_DIR])) ?
-                $index_info[self::ARC_DIR] : '';
-            $seed_info['general']["arc_type"] = 
-                (isset($index_info[self::ARC_TYPE])) ?
-                $index_info[self::ARC_TYPE] : '';
-            $site_types = array(
-                "allowed_sites" => self::ALLOWED_SITES,
-                "disallowed_sites" => self::DISALLOWED_SITES,
-                "seed_sites" => self::TO_CRAWL
+            $general_params = array("restrict_sites_by_url" =>
+                array(self::RESTRICT_SITES_BY_URL, false),
+                "crawl_type" => array(self::CRAWL_TYPE, self::WEB_CRAWL),
+                "crawl_index" => array(self::CRAWL_INDEX, ''),
+                "crawl_order" => array(self::CRAWL_ORDER,
+                    self::PAGE_IMPORTANCE),
+                "arc_dir" => array(self::ARC_DIR, ''),
+                "arc_type" => array(self::ARC_TYPE, ''),
+                "page_recrawl_frequency" => array(self::PAGE_RECRAWL_FREQUENCY,
+                    -1),
+                "page_range_request" => array(self::PAGE_RANGE_REQUEST,
+                    PAGE_RANGE_REQUEST),
             );
-            foreach($site_types as $type => $code) {
-                if(isset($index_info[$code])) {
-                    $tmp = & $index_info[$code];
+            foreach($general_params as $param => $info) {
+                $seed_info['general'][$param] = (isset($index_info[$info[0]])) ?
+                    $index_info[$info[0]] : $info[1];
+            }
+
+            $site_types = array(
+                "allowed_sites" => array(self::ALLOWED_SITES, "url"),
+                "disallowed_sites" => array(self::DISALLOWED_SITES, "url"),
+                "seed_sites" => array(self::TO_CRAWL, "url"),
+                "page_rules" => array(self::PAGE_RULES, "rule"),
+                "indexed_file_types" => array(self::INDEXED_FILE_TYPES, 
+                    "extensions"),
+            );
+            foreach($site_types as $type => $info) {
+                if(isset($index_info[$info[0]])) {
+                    $tmp = & $index_info[$info[0]];
                 } else {
                     $tmp = array();
                 }
-                $seed_info[$type]['url'] =  $tmp;
-            }
-            $seed_info['meta_words'] = array();
-            if(isset($index_info[self::META_WORDS]) ) {
-                $seed_info['meta_words'] = $index_info[self::META_WORDS];
+                $seed_info[$type][$info[1]] =  $tmp;
             }
             if(isset($index_info[self::INDEXING_PLUGINS])) {
                 $seed_info['indexing_plugins']['plugins'] =
@@ -550,7 +551,8 @@ EOT;
     }
 
     /**
-     * Changes the crawl parameters of an existing crawl
+     * Changes the crawl parameters of an existing crawl (can be while crawling)
+     * Not all fields are allowed to be updated
      *
      * @param string $timestamp timestamp of the crawl to change
      * @param array $new_info the new parameters
@@ -573,16 +575,16 @@ EOT;
                     $new_info['general']["restrict_sites_by_url"];
             }
             $updatable_site_info = array(
-                "allowed_sites" => self::ALLOWED_SITES,
-                "disallowed_sites" => self::DISALLOWED_SITES
+                "allowed_sites" => array(self::ALLOWED_SITES,'url'),
+                "disallowed_sites" => array(self::DISALLOWED_SITES, 'url'),
+                "page_rules" => array(self::PAGE_RULES, 'rule'),
+                "indexed_file_types" => array(self::INDEXED_FILE_TYPES, 
+                    "extensions")
             );
-            foreach($updatable_site_info as $type => $code) {
+            foreach($updatable_site_info as $type => $info) {
                 if(isset($new_info[$type])) {
-                    $index_info[$code] = $new_info[$type]['url'];
+                    $index_info[$info[0]] = $new_info[$type][$info[1]];
                 }
-            }
-            if(isset($new_info['meta_words']) ) {
-                $index_info[self::META_WORDS] = $new_info['meta_words'];
             }
             if(isset($new_info['indexing_plugins']) ) {
                 $index_info[self::INDEXING_PLUGINS] =

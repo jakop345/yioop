@@ -1061,8 +1061,8 @@ class Fetcher implements CrawlConstants
         if(isset($info[self::CRAWL_ORDER])) {
             $this->crawl_order = $info[self::CRAWL_ORDER];
         }
-        if(isset($info[self::PAGE_RULES]['rule']) ){
-            $rule_string = implode("\n", $info[self::PAGE_RULES]['rule']);
+        if(isset($info[self::PAGE_RULES]) ){
+            $rule_string = implode("\n", $info[self::PAGE_RULES]);
             $rule_string = html_entity_decode($rule_string, ENT_QUOTES);
             $this->page_rule_parser = 
                 new PageRuleParser($rule_string);

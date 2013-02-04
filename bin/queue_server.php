@@ -1769,6 +1769,10 @@ class QueueServer implements CrawlConstants, Join
         $stat_file = CRAWL_DIR."/schedules/crawl_status.txt";
         if(file_exists($stat_file) ) {
             $crawl_status = unserialize(file_get_contents($stat_file));
+            if(!isset($crawl_status['CRAWL_TIME']) ||
+                $crawl_status['CRAWL_TIME'] != $this->crawl_time) {
+                $crawl_status = array(); // status of some other crawl
+            }
         }
         $crawl_status['MOST_RECENT_FETCHER'] = $this->most_recent_fetcher;
         if(isset($sites[self::RECENT_URLS])) {
@@ -1780,13 +1784,14 @@ class QueueServer implements CrawlConstants, Join
         $index_archive_info = unserialize($info_bundle['DESCRIPTION']);
         $crawl_status['COUNT'] = $info_bundle['COUNT'];
         $now = time();
-        if(count($this->hourly_crawl_data) > 0 ) {
+        $change_in_time = 3601;
+        while (count($this->hourly_crawl_data) > 0 && $change_in_time > 3600) {
             $least_recent_hourly_pair = array_pop($this->hourly_crawl_data);
             $change_in_time =
                 ($now - $least_recent_hourly_pair[0]);
-            if($change_in_time <= 3600) {
-                $this->hourly_crawl_data[] = $least_recent_hourly_pair;
-            }
+        }
+        if($change_in_time <= 3600) {
+            $this->hourly_crawl_data[] = $least_recent_hourly_pair;
         }
         array_unshift($this->hourly_crawl_data,
             array($now, $info_bundle['VISITED_URLS_COUNT']));

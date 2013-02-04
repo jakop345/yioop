@@ -526,9 +526,11 @@ class ArcTool implements CrawlConstants
                 echo "   $site\n";
             }
         }
-        echo "Meta Words:\n";
-        foreach($info[self::META_WORDS] as $word) {
-            echo "   $word\n";
+        echo "Page Rules:\n";
+        if(isset($info[self::PAGE_RULES])) {
+            foreach($info[self::PAGE_RULES] as $rule) {
+                echo "   $rule\n";
+            }
         }
         echo "\n";
     }

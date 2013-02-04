@@ -407,7 +407,7 @@ class MediaWikiArchiveBundleIterator extends TextArchiveBundleIterator
         }
         $toc = $this->makeTableOfContents($pre_page);
         if(!$minimal_regexes) {
-        list($pre_page, $references) = $this->makeReferences($pre_page);
+            list($pre_page, $references) = $this->makeReferences($pre_page);
             $pre_page = preg_replace_callback('/(\A|\n){\|(.*?)\n\|}/s',
                 "makeTableCallback", $pre_page);
             $pre_page = preg_replace($this->matches, $this->replaces,$pre_page);

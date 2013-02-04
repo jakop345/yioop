@@ -84,6 +84,11 @@ class PageOptionsElement extends Element
             e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="pageOptions" />
         <div id='crawltimetab'>
+        <div class="top-margin"><label for="load-options"><b><?php
+            e(tl('pageoptions_element_load_options'))?></b></label><?php
+            $this->view->optionsHelper->render("load-options", "load_option",
+                $data['available_options'], $data['options_default']);
+        ?></div>
         <div class="top-margin"><b><label for="page-range-request"><?php
             e(tl('pageoptions_element_page_range'))?></label></b>
             <?php $this->view->optionsHelper->render("page-range-request",
@@ -100,8 +105,9 @@ class PageOptionsElement extends Element
        </div>
        <table class="file-types-all"><tr>
        <?php $cnt = 0;
+             $num_types_per_column = ceil(count($data['INDEXED_FILE_TYPES'])/3);
              foreach ($data['INDEXED_FILE_TYPES'] as $filetype => $checked) {
-                 if($cnt % 10 == 0) {
+                 if($cnt % $num_types_per_column == 0) {
                     ?><td><table class="file-types-table" ><?php
                  }
        ?>
@@ -112,12 +118,12 @@ class PageOptionsElement extends Element
             </tr>
        <?php
                 $cnt++;
-                if($cnt % 10 == 0) {
+                if($cnt % $num_types_per_column == 0) {
                     ?></table></td><?php
                 }
             }?>
         <?php
-            if($cnt % 10 != 0) {
+            if($cnt % $num_types_per_column != 0) {
                 ?></table></td><?php
             }
         ?>

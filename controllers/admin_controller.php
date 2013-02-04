@@ -907,7 +907,7 @@ class AdminController extends Controller implements CrawlConstants
             isset($seed_info['disallowed_sites']['url']) ?
             $seed_info['disallowed_sites']['url'] : array();
         $crawl_params[self::PAGE_RULES] = isset($seed_info['page_rules']) ?
-            $seed_info['page_rules'] : array();
+            $seed_info['page_rules']['rule'] : array();
 
         if(isset($seed_info['indexing_plugins']['plugins'])) {
             $crawl_params[self::INDEXING_PLUGINS] =
@@ -1439,14 +1439,100 @@ class AdminController extends Controller implements CrawlConstants
     function pageOptions()
     {
         global $INDEXED_FILE_TYPES;
+        $data["ELEMENT"] = "pageoptionsElement";
+        $data['SCRIPT'] = "";
+        $machine_urls = $this->machineModel->getQueueServerUrls();
+        $num_machines = count($machine_urls);
+        if($num_machines <  1 || ($num_machines ==  1 &&
+            UrlParser::isLocalhostUrl($machine_urls[0]))) {
+            $machine_urls = NULL;
+        }
+        $data['available_options'] = array(
+            tl('admin_controller_use_below'),
+            tl('admin_controller_use_defaults'));
+        $crawls = $this->crawlModel->getCrawlList(false, true, $machine_urls);
+        $data['options_default'] = tl('admin_controller_use_below');
+        foreach($crawls as $crawl) {
+            if(strlen($crawl['DESCRIPTION']) > 0 ) {
+                $data['available_options'][$crawl['CRAWL_TIME']] =
+                    tl('admin_controller_previous_crawl')." ".
+                    $crawl['DESCRIPTION'];
+            }
+        }
         $seed_info = $this->crawlModel->getSeedInfo();
+        $data['RECRAWL_FREQS'] = array(-1=>tl('admin_controller_recrawl_never'),
+            1=>tl('admin_controller_recrawl_1day'),
+            2=>tl('admin_controller_recrawl_2day'),
+            3=>tl('admin_controller_recrawl_3day'),
+            7=>tl('admin_controller_recrawl_7day'),
+            14=>tl('admin_controller_recrawl_14day'));
+        $data['SIZE_VALUES'] = array(10000=>10000, 50000=>50000,
+            100000=>100000, 500000=>500000, 1000000=>1000000,
+            5000000=>5000000, 10000000=>10000000);
 
         if(!isset($seed_info["indexed_file_types"]["extensions"])) {
             $seed_info["indexed_file_types"]["extensions"] =
                 $INDEXED_FILE_TYPES;
         }
-        $data["ELEMENT"] = "pageoptionsElement";
-        $data['SCRIPT'] = "";
+        $loaded = false;
+        if(isset($_REQUEST['load_option']) &&
+            $_REQUEST['load_option'] > 0) {
+            if($_REQUEST['load_option'] == 1) {
+                $seed_loaded = $this->crawlModel->getSeedInfo(true);
+            } else {
+                $timestamp = $this->clean($_REQUEST['load_option'], "int");
+                $seed_loaded = $this->crawlModel->getCrawlSeedInfo(
+                    $timestamp, $machine_urls);
+            }
+            if(isset($seed_loaded["indexed_file_types"]["extensions"])) {
+                $seed_info["indexed_file_types"]["extensions"] = 
+                    $seed_loaded["indexed_file_types"]["extensions"];
+            }
+            if(isset($seed_loaded["general"]["page_recrawl_frequency"])) {
+                $seed_info["general"]["page_recrawl_frequency"] = 
+                    $seed_loaded["general"]["page_recrawl_frequency"];
+            }
+            if(isset($seed_loaded["general"]["page_range_request"])) {
+                $seed_info["general"]["page_range_request"] = 
+                    $seed_loaded["general"]["page_range_request"];
+            }
+            if(isset($seed_loaded['page_rules'])) {
+                $seed_info['page_rules'] = 
+                    $seed_loaded['page_rules'];
+            }
+            $update_flag = true;
+            $loaded = true;
+        } else {
+            $seed_info = $this->crawlModel->getSeedInfo();
+            if(isset($_REQUEST["page_recrawl_frequency"]) &&
+                in_array($_REQUEST["page_recrawl_frequency"],
+                    array_keys($data['RECRAWL_FREQS']))) {
+                $seed_info["general"]["page_recrawl_frequency"] =
+                    $_REQUEST["page_recrawl_frequency"];
+            }
+            if(isset($_REQUEST["page_range_request"]) &&
+                in_array($_REQUEST["page_range_request"],$data['SIZE_VALUES'])){
+                $seed_info["general"]["page_range_request"] =
+                    $_REQUEST["page_range_request"];
+            }
+            if(isset($_REQUEST['page_rules'])) {
+                $seed_info['page_rules']['rule'] =
+                    $this->convertStringCleanArray(
+                    $_REQUEST['page_rules'], 'rule');
+                    $update_flag = true;
+            }
+        }
+        if(!isset($seed_info["general"]["page_recrawl_frequency"])) {
+            $seed_info["general"]["page_recrawl_frequency"] =
+                PAGE_RECRAWL_FREQUENCY;
+        }
+        $data['PAGE_RECRAWL_FREQUENCY'] =
+            $seed_info["general"]["page_recrawl_frequency"];
+        if(!isset($seed_info["general"]["page_range_request"])) {
+            $seed_info["general"]["page_range_request"] = PAGE_RANGE_REQUEST;
+        }
+        $data['PAGE_SIZE'] = $seed_info["general"]["page_range_request"];
+
         $profile =  $this->profileModel->getProfile(WORK_DIRECTORY);
         $weights = array('TITLE_WEIGHT' => 4,
             'DESCRIPTION_WEIGHT' => 1, 'LINK_WEIGHT' => 2,
@@ -1466,47 +1552,17 @@ class AdminController extends Controller implements CrawlConstants
                 $change = true;
             }
         }
-        $data['RECRAWL_FREQS'] = array(-1=>tl('admin_controller_recrawl_never'),
-            1=>tl('admin_controller_recrawl_1day'),
-            2=>tl('admin_controller_recrawl_2day'),
-            3=>tl('admin_controller_recrawl_3day'),
-            7=>tl('admin_controller_recrawl_7day'),
-            14=>tl('admin_controller_recrawl_14day'));
-        if(isset($_REQUEST["page_recrawl_frequency"]) &&
-            in_array($_REQUEST["page_recrawl_frequency"],
-                array_keys($data['RECRAWL_FREQS']))) {
-            $seed_info["general"]["page_recrawl_frequency"] =
-                $_REQUEST["page_recrawl_frequency"];
-        }
-        if(!isset($seed_info["general"]["page_recrawl_frequency"])) {
-            $seed_info["general"]["page_recrawl_frequency"] =
-                PAGE_RECRAWL_FREQUENCY;
-        }
-        $data['PAGE_RECRAWL_FREQUENCY'] =
-            $seed_info["general"]["page_recrawl_frequency"];
 
         if($change == true) {
             $this->profileModel->updateProfile(WORK_DIRECTORY, array(),
                 $profile);
         }
-        $data['SIZE_VALUES'] = array(10000=>10000, 50000=>50000,
-            100000=>100000, 500000=>500000, 1000000=>1000000,
-            5000000=>5000000, 10000000=>10000000);
         $data['INDEXED_FILE_TYPES'] = array();
-        if(isset($_REQUEST["page_range_request"]) &&
-            in_array($_REQUEST["page_range_request"], $data['SIZE_VALUES'])) {
-            $seed_info["general"]["page_range_request"] =
-                $_REQUEST["page_range_request"];
-        }
-        if(!isset($seed_info["general"]["page_range_request"])) {
-            $seed_info["general"]["page_range_request"] = PAGE_RANGE_REQUEST;
-        }
-        $data['PAGE_SIZE'] = $seed_info["general"]["page_range_request"];
 
         $filetypes = array();
         foreach($INDEXED_FILE_TYPES as $filetype) {
             $ison =false;
-            if(isset($_REQUEST["filetype"])) {
+            if(isset($_REQUEST["filetype"]) && !$loaded) {
                 if(isset($_REQUEST["filetype"][$filetype])) {
                     $filetypes[] = $filetype;
                     $ison = true;
@@ -1524,12 +1580,7 @@ class AdminController extends Controller implements CrawlConstants
         }
         $seed_info["indexed_file_types"]["extensions"] = $filetypes;
 
-        if(isset($_REQUEST['page_rules'])) {
-            $seed_info['page_rules']['rule'] =
-                $this->convertStringCleanArray(
-                $_REQUEST['page_rules'], 'rule');
-                $update_flag = true;
-        }
+
         if(isset($seed_info['page_rules']['rule'])) {
             $data['page_rules'] = $this->convertArrayLines(
                 $seed_info['page_rules']['rule']);
