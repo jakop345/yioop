@@ -1155,7 +1155,7 @@ class AdminController extends Controller implements CrawlConstants
      * @param array $arr the array of lines to be process
      * @param string $endline_string what string should be used to indicate
      *      the end of a line
-     * @param bool $clean whether tot clean each line
+     * @param bool $clean whether to clean each line
      * @return string a concatenated string of cleaned lines
      */
     function convertArrayLines($arr, $endline_string="\n", $clean = false)

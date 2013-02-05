@@ -63,7 +63,10 @@ class SourceModel extends Model
     const ONE_HOUR = 3600;
 
     /** Maximum number of tries to completely copy over old shard on delete */
-    const MAX_COPY_TRIES = 5;
+    const MAX_COPY_TRIES = 10;
+
+    /** Maximum length of time update/delete news scripts can run in seconds*/
+    const MAX_EXECUTION_TIME = 10;
 
     /**
      * Just calls the parent class constructor
@@ -356,6 +359,8 @@ class SourceModel extends Model
             $nodes = $dom->getElementsByTagName('item');
             $rss_elements = array("title", "description", "link", "guid",
                 "pubDate");
+            $max_time = min(self::MAX_EXECUTION_TIME,
+                ini_get('max_execution_time')/3);
             foreach($nodes as $node) {
                 $item = array();
                 foreach($rss_elements as $element) {
@@ -367,7 +372,7 @@ class SourceModel extends Model
                 }
                 $this->addFeedItemIfNew($item, $feed_shard,
                     $feed['NAME'], $lang, $age);
-                if(time() - $time > ini_get('max_execution_time')/3) {
+                if(time() - $time > $max_time) {
                     break 2; // running out of time better save shard
                 }
             }
@@ -437,6 +442,8 @@ class SourceModel extends Model
         $result = $db->execute($sql);
         if($result) {
             $completed = true;
+            $max_time = min(self::MAX_EXECUTION_TIME,
+                ini_get('max_execution_time')/3);
             while($item = $db->fetchArray($result)) {
                 if(!isset($item['SOURCE_NAME'])) continue;
                 $source_name = $item['SOURCE_NAME'];
@@ -456,7 +463,7 @@ class SourceModel extends Model
                     $source_name, $item["GUID"]);
                 $prune_shard->addDocumentWords($doc_keys, $item['PUBDATE'],
                     $word_lists, $meta_ids, true, false);
-                if(time() - $time > ini_get('max_execution_time')/3) {
+                if(time() - $time > $max_time) {
                     $info['start_pubdate'] = $item['PUBDATE'];
                     $info['copy_tries']++;
                     if($info['copy_tries'] < self::MAX_COPY_TRIES) {
