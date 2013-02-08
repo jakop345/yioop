@@ -197,6 +197,11 @@ class QueueServer implements CrawlConstants, Join
     var $indexed_file_types;
     /**
      *
+     * @var bool
+     */
+    var $cache_pages;
+    /**
+     *
      * @var array
      */
     var $page_rules;
@@ -312,6 +317,7 @@ class QueueServer implements CrawlConstants, Join
         $this->hourly_crawl_data = array();
         $this->archive_modified_time = 0;
         $this->crawl_time = 0;
+        $this->cache_pages = true;
         $this->page_recrawl_frequency = PAGE_RECRAWL_FREQUENCY;
         $this->page_range_request = PAGE_RANGE_REQUEST;
         $this->server_type = self::BOTH;
@@ -949,6 +955,7 @@ class QueueServer implements CrawlConstants, Join
             "crawl_order" => self::CRAWL_ORDER,
             "crawl_type" => self::CRAWL_TYPE,
             "crawl_index" => self::CRAWL_INDEX,
+            "cache_pages" => self::CACHE_PAGES,
             "page_range_request" => self::PAGE_RANGE_REQUEST,
             "page_recrawl_frequency" => self::PAGE_RECRAWL_FREQUENCY,
             "indexed_file_types" => self::INDEXED_FILE_TYPES,
@@ -1116,6 +1123,7 @@ class QueueServer implements CrawlConstants, Join
             "page_range_request" => self::PAGE_RANGE_REQUEST,
             "page_recrawl_frequency" => self::PAGE_RECRAWL_FREQUENCY,
             "restrict_sites_by_url" => self::RESTRICT_SITES_BY_URL,
+            "cache_pages" => self::CACHE_PAGES,
             "allowed_sites" => self::ALLOWED_SITES,
             "disallowed_sites" => self::DISALLOWED_SITES,
             "page_rules" => self::PAGE_RULES,
@@ -1846,6 +1854,7 @@ class QueueServer implements CrawlConstants, Join
         $sites[self::CRAWL_ORDER] = $this->crawl_order;
         $sites[self::CRAWL_TYPE] = $this->crawl_type;
         $sites[self::CRAWL_INDEX] = $this->crawl_index;
+        $sites[self::CACHE_PAGES] = $this->cache_pages;
         $sites[self::PAGE_RULES] = $this->page_rules;
         $sites[self::INDEXING_PLUGINS] =  $this->indexing_plugins;
         $sites[self::VIDEO_SOURCES] = $this->video_sources;

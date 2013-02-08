@@ -63,7 +63,7 @@ class SourceModel extends Model
     const ONE_HOUR = 3600;
 
     /** Maximum number of tries to completely copy over old shard on delete */
-    const MAX_COPY_TRIES = 10;
+    const MAX_COPY_TRIES = 5;
 
     /** Maximum length of time update/delete news scripts can run in seconds*/
     const MAX_EXECUTION_TIME = 10;

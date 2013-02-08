@@ -313,6 +313,12 @@ class Fetcher implements CrawlConstants
     var $crawl_index;
 
     /**
+     * Whether to cache pages or just the summaries
+     * @var bool
+     */
+    var $cache_pages;
+
+    /**
      * Which fetcher instance we are (if fetcher run as a job and more that one)
      * @var string
      */
@@ -395,6 +401,7 @@ class Fetcher implements CrawlConstants
         $this->sum_seen_site_link_length = 0;
         $this->num_seen_sites = 0;
         $this->no_process_links = false;
+        $this->cache_pages = true;
         $this->post_max_size = self::DEFAULT_POST_MAX_SIZE;
 
         //we will get the correct crawl order from a queue_server
@@ -818,7 +825,6 @@ class Fetcher implements CrawlConstants
                 $this->arc_dir = '';
                 $this->arc_type = '';
             }
-
             // Load any batch that might exist for changed-to crawl
             if(file_exists("$dir/$prefix".self::fetch_crawl_info.
                 "{$this->crawl_time}.txt") && file_exists(
@@ -1060,6 +1066,9 @@ class Fetcher implements CrawlConstants
         }
         if(isset($info[self::CRAWL_ORDER])) {
             $this->crawl_order = $info[self::CRAWL_ORDER];
+        }
+        if(isset($info[self::CACHE_PAGES])) {
+            $this->cache_pages= $info[self::CACHE_PAGES];
         }
         if(isset($info[self::PAGE_RULES]) ){
             $rule_string = implode("\n", $info[self::PAGE_RULES]);
@@ -1444,9 +1453,11 @@ class Fetcher implements CrawlConstants
 
         $num_pages = count($stored_site_pages);
 
-        if($num_pages > 0) {
+        if($num_pages > 0 && $this->cache_pages) {
             $cache_page_partition = $this->web_archive->addPages(
                 self::OFFSET, $stored_site_pages);
+        } else if ($num_pages > 0) {
+            $this->web_archive->addCount(count($stored_site_pages));
         }
 
         for($i = 0; $i < $num_pages; $i++) {

@@ -94,6 +94,16 @@ class PageOptionsElement extends Element
             <?php $this->view->optionsHelper->render("page-range-request",
             "page_range_request", $data['SIZE_VALUES'], $data['PAGE_SIZE']);
             ?></div>
+        <div class="top-margin"><b><label for="cache-pages"><?php
+            e(tl('pageoptions_element_save_cache'))?>
+            </label><input 
+            id='cache-pages' type="checkbox" name="cache_pages" 
+            value="true"
+            <?php if(isset($data['CACHE_PAGES']) && $data['CACHE_PAGES']) {
+                e("checked='checked'");
+             }?>
+            />
+        </div>
         <div class="top-margin"><b><label for="allow-recrawl"><?php
             e(tl('pageoptions_element_allow_recrawl'))?></label></b>
             <?php $this->view->optionsHelper->render("page-recrawl-frequency",
@@ -137,6 +147,67 @@ class PageOptionsElement extends Element
         </div>
 
         <div id='searchtimetab'>
+        <h2><?php e(tl('page_element_search_page'))?></h2>
+        <table class="search-page-all"><tr><td>
+        <table class="search-page-table">
+        <tr>
+        <td><label for="wd-suggest"><?php 
+            e(tl('pageoptions_element_wd_suggest')); ?></label></td>
+            <td><input id='wd-suggest' type="checkbox"
+            name="WORD_SUGGEST" value="true"
+            <?php if(isset($data['WORD_SUGGEST']) &&
+                $data['WORD_SUGGEST']){
+                e("checked='checked'");}?>
+            /></td></tr>
+        <tr><td><label for="subsearch-link"><?php 
+            e(tl('pageoptions_element_subsearch_link'));?></label></td><td>
+            <input id='subsearch-link'
+            type="checkbox" name="SUBSEARCH_LINK" value="true"
+            <?php if(isset($data['SUBSEARCH_LINK']) &&
+                $data['SUBSEARCH_LINK']){
+                e("checked='checked'");}?>
+            /></td>
+        </tr>
+        <tr><td><label for="signin-link"><?php 
+            e(tl('pageoptions_element_signin_link')); ?></label></td><td>
+            <input id='signin-link' type="checkbox"
+            name="SIGNIN_LINK" value="true"
+            <?php if(isset($data['SIGNIN_LINK']) &&
+                $data['SIGNIN_LINK']){ e("checked='checked'");}?>
+            />
+        </td></tr>
+        <tr><td><?php e(tl('pageoptions_element_cache_link')); ?></label>
+        </td><td><label for="cache-link"><input id='cache-link' type="checkbox"
+            name="CACHE_LINK" value="true"
+            <?php if(isset($data['CACHE_LINK']) && $data['CACHE_LINK']){
+                e("checked='checked'");}?>
+            /></td></tr>
+        </table></td>
+        <td><table class="search-page-table">
+        <tr><td><?php e(tl('pageoptions_element_similar_link')); ?></label></td>
+        <td><label for="similar-link"><input id='similar-link'
+            type="checkbox" name="SIMILAR_LINK" value="true"
+            <?php if(isset($data['SIMILAR_LINK']) &&
+                $data['SIMILAR_LINK']){
+                e("checked='checked'");}?>
+            /></td>
+        </tr>
+        <tr><td><?php e(tl('pageoptions_element_in_link')); ?></label></td>
+        <td><label for="in-link"><input id='in-link' type="checkbox"
+            name="IN_LINK" value="true"
+            <?php if(isset($data['IN_LINK']) && $data['IN_LINK']){
+                e("checked='checked'");}?>
+            /></td></tr>
+        <tr><td><?php e(tl('pageoptions_element_ip_link')); ?></label></td>
+        <td><label for="ip-link"><input id='ip-link' type="checkbox"
+            name="IP_LINK" value="true"
+            <?php if(isset($data['IP_LINK']) && $data['IP_LINK']){
+                e("checked='checked'");}?>
+            /></td>
+        </tr>
+        </table></td>
+        </tr></table>
+        <h2><?php e(tl('pageoptions_element_ranking_factors'))?></h2>
         <table class="weights-table" >
         <tr><th><label for="title-weight"><?php
             e(tl('pageoptions_element_title_weight'))?></label></th><td>

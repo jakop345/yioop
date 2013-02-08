@@ -93,6 +93,8 @@ class ConfigureElement extends Element
                 e($data['WORK_DIRECTORY']); ?>" />
         <?php }?>
         <input type="hidden" name="c" value="admin" />
+        <input type="hidden" name="advanced" id='a-settings' value="<?php 
+            e($data['advanced']); ?>" />
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="configure" />
@@ -102,6 +104,8 @@ class ConfigureElement extends Element
         <?php e($data['SYSTEM_CHECK']); ?>
         </div>
         <h2><?php e(tl('configure_element_profile_settings'))?></h2>
+        <div class="top-margin">[<a href="javascript:toggleAdvance()"><?php 
+            e(tl('configure_element_toggle_advanced')); ?></a>]</div>
         <div class="bold">
         <div class="top-margin"><span <?php if(!MOBILE) { ?>
             style="position:relative; top:-3.2em;" <?php } ?>><label
@@ -110,6 +114,7 @@ class ConfigureElement extends Element
         <?php $this->view->languageElement->render($data); ?>
         </div>
         <?php if($data['PROFILE']) { ?>
+            <div id="advance-configure">
             <div class="top-margin">
             <fieldset class="extra-wide-field"><legend><?php
                 e(tl('configure_element_debug_display'))?></legend>
@@ -188,49 +193,6 @@ class ConfigureElement extends Element
                 </div>
             </fieldset>
             </div>
-            <div class="top-margin">
-            <fieldset><legend><?php
-                e(tl('configure_element_search_page'))?></legend>
-                <label for="wd-suggest"><input id='wd-suggest' type="checkbox"
-                    name="WORD_SUGGEST" value="true"
-                    <?php if(isset($data['WORD_SUGGEST']) &&
-                        $data['WORD_SUGGEST']){
-                        e("checked='checked'");}?>
-                    /><?php e(tl('configure_element_wd_suggest')); ?></label>
-                <label for="subsearch-link"><input id='subsearch-link'
-                    type="checkbox" name="SUBSEARCH_LINK" value="true"
-                    <?php if(isset($data['SUBSEARCH_LINK']) &&
-                        $data['SUBSEARCH_LINK']){
-                        e("checked='checked'");}?>
-                    /><?php e(tl('configure_element_subsearch_link'));?></label>
-                <label for="signin-link"><input id='signin-link' type="checkbox"
-                    name="SIGNIN_LINK" value="true"
-                    <?php if(isset($data['SIGNIN_LINK']) &&
-                        $data['SIGNIN_LINK']){ e("checked='checked'");}?>
-                    /><?php e(tl('configure_element_signin_link')); ?></label>
-                <label for="cache-link"><input id='cache-link' type="checkbox"
-                    name="CACHE_LINK" value="true"
-                    <?php if(isset($data['CACHE_LINK']) && $data['CACHE_LINK']){
-                        e("checked='checked'");}?>
-                    /><?php e(tl('configure_element_cache_link')); ?></label>
-              <label for="similar-link"><input id='similar-link' type="checkbox"
-                    name="SIMILAR_LINK" value="true"
-                    <?php if(isset($data['SIMILAR_LINK']) &&
-                        $data['SIMILAR_LINK']){
-                        e("checked='checked'");}?>
-                    /><?php e(tl('configure_element_similar_link')); ?></label>
-                <label for="in-link"><input id='in-link' type="checkbox"
-                    name="IN_LINK" value="true"
-                    <?php if(isset($data['IN_LINK']) && $data['IN_LINK']){
-                        e("checked='checked'");}?>
-                    /><?php e(tl('configure_element_in_link')); ?></label>
-                <label for="ip-link"><input id='ip-link' type="checkbox"
-                    name="IP_LINK" value="true"
-                    <?php if(isset($data['IP_LINK']) && $data['IP_LINK']){
-                        e("checked='checked'");}?>
-                    /><?php e(tl('configure_element_ip_link')); ?></label>
-            </fieldset>
-            </div>
             <div class="top-margin"><fieldset><legend><?php
                 e(tl('configure_element_name_server'))?></legend>
                 <div ><b><label for="queue-fetcher-salt"><?php
@@ -269,6 +231,7 @@ class ConfigureElement extends Element
                 </div>
             </fieldset>
             </div>
+            </div>
             <div class="top-margin"><fieldset><legend><?php
                 e(tl('configure_element_crawl_robot'))?></legend>
                 <div><b><label for="crawl-robot-name"><?php
@@ -278,7 +241,7 @@ class ConfigureElement extends Element
                         value="<?php e($data['USER_AGENT_SHORT']); ?>"
                         class="extra-wide-field" />
                 </div>
-                <div class="top-margin"><b><label
+                <div class="top-margin" id='advance-robot'><b><label
                     for="crawl-robot-instance"><?php
                     e(tl('configure_element_robot_instance'))?></label></b>
                     <input type="text" id="crawl-robot-instance"

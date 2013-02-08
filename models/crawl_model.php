@@ -386,6 +386,9 @@ class CrawlModel extends ParallelModel implements CrawlConstants
         if(!isset($info["general"]["arc_type"])) {
             $info["general"]["arc_type"] = "";
         }
+        if(!isset($info["general"]["cache_pages"])) {
+            $info["general"]["cache_pages"] = true;
+        }
         $n = array();
         $n[] = <<<EOT
 ; ***** BEGIN LICENSE BLOCK *****
@@ -427,7 +430,9 @@ EOT;
             $info['general']['page_recrawl_frequency']."';";
         $n[] = "page_range_request = '".
             $info['general']['page_range_request']."';";
-
+        $bool_string =
+            ($info['general']['cache_pages']) ? "true" : "false";
+        $n[] = "cache_pages = $bool_string;";
         $bool_string =
             ($info['general']['restrict_sites_by_url']) ? "true" : "false";
         $n[] = "restrict_sites_by_url = $bool_string;";
@@ -482,7 +487,7 @@ EOT;
             !$this->isSingleLocalhost($machine_urls, $timestamp)) {
             /* seed info should be same amongst all queue_servers that have it--
                only start schedule differs -- however, not all queue_servers
-               necessarily have the same crawls. THus, we still query all
+               necessarily have the same crawls. Thus, we still query all
                machines in case only one has it.
              */
             $a_list = $this->execMachines("getCrawlSeedInfo",
@@ -516,6 +521,7 @@ EOT;
                     self::PAGE_IMPORTANCE),
                 "arc_dir" => array(self::ARC_DIR, ''),
                 "arc_type" => array(self::ARC_TYPE, ''),
+                "cache_pages" => array(self::CACHE_PAGES, true),
                 "page_recrawl_frequency" => array(self::PAGE_RECRAWL_FREQUENCY,
                     -1),
                 "page_range_request" => array(self::PAGE_RANGE_REQUEST,

@@ -211,6 +211,7 @@ interface CrawlConstants
     const POST_MAX_SIZE = 'ck';
     const LOGGING = 'cl';
     const META_WORDS = 'cm';
+    const CACHE_PAGES = 'cn';
 
     const NEEDS_OFFSET_FLAG = 0x7FFFFFFF;
 

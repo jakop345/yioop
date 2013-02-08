@@ -1675,6 +1675,8 @@ ul.in-list li
 .mixes-table,
 .mixes-table td,
 .mixes-table th,
+.search-page-table,
+.search-page-table td,
 .search-sources-table,
 .search-sources-table td,
 .search-sources-table th
@@ -1684,21 +1686,27 @@ ul.in-list li
 }
 
 .html-ltr .file-types-table,
-.html-ltr .file-types-all td
+.html-ltr .file-types-all td,
+.html-ltr .search-page-table,
+.html-ltr .search-page-all td
 {
    margin-left: 0.3in;
    vertical-align: top;
 }
 
 .html-rtl .file-types-table,
-.html-rtl .file-types-all td
+.html-rtl .file-types-all td,
+.html-rtl .search-page-table,
+.html-rtl .search-page-all td
 {
    margin-right: 0.3in;
    vertical-align: top;
 }
 
 .mobile .file-types-table,
-.mobile .file-types-all td
+.mobile .file-types-all td,
+.mobile .search-page-table,
+.mobile .search-page-all td
 {
    margin-left: 2px;
    margin-right: 2px;

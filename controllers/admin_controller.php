@@ -875,7 +875,11 @@ class AdminController extends Controller implements CrawlConstants
     }
 
     /**
+     * Reads the parameters for a crawl from an array gotten from a crawl.ini
+     * file
      *
+     * @param array &$crawl_params parameters to write to queue_server
+     * @param array $seed_info data from crawl.ini file
      */
     function getCrawlParametersFromSeedInfo(&$crawl_params, $seed_info)
     {
@@ -888,6 +892,10 @@ class AdminController extends Controller implements CrawlConstants
         $crawl_params[self::ARC_TYPE] =
             (isset($seed_info['general']['arc_type'])) ?
             $seed_info['general']['arc_type'] : '';
+        $crawl_params[self::CACHE_PAGES] =
+            (isset($seed_info['general']['cache_pages'])) ?
+            intval($seed_info['general']['cache_pages']) :
+            true;
         $crawl_params[self::PAGE_RANGE_REQUEST] =
             (isset($seed_info['general']['page_range_request'])) ?
             intval($seed_info['general']['page_range_request']) :
@@ -1484,17 +1492,14 @@ class AdminController extends Controller implements CrawlConstants
                 $seed_loaded = $this->crawlModel->getCrawlSeedInfo(
                     $timestamp, $machine_urls);
             }
-            if(isset($seed_loaded["indexed_file_types"]["extensions"])) {
-                $seed_info["indexed_file_types"]["extensions"] = 
-                    $seed_loaded["indexed_file_types"]["extensions"];
-            }
-            if(isset($seed_loaded["general"]["page_recrawl_frequency"])) {
-                $seed_info["general"]["page_recrawl_frequency"] = 
-                    $seed_loaded["general"]["page_recrawl_frequency"];
-            }
-            if(isset($seed_loaded["general"]["page_range_request"])) {
-                $seed_info["general"]["page_range_request"] = 
-                    $seed_loaded["general"]["page_range_request"];
+            $copy_options = array("general" => array("page_recrawl_frequency",
+                "page_range_request", "cache_pages"),
+                "indexed_file_types" => array("extensions"));
+            foreach($copy_options as $main_option => $sub_option) {
+                if(isset($seed_loaded[$main_option][$sub_option])) {
+                    $seed_info[$main_option][$sub_option] = 
+                        $seed_loaded[$main_option][$sub_option];
+                }
             }
             if(isset($seed_loaded['page_rules'])) {
                 $seed_info['page_rules'] = 
@@ -1515,7 +1520,14 @@ class AdminController extends Controller implements CrawlConstants
                 $seed_info["general"]["page_range_request"] =
                     $_REQUEST["page_range_request"];
             }
-            if(isset($_REQUEST['page_rules'])) {
+           if(isset($_REQUEST["cache_pages"]) ) {
+                $seed_info["general"]["cache_pages"] = true;
+           } else if(isset($_REQUEST['load_option'])) {
+                //form sent but check box unchecked
+                $seed_info["general"]["cache_pages"] = false;
+           }
+
+           if(isset($_REQUEST['page_rules'])) {
                 $seed_info['page_rules']['rule'] =
                     $this->convertStringCleanArray(
                     $_REQUEST['page_rules'], 'rule');
@@ -1528,12 +1540,24 @@ class AdminController extends Controller implements CrawlConstants
         }
         $data['PAGE_RECRAWL_FREQUENCY'] =
             $seed_info["general"]["page_recrawl_frequency"];
+        if(!isset($seed_info["general"]["cache_pages"])) {
+            $seed_info["general"]["cache_pages"] = false;
+        }
+        $data["CACHE_PAGES"] = $seed_info["general"]["cache_pages"];
         if(!isset($seed_info["general"]["page_range_request"])) {
             $seed_info["general"]["page_range_request"] = PAGE_RANGE_REQUEST;
         }
         $data['PAGE_SIZE'] = $seed_info["general"]["page_range_request"];
 
         $profile =  $this->profileModel->getProfile(WORK_DIRECTORY);
+        if(!isset($_REQUEST['load_option'])) {
+            $data = array_merge($data, $profile);
+        } else {
+            
+            $this->updateProfileFields($data, $profile,
+                array('IP_LINK','CACHE_LINK', 'SIMILAR_LINK', 'IN_LINK',
+                    'SIGNIN_LINK', 'SUBSEARCH_LINK','WORD_SUGGEST'));
+        }
         $weights = array('TITLE_WEIGHT' => 4,
             'DESCRIPTION_WEIGHT' => 1, 'LINK_WEIGHT' => 2,
             'MIN_RESULTS_TO_GROUP' => 200, 'SERVER_ALPHA' => 1.6);
@@ -1552,7 +1576,6 @@ class AdminController extends Controller implements CrawlConstants
                 $change = true;
             }
         }
-
         if($change == true) {
             $this->profileModel->updateProfile(WORK_DIRECTORY, array(),
                 $profile);
@@ -2554,7 +2577,6 @@ class AdminController extends Controller implements CrawlConstants
         if(isset($_REQUEST['arg'])) {
             $arg = $_REQUEST['arg'];
         }
-
         switch($arg)
         {
             case "directory":
@@ -2584,6 +2606,19 @@ class AdminController extends Controller implements CrawlConstants
                             tl('admin_controller_name_your_bot');
                         $data['USER_AGENT_SHORT'] =
                             $profile['USER_AGENT_SHORT'];
+                        $uri = UrlParser::getPath($_SERVER['REQUEST_URI']);
+                        $http = (isset($_SERVER['HTTPS'])) ? "https://" :
+                            "http://";
+                        $profile['NAME_SERVER'] = 
+                            $http . $_SERVER['SERVER_NAME'] . $uri;
+                        $data['NAME_SERVER'] = $profile['NAME_SERVER'];
+                        $profile['AUTH_KEY'] = crawlHash(
+                            $data['WORK_DIRECTORY'].time());
+                        $data['AUTH_KEY'] = $profile['AUTH_KEY'];
+                        $robot_instance = str_replace(".", "_",
+                            $_SERVER['SERVER_NAME'])."-".time();
+                        $profile['ROBOT_INSTANCE'] = $robot_instance;
+                        $data['ROBOT_INSTANCE'] = $profile['ROBOT_INSTANCE'];
                         if($this->profileModel->updateProfile(
                             $data['WORK_DIRECTORY'], array(), $profile)) {
                             if($this->profileModel->setWorkDirectoryConfigFile(
@@ -2643,39 +2678,9 @@ class AdminController extends Controller implements CrawlConstants
                 }
             break;
             case "profile":
-                foreach($this->profileModel->profile_fields as $field) {
-                    if(isset($_REQUEST[$field])) {
-                        if($field != "ROBOT_DESCRIPTION" &&
-                            $field != "MEMCACHE_SERVERS") {
-                            $clean_field =
-                                $this->clean($_REQUEST[$field], "string");
-                        } else {
-                            $clean_field = $_REQUEST[$field];
-                        }
-                        if($field == "NAME_SERVER" &&
-                            $clean_field[strlen($clean_field) -1] != "/") {
-                            $clean_field .= "/";
-                        }
-                        $data[$field] = $clean_field;
-                        $profile[$field] = $data[$field];
-                        if($field == "MEMCACHE_SERVERS") {
-                            $mem_array = preg_split("/(\s)+/", $clean_field);
-                            $profile[$field] =
-                                $this->convertArrayLines(
-                                    $mem_array, "|Z|", true);
-                        }
-                    }
-                    if(!isset($data[$field])) {
-                        $data[$field] = "";
-                        if(in_array($field, array(
-                            'USE_FILECACHE', 'USE_MEMCACHE', 'IP_LINK',
-                            'CACHE_LINK', 'SIMILAR_LINK', 'IN_LINK',
-                            'SIGNIN_LINK', 'SUBSEARCH_LINK','WORD_SUGGEST',
-                            "WEB_ACCESS", 'RSS_ACCESS', 'API_ACCESS'))) {
-                            $profile[$field] = false;
-                        }
-                    }
-                }
+                $this->updateProfileFields($data, $profile, 
+                    array('USE_FILECACHE', 'USE_MEMCACHE', "WEB_ACCESS",
+                        'RSS_ACCESS', 'API_ACCESS'));
                 $data['DEBUG_LEVEL'] = 0;
                 $data['DEBUG_LEVEL'] |=
                     (isset($_REQUEST["ERROR_INFO"])) ? ERROR_INFO : 0;
@@ -2763,7 +2768,7 @@ class AdminController extends Controller implements CrawlConstants
                     $data['PROFILE'] = false;
                 }
         }
-
+        $data['advanced'] = "false";
         if($data['PROFILE']) {
             $data['DBMSS'] = array();
             $data['SCRIPT'] .= "logindbms = Array();\n";
@@ -2790,28 +2795,71 @@ class AdminController extends Controller implements CrawlConstants
                 $data['MEMCACHE_SERVERS'] =
                     "localhost";
             }
-            $data['SCRIPT'] .=
-                "elt('database-system').onchange = function () {" .
-                "setDisplay('login-dbms',".
-                "self.logindbms[elt('database-system').value]);};" .
-                "setDisplay('login-dbms', ".
-                "logindbms[elt('database-system').value]);\n";
-            $data['SCRIPT'] .=
-                "elt('use-memcache').onchange = function () {" .
-                "setDisplay('filecache',".
-                "(elt('use-memcache').checked) ? false: true);" .
-                "setDisplay('memcache',".
-                "(elt('use-memcache').checked) ? true : false);};" .
-                "setDisplay('filecache', ".
-                "(elt('use-memcache').checked) ? false : true);\n".
-                "setDisplay('memcache', ".
-                "(elt('use-memcache').checked) ? true : false);\n";
 
+            if(isset($_REQUEST['advanced']) && $_REQUEST['advanced']) {
+                $data['advanced'] = "true";
+            }
+            $data['SCRIPT'] .= <<< EOD
+    elt('database-system').onchange = function () {
+        setDisplay('login-dbms', self.logindbms[elt('database-system').value]);
+    };
+    setDisplay('login-dbms', logindbms[elt('database-system').value]);
+    elt('use-memcache').onchange = function () {
+        setDisplay('filecache', (elt('use-memcache').checked) ? false: true);
+        setDisplay('memcache', (elt('use-memcache').checked) ? true : false);
+    };
+    setDisplay('filecache', (elt('use-memcache').checked) ? false : true);
+    setDisplay('memcache', (elt('use-memcache').checked) ? true : false);
+    setDisplay('advance-configure', {$data['advanced']});
+    setDisplay('advance-robot', {$data['advanced']});
+    function toggleAdvance() {
+        var advanced = elt('a-settings');
+        advanced.value = (advanced.value =='true') 
+            ? 'false' : 'true';
+        var value = (advanced.value == 'true') ? true : false;
+        setDisplay('advance-configure', value);
+        setDisplay('advance-robot', value);
+    }
+EOD;
         }
         $data['SCRIPT'] .=
             "elt('locale').onchange = ".
             "function () { elt('configureProfileForm').submit();};\n";
+        
         return $data;
+    }
+
+    function updateProfileFields(&$data, &$profile, $check_box_fields = array())
+    {
+        foreach($this->profileModel->profile_fields as $field) {
+            if(isset($_REQUEST[$field])) {
+                if($field != "ROBOT_DESCRIPTION" &&
+                    $field != "MEMCACHE_SERVERS") {
+                    $clean_field =
+                        $this->clean($_REQUEST[$field], "string");
+                } else {
+                    $clean_field = $_REQUEST[$field];
+                }
+                if($field == "NAME_SERVER" &&
+                    $clean_field[strlen($clean_field) -1] != "/") {
+                    $clean_field .= "/";
+                }
+                $data[$field] = $clean_field;
+                $profile[$field] = $data[$field];
+                if($field == "MEMCACHE_SERVERS") {
+                    $mem_array = preg_split("/(\s)+/", $clean_field);
+                    $profile[$field] =
+                        $this->convertArrayLines(
+                            $mem_array, "|Z|", true);
+                }
+            }
+            if(!isset($data[$field])) {
+                $data[$field] = "";
+                if(in_array($field, $check_box_fields)) {
+                    $profile[$field] = false;
+                }
+            }
+        }
     }
 }
 ?>
