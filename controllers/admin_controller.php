@@ -2806,10 +2806,6 @@ class AdminController extends Controller implements CrawlConstants
         setDisplay('login-dbms', self.logindbms[elt('database-system').value]);
     };
     setDisplay('login-dbms', logindbms[elt('database-system').value]);
-    elt('use-memcache').onchange = function () {
-        setDisplay('filecache', (elt('use-memcache').checked) ? false: true);
-        setDisplay('memcache', (elt('use-memcache').checked) ? true : false);
-    };
     setDisplay('filecache', (elt('use-memcache').checked) ? false : true);
     
     setDisplay('advance-configure', {$data['advanced']});
@@ -2824,8 +2820,13 @@ class AdminController extends Controller implements CrawlConstants
     }
 EOD;
             if(class_exists("Memcache")) {
-                $data['SCRIPT'] .= "setDisplay('memcache', ".
-                    "(elt('use-memcache').checked) ? true : false);";
+                $data['SCRIPT'] .= <<< EOD
+    elt('use-memcache').onchange = function () {
+        setDisplay('filecache', (elt('use-memcache').checked) ? false: true);
+        setDisplay('memcache', (elt('use-memcache').checked) ? true : false);
+    };
+    setDisplay('memcache', (elt('use-memcache').checked) ? true : false);
+EOD;
             }
         }
         $data['SCRIPT'] .=
