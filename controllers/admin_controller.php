@@ -1089,27 +1089,6 @@ class AdminController extends Controller implements CrawlConstants
             ($data['restrict_sites_by_url']) ?
             "checked='checked'" : "";
 
-
-        $data['INDEXING_PLUGINS'] = array();
-        $included_plugins = array();
-        if(!$no_further_changes && isset($_REQUEST["posted"])) {
-            $seed_info['indexing_plugins']['plugins'] =
-                (isset($_REQUEST["INDEXING_PLUGINS"])) ?
-                $_REQUEST["INDEXING_PLUGINS"] : array();
-            $update_flag = true;
-        }
-        $included_plugins =
-            (isset($seed_info['indexing_plugins']['plugins'])) ?
-                $seed_info['indexing_plugins']['plugins']
-                : array();
-
-        foreach($this->indexing_plugins as $plugin) {
-            $plugin_name = ucfirst($plugin);
-            $data['INDEXING_PLUGINS'][$plugin_name] =
-                (in_array($plugin_name, $included_plugins)) ?
-                "checked='checked'" : "";
-        }
-
         $data['SCRIPT'] = "setDisplay('toggle', ".
             "'{$data['restrict_sites_by_url']}');";
         if(!isset($_REQUEST['ts'])) {
@@ -1494,11 +1473,14 @@ class AdminController extends Controller implements CrawlConstants
             }
             $copy_options = array("general" => array("page_recrawl_frequency",
                 "page_range_request", "cache_pages"),
-                "indexed_file_types" => array("extensions"));
-            foreach($copy_options as $main_option => $sub_option) {
-                if(isset($seed_loaded[$main_option][$sub_option])) {
-                    $seed_info[$main_option][$sub_option] = 
-                        $seed_loaded[$main_option][$sub_option];
+                "indexed_file_types" => array("extensions"),
+                "indexing_plugins" => array("plugins"));
+            foreach($copy_options as $main_option => $sub_options) {
+                foreach($sub_options as $sub_option) {
+                    if(isset($seed_loaded[$main_option][$sub_option])) {
+                        $seed_info[$main_option][$sub_option] = 
+                            $seed_loaded[$main_option][$sub_option];
+                    }
                 }
             }
             if(isset($seed_loaded['page_rules'])) {
@@ -1522,7 +1504,7 @@ class AdminController extends Controller implements CrawlConstants
             }
            if(isset($_REQUEST["cache_pages"]) ) {
                 $seed_info["general"]["cache_pages"] = true;
-           } else if(isset($_REQUEST['load_option'])) {
+           } else if(isset($_REQUEST['posted'])) {
                 //form sent but check box unchecked
                 $seed_info["general"]["cache_pages"] = false;
            }
@@ -1548,6 +1530,25 @@ class AdminController extends Controller implements CrawlConstants
             $seed_info["general"]["page_range_request"] = PAGE_RANGE_REQUEST;
         }
         $data['PAGE_SIZE'] = $seed_info["general"]["page_range_request"];
+
+        $data['INDEXING_PLUGINS'] = array();
+        $included_plugins = array();
+        if(isset($_REQUEST["posted"])) {
+            $seed_info['indexing_plugins']['plugins'] =
+                (isset($_REQUEST["INDEXING_PLUGINS"])) ?
+                $_REQUEST["INDEXING_PLUGINS"] : array();
+        }
+        $included_plugins =
+            (isset($seed_info['indexing_plugins']['plugins'])) ?
+                $seed_info['indexing_plugins']['plugins']
+                : array();
+
+        foreach($this->indexing_plugins as $plugin) {
+            $plugin_name = ucfirst($plugin);
+            $data['INDEXING_PLUGINS'][$plugin_name] =
+                (in_array($plugin_name, $included_plugins)) ?
+                "checked='checked'" : "";
+        }
 
         $profile =  $this->profileModel->getProfile(WORK_DIRECTORY);
         if(!isset($_REQUEST['load_option'])) {
@@ -1602,7 +1603,6 @@ class AdminController extends Controller implements CrawlConstants
                 "checked='checked'" :'';
         }
         $seed_info["indexed_file_types"]["extensions"] = $filetypes;
-
 
         if(isset($seed_info['page_rules']['rule'])) {
             $data['page_rules'] = $this->convertArrayLines(
@@ -2270,10 +2270,9 @@ class AdminController extends Controller implements CrawlConstants
             array("name" => "Multibyte Character Library",
                 "check"=>"mb_internal_encoding", "type"=>"function"),
         );
-        /* We're leaving this code here but the memcache message seems
-            to cause more questions then it solves*/
         $optional_items = array(
-         /*   array("name" => "Memcache", "check" => "Memcache",
+         /* as an example of what this array could contain...
+            array("name" => "Memcache", "check" => "Memcache",
                 "type"=> "class"), */
         );
 

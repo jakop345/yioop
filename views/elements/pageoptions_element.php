@@ -78,6 +78,7 @@ class PageOptionsElement extends Element
         </ul>
         <div class='tab-menu-content'>
         <input type="hidden" name="c" value="admin" />
+        <input type="hidden" name="posted" value="posted" />
         <input type="hidden" id='option-type' name="option_type" value="<?php
             e($data['option_type'])?>" />
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
@@ -138,6 +139,34 @@ class PageOptionsElement extends Element
             }
         ?>
         </tr></table>
+        <?php if(isset($data['INDEXING_PLUGINS'])) {
+        ?>
+            <div class="top-margin"><b><?php
+                e(tl("pageoptions_element_indexing_plugins"));?></b></div>
+            <table class="indexing-plugin-table">
+                <tr><th><?php e(tl('pageoptions_element_plugin'));
+                                  ?></th>
+                <th><?php
+                    e(tl('pageoptions_element_plugin_include'));
+                        ?></th></tr>
+                <?php
+                $k = 0;
+                foreach($data['INDEXING_PLUGINS'] as
+                    $plugin => $toggleState) {
+                ?>
+                <tr><td><?php e($plugin. "Plugin"); ?></td>
+                <td class="check"><input type="checkbox"
+                    name="INDEXING_PLUGINS[<?php e($k); ?>]"
+                    value = "<?php e($plugin) ?>"
+                    <?php e($toggleState); ?>
+                    /></td></tr>
+            <?php
+                $k++;
+            }
+            ?>
+            </table>
+        <?php
+        } ?>
         <div class="top-margin"><label for="page-rules"><b><?php
             e(tl('pageoptions_element_page_rules'));?></b></label>
         </div>

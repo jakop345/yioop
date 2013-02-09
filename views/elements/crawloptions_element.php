@@ -162,36 +162,6 @@ class CrawloptionsElement extends Element
         </div>
         <?php } ?>
         </div>
-        <?php if(isset($data['INDEXING_PLUGINS'])) {
-        ?>
-            <div class="top-margin"><b><?php
-                e(tl("crawloptions_element_indexing_plugins"));?></b></div>
-            <table class="indexing-plugin-table">
-                <tr><th><?php e(tl('crawloptions_element_plugin'));
-                                  ?></th>
-                <th><?php
-                    e(tl('crawloptions_element_plugin_include'));
-                        ?></th></tr>
-                <?php
-                $k = 0;
-                foreach($data['INDEXING_PLUGINS'] as
-                    $plugin => $toggleState) {
-                ?>
-                <tr><td><?php e($plugin. "Plugin"); ?></td>
-                <td class="check"><input type="checkbox"
-                    name="INDEXING_PLUGINS[<?php e($k); ?>]"
-                    value = "<?php e($plugin) ?>"
-                    <?php e($toggleState); ?>
-                    /></td></tr>
-            <?php
-                $k++;
-            }
-            ?>
-            </table>
-        <?php
-        }
-        ?>
-
 
         <div class="center slight-pad"><button class="button-box"
             type="submit" name="save_options">
