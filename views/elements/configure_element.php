@@ -214,9 +214,7 @@ class ConfigureElement extends Element
                             name="USE_MEMCACHE" value="true" <?php
                             e($data['USE_MEMCACHE'] ? "checked='checked'" :
                                 "" ); ?> /></div>
-               <?php } ?>
                 <div id="memcache">
-                <?php if(class_exists("Memcache")) { ?>
                     <div class="top-margin"><label for="memcache-servers"
                     ><b><?php e(tl('configure_element_memcache_servers'));
                     ?></b></label></div>

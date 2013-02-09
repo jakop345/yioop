@@ -2811,7 +2811,7 @@ class AdminController extends Controller implements CrawlConstants
         setDisplay('memcache', (elt('use-memcache').checked) ? true : false);
     };
     setDisplay('filecache', (elt('use-memcache').checked) ? false : true);
-    setDisplay('memcache', (elt('use-memcache').checked) ? true : false);
+    
     setDisplay('advance-configure', {$data['advanced']});
     setDisplay('advance-robot', {$data['advanced']});
     function toggleAdvance() {
@@ -2823,6 +2823,10 @@ class AdminController extends Controller implements CrawlConstants
         setDisplay('advance-robot', value);
     }
 EOD;
+            if(class_exists("Memcache")) {
+                $data['SCRIPT'] .= "setDisplay('memcache', ".
+                    "(elt('use-memcache').checked) ? true : false);";
+            }
         }
         $data['SCRIPT'] .=
             "elt('locale').onchange = ".
