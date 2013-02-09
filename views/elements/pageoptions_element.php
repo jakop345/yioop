@@ -266,8 +266,8 @@ class PageOptionsElement extends Element
             }
             ?></button></div>
         </form>
+        <div id="test-results">
         <?php if($data['test_options_active'] != "") { ?>
-            <div id="test-results">
             <h2><?php e(tl('pageoptions_element_test_results'))?></h2>
             <?php
             if(isset($data["AFTER_PAGE_PROCESS"])) {
@@ -286,9 +286,9 @@ class PageOptionsElement extends Element
                 e("<h3>".tl('pageoptions_element_extracted_metas')."</h3>");
                 e("<pre>\n{$data['EXTRACTED_META_WORDS']}\n</pre>");
             } ?>
-            </div>
         <?php 
         } ?>
+        </div>
         </div>
 
         <script type="text/javascript">
