@@ -207,12 +207,14 @@ class ConfigureElement extends Element
                         value="<?php e($data['NAME_SERVER']); ?>"
                         class="extra-wide-field" />
                 </div>
+                <?php if(class_exists("Memcache")) { ?>
                 <div class="top-margin"><label for="use-memcache"><b><?php
                     e(tl('configure_element_use_memcache'))?></b></label>
                         <input type="checkbox" id="use-memcache"
                             name="USE_MEMCACHE" value="true" <?php
                             e($data['USE_MEMCACHE'] ? "checked='checked'" :
                                 "" ); ?> /></div>
+               <?php } ?>
                 <div id="memcache">
                 <?php if(class_exists("Memcache")) { ?>
                     <div class="top-margin"><label for="memcache-servers"
