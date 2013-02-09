@@ -2806,8 +2806,6 @@ class AdminController extends Controller implements CrawlConstants
         setDisplay('login-dbms', self.logindbms[elt('database-system').value]);
     };
     setDisplay('login-dbms', logindbms[elt('database-system').value]);
-    setDisplay('filecache', (elt('use-memcache').checked) ? false : true);
-    
     setDisplay('advance-configure', {$data['advanced']});
     setDisplay('advance-robot', {$data['advanced']});
     function toggleAdvance() {
@@ -2825,6 +2823,7 @@ EOD;
         setDisplay('filecache', (elt('use-memcache').checked) ? false: true);
         setDisplay('memcache', (elt('use-memcache').checked) ? true : false);
     };
+    setDisplay('filecache', (elt('use-memcache').checked) ? false : true);
     setDisplay('memcache', (elt('use-memcache').checked) ? true : false);
 EOD;
             }
