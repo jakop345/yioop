@@ -2270,9 +2270,11 @@ class AdminController extends Controller implements CrawlConstants
             array("name" => "Multibyte Character Library",
                 "check"=>"mb_internal_encoding", "type"=>"function"),
         );
+        /* We're leaving this code here but the memcache message seems
+            to cause more questions then it solves*/
         $optional_items = array(
-            array("name" => "Memcache", "check" => "Memcache",
-                "type"=> "class"),
+         /*   array("name" => "Memcache", "check" => "Memcache",
+                "type"=> "class"), */
         );
 
         $missing_required = "";

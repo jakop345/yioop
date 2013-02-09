@@ -89,7 +89,7 @@ require_once BASE_DIR."/lib/upgrade_functions.php";
  */
 require_once(BASE_DIR."/lib/file_cache.php");
 
-if(USE_MEMCACHE) {
+if(USE_MEMCACHE && class_exists("Memcache")) {
     $CACHE = new Memcache();
     foreach($MEMCACHES as $mc) {
         $CACHE->addServer($mc['host'], $mc['port']);
