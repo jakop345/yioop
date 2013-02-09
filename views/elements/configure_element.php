@@ -221,8 +221,8 @@ class ConfigureElement extends Element
                 <textarea class="short-text-area" id="memcache-servers"
                     name="MEMCACHE_SERVERS"><?php e($data['MEMCACHE_SERVERS']);
                 ?></textarea>
-               <?php } ?>
                 </div>
+               <?php } ?>
                 <div id="filecache">
                 <div class="top-margin"><label for="use-filecache"><b><?php
                     e(tl('configure_element_use_filecache'))?></b></label>
