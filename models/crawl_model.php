@@ -38,8 +38,9 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 require_once BASE_DIR."/models/parallel_model.php";
 
 /** used to prevent cache page requests from being logged*/
-define("NO_LOGGING", true);
-
+if(!defined("POST_PROCESSING") && !defined("NO_LOGGING")) {
+    define("NO_LOGGING", true);
+}
 /**
  * This is class is used to handle
  * db results for a given phrase search

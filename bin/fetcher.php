@@ -1494,7 +1494,7 @@ class Fetcher implements CrawlConstants
             self::OPERATING_SYSTEM, self::MODIFIED, self::ROBOT_INSTANCE,
             self::LOCATION, self::SIZE, self::TOTAL_TIME, self::DNS_TIME,
             self::ROBOT_PATHS, self::GOT_ROBOT_TXT, self::CRAWL_DELAY,
-            self::AGENT_LIST, self::ROBOT_METAS);
+            self::AGENT_LIST, self::ROBOT_METAS, self::WARC_ID);
 
         foreach($summary_fields as $field) {
             if(isset($site[$field])) {

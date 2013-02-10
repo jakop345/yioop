@@ -319,7 +319,7 @@ class FetchUrl implements CrawlConstants
      *  the header and return an array of these two parts and the useful info.
      *
      *  @param string &$header_and_page reference to string of downloaded data
-     *  @param string $value field to store the page protion of page
+     *  @param string $value field to store the page portion of page
      *  @return array info array consisting of a header, page for an http
      *      response, as well as parsed from the header the server, server
      *      version, operating system, encoding, and date information.
@@ -339,6 +339,7 @@ class FetchUrl implements CrawlConstants
             //either two CRLF (what spec says) or two LF's to be safe
             $old_offset = $new_offset;
             $header_offset = ($CRLFCRLF > 0) ? $CRLFCRLF : $LFLF;
+            $header_offset = ($header_offset) ? $header_offset : 0;
             $new_offset = ($CRLFCRLF > 0) ? $header_offset + 4
                 : $header_offset + 2;
             $redirect_pos = stripos($header_and_page, 'Location:', $old_offset);
@@ -363,15 +364,18 @@ class FetchUrl implements CrawlConstants
                 $continue = true;
             }
         } while($continue);
-
-
-        $site[CrawlConstants::HEADER] =
-            substr($header_and_page, 0, $header_offset);
-        $site[$value] = ltrim(substr($header_and_page, $header_offset));
-
+        if($header_offset > 0) {
+            $site[CrawlConstants::HEADER] =
+                substr($header_and_page, 0, $header_offset);
+            $site[$value] = ltrim(substr($header_and_page, $header_offset));
+        } else { //header message no body; maybe 301?
+            $site[CrawlConstants::HEADER] = $header_and_page;
+            $site[$value] = " ";
+        }
         $lines = explode("\n", $site[CrawlConstants::HEADER]);
         $first_line = array_shift($lines);
         $response = preg_split("/(\s+)/", $first_line);
+
         $site[CrawlConstants::HTTP_CODE] = @trim($response[1]);
         $site[CrawlConstants::ROBOT_METAS] = array();
         foreach($lines as $line) {
@@ -390,6 +394,10 @@ class FetchUrl implements CrawlConstants
                             @trim($os_parts[0]);
                     }
                 }
+            }
+            if(stristr($line, 'Content-type:')) {
+                list(,$mimetype,) = preg_split("/:|;/i", $line);
+                $site[CrawlConstants::TYPE] = trim($mimetype);
             }
             if(stristr($line, 'charset=')) {
                 $line_parts = preg_split("/charset\=/i", $line);

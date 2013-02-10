@@ -212,6 +212,7 @@ interface CrawlConstants
     const LOGGING = 'cl';
     const META_WORDS = 'cm';
     const CACHE_PAGES = 'cn';
+    const WARC_ID = 'co';
 
     const NEEDS_OFFSET_FLAG = 0x7FFFFFFF;
 

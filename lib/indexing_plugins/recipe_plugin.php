@@ -34,12 +34,6 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- * Flag to say that post_processing is occurring (used to control logging in
- * models)
- */
-define("POST_PROCESSING", true);
-
-/**
  * Ratio of clusters/total number of recipes seen
  */
 define("CLUSTER_RATIO", 0.1);
@@ -107,6 +101,7 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
      */
     function pageProcessing($page, $url)
     {
+        crawlLog("...Using recipe plugin to check for recipes!");
         $page = preg_replace('@<script[^>]*?>.*?</script>@si', ' ', $page);
         $page = preg_replace('/>/', '> ', $page);
         $dom = HtmlProcessor::dom($page);
@@ -159,6 +154,8 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
                 $subdocs_description[] = $recipe;
             }
         }
+        $num_recipes = count($subdocs_description);
+        crawlLog("...$num_recipes found.");
 
         return $subdocs_description;
     }
@@ -176,12 +173,11 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
         $this->phraseModel->index_name = $index_name;
         $this->crawlModel->index_name = $index_name;
 
-        $index_archive_name = self::index_data_base_name . $index_name;
-        $index_archive = new IndexArchiveBundle(
-            CRAWL_DIR.'/cache/'.$index_archive_name);
         $query_iterator = new WordIterator(crawlHash("recipe:all"),
-            $index_archive);
+            $index_name);
         $raw_recipes = array();
+        crawlLog("...Running Recipe Plugin!");
+        crawlLog("...Finding docs tagged as recipes.");
         while(is_array($next_docs = $query_iterator->nextDocsWithWord())) {
             foreach($next_docs as $doc_key => $doc_info) {
                 $summary = & $doc_info[CrawlConstants::SUMMARY];
@@ -196,6 +192,7 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
             }
         }
 
+        crawlLog("...Clustering.");
         // only cluster if would make more than one cluster
         if(count($raw_recipes) * CLUSTER_RATIO > 1 ) {
             $recipes = array();
@@ -308,6 +305,7 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
                 }
             }
 
+            crawlLog("...Making new shard with clustered recipes as docs.");
             $clusters = kruskalClustering($weights,
                 $count, $distinct_ingredients);
             $index_shard = new IndexShard("cluster_shard");
@@ -347,6 +345,8 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
 
             }
 
+            crawlLog("...Adding recipe shard to index archive bundle");
+
             $dir = CRAWL_DIR."/cache/".self::index_data_base_name.$index_name;
             $index_archive = new IndexArchiveBundle($dir, false);
             $generation = $index_archive->initGenerationToAdd($index_shard);
@@ -371,6 +371,7 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
             $this->db->setWorldPermissionsRecursive(
                 CRAWL_DIR.'/cache/'.
                 self::index_data_base_name.$index_name);
+            crawlLog("...Recipe plugin finished.");
         }
     }
 

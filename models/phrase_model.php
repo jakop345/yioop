@@ -37,7 +37,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * logging is done during crawl not through web,
  * so it will not be used in the phrase model
  */
-if(!defined("POST_PROCESSING")) {
+if(!defined("POST_PROCESSING") && !defined("LOG_TO_FILES")) {
     define("LOG_TO_FILES", false);
 }
 

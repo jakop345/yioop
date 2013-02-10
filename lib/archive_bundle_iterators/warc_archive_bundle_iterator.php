@@ -93,7 +93,7 @@ class WarcArchiveBundleIterator extends TextArchiveBundleIterator
             }
             $length = intval($page_info[self::SIZE]);
             $page_info[self::SIZE] = $length;
-            $header_and_page = $this->gzFileRead($length + 2);
+            $header_and_page = ltrim($this->gzFileRead($length + 2));
             $this->gzFileGets();
             $this->gzFileGets();
             if(!$header_and_page) { return NULL; }
@@ -110,6 +110,9 @@ class WarcArchiveBundleIterator extends TextArchiveBundleIterator
         $site = array_merge($site, $site_contents);
         $site[self::HASH] = FetchUrl::computePageHash($site[self::PAGE]);
         $site[self::WEIGHT] = 1;
+        if(!isset($site[self::TYPE])) {
+            $site[self::TYPE] = "text/plain";
+        }
         return $site;
     }
 
@@ -126,7 +129,8 @@ class WarcArchiveBundleIterator extends TextArchiveBundleIterator
         $warc_fields = array( 'warc-type' => 'warc-type', 
             'warc-target-uri' => self::URL, 'warc-date' => self::TIMESTAMP,
             'warc-ip-address' => self::IP_ADDRESSES,
-            'content-length' => self::SIZE);
+            'content-length' => self::SIZE, 'warc-record-id' => self::WARC_ID,
+            'warc-trec-id' => self::WARC_ID);
         $field = "start-record";
         do {
             $line = $this->gzFileGets();

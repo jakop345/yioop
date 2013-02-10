@@ -34,6 +34,12 @@
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
+/**
+ * Flag to say that post_processing is occurring (used to control logging in
+ * models)
+ */
+define("POST_PROCESSING", true);
+
 /** Some models might interface with a DBMS so load the DBMS manager*/
 require_once BASE_DIR."/models/datasources/".DBMS."_manager.php";
 
@@ -102,10 +108,8 @@ abstract class IndexingPlugin
 
             $model_name = ucfirst($model)."Model";
             $model_instance_name = lcfirst($model_name);
-
             $this->$model_instance_name = new $model_name();
         }
-
     }
 
     /**
