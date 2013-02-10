@@ -215,7 +215,8 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
         } else {
             $this->encoding = "UTF-8";
         }
-        foreach(glob("{$this->iterate_dir}/*.$extension") as $filename) {
+        foreach(glob("{$this->iterate_dir}/*.$extension", GLOB_BRACE) 
+            as $filename) {
             $this->partitions[] = $filename;
         }
         $this->num_partitions = count($this->partitions);

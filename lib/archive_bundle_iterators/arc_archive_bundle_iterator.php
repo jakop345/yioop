@@ -79,7 +79,7 @@ class ArcArchiveBundleIterator extends TextArchiveBundleIterator
      * @param bool $no_process do not do any processing on page data
      * @return array associative array for doc or string if no_process true
      */
-    function nextPage($no_process=false)
+    function nextPage($no_process = false)
     {
         if(!$this->checkFileHandle() ) { return NULL; }
         do {
