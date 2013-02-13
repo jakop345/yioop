@@ -109,7 +109,7 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
 
         $xpath = new DOMXPath($dom);
         $recipes_per_page = $xpath->evaluate(
-           "/html//div[@class = 'ingredients'] |
+           "/html//ul[@class = 'ingredient-wrap'] |
             /html//div[@class = 'body-text'] |
             /html//ul[@class = 'clr'] |
             /html//div[@class = 'recipeDetails']
@@ -123,13 +123,10 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
                /html//h1[@class = 'fn'] |
                /html//div[@class =
                 'pod about-recipe clrfix']/p |
-               /html//h1[@class = 'recipeTitle']");
+               /html//p[@class = 'recipeTitle']");
             for($i=0; $i < $recipes_count; $i++) {
-                $ingredients = $xpath->evaluate("/html//div[@class =
-                    'ingredients']/ul/li |
-                    /html//div[@class = 'body-text']
-                    /ul/li[@class = 'ingredient'] |
-                    /html//ul[@class = 'clr']/li |
+                $ingredients = $xpath->evaluate(
+                    "/html//ul[@class = 'ingredient-wrap']/li |
                     /html//div[@class = 'recipeDetails']
                     /ul[@class='ingredient_list']/li |
                     /html//div[@class = 'ingredients']
@@ -180,11 +177,10 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
         crawlLog("...Finding docs tagged as recipes.");
         while(is_array($next_docs = $query_iterator->nextDocsWithWord())) {
             foreach($next_docs as $doc_key => $doc_info) {
-                $summary = & $doc_info[CrawlConstants::SUMMARY];
-                $summary['KEY'] = $doc_key;
-                $tmp = unserialize($query_iterator->getIndex(
-                    $doc_key)->description);
-                $doc_info[self::CRAWL_TIME] = $tmp[self::CRAWL_TIME];
+                $doc_info['KEY'] = $doc_key;
+print_r($doc_info);
+print_r($summary);
+
                 unset($doc_info[CrawlConstants::SUMMARY]);
                 if(is_array($summary)) {
                     $raw_recipes[] = array_merge($doc_info, $summary);
@@ -337,6 +333,8 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
                         $recipes_summary[$recipe][self::HTTP_CODE];
                     $recipe_sites[] = $summary;
                     $meta_ids[] = "ingredient:".$cluster["ingredient"];
+echo "meta";
+print_r($meta_ids);
                     $index_shard->addDocumentWords($doc_key,
                         self::NEEDS_OFFSET_FLAG,
                         $word_counts, $meta_ids, true, false);

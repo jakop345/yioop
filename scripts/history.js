@@ -115,7 +115,7 @@ year.onchange = function() {
     yearjs = eval(yearjs);
     var temp = y_id.options[y_id.selectedIndex].value;
     for(j = 0; j < monthjs.length; j++) {
-        var id = elt('#'+temp+monthjs[j]);
+        var id = elt('#' + temp + monthjs[j]);
         if(id !== null){
             var opt = document.createElement('option');
             opt.text = monthjs[j];

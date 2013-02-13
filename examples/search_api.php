@@ -164,7 +164,6 @@ $index_timestamp = "1317414322";
 $data = $controller->relatedRequest($url, $num_results,
     $first_result_to_return, $index_timestamp);
 outputQueryData($data);
-
 /*
    Finally, we give an example of requesting the cached version of
    a downloaded page...
@@ -172,13 +171,13 @@ outputQueryData($data);
 echo "\n\n\nAn example of making a cached of page request".
     " with the search API:\n";
 $url = "http://www.ucanbuyart.com/";
-$highlight = true; // says to color the search terms
+$ui_flags = array();
 $search_terms = "art classifieds"; // these words will be highlighted
-$index_timestamp = "1317414322";
-$data = $controller->cacheRequest($url, $highlight,
+$search_terms = "arizona";
+$index_timestamp = "1317414322";;
+$data = $controller->cacheRequest($url, $ui_flags,
     $search_terms, $index_timestamp);
 echo $data;
-
 
 /*
   We now delete the example index to clean-up our test. In real-life

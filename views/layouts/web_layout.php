@@ -82,11 +82,14 @@ class WebLayout extends Layout
         <meta charset="utf-8" />
         <?php if(MOBILE) {?>
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <?php } ?>
+        <?php }
+            $path_info = (isset($_SERVER["PATH_INFO"])) ?
+                $_SERVER["PATH_INFO"].'/' : '';
+        ?>
         <link rel="shortcut icon"
-            href="<?php e($_SERVER["PATH_INFO"]); ?>/favicon.ico" />
+            href="<?php e($path_info); ?>favicon.ico" />
         <link rel="stylesheet" type="text/css"
-            href="<?php e($_SERVER["PATH_INFO"]); ?>/css/search.css" />
+            href="<?php e($path_info); ?>/css/search.css" />
         <link rel="search" type="application/opensearchdescription+xml"
             href="<?php e(NAME_SERVER."yioopbar.xml");?>"
             title="Content search" />

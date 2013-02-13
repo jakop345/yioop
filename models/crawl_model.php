@@ -298,7 +298,7 @@ class CrawlModel extends ParallelModel implements CrawlConstants
     /**
      * Stores in DB the supplied crawl mix object
      *
-     * @param array $mix an associative array repreenting the crawl mix object
+     * @param array $mix an associative array representing the crawl mix object
      */
     function setCrawlMix($mix)
     {

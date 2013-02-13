@@ -113,7 +113,7 @@ class SearchController extends Controller implements CrawlConstants
         if(!$format_info) { return;}
         list($view, $web_flag, $raw, $results_per_page, $limit) = $format_info;
 
-        list($query, $highlight, $activity, $arg) = 
+        list($query, $activity, $arg) = 
             $this->initializeUserAndDefaultActivity($data);
 
         if($activity == "query" && $this->mirrorHandle()) {return; }
@@ -124,13 +124,20 @@ class SearchController extends Controller implements CrawlConstants
         if(isset($_REQUEST['q']) && strlen($_REQUEST['q']) > 0
             || $activity != "query") {
             if($activity != "cache") {
-                $this->processQuery($query, $activity, $arg,
+                $this->processQuery($data, $query, $activity, $arg,
                     $results_per_page, $limit, $index_timestamp, $raw,
-                    $save_timestamp, $data);
+                    $save_timestamp);
                     // calculate the results of a search if there is one
             } else {
-                $this->cacheRequestAndOutput($arg,
-                    $highlight, $query, $index_timestamp);
+                $ui_array = array("highlight", "yioop_nav");
+                if(isset($_REQUEST['from_cache'])) {
+                    $ui_array[] = "cache_link_referrer";
+                }
+                if(isset($_REQUEST['hist_open'])) {
+                    $ui_array[] = "hist_ui_open";
+                }
+                $this->cacheRequestAndOutput($arg, $ui_array, $query,
+                    $index_timestamp);
                 return;
             }
         }
@@ -313,10 +320,8 @@ class SearchController extends Controller implements CrawlConstants
             }
         }
         if($activity == "query") {
-            $highlight = false;
             list($query, $activity, $arg) = $this->extractActivityQuery();
         } else {
-            $highlight = true;
             $query = isset($_REQUEST['q']) ? $_REQUEST['q'] : "";
             $query = $this->clean($query, "string");
         }
@@ -327,7 +332,7 @@ class SearchController extends Controller implements CrawlConstants
             $data['OPEN_IN_TABS'] = false;
         }
 
-        return array($query, $highlight, $activity, $arg);
+        return array($query, $activity, $arg);
     }
 
     /**
@@ -559,6 +564,8 @@ class SearchController extends Controller implements CrawlConstants
      * Searches the database for the most relevant pages for the supplied search
      * terms. Renders the results to the HTML page.
      *
+     * @param array &$data an array of view data that will be updated to include
+     *      at most results_per_page many search results
      * @param string $query a string containing the words to search on
      * @param string $activity besides a straight search for words query,
      *      one might have other searches, such as a search for related pages.
@@ -581,11 +588,12 @@ class SearchController extends Controller implements CrawlConstants
      * @param int $save_timestamp if this timestamp is nonzero, then save
      *      iterate position, so can resume on future queries that make
      *      use of the timestamp
-     * @param array &$data an array of view data that will be updated to include
-     *      at most results_per_page many search results
+     * @param bool $cron whether to perform any cron activities such as update
+     *      news
      */
-    function processQuery($query, $activity, $arg, $results_per_page,
-        $limit = 0, $index_name = 0, $raw = 0, $save_timestamp = 0, &$data)
+    function processQuery(&$data, $query, $activity, $arg, $results_per_page,
+        $limit = 0, $index_name = 0, $raw = 0, $save_timestamp = 0,
+        $cron = true)
     {
         $no_index_given = false;
         if($index_name == 0) {
@@ -643,7 +651,9 @@ class SearchController extends Controller implements CrawlConstants
             $guess_semantics = false;
         }
 
-        $this->newsUpdate($data);
+        if($cron) {
+            $this->newsUpdate($data);
+        }
 
         switch($activity)
         {
@@ -1141,8 +1151,8 @@ class SearchController extends Controller implements CrawlConstants
         $grouping = ($grouping > 0 ) ? 2 : 0;
 
         $data = array();
-        $this->processQuery($query, "query", "", $results_per_page,
-                $limit, 0, $grouping, $save_timestamp, $data);
+        $this->processQuery($data, $query, "query", "", $results_per_page,
+                $limit, 0, $grouping, $save_timestamp, false);
         return $data;
     }
 
@@ -1177,10 +1187,12 @@ class SearchController extends Controller implements CrawlConstants
     function relatedRequest($url, $results_per_page, $limit = 0,
         $crawl_time = 0, $grouping = 0, $save_timestamp = 0)
     {
+        if(!API_ACCESS) {return NULL; }
         $grouping = ($grouping > 0 ) ? 2 : 0;
-        return (API_ACCESS) ?
-            $this->processQuery("", "related", $url, $results_per_page,
-                $limit, $crawl_time, $raw, $save_timestamp) : NULL;
+        $data = array();
+        $this->processQuery($data, "", "related", $url, $results_per_page,
+            $limit, $crawl_time, $grouping, $save_timestamp, false);
+        return $data;
     }
 
     /**
@@ -1188,19 +1200,21 @@ class SearchController extends Controller implements CrawlConstants
      * search query and returns associative array of query results
      *
      * @param string $url to get cached page for
-     * @param bool $highlight whether to put the search terms in the page
-     *      in colored span tags.
+     * @param array $ui_flags array of  ui features which
+     *      should be added to the cache page. For example, "highlight" 
+     *      would way search terms should be highlighted, "history_ui"
+     *      says add history navigation for all copies of this cache page in
+     *      yioop system.
      * @param string $terms space separated list of search terms
      * @param string $crawl_time timestamp of crawl to look for cached page in
-     *
      * @return string with contents of cached page
      */
-    function cacheRequest($url, $highlight=true, $terms ="",
+    function cacheRequest($url, $ui_flags = array(), $terms ="",
         $crawl_time = 0)
     {
         if(!API_ACCESS) return false;
         ob_start();
-        $this->cacheRequestAndOutput($url, $highlight, $terms,
+        $this->cacheRequestAndOutput($url, $ui_flags, $terms,
             $crawl_time);
         $cached_page = ob_get_contents();
         ob_end_clean();
@@ -1212,13 +1226,16 @@ class SearchController extends Controller implements CrawlConstants
      * Used to get and render a cached web page
      *
      * @param string $url the url of the page to find the cached version of
-     * @param bool $highlight whether or not to highlight the query terms in
-     *      the cached page
-     * @param string $terms the list of query terms
+     * @param array $ui_flags array of  ui features which
+     *      should be added to the cache page. For example, "highlight" 
+     *      would way search terms should be highlighted, "history_ui"
+     *      says add history navigation for all copies of this cache page in
+     *      yioop system. "cache_link_referrer" says a link on a cache page
+     *      referred us to the current cache request
      * @param int $crawl_time the timestamp of the crawl to look up the cached
      *      page in
      */
-   function cacheRequestAndOutput($url, $highlight = true, $terms ="",
+   function cacheRequestAndOutput($url, $ui_flags = array(), $terms ="",
         $crawl_time = 0)
     {
         global $CACHE, $IMAGE_TYPES;
@@ -1230,10 +1247,11 @@ class SearchController extends Controller implements CrawlConstants
         $all_past_times = array();
 
         //Check if the URL is from a cached page
-        $cached_link = (isset($_REQUEST["from_cache"])) ? true : false;
+        $cached_link = (in_array("cache_link_referrer", $ui_flags)) ?
+            true : false;
 
         $hash_key = crawlHash(
-            $terms.$url.serialize($highlight).serialize($crawl_time));
+            $terms.$url.serialize($ui_flags).serialize($crawl_time));
         if(USE_CACHE) {
             if($newDoc = $CACHE->get($hash_key)) {
                 echo $newDoc;
@@ -1281,12 +1299,6 @@ class SearchController extends Controller implements CrawlConstants
             $network_crawl_times));
         sort($all_crawl_times, SORT_STRING);
 
-        /*Check if a crawl time results in a no cache. If found, remove
-          from crawl times with cache*/
-        $no_cache = $this->checkRobotInstanceAndCacheItem($url,
-            $all_crawl_times, $network_crawl_items, $nonnet_crawl_items);
-        $all_crawl_times = array_diff($all_crawl_times, $no_cache);
-
         //Get past and future crawl times
         foreach($all_crawl_times as $time) {
             if($time >= $crawl_time_int) {
@@ -1308,10 +1320,6 @@ class SearchController extends Controller implements CrawlConstants
             } else {
                 $queue_servers = $nonnet_crawl_items['queue_servers'];
             }
-            $this->phraseModel->index_name = $crawl_time;
-            $this->crawlModel->index_name = $crawl_time;
-            $crawl_item = $this->crawlModel->
-                getCrawlItem($url, $queue_servers);
         } else if(!empty($all_past_times)) {
             $crawl_time = array_pop($all_past_times);
             array_push($all_past_times, $crawl_time);
@@ -1321,11 +1329,10 @@ class SearchController extends Controller implements CrawlConstants
             } else {
                 $queue_servers = $nonnet_crawl_items['queue_servers'];
             }
-            $this->phraseModel->index_name = $crawl_time;
-            $this->crawlModel->index_name = $crawl_time;
-            $crawl_item = $this->crawlModel->
-                getCrawlItem($url, $queue_servers);
         }
+        $this->phraseModel->index_name = $crawl_time;
+        $this->crawlModel->index_name = $crawl_time;
+        $crawl_item = $this->crawlModel->getCrawlItem($url, $queue_servers);
 
         $data = array();
 
@@ -1352,21 +1359,24 @@ class SearchController extends Controller implements CrawlConstants
         if(file_exists($robot_table_name)) {
             $robot_table = unserialize(file_get_contents($robot_table_name));
         }
-
-        if(!isset($robot_table[$robot_instance])) {
-            $data["SUMMARY_STRING"] = $summary_string;
-            $this->displayView("nocache", $data);
-            return;
+        if(isset($robot_table[$robot_instance])) {
+            $machine = $robot_table[$robot_instance][0];
+            $machine_uri = $robot_table[$robot_instance][1];
+        } else {
+            //guess we are in a single machine setting
+            $machine = UrlParser::getHost(NAME_SERVER);
+            if($machine[4] == 's') { // start with https://
+                $machine = substr($machine, 8);
+            } else { // start with http://
+                $machine = substr($machine, 7);
+            }
+            $machine_uri = WEB_URI;
         }
-
         $instance_parts = explode("-", $robot_instance);
         $instance_num = false;
         if(count($instance_parts) > 1) {
             $instance_num = intval($instance_parts[0]);
         }
-        $machine = $robot_table[$robot_instance][0];
-        $machine_uri = $robot_table[$robot_instance][1];
-        $page = $crawl_item[self::HASH];
         $offset = $crawl_item[self::OFFSET];
         $cache_partition = $crawl_item[self::CACHE_PAGE_PARTITION];
         $cache_item = $this->crawlModel->getCacheFile($machine,
@@ -1389,12 +1399,15 @@ class SearchController extends Controller implements CrawlConstants
         if(isset($crawl_item[self::THUMB])) {
             $cache_file = $this->imageCachePage($url, $cache_item, $cache_file,
                 $queue_servers);
-            $highlight = false;
+            unset($ui_flags["highlight"]);
         }
-
-        $newDoc = $this->formatCachePage($cache_item, $cache_file, $url,
-            $summary_string, $crawl_time, $all_crawl_times, $terms, $highlight);
-
+        if(in_array('yioop_nav', $ui_flags)) {
+            $newDoc = $this->formatCachePage($cache_item, $cache_file, $url,
+                $summary_string, $crawl_time, $all_crawl_times, $terms,
+                $ui_flags);
+        } else {
+            $newDoc = $cache_file;
+        }
         if(USE_CACHE) {
             $CACHE->set($hash_key, $newDoc);
         }
@@ -1483,15 +1496,18 @@ class SearchController extends Controller implements CrawlConstants
      * @param array $all_crawl_times timestamps of all crawl times currently
      *      in Yioop system
      * @param string $terms from orginal query responsible for cache request
-     * @param bool $highlight whether to mark query term occurences in different
-     *       colors on web page
+     * @param array $ui_flags array of  ui features which
+     *      should be added to the cache page. For example, "highlight" 
+     *      would way search terms should be highlighted, "history_ui"
+     *      says add history navigation for all copies of this cache page in
+     *      yioop system.
      * return string of formatted cached page
      */
     function formatCachePage($cache_item, $cache_file, $url,
-        $summary_string, $crawl_time, $all_crawl_times, $terms, $highlight)
+        $summary_string, $crawl_time, $all_crawl_times, $terms, $ui_flags)
     {
         //Check if it the URL is from the UI
-        $hist_ui = isset($_REQUEST["hist_ui"]) ? true : false;
+        $hist_ui_open = in_array("hist_ui_open", $ui_flags) ? true : false;
 
         $date = date ("F d Y H:i:s", $cache_item[self::TIMESTAMP]);
 
@@ -1508,7 +1524,7 @@ class SearchController extends Controller implements CrawlConstants
 
         $phrase_string = mb_ereg_replace("[[:punct:]]", " ", $terms);
         $words = mb_split(" ", $phrase_string);
-        if(!$highlight) {
+        if(!in_array("highlight", $ui_flags)) {
             $words = array();
         }
 
@@ -1596,7 +1612,7 @@ class SearchController extends Controller implements CrawlConstants
 
         //UI for showing history
         $history_div = $this->historyUI($crawl_time, $all_crawl_times, $divNode,
-            $dom, $terms, $hist_ui, $url);
+            $dom, $terms, $hist_ui_open, $url);
 
         $aNode = $dom->createElement("a");
         $aTextNode =
@@ -1677,89 +1693,6 @@ class SearchController extends Controller implements CrawlConstants
     }
 
     /**
-     *  Function for filtering crawl times that don't have a cache
-     *
-     *  @param string $url is the URL for the cached page
-     *  @param array $all_crawl_times contains crawl times for
-     *      all indexes.
-     *  @param array $network_crawl_times contains all crawl times for
-     *      networked setting
-     *  @param array $nonnet_crawl_times contains all crawl times for
-     *      non-networked setting
-     *  @return array $no_cache contains crawl_times for which
-     *      there is no cache.
-     */
-    function checkRobotInstanceAndCacheItem($url, $all_crawl_times,
-        $network_crawl_items, $nonnet_crawl_items)
-    {
-        $network_crawl_times = array_keys($network_crawl_items);
-        unset($network_crawl_times[0]);
-        $network_crawl_times = array_values($network_crawl_times);
-        $nonnet_crawl_times = array_keys($nonnet_crawl_items);
-        unset($nonnet_crawl_times[0]);
-        $nonnet_crawl_times = array_diff($nonnet_crawl_times,
-            $network_crawl_times);
-        $no_cache = array();
-
-        foreach($all_crawl_times as $crawl_time) {
-            if(in_array($crawl_time, $network_crawl_times)) {
-                $queue_servers = $network_crawl_items['queue_servers'];
-                $crawl_item = $network_crawl_items[$crawl_time];
-            } else {
-                $queue_servers = $nonnet_crawl_items['queue_servers'];
-                $crawl_item = $nonnet_crawl_items[$crawl_time];
-            }
-            $in_url = "";
-            $image_flag = false;
-            if(isset($crawl_item[self::THUMB])) {
-                $image_flag = true;
-                $inlinks = $this->phraseModel->getPhrasePageResults(
-                    "link:$url", 0,
-                    1, true, NULL, false, 0, $queue_servers);
-                $in_url = isset($inlinks["PAGES"][0][self::URL]) ?
-                    $inlinks["PAGES"][0][self::URL] : "";
-            }
-            $check_fields = array(self::TITLE, self::DESCRIPTION, self::LINKS);
-            foreach($check_fields as $field) {
-                $crawl_item[$field] = (isset($crawl_item[$field])) ?
-                    $crawl_item[$field] : "";
-            }
-            $robot_instance = isset($crawl_item[self::ROBOT_INSTANCE]) ?
-                $crawl_item[self::ROBOT_INSTANCE]: '';
-            $robot_table_name = CRAWL_DIR."/".self::robot_table_name;
-            $robot_table = array();
-            if(file_exists($robot_table_name)) {
-                $robot_table =
-                    unserialize(file_get_contents($robot_table_name));
-            }
-
-            if(!isset($robot_table[$robot_instance])) {
-                array_push($no_cache, $crawl_time);
-                continue;
-            }
-
-            $instance_parts = explode("-", $robot_instance);
-            $instance_num = false;
-            if(count($instance_parts) > 1) {
-                $instance_num = intval($instance_parts[0]);
-            }
-            $machine = $robot_table[$robot_instance][0];
-            $machine_uri = $robot_table[$robot_instance][1];
-            $page = $crawl_item[self::HASH];
-            $offset = $crawl_item[self::OFFSET];
-            $cache_partition = $crawl_item[self::CACHE_PAGE_PARTITION];
-            $cache_item = $this->crawlModel->getCacheFile($machine,
-                $machine_uri, $cache_partition, $offset,  $crawl_time,
-                $instance_num);
-            if(!isset($cache_item[self::PAGE])) {
-                array_push($no_cache, $crawl_time);
-                continue;
-            }
-        }
-        return $no_cache;
-    }
-
-    /**
      *  User Interface for history feature
      *
      *  @param long $crawl_time is the crawl time
@@ -1767,14 +1700,15 @@ class SearchController extends Controller implements CrawlConstants
      *  @param DOMElement $divNode is the section that contains the History UI
      *  @param DOMDocument $dom is the DOM of the cached page
      *  @param string $terms is a string containing query terms
-     *  @param boolean $hist_ui is a flag to check if links is from History UI
+     *  @param boolean $hist_ui_open is a flag to check if History UI should be
+     *      open by default
      *  @param string $url is the URL of the page
      *
      *  @return DOMElement the section containing the options for
      *      selecting year and month
      */
     function historyUI($crawl_time, $all_crawl_times, $divNode, $dom, $terms,
-        $hist_ui, $url)
+        $hist_ui_open, $url)
     {
         //Guess locale for date localization
         $locale_type = guessLocale();
@@ -1799,7 +1733,7 @@ class SearchController extends Controller implements CrawlConstants
         /*create divs for all year.month pairs and populate with links
          */
         $d1 = $this->createLinkDivs($time_ds, $current_year, $current_month,
-            $d1, $dom, $url, $years, $hist_ui, $terms, $crawl_time);
+            $d1, $dom, $url, $years, $hist_ui_open, $terms, $crawl_time);
 
         return $d1;
     }
@@ -1894,14 +1828,15 @@ class SearchController extends Controller implements CrawlConstants
      * @param DOMDocument $dom is the DOM for the cached page
      * @param string $url is the URL for the cached page
      * @param array years is an array storing years associated with all indexes
-     * @param boolean $hist_ui checks if a link is from the History UI
+     * @param boolean $hist_ui_open checks if the History UI state should be
+     *      open
      * @param string $terms is a string containing the query terms
      * @param long $crawl_time is the crawl time for the cached page
      * @return DOMElement $d1 is the section containing the options for
      * selecting year and month
      */
     function createLinkDivs($time_ds, $current_year, $current_month, $d1, $dom,
-        $url, $years, $hist_ui, $terms, $crawl_time)
+        $url, $years, $hist_ui_open, $terms, $crawl_time)
     {
         $yrs = array_keys($time_ds);
         foreach($years as $yr) {
@@ -1910,7 +1845,7 @@ class SearchController extends Controller implements CrawlConstants
                 $yeardiv = $dom->createElement("div");
                 $yeardiv->setAttributeNS("", "id", "#$yr$mth");
                 $yeardiv->setAttributeNS("", "style", "display:none");
-                if($hist_ui === true){
+                if($hist_ui_open === true){
                     if(!strcmp($yr, $current_year) &&
                         !strcmp($mth, $current_month)) {
                         $yeardiv->setAttributeNS("", "style", "display:block");
@@ -1929,12 +1864,14 @@ class SearchController extends Controller implements CrawlConstants
                             "$arr[2]");
                     if(isset($_SESSION['USER_ID'])) {
                         $user = $_SESSION['USER_ID'];
-                    } else {
+                    } else if (isset($_SERVER['REMOTE_ADDR'])) {
                         $user = $_SERVER['REMOTE_ADDR'];
+                    } else {
+                        $user = "127.0.0.1";
                     }
                     $csrf_token = $this->generateCSRFToken($user);
                     $link = "?YIOOP_TOKEN=$csrf_token&c=search&a=cache&".
-                        "q=$terms&arg=$url_encoded&its=$arr[4]";
+                        "q=$terms&arg=$url_encoded&its=$arr[4]&hist_open=true";
                     $link_dom = $dom->createElement("a");
                         $link_dom->setAttributeNS("", "href", $link);
                     if($arr[4] == $crawl_time) {
