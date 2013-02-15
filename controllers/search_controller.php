@@ -806,6 +806,8 @@ class SearchController extends Controller implements CrawlConstants
             return;
         }
         $time = time();
+        $rss_feeds = $this->getMediaSources("rss");
+        if(!$rss_feeds || count($rss_feeds) == 0) { return; }
         $cron_time = $this->cronModel->getCronTime("news_delete");
         $delta = $time - $cron_time;
         if($delta == 0) {
