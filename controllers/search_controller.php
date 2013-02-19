@@ -799,15 +799,35 @@ class SearchController extends Controller implements CrawlConstants
      *
      *  @param array $data used by view to render itself. In this case, if there
      *      is a problem updating the news then we will flash a message
+     *  @param bool $no_news_process if true than assume news_updater.php is
+     *      not running. If false, assume being run from news_updater.php so
+     *      update news_process cron time.
      */
-    function newsUpdate(&$data)
+    function newsUpdate(&$data, $no_news_process = true)
     {
         if(!defined(SUBSEARCH_LINK)|| !SUBSEARCH_LINK) {
+            $data["LOG_MESSAGES"] =
+                "No news update as SUBSEARCH_LINK define false.";
             return;
         }
         $time = time();
         $rss_feeds = $this->sourceModel->getMediaSources("rss");
-        if(!$rss_feeds || count($rss_feeds) == 0) { return; }
+        if(!$rss_feeds || count($rss_feeds) == 0) { 
+            $data["LOG_MESSAGES"] =
+                "No news update as no news feeds.";
+            return;
+        }
+        if($no_news_process) {
+            $cron_time = $this->cronModel->getCronTime("news_process");
+            $delta = $time - $cron_time;
+            if($delta < SourceModel::ONE_HOUR) {
+                $data["LOG_MESSAGES"] = "News process running.";
+                return;
+            }
+        } else {
+            $this->cronModel->updateCronTime("news_process", true);
+        }
+        $data["LOG_MESSAGES"] = "";
         $cron_time = $this->cronModel->getCronTime("news_delete");
         $delta = $time - $cron_time;
         if($delta == 0) {
@@ -826,15 +846,18 @@ class SearchController extends Controller implements CrawlConstants
         /*  each day delete everything older than a week and rebuild index
             do this every four hours so news articles tend to stay in order
          */
-        if($delta > 3*SourceModel::ONE_HOUR && 
+        if($delta > 3 * SourceModel::ONE_HOUR && 
           $start_delta > SourceModel::ONE_HOUR/12 && 
           $lock_delta > SourceModel::TWO_MINUTES) {
             $this->cronModel->updateCronTime("news_lock");
             $this->cronModel->updateCronTime("news_start_delete", true);
+            $data["LOG_MESSAGES"] .=
+                "Deleting feed items and rebuild shard...\n";
             $full_update = $delta > SourceModel::ONE_DAY;
             if($this->sourceModel->deleteFeedItems(SourceModel::ONE_WEEK,
                 $full_update)) {
                 $this->cronModel->updateCronTime("news_delete", true);
+                $data["LOG_MESSAGES"] .= "... shard rebuilt\n";
             }
             $this->cronModel->saveCronTable();
             return;
@@ -851,6 +874,7 @@ class SearchController extends Controller implements CrawlConstants
             $this->cronModel->updateCronTime("news_try_again", true);
             $this->sourceModel->updateFeedItems(SourceModel::ONE_WEEK,
                 true);
+            $data["LOG_MESSAGES"] .= "Re-trying feeds with no items\n";
             $this->cronModel->saveCronTable();
             return;
         }
@@ -861,6 +885,7 @@ class SearchController extends Controller implements CrawlConstants
             && $lock_delta > SourceModel::TWO_MINUTES) {
             $this->cronModel->updateCronTime("news_lock");
             $this->cronModel->updateCronTime("news_update", true);
+            $data["LOG_MESSAGES"] .= "Performing news feeds update\n";
             if(!$this->sourceModel->updateFeedItems(
                 SourceModel::ONE_WEEK)) {
                 if(!isset($data['SCRIPT'])) {
@@ -870,9 +895,13 @@ class SearchController extends Controller implements CrawlConstants
                         "doMessage('<h1 class=\"red\" >".
                         tl('search_controller_news_update_fail').
                         "</h1>');";
+                $data["LOG_MESSAGES"] .= "News feeds update failed.\n";
             }
         }
         $this->cronModel->saveCronTable();
+        if($data["LOG_MESSAGES"] == "") {
+            $data["LOG_MESSAGES"] = "No updates needed.";
+        }
     }
 
     /**

@@ -116,6 +116,7 @@ class CronModel extends Model
         $this->cron_table[$key] = time();
         if(!$transaction) {
             file_put_contents($this->cron_file, serialize($this->cron_table));
+            @chmod($this->cron_file, 0777);
         }
     }
 
@@ -125,6 +126,7 @@ class CronModel extends Model
     function saveCronTable()
     {
         file_put_contents($this->cron_file, serialize($this->cron_table));
+        @chmod($this->cron_file, 0777);
     }
 }
 

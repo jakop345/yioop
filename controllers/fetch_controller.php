@@ -516,6 +516,7 @@ class FetchController extends Controller implements CrawlConstants
         }
 
         $info[self::QUEUE_SERVERS] = $this->machineModel->getQueueServerUrls();
+        $info[self::SAVED_CRAWL_TIMES] = $this->getCrawlTimes();
         $info[self::POST_MAX_SIZE] = metricToInt(ini_get("post_max_size"));
         if(count($info[self::QUEUE_SERVERS]) == 0) {
             $info[self::QUEUE_SERVERS] = array(NAME_SERVER);
@@ -535,6 +536,39 @@ class FetchController extends Controller implements CrawlConstants
     function doCronTasks()
     {
         $this->machineModel->restartCrashedFetchers();
+    }
+
+    /**
+     * Gets a list of all the timestamps of previously stored crawls
+     *
+     * This could probably be moved to crawl model. It is a little lighter
+     * than getCrawlList and should be only used with a name server so leaving
+     * it here so it won't be confused.
+     *
+     * @return array list of timestamps
+     */
+    function getCrawlTimes()
+    {
+        $list = array();
+        $dirs = glob(CRAWL_DIR.'/cache/*');
+
+        foreach($dirs as $dir) {
+            if(strlen($pre_timestamp = strstr($dir,
+                self::index_data_base_name)) > 0) {
+                $list[] = substr($pre_timestamp,
+                    strlen(self::index_data_base_name));
+            }
+            if(strlen($pre_timestamp = strstr($dir,
+                self::network_base_name)) > 0) {
+                $tmp = substr($pre_timestamp,
+                    strlen(self::network_base_name), -4);
+                if(is_numeric($tmp)) {
+                    $list[] = $tmp;
+                }
+            }
+        }
+        $list = array_unique($list);
+        return $list;
     }
 }
 ?>

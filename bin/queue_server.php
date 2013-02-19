@@ -1849,8 +1849,6 @@ class QueueServer implements CrawlConstants, Join
         $sites = array();
         $sites[self::CRAWL_TIME] = $this->crawl_time;
         $sites[self::SCHEDULE_TIME] = $schedule_time;
-        $sites[self::SAVED_CRAWL_TIMES] =  $this->getCrawlTimes();
-            // fetcher should delete any crawl time not listed here
         $sites[self::CRAWL_ORDER] = $this->crawl_order;
         $sites[self::CRAWL_TYPE] = $this->crawl_type;
         $sites[self::CRAWL_INDEX] = $this->crawl_index;
@@ -2281,29 +2279,6 @@ class QueueServer implements CrawlConstants, Join
         }
         return $flag;
     }
-
-    /**
-     * Gets a list of all the timestamps of previously stored crawls
-     *
-     * @return array list of timestamps
-     */
-    function getCrawlTimes()
-    {
-        $list = array();
-        $dirs = glob(CRAWL_DIR.'/cache/*', GLOB_ONLYDIR);
-
-        foreach($dirs as $dir) {
-            if(strlen($pre_timestamp = strstr($dir,
-                self::index_data_base_name)) > 0) {
-                $list[] = substr($pre_timestamp,
-                    strlen(self::index_data_base_name));
-            }
-        }
-
-        return $list;
-    }
-
-
 }
 
 if(!defined("UNIT_TEST_MODE")) {

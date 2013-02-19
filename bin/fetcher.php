@@ -537,10 +537,6 @@ class Fetcher implements CrawlConstants
                 crawlLog("Switching archive...");
             }
 
-            if(isset($info[self::SAVED_CRAWL_TIMES])) {
-                $this->deleteOldCrawls($info[self::SAVED_CRAWL_TIMES]);
-            }
-
             switch($this->crawl_type)
             {
                 case self::WEB_CRAWL:
@@ -745,12 +741,14 @@ class Fetcher implements CrawlConstants
      *
      * If the timestamp has changed save the rest of the current fetch batch,
      * then load any existing fetch from the new crawl; otherwise, set the crawl
-     * to empty
+     * to empty. Also, handles deleting old crawls on this fetcher machine
+     * based on a list of current crawls on the name server.
      *
      * @return bool true if loaded a fetch batch due to time change
      */
     function checkCrawlTime()
     {
+        static $saved_crawl_times = array();
         $name_server = $this->name_server;
 
         $start_time = microtime();
@@ -775,6 +773,15 @@ class Fetcher implements CrawlConstants
             "&crawl_time=$crawl_time";
         $info_string = FetchUrl::getPage($request);
         $info = @unserialize(trim($info_string));
+        if(isset($info[self::SAVED_CRAWL_TIMES])) {
+            if(array_diff($info[self::SAVED_CRAWL_TIMES], $saved_crawl_times)
+                != array() ||
+                array_diff($saved_crawl_times, $info[self::SAVED_CRAWL_TIMES])
+                != array()) {
+                $saved_crawl_times = $info[self::SAVED_CRAWL_TIMES];
+                $this->deleteOldCrawls($saved_crawl_times);
+            }
+        }
         if(isset($info[self::CRAWL_TIME])
             && ($info[self::CRAWL_TIME] != $this->crawl_time
             || $info[self::CRAWL_TIME] == 0)) {

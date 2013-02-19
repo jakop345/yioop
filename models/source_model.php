@@ -477,12 +477,16 @@ class SourceModel extends Model
             }
         }
         $prune_shard->save();
+        @chmod($prune_shard_name, 0777);
+        @chmod($feed_shard_name, 0777);
         if(!$completed) {
             file_put_contents($prune_info_file, serialize($info));
+            chmod($prune_info_file, 0777);
             return false;
         }
 
         @rename($prune_shard_name, $feed_shard_name);
+        @chmod($feed_shard_name, 0777);
         $sql = "DELETE FROM FEED_ITEM WHERE PUBDATE < '$too_old'";
         $db->execute($sql);
         @unlink($prune_info_file);
