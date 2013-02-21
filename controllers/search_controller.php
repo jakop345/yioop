@@ -817,6 +817,7 @@ class SearchController extends Controller implements CrawlConstants
                 "No news update as no news feeds.";
             return;
         }
+        $news_process = false;
         if($no_news_process) {
             $cron_time = $this->cronModel->getCronTime("news_process");
             $delta = $time - $cron_time;
@@ -826,6 +827,7 @@ class SearchController extends Controller implements CrawlConstants
             }
         } else {
             $this->cronModel->updateCronTime("news_process", true);
+            $news_process = true;
         }
         $data["LOG_MESSAGES"] = "";
         $cron_time = $this->cronModel->getCronTime("news_delete");
@@ -843,7 +845,7 @@ class SearchController extends Controller implements CrawlConstants
         $lock_delta = $time - $lock_time;
         if($lock_delta == 0) {$lock_delta = 2 * SourceModel::TWO_MINUTES; }
 
-        /*  each day delete everything older than a week and rebuild index
+        /*  every 3 hours everything older than a week and rebuild index
             do this every four hours so news articles tend to stay in order
          */
         if($delta > 3 * SourceModel::ONE_HOUR && 
@@ -853,9 +855,8 @@ class SearchController extends Controller implements CrawlConstants
             $this->cronModel->updateCronTime("news_start_delete", true);
             $data["LOG_MESSAGES"] .=
                 "Deleting feed items and rebuild shard...\n";
-            $full_update = $delta > SourceModel::ONE_DAY;
             if($this->sourceModel->deleteFeedItems(SourceModel::ONE_WEEK,
-                $full_update)) {
+                $news_process)) {
                 $this->cronModel->updateCronTime("news_delete", true);
                 $data["LOG_MESSAGES"] .= "... shard rebuilt\n";
             }
@@ -873,7 +874,7 @@ class SearchController extends Controller implements CrawlConstants
             $this->cronModel->updateCronTime("news_lock");
             $this->cronModel->updateCronTime("news_try_again", true);
             $this->sourceModel->updateFeedItems(SourceModel::ONE_WEEK,
-                true);
+                true, $news_process);
             $data["LOG_MESSAGES"] .= "Re-trying feeds with no items\n";
             $this->cronModel->saveCronTable();
             return;
@@ -887,7 +888,7 @@ class SearchController extends Controller implements CrawlConstants
             $this->cronModel->updateCronTime("news_update", true);
             $data["LOG_MESSAGES"] .= "Performing news feeds update\n";
             if(!$this->sourceModel->updateFeedItems(
-                SourceModel::ONE_WEEK)) {
+                SourceModel::ONE_WEEK, false, $news_process)) {
                 if(!isset($data['SCRIPT'])) {
                     $data['SCRIPT'] = "";
                 }

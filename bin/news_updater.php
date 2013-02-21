@@ -89,7 +89,9 @@ mb_internal_encoding("UTF-8");
 mb_regex_encoding("UTF-8");
 
 /**
- *
+ *  Separate process/command-line script which can be used to update
+ *  news sources for Yioop. This is as an alternative to using the web app
+ *  for updating. Makes use of the web-apps code.
  *
  *  @author Chris Pollett
  *  @package seek_quarry
@@ -109,9 +111,9 @@ class NewsUpdater implements CrawlConstants
     }
 
     /**
-     *  This is the function that should be called to get the fetcher to start
-     *  fetching. Calls init to handle the command-line arguments then enters
-     *  the fetcher's main loop
+     *  This is the function that should be called to get the newsupdater to 
+     *  start to start updating. Calls init to handle the command-line 
+     *  arguments then enters news_updaters main loop
      */
     function start()
     {
@@ -128,7 +130,6 @@ class NewsUpdater implements CrawlConstants
 
     /**
      * Main loop for the news updater.
-     *
      */
     function loop()
     {
@@ -141,6 +142,9 @@ class NewsUpdater implements CrawlConstants
 
             crawlLog("Checking if news feeds should be updated...");
             $data = array();
+            /* we use the argument false to tell the web app not to try to
+               update news independently of news_updater
+             */
             $this->searchController->newsUpdate($data, false);
             if(isset($data['LOG_MESSAGES'])) {
                 crawlLog($data['LOG_MESSAGES']);
@@ -155,7 +159,6 @@ class NewsUpdater implements CrawlConstants
 
         crawlLog("News Updater shutting down!!");
     }
-
 
 }
 

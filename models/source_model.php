@@ -296,9 +296,12 @@ class SourceModel extends Model
      *  @param int $age how many seconds old records should be ignored
      *  @param bool $try_again whether to update everything or just those
      *      feeds for which we have no items
+     *  @param bool $news_process whether this is being called from
+     *      new_update daemon or being done by the web app
      *  @return bool whether feed item update was successful
      */
-    function updateFeedItems($age = self::ONE_WEEK, $try_again = false)
+    function updateFeedItems($age = self::ONE_WEEK, $try_again = false,
+        $news_process = false)
     {
         $time = time();
         $this->db->selectDB(DB_NAME);
@@ -372,7 +375,7 @@ class SourceModel extends Model
                 }
                 $this->addFeedItemIfNew($item, $feed_shard,
                     $feed['NAME'], $lang, $age);
-                if(time() - $time > $max_time) {
+                if(!$news_process && (time() - $time > $max_time)) {
                     break 2; // running out of time better save shard
                 }
             }
@@ -389,9 +392,11 @@ class SourceModel extends Model
      * it returns true
      *
      * @param int $age how many seconds old records should be deleted
+     * @param bool $news_process whether this is being called from
+     *      new_update daemon or being done by the web app
      * @return bool whether job executed to complete
      */
-    function deleteFeedItems($age, $full_update = true)
+    function deleteFeedItems($age, $news_process = false)
     {
         $time = time();
         $feed_shard_name = WORK_DIRECTORY."/feeds/index";
@@ -463,7 +468,7 @@ class SourceModel extends Model
                     $source_name, $item["GUID"]);
                 $prune_shard->addDocumentWords($doc_keys, $item['PUBDATE'],
                     $word_lists, $meta_ids, true, false);
-                if(time() - $time > $max_time) {
+                if(!$news_process && (time() - $time > $max_time)) {
                     $info['start_pubdate'] = $item['PUBDATE'];
                     $info['copy_tries']++;
                     if($info['copy_tries'] < self::MAX_COPY_TRIES) {
