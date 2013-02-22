@@ -360,18 +360,29 @@ class SourceModel extends Model
             }
 
             $nodes = $dom->getElementsByTagName('item');
-            $rss_elements = array("title", "description", "link", "guid",
-                "pubDate");
+            $rss_elements = array("title" => "title",
+                "description" => "description", "link" =>"link",
+                "guid" => "guid", "pubDate" => "pubDate");
+            if($nodes->length == 0) {
+                // maybe we're dealing with atom rather than rss
+                $nodes = $dom->getElementsByTagName('entry');
+                $rss_elements = array(
+                    "title" => "title", "description" => "summary", 
+                    "link" => "link", "guid" => "id", "pubDate" => "updated");
+            }
             $max_time = min(self::MAX_EXECUTION_TIME,
                 ini_get('max_execution_time')/3);
             foreach($nodes as $node) {
                 $item = array();
-                foreach($rss_elements as $element) {
+                foreach($rss_elements as $db_element => $feed_element) {
                     $tag_node = $node->getElementsByTagName(
-                            $element)->item(0);
+                            $feed_element)->item(0);
                     $element_text = (is_object($tag_node)) ?
                         $tag_node->nodeValue: "";
-                    $item[$element] = strip_tags($element_text);
+                    if($feed_element == "link" && $element_text == "") {
+                        $element_text = $tag_node->getAttribute("href");
+                    }
+                    $item[$db_element] = strip_tags($element_text);
                 }
                 $this->addFeedItemIfNew($item, $feed_shard,
                     $feed['NAME'], $lang, $age);

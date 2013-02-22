@@ -65,6 +65,12 @@ class MachinestatusView extends View
         if(count($data['MACHINES']) == 0) {
             e(tl('machinestatus_view_no_monitored'));
         } else {
+        ?>
+        <div class="box">
+        <h3 class="nomargin"><?php 
+            e(tl('machinestatus_view_news_updater'))?></h3>
+        </div><br />
+        <?php
         foreach($data['MACHINES'] as $m) { ?>
             <div class="box">
             <h3 class="nomargin"><?php e($m['NAME']);?></h3>

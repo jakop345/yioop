@@ -821,7 +821,7 @@ class SearchController extends Controller implements CrawlConstants
         if($no_news_process) {
             $cron_time = $this->cronModel->getCronTime("news_process");
             $delta = $time - $cron_time;
-            if($delta < SourceModel::ONE_HOUR) {
+            if($delta < SourceModel::ONE_HOUR && $delta != 0) {
                 $data["LOG_MESSAGES"] = "News process running.";
                 return;
             }
@@ -829,6 +829,7 @@ class SearchController extends Controller implements CrawlConstants
             $this->cronModel->updateCronTime("news_process", true);
             $news_process = true;
         }
+
         $data["LOG_MESSAGES"] = "";
         $cron_time = $this->cronModel->getCronTime("news_delete");
         $delta = $time - $cron_time;

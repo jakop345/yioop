@@ -82,9 +82,11 @@ class CronModel extends Model
             $this->loadCronTable();
         }
         if(!isset($this->cron_table[$key])) {
-            $this->cron_table[$key] = time();
+            $time = time();
+        } else {
+            $time = $this->cron_table[$key];
         }
-        return $this->cron_table[$key];
+        return $time;
     }
 
     /**
