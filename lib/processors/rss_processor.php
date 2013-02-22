@@ -44,7 +44,7 @@ require_once BASE_DIR."/lib/url_parser.php";
 
  /**
  * Used to create crawl summary information
- * for RSS files
+ * for RSS or Atom files
  *
  * @author Chris Pollett
  * @package seek_quarry
@@ -60,7 +60,7 @@ class RssProcessor extends TextProcessor
 
     /**
      *  Used to extract the title, description and links from
-     *  a string consisting of rss news feed data.
+     *  a string consisting of rss or atom news feed data.
      *
      *  @param string $page   web-page contents
      *  @param string $url   the url where the page contents came from,
@@ -74,16 +74,20 @@ class RssProcessor extends TextProcessor
         $summary = NULL;
         if(is_string($page)) {
             $dom = self::dom($page);
-
+            $atom = false;
+            $feed_nodes = $dom->getElementsByTagName('feed');
+            if($feed_nodes->length > 0) {
+                $atom = true;
+            }
             if($dom !==false) {
-                $summary[self::TITLE] = self::title($dom);
-                $summary[self::DESCRIPTION] = self::description($dom);
+                $summary[self::TITLE] = self::title($dom, $atom);
+                $summary[self::DESCRIPTION] = self::description($dom, $atom);
                 $summary[self::LANG] = self::lang($dom,
                     $summary[self::DESCRIPTION]);
-                $summary[self::LINKS] = self::links($dom, $url);
+                $summary[self::LINKS] = self::links($dom, $url, $atom);
                 if(strlen($summary[self::DESCRIPTION] . $summary[self::TITLE])
                     == 0 && count($summary[self::LINKS]) == 0) {
-                    //maybe not rss? treat as text still try to get urls
+                    //maybe not rss or atom? treat as text still try to get urls
                     $summary = parent::process($page, $url);
                 }
             }
@@ -137,18 +141,24 @@ class RssProcessor extends TextProcessor
      *  Returns html head title of a webpage based on its document object
      *
      *  @param object $dom   a document object to extract a title from.
+     *  @param bool $atom if the feed is atom or rss
      *  @return string  a title of the page
      *
      */
-    static function title($dom)
+    static function title($dom, $atom = false)
     {
         $sites = array();
 
         $xpath = new DOMXPath($dom);
-        $titles = $xpath->evaluate("/rss/channel/title");
+        if($atom){
+            $xpath->registerNamespace('atom', "http://www.w3.org/2005/Atom");
+        }
+        $title_query = ($atom) ? "/feed/title|/atom:feed/atom:title" :
+            "/rss/channel/title";
+
+        $titles = $xpath->evaluate($title_query);
 
         $title = "";
-
         foreach($titles as $pre_title) {
             $title .= $pre_title->textContent;
         }
@@ -161,9 +171,10 @@ class RssProcessor extends TextProcessor
      * object
      *
      * @param object $dom   a document object to extract a description from.
+     * @param bool $atom if the feed is atom or rss
      * @return string a description of the page
      */
-    static function description($dom) {
+    static function description($dom, $atom = false) {
         $sites = array();
 
         $xpath = new DOMXPath($dom);
@@ -171,12 +182,20 @@ class RssProcessor extends TextProcessor
         $description = "";
 
         /*
-          concatenate the contents of then additional dom elements up to
+          concatenate the contents of these dom elements up to
           the limit of description length
         */
         $page_parts = array("/rss/channel/description",
             "/rss/channel/category", "/rss/channel/lastBuildDate",
             "/rss/channel/copyright");
+        if($atom) {
+            $xpath->registerNamespace('atom', "http://www.w3.org/2005/Atom");
+            $page_parts = array("/feed/subtitle", "/feed/author",
+                "/feed/updated", "/feed/rights", "/feed/generator",
+                "/atom:feed/atom:subtitle", "/atom:feed/atom:author",
+                "/atom:feed/atom:updated", "/atom:feed/atom:rights",
+                "/atom:feed/atom:generator");
+        }
         foreach($page_parts as $part) {
             $doc_nodes = $xpath->evaluate($part);
             foreach($doc_nodes as $node) {
@@ -196,10 +215,11 @@ class RssProcessor extends TextProcessor
      *
      * @param object $dom   a document object with links on it
      * @param string $site   a string containing a url
+     * @param bool $atom if the feed is atom or rss
      *
      * @return array   links from the $dom object
      */
-    static function links($dom, $site)
+    static function links($dom, $site, $atom = false)
     {
         $sites = array();
 
@@ -210,6 +230,14 @@ class RssProcessor extends TextProcessor
             "/rss/channel/image" => array( "url" =>"url", "text" => "title"),
             "/rss/channel/item" => array( "url" =>"link", "text" => "title"),
         );
+        if($atom) {
+            $xpath->registerNamespace('atom', "http://www.w3.org/2005/Atom");
+            $link_nodes = array(
+                "/feed/entry" => array( "url" =>"link", "text" => "title"),
+                "/atom:feed/atom:entry" 
+                    => array( "url" =>"link", "text" => "title"),
+            );
+        }
 
         $i = 0;
 
@@ -217,7 +245,8 @@ class RssProcessor extends TextProcessor
             $nodes = $xpath->evaluate($path);
             foreach($nodes as $node) {
                 $result = self::linkAndTexts($node,
-                    $url_text_pair['url'], $url_text_pair['text'], $site);
+                    $url_text_pair['url'], $url_text_pair['text'], $site,
+                    $atom);
                 if($result != false) {
                     list($url, $text) = $result;
                     $sites[$url] = $text;
@@ -242,15 +271,22 @@ class RssProcessor extends TextProcessor
      * @param string $link_name name of link tag
      * @param string $text_name name of text tag to associate with link
      * @param string $site   a string containing a url
+     * @param bool $atom if the feed is atom or rss
      *
      * @return array a url,text pair
      */
-    static function linkAndTexts($item_node, $link_name, $text_name, $site)
+    static function linkAndTexts($item_node, $link_name, $text_name, $site,
+         $atom = false)
     {
         foreach($item_node->childNodes as $node) {
             if($node->nodeName == $link_name) {
-                $url = UrlParser::canonicalLink(
-                    $node->textContent, $site);
+                if(!$atom) {
+                    $url = UrlParser::canonicalLink(
+                        $node->textContent, $site);
+                } else {
+                    $url = UrlParser::canonicalLink(
+                        $node->getAttribute("href"), $site);
+                }
                 if($url === NULL || $url === "" ||
                     UrlParser::checkRecursiveUrl($url) ||
                     strlen($url) >= MAX_URL_LENGTH) {
@@ -261,6 +297,9 @@ class RssProcessor extends TextProcessor
                 $text = $node->textContent;
                 if($text == "") {
                     $text = "RSS Feed";
+                    if($atom) {
+                        $text = "Atom Feed";
+                    }
                 }
             }
         }

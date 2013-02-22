@@ -346,6 +346,7 @@ $INDEXED_FILE_TYPES =
     array(
             "asp",
             "aspx",
+            "atom",
             "bmp",
             "cgi",
             "cfm",
@@ -394,7 +395,7 @@ $PAGE_PROCESSORS = array(   "text/html" => "HtmlProcessor",
                             "application/xhtml+xml" => "HtmlProcessor",
 
                             "application/rss+xml" => "RssProcessor",
-
+                            "application/atom+xml" => "RssProcessor",
                             "application/pdf" => "PdfProcessor",
 
                             "application/msword" => "DocProcessor",

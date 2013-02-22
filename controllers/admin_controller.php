@@ -1651,6 +1651,7 @@ class AdminController extends Controller implements CrawlConstants
             "application/xml" => "XmlProcessor",
             "application/xhtml+xml" => "HtmlProcessor",
             "application/rss+xml" => "RssProcessor",
+            "application/atom+xml" => "RssProcessor",
             "text/rtf" => "RtfProcessor",
             "text/plain" => "TextProcessor",
             "text/csv" => "TextProcessor",
