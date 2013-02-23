@@ -372,6 +372,8 @@ class SourceModel extends Model
             }
             $max_time = min(self::MAX_EXECUTION_TIME,
                 ini_get('max_execution_time')/3);
+            crawlLog("Updating {$feed['NAME']}...");
+            $num_added = 0;
             foreach($nodes as $node) {
                 $item = array();
                 foreach($rss_elements as $db_element => $feed_element) {
@@ -384,12 +386,16 @@ class SourceModel extends Model
                     }
                     $item[$db_element] = strip_tags($element_text);
                 }
-                $this->addFeedItemIfNew($item, $feed_shard,
+                $did_add = $this->addFeedItemIfNew($item, $feed_shard,
                     $feed['NAME'], $lang, $age);
+                if($did_add) {
+                    $num_added++;
+                }
                 if(!$news_process && (time() - $time > $max_time)) {
                     break 2; // running out of time better save shard
                 }
             }
+            crawlLog("...added $num_added news items.");
         }
         $feed_shard->save();
         return true;
@@ -520,11 +526,12 @@ class SourceModel extends Model
      *  on
      * @param int $age how many seconds old records should be ignored
      * @param string $lang locale-tag of the news feed
+     * @return bool whether an item was added
      */
     function addFeedItemIfNew($item, $feed_shard, $source_name, $lang, $age)
     {
         if(!isset($item["link"]) || !isset($item["title"]) ||
-            !isset($item["description"])) return;
+            !isset($item["description"])) return false;
         if(!isset($item["guid"]) || $item["guid"] == "") {
             $item["guid"] = crawlHash($item["link"]);
         } else {
@@ -537,7 +544,7 @@ class SourceModel extends Model
             $item["pubDate"] = strtotime($item["pubDate"]);
         }
         if(time() - $item["pubDate"] > $age) {
-            return;
+            return false;
         }
         $sql = "SELECT COUNT(*) AS NUMBER FROM FEED_ITEM WHERE GUID=".
             "'{$item["guid"]}'";
@@ -546,10 +553,10 @@ class SourceModel extends Model
         if($result) {
             $row = $db->fetchArray($result);
             if($row["NUMBER"] > 0) {
-                return;
+                return false;
             }
         } else {
-            return;
+            return false;
         }
         $sql = "INSERT INTO FEED_ITEM VALUES ('{$item['guid']}',
             '".$db->escapeString($item['title'])."', '".
@@ -558,7 +565,7 @@ class SourceModel extends Model
             '{$item['pubDate']}',
             '".$db->escapeString($source_name)."')";
         $result = $db->execute($sql);
-        if(!$result) return;
+        if(!$result) return false;
         $phrase_string = $item["title"] . " ". $item["description"];
         $word_lists = PhraseParser::extractPhrasesInLists(
             $phrase_string, $lang, true);
@@ -569,6 +576,7 @@ class SourceModel extends Model
             $source_name, $item["guid"]);
         $feed_shard->addDocumentWords($doc_keys, $item['pubDate'], $word_lists,
             $meta_ids, true, false);
+        return true;
     }
 
     /**

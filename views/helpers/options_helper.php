@@ -56,15 +56,21 @@ class OptionsHelper extends Helper
      *  @param string $id   the id attribute the select tag should have
      *  @param string $name   the name this form element should use
      *  @param array $options   an array of key value pairs for the options
-     *  tags of this select element
+     *     tags of this select element
      *  @param string $selected   which option (note singular -- no support
-     *  for selecting more than one) should be set as selected
-     *  in the select tag
+     *      for selecting more than one) should be set as selected
+     *      in the select tag
+     *  @param bool $onchange_submit whether to submit the parent form if
+     *      this drop down is changed
      */
-    function render($id, $name, $options, $selected)
+    function render($id, $name, $options, $selected, $onchange_submit = false)
     {
     ?>
-        <select id="<?php e($id);?>" name="<?php e($name);?>" >
+        <select id="<?php e($id);?>" name="<?php e($name);?>" <?php
+            if($onchange_submit) {
+                e('onchange="this.form.submit()"');
+            }
+        ?> >
         <?php
         foreach($options as $value => $text) {
         ?>

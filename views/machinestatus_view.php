@@ -50,7 +50,7 @@ class MachinestatusView extends View
      * toggle is used to draw an On/Off switch
      * @var array
      */
-    var $helpers = array('toggle');
+    var $helpers = array('toggle', 'options');
 
     /**
      * Draws the ManagestatusView to the output buffer
@@ -68,7 +68,24 @@ class MachinestatusView extends View
         ?>
         <div class="box">
         <h3 class="nomargin"><?php 
-            e(tl('machinestatus_view_news_updater'))?></h3>
+            e(tl('machinestatus_view_news_updater'));
+            $log_url = $base_url ."log&amp;name=news";
+        ?></h3>
+        <form id="newsModeForm" method="post" action=''>
+        <input type="hidden" name="c" value="admin" />
+        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
+            e($data[CSRF_TOKEN]); ?>" />
+        <input type="hidden" name="a" value="manageMachines" />
+        <input type="hidden" name="arg" value="newsmode" />
+        <table class="machine-table"><tr>
+        <th><?php e(tl('machinestatus_view_updates_type'));?></th>
+        <td><?php $this->optionsHelper->render("news-mode",
+            "news_mode", $data['NEWS_MODES'], $data['NEWS_MODE'], true);?>
+        </td>
+        <td>[<a href="<?php e($log_url);?>"><?php 
+            e(tl('machinestatus_view_log'));?></a>]</td>
+        </tr></table>
+        </form>
         </div><br />
         <?php
         foreach($data['MACHINES'] as $m) { ?>

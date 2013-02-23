@@ -153,6 +153,8 @@ class MachineController extends Controller implements CrawlConstants
             $log_file_name = LOG_DIR . "/{$fetcher_num}-fetcher.log";
         }  else if(isset($_REQUEST["mirror"])) {
             $log_file_name = LOG_DIR . "/mirror.log";
+        } else if(isset($_REQUEST["news"])) {
+            $log_file_name = LOG_DIR . "/news_updater.log";
         } else {
             $log_file_name = LOG_DIR . "/queue_server.log";
         }

@@ -58,7 +58,7 @@ class ProfileModel extends Model
             'IN_LINK', 'IP_LINK', 'SIGNIN_LINK', 'SUBSEARCH_LINK',
             'ROBOT_INSTANCE', "WEB_ACCESS", "RSS_ACCESS", "API_ACCESS",
             'TITLE_WEIGHT','DESCRIPTION_WEIGHT','LINK_WEIGHT',
-            'MIN_RESULTS_TO_GROUP','SERVER_ALPHA');
+            'MIN_RESULTS_TO_GROUP','SERVER_ALPHA', 'NEWS_MODE');
     /**
      *  {@inheritdoc}
      */
@@ -171,6 +171,9 @@ EOT;
                     $profile[$field] = constant($field);
             } else {
                     $profile[$field] = "";
+            }
+            if($field == "NEWS_MODE" && $profile[$field] == "") {
+                $profile[$field] = "news_off";
             }
             if($field == "WEB_URI") {
                 $profile[$field] = UrlParser::getPath($_SERVER['REQUEST_URI']);

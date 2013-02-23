@@ -227,10 +227,16 @@ class MachineModel extends Model
     {
         $time = time();
         $session = md5($time . AUTH_KEY);
-        $sql = "SELECT URL FROM MACHINE WHERE NAME='$machine_name'";
+        $news = ($machine_name == "news");
+        if($news) {
+            $row = array();
+            $row["URL"] = NAME_SERVER;
+        } else {
+            $sql = "SELECT URL FROM MACHINE WHERE NAME='$machine_name'";
 
-        $result = $this->db->execute($sql);
-        $row = $this->db->fetchArray($result);
+            $result = $this->db->execute($sql);
+            $row = $this->db->fetchArray($result);
+        }
         if($row) {
             $url = $row["URL"]. "?c=machine&a=log&time=$time".
                 "&session=$session&f=$filter";
@@ -239,6 +245,9 @@ class MachineModel extends Model
             }
             if($is_mirror) {
                 $url .= "&mirror=true";
+            }
+            if($news) {
+                $url .= "&news=true";
             }
             $log_data = urldecode(json_decode(FetchUrl::getPage($url)));
         } else {

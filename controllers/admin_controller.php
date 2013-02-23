@@ -41,6 +41,8 @@ require_once BASE_DIR."/lib/crawl_constants.php";
 require_once BASE_DIR."/lib/url_parser.php";
 /** Used in rule parser test in page options */
 require_once BASE_DIR."/lib/page_rule_parser.php";
+/** Loads crawl_daemon to manage news_updater */
+require_once BASE_DIR."/lib/crawl_daemon.php";
 /** get processors for different file types */
 foreach(glob(BASE_DIR."/lib/processors/*_processor.php") as $filename) {
     require_once $filename;
@@ -70,7 +72,7 @@ class AdminController extends Controller implements CrawlConstants
      */
     var $models = array(
         "signin", "user", "activity", "crawl", "role", "locale", "profile",
-        "searchfilters", "source", "machine");
+        "searchfilters", "source", "machine", "cron");
     /**
      * Says which activities (roughly methods invoke from the web) this
      * controller will respond to
@@ -324,6 +326,14 @@ class AdminController extends Controller implements CrawlConstants
         $data = array();
         $data['REFRESH'] = "machinestatus";
         $data['MACHINES'] = $this->machineModel->getMachineStatuses();
+        $data['NEWS_MODES'] = array(
+            "news_off" => tl('admin_controller_news_off'),
+            "news_web" => tl('admin_controller_news_update_web'),
+            "news_process" => tl('admin_controller_news_process'),
+        );
+        $profile =  $this->profileModel->getProfile(WORK_DIRECTORY);
+        $data['NEWS_MODE'] = isset($profile['NEWS_MODE']) ? 
+            $profile['NEWS_MODE']: "";
         return $data;
     }
 
@@ -1856,7 +1866,7 @@ class AdminController extends Controller implements CrawlConstants
     {
         $data["ELEMENT"] = "managemachinesElement";
         $possible_arguments = array("addmachine", "deletemachine",
-            "log", "update");
+            "newsmode", "log", "update");
         $data['SCRIPT'] = "doUpdate();";
         $data["leftorright"]=(getLocaleDirection() == 'ltr') ? "right": "left";
         $data['MACHINES'] = array();
@@ -1874,7 +1884,6 @@ class AdminController extends Controller implements CrawlConstants
             8 => 8,
             16 => 16
         );
-
         $machines = $this->machineModel->getMachineList();
         $tmp = tl('admin_controller_select_machine');
         $data['DELETABLE_MACHINES'] = array(
@@ -1938,7 +1947,6 @@ class AdminController extends Controller implements CrawlConstants
 
         if(isset($_REQUEST['arg']) &&
             in_array($_REQUEST['arg'], $possible_arguments)) {
-
             switch($_REQUEST['arg'])
             {
                 case "addmachine":
@@ -2002,6 +2010,39 @@ class AdminController extends Controller implements CrawlConstants
                     }
                 break;
 
+                case "newsmode":
+                    $profile =  $this->profileModel->getProfile(WORK_DIRECTORY);
+                    $news_modes = array("news_off", "news_web", "news_process");
+                    if(isset($_REQUEST['news_mode']) && in_array(
+                        $_REQUEST['news_mode'], $news_modes)) {
+                        $profile["NEWS_MODE"] = $_REQUEST['news_mode'];
+                        if($profile["NEWS_MODE"] != "news_process") {
+                            CrawlDaemon::stop("news_updater", "", false);
+                        } else {
+                            $cron_time = $this->cronModel->getCronTime(
+                                "news_process");
+                            $delta = time() - $cron_time;
+                            if($delta > 180) {
+                                CrawlDaemon::start("news_updater", 'none', "",
+                                    false, true);
+                            } else {
+                            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                                tl('admin_controller_news_process_running').
+                                "</h1>');";
+                            }
+                        }
+                        $this->profileModel->updateProfile(
+                            WORK_DIRECTORY, array(), $profile);
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('admin_controller_news_mode_updated').
+                            "</h1>');";
+                    } else {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('admin_controller_news_update_failed').
+                            "</h1>');";
+                    }
+                break;
+
                 case "log":
                     if(isset($_REQUEST["fetcher_num"])) {
                         $r["fetcher_num"] =
@@ -2045,6 +2086,9 @@ class AdminController extends Controller implements CrawlConstants
                             $r["mirror_name"], NULL, $filter,  true);
                     } else if(isset($r['name'])) {
                         $data["LOG_TYPE"] = $r['name']." queue_server";
+                        if($r['name'] == "news") {
+                            $data["LOG_TYPE"] = "Name Server News Updater";
+                        }
                         $data["LOG_FILE_DATA"] = $this->machineModel->getLog(
                             $r["name"], NULL, $filter);
                         $data["REFRESH_LOG"] .= 

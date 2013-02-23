@@ -94,6 +94,7 @@ class CrawlDaemon implements CrawlConstants
 
         self::$time = $now;
         $lock_file = CrawlDaemon::getLockFileName(self::$name, self::$subname);
+
         if(!file_exists($lock_file)) {
             $name_string = CrawlDaemon::getNameString(self::$name,
                 self::$subname);
@@ -167,6 +168,7 @@ class CrawlDaemon implements CrawlConstants
                 $info = array();
                 $info[self::STATUS] = self::WAITING_START_MESSAGE_STATE;
                 file_put_contents($messages_file, serialize($info));
+                chmod($messages_file, 0777);
                 define("LOG_TO_FILES", false);
             break;
 
@@ -177,7 +179,7 @@ class CrawlDaemon implements CrawlConstants
                 $info = array();
                 $info[self::STATUS] = self::WAITING_START_MESSAGE_STATE;
                 file_put_contents($messages_file, serialize($info));
-
+                chmod($messages_file, 0777);
                 define("LOG_TO_FILES", true);
                     // if false log messages are sent to the console
             break;
@@ -197,8 +199,15 @@ class CrawlDaemon implements CrawlConstants
      * @param string $subname the instance name if it is possible for more
      *      than one copy of the daemon to be running at the same time
      * @param string $options a string of additional command line options
+     * @param bool $exit whether this function should exit or return
+     *      by default a lock file is only written if exit (this allows
+     *      both queue server processes (Indexer and Scheduler) to use the
+     *      same lock file
+     * @param bool $lock_file whether to write a lock file even if not exiting
+     *      used by news_updater
      */
-    static function start($name, $subname = "", $options = "", $exit = true)
+    static function start($name, $subname = "", $options = "", $exit = true,
+        $lock_file = false)
     {
         $tmp_subname = ($subname == 'none') ? '' : $subname;
         $lock_file = CrawlDaemon::getLockFileName($name, $tmp_subname);
@@ -208,7 +217,11 @@ class CrawlDaemon implements CrawlConstants
             if(time() - $time < 60) {
                 echo "$name appears to be already running...\n";
                 echo "Try stopping it first, then running start.";
-                exit();
+                if($exit) {
+                    exit();
+                } else {
+                    return;
+                }
             }
         }
         if(strstr(PHP_OS, "WIN")) {
@@ -223,8 +236,10 @@ class CrawlDaemon implements CrawlConstants
         $at_job = sprintf($script, $total_options);
         exec($at_job);
 
-        if($exit) {
+        if($exit || $lock_file) {
             file_put_contents($lock_file,  time());
+        }
+        if($exit) {
             exit();
         }
     }
@@ -237,7 +252,7 @@ class CrawlDaemon implements CrawlConstants
      * @param string $subname the instance name if it is possible for more
      *      than one copy of the daemon to be running at the same time
      */
-    static function stop($name, $subname = "")
+    static function stop($name, $subname = "", $exit = true)
     {
         $name_string = CrawlDaemon::getNameString($name, $subname);
         $lock_file = CrawlDaemon::getLockFileName($name, $subname);
@@ -247,7 +262,9 @@ class CrawlDaemon implements CrawlConstants
         } else {
             crawlLog("$name_string does not appear to running...");
         }
-        exit();
+        if($exit) {
+            exit();
+        }
     }
 
     /**

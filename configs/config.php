@@ -151,6 +151,7 @@ if(file_exists(WORK_DIRECTORY.PROFILE_FILE_NAME)) {
     define('IN_LINK', true);
     define('IP_LINK', true);
     define('SIGNIN_LINK', true);
+    define('NEWS_MODE', 'news_off');
     /** BM25F weight for title text */
     define ('TITLE_WEIGHT', 4);
     /** BM25F weight for other text within doc*/

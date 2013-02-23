@@ -651,7 +651,7 @@ class SearchController extends Controller implements CrawlConstants
             $guess_semantics = false;
         }
 
-        if($cron) {
+        if($cron && defined ("NEWS_MODE") && NEWS_MODE != 'news_off') {
             $this->newsUpdate($data);
         }
 
