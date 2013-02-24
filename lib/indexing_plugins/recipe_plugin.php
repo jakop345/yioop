@@ -38,6 +38,15 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  */
 define("CLUSTER_RATIO", 0.1);
 
+/** NO_CACHE means don't try to use memcache*/
+if(!defined("NO_CACHE")) {
+    define("NO_CACHE", true);
+}
+/** Don't try to use file cache either*/
+if(!defined("USE_CACHE")) {
+    define("USE_CACHE", false);
+}
+
 /** Loads processor used for */
 require_once BASE_DIR."/lib/processors/html_processor.php";
 /** Base indexing plugin class*/
@@ -52,6 +61,10 @@ require_once BASE_DIR."/lib/phrase_parser.php";
 require_once BASE_DIR."/lib/utility.php";
 /** Loads common constants for web crawling */
 require_once BASE_DIR."/lib/crawl_constants.php";
+/** For locale used by recipe query*/
+require_once BASE_DIR."/lib/locale_functions.php";
+/**Load base controller class, if needed. */
+require_once BASE_DIR."/controllers/search_controller.php";
 
 /**
  * This class handles recipe processing.
@@ -68,19 +81,13 @@ require_once BASE_DIR."/lib/crawl_constants.php";
  * http://www.bettycrocker.com/
  *
  *
- * @author Priya Gangaraju, Chris Pollett (reorganized and added documentation)
+ * @author Priya Gangaraju, Chris Pollett (re-organized, added documentation,
+ *      updated)
  * @package seek_quarry
  * @subpackage indexing_plugin
  */
 class RecipePlugin extends IndexingPlugin implements CrawlConstants
 {
-
-    /**
-     * The models used by this indexing plugin
-     * @var array
-     */
-    var $models = array("phrase", "locale", "crawl");
-
     /**
      * This method is called by a PageProcessor in its handle() method
      * just after it has processed a web page. This method allows
@@ -109,30 +116,30 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
 
         $xpath = new DOMXPath($dom);
         $recipes_per_page = $xpath->evaluate(
-           "/html//ul[@class = 'ingredient-wrap'] |
-            /html//div[@class = 'body-text'] |
-            /html//ul[@class = 'clr'] |
-            /html//div[@class = 'recipeDetails']
-                /ul[@class='ingredient_list']");
+ /*allr, f.com, brec, fnet*/ "/html//ul[@class = 'ingredient-wrap'] |
+            /html//*[@class = 'pod ingredients'] |
+            /html//*[@id='recipe_title'] |
+            /html//div[@class = 'rcp-head clrfix']|
+            /html//h1[@class = 'fn recipeDetailHeading']");
         $recipe = array();
         $subdocs_description = array();
-        if($recipes_per_page->length != 0) {
+        if(is_object($recipes_per_page) && $recipes_per_page->length != 0) {
             $recipes_count = $recipes_per_page->length;
             $titles = $xpath->evaluate(
-                "/html//div[@class='rectitle'] |
+ /* allr, f.com, brec, fnet   */ "/html//*[@id = 'itemTitle']|
                /html//h1[@class = 'fn'] |
-               /html//div[@class =
-                'pod about-recipe clrfix']/p |
-               /html//p[@class = 'recipeTitle']");
+               /html//*[@id='recipe_title'] |
+               /html//div[@class ='rcp-head clrfix']/h1 |
+               /html//h1[@class = 'fn recipeDetailHeading']");
             for($i=0; $i < $recipes_count; $i++) {
                 $ingredients = $xpath->evaluate(
-                    "/html//ul[@class = 'ingredient-wrap']/li |
-                    /html//div[@class = 'recipeDetails']
-                    /ul[@class='ingredient_list']/li |
-                    /html//div[@class = 'ingredients']
-                    /table/tr[@class = 'ingredient']");
+ /*allr*, fcomm, brec, fnet*/    "/html//ul[@class = 'ingredient-wrap']/li |
+                    /html//li[@class = 'ingredient']|
+                    /html//*[@class = 'ingredients']/*|
+                    /html//*[@itemprop='ingredients']
+                    ");
                 $ingredients_result = "";
-                if($ingredients->length != 0){
+                if(is_object($ingredients) && $ingredients->length != 0){
                     $lastIngredient = end($ingredients);
                     foreach($ingredients as $ingredient) {
                         $content = trim($ingredient->textContent);
@@ -167,27 +174,42 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
      */
     function postProcessing($index_name)
     {
-        $this->phraseModel->index_name = $index_name;
-        $this->crawlModel->index_name = $index_name;
+        global $INDEXING_PLUGINS;
 
-        $query_iterator = new WordIterator(crawlHash("recipe:all"),
-            $index_name);
-        $raw_recipes = array();
+        $locale_tag = guessLocale();
+        setLocaleObject($locale_tag);
+        $search_controller = new SearchController($INDEXING_PLUGINS);
+        $query = "recipe:all i:$index_name";
         crawlLog("...Running Recipe Plugin!");
         crawlLog("...Finding docs tagged as recipes.");
-        while(is_array($next_docs = $query_iterator->nextDocsWithWord())) {
-            foreach($next_docs as $doc_key => $doc_info) {
-                $doc_info['KEY'] = $doc_key;
-print_r($doc_info);
-print_r($summary);
-
-                unset($doc_info[CrawlConstants::SUMMARY]);
-                if(is_array($summary)) {
-                    $raw_recipes[] = array_merge($doc_info, $summary);
+        $more_docs = true;
+        $raw_recipes = array();
+        $limit = 0;
+        $num = 10;
+        while($more_docs) {
+            $results = @$search_controller->queryRequest($query,
+                $num, $limit, 1, $index_name);
+            if(isset($results["PAGES"]) && 
+                ($num_results = count($results["PAGES"])) > 0 ) {
+                $raw_recipes = array_merge($raw_recipes, $results["PAGES"]);
+            }
+            crawlLog("Scanning recipes $limit through ".
+                ($limit + $num_results).".");
+            $limit += $num_results;
+            if(isset($results["SAVE_POINT"]) ){
+                $end = true;
+                foreach($results["SAVE_POINT"] as $save_point)  {
+                    if($save_point != -1) {
+                        $end = false;
+                    }
                 }
+                if($end) {
+                    $more_docs = false;
+                }
+            } else {
+                $more_docs = false;
             }
         }
-
         crawlLog("...Clustering.");
         // only cluster if would make more than one cluster
         if(count($raw_recipes) * CLUSTER_RATIO > 1 ) {
@@ -199,7 +221,7 @@ print_r($summary);
                 if(is_array($ingredients) && count($ingredients) > 1) {
                     $recipes[$i][0]= $raw_recipe[self::TITLE];
                     $recipes[$i][1] = $ingredients;
-                    $recipes[$i][2] = $raw_recipe['KEY'];
+                    $recipes[$i][2] = crawlHash($raw_recipe[self::URL]);
                     $recipes[$i][3] = $raw_recipe;
                     $i++;
                 }
@@ -663,7 +685,7 @@ class Tree
     * @param array $ingredients array of ingredients of recipes.
     * @return array $new_clusters clusters with common ingredient appended.
     */
-    function findCommonIngredient($clusters,$ingredients)
+    function findCommonIngredient($clusters, $ingredients)
     {
         $k =1;
         $new_clusters = array();
@@ -691,7 +713,7 @@ class Tree
             $ingredient_occurrence =
                 array_count_values($cluster_recipe_ingredients);
             $max = max($ingredient_occurrence);
-            foreach($ingredient_occurrence as $key=>$value){
+            foreach($ingredient_occurrence as $key => $value){
                 if($max == $value && !in_array($key, $basic_ingredients)) {
                     $common_ingredients[] = $key;
                 }

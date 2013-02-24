@@ -166,6 +166,12 @@ class SearchController extends Controller implements CrawlConstants
         }
 
         $this->displayView($view, $data);
+
+        if(defined("NEWS_MODE") && NEWS_MODE != 'news_off' &&
+            count($data['PAGES']) > 0) {
+            ignore_user_abort();
+            $this->newsUpdate($data);
+        }
     }
 
     /**
@@ -588,12 +594,9 @@ class SearchController extends Controller implements CrawlConstants
      * @param int $save_timestamp if this timestamp is nonzero, then save
      *      iterate position, so can resume on future queries that make
      *      use of the timestamp
-     * @param bool $cron whether to perform any cron activities such as update
-     *      news
      */
     function processQuery(&$data, $query, $activity, $arg, $results_per_page,
-        $limit = 0, $index_name = 0, $raw = 0, $save_timestamp = 0,
-        $cron = true)
+        $limit = 0, $index_name = 0, $raw = 0, $save_timestamp = 0)
     {
         $no_index_given = false;
         if($index_name == 0) {
@@ -649,10 +652,6 @@ class SearchController extends Controller implements CrawlConstants
         }
         if(isset($_REQUEST['guess']) &&  $_REQUEST['guess'] == "false") {
             $guess_semantics = false;
-        }
-
-        if($cron && defined ("NEWS_MODE") && NEWS_MODE != 'news_off') {
-            $this->newsUpdate($data);
         }
 
         switch($activity)
@@ -890,13 +889,6 @@ class SearchController extends Controller implements CrawlConstants
             $data["LOG_MESSAGES"] .= "Performing news feeds update\n";
             if(!$this->sourceModel->updateFeedItems(
                 SourceModel::ONE_WEEK, false, $news_process)) {
-                if(!isset($data['SCRIPT'])) {
-                    $data['SCRIPT'] = "";
-                }
-                $data['SCRIPT'] .=
-                        "doMessage('<h1 class=\"red\" >".
-                        tl('search_controller_news_update_fail').
-                        "</h1>');";
                 $data["LOG_MESSAGES"] .= "News feeds update failed.\n";
             }
         }
@@ -1185,7 +1177,7 @@ class SearchController extends Controller implements CrawlConstants
 
         $data = array();
         $this->processQuery($data, $query, "query", "", $results_per_page,
-                $limit, 0, $grouping, $save_timestamp, false);
+                $limit, 0, $grouping, $save_timestamp);
         return $data;
     }
 
@@ -1224,7 +1216,7 @@ class SearchController extends Controller implements CrawlConstants
         $grouping = ($grouping > 0 ) ? 2 : 0;
         $data = array();
         $this->processQuery($data, "", "related", $url, $results_per_page,
-            $limit, $crawl_time, $grouping, $save_timestamp, false);
+            $limit, $crawl_time, $grouping, $save_timestamp);
         return $data;
     }
 

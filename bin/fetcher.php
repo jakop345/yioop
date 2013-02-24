@@ -192,7 +192,7 @@ class Fetcher implements CrawlConstants
     var $video_sources;
 
     /**
-     * WebArchiveBundle  used to store complete web pages and auxiliary data
+     * WebArchiveBundle used to store complete web pages and auxiliary data
      * @var object
      */
     var $web_archive;

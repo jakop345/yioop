@@ -196,6 +196,11 @@ class QueueServer implements CrawlConstants, Join
      */
     var $indexed_file_types;
     /**
+     * List of all known file extensions including those not used for crawl
+     * @var array
+     */
+    var $all_file_types;
+    /**
      *
      * @var bool
      */
@@ -301,6 +306,7 @@ class QueueServer implements CrawlConstants, Join
         $db_class = ucfirst(DBMS)."Manager";
         $this->db = new $db_class();
         $this->indexed_file_types = $indexed_file_types;
+        $this->all_file_types = $indexed_file_types;
         $this->most_recent_fetcher = "No Fetcher has spoken with me";
 
         //the next values will be set for real in startCrawl
@@ -613,7 +619,7 @@ class QueueServer implements CrawlConstants, Join
      */
     function &getDataArchiveFileData($file)
     {
-        crawlLog("Archive Processing File: $file");
+        crawlLog("Processing File: $file");
         $decode = file_get_contents($file);
         $decode = webdecode($decode);
         $decode = gzuncompress($decode);
@@ -1722,7 +1728,6 @@ class QueueServer implements CrawlConstants, Join
                     $this->web_queue->containsUrlQueue($host_with_robots);
 
                 if($this->web_queue->containsUrlQueue($url)) {
-
                     if($robots_in_queue) {
                         $this->web_queue->adjustQueueWeight(
                             $host_with_robots, $weight);
@@ -1737,7 +1742,6 @@ class QueueServer implements CrawlConstants, Join
                             $added_pairs[] = array($host_with_robots, $weight);
                             $added_urls[$host_with_robots] = true;
                     }
-
                     if(!isset($added_urls[$url])) {
                         $added_pairs[] = $triple; // see comment above
                         $added_urls[$url] = true;
@@ -1754,6 +1758,7 @@ class QueueServer implements CrawlConstants, Join
                  adding urls to queue involves disk contains and adjust do not
                  so group and do last
              */
+print_r($added_pairs);
             $this->web_queue->addUrlsQueue($added_pairs);
 
         }
@@ -2185,6 +2190,9 @@ class QueueServer implements CrawlConstants, Join
     function allowedToCrawlSite($url)
     {
         $doc_type = UrlParser::getDocumentType($url);
+        if(!in_array($doc_type, $this->all_file_types)) {
+            $doc_type = "unknown";
+        }
         if(!in_array($doc_type, $this->indexed_file_types)) {
             return false;
         }

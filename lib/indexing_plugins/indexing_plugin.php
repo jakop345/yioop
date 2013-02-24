@@ -73,12 +73,6 @@ abstract class IndexingPlugin
      */
     var $processors = array();
     /**
-     * Array of the model classes used by this IndexingPlugin
-     * (contructor loads these)
-     * @var array
-     */
-    var $models = array();
-    /**
      * The IndexArchiveBundle object that this indexing plugin might
      * make changes to in its postProcessing method
      * @var object
@@ -100,16 +94,6 @@ abstract class IndexingPlugin
     {
         $db_class = ucfirst(DBMS)."Manager";
         $this->db = new $db_class();
-
-        require_once BASE_DIR."/models/model.php";
-
-        foreach($this->models as $model) {
-            require_once BASE_DIR."/models/".$model."_model.php";
-
-            $model_name = ucfirst($model)."Model";
-            $model_instance_name = lcfirst($model_name);
-            $this->$model_instance_name = new $model_name();
-        }
     }
 
     /**

@@ -345,6 +345,7 @@ define('NORMALIZE_FREQUENCY', 10000);
  */
 $INDEXED_FILE_TYPES =
     array(
+            "unknown",
             "asp",
             "aspx",
             "atom",
@@ -353,6 +354,7 @@ $INDEXED_FILE_TYPES =
             "cfm",
             "cfml",
             "csv",
+            "do",
             "doc",
             "epub",
             "gif",

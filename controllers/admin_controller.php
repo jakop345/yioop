@@ -984,9 +984,9 @@ class AdminController extends Controller implements CrawlConstants
             $indexes_by_crawl_time[$crawl['CRAWL_TIME']] =& $indexes[$i];
         }
         $no_further_changes = false;
+        $seed_current = $this->crawlModel->getSeedInfo();
         if(isset($_REQUEST['load_option']) &&
             $_REQUEST['load_option'] == 1) {
-            $seed_current = $this->crawlModel->getSeedInfo();
             $seed_info = $this->crawlModel->getSeedInfo(true);
             if(isset(
                 $seed_current['general']['page_range_request'])) {
@@ -998,11 +998,6 @@ class AdminController extends Controller implements CrawlConstants
                 ){
                 $seed_info['general']['page_recrawl_frequency'] =
                 $seed_current['general']['page_recrawl_frequency'];
-            }
-            if(isset(
-                $seed_current['indexed_file_types'])) {
-                $seed_info['indexed_file_types'] =
-                    $seed_current['indexed_file_types'];
             }
             $update_flag = true;
             $no_further_changes = true;
@@ -1022,6 +1017,14 @@ class AdminController extends Controller implements CrawlConstants
             $data['ts'] = $timestamp;
         } else {
             $seed_info = $this->crawlModel->getSeedInfo();
+        }
+        $page_options_properties = array('indexed_file_types',
+            'page_rules', 'indexing_plugins');
+        //these properties should be changed under page_options not here
+        foreach($page_options_properties as $property) {
+            if(isset($seed_current[$property])) {
+                $seed_info[$property] = $seed_current[$property];
+            }
         }
         if(!$no_further_changes && isset($_REQUEST['crawl_indexes'])
             && in_array($_REQUEST['crawl_indexes'],

@@ -65,7 +65,7 @@ abstract class PageProcessor implements CrawlConstants
      *      processor
      */
     function __construct($plugins = array()){
-        $this->indexing_plugins = $plugins;
+        $this->indexing_plugins = array_unique($plugins);
         foreach($plugins as $plugin) {
             $plugin_name = ucfirst($plugin);
             $plugin_instance_name = lcfirst($plugin);
