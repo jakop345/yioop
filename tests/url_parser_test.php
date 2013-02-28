@@ -191,5 +191,40 @@ class UrlParserTest extends UnitTest
             $this->assertEqual($result, $test_url[2], $test_url[3]);
         }
     }
+
+    /**
+     * urlMemberSiteArray is a function called by both allowedToCrawlSite
+     * disallowedToCrawlSite to test if a url belongs to alist of
+     * regex's of urls or domain. This test function tests this functionality
+     */
+    function urlMemberSiteArrayTestCase()
+    {
+        $sites = array("http://www.example.com/",
+            "http://www.cs.sjsu.edu/faculty/pollett/*/*/",
+            "http://www.bing.com/video/search?*&*&",
+            "http://*.cool.*/a/*/", "domain:ucla.edu");
+       $test_urls = array(
+            array("http://www.cs.sjsu.edu/faculty/pollett/", false,
+                "regex url negative 1"),
+            array("http://www.bing.com/video/search?", false,
+                "regex url negative 2"),
+            array("http://www.cool.edu/a", false,
+                "regex url negative 3"),
+            array("http://ucla.edu.com", false,
+                "domain test negative"),
+            array("http://www.cs.sjsu.edu/faculty/pollett/a/b/c", true,
+                "regex url positive 1"),
+            array("http://www.bing.com/video/search?a&b&c", true,
+                "regex url positive 2"),
+            array("http://www.cool.bob.edu/a/b/c", true,
+                "regex url positive 3"),
+            array("http://test.ucla.edu", true,
+                "domain test positive"),
+        );
+        foreach($test_urls as $test_url) {
+            $result = UrlParser::urlMemberSiteArray($test_url[0], $sites);
+            $this->assertEqual($result, $test_url[1], $test_url[2]);
+        }
+    }
 }
 ?>

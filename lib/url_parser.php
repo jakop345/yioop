@@ -742,6 +742,48 @@ class UrlParser
     }
 
     /**
+     * Checks if the url belongs to one of the sites listed in site_array
+     * Sites can be either given in the form domain:host or
+     * in the form of a url in which case it is check that the site url
+     * is a substring of the passed url.
+     *
+     * @param string $url url to check
+     * @param array $site_array sites to check against
+     * @param bool whether when a match is found to return true or to
+     *      return the matching site rule
+     * @return mixed whether the url belongs to one of the sites
+     */
+    static function urlMemberSiteArray($url, $site_array, $return_rule = false)
+    {
+        $flag = false;
+        if(!is_array($site_array)) {return false;}
+        foreach($site_array as $site) {
+            $site_parts = explode("domain:", $site);
+            $host = UrlParser::getHost($url);
+            if($site_parts[0] == "" && isset($site_parts[1])) {
+                $pos = strrpos($host, $site_parts[1]);
+                if($pos !== false &&
+                    $pos + strlen($site_parts[1]) == strlen($host) ) {
+                    $flag = true;
+                    break;
+                }
+            }
+            $path = UrlParser::getPath($url, true);
+            $site_host = UrlParser::getHost($site);
+            $site_path = UrlParser::getPath($site, true);
+            $flag = UrlParser::isPathMemberRegexPaths($host, array($site_host));
+            if(!$flag) continue;
+            $flag = UrlParser::isPathMemberRegexPaths($path, array($site_path));
+            if($flag) break;
+
+        }
+        if($return_rule && $flag) {
+            $flag = $site;
+        }
+        return $flag;
+    }
+
+    /**
      * Checks if a URL corresponds to a known playback page of a video
      * sharing site
      *

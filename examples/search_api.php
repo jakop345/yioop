@@ -173,7 +173,6 @@ echo "\n\n\nAn example of making a cached of page request".
 $url = "http://www.ucanbuyart.com/";
 $ui_flags = array();
 $search_terms = "art classifieds"; // these words will be highlighted
-$search_terms = "arizona";
 $index_timestamp = "1317414322";;
 $data = $controller->cacheRequest($url, $ui_flags,
     $search_terms, $index_timestamp);

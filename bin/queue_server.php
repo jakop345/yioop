@@ -345,10 +345,10 @@ class QueueServer implements CrawlConstants, Join
         if(isset($argv[1]) && $argv[1] == "start") {
             $argv[2] = "none";
             $argv[3] = self::INDEXER;
-            CrawlDaemon::init($argv, "queue_server", false);
+            CrawlDaemon::init($argv, "queue_server", 0);
             $argv[2] = "none";
             $argv[3] = self::SCHEDULER;
-            CrawlDaemon::init($argv, "queue_server");
+            CrawlDaemon::init($argv, "queue_server", 2);
         } else {
             CrawlDaemon::init($argv, "queue_server");
         }
@@ -1133,6 +1133,7 @@ class QueueServer implements CrawlConstants, Join
             "allowed_sites" => self::ALLOWED_SITES,
             "disallowed_sites" => self::DISALLOWED_SITES,
             "page_rules" => self::PAGE_RULES,
+            "indexed_file_types" => self::INDEXED_FILE_TYPES,
             "indexing_plugins" => self::INDEXING_PLUGINS,
             "video_sources" => self::VIDEO_SOURCES,
         );
@@ -1758,7 +1759,6 @@ class QueueServer implements CrawlConstants, Join
                  adding urls to queue involves disk contains and adjust do not
                  so group and do last
              */
-print_r($added_pairs);
             $this->web_queue->addUrlsQueue($added_pairs);
 
         }
@@ -1859,6 +1859,10 @@ print_r($added_pairs);
         $sites[self::CRAWL_INDEX] = $this->crawl_index;
         $sites[self::CACHE_PAGES] = $this->cache_pages;
         $sites[self::PAGE_RULES] = $this->page_rules;
+        $sites[self::RESTRICT_SITES_BY_URL] = $this->restrict_sites_by_url;
+        $sites[self::INDEXED_FILE_TYPES] = $this->indexed_file_types;
+        $sites[self::ALLOWED_SITES] = $this->allowed_sites;
+        $sites[self::DISALLOWED_SITES] = $this->disallowed_sites;
         $sites[self::INDEXING_PLUGINS] =  $this->indexing_plugins;
         $sites[self::VIDEO_SOURCES] = $this->video_sources;
         $sites[self::PAGE_RANGE_REQUEST] = $this->page_range_request;
@@ -2197,7 +2201,7 @@ print_r($added_pairs);
             return false;
         }
         if($this->restrict_sites_by_url) {
-           return $this->urlMemberSiteArray($url, $this->allowed_sites);
+           return UrlParser::urlMemberSiteArray($url, $this->allowed_sites);
         }
         return true;
     }
@@ -2211,7 +2215,7 @@ print_r($added_pairs);
      */
     function disallowedToCrawlSite($url)
     {
-        return $this->urlMemberSiteArray($url, $this->disallowed_sites);
+        return UrlParser::urlMemberSiteArray($url, $this->disallowed_sites);
     }
 
     /**
@@ -2224,7 +2228,7 @@ print_r($added_pairs);
      */
     function withinQuota($url)
     {
-        if(!($site = $this->urlMemberSiteArray(
+        if(!($site = UrlParser::urlMemberSiteArray(
             $url, $this->quota_sites_keys, true))) {
             return true;
         }
@@ -2241,49 +2245,6 @@ print_r($added_pairs);
                 list($quota,) = $info;
                 $this->quota_sites[$site] = array($quota, 0);
             }
-        }
-        return $flag;
-    }
-
-
-    /**
-     * Checks if the url belongs to one of the sites listed in site_array
-     * Sites can be either given in the form domain:host or
-     * in the form of a url in which case it is check that the site url
-     * is a substring of the passed url.
-     *
-     * @param string $url url to check
-     * @param array $site_array sites to check against
-     * @param bool whether when a match is found to return true or to
-     *      return the matching site rule
-     * @return mixed whether the url belongs to one of the sites
-     */
-    function urlMemberSiteArray($url, $site_array, $return_rule = false)
-    {
-        $flag = false;
-        if(!is_array($site_array)) {return false;}
-        foreach($site_array as $site) {
-            $site_parts = explode("domain:", $site);
-            $host = UrlParser::getHost($url);
-            if($site_parts[0] == "" && isset($site_parts[1])) {
-                $pos = strrpos($host, $site_parts[1]);
-                if($pos !== false &&
-                    $pos + strlen($site_parts[1]) == strlen($host) ) {
-                    $flag = true;
-                    break;
-                }
-            }
-            $path = UrlParser::getPath($url, true);
-            $site_host = UrlParser::getHost($site);
-            $site_path = UrlParser::getPath($site, true);
-            $flag = UrlParser::isPathMemberRegexPaths($host, array($site_host));
-            if(!$flag) continue;
-            $flag = UrlParser::isPathMemberRegexPaths($path, array($site_path));
-            if($flag) break;
-
-        }
-        if($return_rule && $flag) {
-            $flag = $site;
         }
         return $flag;
     }

@@ -111,8 +111,8 @@ class MachineController extends Controller implements CrawlConstants
         if(isset($_REQUEST['queue_server'])) {
             if($_REQUEST['queue_server'] == "true" &&
                 !isset($statuses["queue_server"][-1])) {
-                CrawlDaemon::start("queue_server", 'none', self::INDEXER,false);
-                CrawlDaemon::start("queue_server", 'none', self::SCHEDULER);
+                CrawlDaemon::start("queue_server", 'none', self::INDEXER, 0);
+                CrawlDaemon::start("queue_server", 'none', self::SCHEDULER, 2);
             } else if($_REQUEST['queue_server'] == "false" &&
                 isset($statuses["queue_server"][-1]) ) {
                 CrawlDaemon::stop("queue_server");

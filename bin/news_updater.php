@@ -42,7 +42,7 @@ define("BASE_DIR", substr(
     dirname(realpath($_SERVER['PHP_SELF'])), 0,
     -strlen("/bin")));
 
-ini_set("memory_limit", "250M");  //so have enough memory to crawl sitemaps
+ini_set("memory_limit", "400M");  //so have enough memory to crawl sitemaps
 
 /** Load in global configuration settings */
 require_once BASE_DIR.'/configs/config.php';
@@ -121,7 +121,7 @@ class NewsUpdater implements CrawlConstants
         global $INDEXING_PLUGINS;
 
         // To use CrawlDaemon need to declare ticks first
-        declare(ticks=200);
+        declare(ticks = 200);
         CrawlDaemon::init($argv, "news_updater");
         crawlLog("\n\nInitialize logger..", "news_updater");
         $this->searchController = new SearchController($INDEXING_PLUGINS);

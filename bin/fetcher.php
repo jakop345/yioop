@@ -180,6 +180,32 @@ class Fetcher implements CrawlConstants
     var $plugin_processors;
 
     /**
+     * Says whether the $allowed_sites array is being used or not
+     * @var bool
+     */
+    var $restrict_sites_by_url;
+    /**
+     * List of file extensions supported for the crawl
+     * @var array
+     */
+    var $indexed_file_types;
+    /**
+     * List of all known file extensions including those not used for crawl
+     * @var array
+     */
+    var $all_file_types;
+    /**
+     * Web-sites that crawler can crawl. If used, ONLY these will be crawled
+     * @var array
+     */
+    var $allowed_sites;
+    /**
+     * Web-sites that the crawler must not crawl
+     * @var array
+     */
+    var $disallowed_sites;
+
+    /**
      * @var array
      */
     var $page_rule_parser;
@@ -368,7 +394,7 @@ class Fetcher implements CrawlConstants
      *      a webpage; <=0 -- unlimited
      */
     function __construct($page_processors, $name_server,
-        $page_range_request)
+        $page_range_request, $indexed_file_types)
     {
         $db_class = ucfirst(DBMS)."Manager";
         $this->db = new $db_class();
@@ -378,6 +404,13 @@ class Fetcher implements CrawlConstants
         $this->queue_servers = array($name_server);
         $this->current_server = 0;
         $this->page_processors = $page_processors;
+
+        $this->indexed_file_types = $indexed_file_types;
+        $this->all_file_types = $indexed_file_types;
+        $this->restrict_sites_by_url = true;
+        $this->allowed_sites = array();
+        $this->disallowed_sites = array();
+
         $this->page_rule_parser = NULL;
         $this->video_sources = array();
         $this->hosts_with_errors = array();
@@ -2015,9 +2048,20 @@ class Fetcher implements CrawlConstants
                 }
                 if(isset($info[self::POST_MAX_SIZE]) &&
                     $this->post_max_size != $info[self::POST_MAX_SIZE]) {
+                    crawlLog("post_max_size has changed was ".
+                        "{$this->post_max_size}. Now is ".
+                        $info[self::POST_MAX_SIZE].".");
                     $this->post_max_size = $info[self::POST_MAX_SIZE];
-                    crawlLog("post_max_size has changed, bailing...");
-                    return;
+                    if($max_len > $this->post_max_size) {
+                        crawlLog("Restarting upload...");
+                        if(isset($post_data["resized_once"])) {
+                            crawlLog("Restart failed");
+                            return;
+                        }
+                        $post_data["resized_once"] = true;
+                        return $this->uploadCrawlData(
+                            $queue_server, $byte_counts, $post_data);
+                    }
                 }
             } while(!isset($info[self::STATUS]) ||
                 $info[self::STATUS] != self::CONTINUE_STATE);
@@ -2225,7 +2269,7 @@ class Fetcher implements CrawlConstants
  *  Instantiate and runs the Fetcher
  */
 $fetcher =  new Fetcher($PAGE_PROCESSORS, NAME_SERVER,
-    PAGE_RANGE_REQUEST);
+    PAGE_RANGE_REQUEST, $INDEXED_FILE_TYPES);
 $fetcher->start();
 
 ?>

@@ -286,6 +286,25 @@ class SearchController extends Controller implements CrawlConstants
      */
     function initializeUserAndDefaultActivity(&$data)
     {
+        $arg = false;
+        if(!isset($_REQUEST['a']) || !in_array($_REQUEST['a'], 
+            $this->activities)) {
+            $activity = "query";
+        } else {
+            $activity = $_REQUEST['a'];
+            if($activity == "signout") {
+                unset($_SESSION['USER_ID']);
+                unset($_REQUEST);
+                $user = $_SERVER['REMOTE_ADDR'];
+                $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
+                    tl('search_controller_logout_successful')."</h1>')";
+            }
+            if(isset($_REQUEST['arg'])) {
+                $arg = $_REQUEST['arg'];
+            } else {
+                $activity = "query";
+            }
+        }
         if(isset($_SESSION['USER_ID'])) {
             $user = $_SESSION['USER_ID'];
             $token_okay = $this->checkCSRFToken(CSRF_TOKEN, $user);
@@ -307,24 +326,6 @@ class SearchController extends Controller implements CrawlConstants
             $_REQUEST['q'] = $this->restrictQueryByUserAgent($_REQUEST['q']);
         }
 
-        $arg = false;
-        if(!isset($_REQUEST['a']) || !in_array($_REQUEST['a'], 
-            $this->activities)) {
-            $activity = "query";
-        } else {
-            $activity = $_REQUEST['a'];
-            if($activity == "signout") {
-                unset($_SESSION['USER_ID']);
-                $user = $_SERVER['REMOTE_ADDR'];
-                $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
-                    tl('search_controller_logout_successful')."</h1>')";
-            }
-            if(isset($_REQUEST['arg'])) {
-                $arg = $_REQUEST['arg'];
-            } else {
-                $activity = "query";
-            }
-        }
         if($activity == "query") {
             list($query, $activity, $arg) = $this->extractActivityQuery();
         } else {

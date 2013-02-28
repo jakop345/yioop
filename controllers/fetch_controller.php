@@ -503,14 +503,14 @@ class FetchController extends Controller implements CrawlConstants
                 file_exists($status_filename)) {
             $status = unserialize(file_get_contents($status_filename));
             if($status[self::STATUS] != 'STOP_CRAWL') {
-                if(isset($status[self::CRAWL_TYPE])) {
-                    $info[self::CRAWL_TYPE] = $status[self::CRAWL_TYPE];
-                }
-                if(isset($status[self::ARC_DIR])) {
-                    $info[self::ARC_DIR] = $status[self::ARC_DIR];
-                }
-                if(isset($status[self::ARC_TYPE])) {
-                    $info[self::ARC_TYPE] = $status[self::ARC_TYPE];
+                $to_copy_fields = array(self::CRAWL_TYPE,
+                    self::ARC_DIR, self::ARC_TYPE, self::RESTRICT_SITES_BY_URL,
+                    self::INDEXED_FILE_TYPES, self::ALLOWED_SITES,
+                    self::DISALLOWED_SITES);
+                foreach($to_copy_fields as $field) {
+                    if(isset($status[$field])) {
+                        $info[$field] = $status[$field];
+                    }
                 }
             }
         }
@@ -521,7 +521,6 @@ class FetchController extends Controller implements CrawlConstants
         if(count($info[self::QUEUE_SERVERS]) == 0) {
             $info[self::QUEUE_SERVERS] = array(NAME_SERVER);
         }
-
         $data = array();
         $data['MESSAGE'] = serialize($info);
 

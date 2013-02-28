@@ -117,8 +117,9 @@ class CrawlDaemon implements CrawlConstants
      *      tell the daemon to stop. If the argument is terminal then the
      *      program won't be run as a daemon.
      * @param string $name the prefix to use for lock and message files
+     * @param bool $exit_type
      */
-    static function init($argv, $name, $exit = true)
+    static function init($argv, $name, $exit_type = 1)
     {
         self::$name = $name;
 
@@ -154,10 +155,10 @@ class CrawlDaemon implements CrawlConstants
                 }
                 $subname = (!isset($argv[2]) || $argv[2] == 'none') ? 
                     'none' :self::$subname;
-                $name_prefix = (isset($argv[3])) ? $argv[3] : self::$subname;;
+                $name_prefix = (isset($argv[3])) ? $argv[3] : self::$subname;
                 $name_string = CrawlDaemon::getNameString($name,$name_prefix);
                 echo "Starting $name_string...\n";
-                CrawlDaemon::start($name, $subname, $options, $exit);
+                CrawlDaemon::start($name, $subname, $options, $exit_type);
             break;
 
             case "stop":
@@ -203,16 +204,13 @@ class CrawlDaemon implements CrawlConstants
      *      by default a lock file is only written if exit (this allows
      *      both queue server processes (Indexer and Scheduler) to use the
      *      same lock file
-     * @param bool $lock_file whether to write a lock file even if not exiting
-     *      used by news_updater
      */
-    static function start($name, $subname = "", $options = "", $exit = true,
-        $lock_file = false)
+    static function start($name, $subname = "", $options = "", $exit = 1)
     {
         $tmp_subname = ($subname == 'none') ? '' : $subname;
         $lock_file = CrawlDaemon::getLockFileName($name, $tmp_subname);
 
-        if(file_exists($lock_file)) {
+        if(file_exists($lock_file) && $exit <= 1) {
             $time = intval(file_get_contents($lock_file));
             if(time() - $time < 60) {
                 echo "$name appears to be already running...\n";
@@ -231,15 +229,18 @@ class CrawlDaemon implements CrawlConstants
         } else {
             $script = "echo \"php '".
                 BASE_DIR."/bin/$name.php' child %s\" | at now ";
+            $script = "php '".
+                BASE_DIR."/bin/$name.php' child %s < /dev/null ".
+                " > /dev/null &";
         }
+
         $total_options = "$subname $options";
         $at_job = sprintf($script, $total_options);
         exec($at_job);
-
-        if($exit || $lock_file) {
+        if($exit != 0) {
             file_put_contents($lock_file,  time());
         }
-        if($exit) {
+        if($exit > 0) {
             exit();
         }
     }

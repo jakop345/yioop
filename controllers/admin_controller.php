@@ -2025,13 +2025,14 @@ class AdminController extends Controller implements CrawlConstants
                             $cron_time = $this->cronModel->getCronTime(
                                 "news_process");
                             $delta = time() - $cron_time;
-                            if($delta > 180) {
+                            if($delta > 60) {
                                 CrawlDaemon::start("news_updater", 'none', "",
-                                    false, true);
+                                    -1);
                             } else {
                             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                                 tl('admin_controller_news_process_running').
                                 "</h1>');";
+                                $profile["NEWS_MODE"] = "news_off";
                             }
                         }
                         $this->profileModel->updateProfile(
