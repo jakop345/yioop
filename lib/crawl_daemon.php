@@ -224,11 +224,9 @@ class CrawlDaemon implements CrawlConstants
         }
         if(strstr(PHP_OS, "WIN")) {
             $base_dir = str_replace("/", "\\", BASE_DIR);
-            $script = "psexec -accepteula -d php ".
+            $script = "start /B php ".
                 $base_dir."\\bin\\$name.php child %s";
         } else {
-            $script = "echo \"php '".
-                BASE_DIR."/bin/$name.php' child %s\" | at now ";
             $script = "php '".
                 BASE_DIR."/bin/$name.php' child %s < /dev/null ".
                 " > /dev/null &";
@@ -236,7 +234,8 @@ class CrawlDaemon implements CrawlConstants
 
         $total_options = "$subname $options";
         $at_job = sprintf($script, $total_options);
-        exec($at_job);
+        pclose(popen($at_job, "r"));
+
         if($exit != 0) {
             file_put_contents($lock_file,  time());
         }
