@@ -2591,7 +2591,14 @@ class AdminController extends Controller implements CrawlConstants
                 $http . $_SERVER['SERVER_NAME'] . $uri;
             $data['NAME_SERVER'] = $_REQUEST['NAME_SERVER'];
         }
-        if(isset($_REQUEST['WORK_DIRECTORY']) ) {
+        if(isset($_REQUEST['WORK_DIRECTORY']) || (defined('WORK_DIRECTORY') && 
+            defined('FIX_NAME_SERVER') && FIX_NAME_SERVER) ) {
+            if(defined('WORK_DIRECTORY') && defined('FIX_NAME_SERVER') 
+                && FIX_NAME_SERVER && !isset($_REQUEST['WORK_DIRECTORY'])) {
+                $_REQUEST['WORK_DIRECTORY'] = WORK_DIRECTORY;
+                $_REQUEST['arg'] = "directory";
+                unlink($_REQUEST['WORK_DIRECTORY']."/profile.php");
+            }
             $dir =
                 $this->clean($_REQUEST['WORK_DIRECTORY'], "string");
             $data['PROFILE'] = true;
