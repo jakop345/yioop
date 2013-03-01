@@ -2579,18 +2579,6 @@ class AdminController extends Controller implements CrawlConstants
         $data['SCRIPT'] = "";
 
         $data['PROFILE'] = false;
-        $data['MESSAGE'] = "";
-        if((defined('WORK_DIRECTORY') && 
-            defined('FIX_NAME_SERVER') && FIX_NAME_SERVER) &&
-            !isset($_REQUEST['WORK_DIRECTORY'])) {
-            $_REQUEST['arg'] = "profile";
-            $uri = UrlParser::getPath($_SERVER['REQUEST_URI']);
-            $http = (isset($_SERVER['HTTPS'])) ? "https://" :
-                "http://";
-            $_REQUEST['NAME_SERVER'] = 
-                $http . $_SERVER['SERVER_NAME'] . $uri;
-            $data['NAME_SERVER'] = $_REQUEST['NAME_SERVER'];
-        }
         if(isset($_REQUEST['WORK_DIRECTORY']) || (defined('WORK_DIRECTORY') && 
             defined('FIX_NAME_SERVER') && FIX_NAME_SERVER) ) {
             if(defined('WORK_DIRECTORY') && defined('FIX_NAME_SERVER') 

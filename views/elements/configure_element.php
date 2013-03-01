@@ -104,8 +104,10 @@ class ConfigureElement extends Element
         <?php e($data['SYSTEM_CHECK']); ?>
         </div>
         <h2><?php e(tl('configure_element_profile_settings'))?></h2>
+        <?php if($data['PROFILE']) { ?>
         <div class="top-margin">[<a href="javascript:toggleAdvance()"><?php 
             e(tl('configure_element_toggle_advanced')); ?></a>]</div>
+        <?php } ?>
         <div class="bold">
         <div class="top-margin"><span <?php if(!MOBILE) { ?>
             style="position:relative; top:-3.2em;" <?php } ?>><label
