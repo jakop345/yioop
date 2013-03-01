@@ -2702,6 +2702,7 @@ class AdminController extends Controller implements CrawlConstants
                                 $data = array_merge($data,
                                     $this->profileModel->getProfile(
                                         $data['WORK_DIRECTORY']));
+                                $data['PROFILE'] = true;
                             } else {
                                 $data['PROFILE'] = false;
                         $data["MESSAGE"] =
