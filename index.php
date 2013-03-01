@@ -148,7 +148,7 @@ if(!checkAllowedController($controller_name))
 }
 
 // if no profile exists we force the page to be the configuration page
-if(!PROFILE ) {
+if(!PROFILE || (defined("FIX_NAME_SERVER") && FIX_NAME_SERVER)) {
     $controller_name = "admin";
 }
 

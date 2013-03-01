@@ -115,6 +115,9 @@ if(file_exists(WORK_DIRECTORY.PROFILE_FILE_NAME)) {
     if(defined('QUEUE_SERVER') && !defined('NAME_SERVER')) {
         define('NAME_SERVER', QUEUE_SERVER); //for backward compatibility
     }
+    if(NAME_SERVER == 'http://' || NAME_SERVER == 'https://') {
+        define("FIX_NAME_SERVER", true);
+    }
 } else {
     if((!isset( $_SERVER['SERVER_NAME'])||$_SERVER['SERVER_NAME']!=='localhost')
         && !defined("NO_LOCAL_CHECK") && php_sapi_name() != 'cli' ) {

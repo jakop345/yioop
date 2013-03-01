@@ -200,7 +200,7 @@ class AdminController extends Controller implements CrawlConstants
      */
     function processSession()
     {
-        if(!PROFILE) {
+        if(!PROFILE || (defined("FIX_NAME_SERVER") && FIX_NAME_SERVER)) {
             $activity = "configure";
         } else if(isset($_REQUEST['a']) &&
             in_array($_REQUEST['a'], $this->activities)) {
@@ -2580,7 +2580,18 @@ class AdminController extends Controller implements CrawlConstants
 
         $data['PROFILE'] = false;
         $data['MESSAGE'] = "";
-        if(isset($_REQUEST['WORK_DIRECTORY'])) {
+        if((defined('WORK_DIRECTORY') && 
+            defined('FIX_NAME_SERVER') && FIX_NAME_SERVER) &&
+            !isset($_REQUEST['WORK_DIRECTORY'])) {
+            $_REQUEST['arg'] = "profile";
+            $uri = UrlParser::getPath($_SERVER['REQUEST_URI']);
+            $http = (isset($_SERVER['HTTPS'])) ? "https://" :
+                "http://";
+            $_REQUEST['NAME_SERVER'] = 
+                $http . $_SERVER['SERVER_NAME'] . $uri;
+            $data['NAME_SERVER'] = $_REQUEST['NAME_SERVER'];
+        }
+        if(isset($_REQUEST['WORK_DIRECTORY']) ) {
             $dir =
                 $this->clean($_REQUEST['WORK_DIRECTORY'], "string");
             $data['PROFILE'] = true;
@@ -2780,7 +2791,7 @@ class AdminController extends Controller implements CrawlConstants
                 }
 
                 if($this->profileModel->updateProfile(
-                $data['WORK_DIRECTORY'], $profile, $old_profile)) {
+                    $data['WORK_DIRECTORY'], $profile, $old_profile)) {
                     $data['MESSAGE'] =
                         tl('admin_controller_configure_profile_change');
                     $data['SCRIPT'] =
