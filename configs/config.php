@@ -259,7 +259,7 @@ define('URL_FILTER_SIZE', 20000000);
  */
 define('NUM_URLS_QUEUE_RAM', 300000);
 
-/** Minimum weight in priority queue before rebuilt*/
+/** Minimum weight in priority queue before rebuilt */
 define('MIN_QUEUE_WEIGHT', 1/100000);
 
 /**  largest sized object allowedin a web archive (used to sanity check
@@ -273,11 +273,14 @@ define('NUM_DOCS_PER_GENERATION', 50000);
 /** precision to round floating points document scores */
 define('PRECISION', 10);
 
-/** maximum number of links to consider on any given page */
+/** maximum number of links to extract from a page on an initial pass*/
+define('MAX_LINKS_TO_EXTRACT', 300);
+
+/** maximum number of links to keep after initial extraction*/
 define('MAX_LINKS_PER_PAGE', 50);
 
 /** maximum number of links to consider from a sitemap page */
-define('MAX_LINKS_PER_SITEMAP', 200);
+define('MAX_LINKS_PER_SITEMAP', 300);
 
 /**  maximum number of words from links to consider on any given page */
 define('MAX_LINKS_WORD_TEXT', 100);

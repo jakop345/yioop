@@ -252,7 +252,7 @@ class RssProcessor extends TextProcessor
                     $sites[$url] = $text;
                     $i++;
                 }
-                if($i >= MAX_LINKS_PER_PAGE) {
+                if($i >= MAX_LINKS_TO_EXTRACT) {
                     break 2;
                 }
             }

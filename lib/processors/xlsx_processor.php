@@ -241,7 +241,7 @@ class XlsxProcessor extends TextProcessor
                 if( strcmp( $relation->getAttribute('Type'),
                     $hyperlink) == 0 ) {
 
-                    if($i < MAX_LINKS_PER_PAGE) {
+                    if($i < MAX_LINKS_TO_EXTRACT) {
                         $link = $relation->getAttribute('Target');
                         $url = UrlParser::canonicalLink(
                             $link, $site);

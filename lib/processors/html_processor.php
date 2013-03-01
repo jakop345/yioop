@@ -334,7 +334,7 @@ class HtmlProcessor extends TextProcessor
     }
 
     /**
-     * Returns up to MAX_LINK_PER_PAGE many links from the supplied
+     * Returns up to MAX_LINKS_TO_EXTRACT many links from the supplied
      * dom object where links have been canonicalized according to
      * the supplied $site information.
      *
@@ -363,7 +363,7 @@ class HtmlProcessor extends TextProcessor
 
 
         foreach($hrefs as $href) {
-            if($i < MAX_LINKS_PER_PAGE) {
+            if($i < MAX_LINKS_TO_EXTRACT) {
                 $rel = $href->getAttribute("rel");
                 if($rel == "" || !stristr($rel, "nofollow")) {
                     $url = UrlParser::canonicalLink(
@@ -386,7 +386,7 @@ class HtmlProcessor extends TextProcessor
 
         $frames = $xpath->evaluate("/html/frameset/frame|/html/body//iframe");
         foreach($frames as $frame) {
-            if($i < MAX_LINKS_PER_PAGE) {
+            if($i < MAX_LINKS_TO_EXTRACT) {
                 $url = UrlParser::canonicalLink(
                     $frame->getAttribute('src'), $site);
 
@@ -408,7 +408,7 @@ class HtmlProcessor extends TextProcessor
         $i = 0;
 
         foreach($imgs as $img) {
-            if($i < MAX_LINKS_PER_PAGE) {
+            if($i < MAX_LINKS_TO_EXTRACT) {
                 $alt = $img->getAttribute('alt');
 
                 if(strlen($alt) < 1) { continue; }

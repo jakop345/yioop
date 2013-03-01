@@ -293,7 +293,6 @@ class MachineModel extends Model
             } else {
                 $url .= "&queue_server=$value";
             }
-echo $url;
             echo FetchUrl::getPage($url);
         }
         $this->db->execute("COMMIT");

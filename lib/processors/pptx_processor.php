@@ -155,7 +155,7 @@ class PptxProcessor extends TextProcessor
         $i=0;
 
         foreach($paras as $para) {
-            if($i < MAX_LINKS_PER_PAGE) {
+            if($i < MAX_LINKS_TO_EXTRACT) {
                 $hlink = $para->parentNode->parentNode->
                     getElementsByTagName("t")->item(0)->nodeValue;
 

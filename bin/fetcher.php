@@ -407,7 +407,7 @@ class Fetcher implements CrawlConstants
 
         $this->indexed_file_types = $indexed_file_types;
         $this->all_file_types = $indexed_file_types;
-        $this->restrict_sites_by_url = true;
+        $this->restrict_sites_by_url = false;
         $this->allowed_sites = array();
         $this->disallowed_sites = array();
 
@@ -806,6 +806,7 @@ class Fetcher implements CrawlConstants
             "&crawl_time=$crawl_time";
         $info_string = FetchUrl::getPage($request);
         $info = @unserialize(trim($info_string));
+
         if(isset($info[self::SAVED_CRAWL_TIMES])) {
             if(array_diff($info[self::SAVED_CRAWL_TIMES], $saved_crawl_times)
                 != array() ||
@@ -865,6 +866,7 @@ class Fetcher implements CrawlConstants
                 $this->arc_dir = '';
                 $this->arc_type = '';
             }
+            $this->setCrawlParamsFromArray($info);
             // Load any batch that might exist for changed-to crawl
             if(file_exists("$dir/$prefix".self::fetch_crawl_info.
                 "{$this->crawl_time}.txt") && file_exists(
@@ -1046,11 +1048,17 @@ class Fetcher implements CrawlConstants
         return $info;
     }
 
+    /**
+     *
+     */
     function exceedMemoryThreshold()
     {
        return memory_get_usage() > (metricToInt(ini_get("memory_limit")) * 0.7);
     }
 
+    /**
+     *
+     */
     function selectCurrentServerAndUpdateIfNeeded($at_least_once)
     {
         $i = 0;
@@ -1098,18 +1106,19 @@ class Fetcher implements CrawlConstants
         } else {
             $info[self::CURRENT_SERVER] = $this->current_server;
         }
-        if(isset($info[self::CRAWL_TYPE])) {
-            $this->crawl_type = $info[self::CRAWL_TYPE];
+        $update_fields = array(self::CRAWL_TYPE => "crawl_type",
+            self::CRAWL_INDEX => "crawl_index", self::CRAWL_ORDER =>
+            'crawl_order', self::CACHE_PAGES => 'cache_pages',
+            self::INDEXED_FILE_TYPES => 'indexed_file_types',
+            self::RESTRICT_SITES_BY_URL => 'restrict_sites_by_url',
+            self::ALLOWED_SITES => 'allowed_sites', 
+            self::DISALLOWED_SITES => 'disallowed_sites');
+        foreach($update_fields as $info_field => $field) {
+            if(isset($info[$info_field])) {
+                $this->$field = $info[$info_field];
+            }
         }
-        if(isset($info[self::CRAWL_INDEX])) {
-            $this->crawl_index = $info[self::CRAWL_INDEX];
-        }
-        if(isset($info[self::CRAWL_ORDER])) {
-            $this->crawl_order = $info[self::CRAWL_ORDER];
-        }
-        if(isset($info[self::CACHE_PAGES])) {
-            $this->cache_pages= $info[self::CACHE_PAGES];
-        }
+
         if(isset($info[self::PAGE_RULES]) ){
             $rule_string = implode("\n", $info[self::PAGE_RULES]);
             $rule_string = html_entity_decode($rule_string, ENT_QUOTES);
@@ -1379,6 +1388,10 @@ class Fetcher implements CrawlConstants
                 crawlLog("  Using Processor...".$page_processor);
                 $doc_info = $processor->handle($site[self::PAGE],
                     $site[self::URL]);
+                if($page_processor != "RobotProcessor" &&
+                    !isset($doc_info[self::JUST_METAS])) {
+                    $this->pruneLinks($doc_info);
+                }
             } else if(!$handled) {
                 $doc_info = false;
             }
@@ -1514,6 +1527,52 @@ class Fetcher implements CrawlConstants
 
         return $summarized_site_pages;
     }
+
+    /**
+     *
+     */
+    function pruneLinks(&$doc_info)
+    {
+        if(!isset($doc_info[self::LINKS])) {
+            return;
+        }
+
+        $links = array();
+        foreach($doc_info[self::LINKS] as $url => $text) {
+            $doc_type = UrlParser::getDocumentType($url);
+            if(!in_array($doc_type, $this->all_file_types)) {
+                $doc_type = "unknown";
+            }
+            if(!in_array($doc_type, $this->indexed_file_types)) {
+                continue;
+            }
+            if($this->restrict_sites_by_url) {
+                if(!UrlParser::urlMemberSiteArray($url, $this->allowed_sites)) {
+                    continue;
+                }
+            }
+            if(UrlParser::urlMemberSiteArray($url, $this->disallowed_sites)) {
+                continue;
+            }
+            $links[$url] = $text;
+        }
+        if(count($links) <= MAX_LINKS_PER_PAGE) {
+            $doc_info[self::LINKS] = $links;
+            return;
+        }
+        $info_link = array();
+        // choose the MAX_LINKS_PER_PAGE many pages with most info (crude)
+        foreach($links as $url => $text) {
+            $info_link[$url] = strlen(gzcompress($text));
+        }
+        arsort($info_link);
+        $link_urls = array_keys(array_slice($info_link, 0, MAX_LINKS_PER_PAGE));
+        $doc_info[self::LINKS] = array();
+        foreach($link_urls as $url) {
+            $doc_info[self::LINKS][$url] = $links[$url];
+        }
+    }
+
 
     /**
      * Copies fields from the array of site data to the $i indexed

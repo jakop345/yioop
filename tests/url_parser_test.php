@@ -202,7 +202,8 @@ class UrlParserTest extends UnitTest
         $sites = array("http://www.example.com/",
             "http://www.cs.sjsu.edu/faculty/pollett/*/*/",
             "http://www.bing.com/video/search?*&*&",
-            "http://*.cool.*/a/*/", "domain:ucla.edu");
+            "http://*.cool.*/a/*/", "domain:ucla.edu",
+            "domain:foodnetwork.com");
        $test_urls = array(
             array("http://www.cs.sjsu.edu/faculty/pollett/", false,
                 "regex url negative 1"),
@@ -220,6 +221,8 @@ class UrlParserTest extends UnitTest
                 "regex url positive 3"),
             array("http://test.ucla.edu", true,
                 "domain test positive"),
+            array("http://www.foodnetworkstore.com/small-appliances/", false,
+                "domain test negative"),
         );
         foreach($test_urls as $test_url) {
             $result = UrlParser::urlMemberSiteArray($test_url[0], $sites);

@@ -180,7 +180,7 @@ class TextProcessor extends PageProcessor
             if(!isset($sites[$url]) && strlen($url) < MAX_URL_LENGTH) {
                 $sites[$url] = strip_tags($url);
                 $i++;
-                if($i >= MAX_LINKS_PER_PAGE) {break;}
+                if($i >= MAX_LINKS_TO_EXTRACT) {break;}
             }
         }
         return $sites;
