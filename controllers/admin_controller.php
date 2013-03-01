@@ -2597,7 +2597,7 @@ class AdminController extends Controller implements CrawlConstants
                 && FIX_NAME_SERVER && !isset($_REQUEST['WORK_DIRECTORY'])) {
                 $_REQUEST['WORK_DIRECTORY'] = WORK_DIRECTORY;
                 $_REQUEST['arg'] = "directory";
-                unlink($_REQUEST['WORK_DIRECTORY']."/profile.php");
+                @unlink($_REQUEST['WORK_DIRECTORY']."/profile.php");
             }
             $dir =
                 $this->clean($_REQUEST['WORK_DIRECTORY'], "string");
@@ -2692,13 +2692,16 @@ class AdminController extends Controller implements CrawlConstants
                             $data['WORK_DIRECTORY'], array(), $profile)) {
                             if($this->profileModel->setWorkDirectoryConfigFile(
                                 $data['WORK_DIRECTORY'])) {
-                        $data["MESSAGE"] =
+                                $data["MESSAGE"] =
                             tl('admin_controller_configure_work_profile_made');
                                 $data['SCRIPT'] .=
                                     "doMessage('<h1 class=\"red\" >".
                                     $data["MESSAGE"]. "</h1>');" .
                                     "setTimeout('window.location.href= ".
                                     "window.location.href', 3000);";
+                                $data = array_merge($data,
+                                    $this->profileModel->getProfile(
+                                        $data['WORK_DIRECTORY']));
                             } else {
                                 $data['PROFILE'] = false;
                         $data["MESSAGE"] =
