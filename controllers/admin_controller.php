@@ -2678,7 +2678,7 @@ class AdminController extends Controller implements CrawlConstants
                         $data['ROBOT_INSTANCE'] = $profile['ROBOT_INSTANCE'];
                         if($this->profileModel->updateProfile(
                             $data['WORK_DIRECTORY'], array(), $profile)) {
-                            if((defined(WORK_DIRECTORY) && 
+                            if((defined('WORK_DIRECTORY') && 
                                 $data['WORK_DIRECTORY'] == WORK_DIRECTORY) ||
                                 $this->profileModel->setWorkDirectoryConfigFile(
                                 $data['WORK_DIRECTORY'])) {
