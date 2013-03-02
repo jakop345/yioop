@@ -44,6 +44,8 @@ require_once BASE_DIR."/lib/crawl_constants.php";
  * IndexManager so load the definition of this class
  */
 require_once BASE_DIR."/lib/index_manager.php";
+/** lookupSummaryOffsets uses word iterator*/
+require_once BASE_DIR.'/lib/index_bundle_iterators/word_iterator.php';
 /** For crawlHash function */
 require_once BASE_DIR."/lib/utility.php";
 /**
