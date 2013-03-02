@@ -355,8 +355,6 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
                         $recipes_summary[$recipe][self::HTTP_CODE];
                     $recipe_sites[] = $summary;
                     $meta_ids[] = "ingredient:".$cluster["ingredient"];
-echo "meta";
-print_r($meta_ids);
                     $index_shard->addDocumentWords($doc_key,
                         self::NEEDS_OFFSET_FLAG,
                         $word_counts, $meta_ids, true, false);

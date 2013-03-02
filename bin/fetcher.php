@@ -1736,7 +1736,11 @@ class Fetcher implements CrawlConstants
             } else {
                 $site_index = "[LINK]";
             }
-            crawlLog($site_index.". ".$site[self::URL]);
+            $subdoc_info = "";
+            if(isset($site[self::SUBDOCTYPE])) {
+                $subdoc_info = "(Subdoc: {$site[self::SUBDOCTYPE]})";
+            }
+            crawlLog($site_index.". $subdoc_info ".$site[self::URL]);
 
         } // end for
         if((count($this->to_crawl) <= 0 && count($this->to_crawl_again) <= 0) ||

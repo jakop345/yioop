@@ -275,6 +275,9 @@ class UrlParser
 
         $path = $url_parts['path'];
         $len = strlen($url);
+        if($len < 1) {
+            return NULL;
+        }
         if($with_query_string && isset($url_parts['query'])) {
             $path .= "?".$url_parts['query'];
         } else if($with_query_string && $url[$len - 1] == "?") {
