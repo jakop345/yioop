@@ -515,7 +515,7 @@ class Fetcher implements CrawlConstants
                 }
             } else if ($this->crawl_time > 0) { /* case(3) */
                 // Either a web crawl or a recrawl of a previous web crawl.
-                crawlLog("MAIN LOOP CASE 3 -- WEB SCHEDULER");
+                crawlLog("MAIN LOOP CASE 3 -- WEB/RE-CRAWL SCHEDULER");
                 $info = $this->checkScheduler();
 
                 if($info === false) {
@@ -707,6 +707,7 @@ class Fetcher implements CrawlConstants
                 crawlLog("  participate in a web archive recrawl!!");
                 return $pages;
             } else {
+                crawlLog("Initializing Web Archive Bundle Iterator.");
                 $this->archive_iterator =
                     new WebArchiveBundleIterator($prefix, $this->crawl_index,
                         $this->crawl_time);
@@ -924,7 +925,7 @@ class Fetcher implements CrawlConstants
         $to_crawl_count = count($this->to_crawl);
         $to_crawl_again_count = count($this->to_crawl_again);
         if($this->recrawl_check_scheduler) {
-            crawlLog("Arc Crawl checking scheduler??");
+            crawlLog("Archive Crawl checking ... Recrawl.");
         }
         if((count($this->to_crawl) > 0 || count($this->to_crawl_again) > 0) &&
            (!$this->recrawl_check_scheduler)) {

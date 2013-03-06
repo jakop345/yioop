@@ -1500,7 +1500,7 @@ class QueueServer implements CrawlConstants, Join
                 " time: ".(changeInMicrotime($start_time)));
             $start_time = microtime();
 
-            $this->index_archive->addIndexData($index_shard, $this);
+            $this->index_archive->addIndexData($index_shard);
             $this->index_dirty = true;
         }
         crawlLog("D (add index shard) memory usage".memory_get_usage().

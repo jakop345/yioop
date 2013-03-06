@@ -116,7 +116,8 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
 
         $xpath = new DOMXPath($dom);
         $recipes_per_page = $xpath->evaluate(
- /*allr, f.com, brec, fnet*/ "/html//ul[@class = 'ingredient-wrap'] |
+            /*allr, f.com, brec, fnet*/ 
+            "/html//ul[@class = 'ingredient-wrap'] |
             /html//*[@class = 'pod ingredients'] |
             /html//*[@id='recipe_title'] |
             /html//div[@class = 'rcp-head clrfix']|
@@ -126,14 +127,16 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
         if(is_object($recipes_per_page) && $recipes_per_page->length != 0) {
             $recipes_count = $recipes_per_page->length;
             $titles = $xpath->evaluate(
- /* allr, f.com, brec, fnet   */ "/html//*[@id = 'itemTitle']|
+               /* allr, f.com, brec, fnet   */ 
+               "/html//*[@id = 'itemTitle']|
                /html//h1[@class = 'fn'] |
                /html//*[@id='recipe_title'] |
                /html//div[@class ='rcp-head clrfix']/h1 |
                /html//h1[@class = 'fn recipeDetailHeading']");
             for($i=0; $i < $recipes_count; $i++) {
                 $ingredients = $xpath->evaluate(
- /*allr*, fcomm, brec, fnet*/    "/html//ul[@class = 'ingredient-wrap']/li |
+                    /*allr*, fcomm, brec, fnet*/
+                    "/html//ul[@class = 'ingredient-wrap']/li |
                     /html//li[@class = 'ingredient']|
                     /html//*[@class = 'ingredients']/*|
                     /html//*[@itemprop='ingredients']
@@ -185,7 +188,7 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
         $more_docs = true;
         $raw_recipes = array();
         $limit = 0;
-        $num = 10;
+        $num = 100;
         while($more_docs) {
             $results = @$search_controller->queryRequest($query,
                 $num, $limit, 1, $index_name);
@@ -327,7 +330,7 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
             $clusters = kruskalClustering($weights,
                 $count, $distinct_ingredients);
             $index_shard = new IndexShard("cluster_shard");
-            $word_counts = array();
+            $word_lists = array();
             $recipe_sites = array();
 
             foreach($clusters as $cluster) {
@@ -336,7 +339,6 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
                     $meta_ids = array();
                     $summary = array();
                     $recipe = $cluster[$i];
-                    $doc_key = $doc_keys[$recipe];
                     $summary[self::URL] =
                         $recipes_summary[$recipe][self::URL];
                     $summary[self::TITLE] =
@@ -349,26 +351,42 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
                         $recipes_summary[$recipe][self::ENCODING];
                     $summary[self::HASH] =
                         $recipes_summary[$recipe][self::HASH];
+                    $doc_keys[$recipe] =
+                        crawlHash($summary[self::URL], true);
+                    $hash_rhost =  "r". substr(crawlHash( // r is for recipe
+                        UrlParser::getHost($summary[self::URL])."/",true), 1);
+                    $doc_keys[$recipe] .= $summary[self::HASH] . $hash_rhost;
                     $summary[self::TYPE] =
                         $recipes_summary[$recipe][self::TYPE];
                     $summary[self::HTTP_CODE] =
                         $recipes_summary[$recipe][self::HTTP_CODE];
                     $recipe_sites[] = $summary;
-                    $meta_ids[] = "ingredient:".$cluster["ingredient"];
-                    $index_shard->addDocumentWords($doc_key,
+                    $meta_ids[] = "ingredient:".trim($cluster["ingredient"]);
+                    crawlLog("ingredient:".$cluster["ingredient"]);
+                    if(!$index_shard->addDocumentWords($doc_keys[$recipe],
                         self::NEEDS_OFFSET_FLAG,
-                        $word_counts, $meta_ids, true, false);
-                    $index_shard->save(true);
+                        $word_lists, $meta_ids, true, false)) {
+                        crawlLog("Problem inserting recipe: ".
+                            $summary[self::TITLE]);
+                    }
                 }
 
             }
+            $shard_string = $index_shard->save(true);
+            $index_shard = IndexShard::load("cluster_shard",
+                $shard_string);
+            unset($shard_string);
 
             crawlLog("...Adding recipe shard to index archive bundle");
 
             $dir = CRAWL_DIR."/cache/".self::index_data_base_name.$index_name;
             $index_archive = new IndexArchiveBundle($dir, false);
+            if($index_shard->word_docs_packed) {
+                $index_shard->unpackWordDocs();
+            }
             $generation = $index_archive->initGenerationToAdd($index_shard);
             if(isset($recipe_sites)) {
+                crawlLog("... Adding ".count($recipe_sites)." recipe docs.");
                 $index_archive->addPages($generation,
                     self::SUMMARY_OFFSET, $recipe_sites, 0);
             }
@@ -379,8 +397,7 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
                     $site[self::HASH] .
                     "r". substr(crawlHash( // r is for recipe
                     UrlParser::getHost($site[self::URL])."/",true), 1);
-                $summary_offsets[$hash] =
-                    array($site[self::SUMMARY_OFFSET], null);
+                $summary_offsets[$hash] = $site[self::SUMMARY_OFFSET];
             }
             $index_shard->changeDocumentOffsets($summary_offsets);
             $index_archive->addIndexData($index_shard);

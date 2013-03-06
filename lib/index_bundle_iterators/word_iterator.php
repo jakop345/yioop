@@ -163,13 +163,11 @@ class WordIterator extends IndexBundleIterator
             $word_key = base64_decode($hash);
 
         }
-
         if($filter != NULL) {
             $this->filter = & $filter;
         } else {
             $this->filter = NULL;
         }
-
         $this->word_key = $word_key;
 
         $this->feed_shard_name = WORK_DIRECTORY."/feeds/index";
