@@ -125,7 +125,7 @@ class AdminController extends Controller implements CrawlConstants
                 } else {
                     $view = $data['REFRESH'];
                 }
-             } else if ($this->checkSignin()){
+            } else if ($this->checkSignin()){
                 $user_id = $this->signinModel->getUserId(
                     $this->clean($_REQUEST['u'], "string"));
                 $session = $this->userModel->getUserSession($user_id);
@@ -135,16 +135,16 @@ class AdminController extends Controller implements CrawlConstants
                 $_SESSION['USER_ID'] = $user_id;
                 $data[CSRF_TOKEN] = $this->generateCSRFToken(
                     $_SESSION['USER_ID']);
-                    // now don't want to use remote address anymore
+                // now don't want to use remote address anymore
                 $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
                     tl('admin_controller_login_successful')."</h1>')";
                 $data = array_merge($data, $this->processSession());
                 $view = "admin";
-             } else {
+            } else {
                 $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
                     tl('admin_controller_login_failed')."</h1>')";
                 unset($_SESSION['USER_ID']);
-             }
+            }
         } else if($this->checkCSRFToken(CSRF_TOKEN, "config")) {
             $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
                 tl('admin_controller_login_to_config')."</h1>')";
@@ -158,6 +158,10 @@ class AdminController extends Controller implements CrawlConstants
             $data["ADMIN"] = true;
         } else {
             $data["ADMIN"] = false;
+        }
+        if($view == 'signin') {
+            $data['SCRIPT'] = "var u; if ((u = elt('username')) && u.focus) ".
+               "u.focus();";
         }
         $this->displayView($view, $data);
     }
