@@ -138,6 +138,9 @@ class DatabaseBundleIterator extends ArchiveBundleIterator
             $this->encoding = "UTF-8";
         }
 
+        if(!file_exists($result_dir)) {
+            mkdir($result_dir);
+        }
 
         if(file_exists("{$this->result_dir}/iterate_status.txt")) {
             $this->restoreCheckpoint();
