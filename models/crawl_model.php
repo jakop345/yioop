@@ -719,7 +719,10 @@ EOT;
             CRAWL_DIR.'/schedules/'.self::robot_data_base_name.
             $timestamp, true);
         $this->db->unlinkRecursive(
-            CRAWL_DIR.'/schedules/'.self::archive_iterator.
+            CRAWL_DIR.'/schedules/'.self::name_archive_iterator.
+            $timestamp, true);
+        $this->db->unlinkRecursive(
+            CRAWL_DIR.'/schedules/'.self::fetch_archive_iterator.
             $timestamp, true);
         $save_point_file = CRAWL_DIR.'/cache/'.self::save_point.
             $timestamp.".txt";

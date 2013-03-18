@@ -114,7 +114,6 @@ class AdminController extends Controller implements CrawlConstants
         } else {
             $user = $_SERVER['REMOTE_ADDR'];
         }
-
         $data[CSRF_TOKEN] = $this->generateCSRFToken($user);
         $token_okay = $this->checkCSRFToken(CSRF_TOKEN, $user);
         if($token_okay) {
@@ -160,6 +159,7 @@ class AdminController extends Controller implements CrawlConstants
             $data["ADMIN"] = false;
         }
         if($view == 'signin') {
+            unset($_SESSION['USER_ID']);
             $data['SCRIPT'] = "var u; if ((u = elt('username')) && u.focus) ".
                "u.focus();";
         }

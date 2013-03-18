@@ -86,6 +86,7 @@ class WarcArchiveBundleIterator extends TextArchiveBundleIterator
         if(!$this->checkFileHandle() ) { return NULL; }
         $indexable_records = array('response', 'resource');
         do {
+            $this->getRecordStart();
             $page_info = $this->getWarcHeaders();
             if($page_info == NULL || !isset(
                 $page_info[self::SIZE])) {
@@ -93,9 +94,9 @@ class WarcArchiveBundleIterator extends TextArchiveBundleIterator
             }
             $length = intval($page_info[self::SIZE]);
             $page_info[self::SIZE] = $length;
-            $header_and_page = ltrim($this->gzFileRead($length + 2));
-            $this->gzFileGets();
-            $this->gzFileGets();
+            $header_and_page = ltrim($this->fileRead($length + 2));
+            $this->fileGets();
+            $this->fileGets();
             if(!$header_and_page) { return NULL; }
         } while(!in_array($page_info['warc-type'], $indexable_records) ||
             substr($page_info[self::URL], 0, 4) == 'dns:');
@@ -116,6 +117,15 @@ class WarcArchiveBundleIterator extends TextArchiveBundleIterator
         return $site;
     }
 
+    function getRecordStart()
+    {
+        do {
+            $line = $this->fileGets();
+        } while (substr($line, 0, 5) != "WARC/" && !$this->checkEof());
+        $this->current_offset = $this->fileTell() - strlen($line);
+        fseek($this->buffer_fh, $this->current_offset);
+    }
+
     /**
      * Used to parse the header portion of a WARC record
      *
@@ -133,7 +143,7 @@ class WarcArchiveBundleIterator extends TextArchiveBundleIterator
             'warc-trec-id' => self::WARC_ID);
         $field = "start-record";
         do {
-            $line = $this->gzFileGets();
+            $line = $this->fileGets();
             if(substr($line, 0, 5) == "WARC/") {
                 continue;
             }

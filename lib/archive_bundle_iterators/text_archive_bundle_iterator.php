@@ -126,20 +126,20 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
 
     /**
      * If gzip is being used a buffer file is also employed to
-     * try to reduce the number of calls to gzseek. $gzh is a
+     * try to reduce the number of calls to gzseek. $buffer_fh is a
      * filehandle for the buffer file
      *
      * @var resource
      */
-    var $gzh;
+    var $buffer_fh;
 
     /**
-     * Which block of self::GZ_BUFFER_SIZE from the current archive
-     * file is stored in the file $this->gz_buffer_filename
+     * Which block of self::BUFFER_SIZE from the current archive
+     * file is stored in the file $this->buffer_filename
      *
      * @var int
      */
-    var $gz_block_num;
+    var $buffer_block_num;
 
     /**
      * Name of a buffer file to be used to reduce gzseek calls in the
@@ -147,7 +147,7 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
      *
      * @var string
      */
-    var $gz_buffer_filename;
+    var $buffer_filename;
 
     /**
      * Name of 
@@ -157,17 +157,28 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
     var $switch_partition_callback_name = NULL;
 
     /**
-     * How many bytes at a time should be read from the current archive
-     * file into the gz buffer file when gzip is being used
+     * Name of 
+     *
+     * @var array
      */
-    const GZ_BUFFER_SIZE = 32000000;
+    var $ini;
+
+    /**
+     * How many bytes at a time should be read from the current archive
+     * file into the buffer file. 8192 = BZip2BlockIteraror::BlOCK_SIZE
+     */
+    const BUFFER_SIZE = 16384000; //32768000;
+
+    const MAX_RECORD_SIZE = 49152;
 
     /**
      * Creates an text archive iterator with the given parameters.
      *
      * @param string $iterate_timestamp timestamp of the arc archive bundle to
      *      iterate  over the pages of
-     * @param string $iterate_dir folder of files to iterate over
+     * @param string $iterate_dir folder of files to iterate over. If this
+     *      iterator is used in a fetcher and the data is on a name server
+     *      set this to false
      * @param string $result_timestamp timestamp of the arc archive bundle
      *      results are being stored in
      * @param string $result_dir where to write last position checkpoints to
@@ -181,11 +192,48 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
         $this->iterate_dir = $iterate_dir;
         $this->result_timestamp = $result_timestamp;
         $this->result_dir = $result_dir;
-        $this->partitions = array();
-        if($ini == array()) {
-            $ini = parse_ini_file("{$this->iterate_dir}/arc_description.ini");
+        if(!file_exists($result_dir)) {
+            mkdir($result_dir);
         }
-        $extension = $ini['file_extension'];
+        $this->partitions = array();
+        if($this->iterate_dir != false) { // false =network/fetcher iterator
+            if($ini == array()) {
+                $ini = parse_ini_file(
+                    "{$this->iterate_dir}/arc_description.ini");
+            }
+            $extension = $ini['file_extension'];
+        }
+
+        $this->setIniInfo($ini);
+
+        if($this->start_delimiter == "" && $this->end_delimiter == "" &&
+            $this->iterate_dir != false) {
+            crawlLog("At least one of start or end delimiter must be set!!");
+            exit();
+        }
+        if($this->iterate_dir != false) {
+            foreach(glob("{$this->iterate_dir}/*.$extension", GLOB_BRACE) 
+                as $filename) {
+                $this->partitions[] = $filename;
+            }
+        }
+        $this->num_partitions = count($this->partitions);
+        $this->status_filename = "{$this->result_dir}/iterate_status.txt";
+        $this->buffer_filename = $this->result_dir."/buffer.txt";
+
+        if(file_exists($this->status_filename)) {
+            $this->restoreCheckpoint();
+        } else {
+            $this->reset();
+        }
+    }
+
+    /**
+     *
+     */
+    function setIniInfo($ini)
+    {
+        $this->ini = $ini;
         if(isset($ini['compression'])) {
             $this->compression = $ini['compression'];
         } else {
@@ -201,10 +249,6 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
         } else {
             $this->end_delimiter = "";
         }
-        if($this->start_delimiter == "" && $this->end_delimiter == "") {
-            crawlLog("At least one of start or end delimiter must be set!!");
-            exit();
-        }
         if($this->end_delimiter == "") {
             $this->delimiter = $this->start_delimiter;
         } else {
@@ -214,20 +258,6 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
             $this->encoding = $ini['encoding'];
         } else {
             $this->encoding = "UTF-8";
-        }
-        foreach(glob("{$this->iterate_dir}/*.$extension", GLOB_BRACE) 
-            as $filename) {
-            $this->partitions[] = $filename;
-        }
-        $this->num_partitions = count($this->partitions);
-        $this->status_filename = "{$this->result_dir}/iterate_status.txt";
-        $this->gz_buffer_filename = $this->result_dir."/gz_buffer.txt";
-
-
-        if(file_exists($this->status_filename)) {
-            $this->restoreCheckpoint();
-        } else {
-            $this->reset();
         }
     }
 
@@ -251,15 +281,38 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
         $this->current_partition_num = -1;
         $this->end_of_iterator = false;
         $this->current_offset = 0;
-        $this->gz_offset = 0;
         $this->fh = NULL;
-        $this->gzh = NULL;
-        $this->gz_block_num = 0;
+        $this->buffer_fh = NULL;
+        $this->buffer_block_num = 0;
         $this->bz2_iterator = NULL;
         $this->buffer = "";
+        $this->header = array();
         $this->remainder = "";
         @unlink($this->status_filename);
-        @unlink($this->gz_buffer_filename);
+        @unlink($this->buffer_filename);
+    }
+
+    /**
+     *
+     */
+    function nextChunk()
+    {
+        $info = array();
+        $info[self::START_PARTITION] = false;
+        if(!$this->checkFileHandle() || $this->checkEof()) {
+            $this->current_partition_num++;
+            if($this->current_partition_num >= $this->num_partitions) {
+                $this->end_of_iterator = true;
+                return false;
+            }
+            $this->fileOpen(
+                $this->partitions[$this->current_partition_num], false);
+            $info[self::START_PARTITION] = true;
+        }
+        $info[self::INI] = $this->ini;
+        $info[self::ARC_DATA] = $this->updateBuffer("", true);
+        $this->saveCheckpoint();
+        return $info;
     }
 
     /**
@@ -282,6 +335,9 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
                 if($this->checkFileHandle()) {
                     $this->fileClose();
                 }
+                if(!$this->iterate_dir) { //network case
+                    break;
+                }
                 $this->current_partition_num++;
                 if($this->current_partition_num >= $this->num_partitions) {
                     $this->end_of_iterator = true;
@@ -299,17 +355,12 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
                 if(!$page) {continue; }
             }
             $pages[] = $page;
-            $page_count++;
-        }
-        if($this->checkFileHandle()) {
             $this->current_offset = $this->fileTell();
-            $this->current_page_num += $page_count;
+            $this->current_page_num++;
         }
-
         $this->saveCheckpoint();
         return $pages;
     }
-
 
     /**
      * Gets the next doc from the iterator
@@ -378,24 +429,7 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
     function getFileBlock()
     {
         $block = NULL;
-        switch($this->compression)
-        {
-            case 'bzip2':
-                while(!is_string($block = $this->bz2_iterator->nextBlock())) {
-                    if($this->bz2_iterator->eof())
-                        return false;
-                }
-            break;
-
-            case 'gzip':
-                $block = $this->gzFileGets();
-            break;
-
-            case 'plain':
-                $block = fgets($this->fh);
-            break;
-        }
-        return $block;
+        return $this->fileGets();
     }
 
     /**
@@ -405,14 +439,14 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
      * @param int $num_bytes to read from archive file
      * @return string of length up to $num_bytes (less if eof occurs)
      */
-    function gzFileRead($num_bytes)
+    function fileRead($num_bytes)
     {
         $len = 0;
         $read_string = "";
         do {
-            $read_string .= fread($this->gzh, $num_bytes - $len);
+            $read_string .= fread($this->buffer_fh, $num_bytes - $len);
             $len += strlen($read_string);
-        } while($len < $num_bytes && $this->updateGzBuffer());
+        } while($len < $num_bytes && $this->updateBuffer());
         return $read_string;
     }
 
@@ -422,47 +456,91 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
      *
      * @return string from archive file up to next line ending or eof
      */
-    function gzFileGets()
+    function fileGets()
     {
         $len = 0;
         $read_string = "";
         do {
-            $read_string .= fgets($this->gzh);
-        } while(feof($this->gzh) && $this->updateGzBuffer());
+            $read_string .= fgets($this->buffer_fh);
+        } while(feof($this->buffer_fh) && $this->updateBuffer());
         return $read_string;
     }
 
     /**
      *  If reading from a gzbuffer file goes off the end of the current
      *  buffer, reads in the next block from archive file.
-     *
+     *  @param string $buffer
+     *  @param bool $return_string
      *  @return bool whether successfully read in next block or not
      */
-    function updateGzBuffer()
+    function updateBuffer($buffer= "", $return_string = false)
     {
-        $this->gz_block_num++;
-        return $this->makeGzBufferFile();
+        if(!$this->iterate_dir) { //network case
+            return false;
+        }
+        $this->buffer_block_num++;
+        return $this->makeBuffer($buffer, $return_string);
     }
 
     /**
-     *  Reads in block $this->gz_block_num of size self::GZ_BUFFER_SIZE from
+     *  Reads in block $this->buffer_block_num of size self::BUFFER_SIZE from
      *  the archive file
      *
-     *  @return bool whether successfully read in block or not
+     *  @param string $buffer
+     *  @param bool $return_string
+     *  @return mixed whether successfully read in block or not
      */
-    function makeGzBufferFile()
+    function makeBuffer($buffer= "", $return_string = false)
     {
-        if(!$this->checkFileHandle()) { return false; }
-        $success = gzseek($this->fh, $this->gz_block_num * 
-            self::GZ_BUFFER_SIZE);
-        if($success == -1 || !$this->checkFileHandle() 
-            || $this->checkEof()) { return false; }
-        if(is_resource($this->gzh)) {
-            fclose($this->gzh);
+        if($buffer == "") {
+            if(!$this->checkFileHandle()) { return false; }
+            $success = 1;
+            if($this->compression == "gzip") {
+                $success = gzseek($this->fh, $this->buffer_block_num *
+                    self::BUFFER_SIZE);
+            }
+            if($this->compression == "plain") {
+                $success = fseek($this->fh, $this->buffer_block_num *
+                    self::BUFFER_SIZE);
+            }
+            if($success == -1 || !$this->checkFileHandle() 
+                || $this->checkEof()) { return false; }
+            if(is_resource($this->buffer_fh)) {
+                fclose($this->buffer_fh);
+            }
+            $padded_buffer_size = self::BUFFER_SIZE + 2*self::MAX_RECORD_SIZE;
+            switch($this->compression)
+            {
+                case 'bzip2':
+                    $buffer = "";
+                    while(strlen($buffer) < $padded_buffer_size) {
+                        while(!is_string($block = 
+                            $this->bz2_iterator->nextBlock())) {
+                            if($this->bz2_iterator->eof()) {
+                                break 2;
+                            }
+                        }
+                        $buffer .= $block;
+                    }
+                    if($buffer == "") {
+                        return false;
+                    }
+                break;
+
+                case 'gzip':
+                    $buffer = gzread($this->fh, $padded_buffer_size);
+                break;
+
+                case 'plain':
+                    $buffer = fread($this->fh, $padded_buffer_size);
+                break;
+            }
         }
-        $gz_buffer = gzread($this->fh, self::GZ_BUFFER_SIZE);
-        file_put_contents($this->gz_buffer_filename, $gz_buffer);
-        $this->gzh = fopen($this->gz_buffer_filename, "rb");
+        if($return_string) {
+            return $buffer;
+        }
+        file_put_contents($this->buffer_filename, $buffer);
+        $this->buffer_fh = fopen($this->buffer_filename, "rb");
         return true;
     }
 
@@ -473,7 +551,9 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
      */
     function checkFileHandle()
     {
-        if($this->compression != "bzip2") {
+        if(!$this->iterate_dir) { //network mode
+            return is_resource($this->buffer_fh);
+        } else if($this->compression != "bzip2") {
             return is_resource($this->fh);
         } else {
             return !is_null($this->bz2_iterator);
@@ -487,6 +567,9 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
      */
     function checkEof()
     {
+        if(!$this->iterate_dir) {
+            return feof($this->buffer_fh);
+        }
         switch($this->compression)
         {
             case 'bzip2':
@@ -507,8 +590,9 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
      *  Wrapper around particular compression scheme fopen function
      *
      *  @param string filename to open
+     *  @param bool $make_buffer_if_needed
      */
-    function fileOpen($filename)
+    function fileOpen($filename, $make_buffer_if_needed = true)
     {
         switch($this->compression)
         {
@@ -518,17 +602,21 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
 
             case 'gzip':
                 $this->fh = gzopen($filename, "rb");
-                if(!file_exists($this->gz_buffer_filename)) {
-                    $this->makeGzBufferFile();
-                } else {
-                    $this->gzh = fopen($this->gz_buffer_filename, "rb");
-                }
             break;
 
             case 'plain':
                 $this->fh = fopen($filename, "rb");
             break;
         }
+        if($make_buffer_if_needed) {
+            if(!file_exists($this->buffer_filename)) {
+                $this->makeBuffer();
+            } else {
+                $this->buffer_fh = fopen($this->buffer_filename, "rb");
+            }
+        }
+        $this->buffer_block_num = -1;
+        $this->current_offset = 0;
     }
 
     /**
@@ -536,21 +624,23 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
      */
     function fileClose()
     {
-        switch($this->compression)
-        {
-            case 'bzip2':
-                $this->bz2_iterator->close();
-            break;
+        if($this->iterate_dir) {
+            switch($this->compression)
+            {
+                case 'bzip2':
+                    $this->bz2_iterator->close();
+                break;
 
-            case 'gzip':
-                gzclose($this->fh);
-                fclose($this->gzh);
-            break;
+                case 'gzip':
+                    gzclose($this->fh);
+                break;
 
-            case 'plain':
-                fclose($this->fh);
-            break;
+                case 'plain':
+                    fclose($this->fh);
+                break;
+            }
         }
+        fclose($this->buffer_fh);
     }
 
     /**
@@ -561,20 +651,7 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
      */
     function fileTell()
     {
-        switch($this->compression)
-        {
-            case 'bzip2':
-                return ($this->bz2_iterator) ? 1 : -1;
-            break;
-
-            case 'gzip':
-                return ftell($this->gzh);
-            break;
-
-            case 'plain':
-                return ftell($this->fh);
-            break;
-        }
+        return ftell($this->buffer_fh);
     }
 
 
@@ -588,19 +665,15 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
      */
     function saveCheckPoint($info = array())
     {
-        if($this->compression != "bzip2") {
-            $info['buffer'] = $this->buffer;
-            $info['gz_block_num'] = $this->gz_block_num; //used gzip case; else0
-            parent::saveCheckpoint($info);
-            return;
-        }
         $info['end_of_iterator'] = $this->end_of_iterator;
+        $info['buffer_block_num'] = $this->buffer_block_num;
         $info['current_partition_num'] = $this->current_partition_num;
         $info['current_page_num'] = $this->current_page_num;
         $info['buffer'] = $this->buffer;
         $info['remainder'] = $this->remainder;
         $info['header'] = $this->header;
         $info['bz2_iterator'] = $this->bz2_iterator;
+        $info['current_offset'] = $this->current_offset;
         file_put_contents($this->status_filename,
             serialize($info));
     }
@@ -620,69 +693,21 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
         $info = unserialize(file_get_contents($this->status_filename));
         $this->end_of_iterator = $info['end_of_iterator'];
         $this->current_partition_num = $info['current_partition_num'];
+        $this->current_page_num = (isset($info['current_page_num'])) ?
+            $info['current_page_num'] : 0;
         $this->buffer = (isset($info['buffer'])) ? $info['buffer'] : "";
         $this->remainder = (isset($info['remainder'])) ? $info['remainder']:"";
-        $restore_function = $this->compression . "RestoreCheckpoint";
-        return $this->$restore_function($info);
-    }
-
-    /**
-     * Does additional restoration of the last checkpoint in the case that
-     * plain text (no compression) was being used.
-     *
-     * @param array $info associative array gotten from unserializing the last
-     *      checkpoint
-     * @return array the data serialized when saveCheckpoint was called
-     */
-    function plainRestoreCheckpoint($info)
-    {
-        $this->current_offset = $info['current_offset'];
-        if(!$this->end_of_iterator) {
-            $this->fileOpen($this->partitions[$this->current_partition_num]);
-            $success = fseek($this->fh, $this->current_offset);
-            if($success == -1) { $this->fh = NULL; }
-        }
-        return $info;
-    }
-
-    /**
-     * Does additional restoration of the last checkpoint in the case that
-     * gz compression was being used.
-     *
-     * @param array $info associative array gotten from unserializing the last
-     *      checkpoint
-     * @return array the data serialized when saveCheckpoint was called
-     */
-    function gzipRestoreCheckpoint($info)
-    {
-        $this->current_offset = $info['current_offset'];
-        $this->gz_block_num = $info['gz_block_num'];
-        if(!$this->end_of_iterator) {
-            $this->fileOpen($this->partitions[$this->current_partition_num]);
-            $success = fseek($this->gzh, $this->current_offset);
-            if($success == -1) { $this->gzh = NULL; }
-        }
-        return $info;
-    }
-
-    /**
-     * Does additional restoration of the last checkpoint in the case that
-     * bzip2 compression was being used.
-     *
-     * @param array $info associative array gotten from unserializing the last
-     *      checkpoint
-     */
-    function bzip2RestoreCheckpoint($info)
-    {
-        $this->current_page_num = $info['current_page_num'];
-        $this->buffer = $info['buffer'];
-        $this->remainder = $info['remainder'];
-        $this->header = $info['header'];
+        $this->header = (isset($info['header'])) ? $info['header']: array();
         $this->bz2_iterator = $info['bz2_iterator'];
-
+        if(!$this->end_of_iterator) {
+            $this->fileOpen($this->partitions[$this->current_partition_num]);
+            $success = fseek($this->buffer_fh, $info['current_offset']);
+            if($success == -1) { $this->buffer_fh = NULL; }
+        }
+        $this->buffer_block_num = $info['buffer_block_num'];
+        $this->current_offset = $info['current_offset'];
         return $info;
     }
-
 
     /**
      * Used to extract data between two tags. After operation $this->buffer has

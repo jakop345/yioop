@@ -503,9 +503,9 @@ class Fetcher implements CrawlConstants
                     $this->to_crawl = array();
                 }
             } else if ($this->crawl_type == self::ARCHIVE_CRAWL &&
-                    !in_array($this->arc_dir, $local_archives)) { /* case(2) */
+                    $this->arc_type != "WebArchiveBundle") { /* case(2) */
                 // An archive crawl with data coming from the name server.
-                crawlLog("MAIN LOOP CASE 2 -- ARCHIVE SCHEDULER");
+                crawlLog("MAIN LOOP CASE 2 -- ARCHIVE SCHEDULER (NOT RECRAWL)");
                 $info = $this->checkArchiveScheduler();
                 if($info === false) {
                     crawlLog("Cannot connect to name server...".
@@ -515,7 +515,11 @@ class Fetcher implements CrawlConstants
                 }
             } else if ($this->crawl_time > 0) { /* case(3) */
                 // Either a web crawl or a recrawl of a previous web crawl.
-                crawlLog("MAIN LOOP CASE 3 -- WEB/RE-CRAWL SCHEDULER");
+                if($this->crawl_type == self::ARCHIVE_CRAWL) {
+                    crawlLog("MAIN LOOP CASE 3 -- RECRAWL SCHEDULER");
+                } else {
+                    crawlLog("MAIN LOOP CASE 4 -- WEB SCHEDULER");
+                }
                 $info = $this->checkScheduler();
 
                 if($info === false) {
@@ -525,7 +529,7 @@ class Fetcher implements CrawlConstants
                     continue;
                 }
             } else {
-                crawlLog("MAIN LOOP CASE 4 -- NO CURRENT CRAWL");
+                crawlLog("MAIN LOOP CASE 5 -- NO CURRENT CRAWL");
                 $info[self::STATUS] = self::NO_DATA_STATE;
             }
 
@@ -750,7 +754,8 @@ class Fetcher implements CrawlConstants
         }
         $files = glob(CRAWL_DIR.'/schedules/*');
         $names = array(self::fetch_batch_name, self::fetch_crawl_info,
-            self::fetch_closed_name, self::schedule_name);
+            self::fetch_closed_name, self::schedule_name,
+            self::fetch_archive_iterator);
         foreach($files as $file) {
             $timestamp = "";
             foreach($names as $name) {
@@ -853,7 +858,6 @@ class Fetcher implements CrawlConstants
                 file_put_contents("$dir/$prefix".self::fetch_closed_name.
                     "{$this->crawl_time}.txt", "1");
             }
-
             /* Update the basic crawl info, so that we can decide between going
                to a queue server for a schedule or to the name server for
                archive data. */
@@ -902,6 +906,15 @@ class Fetcher implements CrawlConstants
                         $this->to_crawl = array();
                     }
                 }
+            }
+            if(general_is_a($this->arc_type."Iterator", 
+                    "TextArchiveBundleIterator")) {
+                $result_dir = WORK_DIRECTORY . "/schedules/" .
+                    self::fetch_archive_iterator.$this->crawl_time;
+                $iterator_name = $this->arc_type."Iterator";
+                $this->archive_iterator = new $iterator_name(
+                    $info[self::CRAWL_INDEX],
+                    false, $this->crawl_time, $result_dir);
             }
         }
         crawlLog("End Name Server Check");
@@ -1009,9 +1022,32 @@ class Fetcher implements CrawlConstants
         */
         $this->selectCurrentServerAndUpdateIfNeeded(false);
 
-        crawlLog("Fetching Archive data from name server:");
+        $chunk = false;
+        if(general_is_a($this->arc_type."Iterator", 
+            "TextArchiveBundleIterator")) {
+            $archive_iterator = $this->archive_iterator;
+            $chunk = true;
+            $info = array();
+            $max_offset = TextArchiveBundleIterator::BUFFER_SIZE +
+                TextArchiveBundleIterator::MAX_RECORD_SIZE;
+            if($archive_iterator->buffer_fh && $archive_iterator->current_offset
+                < $max_offset) {
+                crawlLog("Local Iterator Offset: ". 
+                    $archive_iterator->current_offset);
+                crawlLog("Local Max Offset: ". $max_offset);
+                $info[self::ARC_DATA] = 
+                    $archive_iterator->nextPages(ARCHIVE_BATCH_SIZE);
+                crawlLog("Time to get archive data from local buffer ".
+                    changeInMicrotime($start_time));
+            }
+            if($archive_iterator->buffer_fh && $archive_iterator->current_offset
+                < $max_offset) {
+                return $info;
+            }
+            crawlLog("Done processing Local Buffer, requesting more data...");
+        }
+        crawlLog("Fetching Archive data from name server with request:");
         $name_server = $this->name_server;
-        crawlLog("  $name_server");
         $time = time();
         $session = md5($time . AUTH_KEY);
         $prefix = $this->fetcher_num."-";
@@ -1020,7 +1056,7 @@ class Fetcher implements CrawlConstants
             $name_server."?c=fetch&a=archiveSchedule&time=$time".
             "&session=$session&robot_instance=".$prefix.ROBOT_INSTANCE.
             "&machine_uri=".WEB_URI."&crawl_time=".$this->crawl_time;
-
+        crawlLog($request);
         $response_string = FetchUrl::getPage($request);
         if($response_string === false) {
             crawlLog("The following request failed:");
@@ -1035,12 +1071,30 @@ class Fetcher implements CrawlConstants
             $info[self::STATUS] = self::NO_DATA_STATE;
         }
         $this->setCrawlParamsFromArray($info);
-
         if(isset($info[self::DATA])) {
             // Unpack the archive data and return it in the $info array; also
             // write a copy to disk in case something goes wrong.
             $pages = unserialize(gzuncompress(webdecode($info[self::DATA])));
-            $info[self::ARC_DATA] = $pages;
+            if($chunk) {
+                if(isset($pages[self::INI])) {
+                    $archive_iterator->setIniInfo($pages[self::INI]);
+                }
+                if($pages[self::ARC_DATA]) {
+                    $archive_iterator->makeBuffer($pages[self::ARC_DATA]);
+                }
+                if($pages[self::START_PARTITION]) {
+                    if($archive_iterator->switch_partition_callback_name 
+                        != NULL) {
+                        $callback_name = 
+                            $archive_iterator->switch_partition_callback_name;
+                        $result = $archive_iterator->$callback_name();
+                    }
+                } else {
+                    $archive_iterator->nextPages(1);
+                }
+            } else {
+                $info[self::ARC_DATA] = $pages;
+            }
         }
 
         crawlLog("Time to fetch archive data from name server ".
@@ -1337,8 +1391,7 @@ class Fetcher implements CrawlConstants
                 $handled = true;
             } else if(isset($PAGE_PROCESSORS[$type])) {
                 $page_processor = $PAGE_PROCESSORS[$type];
-                if($page_processor == "TextProcessor"  ||
-                    get_parent_class($page_processor) == "TextProcessor") {
+                if(general_is_a($page_processor, "TextProcessor")) {
                     $text_data =true;
                 } else {
                     $text_data =false;
@@ -1363,8 +1416,7 @@ class Fetcher implements CrawlConstants
                 if(isset($site[self::ENCODING]) &&
                     $site[self::ENCODING] != "UTF-8" &&
                     $site[self::ENCODING] != "" &&
-                    ($page_processor == "TextProcessor" ||
-                    is_subclass_of($page_processor, "TextProcessor"))) {
+                    general_is_a($page_processor, "TextProcessor")) {
                     if(!@mb_check_encoding($site[self::PAGE],
                         $site[self::ENCODING])) {
                         crawlLog("  MB_CHECK_ENCODING FAILED!!");

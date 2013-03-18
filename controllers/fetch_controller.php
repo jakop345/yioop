@@ -214,6 +214,7 @@ class FetchController extends Controller implements CrawlConstants
                 $got_lock = false;
             }
         }
+        $chunk = false;
         if($fetch_pages && $got_lock) {
             file_put_contents($lock_filename, serialize($request_start));
             $archive_iterator = NULL;
@@ -222,11 +223,7 @@ class FetchController extends Controller implements CrawlConstants
                 $iterate_timestamp = $info[self::CRAWL_INDEX];
                 $result_timestamp = $crawl_time;
                 $result_dir = WORK_DIRECTORY.
-                    "/schedules/".self::archive_iterator.$crawl_time;
-
-                if(!file_exists($result_dir)) {
-                    mkdir($result_dir);
-                }
+                    "/schedules/".self::name_archive_iterator.$crawl_time;
 
                 $arctype = $info[self::ARC_TYPE];
                 $iterator_name = $arctype."Iterator";
@@ -239,14 +236,20 @@ class FetchController extends Controller implements CrawlConstants
                         $info[self::ARC_DIR], $result_timestamp, $result_dir);
                 }
             }
-
+            $pages = false;
             if($archive_iterator && !$archive_iterator->end_of_iterator) {
-                $pages = $archive_iterator->nextPages(
-                    ARCHIVE_BATCH_SIZE);
+                if(general_is_a($archive_iterator, 
+                    "TextArchiveBundleIterator")) {
+                    $pages = $archive_iterator->nextChunk();
+                    $chunk = true;
+                } else {
+                    $pages = $archive_iterator->nextPages(
+                        ARCHIVE_BATCH_SIZE);
+                }
             }
             @unlink($lock_filename);
         }
-        if(!empty($pages)) {
+         if (($chunk && $pages) || ($pages && !empty($pages))) {
             $pages_string = webencode(gzcompress(serialize($pages)));
         } else {
             $info[self::STATUS] = self::NO_DATA_STATE;
@@ -503,7 +506,7 @@ class FetchController extends Controller implements CrawlConstants
                 file_exists($status_filename)) {
             $status = unserialize(file_get_contents($status_filename));
             if($status[self::STATUS] != 'STOP_CRAWL') {
-                $to_copy_fields = array(self::CRAWL_TYPE,
+                $to_copy_fields = array(self::CRAWL_TYPE, self::CRAWL_INDEX,
                     self::ARC_DIR, self::ARC_TYPE, self::RESTRICT_SITES_BY_URL,
                     self::INDEXED_FILE_TYPES, self::ALLOWED_SITES,
                     self::DISALLOWED_SITES);

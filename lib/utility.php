@@ -1070,4 +1070,15 @@ function readMessage()
     return rtrim($message);
 }
 
+/**
+ * Checks if class_1 is the same as class_2 of has class_2 as a parent
+ * Behaves like 3 param version (last param true) of PHP is_a function 
+ * that came into being with Version 5.3.9.
+ *
+ */
+function general_is_a($class_1, $class_2)
+{
+    if($class_1 == $class_2) return true;
+    return (is_a($class_1, $class_2) || is_subclass_of($class_1, $class_2));
+}
 ?>

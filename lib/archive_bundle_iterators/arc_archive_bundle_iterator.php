@@ -83,13 +83,13 @@ class ArcArchiveBundleIterator extends TextArchiveBundleIterator
     {
         if(!$this->checkFileHandle() ) { return NULL; }
         do {
-            $page_info = $this->gzFileGets();
+            $page_info = $this->fileGets();
             if(trim($page_info) == "") { return NULL; }
             $info_parts = explode(" ", $page_info);
             $num_parts = count($info_parts);
             $length = intval($info_parts[$num_parts - 1]);
 
-            $header_and_page = $this->gzFileRead($length + 1);
+            $header_and_page = $this->fileRead($length + 1);
             if(!$header_and_page) { return NULL; }
         } while(substr($page_info, 0, 3) == 'dns' ||
             substr($page_info, 0, 8) == 'filedesc');

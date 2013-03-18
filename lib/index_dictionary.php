@@ -704,7 +704,9 @@ class IndexDictionary implements CrawlConstants
         //until last record with word id
 
         $test_loc = $check_loc + 1;
-        $previous_generation = $remember_generation;
+        if($extract) {
+            $previous_generation = $remember_generation;
+        }
 
         $break_count = 0;
         while ($test_loc <= $high) {

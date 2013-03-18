@@ -319,7 +319,9 @@ class MediaWikiArchiveBundleIterator extends TextArchiveBundleIterator
         if(isset($info["last_hash"])) {
             $this->last_hash = $info["last_hash"];
         }
-        $this->initializeSubstitutions();
+        if(!$this->iterate_dir) { // do on client not name server
+            $this->initializeSubstitutions();
+        }
         return $info;
     }
 
@@ -367,9 +369,6 @@ class MediaWikiArchiveBundleIterator extends TextArchiveBundleIterator
         static $minimal_regexes = false;
         static $first_call = true;
 
-        if(is_null($this->bz2_iterator)) {
-            return NULL;
-        }
         $page_info = $this->getNextTagData("page");
         if($no_process) { return $page_info; }
         $dom = new DOMDocument();

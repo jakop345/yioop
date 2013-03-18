@@ -161,8 +161,8 @@ class WordIterator extends IndexBundleIterator
             $hash = str_replace("-", "+" , $hash);
             $hash .= "=";
             $word_key = base64_decode($hash);
-
         }
+
         if($filter != NULL) {
             $this->filter = & $filter;
         } else {

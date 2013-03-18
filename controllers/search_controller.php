@@ -524,7 +524,7 @@ class SearchController extends Controller implements CrawlConstants
             if(!isset($data['PAGING_QUERY'])) {
                 $data['PAGING_QUERY'] = "";
             }
-            $data['PAGING_QUERY'] .= "&no_query=true";
+            $data['PAGING_QUERY'] .= "&amp;no_query=true";
         }
 
     }
@@ -639,7 +639,8 @@ class SearchController extends Controller implements CrawlConstants
         $original_query = $query;
         list($query, $raw, $use_network, $use_cache_if_possible,
             $guess_semantics) =
-                $this->calculateControlWords($query, $raw, $is_mix);
+                $this->calculateControlWords($query, $raw, $is_mix,
+                $index_name);
         $index_archive_name= self::index_data_base_name.$index_name;
         if(file_exists( CRAWL_DIR."/cache/$index_archive_name/no_network.txt")){
             $_REQUEST['network'] = false;
@@ -726,11 +727,12 @@ class SearchController extends Controller implements CrawlConstants
      *  @param string $query original query string
      *  @param bool $raw the $_REQUEST['raw'] value
      *  @param bool if the current index name is that of a crawl mix
+     *  @param string $index_name timestamp of current mix or index
      *
      *  @return array ($query, $raw, $use_network,
      *      $use_cache_if_possible, $guess_semantics)
      */
-    function calculateControlWords($query, $raw, $is_mix)
+    function calculateControlWords($query, $raw, $is_mix, $index_name)
     {
         $original_query = $query;
         if(trim($query) != "") {

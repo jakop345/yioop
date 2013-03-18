@@ -59,7 +59,8 @@ interface CrawlConstants
 
     const queue_base_name = "QueueBundle";
     const archive_base_name = "Archive";
-    const archive_iterator = "ArchiveIterator";
+    const name_archive_iterator = "NameArchiveIterator";
+    const fetch_archive_iterator = "FetchArchiveIterator";
     const save_point = "SavePoint";
     const schedule_data_base_name = "ScheduleData";
     const schedule_name = "FetchSchedule";
@@ -213,6 +214,8 @@ interface CrawlConstants
     const META_WORDS = 'cm';
     const CACHE_PAGES = 'cn';
     const WARC_ID = 'co';
+    const START_PARTITION = 'cp';
+    const INI = 'cq';
 
     const NEEDS_OFFSET_FLAG = 0x7FFFFFFF;
 

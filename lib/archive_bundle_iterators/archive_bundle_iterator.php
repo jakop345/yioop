@@ -52,17 +52,22 @@ abstract class ArchiveBundleIterator implements CrawlConstants
      * Timestamp of the archive that is being iterated over
      * @var int
      */
-     var $iterate_timestamp;
+    var $iterate_timestamp;
     /**
      * Timestamp of the archive that is being used to store results in
      * @var int
      */
-     var $result_timestamp;
+    var $result_timestamp;
     /**
      * Whether or not the iterator still has more documents
      * @var bool
      */
-     var $end_of_iterator;
+    var $end_of_iterator;
+    /**
+     * The path to the directory where the iteration status is stored.
+     * @var string
+     */
+    var $result_dir;
 
     /**
      * Stores the current progress to the file iterate_status.txt in the result

@@ -49,7 +49,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 class EnStemmer
 {
 
-    static $no_stem_list = array("Titanic");
+    static $no_stem_list = array("Titanic", "programming", "fishing");
     /**
      * storage used in computing the stem
      * @var string
