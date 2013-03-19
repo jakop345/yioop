@@ -503,7 +503,8 @@ class Fetcher implements CrawlConstants
                     $this->to_crawl = array();
                 }
             } else if ($this->crawl_type == self::ARCHIVE_CRAWL &&
-                    $this->arc_type != "WebArchiveBundle") { /* case(2) */
+                    $this->arc_type != "WebArchiveBundle" && 
+                    $this->arc_type != "") { /* case(2) */
                 // An archive crawl with data coming from the name server.
                 crawlLog("MAIN LOOP CASE 2 -- ARCHIVE SCHEDULER (NOT RECRAWL)");
                 $info = $this->checkArchiveScheduler();

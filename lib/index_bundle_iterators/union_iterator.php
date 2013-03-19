@@ -209,10 +209,11 @@ class UnionIterator extends IndexBundleIterator
             if(!isset($this->pages[$doc_key]["ITERATOR"])) {
                 continue;
             } else {
-                $out_pages[$doc_key] = $this->index_bundle_iterators[
+                $tmp = $this->index_bundle_iterators[
                     $this->pages[
-                        $doc_key]["ITERATOR"]]->getSummariesFromCurrentDocs(
+                        $doc_key]["ITERATOR"]]->getCurrentDocsForKeys(
                             array($doc_key));
+                $out_pages[$doc_key] = $tmp[$doc_key];
             }
         }
         return $out_pages;

@@ -123,7 +123,7 @@ class MixArchiveBundleIterator extends ArchiveBundleIterator
      */
     function getArchiveName($timestamp)
     {
-        return CRAWL_DIR."/schedules/".self::archive_iterator.$timestamp;
+        return CRAWL_DIR."/schedules/".self::name_archive_iterator.$timestamp;
     }
 
     /**
