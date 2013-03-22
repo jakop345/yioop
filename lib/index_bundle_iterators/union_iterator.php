@@ -102,6 +102,8 @@ class UnionIterator extends IndexBundleIterator
         $this->num_docs = 0;
         $this->results_per_block = 0;
         $this->key_iterator_table = array();
+        $this->seen_docs = 0;
+        $this->seen_docs_unfiltered = 0;
         for($i = 0; $i < $this->num_iterators; $i++) {
             $this->num_docs += $this->index_bundle_iterators[$i]->num_docs;
             /*
@@ -111,8 +113,16 @@ class UnionIterator extends IndexBundleIterator
              */
             $this->results_per_block +=
                 $this->index_bundle_iterators[$i]->results_per_block;
+            $this->seen_docs += $this->index_bundle_iterators[$i]->seen_docs;
+            if(isset($this->index_bundle_iterators[$i]->seen_docs_unfiltered)) {
+                $this->seen_docs_unfiltered +=
+                    $this->index_bundle_iterators[$i]->seen_docs_unfiltered;
+            } else {
+                $this->seen_docs_unfiltered += $this->seen_docs;
+            }
         }
-        $this->reset();
+
+        $doc_block = $this->currentDocsWithWord();
     }
 
     /**

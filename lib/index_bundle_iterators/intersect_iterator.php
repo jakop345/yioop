@@ -127,10 +127,19 @@ class IntersectIterator extends IndexBundleIterator
              up here that we return at most one posting at a time from each
              iterator
         */
+        $this->seen_docs = 0;
+        $this->seen_docs_unfiltered = 0;
         for($i = 0; $i < $this->num_iterators; $i++) {
             $this->num_docs += $this->index_bundle_iterators[$i]->num_docs;
+            $this->index_bundle_iterators[$i]->setResultsPerBlock(1);
+            $this->seen_docs += $this->index_bundle_iterators[$i]->seen_docs;
+            if(isset($this->index_bundle_iterators[$i]->seen_docs_unfiltered)) {
+                $this->seen_docs_unfiltered +=
+                    $this->index_bundle_iterators[$i]->seen_docs_unfiltered;
+            } else {
+                $this->seen_docs_unfiltered += $this->seen_docs;
+            }
         }
-        $this->reset();
     }
 
     /**

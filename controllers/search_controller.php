@@ -592,9 +592,11 @@ class SearchController extends Controller implements CrawlConstants
      *      no grouping done on data. If $raw == 1 no summary returned (used
      *      with f=serial, end user probably does not want)
      *      In this case, will get offset, generation, etc so could later lookup
-     * @param int $save_timestamp if this timestamp is nonzero, then save
+     * @param mixed $save_timestamp if this timestamp is nonzero, then save
      *      iterate position, so can resume on future queries that make
-     *      use of the timestamp
+     *      use of the timestamp. $save_time_stamp may also be in the format
+     *      of string timestamp-query_part to handle networked queries involving
+     *      presentations
      */
     function processQuery(&$data, $query, $activity, $arg, $results_per_page,
         $limit = 0, $index_name = 0, $raw = 0, $save_timestamp = 0)

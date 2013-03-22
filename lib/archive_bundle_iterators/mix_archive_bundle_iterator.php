@@ -193,9 +193,8 @@ class MixArchiveBundleIterator extends ArchiveBundleIterator
             $objects = $results["PAGES"];
             $this->limit += $num_results;
             $objects["NO_PROCESS"] = true;
-            if($num_results < $num - 1) {
-                $this->end_of_iterator = true;
-            }
+        } else if ($num_results == 0) {
+            $this->end_of_iterator = true;
         } else {
             $objects = array("NO_PROCESS" => $results);
         }
