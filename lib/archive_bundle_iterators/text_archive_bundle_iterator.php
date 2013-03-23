@@ -594,19 +594,21 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
      */
     function fileOpen($filename, $make_buffer_if_needed = true)
     {
-        switch($this->compression)
-        {
-            case 'bzip2':
-                $this->bz2_iterator = new BZip2BlockIterator($filename);
-            break;
+        if($this->iterate_dir) {
+            switch($this->compression)
+            {
+                case 'bzip2':
+                    $this->bz2_iterator = new BZip2BlockIterator($filename);
+                break;
 
-            case 'gzip':
-                $this->fh = gzopen($filename, "rb");
-            break;
+                case 'gzip':
+                    $this->fh = gzopen($filename, "rb");
+                break;
 
-            case 'plain':
-                $this->fh = fopen($filename, "rb");
-            break;
+                case 'plain':
+                    $this->fh = fopen($filename, "rb");
+                break;
+            }
         }
         if($make_buffer_if_needed) {
             if(!file_exists($this->buffer_filename)) {
@@ -699,8 +701,13 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
         $this->remainder = (isset($info['remainder'])) ? $info['remainder']:"";
         $this->header = (isset($info['header'])) ? $info['header']: array();
         $this->bz2_iterator = $info['bz2_iterator'];
-        if(!$this->end_of_iterator) {
-            $this->fileOpen($this->partitions[$this->current_partition_num]);
+        if(!$this->end_of_iterator && !$this->bz2_iterator) {
+            if(isset($this->partitions[$this->current_partition_num])) {
+                $filename = $this->partitions[$this->current_partition_num];
+            } else if(!$this->iterate_dir) { // fetcher case
+                $filename = ""; // will only use buffer so don't need
+            }
+            $this->fileOpen($filename);
             $success = fseek($this->buffer_fh, $info['current_offset']);
             if($success == -1) { $this->buffer_fh = NULL; }
         }
