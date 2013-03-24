@@ -1083,15 +1083,12 @@ class Fetcher implements CrawlConstants
                 if($pages[self::ARC_DATA]) {
                     $archive_iterator->makeBuffer($pages[self::ARC_DATA]);
                 }
-                if($pages[self::START_PARTITION]) {
-                    if($archive_iterator->switch_partition_callback_name 
-                        != NULL) {
-                        $callback_name = 
-                            $archive_iterator->switch_partition_callback_name;
-                        $result = $archive_iterator->$callback_name();
-                    }
-                } else {
+                if(!$pages[self::START_PARTITION]) {
                     $archive_iterator->nextPages(1);
+                }
+                if(isset($pages[self::HEADER]) && is_array(
+                    $pages[self::HEADER]) && $pages[self::HEADER] != array()) {
+                    $archive_iterator->header = $pages[self::HEADER];
                 }
             } else {
                 $info[self::ARC_DATA] = $pages;

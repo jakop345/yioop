@@ -160,7 +160,6 @@ class MediaWikiArchiveBundleIterator extends TextArchiveBundleIterator
             strrpos($pre_host_name, "/") + 1);
         $url_parts = @parse_url($this->header['base_address']);
         $this->header['ip_address'] = gethostbyname($url_parts['host']);
-        $this->initializeSubstitutions();
         return true;
     }
 
@@ -368,6 +367,9 @@ class MediaWikiArchiveBundleIterator extends TextArchiveBundleIterator
     {
         static $minimal_regexes = false;
         static $first_call = true;
+        if($first_call) {
+            $this->initializeSubstitutions();
+        }
 
         $page_info = $this->getNextTagData("page");
         if($no_process) { return $page_info; }

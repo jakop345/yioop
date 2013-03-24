@@ -306,10 +306,15 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
                 return false;
             }
             $this->fileOpen(
-                $this->partitions[$this->current_partition_num], false);
+                $this->partitions[$this->current_partition_num]);
+            if($this->switch_partition_callback_name != NULL) {
+                $callback_name = $this->switch_partition_callback_name;
+                $result = $this->$callback_name();
+            }
             $info[self::START_PARTITION] = true;
         }
         $info[self::INI] = $this->ini;
+        $info[self::HEADER] = $this->header;
         $info[self::ARC_DATA] = $this->updateBuffer("", true);
         $this->saveCheckpoint();
         return $info;
