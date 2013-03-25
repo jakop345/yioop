@@ -1111,7 +1111,10 @@ class Fetcher implements CrawlConstants
     }
 
     /**
+     * Function to check if memory for this fetcher instance is getting low
+     * relative to what the system will allow.
      *
+     * @return bool whether available memory is getting low
      */
     function exceedMemoryThreshold()
     {
@@ -1119,7 +1122,11 @@ class Fetcher implements CrawlConstants
     }
 
     /**
+     * At least once, and while memory is low picks at server at random and send
+     * any fetcher data we have to it.
      *
+     * @param bool $at_least_once whether to send to at least one fetcher or
+     *      to only send if memory is above threshold
      */
     function selectCurrentServerAndUpdateIfNeeded($at_least_once)
     {
@@ -1589,7 +1596,15 @@ class Fetcher implements CrawlConstants
     }
 
     /**
+     * Page processors are allowed to extract up to MAX_LINKS_TO_EXTRACT
+     * This method attempts to cull from the doc_info struct the
+     * best MAX_LINKS_PER_PAGE. Currently, this is done by first removing
+     * links which of filetype or sites the crawler is forbidden from crawl.
+     * Then a crude estimate of the informaation contained in the links test: 
+     * strlen(gzip(text)) is used to extract the best remaining links.
      *
+     * @param array &$doc_info a string with a CrawlConstants::LINKS subarray
+     *  This subarray in turn contains url => text pairs.
      */
     function pruneLinks(&$doc_info)
     {
@@ -1803,8 +1818,9 @@ class Fetcher implements CrawlConstants
             crawlLog($site_index.". $subdoc_info ".$site[self::URL]);
 
         } // end for
-        if((count($this->to_crawl) <= 0 && count($this->to_crawl_again) <= 0) ||
-                ( isset($this->found_sites[self::SEEN_URLS]) &&
+        if(($this->crawl_type == self::WEB_CRAWL && 
+            count($this->to_crawl) <= 0 && count($this->to_crawl_again) <= 0) ||
+                (isset($this->found_sites[self::SEEN_URLS]) &&
                 count($this->found_sites[self::SEEN_URLS]) >
                 SEEN_URLS_BEFORE_UPDATE_SCHEDULER) ||
                 ($this->archive_iterator &&

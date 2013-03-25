@@ -150,14 +150,18 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
     var $buffer_filename;
 
     /**
-     * Name of 
+     * Name of function to be call whenever the partition is changed
+     * that the iterator is reading. The point of the callback is to
+     * read meta information at the start of the new partition
      *
      * @var string
      */
     var $switch_partition_callback_name = NULL;
 
     /**
-     * Name of 
+     * Contains basic parameters of how this iterate works: compression,
+     * start and stop delimiter. Typically, this data is read from the
+     * arc_description.ini file
      *
      * @var array
      */
@@ -167,8 +171,15 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
      * How many bytes at a time should be read from the current archive
      * file into the buffer file. 8192 = BZip2BlockIteraror::BlOCK_SIZE
      */
-    const BUFFER_SIZE = 16384000; //32768000;
+    const BUFFER_SIZE = 16384000; 
 
+    /**
+     *  Estimate of the maximum size of a record stored in a text archive
+     *  Data in archives is split into chunk of buffer size plus two record
+     *  sizes. This is used to provide a two record overlap between successive
+     *  chunks. This si further used to ensure that records that go over
+     *  the basic chunk boundary of BUFFER_SIZE will be processed.
+     */
     const MAX_RECORD_SIZE = 49152;
 
     /**
@@ -229,7 +240,11 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
     }
 
     /**
+     *  Mutator Method for controller how this text archive iterator behaves
+     *  Normally, data, on compression, start, stop delimiter read from an ini
+     *  file. This reads it from the supplied array.
      *
+     *  @param array $ini configuration settings for this archive iterator
      */
     function setIniInfo($ini)
     {
@@ -293,7 +308,13 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
     }
 
     /**
+     *  Called to get the next chunk of BUFFER_SIZE + 2 MAX_RECORD_SIZE bytes
+     *  of data from the text archive. This data is returned unprocessed in
+     *  self::ARC_DATA together with ini and header information about the
+     *  archive. This method is typically called in the name server setting
+     *  from FetchController.
      *
+     *  @return array with contents as described above
      */
     function nextChunk()
     {
