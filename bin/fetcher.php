@@ -573,6 +573,7 @@ class Fetcher implements CrawlConstants
 
                 crawlLog("New name: ".$this->web_archive->dir_name);
                 crawlLog("Switching archive...");
+                continue;
             }
 
             switch($this->crawl_type)
@@ -756,7 +757,7 @@ class Fetcher implements CrawlConstants
         $files = glob(CRAWL_DIR.'/schedules/*');
         $names = array(self::fetch_batch_name, self::fetch_crawl_info,
             self::fetch_closed_name, self::schedule_name,
-            self::fetch_archive_iterator);
+            self::fetch_archive_iterator, self::save_point);
         foreach($files as $file) {
             $timestamp = "";
             foreach($names as $name) {
@@ -770,7 +771,11 @@ class Fetcher implements CrawlConstants
             }
 
             if($timestamp !== "" && !in_array($timestamp,$still_active_crawls)){
-                unlink($file);
+                if(is_dir($file)) {
+                    $this->db->unlinkRecursive($file);
+                } else {
+                    unlink($file);
+                }
             }
         }
     }
@@ -911,11 +916,12 @@ class Fetcher implements CrawlConstants
             if(general_is_a($this->arc_type."Iterator", 
                     "TextArchiveBundleIterator")) {
                 $result_dir = WORK_DIRECTORY . "/schedules/" .
-                    self::fetch_archive_iterator.$this->crawl_time;
+                    $prefix.self::fetch_archive_iterator.$this->crawl_time;
                 $iterator_name = $this->arc_type."Iterator";
                 $this->archive_iterator = new $iterator_name(
                     $info[self::CRAWL_INDEX],
                     false, $this->crawl_time, $result_dir);
+                $this->db->setWorldPermissionsRecursive($result_dir);
             }
         }
         crawlLog("End Name Server Check");
@@ -1077,18 +1083,21 @@ class Fetcher implements CrawlConstants
             // write a copy to disk in case something goes wrong.
             $pages = unserialize(gzuncompress(webdecode($info[self::DATA])));
             if($chunk) {
-                if(isset($pages[self::INI])) {
-                    $archive_iterator->setIniInfo($pages[self::INI]);
-                }
-                if($pages[self::ARC_DATA]) {
-                    $archive_iterator->makeBuffer($pages[self::ARC_DATA]);
-                }
-                if(!$pages[self::START_PARTITION]) {
-                    $archive_iterator->nextPages(1);
-                }
-                if(isset($pages[self::HEADER]) && is_array(
-                    $pages[self::HEADER]) && $pages[self::HEADER] != array()) {
-                    $archive_iterator->header = $pages[self::HEADER];
+                if(isset($pages[self::ARC_DATA]) ) {
+                    if(isset($pages[self::INI])) {
+                        $archive_iterator->setIniInfo($pages[self::INI]);
+                    }
+                    if($pages[self::ARC_DATA]) {
+                        $archive_iterator->makeBuffer($pages[self::ARC_DATA]);
+                    }
+                    if(isset($pages[self::HEADER]) && 
+                        is_array($pages[self::HEADER]) && 
+                        $pages[self::HEADER] != array()) {
+                        $archive_iterator->header = $pages[self::HEADER];
+                    }
+                    if(!$pages[self::START_PARTITION]) {
+                        $archive_iterator->nextPages(1);
+                    }
                 }
             } else {
                 $info[self::ARC_DATA] = $pages;

@@ -340,7 +340,7 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
                 if($this->checkFileHandle()) {
                     $this->fileClose();
                 }
-                if(!$this->iterate_dir) { //network case
+                if(!$this->iterate_dir) { //fetcher local case
                     break;
                 }
                 $this->current_partition_num++;
@@ -350,7 +350,6 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
                 }
                 $this->fileOpen(
                     $this->partitions[$this->current_partition_num]);
-
                 if($this->switch_partition_callback_name != NULL) {
                     $callback_name = $this->switch_partition_callback_name;
                     $result = $this->$callback_name();

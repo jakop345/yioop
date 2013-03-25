@@ -966,7 +966,7 @@ class PhraseModel extends ParallelModel
         if($save_timestamp_name != "" && ($queue_servers == array() ||
             $this->isSingleLocalhost($queue_servers))) {
             // used for archive crawls of crawl mixes
-            $save_file = CRAWL_DIR.'/cache/'.self::save_point.
+            $save_file = CRAWL_DIR.'/schedules/'.self::save_point.
                 $save_timestamp_name.".txt";
             $iterators = $query_iterator->save_iterators;
             $cnt_iterators = count($iterators);
@@ -977,6 +977,7 @@ class PhraseModel extends ParallelModel
             }
             $results["SAVE_POINT"] = $save_point;
             file_put_contents($save_file, serialize($save_point));
+            $this->db->setWorldPermissionsRecursive($save_file);
         }
         $pages = array_values($pages);
         $result_count = count($pages);
@@ -1258,7 +1259,7 @@ class PhraseModel extends ParallelModel
             $doc_iterate_group_hash = crawlHash("site:doc");
             if($save_timestamp_name != "") { 
                 // used for archive crawls of crawl mixes
-                $save_file = CRAWL_DIR.'/cache/'.self::save_point.
+                $save_file = CRAWL_DIR.'/schedules/'.self::save_point.
                     $save_timestamp_name.".txt";
                 if(file_exists($save_file)) {
                     $save_point =

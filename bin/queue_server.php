@@ -1210,7 +1210,8 @@ class QueueServer implements CrawlConstants, Join
         $names_dir = array(self::schedule_data_base_name,
             self::index_data_base_name, self::robot_data_base_name,
             self::name_archive_iterator, self::fetch_archive_iterator);
-        $name_files = array(self::schedule_name, self::index_closed_name);
+        $name_files = array(self::schedule_name, self::index_closed_name,
+            self::save_point);
         $names = array_merge($name_files, $names_dir);
         foreach($files as $file) {
             $timestamp = "";

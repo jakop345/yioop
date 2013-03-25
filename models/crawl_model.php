@@ -721,12 +721,11 @@ EOT;
         $this->db->unlinkRecursive(
             CRAWL_DIR.'/schedules/'.self::name_archive_iterator.
             $timestamp, true);
-        $this->db->unlinkRecursive(
-            CRAWL_DIR.'/schedules/'.self::fetch_archive_iterator.
-            $timestamp, true);
-        $save_point_file = CRAWL_DIR.'/cache/'.self::save_point.
-            $timestamp.".txt";
-        @unlink($save_point_file);
+        $save_point_files = glob(CRAWL_DIR.'/schedules/'.self::save_point.
+            $timestamp."*.txt");
+        foreach($save_point_files as $save_point_file) {
+            @unlink($save_point_file);
+        }
 
         $this->db->selectDB(DB_NAME);
         $sql = "SELECT DISTINCT MIX_TIMESTAMP FROM MIX_COMPONENTS WHERE ".

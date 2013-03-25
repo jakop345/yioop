@@ -370,7 +370,6 @@ class MediaWikiArchiveBundleIterator extends TextArchiveBundleIterator
         if($first_call) {
             $this->initializeSubstitutions();
         }
-
         $page_info = $this->getNextTagData("page");
         if($no_process) { return $page_info; }
         $dom = new DOMDocument();
@@ -398,10 +397,10 @@ class MediaWikiArchiveBundleIterator extends TextArchiveBundleIterator
             "<body><h1>$pre_url</h1>\n";
         $pre_page = $this->getTextContent($dom, "/page/revision/text");
         $current_hash = crawlHash($pre_page);
-        if($this->last_hash == $current_hash) {
+  /*      if($this->last_hash == $current_hash) {
             $minimal_regexes = true;
         }
-        $this->last_hash = $current_hash;
+        $this->last_hash = $current_hash;*/
         if($first_call) {
             $this->saveCheckPoint(); //ensure we remember to advance one on fail
             $first_call = false;

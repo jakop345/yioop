@@ -448,7 +448,7 @@ class ParallelModel extends Model implements CrawlConstants
             return;
         }
 
-        $save_files = glob(CRAWL_DIR.'/cache/Savepoint'.
+        $save_files = glob(CRAWL_DIR.'/schedules/'.self::save_point.
             $save_timestamp."*.txt");
         foreach($save_files as $save_file) {
             @unlink($save_file);
