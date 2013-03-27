@@ -129,7 +129,8 @@ class SearchController extends Controller implements CrawlConstants
                     $save_timestamp);
                     // calculate the results of a search if there is one
             } else {
-                $ui_array = array("highlight", "yioop_nav");
+                $ui_array = array("highlight", "yioop_nav", "history",
+                    "summaries");
                 if(isset($_REQUEST['from_cache'])) {
                     $ui_array[] = "cache_link_referrer";
                 }
@@ -1258,9 +1259,10 @@ class SearchController extends Controller implements CrawlConstants
      * @param string $url the url of the page to find the cached version of
      * @param array $ui_flags array of  ui features which
      *      should be added to the cache page. For example, "highlight" 
-     *      would way search terms should be highlighted, "history_ui"
+     *      would say search terms should be highlighted, "history"
      *      says add history navigation for all copies of this cache page in
-     *      yioop system. "cache_link_referrer" says a link on a cache page
+     *      yioop system. "summaries" says add a toggle headers and extracted
+     *      summaries link. "cache_link_referrer" says a link on a cache page
      *      referred us to the current cache request
      * @param int $crawl_time the timestamp of the crawl to look up the cached
      *      page in
