@@ -325,7 +325,7 @@ class SearchView extends View implements CrawlConstants
             } //end foreach
             $this->paginationHelper->render(
                 $data['PAGING_QUERY']."&amp;".CSRF_TOKEN."=".
-                    $data[CSRF_TOKEN]."&amp;its=".$page[self::CRAWL_TIME],
+                    $data[CSRF_TOKEN]."&amp;its=".$data['its'],
                 $data['LIMIT'], $data['RESULTS_PER_PAGE'], $data['TOTAL_ROWS']);
             ?>
 

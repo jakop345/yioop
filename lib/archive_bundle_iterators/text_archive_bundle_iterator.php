@@ -321,24 +321,40 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
         $info = array();
         $info[self::START_PARTITION] = false;
         if(!$this->checkFileHandle() || $this->checkEof()) {
-            $this->current_partition_num++;
-            if($this->current_partition_num >= $this->num_partitions) {
-                $this->end_of_iterator = true;
-                return false;
-            }
-            $this->fileOpen(
-                $this->partitions[$this->current_partition_num]);
-            if($this->switch_partition_callback_name != NULL) {
-                $callback_name = $this->switch_partition_callback_name;
-                $result = $this->$callback_name();
-            }
-            $info[self::START_PARTITION] = true;
+            $this->updatePartition($info);
         }
         $info[self::INI] = $this->ini;
         $info[self::HEADER] = $this->header;
         $info[self::ARC_DATA] = $this->updateBuffer("", true);
+        if(!$info[self::ARC_DATA]) {
+            $this->updatePartition($info);
+            $info[self::ARC_DATA] = $this->updateBuffer("", true);
+        }
         $this->saveCheckpoint();
         return $info;
+    }
+
+    /**
+     *  Helper function for nextChunk to advance the parition if we are
+     *  at the end of the current archive file
+     *
+     *  @param &$info a struct with data about current chunk. will up start
+     *      partition flag
+     */
+    function updatePartition(&$info)
+    {
+        $this->current_partition_num++;
+        if($this->current_partition_num >= $this->num_partitions) {
+            $this->end_of_iterator = true;
+            return false;
+        }
+        $this->fileOpen(
+            $this->partitions[$this->current_partition_num]);
+        if($this->switch_partition_callback_name != NULL) {
+            $callback_name = $this->switch_partition_callback_name;
+            $result = $this->$callback_name();
+        }
+        $info[self::START_PARTITION] = true;
     }
 
     /**
@@ -362,6 +378,8 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
                     $this->fileClose();
                 }
                 if(!$this->iterate_dir) { //fetcher local case
+                    $this->current_offset = self::BUFFER_SIZE +
+                        self::MAX_RECORD_SIZE;
                     break;
                 }
                 $this->current_partition_num++;
@@ -520,13 +538,12 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
         if($buffer == "") {
             if(!$this->checkFileHandle()) { return false; }
             $success = 1;
+            $seek_pos = $this->buffer_block_num * self::BUFFER_SIZE;
             if($this->compression == "gzip") {
-                $success = gzseek($this->fh, $this->buffer_block_num *
-                    self::BUFFER_SIZE);
+                $success = gzseek($this->fh, $seek_pos);
             }
             if($this->compression == "plain") {
-                $success = fseek($this->fh, $this->buffer_block_num *
-                    self::BUFFER_SIZE);
+                $success = fseek($this->fh, $seek_pos);
             }
             if($success == -1 || !$this->checkFileHandle() 
                 || $this->checkEof()) { return false; }
@@ -609,6 +626,7 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
                 $eof = feof($this->fh);
             break;
         }
+        return $eof;
     }
 
     /**

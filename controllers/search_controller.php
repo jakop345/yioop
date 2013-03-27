@@ -130,7 +130,7 @@ class SearchController extends Controller implements CrawlConstants
                     // calculate the results of a search if there is one
             } else {
                 $ui_array = array("highlight", "yioop_nav", "history",
-                    "summaries");
+                    "summaries", "version");
                 if(isset($_REQUEST['from_cache'])) {
                     $ui_array[] = "cache_link_referrer";
                 }
@@ -373,11 +373,9 @@ class SearchController extends Controller implements CrawlConstants
         $machine_urls = $this->machineModel->getQueueServerUrls();
 
         $current_its = $this->crawlModel->getCurrentIndexDatabaseName();
+        $index_timestamp = $this->getIndexTimestamp();
 
-        if((isset($_REQUEST['its']) || isset($_SESSION['its']))) {
-            $its = (isset($_REQUEST['its'])) ? $_REQUEST['its'] :
-                $_SESSION['its'];
-            $index_timestamp = $this->clean($its, "int");
+        if($index_timestamp != $current_its) {
             if($raw != 1) {
                 if($index_timestamp != 0 ) {
                     //validate timestamp against list
@@ -409,9 +407,6 @@ class SearchController extends Controller implements CrawlConstants
                         //use the default crawl index
                 }
             }
-        } else {
-            $index_timestamp = $current_its;
-                //use the default crawl index
         }
 
         $index_info = false;
@@ -439,6 +434,28 @@ class SearchController extends Controller implements CrawlConstants
         $data['its'] = (isset($index_timestamp)) ? $index_timestamp : 0;
 
         return array($index_timestamp, $index_info, $save_timestamp);
+    }
+
+    /**
+     * Finds the timestamp of the main crawl or mix to return results from
+     * Does not do checking to make sure timestamp exists.
+     *
+     * @return string current timestamp
+     */
+    function getIndexTimestamp()
+    {
+        static $index_timestamp = -1;
+        if($index_timestamp != -1) {
+            return $index_timestamp;
+        }
+        if((isset($_REQUEST['its']) || isset($_SESSION['its']))) {
+            $its = (isset($_REQUEST['its'])) ? $_REQUEST['its'] :
+                $_SESSION['its'];
+            $index_timestamp = $this->clean($its, "int");
+        } else {
+            $index_timestamp = $this->crawlModel->getCurrentIndexDatabaseName();
+        }
+        return $index_timestamp;
     }
 
     /**
@@ -1114,19 +1131,10 @@ class SearchController extends Controller implements CrawlConstants
                         the cache before going to the live site
                      */
                     if($tag_name != "link" && ($href =="" || $href[0] != "#")) {
-                        if(isset($_SESSION['USER_ID'])) {
-                            $user = $_SESSION['USER_ID'];
-                        } else {
-                            $user = isset($_SERVER['REMOTE_ADDR']) ?
-                                $_SERVER['REMOTE_ADDR'] : "0.0.0.0";
-                        }
-                        $csrf_token = $this->generateCSRFToken($user);
                         $href = urlencode($href);
                         $href = $href."&from_cache=true";
-                        $crawl_time = $this->crawlModel->
-                            getCurrentIndexDatabaseName();
-                        $href = 
-                            "?YIOOP_TOKEN=$csrf_token&c=search&a=cache&q&arg".
+                        $crawl_time = $this->getIndexTimestamp();
+                        $href = $this->baseLink()."&a=cache&q&arg".
                             "=$href&its=$crawl_time";
                     }
 
@@ -1431,11 +1439,13 @@ class SearchController extends Controller implements CrawlConstants
         } else {
             $cache_file = $cache_item[self::PAGE];
         }
-
         if(isset($crawl_item[self::THUMB])) {
             $cache_file = $this->imageCachePage($url, $cache_item, $cache_file,
                 $queue_servers);
             unset($ui_flags["highlight"]);
+        }
+        if(isset($crawl_item[self::KEYWORD_LINKS])) {
+            $cache_item[self::KEYWORD_LINKS] = $crawl_item[self::KEYWORD_LINKS];
         }
         if(in_array('yioop_nav', $ui_flags)) {
             $newDoc = $this->formatCachePage($cache_item, $cache_file, $url,
@@ -1580,13 +1590,13 @@ class SearchController extends Controller implements CrawlConstants
         if(is_object($head)) {
             // add a noindex nofollow robot directive to page
             $head_first_child = $head->firstChild;
-            $robotNode = $dom->createElement('meta');
-            $robotNode = $head->insertBefore($robotNode, $head_first_child);
-            $robotNode->setAttribute("name", "ROBOTS");
-            $robotNode->setAttribute("content", "NOINDEX,NOFOLLOW");
+            $robot_node = $dom->createElement('meta');
+            $robot_node = $head->insertBefore($robot_node, $head_first_child);
+            $robot_node->setAttribute("name", "ROBOTS");
+            $robot_node->setAttribute("content", "NOINDEX,NOFOLLOW");
             $comment = $dom->createComment(
                 tl('search_controller_cache_comment'));
-            $comment = $head->insertBefore($comment, $robotNode);
+            $comment = $head->insertBefore($comment, $robot_node);
             // make link and script links absolute
             $head = $this->canonicalizeLinks($head, $url);
         }
@@ -1608,87 +1618,58 @@ class SearchController extends Controller implements CrawlConstants
         $text_align = (getLocaleDirection() == 'ltr') ? "left" : "right";
         // add information about what was extracted from page
         if(in_array("summaries", $ui_flags)) {
-            $summaryNode = $dom->createElement('pre');
-            $summaryNode = $body->insertBefore($summaryNode, $first_child);
-            $summaryNode->setAttributeNS("","style", "border-color: black; ".
-                "border-style:solid; border-width:3px; text-align:$text_align;".
-                "padding: 5px; background-color: white; display:none;");
-            $summaryNode->setAttributeNS("","id", "summary-page-id");
-
-
-            if(isset($cache_item[self::HEADER])) {
-                $summary_string = $cache_item[self::HEADER]."\n". 
-                    $summary_string;
-            }
-            $textNode = $dom->createTextNode($summary_string);
-            $summaryNode->appendChild($textNode);
-
-            $scriptNode = $dom->createElement('script');
-            $scriptNode = $body->insertBefore($scriptNode, $summaryNode);
-            $textNode = $dom->createTextNode("var summary_show = 'none';");
-            $scriptNode->appendChild($textNode);
-            $aDivNode = $dom->createElement('div');
-            $body->insertBefore($aDivNode, $summaryNode);
-            $aDivNode->setAttributeNS("","style", "border-color: black; ".
-                "border-style:solid; border-width:3px; margin-bottom:10px;".
-                "padding: 5px; background-color: white; ".
-                "text-align:$text_align;");
+            $summary_toggle_node = $this->createSummaryAndToggleNodes($dom,
+                $text_align, $body, $summary_string, $cache_item);
         } else {
-            $aDivNode = $first_child;
+            $summary_toggle_node = $first_child;
         }
-        $divNode = $dom->createElement('div');
+        if(isset($cache_item[self::KEYWORD_LINKS]) && 
+            count($cache_item[self::KEYWORD_LINKS]) > 0) {
+            $keyword_node = $this->createDomBoxNode($dom, $text_align, 
+                "zIndex: 1");
+            $text_node = $dom->createTextNode("Z@key_links@Z");
+            $keyword_node->appendChild($text_node);
+            $keyword_node = $body->insertBefore($keyword_node,
+                $summary_toggle_node);
+            $set_key_links = true;
+        } else {
+            $keyword_node = $summary_toggle_node;
+            $set_key_links = false;
+        }
 
-        $divNode = $body->insertBefore($divNode, $aDivNode);
-        $divNode->setAttributeNS("", "style","zIndex: 1");
-        $divNode->setAttributeNS("", "style", "border-color: black; ".
-            "border-style:solid; border-width:3px;margin-bottom:10px;".
-            "padding: 5px; background-color: white; text-align:$text_align;");
-
-        $textNode = $dom->createTextNode(tl('search_controller_cached_version',
-            "Z@url@Z", $date));
-        $divNode->appendChild($textNode);
-        $brNode = $dom->createElement('br');
-        $divNode->appendChild($brNode);
-        $this->addCacheJavascriptTags($dom, $divNode);
+        if(in_array("version", $ui_flags)) {
+            $version_node = 
+                $this->createDomBoxNode($dom, $text_align, "zIndex: 1");
+            $textNode = $dom->createTextNode(
+                tl('search_controller_cached_version', "Z@url@Z", $date));
+            $version_node->appendChild($textNode);
+            $brNode = $dom->createElement('br');
+            $version_node->appendChild($brNode);
+            $this->addCacheJavascriptTags($dom, $version_node);
+            $version_node = $body->insertBefore($version_node, $keyword_node);
+        } else {
+            $version_node = $keyword_node;
+        }
 
         //UI for showing history
         if(in_array("history", $ui_flags)) {
-            $history_div = $this->historyUI($crawl_time, $all_crawl_times, 
-                $divNode, $dom, $terms, $hist_ui_open, $url);
+            $history_node = $this->historyUI($crawl_time, $all_crawl_times, 
+                $version_node, $dom, $terms, $hist_ui_open, $url);
         } else {
-            $history_div = $dom->createElement('div');
+            $history_node = $dom->createElement('div');
         }
 
-        //ui for extracted summaries
-        if(in_array("summaries", $ui_flags)) {
-            $aNode = $dom->createElement("a");
-            $aTextNode =
-                $dom->createTextNode(tl('search_controller_header_summaries'));
-            $toggle_code = "javascript:".
-                "summary_show = (summary_show != 'block') ? 'block' : 'none';".
-                "summary_pid = elt('summary-page-id');".
-                "summary_pid.style.display = summary_show;";
-            $aNode->setAttributeNS("", "onclick", $toggle_code);
-            $aNode->setAttributeNS("", "style", "zIndex: 1");
-            $aNode->setAttributeNS("", "style", "text-decoration: underline; ".
-                "cursor: pointer");
-
-            $aNode->appendChild($aTextNode);
-
-            $aDivNode->appendChild($aNode);
-        }
-
-        if($history_div) {
-            $divNode->appendChild($history_div);
+        if($history_node) {
+            $version_node->appendChild($history_node);
         }
 
         $body = $this->markChildren($body, $words, $dom);
 
-        $newDoc = $dom->saveHTML();
+        $new_doc = $dom->saveHTML();
         if(substr($url, 0, 7) != "record:") {
             $url = "<a href='$url'>$url</a>";
         }
-        $newDoc = str_replace("Z@url@Z", $url, $newDoc);
+        $new_doc = str_replace("Z@url@Z", $url, $new_doc);
         $colors = array("yellow", "orange", "gray", "cyan");
         $color_count = count($colors);
 
@@ -1702,15 +1683,113 @@ class SearchController extends Controller implements CrawlConstants
                     "/$word/i", '', $mark_prefix);
                 }
                 $match = $mark_prefix.$word;
-                $newDoc = preg_replace("/$match/i",
+                $new_doc = preg_replace("/$match/i",
                     '<span style="background-color:'.
-                    $colors[$i].'">$0</span>', $newDoc);
+                    $colors[$i].'">$0</span>', $new_doc);
                 $i = ($i + 1) % $color_count;
-                $newDoc = preg_replace("/".$mark_prefix."/", "", $newDoc);
+                $new_doc = preg_replace("/".$mark_prefix."/", "", $new_doc);
             }
         }
+        if($set_key_links) {
+            $new_doc = $this->addKeywordLinks($new_doc, $cache_item);
+        }
 
-        return $newDoc;
+        return $new_doc;
+    }
+
+    /**
+     *  Function used to add links for keyword searches in keyword_links
+     *  array of $cache_item to the text of the $web_page we are going to
+     *  display the cache of as part of a pache page request
+     *
+     *  @param string $web_page to add links to
+     *  @param array $cache_item original cache item web page generated from
+     *  @return string modified web page
+     */
+    function addKeywordLinks($web_page, &$cache_item)
+    {
+        $base = $this->baseLink()."&its=".$this->getIndexTimestamp();
+        $link_list = "<ul>";
+        foreach($cache_item[self::KEYWORD_LINKS] as $keywords => $text) {
+            $keywords = urlencode($keywords);
+            $link_list .= "<li><a href='$base&q=$keywords' rel='nofollow'>".
+                "$text</a></li>";
+        }
+        $link_list .= "</ul>";
+        $web_page = str_replace("Z@key_links@Z", $link_list, $web_page);
+        return $web_page;
+    }
+
+    /**
+     *  Creates the toggle link and hidden div for extracted header and 
+     *  summary element on cache pages
+     *
+     * @param DOMDocument $dom used to create new nodes to add to body object
+     *      for page
+     * @param string $text_align whether rtl or ltr language
+     * @param DOMElement $body represent body of cached page
+     * @param string $summary_string header and summary that were extraced
+     * @param array $cache_item contains infor about the cached item
+     * @return DOMElement a div node with toggle link and hidden div
+     */
+    function createSummaryAndToggleNodes($dom, $text_align, $body,
+        $summary_string, $cache_item)
+    {
+        $first_child = $body->firstChild;
+        $summaryNode = $this->createDomBoxNode($dom, $text_align, 
+            "display:none;", 'pre');
+        $summaryNode->setAttributeNS("","id", "summary-page-id");
+        $summaryNode = $body->insertBefore($summaryNode, $first_child);
+
+        if(isset($cache_item[self::HEADER])) {
+            $summary_string = $cache_item[self::HEADER]."\n". 
+                $summary_string;
+        }
+        $textNode = $dom->createTextNode($summary_string);
+        $summaryNode->appendChild($textNode);
+
+        $scriptNode = $dom->createElement('script');
+        $scriptNode = $body->insertBefore($scriptNode, $summaryNode);
+        $textNode = $dom->createTextNode("var summary_show = 'none';");
+        $scriptNode->appendChild($textNode);
+
+        $aDivNode = $this->createDomBoxNode($dom, $text_align);
+        $aNode = $dom->createElement("a");
+        $aTextNode =
+            $dom->createTextNode(tl('search_controller_header_summaries'));
+        $toggle_code = "javascript:".
+            "summary_show = (summary_show != 'block') ? 'block' : 'none';".
+            "summary_pid = elt('summary-page-id');".
+            "summary_pid.style.display = summary_show;";
+        $aNode->setAttributeNS("", "onclick", $toggle_code);
+        $aNode->setAttributeNS("", "style", "zIndex: 1;".
+            "text-decoration: underline; cursor: pointer");
+
+        $aNode->appendChild($aTextNode);
+
+        $aDivNode->appendChild($aNode);
+        $body->insertBefore($aDivNode, $summaryNode);
+        return $aDivNode;
+    }
+
+    /**
+     * Creates a bordered tag (usually div) in which to put meta content on a 
+     * page when it is displayed
+     *
+     * @param DOMDocument $dom representing cache page
+     * @param string $text_align whether doc is ltr or rtl
+     * @param string $more_styles any additional styles for box
+     * @param string $tag base tag of box (default div)
+     * @return DOMElement of styled box
+     */
+    function createDomBoxNode($dom, $text_align, $more_styles="", $tag="div")
+    {
+        $divNode = $dom->createElement($tag);
+        $divNode->setAttributeNS("","style", "border-color: black; ".
+            "border-style:solid; border-width:3px; margin-bottom:10px;".
+            "padding: 5px; background-color: white; ".
+            "text-align:$text_align; $more_styles");
+        return $divNode;
     }
 
     /**
@@ -1912,15 +1991,7 @@ class SearchController extends Controller implements CrawlConstants
                     $url_encoded = urlencode($arr[3]);
                     $link_text = $dom->createTextNode("$arr[0] $arr[1] ".
                             "$arr[2]");
-                    if(isset($_SESSION['USER_ID'])) {
-                        $user = $_SESSION['USER_ID'];
-                    } else if (isset($_SERVER['REMOTE_ADDR'])) {
-                        $user = $_SERVER['REMOTE_ADDR'];
-                    } else {
-                        $user = "127.0.0.1";
-                    }
-                    $csrf_token = $this->generateCSRFToken($user);
-                    $link = "?YIOOP_TOKEN=$csrf_token&c=search&a=cache&".
+                    $link = $this->baseAddress."&a=cache&".
                         "q=$terms&arg=$url_encoded&its=$arr[4]&hist_open=true";
                     $link_dom = $dom->createElement("a");
                         $link_dom->setAttributeNS("", "href", $link);
@@ -1937,6 +2008,27 @@ class SearchController extends Controller implements CrawlConstants
             }
         }
         return $d1;
+    }
+
+    /**
+     * Used to create the base link for links to be displayed on caches
+     * of web pages this link points to yioop because links on cache pages
+     * are to other cache pages
+     *
+     * @return string desired base link
+     */
+    function baseLink()
+    {
+        if(isset($_SESSION['USER_ID'])) {
+            $user = $_SESSION['USER_ID'];
+        } else if (isset($_SERVER['REMOTE_ADDR'])) {
+            $user = $_SERVER['REMOTE_ADDR'];
+        } else {
+            $user = "127.0.0.1";
+        }
+        $csrf_token = $this->generateCSRFToken($user);
+        $link = "?".CSRF_TOKEN."=$csrf_token&c=search";
+        return $link;
     }
 
     /**
@@ -2003,18 +2095,17 @@ class SearchController extends Controller implements CrawlConstants
         $s1->appendChild($m);
         $d1->appendChild($s1);
         $d1->setAttributeNS("", "style", "display:none");
-        $script = $dom->createElement("script");
-        $script->setAttributeNS("","src", NAME_SERVER."/scripts/basic.js");
-        $d1->appendChild($script);
-        $script = $dom->createElement("script");
-        $script->setAttributeNS("","src", NAME_SERVER."/scripts/history.js");
-        $d1->appendChild($script);
+        $this->addCacheJavascriptTags($dom, $d1);
 
         return $d1;
     }
 
     /**
+     * Add to supplied node subnodes containing script tags for javascript
+     * libraries used to display cache pages
      *
+     * @param DOMDocument $dom used to create new nodes
+     * @param DomElement &$node what to add script node to
      */
     function addCacheJavascriptTags($dom, &$node)
     {
