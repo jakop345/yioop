@@ -173,8 +173,9 @@ class PageRuleParser implements CrawlConstants
      */
     function executeFunctionRule($tree, &$page_data)
     {
-        $allowed_functions = array("unset" => "unsetVariable", 
-            "addMetaWord" => "addMetaWord");
+        $allowed_functions = array("unset" => "unsetVariable",
+            "addMetaWord" => "addMetaWord", 
+            "addKeywordLink" => "addKeywordLink");
         if(in_array($tree['func_call'], array_keys($allowed_functions))) {
             $func = $allowed_functions[$tree['func_call']];
             $this->$func($tree['arg'], $page_data);
@@ -253,6 +254,9 @@ class PageRuleParser implements CrawlConstants
     }
 
     /**
+     *  Adds a meta word u:$field:$page_data[$field_name] to the array
+     *  of meta words for this page
+     *
      *  @param $field the key in $page_data to use
      *  @param array &$page_data an associative array of containing summary
      *      info of a web page/record
@@ -266,6 +270,34 @@ class PageRuleParser implements CrawlConstants
             $page_data[CrawlConstants::META_WORDS] = array();
         }
         $page_data[CrawlConstants::META_WORDS][] = $meta_word;
+    }
+
+    /**
+     *  Adds a $keywords => $link_text pair to the KEYWORD_LINKS array fro
+     *  this page based on the value $field on the page. The pair is extracted
+     *  by splitting on comma. The KEYWORD_LINKS array can be used when
+     *  a cached version of a page is displayed to show a list of links
+     *  from the cached page in the header. These links correspond to search
+     *  in Yioop. for example the value:
+     *  madonna, rock star
+     *  would add a link to the top of the cache page with text "rock star"
+     *  which when clicked would perform a Yioop search on madonna.
+     *
+     *  @param $field the key in $page_data to use
+     *  @param array &$page_data an associative array of containing summary
+     *      info of a web page/record
+     */
+    function addKeywordLink($field, &$page_data)
+    {
+        $field_name = $this->getVarField($field);
+        if(!isset($page_data[$field_name])) {return; }
+        $link_parts = explode(",", $page_data[$field_name]);
+        if(count($link_parts) < 2) {return; }
+        list($key_words, $link_text) = $link_parts;
+        if(!isset($page_data[CrawlConstants::KEYWORD_LINKS])) {
+            $page_data[CrawlConstants::KEYWORD_LINKS] = array();
+        }
+        $page_data[CrawlConstants::KEYWORD_LINKS][$key_words] = $link_text;
     }
 }
 

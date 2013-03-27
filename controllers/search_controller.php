@@ -1363,7 +1363,11 @@ class SearchController extends Controller implements CrawlConstants
         $this->phraseModel->index_name = $crawl_time;
         $this->crawlModel->index_name = $crawl_time;
         $crawl_item = $this->crawlModel->getCrawlItem($url, $queue_servers);
-
+        // A crawl item is able to override the default UI_FLAGS
+        if(isset($crawl_item[self::UI_FLAGS]) && 
+            is_string($crawl_item[self::UI_FLAGS])) {
+            $ui_flags = explode(",", $crawl_item[self::UI_FLAGS]);
+        }
         $data = array();
 
         if($crawl_item == NULL) {
@@ -1528,7 +1532,7 @@ class SearchController extends Controller implements CrawlConstants
      * @param string $terms from orginal query responsible for cache request
      * @param array $ui_flags array of  ui features which
      *      should be added to the cache page. For example, "highlight" 
-     *      would way search terms should be highlighted, "history_ui"
+     *      would way search terms should be highlighted, "history"
      *      says add history navigation for all copies of this cache page in
      *      yioop system.
      * return string of formatted cached page
@@ -1599,33 +1603,37 @@ class SearchController extends Controller implements CrawlConstants
         //make tags in body absolute
         $body = $this->canonicalizeLinks($body, $url);
         $first_child = $body->firstChild;
-
-        // add information about what was extracted from page
         $text_align = (getLocaleDirection() == 'ltr') ? "left" : "right";
-        $summaryNode = $dom->createElement('pre');
-        $summaryNode = $body->insertBefore($summaryNode, $first_child);
-        $summaryNode->setAttributeNS("","style", "border-color: black; ".
-            "border-style:solid; border-width:3px; text-align:$text_align;".
-            "padding: 5px; background-color: white; display:none;");
-        $summaryNode->setAttributeNS("","id", "summary-page-id");
+        // add information about what was extracted from page
+        if(in_array("summaries", $ui_flags)) {
+            $summaryNode = $dom->createElement('pre');
+            $summaryNode = $body->insertBefore($summaryNode, $first_child);
+            $summaryNode->setAttributeNS("","style", "border-color: black; ".
+                "border-style:solid; border-width:3px; text-align:$text_align;".
+                "padding: 5px; background-color: white; display:none;");
+            $summaryNode->setAttributeNS("","id", "summary-page-id");
 
 
-        if(isset($cache_item[self::HEADER])) {
-            $summary_string = $cache_item[self::HEADER]."\n". $summary_string;
+            if(isset($cache_item[self::HEADER])) {
+                $summary_string = $cache_item[self::HEADER]."\n". 
+                    $summary_string;
+            }
+            $textNode = $dom->createTextNode($summary_string);
+            $summaryNode->appendChild($textNode);
+
+            $scriptNode = $dom->createElement('script');
+            $scriptNode = $body->insertBefore($scriptNode, $summaryNode);
+            $textNode = $dom->createTextNode("var summary_show = 'none';");
+            $scriptNode->appendChild($textNode);
+            $aDivNode = $dom->createElement('div');
+            $body->insertBefore($aDivNode, $summaryNode);
+            $aDivNode->setAttributeNS("","style", "border-color: black; ".
+                "border-style:solid; border-width:3px; margin-bottom:10px;".
+                "padding: 5px; background-color: white; ".
+                "text-align:$text_align;");
+        } else {
+            $aDivNode = $first_child;
         }
-        $textNode = $dom->createTextNode($summary_string);
-        $summaryNode->appendChild($textNode);
-
-        $scriptNode = $dom->createElement('script');
-        $scriptNode = $body->insertBefore($scriptNode, $summaryNode);
-        $textNode = $dom->createTextNode("var summary_show = 'none';");
-        $scriptNode->appendChild($textNode);
-
-        $aDivNode = $dom->createElement('div');
-        $aDivNode = $body->insertBefore($aDivNode, $summaryNode);
-        $aDivNode->setAttributeNS("","style", "border-color: black; ".
-            "border-style:solid; border-width:3px; margin-bottom:10px;".
-            "padding: 5px; background-color: white; text-align:$text_align;");
         $divNode = $dom->createElement('div');
 
         $divNode = $body->insertBefore($divNode, $aDivNode);
@@ -1639,28 +1647,38 @@ class SearchController extends Controller implements CrawlConstants
         $divNode->appendChild($textNode);
         $brNode = $dom->createElement('br');
         $divNode->appendChild($brNode);
+        $this->addCacheJavascriptTags($dom, $divNode);
 
         //UI for showing history
-        $history_div = $this->historyUI($crawl_time, $all_crawl_times, $divNode,
-            $dom, $terms, $hist_ui_open, $url);
+        if(in_array("history", $ui_flags)) {
+            $history_div = $this->historyUI($crawl_time, $all_crawl_times, 
+                $divNode, $dom, $terms, $hist_ui_open, $url);
+        } else {
+            $history_div = $dom->createElement('div');
+        }
 
-        $aNode = $dom->createElement("a");
-        $aTextNode =
-            $dom->createTextNode(tl('search_controller_header_summaries'));
-        $toggle_code = "javascript:".
-            "summary_show = (summary_show != 'block') ? 'block' : 'none';".
-            "summary_pid = elt('summary-page-id');".
-            "summary_pid.style.display = summary_show;";
-        $aNode->setAttributeNS("", "onclick", $toggle_code);
-        $aNode->setAttributeNS("", "style", "zIndex: 1");
-        $aNode->setAttributeNS("", "style", "text-decoration: underline; ".
-            "cursor: pointer");
+        //ui for extracted summaries
+        if(in_array("summaries", $ui_flags)) {
+            $aNode = $dom->createElement("a");
+            $aTextNode =
+                $dom->createTextNode(tl('search_controller_header_summaries'));
+            $toggle_code = "javascript:".
+                "summary_show = (summary_show != 'block') ? 'block' : 'none';".
+                "summary_pid = elt('summary-page-id');".
+                "summary_pid.style.display = summary_show;";
+            $aNode->setAttributeNS("", "onclick", $toggle_code);
+            $aNode->setAttributeNS("", "style", "zIndex: 1");
+            $aNode->setAttributeNS("", "style", "text-decoration: underline; ".
+                "cursor: pointer");
 
-        $aNode->appendChild($aTextNode);
+            $aNode->appendChild($aTextNode);
 
-        $aNode = $aDivNode->appendChild($aNode);
+            $aDivNode->appendChild($aNode);
+        }
 
-        $history_div = $divNode->appendChild($history_div);
+        if($history_div) {
+            $divNode->appendChild($history_div);
+        }
 
         $body = $this->markChildren($body, $words, $dom);
 
@@ -1991,6 +2009,19 @@ class SearchController extends Controller implements CrawlConstants
         $d1->appendChild($script);
 
         return $d1;
+    }
+
+    /**
+     *
+     */
+    function addCacheJavascriptTags($dom, &$node)
+    {
+        $script = $dom->createElement("script");
+        $script->setAttributeNS("","src", NAME_SERVER."/scripts/basic.js");
+        $node->appendChild($script);
+        $script = $dom->createElement("script");
+        $script->setAttributeNS("","src", NAME_SERVER."/scripts/history.js");
+        $node->appendChild($script);
     }
 }
 ?>

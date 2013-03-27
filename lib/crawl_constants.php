@@ -216,6 +216,8 @@ interface CrawlConstants
     const WARC_ID = 'co';
     const START_PARTITION = 'cp';
     const INI = 'cq';
+    const UI_FLAGS = 'cr';
+    const KEYWORD_LINKS = 'cs';
 
     const NEEDS_OFFSET_FLAG = 0x7FFFFFFF;
 
