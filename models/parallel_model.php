@@ -158,7 +158,8 @@ class ParallelModel extends Model implements CrawlConstants
         $indexes = array();
         $num_machines = count($machine_urls);
         foreach($lookups as $lookup => $lookup_info) {
-            if(count($lookup_info) == 2 && $lookup_info[0][0] === 'h') {
+            if(count($lookup_info) == 2 && ($lookup_info[0][0] === 'h'
+                || $lookup_info[0][0] === 'r')) {
                 $machines = $machine_urls;
                 break;
             } else {

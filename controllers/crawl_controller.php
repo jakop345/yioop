@@ -257,7 +257,8 @@ class CrawlController extends Controller implements CrawlConstants
         $lookups = unserialize(webdecode($_REQUEST["arg"]));
         $our_lookups = array();
         foreach($lookups as $lookup => $lookup_info) {
-            if(count($lookup_info) == 2 && $lookup_info[0][0] === 'h') {
+            if(count($lookup_info) == 2 && ($lookup_info[0][0] === 'h'
+                || $lookup_info[0][0] === 'r')) {
                 $our_lookups[$lookup] = $lookup_info;
             } else {
                 $our_lookups[$lookup] = array();
