@@ -133,7 +133,8 @@ class DocIterator extends IndexBundleIterator
         $info = $index->getArchiveInfo($index->dir_name);
 
         $this->num_docs = $info['COUNT'];
-        $this->num_generations = $index->generation_info['ACTIVE'] + 1;
+        $this->num_generations = (isset($index->generation_info['ACTIVE'])) ?
+            $index->generation_info['ACTIVE'] + 1 : 0;
 
         $this->current_block_fresh = false;
 

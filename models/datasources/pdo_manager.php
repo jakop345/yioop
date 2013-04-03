@@ -104,7 +104,6 @@ class PdoManager extends DatasourceManager
             $this->num_affected = 0;
         } else {
             $this->num_affected = $this->pdo->exec($sql);
-echo $this->num_affected ;
             $result = $this->num_affected + 1;
         }
         return $result;

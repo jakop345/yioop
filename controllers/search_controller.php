@@ -374,7 +374,7 @@ class SearchController extends Controller implements CrawlConstants
 
         $current_its = $this->crawlModel->getCurrentIndexDatabaseName();
         $index_timestamp = $this->getIndexTimestamp();
-
+        $is_mix = false;
         if($index_timestamp != $current_its) {
             if($raw != 1) {
                 if($index_timestamp != 0 ) {
@@ -382,7 +382,6 @@ class SearchController extends Controller implements CrawlConstants
                     //(some crawlers replay deleted crawls)
                     $crawls = $this->crawlModel->getCrawlList(false, true,
                         $machine_urls, true);
-                    $is_mix = false;
                     if($this->crawlModel->isCrawlMix($index_timestamp)) {
                         $is_mix = true;
                     }
@@ -398,23 +397,18 @@ class SearchController extends Controller implements CrawlConstants
                         unset($_SESSION['its']);
                         include(BASE_DIR."/error.php");
                         exit();
-                    } else if(!$found_crawl) {
+                    } else if(!$found_crawl && !$is_mix) {
                         unset($_SESSION['its']);
                         $index_timestamp = $current_its;
                     }
-                } else {
-                    $index_timestamp = $current_its;
-                        //use the default crawl index
                 }
             }
         }
-
-        $index_info = false;
-        if($web_flag && $index_timestamp != 0 ) {
+        if($web_flag && $index_timestamp != 0) {
             $index_info =  $this->crawlModel->getInfoTimestamp(
                 $index_timestamp, $machine_urls);
-            if($index_info == array() || !isset($index_info["COUNT"]) ||
-                $index_info["COUNT"] == 0) {
+            if($index_info == array() || ((!isset($index_info["COUNT"]) ||
+                $index_info["COUNT"] == 0) && !$is_mix)) {
                 if($index_timestamp != $current_its) {
                     $index_timestamp = $current_its;
                     $index_info =  $this->crawlModel->getInfoTimestamp(
@@ -1241,7 +1235,7 @@ class SearchController extends Controller implements CrawlConstants
      * @param string $url to get cached page for
      * @param array $ui_flags array of  ui features which
      *      should be added to the cache page. For example, "highlight" 
-     *      would way search terms should be highlighted, "history_ui"
+     *      would way search terms should be highlighted, "history"
      *      says add history navigation for all copies of this cache page in
      *      yioop system.
      * @param string $terms space separated list of search terms

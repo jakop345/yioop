@@ -1150,8 +1150,6 @@ class AdminController extends Controller implements CrawlConstants
         return $data;
     }
 
-
-
     /**
      * Converts an array of lines of strings into a single string with
      * proper newlines, each line having been trimmed and potentially

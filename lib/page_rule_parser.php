@@ -43,13 +43,16 @@ require_once BASE_DIR."/lib/crawl_constants.php";
  * There are two types of statements that a user can define:
  * command statements and assignment statements
  *
- * A command statement takes a field argument for the page associative
- * and that array and does a function call to manipulate that page.
- * Right now the two supported commands are to unset that field value,
- * and to add the field and field value to the META_WORD array for the page
+ * A command statement takes a key field argument for the page associative array
+ * and does a function call to manipulate that page. Right now the supported
+ * commands are to unset that field value, to add the field and field value to
+ * the META_WORD array for the page and to split the field on comma, view this
+ * as a search keywords => link text association, and add this the 
+ * KEYWORD_LINKS array.
  * These have the syntax:
  * unset(field)
  * addMetaWords(field)
+ * addKeywordLink(field)
  *
  * Assignments can either be straight assignments with '=' or concatenation
  * assignments with '.='. There are three kinds of values that one can assign:

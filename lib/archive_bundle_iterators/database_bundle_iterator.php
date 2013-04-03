@@ -126,10 +126,10 @@ class DatabaseBundleIterator extends ArchiveBundleIterator
            $this->field_value_separator = "\n----\n";
         }
 
-        if(isset($ini['record_separator'])) {
-            $this->record_separator = $ini['record_separator'];
+        if(isset($ini['column_separator'])) {
+            $this->column_separator = $ini['column_separator'];
         } else {
-           $this->record_separator = "\n====\n";
+           $this->column_separator = "\n====\n";
         }
 
         if(isset($ini['encoding'])) {
@@ -191,8 +191,8 @@ class DatabaseBundleIterator extends ArchiveBundleIterator
         while($row = $db->fetchArray($result)) {
             $page = "";
             foreach($row as $key => $value) {
-                $page .= "$key\n{$this->field_value_separator}\n".
-                    "$value\n{$this->record_separator}\n";
+                $page .= "$key{$this->field_value_separator}".
+                    "$value{$this->column_separator}";
             }
             if($no_process) {
                 $pages[] = $page;
