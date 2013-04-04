@@ -573,7 +573,9 @@ class Fetcher implements CrawlConstants
 
                 crawlLog("New name: ".$this->web_archive->dir_name);
                 crawlLog("Switching archive...");
-                continue;
+                if(!isset($info[self::ARC_DATA])) {
+                    continue;
+                }
             }
 
             switch($this->crawl_type)
@@ -603,7 +605,9 @@ class Fetcher implements CrawlConstants
             crawlLog("Number of summarized pages ".
                 count($summarized_site_pages));
 
-            $this->updateFoundSites($summarized_site_pages);
+            $force_send = (isset($info[self::END_ITERATOR]) && 
+                $info[self::END_ITERATOR]) ? true : false;
+            $this->updateFoundSites($summarized_site_pages, $force_send);
 
             $sleep_time = max(0, ceil(
                 MINIMUM_FETCH_LOOP_TIME - changeInMicrotime($start_time)));
@@ -1047,9 +1051,12 @@ class Fetcher implements CrawlConstants
                 crawlLog("Time to get archive data from local buffer ".
                     changeInMicrotime($start_time));
             }
-            if($archive_iterator->buffer_fh && $archive_iterator->current_offset
-                < $max_offset) {
+            if($archive_iterator->buffer_fh
+                && $archive_iterator->current_offset < $max_offset ) {
                 return $info;
+            }
+            if(isset($info[self::ARC_DATA]) && count($info[self::ARC_DATA])>0){
+                $arc_data = $info[self::ARC_DATA];
             }
             crawlLog("Done processing Local Buffer, requesting more data...");
         }
@@ -1099,6 +1106,9 @@ class Fetcher implements CrawlConstants
                         $archive_iterator->nextPages(1);
                     }
                 }
+                if(isset($arc_data)) {
+                    $info[self::ARC_DATA] = $arc_data;
+                }
             } else {
                 $info[self::ARC_DATA] = $pages;
             }
@@ -1106,7 +1116,6 @@ class Fetcher implements CrawlConstants
 
         crawlLog("Time to fetch archive data from name server ".
             changeInMicrotime($start_time));
-
         return $info;
     }
 
@@ -1745,8 +1754,10 @@ class Fetcher implements CrawlConstants
      * the queue server is called with the data.
      *
      * @param array $sites site data to use for the update
+     * @param bool $force_send whether to force send data back to queue_server
+     *      or rely on usual thresholds before sending
      */
-    function updateFoundSites($sites)
+    function updateFoundSites($sites, $force_send = false)
     {
         $start_time = microtime();
 
@@ -1818,7 +1829,7 @@ class Fetcher implements CrawlConstants
             crawlLog($site_index.". $subdoc_info ".$site[self::URL]);
 
         } // end for
-        if(($this->crawl_type == self::WEB_CRAWL && 
+        if($force_send || ($this->crawl_type == self::WEB_CRAWL && 
             count($this->to_crawl) <= 0 && count($this->to_crawl_again) <= 0) ||
                 (isset($this->found_sites[self::SEEN_URLS]) &&
                 count($this->found_sites[self::SEEN_URLS]) >

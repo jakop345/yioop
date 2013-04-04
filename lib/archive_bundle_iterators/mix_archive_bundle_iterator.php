@@ -72,13 +72,6 @@ class MixArchiveBundleIterator extends ArchiveBundleIterator
     var $mix_timestamp;
 
     /**
-     * Used to hold timestamp of the index archive bundle of output results
-     *
-     * @var int
-     */
-    var $result_timestamp;
-
-    /**
      * count of how far our into the crawl mix we've gone.
      *
      * @var int

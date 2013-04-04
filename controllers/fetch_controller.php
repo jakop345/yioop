@@ -249,7 +249,10 @@ class FetchController extends Controller implements CrawlConstants
             }
             @unlink($lock_filename);
         }
-         if (($chunk && $pages) || ($pages && !empty($pages))) {
+        if($archive_iterator->end_of_iterator) {
+            $info[self::END_ITERATOR] = true;
+        }
+        if (($chunk && $pages) || ($pages && !empty($pages))) {
             $pages_string = webencode(gzcompress(serialize($pages)));
         } else {
             $info[self::STATUS] = self::NO_DATA_STATE;

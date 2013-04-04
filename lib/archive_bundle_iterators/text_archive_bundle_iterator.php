@@ -64,11 +64,6 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
      */
     var $iterate_dir;
     /**
-     * The path to the directory where the iteration status is stored.
-     * @var string
-     */
-    var $result_dir;
-    /**
      * The number of arc files in this arc archive bundle
      *  @var int
      */

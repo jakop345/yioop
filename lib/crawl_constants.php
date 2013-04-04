@@ -218,6 +218,7 @@ interface CrawlConstants
     const INI = 'cq';
     const UI_FLAGS = 'cr';
     const KEYWORD_LINKS = 'cs';
+    const END_ITERATOR = 'ct';
 
     const NEEDS_OFFSET_FLAG = 0x7FFFFFFF;
 

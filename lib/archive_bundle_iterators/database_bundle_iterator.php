@@ -44,7 +44,7 @@ require_once BASE_DIR.'/lib/utility.php';
 
 /**
  * Used to iterate through the records that result from an SQL query to a
- *  database
+ * database
  *
  * @author Chris Pollett
  * @package seek_quarry
@@ -60,11 +60,32 @@ class DatabaseBundleIterator extends ArchiveBundleIterator
      * @var string
      */
     var $iterate_dir;
+
     /**
-     * The path to the directory where the iteration status is stored.
+     * SQL query whose records we are index
      * @var string
      */
-    var $result_dir;
+    var $sql;
+
+    /**
+     * DB Records are imported as a text string where column_separator
+     * is used to delimit the end of a column
+     * @var string
+     */
+    var $column_separator;
+
+    /**
+     * For a given DB record each column is converted to a string:
+     * name_of_column field_value_separator value_of_column
+     * @var string
+     */
+    var $field_value_separator;
+
+    /**
+     * What character encoding is used for the DB records
+     * @var string
+     */
+    var $encoding;
 
     /**
      *  File handle for current arc file
