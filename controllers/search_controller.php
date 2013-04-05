@@ -404,6 +404,7 @@ class SearchController extends Controller implements CrawlConstants
                 }
             }
         }
+        $index_info = NULL;
         if($web_flag && $index_timestamp != 0) {
             $index_info =  $this->crawlModel->getInfoTimestamp(
                 $index_timestamp, $machine_urls);
@@ -416,8 +417,6 @@ class SearchController extends Controller implements CrawlConstants
                     if($index_info == array()) { $index_info = NULL; }
                 }
             }
-        } else if ($index_timestamp == 0) {
-            $index_info = NULL;
         }
 
         if(isset($_REQUEST['save_timestamp'])){

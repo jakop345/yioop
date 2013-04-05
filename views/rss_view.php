@@ -80,8 +80,9 @@ class RssView extends View implements CrawlConstants
                         $this->filetypeHelper->render($page[self::TYPE]);
                     }?></title>
 
-                <link><?php if(isset($page[self::TYPE])
-                    && $page[self::TYPE] != "link") {
+                <link><?php if(!isset($page[self::TYPE]) ||
+                    (isset($page[self::TYPE])
+                    && $page[self::TYPE] != "link")) {
                         e($page[self::URL]);
                     } else {
                         e(strip_tags($page[self::TITLE]));
