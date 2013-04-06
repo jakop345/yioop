@@ -346,7 +346,12 @@ class ArcTool implements CrawlConstants
 
         $shard = $index->getCurrentShard();
         echo "Number of Distinct Terms Indexed: ".count($shard->words)."\n";
-        echo "Freq Rank\t# Terms with Rank\t# Docs Term Appears In\n";
+        echo "Number of Docs in Shard: ".$shard->num_docs."\n";
+        echo "Number of Link Items in Shard: ".$shard->num_link_docs."\n";
+        echo "Total Links and Docs: ".($shard->num_docs +
+            $shard->num_link_docs)."\n\n";
+        echo "Term histogram for shard\n";
+        echo "------------------------\n";
         $word_string_lens = array();
         foreach($shard->words as $word => $posting) {
             $word_string_lens[] = intval(ceil(strlen($posting)/4));
@@ -354,6 +359,7 @@ class ArcTool implements CrawlConstants
         $word_string_lens = array_count_values($word_string_lens);
         krsort($word_string_lens);
         $i = 1;
+        echo "Freq Rank\t# Terms with Rank\t# Docs Term Appears In\n";
         foreach($word_string_lens as $num_docs => $num_terms) {
             echo "$i\t\t\t$num_terms\t\t\t$num_docs\n";
             $i += $num_terms;
