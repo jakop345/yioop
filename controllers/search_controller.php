@@ -113,12 +113,12 @@ class SearchController extends Controller implements CrawlConstants
         if(!$format_info) { return;}
         list($view, $web_flag, $raw, $results_per_page, $limit) = $format_info;
 
-        list($query, $activity, $arg) = 
+        list($query, $activity, $arg) =
             $this->initializeUserAndDefaultActivity($data);
 
         if($activity == "query" && $this->mirrorHandle()) {return; }
 
-        list($index_timestamp, $index_info, $save_timestamp) = 
+        list($index_timestamp, $index_info, $save_timestamp) =
             $this->initializeIndexInfo($web_flag, $raw, $data);
 
         if(isset($_REQUEST['q']) && strlen($_REQUEST['q']) > 0
@@ -161,7 +161,7 @@ class SearchController extends Controller implements CrawlConstants
             exit();
         }
 
-        if($web_flag) { 
+        if($web_flag) {
             $this->addSearchViewData($index_info, $no_query, $raw, $view,
                 $subsearches, $data);
         }
@@ -178,7 +178,7 @@ class SearchController extends Controller implements CrawlConstants
     /**
      *  Determines how this query is being run and return variables for the view
      *
-     *  A query might be run as a web-based where HTML is expected as the 
+     *  A query might be run as a web-based where HTML is expected as the
      *  output, an RSS query, an API query, or as a serial query from a
      *  name_server or mirror instance back to one of the other queue servers
      *  in a Yioop installation. A query might also request different numbers
@@ -288,7 +288,7 @@ class SearchController extends Controller implements CrawlConstants
     function initializeUserAndDefaultActivity(&$data)
     {
         $arg = false;
-        if(!isset($_REQUEST['a']) || !in_array($_REQUEST['a'], 
+        if(!isset($_REQUEST['a']) || !in_array($_REQUEST['a'],
             $this->activities)) {
             $activity = "query";
         } else {
@@ -345,12 +345,12 @@ class SearchController extends Controller implements CrawlConstants
 
     /**
      *  Determines which crawl or mix timestamp should be in use for this
-     *  query. It also determines info and returns associated with this 
+     *  query. It also determines info and returns associated with this
      *  timestamp.
      *
      *  @param bool $web_flag whether this is a web based query or one from
      *      the search API
-     *  @param int  and so should validate against list of known crawls or an 
+     *  @param int  and so should validate against list of known crawls or an
      *      internal (say network) query that doesn't require validation
      *      (faster without).
      *  @param array &$data that will eventually be sent to the view. We set
@@ -827,7 +827,7 @@ class SearchController extends Controller implements CrawlConstants
         }
         $time = time();
         $rss_feeds = $this->sourceModel->getMediaSources("rss");
-        if(!$rss_feeds || count($rss_feeds) == 0) { 
+        if(!$rss_feeds || count($rss_feeds) == 0) {
             $data["LOG_MESSAGES"] =
                 "No news update as no news feeds.";
             return;
@@ -864,8 +864,8 @@ class SearchController extends Controller implements CrawlConstants
         /*  every 3 hours everything older than a week and rebuild index
             do this every four hours so news articles tend to stay in order
          */
-        if($delta > 3 * SourceModel::ONE_HOUR && 
-          $start_delta > SourceModel::ONE_HOUR/12 && 
+        if($delta > 3 * SourceModel::ONE_HOUR &&
+          $start_delta > SourceModel::ONE_HOUR/12 &&
           $lock_delta > SourceModel::TWO_MINUTES) {
             $this->cronModel->updateCronTime("news_lock");
             $this->cronModel->updateCronTime("news_start_delete", true);
@@ -881,10 +881,10 @@ class SearchController extends Controller implements CrawlConstants
         }
         $update_cron_time = $this->cronModel->getCronTime("news_update");
         $try_cron_time = $this->cronModel->getCronTime("news_try_again");
-        
+
         $delta = $time - max($update_cron_time, $try_cron_time);
         // each 15 minutes try to re-get feeds that have no items
-        if((($delta > SourceModel::ONE_HOUR/4 && 
+        if((($delta > SourceModel::ONE_HOUR/4 &&
             $delta < SourceModel::ONE_HOUR) || $delta == 0) &&
             $lock_delta > SourceModel::TWO_MINUTES) {
             $this->cronModel->updateCronTime("news_lock");
@@ -895,7 +895,7 @@ class SearchController extends Controller implements CrawlConstants
             $this->cronModel->saveCronTable();
             return;
         }
-        
+
         $delta = $time - $update_cron_time;
         // every hour get items from twenty feeds whose newest items are oldest
         if(($delta > SourceModel::ONE_HOUR || $delta == 0)
@@ -1233,7 +1233,7 @@ class SearchController extends Controller implements CrawlConstants
      *
      * @param string $url to get cached page for
      * @param array $ui_flags array of  ui features which
-     *      should be added to the cache page. For example, "highlight" 
+     *      should be added to the cache page. For example, "highlight"
      *      would way search terms should be highlighted, "history"
      *      says add history navigation for all copies of this cache page in
      *      yioop system.
@@ -1259,7 +1259,7 @@ class SearchController extends Controller implements CrawlConstants
      *
      * @param string $url the url of the page to find the cached version of
      * @param array $ui_flags array of  ui features which
-     *      should be added to the cache page. For example, "highlight" 
+     *      should be added to the cache page. For example, "highlight"
      *      would say search terms should be highlighted, "history"
      *      says add history navigation for all copies of this cache page in
      *      yioop system. "summaries" says add a toggle headers and extracted
@@ -1367,7 +1367,7 @@ class SearchController extends Controller implements CrawlConstants
         $this->crawlModel->index_name = $crawl_time;
         $crawl_item = $this->crawlModel->getCrawlItem($url, $queue_servers);
         // A crawl item is able to override the default UI_FLAGS
-        if(isset($crawl_item[self::UI_FLAGS]) && 
+        if(isset($crawl_item[self::UI_FLAGS]) &&
             is_string($crawl_item[self::UI_FLAGS])) {
             $ui_flags = explode(",", $crawl_item[self::UI_FLAGS]);
         }
@@ -1536,7 +1536,7 @@ class SearchController extends Controller implements CrawlConstants
      *      in Yioop system
      * @param string $terms from orginal query responsible for cache request
      * @param array $ui_flags array of  ui features which
-     *      should be added to the cache page. For example, "highlight" 
+     *      should be added to the cache page. For example, "highlight"
      *      would way search terms should be highlighted, "history"
      *      says add history navigation for all copies of this cache page in
      *      yioop system.
@@ -1616,9 +1616,9 @@ class SearchController extends Controller implements CrawlConstants
         } else {
             $summary_toggle_node = $first_child;
         }
-        if(isset($cache_item[self::KEYWORD_LINKS]) && 
+        if(isset($cache_item[self::KEYWORD_LINKS]) &&
             count($cache_item[self::KEYWORD_LINKS]) > 0) {
-            $keyword_node = $this->createDomBoxNode($dom, $text_align, 
+            $keyword_node = $this->createDomBoxNode($dom, $text_align,
                 "zIndex: 1");
             $text_node = $dom->createTextNode("Z@key_links@Z");
             $keyword_node->appendChild($text_node);
@@ -1631,7 +1631,7 @@ class SearchController extends Controller implements CrawlConstants
         }
 
         if(in_array("version", $ui_flags)) {
-            $version_node = 
+            $version_node =
                 $this->createDomBoxNode($dom, $text_align, "zIndex: 1");
             $textNode = $dom->createTextNode(
                 tl('search_controller_cached_version', "Z@url@Z", $date));
@@ -1646,7 +1646,7 @@ class SearchController extends Controller implements CrawlConstants
 
         //UI for showing history
         if(in_array("history", $ui_flags)) {
-            $history_node = $this->historyUI($crawl_time, $all_crawl_times, 
+            $history_node = $this->historyUI($crawl_time, $all_crawl_times,
                 $version_node, $dom, $terms, $hist_ui_open, $url);
         } else {
             $history_node = $dom->createElement('div');
@@ -1714,7 +1714,7 @@ class SearchController extends Controller implements CrawlConstants
     }
 
     /**
-     *  Creates the toggle link and hidden div for extracted header and 
+     *  Creates the toggle link and hidden div for extracted header and
      *  summary element on cache pages
      *
      * @param DOMDocument $dom used to create new nodes to add to body object
@@ -1729,13 +1729,13 @@ class SearchController extends Controller implements CrawlConstants
         $summary_string, $cache_item)
     {
         $first_child = $body->firstChild;
-        $summaryNode = $this->createDomBoxNode($dom, $text_align, 
+        $summaryNode = $this->createDomBoxNode($dom, $text_align,
             "display:none;", 'pre');
         $summaryNode->setAttributeNS("","id", "summary-page-id");
         $summaryNode = $body->insertBefore($summaryNode, $first_child);
 
         if(isset($cache_item[self::HEADER])) {
-            $summary_string = $cache_item[self::HEADER]."\n". 
+            $summary_string = $cache_item[self::HEADER]."\n".
                 $summary_string;
         }
         $textNode = $dom->createTextNode($summary_string);
@@ -1766,7 +1766,7 @@ class SearchController extends Controller implements CrawlConstants
     }
 
     /**
-     * Creates a bordered tag (usually div) in which to put meta content on a 
+     * Creates a bordered tag (usually div) in which to put meta content on a
      * page when it is displayed
      *
      * @param DOMDocument $dom representing cache page

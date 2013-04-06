@@ -93,7 +93,7 @@ class ConfigureElement extends Element
                 e($data['WORK_DIRECTORY']); ?>" />
         <?php }?>
         <input type="hidden" name="c" value="admin" />
-        <input type="hidden" name="advanced" id='a-settings' value="<?php 
+        <input type="hidden" name="advanced" id='a-settings' value="<?php
             e($data['advanced']); ?>" />
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />
@@ -105,7 +105,7 @@ class ConfigureElement extends Element
         </div>
         <h2><?php e(tl('configure_element_profile_settings'))?></h2>
         <?php if($data['PROFILE']) { ?>
-        <div class="top-margin">[<a href="javascript:toggleAdvance()"><?php 
+        <div class="top-margin">[<a href="javascript:toggleAdvance()"><?php
             e(tl('configure_element_toggle_advanced')); ?></a>]</div>
         <?php } ?>
         <div class="bold">

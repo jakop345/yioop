@@ -88,6 +88,20 @@ require_once BASE_DIR."/controllers/search_controller.php";
 mb_internal_encoding("UTF-8");
 mb_regex_encoding("UTF-8");
 
+if (function_exists('lcfirst') === false) {
+    /**
+     *  Lower cases the first letter in a string
+     *
+     *  This function is only defined if the PHP version is before 5.3
+     *  @param string $str  string to be lower cased
+     *  @return string the lower cased string
+     */
+    function lcfirst( $str )
+    {
+        return (string)(strtolower(substr($str, 0, 1)).substr($str, 1));
+    }
+}
+
 /**
  *  Separate process/command-line script which can be used to update
  *  news sources for Yioop. This is as an alternative to using the web app
@@ -111,8 +125,8 @@ class NewsUpdater implements CrawlConstants
     }
 
     /**
-     *  This is the function that should be called to get the newsupdater to 
-     *  start to start updating. Calls init to handle the command-line 
+     *  This is the function that should be called to get the newsupdater to
+     *  start to start updating. Calls init to handle the command-line
      *  arguments then enters news_updaters main loop
      */
     function start()

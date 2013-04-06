@@ -538,7 +538,7 @@ EOT;
                 "disallowed_sites" => array(self::DISALLOWED_SITES, "url"),
                 "seed_sites" => array(self::TO_CRAWL, "url"),
                 "page_rules" => array(self::PAGE_RULES, "rule"),
-                "indexed_file_types" => array(self::INDEXED_FILE_TYPES, 
+                "indexed_file_types" => array(self::INDEXED_FILE_TYPES,
                     "extensions"),
             );
             foreach($site_types as $type => $info) {
@@ -585,7 +585,7 @@ EOT;
                 "allowed_sites" => array(self::ALLOWED_SITES,'url'),
                 "disallowed_sites" => array(self::DISALLOWED_SITES, 'url'),
                 "page_rules" => array(self::PAGE_RULES, 'rule'),
-                "indexed_file_types" => array(self::INDEXED_FILE_TYPES, 
+                "indexed_file_types" => array(self::INDEXED_FILE_TYPES,
                     "extensions")
             );
             foreach($updatable_site_info as $type => $info) {

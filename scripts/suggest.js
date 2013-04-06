@@ -269,7 +269,7 @@ function correctSpelling(word)
     var trie_subtree;
     var curr_prob = 0;
     var candidates = known(edits1(word));
-    
+
     candidates.push(word);
     var corrected_word = "";
     var correct_threshold = 25;
@@ -749,7 +749,7 @@ function spellCheck()
             var spell_link = "?" + token_name + "=" + csrf_token + "&q="
                 +corrected_query;
             corrected_spell.innerHTML = "<b>" + local_strings.spell
-                +": <a rel='nofollow' href='" + spell_link + 
+                +": <a rel='nofollow' href='" + spell_link +
                 "'>"  + corrected_query + "</a></b>";
         }
     }

@@ -79,7 +79,7 @@ if(MAINTENANCE_MODE && $_SERVER["SERVER_ADDR"] != $_SERVER["REMOTE_ADDR"]) {
 }
 
 if(!defined('WORK_DIRECTORY')) {
-/*+++ The next block of code is machine edited, change at 
+/*+++ The next block of code is machine edited, change at
 your own risk, please use configure web page instead +++*/
 define('WORK_DIRECTORY', '');
 /*++++++*/

@@ -166,7 +166,7 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
      * How many bytes at a time should be read from the current archive
      * file into the buffer file. 8192 = BZip2BlockIteraror::BlOCK_SIZE
      */
-    const BUFFER_SIZE = 16384000; 
+    const BUFFER_SIZE = 16384000;
 
     /**
      *  Estimate of the maximum size of a record stored in a text archive
@@ -218,7 +218,7 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
             exit();
         }
         if($this->iterate_dir != false) {
-            foreach(glob("{$this->iterate_dir}/*.$extension", GLOB_BRACE) 
+            foreach(glob("{$this->iterate_dir}/*.$extension", GLOB_BRACE)
                 as $filename) {
                 $this->partitions[] = $filename;
             }
@@ -405,7 +405,7 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
      * @param bool $no_process if true then just return page string found
      *      not any additional meta data.
      * @return mixed associative array for doc or just string of doc
-     *  
+     *
      */
     function nextPage($no_process = false)
     {
@@ -414,7 +414,7 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
         while((preg_match($this->delimiter, $this->buffer, $matches,
             PREG_OFFSET_CAPTURE)) != 1) {
             $block = $this->getFileBlock();
-            if(!$block || 
+            if(!$block ||
                 !$this->checkFileHandle() || $this->checkEof()) {
                 return NULL;
             }
@@ -471,7 +471,7 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
     }
 
     /**
-     * Acts as gzread($num_bytes, $archive_file), hiding the fact that 
+     * Acts as gzread($num_bytes, $archive_file), hiding the fact that
      * buffering of the archive_file is being done to a buffer file
      *
      * @param int $num_bytes to read from archive file
@@ -489,7 +489,7 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
     }
 
     /**
-     * Acts as gzgets(), hiding the fact that 
+     * Acts as gzgets(), hiding the fact that
      * buffering of the archive_file is being done to a buffer file
      *
      * @return string from archive file up to next line ending or eof
@@ -540,7 +540,7 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
             if($this->compression == "plain") {
                 $success = fseek($this->fh, $seek_pos);
             }
-            if($success == -1 || !$this->checkFileHandle() 
+            if($success == -1 || !$this->checkFileHandle()
                 || $this->checkEof()) { return false; }
             if(is_resource($this->buffer_fh)) {
                 fclose($this->buffer_fh);
@@ -551,7 +551,7 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
                 case 'bzip2':
                     $buffer = "";
                     while(strlen($buffer) < $padded_buffer_size) {
-                        while(!is_string($block = 
+                        while(!is_string($block =
                             $this->bz2_iterator->nextBlock())) {
                             if($this->bz2_iterator->eof()) {
                                 break 2;

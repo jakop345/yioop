@@ -336,7 +336,7 @@ class AdminController extends Controller implements CrawlConstants
             "news_process" => tl('admin_controller_news_process'),
         );
         $profile =  $this->profileModel->getProfile(WORK_DIRECTORY);
-        $data['NEWS_MODE'] = isset($profile['NEWS_MODE']) ? 
+        $data['NEWS_MODE'] = isset($profile['NEWS_MODE']) ?
             $profile['NEWS_MODE']: "";
         return $data;
     }
@@ -928,7 +928,7 @@ class AdminController extends Controller implements CrawlConstants
         $crawl_params[self::DISALLOWED_SITES] =
             isset($seed_info['disallowed_sites']['url']) ?
             $seed_info['disallowed_sites']['url'] : array();
-        $crawl_params[self::PAGE_RULES] = 
+        $crawl_params[self::PAGE_RULES] =
             isset($seed_info['page_rules']['rule']) ?
             $seed_info['page_rules']['rule'] : array();
 
@@ -1178,7 +1178,7 @@ class AdminController extends Controller implements CrawlConstants
     }
     /**
      * Cleans a string consisting of lines, typically of urls into an array of
-     * clean lines. This is used in handling data from the crawl options 
+     * clean lines. This is used in handling data from the crawl options
      * text areas.
      *
      * @param string $str contains the url data
@@ -1494,13 +1494,13 @@ class AdminController extends Controller implements CrawlConstants
             foreach($copy_options as $main_option => $sub_options) {
                 foreach($sub_options as $sub_option) {
                     if(isset($seed_loaded[$main_option][$sub_option])) {
-                        $seed_info[$main_option][$sub_option] = 
+                        $seed_info[$main_option][$sub_option] =
                             $seed_loaded[$main_option][$sub_option];
                     }
                 }
             }
             if(isset($seed_loaded['page_rules'])) {
-                $seed_info['page_rules'] = 
+                $seed_info['page_rules'] =
                     $seed_loaded['page_rules'];
             }
             $update_flag = true;
@@ -1570,7 +1570,7 @@ class AdminController extends Controller implements CrawlConstants
         if(!isset($_REQUEST['load_option'])) {
             $data = array_merge($data, $profile);
         } else {
-            
+
             $this->updateProfileFields($data, $profile,
                 array('IP_LINK','CACHE_LINK', 'SIMILAR_LINK', 'IN_LINK',
                     'SIGNIN_LINK', 'SUBSEARCH_LINK','WORD_SUGGEST'));
@@ -1652,7 +1652,7 @@ class AdminController extends Controller implements CrawlConstants
             $data['SCRIPT'] .= "\nswitchTab('testoptionstab',".
                 "'crawltimetab', 'searchtimetab');\n";
         }
-        
+
         $this->crawlModel->setSeedInfo($seed_info);
         if($change == true && $data['option_type'] != 'test_options') {
             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
@@ -1697,7 +1697,7 @@ class AdminController extends Controller implements CrawlConstants
             $site[self::OPERATING_SYSTEM] = "unknown";
             $site[self::LANG] = 'en';
             $site[self::JUST_METAS] = false;
-            if(isset($_REQUEST['page_type']) && 
+            if(isset($_REQUEST['page_type']) &&
                 in_array($_REQUEST['page_type'], $data['MIME_TYPES'])) {
                 $site[self::TYPE] = $_REQUEST['page_type'];
             }
@@ -1729,7 +1729,7 @@ class AdminController extends Controller implements CrawlConstants
                 print_r($after_process, true), "string"), 75, "\n", true);
             $rule_string = implode("\n", $seed_info['page_rules']['rule']);
             $rule_string = html_entity_decode($rule_string, ENT_QUOTES);
-            $page_rule_parser = 
+            $page_rule_parser =
                 new PageRuleParser($rule_string);
             $page_rule_parser->executeRuleTrees($site);
             $after_process = array();
@@ -2073,9 +2073,9 @@ class AdminController extends Controller implements CrawlConstants
                     $data["ELEMENT"] = "machinelogElement";
                     $filter= "";
                     if(isset($_REQUEST['f'])) {
-                        $filter = 
+                        $filter =
                             $this->clean($_REQUEST['f'], "string");
-                    } 
+                    }
                     $data['filter'] = $filter;
                     $data["REFRESH_LOG"] = "&time=". $data["time"];
                     $data["LOG_TYPE"] = "";
@@ -2097,7 +2097,7 @@ class AdminController extends Controller implements CrawlConstants
                         }
                         $data["LOG_FILE_DATA"] = $this->machineModel->getLog(
                             $r["name"], NULL, $filter);
-                        $data["REFRESH_LOG"] .= 
+                        $data["REFRESH_LOG"] .=
                             "&arg=log&name=".$r['name'];
                     }
                     if($data["time"] >= 1200) {
@@ -2581,9 +2581,9 @@ class AdminController extends Controller implements CrawlConstants
         $data['SCRIPT'] = "";
 
         $data['PROFILE'] = false;
-        if(isset($_REQUEST['WORK_DIRECTORY']) || (defined('WORK_DIRECTORY') && 
+        if(isset($_REQUEST['WORK_DIRECTORY']) || (defined('WORK_DIRECTORY') &&
             defined('FIX_NAME_SERVER') && FIX_NAME_SERVER) ) {
-            if(defined('WORK_DIRECTORY') && defined('FIX_NAME_SERVER') 
+            if(defined('WORK_DIRECTORY') && defined('FIX_NAME_SERVER')
                 && FIX_NAME_SERVER && !isset($_REQUEST['WORK_DIRECTORY'])) {
                 $_REQUEST['WORK_DIRECTORY'] = WORK_DIRECTORY;
                 $_REQUEST['arg'] = "directory";
@@ -2668,7 +2668,7 @@ class AdminController extends Controller implements CrawlConstants
                         $uri = UrlParser::getPath($_SERVER['REQUEST_URI']);
                         $http = (isset($_SERVER['HTTPS'])) ? "https://" :
                             "http://";
-                        $profile['NAME_SERVER'] = 
+                        $profile['NAME_SERVER'] =
                             $http . $_SERVER['SERVER_NAME'] . $uri;
                         $data['NAME_SERVER'] = $profile['NAME_SERVER'];
                         $profile['AUTH_KEY'] = crawlHash(
@@ -2680,7 +2680,7 @@ class AdminController extends Controller implements CrawlConstants
                         $data['ROBOT_INSTANCE'] = $profile['ROBOT_INSTANCE'];
                         if($this->profileModel->updateProfile(
                             $data['WORK_DIRECTORY'], array(), $profile)) {
-                            if((defined('WORK_DIRECTORY') && 
+                            if((defined('WORK_DIRECTORY') &&
                                 $data['WORK_DIRECTORY'] == WORK_DIRECTORY) ||
                                 $this->profileModel->setWorkDirectoryConfigFile(
                                 $data['WORK_DIRECTORY'])) {
@@ -2743,7 +2743,7 @@ class AdminController extends Controller implements CrawlConstants
                 }
             break;
             case "profile":
-                $this->updateProfileFields($data, $profile, 
+                $this->updateProfileFields($data, $profile,
                     array('USE_FILECACHE', 'USE_MEMCACHE', "WEB_ACCESS",
                         'RSS_ACCESS', 'API_ACCESS'));
                 $data['DEBUG_LEVEL'] = 0;
@@ -2873,7 +2873,7 @@ class AdminController extends Controller implements CrawlConstants
     setDisplay('advance-robot', {$data['advanced']});
     function toggleAdvance() {
         var advanced = elt('a-settings');
-        advanced.value = (advanced.value =='true') 
+        advanced.value = (advanced.value =='true')
             ? 'false' : 'true';
         var value = (advanced.value == 'true') ? true : false;
         setDisplay('advance-configure', value);
@@ -2894,7 +2894,7 @@ EOD;
         $data['SCRIPT'] .=
             "elt('locale').onchange = ".
             "function () { elt('configureProfileForm').submit();};\n";
-        
+
         return $data;
     }
 

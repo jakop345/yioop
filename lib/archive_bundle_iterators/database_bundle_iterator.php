@@ -121,7 +121,7 @@ class DatabaseBundleIterator extends ArchiveBundleIterator
         $ini = parse_ini_file("{$this->iterate_dir}/arc_description.ini");
 
         $this->dbinfo = array("DBMS" => DBMS, "DB_HOST" => DB_HOST,
-            "DB_NAME" => DB_NAME, "DB_USER" => DB_USER, 
+            "DB_NAME" => DB_NAME, "DB_USER" => DB_USER,
             "DB_PASSWORD" => DB_PASSWORD);
 
         foreach($this->dbinfo as $key => $value) {
@@ -273,7 +273,7 @@ class DatabaseBundleIterator extends ArchiveBundleIterator
     /**
      * Restores  the internal state from the file iterate_status.txt in the
      * result dir such that the next call to nextPages will pick up from just
-     * after the last checkpoint. 
+     * after the last checkpoint.
      *
      * @return array the data serialized when saveCheckpoint was called
 

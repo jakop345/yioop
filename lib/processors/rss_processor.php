@@ -234,7 +234,7 @@ class RssProcessor extends TextProcessor
             $xpath->registerNamespace('atom', "http://www.w3.org/2005/Atom");
             $link_nodes = array(
                 "/feed/entry" => array( "url" =>"link", "text" => "title"),
-                "/atom:feed/atom:entry" 
+                "/atom:feed/atom:entry"
                     => array( "url" =>"link", "text" => "title"),
             );
         }

@@ -116,7 +116,7 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
 
         $xpath = new DOMXPath($dom);
         $recipes_per_page = $xpath->evaluate(
-            /*allr, f.com, brec, fnet*/ 
+            /*allr, f.com, brec, fnet*/
             "/html//ul[@class = 'ingredient-wrap'] |
             /html//*[@class = 'pod ingredients'] |
             /html//*[@id='recipe_title'] |
@@ -127,7 +127,7 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
         if(is_object($recipes_per_page) && $recipes_per_page->length != 0) {
             $recipes_count = $recipes_per_page->length;
             $titles = $xpath->evaluate(
-               /* allr, f.com, brec, fnet   */ 
+               /* allr, f.com, brec, fnet   */
                "/html//*[@id = 'itemTitle']|
                /html//h1[@class = 'fn'] |
                /html//*[@id='recipe_title'] |
@@ -197,7 +197,7 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
         while($more_docs) {
             $results = @$search_controller->queryRequest($query,
                 $num, $limit, 1, $index_name);
-            if(isset($results["PAGES"]) && 
+            if(isset($results["PAGES"]) &&
                 ($num_results = count($results["PAGES"])) > 0 ) {
                 $raw_recipes = array_merge($raw_recipes, $results["PAGES"]);
             }
@@ -675,9 +675,9 @@ class Tree
                     }
                 }
             }
-        $i++;
+            $i++;
         }
-    return $cluster;
+        return $cluster;
     }
 
    /**

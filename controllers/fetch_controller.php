@@ -238,7 +238,7 @@ class FetchController extends Controller implements CrawlConstants
             }
             $pages = false;
             if($archive_iterator && !$archive_iterator->end_of_iterator) {
-                if(general_is_a($archive_iterator, 
+                if(general_is_a($archive_iterator,
                     "TextArchiveBundleIterator")) {
                     $pages = $archive_iterator->nextChunk();
                     $chunk = true;

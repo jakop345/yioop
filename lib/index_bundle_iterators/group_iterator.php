@@ -524,7 +524,7 @@ class GroupIterator extends IndexBundleIterator
                 $max = ($max < $current_rank ) ? $current_rank : $max;
                 $alpha = $relevance_boost * $domain_weights[$hash_host];
                 $sum_score += $alpha * $hash_page[self::DOC_RANK];
-                    
+
                 $sum_rank += $alpha * $hash_page[self::DOC_RANK];
                 $sum_relevance += $alpha * $hash_page[self::RELEVANCE];
                 $max_proximity = max($max_proximity,

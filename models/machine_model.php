@@ -222,7 +222,7 @@ class MachineModel extends Model
      *  @return string containing the last MachineController::LOG_LISTING_LEN
      *      bytes of the log record
      */
-    function getLog($machine_name, 
+    function getLog($machine_name,
         $fetcher_num = NULL, $filter="", $is_mirror = false)
     {
         $time = time();

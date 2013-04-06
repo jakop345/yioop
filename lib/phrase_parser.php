@@ -474,7 +474,7 @@ class PhraseParser
         $meta_ids[] = 'info:'.crawlHash($site[CrawlConstants::URL]);
         $meta_ids[] = 'code:all';
         $meta_ids[] = 'code:'.$site[CrawlConstants::HTTP_CODE];
-        if(UrlParser::getHost($site[CrawlConstants::URL])."/" == 
+        if(UrlParser::getHost($site[CrawlConstants::URL])."/" ==
             $site[CrawlConstants::URL]) {
             $meta_ids[] = 'host:all'; //used to count number of distinct hosts
         }
@@ -509,7 +509,7 @@ class PhraseParser
                     $meta_ids[] = 'link:'.crawlHash($url);
             }
         }
-        if(isset($site[CrawlConstants::LOCATION]) && 
+        if(isset($site[CrawlConstants::LOCATION]) &&
             count($site[CrawlConstants::LOCATION]) > 0){
             foreach($site[CrawlConstants::LOCATION] as $location) {
                 $meta_ids[] = 'info:'.$location;
@@ -528,7 +528,7 @@ class PhraseParser
 
         $meta_ids[] = 'media:all';
         if($video_sources != array()) {
-            if(UrlParser::isVideoUrl($site[CrawlConstants::URL], 
+            if(UrlParser::isVideoUrl($site[CrawlConstants::URL],
                 $video_sources)) {
                 $meta_ids[] = "media:video";
             } else {

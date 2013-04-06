@@ -410,7 +410,7 @@ class Model implements CrawlConstants
             FROM TRANSLATION T, LOCALE L, TRANSLATION_LOCALE TL
             WHERE T.IDENTIFIER_STRING = '$string_id' AND
                 L.LOCALE_TAG = '$locale_tag' AND
-                L.LOCALE_ID = TL.LOCALE_ID AND 
+                L.LOCALE_ID = TL.LOCALE_ID AND
                 T.TRANSLATION_ID = TL.TRANSLATION_ID LIMIT 1
 EOD;
         $result = $this->db->execute($sql);

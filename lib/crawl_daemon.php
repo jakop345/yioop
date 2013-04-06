@@ -153,7 +153,7 @@ class CrawlDaemon implements CrawlConstants
                 for($i = 3; $i < count($argv); $i++) {
                     $options .= " ".$argv[$i];
                 }
-                $subname = (!isset($argv[2]) || $argv[2] == 'none') ? 
+                $subname = (!isset($argv[2]) || $argv[2] == 'none') ?
                     'none' :self::$subname;
                 $name_prefix = (isset($argv[3])) ? $argv[3] : self::$subname;
                 $name_string = CrawlDaemon::getNameString($name,$name_prefix);

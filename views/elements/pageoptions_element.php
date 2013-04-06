@@ -97,8 +97,8 @@ class PageOptionsElement extends Element
             ?></div>
         <div class="top-margin"><b><label for="cache-pages"><?php
             e(tl('pageoptions_element_save_cache'))?>
-            </label><input 
-            id='cache-pages' type="checkbox" name="cache_pages" 
+            </label><input
+            id='cache-pages' type="checkbox" name="cache_pages"
             value="true"
             <?php if(isset($data['CACHE_PAGES']) && $data['CACHE_PAGES']) {
                 e("checked='checked'");
@@ -180,7 +180,7 @@ class PageOptionsElement extends Element
         <table class="search-page-all"><tr><td>
         <table class="search-page-table">
         <tr>
-        <td><label for="wd-suggest"><?php 
+        <td><label for="wd-suggest"><?php
             e(tl('pageoptions_element_wd_suggest')); ?></label></td>
             <td><input id='wd-suggest' type="checkbox"
             name="WORD_SUGGEST" value="true"
@@ -188,7 +188,7 @@ class PageOptionsElement extends Element
                 $data['WORD_SUGGEST']){
                 e("checked='checked'");}?>
             /></td></tr>
-        <tr><td><label for="subsearch-link"><?php 
+        <tr><td><label for="subsearch-link"><?php
             e(tl('pageoptions_element_subsearch_link'));?></label></td><td>
             <input id='subsearch-link'
             type="checkbox" name="SUBSEARCH_LINK" value="true"
@@ -197,7 +197,7 @@ class PageOptionsElement extends Element
                 e("checked='checked'");}?>
             /></td>
         </tr>
-        <tr><td><label for="signin-link"><?php 
+        <tr><td><label for="signin-link"><?php
             e(tl('pageoptions_element_signin_link')); ?></label></td><td>
             <input id='signin-link' type="checkbox"
             name="SIGNIN_LINK" value="true"
@@ -273,7 +273,7 @@ class PageOptionsElement extends Element
          <h2><?php e(tl('pageoptions_element_test_page'))?></h2>
         <div class="top-margin"><b><label for="page-type"><?php
             e(tl('pageoptions_element_page_type'))?></label></b>
-            <?php 
+            <?php
             $types = $data['MIME_TYPES'];
             $this->view->optionsHelper->render("page-type",
             "page_type", array_combine($types, $types),
@@ -286,7 +286,7 @@ class PageOptionsElement extends Element
 
         </div>
 
-        <div class="center slight-pad"><button class="button-box" 
+        <div class="center slight-pad"><button class="button-box"
             id="page-button"
             type="submit"><?php if($data['test_options_active'] == "") {
                 e(tl('pageoptions_element_save_options'));
@@ -315,7 +315,7 @@ class PageOptionsElement extends Element
                 e("<h3>".tl('pageoptions_element_extracted_metas')."</h3>");
                 e("<pre>\n{$data['EXTRACTED_META_WORDS']}\n</pre>");
             } ?>
-        <?php 
+        <?php
         } ?>
         </div>
         </div>

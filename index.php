@@ -120,7 +120,9 @@ if (function_exists('lcfirst') === false) {
      *  @return string the lower cased string
      */
     function lcfirst( $str )
-    { return (string)(strtolower(substr($str,0,1)).substr($str,1));}
+    {
+        return (string)(strtolower(substr($str, 0, 1)).substr($str, 1));
+    }
 }
 
 $available_controllers = array( "admin", "archive",  "cache", "crawl",

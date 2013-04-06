@@ -41,7 +41,7 @@ require_once BASE_DIR.
 
 /**
  * Used to iterate through the records of a collection of warc files stored in
- * a WebArchiveBundle folder. Warc is the newer file format of the 
+ * a WebArchiveBundle folder. Warc is the newer file format of the
  * Internet Archive and other for digital preservation:
  * http://www.digitalpreservation.gov/formats/fdd/fdd000236.shtml
  * http://archive-access.sourceforge.net/warc/
@@ -101,8 +101,8 @@ class WarcArchiveBundleIterator extends TextArchiveBundleIterator
         } while(!in_array($page_info['warc-type'], $indexable_records) ||
             substr($page_info[self::URL], 0, 4) == 'dns:');
                 //ignore warcinfo, request, metadata, revisit, etc. records
-        if($no_process) { 
-            return $header_and_page; 
+        if($no_process) {
+            return $header_and_page;
         }
         unset($page_info['line']);
         unset($page_info['warc-type']);
@@ -136,7 +136,7 @@ class WarcArchiveBundleIterator extends TextArchiveBundleIterator
     function getWarcHeaders()
     {
         $warc_headers = array();
-        $warc_fields = array( 'warc-type' => 'warc-type', 
+        $warc_fields = array( 'warc-type' => 'warc-type',
             'warc-target-uri' => self::URL, 'warc-date' => self::TIMESTAMP,
             'warc-ip-address' => self::IP_ADDRESSES,
             'content-length' => self::SIZE, 'warc-record-id' => self::WARC_ID,

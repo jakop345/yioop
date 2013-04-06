@@ -726,7 +726,7 @@ class IndexDictionary implements CrawlConstants
             $ws = substr($word_string, $word_key_len);
             if($extract) {
                 $tmp = IndexShard::getWordInfoFromString($ws, true);
-                if($tmp[3] < $max_entry_count && 
+                if($tmp[3] < $max_entry_count &&
                     $previous_generation != $tmp[0]) {
                     array_unshift($info, $tmp);
                     $previous_generation = $tmp[0];

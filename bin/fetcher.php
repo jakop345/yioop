@@ -503,7 +503,7 @@ class Fetcher implements CrawlConstants
                     $this->to_crawl = array();
                 }
             } else if ($this->crawl_type == self::ARCHIVE_CRAWL &&
-                    $this->arc_type != "WebArchiveBundle" && 
+                    $this->arc_type != "WebArchiveBundle" &&
                     $this->arc_type != "") { /* case(2) */
                 // An archive crawl with data coming from the name server.
                 crawlLog("MAIN LOOP CASE 2 -- ARCHIVE SCHEDULER (NOT RECRAWL)");
@@ -605,7 +605,7 @@ class Fetcher implements CrawlConstants
             crawlLog("Number of summarized pages ".
                 count($summarized_site_pages));
 
-            $force_send = (isset($info[self::END_ITERATOR]) && 
+            $force_send = (isset($info[self::END_ITERATOR]) &&
                 $info[self::END_ITERATOR]) ? true : false;
             $this->updateFoundSites($summarized_site_pages, $force_send);
 
@@ -905,7 +905,7 @@ class Fetcher implements CrawlConstants
                 } else {
                     $update_num = SEEN_URLS_BEFORE_UPDATE_SCHEDULER;
                     crawlLog("Fetch on crawl {$this->crawl_time} was not ".
-                        "halted properly."); 
+                        "halted properly.");
                     crawlLog("  Dumping $update_num from old fetch ".
                         "to try to make a clean re-start.");
                     $count = count($this->to_crawl);
@@ -917,7 +917,7 @@ class Fetcher implements CrawlConstants
                     }
                 }
             }
-            if(general_is_a($this->arc_type."Iterator", 
+            if(general_is_a($this->arc_type."Iterator",
                     "TextArchiveBundleIterator")) {
                 $result_dir = WORK_DIRECTORY . "/schedules/" .
                     $prefix.self::fetch_archive_iterator.$this->crawl_time;
@@ -1034,7 +1034,7 @@ class Fetcher implements CrawlConstants
         $this->selectCurrentServerAndUpdateIfNeeded(false);
 
         $chunk = false;
-        if(general_is_a($this->arc_type."Iterator", 
+        if(general_is_a($this->arc_type."Iterator",
             "TextArchiveBundleIterator")) {
             $archive_iterator = $this->archive_iterator;
             $chunk = true;
@@ -1043,10 +1043,10 @@ class Fetcher implements CrawlConstants
                 TextArchiveBundleIterator::MAX_RECORD_SIZE;
             if($archive_iterator->buffer_fh && $archive_iterator->current_offset
                 < $max_offset) {
-                crawlLog("Local Iterator Offset: ". 
+                crawlLog("Local Iterator Offset: ".
                     $archive_iterator->current_offset);
                 crawlLog("Local Max Offset: ". $max_offset);
-                $info[self::ARC_DATA] = 
+                $info[self::ARC_DATA] =
                     $archive_iterator->nextPages(ARCHIVE_BATCH_SIZE);
                 crawlLog("Time to get archive data from local buffer ".
                     changeInMicrotime($start_time));
@@ -1097,8 +1097,8 @@ class Fetcher implements CrawlConstants
                     if($pages[self::ARC_DATA]) {
                         $archive_iterator->makeBuffer($pages[self::ARC_DATA]);
                     }
-                    if(isset($pages[self::HEADER]) && 
-                        is_array($pages[self::HEADER]) && 
+                    if(isset($pages[self::HEADER]) &&
+                        is_array($pages[self::HEADER]) &&
                         $pages[self::HEADER] != array()) {
                         $archive_iterator->header = $pages[self::HEADER];
                     }
@@ -1189,7 +1189,7 @@ class Fetcher implements CrawlConstants
             'crawl_order', self::CACHE_PAGES => 'cache_pages',
             self::INDEXED_FILE_TYPES => 'indexed_file_types',
             self::RESTRICT_SITES_BY_URL => 'restrict_sites_by_url',
-            self::ALLOWED_SITES => 'allowed_sites', 
+            self::ALLOWED_SITES => 'allowed_sites',
             self::DISALLOWED_SITES => 'disallowed_sites');
         foreach($update_fields as $info_field => $field) {
             if(isset($info[$info_field])) {
@@ -1200,7 +1200,7 @@ class Fetcher implements CrawlConstants
         if(isset($info[self::PAGE_RULES]) ){
             $rule_string = implode("\n", $info[self::PAGE_RULES]);
             $rule_string = html_entity_decode($rule_string, ENT_QUOTES);
-            $this->page_rule_parser = 
+            $this->page_rule_parser =
                 new PageRuleParser($rule_string);
         }
         if(isset($info[self::VIDEO_SOURCES])) {
@@ -1609,7 +1609,7 @@ class Fetcher implements CrawlConstants
      * This method attempts to cull from the doc_info struct the
      * best MAX_LINKS_PER_PAGE. Currently, this is done by first removing
      * links which of filetype or sites the crawler is forbidden from crawl.
-     * Then a crude estimate of the informaation contained in the links test: 
+     * Then a crude estimate of the informaation contained in the links test:
      * strlen(gzip(text)) is used to extract the best remaining links.
      *
      * @param array &$doc_info a string with a CrawlConstants::LINKS subarray
@@ -1829,7 +1829,7 @@ class Fetcher implements CrawlConstants
             crawlLog($site_index.". $subdoc_info ".$site[self::URL]);
 
         } // end for
-        if($force_send || ($this->crawl_type == self::WEB_CRAWL && 
+        if($force_send || ($this->crawl_type == self::WEB_CRAWL &&
             count($this->to_crawl) <= 0 && count($this->to_crawl_again) <= 0) ||
                 (isset($this->found_sites[self::SEEN_URLS]) &&
                 count($this->found_sites[self::SEEN_URLS]) >
@@ -2174,7 +2174,7 @@ class Fetcher implements CrawlConstants
                     crawlLog("Trouble sending to the scheduler, response was:");
                     crawlLog("$info_string");
                     $info = unserialize($info_string);
-                    if(isset($info[self::STATUS]) && 
+                    if(isset($info[self::STATUS]) &&
                         $info[self::STATUS] == self::REDO_STATE) {
                         crawlLog("Server requested last item to be re-sent...");
                         if(isset($info[self::SUMMARY])) {

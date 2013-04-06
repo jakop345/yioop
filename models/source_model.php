@@ -101,7 +101,7 @@ class SourceModel extends Model
             } else {
                 $sql .= " AND ";
             }
-            $sql .= " NOT EXISTS 
+            $sql .= " NOT EXISTS
                 (SELECT * FROM FEED_ITEM F
                 WHERE F.SOURCE_NAME = M.NAME)";
         }
@@ -367,7 +367,7 @@ class SourceModel extends Model
                 // maybe we're dealing with atom rather than rss
                 $nodes = $dom->getElementsByTagName('entry');
                 $rss_elements = array(
-                    "title" => "title", "description" => "summary", 
+                    "title" => "title", "description" => "summary",
                     "link" => "link", "guid" => "id", "pubDate" => "updated");
             }
             $max_time = min(self::MAX_EXECUTION_TIME,

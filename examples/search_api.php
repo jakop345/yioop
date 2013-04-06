@@ -64,20 +64,27 @@ if(!PROFILE) {
  * but a crawl into the WORK_DIRECTORY and that would be used to make the
  * query.
  */
-if(!file_exists(BASE_DIR."/examples/Archive1317414322.zip") ||
-   !file_exists(BASE_DIR."/examples/IndexData1317414322.zip")) {
+$archive = BASE_DIR."/examples/Archive1317414322.zip";
+$index_archive = BASE_DIR."/examples/IndexData1317414322.zip";
+$extract_folder = CRAWL_DIR."/cache";
+if(!file_exists($archive) ||
+   !file_exists($index_archive)) {
    echo "\nSearch API test index doesn't exist, so can't run demo\n\n";
    exit();
 }
 
-$zip = new ZipArchive();
-$zipH = $zip->open("Archive1317414322.zip");
-$zip->extractTo(CRAWL_DIR."/cache");
-$zip->close();
-$zipH = $zip->open("IndexData1317414322.zip");
-$zip->extractTo(CRAWL_DIR."/cache");
-$zip->close();
-
+if(class_exists("ZipArchive")) {
+    $zip = new ZipArchive();
+    $zipH = $zip->open($archive);
+    $zip->extractTo($extract_folder);
+    $zip->close();
+    $zipH = $zip->open($index_archive);
+    $zip->extractTo($extract_folder);
+    $zip->close();
+} else {
+    exec("unzip $archive -d $extract_folder");
+    exec("unzip $index_archive -d $extract_folder");
+}
 
 /**
  * The next block of code till +++++ is needed only if you want

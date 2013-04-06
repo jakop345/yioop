@@ -672,7 +672,7 @@ class PhraseModel extends ParallelModel
 
     /**
      * Idealistically, this function tries to guess from the query what the
-     * user is looking for. For now, we are just doing simple things like 
+     * user is looking for. For now, we are just doing simple things like
      * when a query term is a url and rewriting it to the appropriate meta
      * meta word.
      *
@@ -899,7 +899,7 @@ class PhraseModel extends ParallelModel
      *      be used during lookup
      * @param string $original_query if set, the original query that corresponds
      *      to $word_structs
-     * @param string $save_timestamp_name if this timestamp is not empty, then 
+     * @param string $save_timestamp_name if this timestamp is not empty, then
      *      save iterate position, so can resume on future queries that make
      *      use of the timestamp. If used then $limit ignored and get next $num
      *      docs after $save_timestamp 's previous iterate position.
@@ -1119,7 +1119,7 @@ class PhraseModel extends ParallelModel
      * @param array &$pages of page data without text summaries
      * @param array &$queue_servers array of queue server to find data on
      * @param int $raw only lookup locations if 0
-     * @param bool $groups_with_docs whether to return only groups that 
+     * @param bool $groups_with_docs whether to return only groups that
      *      contain at least one doc as opposed to a groups with only links
      * @return array pages with summaries added
      */
@@ -1257,7 +1257,7 @@ class PhraseModel extends ParallelModel
         if(!$network_flag) {
             $doc_iterate_hash = crawlHash("site:any");
             $doc_iterate_group_hash = crawlHash("site:doc");
-            if($save_timestamp_name != "") { 
+            if($save_timestamp_name != "") {
                 // used for archive crawls of crawl mixes
                 $save_file = CRAWL_DIR.'/schedules/'.self::save_point.
                     $save_timestamp_name.".txt";

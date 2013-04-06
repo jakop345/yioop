@@ -67,7 +67,7 @@ class MachinestatusView extends View
         } else {
         ?>
         <div class="box">
-        <h3 class="nomargin"><?php 
+        <h3 class="nomargin"><?php
             e(tl('machinestatus_view_news_updater'));
             $log_url = $base_url ."log&amp;name=news";
         ?></h3>
@@ -82,7 +82,7 @@ class MachinestatusView extends View
         <td><?php $this->optionsHelper->render("news-mode",
             "news_mode", $data['NEWS_MODES'], $data['NEWS_MODE'], true);?>
         </td>
-        <td>[<a href="<?php e($log_url);?>"><?php 
+        <td>[<a href="<?php e($log_url);?>"><?php
             e(tl('machinestatus_view_log'));?></a>]</td>
         </tr></table>
         </form>

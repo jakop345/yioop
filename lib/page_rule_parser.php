@@ -47,7 +47,7 @@ require_once BASE_DIR."/lib/crawl_constants.php";
  * and does a function call to manipulate that page. Right now the supported
  * commands are to unset that field value, to add the field and field value to
  * the META_WORD array for the page and to split the field on comma, view this
- * as a search keywords => link text association, and add this the 
+ * as a search keywords => link text association, and add this the
  * KEYWORD_LINKS array.
  * These have the syntax:
  * unset(field)
@@ -109,7 +109,7 @@ class PageRuleParser implements CrawlConstants
         $end = '(?:\n|\Z)';
         $substitution = '(/[^/\n]+/)([^/\n]*)/';
         $command = '(\w+)\((\w+)\)';
-        $rule = 
+        $rule =
             "@(?:$command$blank*($comment)?$end".
             "|$blank*($literal)$blank*($assignment)$blank*".
             "((".$quote_string.")|($literal)|($substitution))".
@@ -117,7 +117,7 @@ class PageRuleParser implements CrawlConstants
         $matches = array();
         preg_match_all($rule, $page_rules, $matches);
         $rule_trees = array();
-        if(!isset($matches[0]) || 
+        if(!isset($matches[0]) ||
             ($num_rules = count($matches[0])) == 0) { return $rule_trees; }
         for($i = 0; $i < $num_rules; $i++) {
             $tree = array();
@@ -177,7 +177,7 @@ class PageRuleParser implements CrawlConstants
     function executeFunctionRule($tree, &$page_data)
     {
         $allowed_functions = array("unset" => "unsetVariable",
-            "addMetaWord" => "addMetaWord", 
+            "addMetaWord" => "addMetaWord",
             "addKeywordLink" => "addKeywordLink");
         if(in_array($tree['func_call'], array_keys($allowed_functions))) {
             $func = $allowed_functions[$tree['func_call']];
@@ -238,7 +238,7 @@ class PageRuleParser implements CrawlConstants
     }
 
     /**
-     *  Unsets the key $field (or the crawl constant it corresponds to) 
+     *  Unsets the key $field (or the crawl constant it corresponds to)
      *  in $page_data. If it is a crawlconstant it doesn't unset it --
      *  it just sets it to the empty string
      *

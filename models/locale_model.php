@@ -442,7 +442,7 @@ class LocaleModel extends Model
         if(isset($this->configure['strings'][$msg_id])) {
             $msg_string = $this->configure['strings'][$msg_id];
         }
-        if($msg_string == "" && 
+        if($msg_string == "" &&
             isset($this->default_configure['strings'][$msg_id])) {
             $msg_string = $this->default_configure['strings'][$msg_id];
         }
@@ -549,7 +549,7 @@ class LocaleModel extends Model
      */
     function extractMergeLocales()
     {
-        $list = $this->getLocaleList(); 
+        $list = $this->getLocaleList();
             // getLocaleList will also create any missing locale dirs
         $strings =
             $this->getTranslateStrings($this->extract_dirs, $this->extensions);
@@ -698,8 +698,8 @@ EOT;
     /**
      *  Computes a string of the form string_id = 'translation' for a string_id
      *  from among translation array data in $new_configure (most preferred,
-     *  probably come from recent web form data), $old_configure 
-     *  (probably from work dir), and $fallback_configure (probably from base 
+     *  probably come from recent web form data), $old_configure
+     *  (probably from work dir), and $fallback_configure (probably from base
      *  dir of Yioop instance, least preferred).
      *
      *  @param array $new_configure string_id => translation pairs
@@ -710,7 +710,7 @@ EOT;
      *      has a translation for a string_id
      *  @return string translation in format describe above
      */
-    function updateTranslation($new_configure, $old_configure, 
+    function updateTranslation($new_configure, $old_configure,
         $fallback_configure, $string_id, $default_value = "")
     {
         $translation = $string_id . ' = "'.
@@ -720,8 +720,8 @@ EOT;
     }
 
     /**
-     *  Translates a string_id from among translation array data in 
-     *  $new_configure (most preferred, probably come from recent web form 
+     *  Translates a string_id from among translation array data in
+     *  $new_configure (most preferred, probably come from recent web form
      *  data), $old_configure  (probably from work dir), and $fallback_configure
      *  (probably from base  dir of Yioop instance, least preferred).
      *
@@ -756,7 +756,7 @@ EOT;
      */
     function isTranslated($translations, $string_id)
     {
-        return isset($translations[$string_id]) && 
+        return isset($translations[$string_id]) &&
             strlen($translations[$string_id]) > 0;
     }
 

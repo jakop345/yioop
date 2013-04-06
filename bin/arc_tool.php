@@ -814,7 +814,7 @@ class ArcTool implements CrawlConstants
      * @param string $archive_name name or path to what was supposed to be
      *      an archive
      */
-    function badFormatMessageAndExit($archive_name, 
+    function badFormatMessageAndExit($archive_name,
         $allowed_archives = "web or index")
     {
         echo <<< EOD
@@ -858,14 +858,14 @@ php arc_tool.php mergetiers bundle_name max_tier
 php arc_tool.php posting bundle_name generation offset
     or
 php arc_tool.php posting bundle_name generation offset num
-    /* returns info about the posting (num many postings) in bundle_name at 
+    /* returns info about the posting (num many postings) in bundle_name at
        the given generation and offset */
 
 php arc_tool.php reindex bundle_name
     // reindex the word dictionary in bundle_name
 
 php arc_tool.php show bundle_name start num
-    /* outputs items start through num from bundle_name or name of 
+    /* outputs items start through num from bundle_name or name of
        non-Yioop archive crawl folder */
 
 

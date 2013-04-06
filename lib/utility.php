@@ -1072,7 +1072,7 @@ function readMessage()
 
 /**
  * Checks if class_1 is the same as class_2 of has class_2 as a parent
- * Behaves like 3 param version (last param true) of PHP is_a function 
+ * Behaves like 3 param version (last param true) of PHP is_a function
  * that came into being with Version 5.3.9.
  *
  */

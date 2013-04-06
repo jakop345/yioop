@@ -223,7 +223,7 @@ class MediaWikiArchiveBundleIterator extends TextArchiveBundleIterator
             array("/{{Redirect2?\|([^{}\|]+)\|([^{}\|]+)\|([^{}\|]+)}}/i",
                 "<div class='indent'>\"$1\". ($2 &rarr;<a href=\"".
                 $base_address."$3\">$3</a>)</div>"),
-            array("/{{Redirect\|([^{}\|]+)}}/i", 
+            array("/{{Redirect\|([^{}\|]+)}}/i",
                 "<div class='indent'>\"$1\". (<a href=\"".
                 $base_address. "$1_(disambiguation)\">$1???</a>)</div>"),
             array("/#REDIRECT:\s+\[\[(.+?)\]\]/",
@@ -234,7 +234,7 @@ class MediaWikiArchiveBundleIterator extends TextArchiveBundleIterator
                 "<a href=\"{$base_address}$1\">$1</a>"),
             array("/\[(http[^\s\]]+)\s+(.+?)\]/s",
                 "[<a href=\"$1\">$2</a>]"),
-            array("/\[(http[^\]\s]+)\s*\]/","(<a href=\"$1\">&rarr;</a>)"), 
+            array("/\[(http[^\]\s]+)\s*\]/","(<a href=\"$1\">&rarr;</a>)"),
             array("/'''''(.+?)'''''/s", "<b><i>$1</i></b>"),
             array("/'''(.+?)'''/s", "<b>$1</b>"),
             array("/''(.+?)''/s", "<i>$1</i>"),
@@ -380,7 +380,7 @@ class MediaWikiArchiveBundleIterator extends TextArchiveBundleIterator
         $pre_page = preg_replace_callback('/(\A|\n){\|(.*?)\n\|}/s',
             "makeTableCallback", $pre_page);
         $pre_page = preg_replace($this->matches, $this->replaces,$pre_page);
-        $pre_page = preg_replace("/{{Other uses}}/i", 
+        $pre_page = preg_replace("/{{Other uses}}/i",
                 "<div class='indent'>\"$1\". (<a href='".
                 $site[self::URL]. "_(disambiguation)'>$pre_url</a>)</div>",
                 $pre_page);
@@ -459,7 +459,7 @@ class MediaWikiArchiveBundleIterator extends TextArchiveBundleIterator
                             if(in_array($field, $wiki_fields)) {
                                 $value = preg_replace($this->matches,
                                     $this->replaces, $value);
-                                $value = strip_tags($value, 
+                                $value = strip_tags($value,
                                     '<a><b><i><span><img>');
                             }
                             $ref_data[$field] = $value;
