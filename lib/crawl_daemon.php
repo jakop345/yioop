@@ -222,12 +222,17 @@ class CrawlDaemon implements CrawlConstants
                 }
             }
         }
+        $php = "php";
+        if(isset($_SERVER['SERVER_SOFTWARE']) &&
+            $_SERVER['SERVER_SOFTWARE'] == 'hphp') {
+            $php = 'hhvm -f';
+        }
         if(strstr(PHP_OS, "WIN")) {
             $base_dir = str_replace("/", "\\", BASE_DIR);
             $script = "start /B php ".
                 $base_dir."\\bin\\$name.php child %s";
         } else {
-            $script = "php '".
+            $script = "$php '".
                 BASE_DIR."/bin/$name.php' child %s < /dev/null ".
                 " > /dev/null &";
         }
