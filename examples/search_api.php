@@ -85,6 +85,19 @@ if(class_exists("ZipArchive")) {
     exec("unzip $archive -d $extract_folder");
     exec("unzip $index_archive -d $extract_folder");
 }
+if (function_exists('lcfirst') === false) {
+    /**
+     *  Lower cases the first letter in a string
+     *
+     *  This function is only defined if the PHP version is before 5.3
+     *  @param string $str  string to be lower cased
+     *  @return string the lower cased string
+     */
+    function lcfirst( $str )
+    {
+        return (string)(strtolower(substr($str, 0, 1)).substr($str, 1));
+    }
+}
 
 /**
  * The next block of code till +++++ is needed only if you want
