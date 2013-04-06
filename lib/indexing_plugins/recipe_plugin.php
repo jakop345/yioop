@@ -179,6 +179,11 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
     {
         global $INDEXING_PLUGINS;
 
+        if(!class_exists("SplHeap")) {
+            crawlLog("...Recipe Plugin Requires SPLHeap for clustering!");
+            crawlLog("...Aborting plugin");
+            return;
+        }
         $locale_tag = guessLocale();
         setLocaleObject($locale_tag);
         $search_controller = new SearchController($INDEXING_PLUGINS);
@@ -742,6 +747,12 @@ class Tree
 
     }
 }
+
+if(!class_exists("SplHeap")) {
+    class SplHeap {
+    }
+}
+
 /**
  * heap to maintain the MST
  * @package seek_quarry
@@ -750,7 +761,7 @@ class Tree
 class Cluster extends SplHeap
 {
 
-    function compare($edge1,$edge2)
+    function compare($edge1, $edge2)
     {
         $values1 = $edge1->getCost();
         $values2 = $edge2->getCost();
@@ -766,7 +777,7 @@ class Cluster extends SplHeap
 class TreeCluster extends SplHeap
 {
 
-    function compare($edge1,$edge2)
+    function compare($edge1, $edge2)
     {
         $values1 = $edge1->getCost();
         $values2 = $edge2->getCost();
@@ -821,11 +832,12 @@ class Queue
  * @param object array $edges recipes with distances between them.
  * @return object arrat $min_edges MST
  */
-function construct_tree($edges) {
+function construct_tree($edges)
+{
     $vertices = array();
     $tree_heap = new TreeCluster();
     $vertice_no = 1;
-    for($i=0; $i < count($edges)-1; $i++) {
+    for($i = 0; $i < count($edges) - 1; $i++) {
         $edge1 = new Edge($edges[$i][0], $edges[$i][1], $edges[$i][2]);
         $tree_heap->insert($edge1);
         $vertex1 = $edge1->getStartVertex();
