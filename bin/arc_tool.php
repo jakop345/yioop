@@ -164,6 +164,10 @@ class ArcTool implements CrawlConstants
                 $this->outputInfo($path);
             break;
 
+            case "shard":
+                $this->outputShardInfo($path, $argv[3]);
+            break;
+
             case "dict":
                 $this->outputDictInfo($path, $argv[3]);
             break;
@@ -309,6 +313,52 @@ class ArcTool implements CrawlConstants
     }
 
     /**
+     * Prints information about the number of words and frequencies of words
+     * within the $generation'th index shard in the bundle
+     *
+     *  @param string $archive_path the path of a directory that holds
+     *      an IndexArchiveBundle
+     *  @param int $generation which index shard to use
+     */
+    function outputShardInfo($archive_path, $generation)
+    {
+        $bundle_name = $this->getArchiveName($archive_path);
+        echo "\nBundle Name: $bundle_name\n";
+        $archive_type = $this->getArchiveKind($archive_path);
+        echo "Bundle Type: $archive_type\n";
+
+        if(strcmp($archive_type,"IndexArchiveBundle") != 0) {
+            $this->badFormatMessageAndExit($archive_path, "index");
+        }
+        $index_timestamp = substr($archive_path,
+            strpos($archive_path, self::index_data_base_name) +
+            strlen(self::index_data_base_name));
+        $index = IndexManager::getIndex($index_timestamp);
+        $num_generations = $index->generation_info["CURRENT"] + 1;
+        echo "Number of Generations: $num_generations\n";
+        echo "\nShard Information for Generation $generation\n";
+        echo "====================================\n";
+        $index->setCurrentShard($generation, true);
+
+        $index->generation_info['DISK_BASED'] = false;
+        $shard = $index->getCurrentShard();
+        echo "Number of Distinct Terms Indexed: ".count($shard->words)."\n";
+        echo "Freq Rank\t# Terms with Rank\t# Docs Term Appears In\n";
+        $word_string_lens = array();
+        foreach($shard->words as $word => $posting) {
+            $word_string_lens[] = intval(ceil(strlen($posting)/4));
+        }
+        $word_string_lens = array_count_values($word_string_lens);
+        krsort($word_string_lens);
+        $i = 1;
+        foreach($word_string_lens as $num_docs => $num_terms) {
+            echo "$i\t\t\t$num_terms\t\t\t$num_docs\n";
+            $i++;
+        }
+
+    }
+
+    /**
      * Prints information about $num many postings beginning at the
      * provided $generation and $offset
      *
@@ -335,7 +385,6 @@ class ArcTool implements CrawlConstants
             strlen(self::index_data_base_name));
         $index = IndexManager::getIndex($index_timestamp);
         $index->setCurrentShard($generation, true);
-
         $shard = $index->getCurrentShard();
         $next = $offset >> 2;
         $raw_postings = array();
@@ -785,6 +834,10 @@ php arc_tool.php dict bundle_name word
 
 php arc_tool.php info bundle_name
     // return info about documents stored in archive.
+
+php arc_tool.php shard bundle_name generation
+    /* Prints information about the number of words and frequencies of words
+       within the generation'th index shard in the bundle */
 
 php arc_tool.php list
     /* returns a list of all the archives in the Yioop! crawl directory,
