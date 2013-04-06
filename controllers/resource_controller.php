@@ -119,8 +119,12 @@ class ResourceController extends Controller implements CrawlConstants
         }
 
         $path = "$base_dir/$name";
-        $finfo = new finfo(FILEINFO_MIME);
-        $mime_type = $finfo->file($path);
+        if(class_exists("finfo")) {
+            $finfo = new finfo(FILEINFO_MIME);
+            $mime_type = $finfo->file($path);
+        } else {
+            $mime_type = exec('file -b --mime-type ' . $path);
+        }
         if(file_exists($path)) {
             header("Content-type:$mime_type");
             if(isset($offset) && isset($limit)) {
