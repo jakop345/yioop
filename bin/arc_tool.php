@@ -322,6 +322,9 @@ class ArcTool implements CrawlConstants
      */
     function outputShardInfo($archive_path, $generation)
     {
+        ini_set("memory_limit","2000M"); /*reading in a whole shard might take
+                a bit more memory
+            */
         $bundle_name = $this->getArchiveName($archive_path);
         echo "\nBundle Name: $bundle_name\n";
         $archive_type = $this->getArchiveKind($archive_path);
@@ -334,13 +337,13 @@ class ArcTool implements CrawlConstants
             strpos($archive_path, self::index_data_base_name) +
             strlen(self::index_data_base_name));
         $index = IndexManager::getIndex($index_timestamp);
-        $num_generations = $index->generation_info["CURRENT"] + 1;
+        $index->setCurrentShard($generation);
+
+        $num_generations = $index->generation_info["ACTIVE"] + 1;
         echo "Number of Generations: $num_generations\n";
         echo "\nShard Information for Generation $generation\n";
         echo "====================================\n";
-        $index->setCurrentShard($generation, true);
 
-        $index->generation_info['DISK_BASED'] = false;
         $shard = $index->getCurrentShard();
         echo "Number of Distinct Terms Indexed: ".count($shard->words)."\n";
         echo "Freq Rank\t# Terms with Rank\t# Docs Term Appears In\n";
@@ -353,7 +356,7 @@ class ArcTool implements CrawlConstants
         $i = 1;
         foreach($word_string_lens as $num_docs => $num_terms) {
             echo "$i\t\t\t$num_terms\t\t\t$num_docs\n";
-            $i++;
+            $i += $num_terms;
         }
 
     }
