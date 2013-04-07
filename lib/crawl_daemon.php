@@ -89,20 +89,17 @@ class CrawlDaemon implements CrawlConstants
      */
     static function processHandler()
     {
-        $now = time();
-        if($now - self::$time < 30) return;
-
-        self::$time = $now;
         $lock_file = CrawlDaemon::getLockFileName(self::$name, self::$subname);
 
         if(!file_exists($lock_file)) {
             $name_string = CrawlDaemon::getNameString(self::$name,
                 self::$subname);
             crawlLog("Stopping $name_string ...");
-            exit();
+            return false;
         }
 
         file_put_contents($lock_file, $now);
+        return true;
     }
 
     /**
@@ -174,9 +171,6 @@ class CrawlDaemon implements CrawlConstants
             break;
 
             case "child":
-                register_tick_function('CrawlDaemon::processHandler');
-
-                self::$time = time();
                 $info = array();
                 $info[self::STATUS] = self::WAITING_START_MESSAGE_STATE;
                 file_put_contents($messages_file, serialize($info));
@@ -223,8 +217,8 @@ class CrawlDaemon implements CrawlConstants
             }
         }
         $php = "php";
-        if(isset($_SERVER['SERVER_SOFTWARE']) &&
-            $_SERVER['SERVER_SOFTWARE'] == 'HPHP') {
+        if(isset($_SERVER['_']) &&
+            stristr($_SERVER['_'], 'hhvm')) {
             $php = 'hhvm -f';
         }
         if(strstr(PHP_OS, "WIN")) {
@@ -232,7 +226,7 @@ class CrawlDaemon implements CrawlConstants
             $script = "start /B php ".
                 $base_dir."\\bin\\$name.php child %s";
         } else {
-            $script = "$php '".
+            $script = "php '".
                 BASE_DIR."/bin/$name.php' child %s < /dev/null ".
                 " > /dev/null &";
         }

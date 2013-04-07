@@ -449,9 +449,6 @@ class Fetcher implements CrawlConstants
     function start()
     {
         global $argv;
-
-        // To use CrawlDaemon need to declare ticks first
-        declare(ticks=200);
         if(isset($argv[2]) ) {
             $this->fetcher_num = intval($argv[2]);
         } else {
@@ -483,7 +480,7 @@ class Fetcher implements CrawlConstants
 
         $info[self::STATUS] = self::CONTINUE_STATE;
         $local_archives = array("");
-        while ($info[self::STATUS] != self::STOP_STATE) {
+        while (CrawlDaemon::processHandler()) {
             $start_time = microtime();
             $fetcher_message_file = CRAWL_DIR.
                 "/schedules/{$prefix}fetcher_messages.txt";

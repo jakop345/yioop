@@ -175,9 +175,6 @@ class Mirror implements CrawlConstants
     function start()
     {
         global $argv;
-
-        // To use CrawlDaemon need to declare ticks first
-        declare(ticks=200);
         CrawlDaemon::init($argv, "mirror");
         crawlLog("\n\nInitialize logger..", "mirror");
         $this->loop();
@@ -193,7 +190,7 @@ class Mirror implements CrawlConstants
 
         $info[self::STATUS] = self::CONTINUE_STATE;
 
-        while ($info[self::STATUS] != self::STOP_STATE) {
+        while (CrawlDaemon::processHandler()) {
             $syncer_message_file = CRAWL_DIR.
                 "/schedules/mirror_messages.txt";
             if(file_exists($syncer_message_file)) {

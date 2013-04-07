@@ -151,7 +151,7 @@ class NewsUpdater implements CrawlConstants
 
         $info[self::STATUS] = self::CONTINUE_STATE;
         $local_archives = array("");
-        while ($info[self::STATUS] != self::STOP_STATE) {
+        while (CrawlDaemon::processHandler()) {
             $start_time = microtime();
 
             crawlLog("Checking if news feeds should be updated...");

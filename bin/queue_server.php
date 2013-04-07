@@ -341,7 +341,6 @@ class QueueServer implements CrawlConstants, Join
     {
         global $argv;
 
-        declare(ticks=200);
         if(isset($argv[1]) && $argv[1] == "start") {
             $argv[2] = "none";
             $argv[3] = self::INDEXER;
@@ -395,7 +394,7 @@ class QueueServer implements CrawlConstants, Join
         if($this->isAIndexer()) {
             $this->deleteOrphanedBundles();
         }
-        while ($info[self::STATUS] != self::STOP_STATE) {
+        while (CrawlDaemon::processHandler()) {
             crawlLog("{$this->server_name} peak memory usage so far".
                 memory_get_peak_usage()."!!");
 
