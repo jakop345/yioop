@@ -218,7 +218,7 @@ class CrawlDaemon implements CrawlConstants
         }
         $php = "php";
         if(isset($_SERVER['_']) &&
-            stristr($_SERVER['_'], 'hhvm')) {
+            stristr('hhvm', $_SERVER['_'])) {
             $php = 'hhvm -f';
         }
         if(strstr(PHP_OS, "WIN")) {
