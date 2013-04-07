@@ -619,7 +619,8 @@ function crawlLog($msg, $lname = NULL)
                 bzcompress(file_get_contents($logfile)));
             unlink($logfile);
         }
-        error_log($out_msg."\n", 3, $logfile);
+        //don't use error_log options in this case to happify hiphop4php
+        file_put_contents($logfile, $out_msg."\n", FILE_APPEND);
     } else if (php_sapi_name() != 'cli') {
         error_log($out_msg."\n");
     } else {
