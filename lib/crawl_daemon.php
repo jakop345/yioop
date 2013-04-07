@@ -77,11 +77,11 @@ class CrawlDaemon implements CrawlConstants
      static $subname;
 
     /**
-     * Used by processHandler to decide when to update the lock file
-     * @var int
+     * Used by processHandler to decide whether run as daemon or not
+     * @var string
      * @static
      */
-    static $time;
+    static $mode;
 
     /**
      * Tick callback function used to update the timestamp in this processes
@@ -89,6 +89,9 @@ class CrawlDaemon implements CrawlConstants
      */
     static function processHandler()
     {
+        if(self::$mode != 'daemon') {
+            return true;
+        }
         $lock_file = CrawlDaemon::getLockFileName(self::$name, self::$subname);
 
         if(!file_exists($lock_file)) {
@@ -163,6 +166,7 @@ class CrawlDaemon implements CrawlConstants
             break;
 
             case "terminal":
+                self::$mode = 'terminal';
                 $info = array();
                 $info[self::STATUS] = self::WAITING_START_MESSAGE_STATE;
                 file_put_contents($messages_file, serialize($info));
@@ -171,6 +175,7 @@ class CrawlDaemon implements CrawlConstants
             break;
 
             case "child":
+                self::$mode = 'daemon';
                 $info = array();
                 $info[self::STATUS] = self::WAITING_START_MESSAGE_STATE;
                 file_put_contents($messages_file, serialize($info));
