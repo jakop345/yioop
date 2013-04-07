@@ -226,7 +226,7 @@ class CrawlDaemon implements CrawlConstants
             $script = "start /B php ".
                 $base_dir."\\bin\\$name.php child %s";
         } else {
-            $script = "php '".
+            $script = "$php '".
                 BASE_DIR."/bin/$name.php' child %s < /dev/null ".
                 " > /dev/null &";
         }
