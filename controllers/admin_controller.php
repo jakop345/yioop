@@ -2571,7 +2571,7 @@ class AdminController extends Controller implements CrawlConstants
             $data['LANGUAGES'][$language['LOCALE_TAG']] =
                 $language['LOCALE_NAME'];
         }
-        if(isset($_REQUEST['lang'])) {
+        if(isset($_REQUEST['lang']) && $_REQUEST['lang']) {
             $data['lang'] = $this->clean($_REQUEST['lang'], "string");
             $profile['DEFAULT_LOCALE'] = $data['lang'];
             setLocaleObject($data['lang']);

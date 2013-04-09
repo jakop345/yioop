@@ -124,7 +124,6 @@ if(file_exists(WORK_DIRECTORY.PROFILE_FILE_NAME)) {
         echo "SERVICE AVAILABLE ONLY VIA LOCALHOST UNTIL CONFIGURED";
         exit();
     }
-    error_reporting(-1);
     /** @ignore */
     define('PROFILE', false);
     define('DBMS', 'sqlite3');

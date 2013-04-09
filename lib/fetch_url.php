@@ -427,13 +427,10 @@ class FetchUrl implements CrawlConstants
          */
         $end_head = stripos($site[$value], "</head");
         if($end_head) {
-            $reg = "charset(\s*)=(\s*)(\'|\")?((\w|\-)+)(\'|\")?";
-            mb_regex_encoding("UTF-8");
-            mb_ereg_search_init($site[$value]);
-            mb_ereg_search($reg);
-            $match = mb_ereg_search_getregs();
+            $reg = "/charset(\s*)=(\s*)(\'|\")?((\w|\-)+)(\'|\")?/u";
+            preg_match($reg, $site[$value], $match);
             if(isset($match[0])) {
-                $len_c = mb_strlen($match[0]);
+                $len_c = strlen($match[0]);
                 if(($match[6] == "'" || $match[6] == '"') &&
                    $match[3] != $match[6]) {
                     $len_c--;
