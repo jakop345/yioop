@@ -73,7 +73,8 @@ class WebQueueBundleTest extends UnitTest
     function setUp()
     {
         $this->test_objects['FILE1'] =
-            new WebQueueBundle("QueueTest", 1000, 1000, CrawlConstants::MAX);
+            new WebQueueBundle(WORK_DIRECTORY."/QueueTest",
+                1000, 1000, CrawlConstants::MAX);
     }
 
     /**
@@ -81,7 +82,7 @@ class WebQueueBundleTest extends UnitTest
      */
     function tearDown()
     {
-        $this->db->unlinkRecursive("QueueTest");
+        $this->db->unlinkRecursive(WORK_DIRECTORY."/QueueTest");
     }
 
     /**

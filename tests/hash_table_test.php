@@ -60,8 +60,10 @@ class HashTableTest extends UnitTest
      */
     function setUp()
     {
-        $this->test_objects['FILE1'] = new HashTable("hash1.txt", 20000, 8, 8);
-        $this->test_objects['FILE2'] = new HashTable("hash2.txt", 10, 8, 1);
+        $this->test_objects['FILE1'] = new HashTable(
+            WORK_DIRECTORY."/hash1.txt", 20000, 8, 8);
+        $this->test_objects['FILE2'] = new HashTable(WORK_DIRECTORY.
+            "/hash2.txt", 10, 8, 1);
     }
 
     /**
@@ -70,8 +72,8 @@ class HashTableTest extends UnitTest
      */
     function tearDown()
     {
-        @unlink("hash1.txt");
-        @unlink("hash2.txt");
+        @unlink(WORK_DIRECTORY."/hash1.txt");
+        @unlink(WORK_DIRECTORY."/hash2.txt");
     }
 
     /**

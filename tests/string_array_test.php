@@ -55,7 +55,8 @@ class StringArrayTest extends UnitTest
      */
     function setUp()
     {
-        $this->test_objects['FILE1'] = new StringArray("array.txt", 4, 4, -1);
+        $this->test_objects['FILE1'] = new StringArray(WORK_DIRECTORY.
+            "/array.txt", 4, 4, -1);
     }
 
     /**
@@ -64,7 +65,7 @@ class StringArrayTest extends UnitTest
      */
     function tearDown()
     {
-        @unlink("array.txt");
+        @unlink(WORK_DIRECTORY."/array.txt");
     }
 
     /**
@@ -97,7 +98,7 @@ class StringArrayTest extends UnitTest
         $this->test_objects['FILE1']->put(2, pack("N", 3));
         $this->test_objects['FILE1']->put(3, pack("N", 2));
         $this->test_objects['FILE1']->save();
-        $object = StringArray::load("array.txt");
+        $object = StringArray::load(WORK_DIRECTORY."/array.txt");
         //check can read in what we saved
         $tmp = unpack("N",$object->get(0));
         $this->assertEqual($tmp[1], 5, "Get put 0th items equal");

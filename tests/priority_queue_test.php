@@ -56,9 +56,11 @@ class PriorityQueueTest extends UnitTest
     function setUp()
     {
         $this->test_objects['FILE1'] =
-            new PriorityQueue("queue1.txt", 100, 4, CrawlConstants::MAX);
+            new PriorityQueue(WORK_DIRECTORY."/queue1.txt",
+                100, 4, CrawlConstants::MAX);
         $this->test_objects['FILE2'] =
-            new PriorityQueue("queue2.txt", 100, 4, CrawlConstants::MIN);
+            new PriorityQueue(WORK_DIRECTORY."/queue2.txt",
+                100, 4, CrawlConstants::MIN);
     }
 
     /**
@@ -67,8 +69,8 @@ class PriorityQueueTest extends UnitTest
      */
     function tearDown()
     {
-        @unlink("queue1.txt");
-        @unlink("queue2.txt");
+        @unlink(WORK_DIRECTORY."/queue1.txt");
+        @unlink(WORK_DIRECTORY."/queue2.txt");
     }
 
     /**

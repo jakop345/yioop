@@ -65,9 +65,12 @@ class IndexShardTest extends UnitTest
      */
     function setUp()
     {
-        $this->test_objects['shard'] = new IndexShard("shard.txt", 0);
-        $this->test_objects['shard2'] = new IndexShard("shard2.txt", 0);
-        $this->test_objects['shard3'] = new IndexShard("shard3.txt", 0);
+        $this->test_objects['shard'] = new IndexShard(WORK_DIRECTORY.
+            "/shard.txt", 0);
+        $this->test_objects['shard2'] = new IndexShard(WORK_DIRECTORY.
+            "/shard2.txt", 0);
+        $this->test_objects['shard3'] = new IndexShard(WORK_DIRECTORY.
+            "/shard3.txt", 0);
     }
 
     /**
@@ -75,9 +78,9 @@ class IndexShardTest extends UnitTest
      */
     function tearDown()
     {
-        @unlink("shard.txt");
-        @unlink("shard2.txt");
-        @unlink("shard3.txt");
+        @unlink(WORK_DIRECTORY."/shard.txt");
+        @unlink(WORK_DIRECTORY."/shard2.txt");
+        @unlink(WORK_DIRECTORY."/shard3.txt");
     }
 
     /**
@@ -403,7 +406,8 @@ class IndexShardTest extends UnitTest
 
         $this->test_objects['shard']->save();
 
-        $this->test_objects['shard2'] = IndexShard::load("shard.txt");
+        $this->test_objects['shard2'] = IndexShard::load(WORK_DIRECTORY.
+            "/shard.txt");
         $this->assertEqual($this->test_objects['shard2']->len_all_docs, 3,
             "Len All Docs Correctly Counts Length of First Doc");
 

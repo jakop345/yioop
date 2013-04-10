@@ -62,7 +62,7 @@ class WebArchiveTest extends UnitTest
     function setUp()
     {
         $this->test_objects['FILE1'] =
-            new WebArchive("ar1.sqwa", new GzipCompressor());
+            new WebArchive(WORK_DIRECTORY."/ar1.sqwa", new GzipCompressor());
     }
 
     /**
@@ -70,7 +70,7 @@ class WebArchiveTest extends UnitTest
      */
     function tearDown()
     {
-        @unlink("ar1.sqwa");
+        @unlink(WORK_DIRECTORY."/ar1.sqwa");
     }
 
     /**
@@ -150,7 +150,7 @@ class WebArchiveTest extends UnitTest
             $this->test_objects['FILE1']->addObjects("offset", $more_items);
 
         $this->test_objects['REF_FILE1'] =
-            new WebArchive("ar1.sqwa", new GzipCompressor());
+            new WebArchive(WORK_DIRECTORY."/ar1.sqwa", new GzipCompressor());
         $this->assertEqual(
             $this->test_objects['REF_FILE1']->count, 6,
             "Archive count is equal to number of items inserted");

@@ -55,7 +55,8 @@ class BloomFilterFileTest extends UnitTest
      */
     function setUp()
     {
-        $this->test_objects['FILE1'] = new BloomFilterFile("test.ftr", 10, 100);
+        $this->test_objects['FILE1'] = new BloomFilterFile(WORK_DIRECTORY.
+            "/test.ftr", 10, 100);
     }
 
     /**
@@ -64,7 +65,7 @@ class BloomFilterFileTest extends UnitTest
      */
     function tearDown()
     {
-        @unlink("test.ftr");
+        @unlink(WORK_DIRECTORY."/test.ftr");
     }
 
     /**
@@ -103,7 +104,8 @@ class BloomFilterFileTest extends UnitTest
         $this->test_objects['FILE1']->save();
         $this->test_objects['FILE1'] = NULL;
 
-        $this->test_objects['FILE2'] = BloomFilterFile::load("test.ftr");
+        $this->test_objects['FILE2'] = BloomFilterFile::load(WORK_DIRECTORY.
+            "/test.ftr");
         $this->assertTrue(
             $this->test_objects['FILE2']->contains(77), "File 2 contains 77");
         $this->assertFalse(
