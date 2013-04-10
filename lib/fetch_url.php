@@ -249,7 +249,7 @@ class FetchUrl implements CrawlConstants
                 $len = strlen(inet_pton($ip_address));
                 if($len == 4 || $len == 16) {
                     if($len == 16) {
-                        $ip_address= "[$ip_address]";
+                      $ip_address= "[$ip_address]";
                     }
                     if(count($url_ip_parts) > 1) {
                         $url = implode("###", $url_ip_parts);
@@ -467,9 +467,20 @@ class FetchUrl implements CrawlConstants
      */
     static function getCurlIp($header)
     {
-        if (preg_match_all('/Trying\s+(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\b/',
+        if (preg_match_all('/Trying\s+(.*)\b/',
             $header, $matches)) {
-            return array_unique($matches[1]);
+            $out_addresses = array();
+            $addresses = array_unique($matches[1]);
+            foreach($addresses as $address) {
+                $num = @inet_pton($address);
+                if($num !== false) {
+                    $out_addresses[] = $address;
+                }
+            }
+            if($out_addresses != array()) {
+                return $out_addresses;
+            }
+            return false;
         } else {
             return false;
         }

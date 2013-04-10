@@ -99,7 +99,6 @@ class HtmlProcessor extends TextProcessor
                 $summary = parent::process($page, $url);
             }
         }
-
         return $summary;
 
     }
@@ -368,8 +367,9 @@ class HtmlProcessor extends TextProcessor
                 if($rel == "" || !stristr($rel, "nofollow")) {
                     $url = UrlParser::canonicalLink(
                         $href->getAttribute('href'), $site);
+                    $len = strlen($url);
                     if(!UrlParser::checkRecursiveUrl($url)  &&
-                        strlen($url) < MAX_URL_LENGTH) {
+                        strlen($url) < MAX_URL_LENGTH && $len > 4) {
                         if(isset($sites[$url])) {
                             $sites[$url] .=" .. ".
                                 strip_tags($href->textContent);
@@ -389,9 +389,10 @@ class HtmlProcessor extends TextProcessor
             if($i < MAX_LINKS_TO_EXTRACT) {
                 $url = UrlParser::canonicalLink(
                     $frame->getAttribute('src'), $site);
+                $len = strlen($url);
 
                 if(!UrlParser::checkRecursiveUrl($url)
-                    && strlen($url) < MAX_URL_LENGTH) {
+                    && $len < MAX_URL_LENGTH && $len > 4) {
                     if(isset($sites[$url]) ) {
                         $sites[$url] .=" .. HTMLframe";
                     } else {
@@ -415,8 +416,9 @@ class HtmlProcessor extends TextProcessor
 
                 $url = UrlParser::canonicalLink(
                     $img->getAttribute('src'), $site);
+                $len = strlen($url);
                 if(!UrlParser::checkRecursiveUrl($url)
-                    && strlen($url) < MAX_URL_LENGTH) {
+                    && $len < MAX_URL_LENGTH && $len > 4) {
                     if(isset($sites[$url]) ) {
                         $sites[$url] .=" .. ".$alt;
                     } else {

@@ -1360,7 +1360,9 @@ class Fetcher implements CrawlConstants
 
         foreach($site_pages as $site) {
             $response_code = $site[self::HTTP_CODE];
+            $was_error = false;
             if($response_code < 200 || $response_code >= 300) {
+                $was_error = true;
                 crawlLog($site[self::URL]." response code $response_code");
                 $host = UrlParser::getHost($site[self::URL]);
                 if(!isset($this->hosts_with_errors[$host])) {
@@ -1376,11 +1378,14 @@ class Fetcher implements CrawlConstants
                    this makes sure we don't crawl it again
                 */
             }
-
             // text/robot is my made up mimetype for robots.txt files
             if(isset($site[self::ROBOT_PATHS])) {
                 $site[self::GOT_ROBOT_TXT] = true;
-                $type = "text/robot";
+                if(!$was_error) {
+                    $type = "text/robot";
+                } else {
+                    $type = $site[self::TYPE];
+                }
             } else {
                 $type = $site[self::TYPE];
             }
@@ -1417,6 +1422,8 @@ class Fetcher implements CrawlConstants
                     $text_data =false;
                 }
             } else {
+                crawlLog("No page processor for mime type: ".$type);
+                crawlLog("Not processing: ".$site[self::URL]);
                 continue;
             }
             if(!$handled) {
@@ -1508,7 +1515,7 @@ class Fetcher implements CrawlConstants
                 if(isset($doc_info[self::CRAWL_DELAY])) {
                     $site[self::CRAWL_DELAY] = $doc_info[self::CRAWL_DELAY];
                 }
-                if(isset($doc_info[self::ROBOT_PATHS])) {
+                if(isset($doc_info[self::ROBOT_PATHS]) && !$was_error) {
                     $site[self::ROBOT_PATHS] = $doc_info[self::ROBOT_PATHS];
                 }
                 if(!isset($site[self::ROBOT_METAS])) {

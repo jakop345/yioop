@@ -1984,7 +1984,7 @@ class SearchController extends Controller implements CrawlConstants
                     $url_encoded = urlencode($arr[3]);
                     $link_text = $dom->createTextNode("$arr[0] $arr[1] ".
                             "$arr[2]");
-                    $link = $this->baseAddress."&a=cache&".
+                    $link = $this->baseLink()."&a=cache&".
                         "q=$terms&arg=$url_encoded&its=$arr[4]&hist_open=true";
                     $link_dom = $dom->createElement("a");
                         $link_dom->setAttributeNS("", "href", $link);

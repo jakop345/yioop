@@ -161,8 +161,9 @@ class PptxProcessor extends TextProcessor
 
                 $url = UrlParser::canonicalLink(
                     $hlink, $site);
+                $len = strlen($url);
                 if(!UrlParser::checkRecursiveUrl($url)  &&
-                    strlen($url) < MAX_URL_LENGTH) {
+                    strlen($url) < MAX_URL_LENGTH && $len > 0) {
                     if(isset($sites[$url])) {
                         $sites[$url] .= " ".$hlink;
                     } else {

@@ -1719,11 +1719,19 @@ class QueueServer implements CrawlConstants, Join
             }
             foreach($to_crawl_sites as $triple) {
                 $url = & $triple[0];
-                if(strlen($url) < 7) continue; // strlen("http://")
+                if(strlen($url) < 7) { // strlen("http://")
+                    continue; 
+                }
+                if($url[0] != 'h' && trim($url) == "localhost") {
+                    $url = "http://localhost/";
+                }
                 $weight = $triple[1];
                 $this->web_queue->addSeenUrlFilter($triple[2]); //add for dedup
                 unset($triple[2]); // so triple is now a pair
                 $host_url = UrlParser::getHost($url);
+                if(strlen($host_url) < 7) { // strlen("http://")
+                    continue; 
+                }
                 $host_with_robots = $host_url."/robots.txt";
                 $robots_in_queue =
                     $this->web_queue->containsUrlQueue($host_with_robots);
@@ -1928,7 +1936,7 @@ class QueueServer implements CrawlConstants, Join
             // if queue error remove entry any loop
             if($tmp === false || strcmp($url, "LOOKUP ERROR") == 0) {
                 $delete_urls[$i] = $url;
-                crawlLog("Removing lookup error index during produce fetch");
+                crawlLog("Removing lookup error for $url during produce fetch");
                 $i++;
                 continue;
             }
