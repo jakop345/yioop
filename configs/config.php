@@ -257,13 +257,15 @@ define('MAX_ARCHIVE_OBJECT_SIZE', 100000000);
 /**
  * Code to determine how much memory current machine has
  */
+$memory = 4000000000; //assume have at least 4GB on a Mac nowadays
 if(strstr(PHP_OS, "WIN")) {
     exec('wmic memorychip get capacity', $memory_array);
     $memory = array_sum($memory_array);
-} else {
-    exec('free -m', $memory);
-    $memory = intval($memory);
+} else if(stristr(PHP_OS, "LINUX")) {
+    $data = preg_split("/\s+/", file_get_contents("/proc/meminfo"));
+    $memory = 1024 * intval($data[1]);
 }
+
 /**
  *  Factor to multiply sizes of Yioop data structures with in low ram memory
  *  setting (2GB)
@@ -283,8 +285,9 @@ if($memory < 2000000000) {
     /**
      * @ignore
      */
-    define('MEMORY_PROFILE', MEMORY_HIGH);
+    define('MEMORY_PROFILE', MEMORY_STANDARD);
 }
+
 /**
  * bloom filters are used to keep track of which urls are visited,
  * this parameter determines up to how many
