@@ -246,43 +246,73 @@ define('MAXIMUM_CRAWL_DELAY', 64);
 /** maximum number of active crawl-delayed hosts */
 define('MAX_WAITING_HOSTS', 250);
 
+/** Minimum weight in priority queue before rebuilt */
+define('MIN_QUEUE_WEIGHT', 1/100000);
 
+/**  largest sized object allowed in a web archive (used to sanity check
+     reading data out of a web archive)
+*/
+define('MAX_ARCHIVE_OBJECT_SIZE', 100000000);
+
+/**
+ * Code to determine how much memory current machine has
+ */
+if(strstr(PHP_OS, "WIN")) {
+    exec('wmic memorychip get capacity', $memory_array);
+    $memory = array_sum($memory_array);
+} else {
+    exec('free -m', $memory);
+    $memory = intval($memory);
+}
+/**
+ *  Factor to multiply sizes of Yioop data structures with in low ram memory
+ *  setting (2GB)
+ */
+define('MEMORY_LOW', 1);
+/**
+ *  Factor to multiply sizes of Yioop data structures with if have more than
+ * (2GB)
+ */
+define('MEMORY_STANDARD', 4);
+if($memory < 2000000000) {
+    /**
+     *  Based on system memory, either the low or high memory factor
+     */
+    define('MEMORY_PROFILE', MEMORY_LOW);
+} else {
+    /**
+     * @ignore
+     */
+    define('MEMORY_PROFILE', MEMORY_HIGH);
+}
 /**
  * bloom filters are used to keep track of which urls are visited,
  * this parameter determines up to how many
  * urls will be stored in a single filter. Additional filters are
  * read to and from disk.
  */
-define('URL_FILTER_SIZE', 20000000);
+define('URL_FILTER_SIZE', MEMORY_PROFILE * 5000000);
 
 /**
  * maximum number of urls that will be held in ram
  * (as opposed to in files) in the priority queue
  */
-define('NUM_URLS_QUEUE_RAM', 300000);
-
-/** Minimum weight in priority queue before rebuilt */
-define('MIN_QUEUE_WEIGHT', 1/100000);
-
-/**  largest sized object allowedin a web archive (used to sanity check
-     reading data out of a web archive)
-*/
-define('MAX_ARCHIVE_OBJECT_SIZE', 100000000);
+define('NUM_URLS_QUEUE_RAM', MEMORY_PROFILE * 80000);
 
 /** number of documents before next gen */
-define('NUM_DOCS_PER_GENERATION', 50000);
+define('NUM_DOCS_PER_GENERATION', MEMORY_PROFILE *10000);
 
 /** precision to round floating points document scores */
 define('PRECISION', 10);
 
 /** maximum number of links to extract from a page on an initial pass*/
-define('MAX_LINKS_TO_EXTRACT', 300);
+define('MAX_LINKS_TO_EXTRACT', MEMORY_PROFILE * 80);
 
 /** maximum number of links to keep after initial extraction*/
 define('MAX_LINKS_PER_PAGE', 50);
 
 /** maximum number of links to consider from a sitemap page */
-define('MAX_LINKS_PER_SITEMAP', 300);
+define('MAX_LINKS_PER_SITEMAP', MEMORY_PROFILE * 80);
 
 /**  maximum number of words from links to consider on any given page */
 define('MAX_LINKS_WORD_TEXT', 100);
@@ -316,14 +346,6 @@ define('NUM_MULTI_CURL_PAGES', 100);
 
 /** number of pages to extract from an archive in one go */
 define('ARCHIVE_BATCH_SIZE', 100);
-
-/**
- *  Time in seconds to wait to acquire an exclusive lock before we're no longer
- *  allowed to extract the next batch of pages for an archive crawl. This is
- *  intended to prevent a fetcher from waiting to acquire the lock, then
- *  getting it just before cURL gives up and times out the request.
- */
-define('ARCHIVE_LOCK_TIMEOUT', 8);
 
 /** time in seconds before we give up on multi page requests*/
 define('PAGE_TIMEOUT', 30);
@@ -459,7 +481,9 @@ define ('EN_RATIO', 0.9);
 /** Number of total description deemed title */
 define ('AD_HOC_TITLE_LENGTH', 10);
 
-/** Used to say number of bytes in histogram bar for file download sizes*/
+/** Used to say number of bytes in histogram bar (stats page) for file 
+    download sizes
+ */
 define('DOWNLOAD_SIZE_INTERVAL', 5000);
 
 /** Used to say number of secs in histogram bar for file download times*/
@@ -469,10 +493,10 @@ define('DOWNLOAD_TIME_INTERVAL', 0.5);
  * How many non robot urls the fetcher successfully downloads before
  * between times data sent back to queue server
  */
-define ('SEEN_URLS_BEFORE_UPDATE_SCHEDULER', 500);
+define ('SEEN_URLS_BEFORE_UPDATE_SCHEDULER', MEMORY_PROFILE * 100);
 
 /** maximum number of urls to schedule to a given fetcher in one go */
-define ('MAX_FETCH_SIZE', 5000);
+define ('MAX_FETCH_SIZE', MEMORY_PROFILE * 1000);
 
 /** fetcher must wait at least this long between multi-curl requests */
 define ('MINIMUM_FETCH_LOOP_TIME', 5);
