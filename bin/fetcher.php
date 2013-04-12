@@ -2182,7 +2182,7 @@ class Fetcher implements CrawlConstants
                         $info[self::STATUS] == self::REDO_STATE) {
                         crawlLog("Server requested last item to be re-sent...");
                         if(isset($info[self::SUMMARY])) {
-                            crawLog($info[self::SUMMARY]);
+                            crawlLog($info[self::SUMMARY]);
                         }
                         crawlLog("Trying again in 5 seconds...");
                     } else {
