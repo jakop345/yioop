@@ -2153,7 +2153,7 @@ class Fetcher implements CrawlConstants
         $post_data['fetcher_peak_memory'] = memory_get_peak_usage();
         $post_data['byte_counts'] = webencode(serialize($byte_counts));
         $len = strlen($post_data['data']);
-        $max_len = $this->post_max_size - 1024; // non-data post vars < 1K
+        $max_len = $this->post_max_size - 10*1024; // non-data post vars < 10K
         $post_data['num_parts'] = ceil($len/$max_len);
         $num_parts = $post_data['num_parts'];
         $data = & $post_data['data'];
