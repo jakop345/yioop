@@ -2192,7 +2192,7 @@ class Fetcher implements CrawlConstants
                             crawlLog("Using smaller post size to see if helps");
                             define('FORCE_SMALL', true);
                             $this->post_max_size = 1000000;
-                            $info[self::POST_MAX_SIZE] = 1000000;
+                            $info[self::POST_MAX_SIZE] = 1000001;
                             /* set to small value before try again.
                              */
                         }
@@ -2211,13 +2211,14 @@ class Fetcher implements CrawlConstants
                     crawlLog("Messages from Fetch Controller:");
                     crawlLog($info[self::LOGGING]);
                 }
-                if(!defined('FORCE_SMALL') && 
-                    isset($info[self::POST_MAX_SIZE]) &&
+                if(isset($info[self::POST_MAX_SIZE]) &&
                     $this->post_max_size != $info[self::POST_MAX_SIZE]) {
                     crawlLog("post_max_size has changed was ".
                         "{$this->post_max_size}. Now is ".
                         $info[self::POST_MAX_SIZE].".");
-                    $this->post_max_size = $info[self::POST_MAX_SIZE];
+                    if(!defined('FORCE_SMALL')) {
+                        $this->post_max_size = $info[self::POST_MAX_SIZE];
+                    }
                     if($max_len > $this->post_max_size) {
                         crawlLog("Restarting upload...");
                         if(isset($post_data["resized_once"])) {
