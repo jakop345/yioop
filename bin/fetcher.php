@@ -1362,7 +1362,6 @@ class Fetcher implements CrawlConstants
             $response_code = $site[self::HTTP_CODE];
             $was_error = false;
             if($response_code < 200 || $response_code >= 300) {
-                $was_error = true;
                 crawlLog($site[self::URL]." response code $response_code");
                 $host = UrlParser::getHost($site[self::URL]);
                 if(!isset($this->hosts_with_errors[$host])) {
@@ -1371,6 +1370,7 @@ class Fetcher implements CrawlConstants
                 if($response_code >= 400 || $response_code < 100) {
                     // < 100 will capture failures to connect which are returned
                     // as strings
+                    $was_error = true;
                     $this->hosts_with_errors[$host]++;
                 }
                 /* we print out errors to std output. We still go ahead and

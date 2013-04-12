@@ -257,7 +257,7 @@ define('MAX_ARCHIVE_OBJECT_SIZE', 100000000);
 /**
  * Code to determine how much memory current machine has
  */
-$memory = 4000000000; //assume have at least 4GB on a Mac nowadays
+$memory = 4000000000; //assume have at least 4GB on a Mac (could use vm_stat)
 if(strstr(PHP_OS, "WIN")) {
     exec('wmic memorychip get capacity', $memory_array);
     $memory = array_sum($memory_array);

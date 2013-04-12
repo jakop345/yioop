@@ -101,6 +101,8 @@ class FetchUrl implements CrawlConstants
                     curl_setopt($sites[$i][0], CURLOPT_VERBOSE, true);
                 }
                 curl_setopt($sites[$i][0], CURLOPT_USERAGENT, USER_AGENT);
+                curl_setopt($sites[$i][0], CURLOPT_IPRESOLVE,
+                    CURL_IPRESOLVE_V4);
                 curl_setopt($sites[$i][0], CURLOPT_URL, $url);
                 if(strcmp(substr($url,-10), "robots.txt") == 0 ) {
                     $follow = true; /*wikipedia redirects their robot page. grr
@@ -467,7 +469,7 @@ class FetchUrl implements CrawlConstants
      */
     static function getCurlIp($header)
     {
-        if (preg_match_all('/Trying\s+(.*)\b/',
+        if (preg_match_all('/Trying\s+(.*)(\b|\.\.\.)/',
             $header, $matches)) {
             $out_addresses = array();
             $addresses = array_unique($matches[1]);
