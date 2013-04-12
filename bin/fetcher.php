@@ -2185,6 +2185,17 @@ class Fetcher implements CrawlConstants
                             crawlLog($info[self::SUMMARY]);
                         }
                         crawlLog("Trying again in 5 seconds...");
+                        if($i == 1) { 
+                            /* maybe server has limited memory
+                               and two high a post_max_size
+                             */
+                            crawlLog("Using smaller post size to see if helps");
+                            $post_data['force_small'] =true;
+                            $this->post_max_size = 1000000;
+                            $info[self::POST_MAX_SIZE] = 1000000;
+                            /* set to small value before try again.
+                             */
+                        }
                     } else {
                         crawlLog("Trying again in 5 seconds. You might want");
                         crawlLog("to check the queue server url and server");
@@ -2200,7 +2211,8 @@ class Fetcher implements CrawlConstants
                     crawlLog("Messages from Fetch Controller:");
                     crawlLog($info[self::LOGGING]);
                 }
-                if(isset($info[self::POST_MAX_SIZE]) &&
+                if(!isset($post_data['force_small']) && 
+                    isset($info[self::POST_MAX_SIZE]) &&
                     $this->post_max_size != $info[self::POST_MAX_SIZE]) {
                     crawlLog("post_max_size has changed was ".
                         "{$this->post_max_size}. Now is ".

@@ -501,7 +501,7 @@ class FetchUrl implements CrawlConstants
     {
         static $agents = array();
         $MAX_SIZE = 50;
-        $host = @parse_url($site,PHP_URL_HOST);
+        $host = @parse_url($site, PHP_URL_HOST);
         if($host !== false) {
             if(count($agents) > $MAX_SIZE) {
                 array_shift($agents);

@@ -496,7 +496,7 @@ define('DOWNLOAD_TIME_INTERVAL', 0.5);
  * How many non robot urls the fetcher successfully downloads before
  * between times data sent back to queue server
  */
-define ('SEEN_URLS_BEFORE_UPDATE_SCHEDULER', MEMORY_PROFILE * 100);
+define ('SEEN_URLS_BEFORE_UPDATE_SCHEDULER', MEMORY_PROFILE * 95);
 
 /** maximum number of urls to schedule to a given fetcher in one go */
 define ('MAX_FETCH_SIZE', MEMORY_PROFILE * 1000);
