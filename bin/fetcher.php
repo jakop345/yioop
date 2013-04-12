@@ -2213,11 +2213,13 @@ class Fetcher implements CrawlConstants
                 }
                 if(isset($info[self::POST_MAX_SIZE]) &&
                     $this->post_max_size != $info[self::POST_MAX_SIZE]) {
-                    crawlLog("post_max_size has changed was ".
-                        "{$this->post_max_size}. Now is ".
-                        $info[self::POST_MAX_SIZE].".");
                     if(!defined('FORCE_SMALL')) {
+                        crawlLog("post_max_size has changed was ".
+                            "{$this->post_max_size}. Now is ".
+                            $info[self::POST_MAX_SIZE].".");
                         $this->post_max_size = $info[self::POST_MAX_SIZE];
+                    } else {
+                        crawlLog("...Using Force Small Rule on Server Posting");
                     }
                     if($max_len > $this->post_max_size) {
                         crawlLog("Restarting upload...");
