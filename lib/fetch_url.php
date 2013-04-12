@@ -469,7 +469,7 @@ class FetchUrl implements CrawlConstants
      */
     static function getCurlIp($header)
     {
-        if (preg_match_all('/Trying\s+(.*)(\b|\.\.\.)/',
+        if (preg_match_all('/Trying\s+(.*)(\.\.\.)/',
             $header, $matches)) {
             $out_addresses = array();
             $addresses = array_unique($matches[1]);
