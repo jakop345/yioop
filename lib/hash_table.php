@@ -318,12 +318,9 @@ class HashTable extends StringArray
      */
     function hash($key)
     {
-        $hash = substr(md5($key, true), 0, 4);
-        $seed = unpackInt($hash);
-
-        mt_srand($seed);
-        $index = mt_rand(0, $this->num_values - 1);
-
+        $hash = substr(md5($key, true), 0, 3);
+        $pre_index = unpackInt($hash);
+        $index = floor($pre_index * $this->num_values/(2 << 23));
         return $index;
     }
 

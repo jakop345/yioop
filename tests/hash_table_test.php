@@ -187,18 +187,18 @@ class HashTableTest extends UnitTest
             $index, $index2, "Index of reinserted should not change");
 
         $this->assertTrue(
-            $this->test_objects['FILE2']->insert(crawlHash("hi4",true), "8"),
-            "Item hi4 which collides with hi7 insert okay");
+            $this->test_objects['FILE2']->insert(crawlHash("hi11",true), "8"),
+            "Item hi11 which collides with hi7 insert okay");
         $this->assertTrue(
             $this->test_objects['FILE2']->lookup(
-                crawlHash("hi4",true), HashTable::ALWAYS_RETURN_PROBE),
-                $index2 + 1, "Item hi4 located one after hi7");
+                crawlHash("hi11",true), HashTable::ALWAYS_RETURN_PROBE),
+                $index2 + 1, "Item hi11 located one after hi7");
         $this->test_objects['FILE2']->delete(crawlHash("hi7",true));
         $this->assertTrue(
             $this->test_objects['FILE2']->lookup(
-                crawlHash("hi4",true), true), $index2 + 1,
-            "Item hi4 looked up succeed after hi7 deleted");
-        $this->test_objects['FILE2']->delete(crawlHash("hi4",true));
+                crawlHash("hi11",true), true), $index2 + 1,
+            "Item hi11 looked up succeed after hi7 deleted");
+        $this->test_objects['FILE2']->delete(crawlHash("hi11",true));
         $this->test_objects['FILE2']->insert(crawlHash("hi7",true), "7");
         $this->assertEqual(
             $this->test_objects['FILE2']->lookup(

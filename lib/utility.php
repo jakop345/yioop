@@ -1082,6 +1082,4 @@ function general_is_a($class_1, $class_2)
     if($class_1 == $class_2) return true;
     return (is_a($class_1, $class_2) || is_subclass_of($class_1, $class_2));
 }
-
-
 ?>
