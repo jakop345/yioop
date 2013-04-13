@@ -141,7 +141,8 @@ class PageOptionsElement extends Element
         </tr></table>
             <div class="top-margin"><b><?php
                 e(tl("pageoptions_element_indexing_plugins"));?></b></div>
-        <?php if(isset($data['INDEXING_PLUGINS'])) { ?>
+        <?php if(isset($data['INDEXING_PLUGINS']) && 
+            count($data['INDEXING_PLUGINS']) > 0) { ?>
             <table class="indexing-plugin-table">
                 <tr><th><?php e(tl('pageoptions_element_plugin'));
                                   ?></th>
