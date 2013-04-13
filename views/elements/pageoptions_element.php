@@ -139,10 +139,9 @@ class PageOptionsElement extends Element
             }
         ?>
         </tr></table>
-        <?php if(isset($data['INDEXING_PLUGINS'])) {
-        ?>
             <div class="top-margin"><b><?php
                 e(tl("pageoptions_element_indexing_plugins"));?></b></div>
+        <?php if(isset($data['INDEXING_PLUGINS'])) { ?>
             <table class="indexing-plugin-table">
                 <tr><th><?php e(tl('pageoptions_element_plugin'));
                                   ?></th>
@@ -166,6 +165,9 @@ class PageOptionsElement extends Element
             ?>
             </table>
         <?php
+        } else {
+            e("<p class='red'>".
+                tl('pageoptions_element_no_compatible_plugins')."</p>");
         } ?>
         <div class="top-margin"><label for="page-rules"><b><?php
             e(tl('pageoptions_element_page_rules'));?></b></label>

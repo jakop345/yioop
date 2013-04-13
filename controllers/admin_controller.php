@@ -1558,7 +1558,6 @@ class AdminController extends Controller implements CrawlConstants
             (isset($seed_info['indexing_plugins']['plugins'])) ?
                 $seed_info['indexing_plugins']['plugins']
                 : array();
-
         foreach($this->indexing_plugins as $plugin) {
             $plugin_name = ucfirst($plugin);
             $data['INDEXING_PLUGINS'][$plugin_name] =
