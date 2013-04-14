@@ -111,7 +111,7 @@ function elt(id)
 }
 
 /*
- *  Shorthand for document.getElementByTagName()
+ *  Shorthand for document.getElementsByTagName()
  *
  *  @param String name the name of the DOM element one wants
  */

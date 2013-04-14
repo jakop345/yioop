@@ -506,7 +506,7 @@ class Fetcher implements CrawlConstants
                 crawlLog("MAIN LOOP CASE 2 -- ARCHIVE SCHEDULER (NOT RECRAWL)");
                 $info = $this->checkArchiveScheduler();
                 if($info === false) {
-                    crawlLog("Cannot connect to name server...".
+                    crawlLog("No Archive Schedule Data...".
                         " will try again in ".FETCH_SLEEP_TIME." seconds.");
                     sleep(FETCH_SLEEP_TIME);
                     continue;

@@ -1057,7 +1057,8 @@ class SearchController extends Controller implements CrawlConstants
     function markChildren($node, $words, $dom)
     {
 
-        if(!isset($node->childNodes->length)) {
+        if(!isset($node->childNodes->length) || 
+            get_class($node) != 'DOMElement') {
             return $node;
         }
         for($k = 0; $node->childNodes->length; $k++)  {
@@ -1104,12 +1105,12 @@ class SearchController extends Controller implements CrawlConstants
      */
     function canonicalizeLinks($node, $url)
     {
-        if(!isset($node->childNodes->length)) {
+        if(!isset($node->childNodes->length) || 
+            get_class($node) != 'DOMElement') {
             return $node;
         }
-        for($k = 0; $node->childNodes->length; $k++) {
+        for($k = 0; $k < $node->childNodes->length; $k++) {
             if(!$node->childNodes->item($k)) { break; }
-
             $clone = $node->childNodes->item($k)->cloneNode(true);
             $tag_name = (isset($clone->tagName) ) ? $clone->tagName : "-1";
             if(in_array($tag_name, array("a", "link"))) {
@@ -1440,7 +1441,11 @@ class SearchController extends Controller implements CrawlConstants
         if(isset($crawl_item[self::KEYWORD_LINKS])) {
             $cache_item[self::KEYWORD_LINKS] = $crawl_item[self::KEYWORD_LINKS];
         }
-        if(in_array('yioop_nav', $ui_flags)) {
+
+        if(in_array('yioop_nav', $ui_flags) && !(isset($_SERVER['_']) &&
+            stristr($_SERVER['_'], 'hhvm')) || //HipHop and Dom cause problems
+            (isset($_SERVER['SERVER_SOFTWARE']) && 
+            $_SERVER['SERVER_SOFTWARE'] == "HPHP"))) {
             $newDoc = $this->formatCachePage($cache_item, $cache_file, $url,
                 $summary_string, $crawl_time, $all_crawl_times, $terms,
                 $ui_flags);
@@ -1576,8 +1581,6 @@ class SearchController extends Controller implements CrawlConstants
         }
         $dom->encoding = "UTF-8"; // insert proper
 
-        $xpath = new DOMXPath($dom);
-
         $head = $dom->getElementsByTagName('head')->item(0);
 
         if(is_object($head)) {
@@ -1592,9 +1595,7 @@ class SearchController extends Controller implements CrawlConstants
             $comment = $head->insertBefore($comment, $robot_node);
             // make link and script links absolute
             $head = $this->canonicalizeLinks($head, $url);
-        }
-        $body =  $dom->getElementsByTagName('body')->item(0);
-        if($body == false) {
+        } else {
             $body_tags = "<frameset><frame><noscript><img><span><b><i><em>".
                 "<strong><h1><h2><h3><h4><h5><h6><p><div>".
                 "<a><table><tr><td><th><dt><dir><dl><dd>";
@@ -1603,8 +1604,8 @@ class SearchController extends Controller implements CrawlConstants
                 "<body>".$cache_file."</body></html>";
             $dom = new DOMDocument();
             @$dom->loadHTML($cache_file);
-            $body =  $dom->getElementsByTagName('body')->item(0);
         }
+        $body =  $dom->getElementsByTagName('body')->item(0);
         //make tags in body absolute
         $body = $this->canonicalizeLinks($body, $url);
         $first_child = $body->firstChild;
