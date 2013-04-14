@@ -1442,8 +1442,8 @@ class SearchController extends Controller implements CrawlConstants
             $cache_item[self::KEYWORD_LINKS] = $crawl_item[self::KEYWORD_LINKS];
         }
 
-        if(in_array('yioop_nav', $ui_flags) && !(isset($_SERVER['_']) &&
-            stristr($_SERVER['_'], 'hhvm')) || //HipHop and Dom cause problems
+        if(in_array('yioop_nav', $ui_flags) && !((isset($_SERVER['_']) &&
+            stristr($_SERVER['_'], 'hhvm')) || 
             (isset($_SERVER['SERVER_SOFTWARE']) && 
             $_SERVER['SERVER_SOFTWARE'] == "HPHP"))) {
             $newDoc = $this->formatCachePage($cache_item, $cache_file, $url,
