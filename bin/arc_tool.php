@@ -844,10 +844,6 @@ php arc_tool.php dict bundle_name word
 php arc_tool.php info bundle_name
     // return info about documents stored in archive.
 
-php arc_tool.php shard bundle_name generation
-    /* Prints information about the number of words and frequencies of words
-       within the generation'th index shard in the bundle */
-
 php arc_tool.php list
     /* returns a list of all the archives in the Yioop! crawl directory,
        including non-Yioop! archives in the cache/archives sub-folder.*/
@@ -863,6 +859,10 @@ php arc_tool.php posting bundle_name generation offset num
 
 php arc_tool.php reindex bundle_name
     // reindex the word dictionary in bundle_name
+
+php arc_tool.php shard bundle_name generation
+    /* Prints information about the number of words and frequencies of words
+       within the generation'th index shard in the bundle */
 
 php arc_tool.php show bundle_name start num
     /* outputs items start through num from bundle_name or name of

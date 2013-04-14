@@ -91,11 +91,14 @@ class CrawlModel extends ParallelModel implements CrawlConstants
         $time = time();
         $session = md5($time . AUTH_KEY);
         if($machine == '::1') { //IPv6 :(
-            $machine = "[::1]/";
+            $machine = "[::1]";
             //used if the fetching and queue serving were on the same machine
         }
-        $request = "http://$machine$machine_uri?c=archive&a=cache&time=$time".
-            "&session=$session&partition=$partition&offset=$offset".
+        // we assume all machines use the same scheme & port of the name server
+        $port = UrlParser::getPort(NAME_SERVER);
+        $scheme = UrlParser::getScheme(NAME_SERVER);
+        $request = "$scheme://$machine:$port$machine_uri?c=archive&a=cache&".
+            "time=$time&session=$session&partition=$partition&offset=$offset".
             "&crawl_time=$crawl_time";
         if($instance_num !== false) {
             $request .= "&instance_num=$instance_num";

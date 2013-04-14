@@ -150,6 +150,32 @@ class UrlParser
     }
 
     /**
+     * Get the port number of a url if present; if not return 80
+     * @return int a port number
+     */
+    static function getPort($url)
+    {
+        $url_parts = @parse_url($url);
+        if(isset($url_parts['port'])) {
+            return $url_parts['port'];
+        }
+        return 80;
+    }
+
+    /**
+     * Get the scheme of a url if present; if not return http
+     * @return int a port number
+     */
+    static function getScheme($url)
+    {
+        $url_parts = @parse_url($url);
+        if(isset($url_parts['scheme'])) {
+            return $url_parts['scheme'];
+        }
+        return "http";
+    }
+
+    /**
      *  Attempts to guess the language tag based on url
      *
      *  @param string $url the url to parse
