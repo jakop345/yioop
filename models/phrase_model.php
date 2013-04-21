@@ -747,6 +747,9 @@ class PhraseModel extends ParallelModel
             }
             $phrase = $letter." ".$phrase;
         }
+        if(substr($phrase, 0, 7) == 'mimetyp') {
+            $phrase = 'mime';
+        }
 
         return $phrase;
     }
@@ -1006,7 +1009,7 @@ class PhraseModel extends ParallelModel
                                 $score++;
                             }
                         }
-                        $pages[$i]["OUT_SCORE"] += $alpha/(60 + $score);
+                        $pages[$i]["OUT_SCORE"] += $alpha/(59 + $score);
                     }
                 }
                 orderCallback($pages[0], $pages[0], "OUT_SCORE");

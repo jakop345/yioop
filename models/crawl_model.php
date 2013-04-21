@@ -592,11 +592,11 @@ EOT;
                     "extensions")
             );
             foreach($updatable_site_info as $type => $info) {
-                if(isset($new_info[$type])) {
+                if(isset($new_info[$type][$info[1]])) {
                     $index_info[$info[0]] = $new_info[$type][$info[1]];
                 }
             }
-            if(isset($new_info['indexing_plugins']) ) {
+            if(isset($new_info['indexing_plugins']['plugins']) ) {
                 $index_info[self::INDEXING_PLUGINS] =
                     $new_info['indexing_plugins']['plugins'];
             }

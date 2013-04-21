@@ -314,6 +314,9 @@ define('MAX_LINKS_TO_EXTRACT', MEMORY_PROFILE * 80);
 /** maximum number of links to keep after initial extraction*/
 define('MAX_LINKS_PER_PAGE', 50);
 
+/** Estimate of the average number of links per page a document has*/
+define('AVG_LINKS_PER_PAGE', 24);
+
 /** maximum number of links to consider from a sitemap page */
 define('MAX_LINKS_PER_SITEMAP', MEMORY_PROFILE * 80);
 

@@ -308,9 +308,12 @@ class HtmlProcessor extends TextProcessor
     }
 
     /**
-     * @param object $dom
-     * @param string $site
-     * @return string
+     * Extracts are location of refresh urls from the meta tags of html page
+     * in site
+     *
+     * @param object $dom document object version of web page
+     * @param string $site string version of page
+     * @return mixed refresh or location url if found, false otherwise
      */
     static function location($dom, $site)
     {

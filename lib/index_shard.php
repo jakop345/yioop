@@ -608,9 +608,9 @@ class IndexShard extends PersistentStructure implements
         list($doc_index, $position_list) =
             unpackPosting($posting, $offset);
         $item[self::POSITION_LIST] = $position_list;
-        $doc_depth = log(10*(($doc_index +1) +
-            $this->num_docs_per_generation*$this->generation), 10);
-        $item[self::DOC_RANK] = number_format(11 - $doc_depth, PRECISION);
+        $doc_depth = log(($doc_index + 1) + (AVG_LINKS_PER_PAGE + 1) *
+            $this->num_docs_per_generation * $this->generation, 10);
+        $item[self::DOC_RANK] = number_format(10 - $doc_depth, PRECISION);
 
         $doc_loc = $doc_index << 4;
 

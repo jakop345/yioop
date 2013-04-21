@@ -453,7 +453,7 @@ class UrlParser
             return "";
         }
         $host = $url_parts['host'];
-        $host_parts = explode(".", $host);
+        $host_parts = preg_split("/\.|\-/", $host);
         if(count($host_parts) <= 1) {
             return "";
         }
