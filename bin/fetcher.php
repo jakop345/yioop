@@ -1895,8 +1895,8 @@ class Fetcher implements CrawlConstants
                     "UrlParser::getHost");
                 if($from_sitemap) {
                     $this->found_sites[self::TO_CRAWL][$part][] =
-                        array($url,  $old_weight * $square_factor *
-                            $sitemap_link_weight / (($i+1)*($i+1)),
+                        array($url,  $old_weight * $sitemap_link_weight / 
+                        (($i+1)*($i+1) * $square_factor),
                             $site_hash.$i);
                 } else if ($this->crawl_order == self::BREADTH_FIRST) {
                     $this->found_sites[self::TO_CRAWL][$part][] =
