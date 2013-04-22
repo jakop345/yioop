@@ -1864,28 +1864,24 @@ class Fetcher implements CrawlConstants
     {
         $sitemap_link_weight = 0.25;
         $num_links = count($link_urls);
-        if($num_links > 0 ) {
-            $weight= $old_weight/$num_links;
-        } else {
-            $weight= $old_weight;
-        }
         $num_queue_servers = count($this->queue_servers);
         if($from_sitemap) {
-            $total_weight = 0;
+            $square_factor = 0;
             for($i = 1; $i <= $num_links; $i++) {
-                $total_weight += $old_weight/($i*$i);
+                $square_factor += 1/($i*$i);
             }
-            $total_weight = $total_weight ;
         } else if ($this->crawl_order != self::BREADTH_FIRST) {
             $num_common =
                 $this->countCompanyLevelDomainsInCommon($old_url, $link_urls);
-            if($num_common > 0 ) {
-                $common_weight = 1/(2*$num_common);
-            }
-
             $num_different = $num_links - $num_common;
+            if($num_common > 0 && $num_different > 0) {
+                $common_weight = $old_weight/(2*$num_links);
+            } else if($num_common > 0) {
+                $common_weight = $old_weight/($num_links);
+            }
+            $remaining_weight = $old_weight - $common_weight * $num_common;
             if($num_different > 0 ) {
-                $different_weight = 1/$num_different;
+                $different_weight = $remaining_weight/$num_different;
                     //favour links between different company level domains
             }
 
@@ -1899,8 +1895,8 @@ class Fetcher implements CrawlConstants
                     "UrlParser::getHost");
                 if($from_sitemap) {
                     $this->found_sites[self::TO_CRAWL][$part][] =
-                        array($url,  $old_weight* $sitemap_link_weight /
-                            (($i+1)*($i+1)*$total_weight),
+                        array($url,  $old_weight * $square_factor *
+                            $sitemap_link_weight / (($i+1)*($i+1)),
                             $site_hash.$i);
                 } else if ($this->crawl_order == self::BREADTH_FIRST) {
                     $this->found_sites[self::TO_CRAWL][$part][] =
