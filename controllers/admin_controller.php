@@ -160,6 +160,8 @@ class AdminController extends Controller implements CrawlConstants
         }
         if($view == 'signin') {
             unset($_SESSION['USER_ID']);
+            $data[CSRF_TOKEN] = $this->generateCSRFToken(
+                $_SERVER['REMOTE_ADDR']);
             $data['SCRIPT'] = "var u; if ((u = elt('username')) && u.focus) ".
                "u.focus();";
         }
