@@ -1876,8 +1876,6 @@ class Fetcher implements CrawlConstants
             $num_different = $num_links - $num_common;
             if($num_common > 0 && $num_different > 0) {
                 $common_weight = $old_weight/(2*$num_links);
-            } else if($num_common > 0) {
-                $common_weight = $old_weight/($num_links);
             }
             $remaining_weight = $old_weight - $common_weight * $num_common;
             if($num_different > 0 ) {
