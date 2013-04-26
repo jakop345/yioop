@@ -625,6 +625,7 @@ class IndexShard extends PersistentStructure implements
         if(!$is_doc) {
             $doc_len &= (self::LINK_FLAG - 1);
         }
+        $item[self::DOC_LEN] = $doc_len;
         $item[self::IS_DOC] = $is_doc;
 
         $item[self::PROXIMITY]=$this->computeProximity($position_list, $is_doc);
@@ -699,8 +700,9 @@ class IndexShard extends PersistentStructure implements
                     $this->num_docs + $this->num_link_docs,
                     floatval(LINK_WEIGHT));
             }
-            $item[self::SCORE] = $item[self::DOC_RANK]
-                * $item[self::RELEVANCE];
+            $item[self::SCORE] = $item[self::DOC_RANK] 
+                * $item[self::RELEVANCE]; /*crude score not used for final
+                    results */
         }
 
         return array($doc_id, $num_keys, $item);

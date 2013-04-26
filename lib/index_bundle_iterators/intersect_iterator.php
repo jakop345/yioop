@@ -227,7 +227,8 @@ class IntersectIterator extends IndexBundleIterator
                     $this->checkQuotes($position_lists)) {
                     $docs[$key][self::PROXIMITY] =
                         $this->computeProximity($position_lists, $len_lists,
-                            $docs[$key][self::IS_DOC]);
+                            $docs[$key][self::IS_DOC],
+                            $docs[$key][self::DOC_LEN]);
                 } else {
                     $docs = array();
                 }
@@ -325,9 +326,12 @@ class IntersectIterator extends IndexBundleIterator
      *  @param array $len_lists length for each item of its position list
      *  @param bool $is_doc whether this is the position list of a document
      *      or a link
-     *  @return sum of inverse of all covers computed by plane sweep algorithm
+     *  @param int $doc_len length of document we are scoring
+     *  @return length normalized sum of inverse of all covers computed by
+     *      plane sweep algorithm
      */
-    function computeProximity(&$word_position_lists, &$word_len_lists, $is_doc)
+    function computeProximity(&$word_position_lists, &$word_len_lists, $is_doc,
+        $doc_len)
     {
         $num_iterators = $this->num_iterators;
         if($num_iterators < 1) return 1;
@@ -398,14 +402,13 @@ class IntersectIterator extends IndexBundleIterator
             foreach($covers as $cover){
                 $score += ($weight/($cover[1] - $cover[0] + 1));
             }
-        }
-        else{
+        } else {
             $weight = LINK_WEIGHT;
             foreach($covers as $cover) {
                 $score += ($weight/($cover[1] - $cover[0] + 1));
             }
         }
-        return $score;
+        return (100*$score)/$doc_len;
     }
 
     /**

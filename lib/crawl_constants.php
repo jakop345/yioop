@@ -165,7 +165,7 @@ interface CrawlConstants
     const CACHE_PAGE_PARTITION = 'ap';
     const GENERATION = 'aq';
     const HASH_SUM_SCORE = 'ar';
-    const HASH_URL_COUNT = 'as';
+    const HASH_URL_COUNT = 'as'; //not used
     const IS_DOC = 'at';
     const BOOST = 'av';
     const IP_ADDRESSES = 'au';
