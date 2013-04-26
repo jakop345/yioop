@@ -506,44 +506,29 @@ class GroupIterator extends IndexBundleIterator
     {
         $sum_score = 0;
         $sum_rank = 0;
-        $sum_relevance = 0;
         $max_proximity = 0;
-        $domain_rels = array();
-        $domain_counts = array();
-        $domain_proxs = array();
+        $domain_weights = array();
         foreach($pre_hash_page as $hash_page) {
             if(isset($hash_page[self::SCORE])) {
                 $current_rank = $hash_page[self::DOC_RANK];
                 $hash_host = $hash_page[self::INLINKS];
-                if(!isset($domain__counts[$hash_host])) {
-                    $domain_counts[$hash_host] = 1;
-                    $domain_rels[$hash_host] = 0;
-                    $domain_proxs[$hash_host] = 0;
-                } else {
-                    $domain_counts[$hash_host]++;
+                if(!isset($domain_weights[$hash_host])) {
+                    $domain_weights[$hash_host] = 1;
                 }
-                $weight = 1;
+                $relevance_boost = 1;
                 if(substr($hash_url, 1) == substr($hash_host, 1)) {
-                    $weight = 2;
-                } else if(!$hash_page[self::IS_DOC]) {
-                    $weight = 0.5;
+                    $relevance_boost = 2;
                 }
-                $sum_score += $weight * $current_rank;
+                $alpha = $relevance_boost * $domain_weights[$hash_host];
+                $sum_score += $alpha * $hash_page[self::DOC_RANK];
 
-                $sum_rank += $weight * $current_rank;
-                $domain_rels[$hash_host] += $hash_page[self::RELEVANCE];
-                $domain_proxs[$hash_host] += $hash_page[self::PROXIMITY];
+                $sum_rank += $alpha * $hash_page[self::DOC_RANK];
+                $sum_relevance += $alpha * $hash_page[self::RELEVANCE];
+                $max_proximity = max($max_proximity,
+                    $hash_page[self::PROXIMITY]);
+                $domain_weights[$hash_host] *=  0.5;
             }
         }
-        $rels = array();
-        $proxs = array();
-        foreach($domain_rels as $hash_host => $relevance) {
-            $rels[] = $relevance/$domain_counts[$hash_host];
-            $proxs[] = $domain_proxs[$hash_host]/$domain_counts[$hash_host];
-        }
-        sort($rels);
-        sort($proxs);
-        $half_domains = floor(count($rels)/2);
         /* if two pages have the same hash HASH_SUM_SCORE used to determine
            which url is assumed to be the correct one (the other will be
            deleted). It doesn't show up as part of the final scores one
@@ -553,8 +538,8 @@ class GroupIterator extends IndexBundleIterator
 
         $pre_hash_page[0][self::DOC_RANK] = $sum_rank;
         $pre_hash_page[0][self::HASH_URL_COUNT] = count($pre_hash_page);
-        $pre_hash_page[0][self::RELEVANCE] = $rels[$half_domains];
-        $pre_hash_page[0][self::PROXIMITY] = $proxs[$half_domains];
+        $pre_hash_page[0][self::RELEVANCE] = $sum_relevance;
+        $pre_hash_page[0][self::PROXIMITY] = $max_proximity;
     }
 
     /**
