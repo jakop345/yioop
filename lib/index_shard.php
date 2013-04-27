@@ -857,7 +857,7 @@ class IndexShard extends PersistentStructure implements
      *  @param int $doc_offset document offset we want to be greater than or
      *      equal to
      *
-     *  @return int offset to next posting
+     *  @return array (int offset to next posting, doc_offset for this post)
      */
      function nextPostingOffsetDocOffset($start_offset, $end_offset,
         $doc_offset)
@@ -892,14 +892,14 @@ class IndexShard extends PersistentStructure implements
                 }
             } else if($doc_index < $post_doc_index) {
                 if($low == $current) {
-                    return $current << 2;
+                    return array($current << 2, $post_doc_index << 4);
                 } else if($gallop_phase) {
                     $gallop_phase = false;
                 }
                 $high = $current;
                 $current = (($low + $high) >> 1);
             } else  {
-                return $current << 2;
+                return array($current << 2, $post_doc_index << 4);
             }
         } while($current <= $end);
         return false;

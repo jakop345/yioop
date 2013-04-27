@@ -506,6 +506,7 @@ class GroupIterator extends IndexBundleIterator
     {
         $sum_score = 0;
         $sum_rank = 0;
+        $sum_relevance = 0;
         $max_proximity = 0;
         $domain_weights = array();
         foreach($pre_hash_page as $hash_page) {

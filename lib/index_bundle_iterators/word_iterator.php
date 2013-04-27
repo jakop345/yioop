@@ -136,6 +136,12 @@ class WordIterator extends IndexBundleIterator
      */
     var $filter;
 
+    /**
+     * The current value of the doc_offset of current posting if known
+     * @var int
+     */
+    var $current_doc_offset;
+
     /** Host Key position + 1 (first char says doc, inlink or eternal link)*/
     const HOST_KEY_POS = 17;
 
@@ -228,7 +234,7 @@ class WordIterator extends IndexBundleIterator
                 $this->empty = false;
             }
         }
-
+        $this->current_doc_offset = null;
         if($this->dictionary_info !== false || $this->feed_info !== false) {
             $this->reset();
         }
@@ -302,6 +308,7 @@ class WordIterator extends IndexBundleIterator
         $this->generation_pointer = 0;
         $this->count_block = 0;
         $this->seen_docs = 0;
+        $this->current_doc_offset = null;
     }
 
 
@@ -424,6 +431,7 @@ class WordIterator extends IndexBundleIterator
     function advance($gen_doc_offset = null)
     {
         $this->advanceSeenDocs();
+        $this->current_doc_offset = null;
         if($this->current_offset < $this->next_offset) {
             $this->current_offset = $this->next_offset;
         } else {
@@ -431,7 +439,7 @@ class WordIterator extends IndexBundleIterator
             $this->next_offset = $this->current_offset;
         }
         $using_feeds = $this->using_feeds && $this->use_feeds;
-        if(( $using_feeds &&
+        if(($using_feeds &&
             $this->current_offset > $this->feed_end) || (!$using_feeds &&
             $this->current_offset > $this->last_offset)) {
             $this->advanceGeneration();
@@ -454,12 +462,15 @@ class WordIterator extends IndexBundleIterator
             }
 
             if($this->current_generation == $gen_doc_offset[0]) {
-                $this->current_offset =
+                $offset_pair =
                     $shard->nextPostingOffsetDocOffset($this->next_offset,
                             $last, $gen_doc_offset[1]);
-                if($this->current_offset === false) {
+                if($offset_pair === false) {
                     $this->advanceGeneration();
                     $this->next_offset = $this->current_offset;
+                } else {
+                   list($this->current_offset, 
+                        $this->current_doc_offset) = $offset_pair;
                 }
             }
             $this->seen_docs =
@@ -477,7 +488,6 @@ class WordIterator extends IndexBundleIterator
      */
     function advanceGeneration($generation = null)
     {
-        $feed_no_advance = false;
         if($this->using_feeds && $this->use_feeds) {
             $this->using_feeds = false;
             $this->generation_pointer = -1;
@@ -508,6 +518,9 @@ class WordIterator extends IndexBundleIterator
      *  and generation; -1 on fail
      */
     function currentGenDocOffsetWithWord() {
+        if($this->current_doc_offset !== null) {
+            return array($this->current_generation, $this->current_doc_offset);
+        }
         $feeds = $this->using_feeds && $this->use_feeds && !$this->feed_empty;
         if( ($feeds && $this->current_offset > $this->feed_end) ||
             (!$feeds && ($this->current_offset > $this->last_offset||
