@@ -469,7 +469,7 @@ class WordIterator extends IndexBundleIterator
                     $this->advanceGeneration();
                     $this->next_offset = $this->current_offset;
                 } else {
-                   list($this->current_offset, 
+                   list($this->current_offset,
                         $this->current_doc_offset) = $offset_pair;
                 }
             }

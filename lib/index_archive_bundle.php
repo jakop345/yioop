@@ -325,7 +325,7 @@ class IndexArchiveBundle implements CrawlConstants
             if(file_exists($current_index_shard_file)) {
                 if(isset($this->generation_info['DISK_BASED']) &&
                     $this->generation_info['DISK_BASED'] == true) {
-                    $this->current_shard =new IndexShard(
+                    $this->current_shard = new IndexShard(
                         $current_index_shard_file,
                         $this->generation_info['CURRENT'],
                         $this->num_docs_per_generation, true);

@@ -66,15 +66,15 @@ class IndexManager implements CrawlConstants
         static $indexes = array();
         if(!isset($indexes[$index_name])) {
             if($index_name == "feed") {
-                if(file_exists(WORK_DIRECTORY."/feeds/index")) {
+                $index_file = WORK_DIRECTORY."/feeds/index";
+                if(file_exists($index_file)) {
                     $indexes[$index_name] = new IndexShard(
-                        WORK_DIRECTORY."/feeds/index", 0,
-                        NUM_DOCS_PER_GENERATION, true);
+                        $index_file, 0, NUM_DOCS_PER_GENERATION, true);
                 } else {
                     return false;
                 }
             } else {
-                $index_archive_name =self::index_data_base_name . $index_name;
+                $index_archive_name = self::index_data_base_name . $index_name;
                 $tmp =
                     new IndexArchiveBundle(
                         CRAWL_DIR.'/cache/'.$index_archive_name);

@@ -869,6 +869,10 @@ class IndexShard extends PersistentStructure implements
         $high = $end;
         $stride = 32;
         $gallop_phase = true;
+        $post_doc_index = $this->getDocIndexOfPostingAtOffset($end);
+        if($doc_index > $post_doc_index) { //fail fast
+            return false;
+        }
         do {
             $post_doc_index = $this->getDocIndexOfPostingAtOffset($current);
             if($doc_index > $post_doc_index) {
@@ -881,7 +885,6 @@ class IndexShard extends PersistentStructure implements
                         $gallop_phase = false;
                     }
                 } else if($current >= $end) {
-
                     return false;
                 } else {
                     if($current + 1 == $high) {
@@ -1551,8 +1554,8 @@ class IndexShard extends PersistentStructure implements
         if(isset($this->num_docs) && $this->num_docs > 0) {
             return; // if $this->num_docs > 0 assume have read in
         }
-        $info_block = $this->readBlockShardAtOffset(0, false);
-        $header = substr($info_block, 0, self::HEADER_LENGTH);
+        $header = substr($this->readBlockShardAtOffset(0, false),
+            0, self::HEADER_LENGTH);
         self::headerToShardFields($header, $this);
         $this->doc_info_offset = $this->file_len - $this->docids_len;
     }
@@ -1664,20 +1667,20 @@ class IndexShard extends PersistentStructure implements
      */
     static function headerToShardFields($header, $shard)
     {
-        $header_data = unpack("N*", $header);
-        $shard->prefixes_len = $header_data[1];
-        $shard->words_len = $header_data[2];
-        $shard->word_docs_len = $header_data[3];
-        $shard->docids_len = $header_data[4];
-        $shard->generation = $header_data[5];
-        $shard->num_docs_per_generation = $header_data[6];
-        $shard->num_docs = $header_data[7];
-        $shard->num_link_docs = $header_data[8];
-        $shard->len_all_docs = $header_data[9];
-        $shard->len_all_link_docs = $header_data[10];
+        list(,
+            $shard->prefixes_len,
+            $shard->words_len,
+            $shard->word_docs_len,
+            $shard->docids_len,
+            $shard->generation,
+            $shard->num_docs_per_generation,
+            $shard->num_docs,
+            $shard->num_link_docs,
+            $shard->len_all_docs,
+            $shard->len_all_link_docs
+            ) = unpack("N*", $header);
         $shard->word_doc_offset = self::HEADER_LENGTH +
             $shard->prefixes_len + $shard->words_len;
-
     }
 
     /**
