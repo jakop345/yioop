@@ -832,15 +832,16 @@ class IndexShard extends PersistentStructure implements
      */
     function getDocIndexOfPostingAtOffset($current)
     {
-        $pword = $this->getWordDocsWord($current << 2);
+        $current_offset = $current << 2;
+        $pword = $this->getWordDocsWord($current_offset);
         $chr = (($pword >> 24) & 192);
         if(!$chr) {
             return docIndexModified9($pword);
         }
         $continue = $chr != 192;
         while ($continue) {
-            $current--;
-            $pword = $this->getWordDocsWord($current << 2);
+            $current_offset -= 4;
+            $pword = $this->getWordDocsWord($current_offset);
             $continue = ((($pword >> 24) & 192) == 128);
         }
         return docIndexModified9($pword);
@@ -904,6 +905,9 @@ class IndexShard extends PersistentStructure implements
         return false;
      }
 
+    /**
+     *
+     */
     function gallopPostingOffsetDocOffset(&$current, $doc_index, $end)
     {
         $stride = 32;
@@ -1512,9 +1516,8 @@ class IndexShard extends PersistentStructure implements
         if(isset($this->blocks_words[$offset])) {
             return $this->blocks_words[$offset];
         }
-        $block_offset =  ($offset >> self::SHARD_BLOCK_POWER) <<
-            self::SHARD_BLOCK_POWER;
-        $this->readBlockShardAtOffset($block_offset);
+        $this->readBlockShardAtOffset(($offset >> self::SHARD_BLOCK_POWER) <<
+            self::SHARD_BLOCK_POWER);
         return $this->blocks_words[$offset];
     }
 
@@ -1532,18 +1535,17 @@ class IndexShard extends PersistentStructure implements
         if(isset($this->blocks[$bytes])) {
             return $this->blocks[$bytes];
         }
-        $false = false;
         if($this->fh === NULL) {
             $this->fh = fopen($this->filename, "rb");
             if($this->fh === false) return false;
             $this->file_len = filesize($this->filename);
         }
         if($bytes >= $this->file_len) {
-            return $false;
+            return false;
         }
         $seek = fseek($this->fh, $bytes, SEEK_SET);
         if($seek < 0) {
-            return $false;
+            return false;
         }
         if(!$cache) {
             return fread($this->fh, self::SHARD_BLOCK_SIZE);

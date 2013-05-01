@@ -410,14 +410,10 @@ function docIndexModified9($encoded_list)
     switch($encoded_list & 0x30000000)
     {
         case 0:
-            $doc_index = $encoded_list & 0x0FFFFFFF; //lop off high nibble
-            if(($doc_index & $t26) > 0) {
-                $doc_index -= $t26 + ($doc_index & 0x1FF);
-                $doc_index >>= 9;
-            } else {
-                $doc_index--;
-            }
-            return $doc_index;
+            $encoded_list &= 0x0FFFFFFF; //lop off high nibble
+            return (($encoded_list & $t26) > 0) ?
+                ($encoded_list - $t26 + ($encoded_list & 0x1FF)) >> 9 :
+                $encoded_list - 1;
         break;
         case 0x10000000:
             $encoded_list &= 0xEFFFFFFF;
@@ -446,18 +442,14 @@ function docIndexModified9($encoded_list)
     }
 
     do {
-        $tmp = $encoded_list >> $shift;
-        if($doc_index = ($tmp & $mask)) {
-            if(($doc_index & $t26) > 0) {
-                $doc_index -= $t26 + ($doc_index & 0x1FF);
-                $doc_index >>= 9;
-            } else {
-                $doc_index--;
-            }
+        if($doc_index = (($encoded_list >> $shift) & $mask)) {
+            $doc_index -= (($doc_index & $t26) > 0) ?
+                $t26 + ($doc_index & 0x1FF) : 1;
             return $doc_index;
         }
         $shift -= $num_bits;
     } while($shift >= 0);
+
     return $doc_index; //shouldn't get here
 
 }
