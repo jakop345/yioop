@@ -529,13 +529,15 @@ class WordIterator extends IndexBundleIterator
         }
         if($feeds) {
             $index = IndexManager::getIndex("feed");
-            return array(-1, $index->docOffsetFromPostingOffset(
-                $this->current_offset));
+            $this->current_doc_offset = $index->getCurrentShard(
+                        )->docOffsetFromPostingOffset($this->current_offset);
+            return array(-1, $this->current_doc_offset);
         }
         $index = IndexManager::getIndex($this->index_name);
         $index->setCurrentShard($this->current_generation, true);
-        return array($this->current_generation, $index->getCurrentShard(
-                        )->docOffsetFromPostingOffset($this->current_offset));
+        $this->current_doc_offset = $index->getCurrentShard(
+            )->docOffsetFromPostingOffset($this->current_offset);
+        return array($this->current_generation, $this->current_doc_offset);
     }
 
 }

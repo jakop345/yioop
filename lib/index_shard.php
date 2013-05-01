@@ -863,28 +863,26 @@ class IndexShard extends PersistentStructure implements
         $doc_offset)
     {
         $doc_index = $doc_offset >> 4;
-        $current = $start_offset >> 2;
         $end = $end_offset >> 2;
-        $low = $current;
-        $high = $end;
-        $stride = 32;
-        $gallop_phase = true;
         $post_doc_index = $this->getDocIndexOfPostingAtOffset($end);
         if($doc_index > $post_doc_index) { //fail fast
             return false;
+        } else if ($doc_index == $post_doc_index) {
+            return array($end << 2, $post_doc_index << 4);
         }
+        $current = $start_offset >> 2;
+        $post_doc_index = $this->gallopPostingOffsetDocOffset($current,
+            $doc_index, $end);
+        if($doc_index == $post_doc_index) {
+            return array($current << 2, $post_doc_index << 4);
+        }
+        $low = $start_offset >> 2;
+        $high = $end;
         do {
             $post_doc_index = $this->getDocIndexOfPostingAtOffset($current);
             if($doc_index > $post_doc_index) {
                 $low = $current;
-                if($gallop_phase) {
-                    $current += $stride;
-                    $stride <<= 1;
-                    if($current > $end ) {
-                        $current = $end;
-                        $gallop_phase = false;
-                    }
-                } else if($current >= $end) {
+                if($current >= $end) {
                     return false;
                 } else {
                     if($current + 1 == $high) {
@@ -896,8 +894,6 @@ class IndexShard extends PersistentStructure implements
             } else if($doc_index < $post_doc_index) {
                 if($low == $current) {
                     return array($current << 2, $post_doc_index << 4);
-                } else if($gallop_phase) {
-                    $gallop_phase = false;
                 }
                 $high = $current;
                 $current = (($low + $high) >> 1);
@@ -907,6 +903,21 @@ class IndexShard extends PersistentStructure implements
         } while($current <= $end);
         return false;
      }
+
+    function gallopPostingOffsetDocOffset(&$current, $doc_index, $end)
+    {
+        $stride = 32;
+        do {
+            $post_doc_index = $this->getDocIndexOfPostingAtOffset($current);
+            if($doc_index <= $post_doc_index) {
+                return $post_doc_index;
+            }
+            $current += $stride;
+            $stride <<= 1;
+        } while($current <= $end);
+        $current = $end;
+        return $post_doc_index;
+    }
 
     /**
      * Given an offset of a posting into the word_docs string, looks up
@@ -1540,7 +1551,7 @@ class IndexShard extends PersistentStructure implements
         $this->blocks[$bytes] = fread($this->fh, self::SHARD_BLOCK_SIZE);
         $tmp = & $this->blocks[$bytes];
         $this->blocks_words += array_combine(
-            range($bytes, $bytes + strlen($tmp) -1, 4),
+            range($bytes, $bytes + strlen($tmp) - 1, 4),
             unpack("N*", $tmp));
         return $tmp;
     }
