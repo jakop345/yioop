@@ -859,6 +859,32 @@ class UrlParser
         }
         return $out_links;
     }
+
+    /**
+     *
+     */
+    static function pruneLinks($links, $max_links = MAX_LINKS_PER_PAGE)
+    {
+        if(count($links) <= MAX_LINKS_PER_PAGE) {
+            return $links;
+        }
+        $info_link = array();
+        // choose the MAX_LINKS_PER_PAGE many pages with most info (crude)
+        foreach($links as $url => $text) {
+            if(!isset($info_link[$url])) {
+                $info_link[$url] = strlen(gzcompress($text));
+            } else {
+                $info_link[$url] += strlen(gzcompress($text));
+            }
+        }
+        arsort($info_link);
+        $link_urls = array_keys(array_slice($info_link, 0, MAX_LINKS_PER_PAGE));
+        $out_links = array();
+        foreach($link_urls as $url) {
+            $out_links[$url] = $links[$url];
+        }
+        return $out_links;
+    }
 }
 
 ?>

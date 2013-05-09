@@ -43,8 +43,9 @@ if(!defined("POST_PROCESSING") && !defined("LOG_TO_FILES")) {
 
 /** For base class*/
 require_once BASE_DIR."/models/parallel_model.php";
-/** For extractPhrasesAndCount function */
+/** For extractPhrases* methods */
 require_once BASE_DIR."/lib/phrase_parser.php";
+
 /**
  * Load FileCache class in case used
  */
@@ -69,7 +70,6 @@ foreach(glob(BASE_DIR."/lib/index_bundle_iterators/*_iterator.php")
  */
 class PhraseModel extends ParallelModel
 {
-
     /** an associative array of additional meta words and
      * the max description length of results if such a meta word is used
      * this array is typically set in index.php
@@ -469,49 +469,10 @@ class PhraseModel extends ParallelModel
         }
         $phrase = $this->parseIfConditions($phrase);
         $phrase_string = $phrase;
-        $phrase_string = str_replace("&", "&amp;", $phrase_string);
-        $meta_words = $this->meta_words_list;
-        if(isset($this->additional_meta_words)) {
-            $meta_words = array_merge($meta_words, array_keys(
-                $this->additional_meta_words));
-        }
-        $index_name = $this->index_name;
-        $weight = 1;
-        $found_metas = array();
-        $disallow_phrases = array();
-        foreach($meta_words as $meta_word) {
-            $pattern = "/(\s)($meta_word(\S)+)/";
-            preg_match_all($pattern, $phrase, $matches);
-            if(!in_array($meta_word, array('i:', 'index:', 'w:',
-            'weight:', '\-') )) {
-                $matches = $matches[2];
-                $found_metas = array_merge($found_metas, $matches);
-            } else if($meta_word == '\-') {
-                if(count($matches[0]) > 0) {
-                    foreach($matches[2] as $disallowed) {
-                        $disallow_phrases[] = substr($disallowed, 1);
-                    }
-                }
-            } else if ($meta_word == 'i:' || $meta_word == 'index:') {
-                if(isset($matches[2][0])) {
-                    $index_name = substr($matches[2][0],strlen($meta_word));
-                }
-            } else if ($meta_word == 'w:' || $meta_word == 'weight:') {
 
-                if(isset($matches[2][0])) {
-                    $weight = substr($matches[2][0],strlen($meta_word));
-                }
-            }
-            $phrase_string = preg_replace($pattern, "", $phrase_string);
-        }
-        $found_metas = array_unique($found_metas);
-
-        $phrase_string = mb_ereg_replace("&amp;", "_and_", $phrase_string);
-
-        $query_string = mb_ereg_replace(PUNCT, " ", $phrase_string);
-        $query_string = preg_replace("/(\s)+/", " ", $query_string);
-        $query_string = mb_ereg_replace('_and_', '&', $query_string);
-        $phrase_string = mb_ereg_replace('_and_', '&', $phrase_string);
+        list($found_metas, $disallow_phrases, $phrase_string, 
+            $query_string, $index_name, $weight) =
+            $this->extractMetaWordInfo($phrase);
 
         /*
             we search using the stemmed/char-grammed words, but we format
@@ -538,7 +499,7 @@ class PhraseModel extends ParallelModel
                         $quote_position["*$num_words"] = "*";
                     }
                     $new_words = PhraseParser::extractPhrases(
-                        $sub_part, $locale_tag);
+                        $sub_part, $locale_tag, $index_name, true);
                     $base_words = array_merge($base_words, $new_words);
                     foreach($new_words as $new_word) {
                         $len = substr_count($new_word, " ") + 1;
@@ -550,7 +511,8 @@ class PhraseModel extends ParallelModel
                 $quote_positions[] = $quote_position;
             } else {
                 $new_words =
-                    PhraseParser::extractPhrases($phrase_part, $locale_tag);
+                    PhraseParser::extractPhrases($phrase_part, $locale_tag,
+                         $index_name);
                 $base_words = array_merge($base_words, $new_words);
             }
 
@@ -598,7 +560,6 @@ class PhraseModel extends ParallelModel
                 "WEIGHT" => $weight, "INDEX_NAME" => $index_name
             );
         } else {
-
             //get a raw list of words and their hashes
 
             $hashes = array();
@@ -622,9 +583,14 @@ class PhraseModel extends ParallelModel
                     "<br />";
             }
             for($i = 0; $i < $num_disallow_keys; $i++) {
-                $disallow_stem = PhraseParser::extractPhrases(
-                    $disallow_phrases[$i], getLocaleTag());
-                        //stemmed
+                // check if disallowed is a meta word and stem or not stem
+                if(mb_strstr($disallow_phrases[$i], ':') === false) {
+                    $disallow_stem = PhraseParser::extractPhrases(
+                        $disallow_phrases[$i], getLocaleTag());
+                            //stemmed
+                } else {
+                    $disallow_stem[0] = $disallow_phrases[$i];
+                }
                 if(QUERY_STATISTICS) {
                     $this->query_info['QUERY'] .= "$in4{$disallow_stem[0]}".
                         "<br />";
@@ -641,9 +607,13 @@ class PhraseModel extends ParallelModel
                 );
             }
         }
+        $pre_format_words = array();
+        foreach($base_words as $base_word) {
+            $pre_format_words = array_merge($pre_format_words,
+                explode(" * ", $base_word));
+        }
         $pre_format_words = array_values(array_unique(
-            array_merge($query_words, $base_words)));
-
+            array_merge($query_words, $pre_format_words)));
         $format_words = array();
         $count = count($pre_format_words);
         for($i = 0; $i < $count; $i++) {
@@ -668,6 +638,58 @@ class PhraseModel extends ParallelModel
         return array($word_struct, $format_words);
     }
 
+    /**
+     *
+     */
+    function extractMetaWordInfo($phrase)
+    {
+        $index_name = $this->index_name;
+        $weight = 1;
+        $found_metas = array();
+        $disallow_phrases = array();
+        $phrase_string = $phrase;
+        $phrase_string = str_replace("&", "&amp;", $phrase_string);
+        $meta_words = $this->meta_words_list;
+        if(isset($this->additional_meta_words)) {
+            $meta_words = array_merge($meta_words, array_keys(
+                $this->additional_meta_words));
+        }
+        foreach($meta_words as $meta_word) {
+            $pattern = "/(\s)($meta_word(\S)+)/";
+            preg_match_all($pattern, $phrase, $matches);
+            if(!in_array($meta_word, array('i:', 'index:', 'w:',
+            'weight:', '\-') )) {
+                $matches = $matches[2];
+                $found_metas = array_merge($found_metas, $matches);
+            } else if($meta_word == '\-') {
+                if(count($matches[0]) > 0) {
+                    foreach($matches[2] as $disallowed) {
+                        $disallow_phrases[] = substr($disallowed, 1);
+                    }
+                }
+            } else if ($meta_word == 'i:' || $meta_word == 'index:') {
+                if(isset($matches[2][0])) {
+                    $index_name = substr($matches[2][0],strlen($meta_word));
+                }
+            } else if ($meta_word == 'w:' || $meta_word == 'weight:') {
+
+                if(isset($matches[2][0])) {
+                    $weight = substr($matches[2][0],strlen($meta_word));
+                }
+            }
+            $phrase_string = preg_replace($pattern, "", $phrase_string);
+        }
+        $found_metas = array_unique($found_metas);
+
+        $phrase_string = mb_ereg_replace("&amp;", "_and_", $phrase_string);
+
+        $query_string = mb_ereg_replace(PUNCT, " ", $phrase_string);
+        $query_string = preg_replace("/(\s)+/", " ", $query_string);
+        $query_string = mb_ereg_replace('_and_', '&', $query_string);
+        $phrase_string = mb_ereg_replace('_and_', '&', $phrase_string);
+        return array($found_metas, $disallow_phrases, 
+            $phrase_string, $query_string, $index_name, $weight);
+    }
 
 
     /**

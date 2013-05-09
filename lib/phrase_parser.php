@@ -43,11 +43,6 @@ foreach(glob(LOCALE_DIR."/*/resources/tokenizer.php")
 $GLOBALS["CHARGRAMS"] = $CHARGRAMS;
 
 /**
- * Load the n word grams File
- */
-require_once BASE_DIR."/lib/nword_grams.php";
-
-/**
  * Reads in constants used as enums used for storing web sites
  */
 require_once BASE_DIR."/lib/crawl_constants.php";
@@ -62,6 +57,11 @@ require_once BASE_DIR."/lib/url_parser.php";
  * For crawlHash
  */
 require_once BASE_DIR."/lib/utility.php";
+
+/**
+ * Used by numDocsTerm
+ */
+require_once BASE_DIR."/lib/index_manager.php";
 
 /**
  * Library of functions used to manipulate words and phrases
@@ -107,17 +107,115 @@ class PhraseParser
      *
      * @param string $string subject to extract phrases from
      * @param string $lang locale tag for stemming
-     * @param bool $orig_and_grams if char-gramming is done whether to keep
-     *      the original term as well in what's returned
+     * @param string $index_name name of index to be used a s a reference
+     *      when extracting phrases
+     * @param bool $exact_match whether the match has to be exact or not
      * @return array of phrases
      */
-    static function extractPhrases($string,$lang = NULL,$orig_and_grams = false)
+    static function extractPhrases($string, $lang = NULL, $index_name = NULL,
+        $exact_match = false)
     {
         self::canonicalizePunctuatedTerms($string, $lang);
-        $phrase_pos = self::extractPhrasesInLists($string, $lang,
-            $orig_and_grams, false);
-        $phrases = array_keys($phrase_pos);
-        return $phrases;
+        mb_internal_encoding("UTF-8");
+        //split first on punctuation as n word grams shouldn't cross punctuation
+        $fragments = mb_split(PUNCT, $string);
+
+        $stem_obj = self::getStemmer($lang);
+
+        $t = 0;
+        $stems = array();
+        foreach($fragments as $fragment) {
+            $terms = self::extractTermsFragment($fragment, $lang);
+            if($terms == array()) { continue;}
+            $num = 0;
+            foreach($terms as $term) {
+                if(trim($term) == "") continue;
+                $pre_stem = mb_strtolower($term);
+                if($stem_obj != NULL) {
+                    $pre_stem = $stem_obj->stem($pre_stem);
+                }
+                $stems[] = $pre_stem;
+                $num++;
+            }
+        }
+        if($index_name == NULL || $num <= 1) {
+            return $stems;
+        }
+        $whole_phrase = implode(" ", $stems);
+        if($exact_match) {
+            return array($whole_phrase);
+        }
+        $count_whole_phrase = self::numDocsTerm(crawlHash($whole_phrase, true),
+            $index_name);
+        if($count_whole_phrase >= MIN_RESULTS_TO_GROUP
+            || $num > MAX_QUERY_TERMS / 2) {
+            return array($whole_phrase);
+        }
+        if($index_name != 'feed' && intval($index_name) < 1367767529) {
+            return $stems; //old style index before max phrase extraction
+        }
+
+        $out_phrases = array();
+        $first = true;
+        foreach($stems as $stem) {
+            if($first) {
+                $first = false;
+                $last = $stem;
+                $previous = $stem;
+                continue;
+            }
+            if(strcmp($stem, $last) < 0) {
+                $pre_phrase = $stem.' * '.$last;
+            } else {
+                $pre_phrase = $last.' * '.$stem;
+            }
+            $num_pre_phrase = self::numDocsTerm(crawlHash($pre_phrase, true),
+                $index_name, true);
+            if($num_pre_phrase == 0) {
+                if(self::numDocsTerm(crawlHash($previous, true),
+                    $index_name, true) <  3 * MIN_RESULTS_TO_GROUP &&
+                    self::numDocsTerm(crawlHash($stem, true),
+                    $index_name, true) <  3 * MIN_RESULTS_TO_GROUP) {
+                    $pre_phrase = $previous;
+                }
+
+            }
+            $previous = $stem;
+            $out_phrases[] = $pre_phrase;
+        }
+        if(strpos($pre_phrase, "*") == 0)  {
+            $out_phrases[] = $stem;
+        }
+        return array_merge($out_phrases);
+    }
+
+    /**
+     *
+     */
+    static function numDocsTerm($word_key, $index_name, $raw = false)
+    {
+        if($raw == false) {
+            //get rid of out modfied base64 encoding
+            $hash = str_replace("_", "/", $word_key);
+            $hash = str_replace("-", "+" , $hash);
+            $hash .= "=";
+            $word_key = base64_decode($hash);
+        }
+        $index = IndexManager::getIndex($index_name);
+        if($index->dictionary) {
+            $dictionary_info =
+                $index->dictionary->getWordInfo($word_key, true);
+        } else {
+            return 0;
+        }
+        $num_generations = count($dictionary_info);
+        $total_num_docs = 0;
+        for($i = 0; $i < $num_generations; $i++) {
+            list(, , , $num_docs) =
+                $dictionary_info[$i];
+            $total_num_docs += $num_docs;
+        }
+        return $total_num_docs;
     }
 
     /**
@@ -127,18 +225,14 @@ class PhraseParser
      *
      * @param string $string subject to extract phrases from
      * @param string $lang locale tag for stemming
-     * @param bool $orig_and_grams if char-gramming is done whether to keep
-     *      the original term as well in what's returned
      * @return array pairs of the form (phrase, number of occurrences)
      */
-    static function extractPhrasesAndCount($string, $lang = NULL,
-        $orig_and_grams = false)
+    static function extractPhrasesAndCount($string, $lang = NULL)
     {
 
         self::canonicalizePunctuatedTerms($string, $lang);
 
-        $phrases = self::extractPhrasesInLists($string, $lang, $orig_and_grams,
-            false);
+        $phrases = self::extractPhrasesInLists($string, $lang);
         $phrase_counts = array();
         foreach($phrases as $term => $positions) {
             $phrase_counts[$term] = count($positions);
@@ -153,34 +247,13 @@ class PhraseParser
      *
      * @param string $string subject to extract phrases from
      * @param string $lang locale tag for stemming
-     * @param bool $orig_and_grams if char-gramming is done whether to keep
-     *      the original term as well in what's returned
      * @return array word => list of positions at which the word occurred in
      *      the document
      */
-    static function extractPhrasesInLists($string,
-        $lang = NULL, $orig_and_grams = false, $phrases_and_terms = true)
+    static function extractPhrasesInLists($string, $lang = NULL)
     {
-        $phrase_lists = array();
         self::canonicalizePunctuatedTerms($string, $lang);
-        $pre_phrases =
-            self::extractTermsAndFilterPhrases($string, $lang, $orig_and_grams);
-        $phrases = array();
-        $j = 0;
-        foreach($pre_phrases as $pre_phrase) {
-            $len = count($pre_phrase);
-            if($len == 1) {
-                $phrases[$pre_phrase[0]][] = $j++;
-            } else {
-                $phrases[implode(" ", $pre_phrase)][] = $j;
-                if($phrases_and_terms) {
-                    foreach($pre_phrase as $term) {
-                        $phrases[$term][] = $j++;
-                    }
-                }
-            }
-        }
-        return $phrases;
+        return self::extractMaximalTermsAndFilterPhrases($string, $lang);
     }
 
     /**
@@ -215,7 +288,7 @@ class PhraseParser
                 return $result;
             ');
         }
-        $string = preg_replace_callback($ampersand_pattern,$replace_function1,
+        $string = preg_replace_callback($ampersand_pattern, $replace_function1,
             $string);
 
         $url_or_email_pattern =
@@ -245,86 +318,152 @@ class PhraseParser
     /**
      * Splits string according to punctuation and white space then
      * extracts (stems/char grams) of terms and n word grams from the string
+     * Uses a notiona of maximal n word gram to dot eh extraction
      *
      * @param string $string to extract terms from
      * @param string $lang IANA tag to look up stemmer under
-     * @param bool $orig_and_grams if char-gramming is done whether to keep
-     *      the original term as well in what's returned
      * @return array of terms and n word grams in the order they appeared in
      *      string
      */
-    static function extractTermsAndFilterPhrases($string,
-        $lang = NULL, $orig_and_grams = false)
+    static function extractMaximalTermsAndFilterPhrases($string,
+        $lang = NULL)
     {
         global $CHARGRAMS;
 
         mb_internal_encoding("UTF-8");
-        //split first on punctuation as n word grams shouldn't cross punctuation
-        $fragments = mb_split(PUNCT, $string);
-
-        $final_terms = array();
         $stem_obj = self::getStemmer($lang);
-
-        foreach($fragments as $fragment) {
-            $pre_terms = mb_split("[[:space:]]", $fragment);
-            if($pre_terms == array()) continue;
-            $terms = array();
-            if(isset($CHARGRAMS[$lang])) {
-                foreach($pre_terms as $pre_term) {
-                    if($pre_term == "") continue;
-                    $ngrams = self::getCharGramsTerm(array($pre_term), $lang);
-                    if($orig_and_grams) {
-                        $terms[]  = $pre_term;
-                        $terms = array_merge($terms, $ngrams);
-                    } else if(count($ngrams) > 0) {
-                        $terms = array_merge($terms, $ngrams);
+        $t = 0;
+        $stems = array();
+        $pos_lists = array();
+        $maximal_phrases = array();
+        $terms = self::extractTermsFragment($string, $lang);
+        if($terms == array()) {continue; }
+        // make post lists and stem
+        foreach($terms as $term) {
+            if(trim($term) == "") continue;
+            $pre_stem = mb_strtolower($term);
+            if($stem_obj != NULL) {
+                $pre_stem = $stem_obj->stem($pre_stem);
+            }
+            $stems[] = $pre_stem;
+            $pos_lists[$pre_stem][] = $t;
+            $t++;
+        }
+        $num = count($stems);
+        for($i = 0; $i < $num; $i++) {
+            $stem = $stems[$i];
+            $maximal_phrase = $stem;
+            $old_maximal = $stem;
+            $pos_list = $pos_lists[$stem];
+            $maximal_phrases[$maximal_phrase][] = $i;
+            if(!isset($stems[$i + 1])) {
+                continue;
+            }
+            $j = 1;
+            $ignore_list = array($i);
+            $num_pos_list = count($pos_list);
+            $next_term = $stem;
+            do {
+                $old_term = $next_term;
+                $next_term = $stems[$i + $j];
+                $is_maximal = false;
+                if($num_pos_list == count($ignore_list)) {
+                    if(!isset($stems[$i + $j + 1])) {
+                        $is_maximal = true;
+                    }
+                } else {
+                    foreach($pos_list as $pos) {
+                        if(in_array($pos, $ignore_list)) { continue;}
+                        if((isset($stems[$pos + $j]) &&
+                            $stems[$pos + $j] != $next_term) ||
+                            !isset($stems[$pos + $j])){
+                            $ignore_list[] = $pos;
+                            $is_maximal = true; 
+                            /* don't break since won't to remove all
+                               phrases which separate */
+                        }
                     }
                 }
-            } else {
-                $terms = $pre_terms;
+                if($is_maximal) {
+                    if($maximal_phrase != $old_maximal) {
+                        $maximal_phrases[$maximal_phrase]["cond_max"] =
+                            $old_maximal;
+                    }
+                    $old_maximal = $maximal_phrase;
+                    $maximal_phrases[$maximal_phrase][] = $i;
+                    if($maximal_phrase != $stem) {
+                        if(strcmp($stem, $old_term) < 0) {
+                            $maximal_phrases[' '.$stem.' * '.$old_term][]
+                                = $i;
+                        } else {
+                            $maximal_phrases[' '.$old_term.' * '.$stem][]
+                                = $i;
+                        }
+                    }
+                }
+                if($maximal_phrase[0] != ' ') {
+                    $maximal_phrase = ' ' . $maximal_phrase;
+                }
+                $maximal_phrase .= " ". $next_term;
+                $j++;
+            } while(isset($stems[$i + $j]) );//MAX_QUERY_TERMS);
+
+            if($j <  MAX_QUERY_TERMS) {
+                $maximal_phrases[$maximal_phrase][] = $i;
+                if($maximal_phrase != $stem) {
+                    if(strcmp($stem, $next_term) < 0) {
+                        $maximal_phrases[' '.$stem.' * '.$next_term][] = $i;
+                    } else {
+                        $maximal_phrases[' '.$next_term.' * '.$stem][] = $i;
+                    }
+                }
             }
-            $stems = array();
-            if($stem_obj != NULL) {
-                foreach($terms as $term) {
-                    $pre_stem = mb_strtolower($term);
-                    $stems[] = $stem_obj->stem($pre_stem);
+        }
+        $out_phrases = array();
+        foreach($maximal_phrases as $phrase => $pos_list) {
+            if($phrase[0] == ' ') {
+                if(count($pos_list) > 0) {
+                    /* if count more than 1 or its in a title and maximal
+                        than assume n_word gram */
+                     
+                    $out_phrases[trim($phrase)] = array_unique($pos_list);
                 }
             } else {
-                foreach($terms as $term) {
-                    $stems[] = mb_strtolower($term);
-                }
+                $out_phrases[$phrase] = array_unique($pos_list);
             }
-            $accumulators = array();
-            $phrases = array();
-            $i = 0;
-            $num_stems = count($stems);
-            while($i < $num_stems) {
-                $tmp = $stems[$i];
-                if($stems[$i] == "") {
-                    $i++;
+        }
+        return $out_phrases;
+    }
+
+    /**
+     *
+     */
+    static function extractTermsFragment($fragment, $lang)
+    {
+        global $CHARGRAMS;
+
+        mb_internal_encoding("UTF-8");
+
+        $pre_terms = mb_split("[[:space:]]|".PUNCT, $fragment);
+        if($pre_terms == array()) { return array();}
+        $terms = array();
+        if(isset($CHARGRAMS[$lang])) {
+            foreach($pre_terms as $pre_term) {
+                if($pre_term == "") { continue; }
+                if(substr($pre_term, 0, 4) == 'http') {
+                    $terms[]  = $pre_term; // don't chargram urls
                     continue;
                 }
-                $j = $i + 1;
-                $max_j = $i;
-                $cont_ngram = true;
-                while($cont_ngram && $j < $num_stems) {
-                    $tmp .= " " . $stems[$j];
-                    $isngram = NWordGrams::ngramsContains($tmp, $lang, "all");
-                    if($isngram) {
-                        $max_j = $j;
-                    }
-                    $cont_ngram = NWordGrams::ngramsContains($tmp."*", $lang,
-                        "all");
-                    $j++;
+                $ngrams = self::getCharGramsTerm(array($pre_term), $lang);
+                if(count($ngrams) > 0) {
+                    $terms = array_merge($terms, $ngrams);
                 }
-                $phrases[] = array_slice($stems, $i, $max_j - $i + 1);
-                $i = $max_j + 1;
             }
-
-            $phrases = array_values($phrases);
-            $final_terms = array_merge($final_terms, $phrases);
+        } else {
+            $terms = $pre_terms;
         }
-        return $final_terms;
+
+        return $terms;
     }
 
     /**
@@ -675,7 +814,7 @@ vaffanculo fok hoer kut lul やりまん 打っ掛け
 
         if($unsafe_terms == array()) {
             $unsafe_lists = PhraseParser::extractPhrasesInLists($unsafe_phrase,
-                "en-US", true);
+                "en-US");
             $unsafe_terms = array_keys($unsafe_lists);
         }
 

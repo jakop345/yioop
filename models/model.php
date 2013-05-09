@@ -45,7 +45,6 @@ require_once BASE_DIR."/lib/utility.php";
 /** For checking if a url is on localhost */
 require_once BASE_DIR."/lib/url_parser.php";
 
-
 /** Used to load common constants among crawl components */
 require_once BASE_DIR."/lib/crawl_constants.php";
 
@@ -57,7 +56,6 @@ define("MAX_TITLE_LENGTH", 20);
 define("SNIPPET_LENGTH_LEFT", 60);
 define("SNIPPET_LENGTH_RIGHT", 50);
 define("MIN_SNIPPET_LENGTH", 100);
-
 
 /**
  *

@@ -1618,15 +1618,16 @@ class Fetcher implements CrawlConstants
      *
      * @param array &$doc_info a string with a CrawlConstants::LINKS subarray
      *  This subarray in turn contains url => text pairs.
+     * @param string $field field for links default is CrawlConstants::LINKS
      */
-    function pruneLinks(&$doc_info)
+    function pruneLinks(&$doc_info, $field = CrawlConstants::LINKS)
     {
         if(!isset($doc_info[self::LINKS])) {
             return;
         }
 
         $links = array();
-        foreach($doc_info[self::LINKS] as $url => $text) {
+        foreach($doc_info[$field] as $url => $text) {
             $doc_type = UrlParser::getDocumentType($url);
             if(!in_array($doc_type, $this->all_file_types)) {
                 $doc_type = "unknown";
@@ -1644,21 +1645,7 @@ class Fetcher implements CrawlConstants
             }
             $links[$url] = $text;
         }
-        if(count($links) <= MAX_LINKS_PER_PAGE) {
-            $doc_info[self::LINKS] = $links;
-            return;
-        }
-        $info_link = array();
-        // choose the MAX_LINKS_PER_PAGE many pages with most info (crude)
-        foreach($links as $url => $text) {
-            $info_link[$url] = strlen(gzcompress($text));
-        }
-        arsort($info_link);
-        $link_urls = array_keys(array_slice($info_link, 0, MAX_LINKS_PER_PAGE));
-        $doc_info[self::LINKS] = array();
-        foreach($link_urls as $url) {
-            $doc_info[self::LINKS][$url] = $links[$url];
-        }
+        $doc_info[$field] = UrlParser::pruneLinks($links);
     }
 
 
@@ -2326,7 +2313,7 @@ class Fetcher implements CrawlConstants
 
                 $word_lists =
                     PhraseParser::extractPhrasesInLists($phrase_string,
-                        $lang, true);
+                        $lang);
                 $len = strlen($phrase_string);
                 if(PhraseParser::computeSafeSearchScore($word_lists, $len) <
                     0.012) {
@@ -2403,7 +2390,7 @@ class Fetcher implements CrawlConstants
                         $summary;
                     $link_word_lists =
                         PhraseParser::extractPhrasesInLists($link_text,
-                        $lang, true);
+                        $lang);
                     $link_meta_ids =  PhraseParser::calculateLinkMetas($url,
                         $link_host, $link_text, $site_url);
                     if(!isset($this->found_sites[self::INVERTED_INDEX][

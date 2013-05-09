@@ -44,6 +44,7 @@ define("BASE_DIR", substr(
 
 /** Load in global configuration settings */
 require_once BASE_DIR.'/configs/config.php';
+
 if(!PROFILE) {
     echo "Please configure the search engine instance by visiting" .
         "its web interface on localhost.\n";

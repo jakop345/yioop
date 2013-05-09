@@ -476,7 +476,7 @@ class SourceModel extends Model
                 }
                 $phrase_string = $item["TITLE"] . " ". $item["DESCRIPTION"];
                 $word_lists = PhraseParser::extractPhrasesInLists(
-                    $phrase_string, $lang, true);
+                    $phrase_string, $lang);
                 $raw_guid = unbase64Hash($item["GUID"]);
                 $doc_keys = crawlHash($item["LINK"], true) .
                     $raw_guid."d". substr(crawlHash(
@@ -568,7 +568,7 @@ class SourceModel extends Model
         if(!$result) return false;
         $phrase_string = $item["title"] . " ". $item["description"];
         $word_lists = PhraseParser::extractPhrasesInLists(
-            $phrase_string, $lang, true);
+            $phrase_string, $lang);
         $doc_keys = crawlHash($item["link"], true) .
             $raw_guid."d". substr(crawlHash(
             UrlParser::getHost($item["link"])."/",true), 1);

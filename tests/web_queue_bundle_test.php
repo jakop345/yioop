@@ -100,11 +100,11 @@ class WebQueueBundleTest extends UnitTest
             array("http://www.slashdot.org/", 3));
         $this->test_objects['FILE1']->addUrlsQueue($urls2);
 
-        $expected_array = array(array('http://www.google.com/', 20, 0, 3108),
-            array('http://www.ucanbuyart.com/', 15, 0, 2309),
-            array('http://www.yahoo.com/', 2, 0, 3128),
-            array('http://www.pollett.com/', 10, 0, 1412),
-            array('http://www.slashdot.org/', 3, 0, 892)
+        $expected_array = array(array('http://www.google.com/', 20, 0, 3847),
+            array('http://www.ucanbuyart.com/', 15, 0, 3253),
+            array('http://www.yahoo.com/', 2, 0, 2611),
+            array('http://www.pollett.com/', 10, 0, 3182),
+            array('http://www.slashdot.org/', 3, 0, 826)
         );
 
         $this->assertEqual(

@@ -36,7 +36,6 @@
 if(!defined('BASE_DIR') ||
     defined('PROFILE_FILE_NAME')) {echo "BAD REQUEST"; exit();}
 
-
 /** Don't display any query info*/
 define('NO_DEBUG_INFO', 0);
 /** bit of DEBUG_LEVEL used to indicate test cases should be displayable*/

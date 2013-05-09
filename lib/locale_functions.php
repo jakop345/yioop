@@ -176,7 +176,53 @@ function guessLangEncoding($encoding)
 
     return 'en';
 }
-
+/**
+ *  Tries to guess the encoding used for an Html document
+ *
+ *  @param string $html a character encoding name
+ *  @param string $return_loc_info if meta http-equiv info was used to
+ *      find the encoding, then if $return_loc_info is true, we
+ *      return the location of charset substring. This allows converting to
+ *      UTF-8 later so cached pages will display correctly and
+ *      redirects without char encoding won't be given a different hash.
+ *
+ *  @return mixed either string or array if string then guessed encoding,
+ *      if array guessed encoding, start_pos of where charset info came from,
+ *      length
+ */
+function guessEncodingHtml($html, $return_loc_info = false)
+{
+     /*
+       If the doc is HTML and it uses a http-equiv to set the encoding
+       then we override what the server says (if anything). As we
+       are going to convert to UTF-8 we remove the charset info
+       from the meta tag so cached pages will display correctly and
+       redirects without char encoding won't be given a different hash.
+     */
+    $end_head = stripos($html, "</head");
+    if($end_head) {
+        $reg = "/charset(\s*)=(\s*)(\'|\")?((\w|\-)+)(\'|\")?/u";
+        $is_match = preg_match($reg, $html, $match);
+        if($is_match && isset($match[6])) {
+            $len_c = strlen($match[0]);
+            if(($match[6] == "'" || $match[6] == '"') &&
+               $match[3] != $match[6]) {
+                $len_c--;
+            }
+            $start_charset = strpos($html, $match[0]);
+            if($start_charset + $len_c < $end_head) {
+                if(isset($match[4])) {
+                    $encoding = strtoupper($match[4]);
+                    if($return_loc_info) {
+                        return array($encoding, $start_charset, $len_c);
+                    }
+                    return $encoding;
+                }
+            }
+        }
+    }
+    return mb_detect_encoding($html, 'auto');
+}
 
 /**
  * Translate the supplied arguments into the current locale.

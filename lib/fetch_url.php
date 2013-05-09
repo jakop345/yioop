@@ -427,32 +427,14 @@ class FetchUrl implements CrawlConstants
            from the meta tag so cached pages will display correctly and
            redirects without char encoding won't be given a different hash.
          */
-        $end_head = stripos($site[$value], "</head");
-        if($end_head) {
-            $reg = "/charset(\s*)=(\s*)(\'|\")?((\w|\-)+)(\'|\")?/u";
-            $is_match = preg_match($reg, $site[$value], $match);
-            if($is_match && isset($match[6])) {
-                $len_c = strlen($match[0]);
-                if(($match[6] == "'" || $match[6] == '"') &&
-                   $match[3] != $match[6]) {
-                    $len_c--;
-                }
-                $start_charset = strpos($site[$value], $match[0]);
-                if($start_charset + $len_c < $end_head) {
-                    if(isset($match[4])) {
-                        $site[CrawlConstants::ENCODING] = strtoupper(
-                            $match[4]);
-                        $site[$value] = substr_replace(
-                            $site[$value], "", $start_charset,
-                            $len_c);
-                    }
-                }
-            }
-        }
-        if(!isset($site[CrawlConstants::ENCODING])) {
-            //else  fallback to auto-detect
-            $site[CrawlConstants::ENCODING] =
-                mb_detect_encoding($site[$value], 'auto');
+        $encoding_info = guessEncodingHtml($site[$value], true);
+        if(is_array($encoding_info)) {
+            list($site[CrawlConstants::ENCODING], $start_charset, $len_c) =
+            $encoding_info;
+            $site[$value] = substr_replace($site[$value], "", $start_charset,
+                $len_c);
+        } else {
+            $site[CrawlConstants::ENCODING] = $encoding_info;
         }
 
         if(!isset($site[CrawlConstants::SERVER]) ) {

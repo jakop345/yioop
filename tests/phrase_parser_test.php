@@ -72,7 +72,7 @@ class PhraseParserTest extends UnitTest
 Dr. T.Y Lin's home page. J. R. R. Tolkien
 EOD;
         $word_lists = PhraseParser::extractPhrasesInLists($phrase_string,
-            "en-US", true);
+            "en-US");
         $words = array_keys($word_lists);
         $this->assertTrue(in_array("dr", $words), "Abbreviation 1");
         $this->assertTrue(in_array("_ty", $words),"Initials 1");
@@ -80,12 +80,13 @@ EOD;
 
         $phrase_string = <<< EOD
 THE THE
-‘Deep Space nine’ ‘Deep Space’ version of GIANT
+‘Deep Space nine’ ‘Deep Space’ version of GIANT the the
 ©2012
 reddit: the front page of the internet
 EOD;
         $word_lists = PhraseParser::extractPhrasesInLists($phrase_string,
-            "en-US", true);
+            "en-US");
+print_r($word_lists);
         $words = array_keys($word_lists);
 
         $this->assertTrue(in_array("the the", $words), "Extract Bigram 1");
@@ -93,28 +94,19 @@ EOD;
         $this->assertTrue(in_array("deep", $words), "Unigrams still present 1");
         $this->assertTrue(in_array("space", $words),"Unigrams still present 2");
         $this->assertTrue(in_array("2012", $words), "Punctuation removal 1");
-        $phrase_string = <<< EOD
-THE . THE
-EOD;
-        $word_lists = PhraseParser::extractPhrasesInLists($phrase_string,
-            "en-US", true);
-        $words = array_keys($word_lists);
-
-        $this->assertFalse(in_array("the the", $words), "No Bigram when ".
-            "punctuation present");
 
         $phrase_string = <<< EOD
  百度一下，你就知道
  .. 知 道 MP3 图 片 视 频 地 图 输入法 手写
 拼音 关闭 空间 百科 hao123 | 更多>>
-About Baidu
+About Baidu Baidu
 EOD;
 
         $word_lists = PhraseParser::extractPhrasesInLists($phrase_string,
-            "zh-CN", true);
+            "zh-CN");
         $words = array_keys($word_lists);
         $this->assertTrue(in_array("百度", $words), "Chinese test 1");
-        $this->assertTrue(in_array("mp3", $words), "Chinese test 2");
+        $this->assertTrue(in_array("ba ai id du", $words), "Chinese test 2");
         $this->assertTrue(in_array("ab", $words), "Chinese test 3");
         $this->assertFalse(in_array("", $words), "Chinese test 4");
         $this->assertFalse(in_array("下，", $words), "Chinese test 5");
@@ -136,8 +128,9 @@ Fish 'n chips
 EOD;
 
         $word_lists = PhraseParser::extractPhrasesInLists($phrase_string,
-            "en-US", true);
+            "en-US");
         $words = array_keys($word_lists);
+
         $this->assertTrue(in_array("_po", $words), "Acronym Test 1");
         $this->assertTrue(in_array("_uk", $words), "Acronym Test 2");
         $this->assertTrue(in_array("a_and_w", $words), "Ampersand Test 1");
@@ -178,7 +171,7 @@ this those three to to to trap uncle uncle wagon walls was was was was was
 were where which which whirlwinds who who wife with
 EOD;
         $word_lists = PhraseParser::extractPhrasesInLists($phrase_string,
-            "en-US", true);
+            "en-US");
         $len = strlen($phrase_string);
         $score = PhraseParser::computeSafeSearchScore($word_lists, $len);
         $this->assertTrue(($score < 0.012), "Easy Safe Test 1");
@@ -190,7 +183,7 @@ she she shew slut teens their thom them thought they're tight to to to total
 up use whether
 EOD;
         $word_lists = PhraseParser::extractPhrasesInLists($phrase_string,
-            "en-US", true);
+            "en-US");
         $len = strlen($phrase_string);
         $score = PhraseParser::computeSafeSearchScore($word_lists, $len);
         $this->assertTrue(($score > 0.012), "Easy Unsafe Test 1");
@@ -209,7 +202,7 @@ us was we we we what what when what wild with with with workout wrap yes
 you
 EOD;
         $word_lists = PhraseParser::extractPhrasesInLists($phrase_string,
-            "en-US", true);
+            "en-US");
         $len = strlen($phrase_string);
         $score = PhraseParser::computeSafeSearchScore($word_lists, $len);
         $this->assertTrue(($score > 0.012), "Harder Unsafe Test 1");
@@ -227,7 +220,7 @@ sexual small specialist specialized specific such that that the the the
 the their to to traits traits transport two types variety while young
 EOD;
         $word_lists = PhraseParser::extractPhrasesInLists($phrase_string,
-            "en-US", true);
+            "en-US");
         $len = strlen($phrase_string);
         $score = PhraseParser::computeSafeSearchScore($word_lists, $len);
         $this->assertTrue(($score < 0.012), "Harder Safe Test 1");
@@ -241,7 +234,7 @@ romantic same sex sexual trim the the the them to to to to to used
 used who who wide women ward
 EOD;
         $word_lists = PhraseParser::extractPhrasesInLists($phrase_string,
-            "en-US", true);
+            "en-US");
         $len = strlen($phrase_string);
         $score = PhraseParser::computeSafeSearchScore($word_lists, $len);
         $this->assertTrue(($score < 0.012), "Harder Safe Test 2");

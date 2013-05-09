@@ -42,6 +42,11 @@ require_once BASE_DIR."/lib/processors/text_processor.php";
  */
 require_once BASE_DIR."/lib/url_parser.php";
 
+/**
+ * For guessing language from charset
+ */
+require_once BASE_DIR."/lib/locale_functions.php";
+
  /**
  * Used to create crawl summary information
  * for HTML files
@@ -72,14 +77,27 @@ class HtmlProcessor extends TextProcessor
         if(is_string($page)) {
             $page = preg_replace('/>/', '> ', $page);
             $page = preg_replace('@<script[^>]*?>.*?</script>@si', ' ', $page);
-            $dom = self::dom($page);
+            $dom_page = preg_replace(
+                '@<style[^>]*?>.*?</style>@si', ' ', $page);
+            $dom = self::dom($dom_page);
             if($dom !== false ) {
                 $summary[self::ROBOT_METAS] = self::getMetaRobots($dom);
                 $summary[self::TITLE] = self::title($dom);
+                if($summary[self::TITLE] == "") {
+                    $summary[self::TITLE] = self::crudeTitle($dom_page);
+                }
                 $summary[self::DESCRIPTION] = self::description($dom);
+                if(trim($summary[self::DESCRIPTION]) == "") {
+                    $summary[self::DESCRIPTION] = self::crudeDescription(
+                        $dom_page);
+                }
                 $summary[self::LANG] = self::lang($dom,
                     $summary[self::DESCRIPTION], $url);
                 $summary[self::LINKS] = self::links($dom, $url);
+                if($summary[self::LINKS] == array()) {
+                    $summary[self::LINKS] = parent::extractHttpHttpsUrls(
+                        $page);
+                }
                 $location = self::location($dom, $url);
                 if($location) {
                     $summary[self::LINKS][$location] = "location:".$url;
@@ -92,8 +110,16 @@ class HtmlProcessor extends TextProcessor
                 $summary[self::PAGE] = $page;
                 if(strlen($summary[self::DESCRIPTION] . $summary[self::TITLE])
                     == 0 && count($summary[self::LINKS]) == 0 && !$location) {
-                    //maybe not html? treat as text still try to get urls
-                    $summary = parent::process($page, $url);
+                    /*maybe not html? treat as text with messed up tags
+                        still try to get urls
+                     */
+                    $summary_text = parent::process(strip_tags($page), $url);
+                    foreach($summary as $field => $value) {
+                        if(($value == "" || $value == array() ) &&
+                            isset($summary_text[$field])) {
+                            $summary[$field] = $summary_text[$field];
+                        }
+                    }
                 }
             } else if( $dom == false ) {
                 $summary = parent::process($page, $url);
@@ -194,14 +220,30 @@ class HtmlProcessor extends TextProcessor
             }
         }
 
-        if($lang == NULL){
+        if($lang == NULL) {
+            //baidu doesn't have a lang attribute but does say encoding
+            $xpath = new DOMXPath($dom);
+            $charset_check = "contains(translate(@http-equiv,".
+                "'abcdefghijklmnopqrstuvwxyz'," .
+                " 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'),'CONTENT-TYPE')";
+            $metas = $xpath->evaluate("/html/head//meta[$charset_check]");
+            $found_metas = array();
+            foreach($metas as $meta) {
+                $content = $meta->getAttribute('content');
+                $charset_metas = explode("=", $content);
+                if(isset($charset_metas[1])) {
+                    $charset = strtoupper($charset_metas[1]);
+                    $lang = guessLangEncoding($charset);
+                    return $lang;
+                }
+            }
             $lang = self::calculateLang($sample_text, $url);
         }
         return $lang;
     }
 
     /**
-     *  Returns html head title of a webpage based on its document object
+     *  Returns title of a webpage based on its document object
      *
      *  @param object $dom   a document object to extract a title from.
      *  @return string  a title of the page
@@ -209,8 +251,6 @@ class HtmlProcessor extends TextProcessor
      */
     static function title($dom)
     {
-        $sites = array();
-
         $xpath = new DOMXPath($dom);
         $titles = $xpath->evaluate("/html//title");
 
@@ -236,6 +276,36 @@ class HtmlProcessor extends TextProcessor
     }
 
     /**
+     *  Returns title of a webpage based on crude regex match,
+     *      used as a fall back if dom parsing did not work.
+     *
+     *  @param string $page to extract title from
+     *  @return string  a title of the page
+     */
+    static function crudeTitle($page)
+    {
+        $title = parent::getBetweenTags($page, 0, "<title", "</title");
+        return strip_tags("<title".$title[1]."</title>");
+    }
+
+    /**
+     *  Returns summary of body of a web page based on crude regex matching
+     *      used as a fall back if dom parsing did not work.
+     *
+     *  @param string $page to extract title from
+     *  @return string  a title of the page
+     */
+    static function crudeDescription($page)
+    {
+        $body = parent::getBetweenTags($page, 0, "<body", "</body");
+        $body = strip_tags("<body".$body[1]."</body>");
+        if($body == "") { return $body; }
+        $body_parts = preg_split("/\s+/", $body);
+        $body = implode(" ", $body_parts);
+        return mb_substr($body, 0, self::MAX_DESCRIPTION_LEN);
+    }
+
+    /**
      * Returns descriptive text concerning a webpage based on its document
      * object
      *
@@ -243,8 +313,6 @@ class HtmlProcessor extends TextProcessor
      * @return string a description of the page
      */
     static function description($dom) {
-        $sites = array();
-
         $xpath = new DOMXPath($dom);
 
         $metas = $xpath->evaluate("/html//meta");
@@ -372,12 +440,17 @@ class HtmlProcessor extends TextProcessor
                         $href->getAttribute('href'), $site);
                     $len = strlen($url);
                     if(!UrlParser::checkRecursiveUrl($url)  &&
-                        strlen($url) < MAX_URL_LENGTH && $len > 4) {
+                        $len < MAX_URL_LENGTH && $len > 4) {
+                        $text = $href->textContent;
                         if(isset($sites[$url])) {
                             $sites[$url] .=" .. ".
-                                strip_tags($href->textContent);
+                                strip_tags($text);
+                            $sites[$url] = mb_substr($sites[$url], 0, 
+                                2* MAX_LINKS_WORD_TEXT);
                         } else {
-                            $sites[$url] = strip_tags($href->textContent);
+                            $sites[$url] = strip_tags($text);
+                            $sites[$url] = mb_substr($sites[$url], 0, 
+                                2* MAX_LINKS_WORD_TEXT);
                         }
 
                        $i++;
@@ -422,12 +495,15 @@ class HtmlProcessor extends TextProcessor
                 $len = strlen($url);
                 if(!UrlParser::checkRecursiveUrl($url)
                     && $len < MAX_URL_LENGTH && $len > 4) {
-                    if(isset($sites[$url]) ) {
+                    if(isset($sites[$url])) {
                         $sites[$url] .=" .. ".$alt;
+                        $sites[$url] = mb_substr($sites[$url], 0, 
+                            2* MAX_LINKS_WORD_TEXT);
                     } else {
-                        $sites[$url] = $alt;
+                        $sites[$url] =$alt;
+                        $sites[$url] = mb_substr($sites[$url], 0, 
+                            2* MAX_LINKS_WORD_TEXT);
                     }
-
                     $i++;
                 }
             }

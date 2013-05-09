@@ -1702,10 +1702,19 @@ class AdminController extends Controller implements CrawlConstants
                 in_array($_REQUEST['page_type'], $data['MIME_TYPES'])) {
                 $site[self::TYPE] = $_REQUEST['page_type'];
             }
+            if($site[self::TYPE] == 'text/html') {
+                $site[self::ENCODING] =
+                    guessEncodingHtml($_REQUEST['TESTPAGE']);
+            }
             $processor_name = $test_processors[$site[self::TYPE]];
             $page_processor = new $processor_name();
             $doc_info = $page_processor->handle($_REQUEST['TESTPAGE'],
                 $site[self::URL]);
+            if($page_processor != "RobotProcessor" &&
+                !isset($doc_info[self::JUST_METAS])) {
+                $doc_info[self::LINKS] = UrlParser::pruneLinks(
+                    $doc_info[self::LINKS]);
+            }
             foreach($doc_info as $key => $value) {
                 $site[$key] = $value;
             }
@@ -1715,6 +1724,7 @@ class AdminController extends Controller implements CrawlConstants
             if(isset($site[self::ROBOT_PATHS])) {
                 $site[self::JUST_METAS] = true;
             }
+
             $reflect = new ReflectionClass("CrawlConstants");
             $crawl_constants = $reflect->getConstants();
             $crawl_keys = array_keys($crawl_constants);
@@ -1754,7 +1764,7 @@ class AdminController extends Controller implements CrawlConstants
                     " ". $path_words . " ". $site[self::DESCRIPTION];
                 $word_lists =
                     PhraseParser::extractPhrasesInLists($phrase_string,
-                        $lang, true);
+                        $lang);
                 $len = strlen($phrase_string);
                 if(PhraseParser::computeSafeSearchScore($word_lists, $len) <
                     0.012) {

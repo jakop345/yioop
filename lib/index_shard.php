@@ -1052,7 +1052,7 @@ class IndexShard extends PersistentStructure implements
                 if($cmp == 0) {
                     if($replace) {
                         $tmp_string .= $key .
-                                packInt($word_id_posts_len) . $postings;
+                            packInt($word_id_posts_len) . $postings;
                     } else {
                         $tmp_string .= $key .
                             packInt($key_posts_len + $word_id_posts_len) .
@@ -1286,7 +1286,7 @@ class IndexShard extends PersistentStructure implements
      * After being applied words is a string consisting of
      * triples (as concatenated strings) word_id, start_offset, end_offset.
      * The offsets refer to integers offsets into a string $this->word_docs
-     * Finally, if a file handle is given its write the word dictionary out
+     * Finally, if a file handle is given, it writes the word dictionary out
      * to the file as a long string. This function assumes
      * mergeWordPostingsToString has just been called.
      *
