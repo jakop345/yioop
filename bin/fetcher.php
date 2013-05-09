@@ -414,6 +414,7 @@ class Fetcher implements CrawlConstants
         $this->disallowed_sites = array();
 
         $this->page_rule_parser = NULL;
+
         $this->video_sources = array();
         $this->hosts_with_errors = array();
 
@@ -1594,12 +1595,10 @@ class Fetcher implements CrawlConstants
                     $summarized_site_pages[$i][self::LINKS] =
                         $site[self::DOC_INFO][self::LINKS];
                 }
-
                 if(isset($site[self::DOC_INFO][self::THUMB])) {
                     $summarized_site_pages[$i][self::THUMB] =
                         $site[self::DOC_INFO][self::THUMB];
                 }
-
                 if(isset($site[self::DOC_INFO][self::SUBDOCS])) {
                     $this->processSubdocs($i, $site, $summarized_site_pages,
                        $stored_site_pages);
@@ -1918,7 +1917,7 @@ class Fetcher implements CrawlConstants
                     "UrlParser::getHost");
                 if($from_sitemap) {
                     $this->found_sites[self::TO_CRAWL][$part][] =
-                        array($url,  $old_weight * $sitemap_link_weight / 
+                        array($url,  $old_weight * $sitemap_link_weight /
                         (($i+1)*($i+1) * $square_factor),
                             $site_hash.$i);
                 } else if ($this->crawl_order == self::BREADTH_FIRST) {
@@ -2204,7 +2203,7 @@ class Fetcher implements CrawlConstants
                             crawlLog($info[self::SUMMARY]);
                         }
                         crawlLog("Trying again in 5 seconds...");
-                        if($i == 1) { 
+                        if($i == 1) {
                             /* maybe server has limited memory
                                and two high a post_max_size
                              */

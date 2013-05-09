@@ -1574,7 +1574,6 @@ class AdminController extends Controller implements CrawlConstants
         if(!isset($_REQUEST['load_option'])) {
             $data = array_merge($data, $profile);
         } else {
-
             $this->updateProfileFields($data, $profile,
                 array('IP_LINK','CACHE_LINK', 'SIMILAR_LINK', 'IN_LINK',
                     'SIGNIN_LINK', 'SUBSEARCH_LINK','WORD_SUGGEST'));
@@ -1601,8 +1600,8 @@ class AdminController extends Controller implements CrawlConstants
             $this->profileModel->updateProfile(WORK_DIRECTORY, array(),
                 $profile);
         }
-        $data['INDEXED_FILE_TYPES'] = array();
 
+        $data['INDEXED_FILE_TYPES'] = array();
         $filetypes = array();
         foreach($INDEXED_FILE_TYPES as $filetype) {
             $ison =false;

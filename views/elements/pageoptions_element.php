@@ -35,18 +35,15 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
  * This element is used to render the Page Options admin activity
- * This activity lets a usercontrol the amount of web pages downloaded,
+ * This activity lets a user control the amount of web pages downloaded,
  * the recrawl frequency, the file types, etc of the pages crawled
  *
  * @author Chris Pollett
- *
  * @package seek_quarry
  * @subpackage element
  */
-
 class PageOptionsElement extends Element
 {
-
     /**
      * Draws the page options element to the output buffer
      *

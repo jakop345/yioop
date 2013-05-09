@@ -1720,7 +1720,7 @@ class QueueServer implements CrawlConstants, Join
             foreach($to_crawl_sites as $triple) {
                 $url = & $triple[0];
                 if(strlen($url) < 7) { // strlen("http://")
-                    continue; 
+                    continue;
                 }
                 if($url[0] != 'h' && trim($url) == "localhost") {
                     $url = "http://localhost/";
@@ -1730,7 +1730,7 @@ class QueueServer implements CrawlConstants, Join
                 unset($triple[2]); // so triple is now a pair
                 $host_url = UrlParser::getHost($url);
                 if(strlen($host_url) < 7) { // strlen("http://")
-                    continue; 
+                    continue;
                 }
                 $host_with_robots = $host_url."/robots.txt";
                 $robots_in_queue =

@@ -34,14 +34,13 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- * View responsible for drawing the admin pages of the
- * SeekQuarry search engine site
+ * View responsible for drawing the admin pages of the SeekQuarry search engine
+ * site.
  *
  * @author Chris Pollett
  * @package seek_quarry
  * @subpackage view
  */
-
 class AdminView extends View
 {
     /** This view is drawn on a web layout
