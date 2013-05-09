@@ -50,7 +50,7 @@ require_once BASE_DIR."/lib/url_parser.php";
 class ResourceController extends Controller implements CrawlConstants
 {
     /**
-     * No models used by this controller
+     * Models used by this controller
      * @var array
      */
     var $models = array("crawl");

@@ -37,6 +37,8 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 require_once BASE_DIR."/controllers/controller.php";
 /** Loads common constants for web crawling*/
 require_once BASE_DIR."/lib/crawl_constants.php";
+/** For user-trained classification of page summaries*/
+require_once BASE_DIR."/lib/classifiers/classifier.php";
 
 /** get available archive iterators */
 foreach(glob(BASE_DIR."/lib/archive_bundle_iterators/*_bundle_iterator.php")
@@ -228,12 +230,20 @@ class FetchController extends Controller implements CrawlConstants
                 $arctype = $info[self::ARC_TYPE];
                 $iterator_name = $arctype."Iterator";
 
-                if($info[self::ARC_DIR] == "MIX") { //recrawl of crawl mix case
-                    $archive_iterator = new $iterator_name($iterate_timestamp,
-                        $result_timestamp);
-                } else { //any other archive crawl except web archive recrawls
-                    $archive_iterator = new $iterator_name($iterate_timestamp,
-                        $info[self::ARC_DIR], $result_timestamp, $result_dir);
+                if(!class_exists($iterator_name)) {
+                    $info['ARCHIVE_BUNDLE_ERROR'] =
+                        "Invalid bundle iterator: '{$iterator_name}'";
+                } else {
+                    if($info[self::ARC_DIR] == "MIX") {
+                        //recrawl of crawl mix case
+                        $archive_iterator = new $iterator_name(
+                            $iterate_timestamp, $result_timestamp);
+                    } else {
+                        //any other archive crawl except web archive recrawls
+                        $archive_iterator = new $iterator_name(
+                            $iterate_timestamp, $info[self::ARC_DIR],
+                            $result_timestamp, $result_dir);
+                    }
                 }
             }
             $pages = false;
@@ -517,6 +527,18 @@ class FetchController extends Controller implements CrawlConstants
                     if(isset($status[$field])) {
                         $info[$field] = $status[$field];
                     }
+                }
+                /*
+                   When initiating a new crawl AND there are active
+                   classifiers (an array of class labels), then augment the
+                   info with compressed, serialized versions of each active
+                   classifier so that each fetcher can reconstruct the same
+                   classifiers.
+                 */
+                if (isset($status[self::ACTIVE_CLASSIFIERS])) {
+                    $classifiers_data = Classifier::loadClassifiersData(
+                            $status[self::ACTIVE_CLASSIFIERS]);
+                    $info[self::ACTIVE_CLASSIFIERS_DATA] = $classifiers_data;
                 }
             }
         }

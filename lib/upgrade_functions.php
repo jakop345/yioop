@@ -76,7 +76,7 @@ function upgradeDatabaseWorkDirectoryCheck()
         $result = @$model->db->execute($sql);
         if($result !== false) {
             $row = $model->db->fetchArray($result);
-            if(isset($row['ID']) && $row['ID'] >= 14) {
+            if(isset($row['ID']) && $row['ID'] >= 16) {
                 return false;
             } else {
                 return true;
@@ -94,7 +94,7 @@ function upgradeDatabaseWorkDirectoryCheck()
  */
 function upgradeDatabaseWorkDirectory()
 {
-    $versions = array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15);
+    $versions = array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16);
     $model = new Model();
     $model->db->selectDB(DB_NAME);
     $sql = "SELECT ID FROM VERSION";
@@ -230,6 +230,7 @@ function upgradeDatabaseVersion3(&$db)
         'Sắp xếp hoạt động dựa theo hoạch định')");
 
 }
+
 /**
  * Upgrades a Version 3 version of the Yioop! database to a Version 4 version
  * @param object $db datasource to use to upgrade
@@ -477,7 +478,75 @@ function upgradeDatabaseVersion15(&$db)
         AND GROUP_ID=0");
     $db->execute("INSERT INTO MIX_COMPONENTS VALUES(
         3, 0, 1, 1, 'media:video site:doc')");
-    $db->execute("INSERT INTO LOCALE VALUES (21, 'te', 'తెలుగు', 'lr-tb')");
+    $db->execute("INSERT INTO LOCALE VALUES (21, 'te',
+        'తెలుగు', 'lr-tb')");
+    upgradeLocales();
+}
+
+/**
+ * Upgrades a Version 15 version of the Yioop! database to a Version 16 version
+ * @param object $db datasource to use to upgrade
+ */
+function upgradeDatabaseVersion16(&$db)
+{
+    $db->execute("DELETE FROM VERSION WHERE ID < 15");
+    $db->execute("UPDATE VERSION SET ID=16 WHERE ID=15");
+
+    $db->execute("INSERT INTO ROLE_ACTIVITY VALUES (1, 12)");
+
+    $db->execute("UPDATE ACTIVITY
+        SET ACTIVITY_ID = ACTIVITY_ID + 100,
+            TRANSLATION_ID = TRANSLATION_ID + 100
+        WHERE ACTIVITY_ID > 5 AND ACTIVITY_ID < 1000");
+
+    $db->execute("INSERT INTO ACTIVITY
+        VALUES (6, 6, 'manageClassifiers')");
+
+    $db->execute("UPDATE ACTIVITY
+        SET ACTIVITY_ID = ACTIVITY_ID - 99,
+            TRANSLATION_ID = TRANSLATION_ID - 99
+        WHERE ACTIVITY_ID > 6 AND ACTIVITY_ID < 1000");
+
+    $db->execute("UPDATE sqlite_sequence SET seq = 12
+        WHERE name = 'ACTIVITY'");
+
+    $db->execute("UPDATE TRANSLATION
+        SET TRANSLATION_ID = TRANSLATION_ID + 100
+        WHERE TRANSLATION_ID > 5 AND TRANSLATION_ID < 1000");
+
+    $db->execute("INSERT INTO TRANSLATION
+        VALUES (6, 'db_activity_manage_classifiers')");
+
+    $db->execute("UPDATE TRANSLATION
+        SET TRANSLATION_ID = TRANSLATION_ID - 99
+        WHERE TRANSLATION_ID > 6 AND TRANSLATION_ID < 1000");
+
+    $db->execute("UPDATE TRANSLATION_LOCALE
+        SET TRANSLATION_ID = TRANSLATION_ID + 100
+        WHERE TRANSLATION_ID > 5 AND TRANSLATION_ID < 1000");
+
+    $db->execute("INSERT INTO TRANSLATION_LOCALE
+        VALUES (6, 1, 'Classifiers')");
+
+    $db->execute("UPDATE TRANSLATION_LOCALE
+        SET TRANSLATION_ID = TRANSLATION_ID - 99
+        WHERE TRANSLATION_ID > 6 AND TRANSLATION_ID < 1000");
+
+    $old_archives_path = WORK_DIRECTORY."/cache/archives";
+    $new_archives_path = WORK_DIRECTORY."/archives";
+    if (file_exists($old_archives_path)) {
+        rename($old_archives_path, $new_archives_path);
+    } else {
+        mkdir($new_archives_path);
+    }
+    $db->setWorldPermissionsRecursive($new_archives_path);
+
+    $new_classifiers_path = WORK_DIRECTORY."/classifiers";
+    if (!file_exists($new_classifiers_path)) {
+        mkdir($new_classifiers_path);
+    }
+    $db->setWorldPermissionsRecursive($new_classifiers_path);
+
     upgradeLocales();
 }
 ?>

@@ -219,8 +219,9 @@ interface CrawlConstants
     const UI_FLAGS = 'cr';
     const KEYWORD_LINKS = 'cs';
     const END_ITERATOR = 'ct';
+    const ACTIVE_CLASSIFIERS = 'cu';
+    const ACTIVE_CLASSIFIERS_DATA = 'cv';
 
     const NEEDS_OFFSET_FLAG = 0x7FFFFFFF;
-
 }
 ?>

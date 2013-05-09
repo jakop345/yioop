@@ -36,6 +36,8 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /** For base class*/
 require_once BASE_DIR."/models/parallel_model.php";
+/** For deleting save points*/
+require_once BASE_DIR."/controllers/search_controller.php";
 
 /** used to prevent cache page requests from being logged*/
 if(!defined("POST_PROCESSING") && !defined("NO_LOGGING")) {
@@ -347,9 +349,27 @@ class CrawlModel extends ParallelModel implements CrawlConstants
         $this->db->execute($sql);
         $sql = "DELETE FROM MIX_COMPONENTS WHERE MIX_TIMESTAMP='$timestamp'";
         $this->db->execute($sql);
-
     }
 
+    /**
+     * Deletes the archive iterator and savepoint files created during the
+     * process of iterating through a crawl mix.
+     *
+     * @param int $timestamp The timestamp of the crawl mix
+     */
+    function deleteCrawlMixIteratorState($timestamp)
+    {
+        global $INDEXING_PLUGINS;
+        setLocaleObject(getLocaleTag());
+        $searchController = new SearchController($INDEXING_PLUGINS);
+        $searchController->clearQuerySavepoint($timestamp);
+
+        $archive_dir = WORK_DIRECTORY."/schedules/".
+            self::name_archive_iterator.$timestamp;
+        if (file_exists($archive_dir)) {
+            $this->db->unlinkRecursive($archive_dir);
+        }
+    }
 
     /**
      *  Returns the initial sites that a new crawl will start with along with
@@ -446,6 +466,14 @@ EOT;
         if(isset($info["indexed_file_types"]['extensions'])) {
             foreach($info["indexed_file_types"]['extensions'] as $extension) {
                 $n[] = "extensions[] = '$extension';";
+            }
+        }
+        $n[] = "";
+
+        $n[] = "[active_classifiers]";
+        if(isset($info['active_classifiers'])) {
+            foreach ($info['active_classifiers']['label'] as $label) {
+                $n[] = "label[] = '$label';";
             }
         }
         $n[] = "";
@@ -589,7 +617,9 @@ EOT;
                 "disallowed_sites" => array(self::DISALLOWED_SITES, 'url'),
                 "page_rules" => array(self::PAGE_RULES, 'rule'),
                 "indexed_file_types" => array(self::INDEXED_FILE_TYPES,
-                    "extensions")
+                    "extensions"),
+                "active_classifiers" => array(self::ACTIVE_CLASSIFIERS,
+                    'label')
             );
             foreach($updatable_site_info as $type => $info) {
                 if(isset($new_info[$type][$info[1]])) {
@@ -900,7 +930,7 @@ EOT;
             $list[] = $crawl;
         }
         if($return_arc_bundles) {
-            $dirs = glob(CRAWL_DIR.'/cache/archives/*', GLOB_ONLYDIR);
+            $dirs = glob(CRAWL_DIR.'/archives/*', GLOB_ONLYDIR);
             foreach($dirs as $dir) {
                 $crawl = array();
                 $crawl['CRAWL_TIME'] = crc32($dir);

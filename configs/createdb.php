@@ -80,7 +80,7 @@ if(!$profile_model->createDatabaseTables($db, $dbinfo)) {
     exit();
 }
 
-$db->execute("INSERT INTO VERSION VALUES (15)");
+$db->execute("INSERT INTO VERSION VALUES (16)");
 
 //default account is root without a password
 $sql ="INSERT INTO USER VALUES (1, 'root', '".crawlCrypt('')."' ) ";
@@ -112,7 +112,8 @@ $db->execute("INSERT INTO LOCALE VALUES (
     18, 'hi', 'हिन्दी', 'lr-tb')");
 $db->execute("INSERT INTO LOCALE VALUES (19, 'tr', 'Türkçe', 'lr-tb')");
 $db->execute("INSERT INTO LOCALE VALUES (20, 'fa', 'فارسی', 'rl-tb')");
-$db->execute("INSERT INTO LOCALE VALUES (21, 'te', 'తెలుగు', 'lr-tb')");
+$db->execute("INSERT INTO LOCALE VALUES (21, 'te',
+    'తెలుగు', 'lr-tb')");
 
 $sql ="INSERT INTO ROLE VALUES (1, 'Admin' ) ";
 $db->execute($sql);
@@ -128,31 +129,36 @@ $db->execute("INSERT INTO ROLE_ACTIVITY VALUES (1, 8)");
 $db->execute("INSERT INTO ROLE_ACTIVITY VALUES (1, 9)");
 $db->execute("INSERT INTO ROLE_ACTIVITY VALUES (1, 10)");
 $db->execute("INSERT INTO ROLE_ACTIVITY VALUES (1, 11)");
+$db->execute("INSERT INTO ROLE_ACTIVITY VALUES (1, 12)");
 
 $db->execute("INSERT INTO ACTIVITY VALUES (1, 1, 'manageAccount')");
 $db->execute("INSERT INTO ACTIVITY VALUES (2, 2, 'manageUsers')");
 $db->execute("INSERT INTO ACTIVITY VALUES (3, 3, 'manageRoles')");
 $db->execute("INSERT INTO ACTIVITY VALUES (4, 4, 'manageCrawls')");
 $db->execute("INSERT INTO ACTIVITY VALUES (5, 5, 'mixCrawls')");
-$db->execute("INSERT INTO ACTIVITY VALUES (6, 6, 'pageOptions')");
-$db->execute("INSERT INTO ACTIVITY VALUES (7, 7, 'resultsEditor')");
-$db->execute("INSERT INTO ACTIVITY VALUES (8, 8, 'searchSources')");
-$db->execute("INSERT INTO ACTIVITY VALUES (9, 9, 'manageMachines')");
-$db->execute("INSERT INTO ACTIVITY VALUES (10, 10, 'manageLocales')");
-$db->execute("INSERT INTO ACTIVITY VALUES (11, 11, 'configure')");
+$db->execute("INSERT INTO ACTIVITY VALUES (6, 6, 'manageClassifiers')");
+$db->execute("INSERT INTO ACTIVITY VALUES (7, 7, 'pageOptions')");
+$db->execute("INSERT INTO ACTIVITY VALUES (8, 8, 'resultsEditor')");
+$db->execute("INSERT INTO ACTIVITY VALUES (9, 9, 'searchSources')");
+$db->execute("INSERT INTO ACTIVITY VALUES (10, 10, 'manageMachines')");
+$db->execute("INSERT INTO ACTIVITY VALUES (11, 11, 'manageLocales')");
+$db->execute("INSERT INTO ACTIVITY VALUES (12, 12, 'configure')");
 
 $db->execute("INSERT INTO TRANSLATION VALUES (1,'db_activity_manage_account')");
 $db->execute("INSERT INTO TRANSLATION VALUES (2, 'db_activity_manage_users')");
 $db->execute("INSERT INTO TRANSLATION VALUES (3, 'db_activity_manage_roles')");
 $db->execute("INSERT INTO TRANSLATION VALUES (4, 'db_activity_manage_crawl')");
 $db->execute("INSERT INTO TRANSLATION VALUES (5, 'db_activity_mix_crawls')");
-$db->execute("INSERT INTO TRANSLATION VALUES (6, 'db_activity_file_options')");
-$db->execute("INSERT INTO TRANSLATION VALUES (7,'db_activity_results_editor')");
-$db->execute("INSERT INTO TRANSLATION VALUES(8,'db_activity_search_services')");
-$db->execute("INSERT INTO TRANSLATION VALUES(9,'db_activity_manage_machines')");
-$db->execute("INSERT INTO TRANSLATION VALUES (10,
+$db->execute("INSERT INTO TRANSLATION VALUES (6,
+    'db_activity_manage_classifiers')");
+$db->execute("INSERT INTO TRANSLATION VALUES (7, 'db_activity_file_options')");
+$db->execute("INSERT INTO TRANSLATION VALUES (8,'db_activity_results_editor')");
+$db->execute("INSERT INTO TRANSLATION VALUES(9,'db_activity_search_services')");
+$db->execute("INSERT INTO TRANSLATION VALUES(10,
+    'db_activity_manage_machines')");
+$db->execute("INSERT INTO TRANSLATION VALUES (11,
     'db_activity_manage_locales')");
-$db->execute("INSERT INTO TRANSLATION VALUES (11, 'db_activity_configure')");
+$db->execute("INSERT INTO TRANSLATION VALUES (12, 'db_activity_configure')");
 
 
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (1, 1, 'Manage Account' )");
@@ -160,12 +166,14 @@ $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (2, 1, 'Manage Users')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (3, 1, 'Manage Roles')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (4, 1, 'Manage Crawls')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (5, 1, 'Mix Crawls')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (6, 1, 'Page Options')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (7, 1, 'Results Editor')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (8, 1, 'Search Sources')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (9, 1, 'Manage Machines')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (10, 1, 'Manage Locales')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (11, 1, 'Configure')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (6, 1, 'Classifiers')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (7, 1, 'Page Options')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (8, 1, 'Results Editor')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (9, 1, 'Search Sources')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (10,
+    1, 'Manage Machines')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (11, 1, 'Manage Locales')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (12, 1, 'Configure')");
 
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (1, 5,
     'Modifier votre compte' )");

@@ -122,10 +122,12 @@ class PageOptionsElement extends Element
                     ?><td><table class="file-types-table" ><?php
                  }
        ?>
-            <tr><td><label for="<?php e($filetype); ?>-id"><?php
+            <tr><td><label for="filetype-<?php e($filetype); ?>-id"><?php
                 e($filetype); ?>
             </label></td><td><input type="checkbox" <?php e($checked) ?>
-                name="filetype[<?php  e($filetype); ?>]" value="true" /></td>
+                name="filetype[<?php  e($filetype); ?>]"
+                id="filetype-<?php  e($filetype); ?>-id"
+                value="true" /></td>
             </tr>
        <?php
                 $cnt++;
@@ -139,9 +141,47 @@ class PageOptionsElement extends Element
             }
         ?>
         </tr></table>
-            <div class="top-margin"><b><?php
-                e(tl("pageoptions_element_indexing_plugins"));?></b></div>
-        <?php if(isset($data['INDEXING_PLUGINS']) && 
+        <div class="top-margin"><b><?php
+            e(tl('pageoptions_element_classifiers_to_apply')) ?></b>
+       </div>
+       <?php if (!empty($data['CLASSIFIERS'])) { ?>
+           <table class="classifiers-all"><tr>
+           <?php $cnt = 0;
+                 $num_per_column = count($data['CLASSIFIERS']);
+                 if ($num_per_column > 5) {
+                     $num_per_column = ceil($num_per_column / 3);
+                 }
+                 foreach ($data['CLASSIFIERS'] as $label => $checked) {
+                     if ($cnt % $num_per_column == 0) {
+                        ?><td><table class="classifiers-table" ><?php
+                     }
+           ?>
+                <tr><td><label for="classifier-<?php e($label); ?>-id"><?php
+                    e($label); ?>
+                </label></td><td><input type="checkbox" <?php e($checked) ?>
+                    name="classifier[<?php  e($label); ?>]"
+                    id="classifier-<?php e($label) ?>-id" value="true" /></td>
+                </tr>
+           <?php
+                    $cnt++;
+                    if($cnt % $num_per_column == 0) {
+                        ?></table></td><?php
+                    }
+                }?>
+            <?php
+                if($cnt % $num_per_column != 0) {
+                    ?></table></td><?php
+                }
+            ?>
+            </tr></table>
+        <?php
+        } else {
+            e("<p class='red'>".
+                tl('pageoptions_element_no_classifiers').'</p>');
+        } ?>
+        <div class="top-margin"><b><?php
+            e(tl("pageoptions_element_indexing_plugins"));?></b></div>
+        <?php if(isset($data['INDEXING_PLUGINS']) &&
             count($data['INDEXING_PLUGINS']) > 0) { ?>
             <table class="indexing-plugin-table">
                 <tr><th><?php e(tl('pageoptions_element_plugin'));

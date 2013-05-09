@@ -149,7 +149,7 @@ class ArcTool implements CrawlConstants
             if($path == $argv[2] && !file_exists($path)) {
                 $path = CRAWL_DIR."/cache/".$path;
                 if(!file_exists($path)) {
-                    $path = CRAWL_DIR."/cache/archives/".$argv[2];
+                    $path = CRAWL_DIR."/archives/".$argv[2];
                 }
             }
         }
@@ -223,7 +223,7 @@ class ArcTool implements CrawlConstants
             }
         }
 
-        $nonyioop_pattern = CRAWL_DIR."/cache/archives/*/arc_description.ini";
+        $nonyioop_pattern = CRAWL_DIR."/archives/*/arc_description.ini";
         $archives = glob($nonyioop_pattern);
         if(is_array($archives) && count($archives) > 0 ) {
             $archives_found = true;
@@ -481,7 +481,7 @@ class ArcTool implements CrawlConstants
      */
     function getArchiveName($archive_path)
     {
-        $start = CRAWL_DIR."/cache/archives/";
+        $start = CRAWL_DIR."/archives/";
         if(strstr($archive_path, $start)) {
             $start_len = strlen($start);
             $name = substr($archive_path, $start_len);
@@ -846,7 +846,7 @@ php arc_tool.php info bundle_name
 
 php arc_tool.php list
     /* returns a list of all the archives in the Yioop! crawl directory,
-       including non-Yioop! archives in the cache/archives sub-folder.*/
+       including non-Yioop! archives in the /archives sub-folder.*/
 
 php arc_tool.php mergetiers bundle_name max_tier
     // merges tiers of word dictionary into one tier up to max_tier

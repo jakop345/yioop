@@ -92,7 +92,7 @@ class PhraseModel extends ParallelModel
             'filetype:', 'info:', '\-', 'os:', 'server:', 'date:', "numlinks:",
             'index:', 'i:', 'ip:', 'weight:', 'w:', 'u:', 'time:', 'code:',
             'lang:', 'media:', 'elink:', 'location:', 'size:', 'host:', 'dns:',
-            'path:', 'robot:', 'safe:', 'guid:');
+            'path:', 'robot:', 'safe:', 'guid:', 'class:', 'class-score:');
 
     /**
      * Number of pages to cache in one go in memcache or filecache
@@ -401,7 +401,7 @@ class PhraseModel extends ParallelModel
         }
         if(isset($total_rows)) {
             $results['TOTAL_ROWS'] = $total_rows;
-        } else {
+        } else if (isset($results['PAGES'])) {
             $results['TOTAL_ROWS'] = count($results['PAGES']);
         }
 

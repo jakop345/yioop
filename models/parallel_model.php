@@ -443,15 +443,25 @@ class ParallelModel extends Model implements CrawlConstants
      */
     function clearQuerySavePoint($save_timestamp, $machine_urls = NULL)
     {
+        /*
+           It's important to quit early in the case that the timestamp is
+           empty, as this could result in deleting all SavePoint* files below.
+        */
+        if (!$save_timestamp) return;
+
         if($machine_urls != NULL && !$this->isSingleLocalhost($machine_urls)) {
             $this->execMachines("clearQuerySavePoint", $machine_urls,
                 $save_timestamp);
             return;
         }
 
-        $save_files = glob(CRAWL_DIR.'/schedules/'.self::save_point.
-            $save_timestamp."*.txt");
-        foreach($save_files as $save_file) {
+        /*
+           SavePoint files have a $qpart tagged on to the timestamp to
+           distinguish between parts of a query, so we want to delete anything
+           that starts with the appropriate timestamp.
+        */
+        $save_stub = CRAWL_DIR.'/schedules/'.self::save_point.$save_timestamp;
+        foreach (glob($save_stub.'*.txt') as $save_file) {
             @unlink($save_file);
         }
     }

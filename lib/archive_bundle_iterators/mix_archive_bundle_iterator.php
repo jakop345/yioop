@@ -72,7 +72,14 @@ class MixArchiveBundleIterator extends ArchiveBundleIterator
     var $mix_timestamp;
 
     /**
-     * count of how far our into the crawl mix we've gone.
+     * Used to hold timestamp of the index archive bundle of output results
+     *
+     * @var int
+     */
+    var $result_timestamp;
+
+    /**
+     * count of how far out into the crawl mix we've gone.
      *
      * @var int
      */
@@ -175,8 +182,8 @@ class MixArchiveBundleIterator extends ArchiveBundleIterator
      */
     function nextPages($num, $no_process = false)
     {
+        $objects = array("NO_PROCESS" => false);
         if($this->end_of_iterator) {
-            $objects = array("NO_PROCESS" => false);
             return $objects;
         }
         $results = $this->searchController->queryRequest($this->query,
@@ -189,7 +196,7 @@ class MixArchiveBundleIterator extends ArchiveBundleIterator
         } else if ($num_results == 0) {
             $this->end_of_iterator = true;
         } else {
-            $objects = array("NO_PROCESS" => $results);
+            $objects['NO_PROCESS'] = $results;
         }
         if(isset($results["SAVE_POINT"]) ){
             $end = true;

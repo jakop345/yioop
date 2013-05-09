@@ -90,6 +90,8 @@ require_once BASE_DIR."/lib/url_parser.php";
 require_once BASE_DIR."/lib/phrase_parser.php";
 /** For user-defined processing on page summaries*/
 require_once BASE_DIR."/lib/page_rule_parser.php";
+/** For user-trained classification of page summaries*/
+require_once BASE_DIR."/lib/classifiers/classifier.php";
 /** for crawlHash and crawlLog */
 require_once BASE_DIR."/lib/utility.php";
 /** for crawlDaemon function */
@@ -1109,6 +1111,8 @@ class Fetcher implements CrawlConstants
             } else {
                 $info[self::ARC_DATA] = $pages;
             }
+        } else if(isset($info['ARCHIVE_BUNDLE_ERROR'])) {
+            crawlLog("  ".$info['ARCHIVE_BUNDLE_ERROR']);
         }
 
         crawlLog("Time to fetch archive data from name server ".
@@ -1193,7 +1197,26 @@ class Fetcher implements CrawlConstants
                 $this->$field = $info[$info_field];
             }
         }
-
+        if(!empty($info[self::ACTIVE_CLASSIFIERS_DATA])){
+            /*
+               The classifier data is set by the fetch controller for each
+               active classifier, and is a compressed, serialized structure
+               containing all of the objects needed for classification.
+             */
+            $classifiers_data = $info[self::ACTIVE_CLASSIFIERS_DATA];
+            $this->classifiers = array();
+            foreach ($classifiers_data as $label => $classifier_data) {
+                if ($classifier_data) {
+                    $classifier = Classifier::newClassifierFromData(
+                        $classifier_data);
+                    $this->classifiers[] = $classifier;
+                    crawlLog("Classifying with '{$label}' classifier.");
+                } else {
+                    crawlLog("Skipping classifier '{$label}'; missing ".
+                        "finalized data.");
+                }
+            }
+        }
         if(isset($info[self::PAGE_RULES]) ){
             $rule_string = implode("\n", $info[self::PAGE_RULES]);
             $rule_string = html_entity_decode($rule_string, ENT_QUOTES);
@@ -1547,6 +1570,17 @@ class Fetcher implements CrawlConstants
                     isset($site[self::ROBOT_PATHS])) {
                     $summarized_site_pages[$i][self::JUST_METAS] = true;
                 }
+                if(isset($site[self::DOC_INFO][self::META_WORDS])) {
+                    if (!isset($summarized_site_pages[$i][self::META_WORDS])) {
+                        $summarized_site_pages[$i][self::META_WORDS] =
+                            $site[self::DOC_INFO][self::META_WORDS];
+                    } else {
+                        $summarized_site_pages[$i][self::META_WORDS] =
+                            array_merge(
+                                $summarized_site_pages[$i][self::META_WORDS],
+                                $site[self::DOC_INFO][self::META_WORDS]);
+                    }
+                }
                 if(isset($site[self::DOC_INFO][self::LANG])) {
                     if($site[self::DOC_INFO][self::LANG] == 'en' &&
                         $site[self::ENCODING] != "UTF-8") {
@@ -1579,6 +1613,10 @@ class Fetcher implements CrawlConstants
                 if($this->page_rule_parser != NULL) {
                     $this->page_rule_parser->executeRuleTrees(
                         $summarized_site_pages[$i]);
+                }
+                if(!empty($this->classifiers)) {
+                    Classifier::labelPage($summarized_site_pages[$i],
+                        $this->classifiers);
                 }
                 $i++;
             }

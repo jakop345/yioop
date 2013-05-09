@@ -41,6 +41,8 @@ require_once BASE_DIR."/lib/crawl_constants.php";
 require_once BASE_DIR."/lib/url_parser.php";
 /** Used in rule parser test in page options */
 require_once BASE_DIR."/lib/page_rule_parser.php";
+/** Used to create, update, and delete user-trained classifiers. */
+require_once BASE_DIR."/lib/classifiers/classifier.php";
 /** Loads crawl_daemon to manage news_updater */
 require_once BASE_DIR."/lib/crawl_daemon.php";
 /** get processors for different file types */
@@ -79,9 +81,9 @@ class AdminController extends Controller implements CrawlConstants
      * @var array
      */
     var $activities = array("signin", "manageAccount", "manageUsers",
-        "manageRoles", "manageCrawls", "pageOptions", "resultsEditor",
-        "manageMachines", "manageLocales", "crawlStatus", "mixCrawls",
-        "machineStatus", "searchSources", "configure");
+        "manageRoles", "manageCrawls", "pageOptions", "manageClassifiers",
+        "resultsEditor", "manageMachines", "manageLocales", "crawlStatus",
+        "mixCrawls", "machineStatus", "searchSources", "configure");
     /**
      * An array of activities which are periodically updated within other
      * activities that they live. For example, within manage crawl,
@@ -930,18 +932,22 @@ class AdminController extends Controller implements CrawlConstants
         $crawl_params[self::DISALLOWED_SITES] =
             isset($seed_info['disallowed_sites']['url']) ?
             $seed_info['disallowed_sites']['url'] : array();
-        $crawl_params[self::PAGE_RULES] =
-            isset($seed_info['page_rules']['rule']) ?
-            $seed_info['page_rules']['rule'] : array();
-
-        if(isset($seed_info['indexing_plugins']['plugins'])) {
-            $crawl_params[self::INDEXING_PLUGINS] =
-                $seed_info['indexing_plugins']['plugins'];
-        }
         if(isset($seed_info['indexed_file_types']['extensions'])) {
             $crawl_params[self::INDEXED_FILE_TYPES] =
                 $seed_info['indexed_file_types']['extensions'];
         }
+        if(isset($seed_info['active_classifiers']['label'])) {
+            // Note that 'label' is actually an array of active class labels.
+            $crawl_params[self::ACTIVE_CLASSIFIERS] =
+                $seed_info['active_classifiers']['label'];
+        }
+        if(isset($seed_info['indexing_plugins']['plugins'])) {
+            $crawl_params[self::INDEXING_PLUGINS] =
+                $seed_info['indexing_plugins']['plugins'];
+        }
+        $crawl_params[self::PAGE_RULES] =
+            isset($seed_info['page_rules']['rule']) ?
+            $seed_info['page_rules']['rule'] : array();
     }
 
     /**
@@ -1025,7 +1031,7 @@ class AdminController extends Controller implements CrawlConstants
             $seed_info = $this->crawlModel->getSeedInfo();
         }
         $page_options_properties = array('indexed_file_types',
-            'page_rules', 'indexing_plugins');
+            'active_classifiers', 'page_rules', 'indexing_plugins');
         //these properties should be changed under page_options not here
         foreach($page_options_properties as $property) {
             if(isset($seed_current[$property])) {
@@ -1437,9 +1443,6 @@ class AdminController extends Controller implements CrawlConstants
      *
      * This activity allows a user to specify the page range size to be
      * be used during a crawl as well as which file types can be downloaded
-     *
-     * @return array $data info about the groups and their contents for a
-     *      particular crawl mix
      */
     function pageOptions()
     {
@@ -1621,6 +1624,30 @@ class AdminController extends Controller implements CrawlConstants
         }
         $seed_info["indexed_file_types"]["extensions"] = $filetypes;
 
+        $data['CLASSIFIERS'] = array();
+        $active_classifiers = array();
+        foreach (Classifier::getClassifierList() as $classifier) {
+            $label = $classifier->class_label;
+            $ison = false;
+            if (isset($_REQUEST['classifier']) && !$loaded) {
+                if (isset($_REQUEST['classifier'][$label])) {
+                    $ison = true;
+                }
+            } else if (isset($seed_info['active_classifiers']['label'])) {
+                if (in_array($label,
+                    $seed_info['active_classifiers']['label'])) {
+                    $ison = true;
+                }
+            }
+            if ($ison) {
+                $data['CLASSIFIERS'][$label] = 'checked="checked"';
+                $active_classifiers[] = $label;
+            } else {
+                $data['CLASSIFIERS'][$label] = '';
+            }
+        }
+        $seed_info['active_classifiers']['label'] = $active_classifiers;
+
         if(isset($seed_info['page_rules']['rule'])) {
             $data['page_rules'] = $this->convertArrayLines(
                 $seed_info['page_rules']['rule']);
@@ -1771,6 +1798,207 @@ class AdminController extends Controller implements CrawlConstants
                 print_r($meta_ids, true), "string"), 75, "\n", true);
         }
         return $data;
+    }
+
+    /**
+     * Handles admin requests for creating, editing, and deleting classifiers.
+     *
+     * This activity implements the logic for the page that lists existing
+     * classifiers, including the actions that can be performed on them.
+     */
+    function manageClassifiers()
+    {
+        $possible_arguments = array('createclassifier', 'editclassifier',
+            'finalizeclassifier', 'deleteclassifier');
+
+        $data['ELEMENT'] = 'manageclassifiersElement';
+        $data['SCRIPT'] = '';
+
+        $machine_urls = $this->machineModel->getQueueServerUrls();
+        $num_machines = count($machine_urls);
+        if ($num_machines < 1 || ($num_machines == 1 &&
+            UrlParser::isLocalhostUrl($machine_urls[0]))) {
+            $machine_urls = NULL;
+        }
+
+        $data['leftorright'] =
+            (getLocaleDirection() == 'ltr') ? 'right': 'left';
+
+        $classifiers = Classifier::getClassifierList();
+
+        if (isset($_REQUEST['arg']) &&
+            in_array($_REQUEST['arg'], $possible_arguments)) {
+            $label = $this->clean($_REQUEST['class_label'], 'string');
+            $label = Classifier::cleanLabel($label);
+            switch ($_REQUEST['arg'])
+            {
+                case 'createclassifier':
+                    if (!isset($classifiers[$label])) {
+                        $classifier = new Classifier($label);
+                        Classifier::setClassifier($classifier);
+                        $classifiers[$label] = $classifier;
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\">".
+                            tl('admin_controller_new_classifier').'</h1>\');';
+                    } else {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\">".
+                            tl('admin_controller_classifier_exists').
+                            '</h1>\');';
+                    }
+                    break;
+
+                case 'editclassifier':
+                    if (isset($classifiers[$label])) {
+                        $data['class_label'] = $label;
+                        $this->editClassifier($data, $classifiers,
+                            $machine_urls);
+                    } else {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\">".
+                            tl('admin_controller_no_classifier').
+                            '</h1>\');';
+                    }
+                    break;
+
+                case 'finalizeclassifier':
+                    /*
+                       Finalizing is too expensive to be done directly in the
+                       controller that responds to the web request. Instead, a
+                       daemon is launched to finalize the classifier
+                       asynchronously and save it back to disk when it's done.
+                       In the meantime, a flag is set to indicate the current
+                       finalizing state.
+                     */
+                    CrawlDaemon::start("classifier_trainer", $label, '', -1);
+                    $classifier = $classifiers[$label];
+                    $classifier->finalized = Classifier::FINALIZING;
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\">".
+                        tl('admin_controller_finalizing_classifier').
+                        '</h1>\');';
+                    break;
+
+                case 'deleteclassifier':
+                    /*
+                       In addition to deleting the classifier, we also want to
+                       delete the associated crawl mix (if one exists) used to
+                       iterate over existing indexes in search of new training
+                       examples.
+                     */
+                    if (isset($classifiers[$label])) {
+                        unset($classifiers[$label]);
+                        Classifier::deleteClassifier($label);
+                        $mix_name = Classifier::getCrawlMixName($label);
+                        $mix_time = $this->crawlModel->getCrawlMixTimestamp(
+                            $mix_name);
+                        if ($mix_time) {
+                            $this->crawlModel->deleteCrawlMixIteratorState(
+                                $mix_time);
+                            $this->crawlModel->deleteCrawlMix($mix_time);
+                        }
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\">".
+                            tl('admin_controller_classifier_deleted').
+                            '</h1>\');';
+                    } else {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\">".
+                            tl('admin_controller_no_classifier').
+                            '</h1>\');';
+                    }
+                    break;
+            }
+        }
+
+        $data['classifiers'] = $classifiers;
+        return $data;
+    }
+
+    /**
+     * Handles the particulars of editing a classifier, which includes changing
+     * its label and adding training examples.
+     *
+     * This activity directly handles changing the class label, but not adding
+     * training examples. The latter activity is done interactively without
+     * reloading the page via XmlHttpRequests, coordinated by the classifier
+     * controller dedicated to that task.
+     *
+     * @param array $data data to be passed on to the view
+     * @param array $classifiers map from class labels to their associated
+     *     classifiers
+     * @param array $machine_urls string urls of machines managed by this
+     *     Yioop name server
+     */
+    function editClassifier(&$data, $classifiers, $machine_urls)
+    {
+        $data['ELEMENT'] = 'editclassifierElement';
+        $data['INCLUDE_SCRIPTS'] = array('classifiers');
+
+        // We want recrawls, but not archive crawls.
+        $crawls = $this->crawlModel->getCrawlList(false, true, $machine_urls);
+        $data['CRAWLS'] = $crawls;
+
+        $classifier = $classifiers[$data['class_label']];
+
+        if (isset($_REQUEST['update']) && $_REQUEST['update'] == 'update') {
+            if (isset($_REQUEST['rename_label'])) {
+                $new_label = $this->clean($_REQUEST['rename_label'], 'string');
+                $new_label = preg_replace('/[^a-zA-Z0-9_]/', '', $new_label);
+                if (!isset($classifiers[$new_label])) {
+                    $old_label = $classifier['label'];
+                    $classifier['label'] = $new_label;
+                    Classifier::setClassifier($classifier);
+                    Classifier::deleteClassifier($old_label);
+                    $data['class_label'] = $new_label;
+                } else {
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\">".
+                        tl('admin_controller_classifier_exists').
+                        '</h1>\');';
+                }
+            }
+        }
+
+        $data['classifier'] = $classifier;
+
+        // Translations for the classification javascript.
+        $data['SCRIPT'] .= "window.tl = {".
+            'editclassifier_load_failed:"'.
+                tl('editclassifier_load_failed').'",'.
+            'editclassifier_loading:"'.
+                tl('editclassifier_loading').'",'.
+            'editclassifier_added_examples:"'.
+                tl('editclassifier_added_examples').'",'.
+            'editclassifier_label_update_failed:"'.
+                tl('editclassifier_label_update_failed').'",'.
+            'editclassifier_updating:"'.
+                tl('editclassifier_updating').'",'.
+            'editclassifier_acc_update_failed:"'.
+                tl('editclassifier_acc_update_failed').'",'.
+            'editclassifier_na:"'.
+                tl('editclassifier_na').'",'.
+            'editclassifier_no_docs:"'.
+                tl('editclassifier_no_docs').'",'.
+            'editclassifier_num_docs:"'.
+                tl('editclassifier_num_docs').'",'.
+            'editclassifier_in_class:"'.
+                tl('editclassifier_in_class').'",'.
+            'editclassifier_not_in_class:"'.
+                tl('editclassifier_not_in_class').'",'.
+            'editclassifier_skip:"'.
+                tl('editclassifier_skip').'",'.
+            'editclassifier_prediction:"'.
+                tl('editclassifier_prediction').'",'.
+            'editclassifier_scores:"'.
+                tl('editclassifier_scores').'"'.
+            '};';
+
+        /*
+           We pass along authentication information to the client, so that it
+           can authenticate any XmlHttpRequests that it makes in order to label
+           documents.
+         */
+        $time = strval(time());
+        $session = md5($time.AUTH_KEY);
+        $data['SCRIPT'] .=
+            "Classifier.initialize(".
+                "'{$data['class_label']}',".
+                "'{$session}',".
+                "'{$time}');";
     }
 
     /**
