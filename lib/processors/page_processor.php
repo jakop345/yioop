@@ -95,10 +95,10 @@ abstract class PageProcessor implements CrawlConstants
             $summary[self::SUBDOCS] = array();
             foreach($this->indexing_plugins as $plugin) {
                 $subdoc = NULL;
-                $plugin_instance_name =
-                    lcfirst($plugin);
-                $subdocs_description =
-                    $this->$plugin_instance_name->pageProcessing($page, $url);
+                $plugin_instance_name = lcfirst($plugin);
+                $plugin_instance = $this->$plugin_instance_name;
+                $subdocs_description = $plugin_instance->pageProcessing(
+                    $page, $url);
                 if(is_array($subdocs_description)
                     && count($subdocs_description) != 0) {
                     foreach($subdocs_description as $subdoc_description) {
@@ -113,6 +113,7 @@ abstract class PageProcessor implements CrawlConstants
                         $summary[self::SUBDOCS][] = $subdoc;
                     }
                 }
+                $plugin_instance->pageSummaryProcessing($summary);
             }
         }
         return $summary;

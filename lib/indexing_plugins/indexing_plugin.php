@@ -111,7 +111,22 @@ abstract class IndexingPlugin
      *      on the given page. Each subdoc array has a self::TITLE and
      *      a self::DESCRIPTION
      */
-    abstract function pageProcessing($page, $url);
+    function pageProcessing($page, $url) {return NULL;}
+
+    /**
+     * Optionally modifies the page summary array produced by the PageProcessor
+     * handle method in place. This hook provides a way to easily modify the
+     * title, description, and meta words of a page. Only the PAGE,
+     * CRAWL_DELAY, ROBOT_PATHS, ROBOT_METAS, AGENT_LIST, TITLE,
+     * DESCRIPTION, META_WORDS, LANG, LINKS, and THUMB fields of the summary
+     * will be respected. If you add custom meta words, then you must define
+     * them in the getAdditionalMetaWords function for this plugin, or they
+     * will not be recognized in queries.
+     *
+     * @param array &$summary the summary data produced by the relevant page
+     *      processor's handle method; modified in-place.
+     */
+    function pageSummaryProcessing(&$summary) {return NULL;}
 
     /**
      * This method is called by the queue_server with the name of
@@ -123,7 +138,7 @@ abstract class IndexingPlugin
      * @param string $index_name the name/timestamp of an IndexArchiveBundle
      *      to do post processing for
      */
-    abstract function postProcessing($index_name);
+    function postProcessing($index_name) {return NULL;}
 
     /**
      * @return array string names of page processors that this plugin

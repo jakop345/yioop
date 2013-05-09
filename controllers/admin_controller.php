@@ -1730,7 +1730,19 @@ class AdminController extends Controller implements CrawlConstants
                 $site[self::TYPE] = $_REQUEST['page_type'];
             }
             $processor_name = $test_processors[$site[self::TYPE]];
-            $page_processor = new $processor_name();
+            $plugin_processors = array();
+            if (isset($seed_info['indexing_plugins']['plugins'])) {
+                foreach($seed_info['indexing_plugins']['plugins'] as $plugin) {
+                    $plugin_name = $plugin."Plugin";
+                    $supported_processors = $plugin_name::getProcessors();
+                    foreach($supported_processors as $supported_processor) {
+                        if ($supported_processor == $processor_name) {
+                            $plugin_processors[] = $plugin_name;
+                        }
+                    }
+                }
+            }
+            $page_processor = new $processor_name($plugin_processors);
             $doc_info = $page_processor->handle($_REQUEST['TESTPAGE'],
                 $site[self::URL]);
             foreach($doc_info as $key => $value) {
