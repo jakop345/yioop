@@ -86,7 +86,6 @@ reddit: the front page of the internet
 EOD;
         $word_lists = PhraseParser::extractPhrasesInLists($phrase_string,
             "en-US");
-print_r($word_lists);
         $words = array_keys($word_lists);
 
         $this->assertTrue(in_array("the the", $words), "Extract Bigram 1");
