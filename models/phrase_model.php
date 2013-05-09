@@ -976,7 +976,8 @@ class PhraseModel extends ParallelModel
             }
         }
         $query_iterator = $this->getQueryIterator($word_structs, $filter, $raw,
-             $queue_servers, $original_query, $save_timestamp_name);
+            $to_retrieve, $queue_servers, $original_query,
+            $save_timestamp_name);
         $num_retrieved = 0;
         $pages = array();
 
@@ -1259,7 +1260,8 @@ class PhraseModel extends ParallelModel
      *  query
      */
     function getQueryIterator($word_structs, &$filter, $raw = 0,
-        $queue_servers = array(), $original_query = "", $save_timestamp_name="")
+        $to_retrieve, $queue_servers = array(), $original_query = "",
+        $save_timestamp_name="")
     {
         $iterators = array();
         $total_iterators = 0;
@@ -1310,11 +1312,11 @@ class PhraseModel extends ParallelModel
                     if($distinct_word_keys[$i] == $doc_iterate_hash
                         || $distinct_word_keys[$i] == $doc_iterate_group_hash) {
                         $word_iterators[$i] = new DocIterator(
-                            $index_name, $filter);
+                            $index_name, $filter, $to_retrieve);
                     } else {
                         $word_iterators[$i] =
                             new WordIterator($distinct_word_keys[$i],
-                                $index_name, false, $filter);
+                                $index_name, false, $filter, $to_retrieve);
                     }
                     foreach ($word_keys as $index => $key) {
                         if(isset($distinct_word_keys[$i]) &&

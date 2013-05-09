@@ -119,14 +119,14 @@ class DocIterator extends IndexBundleIterator
      * @param array $filter an array of hashes of domains to filter from
      *      results
      */
-    function __construct($index_name, &$filter = NULL)
+    function __construct($index_name, &$filter = NULL,
+        $results_per_block = IndexBundleIterator::RESULTS_PER_BLOCK)
     {
         if($filter != NULL) {
             $this->filter = & $filter;
         } else {
             $this->filter = NULL;
         }
-
 
         $this->index_name =  $index_name;
         $index = IndexManager::getIndex($index_name);
@@ -136,6 +136,7 @@ class DocIterator extends IndexBundleIterator
         $this->num_generations = (isset($index->generation_info['ACTIVE'])) ?
             $index->generation_info['ACTIVE'] + 1 : 0;
 
+        $this->results_per_block = $results_per_block;
         $this->current_block_fresh = false;
 
         $this->reset();

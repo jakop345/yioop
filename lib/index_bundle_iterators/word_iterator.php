@@ -159,7 +159,8 @@ class WordIterator extends IndexBundleIterator
      * @param array $filter an array of hashes of domains to filter from
      *      results
      */
-    function __construct($word_key, $index_name, $raw = false, &$filter = NULL)
+    function __construct($word_key, $index_name, $raw = false, &$filter = NULL,
+        $results_per_block = IndexBundleIterator::RESULTS_PER_BLOCK)
     {
         if($raw == false) {
             //get rid of out modfied base64 encoding
@@ -235,6 +236,7 @@ class WordIterator extends IndexBundleIterator
             }
         }
         $this->current_doc_offset = null;
+        $this->results_per_block = $results_per_block;
         if($this->dictionary_info !== false || $this->feed_info !== false) {
             $this->reset();
         }
