@@ -1728,6 +1728,10 @@ class AdminController extends Controller implements CrawlConstants
                 in_array($_REQUEST['page_type'], $data['MIME_TYPES'])) {
                 $site[self::TYPE] = $_REQUEST['page_type'];
             }
+            if($site[self::TYPE] == 'text/html') {
+                $site[self::ENCODING] =
+                    guessEncodingHtml($_REQUEST['TESTPAGE']);
+            }
             $processor_name = $test_processors[$site[self::TYPE]];
             $plugin_processors = array();
             if (isset($seed_info['indexing_plugins']['plugins'])) {
@@ -1742,6 +1746,11 @@ class AdminController extends Controller implements CrawlConstants
                 }
             }
             $page_processor = new $processor_name($plugin_processors);
+            if($page_processor != "RobotProcessor" &&
+                !isset($doc_info[self::JUST_METAS])) {
+                $doc_info[self::LINKS] = UrlParser::pruneLinks(
+                    $doc_info[self::LINKS]);
+            }
             $doc_info = $page_processor->handle($_REQUEST['TESTPAGE'],
                 $site[self::URL]);
             foreach($doc_info as $key => $value) {
@@ -1792,7 +1801,7 @@ class AdminController extends Controller implements CrawlConstants
                     " ". $path_words . " ". $site[self::DESCRIPTION];
                 $word_lists =
                     PhraseParser::extractPhrasesInLists($phrase_string,
-                        $lang, true);
+                        $lang);
                 $len = strlen($phrase_string);
                 if(PhraseParser::computeSafeSearchScore($word_lists, $len) <
                     0.012) {
