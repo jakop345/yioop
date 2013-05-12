@@ -64,6 +64,12 @@ require_once BASE_DIR."/lib/utility.php";
 require_once BASE_DIR."/lib/index_manager.php";
 
 /**
+ * Used to in extractMaximalTermsAndFilterPhrases to build a SuffixTree
+ */
+require_once BASE_DIR."/lib/suffix_tree.php";
+
+
+/**
  * Library of functions used to manipulate words and phrases
  *
  * @author Chris Pollett
@@ -116,32 +122,13 @@ class PhraseParser
         $exact_match = false)
     {
         self::canonicalizePunctuatedTerms($string, $lang);
-        mb_internal_encoding("UTF-8");
-        //split first on punctuation as n word grams shouldn't cross punctuation
-        $fragments = mb_split(PUNCT, $string);
+        $terms = self::stemCharGramSegment($string, $lang);
 
-        $stem_obj = self::getStemmer($lang);
-
-        $t = 0;
-        $stems = array();
-        foreach($fragments as $fragment) {
-            $terms = self::extractTermsFragment($fragment, $lang);
-            if($terms == array()) { continue;}
-            $num = 0;
-            foreach($terms as $term) {
-                if(trim($term) == "") continue;
-                $pre_stem = mb_strtolower($term);
-                if($stem_obj != NULL) {
-                    $pre_stem = $stem_obj->stem($pre_stem);
-                }
-                $stems[] = $pre_stem;
-                $num++;
-            }
-        }
+        $num = count($terms);
         if($index_name == NULL || $num <= 1) {
-            return $stems;
+            return $terms;
         }
-        $whole_phrase = implode(" ", $stems);
+        $whole_phrase = implode(" ", $terms);
         if($exact_match) {
             return array($whole_phrase);
         }
@@ -152,39 +139,39 @@ class PhraseParser
             return array($whole_phrase);
         }
         if($index_name != 'feed' && intval($index_name) < 1367767529) {
-            return $stems; //old style index before max phrase extraction
+            return $terms; //old style index before max phrase extraction
         }
 
         $out_phrases = array();
         $first = true;
-        foreach($stems as $stem) {
+        foreach($terms as $term) {
             if($first) {
                 $first = false;
-                $last = $stem;
-                $previous = $stem;
+                $last = $term;
+                $previous = $term;
                 continue;
             }
-            if(strcmp($stem, $last) < 0) {
-                $pre_phrase = $stem.' * '.$last;
+            if(strcmp($term, $last) < 0) {
+                $pre_phrase = $term.' * '.$last;
             } else {
-                $pre_phrase = $last.' * '.$stem;
+                $pre_phrase = $last.' * '.$term;
             }
             $num_pre_phrase = self::numDocsTerm(crawlHash($pre_phrase, true),
                 $index_name, true);
             if($num_pre_phrase == 0) {
                 if(self::numDocsTerm(crawlHash($previous, true),
                     $index_name, true) <  3 * MIN_RESULTS_TO_GROUP &&
-                    self::numDocsTerm(crawlHash($stem, true),
+                    self::numDocsTerm(crawlHash($term, true),
                     $index_name, true) <  3 * MIN_RESULTS_TO_GROUP) {
                     $pre_phrase = $previous;
                 }
 
             }
-            $previous = $stem;
+            $previous = $term;
             $out_phrases[] = $pre_phrase;
         }
         if(strpos($pre_phrase, "*") == 0)  {
-            $out_phrases[] = $stem;
+            $out_phrases[] = $term;
         }
         return array_merge($out_phrases);
     }
@@ -328,123 +315,53 @@ class PhraseParser
     static function extractMaximalTermsAndFilterPhrases($string,
         $lang = NULL)
     {
-        global $CHARGRAMS;
-
-        mb_internal_encoding("UTF-8");
-        $stem_obj = self::getStemmer($lang);
-        $t = 0;
-        $stems = array();
         $pos_lists = array();
         $maximal_phrases = array();
-        $terms = self::extractTermsFragment($string, $lang);
-        if($terms == array()) {continue; }
-        // make post lists and stem
+
+        $terms = self::stemCharGramSegment($string, $lang);
+
+        if($terms == array()) { return array(); }
+
+        $suffix_tree = new SuffixTree($terms);
+        $suffix_tree->outputMaximal(1, "", 0, $maximal_phrases);
+        $t = 0;
+        $seen = array();
+        // add all single terms 
         foreach($terms as $term) {
-            if(trim($term) == "") continue;
-            $pre_stem = mb_strtolower($term);
-            if($stem_obj != NULL) {
-                $pre_stem = $stem_obj->stem($pre_stem);
+            if(!isset($seen[$term])) {
+                $seen[$term] = array();
+                $maximal_phrases[$term] = array();
             }
-            $stems[] = $pre_stem;
-            $pos_lists[$pre_stem][] = $t;
+            $maximal_phrases[$term][] = $t;
             $t++;
         }
-        $num = count($stems);
-        for($i = 0; $i < $num; $i++) {
-            $stem = $stems[$i];
-            $maximal_phrase = $stem;
-            $old_maximal = $stem;
-            $pos_list = $pos_lists[$stem];
-            $maximal_phrases[$maximal_phrase][] = $i;
-            if(!isset($stems[$i + 1])) {
-                continue;
-            }
-            $j = 1;
-            $ignore_list = array($i);
-            $num_pos_list = count($pos_list);
-            $next_term = $stem;
-            do {
-                $old_term = $next_term;
-                $next_term = $stems[$i + $j];
-                $is_maximal = false;
-                if($num_pos_list == count($ignore_list)) {
-                    if(!isset($stems[$i + $j + 1])) {
-                        $is_maximal = true;
-                    }
-                } else {
-                    foreach($pos_list as $pos) {
-                        if(in_array($pos, $ignore_list)) { continue;}
-                        if((isset($stems[$pos + $j]) &&
-                            $stems[$pos + $j] != $next_term) ||
-                            !isset($stems[$pos + $j])){
-                            $ignore_list[] = $pos;
-                            $is_maximal = true; 
-                            /* don't break since won't to remove all
-                               phrases which separate */
-                        }
-                    }
-                }
-                if($is_maximal) {
-                    if($maximal_phrase != $old_maximal) {
-                        $maximal_phrases[$maximal_phrase]["cond_max"] =
-                            $old_maximal;
-                    }
-                    $old_maximal = $maximal_phrase;
-                    $maximal_phrases[$maximal_phrase][] = $i;
-                    if($maximal_phrase != $stem) {
-                        if(strcmp($stem, $old_term) < 0) {
-                            $maximal_phrases[' '.$stem.' * '.$old_term][]
-                                = $i;
-                        } else {
-                            $maximal_phrases[' '.$old_term.' * '.$stem][]
-                                = $i;
-                        }
-                    }
-                }
-                if($maximal_phrase[0] != ' ') {
-                    $maximal_phrase = ' ' . $maximal_phrase;
-                }
-                $maximal_phrase .= " ". $next_term;
-                $j++;
-            } while(isset($stems[$i + $j]) );//MAX_QUERY_TERMS);
-
-            if($j <  MAX_QUERY_TERMS) {
-                $maximal_phrases[$maximal_phrase][] = $i;
-                if($maximal_phrase != $stem) {
-                    if(strcmp($stem, $next_term) < 0) {
-                        $maximal_phrases[' '.$stem.' * '.$next_term][] = $i;
-                    } else {
-                        $maximal_phrases[' '.$next_term.' * '.$stem][] = $i;
-                    }
-                }
-            }
-        }
-        $out_phrases = array();
-        foreach($maximal_phrases as $phrase => $pos_list) {
-            if($phrase[0] == ' ') {
-                if(count($pos_list) > 0) {
-                    /* if count more than 1 or its in a title and maximal
-                        than assume n_word gram */
-                     
-                    $out_phrases[trim($phrase)] = array_unique($pos_list);
-                }
-            } else {
-                $out_phrases[$phrase] = array_unique($pos_list);
-            }
-        }
-        return $out_phrases;
+        return $maximal_phrases;
     }
 
     /**
      *
      */
-    static function extractTermsFragment($fragment, $lang)
+    static function stemCharGramSegment($string, $lang)
+    {
+        mb_internal_encoding("UTF-8");
+
+        $terms = mb_split("[[:space:]]|".PUNCT, $string);
+        $terms = self::segmentSegments($terms, $lang);
+        $terms = self::charGramTerms($terms, $lang);
+        $terms = self::stemTerms($terms, $lang);
+
+        return $terms;
+    }
+
+    /**
+     *
+     */
+    static function charGramTerms($pre_terms, $lang)
     {
         global $CHARGRAMS;
 
         mb_internal_encoding("UTF-8");
 
-        $pre_terms = mb_split("[[:space:]]|".PUNCT, $fragment);
         if($pre_terms == array()) { return array();}
         $terms = array();
         if(isset($CHARGRAMS[$lang])) {
@@ -507,25 +424,51 @@ class PhraseParser
     }
 
     /**
+     *
+     */
+    static function segmentSegments($segments, $lang)
+    {
+        if($segments == array()) { return array();}
+        $segment_obj = self::getTokenizer($lang);
+        $terms = array();
+        if($segment_obj != NULL) {
+            foreach($segments as $segment) {
+                $terms[] = $segment_obj->segment($segment);
+            }
+        } else {
+            $terms = & $segments;
+        }
+        return $terms;
+    }
+
+    /**
      * Splits supplied string based on white space, then stems each
      * terms according to the stemmer for $lanf if exists
      *
-     * @param string $string to extract stemmed terms from
+     * @param mixed $string_or_array to extract stemmed terms from
      * @param string $lang IANA tag to look up stemmer under
      * @return array stemmed terms if stemmer; terms otherwise
      */
-    static function stemTerms($string, $lang)
+    static function stemTerms($string_or_array, $lang)
     {
-        $terms = mb_split("[[:space:]]", $string);
-        $stem_obj = self::getStemmer($lang);
+        if($string_or_array == array() || 
+            $string_or_array == "") { return array();}
+        if(is_array($string_or_array)) {
+            $terms = & $string_or_array;
+        } else {
+            $terms = mb_split("[[:space:]]", $string_or_array);
+        }
+        $stem_obj = self::getTokenizer($lang);
         $stems = array();
         if($stem_obj != NULL) {
             foreach($terms as $term) {
+                if(trim($term) == "") {continue;}
                 $pre_stem = mb_strtolower($term);
                 $stems[] = $stem_obj->stem($pre_stem);
             }
         } else {
             foreach($terms as $term) {
+                if(trim($term) == "") {continue;}
                 $stems[] = mb_strtolower($term);
             }
         }
@@ -534,32 +477,38 @@ class PhraseParser
     }
 
     /**
-     * Loads and instantiates a stemmer object for a language if exists
+     * Loads and instantiates a tokenizer object for a language if exists
      *
      * @param string $lang IANA tag to look up stemmer under
      * @return object stemmer object
      */
-    static function getStemmer($lang)
+    static function getTokenizer($lang)
     {
+        static $tokenizers = array();
+        if(isset($tokenizers[$lang])) {
+            return $tokenizers[$lang];
+        }
         mb_regex_encoding('UTF-8');
         mb_internal_encoding("UTF-8");
         $lower_lang = strtolower($lang); //try to avoid case sensitivity issues
         $lang_parts = explode("-", $lang);
         if(isset($lang_parts[1])) {
-            $stem_class_name = ucfirst($lang_parts[0]).ucfirst($lang_parts[1]) .
-                "Stemmer";
-            if(!class_exists($stem_class_name)) {
-                $stem_class_name = ucfirst($lang_parts[0])."Stemmer";
+            $tokenizer_class_name = ucfirst($lang_parts[0]).
+                ucfirst($lang_parts[1]) . "Tokenizer";
+            if(!class_exists($tokenizer_class_name)) {
+                $tokenizer_class_name = ucfirst($lang_parts[0])."Tokenizer";
             }
         } else {
-            $stem_class_name = ucfirst($lang)."Stemmer";
+            $tokenizer_class_name = ucfirst($lang)."Tokenizer";
         }
-        if(class_exists($stem_class_name)) {
-            $stem_obj = new $stem_class_name(); //for php 5.2 compatibility
+        if(class_exists($tokenizer_class_name)) {
+            $tokenizer_obj = new $tokenizer_class_name(); 
+                //for php 5.2 compatibility
         } else {
-            $stem_obj = NULL;
+            $tokenizer_obj = NULL;
         }
-        return $stem_obj;
+        $tokenizers[$lang] = $tokenizer_obj;
+        return $tokenizer_obj;
     }
 
     /**

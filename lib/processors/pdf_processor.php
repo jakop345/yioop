@@ -208,7 +208,6 @@ class PdfProcessor extends TextProcessor
             create_function( '$matches', 'return chr(hexdec($matches[1]));'),
             $data);
         $len = strlen($data);
-
         $out = "";
         $escape_flag =false;
         while($cur_pos < $len) {
@@ -216,8 +215,8 @@ class PdfProcessor extends TextProcessor
 
             if($cur_char == '[' && !$escape_flag) {
                 list($cur_pos, $text) = self::parseBrackets($data, $cur_pos);
-                $cur_pos --;
-                $out .= $text;
+                $cur_pos--;
+                $out .= " ".$text;
             }
 
             if($cur_char == '\\') {
@@ -256,7 +255,6 @@ class PdfProcessor extends TextProcessor
                 $cur_pos --;
                 $out .= $text;
             }
-
             $cur_pos++;
         }
 

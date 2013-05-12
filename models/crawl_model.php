@@ -471,7 +471,7 @@ EOT;
         $n[] = "";
 
         $n[] = "[active_classifiers]";
-        if(isset($info['active_classifiers'])) {
+        if(isset($info['active_classifiers']['label'])) {
             foreach ($info['active_classifiers']['label'] as $label) {
                 $n[] = "label[] = '$label';";
             }

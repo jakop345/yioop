@@ -1889,6 +1889,7 @@ class Fetcher implements CrawlConstants
         $sitemap_link_weight = 0.25;
         $num_links = count($link_urls);
         $num_queue_servers = count($this->queue_servers);
+        $common_weight = 1;
         if($from_sitemap) {
             $square_factor = 0;
             for($i = 1; $i <= $num_links; $i++) {
@@ -2294,6 +2295,7 @@ class Fetcher implements CrawlConstants
                 new IndexShard("fetcher_shard_{$this->current_server}");
         }
         for($i = 0; $i < $num_seen; $i++) {
+            $interim_time = microtime();
             $site = $this->found_sites[self::SEEN_URLS][$i];
             if(!isset($site[self::HASH])) {continue; }
 
@@ -2382,7 +2384,6 @@ class Fetcher implements CrawlConstants
             $this->found_sites[self::INVERTED_INDEX][$this->current_server
                 ]->addDocumentWords($doc_keys, self::NEEDS_OFFSET_FLAG,
                 $word_lists, $meta_ids, true, $doc_rank);
-
             if(!$this->no_process_links) {
                 foreach($site[self::LINKS] as $url => $link_text) {
                     /* this mysterious check means won't index links from
@@ -2440,6 +2441,12 @@ class Fetcher implements CrawlConstants
                             self::NEEDS_OFFSET_FLAG, $link_word_lists,
                                 $link_meta_ids, false, $link_rank);
                 }
+            }
+            $iterim_elapse = changeInMicrotime($interim_time);
+            if($iterim_elapse > 5) {
+                crawlLog("..Inverting ".$site[self::URL]."...took > 5s.");
+                crawlLog("..Still building inverted index. Have processed $i".
+                    " of $num_seen documents.");
             }
         }
         if($this->crawl_type == self::ARCHIVE_CRAWL) {

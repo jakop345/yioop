@@ -403,8 +403,10 @@ class IndexShard extends PersistentStructure implements
         foreach($word_lists as $word => $position_list) {
             $occurrences = count($position_list);
             $word_id = crawlHash($word, true);
+            if(isset($position_list["cond_max"])) { //for now
+                unset($position_list["cond_max"]);
+            }
             $store = packPosting($doc_offset, $position_list);
-
             if(!isset($this->words[$word_id])) {
                 $this->words[$word_id] = $store;
             } else {

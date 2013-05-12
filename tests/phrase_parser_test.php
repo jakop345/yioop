@@ -98,7 +98,7 @@ EOD;
  百度一下，你就知道
  .. 知 道 MP3 图 片 视 频 地 图 输入法 手写
 拼音 关闭 空间 百科 hao123 | 更多>>
-About Baidu Baidu
+About Baidu
 EOD;
 
         $word_lists = PhraseParser::extractPhrasesInLists($phrase_string,

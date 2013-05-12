@@ -46,7 +46,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @subpackage locale
  */
 
-class EnStemmer
+class EnTokenizer
 {
 
     static $no_stem_list = array("Titanic", "programming", "fishing");
@@ -67,6 +67,14 @@ class EnStemmer
      * @var int
      */
     static $j;
+
+    /**
+     *
+     */
+    static function segment($pre_segment)
+    {
+        return $pre_segment;
+    }
 
     /**
      * Computes the stem of an English word

@@ -1746,13 +1746,14 @@ class AdminController extends Controller implements CrawlConstants
                 }
             }
             $page_processor = new $processor_name($plugin_processors);
+            $doc_info = $page_processor->handle($_REQUEST['TESTPAGE'],
+                $site[self::URL]);
+
             if($page_processor != "RobotProcessor" &&
                 !isset($doc_info[self::JUST_METAS])) {
                 $doc_info[self::LINKS] = UrlParser::pruneLinks(
                     $doc_info[self::LINKS]);
             }
-            $doc_info = $page_processor->handle($_REQUEST['TESTPAGE'],
-                $site[self::URL]);
             foreach($doc_info as $key => $value) {
                 $site[$key] = $value;
             }

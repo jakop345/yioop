@@ -41,7 +41,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @subpackage locale
  */
 
-class ItStemmer
+class ItTokenizer
 {   /**
      * Storage used in computing the stem
      * @var string
@@ -95,6 +95,14 @@ class ItStemmer
      * @var bool
      */
     static $step1_changes;
+
+    /**
+     *
+     */
+    static function segment($pre_segment)
+    {
+        return $pre_segment;
+    }
 
     /**
      * Computes the stem of an Italian word
