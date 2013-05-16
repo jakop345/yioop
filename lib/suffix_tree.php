@@ -45,11 +45,14 @@
 class SuffixTree
 {
     /**
+     * The root node of the suffix trees
      * @var array
      */
     var $root;
 
     /**
+     * Index of last node added to the suffix tree in the array used to
+     * hold the suffix tree data structures
      * @var int
      */
     var $last_added;
@@ -85,27 +88,34 @@ class SuffixTree
     var $active_len;
 
     /**
+     * Number of elements in $this->text. i.e., count($this->text)
      * @var int
      */
     var $size;
 
     /**
+     * The sequence of terms, one array entry per term, that a suffix tree is
+     * to be made from
      * @var array
      */
     var $text;
 
     /**
+     * Used to hold the suffix tree data structure (represented as a sequence
+     * of nodes)
      * @var array
      */
     var $tree;
 
     /**
-     *
+     *  Upper bound on the length of any path in the tree
      */
     const INFTY = 2000000000;
 
     /**
+     * Initializes a suffix tree based on the supplied array of terms.
      *
+     * @param array $text a sequence of terms to build the suffix tree for
      */
     function __construct($text)
     {
@@ -137,6 +147,14 @@ class SuffixTree
     }
 
     /**
+     * Makes a new node for the suffix tree structure. This node
+     * is inserted at the end of the tree so far. A node is associative
+     * array consisting of the fields "start" whose value
+     * is the starting location in $this->text for this node, 
+     * "end" location in $this->text up to which this node is
+     * responsible, "sym_link" is a link to an isomorphic subtree for the
+     * purposes of building the suffix tree, and "next" is an array of
+     * next children in the tree.
      *
      */
     function makeNode($start, $end = self::INFTY)
@@ -151,7 +169,10 @@ class SuffixTree
     }
 
     /**
+     * The number of elements out of $this->text that this node is currently
+     * responsible for
      *
+     * @param array &$node the node to compute the length of
      */
     function edgeLength(&$node)
     {
@@ -246,7 +267,6 @@ class SuffixTree
     {
         $start = $this->tree[$index]["start"];
         $end = $this->tree[$index]["end"];
-        $cond_max = "";
         if($start >= 0 && $end >= 0) {
             $tmp_terms = array_slice($this->text, $start, $end - $start);
             if($path != "") {
@@ -254,15 +274,10 @@ class SuffixTree
                 $out_path = $path;
                 if($len > MAX_QUERY_TERMS) {
                     $out_array = array_slice($this->text, $begin, 
-                            MAX_QUERY_TERMS -1);
-                    $out_path = implode(" ", $out_array)." * ";
+                            MAX_QUERY_TERMS);
+                    $out_path = implode(" ", $out_array);
                 }
                 $maximal[$out_path][] = $begin;
-                if($begin != $start - 1) {
-                    $first_last = $this->text[$begin]." * ".
-                        $this->text[$start - 1];
-                    $maximal[$first_last][] =  $begin;
-                }
             }
             $tmp = implode(" ", $tmp_terms);
             $num = count($tmp_terms);
@@ -270,30 +285,31 @@ class SuffixTree
                 $len = $num;
                 $path = $tmp;
             } else {
-                $cond_max = $path;
+                if($len > 1 && $len < MAX_QUERY_TERMS) {
+                    $cond_max = strlen($path) + 1;
+                }
                 $path .= " ".$tmp;
                 $len += $num;
+                if(isset($cond_max)) {
+                    $out_path = $path;
+                    if($len > MAX_QUERY_TERMS) {
+                        $out_array = array_slice($this->text, $begin,
+                            MAX_QUERY_TERMS);
+                        $out_path = implode(" ", $out_array);
+                    }
+                    $maximal[$out_path]["cond_max"] = $cond_max;
+                }
             }
         }
         if($end == self::INFTY) {
-            $cond_flag = true;
             $begin = $this->size - $len;
             $out_path = $path;
             if($len > MAX_QUERY_TERMS) {
                 $out_array = array_slice($this->text, $begin,
-                    MAX_QUERY_TERMS - 1);
-                $out_path = implode(" ", $out_array). " *";
-                $cond_flag = false;
+                    MAX_QUERY_TERMS);
+                $out_path = implode(" ", $out_array);
             }
             $maximal[$out_path][] = $begin;
-            if($cond_max != "" && $cond_flag) {
-                $maximal[$out_path]["cond_max"] = $cond_max;
-            }
-            if($len != 1) {
-                $first_last = $this->text[$begin]." * ".
-                    $this->text[$this->size-1];
-                $maximal[$first_last][] =  $begin;
-            }
             return;
         }
         foreach($this->tree[$index]["next"] as $sub_index) {

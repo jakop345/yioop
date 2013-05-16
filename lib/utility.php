@@ -654,6 +654,130 @@ function crawlHash($string, $raw = false)
 }
 
 /**
+ *
+ */
+function allCrawlHashPaths($string, $raw = false)
+{
+    $pos = -1;
+    $hashes = array();
+    do {
+        $old_pos = $pos;
+        $hash = crawlHashPath($string, $pos + 1, $raw);
+        $hashes[] = $hash;
+        $pos = mb_strpos($string, " ", $pos + 1);
+
+    } while($pos > 0 && $old_pos != $pos);
+
+    if(count($hashes) == 1) {
+        return $hashes[0];
+    }
+    return $hashes;
+}
+
+/**
+ *
+ */
+function crawlHashPath($string, $path_start = 0, $raw = false)
+{
+
+    if($path_start > 0) {
+        $string_parts = explode(" ", substr($string, $path_start));
+        $num_parts = count($string_parts);
+    }
+    if($path_start == 0 || $num_parts == 0) {
+        $hash = crawlHash($string, true);
+        if(!$raw) {
+            $hash = base64Hash($hash);
+        }
+        return $hash;
+    }
+    $front = substr($string, 0, $path_start);
+    //Top five bytes what a normal crawlHash would be
+    $front_hash = substr(crawlHash($front, true), 0, 5);
+
+    //Low 3 bytes encode paths
+    $path_ints = array();
+    foreach($string_parts as $part) {
+        $path_ints[] = unpackInt(substr(md5($part, true), 0, 4));
+    }
+    $num_parts = count($path_ints);
+    switch($num_parts)
+    {
+        case 1: // 1 22 bit number
+            $bit_mask = (1 << 22) - 1;
+            $out_int = ($path_ints[0] & $bit_mask);
+        break;
+        case 2: // 2 11 bit numbers
+            $bit_mask = (1 << 11) - 1;
+            $out_int = (((1 << 11) + ($path_ints[0] & $bit_mask)) << 11)
+                + ($path_ints[1] & $bit_mask);
+        break;
+        case 3: // 3 7 bit numbers
+            $bit_mask = (1 << 7) - 1;
+            $out_int = (((((1 << 9) + ($path_ints[0] & $bit_mask)) << 7)
+                + ($path_ints[1] & $bit_mask)) << 7)
+                + ($path_ints[2] & $bit_mask);
+        break;
+        case 4: // 4 5 bit numbers
+            $bit_mask = (1 << 5) - 1;
+            $out_int = (((((((3 << 7) + ($path_ints[0] & $bit_mask)) << 5)
+                + ($path_ints[1] & $bit_mask)) << 5)
+                + ($path_ints[2] & $bit_mask)) << 5)
+                + ($path_ints[3] & $bit_mask);
+        break;
+        case 5: // 5 4 bit numbers
+            $bit_mask = (1 << 4) - 1;
+            $out_int = (((((( (((13 << 4) + ($path_ints[0] & $bit_mask)) << 4)
+                + ($path_ints[1] & $bit_mask)) << 4)
+                + ($path_ints[2] & $bit_mask)) << 4)
+                + ($path_ints[3] & $bit_mask)) << 4)
+                + ($path_ints[4] & $bit_mask);
+        break;
+        case 6: // 6 3 bit numbers
+            $bit_mask = (1 << 3) - 1;
+            $out_int = (((((((((((7 << 6) + ($path_ints[0] & $bit_mask)) << 3)
+                + ($path_ints[1] & $bit_mask)) << 3)
+                + ($path_ints[2] & $bit_mask)) << 3)
+                + ($path_ints[3] & $bit_mask)) << 3)
+                + ($path_ints[4] & $bit_mask)) << 3)
+                + ($path_ints[5] & $bit_mask);
+        break;
+        case 7:
+        case 8:
+        case 9: // 9 2 bit numbers
+            $bit_mask = (1 << 2) - 1;
+            $out_int = 60;
+            if(!isset($path_ints[7])) {
+                $path_ints[7] = 0;
+            }
+            if(!isset($path_ints[8])) {
+                $path_ints[8] = 0;
+            }
+            for($i = 0; $i < 9; $i++) {
+                $out_int <<= 2;
+                $out_int += ($path_ints[$i] & $bit_mask);
+            }
+        break;
+        default: // 19 1 bit numbers
+            $bit_mask = 1;
+            $out_int = 62;
+            for($i = 0; $i < 19; $i++) {
+                $out_int <<= 1;
+                if(!isset($path_ints[$i])) {
+                    $path_ints[$i] = 0;
+                }
+                $out_int += ($path_ints[$i] & $bit_mask);
+            }
+    }
+    $hash = $front_hash . substr(packInt($out_int), 1);
+    if(!$raw) {
+        $hash = base64Hash($hash);
+            // common variant of base64 safe for urls and paths
+    }
+    return $hash;
+}
+
+/**
  * Converts a crawl hash number to something closer to base64 coded but
  * so doesn't get confused in urls or DBs
  *

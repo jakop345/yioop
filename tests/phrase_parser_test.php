@@ -68,6 +68,12 @@ class PhraseParserTest extends UnitTest
      */
     function extractPhrasesTestCase()
     {
+$phrase_string = <<< EOD
+This is a dog. This is not a cat. This is not a donkey.
+EOD;
+        $word_lists = PhraseParser::extractPhrasesInLists($phrase_string,
+            "en-US");
+print_r($word_lists); exit();
         $phrase_string = <<< EOD
 Dr. T.Y Lin's home page. J. R. R. Tolkien
 EOD;

@@ -82,8 +82,8 @@ class TextProcessor extends PageProcessor
             $summary[self::LANG] = self::calculateLang(
                 $summary[self::DESCRIPTION]);
             $summary[self::LINKS] = self::extractHttpHttpsUrls($page);
-            $summary[self::PAGE] = "<html><body><pre>".
-                strip_tags($page)."</pre></body></html>";
+            $summary[self::PAGE] = "<html><body><div><p>&nbsp;</p><pre>".
+                strip_tags($page)."</pre></div></body></html>";
         }
         return $summary;
     }

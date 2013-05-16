@@ -359,7 +359,6 @@ class IndexDictionary implements CrawlConstants
         $out_len = 0;
         $segment_size = self::SEGMENT_SIZE;
 
-
         while($remaining_a > 0 || $remaining_b > 0 ||
             $offset_a < $read_size_a || $offset_b < $read_size_b) {
             if($offset_a >= $read_size_a && $remaining_a > 0) {

@@ -128,80 +128,54 @@ class PhraseParser
         if($index_name == NULL || $num <= 1) {
             return $terms;
         }
-        $whole_phrase = implode(" ", $terms);
+        if(count($terms) > MAX_QUERY_TERMS) {
+            $first_terms = array_slice($terms, 0, MAX_QUERY_TERMS);
+            $whole_phrase = implode(" ", $first_terms);
+        } else {
+            $whole_phrase = implode(" ", $terms);
+        }
         if($exact_match) {
             return array($whole_phrase);
         }
-        $count_whole_phrase = self::numDocsTerm(crawlHash($whole_phrase, true),
-            $index_name);
-        if($count_whole_phrase >= MIN_RESULTS_TO_GROUP
+        $count_whole_phrase = self::numDocsTerm($whole_phrase, $index_name);
+
+        if($count_whole_phrase >= 10
             || $num > MAX_QUERY_TERMS / 2) {
             return array($whole_phrase);
         }
         if($index_name != 'feed' && intval($index_name) < 1367767529) {
             return $terms; //old style index before max phrase extraction
         }
-
-        $out_phrases = array();
-        $first = true;
-        foreach($terms as $term) {
-            if($first) {
-                $first = false;
-                $last = $term;
-                $previous = $term;
-                continue;
-            }
-            if(strcmp($term, $last) < 0) {
-                $pre_phrase = $term.' * '.$last;
-            } else {
-                $pre_phrase = $last.' * '.$term;
-            }
-            $num_pre_phrase = self::numDocsTerm(crawlHash($pre_phrase, true),
-                $index_name, true);
-            if($num_pre_phrase == 0) {
-                if(self::numDocsTerm(crawlHash($previous, true),
-                    $index_name, true) <  3 * MIN_RESULTS_TO_GROUP &&
-                    self::numDocsTerm(crawlHash($term, true),
-                    $index_name, true) <  3 * MIN_RESULTS_TO_GROUP) {
-                    $pre_phrase = $previous;
-                }
-
-            }
-            $previous = $term;
-            $out_phrases[] = $pre_phrase;
-        }
-        if(strpos($pre_phrase, "*") == 0)  {
-            $out_phrases[] = $term;
-        }
-        return array_merge($out_phrases);
+        return $terms;
     }
 
     /**
      *
      */
-    static function numDocsTerm($word_key, $index_name, $raw = false)
+    static function numDocsTerm($term_or_phrase, $index_name)
     {
-        if($raw == false) {
-            //get rid of out modfied base64 encoding
-            $hash = str_replace("_", "/", $word_key);
-            $hash = str_replace("-", "+" , $hash);
-            $hash .= "=";
-            $word_key = base64_decode($hash);
-        }
         $index = IndexManager::getIndex($index_name);
-        if($index->dictionary) {
-            $dictionary_info =
-                $index->dictionary->getWordInfo($word_key, true);
-        } else {
-            return 0;
+        if(!$index->dictionary) {
+            return false;
         }
-        $num_generations = count($dictionary_info);
+        $pos = -1;
         $total_num_docs = 0;
-        for($i = 0; $i < $num_generations; $i++) {
-            list(, , , $num_docs) =
-                $dictionary_info[$i];
-            $total_num_docs += $num_docs;
-        }
+        do {
+            $pos++;
+            $hash = crawlHashPath($term_or_phrase, $pos, true);
+            $dictionary_info =
+                $index->dictionary->getWordInfo($hash, true);
+
+            $num_generations = count($dictionary_info);
+
+            for($i = 0; $i < $num_generations; $i++) {
+                list(, , , $num_docs) =
+                    $dictionary_info[$i];
+                $total_num_docs += $num_docs;
+            }
+            $pos = strpos($term_or_phrase, " ", $pos);
+        } while($pos !== false || !isset($term_or_phrase[$pos + 1]));
+
         return $total_num_docs;
     }
 

@@ -552,9 +552,9 @@ class PhraseModel extends ParallelModel
             }
         }
         if(isset($words) && count($words) == 1 &&
-            count($disallow_phrases) < 1) {
+            count($disallow_phrases) < 1) {;
             $phrase_string = $words[0];
-            $phrase_hash = crawlHash($phrase_string);
+            $phrase_hash = allCrawlHashPaths($phrase_string);
             $word_struct = array("KEYS" => array($phrase_hash),
                 "QUOTE_POSITIONS" => NULL, "DISALLOW_KEYS" => array(),
                 "WEIGHT" => $weight, "INDEX_NAME" => $index_name
@@ -565,12 +565,10 @@ class PhraseModel extends ParallelModel
             $hashes = array();
             $i = 0;
             foreach($words as $word) {
-                $hashes[] = crawlHash($word);
+                $word_keys[] = allCrawlHashPaths($word);
             }
 
-            if(count($hashes) > 0) {
-                $word_keys = array_slice($hashes, 0, MAX_QUERY_TERMS);
-            } else {
+            if(count($word_keys) == 0) {
                 $word_keys = NULL;
                 $word_struct = NULL;
             }
@@ -1313,6 +1311,17 @@ class PhraseModel extends ParallelModel
                         || $distinct_word_keys[$i] == $doc_iterate_group_hash) {
                         $word_iterators[$i] = new DocIterator(
                             $index_name, $filter, $to_retrieve);
+                    } else if(is_array($distinct_word_keys[$i])) {
+                        //can happen if exact phrase search suffix approach used
+                        $distinct_keys = $distinct_word_keys[$i];
+                        $tmp_word_iterators =array();
+                        foreach($distinct_keys as $distinct_key) {
+                            $tmp_word_iterators[] =
+                                new WordIterator($distinct_key,
+                                $index_name, false, $filter, $to_retrieve);
+                        }
+                        $word_iterators[$i] = new DisjointIterator(
+                            $tmp_word_iterators);
                     } else {
                         $word_iterators[$i] =
                             new WordIterator($distinct_word_keys[$i],
