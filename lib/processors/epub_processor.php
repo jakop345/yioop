@@ -48,12 +48,6 @@ require_once BASE_DIR."/lib/processors/html_processor.php";
  */
 require_once BASE_DIR."/lib/url_parser.php";
 
-
-/**
- *  The maximum length of description
- */
-define('MAX_DESCRIPTION_LEN', 2000);
-
 /**
  * The constant represents the number of
  * child levels at which the data is present in
@@ -214,8 +208,8 @@ class EpubProcessor extends TextProcessor
         }
         $desc= $desc.$htmlcontent;
         //restrict the length of the description to maximum description length
-        if(strlen($desc) > MAX_DESCRIPTION_LEN) {
-            $desc = substr($desc, 0, MAX_DESCRIPTION_LEN);
+        if(strlen($desc) > self::$max_description_len) {
+            $desc = substr($desc, 0, self::$max_description_len);
         }
 
         $summary[self::TITLE] = $epub_title;

@@ -660,13 +660,29 @@ function allCrawlHashPaths($string, $raw = false)
 {
     $pos = -1;
     $hashes = array();
+    $zero = "*";
+    $masks = array(2047, 127, 31, 15, 7, 3, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
+    $num_spaces = substr_count($string, " ");
+    $num = MAX_QUERY_TERMS - $num_spaces - 1;
+
+    $j = 0;
     do {
         $old_pos = $pos;
-        $hash = crawlHashPath($string, $pos + 1, $raw);
-        $hashes[] = $hash;
+        $path_string = $string;
+        for($i = 0; $i < $num; $i++) {
+            $hash = crawlHashPath($path_string, $pos + 1, $raw);
+            if($i > 0 && $j > 0) {
+                $hashes[] = array($hash, $masks[$i]);
+            } else {
+                $hashes[] = $hash;
+            }
+            if($j == 0) {break; }
+            $path_string .= " ".$zero;
+        }
         $pos = mb_strpos($string, " ", $pos + 1);
-
+        $j++;
     } while($pos > 0 && $old_pos != $pos);
+
 
     if(count($hashes) == 1) {
         return $hashes[0];
@@ -674,13 +690,14 @@ function allCrawlHashPaths($string, $raw = false)
     return $hashes;
 }
 
+
 /**
  *
  */
 function crawlHashPath($string, $path_start = 0, $raw = false)
 {
 
-    if($path_start > 0) {
+    if($path_start > 0 ) {
         $string_parts = explode(" ", substr($string, $path_start));
         $num_parts = count($string_parts);
     }
@@ -698,7 +715,11 @@ function crawlHashPath($string, $path_start = 0, $raw = false)
     //Low 3 bytes encode paths
     $path_ints = array();
     foreach($string_parts as $part) {
-        $path_ints[] = unpackInt(substr(md5($part, true), 0, 4));
+        if($part == "*") {
+            $path_ints[] = 0;
+        } else {
+            $path_ints[] = unpackInt(substr(md5($part, true), 0, 4));
+        }
     }
     $num_parts = count($path_ints);
     switch($num_parts)
@@ -776,6 +797,23 @@ function crawlHashPath($string, $path_start = 0, $raw = false)
     }
     return $hash;
 }
+
+    /**
+     *
+     */
+    function compareWordHashes($id1, $id2, $mask)
+    {
+        if($mask === false) {
+            return strcmp($id1, $id2);
+        }
+        $cmp = strcmp(substr($id1, 0, 4), substr($id2, 0, 4));
+        if($cmp !== 0) {
+            return $cmp;
+        }
+        $id1 = packInt((unpackInt($id1) & $mask));
+        $id2 = packInt((unpackInt($id2) & $mask));
+        return strcmp($id1, $id2);
+    }
 
 /**
  * Converts a crawl hash number to something closer to base64 coded but

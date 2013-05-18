@@ -233,9 +233,15 @@ class FetchUrl implements CrawlConstants
     }
 
     /**
-     *
-     * @param string $url
-     * @param bool $minimal
+     * Curl requests are typically done using cache data which is stored
+     * after ### at the end of urls if this is possible. To make this
+     * work. The http Host: with the url is added a header after the
+     * for the curl request. The job of this function is to do this replace
+     * @param string $url site to download with ip address at end potentially
+     *   afte ###
+     * @param bool $minimal don't try to do replacement, but do add an Expect
+     *      header
+     * @return array 3-tuple (orig url, url with replacement, http header array)
      */
     static function prepareUrlHeaders($url, $minimal = false)
     {

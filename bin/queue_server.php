@@ -166,6 +166,12 @@ class QueueServer implements CrawlConstants, Join
      */
     var $page_range_request;
     /**
+     * Max number of chars to extract for description from a page to index.
+     * Only words in the description are indexed.
+     * @var int
+     */
+    var $max_description_len;
+    /**
      * Number of days between resets of the page url filter
      * If nonpositive, then never reset filter
      * @var int
@@ -298,15 +304,16 @@ class QueueServer implements CrawlConstants, Join
     var $server_name;
 
     /**
-     * holds the post processors selected in the crawl options page
+     *  Creates a Queue Server Daemon
      */
-
-    function __construct($indexed_file_types)
+    function __construct()
     {
+        global $INDEXED_FILE_TYPES;
+
         $db_class = ucfirst(DBMS)."Manager";
         $this->db = new $db_class();
-        $this->indexed_file_types = $indexed_file_types;
-        $this->all_file_types = $indexed_file_types;
+        $this->indexed_file_types = $INDEXED_FILE_TYPES;
+        $this->all_file_types = $INDEXED_FILE_TYPES;
         $this->most_recent_fetcher = "No Fetcher has spoken with me";
 
         //the next values will be set for real in startCrawl
@@ -326,6 +333,7 @@ class QueueServer implements CrawlConstants, Join
         $this->cache_pages = true;
         $this->page_recrawl_frequency = PAGE_RECRAWL_FREQUENCY;
         $this->page_range_request = PAGE_RANGE_REQUEST;
+        $this->max_description_len = MAX_DESCRIPTION_LEN;
         $this->server_type = self::BOTH;
         $this->indexing_plugins = array();
         $this->video_sources = array();
@@ -962,6 +970,7 @@ class QueueServer implements CrawlConstants, Join
             "crawl_index" => self::CRAWL_INDEX,
             "cache_pages" => self::CACHE_PAGES,
             "page_range_request" => self::PAGE_RANGE_REQUEST,
+            "max_description_len" => self::MAX_DESCRIPTION_LEN,
             "page_recrawl_frequency" => self::PAGE_RECRAWL_FREQUENCY,
             "indexed_file_types" => self::INDEXED_FILE_TYPES,
             "restrict_sites_by_url" => self::RESTRICT_SITES_BY_URL,
@@ -1126,6 +1135,7 @@ class QueueServer implements CrawlConstants, Join
         }
         $updatable_info = array(
             "page_range_request" => self::PAGE_RANGE_REQUEST,
+            "max_description_len" => self::MAX_DESCRIPTION_LEN,
             "page_recrawl_frequency" => self::PAGE_RECRAWL_FREQUENCY,
             "restrict_sites_by_url" => self::RESTRICT_SITES_BY_URL,
             "cache_pages" => self::CACHE_PAGES,
@@ -1874,6 +1884,7 @@ class QueueServer implements CrawlConstants, Join
         $sites[self::INDEXING_PLUGINS] =  $this->indexing_plugins;
         $sites[self::VIDEO_SOURCES] = $this->video_sources;
         $sites[self::PAGE_RANGE_REQUEST] = $this->page_range_request;
+        $sites[self::MAX_DESCRIPTION_LEN] = $this->max_description_len;
         $sites[self::POST_MAX_SIZE] = metricToInt(ini_get("post_max_size"));
         $sites[self::SITES] = array();
 

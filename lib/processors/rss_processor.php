@@ -53,12 +53,6 @@ require_once BASE_DIR."/lib/url_parser.php";
 class RssProcessor extends TextProcessor
 {
     /**
-     * Max number of chars to extract for description
-     */
-    const MAX_DESCRIPTION_LEN = 2000;
-
-
-    /**
      *  Used to extract the title, description and links from
      *  a string consisting of rss or atom news feed data.
      *
@@ -200,7 +194,7 @@ class RssProcessor extends TextProcessor
             $doc_nodes = $xpath->evaluate($part);
             foreach($doc_nodes as $node) {
                 $description .= " ".$node->textContent;
-                if(strlen($description) > self::MAX_DESCRIPTION_LEN) { break 2;}
+                if(strlen($description) > self::$max_description_len) {break 2;}
             }
         }
         $description = mb_ereg_replace("(\s)+", " ",  $description);

@@ -55,11 +55,6 @@ require_once BASE_DIR."/lib/url_parser.php";
 class TextProcessor extends PageProcessor
 {
     /**
-     * Max number of chars to extract for description
-     */
-    const MAX_DESCRIPTION_LEN = 2000;
-
-    /**
      * Computes a summary based on a text string of a document
      *
      * @param string $page text string of a document
@@ -78,11 +73,11 @@ class TextProcessor extends PageProcessor
         if(is_string($page)) {
             $summary[self::TITLE] = "";
             $summary[self::DESCRIPTION] = mb_substr($page, 0,
-                self::MAX_DESCRIPTION_LEN);
+                self::$max_description_len);
             $summary[self::LANG] = self::calculateLang(
                 $summary[self::DESCRIPTION]);
             $summary[self::LINKS] = self::extractHttpHttpsUrls($page);
-            $summary[self::PAGE] = "<html><body><div><p>&nbsp;</p><pre>".
+            $summary[self::PAGE] = "<html><body><div><pre>".
                 strip_tags($page)."</pre></div></body></html>";
         }
         return $summary;

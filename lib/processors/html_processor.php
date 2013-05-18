@@ -57,7 +57,9 @@ require_once BASE_DIR."/lib/locale_functions.php";
  */
 class HtmlProcessor extends TextProcessor
 {
-    const MAX_DESCRIPTION_LEN = 2000;
+    /**
+     *  Maximum number of characters in a title
+     */
     const MAX_TITLE_LEN = 100;
 
     /**
@@ -86,7 +88,8 @@ class HtmlProcessor extends TextProcessor
                 if($summary[self::TITLE] == "") {
                     $summary[self::TITLE] = self::crudeTitle($dom_page);
                 }
-                $summary[self::DESCRIPTION] = self::description($dom);
+                $summary[self::DESCRIPTION] = self::description($dom,
+                    $dom_page);
                 if(trim($summary[self::DESCRIPTION]) == "") {
                     $summary[self::DESCRIPTION] = self::crudeDescription(
                         $dom_page);
@@ -292,7 +295,7 @@ class HtmlProcessor extends TextProcessor
      *  Returns summary of body of a web page based on crude regex matching
      *      used as a fall back if dom parsing did not work.
      *
-     *  @param string $page to extract title from
+     *  @param string $page to extract description from
      *  @return string  a title of the page
      */
     static function crudeDescription($page)
@@ -302,7 +305,7 @@ class HtmlProcessor extends TextProcessor
         if($body == "") { return $body; }
         $body_parts = preg_split("/\s+/", $body);
         $body = implode(" ", $body_parts);
-        return mb_substr($body, 0, self::MAX_DESCRIPTION_LEN);
+        return mb_substr($body, 0, self::$max_description_len);
     }
 
     /**
@@ -310,9 +313,10 @@ class HtmlProcessor extends TextProcessor
      * object
      *
      * @param object $dom   a document object to extract a description from.
+     * @param string $page original page string to extract description from
      * @return string a description of the page
      */
-    static function description($dom) {
+    static function description($dom, $page) {
         $xpath = new DOMXPath($dom);
 
         $metas = $xpath->evaluate("/html//meta");
@@ -325,15 +329,26 @@ class HtmlProcessor extends TextProcessor
                 $description .= " .. ".$meta->getAttribute('content');
             }
         }
+        if(self::$max_description_len > 2 * MAX_DESCRIPTION_LEN) {
+            /* if don't need to summarize much, take meta description
+               from above code, then concatenate body of doc 
+               after stripping tags, return result
+             */
+            $description .= "\n".self::crudeDescription($page);
+            return $description;
+        }
 
         /*
           concatenate the contents of then additional dom elements up to
-          the limit of description length
+          the limit of description length. Choose tags in order of likely
+          importance to this doc
         */
         $page_parts = array("/html//p[1]",
             "/html//div[1]", "/html//p[2]", "/html//div[2]", "/html//p[3]",
             "/html//div[3]", "/html//p[4]", "/html//div[4]",
-            "/html//td", "/html//li", "/html//dt", "/html//dd", "/html//a");
+            "/html//td", "/html//li", "/html//dt", "/html//dd", 
+            "/html//pre", "/html//a", "/html//article",
+            "/html//section", "/html//cite");
 
         $para_data = array();
         $len = 0;
@@ -343,17 +358,17 @@ class HtmlProcessor extends TextProcessor
             foreach($doc_nodes as $node) {
                 if($part == "/html//a") {
                     $content = $node->getAttribute('href')." = ";
-                    $add_len  = min(self::MAX_DESCRIPTION_LEN / 2,
+                    $add_len  = min(self::$max_description_len / 2,
                         mb_strlen($content));
                     $para_data[$add_len][] = mb_substr($content, 0, $add_len);
                 }
-                $add_len  = min(self::MAX_DESCRIPTION_LEN / 2,
+                $add_len  = min(self::$max_description_len / 2,
                     mb_strlen($node->textContent));
                 $para_data[$add_len][] = mb_substr($node->textContent,
                     0, $add_len);
                 $len += $add_len;
 
-                if($len > self::MAX_DESCRIPTION_LEN) { break 2;}
+                if($len > self::$max_description_len) { break 2;}
                 if(in_array($part, array("/html//p[1]", "/html//div[1]",
                     "/html//div[2]", "/html//p[2]", "/html//p[3]",
                     "/html//div[3]", "/html//div[4]", "/html//p[4]"))) break;

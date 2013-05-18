@@ -1598,8 +1598,9 @@ class SearchController extends Controller implements CrawlConstants
         } else {
             $body_tags = "<frameset><frame><noscript><img><span><b><i><em>".
                 "<strong><h1><h2><h3><h4><h5><h6><p><div>".
-                "<a><table><tr><td><th><dt><dir><dl><dd>";
+                "<a><table><tr><td><th><dt><dir><dl><dd><pre>";
             $cache_file = strip_tags($cache_file, $body_tags);
+            $cache_file = wordwrap($cache_file, 80);
             $cache_file = "<html><head><title>Yioop! Cache</title></head>".
                 "<body>".$cache_file."</body></html>";
             $dom = new DOMDocument();

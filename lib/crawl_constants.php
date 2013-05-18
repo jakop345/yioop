@@ -221,6 +221,7 @@ interface CrawlConstants
     const END_ITERATOR = 'ct';
     const ACTIVE_CLASSIFIERS = 'cu';
     const ACTIVE_CLASSIFIERS_DATA = 'cv';
+    const MAX_DESCRIPTION_LEN = 'cw';
 
     const NEEDS_OFFSET_FLAG = 0x7FFFFFFF;
 }

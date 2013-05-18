@@ -203,6 +203,16 @@ function guessEncodingHtml($html, $return_loc_info = false)
     if($end_head) {
         $reg = "/charset(\s*)=(\s*)(\'|\")?((\w|\-)+)(\'|\")?/u";
         $is_match = preg_match($reg, $html, $match);
+        if(!$is_match) {
+            $reg = "charset(\s*)=(\s*)(\'|\")?((\w|\-)+)(\'|\")?";
+            mb_regex_encoding("UTF-8");
+            mb_ereg_search_init($html);
+            mb_ereg_search($reg);
+            $match = mb_ereg_search_getregs();
+            if(isset($match[0])) {
+                $is_match = true;
+            }
+        }
         if($is_match && isset($match[6])) {
             $len_c = strlen($match[0]);
             if(($match[6] == "'" || $match[6] == '"') &&

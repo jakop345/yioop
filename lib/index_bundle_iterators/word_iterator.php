@@ -162,6 +162,11 @@ class WordIterator extends IndexBundleIterator
     function __construct($word_key, $index_name, $raw = false, &$filter = NULL,
         $results_per_block = IndexBundleIterator::RESULTS_PER_BLOCK)
     {
+        $mask = false;
+        if(is_array($word_key)) {
+            $mask = $word_key[1];
+            $word_key = $word_key[0];
+        }
         if($raw == false) {
             //get rid of out modfied base64 encoding
             $hash = str_replace("_", "/", $word_key);
@@ -211,15 +216,10 @@ class WordIterator extends IndexBundleIterator
             $this->using_feeds = false;
         }
         $this->num_docs = $this->feed_count;
-        $this->index_name =  $index_name;
-        $index = IndexManager::getIndex($index_name);
         $this->current_block_fresh = false;
-        if($index->dictionary) {
-            $this->dictionary_info =
-                $index->dictionary->getWordInfo($word_key, true);
-        } else {
-            $this->dictionary_info = false;
-        }
+        $this->index_name =  $index_name;
+        $this->dictionary_info = 
+            IndexManager::getWordInfo($index_name, $word_key, $mask);
         if ($this->dictionary_info === false) {
             $this->empty = true;
         } else {

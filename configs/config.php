@@ -331,9 +331,15 @@ define('MAX_LINKS_WORD_TEXT', 100);
 define('MAX_URL_LENGTH', 512);
 
 /** request this many bytes out of a page -- this is the default value to
-    use if the user doesn't set this value in the page options GUI
+ *  use if the user doesn't set this value in the page options GUI
  */
 define('PAGE_RANGE_REQUEST', 50000);
+
+/**
+ * Max number of chars to extract for description from a page to index.
+ * Only words in the description are indexed.
+ */
+define('MAX_DESCRIPTION_LEN', 2000);
 
 /**
     Allow pages to be recrawled after this many days -- this is the

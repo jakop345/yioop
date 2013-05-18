@@ -514,8 +514,8 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
     static function getAdditionalMetaWords()
     {
 
-        return array("recipe:" => HtmlProcessor::MAX_DESCRIPTION_LEN,
-            "ingredient:" => HtmlProcessor::MAX_DESCRIPTION_LEN);
+        return array("recipe:" => MAX_DESCRIPTION_LEN,
+            "ingredient:" => MAX_DESCRIPTION_LEN);
     }
 }
 

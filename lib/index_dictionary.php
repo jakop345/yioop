@@ -525,11 +525,13 @@ class IndexDictionary implements CrawlConstants
      *      generation, first offset, last offset, count or
      *      just a string of the word_info data if $extract is false
      */
-     function getWordInfo($word_id, $raw = false, $extract = true)
+     function getWordInfo($word_id, $raw = false, $extract = true,
+        $mask = false)
      {
         $info = array();
         foreach($this->active_tiers as $tier) {
-            $tier_info =$this->getWordInfoTier($word_id, $raw, $extract, $tier);
+            $tier_info =$this->getWordInfoTier($word_id, $raw, $extract, $tier,
+                $mask);
             if(is_array($tier_info)) {
                 $info = array_merge($info, $tier_info);
             }
@@ -561,7 +563,7 @@ class IndexDictionary implements CrawlConstants
       *      generation, first offset, last offset, count or
       *      just a string of the word_info data if $extract is false
       */
-     function getWordInfoTier($word_id, $raw, $extract, $tier)
+     function getWordInfoTier($word_id, $raw, $extract, $tier, $mask = false)
      {
         if(isset($this->fhs)) {
             $this->tier_fhs[$this->read_tier] = $this->fhs;
@@ -617,7 +619,7 @@ class IndexDictionary implements CrawlConstants
 
             if($word_string == false) {return false;}
             $id = substr($word_string, 0, $word_key_len);
-            $cmp = strcmp($word_id, $id);
+            $cmp = compareWordHashes($word_id, $id, $mask);
             if($cmp === 0) {
                 $found = true;
                 break;
@@ -664,7 +666,7 @@ class IndexDictionary implements CrawlConstants
                 $test_loc * $word_item_len, $word_item_len);
             if($word_string == "" ) break;
             $id = substr($word_string, 0, $word_key_len);
-            if(strcmp($word_id, $id) != 0 ) {
+            if(compareWordHashes($word_id, $id, $mask) != 0 ) {
                 $break_count++;
                 if($break_count > 1) {
                     break;
@@ -713,7 +715,7 @@ class IndexDictionary implements CrawlConstants
                 $test_loc * $word_item_len, $word_item_len);
             if($word_string == "" ) break;
             $id = substr($word_string, 0, $word_key_len);
-            if(strcmp($word_id, $id) != 0 ) {
+            if(compareWordHashes($word_id, $id, $mask) != 0 ) {
                 $break_count++;
                 if($break_count > 1) {
                     break;

@@ -57,6 +57,13 @@ abstract class PageProcessor implements CrawlConstants
     var $indexing_plugins;
 
     /**
+     * Max number of chars to extract for description from a page to index.
+     * Only words in the description are indexed.
+     * @var int
+     */
+    static $max_description_len;
+
+    /**
      *  Set-ups the any indexing plugins associated with this page
      *  processor
      *
@@ -64,8 +71,13 @@ abstract class PageProcessor implements CrawlConstants
      *      do further processing on the data handles by this page
      *      processor
      */
-    function __construct($plugins = array()){
+    function __construct($plugins = array(), $max_description_len = NULL) {
         $this->indexing_plugins = array_unique($plugins);
+        if($max_description_len != NULL) {
+            self::$max_description_len = $max_description_len;
+        } else {
+            self::$max_description_len = MAX_DESCRIPTION_LEN;
+        }
         foreach($plugins as $plugin) {
             $plugin_name = ucfirst($plugin);
             $plugin_instance_name = lcfirst($plugin);

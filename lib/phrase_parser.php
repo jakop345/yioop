@@ -137,8 +137,8 @@ class PhraseParser
         if($exact_match) {
             return array($whole_phrase);
         }
-        $count_whole_phrase = self::numDocsTerm($whole_phrase, $index_name);
-
+        $count_whole_phrase = IndexManager::numDocsTerm($whole_phrase,
+            $index_name);
         if($count_whole_phrase >= 10
             || $num > MAX_QUERY_TERMS / 2) {
             return array($whole_phrase);
@@ -147,36 +147,6 @@ class PhraseParser
             return $terms; //old style index before max phrase extraction
         }
         return $terms;
-    }
-
-    /**
-     *
-     */
-    static function numDocsTerm($term_or_phrase, $index_name)
-    {
-        $index = IndexManager::getIndex($index_name);
-        if(!$index->dictionary) {
-            return false;
-        }
-        $pos = -1;
-        $total_num_docs = 0;
-        do {
-            $pos++;
-            $hash = crawlHashPath($term_or_phrase, $pos, true);
-            $dictionary_info =
-                $index->dictionary->getWordInfo($hash, true);
-
-            $num_generations = count($dictionary_info);
-
-            for($i = 0; $i < $num_generations; $i++) {
-                list(, , , $num_docs) =
-                    $dictionary_info[$i];
-                $total_num_docs += $num_docs;
-            }
-            $pos = strpos($term_or_phrase, " ", $pos);
-        } while($pos !== false || !isset($term_or_phrase[$pos + 1]));
-
-        return $total_num_docs;
     }
 
     /**

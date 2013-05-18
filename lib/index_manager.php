@@ -41,6 +41,10 @@ require_once BASE_DIR."/lib/crawl_constants.php";
  */
 require_once BASE_DIR."/lib/index_archive_bundle.php";
 /**
+ * For crawlHash
+ */
+require_once BASE_DIR."/lib/utility.php";
+/**
  * Class used to manage open IndexArchiveBundle's while performing
  * a query. Ensures an easy place to obtain references to these bundles
  * and ensures only one object per bundle is instantiated in a Singleton-esque
@@ -54,6 +58,13 @@ require_once BASE_DIR."/lib/index_archive_bundle.php";
 class IndexManager implements CrawlConstants
 {
     /**
+     *
+     *  @var array
+     */
+    static $indexes = array();
+
+    static $dictionary = array();
+    /**
      *  Returns a reference to the managed copy of an IndexArchiveBundle object
      *  with a given timestamp or an IndexShard in the case where
      *  $index_name == "feed" (for handling news feeds)
@@ -63,12 +74,12 @@ class IndexManager implements CrawlConstants
      */
     static function getIndex($index_name)
     {
-        static $indexes = array();
-        if(!isset($indexes[$index_name])) {
+
+        if(!isset(self::$indexes[$index_name])) {
             if($index_name == "feed") {
                 $index_file = WORK_DIRECTORY."/feeds/index";
                 if(file_exists($index_file)) {
-                    $indexes[$index_name] = new IndexShard(
+                    self::$indexes[$index_name] = new IndexShard(
                         $index_file, 0, NUM_DOCS_PER_GENERATION, true);
                 } else {
                     return false;
@@ -81,12 +92,60 @@ class IndexManager implements CrawlConstants
                 if(!$tmp) {
                     return false;
                 }
-                $indexes[$index_name] = $tmp;
-                $indexes[$index_name]->setCurrentShard(0, true);
+                self::$indexes[$index_name] = $tmp;
+                self::$indexes[$index_name]->setCurrentShard(0, true);
             }
         }
-        return $indexes[$index_name];
+        return self::$indexes[$index_name];
     }
 
+    /**
+     *
+     */
+    static function getWordInfo($index_name, $hash, $mask = false)
+    {
+        $index = IndexManager::getIndex($index_name);
+        if(!$index->dictionary) {
+            return false;
+        }
+        if(!isset(IndexManager::$dictionary[$index_name][$hash][$mask])) {
+            IndexManager::$dictionary[$index_name][$hash][$mask] =
+                $index->dictionary->getWordInfo($hash, true, true, $mask);
+        }
+        return IndexManager::$dictionary[$index_name][$hash][$mask];
+    }
+
+    /**
+     *
+     */
+    static function numDocsTerm($term_or_phrase, $index_name)
+    {
+        $index = IndexManager::getIndex($index_name);
+        if(!$index->dictionary) {
+            return false;
+        }
+        $pos = -1;
+        $total_num_docs = 0;
+        $hashes = allCrawlHashPaths($term_or_phrase, true);
+        if(!is_array($hashes)) {
+            $hashes = array($hashes);
+        }
+        foreach($hashes as $hash) {
+            if(is_array($hash)) {
+                $dictionary_info = 
+                    IndexManager::getWordInfo($index_name, $hash[0],
+                        $hash[1]);
+            } else {
+                $dictionary_info = 
+                    IndexManager::getWordInfo($index_name, $hash);
+            }
+            $num_generations = count($dictionary_info);
+            for($i = 0; $i < $num_generations; $i++) {
+                list(, , , $num_docs) = $dictionary_info[$i];
+                $total_num_docs += $num_docs;
+            }
+        }
+        return $total_num_docs;
+    }
 }
 ?>

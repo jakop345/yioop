@@ -63,7 +63,6 @@ require_once BASE_DIR."/lib/utility.php";
  */
 class SvgProcessor extends TextProcessor
 {
-    const MAX_DESCRIPTION_LEN = 2000;
     const MAX_THUMB_LEN = 5000;
 
 
@@ -203,7 +202,7 @@ class SvgProcessor extends TextProcessor
             $doc_nodes = $xpath->evaluate($part);
             foreach($doc_nodes as $node) {
                 $description .= " ".$node->textContent;
-                if(strlen($description) > self::MAX_DESCRIPTION_LEN) { break 2;}
+                if(strlen($description) > self::$max_description_len){ break 2;}
             }
         }
         $description = mb_ereg_replace("(\s)+", " ",  $description);

@@ -918,6 +918,10 @@ class AdminController extends Controller implements CrawlConstants
             (isset($seed_info['general']['page_range_request'])) ?
             intval($seed_info['general']['page_range_request']) :
             PAGE_RANGE_REQUEST;
+        $crawl_params[self::MAX_DESCRIPTION_LEN] =
+            (isset($seed_info['general']['max_description_len'])) ?
+            intval($seed_info['general']['max_description_len']) :
+            MAX_DESCRIPTION_LEN;
         $crawl_params[self::PAGE_RECRAWL_FREQUENCY] =
             (isset($seed_info['general']['page_recrawl_frequency'])) ?
             intval($seed_info['general']['page_recrawl_frequency']) :
@@ -1010,6 +1014,11 @@ class AdminController extends Controller implements CrawlConstants
                 ){
                 $seed_info['general']['page_recrawl_frequency'] =
                 $seed_current['general']['page_recrawl_frequency'];
+            }
+            if(isset(
+                $seed_current['general']['max_description_len'])) {
+                $seed_info['general']['max_description_len'] =
+                    $seed_current['general']['max_description_len'];
             }
             $update_flag = true;
             $no_further_changes = true;
@@ -1477,7 +1486,9 @@ class AdminController extends Controller implements CrawlConstants
         $data['SIZE_VALUES'] = array(10000=>10000, 50000=>50000,
             100000=>100000, 500000=>500000, 1000000=>1000000,
             5000000=>5000000, 10000000=>10000000);
-
+        $data['LEN_VALUES'] = array(2000=>2000, 10000=>10000, 50000=>50000,
+            100000=>100000, 500000=>500000, 1000000=>1000000,
+            5000000=>5000000, 10000000=>10000000);
         if(!isset($seed_info["indexed_file_types"]["extensions"])) {
             $seed_info["indexed_file_types"]["extensions"] =
                 $INDEXED_FILE_TYPES;
@@ -1493,7 +1504,7 @@ class AdminController extends Controller implements CrawlConstants
                     $timestamp, $machine_urls);
             }
             $copy_options = array("general" => array("page_recrawl_frequency",
-                "page_range_request", "cache_pages"),
+                "page_range_request", "max_description_len", "cache_pages"),
                 "indexed_file_types" => array("extensions"),
                 "indexing_plugins" => array("plugins"));
             foreach($copy_options as $main_option => $sub_options) {
@@ -1523,6 +1534,11 @@ class AdminController extends Controller implements CrawlConstants
                 $seed_info["general"]["page_range_request"] =
                     $_REQUEST["page_range_request"];
             }
+            if(isset($_REQUEST["max_description_len"]) &&
+                in_array($_REQUEST["max_description_len"],$data['LEN_VALUES'])){
+                $seed_info["general"]["max_description_len"] =
+                    $_REQUEST["max_description_len"];
+            }
            if(isset($_REQUEST["cache_pages"]) ) {
                 $seed_info["general"]["cache_pages"] = true;
            } else if(isset($_REQUEST['posted'])) {
@@ -1551,6 +1567,10 @@ class AdminController extends Controller implements CrawlConstants
             $seed_info["general"]["page_range_request"] = PAGE_RANGE_REQUEST;
         }
         $data['PAGE_SIZE'] = $seed_info["general"]["page_range_request"];
+        if(!isset($seed_info["general"]["max_description_len"])) {
+            $seed_info["general"]["max_description_len"] = MAX_DESCRIPTION_LEN;
+        }
+        $data['MAX_LEN'] = $seed_info["general"]["max_description_len"];
 
         $data['INDEXING_PLUGINS'] = array();
         $included_plugins = array();
@@ -1745,7 +1765,8 @@ class AdminController extends Controller implements CrawlConstants
                     }
                 }
             }
-            $page_processor = new $processor_name($plugin_processors);
+            $page_processor = new $processor_name($plugin_processors,
+                $seed_info["general"]["max_description_len"]);
             $doc_info = $page_processor->handle($_REQUEST['TESTPAGE'],
                 $site[self::URL]);
 

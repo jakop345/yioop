@@ -359,6 +359,13 @@ class Fetcher implements CrawlConstants
     var $page_range_request;
 
     /**
+     * Max number of chars to extract for description from a page to index.
+     * Only words in the description are indexed.
+     * @var int
+     */
+    var $max_description_len;
+
+    /**
      * An array to keep track of hosts which have had a lot of http errors
      * @var array
      */
@@ -390,25 +397,21 @@ class Fetcher implements CrawlConstants
     /**
      * Sets up the field variables so that crawling can begin
      *
-     * @param array $page_processors (mimetype => name of processor) pairs
-     * @param string $name_server URL or IP address of the queue server
-     * @param int $page_range_request maximum number of bytes to download from
-     *      a webpage; <=0 -- unlimited
      */
-    function __construct($page_processors, $name_server,
-        $page_range_request, $indexed_file_types)
+    function __construct()
     {
+        global $PAGE_PROCESSORS, $INDEXED_FILE_TYPES;
         $db_class = ucfirst(DBMS)."Manager";
         $this->db = new $db_class();
 
         // initially same only one queueserver and is same as name server
-        $this->name_server = $name_server;
-        $this->queue_servers = array($name_server);
+        $this->name_server = NAME_SERVER;
+        $this->queue_servers = array(NAME_SERVER);
         $this->current_server = 0;
-        $this->page_processors = $page_processors;
+        $this->page_processors = $PAGE_PROCESSORS;
 
-        $this->indexed_file_types = $indexed_file_types;
-        $this->all_file_types = $indexed_file_types;
+        $this->indexed_file_types = $INDEXED_FILE_TYPES;
+        $this->all_file_types = $INDEXED_FILE_TYPES;
         $this->restrict_sites_by_url = false;
         $this->allowed_sites = array();
         $this->disallowed_sites = array();
@@ -429,7 +432,8 @@ class Fetcher implements CrawlConstants
         $this->to_crawl = array();
         $this->to_crawl_again = array();
         $this->found_sites = array();
-        $this->page_range_request = $page_range_request;
+        $this->page_range_request = PAGE_RANGE_REQUEST;
+        $this->max_description_len = MAX_DESCRIPTION_LEN;
         $this->fetcher_num = false;
 
         $this->sum_seen_title_length = 0;
@@ -978,9 +982,10 @@ class Fetcher implements CrawlConstants
             "&robot_instance=".$prefix.ROBOT_INSTANCE."&machine_uri=".WEB_URI.
             "&crawl_time=".$this->crawl_time;
         $info_string = FetchUrl::getPage($request);
+        crawlLog("Making request: ");
+        crawlLog($request);
         if($info_string === false) {
-            crawlLog("The following request failed:");
-            crawlLog($request);
+            crawlLog("The request failed!!!!");
             return false;
         }
         $info_string = trim($info_string);
@@ -1242,9 +1247,11 @@ class Fetcher implements CrawlConstants
         if(isset($info[self::SCHEDULE_TIME])) {
               $this->schedule_time = $info[self::SCHEDULE_TIME];
         }
-
         if(isset($info[self::PAGE_RANGE_REQUEST])) {
             $this->page_range_request = $info[self::PAGE_RANGE_REQUEST];
+        }
+        if(isset($info[self::MAX_DESCRIPTION_LEN])) {
+            $this->max_description_len = $info[self::MAX_DESCRIPTION_LEN];
         }
     }
 
@@ -1453,9 +1460,11 @@ class Fetcher implements CrawlConstants
             if(!$handled) {
                 if(isset($this->plugin_processors[$page_processor])) {
                     $processor = new $page_processor(
-                        $this->plugin_processors[$page_processor]);
+                        $this->plugin_processors[$page_processor],
+                        $this->max_description_len);
                 } else {
-                    $processor = new $page_processor();
+                    $processor = new $page_processor(array(),
+                        $this->max_description_len);
                 }
             }
 
@@ -2462,8 +2471,7 @@ class Fetcher implements CrawlConstants
 /*
  *  Instantiate and runs the Fetcher
  */
-$fetcher =  new Fetcher($PAGE_PROCESSORS, NAME_SERVER,
-    PAGE_RANGE_REQUEST, $INDEXED_FILE_TYPES);
+$fetcher =  new Fetcher();
 $fetcher->start();
 
 ?>

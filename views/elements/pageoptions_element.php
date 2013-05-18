@@ -92,6 +92,11 @@ class PageOptionsElement extends Element
             <?php $this->view->optionsHelper->render("page-range-request",
             "page_range_request", $data['SIZE_VALUES'], $data['PAGE_SIZE']);
             ?></div>
+        <div class="top-margin"><b><label for="max-description-len"><?php
+            e(tl('pageoptions_element_max_description'))?></label></b>
+            <?php $this->view->optionsHelper->render("max-description-len",
+            "max_description_len", $data['LEN_VALUES'], $data['MAX_LEN']);
+            ?></div>
         <div class="top-margin"><b><label for="cache-pages"><?php
             e(tl('pageoptions_element_save_cache'))?>
             </label><input

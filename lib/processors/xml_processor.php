@@ -64,9 +64,6 @@ require_once BASE_DIR."/lib/url_parser.php";
  */
 class XmlProcessor extends TextProcessor
 {
-    const MAX_DESCRIPTION_LEN = 2000;
-
-
     /**
      *  Used to extract the title, description and links from
      *  a string consisting of rss news feed data.

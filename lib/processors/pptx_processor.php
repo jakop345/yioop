@@ -56,11 +56,6 @@ require_once BASE_DIR."/lib/utility.php";
  */
 class PptxProcessor extends TextProcessor
 {
-    /**
-     * Constant for maximum description length
-     * @var number
-     */
-    const MAX_DESCRIPTION_LEN = 2000;
 
     /**
      *  Used to extract the title, description and links from
@@ -110,7 +105,7 @@ class PptxProcessor extends TextProcessor
                     $desc=self::description($dom);
 
                     if(strlen($summary[self::DESCRIPTION])
-                        < self::MAX_DESCRIPTION_LEN) {
+                        < self::$max_description_len) {
                             $summary[self::DESCRIPTION]=
                                 $summary[self::DESCRIPTION].$desc;
                     }

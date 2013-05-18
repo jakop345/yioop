@@ -444,6 +444,9 @@ EOT;
         if(!isset($info['general']['page_recrawl_frequency'])) {
             $info['general']['page_recrawl_frequency'] = PAGE_RECRAWL_FREQUENCY;
         }
+        if(!isset($info['general']['max_description_len'])) {
+            $info['general']['max_description_len'] = MAX_DESCRIPTION_LEN;
+        }
         $n[] = '[general]';
         $n[] = "crawl_order = '".$info['general']['crawl_order']."';";
         $n[] = "crawl_type = '".$info['general']['crawl_type']."';";
@@ -454,6 +457,8 @@ EOT;
             $info['general']['page_recrawl_frequency']."';";
         $n[] = "page_range_request = '".
             $info['general']['page_range_request']."';";
+        $n[] = "max_description_len = '".
+            $info['general']['max_description_len']."';";
         $bool_string =
             ($info['general']['cache_pages']) ? "true" : "false";
         $n[] = "cache_pages = $bool_string;";
@@ -558,6 +563,8 @@ EOT;
                     -1),
                 "page_range_request" => array(self::PAGE_RANGE_REQUEST,
                     PAGE_RANGE_REQUEST),
+                "max_description_len" => array(self::MAX_DESCRIPTION_LEN,
+                    MAX_DESCRIPTION_LEN),
             );
             foreach($general_params as $param => $info) {
                 $seed_info['general'][$param] = (isset($index_info[$info[0]])) ?
@@ -793,7 +800,6 @@ EOT;
                 $machine_urls, serialize($params));
             return;
         }
-
         $info_string = serialize($crawl_params);
         file_put_contents(
             CRAWL_DIR."/schedules/queue_server_messages.txt",
