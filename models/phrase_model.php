@@ -1095,6 +1095,7 @@ class PhraseModel extends ParallelModel
         if(preg_match("/\bsite:doc\b/", $original_query)) {
             $groups_with_docs = true;
         }
+
         $out_pages = $this->getSummariesFromOffsets($pages, $queue_servers,
             $raw, $groups_with_docs);
 
@@ -1173,6 +1174,7 @@ class PhraseModel extends ParallelModel
         }
 
         $summaries = $this->getCrawlItems($lookups, $queue_servers);
+
         if($queue_servers != NULL && !$this->isSingleLocalhost($queue_servers)
             && $raw == 0){
             $lookups = array();
@@ -1191,7 +1193,6 @@ class PhraseModel extends ParallelModel
             $loc_summaries = $this->getCrawlItems($lookups, $queue_servers);
             $summaries = array_merge($summaries, $loc_summaries);
         }
-
         $out_pages = array();
         $seen_hashes = array();
         foreach($pages as $page) {
@@ -1315,10 +1316,17 @@ class PhraseModel extends ParallelModel
                         //can happen if exact phrase search suffix approach used
                         $distinct_keys = $distinct_word_keys[$i];
                         $tmp_word_iterators =array();
+                        $m = 0;
                         foreach($distinct_keys as $distinct_key) {
-                            $tmp_word_iterators[] =
+                            $tmp_word_iterators[$m] =
                                 new WordIterator($distinct_key,
                                 $index_name, false, $filter, $to_retrieve);
+                            if($tmp_word_iterators[$m]->dictionary_info !=
+                                array()) {
+                                $m++;
+                            } else {
+                                unset($tmp_word_iterators[$m]);
+                            }
                         }
                         $word_iterators[$i] = new DisjointIterator(
                             $tmp_word_iterators);
@@ -1390,7 +1398,6 @@ class PhraseModel extends ParallelModel
         } else if($save_timestamp_name != "") {
             $group_iterator->save_iterators = $iterators;
         }
-
         return $group_iterator;
     }
 

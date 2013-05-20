@@ -162,9 +162,9 @@ class WordIterator extends IndexBundleIterator
     function __construct($word_key, $index_name, $raw = false, &$filter = NULL,
         $results_per_block = IndexBundleIterator::RESULTS_PER_BLOCK)
     {
-        $mask = false;
+        $shift = 0;
         if(is_array($word_key)) {
-            $mask = $word_key[1];
+            $shift = $word_key[1];
             $word_key = $word_key[0];
         }
         if($raw == false) {
@@ -219,7 +219,7 @@ class WordIterator extends IndexBundleIterator
         $this->current_block_fresh = false;
         $this->index_name =  $index_name;
         $this->dictionary_info = 
-            IndexManager::getWordInfo($index_name, $word_key, $mask);
+            IndexManager::getWordInfo($index_name, $word_key, $shift);
         if ($this->dictionary_info === false) {
             $this->empty = true;
         } else {
@@ -495,7 +495,7 @@ class WordIterator extends IndexBundleIterator
             $this->generation_pointer = -1;
         }
         if($generation === null) {
-            $generation = $this->current_generation + 1;
+            $generation = $this->current_generation;
         }
         do {
             if($this->generation_pointer < $this->num_generations) {

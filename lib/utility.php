@@ -654,17 +654,23 @@ function crawlHash($string, $raw = false)
 }
 
 /**
+ *  Used to compute all hashes for a phrase based on each possible cond_max
+ *  point. Here cond_max is the location of a substring of a phase which is
+ *  maximal.
  *
+ *  @param string $string what to find hashes for
+ *  @param $raw whether to modified base64 the result
+ *  @return array of hashes with appropriates shifts if needed
  */
 function allCrawlHashPaths($string, $raw = false)
 {
     $pos = -1;
     $hashes = array();
     $zero = "*";
-    $masks = array(2047, 127, 31, 15, 7, 3, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
+    $shifts = array(24 ,22, 11, 7, 5, 4, 3, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1);
     $num_spaces = substr_count($string, " ");
-    $num = MAX_QUERY_TERMS - $num_spaces - 1;
-
+    $num = MAX_QUERY_TERMS - $num_spaces;
     $j = 0;
     do {
         $old_pos = $pos;
@@ -672,7 +678,18 @@ function allCrawlHashPaths($string, $raw = false)
         for($i = 0; $i < $num; $i++) {
             $hash = crawlHashPath($path_string, $pos + 1, $raw);
             if($i > 0 && $j > 0) {
-                $hashes[] = array($hash, $masks[$i]);
+                $path_len = $num_spaces - $j + 1 + $i;
+                $shift = $i * $shifts[$path_len];
+                if($path_len == 7) {
+                    $shift += 4;
+                }
+                if($path_len == 8) {
+                    $shift += 2;
+                }
+                if($path_len > 9) {
+                    $shift += 18 - $path_len;
+                }
+                $hashes[] = array($hash, $shift);
             } else {
                 $hashes[] = $hash;
             }
@@ -683,7 +700,6 @@ function allCrawlHashPaths($string, $raw = false)
         $j++;
     } while($pos > 0 && $old_pos != $pos);
 
-
     if(count($hashes) == 1) {
         return $hashes[0];
     }
@@ -692,11 +708,30 @@ function allCrawlHashPaths($string, $raw = false)
 
 
 /**
+ *  Given a string makes an 8 byte hash path - where first 5 bytes is
+ *  a hash of the string before path start, last 3 bytes is the path
+ *  given by splitting on space and separately hashing each element
+ *  according to the number of elements and the pattern below:
  *
+ *  00 - len 1 path, 22bits/part
+ *  01 - len 2 path, 11bits/part
+ *  10 - len 3 path, 7bits/part
+ *  1100 - len 4 path, 5bits/part
+ *  1101 - len 5 path, 4bits/part
+ *  1110 - len 6 path, 3bits/part
+ *  111100 - len 9 path, 2bits/part
+ *  111110 - len 18 path, 1bits/part
+ *
+ *  If $path_start is 0 behaves like crawlHash()
+ *
+ *  @param string $string what to hash
+ *  @param int $path_start what to use as the split between 5 byte front
+ *      hash and the rest
+ *  @param $raw whether to modified base64 the result
+ *  @return string 8 bytes that results from this hash process
  */
 function crawlHashPath($string, $path_start = 0, $raw = false)
 {
-
     if($path_start > 0 ) {
         $string_parts = explode(" ", substr($string, $path_start));
         $num_parts = count($string_parts);
@@ -711,7 +746,6 @@ function crawlHashPath($string, $path_start = 0, $raw = false)
     $front = substr($string, 0, $path_start);
     //Top five bytes what a normal crawlHash would be
     $front_hash = substr(crawlHash($front, true), 0, 5);
-
     //Low 3 bytes encode paths
     $path_ints = array();
     foreach($string_parts as $part) {
@@ -779,10 +813,10 @@ function crawlHashPath($string, $path_start = 0, $raw = false)
                 $out_int += ($path_ints[$i] & $bit_mask);
             }
         break;
-        default: // 19 1 bit numbers
+        default: // 18 1 bit numbers
             $bit_mask = 1;
             $out_int = 62;
-            for($i = 0; $i < 19; $i++) {
+            for($i = 0; $i < 18; $i++) {
                 $out_int <<= 1;
                 if(!isset($path_ints[$i])) {
                     $path_ints[$i] = 0;
@@ -798,22 +832,28 @@ function crawlHashPath($string, $path_start = 0, $raw = false)
     return $hash;
 }
 
-    /**
-     *
-     */
-    function compareWordHashes($id1, $id2, $mask)
-    {
-        if($mask === false) {
-            return strcmp($id1, $id2);
-        }
-        $cmp = strcmp(substr($id1, 0, 4), substr($id2, 0, 4));
-        if($cmp !== 0) {
-            return $cmp;
-        }
-        $id1 = packInt((unpackInt($id1) & $mask));
-        $id2 = packInt((unpackInt($id2) & $mask));
-        return strcmp($id1, $id2);
+/**
+ *  Used to compare to ids for index dictionary lookup. ids
+ *  might be either a crawlHash or a 5 byte crawlHash together
+ *  with 3 byte hash path for suffix tree lookup. In the latter
+ *  case the shift variable can be used to match up to a subtree
+ *
+ *  @param string $id1 8 byte word id to compare
+ *  @param string $id2 8 byte word id to compare
+ *  @param int $shift bit shift to apply before saying paths equal
+ *  @return int negative if $id1 smaller, positive if bigger, and 0 if
+ *      same
+ */
+function compareWordHashes($id1, $id2, $shift = 0)
+{
+    $cmp = strcmp(substr($id1, 0, 4), substr($id2, 0, 4));
+    if($cmp != 0) {
+        return $cmp;
     }
+    $id1 = (unpackInt(substr($id1, 4, 4)) >> $shift);
+    $id2 = (unpackInt(substr($id2, 4, 4)) >> $shift);
+    return $id1 - $id2;
+}
 
 /**
  * Converts a crawl hash number to something closer to base64 coded but

@@ -58,6 +58,8 @@ class SuffixTree
     var $last_added;
 
     /**
+     * Position in the $this->text up to which we have created a suffix tree
+     * so far
      * @var int
      */
     var $pos;
@@ -206,7 +208,9 @@ class SuffixTree
     }
 
     /**
-     *
+     * Given a suffix tree of the array of terms in $this->text up to
+     * $this->pos, adds one to pos and build the suffix tree up to this
+     * new value. i.e., the text with one more term added.
      */
     function suffixTreeExtend()
     {
@@ -278,6 +282,10 @@ class SuffixTree
                     $out_path = implode(" ", $out_array);
                 }
                 $maximal[$out_path][] = $begin;
+                if(!isset($maximal[$out_path]["cond_max"])) {
+                    $maximal[$out_path]["cond_max"] =
+                        strpos($out_path, " ") + 1;
+                }
             }
             $tmp = implode(" ", $tmp_terms);
             $num = count($tmp_terms);
@@ -310,6 +318,10 @@ class SuffixTree
                 $out_path = implode(" ", $out_array);
             }
             $maximal[$out_path][] = $begin;
+            if(!isset($maximal[$out_path]["cond_max"])) {
+                $maximal[$out_path]["cond_max"] =
+                    strpos($out_path, " ") + 1;
+            }
             return;
         }
         foreach($this->tree[$index]["next"] as $sub_index) {

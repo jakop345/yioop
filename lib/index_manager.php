@@ -102,17 +102,17 @@ class IndexManager implements CrawlConstants
     /**
      *
      */
-    static function getWordInfo($index_name, $hash, $mask = false)
+    static function getWordInfo($index_name, $hash, $shift = 0)
     {
         $index = IndexManager::getIndex($index_name);
         if(!$index->dictionary) {
             return false;
         }
-        if(!isset(IndexManager::$dictionary[$index_name][$hash][$mask])) {
-            IndexManager::$dictionary[$index_name][$hash][$mask] =
-                $index->dictionary->getWordInfo($hash, true, true, $mask);
+        if(!isset(IndexManager::$dictionary[$index_name][$hash][$shift])) {
+            IndexManager::$dictionary[$index_name][$hash][$shift] =
+                $index->dictionary->getWordInfo($hash, true, true, $shift);
         }
-        return IndexManager::$dictionary[$index_name][$hash][$mask];
+        return IndexManager::$dictionary[$index_name][$hash][$shift];
     }
 
     /**

@@ -559,11 +559,12 @@ class IndexDictionary implements CrawlConstants
       *  @param int $tier which tier to get word info from
       *  @param bool $extract whether the results should be extracted to
       *     an array or left as a string
+      *  @param int $shift
       *  @return mixed an array of entries of the form
       *      generation, first offset, last offset, count or
       *      just a string of the word_info data if $extract is false
       */
-     function getWordInfoTier($word_id, $raw, $extract, $tier, $mask = false)
+     function getWordInfoTier($word_id, $raw, $extract, $tier, $shift = 0)
      {
         if(isset($this->fhs)) {
             $this->tier_fhs[$this->read_tier] = $this->fhs;
@@ -619,7 +620,7 @@ class IndexDictionary implements CrawlConstants
 
             if($word_string == false) {return false;}
             $id = substr($word_string, 0, $word_key_len);
-            $cmp = compareWordHashes($word_id, $id, $mask);
+            $cmp = compareWordHashes($word_id, $id, $shift);
             if($cmp === 0) {
                 $found = true;
                 break;
@@ -647,6 +648,7 @@ class IndexDictionary implements CrawlConstants
             if($tmp[3] < $max_entry_count) {
                 $info[0] = $tmp;
                 $previous_generation = $tmp[0];
+                $previous_id = $id;
                 $remember_generation = $previous_generation;
             }
         } else {
@@ -666,7 +668,7 @@ class IndexDictionary implements CrawlConstants
                 $test_loc * $word_item_len, $word_item_len);
             if($word_string == "" ) break;
             $id = substr($word_string, 0, $word_key_len);
-            if(compareWordHashes($word_id, $id, $mask) != 0 ) {
+            if(compareWordHashes($word_id, $id, $shift) != 0 ) {
                 $break_count++;
                 if($break_count > 1) {
                     break;
@@ -692,11 +694,12 @@ class IndexDictionary implements CrawlConstants
                    dictionary. Only the last such save has useful data.
                  */
                 if($tmp[3] < $max_entry_count ) {
-                    if($previous_generation == $tmp[0]) {
+                    if($previous_generation == $tmp[0] && $previous_id == $id) {
                         array_pop($info);
                     }
                     array_push($info, $tmp);
                     $previous_generation = $tmp[0];
+                    $previous_id = $id;
                 }
             } else {
                 $info = $ws . $info;
@@ -715,7 +718,7 @@ class IndexDictionary implements CrawlConstants
                 $test_loc * $word_item_len, $word_item_len);
             if($word_string == "" ) break;
             $id = substr($word_string, 0, $word_key_len);
-            if(compareWordHashes($word_id, $id, $mask) != 0 ) {
+            if(compareWordHashes($word_id, $id, $shift) != 0 ) {
                 $break_count++;
                 if($break_count > 1) {
                     break;
@@ -728,9 +731,10 @@ class IndexDictionary implements CrawlConstants
             if($extract) {
                 $tmp = IndexShard::getWordInfoFromString($ws, true);
                 if($tmp[3] < $max_entry_count &&
-                    $previous_generation != $tmp[0]) {
+                    ($previous_generation != $tmp[0] || $previous_id !=$id)) {
                     array_unshift($info, $tmp);
                     $previous_generation = $tmp[0];
+                    $previous_id = $id;
                 }
             } else {
                 $info .= $ws;
