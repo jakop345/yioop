@@ -1652,7 +1652,7 @@ class QueueServer implements CrawlConstants, Join
         foreach($cache_page_validation_data as $data) {
             $link = $data[0];
             $value = $data[1];
-            $key = crawlHash($link);
+            $key = crawlHash($link, true);
             $entry = array($key, $value);
             $this->btree->insert($entry);
         }
@@ -2216,7 +2216,7 @@ class QueueServer implements CrawlConstants, Join
                   found, the ETag is appended to the URL so that it can be
                   processed by the fetcher.
                  */
-                $key = crawlHash($url);
+                $key = crawlHash($url, true);
                 $value = $this->btree->findValue($key);
                 if($value !== null) {
                     $cache_validation_data = $value[1];
