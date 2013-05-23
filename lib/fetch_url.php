@@ -246,6 +246,22 @@ class FetchUrl implements CrawlConstants
     static function prepareUrlHeaders($url, $minimal = false)
     {
         $url = str_replace("&amp;", "&", $url);
+
+        /*Check if an ETag was added by the queue server. If found, create
+          If-None_Match header with the ETag and add it to the headers. Remove
+          ETag from URL
+         */
+        $if_none_match = "If-None-Match";
+        $etag = null;
+        if(stristr($url, "ETag:")) {
+            crawlLog("Adding ETag header");
+            $etag_parts = preg_split("/ETag\:/i", $url);
+            $etag_data = explode(" ", $etag_parts[1]);
+            $etag = $etag_data[1];
+            $pos = strrpos($url, "ETag:");
+            $url = substr_replace($url, "", $pos, strlen("ETag: ".$etag));
+        }
+
         /* in queue_server we added the ip (if available)
           after the url followed by ###
          */
@@ -286,6 +302,11 @@ class FetchUrl implements CrawlConstants
             $url_with_ip_if_possible = $url;
         }
         $headers[] = 'Expect:';
+        if($etag !== null) {
+            $etag_header = $if_none_match.": ".$etag;
+            $headers[] = $etag_header;
+            crawlLog("...done");
+        }
         $results = array($url, $url_with_ip_if_possible, $headers);
         return $results;
     }
@@ -335,6 +356,9 @@ class FetchUrl implements CrawlConstants
     static function parseHeaderPage(&$header_and_page,
         $value=CrawlConstants::PAGE)
     {
+        $cache_page_validators = array();
+        $cache_page_validators['etag'] = -1;
+        $cache_page_validators['expires'] = -1;
         $new_offset = 0;
         // header will include all redirect headers
         $site = array();
@@ -424,6 +448,38 @@ class FetchUrl implements CrawlConstants
                     $site[CrawlConstants::ROBOT_METAS][] = strtoupper(
                         trim($robot_meta));
                 }
+            }
+            if(stristr($line, 'ETag:')) {
+                $line_parts = preg_split("/ETag\:/i", $line);
+                $etag_data = explode(" ", $line_parts[1]);
+                $etag = $etag_data[1];
+                $cache_page_validators['etag'] = $etag;
+            }
+            if(stristr($line, 'Expires:')) {
+                $line_parts = preg_split("/Expires\:/i", $line);
+                $all_dates = $line_parts[1];
+                $date_parts = explode(",", $all_dates);
+                if(count($date_parts) == 2) {
+                    $date_dt = new DateTime($date_parts[1]);
+                    $date_ts = $date_dt->getTimestamp();
+                    $cache_page_validators['expires'] = $date_ts;
+                } else if(count($date_parts) > 2) {
+                    /*Encountered some pages with more than one Expires date
+                      :O */
+                    $timestamps = array();
+                    for($i = 1;$i < count($date_parts);$i += 2) {
+                        $dt = new DateTime($date_parts[$i]);
+                        $ds = $dt->getTimestamp();
+                        $timestamps[] = $ds;
+                    }
+                    $lowest = min($timestamps);
+                    $cache_page_validators['expires'] = $lowest;
+                }
+            }
+            if(!($cache_page_validators['etag'] == -1 &&
+                $cache_page_validators['expires'] == -1)) {
+                $site[CrawlConstants::CACHE_PAGE_VALIDATORS] = 
+                    $cache_page_validators;
             }
         }
         /*
