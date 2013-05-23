@@ -103,7 +103,7 @@ class BTree
             $this->id_count = unserialize(file_get_contents($this->dir.
                 "/count.txt"));
         } else {
-            $this->root = new Node();
+            $this->root = new BTNode();
             $this->root->id = "root";
             $this->id_count = 1;
         }
@@ -295,7 +295,7 @@ class BTree
     function bTreeSplitChild($parent, $i, $child)
     {
         $this->id_count += 1;
-        $temp = new Node();
+        $temp = new BTNode();
         $temp->id = $this->id_count;
         $this->saveNodeCount();
         $temp->is_leaf = $child->is_leaf;
@@ -346,7 +346,7 @@ class BTree
     function createEmptyParentNode()
     {
         $this->id_count += 1;
-        $temp = new Node();
+        $temp = new BTNode();
         $temp->id = $this->id_count;
         $this->saveNodeCount();
         $temp->is_leaf = false;
@@ -752,5 +752,55 @@ class BTree
             $siblings[] = -1;
         }
         return $siblings;
+    }
+}
+
+/**
+ * Class for B-Tree nodes
+ */
+
+class BTNode
+{
+    /**
+     * Storage for id of a B-Tree node
+     * @var int
+     */
+    var $id;
+
+    /**
+     * Flag for checking if node is a leaf node or internal node
+     * @var boolean
+     */
+    var $is_leaf;
+
+    /**
+     * Storage for keeping track of node ids
+     * @var int
+     */
+    var $count;
+
+    /**
+     * Storage for key-value pairs in a B-Tree node
+     * @var array
+     */
+    var $keys;
+
+    /**
+     * Storage for links to child nodes in a B-Tree node
+     * @var array
+     */
+    var $links;
+
+    /**
+     * Creates and initializes an empty leaf node with id -1
+     * @var int
+     */
+    function __construct()
+    {
+        $this->id = -1;
+        $this->is_leaf = true;
+        $this->count = 0;
+        $this->keys = null;
+        $this->links = null;
     }
 }
