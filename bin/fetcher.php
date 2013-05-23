@@ -432,6 +432,7 @@ class Fetcher implements CrawlConstants
         $this->to_crawl = array();
         $this->to_crawl_again = array();
         $this->found_sites = array();
+        $this->found_sites[self::CACHE_PAGE_VALIDATION_DATA] = array();
         $this->page_range_request = PAGE_RANGE_REQUEST;
         $this->max_description_len = MAX_DESCRIPTION_LEN;
         $this->fetcher_num = false;
@@ -1714,7 +1715,8 @@ class Fetcher implements CrawlConstants
             self::OPERATING_SYSTEM, self::MODIFIED, self::ROBOT_INSTANCE,
             self::LOCATION, self::SIZE, self::TOTAL_TIME, self::DNS_TIME,
             self::ROBOT_PATHS, self::GOT_ROBOT_TXT, self::CRAWL_DELAY,
-            self::AGENT_LIST, self::ROBOT_METAS, self::WARC_ID);
+            self::AGENT_LIST, self::ROBOT_METAS, self::WARC_ID
+            self::CACHE_PAGE_VALIDATORS);
 
         foreach($summary_fields as $field) {
             if(isset($site[$field])) {
@@ -1842,6 +1844,12 @@ class Fetcher implements CrawlConstants
 
                 }
             } //end else
+
+            //Add cache page validation data
+            if(isset($site[self::CACHE_PAGE_VALIDATORS])) {
+                $this->found_sites[self::CACHE_PAGE_VALIDATION_DATA][] = 
+                    array($site[self::URL], $site[self::CACHE_PAGE_VALIDATORS]);
+            }
 
             if(isset($this->hosts_with_errors[$host]) &&
                 $this->hosts_with_errors[$host] > DOWNLOAD_ERROR_THRESHOLD) {
@@ -2029,7 +2037,7 @@ class Fetcher implements CrawlConstants
             footprint.
          */
         $byte_counts = array("TOTAL" => 0, "ROBOT" => 0, "SCHEDULE" => 0,
-            "INDEX" => 0);
+            "INDEX" => 0, "CACHE_PAGE_VALIDATION" => 0);
         $post_data = array('c'=>'fetch', 'a'=>'update',
             'crawl_time' => $this->crawl_time, 'machine_uri' => WEB_URI,
             'robot_instance' => $prefix.ROBOT_INSTANCE, 'data' => '');
@@ -2044,6 +2052,22 @@ class Fetcher implements CrawlConstants
             crawlLog("...".$bytes_robot." bytes of robot data");
             $byte_counts["TOTAL"] += $bytes_robot;
             $byte_counts["ROBOT"] = $bytes_robot;
+        }
+
+        //handle cache validation data
+        if(isset($this->found_sites[self::CACHE_PAGE_VALIDATION_DATA])) {
+            $cache_page_validation_data = webencode(
+                gzcompress(serialize(
+                    $this->found_sites[self::CACHE_PAGE_VALIDATION_DATA])));
+
+            unset($this->found_sites[self::CACHE_PAGE_VALIDATION_DATA]);
+            $bytes_cache_page_validation = strlen($cache_page_validation_data);
+            $post_data['data'] .= $cache_page_validation_data;
+            crawlLog("...".$bytes_cache_page_validation.
+                " bytes of cache page validation data");
+            $byte_counts["TOTAL"] += $bytes_cache_page_validation;
+            $byte_counts["CACHE_PAGE_VALIDATION"] = 
+                $bytes_cache_page_validation;
         }
 
         //handle schedule data

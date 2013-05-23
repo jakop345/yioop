@@ -414,6 +414,7 @@ class FetchController extends Controller implements CrawlConstants
             $byte_counts = unserialize(webdecode($_REQUEST['byte_counts']));
         }
         $robot_data = "";
+        $cache_page_validation_data = "";
         $schedule_data = "";
         $index_data = "";
         if(isset($byte_counts["TOTAL"]) &&
@@ -421,6 +422,9 @@ class FetchController extends Controller implements CrawlConstants
             $pos = 0;
             $robot_data = substr($uploaded, $pos,$byte_counts["ROBOT"]);
             $pos += $byte_counts["ROBOT"];
+            $cache_page_validation_data = substr($uploaded, $pos, 
+                $byte_counts["CACHE_PAGE_VALIDATION"]);
+            $pos += $byte_counts["CACHE_PAGE_VALIDATION"];
             $schedule_data =
                 substr($uploaded, $pos, $byte_counts["SCHEDULE"]);
             $pos += $byte_counts["SCHEDULE"];
@@ -430,6 +434,11 @@ class FetchController extends Controller implements CrawlConstants
         if(strlen($robot_data) > 0) {
             $this->addScheduleToScheduleDirectory(self::robot_data_base_name,
                 $robot_data);
+        }
+        if(strlen($cache_page_validation_data) > 0) {
+            $this->addScheduleToScheduleDirectory(
+                self::cache_page_validation_data_base_name, 
+                $cache_page_validation_data);
         }
         if(strlen($schedule_data) > 0) {
             $this->addScheduleToScheduleDirectory(self::schedule_data_base_name,
