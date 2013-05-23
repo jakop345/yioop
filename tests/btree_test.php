@@ -170,8 +170,8 @@
     {
         //Insert values
         for($i = 1;$i <= NUM_VALS;$i++) {
-            $value = crawlHash(rand(1, 1000));
-            $key = crawlHash($value);
+            $value = crawlHash(rand(1, 1000), true);
+            $key = crawlHash($value, true);
             $this->test_objects['FILE1']->insert(array($key, $value));
         }
 
@@ -198,8 +198,8 @@
         //Insert values
         $key_value_pairs = array();
         for($i = 1;$i <= NUM_VALS;$i++) {
-            $value = crawlHash(rand(1, 1000));
-            $key = crawlHash($value);
+            $value = crawlHash(rand(1, 1000), true);
+            $key = crawlHash($value, true);
             $this->test_objects['FILE1']->insert(array($key, $value));
             $key_value_pairs[] = array($key, $key);
         }
