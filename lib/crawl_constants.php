@@ -65,6 +65,7 @@ interface CrawlConstants
     const schedule_data_base_name = "ScheduleData";
     const schedule_name = "FetchSchedule";
     const robot_data_base_name = "RobotData";
+    const cache_page_validation_data_base_name = "CachePageValidationData";
     const index_data_base_name = "IndexData";
     const network_base_name = "Network";
     const network_crawllist_base_name = "NetworkCrawlList";
@@ -222,6 +223,8 @@ interface CrawlConstants
     const ACTIVE_CLASSIFIERS = 'cu';
     const ACTIVE_CLASSIFIERS_DATA = 'cv';
     const MAX_DESCRIPTION_LEN = 'cw';
+    const CACHE_PAGE_VALIDATORS = 'cx';
+    const CACHE_PAGE_VALIDATION_DATA = 'cy';
 
     const NEEDS_OFFSET_FLAG = 0x7FFFFFFF;
 }
