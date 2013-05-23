@@ -86,6 +86,8 @@ require_once BASE_DIR."/lib/phrase_parser.php";
 /** Include marker interface to say we support join() method*/
 require_once BASE_DIR."/lib/join.php";
 
+/** Include B-Tree class for storing cache page validation data*/
+require_once BASE_DIR."/lib/btree.php";
 
 /** get any indexing plugins */
 foreach(glob(BASE_DIR."/lib/indexing_plugins/*_plugin.php") as $filename) {
@@ -109,6 +111,14 @@ if(USE_MEMCACHE) {
         $MEMCACHE->addServer($mc['host'], $mc['port']);
     }
     unset($mc);
+}
+
+if(!defined("CACHE_PAGE_VALIDATORS")) {
+    define("CACHE_PAGE_VALIDATORS",CRAWL_DIR.'/cachePageValidators');
+}
+if(!is_dir(CACHE_PAGE_VALIDATORS)) {
+    mkdir(CACHE_PAGE_VALIDATORS);
+    chmod(CACHE_PAGE_VALIDATORS, 0777);
 }
 
 /**
@@ -230,6 +240,10 @@ class QueueServer implements CrawlConstants, Join
      */
     var $index_archive;
     /**
+     * Holds the B-Tree used for saving cache page validation data
+     */
+    var $btree;
+    /**
      * The timestamp of the current active crawl
      * @var int
      */
@@ -338,6 +352,7 @@ class QueueServer implements CrawlConstants, Join
         $this->indexing_plugins = array();
         $this->video_sources = array();
         $this->server_name = "IndexerAndScheduler";
+        $this->btree = false;
     }
 
     /**
@@ -477,6 +492,7 @@ class QueueServer implements CrawlConstants, Join
             case self::WEB_CRAWL:
                 if($this->isOnlyIndexer()) return;
                 $this->processRobotUrls();
+                $this->processCachePageValidators();
 
                 $count = $this->web_queue->to_crawl_queue->count;
                 $max_links = max(MAX_LINKS_PER_PAGE, MAX_LINKS_PER_SITEMAP);
@@ -800,6 +816,8 @@ class QueueServer implements CrawlConstants, Join
         } else {
             file_put_contents($close_file, "1");
         }
+        //Write B-Tree root node to disk before before exiting
+        $this->btree->writeNode($this->btree->root);
     }
 
     /**
@@ -963,6 +981,9 @@ class QueueServer implements CrawlConstants, Join
     {
         //to get here we at least have to have a crawl_time
         $this->crawl_time = $info[self::CRAWL_TIME];
+        //Initialize B-Tree for storing cache page validation data
+        $this->btree = new BTree(CACHE_PAGE_VALIDATORS.'/cachePageValidators'.
+            $this->crawl_time);
 
         $read_from_info = array(
             "crawl_order" => self::CRAWL_ORDER,
@@ -1602,6 +1623,47 @@ class QueueServer implements CrawlConstants, Join
     }
 
     /**
+     * Process cache page validation data files sent by Fetcher
+     */
+    function processCachePageValidators()
+    {
+        crawlLog("Checking for cache page validation data");
+        $cache_page_validators_dir = CRAWL_DIR."/schedules/".
+            self::cache_page_validation_data_base_name.$this->crawl_time;
+        $this->processDataFile($cache_page_validators_dir, 
+            "processCachePageValidatorsArchive");
+        crawlLog("...done");
+    }
+
+    /**
+     * Processes a cache page validation data file. Extracts key-value pairs 
+     * from the file and inserts into the B-Tree used for storing cache
+     * page validation data.
+     * @param string $file is the cache page validation data file written by
+     * Fetchers.
+     */
+    function processCachePageValidatorsArchive($file)
+    {
+        crawlLog("Processing cache page validation data in $file");
+        $start_time = microtime();
+
+        $cache_page_validation_data = 
+            unserialize(gzuncompress(webdecode(file_get_contents($file))));
+        foreach($cache_page_validation_data as $data) {
+            $link = $data[0];
+            $value = $data[1];
+            $key = crawlHash($link);
+            $entry = array($key, $value);
+            $this->btree->insert($entry);
+        }
+
+        crawlLog(" time: ".(changeInMicrotime($start_time))."\n");
+        crawlLog("Done processing cache page validation data file: $file");
+
+        unlink($file);
+    }
+
+    /**
      * Deletes all Robot informations stored by the QueueServer.
      *
      * This function is called roughly every CACHE_ROBOT_TXT_TIME.
@@ -2143,12 +2205,53 @@ class QueueServer implements CrawlConstants, Join
                 self::schedule_name.$this->crawl_time.".txt", "wb");
             fwrite($fh, $first_line);
             foreach($sites as $site) {
+                $extracted_etag = null;
                 list($url, $weight, $delay) = $site;
+
+                /*check if we have cache validation data for a URL. If both 
+                  ETag and Expires timestamp are found or only an expires
+                  timestamp is found, the timestamp is compared with the current
+                  time. If the current time is less than the expires timestamp,
+                  the URL is not added to the fetch batch. If only an ETag is 
+                  found, the ETag is appended to the URL so that it can be
+                  processed by the fetcher.
+                 */
+                $key = crawlHash($url);
+                $value = $this->btree->findValue($key);
+                if($value !== null) {
+                    $cache_validation_data = $value[1];
+                    if($cache_validation_data['etag'] !== -1 && 
+                        $cache_validation_data['expires'] !== -1) {
+                        $expires_timestamp = $cache_validation_data['expires'];
+                        $current_time = time();
+                        if($current_time < $expires_timestamp) {
+                            continue;
+                        } else {
+                            $etag = $cache_validation_data['etag'];
+                            $extracted_etag = "ETag: ".$etag;
+                        }
+                    } else if($cache_validation_data['etag'] !== -1) {
+                        $etag = $cache_validation_data['etag'];
+                        $extracted_etag = "ETag: ".$etag;
+                    } else if($cache_validation_data['expires'] !== -1){
+                        $expires_timestamp = $cache_validation_data['expires'];
+                        $current_time = time();
+                        if($current_time < $expires_timestamp) {
+                            continue;
+                        }
+                    }
+                }
+
                 $host_url = UrlParser::getHost($url);
                 $dns_lookup = $this->web_queue->dnsLookup($host_url);
                 if($dns_lookup) {
                     $url .= "###".urlencode($dns_lookup);
                 }
+
+                if($extracted_etag !== null) {
+                    $url .= $extracted_etag;
+                }
+
                 $out_string = base64_encode(
                     packFloat($weight).packInt($delay).$url)."\n";
                 fwrite($fh, $out_string);
