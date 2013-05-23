@@ -33,11 +33,6 @@
  */
 
 /**
- * Load Node class
- */
-require_once(BASE_DIR.'/lib/btree_node.php');
-
-/**
  * Default value of minimum degree. The minimum degree determines the minimum 
  * and maximum number of keys and child nodes, for nodes 
  * other than root node
