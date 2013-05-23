@@ -521,17 +521,18 @@ class IndexDictionary implements CrawlConstants
      * @param bool $raw whether the id is our version of base64 encoded or not
      * @param bool $extract whether to extract an array of entries or to just
      *      return the word info as a string
+     * @param int $shift
      * @return mixed an array of entries of the form
      *      generation, first offset, last offset, count or
      *      just a string of the word_info data if $extract is false
      */
      function getWordInfo($word_id, $raw = false, $extract = true,
-        $mask = false)
+        $shift = 0, $shift_keys = false)
      {
         $info = array();
         foreach($this->active_tiers as $tier) {
             $tier_info =$this->getWordInfoTier($word_id, $raw, $extract, $tier,
-                $mask);
+                $shift, $shift_keys);
             if(is_array($tier_info)) {
                 $info = array_merge($info, $tier_info);
             }
@@ -646,6 +647,7 @@ class IndexDictionary implements CrawlConstants
             $info = array();
             $tmp = IndexShard::getWordInfoFromString($word_string, true);
             if($tmp[3] < $max_entry_count) {
+                $tmp[4] = $id;
                 $info[0] = $tmp;
                 $previous_generation = $tmp[0];
                 $previous_id = $id;
@@ -697,6 +699,7 @@ class IndexDictionary implements CrawlConstants
                     if($previous_generation == $tmp[0] && $previous_id == $id) {
                         array_pop($info);
                     }
+                    $tmp[4] = $id;
                     array_push($info, $tmp);
                     $previous_generation = $tmp[0];
                     $previous_id = $id;
@@ -732,6 +735,7 @@ class IndexDictionary implements CrawlConstants
                 $tmp = IndexShard::getWordInfoFromString($ws, true);
                 if($tmp[3] < $max_entry_count &&
                     ($previous_generation != $tmp[0] || $previous_id !=$id)) {
+                    $tmp[4] = $id;
                     array_unshift($info, $tmp);
                     $previous_generation = $tmp[0];
                     $previous_id = $id;
@@ -742,34 +746,6 @@ class IndexDictionary implements CrawlConstants
         }
         return $info;
     }
-
-    /**
-     *  Given an array of $key => $word_id associations returns an array of
-     *  $key => $num_docs of that $word_id
-     *
-     *  @param array &$key_words associative array of $key => $word_id's
-     *  @return array $key => $num_docs associations
-     */
-     function getNumDocsArray(&$key_words)
-     {
-        $file_key_words = array();
-        foreach($key_words as $key => $word_id) {
-            $file_key_words[ord($word_id[0])][$key] = $word_id;
-        }
-        $num_docs_array = array();
-        foreach($file_key_words as $file_num => $k_words) {
-            foreach($k_words as $key => $word_id) {
-                $info = $this->getWordInfo($word_id, true);
-                $num_generations = count($info);
-                $num_docs = 0;
-                for($i = 0; $i < $num_generations; $i++) {
-                    $num_docs += $info[$i][3];
-                }
-                $num_docs_array[$key] = $num_docs;
-            }
-        }
-        return $num_docs_array;
-     }
 
     /**
      *  Gets from disk $len many bytes beginning at $offset from the

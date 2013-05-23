@@ -72,8 +72,9 @@ token_tool.php
 
 Usage
 =====
-token_tool is used to create suggest word dictionaries and 'n' word gram filter
-files for the Yioop! search engine. To create either of these items, the user
+token_tool is used to create suggest word dictionaries,
+segment and 'n' word gram filter files for the Yioop! search engine. 
+To create either of these items, the user
 puts a source file in Yioop's WORK_DIRECTORY/prepare folder. Suggest word
 dictionaries are used to supply the content of the dropdown of search terms
 that appears as a user is entering a query in Yioop. To make a suggest
@@ -89,23 +90,37 @@ $ works pretty well.
 
 token_tool.php can also be used to make filter files. A filter file is used to
 detect when words in a language should be treated as a unit when extracting text
-during a crawl. For example, Bill Clinton is 2 word gram which should be treated
-as unit because it is a particular person. ngram_builder is run from the command
-line as:
+during a crawl and at search time.  For example, Bill Clinton is 2 word gram 
+which should be treated as unit because it is a particular person. These
+filter files can also be used  with a segmenter which
+might be used to split Chinese or Japanese text which does not have spaces into
+a sequence of Chinese and Japanese words (which may be made out of multiple
+characters). For a nonsegmenter filter, token_tool.php is run from the
+command line as:
 
 php token_tool.php filter wiki_file lang locale n extract_type max_to_extract
 
-where wiki_file is a wikipedia xml file or a bz2  compressed xml file whose urls
+where file is a wikipedia xml file or is a bz2  compressed xml file whose urls
 or wiki page count dump file (it can also be a folder of these kind of files)
-which will be used to determine the n-grams, lang is an Wikipedia language tag,
-locale is the IANA language tag of locale to store the results for (if different
-from lang, for example, en-US versus en for lang), n is the number of words in
-a row to consider, extract_type is where from Wikipedia source to extract:
+used to determine the n-grams, 
+lang is an Wikipedia language tag (ignored in segmenter case),
+locale is the IANA language tag of the locale to store the results for
+(if different from lang, for example, en-US versus en for lang), n is the 
+number of words in a row to consider , extract_type is where from Wikipedia 
+source to extract:
 
 0 = title's,
 1 = redirect's,
 2 = page count dump wikipedia data,
 3 = page count dump wiktionary data.
+
+For a segmenter filter, token_tool.php is run from the
+command line as:
+
+php token_tool.php segment-filter dictionary_file locale
+
+Here dictionary_file should be a text file with one word/line,
+locale is the IANA language tag of the locale to store the results for.
 
 
 Obtaining Data
@@ -136,6 +151,10 @@ Beneath this we might find a link with a name like:
 enwiki-20120104-pages-meta-current.xml.bz2
 which is a file that could be processed by this tool.
 
+A Creative Commons licensed file which can be manipulated into a dictionary
+file suitable for Chinese segmentation can be found at:
+http://www.mdbg.net/chindict/chindict.php?page=cc-cedict
+
 EOD;
 
 
@@ -161,6 +180,15 @@ switch($argv[1])
         array_shift($argv);
         array_shift($argv);
         makeNWordGramsFiles($argv);
+    break;
+
+    case "segment-filter":
+        $file_path = PREP_DIR."/";
+        if (!file_exists($file_path.$argv[2])) {
+            echo $argv[2]." does not exist in ".$file_path;
+            exit();
+        }
+        NWordGrams::makeSegmentFilterFile($file_path.$argv[2], $argv[3]);
     break;
 
     default:

@@ -368,7 +368,7 @@ define('SINGLE_PAGE_TIMEOUT', 60);
  *  Number of error page 400 or greater seen from a host before crawl-delay
  *  host and dump remainder from current schedule
  */
-define('DOWNLOAD_ERROR_THRESHOLD', 10);
+define('DOWNLOAD_ERROR_THRESHOLD', 50);
 
 /** Crawl-delay to set in the event that DOWNLOAD_ERROR_THRESHOLD exceeded*/
 define('ERROR_CRAWL_DELAY', 20);
@@ -484,7 +484,8 @@ $MOD9_NUM_ELTS_DECODES = array(
 
 /** Characters we view as not part of words, not same as POSIX [:punct:]*/
 define ('PUNCT', "\.|\,|\:|\;|\"|\'|\[|\/|\%|".
-    "\]|\{|\}|\(|\)|\!|\||\&|\`|\’|\‘|©|®|™|℠|… |- |\/ |\>|，|\=");
+    "\]|\{|\}|\(|\)|\!|\||\&|\`|\’|\‘|©|®|™|℠|… |- |\/ |\>|，|\=|。|）|：|、|".
+    "”|“|《|》|（");
 
 /** Percentage ASCII text before guess we dealing with english*/
 define ('EN_RATIO', 0.9);

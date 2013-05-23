@@ -169,10 +169,7 @@ class WordIterator extends IndexBundleIterator
         }
         if($raw == false) {
             //get rid of out modfied base64 encoding
-            $hash = str_replace("_", "/", $word_key);
-            $hash = str_replace("-", "+" , $hash);
-            $hash .= "=";
-            $word_key = base64_decode($hash);
+            $word_key = unbase64Hash($word_key);
         }
 
         if($filter != NULL) {

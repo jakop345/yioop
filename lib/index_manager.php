@@ -101,6 +101,9 @@ class IndexManager implements CrawlConstants
 
     /**
      *
+     *  @param string $index_name
+     *  @param string $hash
+     *  @param int $shift
      */
     static function getWordInfo($index_name, $hash, $shift = 0)
     {
@@ -116,7 +119,8 @@ class IndexManager implements CrawlConstants
     }
 
     /**
-     *
+     *  @param string $term_or_phrase
+     *  @param string $index_name
      */
     static function numDocsTerm($term_or_phrase, $index_name)
     {

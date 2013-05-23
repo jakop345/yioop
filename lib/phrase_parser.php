@@ -41,7 +41,10 @@ foreach(glob(LOCALE_DIR."/*/resources/tokenizer.php")
     require_once $filename;
 }
 $GLOBALS["CHARGRAMS"] = $CHARGRAMS;
-
+/**
+ * Load the n word grams file used by reverseMaximalMatch
+ */
+require_once BASE_DIR."/lib/nword_grams.php";
 /**
  * Reads in constants used as enums used for storing web sites
  */
@@ -661,6 +664,44 @@ class PhraseParser
         }
         $link_meta_ids[] = "link:all";
         return $link_meta_ids;
+    }
+
+    /**
+     *
+     */
+    static function reverseMaximalMatch($segment, $locale)
+    {
+        $len = mb_strlen($segment);
+        $cur_pos = $len - 1;
+        if($cur_pos < 1) {
+            return $segment;
+        }
+        $words = array();
+        $word_len = 2;
+        $word_guess = mb_substr($segment, $cur_pos, 1);
+        $added = false;
+        while($cur_pos >= 0) {
+            $old_word_guess = $word_guess;
+            $cur_pos--;
+            $word_guess = mb_substr($segment, $cur_pos, $word_len);
+            if(NWordGrams::ngramsContains($word_guess, $locale, "segment") ||
+                is_numeric($word_guess) || 
+                mb_check_encoding($word_guess, 'ASCII')) {
+                $word_len++;
+                $added = false;
+            } else {
+                $word_len = 1;
+                array_unshift($words, $old_word_guess);
+                $word_guess = mb_substr($segment, $cur_pos, $word_len);
+                $word_len++;
+                $added = true;
+            }
+        }
+        if(!$added) {
+            array_unshift($words, $old_word_guess);
+        }
+        $out_segment = implode(" ", $words);
+        return $out_segment;
     }
 
 

@@ -921,7 +921,7 @@ class Fetcher implements CrawlConstants
                     }
                 }
             }
-            if(general_is_a($this->arc_type."Iterator",
+            if(generalIsA($this->arc_type."Iterator",
                     "TextArchiveBundleIterator")) {
                 $result_dir = WORK_DIRECTORY . "/schedules/" .
                     $prefix.self::fetch_archive_iterator.$this->crawl_time;
@@ -1039,7 +1039,7 @@ class Fetcher implements CrawlConstants
         $this->selectCurrentServerAndUpdateIfNeeded(false);
 
         $chunk = false;
-        if(general_is_a($this->arc_type."Iterator",
+        if(generalIsA($this->arc_type."Iterator",
             "TextArchiveBundleIterator")) {
             $archive_iterator = $this->archive_iterator;
             $chunk = true;
@@ -1447,7 +1447,7 @@ class Fetcher implements CrawlConstants
                 $handled = true;
             } else if(isset($PAGE_PROCESSORS[$type])) {
                 $page_processor = $PAGE_PROCESSORS[$type];
-                if(general_is_a($page_processor, "TextProcessor")) {
+                if(generalIsA($page_processor, "TextProcessor")) {
                     $text_data =true;
                 } else {
                     $text_data =false;
@@ -1476,7 +1476,7 @@ class Fetcher implements CrawlConstants
                 if(isset($site[self::ENCODING]) &&
                     $site[self::ENCODING] != "UTF-8" &&
                     $site[self::ENCODING] != "" &&
-                    general_is_a($page_processor, "TextProcessor")) {
+                    generalIsA($page_processor, "TextProcessor")) {
                     if(!@mb_check_encoding($site[self::PAGE],
                         $site[self::ENCODING])) {
                         crawlLog("  MB_CHECK_ENCODING FAILED!!");

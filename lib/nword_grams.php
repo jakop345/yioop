@@ -83,22 +83,25 @@ class NWordGrams
      *
      * @param $phrase what to check if is a bigram
      * @param string $lang language of bigrams file
+     * @param string $filter_prefix either the word "segment", "all", or
+     *      number n of the number of words in an ngram in filter.
      * @return true or false
      */
-    static function ngramsContains($phrase, $lang, $num_gram = 2)
+    static function ngramsContains($phrase, $lang, $filter_prefix = 2)
     {
 
-        if(self::$ngrams == NULL || !isset(self::$ngrams[$num_gram])) {
+        if(self::$ngrams == NULL || !isset(self::$ngrams[$filter_prefix])) {
             $filter_path =
                 LOCALE_DIR . "/$lang/resources/" .
-                "{$num_gram}" . self::FILTER_SUFFIX;
+                "{$filter_prefix}" . self::FILTER_SUFFIX;
             if (file_exists($filter_path)) {
-                self::$ngrams[$num_gram] = BloomFilterFile::load($filter_path);
+                self::$ngrams[$filter_prefix] = 
+                    BloomFilterFile::load($filter_path);
             } else  {
                 return false;
             }
         }
-        return self::$ngrams[$num_gram]->contains(strtolower($phrase));
+        return self::$ngrams[$filter_prefix]->contains(mb_strtolower($phrase));
     }
 
     /**
@@ -110,13 +113,12 @@ class NWordGrams
      * is available for $lang and then stored in filter file.
      *
      * @param string $lang locale to be used to stem n grams.
-     * @param int $num_gram number of words in grams we are storing
      * @param int $num_ngrams_found count of n word grams in text file.
      * @param int $max_gram_len value n of longest n gram to be added.
      * @return none
      */
     static function makeNWordGramsFilterFile($lang, $num_gram,
-        $num_ngrams_found, $max_gram_len)
+        $num_ngrams_found, $max_gram_len = 2)
     {
         $filter_path =
             LOCALE_DIR . "/$lang/resources/" .
@@ -140,6 +142,26 @@ class NWordGrams
         fclose($fp);
         $ngrams->max_gram_len = $max_gram_len;
         $ngrams->save();
+    }
+
+    /**
+     *
+     */
+    static function makeSegmentFilterFile($dict_file, $lang)
+    {
+        $filter_path =
+            LOCALE_DIR . "/$lang/resources/" .
+            "segment" . self::FILTER_SUFFIX;
+        if (file_exists($filter_path)) {
+            unlink($filter_path); //build again from scratch
+        }
+        $words = file($dict_file);
+        $filter = new BloomFilterFile($filter_path, count($words));
+        foreach($words as $word) {
+          $filter->add(mb_strtolower(trim($word)));
+        }
+        $filter->max_gram_len = 1;
+        $filter->save();
     }
 
     /**

@@ -171,6 +171,9 @@ class DisjointIterator extends IndexBundleIterator
      *  and generation; -1 on fail
      */
     function currentGenDocOffsetWithWord() {
+        if($this->num_iterators <= 0) {
+            return -1;
+        }
         $this->leastGenDocOffsetsAmongstIterators();
         return $this->index_bundle_iterators[$this->least_offset_index
             ]->currentGenDocOffsetWithWord();

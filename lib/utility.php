@@ -1271,10 +1271,25 @@ function readMessage()
  * that came into being with Version 5.3.9.
  *
  */
-function general_is_a($class_1, $class_2)
+function generalIsA($class_1, $class_2)
 {
     if($class_1 == $class_2) return true;
     return (is_a($class_1, $class_2) || is_subclass_of($class_1, $class_2));
+}
+
+/**
+ *
+ */
+function arrayColumnCount($arr, $key_column, $count_column)
+{
+    $out_arr = array();
+    foreach($arr as $row) {
+        if(!isset($out_arr[$row[$key_column]])) {
+            $out_arr[$row[$key_column]] = 0;
+        }
+        $out_arr[$row[$key_column]] += $row[$count_column];
+    }
+    return $out_arr;
 }
 
 ?>

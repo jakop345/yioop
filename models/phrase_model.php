@@ -1315,12 +1315,32 @@ class PhraseModel extends ParallelModel
                     } else if(is_array($distinct_word_keys[$i])) {
                         //can happen if exact phrase search suffix approach used
                         $distinct_keys = $distinct_word_keys[$i];
+                        $out_keys = array();
+                        foreach($distinct_keys as $distinct_key) {
+                            if(is_array($distinct_key)) {
+                                $shift = $distinct_key[1];
+                                $distinct_key_id = unbase64Hash(
+                                    $distinct_key[0]);
+                            } else {
+                                $shift = 0;
+                                $distinct_key_id = unbase64Hash($distinct_key);
+                            }
+                            $info = IndexManager::getWordInfo($index_name,
+                                $distinct_key_id, $shift);
+                            if($info != array()) {
+                                $tmp_keys = arrayColumnCount($info, 4, 3);
+                                $out_keys = array_merge($out_keys, $tmp_keys);
+                            }
+                        }
+                        arsort($out_keys);
+                        $out_keys = array_keys(array_slice($out_keys, 0, 50));
+
                         $tmp_word_iterators =array();
                         $m = 0;
-                        foreach($distinct_keys as $distinct_key) {
+                        foreach($out_keys as $distinct_key) {
                             $tmp_word_iterators[$m] =
                                 new WordIterator($distinct_key,
-                                $index_name, false, $filter, $to_retrieve);
+                                $index_name, true, $filter, $to_retrieve);
                             if($tmp_word_iterators[$m]->dictionary_info !=
                                 array()) {
                                 $m++;

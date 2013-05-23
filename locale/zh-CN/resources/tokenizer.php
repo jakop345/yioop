@@ -40,7 +40,17 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @package seek_quarry
  * @subpackage locale
  */
-$CHARGRAMS['zh'] = 2;
-$CHARGRAMS['zh-CN'] = 2;
-$CHARGRAMS['cn'] = 2;
+
+class ZhTokenizer
+{
+    static function segment($pre_segment)
+    {
+        return PhraseParser::reverseMaximalMatch($pre_segment, "zh-CN");
+    }
+
+    static function stem($word)
+    {
+        return $word;
+    }
+}
 ?>
