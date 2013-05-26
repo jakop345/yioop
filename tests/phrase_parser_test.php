@@ -68,12 +68,6 @@ class PhraseParserTest extends UnitTest
      */
     function extractPhrasesTestCase()
     {
-$phrase_string = <<< EOD
-This is a dog. This is not a cat. This is not a donkey.
-EOD;
-        $word_lists = PhraseParser::extractPhrasesInLists($phrase_string,
-            "en-US");
-print_r($word_lists); exit();
         $phrase_string = <<< EOD
 Dr. T.Y Lin's home page. J. R. R. Tolkien
 EOD;
@@ -110,9 +104,9 @@ EOD;
         $word_lists = PhraseParser::extractPhrasesInLists($phrase_string,
             "zh-CN");
         $words = array_keys($word_lists);
-        $this->assertTrue(in_array("百度", $words), "Chinese test 1");
-        $this->assertTrue(in_array("ba ai id du", $words), "Chinese test 2");
-        $this->assertTrue(in_array("ab", $words), "Chinese test 3");
+        $this->assertTrue(in_array("百科", $words), "Chinese test 1");
+        $this->assertTrue(in_array("baidu", $words), "Chinese test 2");
+        $this->assertTrue(in_array("about", $words), "Chinese test 3");
         $this->assertFalse(in_array("", $words), "Chinese test 4");
         $this->assertFalse(in_array("下，", $words), "Chinese test 5");
 

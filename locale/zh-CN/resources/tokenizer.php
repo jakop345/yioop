@@ -32,7 +32,7 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- * Turkish specific tokenization code. Typically, tokenizer.php
+ * Chinese specific tokenization code. Typically, tokenizer.php
  * either contains a stemmer for the language in question or
  * it specifies how many characters in a char gram
  *

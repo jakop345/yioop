@@ -144,7 +144,7 @@ class SearchController extends Controller implements CrawlConstants
         }
 
         $data['ELAPSED_TIME'] = changeInMicrotime($start_time);
-        if ($view == "serial") {
+        if ($view == "serial" || $view == "json") {
             if(isset($data["PAGES"])) {
                 $count = count($data["PAGES"]);
                 for($i = 0; $i < $count; $i++) {
@@ -157,7 +157,40 @@ class SearchController extends Controller implements CrawlConstants
                         round($data["PAGES"][$i][self::RELEVANCE], 3);
                 }
             }
-            echo serialize($data);
+            if($view == "serial") {
+                echo serialize($data);
+            } else {
+                $out_data = array();
+                $out_data["language"] = getLocaleTag();
+                $out_data["link"] = NAME_SERVER.
+                    "?f=json&amp;q={$data['QUERY']}&amp;its={$data['QUERY']}";
+                $out_data["totalResults"] = $data['TOTAL_ROWS'];
+                $out_data["startIndex"] = $data['LIMIT'];
+                $out_data["itemsPerPage"] = $data['RESULTS_PER_PAGE'];
+                foreach($data['PAGES'] as $page) {
+                    $item = array();
+                    $item["title"] = $page[self::TITLE];
+                    if(!isset($page[self::TYPE]) ||
+                    (isset($page[self::TYPE])
+                    && $page[self::TYPE] != "link")) {
+                        $item["link"] = $page[self::URL];
+                    } else {
+                        $item["link"] = strip_tags($page[self::TITLE]);
+                    }
+                    $item["description"] = strip_tags($page[self::DESCRIPTION]);
+                    if(isset($page[self::THUMB])
+                    && $page[self::THUMB] != 'NULL') {
+                        $item["thumb"] = $page[self::THUMB];
+                    }
+                    if(isset($page[self::TYPE])) {
+                        $item["type"] = $page[self::TYPE];
+                    }
+                    $out_data['item'][] =$item;
+                }
+
+                echo json_encode($out_data);
+                
+            }
             exit();
         }
 
@@ -191,15 +224,12 @@ class SearchController extends Controller implements CrawlConstants
      */
     function initializeResponseFormat()
     {
+        $alternative_outputs = array('rss', 'json', 'serial');
         $view = "search";
         $web_flag = true;
-        if(isset($_REQUEST['f']) && $_REQUEST['f']=='rss' &&
-            RSS_ACCESS) {
-            $view = "rss";
-            $web_flag = false;
-        } else if(isset($_REQUEST['f']) && $_REQUEST['f']=='serial' &&
-            RSS_ACCESS) {
-            $view = "serial";
+        if(isset($_REQUEST['f']) && in_array($_REQUEST['f'],
+            $alternative_outputs) && RSS_ACCESS) {
+            $view = $_REQUEST['f'];
             $web_flag = false;
         } else if (!WEB_ACCESS) {
             return false;
