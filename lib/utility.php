@@ -711,6 +711,9 @@ function allCrawlHashPaths($string, $raw = false)
                 } else if ($path_len < 8) {
                     if($i < 4) {
                         $shift = 8 * $i;
+                        if($path_len == 6) {
+                            $shift += 8;
+                        }
                     } else if ($i < 6) {
                         $shift = 32 + 16 * ($i - 4);
                     } else {
@@ -719,8 +722,14 @@ function allCrawlHashPaths($string, $raw = false)
                 } else if ($path_len < 10) {
                     if($i < 4) {
                         $shift = 4 * $i;
+                        if($path_len == 8) {
+                            $shift += 4;
+                        }
                     } else if ($i < 6) {
                         $shift = 16 + 8 * ($i - 4);
+                        if($path_len == 8) {
+                            $shift += 12;
+                        }
                     } else if ($i < 8) {
                         $shift = 32 + 16 * ($i - 6);
                     } else {
@@ -729,6 +738,9 @@ function allCrawlHashPaths($string, $raw = false)
                 } else if ($path_len < 12) {
                     if($i < 4) {
                         $shift = 2 * $i;
+                        if($path_len == 10) {
+                            $shift += 2;
+                        }
                     } else if ($i < 6) {
                         $shift = 8 + 4 * ($i - 4);
                     } else if ($i < 8) {
@@ -741,6 +753,9 @@ function allCrawlHashPaths($string, $raw = false)
                 } else if ($path_len < 14) {
                     if($i < 4) {
                         $shift = $i;
+                        if($path_len == 12) {
+                            $shift += 1;
+                        }
                     } else if ($i < 6) {
                         $shift = 4 + 2 * ($i - 4);
                     } else if ($i < 8) {
@@ -772,12 +787,12 @@ function allCrawlHashPaths($string, $raw = false)
 
 
 /**
- *  Given a string makes an 16 byte hash path - where first 8 bytes is
- *  a hash of the string before path start, last 8 bytes is the path
+ *  Given a string makes an 20 byte hash path - where first 8 bytes is
+ *  a hash of the string before path start, last 12 bytes is the path
  *  given by splitting on space and separately hashing each element
- *  according to the number of elements and the pattern below:
+ *  according to the number of elements and the 3bit selector below:
  *
- *  0000 1 60 bit number
+ *  000 
  *
  *  4 bit selector 28 Bit number
  *

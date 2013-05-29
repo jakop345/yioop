@@ -522,12 +522,13 @@ class IndexDictionary implements CrawlConstants
      * @param bool $extract whether to extract an array of entries or to just
      *      return the word info as a string
      * @param int $shift
+     * @param int $threshold
      * @return mixed an array of entries of the form
      *      generation, first offset, last offset, count or
      *      just a string of the word_info data if $extract is false
      */
      function getWordInfo($word_id, $raw = false, $extract = true,
-        $shift = 0, $shift_keys = false)
+        $shift = 0, $shift_keys = false, $threshold = -1)
      {
         $info = array();
         foreach($this->active_tiers as $tier) {
@@ -561,11 +562,13 @@ class IndexDictionary implements CrawlConstants
       *  @param bool $extract whether the results should be extracted to
       *     an array or left as a string
       *  @param int $shift
+      *  @param int $threshold
       *  @return mixed an array of entries of the form
       *      generation, first offset, last offset, count or
       *      just a string of the word_info data if $extract is false
       */
-     function getWordInfoTier($word_id, $raw, $extract, $tier, $shift = 0)
+     function getWordInfoTier($word_id, $raw, $extract, $tier, $shift = 0,
+        $threshold = -1)
      {
         if(isset($this->fhs)) {
             $this->tier_fhs[$this->read_tier] = $this->fhs;
@@ -597,6 +600,7 @@ class IndexDictionary implements CrawlConstants
             set threshold to 5 * number of docs that could be in a shard
          */
         $max_entry_count = 5 * NUM_DOCS_PER_GENERATION;
+        $total_count = 0;
 
         $prefix = ord($word_id[1]);
         $prefix_info = $this->getDictSubstring($file_num,
@@ -694,7 +698,7 @@ class IndexDictionary implements CrawlConstants
                    times within one shard and each time merged with the
                    dictionary. Only the last such save has useful data.
                  */
-                if($tmp[3] < $max_entry_count ) {
+                if($tmp[3] < $max_entry_count) {
                     if($previous_generation == $tmp[0] && $previous_id == $id) {
                         array_pop($info);
                     }
@@ -702,6 +706,10 @@ class IndexDictionary implements CrawlConstants
                     array_push($info, $tmp);
                     $previous_generation = $tmp[0];
                     $previous_id = $id;
+                    $total_count += $tmp[3];
+                    if($threshold > 0 && $total_count > $threshold) {
+                        return $info;
+                    }
                 }
             } else {
                 $info = $ws . $info;
@@ -738,6 +746,10 @@ class IndexDictionary implements CrawlConstants
                     array_unshift($info, $tmp);
                     $previous_generation = $tmp[0];
                     $previous_id = $id;
+                    $total_count += $tmp[3];
+                    if($threshold > 0 && $total_count > $threshold) {
+                        return $info;
+                    }
                 }
             } else {
                 $info .= $ws;

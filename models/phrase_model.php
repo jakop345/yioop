@@ -1287,8 +1287,7 @@ class PhraseModel extends ParallelModel
         }
         if(!$network_flag) {
             $doc_iterate_hashes = array(crawlHashWord("site:any"),
-                crawlHash("site:any"));
-            $doc_iterate_group_hashes = array(crawlHashWord("site:doc"),
+                crawlHash("site:any"), crawlHashWord("site:doc"),
                 crawlHash("site:doc"));
             if($save_timestamp_name != "") {
                 // used for archive crawls of crawl mixes
@@ -1303,7 +1302,7 @@ class PhraseModel extends ParallelModel
             foreach($word_structs as $word_struct) {
                 if(!is_array($word_struct)) { continue;}
                 $word_keys = $word_struct["KEYS"];
-                $distinct_word_keys = array_unique($word_keys);
+                $distinct_word_keys = array_values(array_unique($word_keys));
                 $quote_positions = $word_struct["QUOTE_POSITIONS"];
                 $disallow_keys = $word_struct["DISALLOW_KEYS"];
                 $index_name = $word_struct["INDEX_NAME"];
@@ -1313,11 +1312,8 @@ class PhraseModel extends ParallelModel
                 $word_iterators = array();
                 $word_iterator_map = array();
                 if($num_word_keys < 1) {continue;}
-
                 for($i = 0; $i < $total_iterators; $i++) {
-                    if(in_array($distinct_word_keys[$i], $doc_iterate_hashes)
-                        || in_array($distinct_word_keys[$i], 
-                            $doc_iterate_group_hashes)) {
+                    if(in_array($distinct_word_keys[$i], $doc_iterate_hashes)) {
                         $word_iterators[$i] = new DocIterator(
                             $index_name, $filter, $to_retrieve);
                     } else if(is_array($distinct_word_keys[$i])) {
@@ -1334,7 +1330,7 @@ class PhraseModel extends ParallelModel
                                 $distinct_key_id = unbase64Hash($distinct_key);
                             }
                             $info = IndexManager::getWordInfo($index_name,
-                                $distinct_key_id, $shift);
+                                $distinct_key_id, $shift, $to_retrieve);
                             if($info != array()) {
                                 $tmp_keys = arrayColumnCount($info, 4, 3);
                                 $out_keys = array_merge($out_keys, $tmp_keys);

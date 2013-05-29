@@ -116,25 +116,30 @@ class IndexManager implements CrawlConstants
      *  @param string $index_name
      *  @param string $hash
      *  @param int $shift
+     *  @param int $threshold
      */
-    static function getWordInfo($index_name, $hash, $shift = 0)
+    static function getWordInfo($index_name, $hash, $shift = 0, $threshold = -1)
     {
         $index = IndexManager::getIndex($index_name);
         if(!$index->dictionary) {
             return false;
         }
-        if(!isset(IndexManager::$dictionary[$index_name][$hash][$shift])) {
-            IndexManager::$dictionary[$index_name][$hash][$shift] =
-                $index->dictionary->getWordInfo($hash, true, true, $shift);
+        if(!isset(IndexManager::$dictionary[$index_name][$hash][$shift][
+            $threshold])) {
+            IndexManager::$dictionary[$index_name][$hash][$shift][
+                $threshold] =
+                $index->dictionary->getWordInfo($hash, true, true, $shift,
+                $threshold);
         }
-        return IndexManager::$dictionary[$index_name][$hash][$shift];
+        return IndexManager::$dictionary[$index_name][$hash][$shift][
+            $threshold];
     }
 
     /**
      *  @param string $term_or_phrase
      *  @param string $index_name
      */
-    static function numDocsTerm($term_or_phrase, $index_name)
+    static function numDocsTerm($term_or_phrase, $index_name, $threshold = -1)
     {
         $index = IndexManager::getIndex($index_name);
         if(!$index->dictionary) {
@@ -150,7 +155,7 @@ class IndexManager implements CrawlConstants
             if(is_array($hash)) {
                 $dictionary_info = 
                     IndexManager::getWordInfo($index_name, $hash[0],
-                        $hash[1]);
+                        $hash[1], $threshold);
             } else {
                 $dictionary_info = 
                     IndexManager::getWordInfo($index_name, $hash);
@@ -159,6 +164,9 @@ class IndexManager implements CrawlConstants
             for($i = 0; $i < $num_generations; $i++) {
                 list(, , , $num_docs) = $dictionary_info[$i];
                 $total_num_docs += $num_docs;
+                if($threshold > 0 && $total_num_docs > $threshold) {
+                    return $total_num_docs;
+                }
             }
         }
         return $total_num_docs;

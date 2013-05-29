@@ -122,7 +122,7 @@ class PhraseParser
      * @return array of phrases
      */
     static function extractPhrases($string, $lang = NULL, $index_name = NULL,
-        $exact_match = false)
+        $exact_match = false, $threshold = 10)
     {
         self::canonicalizePunctuatedTerms($string, $lang);
         $terms = self::stemCharGramSegment($string, $lang);
@@ -141,8 +141,8 @@ class PhraseParser
             return array($whole_phrase);
         }
         $count_whole_phrase = IndexManager::numDocsTerm($whole_phrase,
-            $index_name);
-        if($count_whole_phrase >= 10
+            $index_name, $threshold);
+        if($count_whole_phrase >= $threshold
             || $num > MAX_QUERY_TERMS / 2) {
             return array($whole_phrase);
         }
