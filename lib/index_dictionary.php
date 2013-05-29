@@ -578,17 +578,16 @@ class IndexDictionary implements CrawlConstants
             $this->fhs = array();
         }
         $this->read_tier = $tier;
-        $word_key_len = IndexShard::WORD_KEY_LEN;
-        if(strlen($word_id) < $word_key_len) {
-            return false;
-        }
         if($raw == false) {
             //get rid of out modified base64 encoding
             $word_id = unbase64Hash($word_id);
         }
-
-        $word_item_len = IndexShard::WORD_ITEM_LEN;
-        $word_data_len = $word_item_len - $word_key_len;
+        $word_key_len = strlen($word_id);
+        if(strlen($word_id) < 1) { //length of oldest format word
+            return false;
+        }
+        $word_item_len = $word_key_len + IndexShard::WORD_DATA_LEN;
+        $word_data_len = IndexShard::WORD_DATA_LEN;
         $file_num = ord($word_id[0]);
         /*
             Entries for a particular shard have postings for both
@@ -734,7 +733,7 @@ class IndexDictionary implements CrawlConstants
             if($extract) {
                 $tmp = IndexShard::getWordInfoFromString($ws, true);
                 if($tmp[3] < $max_entry_count &&
-                    ($previous_generation != $tmp[0] || $previous_id !=$id)) {
+                    ($previous_generation != $tmp[0] || $previous_id != $id)) {
                     $tmp[4] = $id;
                     array_unshift($info, $tmp);
                     $previous_generation = $tmp[0];

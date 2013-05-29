@@ -111,7 +111,7 @@ class IndexShardTest extends UnitTest
             "Len All Docs Correctly Counts Length of First Doc");
 
         $c_data = $this->test_objects['shard']->getPostingsSliceById(
-            crawlHash('CCCCCCCC', true), 5);
+            crawlHashWord('CCCCCCCC', true), 5);
 
         $this->assertTrue(isset($c_data[$docid]),
             "Doc lookup by word works");
@@ -133,7 +133,7 @@ class IndexShardTest extends UnitTest
             $offset, $word_counts, $meta_ids, true);
 
         $c_data = $this->test_objects['shard']->getPostingsSliceById(
-            crawlHash('CCCCCCCC', true), 5);
+            crawlHashWord('CCCCCCCC', true), 5);
 
         $this->assertTrue(isset($c_data["AAAAAAAABBBBBBBBCCCCCCCC"]),
             "Work lookup first item of two works");
@@ -145,7 +145,7 @@ class IndexShardTest extends UnitTest
         //add a meta word lookup
 
         $c_data = $this->test_objects['shard']->getPostingsSliceById(
-            crawlHash('EEEEEEEE', true), 5);
+            crawlHashWord('EEEEEEEE', true), 5);
 
         $this->assertTrue(isset($c_data["AAAAAAAABBBBBBBBCCCCCCCC"]),
             "Doc lookup by meta word works");
@@ -178,7 +178,7 @@ class IndexShardTest extends UnitTest
         $this->assertEqual($this->test_objects['shard']->len_all_link_docs, 9,
             "Len All Docs Correctly Counts Length of First Doc");
         $c_data = $this->test_objects['shard']->getPostingsSliceById(
-            crawlHash('MMMMMMMM', true), 5);
+            crawlHashWord('MMMMMMMM', true), 5);
 
         $this->assertTrue(isset($c_data["AAAAAAAABBBBBBBBCCCCCCCC"]),
             "Link Doc lookup by word works");
@@ -200,7 +200,7 @@ class IndexShardTest extends UnitTest
         $this->test_objects['shard']->addDocumentWords($docid,
             $offset, $word_counts, $meta_ids, true);
         $c_data = $this->test_objects['shard']->getPostingsSliceById(
-            crawlHash('MMMMMMMM', true), 5);
+            crawlHashWord('MMMMMMMM', true), 5);
         $this->assertTrue(isset($c_data["AAAAAAAABBBBBBBBCCCCCCCC"]),
             "Link Doc lookup by word works 1st of two");
         $this->assertTrue(isset($c_data["AAAAAAAABBBBBBBBEEEEEEEE"]),
@@ -255,15 +255,15 @@ class IndexShardTest extends UnitTest
         $this->test_objects['shard']->appendIndexShard(
             $this->test_objects['shard2']);
         $c_data = $this->test_objects['shard']->getPostingsSliceById(
-            crawlHash('BBBBBBBB', true), 5);
+            crawlHashWord('BBBBBBBB', true), 5);
         $this->assertTrue(isset($c_data["AAAAAAAA"]),
             "Data from first shard present 1");
         $c_data = $this->test_objects['shard']->getPostingsSliceById(
-            crawlHash('CCCCCCCC', true), 5);
+            crawlHashWord('CCCCCCCC', true), 5);
         $this->assertTrue(isset($c_data["AAAAAAAA"]),
             "Data from first shard present 2");
         $c_data = $this->test_objects['shard']->getPostingsSliceById(
-            crawlHash('DDDDDDDD', true), 5);
+            crawlHashWord('DDDDDDDD', true), 5);
         $this->assertTrue(isset($c_data["AAAAAAAA"]),
             "Data from first shard present 3");
         $this->assertTrue(isset($c_data["KKKKKKKKGGGGGGGGHHHHHHHH"]),
@@ -271,27 +271,27 @@ class IndexShardTest extends UnitTest
         $this->assertTrue(isset($c_data["GGGGGGGG"]),
             "Data from third shard present 1");
         $c_data = $this->test_objects['shard']->getPostingsSliceById(
-            crawlHash('EEEEEEEE', true), 5);
+            crawlHashWord('EEEEEEEE', true), 5);
         $this->assertTrue(isset($c_data["AAAAAAAA"]),
             "Data from first shard present 4");
         $c_data = $this->test_objects['shard']->getPostingsSliceById(
-            crawlHash('FFFFFFFF', true), 5);
+            crawlHashWord('FFFFFFFF', true), 5);
         $this->assertTrue(isset($c_data["AAAAAAAA"]),
             "Data from first shard present 5");
         $c_data = $this->test_objects['shard']->getPostingsSliceById(
-            crawlHash('ZZZZZZZZ', true), 5);
+            crawlHashWord('ZZZZZZZZ', true), 5);
         $this->assertTrue(isset($c_data["KKKKKKKKGGGGGGGGHHHHHHHH"]),
             "Data from second shard present 2");
         $c_data = $this->test_objects['shard']->getPostingsSliceById(
-            crawlHash('IIIIIIII', true), 5);
+            crawlHashWord('IIIIIIII', true), 5);
         $this->assertTrue(isset($c_data["GGGGGGGG"]),
             "Data from third shard present 2");
         $c_data = $this->test_objects['shard']->getPostingsSliceById(
-            crawlHash('JJJJJJJJ', true), 5);
+            crawlHashWord('JJJJJJJJ', true), 5);
         $this->assertTrue(isset($c_data["GGGGGGGG"]),
             "Data from third shard present 3");
         $c_data = $this->test_objects['shard']->getPostingsSliceById(
-            crawlHash('KKKKKKKK', true), 5);
+            crawlHashWord('KKKKKKKK', true), 5);
         $this->assertTrue(isset($c_data["GGGGGGGG"]),
             "Data from third shard present 4");
     }
@@ -349,7 +349,7 @@ class IndexShardTest extends UnitTest
         $this->test_objects['shard']->addDocumentWords($docid,
             $offset, $word_lists, $meta_ids);
         $c_data = $this->test_objects['shard']->getPostingsSliceById(
-            crawlHash('BBBBBBBB', true), 5);
+            crawlHashWord('BBBBBBBB', true), 5);
         $new_doc_offsets = array(
             "AAAAAAAASSSSSSSS" => 5,
             "AAAAAAAAEEEEEEEEFFFFFFFF" => 10,
@@ -358,7 +358,7 @@ class IndexShardTest extends UnitTest
         );
         $this->test_objects['shard']->changeDocumentOffsets($new_doc_offsets);
         $c_data = $this->test_objects['shard']->getPostingsSliceById(
-            crawlHash('BBBBBBBB', true), 5);
+            crawlHashWord('BBBBBBBB', true), 5);
         $predicted_offsets = array(
             "AAAAAAAASSSSSSSS" => 5,
             "CCCCCCCCFFFFFFFF" => 0,
@@ -375,7 +375,7 @@ class IndexShardTest extends UnitTest
             $i++;
         }
         $c_data = $this->test_objects['shard']->getPostingsSliceById(
-            crawlHash('ZZZZZZZZ', true), 5);
+            crawlHashWord('ZZZZZZZZ', true), 5);
             $this->assertEqual($c_data['CCCCCCCCFFFFFFFF']
                 [CrawlConstants::SUMMARY_OFFSET],
                 0,  "Summary offset matches predicted second word");
@@ -412,24 +412,24 @@ class IndexShardTest extends UnitTest
             "Len All Docs Correctly Counts Length of First Doc");
 
         $c_data = $this->test_objects['shard2']->getPostingsSliceById(
-            crawlHash('BBBBBBBB', true), 5);
+            crawlHashWord('BBBBBBBB', true), 5);
 
         $this->assertTrue(isset($c_data["AAAAAAAABBBBBBBBCCCCCCCC"]),
             "Doc lookup by word works");
         $c_data = $this->test_objects['shard2']->getPostingsSliceById(
-            crawlHash('CCCCCCCC', true), 5);
+            crawlHashWord('CCCCCCCC', true), 5);
         $this->assertTrue(isset($c_data["AAAAAAAABBBBBBBBCCCCCCCC"]),
             "Doc lookup 2 by word works");
         $c_data = $this->test_objects['shard2']->getPostingsSliceById(
-            crawlHash('DDDDDDDD', true), 5);
+            crawlHashWord('DDDDDDDD', true), 5);
         $this->assertTrue(isset($c_data["AAAAAAAABBBBBBBBCCCCCCCC"]),
             "Doc lookup 2 by word works");
         $c_data = $this->test_objects['shard2']->getPostingsSliceById(
-            crawlHash('EEEEEEEE', true), 5);
+            crawlHashWord('EEEEEEEE', true), 5);
         $this->assertTrue(isset($c_data["AAAAAAAABBBBBBBBCCCCCCCC"]),
             "Doc lookup 2 by word works");
         $c_data = $this->test_objects['shard2']->getPostingsSliceById(
-            crawlHash('FFFFFFFF', true), 5);
+            crawlHashWord('FFFFFFFF', true), 5);
         $this->assertTrue(isset($c_data["AAAAAAAABBBBBBBBCCCCCCCC"]),
             "Doc lookup 2 by word works");
         // test saving and loading from a string
@@ -439,23 +439,23 @@ class IndexShardTest extends UnitTest
         $this->test_objects['shard2'] = IndexShard::load("shard.txt",
             $out_string);
         $c_data = $this->test_objects['shard2']->getPostingsSliceById(
-            crawlHash('BBBBBBBB', true), 5);
+            crawlHashWord('BBBBBBBB', true), 5);
         $this->assertTrue(isset($c_data["AAAAAAAABBBBBBBBCCCCCCCC"]),
             "String Load Doc lookup by word works");
         $c_data = $this->test_objects['shard2']->getPostingsSliceById(
-            crawlHash('CCCCCCCC', true), 5);
+            crawlHashWord('CCCCCCCC', true), 5);
         $this->assertTrue(isset($c_data["AAAAAAAABBBBBBBBCCCCCCCC"]),
             "String Load Doc lookup 2 by word works");
         $c_data = $this->test_objects['shard2']->getPostingsSliceById(
-            crawlHash('DDDDDDDD', true), 5);
+            crawlHashWord('DDDDDDDD', true), 5);
         $this->assertTrue(isset($c_data["AAAAAAAABBBBBBBBCCCCCCCC"]),
             "String Load Doc lookup 2 by word works");
         $c_data = $this->test_objects['shard2']->getPostingsSliceById(
-            crawlHash('EEEEEEEE', true), 5);
+            crawlHashWord('EEEEEEEE', true), 5);
         $this->assertTrue(isset($c_data["AAAAAAAABBBBBBBBCCCCCCCC"]),
             "String Load Doc lookup 2 by word works");
         $c_data = $this->test_objects['shard2']->getPostingsSliceById(
-            crawlHash('FFFFFFFF', true), 5);
+            crawlHashWord('FFFFFFFF', true), 5);
         $this->assertTrue(isset($c_data["AAAAAAAABBBBBBBBCCCCCCCC"]),
             "String Load Doc lookup 2 by word works");
 

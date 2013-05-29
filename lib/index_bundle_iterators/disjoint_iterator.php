@@ -224,11 +224,19 @@ class DisjointIterator extends IndexBundleIterator
 
         //num_docs can change when advance() called so that's why we recompute
         $total_num_docs = 0;
-        for($i = 0; $i < $this->num_iterators; $i++) {
+        if($gen_doc_offset !== null) {
+            for($i = 0; $i < $this->num_iterators; $i++) {
+                $this->seen_docs_unfiltered +=
+                    $this->index_bundle_iterators[$i]->seen_docs;
+                $total_num_docs += $this->index_bundle_iterators[$i]->num_docs;
+                $this->index_bundle_iterators[$i]->advance($gen_doc_offset);
+            }
+        } else {
+            $least= $this->least_offset_index;
             $this->seen_docs_unfiltered +=
-                $this->index_bundle_iterators[$i]->seen_docs;
-            $total_num_docs += $this->index_bundle_iterators[$i]->num_docs;
-            $this->index_bundle_iterators[$i]->advance($gen_doc_offset);
+                $this->index_bundle_iterators[$least]->seen_docs;
+            $total_num_docs += $this->index_bundle_iterators[$least]->num_docs;
+            $this->index_bundle_iterators[$least]->advance($gen_doc_offset);
         }
         if($this->seen_docs_unfiltered > 0) {
             $this->num_docs =

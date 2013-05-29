@@ -160,7 +160,6 @@ class IndexArchiveBundle implements CrawlConstants
             return false;
         } else {
             $index_archive_exists = true;
-
         }
         if(file_exists($this->dir_name."/generation.txt")) {
             $this->generation_info = unserialize(

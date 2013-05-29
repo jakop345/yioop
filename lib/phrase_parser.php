@@ -146,7 +146,8 @@ class PhraseParser
             || $num > MAX_QUERY_TERMS / 2) {
             return array($whole_phrase);
         }
-        if($index_name != 'feed' && intval($index_name) < 1367767529) {
+        if($index_name != 'feed' && 
+            IndexManager::getVersion($index_name) == 0) {
             return $terms; //old style index before max phrase extraction
         }
         return $terms;
@@ -163,9 +164,6 @@ class PhraseParser
      */
     static function extractPhrasesAndCount($string, $lang = NULL)
     {
-
-        self::canonicalizePunctuatedTerms($string, $lang);
-
         $phrases = self::extractPhrasesInLists($string, $lang);
         $phrase_counts = array();
         foreach($phrases as $term => $positions) {
@@ -264,9 +262,7 @@ class PhraseParser
     {
         $pos_lists = array();
         $maximal_phrases = array();
-
         $terms = self::stemCharGramSegment($string, $lang);
-
         if($terms == array()) { return array(); }
 
         $suffix_tree = new SuffixTree($terms);

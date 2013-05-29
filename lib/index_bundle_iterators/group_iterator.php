@@ -382,7 +382,7 @@ class GroupIterator extends IndexBundleIterator
         $hash_url = substr($doc_key, 0, IndexShard::DOC_KEY_LEN);
         $prefix = ($is_location) ? "location:" : "info:";
         $hash_info_url=
-            crawlHash($prefix.base64Hash($hash_url), true);
+            crawlHashWord($prefix.base64Hash($hash_url), true);
         $word_iterator =
              new WordIterator($hash_info_url,
                 $index_name, true);

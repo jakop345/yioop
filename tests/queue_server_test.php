@@ -57,8 +57,9 @@ class QueueServerTest extends UnitTest
      */
     function setUp()
     {
+        global $INDEXED_FILE_TYPES;
         $INDEXED_FILE_TYPES = array("html", "txt");
-        $this->test_objects['Q_SERVER'] =  new QueueServer($INDEXED_FILE_TYPES);
+        $this->test_objects['Q_SERVER'] =  new QueueServer();
     }
 
     /**

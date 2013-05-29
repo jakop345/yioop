@@ -406,8 +406,8 @@ class ParallelModel extends Model implements CrawlConstants
             return false;
         }
         $num_generations = $index_archive->generation_info['ACTIVE'];
-        $hash_key = ($is_key) ? crawlHash($url_or_key) :
-            crawlHash("info:$url_or_key");
+        $hash_key = ($is_key) ? crawlHashWord($url_or_key) :
+            crawlHashWord("info:$url_or_key");
         $word_iterator = new WordIterator($hash_key, $index_name);
 
         if(is_array($next_docs = $word_iterator->nextDocsWithWord())) {

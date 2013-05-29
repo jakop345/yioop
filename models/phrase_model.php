@@ -551,10 +551,12 @@ class PhraseModel extends ParallelModel
                 $this->query_info['QUERY'] .= ")<br />";
             }
         }
+        $index_version = IndexManager::getVersion($index_name);
         if(isset($words) && count($words) == 1 &&
             count($disallow_phrases) < 1) {;
             $phrase_string = $words[0];
-            $phrase_hash = allCrawlHashPaths($phrase_string);
+            $phrase_hash = ($index_version == 0) ? crawlHash($phrase_string) :
+                allCrawlHashPaths($phrase_string);
             $word_struct = array("KEYS" => array($phrase_hash),
                 "QUOTE_POSITIONS" => NULL, "DISALLOW_KEYS" => array(),
                 "WEIGHT" => $weight, "INDEX_NAME" => $index_name
@@ -564,8 +566,10 @@ class PhraseModel extends ParallelModel
 
             $hashes = array();
             $i = 0;
+            
             foreach($words as $word) {
-                $word_keys[] = allCrawlHashPaths($word);
+                $word_keys[] = ($index_version == 0) ? 
+                    crawlHash($word) : allCrawlHashPaths($word);
             }
 
             if(count($word_keys) == 0) {
@@ -593,7 +597,8 @@ class PhraseModel extends ParallelModel
                     $this->query_info['QUERY'] .= "$in4{$disallow_stem[0]}".
                         "<br />";
                 }
-                $disallow_keys[] = crawlHash($disallow_stem[0]);
+                $disallow_keys[] = ($index_version == 0) ? 
+                    crawlHash($word) : crawlHashWord($disallow_stem[0]);
             }
 
             if($word_keys !== NULL) {
@@ -1281,8 +1286,10 @@ class PhraseModel extends ParallelModel
 
         }
         if(!$network_flag) {
-            $doc_iterate_hash = crawlHash("site:any");
-            $doc_iterate_group_hash = crawlHash("site:doc");
+            $doc_iterate_hashes = array(crawlHashWord("site:any"),
+                crawlHash("site:any"));
+            $doc_iterate_group_hashes = array(crawlHashWord("site:doc"),
+                crawlHash("site:doc"));
             if($save_timestamp_name != "") {
                 // used for archive crawls of crawl mixes
                 $save_file = CRAWL_DIR.'/schedules/'.self::save_point.
@@ -1308,8 +1315,9 @@ class PhraseModel extends ParallelModel
                 if($num_word_keys < 1) {continue;}
 
                 for($i = 0; $i < $total_iterators; $i++) {
-                    if($distinct_word_keys[$i] == $doc_iterate_hash
-                        || $distinct_word_keys[$i] == $doc_iterate_group_hash) {
+                    if(in_array($distinct_word_keys[$i], $doc_iterate_hashes)
+                        || in_array($distinct_word_keys[$i], 
+                            $doc_iterate_group_hashes)) {
                         $word_iterators[$i] = new DocIterator(
                             $index_name, $filter, $to_retrieve);
                     } else if(is_array($distinct_word_keys[$i])) {

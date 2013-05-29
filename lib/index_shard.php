@@ -274,14 +274,14 @@ class IndexShard extends PersistentStructure implements
     const HEADER_LENGTH = 40;
 
     /**
-     * Length of a Word entry in bytes in the shard
+     * Length of the data portion of a word entry in bytes in the shard
      */
-    const WORD_ITEM_LEN = 20;
+    const WORD_DATA_LEN = 12;
 
     /**
      * Length of a word entry's key in bytes
      */
-    const WORD_KEY_LEN = 8;
+    const WORD_KEY_LEN = 20;
 
     /**
      * Length of a key in a DOC ID.
@@ -394,20 +394,29 @@ class IndexShard extends PersistentStructure implements
         } else { //link item
             $this->num_link_docs++;
         }
+        $meta_suffix = "";
         foreach($meta_ids as $meta_id) {
-            $word_lists[$meta_id] = array();
+            if(substr($meta_id, 0, 8) == "u:suffix") {
+                $meta_suffix = " ".str_replace("_", " ",substr($meta_id, 9));
+            } else {
+                $word_lists[$meta_id] = array();
+            }
         }
 
         //using $this->docids_len divisible by 16
         $doc_offset = $this->docids_len >> 4;
         foreach($word_lists as $word => $position_list) {
             $occurrences = count($position_list);
+            $word = trim($word . $meta_suffix);
             if(isset($position_list["cond_max"])) { //for now
                 $word_id = crawlHashPath($word,
                     $position_list["cond_max"], true);
                 unset($position_list["cond_max"]);
+            } else if($meta_suffix != "") {
+                $word_id = crawlHashPath($word,
+                    strlen($word) + 1, true);
             } else {
-                $word_id = crawlHash($word, true);
+                $word_id = crawlHashWord($word, true);
             }
             $store = packPosting($doc_offset, $position_list);
             if(!isset($this->words[$word_id])) {
@@ -463,7 +472,7 @@ class IndexShard extends PersistentStructure implements
         }
 
         $is_disk = $this->read_only_from_disk;
-        $word_item_len = self::WORD_ITEM_LEN;
+        $word_item_len = self::WORD_KEY_LEN + self::WORD_DATA_LEN;
         $word_key_len = self::WORD_KEY_LEN;
 
         if($is_disk) {
@@ -471,7 +480,7 @@ class IndexShard extends PersistentStructure implements
 
             $prefix = (ord($word_id[0]) << 8) + ord($word_id[1]);
             $prefix_info = $this->getShardSubstring(
-                self::HEADER_LENGTH + 8*$prefix, 8);
+                self::HEADER_LENGTH + 8 * $prefix, 8);
             if($prefix_info == self::BLANK) {
                 return false;
             }
@@ -1242,7 +1251,7 @@ class IndexShard extends PersistentStructure implements
      */
     function prepareWordsAndPrefixes()
     {
-        $word_item_len = IndexShard::WORD_ITEM_LEN;
+        $word_item_len = IndexShard::WORD_KEY_LEN + IndexShard::WORD_DATA_LEN;
         $key_len = self::WORD_KEY_LEN;
         $posting_len = self::POSTING_LEN;
         $this->words_len = 0;
@@ -1305,7 +1314,7 @@ class IndexShard extends PersistentStructure implements
         if($this->word_docs_packed) {
             return;
         }
-        $word_item_len = IndexShard::WORD_ITEM_LEN;
+        $word_item_len = IndexShard::WORD_KEY_LEN + IndexShard::WORD_DATA_LEN;
         $key_len = self::WORD_KEY_LEN;
         $posting_len = self::POSTING_LEN;
         $this->word_docs_len = 0;
@@ -1332,7 +1341,7 @@ class IndexShard extends PersistentStructure implements
                 $this->words .= $word_id . $out;
             } else {
                 $out = substr($postings,
-                    self::POSTING_LEN, self::WORD_ITEM_LEN);
+                    self::POSTING_LEN, $word_item_len);
                 $out[0] = chr((0x80 | ord($out[0])));
                 $this->words .= $word_id . $out;
             }
@@ -1353,7 +1362,7 @@ class IndexShard extends PersistentStructure implements
      */
     function outputPostingLists($fh = NULL)
     {
-        $word_item_len = IndexShard::WORD_ITEM_LEN;
+        $word_item_len = IndexShard::WORD_KEY_LEN + IndexShard::WORD_DATA_LEN;
         $key_len = self::WORD_KEY_LEN;
         $posting_len = self::POSTING_LEN;
         $this->word_docs = "";
@@ -1668,7 +1677,8 @@ class IndexShard extends PersistentStructure implements
             $shard->doc_infos = substr($data, $pos, $shard->docids_len);
         }
 
-        $pre_words_array = str_split($words, self::WORD_ITEM_LEN);
+        $pre_words_array = str_split($words, self::WORD_KEY_LEN + 
+            self::WORD_DATA_LEN);
         unset($words);
         array_walk($pre_words_array, 'IndexShard::makeWords', $shard);
         $shard->word_docs_packed = true;
@@ -1713,7 +1723,7 @@ class IndexShard extends PersistentStructure implements
     {
         $shard->words[substr($value, 0, self::WORD_KEY_LEN)] =
             substr($value, self::WORD_KEY_LEN,
-                self::WORD_ITEM_LEN - self::WORD_KEY_LEN);
+                self::WORD_DATA_LEN);
     }
 
 }

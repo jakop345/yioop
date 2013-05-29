@@ -189,7 +189,6 @@ class SearchController extends Controller implements CrawlConstants
                 }
 
                 echo json_encode($out_data);
-                
             }
             exit();
         }

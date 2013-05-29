@@ -654,6 +654,24 @@ function crawlHash($string, $raw = false)
 }
 
 /**
+ *
+ */
+function crawlHashWord($string, $raw = false)
+{
+    $pre_hash = substr(md5($string, true), 0, 8) .
+        "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00";
+        /* low order bytes all 0 -- distinguishes it from a crawlHashPath */
+    if(!$raw) {
+        $hash = base64Hash($pre_hash);
+            // common variant of base64 safe for urls and paths
+    } else {
+        $hash = $pre_hash;
+    }
+
+    return $hash;
+}
+
+/**
  *  Used to compute all hashes for a phrase based on each possible cond_max
  *  point. Here cond_max is the location of a substring of a phase which is
  *  maximal.
@@ -667,11 +685,11 @@ function allCrawlHashPaths($string, $raw = false)
     $pos = -1;
     $hashes = array();
     $zero = "*";
-    $shifts = array(24 ,22, 11, 7, 5, 4, 3, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-        1);
+    $shifts = array();
     $num_spaces = substr_count($string, " ");
     $num = MAX_QUERY_TERMS - $num_spaces;
     $j = 0;
+
     do {
         $old_pos = $pos;
         $path_string = $string;
@@ -679,15 +697,61 @@ function allCrawlHashPaths($string, $raw = false)
             $hash = crawlHashPath($path_string, $pos + 1, $raw);
             if($i > 0 && $j > 0) {
                 $path_len = $num_spaces - $j + 1 + $i;
-                $shift = $i * $shifts[$path_len];
-                if($path_len == 7) {
-                    $shift += 4;
-                }
-                if($path_len == 8) {
-                    $shift += 2;
-                }
-                if($path_len > 9) {
-                    $shift += 18 - $path_len;
+                if($path_len < 4) {
+                    $shift = 32 * $i;
+                    if($path_len == 3 && $i == 3) {
+                        $shift -= 3;
+                    }
+                } else if ($path_len < 6) {
+                    if($i < 4) {
+                        $shift = 16 * $i;
+                    } else {
+                        $shift = 64 + 29 * ($i - 4);
+                    }
+                } else if ($path_len < 8) {
+                    if($i < 4) {
+                        $shift = 8 * $i;
+                    } else if ($i < 6) {
+                        $shift = 32 + 16 * ($i - 4);
+                    } else {
+                        $shift = 64 + 29 * ($i - 6);
+                    }
+                } else if ($path_len < 10) {
+                    if($i < 4) {
+                        $shift = 4 * $i;
+                    } else if ($i < 6) {
+                        $shift = 16 + 8 * ($i - 4);
+                    } else if ($i < 8) {
+                        $shift = 32 + 16 * ($i - 6);
+                    } else {
+                        $shift = 64 + 29 * ($i - 8);
+                    }
+                } else if ($path_len < 12) {
+                    if($i < 4) {
+                        $shift = 2 * $i;
+                    } else if ($i < 6) {
+                        $shift = 8 + 4 * ($i - 4);
+                    } else if ($i < 8) {
+                        $shift = 16 + 8 * ($i - 6);
+                    } else if ($i < 10) {
+                        $shift = 32 + 16 * ($i - 8);
+                    } else {
+                        $shift = 64 + 29 * ($i - 10);
+                    }
+                } else if ($path_len < 14) {
+                    if($i < 4) {
+                        $shift = $i;
+                    } else if ($i < 6) {
+                        $shift = 4 + 2 * ($i - 4);
+                    } else if ($i < 8) {
+                        $shift = 8 + 4 * ($i - 6);
+                    } else if ($i < 10) {
+                        $shift = 16 + 8 * ($i - 8);
+                    } else if ($i < 12 ){
+                        $shift = 32 + 16 * ($i - 10);
+                    } else {
+                        $shift = 64 + 29 * ($i - 12);
+                    }
                 }
                 $hashes[] = array($hash, $shift);
             } else {
@@ -708,21 +772,16 @@ function allCrawlHashPaths($string, $raw = false)
 
 
 /**
- *  Given a string makes an 8 byte hash path - where first 5 bytes is
- *  a hash of the string before path start, last 3 bytes is the path
+ *  Given a string makes an 16 byte hash path - where first 8 bytes is
+ *  a hash of the string before path start, last 8 bytes is the path
  *  given by splitting on space and separately hashing each element
  *  according to the number of elements and the pattern below:
  *
- *  00 - len 1 path, 22bits/part
- *  01 - len 2 path, 11bits/part
- *  10 - len 3 path, 7bits/part
- *  1100 - len 4 path, 5bits/part
- *  1101 - len 5 path, 4bits/part
- *  1110 - len 6 path, 3bits/part
- *  111100 - len 9 path, 2bits/part
- *  111110 - len 18 path, 1bits/part
+ *  0000 1 60 bit number
  *
- *  If $path_start is 0 behaves like crawlHash()
+ *  4 bit selector 28 Bit number
+ *
+ *  If $path_start is 0 behaves like crawlHashWord()
  *
  *  @param string $string what to hash
  *  @param int $path_start what to use as the split between 5 byte front
@@ -737,17 +796,20 @@ function crawlHashPath($string, $path_start = 0, $raw = false)
         $num_parts = count($string_parts);
     }
     if($path_start == 0 || $num_parts == 0) {
-        $hash = crawlHash($string, true);
+        $hash = crawlHashWord($string, true);
         if(!$raw) {
             $hash = base64Hash($hash);
         }
         return $hash;
     }
     $front = substr($string, 0, $path_start);
-    //Top five bytes what a normal crawlHash would be
-    $front_hash = substr(crawlHash($front, true), 0, 5);
-    //Low 3 bytes encode paths
+    //Top 8 bytes what a normal crawlHashWord would be
+    $front_hash = substr(crawlHashWord($front, true), 0, 8);
+    //Low 8 bytes encode paths
     $path_ints = array();
+    $modes = array(3, 3, 3, 3, 5, 5, 7, 7, 9, 9, 11, 11, 13, 13);
+    $mode_nums = array(0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5);
+
     foreach($string_parts as $part) {
         if($part == "*") {
             $path_ints[] = 0;
@@ -756,75 +818,115 @@ function crawlHashPath($string, $path_start = 0, $raw = false)
         }
     }
     $num_parts = count($path_ints);
-    switch($num_parts)
+    if($num_parts > 13) {$num_parts = 13; }
+    $mode = $modes[$num_parts];
+    $mode_num = $mode_nums[$num_parts];
+    switch($mode)
     {
-        case 1: // 1 22 bit number
-            $bit_mask = (1 << 22) - 1;
-            $out_int = ($path_ints[0] & $bit_mask);
+        case 3:
+            for($i = 0; $i < 3; $i++) {
+                $path_ints[$i] = isset($path_ints[$i]) ? $path_ints[$i] : 0;
+            }
+            $second_int = $path_ints[1];
+            $third_int = $path_ints[2];
         break;
-        case 2: // 2 11 bit numbers
-            $bit_mask = (1 << 11) - 1;
-            $out_int = (((1 << 11) + ($path_ints[0] & $bit_mask)) << 11)
-                + ($path_ints[1] & $bit_mask);
-        break;
-        case 3: // 3 7 bit numbers
-            $bit_mask = (1 << 7) - 1;
-            $out_int = (((((1 << 9) + ($path_ints[0] & $bit_mask)) << 7)
-                + ($path_ints[1] & $bit_mask)) << 7)
-                + ($path_ints[2] & $bit_mask);
-        break;
-        case 4: // 4 5 bit numbers
-            $bit_mask = (1 << 5) - 1;
-            $out_int = (((((((3 << 7) + ($path_ints[0] & $bit_mask)) << 5)
-                + ($path_ints[1] & $bit_mask)) << 5)
-                + ($path_ints[2] & $bit_mask)) << 5)
-                + ($path_ints[3] & $bit_mask);
-        break;
-        case 5: // 5 4 bit numbers
-            $bit_mask = (1 << 4) - 1;
-            $out_int = (((((( (((13 << 4) + ($path_ints[0] & $bit_mask)) << 4)
-                + ($path_ints[1] & $bit_mask)) << 4)
-                + ($path_ints[2] & $bit_mask)) << 4)
-                + ($path_ints[3] & $bit_mask)) << 4)
-                + ($path_ints[4] & $bit_mask);
-        break;
-        case 6: // 6 3 bit numbers
-            $bit_mask = (1 << 3) - 1;
-            $out_int = (((((((((((7 << 6) + ($path_ints[0] & $bit_mask)) << 3)
-                + ($path_ints[1] & $bit_mask)) << 3)
-                + ($path_ints[2] & $bit_mask)) << 3)
-                + ($path_ints[3] & $bit_mask)) << 3)
-                + ($path_ints[4] & $bit_mask)) << 3)
-                + ($path_ints[5] & $bit_mask);
+        case 5:
+            $path_ints[4] = isset($path_ints[4]) ? $path_ints[4] : 0;
+            $shift = 16;
+            $mask = (1 << $shift) - 1;
+            $second_int = (($path_ints[1] & $mask) << $shift)
+                + ($path_ints[2] & $mask);
+            $third_int = (($path_ints[3] & $mask) << $shift)
+                + ($path_ints[4] & $mask);
         break;
         case 7:
-        case 8:
-        case 9: // 9 2 bit numbers
-            $bit_mask = (1 << 2) - 1;
-            $out_int = 60;
-            if(!isset($path_ints[7])) {
-                $path_ints[7] = 0;
-            }
-            if(!isset($path_ints[8])) {
-                $path_ints[8] = 0;
-            }
-            for($i = 0; $i < 9; $i++) {
-                $out_int <<= 2;
-                $out_int += ($path_ints[$i] & $bit_mask);
-            }
+            $path_ints[6] = isset($path_ints[6]) ? $path_ints[6] : 0;
+            $shift = 16;
+            $mask = (1 << $shift) - 1;
+            $second_int = (($path_ints[1] & $mask) << $shift)
+                + ($path_ints[2] & $mask);
+            $shift = 8;
+            $mask = 127;
+            $third_int = (((((($path_ints[3] & $mask) << $shift)
+                + ($path_ints[4] & $mask)) << $shift)
+                + ($path_ints[5] & $mask)) << $shift)
+                + ($path_ints[6] & $mask);
+
         break;
-        default: // 18 1 bit numbers
-            $bit_mask = 1;
-            $out_int = 62;
-            for($i = 0; $i < 18; $i++) {
-                $out_int <<= 1;
-                if(!isset($path_ints[$i])) {
-                    $path_ints[$i] = 0;
-                }
-                $out_int += ($path_ints[$i] & $bit_mask);
-            }
+        case 9:
+            $path_ints[8] = isset($path_ints[8]) ? $path_ints[8] : 0;
+            $shift = 16;
+            $mask = (1 << $shift) - 1;
+            $second_int = (($path_ints[1] & $mask) << $shift)
+                + ($path_ints[2] & $mask);
+            $shift = 8;
+            $mask = 127;
+            $third_int = (((($path_ints[3] & $mask) << $shift)
+                + ($path_ints[4] & $mask)) << $shift);
+            $shift = 4;
+            $mask = 15;
+            $third_int = (((((($third_int
+                + ($path_ints[5] & $mask)) << $shift)
+                + ($path_ints[6] & $mask)) << $shift)
+                + ($path_ints[7] & $mask)) << $shift)
+                + ($path_ints[8] & $mask);
+        break;
+        case 11:
+            $path_ints[10] = isset($path_ints[10]) ? $path_ints[10] : 0;
+            $shift = 16;
+            $mask = (1 << $shift) - 1;
+            $second_int = (($path_ints[1] & $mask) << $shift)
+                + ($path_ints[2] & $mask);
+            $shift = 8;
+            $mask = 127;
+            $third_int = (((($path_ints[3] & $mask) << $shift)
+                + ($path_ints[4] & $mask)) << $shift);
+            $shift = 4;
+            $mask = 15;
+            $third_int = (((($third_int
+                + ($path_ints[5] & $mask)) << $shift)
+                + ($path_ints[6] & $mask)) << $shift);
+            $shift = 2;
+            $mask = 3;
+            $third_int = (((((($third_int
+                + ($path_ints[7] & $mask)) << $shift)
+                + ($path_ints[8] & $mask)) << $shift)
+                + ($path_ints[9] & $mask)) << $shift)
+                + ($path_ints[10] & $mask);
+        break;
+        case 13:
+        default:
+            $path_ints[10] = isset($path_ints[10]) ? $path_ints[10] : 0;
+            $shift = 16;
+            $mask = (1 << $shift) - 1;
+            $second_int = (($path_ints[1] & $mask) << $shift)
+                + ($path_ints[2] & $mask);
+            $shift = 8;
+            $mask = 127;
+            $third_int = (((($path_ints[3] & $mask) << $shift)
+                + ($path_ints[4] & $mask)) << $shift);
+            $shift = 4;
+            $mask = 15;
+            $third_int = (((($third_int
+                + ($path_ints[5] & $mask)) << $shift)
+                + ($path_ints[6] & $mask)) << $shift);
+            $shift = 2;
+            $mask = 3;
+            $third_int = (((($third_int
+                + ($path_ints[7] & $mask)) << $shift)
+                + ($path_ints[8] & $mask)) << $shift);
+            $shift = 1;
+            $mask = 1;
+            $third_int = (((((($third_int
+                + ($path_ints[9] & $mask)) << $shift)
+                + ($path_ints[10] & $mask)) << $shift)
+                + ($path_ints[11] & $mask)) << $shift)
+                + ($path_ints[12] & $mask);
+        break;
     }
-    $hash = $front_hash . substr(packInt($out_int), 1);
+    $hash = $front_hash. pack("NNN", $path_ints[0], $second_int,
+        $third_int);
+    $hash[8] = chr((ord($hash[8]) & 31) + ($mode_num << 5));
     if(!$raw) {
         $hash = base64Hash($hash);
             // common variant of base64 safe for urls and paths
@@ -838,21 +940,36 @@ function crawlHashPath($string, $path_start = 0, $raw = false)
  *  with 3 byte hash path for suffix tree lookup. In the latter
  *  case the shift variable can be used to match up to a subtree
  *
- *  @param string $id1 8 byte word id to compare
- *  @param string $id2 8 byte word id to compare
+ *  @param string $id1 16 byte word id to compare
+ *  @param string $id2 16 byte word id to compare
  *  @param int $shift bit shift to apply before saying paths equal
  *  @return int negative if $id1 smaller, positive if bigger, and 0 if
  *      same
  */
 function compareWordHashes($id1, $id2, $shift = 0)
 {
-    $cmp = strcmp(substr($id1, 0, 4), substr($id2, 0, 4));
+    if($shift < 32) {
+        $cmp = strcmp(substr($id1, 0, 16), substr($id2, 0, 16));
+    } else if ($shift < 64) {
+        $cmp = strcmp(substr($id1, 0,12), substr($id2, 0, 12));
+    } else {
+        $cmp = strcmp(substr($id1, 0,8), substr($id2, 0, 8));
+    }
     if($cmp != 0) {
         return $cmp;
     }
-    $id1 = (unpackInt(substr($id1, 4, 4)) >> $shift);
-    $id2 = (unpackInt(substr($id2, 4, 4)) >> $shift);
-    return $id1 - $id2;
+    if($shift < 32) {
+        $pos = 16;
+    } else if ($shift < 64) {
+        $shift -= 32;
+        $pos = 12;
+    } else {
+        $shift -= 64;
+        $pos = 8;
+    }
+    $id1 = packInt(unpackInt(substr($id1, $pos, 4)) >> $shift);
+    $id2 = packInt(unpackInt(substr($id2, $pos, 4)) >> $shift);
+    return strcmp($id1, $id2);
 }
 
 /**

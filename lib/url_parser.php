@@ -90,6 +90,8 @@ class UrlParser
             $url = mb_substr($url, 0, $front_len)."...".
                 mb_substr($url, -$end_len);
         }
+        $url = urldecode($url);
+        $url = mb_ereg_replace(" ", "%20", $url);
         return $url;
     }
 
