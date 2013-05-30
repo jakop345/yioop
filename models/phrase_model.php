@@ -563,7 +563,6 @@ class PhraseModel extends ParallelModel
             );
         } else {
             //get a raw list of words and their hashes
-
             $hashes = array();
             $i = 0;
             

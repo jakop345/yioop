@@ -47,6 +47,12 @@ KeyCodes.DOWN_ARROW = 40;
  * Maximum number of search terms to display
  */
 MAX_DISPLAY = 6;
+
+/*
+ * Maximum number of characters in query to do spellsheck for
+ */
+MIN_SPELL_CHECK_WIDTH = 40;
+
 /*
  * Height of a search term in pixels
  */
@@ -743,6 +749,9 @@ function spellCheck()
             } else {
                 corrected_query += ret_word + " ";
             }
+        }
+        if(query.length > MIN_SPELL_CHECK_WIDTH) {
+            return;
         }
         if (corrected_query.trim() != query) {
             var token_name = csrf_name;

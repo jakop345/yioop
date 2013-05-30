@@ -216,7 +216,8 @@ class IndexDictionary implements CrawlConstants
         $prefix_string = $index_shard->getShardSubstring(
             IndexShard::HEADER_LENGTH, $index_shard->prefixes_len, false);
         $next_offset = $base_offset;
-        $word_item_len = IndexShard::WORD_ITEM_LEN;
+        $word_item_len = IndexShard:: WORD_KEY_LEN + 
+                IndexShard:: WORD_DATA_LEN;
         $num_prefix_letters = self::NUM_PREFIX_LETTERS;
         $prefix_item_size = self::PREFIX_ITEM_SIZE;
         for($i = 0; $i < $num_prefix_letters; $i++) {
@@ -321,7 +322,8 @@ class IndexDictionary implements CrawlConstants
         $prefix_string_b = fread($fhB, self::PREFIX_HEADER_SIZE);
         $prefix_string_out = "";
         $offset = 0;
-        $word_item_len = IndexShard::WORD_ITEM_LEN;
+        $word_item_len = IndexShard:: WORD_KEY_LEN + 
+                IndexShard:: WORD_DATA_LEN;
         $blank = IndexShard::BLANK;
         $num_prefix_letters = self::NUM_PREFIX_LETTERS;
 
@@ -521,8 +523,11 @@ class IndexDictionary implements CrawlConstants
      * @param bool $raw whether the id is our version of base64 encoded or not
      * @param bool $extract whether to extract an array of entries or to just
      *      return the word info as a string
-     * @param int $shift
-     * @param int $threshold
+     * @param int $shift how many low order bits to drop from $word_id's
+     *     when checking for a match
+     * @param int $threshold if greater than zero how many posting list
+     *     results in dictionary info returned before stopping looking for
+     *     more matches
      * @return mixed an array of entries of the form
      *      generation, first offset, last offset, count or
      *      just a string of the word_info data if $extract is false
@@ -541,32 +546,35 @@ class IndexDictionary implements CrawlConstants
         return $info;
      }
 
-     /**
-      *  This method facilitates query processing of an ongoing crawl.
-      *  During an ongoing crawl, the dictionary is arranged into tiers
-      *  as per the logarithmic merge algortihm rather than just one tier
-      *  as in a crawl that has been stopped.  Word info for more
-      *  recently crawled pages will tend to be in lower tiers than data
-      *  that was crawled earlier. getWordInfoTier gets word info data for
-      *  a specific tier in the index dictionary. Each tier will
-      *  have word info for a specific, disjoint set of shards, so the format of
-      *  how to look up posting lists in a shard can be the same
-      *  regardless of the tier: an array entry is of the form
-      *  generation, first offset, last offset, and number of documents the
-      *  word occurred in for this shard.
-      *
-      *  @param string $word_id id of the word one wants to look up
-      *  @param bool $raw whether the id is our version of base64 encoded or
-      *  not
-      *  @param int $tier which tier to get word info from
-      *  @param bool $extract whether the results should be extracted to
-      *     an array or left as a string
-      *  @param int $shift
-      *  @param int $threshold
-      *  @return mixed an array of entries of the form
-      *      generation, first offset, last offset, count or
-      *      just a string of the word_info data if $extract is false
-      */
+    /**
+     *  This method facilitates query processing of an ongoing crawl.
+     *  During an ongoing crawl, the dictionary is arranged into tiers
+     *  as per the logarithmic merge algortihm rather than just one tier
+     *  as in a crawl that has been stopped.  Word info for more
+     *  recently crawled pages will tend to be in lower tiers than data
+     *  that was crawled earlier. getWordInfoTier gets word info data for
+     *  a specific tier in the index dictionary. Each tier will
+     *  have word info for a specific, disjoint set of shards, so the format of
+     *  how to look up posting lists in a shard can be the same
+     *  regardless of the tier: an array entry is of the form
+     *  generation, first offset, last offset, and number of documents the
+     *  word occurred in for this shard.
+     *
+     *  @param string $word_id id of the word one wants to look up
+     *  @param bool $raw whether the id is our version of base64 encoded or
+     *  not
+     *  @param int $tier which tier to get word info from
+     *  @param bool $extract whether the results should be extracted to
+     *     an array or left as a string
+     *  @param int $shift how many low order bits to drop from $word_id's
+     *     when checking for a match
+     *  @param int $threshold if greater than zero how many posting list
+     *     results in dictionary info returned before stopping looking for
+     *     more matches
+     *  @return mixed an array of entries of the form
+     *      generation, first offset, last offset, count or
+     *      just a string of the word_info data if $extract is false
+     */
      function getWordInfoTier($word_id, $raw, $extract, $tier, $shift = 0,
         $threshold = -1)
      {
