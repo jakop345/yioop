@@ -566,15 +566,19 @@ class IndexShard extends PersistentStructure implements
         $last = $last_offset >> 2;
         $next = $next_offset >> 2;
         $posting_end = $next;
-        $num_docs_or_links =
-            self::numDocsOrLinks($start_offset, $last_offset);
-
+        $total_posting_len = 0;
+        $num_postings_so_far = 0;
         do {
             if($next > $end) {break;}
             $posting_start = $next;
             $posting = $this->getPostingAtOffset(
                 $next, $posting_start, $posting_end);
+            $total_posting_len += strlen($posting);
+            $num_postings_so_far++;
             $next = $posting_end + 1;
+            $num_docs_or_links =
+                self::numDocsOrLinks($start_offset, $last_offset,
+                    $total_posting_len/$num_postings_so_far);
             list($doc_id, , $item) =
                 $this->makeItem($posting, $num_docs_or_links);
             $results[$doc_id] = $item;
@@ -591,11 +595,14 @@ class IndexShard extends PersistentStructure implements
      *
      *  @param int $start_offset starting location in posting list
      *  @param int $last_offset ending location in posting list
+     *  @param float $avg_posting_len number of bytes in an average posting
+     *
      *  @return int number of docs or links
      */
-    static function numDocsOrLinks($start_offset, $last_offset)
+    static function numDocsOrLinks($start_offset, $last_offset,
+        $avg_posting_len = 4)
     {
-        return ($last_offset - $start_offset) >> 2;
+        return ceil(($last_offset - $start_offset) /$avg_posting_len);
     }
 
     /**
@@ -647,14 +654,14 @@ class IndexShard extends PersistentStructure implements
 
         //override $occurrences if $occurs != 0
         if($occurs != 0) {
-            $occurences = array(
+            $occurrences = array(
                 self::TITLE => 0,
                 self::DESCRIPTION => 0,
                 self::LINKS => 0);
             if($is_doc) {
                 $occurrences[self::DESCRIPTION] = $occurs;
             } else {
-                $occurences[self::LINKS] = $occurs;
+                $occurrences[self::LINKS] = $occurs;
             }
         }
         /*
@@ -789,14 +796,16 @@ class IndexShard extends PersistentStructure implements
             3 * $occurrences/($occurrences + $half + 1.5* $doc_ratio),
             PRECISION);
 
+        if($num_doc_or_links > $total_docs_or_links) {
+            $num_doc_or_links = 0.5 * $total_docs_or_links;
+            //this case shouldn't happen but do a sanity check
+        }
         $num_term_occurrences = $num_doc_or_links *
             $num_docs/($total_docs_or_links);
 
         $IDF = log(($num_docs - $num_term_occurrences + $half) /
             ($num_term_occurrences + $half));
-
         $item[self::RELEVANCE] += $half * $IDF * $pre_relevance * $type_weight;
-
     }
 
     /**

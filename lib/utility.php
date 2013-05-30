@@ -1211,8 +1211,6 @@ function convertPixels($value)
 }
 
 
-// callbacks for Model::traverseDirectory
-
 /**
  * This is a callback function used in the process of recursively deleting a
  * directory
@@ -1410,7 +1408,15 @@ function generalIsA($class_1, $class_2)
 }
 
 /**
+ *  Given an array of arrays acting much like a database table, this
+ *  returns a sequence of key value pairs, where the keys are the distinct
+ *  entries in $key_column and the values are the counts of numbers in
+ *  $count_column for each particular key;
  *
+ *  @param array $arr an array of arrays
+ *  @param mixed $key_column (string or int) field name of key column
+ *  @param mixed $count_column (string or int) field name of count column
+ *  @return array key => values pairs of counts
  */
 function arrayColumnCount($arr, $key_column, $count_column)
 {

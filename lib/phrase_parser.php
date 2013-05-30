@@ -136,15 +136,18 @@ class PhraseParser
             $whole_phrase = implode(" ", $first_terms);
         } else {
             $whole_phrase = implode(" ", $terms);
+            $first_terms = & $terms;
         }
         if($exact_match) {
-            return array($whole_phrase);
+            array_unshift($terms, $whole_phrase);
+            return $terms;
         }
         $count_whole_phrase = IndexManager::numDocsTerm($whole_phrase,
             $index_name, $threshold);
         if($count_whole_phrase >= $threshold
             || $num > MAX_QUERY_TERMS / 2) {
-            return array($whole_phrase);
+            array_unshift($terms, $whole_phrase);
+            return $terms;
         }
         if($index_name != 'feed' && 
             IndexManager::getVersion($index_name) == 0) {
@@ -282,7 +285,14 @@ class PhraseParser
     }
 
     /**
+     * Given a string splits it into terms by running any applicable
+     * segmenters, chargrammers, or stemmers of the given locale
      *
+     * @param string $string what to extract terms from
+     * @param string $lang locale tag to determine which stemmers, chargramming
+     *      and segmentation needs to be done.
+     *
+     * @return array the terms computed from the string
      */
     static function stemCharGramSegment($string, $lang)
     {
@@ -297,6 +307,7 @@ class PhraseParser
     }
 
     /**
+     * Given a little of pre-terms 
      *
      */
     static function charGramTerms($pre_terms, $lang)
@@ -367,7 +378,13 @@ class PhraseParser
     }
 
     /**
+     * Given an array of strings to segment into words (where strings might
+     * not contain spaces), this function segments them according to the given
+     * locales segmenter
      *
+     * @param array $segments string to split into terms
+     * @param string $lang IANA tag to look up segmenter under
+     * @param array of terms found in the segments
      */
     static function segmentSegments($segments, $lang)
     {
@@ -423,7 +440,7 @@ class PhraseParser
      * Loads and instantiates a tokenizer object for a language if exists
      *
      * @param string $lang IANA tag to look up stemmer under
-     * @return object stemmer object
+     * @return object tokenizer object
      */
     static function getTokenizer($lang)
     {
