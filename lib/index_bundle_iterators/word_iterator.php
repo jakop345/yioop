@@ -78,11 +78,14 @@ class WordIterator extends IndexBundleIterator
     var $dictionary_info;
 
     /**
-     *
+     * File name (including path) of the feed shard for news items
+     * @var string
      */
     var $feed_shard_name;
     /**
-     *
+     * Structure used to hold posting list start and stops for the query
+     * in the feed shard
+     * @var array
      */
     var $feed_info;
 

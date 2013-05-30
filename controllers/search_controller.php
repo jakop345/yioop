@@ -115,7 +115,6 @@ class SearchController extends Controller implements CrawlConstants
 
         list($query, $activity, $arg) =
             $this->initializeUserAndDefaultActivity($data);
-
         if($activity == "query" && $this->mirrorHandle()) {return; }
 
         list($index_timestamp, $index_info, $save_timestamp) =
@@ -351,11 +350,9 @@ class SearchController extends Controller implements CrawlConstants
             $data["ADMIN"] = false;
         }
         $data[CSRF_TOKEN] = $this->generateCSRFToken($user);
-
         if(isset($_REQUEST['q'])) {
             $_REQUEST['q'] = $this->restrictQueryByUserAgent($_REQUEST['q']);
         }
-
         if($activity == "query") {
             list($query, $activity, $arg) = $this->extractActivityQuery();
         } else {
@@ -492,7 +489,7 @@ class SearchController extends Controller implements CrawlConstants
         $bots = array("googlebot", "baidu", "naver", "sogou");
         $query_okay = true;
         foreach($bots as $bot) {
-            if(!isset($_SERVER["HTTP_USER_AGENT"]) ||
+            if(isset($_SERVER["HTTP_USER_AGENT"]) &&
                 stristr($_SERVER["HTTP_USER_AGENT"], $bot)) {
                 $query_okay = false;
             }

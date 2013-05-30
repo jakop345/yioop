@@ -792,9 +792,8 @@ function allCrawlHashPaths($string, $raw = false)
  *  given by splitting on space and separately hashing each element
  *  according to the number of elements and the 3bit selector below:
  *
- *  000 
- *
- *  4 bit selector 28 Bit number
+ *  64 bit number 000
+ *  001
  *
  *  If $path_start is 0 behaves like crawlHashWord()
  *
