@@ -139,8 +139,9 @@ class PhraseParser
             $first_terms = & $terms;
         }
         if($exact_match) {
-            array_unshift($terms, $whole_phrase);
-            return $terms;
+            return $terms; /* for exact phrase search do not use suffix tree
+                              stuff for now
+                            */
         }
         $count_whole_phrase = IndexManager::numDocsTerm($whole_phrase,
             $index_name, $threshold);

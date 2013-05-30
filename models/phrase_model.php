@@ -907,7 +907,7 @@ class PhraseModel extends ParallelModel
      * @param array $word_structs an array of word_structs. Here a word_struct
      *      is an associative array with at least the following fields
      *      KEYS -- an array of word keys
-     *      QUOTE_POSITIONS -- an array of positions of words that appreared in
+     *      QUOTE_POSITIONS -- an array of positions of words that appeared in
      *          quotes (so need to be matched exactly)
      *      DISALLOW_PHRASES -- an array of words the document must not contain
      *      WEIGHT -- a weight to multiple scores returned from this iterator by

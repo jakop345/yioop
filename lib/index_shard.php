@@ -929,7 +929,17 @@ class IndexShard extends PersistentStructure implements
      }
 
     /**
+     * Performs a galloping search (double forward jump distance each failure 
+     * step)  forward in a posting list from
+     * position $current forward until either $end is reached or a
+     * posting with document index bigger than $doc_index is found
      *
+     * @param int &$current current posting offset into posting list
+     * @param int $doc_index document index want bigger than or equal to
+     * @param int $end last index of posting list
+     * @return int document index bigger than or equal to $doc_index. Since
+     *      $current points at the posting this occurs for if found, no success
+     *      by whether $current > $end.
      */
     function gallopPostingOffsetDocOffset(&$current, $doc_index, $end)
     {
