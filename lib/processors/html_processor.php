@@ -458,11 +458,12 @@ class HtmlProcessor extends TextProcessor
                         $text = $href->textContent;
                         if(isset($sites[$url])) {
                             $sites[$url] .=" .. ".
-                                strip_tags($text);
+                                preg_replace("/\s+/", " ", strip_tags($text));
                             $sites[$url] = mb_substr($sites[$url], 0, 
                                 2* MAX_LINKS_WORD_TEXT);
                         } else {
-                            $sites[$url] = strip_tags($text);
+                            $sites[$url] = preg_replace("/\s+/", " ",
+                                strip_tags($text));
                             $sites[$url] = mb_substr($sites[$url], 0, 
                                 2* MAX_LINKS_WORD_TEXT);
                         }

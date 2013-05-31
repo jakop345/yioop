@@ -298,7 +298,6 @@ class PhraseParser
     static function stemCharGramSegment($string, $lang)
     {
         mb_internal_encoding("UTF-8");
-
         $terms = mb_split("[[:space:]]|".PUNCT, $string);
         $terms = self::segmentSegments($terms, $lang);
         $terms = self::charGramTerms($terms, $lang);
@@ -308,8 +307,17 @@ class PhraseParser
     }
 
     /**
-     * Given a little of pre-terms 
+     * Given an array of pre_terms returns the characters n-grams for the 
+     * given terms where n is the length Yioop uses for the language in 
+     * question. If a stemmer is used for language then n-gramming is not 
+     * done and this just returns an empty array this method differs from
+     * getCharGramsTerm in that it may do checking of certain words and
+     * not char gram them. For example, it won't char gram urls.
      *
+     * @param array $pre_terms the terms to make n-grams for
+     * @param string $lang locale tag to determine n to be used for n-gramming
+     *
+     * @return array the n-grams for the terms in question
      */
     static function charGramTerms($pre_terms, $lang)
     {
@@ -341,7 +349,7 @@ class PhraseParser
     /**
      * Returns the characters n-grams for the given terms where n is the length
      * Yioop uses for the language in question. If a stemmer is used for
-     * language then n-gramming is no done and this just returns an empty array
+     * language then n-gramming is not done and this just returns an empty array
      *
      * @param array $terms the terms to make n-grams for
      * @param string $lang locale tag to determine n to be used for n-gramming
@@ -390,14 +398,23 @@ class PhraseParser
     static function segmentSegments($segments, $lang)
     {
         if($segments == array()) { return array();}
-        $segment_obj = self::getTokenizer($lang);
         $terms = array();
-        if($segment_obj != NULL) {
-            foreach($segments as $segment) {
-                $terms[] = $segment_obj->segment($segment);
+        foreach($segments as $segment) {
+            /*  sometimes a document is a mix of languages so we are checking
+                on a segment by segment basis
+             */
+            if($lang != NULL) {
+                $segment_lang = guessLocaleFromString($segment, $lang);
+                $segment_obj = self::getTokenizer($segment_lang);
+            } else {
+                $segment_obj = NULL;
             }
-        } else {
-            $terms = & $segments;
+            if($segment_obj != NULL) {
+                $terms = array_merge($terms, mb_split("[[:space:]]", 
+                    $segment_obj->segment($segment)));
+            } else {
+                $terms[] = $segment;
+            }
         }
         return $terms;
     }

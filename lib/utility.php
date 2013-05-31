@@ -918,6 +918,8 @@ function crawlHashPath($string, $path_start = 0, $raw = false)
         case 13:
         default:
             $path_ints[10] = isset($path_ints[10]) ? $path_ints[10] : 0;
+            $path_ints[11] = isset($path_ints[11]) ? $path_ints[11] : 0;
+            $path_ints[12] = isset($path_ints[12]) ? $path_ints[12] : 0;
             $shift = 16;
             $mask = (1 << $shift) - 1;
             $second_int = (($path_ints[1] & $mask) << $shift)

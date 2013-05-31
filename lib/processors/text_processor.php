@@ -174,7 +174,7 @@ class TextProcessor extends PageProcessor
         foreach($matches[0] as $url) {
             if(!isset($sites[$url]) && strlen($url) < MAX_URL_LENGTH &&
                 strlen($url) > 4) {
-                $sites[$url] = strip_tags($url);
+                $sites[$url] = preg_replace("/\s+/", " ", strip_tags($url));
                 $i++;
                 if($i >= MAX_LINKS_TO_EXTRACT) {break;}
             }
