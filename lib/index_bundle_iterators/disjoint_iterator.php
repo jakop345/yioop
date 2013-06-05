@@ -86,7 +86,6 @@ class DisjointIterator extends IndexBundleIterator
         $this->num_iterators = count($index_bundle_iterators);
         $this->num_docs = 0;
         $this->results_per_block = 1;
-
         /*
              We take an initial guess of the num_docs we return as the sum
              of the num_docs of the underlying iterators. We are also setting
@@ -174,9 +173,7 @@ class DisjointIterator extends IndexBundleIterator
         if($this->num_iterators <= 0) {
             return -1;
         }
-        $this->leastGenDocOffsetsAmongstIterators();
-        return $this->index_bundle_iterators[$this->least_offset_index
-            ]->currentGenDocOffsetWithWord();
+        return $this->leastGenDocOffsetsAmongstIterators();
     }
 
     /**
@@ -217,26 +214,40 @@ class DisjointIterator extends IndexBundleIterator
      */
     function advance($gen_doc_offset = null)
     {
-        $this->current_block_fresh = false;
-        $this->seen_docs += 1;
-
-        $this->seen_docs_unfiltered = 0;
-
+        $no_change = true;
         //num_docs can change when advance() called so that's why we recompute
         $total_num_docs = 0;
         if($gen_doc_offset !== null) {
             for($i = 0; $i < $this->num_iterators; $i++) {
-                $this->seen_docs_unfiltered +=
-                    $this->index_bundle_iterators[$i]->seen_docs;
-                $total_num_docs += $this->index_bundle_iterators[$i]->num_docs;
-                $this->index_bundle_iterators[$i]->advance($gen_doc_offset);
+                $cur_gen_doc_offset = $this->index_bundle_iterators[
+                    $i]->currentGenDocOffsetWithWord();
+                if($this->genDocOffsetCmp($cur_gen_doc_offset,
+                    $gen_doc_offset) < 0) {
+                    if($no_change) {
+                        $this->current_block_fresh = false;
+                        $this->seen_docs += 1;
+                        $this->seen_docs_unfiltered = 0;
+                        $no_change = false;
+                    }
+                    $this->seen_docs_unfiltered +=
+                        $this->index_bundle_iterators[$i]->seen_docs;
+                    $total_num_docs += 
+                        $this->index_bundle_iterators[$i]->num_docs;
+                    $this->index_bundle_iterators[$i]->advance($gen_doc_offset);
+                }
             }
         } else {
+            if(!$this->current_block_fresh) {
+                $this->leastGenDocOffsetsAmongstIterators();
+            }
+            $this->current_block_fresh = false;
+            $this->seen_docs += 1;
+            $this->seen_docs_unfiltered = 0;
             $least= $this->least_offset_index;
             $this->seen_docs_unfiltered +=
                 $this->index_bundle_iterators[$least]->seen_docs;
             $total_num_docs += $this->index_bundle_iterators[$least]->num_docs;
-            $this->index_bundle_iterators[$least]->advance($gen_doc_offset);
+            $this->index_bundle_iterators[$least]->advance();
         }
         if($this->seen_docs_unfiltered > 0) {
             $this->num_docs =

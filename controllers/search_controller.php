@@ -1581,7 +1581,7 @@ class SearchController extends Controller implements CrawlConstants
 
         $date = date ("F d Y H:i:s", $cache_item[self::TIMESTAMP]);
 
-        $meta_words = $this->phraseModel->meta_words_list;
+        $meta_words = PhraseParser::$meta_words_list;
         foreach($meta_words as $meta_word) {
             $pattern = "/(\b)($meta_word(\S)+)/";
             $terms = preg_replace($pattern, "", $terms);

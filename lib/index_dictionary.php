@@ -521,24 +521,22 @@ class IndexDictionary implements CrawlConstants
      *
      * @param string $word_id id of the word one wants to look up
      * @param bool $raw whether the id is our version of base64 encoded or not
-     * @param bool $extract whether to extract an array of entries or to just
-     *      return the word info as a string
      * @param int $shift how many low order bits to drop from $word_id's
      *     when checking for a match
+     * @param string $mask
      * @param int $threshold if greater than zero how many posting list
      *     results in dictionary info returned before stopping looking for
      *     more matches
      * @return mixed an array of entries of the form
-     *      generation, first offset, last offset, count or
-     *      just a string of the word_info data if $extract is false
+     *      generation, first offset, last offset, count
      */
-     function getWordInfo($word_id, $raw = false, $extract = true,
-        $shift = 0, $shift_keys = false, $threshold = -1)
+     function getWordInfo($word_id, $raw = false, $shift = 0, $mask = "",
+        $threshold = -1)
      {
         $info = array();
         foreach($this->active_tiers as $tier) {
-            $tier_info =$this->getWordInfoTier($word_id, $raw, $extract, $tier,
-                $shift, $shift_keys);
+            $tier_info = $this->getWordInfoTier($word_id, $raw, $tier, $shift,
+                $mask, $threshold);
             if(is_array($tier_info)) {
                 $info = array_merge($info, $tier_info);
             }
@@ -564,19 +562,16 @@ class IndexDictionary implements CrawlConstants
      *  @param bool $raw whether the id is our version of base64 encoded or
      *  not
      *  @param int $tier which tier to get word info from
-     *  @param bool $extract whether the results should be extracted to
-     *     an array or left as a string
      *  @param int $shift how many low order bits to drop from $word_id's
      *     when checking for a match
      *  @param int $threshold if greater than zero how many posting list
      *     results in dictionary info returned before stopping looking for
      *     more matches
      *  @return mixed an array of entries of the form
-     *      generation, first offset, last offset, count or
-     *      just a string of the word_info data if $extract is false
+     *      generation, first offset, last offset, count
      */
-     function getWordInfoTier($word_id, $raw, $extract, $tier, $shift = 0,
-        $threshold = -1)
+     function getWordInfoTier($word_id, $raw, $tier, $shift = 0,
+        $mask = "", $threshold = -1)
      {
         if(isset($this->fhs)) {
             $this->tier_fhs[$this->read_tier] = $this->fhs;
@@ -596,6 +591,9 @@ class IndexDictionary implements CrawlConstants
         $word_key_len = strlen($word_id);
         if(strlen($word_id) < 1) { //length of oldest format word
             return false;
+        }
+        if($mask != "") {
+            $mask_len = min(11, strlen($mask));
         }
         $word_item_len = $word_key_len + IndexShard::WORD_DATA_LEN;
         $word_data_len = IndexShard::WORD_DATA_LEN;
@@ -654,19 +652,30 @@ class IndexDictionary implements CrawlConstants
         //now extract the info
 
         $word_string = substr($word_string, $word_key_len);
-        if($extract) {
-            $info = array();
-            $tmp = IndexShard::getWordInfoFromString($word_string, true);
-            if($tmp[3] < $max_entry_count) {
-                $tmp[4] = $id;
-                $info[0] = $tmp;
-                $previous_generation = $tmp[0];
-                $previous_id = $id;
-                $remember_generation = $previous_generation;
+        $info = array();
+        $tmp = IndexShard::getWordInfoFromString($word_string, true);
+        if($tmp[3] < $max_entry_count) {
+            $tmp[4] = $id;
+            $previous_generation = $tmp[0];
+            $previous_id = $id;
+            $remember_generation = $previous_generation;
+            $add_flag = true;
+            if($mask != "") {
+                for($k = 0; $k < $mask_len; $k++) {
+                    $loc = 9 + $k;
+                    if(ord($mask[$k]) > 0 && 
+                        ord($id[$loc]) != ord($word_id[$loc])) {
+                        $add_flag = false;
+                        break;
+                    }
+                }
             }
-        } else {
-            $info = $word_string;
+            if($add_flag) {
+                array_unshift($info, $tmp);
+                $total_count += $tmp[3];
+            }
         }
+
         //up to first record with word id
         $test_loc = $check_loc - 1;
         $start_loc = $check_loc;
@@ -693,43 +702,49 @@ class IndexDictionary implements CrawlConstants
             $start_loc = $test_loc;
             $test_loc--;
             $ws = substr($word_string, $word_key_len);
-            if($extract) {
-                $tmp = IndexShard::getWordInfoFromString($ws, true);
-                /*
-                   In the extract case we are doing two checks designed to
-                   enhance fault tolerance. Both rely on the fact we have
-                   parsed the word string. The first check is that the number
-                   of entries for the word id is fewer than what could be stored
-                   in a shard (sanity check). The second is that the generation
-                   of one entry for a word id is always different from the next.
-                   If they are the same it means the crawl was stopped several
-                   times within one shard and each time merged with the
-                   dictionary. Only the last such save has useful data.
-                 */
-                if($tmp[3] < $max_entry_count) {
-                    if($previous_generation == $tmp[0] && $previous_id == $id) {
-                        array_pop($info);
-                    }
-                    $tmp[4] = $id;
-                    array_push($info, $tmp);
-                    $previous_generation = $tmp[0];
-                    $previous_id = $id;
-                    $total_count += $tmp[3];
-                    if($threshold > 0 && $total_count > $threshold) {
-                        return $info;
+            $tmp = IndexShard::getWordInfoFromString($ws, true);
+            /*
+               We are doing two checks designed to
+               enhance fault tolerance. Both rely on the fact we have
+               parsed the word string. The first check is that the number
+               of entries for the word id is fewer than what could be stored
+               in a shard (sanity check). The second is that the generation
+               of one entry for a word id is always different from the next.
+               If they are the same it means the crawl was stopped several
+               times within one shard and each time merged with the
+               dictionary. Only the last such save has useful data.
+             */
+            if($tmp[3] < $max_entry_count) {
+                if($previous_generation == $tmp[0] && $previous_id == $id) {
+                    array_pop($info);
+                }
+                $tmp[4] = $id;
+                $add_flag = true;
+                if($mask != "") {
+                    for($k = 0; $k < $mask_len; $k++) {
+                        $loc = 9 + $k;
+                        if(ord($mask[$k]) > 0 &&
+                            ord($id[$loc]) != ord($word_id[$loc])) {
+                            $add_flag = false;
+                            break;
+                        }
                     }
                 }
-            } else {
-                $info = $ws . $info;
+                if($add_flag) {
+                    array_unshift($info, $tmp);
+                    $total_count += $tmp[3];
+                    $previous_generation = $tmp[0];
+                    $previous_id = $id;
+                }
+                if($threshold > 0 && $total_count > $threshold) {
+                    return $info;
+                }
             }
         }
         //until last record with word id
 
         $test_loc = $check_loc + 1;
-        if($extract) {
-            $previous_generation = $remember_generation;
-        }
-
+        $previous_generation = $remember_generation;
         $break_count = 0;
         while ($test_loc <= $high) {
             $word_string = $this->getDictSubstring($file_num, $start +
@@ -746,25 +761,35 @@ class IndexDictionary implements CrawlConstants
             }
             $test_loc++;
             $ws = substr($word_string, $word_key_len);
-            if($extract) {
-                $tmp = IndexShard::getWordInfoFromString($ws, true);
-                if($tmp[3] < $max_entry_count &&
-                    ($previous_generation != $tmp[0] || $previous_id != $id)) {
-                    $tmp[4] = $id;
-                    array_unshift($info, $tmp);
-                    $previous_generation = $tmp[0];
-                    $previous_id = $id;
-                    $total_count += $tmp[3];
-                    if($threshold > 0 && $total_count > $threshold) {
-                        return $info;
+            $tmp = IndexShard::getWordInfoFromString($ws, true);
+            if($tmp[3] < $max_entry_count &&
+                ($previous_generation != $tmp[0] || $previous_id != $id)) {
+                $tmp[4] = $id;
+                $add_flag = true;
+                if($mask != "") {
+                    for($k = 0; $k < $mask_len; $k++) {
+                        $loc = 9 + $k;
+                        if(ord($mask[$k]) > 0 && 
+                            ord($id[$loc]) != ord($word_id[$loc])) {
+                            $add_flag = false;
+                            break;
+                        }
                     }
                 }
-            } else {
-                $info .= $ws;
+                if($add_flag) {
+                    array_unshift($info, $tmp);
+                    $total_count += $tmp[3];
+                    $previous_generation = $tmp[0];
+                    $previous_id = $id;
+                }
+                if($threshold > 0 && $total_count > $threshold) {
+                    return $info;
+                }
             }
         }
         return $info;
     }
+
 
     /**
      *  Gets from disk $len many bytes beginning at $offset from the

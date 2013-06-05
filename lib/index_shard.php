@@ -359,6 +359,7 @@ class IndexShard extends PersistentStructure implements
      * @param array $word_lists (word => array of word positions in doc)
      * @param array $meta_ids meta words to be associated with the document
      *      an example meta word would be filetype:pdf for a PDF document.
+     * @param array $materialized_metas
      * @param bool $is_doc flag used to indicate if what is being sored is
      *      a document or a link to a document
      * @param mixed $rank either false if not used, or a 4 bit estimate of the
@@ -366,7 +367,8 @@ class IndexShard extends PersistentStructure implements
      * @return bool success or failure of performing the add
      */
     function addDocumentWords($doc_keys, $summary_offset, $word_lists,
-        $meta_ids = array(), $is_doc = false, $rank = false)
+        $meta_ids = array(), $materialized_metas = array(), $is_doc = false,
+        $rank = false)
     {
         if($this->word_docs_packed == true) {
             $this->words = array();
@@ -394,29 +396,20 @@ class IndexShard extends PersistentStructure implements
         } else { //link item
             $this->num_link_docs++;
         }
-        $meta_suffix = "";
         foreach($meta_ids as $meta_id) {
-            if(substr($meta_id, 0, 8) == "u:suffix") {
-                $meta_suffix = " ".str_replace("_", " ",substr($meta_id, 9));
-            } else {
-                $word_lists[$meta_id] = array();
-            }
+            $word_lists[$meta_id] = array();
         }
-
+        $meta_string = encodeMaterialMetas($meta_ids, $materialized_metas);
         //using $this->docids_len divisible by 16
         $doc_offset = $this->docids_len >> 4;
         foreach($word_lists as $word => $position_list) {
             $occurrences = count($position_list);
-            $word = trim($word . $meta_suffix);
             if(isset($position_list["cond_max"])) { //for now
                 $word_id = crawlHashPath($word,
-                    $position_list["cond_max"], true);
+                    $position_list["cond_max"], array(), array(), true);
                 unset($position_list["cond_max"]);
-            } else if($meta_suffix != "") {
-                $word_id = crawlHashPath($word,
-                    strlen($word) + 1, true);
-            } else {
-                $word_id = crawlHashWord($word, true);
+            }  else {
+                $word_id = crawlHashWord($word, true, $meta_string);
             }
             $store = packPosting($doc_offset, $position_list);
             if(!isset($this->words[$word_id])) {

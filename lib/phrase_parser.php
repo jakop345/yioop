@@ -83,6 +83,22 @@ require_once BASE_DIR."/lib/suffix_tree.php";
 class PhraseParser
 {
     /**
+     * A list of meta words that might be extracted from a query
+     * @var array
+     */
+    static $meta_words_list = array('link:', 'site:', 'version:',
+            'modified:', 'filetype:', 'info:', '\-', 'os:', 'server:', 'date:',
+            "numlinks:", 'index:', 'i:', 'ip:', 'weight:', 'w:', 'u:', 'time:',
+            'code:', 'lang:', 'media:', 'elink:', 'location:', 'size:', 'host:',
+            'dns:', 'path:', 'robot:', 'safe:', 'guid:', 'class:',
+            'class-score:');
+
+    /**
+     *
+     */
+    static $materialized_metas = array("media:", "safe:");
+
+    /**
      * Converts a summary of a web page into a string of space separated words
      *
      * @param array $page associative array of page summary data. Contains

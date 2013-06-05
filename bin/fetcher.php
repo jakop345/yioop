@@ -2416,7 +2416,8 @@ class Fetcher implements CrawlConstants
 
             $this->found_sites[self::INVERTED_INDEX][$this->current_server
                 ]->addDocumentWords($doc_keys, self::NEEDS_OFFSET_FLAG,
-                $word_lists, $meta_ids, true, $doc_rank);
+                $word_lists, $meta_ids, PhraseParser::$materialized_metas,
+                true, $doc_rank);
             if(!$this->no_process_links) {
                 foreach($site[self::LINKS] as $url => $link_text) {
                     /* this mysterious check means won't index links from
@@ -2472,7 +2473,9 @@ class Fetcher implements CrawlConstants
                     $this->found_sites[self::INVERTED_INDEX][
                         $part_num]->addDocumentWords($link_keys,
                             self::NEEDS_OFFSET_FLAG, $link_word_lists,
-                                $link_meta_ids, false, $link_rank);
+                                $link_meta_ids,
+                                PhraseParser::$materialized_metas, false, 
+                                $link_rank);
                 }
             }
             $iterim_elapse = changeInMicrotime($interim_time);

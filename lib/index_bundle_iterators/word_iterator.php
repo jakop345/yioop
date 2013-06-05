@@ -165,11 +165,6 @@ class WordIterator extends IndexBundleIterator
     function __construct($word_key, $index_name, $raw = false, &$filter = NULL,
         $results_per_block = IndexBundleIterator::RESULTS_PER_BLOCK)
     {
-        $shift = 0;
-        if(is_array($word_key)) {
-            $shift = $word_key[1];
-            $word_key = $word_key[0];
-        }
         if($raw == false) {
             //get rid of out modfied base64 encoding
             $word_key = unbase64Hash($word_key);
@@ -219,7 +214,8 @@ class WordIterator extends IndexBundleIterator
         $this->current_block_fresh = false;
         $this->index_name =  $index_name;
         $this->dictionary_info = 
-            IndexManager::getWordInfo($index_name, $word_key, $shift);
+            IndexManager::getWordInfo($index_name, $word_key, 0,
+            "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF");
         if ($this->dictionary_info === false) {
             $this->empty = true;
         } else {
@@ -353,7 +349,6 @@ class WordIterator extends IndexBundleIterator
             $this->next_offset = $this->current_offset;
             $index = IndexManager::getIndex($this->index_name);
             $index->setCurrentShard($this->current_generation, true);
-
             //the next call also updates next offset
             $shard = $index->getCurrentShard();
             $pre_results = $shard->getPostingsSlice(
@@ -432,6 +427,14 @@ class WordIterator extends IndexBundleIterator
      */
     function advance($gen_doc_offset = null)
     {
+        if($gen_doc_offset != null) { //only advance if $gen_doc_offset bigger
+            $cur_gen_doc_offset = $this->currentGenDocOffsetWithWord();
+            if($cur_gen_doc_offset == -1 ||
+                $this->genDocOffsetCmp($cur_gen_doc_offset,
+                $gen_doc_offset) >= 0) {
+                return;
+            }
+        }
         $this->advanceSeenDocs();
         $this->current_doc_offset = null;
         if($this->current_offset < $this->next_offset) {

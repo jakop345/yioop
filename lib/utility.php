@@ -656,18 +656,20 @@ function crawlHash($string, $raw = false)
 /**
  *
  */
-function crawlHashWord($string, $raw = false)
+function crawlHashWord($string, $raw = false, $meta_string = "")
 {
     $pre_hash = substr(md5($string, true), 0, 8) .
-        "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00";
-        /* low order bytes all 0 -- distinguishes it from a crawlHashPath */
+        "\x00";
+    $meta_string = substr($meta_string, 0, 11);
+    $pre_hash .= $meta_string;
+    $pre_hash = str_pad($pre_hash, 20, "\x00");
+    /* low order bytes all 0 -- distinguishes it from a crawlHashPath */
     if(!$raw) {
         $hash = base64Hash($pre_hash);
             // common variant of base64 safe for urls and paths
     } else {
         $hash = $pre_hash;
     }
-
     return $hash;
 }
 
@@ -680,21 +682,31 @@ function crawlHashWord($string, $raw = false)
  *  @param $raw whether to modified base64 the result
  *  @return array of hashes with appropriates shifts if needed
  */
-function allCrawlHashPaths($string, $raw = false)
+function allCrawlHashPaths($string, $metas = array(),
+    $encode_metas = array(), $raw = false)
 {
+    $mask = "";
+    if($encode_metas != array()) {
+        $mask_num = min(11, count($encode_metas));
+        $found_materialized_metas = findMaterialMetas($metas, $encode_metas);
+
+        foreach($encode_metas as $meta) {
+            $mask .= (isset($found_materialized_metas[$meta])) ? "\xFF": "\x00";
+        }
+    }
     $pos = -1;
     $hashes = array();
     $zero = "*";
-    $shifts = array();
+    $shift = 0;
     $num_spaces = substr_count($string, " ");
     $num = MAX_QUERY_TERMS - $num_spaces;
     $j = 0;
-
     do {
         $old_pos = $pos;
         $path_string = $string;
         for($i = 0; $i < $num; $i++) {
-            $hash = crawlHashPath($path_string, $pos + 1, $raw);
+            $hash = crawlHashPath($path_string, $pos + 1, $metas,
+                $encode_metas, $raw);
             if($i > 0 && $j > 0) {
                 $path_len = $num_spaces - $j + 1 + $i;
                 if($path_len < 4) {
@@ -768,7 +780,9 @@ function allCrawlHashPaths($string, $raw = false)
                         $shift = 64 + 29 * ($i - 12);
                     }
                 }
-                $hashes[] = array($hash, $shift);
+                $hashes[] = array($hash, $shift, $mask);
+            } else if($mask != "") {
+                $hashes[] = array($hash, $shift, $mask);
             } else {
                 $hashes[] = $hash;
             }
@@ -776,6 +790,7 @@ function allCrawlHashPaths($string, $raw = false)
             $path_string .= " ".$zero;
         }
         $pos = mb_strpos($string, " ", $pos + 1);
+        $encode_metas = array();
         $j++;
     } while($pos > 0 && $old_pos != $pos);
 
@@ -785,6 +800,42 @@ function allCrawlHashPaths($string, $raw = false)
     return $hashes;
 }
 
+/**
+ *
+ */
+function findMaterialMetas($metas, $encode_metas)
+{
+    $found_materialized_metas = array();
+    foreach($metas as $meta_id) {
+        if($encode_metas != array()) { 
+            $match_kinds = explode(":", $meta_id);
+            if(in_array($match_kinds[0].":", $encode_metas) &&
+                !in_array($match_kinds[1], array("all", "false"))) {
+                $found_materialized_metas[$match_kinds[0].":"] = 
+                    $meta_id;
+            }
+        }
+    }
+    return $found_materialized_metas;
+}
+
+/**
+ *
+ */
+function encodeMaterialMetas($metas, $encode_metas)
+{
+    $found_materialized_metas = findMaterialMetas($metas, $encode_metas);
+    $meta_string = "";
+    foreach($encode_metas as $meta) {
+        if(isset($found_materialized_metas[$meta])) {
+            $meta_string .= substr(
+                md5($found_materialized_metas[$meta], true), 0, 1);
+        } else {
+            $meta_string .= chr(0);
+        }
+    }
+    return $meta_string;
+}
 
 /**
  *  Given a string makes an 20 byte hash path - where first 8 bytes is
@@ -795,29 +846,33 @@ function allCrawlHashPaths($string, $raw = false)
  *  general format: 64 bit lead word hash 3bit selector hashes of rest of words
  *  according to:
  *  Selector Bits for each remaining word
- *   000     29 32 32
- *   001     29 16 16 16 16
- *   010     29 16 16 8 8 8 8
- *   011     29 16 16 8 8 4 4 4 4
- *   100     29 16 16 8 8 4 4 2 2 2 2
- *   101     29 16 16 8 8 4 4 2 2 1 1 1 1
+ *   001     29 32 32
+ *   010     29 16 16 16 16
+ *   011     29 16 16 8 8 8 8
+ *   100     29 16 16 8 8 4 4 4 4
+ *   101     29 16 16 8 8 4 4 2 2 2 2
+ *   110     29 16 16 8 8 4 4 2 2 1 1 1 1
  *
  *  If $path_start is 0 behaves like crawlHashWord()
  *
  *  @param string $string what to hash
  *  @param int $path_start what to use as the split between 5 byte front
  *      hash and the rest
- *  @param $raw whether to modified base64 the result
+ *  @param array $metas
+ *  @param array $encode_metas
+ *  @param bool $raw whether to modified base64 the result
  *  @return string 8 bytes that results from this hash process
  */
-function crawlHashPath($string, $path_start = 0, $raw = false)
+function crawlHashPath($string, $path_start = 0, $metas = array(),
+    $encode_metas = array(), $raw = false)
 {
     if($path_start > 0 ) {
         $string_parts = explode(" ", substr($string, $path_start));
         $num_parts = count($string_parts);
     }
     if($path_start == 0 || $num_parts == 0) {
-        $hash = crawlHashWord($string, true);
+        $meta_string = encodeMaterialMetas($metas, $encode_metas);
+        $hash = crawlHashWord($string, true, $meta_string);
         if(!$raw) {
             $hash = base64Hash($hash);
         }
@@ -829,7 +884,7 @@ function crawlHashPath($string, $path_start = 0, $raw = false)
     //Low 8 bytes encode paths
     $path_ints = array();
     $modes = array(3, 3, 3, 3, 5, 5, 7, 7, 9, 9, 11, 11, 13, 13);
-    $mode_nums = array(0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5);
+    $mode_nums = array(1, 1, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6);
 
     foreach($string_parts as $part) {
         if($part == "*") {
@@ -971,7 +1026,9 @@ function crawlHashPath($string, $path_start = 0, $raw = false)
  */
 function compareWordHashes($id1, $id2, $shift = 0)
 {
-    if($shift < 32) {
+    if($id1[8] == "\x00") {
+        return strcmp(substr($id1, 0, 9), substr($id2, 0, 9));
+    } else if($shift < 32) {
         $cmp = strcmp(substr($id1, 0, 16), substr($id2, 0, 16));
     } else if ($shift < 64) {
         $cmp = strcmp(substr($id1, 0,12), substr($id2, 0, 12));

@@ -116,22 +116,24 @@ class IndexManager implements CrawlConstants
      *  @param string $index_name
      *  @param string $hash
      *  @param int $shift
+     *  @param string $mask
      *  @param int $threshold
      */
-    static function getWordInfo($index_name, $hash, $shift = 0, $threshold = -1)
+    static function getWordInfo($index_name, $hash, $shift = 0, $mask = "",
+        $threshold = -1)
     {
         $index = IndexManager::getIndex($index_name);
         if(!$index->dictionary) {
             return false;
         }
-        if(!isset(IndexManager::$dictionary[$index_name][$hash][$shift][
+        if(!isset(IndexManager::$dictionary[$index_name][$hash][$shift][$mask][
             $threshold])) {
-            IndexManager::$dictionary[$index_name][$hash][$shift][
+            IndexManager::$dictionary[$index_name][$hash][$shift][$mask][
                 $threshold] =
-                $index->dictionary->getWordInfo($hash, true, true, $shift,
+                $index->dictionary->getWordInfo($hash, true, $shift, $mask,
                 $threshold);
         }
-        return IndexManager::$dictionary[$index_name][$hash][$shift][
+        return IndexManager::$dictionary[$index_name][$hash][$shift][$mask][
             $threshold];
     }
 
@@ -147,7 +149,7 @@ class IndexManager implements CrawlConstants
         }
         $pos = -1;
         $total_num_docs = 0;
-        $hashes = allCrawlHashPaths($term_or_phrase, true);
+        $hashes = allCrawlHashPaths($term_or_phrase, array(), array(), true);
         if(!is_array($hashes)) {
             $hashes = array($hashes);
         }
@@ -155,7 +157,7 @@ class IndexManager implements CrawlConstants
             if(is_array($hash)) {
                 $dictionary_info = 
                     IndexManager::getWordInfo($index_name, $hash[0],
-                        $hash[1], $threshold);
+                        $hash[1], $hash[2], $threshold);
             } else {
                 $dictionary_info = 
                     IndexManager::getWordInfo($index_name, $hash);

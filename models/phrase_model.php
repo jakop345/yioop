@@ -85,16 +85,6 @@ class PhraseModel extends ParallelModel
     var $query_info;
 
     /**
-     * A list of meta words that might be extracted from a query
-     * @var array
-     */
-    var $meta_words_list = array('link:', 'site:', 'version:', 'modified:',
-            'filetype:', 'info:', '\-', 'os:', 'server:', 'date:', "numlinks:",
-            'index:', 'i:', 'ip:', 'weight:', 'w:', 'u:', 'time:', 'code:',
-            'lang:', 'media:', 'elink:', 'location:', 'size:', 'host:', 'dns:',
-            'path:', 'robot:', 'safe:', 'guid:', 'class:', 'class-score:');
-
-    /**
      * Number of pages to cache in one go in memcache or filecache
      * Size chosen based on 1MB max object size for memcache or filecache
      */
@@ -470,8 +460,8 @@ class PhraseModel extends ParallelModel
         $phrase = $this->parseIfConditions($phrase);
         $phrase_string = $phrase;
 
-        list($found_metas, $disallow_phrases, $phrase_string, 
-            $query_string, $index_name, $weight) =
+        list($found_metas, $found_materialized_metas, $disallow_phrases,
+            $phrase_string, $query_string, $index_name, $weight) =
             $this->extractMetaWordInfo($phrase);
 
         /*
@@ -564,13 +554,18 @@ class PhraseModel extends ParallelModel
         } else {
             //get a raw list of words and their hashes
             $hashes = array();
-            $i = 0;
-            
+            $metas_accounted = false;
+            $materialized_metas = array();
             foreach($words as $word) {
+                if(!$metas_accounted && substr_count($word, " ") == 0
+                    && !in_array($word, $found_metas)) {
+                    $metas_accounted = true;
+                    $materialized_metas = $found_materialized_metas;
+                }
                 $word_keys[] = ($index_version == 0) ? 
-                    crawlHash($word) : allCrawlHashPaths($word);
+                    crawlHash($word) : allCrawlHashPaths($word,
+                        $materialized_metas, PhraseParser::$materialized_metas);
             }
-
             if(count($word_keys) == 0) {
                 $word_keys = NULL;
                 $word_struct = NULL;
@@ -648,10 +643,11 @@ class PhraseModel extends ParallelModel
         $index_name = $this->index_name;
         $weight = 1;
         $found_metas = array();
+        $found_materialized_metas = array();
         $disallow_phrases = array();
         $phrase_string = $phrase;
         $phrase_string = str_replace("&", "&amp;", $phrase_string);
-        $meta_words = $this->meta_words_list;
+        $meta_words = PhraseParser::$meta_words_list;
         if(isset($this->additional_meta_words)) {
             $meta_words = array_merge($meta_words, array_keys(
                 $this->additional_meta_words));
@@ -663,6 +659,14 @@ class PhraseModel extends ParallelModel
             'weight:', '\-') )) {
                 $matches = $matches[2];
                 $found_metas = array_merge($found_metas, $matches);
+                if(in_array($meta_word, PhraseParser::$materialized_metas)) {
+                    foreach($matches as $pre_material_match) {
+                        $match_kinds = explode(":", $pre_material_match);
+                        if(!in_array($match_kinds[1], array("all", "false"))) {
+                            $found_materialized_metas[] = $pre_material_match;
+                        }
+                    }
+                }
             } else if($meta_word == '\-') {
                 if(count($matches[0]) > 0) {
                     foreach($matches[2] as $disallowed) {
@@ -682,6 +686,7 @@ class PhraseModel extends ParallelModel
             $phrase_string = preg_replace($pattern, "", $phrase_string);
         }
         $found_metas = array_unique($found_metas);
+        $found_materialized_metas = array_unique($found_materialized_metas);
 
         $phrase_string = mb_ereg_replace("&amp;", "_and_", $phrase_string);
 
@@ -689,8 +694,9 @@ class PhraseModel extends ParallelModel
         $query_string = preg_replace("/(\s)+/", " ", $query_string);
         $query_string = mb_ereg_replace('_and_', '&', $query_string);
         $phrase_string = mb_ereg_replace('_and_', '&', $phrase_string);
-        return array($found_metas, $disallow_phrases, 
-            $phrase_string, $query_string, $index_name, $weight);
+        return array($found_metas, $found_materialized_metas, 
+            $disallow_phrases, $phrase_string, $query_string, $index_name,
+            $weight);
     }
 
 
@@ -1091,7 +1097,6 @@ class PhraseModel extends ParallelModel
                 "$in3<i>Merge-Rank Sub-Time</i>: ".
                     $sort_time."<br />";
             }
-
             $summaries_time = microtime();
         }
 
@@ -1301,7 +1306,7 @@ class PhraseModel extends ParallelModel
             foreach($word_structs as $word_struct) {
                 if(!is_array($word_struct)) { continue;}
                 $word_keys = $word_struct["KEYS"];
-                $distinct_word_keys = array_values(array_unique($word_keys));
+                $distinct_word_keys = array_values($word_keys);
                 $quote_positions = $word_struct["QUOTE_POSITIONS"];
                 $disallow_keys = $word_struct["DISALLOW_KEYS"];
                 $index_name = $word_struct["INDEX_NAME"];
@@ -1315,26 +1320,37 @@ class PhraseModel extends ParallelModel
                     if(in_array($distinct_word_keys[$i], $doc_iterate_hashes)) {
                         $word_iterators[$i] = new DocIterator(
                             $index_name, $filter, $to_retrieve);
-                    } else if(is_array($distinct_word_keys[$i])) {
+                    } else {
                         //can happen if exact phrase search suffix approach used
-                        $distinct_keys = $distinct_word_keys[$i];
+                        if(is_array($distinct_word_keys[$i])) {
+                            $distinct_keys = $distinct_word_keys[$i];
+                        } else {
+                            $distinct_keys = array($distinct_word_keys[$i]);
+                        }
                         $out_keys = array();
                         foreach($distinct_keys as $distinct_key) {
                             if(is_array($distinct_key)) {
                                 $shift = $distinct_key[1];
+                                $mask = $distinct_key[2];
                                 $distinct_key_id = unbase64Hash(
                                     $distinct_key[0]);
                             } else {
                                 $shift = 0;
+                                $mask = "\x00\x00\x00\x00\x00" .
+                                    "\x00\x00\x00\x00\x00\x00";
                                 $distinct_key_id = unbase64Hash($distinct_key);
                             }
+                            $lookup_cutoff = max(MIN_RESULTS_TO_GROUP,
+                                $to_retrieve);
                             $info = IndexManager::getWordInfo($index_name,
-                                $distinct_key_id, $shift, $to_retrieve);
+                                $distinct_key_id, $shift, $mask,
+                                $lookup_cutoff);
                             if($info != array()) {
                                 $tmp_keys = arrayColumnCount($info, 4, 3);
                                 $out_keys = array_merge($out_keys, $tmp_keys);
                             }
                         }
+
                         arsort($out_keys);
                         $out_keys = array_keys(array_slice($out_keys, 0, 50));
 
@@ -1351,12 +1367,12 @@ class PhraseModel extends ParallelModel
                                 unset($tmp_word_iterators[$m]);
                             }
                         }
-                        $word_iterators[$i] = new DisjointIterator(
-                            $tmp_word_iterators);
-                    } else {
-                        $word_iterators[$i] =
-                            new WordIterator($distinct_word_keys[$i],
-                                $index_name, false, $filter, $to_retrieve);
+                        if($m == 1) {
+                            $word_iterators[$i] = $tmp_word_iterators[0];
+                        } else {
+                            $word_iterators[$i] = new DisjointIterator(
+                                $tmp_word_iterators);
+                        }
                     }
                     foreach ($word_keys as $index => $key) {
                         if(isset($distinct_word_keys[$i]) &&
