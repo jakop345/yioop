@@ -594,6 +594,8 @@ class IndexDictionary implements CrawlConstants
         }
         if($mask != "") {
             $mask_len = min(11, strlen($mask));
+        } else {
+            $mask_len = 0;
         }
         $word_item_len = $word_key_len + IndexShard::WORD_DATA_LEN;
         $word_data_len = IndexShard::WORD_DATA_LEN;
@@ -655,25 +657,11 @@ class IndexDictionary implements CrawlConstants
         $info = array();
         $tmp = IndexShard::getWordInfoFromString($word_string, true);
         if($tmp[3] < $max_entry_count) {
-            $tmp[4] = $id;
             $previous_generation = $tmp[0];
             $previous_id = $id;
             $remember_generation = $previous_generation;
-            $add_flag = true;
-            if($mask != "") {
-                for($k = 0; $k < $mask_len; $k++) {
-                    $loc = 9 + $k;
-                    if(ord($mask[$k]) > 0 && 
-                        ord($id[$loc]) != ord($word_id[$loc])) {
-                        $add_flag = false;
-                        break;
-                    }
-                }
-            }
-            if($add_flag) {
-                array_unshift($info, $tmp);
-                $total_count += $tmp[3];
-            }
+            $this->checkMaskAndAdd($id, $word_id, $mask, $mask_len, $tmp,
+                $info, $total_count, $previous_generation, $previous_id);
         }
 
         //up to first record with word id
@@ -718,24 +706,8 @@ class IndexDictionary implements CrawlConstants
                 if($previous_generation == $tmp[0] && $previous_id == $id) {
                     array_pop($info);
                 }
-                $tmp[4] = $id;
-                $add_flag = true;
-                if($mask != "") {
-                    for($k = 0; $k < $mask_len; $k++) {
-                        $loc = 9 + $k;
-                        if(ord($mask[$k]) > 0 &&
-                            ord($id[$loc]) != ord($word_id[$loc])) {
-                            $add_flag = false;
-                            break;
-                        }
-                    }
-                }
-                if($add_flag) {
-                    array_unshift($info, $tmp);
-                    $total_count += $tmp[3];
-                    $previous_generation = $tmp[0];
-                    $previous_id = $id;
-                }
+                $this->checkMaskAndAdd($id, $word_id, $mask, $mask_len, $tmp,
+                    $info, $total_count, $previous_generation, $previous_id);
                 if($threshold > 0 && $total_count > $threshold) {
                     return $info;
                 }
@@ -764,24 +736,8 @@ class IndexDictionary implements CrawlConstants
             $tmp = IndexShard::getWordInfoFromString($ws, true);
             if($tmp[3] < $max_entry_count &&
                 ($previous_generation != $tmp[0] || $previous_id != $id)) {
-                $tmp[4] = $id;
-                $add_flag = true;
-                if($mask != "") {
-                    for($k = 0; $k < $mask_len; $k++) {
-                        $loc = 9 + $k;
-                        if(ord($mask[$k]) > 0 && 
-                            ord($id[$loc]) != ord($word_id[$loc])) {
-                            $add_flag = false;
-                            break;
-                        }
-                    }
-                }
-                if($add_flag) {
-                    array_unshift($info, $tmp);
-                    $total_count += $tmp[3];
-                    $previous_generation = $tmp[0];
-                    $previous_id = $id;
-                }
+                $this->checkMaskAndAdd($id, $word_id, $mask, $mask_len, $tmp,
+                    $info, $total_count, $previous_generation, $previous_id);
                 if($threshold > 0 && $total_count > $threshold) {
                     return $info;
                 }
@@ -790,6 +746,32 @@ class IndexDictionary implements CrawlConstants
         return $info;
     }
 
+
+    /**
+     *
+     */
+    function checkMaskAndAdd($id, $word_id, $mask, $mask_len, $record,
+        &$info, &$total_count, &$previous_generation, &$previous_id)
+    {
+        $record[4] = $id;
+        $add_flag = true;
+        if($mask != "") {
+            for($k = 0; $k < $mask_len; $k++) {
+                $loc = 9 + $k;
+                if(ord($mask[$k]) > 0 && 
+                    $id[$loc] != $word_id[$loc]) {
+                    $add_flag = false;
+                    break;
+                }
+            }
+        }
+        if($add_flag) {
+            array_unshift($info, $record);
+            $total_count += $record[3];
+            $previous_generation = $record[0];
+            $previous_id = $id;
+        }
+    }
 
     /**
      *  Gets from disk $len many bytes beginning at $offset from the

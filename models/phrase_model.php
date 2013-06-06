@@ -549,7 +549,7 @@ class PhraseModel extends ParallelModel
                 allCrawlHashPaths($phrase_string);
             $word_struct = array("KEYS" => array($phrase_hash),
                 "QUOTE_POSITIONS" => NULL, "DISALLOW_KEYS" => array(),
-                "WEIGHT" => $weight, "INDEX_NAME" => $index_name
+                "WEIGHT" => $weight, "INDEX_NAME" => $index_name,
             );
         } else {
             //get a raw list of words and their hashes
@@ -687,6 +687,7 @@ class PhraseModel extends ParallelModel
         }
         $found_metas = array_unique($found_metas);
         $found_materialized_metas = array_unique($found_materialized_metas);
+        $disallow_phrases = array_unique($disallow_phrases);
 
         $phrase_string = mb_ereg_replace("&amp;", "_and_", $phrase_string);
 
@@ -1290,9 +1291,10 @@ class PhraseModel extends ParallelModel
 
         }
         if(!$network_flag) {
-            $doc_iterate_hashes = array(crawlHashWord("site:any"),
-                crawlHash("site:any"), crawlHashWord("site:doc"),
-                crawlHash("site:doc"));
+            $doc_iterate_hashes = array(substr(crawlHashWord("site:any"), 0, 9),
+                substr(crawlHash("site:any"), 0, 9), 
+                substr(crawlHashWord("site:doc"), 0, 9),
+                substr(crawlHash("site:doc"), 0, 9));
             if($save_timestamp_name != "") {
                 // used for archive crawls of crawl mixes
                 $save_file = CRAWL_DIR.'/schedules/'.self::save_point.
@@ -1306,7 +1308,19 @@ class PhraseModel extends ParallelModel
             foreach($word_structs as $word_struct) {
                 if(!is_array($word_struct)) { continue;}
                 $word_keys = $word_struct["KEYS"];
-                $distinct_word_keys = array_values($word_keys);
+                $distinct_word_keys = array();
+                $seen_keys = array();
+                foreach($word_keys as $wkey) {
+                    if(is_string($wkey) || is_string($wkey[0])) {
+                        $tmp_key = is_string($wkey) ? $wkey : $wkey[0];
+                        if(!isset($seen_keys[$tmp_key])) {
+                            $seen_keys[$tmp_key] = true;
+                            $distinct_word_keys[] = $wkey;
+                        }
+                    } else {
+                        $distinct_word_keys[] = $wkey;
+                    }
+                }
                 $quote_positions = $word_struct["QUOTE_POSITIONS"];
                 $disallow_keys = $word_struct["DISALLOW_KEYS"];
                 $index_name = $word_struct["INDEX_NAME"];
@@ -1317,12 +1331,18 @@ class PhraseModel extends ParallelModel
                 $word_iterator_map = array();
                 if($num_word_keys < 1) {continue;}
                 for($i = 0; $i < $total_iterators; $i++) {
-                    if(in_array($distinct_word_keys[$i], $doc_iterate_hashes)) {
+                    $current_key = (is_string($distinct_word_keys[$i]) ) ?
+                        $distinct_word_keys[$i] : is_string(
+                        $distinct_word_keys[$i][0]) ? $distinct_word_keys[$i][0]
+                        : $distinct_word_keys[$i][0][0];
+                    if(in_array(substr($current_key, 0, 9), 
+                        $doc_iterate_hashes)) {
                         $word_iterators[$i] = new DocIterator(
                             $index_name, $filter, $to_retrieve);
                     } else {
                         //can happen if exact phrase search suffix approach used
-                        if(is_array($distinct_word_keys[$i])) {
+                        if(isset($distinct_word_keys[$i][0]) && 
+                            is_array($distinct_word_keys[$i][0])) {
                             $distinct_keys = $distinct_word_keys[$i];
                         } else {
                             $distinct_keys = array($distinct_word_keys[$i]);
@@ -1343,8 +1363,7 @@ class PhraseModel extends ParallelModel
                             $lookup_cutoff = max(MIN_RESULTS_TO_GROUP,
                                 $to_retrieve);
                             $info = IndexManager::getWordInfo($index_name,
-                                $distinct_key_id, $shift, $mask,
-                                $lookup_cutoff);
+                                $distinct_key_id, $shift, $mask);
                             if($info != array()) {
                                 $tmp_keys = arrayColumnCount($info, 4, 3);
                                 $out_keys = array_merge($out_keys, $tmp_keys);
