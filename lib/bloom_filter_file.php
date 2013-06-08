@@ -89,8 +89,7 @@ class BloomFilterFile extends PersistentStructure
     {
         $log2 = log(2);
         $this->num_keys = ceil(log($num_values)/$log2);
-        $this->filter_size = ($this->num_keys)*$num_values/$log2;
-
+        $this->filter_size = ceil( ($this->num_keys) * $num_values/$log2 );
         $mem_before =  memory_get_usage(true);
         $this->filter = pack("x". ceil(.125*$this->filter_size));
             // 1/8 =.125 = num bits/bytes, want to make things floats
@@ -130,7 +129,6 @@ class BloomFilterFile extends PersistentStructure
                 return false;
             }
         }
-
         return true;
     }
 
@@ -142,25 +140,18 @@ class BloomFilterFile extends PersistentStructure
      */
     function getHashBitPositionArray($value, $num_keys)
     {
-        $md5 = md5($value, true);
-        $seed = array();
-        for($i = 0; $i < 16; $i += 4) {
-            $hash = substr($md5, $i, 4);
-            $seed[] = unpackInt($hash);
+        $offset = ($num_keys >> 2) + 1;
+        $rand_string = "";
+        for($i = 0 ; $i < $offset; $i++) {
+            $value = md5($value, true);
+            $rand_string .= $value;
         }
-
+        $seed = array_values(unpack("N*", $rand_string));
         $pos_array = array();
-        $offset = $num_keys >> 2;
-        $size = $this->filter_size - 1;
-        $index = 0;
-        for($j = 0; $j < $num_keys; $j += $offset) {
-            $high = $j + $offset;
-            if($index < 4) {
-                mt_srand($seed[$index++]);
-            }
-            for($i = $j; $i < $high; $i++) {
-                $pos_array[$i] = mt_rand(0, $size);
-            }
+        $size = $this->filter_size >> 1;
+        $less_one = $size - 1;
+        for($i = 0; $i < $num_keys; $i++) {
+            $pos_array[$i] = ($seed[$i] % $size) + $less_one;
         }
         return $pos_array;
     }

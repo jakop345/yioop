@@ -204,6 +204,7 @@ class PhraseParser
      */
     static function extractPhrasesInLists($string, $lang = NULL)
     {
+
         self::canonicalizePunctuatedTerms($string, $lang);
         return self::extractMaximalTermsAndFilterPhrases($string, $lang);
     }
@@ -284,12 +285,11 @@ class PhraseParser
         $maximal_phrases = array();
         $terms = self::stemCharGramSegment($string, $lang);
         if($terms == array()) { return array(); }
-
         $suffix_tree = new SuffixTree($terms);
         $suffix_tree->outputMaximal(1, "", 0, $maximal_phrases);
         $t = 0;
         $seen = array();
-        // add all single terms 
+        // add all single terms
         foreach($terms as $term) {
             if(!isset($seen[$term])) {
                 $seen[$term] = array();
@@ -314,11 +314,11 @@ class PhraseParser
     static function stemCharGramSegment($string, $lang)
     {
         mb_internal_encoding("UTF-8");
+        $string = mb_strtolower($string);
         $terms = mb_split("[[:space:]]|".PUNCT, $string);
         $terms = self::segmentSegments($terms, $lang);
         $terms = self::charGramTerms($terms, $lang);
         $terms = self::stemTerms($terms, $lang);
-
         return $terms;
     }
 
@@ -338,7 +338,6 @@ class PhraseParser
     static function charGramTerms($pre_terms, $lang)
     {
         global $CHARGRAMS;
-
         mb_internal_encoding("UTF-8");
 
         if($pre_terms == array()) { return array();}
@@ -356,7 +355,7 @@ class PhraseParser
                 }
             }
         } else {
-            $terms = $pre_terms;
+            $terms = & $pre_terms;
         }
 
         return $terms;
@@ -408,30 +407,32 @@ class PhraseParser
      * locales segmenter
      *
      * @param array $segments string to split into terms
-     * @param string $lang IANA tag to look up segmenter under
+     * @param string &$lang IANA tag to look up segmenter under, this function
+     *      might modify this value if it determines the segment is likely
+     *      from some other language
      * @param array of terms found in the segments
      */
-    static function segmentSegments($segments, $lang)
+    static function segmentSegments($segments, &$lang)
     {
         if($segments == array()) { return array();}
-        $terms = array();
+        $term_string = "";
         foreach($segments as $segment) {
             /*  sometimes a document is a mix of languages so we are checking
                 on a segment by segment basis
              */
             if($lang != NULL) {
-                $segment_lang = guessLocaleFromString($segment, $lang);
-                $segment_obj = self::getTokenizer($segment_lang);
+                $lang = guessLocaleFromString($segment, $lang);
+                $segment_obj = self::getTokenizer($lang);
             } else {
                 $segment_obj = NULL;
             }
             if($segment_obj != NULL) {
-                $terms = array_merge($terms, mb_split("[[:space:]]", 
-                    $segment_obj->segment($segment)));
+                $term_string .= " ".$segment_obj->segment($segment);
             } else {
-                $terms[] = $segment;
+                $term_string .= " ".$segment;
             }
         }
+        $terms = mb_split("\s+", trim($term_string));
         return $terms;
     }
 
@@ -454,19 +455,14 @@ class PhraseParser
         }
         $stem_obj = self::getTokenizer($lang);
         $stems = array();
-        if($stem_obj != NULL) {
+        if($stem_obj != NULL && $stem_obj->stem("a") !== false) {
             foreach($terms as $term) {
                 if(trim($term) == "") {continue;}
-                $pre_stem = mb_strtolower($term);
-                $stems[] = $stem_obj->stem($pre_stem);
+                $stems[] = $stem_obj->stem($term);
             }
         } else {
-            foreach($terms as $term) {
-                if(trim($term) == "") {continue;}
-                $stems[] = mb_strtolower($term);
-            }
+            return $terms;
         }
-
         return $stems;
     }
 
@@ -723,7 +719,7 @@ class PhraseParser
         if($cur_pos < 1) {
             return $segment;
         }
-        $words = array();
+        $out_segment = "";
         $word_len = 2;
         $word_guess = mb_substr($segment, $cur_pos, 1);
         $added = false;
@@ -738,23 +734,23 @@ class PhraseParser
                 $added = false;
             } else {
                 $word_len = 1;
-                array_unshift($words, $old_word_guess);
+                $out_segment .= " ".strrev($old_word_guess);
                 $word_guess = mb_substr($segment, $cur_pos, $word_len);
                 $word_len++;
                 $added = true;
             }
         }
         if(!$added) {
-            array_unshift($words, $old_word_guess);
+            $out_segment .= " ".strrev($old_word_guess);
         }
-        $out_segment = implode(" ", $words);
+        $out_segment = strrev($out_segment);
         return $out_segment;
     }
 
 
     /**
      *  Scores documents according to the lack or nonlack of sexually explicit
-     *  terms. Tries to work for several languages.
+     *  terms. Tries to work for several languages. Very crude classifier.
      *
      *  @param array $word_lists word => pos_list tuples
      *  @param int $len length of text being examined in characters

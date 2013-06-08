@@ -273,26 +273,20 @@ class SuffixTree
         $end = $this->tree[$index]["end"];
         if($start >= 0 && $end >= 0) {
             $tmp_terms = array_slice($this->text, $start, $end - $start);
+            $tmp = implode(" ", $tmp_terms);
+            $num = count($tmp_terms);
             if($path != "") {
                 $begin = $start - $len;
                 $out_path = $path;
                 if($len > MAX_QUERY_TERMS) {
-                    $out_array = array_slice($this->text, $begin, 
-                            MAX_QUERY_TERMS);
-                    $out_path = implode(" ", $out_array);
+                    $out_path = implode(" ", array_slice($this->text, $begin,
+                        MAX_QUERY_TERMS));
                 }
                 $maximal[$out_path][] = $begin;
                 if(!isset($maximal[$out_path]["cond_max"])) {
                     $maximal[$out_path]["cond_max"] =
                         strpos($out_path, " ") + 1;
                 }
-            }
-            $tmp = implode(" ", $tmp_terms);
-            $num = count($tmp_terms);
-            if($path == "") {
-                $len = $num;
-                $path = $tmp;
-            } else {
                 if($len > 1 && $len < MAX_QUERY_TERMS) {
                     $cond_max = strlen($path) + 1;
                 }
@@ -301,21 +295,22 @@ class SuffixTree
                 if(isset($cond_max)) {
                     $out_path = $path;
                     if($len > MAX_QUERY_TERMS) {
-                        $out_array = array_slice($this->text, $begin,
-                            MAX_QUERY_TERMS);
-                        $out_path = implode(" ", $out_array);
+                        $out_path = implode(" ", array_slice($this->text,
+                            $begin, MAX_QUERY_TERMS));
                     }
                     $maximal[$out_path]["cond_max"] = $cond_max;
                 }
+            } else {
+                $len = $num;
+                $path = $tmp;
             }
         }
         if($end == self::INFTY) {
             $begin = $this->size - $len;
             $out_path = $path;
             if($len > MAX_QUERY_TERMS) {
-                $out_array = array_slice($this->text, $begin,
-                    MAX_QUERY_TERMS);
-                $out_path = implode(" ", $out_array);
+                $out_path = implode(" ", array_slice($this->text, $begin,
+                    MAX_QUERY_TERMS));
             }
             $maximal[$out_path][] = $begin;
             if(!isset($maximal[$out_path]["cond_max"])) {
@@ -328,6 +323,5 @@ class SuffixTree
             $this->outputMaximal($sub_index, $path, $len, $maximal);
         }
     }
-
 }
 ?>

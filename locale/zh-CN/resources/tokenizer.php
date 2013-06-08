@@ -50,7 +50,7 @@ class ZhTokenizer
 
     static function stem($word)
     {
-        return $word;
+        return false;
     }
 }
 ?>

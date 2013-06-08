@@ -66,6 +66,10 @@ require_once 'url_parser.php';
  *  Used for the crawlHash function
  */
 require_once 'utility.php';
+/** 
+ * B-Tree class for storing Etag and Expires https header data
+ */
+require_once "btree.php";
 /**
  *  Needed for robot stuff
  */
@@ -174,6 +178,15 @@ class WebQueueBundle implements Notifier
      * @var object
      */
     var $crawl_delay_filter;
+    /**
+     * Holds the B-Tree used for saving etag and expires http data
+     */
+    var $etag_btree;
+
+    /**
+     *
+     */
+    var $notify_cache;
 
     /**
      * The largest offset for the url WebArchive before we rebuild it.
@@ -259,7 +272,7 @@ class WebQueueBundle implements Notifier
           usual twice the number we want to insert slack
         */
         $this->to_crawl_table = $this->constructHashTable(
-            $dir_name."/hash_table.dat", 4*$num_urls_ram);
+            $dir_name."/hash_table.dat", 4 * $num_urls_ram);
 
         /* set up url archive, used to store the full text of the urls which
            are on the priority queue
@@ -302,7 +315,7 @@ class WebQueueBundle implements Notifier
             $this->dns_table = HashTable::load($dir_name."/dns_table.dat");
         } else {
             $this->dns_table = new HashTable($dir_name."/dns_table.dat",
-                4*$num_urls_ram, self::HASH_KEY_SIZE, self::IP_SIZE);
+                4 * $num_urls_ram, self::HASH_KEY_SIZE, self::IP_SIZE);
         }
         //set up storage for robots.txt info
         $robot_archive_name = $dir_name."/robot_archive".
@@ -330,6 +343,11 @@ class WebQueueBundle implements Notifier
             $this->crawl_delay_filter =
                 new BloomFilterFile($dir_name."/crawl_delay.ftr", $filter_size);
         }
+
+        //Initialize B-Tree for storing cache page validation data
+        $this->etag_btree = new BTree($dir_name.'/EtagExpiresTree');
+
+        $this->notify_cache = array();
     }
 
     /**
@@ -370,6 +388,7 @@ class WebQueueBundle implements Notifier
                 crawlLog("Error inserting $url into web archive !!");
             }
         }
+        $this->notifyFlush();
 
         if(isset($offset) && $offset > self::max_url_archive_offset) {
              $this->rebuildUrlTable();
@@ -399,8 +418,9 @@ class WebQueueBundle implements Notifier
      *
      * @param string $url url whose weight in queue we want to adjust
      * @param float $delta change in weight (usually positive).
+     * @param bool $flush
      */
-    function adjustQueueWeight(&$url, $delta)
+    function adjustQueueWeight(&$url, $delta, $flush = true)
     {
         $hash_url = crawlHash($url, true);
         $data = $this->lookupHashTable($hash_url);
@@ -409,6 +429,9 @@ class WebQueueBundle implements Notifier
             $queue_index = unpackInt(substr($data, 4 , 4));
 
             $this->to_crawl_queue->adjustWeight($queue_index, $delta);
+            if($flush) {
+                $this->notifyFlush();
+            }
         } else {
           crawlLog("Can't adjust weight. Not in queue $url");
         }
@@ -470,7 +493,7 @@ class WebQueueBundle implements Notifier
         $queue_index = unpackInt(substr($data, 4 , 4));
 
         $this->to_crawl_queue->poll($queue_index);
-
+        $this->notifyFlush();
         $this->deleteHashTable($hash_url, $probe);
 
     }
@@ -548,6 +571,8 @@ class WebQueueBundle implements Notifier
     function normalize($new_total = NUM_URLS_QUEUE_RAM)
     {
         $this->to_crawl_queue->normalize();
+        // we don't chance positions when normalize
+        $this->to_crawl_queue->notify_cache = array();
     }
 
     //Filter and Filter Bundle Methods
@@ -1022,21 +1047,28 @@ class WebQueueBundle implements Notifier
      */
     function notify($index, $data)
     {
-        $hash_url = $data[0];
-        $both = $this->lookupHashTable($hash_url, HashTable::RETURN_BOTH);
-        if($both !== false) {
-            list($probe, $value) = $both;
-            $packed_offset = substr($value, 0 , 4);
-            $packed_flag = substr($value, 8 , 4);
-            $new_data = $packed_offset.packInt($index).$packed_flag;
-
-            $this->insertHashTable($hash_url, $new_data, $probe);
-        } else {
-            crawlLog("NOTIFY LOOKUP FAILED. INDEX WAS $index. DATA WAS ".
-                bin2hex($data[0]));
-
-        }
+        $this->notify_cache[$data[0]] = $index;
     }
 
+    /**
+     *
+     */
+    function notifyFlush()
+    {
+        foreach($this->notify_cache as $hash_url => $index) {
+            $both = $this->lookupHashTable($hash_url, HashTable::RETURN_BOTH);
+            if($both !== false) {
+                list($probe, $value) = $both;
+                $packed_offset = substr($value, 0 , 4);
+                $packed_flag = substr($value, 8 , 4);
+                $new_data = $packed_offset.packInt($index).$packed_flag;
+                $this->insertHashTable($hash_url, $new_data, $probe);
+            } else {
+                crawlLog("NOTIFY LOOKUP FAILED. INDEX WAS $index. DATA WAS ".
+                    bin2hex($hash_url));
+            }
+        }
+        $this->notify_cache = array();
+    }
 }
 ?>

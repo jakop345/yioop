@@ -133,6 +133,14 @@ class BTree
     }
 
     /**
+     *
+     */
+    function writeRoot()
+    {
+        $this->writeNode($this->root);
+    }
+
+    /**
      * Deletes file associated with given node from disk
      * @param int $id is the id of the node whose file is to be deleted
      */
@@ -174,10 +182,14 @@ class BTree
     {
         list($node, $flag, $pos) = $this->search($this->root, $key);
         if($pos !== null) {
-            if($flag == 1)
+            if($flag == 1) {
                 return $node->keys[$pos];
-            else return null;
-        } else return null;
+            } else {
+                return null;
+            }
+        } else {
+            return null;
+        }
     }
 
     /**

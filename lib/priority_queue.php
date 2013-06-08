@@ -362,7 +362,7 @@ class PriorityQueue extends StringArray implements CrawlConstants
                 return;
             }
             $parent = $child;
-            $child = 2*$parent;
+            $child = 2 * $parent;
         }
 
         $this->putRow($parent, $start_row);

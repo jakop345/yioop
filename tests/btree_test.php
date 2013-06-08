@@ -39,10 +39,15 @@
   */
  require_once BASE_DIR."/lib/btree.php";
 
-  /**
+ /**
   * Load crawlHash
   */
  require_once BASE_DIR."/lib/utility.php";
+
+ /**
+  * For base model class
+  */
+ require_once BASE_DIR."/models/model.php";
 
  /**
  * Used to test insert, lookup,  and deletion of key-value pairs on the B-Tree.
@@ -52,6 +57,16 @@
  * @subpackage test
  */
 
+/**
+ */
+define('BTREE_TEST_DIR', WORK_DIRECTORY."/btree_test");
+/**
+ */
+define('DEGREE', 2);
+/**
+ */
+define('NUM_VALS', 25);
+
  class BTreeTest extends UnitTest
  {
     /**
@@ -59,16 +74,7 @@
      */
     function setUp()
     {
-        if(!defined('BTREE_TEST_DIR')) {
-            define('BTREE_TEST_DIR', WORK_DIRECTORY."/btreeTest");
-        }
-        if(!defined('DEGREE')) {
-            define('DEGREE', 2);
-        }
         $this->test_objects['FILE1'] = new BTree(BTREE_TEST_DIR, DEGREE);
-        if(!defined('NUM_VALS')) {
-            define('NUM_VALS', 25);
-        }
     }
 
     /**
@@ -76,12 +82,8 @@
      */
     function tearDown()
     {
-        $all_files = glob(BTREE_TEST_DIR."/*.txt");
-        if($all_files !== NULL) {
-            foreach($all_files as $file) {
-                unlink($file);
-            }
-        }
+        $model = new Model();
+        $model->db->unlinkRecursive(BTREE_TEST_DIR);
     }
 
     /** 
@@ -146,7 +148,7 @@
         }
 
         //Keys in leaf nodes
-        $leaf_keys = array(1,3,5,9,10);
+        $leaf_keys = array(1, 3, 5, 9, 10);
         foreach($leaf_keys as $key) {
             $this->test_objects['FILE1']->remove($key);
         }

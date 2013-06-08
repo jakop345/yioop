@@ -153,13 +153,12 @@ function packPosting($doc_index, $position_list, $delta = true)
  * @param bool $dedelta if true then assumes the list is a sequence of
  *      differences (a delta list) and undoes the difference to get
  *      the original sequence
- * @param bool $exact whether the supplied string is exactly one posting
  * @return array consisting of integer doc_index and a subarray consisting
  *      of integer positions of word in doc.
  */
-function unpackPosting($posting, &$offset, $dedelta = true, $exact = false)
+function unpackPosting($posting, &$offset, $dedelta = true)
 {
-    $delta_list = decodeModified9($posting, $offset, $exact);
+    $delta_list = decodeModified9($posting, $offset);
     $doc_index = array_shift($delta_list);
 
     if(($doc_index & (2 << 26)) > 0) {
@@ -249,14 +248,14 @@ function encodeModified9($list)
     $continue_bits = 3;
     foreach($list as $elt) {
         $old_len = $cur_len;
-        while( $elt > $cur_size )
+        while($elt > $cur_size)
         {
             $cur_len++;
             $cur_size = (1 << $cur_len) - 1;
 
         }
 
-        if( $cnt < $MOD9_PACK_POSSIBILITIES[$cur_len] ) {
+        if($cnt < $MOD9_PACK_POSSIBILITIES[$cur_len]) {
             $pack_list[] = $elt;
             $cnt++;
         } else {
@@ -267,7 +266,7 @@ function encodeModified9($list)
             $cur_size = 1;
             $cur_len = 1;
             $cnt = 1;
-            while( $elt > $cur_size )
+            while($elt > $cur_size)
             {
                 $cur_size = (1 << $cur_len) - 1;
                 $cur_len++;
@@ -316,31 +315,28 @@ function packListModified9($continue_bits, $cnt, $pack_list)
  * @param string $int_string string to decode from
  * @param int &$offset where to string in the string, after decode
  *      points to where one was after decoding.
- * @param bool $exact whether the supplied string is exactly one posting
  * @return array sequence of positive integers that were decoded
  * @see encodeModified9
  */
-function decodeModified9($input_string, &$offset, $exact = false)
+function decodeModified9($input_string, &$offset)
 {
     if(!isset($input_string[$offset+3])) return array();
-    if(!$exact) {
-        $flag_mask = 192;
-        $continue_threshold = 128;
-        $len = strlen($input_string);
-        $end = $offset;
-        $flag_bits = (ord($input_string[$end]) & $flag_mask) ;
-        if($flag_bits && $flag_bits != $flag_mask) {
-            return false;
-        }
-        $end += 4;
-        while ($end < $len &&
-                $flag_bits >= $continue_threshold) {
-            $flag_bits = (ord($input_string[$end]) & $flag_mask);
-            $end += 4;
-        }
-        $post_string = substr($input_string, $offset, $end - $offset);
-        $offset = $end;
+    $flag_mask = 192;
+    $continue_threshold = 128;
+    $len = strlen($input_string);
+    $end = $offset;
+    $flag_bits = (ord($input_string[$end]) & $flag_mask) ;
+    if($flag_bits && $flag_bits != $flag_mask) {
+        crawlLog("Decode Error Flags: $flag_bits $flag_mask");
     }
+    $end += 4;
+    while ($end < $len &&
+            $flag_bits >= $continue_threshold) {
+        $flag_bits = (ord($input_string[$end]) & $flag_mask);
+        $end += 4;
+    }
+    $post_string = substr($input_string, $offset, $end - $offset);
+    $offset = $end;
 
     return call_user_func_array( "array_merge",
         array_map("unpackListModified9", unpack("N*", $post_string)));
@@ -809,7 +805,8 @@ function findMaterialMetas($metas, $encode_metas)
     foreach($metas as $meta_id) {
         if($encode_metas != array()) { 
             $match_kinds = explode(":", $meta_id);
-            if(in_array($match_kinds[0].":", $encode_metas) &&
+            if(count($match_kinds) > 1 && 
+                in_array($match_kinds[0].":", $encode_metas) &&
                 !in_array($match_kinds[1], array("all", "false"))) {
                 $found_materialized_metas[$match_kinds[0].":"] = 
                     $meta_id;
@@ -826,6 +823,7 @@ function encodeMaterialMetas($metas, $encode_metas)
 {
     $found_materialized_metas = findMaterialMetas($metas, $encode_metas);
     $meta_string = "";
+    if(!is_array($encode_metas)) return "";
     foreach($encode_metas as $meta) {
         if(isset($found_materialized_metas[$meta])) {
             $meta_string .= substr(

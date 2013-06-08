@@ -78,6 +78,8 @@ class HtmlProcessor extends TextProcessor
         $summary = NULL;
         if(is_string($page)) {
             $page = preg_replace('@<script[^>]*?>.*?</script>@si', ' ', $page);
+            $page = preg_replace('/\&nbsp\;|\&rdquo\;|\&ldquo\;|\&mdash\;/si',
+                ' ',$page);
             $dom_page = preg_replace(
                 '@<style[^>]*?>.*?</style>@si', ' ', $page);
             $dom = self::dom($dom_page);

@@ -39,6 +39,12 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 require_once BASE_DIR."/lib/phrase_parser.php";
 
 /**
+ *  For guessLocaleFromString
+ */
+require_once BASE_DIR."/lib/locale_functions.php";
+
+
+/**
  *  Used to test that the PhraseParser class. Want to make sure bigram
  *  extracting works correctly
  *

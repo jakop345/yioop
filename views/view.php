@@ -33,7 +33,7 @@
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
-$locale_version = tl('view_locale_version2');
+$locale_version = tl('view_locale_version3');
 /**
  * Base View Class. A View is used to display
  * the output of controller activity

@@ -51,8 +51,9 @@ require_once BASE_DIR."/lib/index_shard.php";
 
 
 /**
- *  Used to test that the StringArray class properly stores/retrieves values,
- *  and can handle loading and saving
+ *  Used to test that the IndexShard class can properly add new documents
+ *  and retrieve those documents by word. Checks that doc offsets can be
+ *  updated, shards can be saved and reloaded
  *
  *  @author Chris Pollett
  *  @package seek_quarry
@@ -105,8 +106,7 @@ class IndexShardTest extends UnitTest
         );
 
         $this->test_objects['shard']->addDocumentWords($docid,
-            $offset, $word_counts, $meta_ids, true);
-
+            $offset, $word_counts, $meta_ids, array("EEEEEEEE"), true);
         $this->assertEqual($this->test_objects['shard']->len_all_docs, 8,
             "Len All Docs Correctly Counts Length of First Doc");
 
@@ -130,7 +130,7 @@ class IndexShardTest extends UnitTest
         );
 
         $this->test_objects['shard']->addDocumentWords($docid,
-            $offset, $word_counts, $meta_ids, true);
+            $offset, $word_counts, $meta_ids, array(), true);
 
         $c_data = $this->test_objects['shard']->getPostingsSliceById(
             crawlHashWord('CCCCCCCC', true), 5);
@@ -402,7 +402,7 @@ class IndexShardTest extends UnitTest
         );
         //test saving and loading to a file
         $this->test_objects['shard']->addDocumentWords($docid,
-            $offset, $word_counts, $meta_ids, true);
+            $offset, $word_counts, $meta_ids, array(), true);
 
         $this->test_objects['shard']->save();
 

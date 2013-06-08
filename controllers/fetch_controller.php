@@ -437,7 +437,7 @@ class FetchController extends Controller implements CrawlConstants
         }
         if(strlen($cache_page_validation_data) > 0) {
             $this->addScheduleToScheduleDirectory(
-                self::cache_page_validation_data_base_name, 
+                self::etag_expires_data_base_name, 
                 $cache_page_validation_data);
         }
         if(strlen($schedule_data) > 0) {

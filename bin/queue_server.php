@@ -86,9 +86,6 @@ require_once BASE_DIR."/lib/phrase_parser.php";
 /** Include marker interface to say we support join() method*/
 require_once BASE_DIR."/lib/join.php";
 
-/** Include B-Tree class for storing cache page validation data*/
-require_once BASE_DIR."/lib/btree.php";
-
 /** get any indexing plugins */
 foreach(glob(BASE_DIR."/lib/indexing_plugins/*_plugin.php") as $filename) {
     require_once $filename;
@@ -113,13 +110,6 @@ if(USE_MEMCACHE) {
     unset($mc);
 }
 
-if(!defined("CACHE_PAGE_VALIDATORS")) {
-    define("CACHE_PAGE_VALIDATORS",CRAWL_DIR.'/cachePageValidators');
-}
-if(!is_dir(CACHE_PAGE_VALIDATORS)) {
-    mkdir(CACHE_PAGE_VALIDATORS);
-    chmod(CACHE_PAGE_VALIDATORS, 0777);
-}
 
 /**
  * Command line program responsible for managing Yioop crawls.
@@ -240,10 +230,6 @@ class QueueServer implements CrawlConstants, Join
      */
     var $index_archive;
     /**
-     * Holds the B-Tree used for saving cache page validation data
-     */
-    var $btree;
-    /**
      * The timestamp of the current active crawl
      * @var int
      */
@@ -352,7 +338,6 @@ class QueueServer implements CrawlConstants, Join
         $this->indexing_plugins = array();
         $this->video_sources = array();
         $this->server_name = "IndexerAndScheduler";
-        $this->btree = false;
     }
 
     /**
@@ -492,7 +477,7 @@ class QueueServer implements CrawlConstants, Join
             case self::WEB_CRAWL:
                 if($this->isOnlyIndexer()) return;
                 $this->processRobotUrls();
-                $this->processCachePageValidators();
+                $this->processEtagExpires();
 
                 $count = $this->web_queue->to_crawl_queue->count;
                 $max_links = max(MAX_LINKS_PER_PAGE, MAX_LINKS_PER_SITEMAP);
@@ -817,7 +802,7 @@ class QueueServer implements CrawlConstants, Join
             file_put_contents($close_file, "1");
         }
         //Write B-Tree root node to disk before before exiting
-        $this->btree->writeNode($this->btree->root);
+        $this->web_queue->etag_btree->writeRoot();
     }
 
     /**
@@ -981,9 +966,6 @@ class QueueServer implements CrawlConstants, Join
     {
         //to get here we at least have to have a crawl_time
         $this->crawl_time = $info[self::CRAWL_TIME];
-        //Initialize B-Tree for storing cache page validation data
-        $this->btree = new BTree(CACHE_PAGE_VALIDATORS.'/cachePageValidators'.
-            $this->crawl_time);
 
         $read_from_info = array(
             "crawl_order" => self::CRAWL_ORDER,
@@ -1625,13 +1607,13 @@ class QueueServer implements CrawlConstants, Join
     /**
      * Process cache page validation data files sent by Fetcher
      */
-    function processCachePageValidators()
+    function processEtagExpires()
     {
-        crawlLog("Checking for cache page validation data");
-        $cache_page_validators_dir = CRAWL_DIR."/schedules/".
-            self::cache_page_validation_data_base_name.$this->crawl_time;
-        $this->processDataFile($cache_page_validators_dir, 
-            "processCachePageValidatorsArchive");
+        crawlLog("Checking for etag expires http header data");
+        $etag_expires_dir = CRAWL_DIR."/schedules/".
+            self::etag_expires_data_base_name.$this->crawl_time;
+        $this->processDataFile($etag_expires_dir, 
+            "processEtagExpiresArchive");
         crawlLog("...done");
     }
 
@@ -1642,24 +1624,23 @@ class QueueServer implements CrawlConstants, Join
      * @param string $file is the cache page validation data file written by
      * Fetchers.
      */
-    function processCachePageValidatorsArchive($file)
+    function processEtagExpiresArchive($file)
     {
-        crawlLog("Processing cache page validation data in $file");
+        crawlLog("Processing etag expires http header data in $file");
         $start_time = microtime();
 
-        $cache_page_validation_data = 
+        $etag_expires_data = 
             unserialize(gzuncompress(webdecode(file_get_contents($file))));
-        foreach($cache_page_validation_data as $data) {
+        foreach($etag_expires_data as $data) {
             $link = $data[0];
             $value = $data[1];
             $key = crawlHash($link, true);
             $entry = array($key, $value);
-            $this->btree->insert($entry);
+            $this->web_queue->etag_btree->insert($entry);
         }
 
         crawlLog(" time: ".(changeInMicrotime($start_time))."\n");
-        crawlLog("Done processing cache page validation data file: $file");
-
+        crawlLog("Done processing etag expires http header data file: $file");
         unlink($file);
     }
 
@@ -1811,9 +1792,9 @@ class QueueServer implements CrawlConstants, Join
                 if($this->web_queue->containsUrlQueue($url)) {
                     if($robots_in_queue) {
                         $this->web_queue->adjustQueueWeight(
-                            $host_with_robots, $weight);
+                            $host_with_robots, $weight, false);
                     }
-                    $this->web_queue->adjustQueueWeight($url, $weight);
+                    $this->web_queue->adjustQueueWeight($url, $weight, false);
                 } else if($this->allowedToCrawlSite($url) &&
                     !$this->disallowedToCrawlSite($url)  ) {
                     if(!$this->web_queue->containsGotRobotTxt($host_url)
@@ -1830,6 +1811,7 @@ class QueueServer implements CrawlConstants, Join
 
                 }
             }
+            $this->web_queue->notifyFlush();
 
             crawlLog(" time: ".(changeInMicrotime($start_time)));
 
@@ -2217,7 +2199,7 @@ class QueueServer implements CrawlConstants, Join
                   processed by the fetcher.
                  */
                 $key = crawlHash($url, true);
-                $value = $this->btree->findValue($key);
+                $value = $this->web_queue->etag_btree->findValue($key);
                 if($value !== null) {
                     $cache_validation_data = $value[1];
                     if($cache_validation_data['etag'] !== -1 && 
