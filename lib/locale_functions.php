@@ -135,10 +135,10 @@ function guessLocaleFromString($phrase_string, $locale_tag = NULL, $factor = 2)
             $guess['ko']++;
         }
     }
-    $num_points = $len/4 - 2; //there will be a lead and tail space
-    if($num_points > 0 ) {
+    $num_points = ($len/4) - 1; //there will be a lead and tail space
+    if($num_points >= 0 ) {
         foreach($guess as $tag => $cnt) {
-            if($factor*$cnt >= $num_points) {
+            if($factor * $cnt >= $num_points) {
                 $locale_tag = $tag;
                 break;
             }

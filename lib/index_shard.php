@@ -1015,6 +1015,7 @@ class IndexShard extends PersistentStructure implements
                 while($offset < $postings_len) {
                     list($doc_index, $posting_list) = // this changes $offset
                         unpackPosting($postings, $offset, false);
+                    if($posting_list === false) {continue; }
                     $doc_index += $index_shard_len;
                     $new_postings .=
                         packPosting($doc_index, $posting_list, false);

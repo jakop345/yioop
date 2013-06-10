@@ -372,7 +372,6 @@ class ParallelModel extends Model implements CrawlConstants
                 $summaries[$lookup] = $summary;
             }
         }
-
         return $summaries;
     }
 
@@ -405,10 +404,15 @@ class ParallelModel extends Model implements CrawlConstants
         if(!isset($index_archive->generation_info['ACTIVE'])) {
             return false;
         }
+        $mask = "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00";
         $num_generations = $index_archive->generation_info['ACTIVE'];
-        $hash_key = ($is_key) ? crawlHashWord($url_or_key) :
-            crawlHashWord("info:$url_or_key");
-        $word_iterator = new WordIterator($hash_key, $index_name);
+        $hash_key = ($is_key) ? crawlHashWord($url_or_key, true, $mask) :
+            crawlHashWord("info:$url_or_key", true, $mask);
+        $info = IndexManager::getWordInfo($index_name, $hash_key, 0, $mask, 1);
+        if(!isset($info[0][4])) {
+            return false;
+        }
+        $word_iterator = new WordIterator($info[0][4], $index_name, true);
 
         if(is_array($next_docs = $word_iterator->nextDocsWithWord())) {
              foreach($next_docs as $doc_key => $doc_info) {

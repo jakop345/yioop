@@ -597,6 +597,7 @@ class IndexDictionary implements CrawlConstants
         } else {
             $mask_len = 0;
         }
+
         $word_item_len = $word_key_len + IndexShard::WORD_DATA_LEN;
         $word_data_len = IndexShard::WORD_DATA_LEN;
         $file_num = ord($word_id[0]);
@@ -611,8 +612,9 @@ class IndexDictionary implements CrawlConstants
         $total_count = 0;
 
         $prefix = ord($word_id[1]);
+
         $prefix_info = $this->getDictSubstring($file_num,
-            self::PREFIX_ITEM_SIZE*$prefix, self::PREFIX_ITEM_SIZE);
+            self::PREFIX_ITEM_SIZE * $prefix, self::PREFIX_ITEM_SIZE);
         if($prefix_info == IndexShard::BLANK) {
             return false;
         }
@@ -652,7 +654,6 @@ class IndexDictionary implements CrawlConstants
             return false;
         }
         //now extract the info
-
         $word_string = substr($word_string, $word_key_len);
         $info = array();
         $tmp = IndexShard::getWordInfoFromString($word_string, true);
@@ -758,7 +759,7 @@ class IndexDictionary implements CrawlConstants
         if($mask != "") {
             for($k = 0; $k < $mask_len; $k++) {
                 $loc = 9 + $k;
-                if(ord($mask[$k]) > 0 && 
+                if(ord($mask[$k]) > 0 && isset($id[$loc]) &&
                     $id[$loc] != $word_id[$loc]) {
                     $add_flag = false;
                     break;

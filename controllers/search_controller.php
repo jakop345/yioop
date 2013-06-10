@@ -1599,8 +1599,8 @@ class SearchController extends Controller implements CrawlConstants
         }
 
         $dom = new DOMDocument();
-
         $did_dom = @$dom->loadHTML('<?xml encoding="UTF-8">' . $cache_file);
+
         foreach ($dom->childNodes as $item) {
             if($item->nodeType == XML_PI_NODE)
                 $dom->removeChild($item); // remove hack
@@ -1636,6 +1636,7 @@ class SearchController extends Controller implements CrawlConstants
         //make tags in body absolute
         $body = $this->canonicalizeLinks($body, $url);
         $first_child = $body->firstChild;
+
         $text_align = (getLocaleDirection() == 'ltr') ? "left" : "right";
         // add information about what was extracted from page
         if(in_array("summaries", $ui_flags)) {
@@ -1662,7 +1663,7 @@ class SearchController extends Controller implements CrawlConstants
             $version_node =
                 $this->createDomBoxNode($dom, $text_align, "zIndex: 1");
             $textNode = $dom->createTextNode(
-                tl('search_controller_cached_version', "Z@url@Z", $date));
+                    tl('search_controller_cached_version', "Z@url@Z", $date));
             $version_node->appendChild($textNode);
             $brNode = $dom->createElement('br');
             $version_node->appendChild($brNode);
@@ -1685,7 +1686,6 @@ class SearchController extends Controller implements CrawlConstants
         }
 
         $body = $this->markChildren($body, $words, $dom);
-
         $new_doc = $dom->saveHTML();
         if(substr($url, 0, 7) != "record:") {
             $url = "<a href='$url'>$url</a>";
@@ -1763,8 +1763,9 @@ class SearchController extends Controller implements CrawlConstants
         $summaryNode = $body->insertBefore($summaryNode, $first_child);
 
         if(isset($cache_item[self::HEADER])) {
+            //without mb_convert_encoding get conv error when do saveHTML
             $summary_string = $cache_item[self::HEADER]."\n".
-                $summary_string;
+                mb_convert_encoding($summary_string, "UTF-8", "UTF-8");
         }
         $textNode = $dom->createTextNode($summary_string);
         $summaryNode->appendChild($textNode);

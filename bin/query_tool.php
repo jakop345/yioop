@@ -126,8 +126,10 @@ class QueryTool implements CrawlConstants
             echo "TITLE: ". trim($page[self::TITLE]). "\n";
             echo "URL: ". trim($page[self::URL]). "\n";
             echo "IPs: ";
-            foreach($page[self::IP_ADDRESSES] as $address) {
-                echo $address." ";
+            if(isset($page[self::IP_ADDRESSES])) {
+                foreach($page[self::IP_ADDRESSES] as $address) {
+                    echo $address." ";
+                }
             }
             echo "\n";
             echo "DESCRIPTION: ".wordwrap(trim($page[self::DESCRIPTION]))."\n";

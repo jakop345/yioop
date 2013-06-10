@@ -223,7 +223,6 @@ class WebArchiveBundle
         $page_array =
             $this->getPartition($partition)->getObjects(
                 $offset, 1, true, $file_handle);
-
         if(isset($page_array[0][1])) {
             return $page_array[0][1];
         } else {

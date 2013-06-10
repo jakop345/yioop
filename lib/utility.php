@@ -325,9 +325,12 @@ function decodeModified9($input_string, &$offset)
     $continue_threshold = 128;
     $len = strlen($input_string);
     $end = $offset;
+    $error = false;
     $flag_bits = (ord($input_string[$end]) & $flag_mask) ;
     if($flag_bits && $flag_bits != $flag_mask) {
-        crawlLog("Decode Error Flags: $flag_bits $flag_mask");
+        crawlLog("!! Decode Error Flags: $flag_bits $flag_mask");
+        crawlLog("!! Dropping posting at $offset cycle to next posting.");
+        $error = true;
     }
     $end += 4;
     while ($end < $len &&
@@ -337,7 +340,9 @@ function decodeModified9($input_string, &$offset)
     }
     $post_string = substr($input_string, $offset, $end - $offset);
     $offset = $end;
-
+    if($error) {
+        return array(0, false);
+    }
     return call_user_func_array( "array_merge",
         array_map("unpackListModified9", unpack("N*", $post_string)));
 }
@@ -1024,7 +1029,9 @@ function crawlHashPath($string, $path_start = 0, $metas = array(),
  */
 function compareWordHashes($id1, $id2, $shift = 0)
 {
-    if(isset($id1[8]) && $id1[8] == "\x00") {
+    if(!isset($id1[8]) || !isset($id2[8])) {
+        return strcmp(substr($id1, 0,8), substr($id2, 0, 8));
+    } else if($id1[8] == "\x00") {
         return strcmp(substr($id1, 0, 9), substr($id2, 0, 9));
     } else if($shift < 32) {
         $cmp = strcmp(substr($id1, 0, 16), substr($id2, 0, 16));
@@ -1033,6 +1040,7 @@ function compareWordHashes($id1, $id2, $shift = 0)
     } else {
         $cmp = strcmp(substr($id1, 0,8), substr($id2, 0, 8));
     }
+
     if($cmp != 0) {
         return $cmp;
     }

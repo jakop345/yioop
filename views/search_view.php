@@ -181,7 +181,8 @@ class SearchView extends View implements CrawlConstants
                         } else {
                             $link_url = $url;
                         }
-                        $title = $page[self::TITLE];
+                        $title = mb_convert_encoding($page[self::TITLE],
+                            "UTF-8", "UTF-8");
                         if(strlen(trim($title)) == 0) {
                             $title = UrlParser::simplifyUrl($url, 60);
                         }
@@ -242,6 +243,8 @@ class SearchView extends View implements CrawlConstants
                     !in_array("NOSNIPPET", $page[self::ROBOT_METAS])) {
                         $description = isset($page[self::DESCRIPTION]) ?
                             $page[self::DESCRIPTION] : "";
+                        $description = mb_convert_encoding($description, 
+                            "UTF-8", "UTF-8");
                         e("<p>".$this->displayresultsHelper->
                             render($description)."</p>");
                     }?>

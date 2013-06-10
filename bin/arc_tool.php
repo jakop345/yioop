@@ -288,10 +288,18 @@ class ArcTool implements CrawlConstants
         $index_timestamp = substr($archive_path,
             strpos($archive_path, self::index_data_base_name) +
             strlen(self::index_data_base_name));
-        $word_iterator = new WordIterator(crawlHash($word), $index_timestamp);
-        if(!$word_iterator->dictionary_info) {
-            echo "\n$word does not appear in bundle!\n\n";
-            exit();
+        $mask = "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00";
+        $hash_key = crawlHashWord($word, true, $mask) ;
+        $info = IndexManager::getWordInfo($index_timestamp, $hash_key, 0, 
+            $mask, 1);
+        if(!$info) {
+            //fallback to old word hashes
+            $info = IndexManager::getWordInfo($index_timestamp, 
+                crawlHash($word, true), 0, "", 1);
+            if(!$info) {
+                echo "\n$word does not appear in bundle!\n\n";
+                exit();
+            }
         }
         echo "Dictionary Tiers: ";
         $index = IndexManager::getIndex($index_timestamp);
@@ -302,7 +310,7 @@ class ArcTool implements CrawlConstants
         echo "\nBundle Dictionary Entries for '$word':\n";
         echo "====================================\n";
         $i = 1;
-        foreach($word_iterator->dictionary_info as $record) {
+        foreach($info as $record) {
             echo "RECORD: $i\n";
             echo "GENERATION: {$record[0]}\n";
             echo "FIRST WORD OFFSET: {$record[1]}\n";
@@ -459,7 +467,7 @@ class ArcTool implements CrawlConstants
             if(isset($page[self::TITLE])) {
                 echo "SUMMARY TITLE:\n";
                 echo "--------------\n";
-                echo wordwrap($page[self::TITLE],80)."\n";
+                echo wordwrap($page[self::TITLE], 80)."\n";
             }
 
             if(isset($page[self::DESCRIPTION])) {

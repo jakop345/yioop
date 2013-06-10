@@ -110,7 +110,7 @@ class Model implements CrawlConstants
 
 
     /**
-     * Given an array page summarries, for each summary extracts snippets which
+     * Given an array page summaries, for each summary extracts snippets which
      * are related to a set of search words. For each snippet, bold faces the
      * search terms, and then creates a new summary array.
      *
@@ -170,7 +170,7 @@ class Model implements CrawlConstants
                 }
                 $page[self::TITLE] =
                     mb_substr(strip_tags($page[self::DESCRIPTION]), 0,
-                        $end_title).$ellipsis;
+                        $end_title) . $ellipsis;
                 //still no text revert to url
                 if(strlen($page[self::TITLE]) == 0 && isset($page[self::URL])) {
                     $page[self::TITLE] = $page[self::URL];
@@ -224,7 +224,7 @@ class Model implements CrawlConstants
      */
     function getSnippets($text, $words, $description_length)
     {
-        if(strlen($text) < $description_length) {
+        if(mb_strlen($text) < $description_length) {
             return $text;
         }
 
@@ -251,7 +251,9 @@ class Model implements CrawlConstants
                         $snippet_string .= $ellipsis. $text_source;
                         $ellipsis = " ... ";
                         $snippet_hash[$text_source] = true;
-                        if(strlen($snippet_string)>= $description_length) break;
+                        if(mb_strlen($snippet_string)>= $description_length) {
+                            break;
+                        }
                     }
                 }
                 continue;

@@ -1758,6 +1758,9 @@ class QueueServer implements CrawlConstants, Join
             crawlLog("B.. Queue insert unseen robots.txt urls;".
                 "adjust changed weights");
             $start_time = microtime();
+            $incremental_time = $start_time;
+            $cnt = 0;
+            $num_triples = count($to_crawl_sites);
 
             $added_urls = array();
             $added_pairs = array();
@@ -1772,6 +1775,11 @@ class QueueServer implements CrawlConstants, Join
             }
             foreach($to_crawl_sites as $triple) {
                 $url = & $triple[0];
+                $cnt++;
+                if(changeInMicrotime($incremental_time) > 30 ) {
+                    crawlLog("..Processing url $cnt of $num_triples.");
+                    $incremental_time = microtime();
+                }
                 if(strlen($url) < 7) { // strlen("http://")
                     continue;
                 }

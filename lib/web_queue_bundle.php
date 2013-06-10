@@ -1048,10 +1048,13 @@ class WebQueueBundle implements Notifier
     function notify($index, $data)
     {
         $this->notify_cache[$data[0]] = $index;
+        if(count($this->notify_cache) > 1000) {
+            $this->notifyFlush(); //prevent memory from being exhausted
+        }
     }
 
     /**
-     *
+     * 
      */
     function notifyFlush()
     {

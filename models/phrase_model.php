@@ -463,7 +463,6 @@ class PhraseModel extends ParallelModel
         list($found_metas, $found_materialized_metas, $disallow_phrases,
             $phrase_string, $query_string, $index_name, $weight) =
             $this->extractMetaWordInfo($phrase);
-
         /*
             we search using the stemmed/char-grammed words, but we format
             snippets in the results by bolding either
@@ -478,6 +477,7 @@ class PhraseModel extends ParallelModel
         $num_words = 0;
         $quote_positions = array();
         foreach($phrase_parts as $phrase_part) {
+            if(trim($phrase_part) == "") {continue;}
             /*still use original phrase string here to handle
                acronyms abbreviations and the like that use periods */
             if($quote_state) {
@@ -735,8 +735,9 @@ class PhraseModel extends ParallelModel
         }
 
         if($len == 1) {
-            $tag = guessLocale();
+            $tag = guessLocaleFromString($phrase);
             $main_tag = substr($tag, 0, 2);
+            $letter = "";
             switch($main_tag)
             {
                 case 'ar':
@@ -1108,7 +1109,6 @@ class PhraseModel extends ParallelModel
 
         $out_pages = $this->getSummariesFromOffsets($pages, $queue_servers,
             $raw, $groups_with_docs);
-
         if(QUERY_STATISTICS) {
             $summary_times_string = AnalyticsManager::get("SUMMARY_TIMES");
             if($summary_times_string) {
@@ -1332,9 +1332,9 @@ class PhraseModel extends ParallelModel
                 if($num_word_keys < 1) {continue;}
                 for($i = 0; $i < $total_iterators; $i++) {
                     $current_key = (is_string($distinct_word_keys[$i]) ) ?
-                        $distinct_word_keys[$i] : is_string(
+                        $distinct_word_keys[$i] : (is_string(
                         $distinct_word_keys[$i][0]) ? $distinct_word_keys[$i][0]
-                        : $distinct_word_keys[$i][0][0];
+                        : $distinct_word_keys[$i][0][0]);
                     if(in_array(substr($current_key, 0, 9), 
                         $doc_iterate_hashes)) {
                         $word_iterators[$i] = new DocIterator(
@@ -1400,6 +1400,7 @@ class PhraseModel extends ParallelModel
                         }
                     }
                 }
+
                 $num_disallow_keys = count($disallow_keys);
                 if($num_disallow_keys > 0) {
                 for($i = 0; $i < $num_disallow_keys; $i++) {
