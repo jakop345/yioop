@@ -189,15 +189,15 @@ class HashTableTest extends UnitTest
         $this->assertTrue(
             $this->test_objects['FILE2']->insert(crawlHash("hi11",true), "8"),
             "Item hi11 which collides with hi7 insert okay");
-        $this->assertTrue(
+        $this->assertEqual(
             $this->test_objects['FILE2']->lookup(
                 crawlHash("hi11",true), HashTable::ALWAYS_RETURN_PROBE),
                 $index2 + 1, "Item hi11 located one after hi7");
         $this->test_objects['FILE2']->delete(crawlHash("hi7",true));
-        $this->assertTrue(
+        $this->assertEqual(
             $this->test_objects['FILE2']->lookup(
-                crawlHash("hi11",true), true), $index2 + 1,
-            "Item hi11 looked up succeed after hi7 deleted");
+                crawlHash("hi11",true),HashTable::ALWAYS_RETURN_PROBE),
+             $index2 + 1, "Item hi11 looked up succeed after hi7 deleted");
         $this->test_objects['FILE2']->delete(crawlHash("hi11",true));
         $this->test_objects['FILE2']->insert(crawlHash("hi7",true), "7");
         $this->assertEqual(
@@ -209,6 +209,27 @@ class HashTableTest extends UnitTest
                 crawlHash("hi7",true), HashTable::ALWAYS_RETURN_PROBE),
                 $index2 + 2,
                 "New Item hi7 location does not overwrite deleted items");
+    }
+
+    /**
+     *  Test how fast insertion and deletions can be done
+     */
+    function timingTestCase()
+    {
+        $start_time = microtime();
+        for($i = 0; $i < 10000; $i++) {
+            $this->test_objects['FILE1']->insert(crawlHash("hi$i",true), 
+            "0000".packInt($i));
+        }
+        $this->assertTrue((changeInMicrotime($start_time) < 1),
+            "Insert 10000 into table of size 20000 takes less than a second");
+        $start_time = microtime();
+        for($i = 0; $i < 10000; $i++) {
+            $this->test_objects['FILE1']->delete(
+                crawlHash("hi$i", true));
+        }
+        $this->assertTrue((changeInMicrotime($start_time) < 1),
+            "Delete 10000 from table of size 20000 takes less than a second");
     }
 
 }

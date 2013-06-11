@@ -151,7 +151,7 @@ class BloomFilterBundle
      */
     function differenceFilter(&$arr, $field_names = NULL)
     {
-
+        $incremental_time = microtime();
         $num_filters = $this->num_filters;
         $count = count($arr);
         for($i = 0; $i < $num_filters; $i++) {
@@ -183,6 +183,11 @@ class BloomFilterBundle
                             break;
                         }
                     }
+                }
+                if(changeInMicrotime($incremental_time) > 30 ) {
+                    crawlLog("..Processing item $j of $count from filter ".
+                        "number $i of $num_filters.");
+                    $incremental_time = microtime();
                 }
             }
         }

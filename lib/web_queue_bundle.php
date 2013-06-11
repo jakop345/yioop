@@ -272,8 +272,7 @@ class WebQueueBundle implements Notifier
           usual twice the number we want to insert slack
         */
         $this->to_crawl_table = $this->constructHashTable(
-            $dir_name."/hash_table.dat", 4 * $num_urls_ram);
-
+            $dir_name."/hash_table.dat", 8 * $num_urls_ram);
         /* set up url archive, used to store the full text of the urls which
            are on the priority queue
          */

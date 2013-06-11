@@ -318,12 +318,22 @@ class HashTable extends StringArray
      */
     function hash($key)
     {
-        $hash = substr(md5($key, true), 0, 3);
-        $pre_index = unpackInt($hash);
+        $tmp = md5($key, true);
+        $pre_index = ((ord($tmp[0]) << 8) + ord($tmp[1]) << 8) + ord($tmp[2]);
         $index = floor($pre_index * $this->num_values/(2 << 23));
         return $index;
     }
 
-
+    /**
+     * Pretty prints the contents of the hash table viewed as an array.
+     *
+     */
+    function printContents()
+    {
+        for($i = 1; $i <= $this->num_values; $i++) {
+            $row = $this->getEntry($i);
+            print "Entry: $i Key:".$row[0]." Value: ".$row[1]."\n";
+        }
+    }
 }
 ?>

@@ -360,7 +360,7 @@ class QueueServer implements CrawlConstants, Join
             CrawlDaemon::init($argv, "queue_server");
         }
 
-        crawlLog("\n\nInitialize logger..", "queue_server");
+        crawlLog("\n\nInitialize logger..", "queue_server", true);
         $this->server_name = "IndexerAndScheduler";
         if(isset($argv[3]) && $argv[1] == "child" &&
             in_array($argv[3], array(self::INDEXER, self::SCHEDULER))) {

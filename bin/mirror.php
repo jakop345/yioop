@@ -176,7 +176,7 @@ class Mirror implements CrawlConstants
     {
         global $argv;
         CrawlDaemon::init($argv, "mirror");
-        crawlLog("\n\nInitialize logger..", "mirror");
+        crawlLog("\n\nInitialize logger..", "mirror", true);
         $this->loop();
     }
 

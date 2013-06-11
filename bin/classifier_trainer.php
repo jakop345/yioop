@@ -109,7 +109,7 @@ class ClassifierTrainer
         CrawlDaemon::init($argv, "classifier_trainer");
         $label = $argv[2];
         crawlLog("Initializing classifier trainer log..",
-            $label.'-classifier_trainer');
+            $label.'-classifier_trainer', true);
         $classifier = Classifier::getClassifier($label);
         $classifier->prepareToFinalize();
         $classifier->finalize();

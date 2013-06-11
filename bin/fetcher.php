@@ -464,7 +464,8 @@ class Fetcher implements CrawlConstants
             $argv[2] = "0";
         }
         CrawlDaemon::init($argv, "fetcher");
-        crawlLog("\n\nInitialize logger..", $this->fetcher_num."-fetcher");
+        crawlLog("\n\nInitialize logger..", $this->fetcher_num."-fetcher",
+            true);
 
         $this->loop();
     }

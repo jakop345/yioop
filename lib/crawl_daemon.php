@@ -97,8 +97,8 @@ class CrawlDaemon implements CrawlConstants
         if(!file_exists($lock_file)) {
             $name_string = CrawlDaemon::getNameString(self::$name,
                 self::$subname);
-            crawlLog("Stopping $name_string ...");
-            return false;
+            crawlLog("Stopping $name_string ...", NULL, true);
+            exit();
         }
 
         file_put_contents($lock_file, $now);
@@ -240,6 +240,7 @@ class CrawlDaemon implements CrawlConstants
 
         $total_options = "$subname $options";
         $at_job = sprintf($script, $total_options);
+
         pclose(popen($at_job, "r"));
 
         if($exit != 0) {

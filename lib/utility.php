@@ -577,9 +577,11 @@ function metricToInt($metric_num)
  *      bz2 (since they are bzipped).
  */
 
-function crawlLog($msg, $lname = NULL)
+function crawlLog($msg, $lname = NULL, $check_process_handler = false)
 {
     static $logname;
+    static $last_check_time = 0;
+    static $check_handler = false;
 
     if(defined("NO_LOGGING") && NO_LOGGING) {
         return;
@@ -591,7 +593,9 @@ function crawlLog($msg, $lname = NULL)
     } else if(!isset($logname)) {
         $logname = "message";
     }
-
+    if($check_process_handler != NULL) {
+        $check_handler = $check_process_handler;
+    }
     $time_string = date("r", time());
     $out_msg = "[$time_string] $msg";
     if(defined("LOG_TO_FILES") && LOG_TO_FILES) {
@@ -614,6 +618,11 @@ function crawlLog($msg, $lname = NULL)
         }
         //don't use error_log options in this case to happify hiphop4php
         file_put_contents($logfile, $out_msg."\n", FILE_APPEND);
+        if($check_handler && !$check_process_handler && 
+            changeInMicrotime($last_check_time) > 5) {
+            CrawlDaemon::processHandler();
+            $last_check_time = microtime();
+        }
     } else if (php_sapi_name() != 'cli') {
         error_log($out_msg."\n");
     } else {

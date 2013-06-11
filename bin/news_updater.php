@@ -137,7 +137,7 @@ class NewsUpdater implements CrawlConstants
         // To use CrawlDaemon need to declare ticks first
         declare(ticks = 200);
         CrawlDaemon::init($argv, "news_updater");
-        crawlLog("\n\nInitialize logger..", "news_updater");
+        crawlLog("\n\nInitialize logger..", "news_updater", true);
         $this->searchController = new SearchController($INDEXING_PLUGINS);
         $this->loop();
     }
