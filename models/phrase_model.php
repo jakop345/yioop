@@ -1373,6 +1373,10 @@ class PhraseModel extends ParallelModel
                         $out_keys = array();
                         foreach($distinct_keys as $distinct_key) {
                             if(is_array($distinct_key)) {
+                                if(!isset($distinct_key[2]) && 
+                                    isset($distinct_key[1])) {
+                                    $distinct_keys[] = $distinct_key[1];
+                                }
                                 $shift = (isset($distinct_key[1])) ?
                                     $distinct_key[1] : 0;
                                 $mask = (isset($distinct_key[2])) ? 
