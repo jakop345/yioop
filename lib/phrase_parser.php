@@ -407,8 +407,7 @@ class PhraseParser
      * locales segmenter
      *
      * @param array $segments string to split into terms
-     * @param string &$lang IANA tag to look up segmenter under, this function
-     *      might modify this value if it determines the segment is likely
+     * @param string $lang IANA tag to look up segmenter under
      *      from some other language
      * @param array of terms found in the segments
      */
@@ -421,7 +420,6 @@ class PhraseParser
                 on a segment by segment basis
              */
             if($lang != NULL) {
-                $lang = guessLocaleFromString($segment, $lang);
                 $segment_obj = self::getTokenizer($lang);
             } else {
                 $segment_obj = NULL;

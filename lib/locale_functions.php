@@ -104,9 +104,10 @@ function guessLocale()
  * @return string IANA language tag of the guessed locale
 
  */
-function guessLocaleFromString($phrase_string, $locale_tag = NULL, $factor = 2)
+function guessLocaleFromString($phrase_string, $locale_tag = NULL)
 {
     $locale_tag = ($locale_tag == NULL) ? getLocaleTag() : $locale_tag;
+    $phrase_string = mb_ereg_replace(PUNCT."|[0-9]|\s", "", $phrase_string);
     $phrase_string = mb_convert_encoding($phrase_string, "UTF-32", "UTF-8");
     $len = strlen($phrase_string);
     $guess['zh-CN'] = 0;
@@ -116,30 +117,35 @@ function guessLocaleFromString($phrase_string, $locale_tag = NULL, $factor = 2)
     $guess['th'] = 0;
     $guess['ja'] = 0;
     $guess['ko'] = 0;
+    $guess[$locale_tag] = 0;
     for($i = 0; $i < $len; $i += 4) {
         $start = ord($phrase_string[$i+2]);
         $next = ord($phrase_string[$i+3]);
         if($start >= 78 && $start <= 159) {
-            $guess['zh-CN']++;
+            $guess['zh-CN'] += 4;
         } else if ($start == 4 || ($start == 5 && $next < 48)) {
             $guess['ru']++;
         } else if ($start == 5 && $next >= 144) {
-            $guess['he']++;
+            $guess['he'] += 2;
         } else if ($start >= 6 && $start <= 7) {
-            $guess['ar']++;
+            $guess['ar'] += 2;
         } else if ($start == 14 && $next < 128) {
-            $guess['th']++;
+            $guess['th'] += 2;
         } else if ($start >= 48 && $start <= 49) {
-            $guess['ja']++;
+            $guess['ja'] += 3;
         } else if ($start == 17 || $start >= 172 && $start < 215) {
-            $guess['ko']++;
+            $guess['ko'] += 2;
+        } else if ($start == 0 && $next < 128) {
+            $guess[$locale_tag]++; // assume ascii is from $locale_tag
         }
     }
     $num_points = ($len/4) - 1; //there will be a lead and tail space
+    $max = $guess[$locale_tag];
     if($num_points >= 0 ) {
         foreach($guess as $tag => $cnt) {
-            if($factor * $cnt >= $num_points) {
+            if($cnt >= $num_points && $cnt > $max) {
                 $locale_tag = $tag;
+                $max = $cnt;
                 break;
             }
         }

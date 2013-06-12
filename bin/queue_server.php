@@ -802,7 +802,9 @@ class QueueServer implements CrawlConstants, Join
             file_put_contents($close_file, "1");
         }
         //Write B-Tree root node to disk before before exiting
-        $this->web_queue->etag_btree->writeRoot();
+        if(is_object($this->web_queue->etag_btree)) {
+            $this->web_queue->etag_btree->writeRoot();
+        }
     }
 
     /**

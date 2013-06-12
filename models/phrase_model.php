@@ -1369,10 +1369,8 @@ class PhraseModel extends ParallelModel
                                 $out_keys = array_merge($out_keys, $tmp_keys);
                             }
                         }
-
                         arsort($out_keys);
                         $out_keys = array_keys(array_slice($out_keys, 0, 50));
-
                         $tmp_word_iterators =array();
                         $m = 0;
                         foreach($out_keys as $distinct_key) {
@@ -1380,7 +1378,8 @@ class PhraseModel extends ParallelModel
                                 new WordIterator($distinct_key,
                                 $index_name, true, $filter, $to_retrieve);
                             if($tmp_word_iterators[$m]->dictionary_info !=
-                                array()) {
+                                array() ||
+                                $tmp_word_iterators[$m]->feed_count > 0) {
                                 $m++;
                             } else {
                                 unset($tmp_word_iterators[$m]);

@@ -1821,6 +1821,13 @@ class AdminController extends Controller implements CrawlConstants
                     $site[self::URL]);
                 $phrase_string = $host_words." ".$site[self::TITLE] .
                     " ". $path_words . " ". $site[self::DESCRIPTION];
+                if($site[self::TITLE] != "" ) {
+                    $lang = guessLocaleFromString($site[self::TITLE], $lang);
+                } else {
+                    $lang = guessLocaleFromString(
+                        substr($site[self::DESCRIPTION], 0,
+                        AD_HOC_TITLE_LENGTH), $lang);
+                }
                 $word_lists =
                     PhraseParser::extractPhrasesInLists($phrase_string,
                         $lang);

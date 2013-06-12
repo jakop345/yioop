@@ -2381,7 +2381,9 @@ class Fetcher implements CrawlConstants
                             " ". $path_words . " ". $site[self::DESCRIPTION];
                 }
                 if(isset($site[self::LANG])) {
-                    $lang = $site[self::LANG];
+                    $lang = guessLocaleFromString(
+                        mb_substr($site[self::DESCRIPTION], 0, 
+                        AD_HOC_TITLE_LENGTH), $site[self::LANG]);
                 }
 
                 $word_lists =

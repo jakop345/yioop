@@ -564,6 +564,7 @@ class IndexDictionary implements CrawlConstants
      *  @param int $tier which tier to get word info from
      *  @param int $shift how many low order bits to drop from $word_id's
      *     when checking for a match
+     *  @param string $mask
      *  @param int $threshold if greater than zero how many posting list
      *     results in dictionary info returned before stopping looking for
      *     more matches

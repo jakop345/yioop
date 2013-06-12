@@ -122,14 +122,27 @@ class IndexManager implements CrawlConstants
     static function getWordInfo($index_name, $hash, $shift = 0, $mask = "",
         $threshold = -1)
     {
+
         $index = IndexManager::getIndex($index_name);
         if(!$index->dictionary) {
             return false;
         }
         if(!isset(IndexManager::$dictionary[$index_name][$hash][$shift][$mask][
             $threshold])) {
+            $tmp = array();
+            if((!defined('NO_FEEDS') || !NO_FEEDS)
+                && file_exists(WORK_DIRECTORY."/feeds/index")) {
+                //NO_FEEDS defined true in statistic_controller.php
+                $use_feeds = true;
+                $feed_shard = IndexManager::getIndex("feed");
+                $feed_info = $feed_shard->getWordInfo($hash, true);
+                if(is_array($feed_info)) {
+                    $tmp[-1] = array(-1, $feed_info[0],
+                        $feed_info[1], $feed_info[2], $hash);
+                }
+            }
             IndexManager::$dictionary[$index_name][$hash][$shift][$mask][
-                $threshold] =
+                $threshold] = $tmp +
                 $index->dictionary->getWordInfo($hash, true, $shift, $mask,
                 $threshold);
         }
@@ -153,6 +166,12 @@ class IndexManager implements CrawlConstants
         if(!is_array($hashes)) {
             $hashes = array($hashes);
         }
+        if((!defined('NO_FEEDS') || !NO_FEEDS)
+            && file_exists(WORK_DIRECTORY."/feeds/index")) {
+            //NO_FEEDS defined true in statistic_controller.php
+            $use_feeds = true;
+            $feed_shard = IndexManager::getIndex("feed");
+        }
         foreach($hashes as $hash) {
             if(is_array($hash)) {
                 $dictionary_info = 
@@ -161,6 +180,14 @@ class IndexManager implements CrawlConstants
             } else {
                 $dictionary_info = 
                     IndexManager::getWordInfo($index_name, $hash);
+                if($use_feeds) {
+                    $feed_info = $feed_shard->getWordInfo($hash[0], true);
+                    $feed_count = 0;
+                    if(is_array($feed_info)) {
+                        list(, , $feed_count) = $feed_info;
+                    }
+                    $total_num_docs += $feed_count;
+                }
             }
             $num_generations = count($dictionary_info);
             for($i = 0; $i < $num_generations; $i++) {

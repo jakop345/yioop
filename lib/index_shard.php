@@ -504,7 +504,7 @@ class IndexShard extends PersistentStructure implements
             }
             if($word_string == false) {return false;}
             $id = substr($word_string, 0, $word_key_len);
-            $cmp = strcmp($word_id, $id);
+            $cmp = compareWordHashes($word_id, $id, 0);
             if($cmp === 0) {
                 return $this->getWordInfoFromString(
                     substr($word_string, $word_key_len));

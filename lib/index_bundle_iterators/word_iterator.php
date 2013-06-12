@@ -176,7 +176,10 @@ class WordIterator extends IndexBundleIterator
             $this->filter = NULL;
         }
         $this->word_key = $word_key;
-
+        $this->index_name =  $index_name;
+        $this->dictionary_info = 
+            IndexManager::getWordInfo($index_name, $word_key, 0,
+            "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF");
         $this->feed_shard_name = WORK_DIRECTORY."/feeds/index";
         if((!defined('NO_FEEDS') || !NO_FEEDS)
             && file_exists($this->feed_shard_name)) {
@@ -186,11 +189,12 @@ class WordIterator extends IndexBundleIterator
             $this->use_feeds = false;
         }
         if($this->use_feeds) {
-            $feed_shard = IndexManager::getIndex("feed");
-            $this->feed_info = $feed_shard->getWordInfo($word_key, true);
-            if (!$this->feed_info) {
+            if (!isset($this->dictionary_info[-1])) {
+                $this->feed_info = false;
                 $this->feed_empty = true;
             } else {
+                $this->feed_info = $this->dictionary_info[-1];
+                unset($this->dictionary_info[-1]);
                 $this->feed_empty = false;
             }
         } else {
@@ -198,8 +202,10 @@ class WordIterator extends IndexBundleIterator
             $this->feed_empty = true;
         }
         if(is_array($this->feed_info)) {
-            list($this->feed_start, $this->feed_end, $this->feed_count) =
+            list(,$this->feed_start, $this->feed_end, $this->feed_count,) =
                 $this->feed_info;
+            $this->feed_info = array($this->feed_start, $this->feed_end,
+                $this->feed_count);
         } else {
             $this->feed_start = 0;
             $this->feed_end = 0;
@@ -211,11 +217,6 @@ class WordIterator extends IndexBundleIterator
             $this->using_feeds = false;
         }
         $this->num_docs = $this->feed_count;
-        $this->current_block_fresh = false;
-        $this->index_name =  $index_name;
-        $this->dictionary_info = 
-            IndexManager::getWordInfo($index_name, $word_key, 0,
-            "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF");
         if ($this->dictionary_info === false) {
             $this->empty = true;
         } else {
@@ -233,6 +234,7 @@ class WordIterator extends IndexBundleIterator
         }
         $this->current_doc_offset = null;
         $this->results_per_block = $results_per_block;
+        $this->current_block_fresh = false;
         if($this->dictionary_info !== false || $this->feed_info !== false) {
             $this->reset();
         }
@@ -534,8 +536,8 @@ class WordIterator extends IndexBundleIterator
         }
         if($feeds) {
             $index = IndexManager::getIndex("feed");
-            $this->current_doc_offset = $index->getCurrentShard(
-                        )->docOffsetFromPostingOffset($this->current_offset);
+            $this->current_doc_offset = 
+                $index->docOffsetFromPostingOffset($this->current_offset);
             return array(-1, $this->current_doc_offset);
         }
         $index = IndexManager::getIndex($this->index_name);

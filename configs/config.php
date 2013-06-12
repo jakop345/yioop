@@ -491,7 +491,7 @@ define ('PUNCT', "\.|\,|\:|\;|\"|\'|\[|\/|\%|\?|-|".
 define ('EN_RATIO', 0.9);
 
 /** Number of total description deemed title */
-define ('AD_HOC_TITLE_LENGTH', 10);
+define ('AD_HOC_TITLE_LENGTH', 50);
 
 /** Used to say number of bytes in histogram bar (stats page) for file
     download sizes
