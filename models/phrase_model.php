@@ -545,8 +545,16 @@ class PhraseModel extends ParallelModel
         if(isset($words) && count($words) == 1 &&
             count($disallow_phrases) < 1) {;
             $phrase_string = $words[0];
-            $phrase_hash = ($index_version == 0) ? crawlHash($phrase_string) :
-                allCrawlHashPaths($phrase_string);
+            if($index_version == 0) {
+                $tmp_hash = allCrawlHashPaths($phrase_string);
+                $tmp_hash = (is_array($tmp_hash)) ? $tmp_hash :
+                    array($tmp_hash);
+                $phrase_hash = array_merge(array($tmp_hash),
+                    array(crawlHash($phrase_string)));
+            } else {
+                $phrase_hash = allCrawlHashPaths($phrase_string);
+            }
+
             $word_struct = array("KEYS" => array($phrase_hash),
                 "QUOTE_POSITIONS" => NULL, "DISALLOW_KEYS" => array(),
                 "WEIGHT" => $weight, "INDEX_NAME" => $index_name,
@@ -562,15 +570,21 @@ class PhraseModel extends ParallelModel
                     $metas_accounted = true;
                     $materialized_metas = $found_materialized_metas;
                 }
-                $word_keys[] = ($index_version == 0) ? 
-                    crawlHash($word) : allCrawlHashPaths($word,
-                        $materialized_metas, PhraseParser::$materialized_metas);
+                $tmp_hash = allCrawlHashPaths($word, $materialized_metas,
+                    PhraseParser::$materialized_metas);
+                if($index_version == 0) {
+                    $tmp_hash = (is_array($tmp_hash)) ? $tmp_hash :
+                        array($tmp_hash);
+                    $word_keys[] =  array_merge(
+                        $tmp_hash, array(crawlHash($word)));
+                } else {
+                    $word_keys[] = $tmp_hash;
+                }
             }
             if(count($word_keys) == 0) {
                 $word_keys = NULL;
                 $word_struct = NULL;
             }
-
             $disallow_keys = array();
             $num_disallow_keys = min(MAX_QUERY_TERMS, count($disallow_phrases));
 
@@ -591,8 +605,10 @@ class PhraseModel extends ParallelModel
                     $this->query_info['QUERY'] .= "$in4{$disallow_stem[0]}".
                         "<br />";
                 }
-                $disallow_keys[] = ($index_version == 0) ? 
-                    crawlHash($word) : crawlHashWord($disallow_stem[0]);
+                $disallow_keys[] = crawlHashWord($disallow_stem[0]);
+                if($index_version == 0) {
+                    $disallow_keys[] = crawlHash($word);
+                }
             }
 
             if($word_keys !== NULL) {
@@ -1335,13 +1351,20 @@ class PhraseModel extends ParallelModel
                         $distinct_word_keys[$i] : (is_string(
                         $distinct_word_keys[$i][0]) ? $distinct_word_keys[$i][0]
                         : $distinct_word_keys[$i][0][0]);
+                    if(!is_string($current_key)) {
+                        $current_key = $current_key[0];
+                    }
                     if(in_array(substr($current_key, 0, 9), 
                         $doc_iterate_hashes)) {
                         $word_iterators[$i] = new DocIterator(
                             $index_name, $filter, $to_retrieve);
                     } else {
                         //can happen if exact phrase search suffix approach used
-                        if(isset($distinct_word_keys[$i][0]) && 
+                        if(isset($distinct_word_keys[$i][0][0]) && 
+                            is_array($distinct_word_keys[$i][0][0])) {
+                            $distinct_keys = array(
+                                $distinct_word_keys[$i][0][1]);
+                        } else if(isset($distinct_word_keys[$i][0]) && 
                             is_array($distinct_word_keys[$i][0])) {
                             $distinct_keys = $distinct_word_keys[$i];
                         } else {
@@ -1350,8 +1373,11 @@ class PhraseModel extends ParallelModel
                         $out_keys = array();
                         foreach($distinct_keys as $distinct_key) {
                             if(is_array($distinct_key)) {
-                                $shift = $distinct_key[1];
-                                $mask = $distinct_key[2];
+                                $shift = (isset($distinct_key[1])) ?
+                                    $distinct_key[1] : 0;
+                                $mask = (isset($distinct_key[2])) ? 
+                                    $distinct_key[2] : "\x00\x00\x00\x00\x00" .
+                                    "\x00\x00\x00\x00\x00\x00";
                                 $distinct_key_id = unbase64Hash(
                                     $distinct_key[0]);
                             } else {
@@ -1364,6 +1390,7 @@ class PhraseModel extends ParallelModel
                                 $to_retrieve);
                             $info = IndexManager::getWordInfo($index_name,
                                 $distinct_key_id, $shift, $mask);
+
                             if($info != array()) {
                                 $tmp_keys = arrayColumnCount($info, 4, 3);
                                 $out_keys = array_merge($out_keys, $tmp_keys);

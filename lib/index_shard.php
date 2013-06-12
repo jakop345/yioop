@@ -463,14 +463,15 @@ class IndexShard extends PersistentStructure implements
             //get rid of out modfied base64 encoding
             $word_id = unbase64Hash($word_id);
         }
-
         $is_disk = $this->read_only_from_disk;
         $word_item_len = self::WORD_KEY_LEN + self::WORD_DATA_LEN;
         $word_key_len = self::WORD_KEY_LEN;
 
         if($is_disk) {
             $this->getShardHeader();
-
+            if(!isset($word_id[1])) {
+                return false;
+            }
             $prefix = (ord($word_id[0]) << 8) + ord($word_id[1]);
             $prefix_info = $this->getShardSubstring(
                 self::HEADER_LENGTH + 8 * $prefix, 8);
