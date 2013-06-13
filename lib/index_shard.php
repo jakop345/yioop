@@ -992,13 +992,16 @@ class IndexShard extends PersistentStructure implements
      */
     function appendIndexShard($index_shard)
     {
+        crawlLog("Appending shard to current..");
         if($this->word_docs_packed == true) {
             $this->words = array();
             $this->word_docs = "";
             $this->word_docs_packed = false;
         }
         if($index_shard->word_docs_packed == true) {
+            crawlLog("Unpacking shard word docs..");
             $index_shard->unpackWordDocs();
+            crawlLog("..done.");
         }
 
         $this->doc_infos .= $index_shard->doc_infos;
@@ -1006,7 +1009,6 @@ class IndexShard extends PersistentStructure implements
         $two_doc_len = 2 * self::DOC_KEY_LEN;
         $num_words = count($index_shard->words);
         $word_cnt = 0;
-        $incremental_time = microtime();
         foreach($index_shard->words as $word_id => $postings) {
             $postings_len = strlen($postings);
             // update doc offsets for newly added docs
@@ -1037,12 +1039,8 @@ class IndexShard extends PersistentStructure implements
             if($add_len_flag) {
                 $this->word_docs_len += $new_postings_len;
             }
-            $elapse = changeInMicrotime($incremental_time);
-            if($elapse > LOG_TIMEOUT ) {
-                crawlLog(".. still appending shard words. At word: $word_cnt ".
-                    "of $num_words.");
-                $incremental_time = microtime();
-            }
+            crawlTimeoutLog(".. still appending shard words. At word: %s ".
+                    "of %s.", $word_cnt, $num_words);
             $word_cnt++;
         }
         $this->docids_len += $index_shard->docids_len;

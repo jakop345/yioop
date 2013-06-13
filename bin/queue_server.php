@@ -872,12 +872,9 @@ class QueueServer implements CrawlConstants, Join
         $schedule_data[self::SCHEDULE_TIME] = $this->crawl_time;
         $schedule_data[self::TO_CRAWL] = array();
         $fh = $this->web_queue->openUrlArchive();
-        $interim_time = microtime();
         for($time = 1; $time < $count; $time++) {
-            if(changeInMicrotime($interim_time) > LOG_TIMEOUT) {
-                crawlLog("..have written $time urls of $count urls so far");
-                $interim_time = microtime();
-            }
+            crawlTimeoutLog("..have written %s urls of %s urls so far", $time,
+                $count);
             $tmp =  $this->web_queue->peekQueue($time, $fh);
             list($url, $weight, , ) = $tmp;
             // if queue error skip
@@ -1412,6 +1409,8 @@ class QueueServer implements CrawlConstants, Join
         $max_batch_sites_and_links = SEEN_URLS_BEFORE_UPDATE_SCHEDULER *
             (max(MAX_LINKS_PER_PAGE, MAX_LINKS_PER_SITEMAP) + 1);
         while($pos < $len_urls && $num <= $max_batch_sites_and_links) {
+            crawlTimeoutLog("..still processing index data at position %s of ".
+                "out of %s", $pos, $len_urls);
             $len_site = unpackInt(substr($seen_urls_string, $pos ,4));
             if($len_site > 2*$this->page_range_request) {
                 crawlLog("Site string too long, $len_site,".
@@ -1773,7 +1772,6 @@ class QueueServer implements CrawlConstants, Join
             crawlLog("B.. Queue insert unseen robots.txt urls;".
                 "adjust changed weights");
             $start_time = microtime();
-            $incremental_time = $start_time;
             $cnt = 0;
             $num_triples = count($to_crawl_sites);
 
@@ -1792,12 +1790,8 @@ class QueueServer implements CrawlConstants, Join
             foreach($to_crawl_sites as $triple) {
                 $url = & $triple[0];
                 $cnt++;
-                $change_in_time = changeInMicrotime($incremental_time);
-                if($change_in_time > LOG_TIMEOUT ) {
-                    crawlLog("..Processing url $cnt of $num_triples. ".
-                        "$change_in_time sec since last report.");
-                    $incremental_time = microtime();
-                }
+                crawlTimeoutLog("..Processing url %s of %s ", $cnt, $num_triples
+                   );
                 if(strlen($url) < 7) { // strlen("http://")
                     continue;
                 }

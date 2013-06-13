@@ -631,6 +631,28 @@ function crawlLog($msg, $lname = NULL, $check_process_handler = false)
 }
 
 /**
+ *
+ */
+function crawlTimeoutLog($msg)
+{
+    static $cache = array();
+    $hash = crawlHash($msg);
+    if(!isset($cache[$hash])) {
+        $cache[$hash] = microtime();
+    }
+    if(changeInMicrotime($cache[$hash]) < LOG_TIMEOUT) {
+        return;
+    }
+
+    $out_msg = & $msg;
+    if(func_num_args() > 1) {
+        $out_msg = call_user_func_array('sprintf', func_get_args());
+    }
+    crawlLog($out_msg);
+    $cache[$hash] = microtime();
+}
+
+/**
  *  Computes an 8 byte hash of a string for use in storing documents.
  *
  *  An eight byte hash was chosen so that the odds of collision even for

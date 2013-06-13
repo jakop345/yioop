@@ -2340,7 +2340,6 @@ class Fetcher implements CrawlConstants
             $this->found_sites[self::INVERTED_INDEX][$this->current_server] =
                 new IndexShard("fetcher_shard_{$this->current_server}");
         }
-        $interim_time2 = microtime();
         for($i = 0; $i < $num_seen; $i++) {
             $interim_time = microtime();
             $site = $this->found_sites[self::SEEN_URLS][$i];
@@ -2500,12 +2499,8 @@ class Fetcher implements CrawlConstants
                 crawlLog("..Still building inverted index. Have processed $i".
                     " of $num_seen documents.");
             }
-            $iterim_elapse = changeInMicrotime($interim_time2);
-            if($iterim_elapse > LOG_TIMEOUT) {
-                crawlLog("..Still building inverted index. Have processed $i".
-                    " of $num_seen documents.");
-                $interim_time2 = microtime();
-            }
+            crawlTimeoutLog("..Still building inverted index. Have processed ".
+                "%s of %s documents.", $i, $num_seen);
         }
         if($this->crawl_type == self::ARCHIVE_CRAWL) {
             $this->recrawl_check_scheduler = true;
