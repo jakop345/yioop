@@ -1003,9 +1003,10 @@ class IndexShard extends PersistentStructure implements
             $index_shard->unpackWordDocs();
             crawlLog("..done.");
         }
-
+        crawlLog("Concatenate document info maps..");
         $this->doc_infos .= $index_shard->doc_infos;
-
+        crawlLog("..done.");
+        crawlLog("Start processing the appended shard's posting lists..");
         $two_doc_len = 2 * self::DOC_KEY_LEN;
         $num_words = count($index_shard->words);
         $word_cnt = 0;
@@ -1043,6 +1044,7 @@ class IndexShard extends PersistentStructure implements
                     "of %s.", $word_cnt, $num_words);
             $word_cnt++;
         }
+        crawlLog("..done.");
         $this->docids_len += $index_shard->docids_len;
         $this->num_docs += $index_shard->num_docs;
         $this->num_link_docs += $index_shard->num_link_docs;
