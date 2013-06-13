@@ -872,14 +872,19 @@ class QueueServer implements CrawlConstants, Join
         $schedule_data[self::SCHEDULE_TIME] = $this->crawl_time;
         $schedule_data[self::TO_CRAWL] = array();
         $fh = $this->web_queue->openUrlArchive();
+        $interim_time = microtime();
         for($time = 1; $time < $count; $time++) {
+            if(changeInMicrotime($interim_time) > LOG_TIMEOUT) {
+                crawlLog("..have written $time urls of $count urls so far");
+                $interim_time = microtime();
+            }
             $tmp =  $this->web_queue->peekQueue($time, $fh);
             list($url, $weight, , ) = $tmp;
             // if queue error skip
             if($tmp === false || strcmp($url, "LOOKUP ERROR") == 0) {
                 continue;
             }
-            $hash = crawlHash($now.$url);
+            $hash = crawlHash($now . $url);
             $schedule_data[self::TO_CRAWL][] = array($url, $weight, $hash);
             if($time - $old_time >= MAX_FETCH_SIZE) {
                 if(count($schedule_data[self::TO_CRAWL]) > 0) {
@@ -1788,7 +1793,7 @@ class QueueServer implements CrawlConstants, Join
                 $url = & $triple[0];
                 $cnt++;
                 $change_in_time = changeInMicrotime($incremental_time);
-                if($change_in_time > 30 ) {
+                if($change_in_time > LOG_TIMEOUT ) {
                     crawlLog("..Processing url $cnt of $num_triples. ".
                         "$change_in_time sec since last report.");
                     $incremental_time = microtime();

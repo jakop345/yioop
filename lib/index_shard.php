@@ -1038,7 +1038,7 @@ class IndexShard extends PersistentStructure implements
                 $this->word_docs_len += $new_postings_len;
             }
             $elapse = changeInMicrotime($incremental_time);
-            if($elapse > 30 ) {
+            if($elapse > LOG_TIMEOUT ) {
                 crawlLog(".. still appending shard words. At word: $word_cnt ".
                     "of $num_words.");
                 $incremental_time = microtime();

@@ -361,6 +361,9 @@ define('PAGE_TIMEOUT', 30);
 /** time in seconds before we give up on a single page request*/
 define('SINGLE_PAGE_TIMEOUT', 60);
 
+/** max time in seconds in a process before write a log message*/
+define('LOG_TIMEOUT', 30);
+
 /**
  *  Number of error page 400 or greater seen from a host before crawl-delay
  *  host and dump remainder from current schedule

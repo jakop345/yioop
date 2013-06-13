@@ -2495,7 +2495,7 @@ class Fetcher implements CrawlConstants
                     " of $num_seen documents.");
             }
             $iterim_elapse = changeInMicrotime($interim_time2);
-            if($iterim_elapse > 5) {
+            if($iterim_elapse > LOG_TIMEOUT) {
                 crawlLog("..Still building inverted index. Have processed $i".
                     " of $num_seen documents.");
                 $interim_time2 = microtime();
