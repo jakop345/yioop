@@ -1505,7 +1505,8 @@ class Fetcher implements CrawlConstants
                     $site[self::URL]);
                 if($page_processor != "RobotProcessor" &&
                     !isset($doc_info[self::JUST_METAS])) {
-                    $this->pruneLinks($doc_info);
+                    $this->pruneLinks($doc_info, CrawlConstants::LINKS,
+                        $start_time);
                 }
             } else if(!$handled) {
                 $doc_info = false;
@@ -1668,13 +1669,16 @@ class Fetcher implements CrawlConstants
      *  This subarray in turn contains url => text pairs.
      * @param string $field field for links default is CrawlConstants::LINKS
      */
-    function pruneLinks(&$doc_info, $field = CrawlConstants::LINKS)
+    function pruneLinks(&$doc_info, $field = CrawlConstants::LINKS,
+        $member_cache_time = 0)
     {
         if(!isset($doc_info[self::LINKS])) {
             return;
         }
 
         $links = array();
+        $allowed_name = "a".$member_cache_time;
+        $disallowed_name = "d".$member_cache_time;
         foreach($doc_info[$field] as $url => $text) {
             $doc_type = UrlParser::getDocumentType($url);
             if(!in_array($doc_type, $this->all_file_types)) {
@@ -1684,11 +1688,13 @@ class Fetcher implements CrawlConstants
                 continue;
             }
             if($this->restrict_sites_by_url) {
-                if(!UrlParser::urlMemberSiteArray($url, $this->allowed_sites)) {
+                if(!UrlParser::urlMemberSiteArray($url, $this->allowed_sites,
+                    $allowed_name)) {
                     continue;
                 }
             }
-            if(UrlParser::urlMemberSiteArray($url, $this->disallowed_sites)) {
+            if(UrlParser::urlMemberSiteArray($url, $this->disallowed_sites,
+                $disallowed_name)) {
                 continue;
             }
             $links[$url] = $text;
@@ -2328,6 +2334,7 @@ class Fetcher implements CrawlConstants
             $this->found_sites[self::INVERTED_INDEX][$this->current_server] =
                 new IndexShard("fetcher_shard_{$this->current_server}");
         }
+        $interim_time2 = microtime();
         for($i = 0; $i < $num_seen; $i++) {
             $interim_time = microtime();
             $site = $this->found_sites[self::SEEN_URLS][$i];
@@ -2477,7 +2484,7 @@ class Fetcher implements CrawlConstants
                         $part_num]->addDocumentWords($link_keys,
                             self::NEEDS_OFFSET_FLAG, $link_word_lists,
                                 $link_meta_ids,
-                                PhraseParser::$materialized_metas, false, 
+                                PhraseParser::$materialized_metas, false,
                                 $link_rank);
                 }
             }
@@ -2486,6 +2493,12 @@ class Fetcher implements CrawlConstants
                 crawlLog("..Inverting ".$site[self::URL]."...took > 5s.");
                 crawlLog("..Still building inverted index. Have processed $i".
                     " of $num_seen documents.");
+            }
+            $iterim_elapse = changeInMicrotime($interim_time2);
+            if($iterim_elapse > 5) {
+                crawlLog("..Still building inverted index. Have processed $i".
+                    " of $num_seen documents.");
+                $interim_time2 = microtime();
             }
         }
         if($this->crawl_type == self::ARCHIVE_CRAWL) {

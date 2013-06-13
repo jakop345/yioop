@@ -349,9 +349,6 @@ define('MAX_DESCRIPTION_LEN', 2000);
  */
 define('PAGE_RECRAWL_FREQUENCY', -1);
 
-/** maximum length +1 exact phrase matches */
-define('MAX_PHRASE_LEN', 2);
-
 /** number of multi curl page requests in one go */
 define('NUM_MULTI_CURL_PAGES', 100);
 

@@ -2301,6 +2301,9 @@ class AdminController extends Controller implements CrawlConstants
                         $profile["NEWS_MODE"] = $_REQUEST['news_mode'];
                         if($profile["NEWS_MODE"] != "news_process") {
                             CrawlDaemon::stop("news_updater", "", false);
+                            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                                tl('admin_controller_news_mode_updated').
+                                "</h1>');";
                         } else {
                             $cron_time = $this->cronModel->getCronTime(
                                 "news_process");
@@ -2308,6 +2311,9 @@ class AdminController extends Controller implements CrawlConstants
                             if($delta > 60) {
                                 CrawlDaemon::start("news_updater", 'none', "",
                                     -1);
+                            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                                tl('admin_controller_news_mode_updated').
+                                "</h1>');";
                             } else {
                             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                                 tl('admin_controller_news_process_running').
@@ -2317,9 +2323,6 @@ class AdminController extends Controller implements CrawlConstants
                         }
                         $this->profileModel->updateProfile(
                             WORK_DIRECTORY, array(), $profile);
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('admin_controller_news_mode_updated').
-                            "</h1>');";
                     } else {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('admin_controller_news_update_failed').

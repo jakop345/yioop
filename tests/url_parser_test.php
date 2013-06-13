@@ -225,7 +225,8 @@ class UrlParserTest extends UnitTest
                 "domain test negative"),
         );
         foreach($test_urls as $test_url) {
-            $result = UrlParser::urlMemberSiteArray($test_url[0], $sites);
+            $result = UrlParser::urlMemberSiteArray($test_url[0], $sites,
+                "s");
             $this->assertEqual($result, $test_url[1], $test_url[2]);
         }
     }

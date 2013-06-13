@@ -141,6 +141,12 @@ class QueueServer implements CrawlConstants, Join
      */
     var $disallowed_sites;
     /**
+     * Used to cache $allowed_sites and $disallowed_sites filtering data
+     * structures
+     * @var int
+     */
+    var $allow_disallow_cache_time;
+    /**
      * Timestamp of lst time download from site quotas were cleared
      * @var int
      */
@@ -321,6 +327,7 @@ class QueueServer implements CrawlConstants, Join
         $this->restrict_sites_by_url = true;
         $this->allowed_sites = array();
         $this->disallowed_sites = array();
+        $this->allow_disallow_cache_time = microtime();
         $this->quota_sites = array();
         $this->quota_sites_keys = array();
         $this->quota_clear_time = time();
@@ -926,6 +933,7 @@ class QueueServer implements CrawlConstants, Join
         if(isset($this->indexing_plugins)) {
             crawlLog("Post Processing....");
             $this->writeAdminMessage("SHUTDOWN_RUNPLUGINS");
+            crawlLog("... Wrote Run Plugin shutdown Message");
             foreach($this->indexing_plugins as $plugin) {
                 $plugin_instance_name =
                     lcfirst($plugin)."Plugin";
@@ -1775,11 +1783,14 @@ class QueueServer implements CrawlConstants, Join
                 crawlLog("Emptying queue page url filter!!!!!!");
                 $this->web_queue->emptyUrlFilter();
             }
+            $this->allow_disallow_cache_time = microtime();
             foreach($to_crawl_sites as $triple) {
                 $url = & $triple[0];
                 $cnt++;
-                if(changeInMicrotime($incremental_time) > 30 ) {
-                    crawlLog("..Processing url $cnt of $num_triples.");
+                $change_in_time = changeInMicrotime($incremental_time);
+                if($change_in_time > 30 ) {
+                    crawlLog("..Processing url $cnt of $num_triples. ".
+                        "$change_in_time sec since last report.");
                     $incremental_time = microtime();
                 }
                 if(strlen($url) < 7) { // strlen("http://")
@@ -1789,6 +1800,7 @@ class QueueServer implements CrawlConstants, Join
                     $url = "http://localhost/";
                 }
                 $weight = $triple[1];
+
                 $this->web_queue->addSeenUrlFilter($triple[2]); //add for dedup
                 unset($triple[2]); // so triple is now a pair
                 $host_url = UrlParser::getHost($url);
@@ -1798,15 +1810,16 @@ class QueueServer implements CrawlConstants, Join
                 $host_with_robots = $host_url."/robots.txt";
                 $robots_in_queue =
                     $this->web_queue->containsUrlQueue($host_with_robots);
-
                 if($this->web_queue->containsUrlQueue($url)) {
                     if($robots_in_queue) {
                         $this->web_queue->adjustQueueWeight(
                             $host_with_robots, $weight, false);
                     }
-                    $this->web_queue->adjustQueueWeight($url, $weight, false);
+                    $this->web_queue->adjustQueueWeight($url, 
+                        $weight, false);
                 } else if($this->allowedToCrawlSite($url) &&
-                    !$this->disallowedToCrawlSite($url)  ) {
+                    !$this->disallowedToCrawlSite($url)) {
+
                     if(!$this->web_queue->containsGotRobotTxt($host_url)
                         && !$robots_in_queue
                         && !isset($added_urls[$host_with_robots])
@@ -1818,7 +1831,6 @@ class QueueServer implements CrawlConstants, Join
                         $added_pairs[] = $triple; // see comment above
                         $added_urls[$url] = true;
                     }
-
                 }
             }
             $this->web_queue->notifyFlush();
@@ -2315,7 +2327,8 @@ class QueueServer implements CrawlConstants, Join
             return false;
         }
         if($this->restrict_sites_by_url) {
-           return UrlParser::urlMemberSiteArray($url, $this->allowed_sites);
+           return UrlParser::urlMemberSiteArray($url, $this->allowed_sites,
+                "a".$this->allow_disallow_cache_time);
         }
         return true;
     }
@@ -2329,7 +2342,8 @@ class QueueServer implements CrawlConstants, Join
      */
     function disallowedToCrawlSite($url)
     {
-        return UrlParser::urlMemberSiteArray($url, $this->disallowed_sites);
+        return UrlParser::urlMemberSiteArray($url, $this->disallowed_sites,
+            "d".$this->allow_disallow_cache_time);
     }
 
     /**
@@ -2343,7 +2357,8 @@ class QueueServer implements CrawlConstants, Join
     function withinQuota($url)
     {
         if(!($site = UrlParser::urlMemberSiteArray(
-            $url, $this->quota_sites_keys, true))) {
+            $url, $this->quota_sites_keys, "q".$this->allow_disallow_cache_time,
+            true))) {
             return true;
         }
         list($quota, $current_count) = $this->quota_sites[$site];

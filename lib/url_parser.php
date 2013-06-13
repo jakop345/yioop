@@ -108,48 +108,6 @@ class UrlParser
        return isset($url_parts['host']);
     }
 
-    /**
-     * Get the host name portion of a url if present; if not return false
-     *
-     * @param string $url the url to parse
-     * @param bool $with_login whether to include user,password,port if present
-     * @return the host portion of the url if present; false otherwise
-     */
-    static function getHost($url, $with_login_and_port = true)
-    {
-        $url_parts = @parse_url($url);
-
-        if(!isset($url_parts['scheme']) ) {return false;}
-        $host_url = $url_parts['scheme'].'://';
-
-        //handles common typo http:/yahoo.com rather than http://yahoo.com
-        if(!isset($url_parts['host'])) {
-            if(isset($url_parts['path'])) {
-                $url_parts = @parse_url($url_parts['scheme'].":/".
-                    $url_parts['path']);
-                if(!isset($url_parts['host'])) {
-                    return false;
-                }
-            } else {
-                return false;
-            }
-        }
-
-        if($with_login_and_port &&
-            isset($url_parts['user']) && isset($url_parts['pass'])) {
-            $host_url .= $url_parts['user'].":".$url_parts['pass']."@";
-        }
-
-        if(strlen($url_parts['host']) <= 0) { return false; }
-
-        $host_url .= $url_parts['host'];
-
-        if($with_login_and_port && isset($url_parts['port'])) {
-            $host_url .= ":".$url_parts['port'];
-        }
-
-        return $host_url;
-    }
 
     /**
      * Get the port number of a url if present; if not return 80
@@ -282,7 +240,48 @@ class UrlParser
         return NULL;
     }
 
+    /**
+     * Get the host name portion of a url if present; if not return false
+     *
+     * @param string $url the url to parse
+     * @param bool $with_login whether to include user,password,port if present
+     * @return the host portion of the url if present; false otherwise
+     */
+    static function getHost($url, $with_login_and_port = true)
+    {
+        $url_parts = @parse_url($url);
 
+        if(!isset($url_parts['scheme']) ) {return false;}
+        $host_url = $url_parts['scheme'].'://';
+
+        //handles common typo http:/yahoo.com rather than http://yahoo.com
+        if(!isset($url_parts['host'])) {
+            if(isset($url_parts['path'])) {
+                $url_parts = @parse_url($url_parts['scheme'].":/".
+                    $url_parts['path']);
+                if(!isset($url_parts['host'])) {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        }
+
+        if($with_login_and_port &&
+            isset($url_parts['user']) && isset($url_parts['pass'])) {
+            $host_url .= $url_parts['user'].":".$url_parts['pass']."@";
+        }
+
+        if(strlen($url_parts['host']) <= 0) { return false; }
+
+        $host_url .= $url_parts['host'];
+
+        if($with_login_and_port && isset($url_parts['port'])) {
+            $host_url .= ":".$url_parts['port'];
+        }
+
+        return $host_url;
+    }
 
     /**
      *  Get the path portion of a url if present; if not return NULL
@@ -315,6 +314,60 @@ class UrlParser
     }
 
     /**
+     *
+     */
+    static function getHostAndPath($url, $with_login_and_port = true, 
+        $with_query_string = false)
+    {
+        $url_parts = @parse_url($url);
+        $path = (isset($url_parts['path'])) ? $url_parts['path'] : false;
+
+        if(!isset($url_parts['scheme']) ) {return array(false, false);}
+        $host_url = $url_parts['scheme'].'://';
+
+        //handles common typo http:/yahoo.com rather than http://yahoo.com
+        if(!isset($url_parts['host'])) {
+            if($path) {
+                $url_parts = @parse_url($url_parts['scheme'].":/".
+                    $path);
+                if(!isset($url_parts['host'])) {
+                    return array(false, false);
+                }
+                $path = (isset($url_parts['path'])) ? $url_parts['path'] :false;
+            } else {
+                return array(false, false);
+            }
+        }
+        if($with_login_and_port &&
+            isset($url_parts['user']) && isset($url_parts['pass'])) {
+            $host_url .= $url_parts['user'].":".$url_parts['pass']."@";
+        }
+        if(strlen($url_parts['host']) <= 0) { return array(false, false); }
+
+        $host_url .= $url_parts['host'];
+
+        if($with_login_and_port && isset($url_parts['port'])) {
+            $host_url .= ":".$url_parts['port'];
+        }
+        if(!$path) {
+            return array($host_url, false);
+        }
+        // windows hack
+        $path = str_replace("\/", "/", $path);
+
+        $len = strlen($url);
+        if($len < 1) {
+            return array($host_url, false);
+        }
+        if($with_query_string && isset($url_parts['query'])) {
+            $path .= "?".$url_parts['query'];
+        } else if($with_query_string && $url[$len - 1] == "?") {
+            $path .= "?"; //handle blank query string case
+        }
+        return array($host_url, $path);
+    }
+
+    /**
      * Gets an array of prefix urls from a given url. Each prefix contains at
      * least the the hostname of the the start url
      *
@@ -328,12 +381,10 @@ class UrlParser
     {
         $host_paths = array($url);
 
-        $host = self::getHost($url);
+        list($host, $path) = self::getHostAndPath($url);
         if(!$host) {return $host_paths;}
 
         $host_paths[] = $host;
-
-        $path = self::getPath($url);
 
         $path_parts = explode("/", $path);
 
@@ -628,8 +679,7 @@ class UrlParser
         }
 
         if(self::hasHostUrl($link)) {
-            $host = self::getHost($link);
-            $path = self::getPath($link);
+            list($host, $path) = self::getHostAndPath($link);
             $query = self::getQuery($link);
             $fragment = self::getFragment($link);
         } else {
@@ -780,36 +830,67 @@ class UrlParser
      *
      * @param string $url url to check
      * @param array $site_array sites to check against
+     * @param string $name
      * @param bool whether when a match is found to return true or to
      *      return the matching site rule
      * @return mixed whether the url belongs to one of the sites
      */
-    static function urlMemberSiteArray($url, $site_array, $return_rule = false)
+    static function urlMemberSiteArray($url, $site_array,
+        $name, $return_rule = false)
     {
-        $flag = false;
+        static $cache = array();
         if(!is_array($site_array)) {return false;}
-        foreach($site_array as $site) {
-            $site_parts = explode("domain:", $site);
-            $host = UrlParser::getHost($url);
-            if($site_parts[0] == "" && isset($site_parts[1])) {
-                $pos = strrpos($host, $site_parts[1]);
-                if($pos !== false &&
-                    $pos + strlen($site_parts[1]) == strlen($host) ) {
-                    $flag = true;
-                    break;
-                }
-            }
-            $path = UrlParser::getPath($url, true);
-            $site_host = UrlParser::getHost($site);
-            $site_path = UrlParser::getPath($site, true);
-            $flag = UrlParser::isPathMemberRegexPaths($host, array($site_host));
-            if(!$flag) continue;
-            $flag = UrlParser::isPathMemberRegexPaths($path, array($site_path));
-            if($flag) break;
 
+        if(!isset($cache[$name])) {
+            if(count($cache) > 100) {
+                $cache = array();
+            }
+            $i = 0;
+            $cache[$name]["domains"] = array();
+            $cache[$name]["hosts"] = array();
+            $cache[$name]["paths"] = array();
+            $cache[$name]["sites"] = array();
+            foreach($site_array as $site) {
+                if(strcmp(substr($site, 0, 7), "domain:") == 0) {
+                    $cache[$name]["domains"][] = substr($site, 7);
+                    continue;
+                }
+                list($site_host, $site_path) = 
+                    UrlParser::getHostAndPath($site, true, true);
+                $cache[$name]["hosts"][] = $site_host;
+                $cache[$name]["paths"][] = $site_path;
+                $cache[$name]["sites"][] = $site;
+                $i++;
+            }
+            $cache[$name]["domains"] = array_values(array_unique(
+                $cache[$name]["domains"]));
+        }
+        $flag = false;
+
+        $domains = & $cache[$name]["domains"];
+        $hosts = & $cache[$name]["hosts"];
+        $paths = & $cache[$name]["paths"];
+        $sites = & $cache[$name]["sites"];
+        list($host, $path) = UrlParser::getHostAndPath($url, true, true);
+        foreach($domains as $domain) {
+            $pos = strrpos($host, $domain);
+            if($pos !== false &&
+                $pos + strlen($domain) == strlen($host) ) {
+                if($return_rule) {
+                    return "domain:$domain";
+                }
+                return true;
+            }
+        }
+        $count = count($sites);
+        for($i = 0; $i < $count; $i++) {
+            $flag = UrlParser::isPathMemberRegexPaths($host, array($hosts[$i]));
+            if(!$flag) continue;
+            $flag = UrlParser::isPathMemberRegexPaths($path, array($paths[$i]));
+            if($flag) break;
         }
         if($return_rule && $flag) {
-            $flag = $site;
+            $flag = $sites[$i];
         }
         return $flag;
     }

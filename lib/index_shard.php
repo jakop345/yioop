@@ -1004,6 +1004,9 @@ class IndexShard extends PersistentStructure implements
         $this->doc_infos .= $index_shard->doc_infos;
 
         $two_doc_len = 2 * self::DOC_KEY_LEN;
+        $num_words = count($index_shard->words);
+        $word_cnt = 0;
+        $incremental_time = microtime();
         foreach($index_shard->words as $word_id => $postings) {
             $postings_len = strlen($postings);
             // update doc offsets for newly added docs
@@ -1034,6 +1037,13 @@ class IndexShard extends PersistentStructure implements
             if($add_len_flag) {
                 $this->word_docs_len += $new_postings_len;
             }
+            $elapse = changeInMicrotime($incremental_time);
+            if($elapse > 30 ) {
+                crawlLog(".. still appending shard words. At word: $word_cnt ".
+                    "of $num_words.");
+                $incremental_time = microtime();
+            }
+            $word_cnt++;
         }
         $this->docids_len += $index_shard->docids_len;
         $this->num_docs += $index_shard->num_docs;
