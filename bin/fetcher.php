@@ -2234,9 +2234,15 @@ class Fetcher implements CrawlConstants
             $sleep = false;
             do {
                 if($sleep == true) {
-                    crawlLog("Trouble sending to the scheduler, response was:");
+                    crawlLog("Trouble sending to the scheduler at url:");
+                    crawlLog($queue_server);
+                    crawlLog("Response was:");
                     crawlLog("$info_string");
                     $info = unserialize($info_string);
+                    $time = time();
+                    $session = md5($time . AUTH_KEY);
+                    $post_data['time'] = $time;
+                    $post_data['session'] = $session;
                     if(isset($info[self::STATUS]) &&
                         $info[self::STATUS] == self::REDO_STATE) {
                         crawlLog("Server requested last item to be re-sent...");
