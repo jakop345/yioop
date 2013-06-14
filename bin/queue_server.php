@@ -1645,7 +1645,13 @@ class QueueServer implements CrawlConstants, Join
 
         $etag_expires_data = 
             unserialize(gzuncompress(webdecode(file_get_contents($file))));
+        crawlLog("Done uncompressing etag data. Starting to add to btree");
+        $num_entries = count($etag_expires_data);
+        $i = 0;
         foreach($etag_expires_data as $data) {
+            crawlTimeoutLog("..still etag processing on item %s of %s.",
+                $i, $num_entries);
+            $i++;
             $link = $data[0];
             $value = $data[1];
             $key = crawlHash($link, true);
