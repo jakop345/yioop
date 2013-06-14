@@ -158,7 +158,16 @@ class NWordGrams
         $words = file($dict_file);
         $filter = new BloomFilterFile($filter_path, count($words));
         foreach($words as $word) {
-          $filter->add(mb_strtolower(trim($word)));
+            $tmp = trim($word);
+            $len = mb_strlen($tmp);
+            $filter->add(mb_strtolower($tmp));
+            if($len >= 3) {
+                for($i = 1; $i < $len - 1; $i++) {
+                    $tmp2 = "*" . mb_substr($tmp, $i, $len - $i, "UTF-8");
+                    if($tmp2 == "*") {continue;}
+                    $filter->add(mb_strtolower($tmp2));
+                }
+            }
         }
         $filter->max_gram_len = 1;
         $filter->save();

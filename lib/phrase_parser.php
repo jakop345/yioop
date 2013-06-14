@@ -721,16 +721,32 @@ class PhraseParser
         $word_len = 2;
         $word_guess = mb_substr($segment, $cur_pos, 1);
         $added = false;
+        $suffix_backup = - 1;
         while($cur_pos >= 0) {
             $old_word_guess = $word_guess;
             $cur_pos--;
             $word_guess = mb_substr($segment, $cur_pos, $word_len);
-            if(NWordGrams::ngramsContains($word_guess, $locale, "segment") ||
-                is_numeric($word_guess) || 
+            $is_word = NWordGrams::ngramsContains($word_guess, $locale,
+                "segment");
+            $is_suffix = NWordGrams::ngramsContains("*".$word_guess, $locale,
+                "segment");
+            if($is_word || $is_suffix || is_numeric($word_guess) ||
                 mb_check_encoding($word_guess, 'ASCII')) {
                 $word_len++;
                 $added = false;
+                if($is_word) {
+                    $suffix_backup = - 1;
+                }
+                if($is_suffix && $suffix_backup == -1) {
+                    $suffix_backup = $cur_pos;
+                    $suffix_guess = $old_word_guess;
+                }
             } else {
+                if($suffix_backup >= 0) {
+                    $cur_pos = $suffix_backup;
+                    $suffix_backup = - 1;
+                    $old_word_guess = $suffix_guess;
+                }
                 $word_len = 1;
                 $out_segment .= " ".strrev($old_word_guess);
                 $word_guess = mb_substr($segment, $cur_pos, $word_len);
@@ -739,7 +755,15 @@ class PhraseParser
             }
         }
         if(!$added) {
-            $out_segment .= " ".strrev($old_word_guess);
+            if(NWordGrams::ngramsContains($old_word_guess, $locale, "segment")||
+                is_numeric($old_word_guess) || 
+                mb_check_encoding($old_word_guess, 'ASCII')) {
+                $out_segment .= " ".strrev($old_word_guess);
+            } else {
+                $front = mb_substr($old_word_guess, 0, 1);
+                $back = mb_substr($old_word_guess, 1);
+                $out_segment .= " ".strrev($front). " ". strrev($back);
+            }
         }
         $out_segment = strrev($out_segment);
         return $out_segment;
