@@ -1241,7 +1241,7 @@ class IndexShard extends PersistentStructure implements
             $out = $header;
             $this->packWords(NULL);
             $out .= $this->words;
-            $this->outputPostingLists(NULL);
+            $this->outputPostingLists(NULL, $with_logging);
             $out .= $this->word_docs;
             $out .= $this->doc_infos;
         } else {
@@ -1252,7 +1252,7 @@ class IndexShard extends PersistentStructure implements
             if($with_logging) {
                 crawlLog("Saving index shard .. wrote dictionary");
             }
-            $this->outputPostingLists($fh);
+            $this->outputPostingLists($fh, $with_logging);
             fwrite($fh, $this->doc_infos);
             fclose($fh);
         }
@@ -1383,8 +1383,9 @@ class IndexShard extends PersistentStructure implements
      * of postings to the provided file handle.
      *
      * @param resource $fh a filehandle to write to
+     * @param bool $with_logging whether to log progress
      */
-    function outputPostingLists($fh = NULL)
+    function outputPostingLists($fh = NULL, $with_logging = false)
     {
         $word_item_len = IndexShard::WORD_KEY_LEN + IndexShard::WORD_DATA_LEN;
         $key_len = self::WORD_KEY_LEN;
@@ -1397,6 +1398,10 @@ class IndexShard extends PersistentStructure implements
         $tmp_len = 0;
         $two_doc_len = 2 * self::DOC_KEY_LEN;
         while($pos < $word_postings_len) {
+            if($with_logging) {
+                crawlTimeoutLog("..Outputting to position $pos of".
+                    " $word_postings_len in posting lists.");
+            }
             $word_id = substr($this->word_postings, $pos, $key_len);
             $len = unpackInt(substr($this->word_postings,
                 $pos + $key_len, $posting_len));

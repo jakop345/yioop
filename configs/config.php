@@ -342,10 +342,10 @@ define('PAGE_RANGE_REQUEST', 50000);
 define('MAX_DESCRIPTION_LEN', 2000);
 
 /**
-    Allow pages to be recrawled after this many days -- this is the
-    default value to use if the user doesn't set this value in the page options
-    GUI. What this controls is how often the page url filter is deleted.
-    A nonpositive value means the filter will never be deleted.
+ *  Allow pages to be recrawled after this many days -- this is the
+ *  default value to use if the user doesn't set this value in the page options
+ *  GUI. What this controls is how often the page url filter is deleted.
+ *  A nonpositive value means the filter will never be deleted.
  */
 define('PAGE_RECRAWL_FREQUENCY', -1);
 
@@ -361,8 +361,16 @@ define('PAGE_TIMEOUT', 30);
 /** time in seconds before we give up on a single page request*/
 define('SINGLE_PAGE_TIMEOUT', 60);
 
-/** max time in seconds in a process before write a log message*/
+/** max time in seconds in a process before write a log message if
+    crawlTimeoutLog is called repeatedly from a loop
+ */
 define('LOG_TIMEOUT', 30);
+
+/**
+ *  Maximum time a crawl daemon process can go before calling
+ *  @see CrawlDaemon::processHandler
+ */
+define('PROCESS_TIMEOUT', 180);
 
 /**
  *  Number of error page 400 or greater seen from a host before crawl-delay
@@ -480,7 +488,6 @@ $MOD9_NUM_BITS_CODES = array( 63 => 1, 62 => 2, 60 => 3, 56 => 4, 52 => 5,
 $MOD9_NUM_ELTS_DECODES = array(
     63 => 24, 62 => 12, 60=> 7, 56 => 6, 52 => 5, 48 => 4, 32 => 3,
     16 => 2, 0 => 1);
-
 
 /** Characters we view as not part of words, not same as POSIX [:punct:]*/
 define ('PUNCT', "\.|\,|\:|\;|\"|\'|\[|\/|\%|\?|-|".

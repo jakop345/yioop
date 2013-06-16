@@ -1806,7 +1806,7 @@ class Fetcher implements CrawlConstants
     function updateFoundSites($sites, $force_send = false)
     {
         $start_time = microtime();
-
+        crawlLog("  Updating Found Sites Array...");
         for($i = 0; $i < count($sites); $i++) {
             $site = $sites[$i];
             if(!isset($site[self::URL])) continue;
@@ -1881,6 +1881,9 @@ class Fetcher implements CrawlConstants
             crawlLog($site_index.". $subdoc_info ".$site[self::URL]);
 
         } // end for
+        crawlLog("  Done Update Found Sites Array Time ".
+            (changeInMicrotime($start_time)));
+
         if($force_send || ($this->crawl_type == self::WEB_CRAWL &&
             count($this->to_crawl) <= 0 && count($this->to_crawl_again) <= 0) ||
                 (isset($this->found_sites[self::SEEN_URLS]) &&
@@ -1889,10 +1892,13 @@ class Fetcher implements CrawlConstants
                 ($this->archive_iterator &&
                 $this->archive_iterator->end_of_iterator) ||
                     $this->exceedMemoryThreshold() ) {
+            $start_time = microtime();
+            crawlLog("  Start Update Server ");
                 $this->selectCurrentServerAndUpdateIfNeeded(true);
+            crawlLog("  Update Server Time ".(changeInMicrotime($start_time)));
         }
 
-        crawlLog("  Update Found Sites Time ".(changeInMicrotime($start_time)));
+
     }
 
     /**
@@ -2212,7 +2218,7 @@ class Fetcher implements CrawlConstants
         $post_data['fetcher_peak_memory'] = memory_get_peak_usage();
         $post_data['byte_counts'] = webencode(serialize($byte_counts));
         $len = strlen($post_data['data']);
-        $max_len = $this->post_max_size - 10*1024; // non-data post vars < 10K
+        $max_len = $this->post_max_size - 10 * 1024; // non-data post vars < 10K
         $post_data['num_parts'] = ceil($len/$max_len);
         $num_parts = $post_data['num_parts'];
         $data = & $post_data['data'];

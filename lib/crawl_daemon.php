@@ -89,18 +89,27 @@ class CrawlDaemon implements CrawlConstants
      */
     static function processHandler()
     {
+        static $time = 0;
         if(self::$mode != 'daemon') {
             return true;
         }
         $lock_file = CrawlDaemon::getLockFileName(self::$name, self::$subname);
-
-        if(!file_exists($lock_file)) {
+        $now = time();
+        if($time == 0 ) {
+            $time = $now;
+        }
+        if(!file_exists($lock_file) || ($now - $time) > PROCESS_TIMEOUT) {
             $name_string = CrawlDaemon::getNameString(self::$name,
                 self::$subname);
+            if(($now - $time) > PROCESS_TIMEOUT) {
+                crawlLog(($now - $time) . " 
+                    seconds has elapsed since processHandler last called.");
+                crawlLog("Timeout exceeded...");
+            }
             crawlLog("Stopping $name_string ...", NULL, true);
             exit();
         }
-
+        $time = $now;
         file_put_contents($lock_file, $now);
         return true;
     }
@@ -211,7 +220,7 @@ class CrawlDaemon implements CrawlConstants
 
         if(file_exists($lock_file) && $exit <= 1) {
             $time = intval(file_get_contents($lock_file));
-            if(time() - $time < 60) {
+            if(time() - $time < PROCESS_TIMEOUT) {
                 echo "$name appears to be already running...\n";
                 echo "Try stopping it first, then running start.";
                 if($exit) {

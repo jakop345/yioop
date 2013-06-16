@@ -271,6 +271,7 @@ class IndexDictionary implements CrawlConstants
             if(file_exists($this->dir_name."/0/".($tier + 1)."A.dic")) {
                 $out_slot ="B";
             }
+            crawlLog("..Merging $tier to ".($tier +1).$out_slot);
             $this->mergeTier($tier, $out_slot);
             $tier++;
             if($tier > $this->max_tier) {
@@ -294,6 +295,8 @@ class IndexDictionary implements CrawlConstants
     function mergeTier($tier, $out_slot)
     {
         for($i = 0; $i < self::NUM_PREFIX_LETTERS; $i++) {
+            crawlLog("..processing first prefix $i of ".
+                self::NUM_PREFIX_LETTERS." in $tier.");
             $this-> mergeTierFiles($i, $tier, $out_slot);
         }
     }
@@ -328,6 +331,8 @@ class IndexDictionary implements CrawlConstants
         $num_prefix_letters = self::NUM_PREFIX_LETTERS;
 
         for($j = 0; $j < $num_prefix_letters; $j++) {
+            crawlTimeoutLog("..processing second prefix $j of ".
+                "$num_prefix_letters");
             $record_a = $this->extractPrefixRecord($prefix_string_a, $j);
             $record_b = $this->extractPrefixRecord($prefix_string_b, $j);
             if($record_a === false && $record_b === false) {
@@ -363,6 +368,8 @@ class IndexDictionary implements CrawlConstants
 
         while($remaining_a > 0 || $remaining_b > 0 ||
             $offset_a < $read_size_a || $offset_b < $read_size_b) {
+            crawlTimeoutLog("..merging tier files $remaining_a left in A file ".
+                "$remaining_b left in B file.");
             if($offset_a >= $read_size_a && $remaining_a > 0) {
                 $read_size_a = min($remaining_a, $segment_size);
                 $work_string_a = fread($fhA, $read_size_a);

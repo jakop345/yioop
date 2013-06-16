@@ -517,6 +517,9 @@ class PhraseModel extends ParallelModel
         }
 
         if(QUERY_STATISTICS) {
+            if(!isset($this->query_info['QUERY'])) {
+                $this->query_info['QUERY'] = "";
+            }
             $this->query_info['QUERY'] .= "$in3<i>Index</i>: ".
                 $index_name."<br />";
             $this->query_info['QUERY'] .= "$in3<i>LocaleTag</i>: ".
@@ -552,6 +555,7 @@ class PhraseModel extends ParallelModel
                 $phrase_hash = array_merge(array($tmp_hash),
                     array(crawlHash($phrase_string)));
             } else {
+                // notice in single word case don't use materialized meta stuff
                 $phrase_hash = allCrawlHashPaths($phrase_string);
             }
 
@@ -678,7 +682,7 @@ class PhraseModel extends ParallelModel
                 if(in_array($meta_word, PhraseParser::$materialized_metas)) {
                     foreach($matches as $pre_material_match) {
                         $match_kinds = explode(":", $pre_material_match);
-                        if(!in_array($match_kinds[1], array("all", "false"))) {
+                        if(!in_array($match_kinds[1], array("all", "false")) ){
                             $found_materialized_metas[] = $pre_material_match;
                         }
                     }
@@ -703,6 +707,7 @@ class PhraseModel extends ParallelModel
         }
         $found_metas = array_unique($found_metas);
         $found_materialized_metas = array_unique($found_materialized_metas);
+
         $disallow_phrases = array_unique($disallow_phrases);
 
         $phrase_string = mb_ereg_replace("&amp;", "_and_", $phrase_string);
@@ -711,7 +716,8 @@ class PhraseModel extends ParallelModel
         $query_string = preg_replace("/(\s)+/", " ", $query_string);
         $query_string = mb_ereg_replace('_and_', '&', $query_string);
         $phrase_string = mb_ereg_replace('_and_', '&', $phrase_string);
-        return array($found_metas, $found_materialized_metas, 
+
+        return array($found_metas, $found_materialized_metas,
             $disallow_phrases, $phrase_string, $query_string, $index_name,
             $weight);
     }

@@ -1989,8 +1989,8 @@ class AdminController extends Controller implements CrawlConstants
                 $new_label = $this->clean($_REQUEST['rename_label'], 'string');
                 $new_label = preg_replace('/[^a-zA-Z0-9_]/', '', $new_label);
                 if (!isset($classifiers[$new_label])) {
-                    $old_label = $classifier['label'];
-                    $classifier['label'] = $new_label;
+                    $old_label = $classifier->class_label;
+                    $classifier->class_label = $new_label;
                     Classifier::setClassifier($classifier);
                     Classifier::deleteClassifier($old_label);
                     $data['class_label'] = $new_label;

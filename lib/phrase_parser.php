@@ -96,7 +96,7 @@ class PhraseParser
     /**
      *
      */
-    static $materialized_metas = array("media:", "safe:");
+    static $materialized_metas = array("media:", "safe:", "class:");
 
     /**
      * Converts a summary of a web page into a string of space separated words

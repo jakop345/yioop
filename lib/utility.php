@@ -631,7 +631,12 @@ function crawlLog($msg, $lname = NULL, $check_process_handler = false)
 }
 
 /**
+ * Writes a log message $msg if more than LOG_TIMEOUT time has passed since 
+ * function first called with that $msg. Useful in loops to write a message
+ * as progress is made through the loop (but not on every iteration, but
+ * say every 30 seconds).
  *
+ * @param string $msg what to be printed out after the timeout period.
  */
 function crawlTimeoutLog($msg)
 {
@@ -839,13 +844,16 @@ function findMaterialMetas($metas, $encode_metas)
 {
     $found_materialized_metas = array();
     foreach($metas as $meta_id) {
-        if($encode_metas != array()) { 
+        if($encode_metas != array()) {
             $match_kinds = explode(":", $meta_id);
-            if(count($match_kinds) > 1 && 
+            $next_char = (isset($match_kinds[1][0])) ? $match_kinds[1][0] :
+                ord('a');
+            $is_class = ($match_kinds[0] == 'class');
+            if(count($match_kinds) > 1 &&
                 in_array($match_kinds[0].":", $encode_metas) &&
-                !in_array($match_kinds[1], array("all", "false"))) {
-                $found_materialized_metas[$match_kinds[0].":"] = 
-                    $meta_id;
+                !in_array($match_kinds[1], array("all", "false")) ) {
+                    $found_materialized_metas[$match_kinds[0].":"][] =
+                        $meta_id;
             }
         }
     }
@@ -858,14 +866,17 @@ function findMaterialMetas($metas, $encode_metas)
 function encodeMaterialMetas($metas, $encode_metas)
 {
     $found_materialized_metas = findMaterialMetas($metas, $encode_metas);
-    $meta_string = "";
+    $meta_string = "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00";
     if(!is_array($encode_metas)) return "";
-    foreach($encode_metas as $meta) {
-        if(isset($found_materialized_metas[$meta])) {
-            $meta_string .= substr(
-                md5($found_materialized_metas[$meta], true), 0, 1);
-        } else {
-            $meta_string .= chr(0);
+    foreach($found_materialized_metas as $name => $values) {
+        foreach($values as $value) {
+            if($name == 'class:' && isset($value[6])) {
+                $pre_meta_pos = ord($value[6]);
+                $meta_pos = (($pre_meta_pos) % 9) + 2;
+            } else {
+                $meta_pos = (ord($name[0]) > ord('m')) ? 1 : 0;
+            }
+            $meta_string[$meta_pos] = substr(crawlHash($value, true), 0, 1);
         }
     }
     return $meta_string;

@@ -687,7 +687,6 @@ var Classifier = (function() {
         }
 
         request.open(method, options.url, true);
-
         if (postdata) {
             request.setRequestHeader("Content-type",
                 "application/x-www-form-urlencoded");
