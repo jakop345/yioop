@@ -1399,7 +1399,7 @@ class IndexShard extends PersistentStructure implements
         $two_doc_len = 2 * self::DOC_KEY_LEN;
         while($pos < $word_postings_len) {
             if($with_logging) {
-                crawlTimeoutLog("..Outputting to position $pos of".
+                crawlTimeoutLog("..Outputting to position $pos of" .
                     " $word_postings_len in posting lists.");
             }
             $word_id = substr($this->word_postings, $pos, $key_len);
