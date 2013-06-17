@@ -1253,11 +1253,14 @@ class IndexShard extends PersistentStructure implements
                 crawlLog("Saving index shard .. wrote dictionary");
             }
             $this->outputPostingLists($fh, $with_logging);
+            if($with_logging) {
+                crawlLog("Saving index shard .. wrote postings lists");
+            }
             fwrite($fh, $this->doc_infos);
             fclose($fh);
         }
         if($with_logging) {
-            crawlLog("Saving index shard .. done");
+            crawlLog("Saving index shard .. wrote doc map. Done save");
         }
         // clean up by returning to state where could add more docs
         $this->words = array();
@@ -1399,8 +1402,9 @@ class IndexShard extends PersistentStructure implements
         $two_doc_len = 2 * self::DOC_KEY_LEN;
         while($pos < $word_postings_len) {
             if($with_logging) {
-                crawlTimeoutLog("..Outputting to position $pos of" .
-                    " $word_postings_len in posting lists.");
+                crawlTimeoutLog("..Outputting to position %s of" .
+                    " %s in posting lists.", $pos,
+                    $word_postings_len);
             }
             $word_id = substr($this->word_postings, $pos, $key_len);
             $len = unpackInt(substr($this->word_postings,

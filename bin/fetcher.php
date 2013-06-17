@@ -2119,9 +2119,10 @@ class Fetcher implements CrawlConstants
             $this->buildMiniInvertedIndex();
         }
         if(isset($this->found_sites[self::INVERTED_INDEX][$current_server])) {
+            crawlLog("Saving Mini Inverted Index...");
             $this->found_sites[self::INVERTED_INDEX][$current_server] =
                 $this->found_sites[self::INVERTED_INDEX][
-                    $current_server]->save(true);
+                    $current_server]->save(true, true);
 
             $compress_urls = $this->compressAndUnsetSeenUrls();
             $len_urls =  strlen($compress_urls);

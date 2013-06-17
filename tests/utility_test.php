@@ -106,7 +106,5 @@ class UtilityTest extends UnitTest
             "Bigger Delta unpack of posting equal");
 
     }
-
-
 }
 ?>
