@@ -1077,9 +1077,13 @@ class IndexShard extends PersistentStructure implements
         $key_len = self::WORD_KEY_LEN;
         $posting_len = self::POSTING_LEN;
         $item_len = $key_len + $posting_len;
+        $num_words = count($this->words);
         foreach($this->words as $word_id => $postings) {
             $cmp = -1;
             while($cmp < 0 && $offset + $item_len <= $len) {
+                crawlTimeoutLog("..still merging word postings to string ..".
+                    " processing %s of %s at offset %s less than %s", $i,
+                    $num_words, $offset, $len);
                 $key = substr($this->word_postings, $offset, $key_len);
                 $key_posts_len = unpackInt(substr(
                     $this->word_postings, $offset + $key_len, $posting_len));
@@ -1137,6 +1141,7 @@ class IndexShard extends PersistentStructure implements
                 $this->word_postings .=
                     $word_id . packInt($word_id_posts_len). $postings;
             }
+            $i++;
         }
         if($tmp_string != "") {
             $tmp_len = strlen($tmp_string);
