@@ -992,21 +992,21 @@ class IndexShard extends PersistentStructure implements
      */
     function appendIndexShard($index_shard)
     {
-        crawlLog("Appending shard to current..");
+        crawlLog("Appending index shard to current..");
         if($this->word_docs_packed == true) {
             $this->words = array();
             $this->word_docs = "";
             $this->word_docs_packed = false;
         }
         if($index_shard->word_docs_packed == true) {
-            crawlLog("Unpacking shard word docs..");
+            crawlLog("Unpacking index shard word docs..");
             $index_shard->unpackWordDocs();
             crawlLog("..done.");
         }
-        crawlLog("Concatenate document info maps..");
+        crawlLog("Concatenate index document info maps..");
         $this->doc_infos .= $index_shard->doc_infos;
         crawlLog("..done.");
-        crawlLog("Start processing the appended shard's posting lists..");
+        crawlLog("Start processing the appended index shard's posting lists..");
         $two_doc_len = 2 * self::DOC_KEY_LEN;
         $num_words = count($index_shard->words);
         $word_cnt = 0;
@@ -1040,8 +1040,8 @@ class IndexShard extends PersistentStructure implements
             if($add_len_flag) {
                 $this->word_docs_len += $new_postings_len;
             }
-            crawlTimeoutLog(".. still appending shard words. At word: %s ".
-                    "of %s.", $word_cnt, $num_words);
+            crawlTimeoutLog(".. still appending index shard words. At word: %s".
+                    " of %s.", $word_cnt, $num_words);
             $word_cnt++;
         }
         crawlLog("..done.");
@@ -1050,11 +1050,12 @@ class IndexShard extends PersistentStructure implements
         $this->num_link_docs += $index_shard->num_link_docs;
         $this->len_all_docs += $index_shard->len_all_docs;
         $this->len_all_link_docs += $index_shard->len_all_link_docs;
-        crawlLog("Finishing append...mem:".memory_get_usage());
+        crawlLog("Finishing index append...mem:".memory_get_usage());
         if($this->num_docs - $this->last_flattened_words_count >
             self::FLATTEN_FREQUENCY) {
             $this->mergeWordPostingsToString();
-            crawlLog("...Flattened Word Postings mem:".memory_get_usage());
+            crawlLog("...Flattened Index Word Postings mem:".
+                memory_get_usage());
         }
     }
 
@@ -1078,10 +1079,11 @@ class IndexShard extends PersistentStructure implements
         $posting_len = self::POSTING_LEN;
         $item_len = $key_len + $posting_len;
         $num_words = count($this->words);
+        $i = 0;
         foreach($this->words as $word_id => $postings) {
             $cmp = -1;
             while($cmp < 0 && $offset + $item_len <= $len) {
-                crawlTimeoutLog("..still merging word postings to string ..".
+                crawlTimeoutLog("..merging index word postings to string ..".
                     " processing %s of %s at offset %s less than %s", $i,
                     $num_words, $offset, $len);
                 $key = substr($this->word_postings, $offset, $key_len);

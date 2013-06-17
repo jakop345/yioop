@@ -788,6 +788,10 @@ class QueueServer implements CrawlConstants, Join
         if($this->isAScheduler()) {
 
             $this->dumpQueueToSchedules();
+            //Write B-Tree root node to disk before before exiting
+            if(is_object($this->web_queue->etag_btree)) {
+                $this->web_queue->etag_btree->writeRoot();
+            }
         }
         if($this->isAIndexer()) {
             $this->shutdownDictionary();
@@ -801,16 +805,23 @@ class QueueServer implements CrawlConstants, Join
         if(!file_exists($close_file) &&
             strcmp($this->server_type, self::BOTH) != 0) {
             file_put_contents($close_file, "2");
+            $start_time = microtime();
             do {
+                if($this->isAIndexer()) {
+                    crawlLog("Indexer waiting for Scheduler to stop.");
+                } else {
+                    crawlLog("Scheduler waiting for Indexer to stop.");
+                }
                 sleep(5);
                 $contents = trim(file_get_contents($close_file));
-            } while(file_exists($close_file) && strcmp($contents, "1") != 0);
+            } while(file_exists($close_file) && strcmp($contents, "1") != 0
+                changeInMicrotime($start_time) <=  PROCESS_TIMEOUT);
+            if(changeInMicrotime($start_time) >  PROCESS_TIMEOUT) {
+                crawlLog("Other process appears dead so stopping.");
+                file_put_contents($close_file, "1");
+            }
         } else {
             file_put_contents($close_file, "1");
-        }
-        //Write B-Tree root node to disk before before exiting
-        if(is_object($this->web_queue->etag_btree)) {
-            $this->web_queue->etag_btree->writeRoot();
         }
     }
 
@@ -936,6 +947,10 @@ class QueueServer implements CrawlConstants, Join
             crawlLog("Post Processing....");
             $this->writeAdminMessage("SHUTDOWN_RUNPLUGINS");
             crawlLog("... Wrote Run Plugin shutdown Message");
+            $num_plugins = count($this->indexing_plugins);
+            if($num_plugins > 0) {
+                crawlLog("... Will now shutdown $num_plugins plugins.");
+            }
             foreach($this->indexing_plugins as $plugin) {
                 $plugin_instance_name =
                     lcfirst($plugin)."Plugin";
@@ -2009,7 +2024,8 @@ class QueueServer implements CrawlConstants, Join
                 number of slots
         */
         while ($i <= $count && $fetch_size < MAX_FETCH_SIZE) {
-
+            crawlTimeoutLog("..still producing fetch batch. Examining ".
+                "location %s in queue of %s.", $i, $count);
             //look in queue for url and its weight
             $tmp = $this->web_queue->peekQueue($i, $fh);
 

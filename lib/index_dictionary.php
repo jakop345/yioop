@@ -331,8 +331,8 @@ class IndexDictionary implements CrawlConstants
         $num_prefix_letters = self::NUM_PREFIX_LETTERS;
 
         for($j = 0; $j < $num_prefix_letters; $j++) {
-            crawlTimeoutLog("..processing second prefix $j of ".
-                "$num_prefix_letters");
+            crawlTimeoutLog("..processing second prefix %s of %s.", 
+                $j, $num_prefix_letters);
             $record_a = $this->extractPrefixRecord($prefix_string_a, $j);
             $record_b = $this->extractPrefixRecord($prefix_string_b, $j);
             if($record_a === false && $record_b === false) {
@@ -368,8 +368,8 @@ class IndexDictionary implements CrawlConstants
 
         while($remaining_a > 0 || $remaining_b > 0 ||
             $offset_a < $read_size_a || $offset_b < $read_size_b) {
-            crawlTimeoutLog("..merging tier files $remaining_a left in A file ".
-                "$remaining_b left in B file.");
+            crawlTimeoutLog("..merging tier files %s left in A file ".
+                "%s left in B file.", $remaining_a, $remaining_b);
             if($offset_a >= $read_size_a && $remaining_a > 0) {
                 $read_size_a = min($remaining_a, $segment_size);
                 $work_string_a = fread($fhA, $read_size_a);
