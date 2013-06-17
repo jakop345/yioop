@@ -331,7 +331,7 @@ class IndexDictionary implements CrawlConstants
         $num_prefix_letters = self::NUM_PREFIX_LETTERS;
 
         for($j = 0; $j < $num_prefix_letters; $j++) {
-            crawlTimeoutLog("..processing second prefix %s of %s.", 
+            crawlTimeoutLog("..processing second prefix %s of %s.",
                 $j, $num_prefix_letters);
             $record_a = $this->extractPrefixRecord($prefix_string_a, $j);
             $record_b = $this->extractPrefixRecord($prefix_string_b, $j);
@@ -488,8 +488,8 @@ class IndexDictionary implements CrawlConstants
 
         for($i = 0; $i < self::NUM_PREFIX_LETTERS; $i++) {
             for($j = 0; $j <= $max_tier; $j++) {
-                crawlLog("...Processing Prefix Number $i Tier $j Max Tier ".
-                    $max_tier);
+                crawlTimeoutLog("...Processing Prefix Number %s Tier %s".
+                    " Max Tier %s", $i, $j, $max_tier);
                 if($callback != NULL) {
                     $callback->join();
                 }

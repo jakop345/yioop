@@ -649,10 +649,10 @@ function crawlTimeoutLog($msg)
     if(changeInMicrotime($cache[$hash]) < LOG_TIMEOUT) {
         return;
     }
-
-    $out_msg = & $msg;
     if(func_num_args() > 1) {
         $out_msg = call_user_func_array('sprintf', func_get_args());
+    } else {
+        $out_msg = & $msg;
     }
     crawlLog($out_msg);
     $cache[$hash] = microtime();
