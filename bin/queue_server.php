@@ -2199,7 +2199,12 @@ class QueueServer implements CrawlConstants, Join
         crawlLog("...Done selecting URLS for fetch batch time so far:".
             (changeInMicrotime($start_time)));
 
+        $num_delete = count($delete_urls);
+        $i = 0;
         foreach($delete_urls as $delete_url) {
+            $i++;
+            crawlTimeoutLog("..Removing selected url %s of %s ".
+                "from queue.", $i, $num_delete);
             $this->web_queue->removeQueue($delete_url);
         }
         crawlLog("...Removing selected URLS for fetch batch from queue time: ".
@@ -2229,7 +2234,11 @@ class QueueServer implements CrawlConstants, Join
                 "/schedules/".
                 self::schedule_name.$this->crawl_time.".txt", "wb");
             fwrite($fh, $first_line);
+            $num_sites = count($sites);
+            $i = 0;
             foreach($sites as $site) {
+                crawlTimeoutLog("..Still Writing schedule %s".
+                    " of %s.", $i, $num_sites);
                 $extracted_etag = null;
                 list($url, $weight, $delay) = $site;
 
