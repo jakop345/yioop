@@ -1456,8 +1456,8 @@ class QueueServer implements CrawlConstants, Join
             $pre_sites);
         unset($pre_sites);
 
-        crawlLog("A memory usage".memory_get_usage() .
-          " time: ".(changeInMicrotime($start_time)));
+        crawlLog("A Load seen_url, sent shard, memory usage:".
+            memory_get_usage() ." time: ".(changeInMicrotime($start_time)));
         $start_time = microtime();
 
         //do deduplication of summaries
@@ -2200,11 +2200,11 @@ class QueueServer implements CrawlConstants, Join
             (changeInMicrotime($start_time)));
 
         $num_delete = count($delete_urls);
-        $i = 0;
+        $k = 0;
         foreach($delete_urls as $delete_url) {
-            $i++;
+            $k++;
             crawlTimeoutLog("..Removing selected url %s of %s ".
-                "from queue.", $i, $num_delete);
+                "from queue.", $k, $num_delete);
             $this->web_queue->removeQueue($delete_url);
         }
         crawlLog("...Removing selected URLS for fetch batch from queue time: ".
@@ -2235,10 +2235,11 @@ class QueueServer implements CrawlConstants, Join
                 self::schedule_name.$this->crawl_time.".txt", "wb");
             fwrite($fh, $first_line);
             $num_sites = count($sites);
-            $i = 0;
+            $k = 0;
             foreach($sites as $site) {
                 crawlTimeoutLog("..Still Writing schedule %s".
-                    " of %s.", $i, $num_sites);
+                    " of %s.", $k, $num_sites);
+                $k++;
                 $extracted_etag = null;
                 list($url, $weight, $delay) = $site;
 

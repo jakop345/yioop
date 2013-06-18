@@ -628,9 +628,10 @@ EOT;
                 "active_classifiers" => array(self::ACTIVE_CLASSIFIERS,
                     'label')
             );
-            foreach($updatable_site_info as $type => $info) {
-                if(isset($new_info[$type][$info[1]])) {
-                    $index_info[$info[0]] = $new_info[$type][$info[1]];
+            foreach($updatable_site_info as $type => $type_info) {
+                if(isset($new_info[$type][$type_info[1]])) {
+                    $index_info[$type_info[0]] =
+                        $new_info[$type][$type_info[1]];
                 }
             }
             if(isset($new_info['indexing_plugins']['plugins']) ) {
