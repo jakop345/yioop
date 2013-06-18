@@ -2192,7 +2192,12 @@ class Fetcher implements CrawlConstants
         $this->found_sites[self::LINK_SEEN_URLS][$current_server] =
             array();
         if(isset($this->found_sites[self::SEEN_URLS])) {
+            $num_seen = count($this->found_sites[self::SEEN_URLS]);
+            $i = 0;
             while($this->found_sites[self::SEEN_URLS] != array()) {
+                crawlTimeoutLog("..compressing seen url %s of %s",
+                $i, $num_seen);
+                $i++;
                 $site = array_shift($this->found_sites[self::SEEN_URLS]);
                 $site_string = gzcompress(serialize($site));
                 $compress_urls.= packInt(strlen($site_string)).$site_string;
