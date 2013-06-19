@@ -275,7 +275,7 @@ define('MEMORY_LOW', 1);
  * (2GB)
  */
 define('MEMORY_STANDARD', 4);
-if($memory < 2000000000) {
+if($memory < 2200000000) {
     /**
      *  Based on system memory, either the low or high memory factor
      */

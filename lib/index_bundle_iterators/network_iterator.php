@@ -131,7 +131,7 @@ class NetworkIterator extends IndexBundleIterator
         $this->results_per_block = ceil(self::MIN_FIND_RESULTS_PER_BLOCK);
         $this->base_query = "q=".urlencode($query).
             "&f=serial&network=false&raw=1&its=$timestamp&guess=false";
-        if($save_timestamp > 0) { // used for archive crawls of crawl mixes
+        if($save_timestamp_name!="") { // used for archive crawls of crawl mixes
             $this->base_query .= "&save_timestamp=$save_timestamp_name";
         }
         $this->queue_servers = $queue_servers;

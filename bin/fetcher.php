@@ -232,6 +232,12 @@ class Fetcher implements CrawlConstants
     var $crawl_time;
 
     /**
+     * The last time the name server was checked for a crawl time
+     * @var int
+     */
+    var $check_crawl_time;
+
+    /**
      * Contains the list of web pages to crawl from a queue_server
      * @var array
      */
@@ -423,6 +429,7 @@ class Fetcher implements CrawlConstants
 
         $this->web_archive = NULL;
         $this->crawl_time = NULL;
+        $this->check_crawl_time = NULL;
         $this->schedule_time = NULL;
 
         $this->crawl_type = self::WEB_CRAWL;
@@ -808,6 +815,7 @@ class Fetcher implements CrawlConstants
 
         $start_time = microtime();
         $time = time();
+        $this->check_crawl_time = $time;
         $session = md5($time . AUTH_KEY);
 
         $prefix = $this->fetcher_num."-";
@@ -982,7 +990,8 @@ class Fetcher implements CrawlConstants
         $request =
             $queue_server."?c=fetch&a=schedule&time=$time&session=$session".
             "&robot_instance=".$prefix.ROBOT_INSTANCE."&machine_uri=".WEB_URI.
-            "&crawl_time=".$this->crawl_time;
+            "&crawl_time=".$this->crawl_time."&check_crawl_time=".
+            $this->check_crawl_time;
         $info_string = FetchUrl::getPage($request);
         crawlLog("Making request: ");
         crawlLog($request);
@@ -1076,7 +1085,8 @@ class Fetcher implements CrawlConstants
         $request =
             $name_server."?c=fetch&a=archiveSchedule&time=$time".
             "&session=$session&robot_instance=".$prefix.ROBOT_INSTANCE.
-            "&machine_uri=".WEB_URI."&crawl_time=".$this->crawl_time;
+            "&machine_uri=".WEB_URI."&crawl_time=".$this->crawl_time.
+            "&check_crawl_time=".$this->check_crawl_time;
         crawlLog($request);
         $response_string = FetchUrl::getPage($request);
         if($response_string === false) {

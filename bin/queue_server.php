@@ -814,12 +814,7 @@ class QueueServer implements CrawlConstants, Join
                 }
                 sleep(5);
                 $contents = trim(file_get_contents($close_file));
-            } while(file_exists($close_file) && strcmp($contents, "1") != 0 &&
-                changeInMicrotime($start_time) <=  PROCESS_TIMEOUT);
-            if(changeInMicrotime($start_time) >  PROCESS_TIMEOUT) {
-                crawlLog("Other process appears dead so stopping.");
-                file_put_contents($close_file, "1");
-            }
+            } while(file_exists($close_file) && strcmp($contents, "1") != 0 );
         } else {
             file_put_contents($close_file, "1");
         }
