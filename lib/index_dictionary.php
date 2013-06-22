@@ -421,8 +421,8 @@ class IndexDictionary implements CrawlConstants
     /**
      * Does a lexicographical comparison of the word_ids of two word records.
      *
-     * @param string $record_a
-     * @param string $record_b
+     * @param string $record_a first record to compare
+     * @param string $record_b second record to compare
      * @return int less than 0 if $record_a less than $record_b;
      *      greater than 0 if $record_b is less than $record_a; 0 otherwise
      */
@@ -526,11 +526,13 @@ class IndexDictionary implements CrawlConstants
      * offset) is the byte offset into the word_docs string of the first
      * (last) record involving that word.
      *
-     * @param string $word_id id of the word one wants to look up
+     * @param string $word_id id of the word or phrase one wants to look up
      * @param bool $raw whether the id is our version of base64 encoded or not
      * @param int $shift how many low order bits to drop from $word_id's
      *     when checking for a match
-     * @param string $mask
+     * @param string $mask bit mask to be applied to bytes after the 8th
+     *      byte through 20th byte of word_id. In single word case these
+     *      bytes contain safe:, media:, and class: meta word info
      * @param int $threshold if greater than zero how many posting list
      *     results in dictionary info returned before stopping looking for
      *     more matches
@@ -571,7 +573,9 @@ class IndexDictionary implements CrawlConstants
      *  @param int $tier which tier to get word info from
      *  @param int $shift how many low order bits to drop from $word_id's
      *     when checking for a match
-     *  @param string $mask
+     *  @param string $mask bit mask to be applied to bytes after the 8th
+     *      byte through 20th byte of word_id. In single word case these
+     *      bytes contain safe:, media:, and class: meta word info
      *  @param int $threshold if greater than zero how many posting list
      *     results in dictionary info returned before stopping looking for
      *     more matches
@@ -757,7 +761,26 @@ class IndexDictionary implements CrawlConstants
 
 
     /**
+     * This method is used when computing the array of
+     * (generation,posting_list_start, len, exact_word_id) quadruples when 
+     * looking up a $word_id in an index dictionary.It checks
+     * if the $id of a dictionary row matches $word_id up to the $mask info.
+     * If so, it adds the word record to the quadruple array $info that has been
+     * calculated so far. It also update $total_count, and as well as
+     * $previous info for the previous matching record.
      *
+     * @param string $id of a row to compare $word_id against
+     * @param string $word_id the word id of a term or phrase we are computing
+     *      the quadruple array for
+     * @param string $mask up to 9 byte wask used to say which materialized
+     *      meta words should be checked for when doing a match
+     * @param int $mask_len this should be strlen($mask)
+     * @param array $record current record from dictionary that we may or may
+     *      not add to info
+     * @param array &$info quarduple array we are adding to
+     * @param int &$total_count count of items in $info
+     * @param int &$previous_generation last generation added to $info
+     * @param int &$previous_id last exact if added to $infos
      */
     function checkMaskAndAdd($id, $word_id, $mask, $mask_len, $record,
         &$info, &$total_count, &$previous_generation, &$previous_id)

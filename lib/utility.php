@@ -839,7 +839,16 @@ function allCrawlHashPaths($string, $metas = array(),
 }
 
 /**
+ * Give an array of values for meta words (for example, media:video, lang:en) 
+ * and an array of names of meta words to be encoded into word_id's 
+ * (for example, media:, safe:, class:) return an associative array of pairs
+ * (meta word name => array(value of that name)) which should be encoded
+ * into word id's
  *
+ * @param array $meta array of meta word values 
+ * @param array $encode_meta a list of meta word names to encode in word_ids
+ * @return array $found_materialized_metas associative array of name =>
+ *      values for that name
  */
 function findMaterialMetas($metas, $encode_metas)
 {
@@ -862,7 +871,19 @@ function findMaterialMetas($metas, $encode_metas)
 }
 
 /**
+ * Give an array of values for meta words (for example, media:video, lang:en) 
+ * and an array of names of meta words to be encoded into word_id's 
+ * (for example, media:, safe:, class:) returns a string mask for the
+ * byte positions in a word_id after the 9th byte. The format of a word id
+ * in the case of a single word is described in the documentation for
+ * @see crawlHashPath
  *
+ * @param array $meta a list of meta word values extracted from a query
+ *  string or document.
+ * @param array $encode_meta a list of meta word names that should be encoded
+ *  in word id's For example, (media:, safe:, class:)
+ * @return string a 9 byte string where encoded meta word values have been
+ *      stored
  */
 function encodeMaterialMetas($metas, $encode_metas)
 {
@@ -889,8 +910,8 @@ function encodeMaterialMetas($metas, $encode_metas)
  *  given by splitting on space and separately hashing each element
  *  according to the number of elements and the 3bit selector below:
  *
- *  general format: 64 bit lead word hash 3bit selector hashes of rest of words
- *  according to:
+ *  general format: (64 bit lead word hash, 3bit selector, hashes of rest of 
+ *  words)  according to:
  *  Selector Bits for each remaining word
  *   001     29 32 32
  *   010     29 16 16 16 16
@@ -899,13 +920,26 @@ function encodeMaterialMetas($metas, $encode_metas)
  *   101     29 16 16 8 8 4 4 2 2 2 2
  *   110     29 16 16 8 8 4 4 2 2 1 1 1 1
  *
- *  If $path_start is 0 behaves like crawlHashWord()
+ *  If $path_start is 0 behaves like crawlHashWord(). The above encoding is
+ *  typically used to make word_ids for whole phrases, to make word id's
+ *  for single words, the format is
+ *  (64 bits for word, 1 byte null, remaining 11 bytes encode an materialized 
+ *  meta words present in document or query string). Of this 11 bytes,
+ *  the first is used for the meta word media:, so if the document is of type
+ *  media:image, then a single byte hash of media:image gives the value of this
+ *  byte. The second byte encodes the meta word safe: in a similar fashion. 
+ *  The remaining 9 bytes encode different values of the class: meta word.
+ *  To encode class:some_value., first class:some_value[0] is hashed to a value
+ *  j betwen 0 and 8. Then class:some_value is hash to a single byte b. Then
+ *  the jth value of the remaining bytes is set to b. Non affected bytes are 
+ *  null.
  *
  *  @param string $string what to hash
  *  @param int $path_start what to use as the split between 5 byte front
  *      hash and the rest
- *  @param array $metas
- *  @param array $encode_metas
+ *  @param array $metas meta word values from a document or query string
+ *  @param array $encode_metas a list of names of meta word values which should
+ *      encoded into word ids. i.e., (media:, safe:, class:) or none.
  *  @param bool $raw whether to modified base64 the result
  *  @return string 8 bytes that results from this hash process
  */

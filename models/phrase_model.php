@@ -656,7 +656,16 @@ class PhraseModel extends ParallelModel
     }
 
     /**
+     * Given a query string extracts meta word, which of these are 
+     * "materialized" (i.e., should be encoded as part of word ids),
+     * disallowed phrases, the query string after meta words removed
+     * and ampersand substitution applied, the query string with meta words
+     * but apersand substitution applied, the index and the weights found
+     * as part of the query string.
      *
+     *  @param string $phrase the query string
+     *  @return array containing items listed above in the description of this
+     *      method
      */
     function extractMetaWordInfo($phrase)
     {
@@ -724,7 +733,7 @@ class PhraseModel extends ParallelModel
 
 
     /**
-     * Idealistically, this function tries to guess from the query what the
+     * Ideally, this function tries to guess from the query what the
      * user is looking for. For now, we are just doing simple things like
      * when a query term is a url and rewriting it to the appropriate meta
      * meta word.

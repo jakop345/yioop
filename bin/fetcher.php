@@ -402,7 +402,6 @@ class Fetcher implements CrawlConstants
 
     /**
      * Sets up the field variables so that crawling can begin
-     *
      */
     function __construct()
     {

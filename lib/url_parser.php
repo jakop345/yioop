@@ -830,7 +830,8 @@ class UrlParser
      *
      * @param string $url url to check
      * @param array $site_array sites to check against
-     * @param string $name
+     * @param string $name identifier to store $site_array with in this
+     *      function's cache
      * @param bool whether when a match is found to return true or to
      *      return the matching site rule
      * @return mixed whether the url belongs to one of the sites
@@ -944,7 +945,14 @@ class UrlParser
     }
 
     /**
-     *
+     *  Prunes a list of url => text pairs down to max_link many pairs
+     *  by choosin those whose text has the most information. Information
+     *  crudely measured by the length of the gzipped version of the text.
+     * 
+     *  @param array $links list of pairs $url=>$text 
+     *  @param int $max_links maximum number of links from $links to return
+     *  @return array $out_links extracted from $links accodring to the
+     *      description above.
      */
     static function pruneLinks($links, $max_links = MAX_LINKS_PER_PAGE)
     {

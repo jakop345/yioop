@@ -58,12 +58,17 @@ require_once BASE_DIR."/lib/utility.php";
 class IndexManager implements CrawlConstants
 {
     /**
-     *
+     *  Open IndexArchiveBundle's managed by this manager
      *  @var array
      */
     static $indexes = array();
-
+    /**
+     *  Used to cache word lookup of posting list locations for a given
+     *  index
+     *  @var array
+     */
     static $dictionary = array();
+
     /**
      *  Returns a reference to the managed copy of an IndexArchiveBundle object
      *  with a given timestamp or an IndexShard in the case where
@@ -100,7 +105,14 @@ class IndexManager implements CrawlConstants
     }
 
     /**
-     *  
+     *  Returns the version of the index, so that Yioop can determine
+     *  how to do word lookup. This is currently very crude. The only
+     *  major change to the format was when word_id's went from 8 to 20 bytes
+     *  which happened around unix time 1369754208.
+     *
+     *  @param string $index_name unix timestamp of index
+     *  @return int 0 - if the orginal format for Yioop indexes; 1 -if 20 byte
+     *      word_id format
      */
     static function getVersion($index_name)
     {
@@ -112,12 +124,21 @@ class IndexManager implements CrawlConstants
     }
 
     /**
+     *  Gets an array posting list positions for each shard in the
+     *  bundle $index_name for the word id $hash
      *
-     *  @param string $index_name
-     *  @param string $hash
-     *  @param int $shift
-     *  @param string $mask
-     *  @param int $threshold
+     *  @param string $index_name bundle to look $hash in
+     *  @param string $hash hash of phrasse or word to look up in bundle
+     *      dictionary
+     *  @param int $shift if $hash is for a phrase, how many low order
+     *      bits of word id to discard
+     *  @param string $mask if $hash is for a word, after the 9th byte what
+     *      meta word mask should be applied to the 20 byte hash
+     *  @param int $threshold after the number of results exceeds this amount
+     *      stop looking for more dictionary entries.
+     *  @return array sequence of four tuples:
+     *      (index_shard generation, posting_list_offset, length, exact id
+     *       that match $hash)
      */
     static function getWordInfo($index_name, $hash, $shift = 0, $mask = "",
         $threshold = -1)
@@ -151,8 +172,16 @@ class IndexManager implements CrawlConstants
     }
 
     /**
-     *  @param string $term_or_phrase
-     *  @param string $index_name
+     *  Returns the number of document that a given term or phrase appears in
+     *  in the given index
+     *
+     *  @param string $term_or_phrase what to look up in the indexes dictionary
+     *      no  mask is used for this look up
+     *  @param string $index_name index to look up term or phrase in
+     *  @param int $threshold if set and positive then once threshold many 
+     *      documents are found the search for more documents to add to the
+     *      total is stopped
+     *  @return int number of documents
      */
     static function numDocsTerm($term_or_phrase, $index_name, $threshold = -1)
     {

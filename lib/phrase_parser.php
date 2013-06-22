@@ -708,7 +708,17 @@ class PhraseParser
     }
 
     /**
+     * Used to split a string of text in the language given by $locale into 
+     * space separated words. Ex: "acontinuousstringofwords" becomes
+     * "a continuous string of words". It operates by scanning from the end of
+     * the string to the front and splitting on the longest segment that is a
+     * word.
      *
+     * @param string $segment string to make into a string of space separated
+     *      words
+     * @param string $locale IANA tag used to look up dictionary filter to
+     *      use to do this segmenting
+     * @return string space separated words
      */
     static function reverseMaximalMatch($segment, $locale)
     {

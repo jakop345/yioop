@@ -133,7 +133,7 @@ class BTree
     }
 
     /**
-     *
+     * Writes the root node of this btree to disk
      */
     function writeRoot()
     {

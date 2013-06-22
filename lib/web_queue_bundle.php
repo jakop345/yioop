@@ -184,9 +184,12 @@ class WebQueueBundle implements Notifier
     var $etag_btree;
 
     /**
-     *
+     * Associative array of (hash_url => index) pairs saying where a hash_url
+     * has moved in the priority queue. These moves are buffered and later
+     * re-stored in the hash table when notifyFlush called
+     * @var array
      */
-    var $notify_cache;
+    var $notify_buffer;
 
     /**
      * The largest offset for the url WebArchive before we rebuild it.
@@ -230,6 +233,10 @@ class WebQueueBundle implements Notifier
     /** Size of int
      **/
     const INT_SIZE = 4;
+
+    /** Size of notify buffer
+     **/
+    const NOTIFY_BUFFER_SIZE = 1000;
 
     /**
      * Makes a WebQueueBundle with the provided parameters
@@ -346,7 +353,7 @@ class WebQueueBundle implements Notifier
         //Initialize B-Tree for storing cache page validation data
         $this->etag_btree = new BTree($dir_name.'/EtagExpiresTree');
 
-        $this->notify_cache = array();
+        $this->notify_buffer = array();
     }
 
     /**
@@ -571,7 +578,7 @@ class WebQueueBundle implements Notifier
     {
         $this->to_crawl_queue->normalize();
         // we don't chance positions when normalize
-        $this->to_crawl_queue->notify_cache = array();
+        $this->to_crawl_queue->notify_buffer = array();
     }
 
     //Filter and Filter Bundle Methods
@@ -1039,24 +1046,28 @@ class WebQueueBundle implements Notifier
      * position. The position is updated in the hash table.
      * The priority queue stores (hash of url, weight). The hash table
      * stores (hash of url, web_archive offset to url, index priority queue).
+     * This method actually buffers changes in $this->notify_buffer,
+     * they are applied when notifyFlush is called or when the buffer reaches
+     * self::NOTIFY_BUFFER_SIZE.
      *
      * @param int $index new index in priority queue
      * @param array $data (hash url, weight)
      */
     function notify($index, $data)
     {
-        $this->notify_cache[$data[0]] = $index;
-        if(count($this->notify_cache) > 1000) {
+        $this->notify_buffer[$data[0]] = $index;
+        if(count($this->notify_buffer > self::NOTIFY_BUFFER_SIZE) {
             $this->notifyFlush(); //prevent memory from being exhausted
         }
     }
 
     /**
-     * 
+     * Used to flush changes of hash_url indexes caused by adjusting weights
+     * in the bundle's priority queue to its hash table.
      */
     function notifyFlush()
     {
-        foreach($this->notify_cache as $hash_url => $index) {
+        foreach($this->notify_buffer as $hash_url => $index) {
             $both = $this->lookupHashTable($hash_url, HashTable::RETURN_BOTH);
             if($both !== false) {
                 list($probe, $value) = $both;
@@ -1069,7 +1080,7 @@ class WebQueueBundle implements Notifier
                     bin2hex($hash_url));
             }
         }
-        $this->notify_cache = array();
+        $this->notify_buffer = array();
     }
 }
 ?>
