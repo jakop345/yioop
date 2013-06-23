@@ -65,26 +65,40 @@ class SuffixTree
     var $pos;
 
     /**
+     * If in a given step in constructing the suffix tree we split the
+     * active edge and insert a new node and then have to do this
+     * again in the same step, then we need to create a sym_link between
+     * the suffix trees represented by these new nodes. This variable
+     * keeps track of the index of the first node so we can do this.
+     *
      * @var int
      */
     var $need_sym_link;
 
     /**
+     * At a given stage in building the suffix tree how many new suffixes
+     * we need to insert
      * @var int
      */
     var $remainder;
 
     /**
+     * Node which represents the left hand the start of the active edge
+     * This is the edge that contains the last suffix inserted
      * @var int
      */
     var $active_index;
 
     /**
+     * Index into $this->text of starting word of active edge
      * @var int
      */
     var $active_edge_index;
 
     /**
+     * How many words from the start of the active edge label to get the
+     * last suffix. If active edge label was: "a black cat a black" and 
+     * $active_len was 2, then would have "a black" from the first two chars.
      * @var int
      */
     var $active_len;
@@ -182,7 +196,17 @@ class SuffixTree
     }
 
     /**
+     * If in a given step in constructing the suffix tree we split the
+     * active edge and insert a new node and then have to do this
+     * again in the same step, then we need to create a sym_link between
+     * the suffix trees represented by these new nodes. If in the current
+     * step it is necessary to add a sym_link this method sets the
+     * $this->need_sym_link node's "sym_link" field to $index which is supposed
+     * be the index of the second created node.
      *
+     *  @param int $index the index of the a created node in a given step.
+     *      ($this->need_sym_link will be greater than 0 if it is the second
+     *      created node of the step)
      */
     function addSuffixLink($index)
     {
@@ -193,7 +217,11 @@ class SuffixTree
     }
 
     /**
+     * Used to set the active point to the node given by $index
      *
+     *  @param int $index which node to use for setting
+     *  @return if the current active edge is longer than $index's edge length
+     *      then don't update and return false; otherwise, return true
      */
     function walkDown($index)
     {
@@ -265,7 +293,15 @@ class SuffixTree
     }
 
     /**
+     * Recursive function used to compute the maximal phrases in a document
+     * as well as their conditional maximal subphrases.
      *
+     * @param int $index a node in the suffix tree
+     * @param string $path from root to current node
+     * @param int $len number of nodes from root to current node in suffix tree
+     * @param array &$maximal assoc array of phrase => (cond_max => pos of
+     *      conditional maximal subphrase, [0] => pos_1st_occurrence of phrase,
+     *      [1]=>pos_2nd_occurrence of phrase, etc)
      */
     function outputMaximal($index, $path, $len, &$maximal)
     {
