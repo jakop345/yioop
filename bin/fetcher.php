@@ -2454,7 +2454,16 @@ class Fetcher implements CrawlConstants
                 ]->addDocumentWords($doc_keys, self::NEEDS_OFFSET_FLAG,
                 $word_lists, $meta_ids, PhraseParser::$materialized_metas,
                 true, $doc_rank);
-            if(!$this->no_process_links) {
+
+            /*
+                $this->no_process_links is set when doing things like
+                mix recrawls. In this case links likely already will appear
+                in what indexing, so don't index again. $site[self::JUST_META]
+                is set when have a sitemap. In this case link info is not
+                particularly useful for indexing and can greatly slow building
+                inverted index.
+             */
+            if(!$this->no_process_links && !isset($site[self::JUST_METAS])) {
                 foreach($site[self::LINKS] as $url => $link_text) {
                     /* this mysterious check means won't index links from
                       robots.txt. Sitemap will still be in TO_CRAWL, but that's

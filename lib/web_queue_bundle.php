@@ -1056,7 +1056,7 @@ class WebQueueBundle implements Notifier
     function notify($index, $data)
     {
         $this->notify_buffer[$data[0]] = $index;
-        if(count($this->notify_buffer > self::NOTIFY_BUFFER_SIZE) {
+        if(count($this->notify_buffer) > self::NOTIFY_BUFFER_SIZE) {
             $this->notifyFlush(); //prevent memory from being exhausted
         }
     }
