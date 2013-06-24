@@ -420,7 +420,11 @@ class PhraseParser
         } else {
             $segment_obj = NULL;
         }
-        $term_string = $segment_obj->segment($segment);
+        if($segment_obj != NULL) {
+            $term_string .= $segment_obj->segment($segment);
+        } else {
+            $term_string = $segment;
+        }
         $terms = mb_split("\s+", trim($term_string));
         return $terms;
     }
