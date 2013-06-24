@@ -2174,7 +2174,7 @@ class Fetcher implements CrawlConstants
     }
 
     /**
-     * Computes a string of compressed urls fromthe seen urls and extracted
+     * Computes a string of compressed urls from the seen urls and extracted
      * links destined for the current queue server. Then unsets these
      * values from $this->found_sites
      *
@@ -2526,8 +2526,6 @@ class Fetcher implements CrawlConstants
             $iterim_elapse = changeInMicrotime($interim_time);
             if($iterim_elapse > 5) {
                 crawlLog("..Inverting ".$site[self::URL]."...took > 5s.");
-                crawlLog("..Still building inverted index. Have processed $i".
-                    " of $num_seen documents.");
             }
             crawlTimeoutLog("..Still building inverted index. Have processed ".
                 "%s of %s documents.", $i, $num_seen);

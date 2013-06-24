@@ -315,8 +315,8 @@ class PhraseParser
     {
         mb_internal_encoding("UTF-8");
         $string = mb_strtolower($string);
-        $terms = mb_split("[[:space:]]|".PUNCT, $string);
-        $terms = self::segmentSegments($terms, $lang);
+        $string = mb_ereg_replace("\s+|".PUNCT, " ", $string);
+        $terms = self::segmentSegment($string, $lang);
         $terms = self::charGramTerms($terms, $lang);
         $terms = self::stemTerms($terms, $lang);
         return $terms;
@@ -402,34 +402,25 @@ class PhraseParser
     }
 
     /**
-     * Given an array of strings to segment into words (where strings might
+     * Given a string to segment into words (where strings might
      * not contain spaces), this function segments them according to the given
      * locales segmenter
      *
-     * @param array $segments string to split into terms
+     * @param string $segment string to split into terms
      * @param string $lang IANA tag to look up segmenter under
      *      from some other language
      * @param array of terms found in the segments
      */
-    static function segmentSegments($segments, &$lang)
+    static function segmentSegment($segment, &$lang)
     {
-        if($segments == array()) { return array();}
+        if($segment == "") { return array();}
         $term_string = "";
-        foreach($segments as $segment) {
-            /*  sometimes a document is a mix of languages so we are checking
-                on a segment by segment basis
-             */
-            if($lang != NULL) {
-                $segment_obj = self::getTokenizer($lang);
-            } else {
-                $segment_obj = NULL;
-            }
-            if($segment_obj != NULL) {
-                $term_string .= " ".$segment_obj->segment($segment);
-            } else {
-                $term_string .= " ".$segment;
-            }
+        if($lang != NULL) {
+            $segment_obj = self::getTokenizer($lang);
+        } else {
+            $segment_obj = NULL;
         }
+        $term_string = $segment_obj->segment($segment);
         $terms = mb_split("\s+", trim($term_string));
         return $terms;
     }
@@ -729,44 +720,71 @@ class PhraseParser
         }
         $out_segment = "";
         $word_len = 2;
-        $word_guess = mb_substr($segment, $cur_pos, 1);
+        $char_added = mb_substr($segment, $cur_pos, 1);
+        $word_guess = $char_added;
+        $is_ascii = mb_check_encoding($char_added, 'ASCII');
+        $was_space = trim($char_added) == "";
         $added = false;
-        $suffix_backup = - 1;
+        $suffix_backup = -1;
+        $suffix_check = true;
         while($cur_pos >= 0) {
             $old_word_guess = $word_guess;
             $cur_pos--;
-            $word_guess = mb_substr($segment, $cur_pos, $word_len);
-            $is_word = NWordGrams::ngramsContains($word_guess, $locale,
-                "segment");
-            $is_suffix = NWordGrams::ngramsContains("*".$word_guess, $locale,
-                "segment");
-            if($is_word || $is_suffix || is_numeric($word_guess) ||
-                mb_check_encoding($word_guess, 'ASCII')) {
+            $char_added =  mb_substr($segment, $cur_pos, 1);
+            $is_space = trim($char_added) == "";
+            if($is_space && $was_space) {continue;}
+            if(!$is_space) {
+                $word_guess = $char_added . $word_guess;
+                $was_space = false;
+            } else {
+                $was_space = true;
+            }
+            if($suffix_check) {
+                $is_suffix = NWordGrams::ngramsContains("*".$word_guess, 
+                    $locale, "segment");
+            } else {
+                $is_suffix = false;
+            }
+            $suffix_check = true;
+            $is_ascii = $is_ascii && mb_check_encoding($char_added, 'ASCII') &&
+                !$is_space;
+            if($is_suffix || $is_ascii) {
                 $word_len++;
                 $added = false;
-                if($is_word) {
-                    $suffix_backup = - 1;
-                }
-                if($is_suffix && $suffix_backup == -1) {
+                if($is_suffix) {
                     $suffix_backup = $cur_pos;
-                    $suffix_guess = $old_word_guess;
+                    $suffix_guess = $word_guess;
                 }
-            } else {
-                if($suffix_backup >= 0) {
-                    $cur_pos = $suffix_backup;
-                    $suffix_backup = - 1;
-                    $old_word_guess = $suffix_guess;
-                }
+            } else if($suffix_backup >= 0) {
+                $cur_pos = $suffix_backup;
+                $suffix_backup = -1;
+                $suffix_check = false;
+                $word_guess = $suffix_guess;
+                $word_len = strlen($word_guess);
+            } else if (NWordGrams::ngramsContains($word_guess, $locale,
+                "segment") || $is_space) {
+                $out_segment .= " ".strrev($word_guess);
+                $cur_pos--;
+                $suffix_backup = -1;
                 $word_len = 1;
+                $word_guess = mb_substr($segment, $cur_pos, $word_len);
+                $is_ascii = mb_check_encoding($word_guess, 'ASCII');
+                $was_space = trim($char_added) == "";
+                $word_len++;
+                $added = true;
+            } else {
+                $word_len = 1;
+                $suffix_backup = -1;
                 $out_segment .= " ".strrev($old_word_guess);
                 $word_guess = mb_substr($segment, $cur_pos, $word_len);
+                $is_ascii = mb_check_encoding($word_guess, 'ASCII');
+                $was_space = trim($char_added) == "";
                 $word_len++;
                 $added = true;
             }
         }
         if(!$added) {
             if(NWordGrams::ngramsContains($old_word_guess, $locale, "segment")||
-                is_numeric($old_word_guess) || 
                 mb_check_encoding($old_word_guess, 'ASCII')) {
                 $out_segment .= " ".strrev($old_word_guess);
             } else {

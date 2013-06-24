@@ -1519,6 +1519,13 @@ class AdminController extends Controller implements CrawlConstants
                 $seed_info['page_rules'] =
                     $seed_loaded['page_rules'];
             }
+            if(isset($seed_loaded['active_classifiers'])) {
+                $seed_info['active_classifiers'] =
+                    $seed_loaded['active_classifiers'];
+            } else {
+                $seed_info['active_classifiers'] = array();
+                $seed_info['active_classifiers']['label'] = array();
+            }
             $update_flag = true;
             $loaded = true;
         } else {
@@ -1645,6 +1652,7 @@ class AdminController extends Controller implements CrawlConstants
 
         $data['CLASSIFIERS'] = array();
         $active_classifiers = array();
+
         foreach (Classifier::getClassifierList() as $classifier) {
             $label = $classifier->class_label;
             $ison = false;
@@ -1652,7 +1660,8 @@ class AdminController extends Controller implements CrawlConstants
                 if (isset($_REQUEST['classifier'][$label])) {
                     $ison = true;
                 }
-            } else if (isset($seed_info['active_classifiers']['label'])) {
+            } else if ($loaded || !isset($_REQUEST['posted']) && 
+                isset($seed_info['active_classifiers']['label'])) {
                 if (in_array($label,
                     $seed_info['active_classifiers']['label'])) {
                     $ison = true;
@@ -1668,8 +1677,13 @@ class AdminController extends Controller implements CrawlConstants
         $seed_info['active_classifiers']['label'] = $active_classifiers;
 
         if(isset($seed_info['page_rules']['rule'])) {
-            $data['page_rules'] = $this->convertArrayLines(
-                $seed_info['page_rules']['rule']);
+            if(isset($seed_info['page_rules']['rule']['rule'])) {
+                $data['page_rules'] = $this->convertArrayLines(
+                    $seed_info['page_rules']['rule']['rule']);
+            } else {
+                $data['page_rules'] = $this->convertArrayLines(
+                    $seed_info['page_rules']['rule']);
+            }
         } else {
             $data['page_rules'] = "";
         }
