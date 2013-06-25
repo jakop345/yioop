@@ -2419,7 +2419,6 @@ class Fetcher implements CrawlConstants
                 $word_lists =
                     PhraseParser::extractPhrasesInLists($phrase_string,
                         $lang);
-echo "hi 3";
                 $len = strlen($phrase_string);
                 if(PhraseParser::computeSafeSearchScore($word_lists, $len) <
                     0.012) {
@@ -2446,7 +2445,6 @@ echo "hi 3";
             }
 
             $num_queue_servers = count($this->queue_servers);
-echo "yo";
             $this->found_sites[self::INVERTED_INDEX][$this->current_server
                 ]->addDocumentWords($doc_keys, self::NEEDS_OFFSET_FLAG,
                 $word_lists, $meta_ids, PhraseParser::$materialized_metas,

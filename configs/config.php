@@ -33,11 +33,19 @@
  * @filesource
  */
 
-ini_set('pcre.recursion_limit', 5000);
-ini_set('pcre.backtrack_limit', 5000);
-
 if(!defined('BASE_DIR') ||
     defined('PROFILE_FILE_NAME')) {echo "BAD REQUEST"; exit();}
+/*
+    pcre is an external library to php which can cause Yioop
+    to seg fault if given instances of reg expressions with
+    large recursion depth on a string.
+    https://bugs.php.net/bug.php?id=47376
+    The goal here is to cut off these problems before they happen.
+    We do this in config.php because it is included in most Yioop
+    files.
+ */
+ini_set('pcre.recursion_limit', 5000);
+ini_set('pcre.backtrack_limit', 5000);
 
 /** Don't display any query info*/
 define('NO_DEBUG_INFO', 0);
