@@ -204,7 +204,6 @@ class PhraseParser
      */
     static function extractPhrasesInLists($string, $lang = NULL)
     {
-
         self::canonicalizePunctuatedTerms($string, $lang);
         return self::extractMaximalTermsAndFilterPhrases($string, $lang);
     }

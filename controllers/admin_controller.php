@@ -1855,6 +1855,9 @@ class AdminController extends Controller implements CrawlConstants
                     $safe = false;
                 }
             }
+            if(!isset($word_lists)) {
+                $word_lists = array();
+            }
             $data["EXTRACTED_WORDS"] = wordwrap($this->clean(
                 print_r($word_lists, true), "string"), 75, "\n", true);;
             $data["EXTRACTED_META_WORDS"] = wordwrap($this->clean(

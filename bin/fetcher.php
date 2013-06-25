@@ -2395,15 +2395,13 @@ class Fetcher implements CrawlConstants
                 $meta_ids =  PhraseParser::calculateMetas($site,
                     $this->video_sources);
             }
-
             $word_lists = array();
             /*
                 self::JUST_METAS check to avoid getting sitemaps in results for
                 popular words
              */
             $lang = NULL;
-            if(!isset($site[self::JUST_METAS]) || $site[self::JUST_METAS] !=
-                true) {
+            if(!isset($site[self::JUST_METAS])) {
                 $host_words = UrlParser::getWordsIfHostUrl($site_url);
                 $path_words = UrlParser::getWordsLastPathPartUrl(
                     $site_url);
@@ -2418,10 +2416,10 @@ class Fetcher implements CrawlConstants
                         mb_substr($site[self::DESCRIPTION], 0, 
                         AD_HOC_TITLE_LENGTH), $site[self::LANG]);
                 }
-
                 $word_lists =
                     PhraseParser::extractPhrasesInLists($phrase_string,
                         $lang);
+echo "hi 3";
                 $len = strlen($phrase_string);
                 if(PhraseParser::computeSafeSearchScore($word_lists, $len) <
                     0.012) {
@@ -2432,7 +2430,6 @@ class Fetcher implements CrawlConstants
                     $safe = false;
                 }
             }
-
             if(!$is_link) {
                 $link_phrase_string = "";
                 $link_urls = array();
@@ -2449,7 +2446,7 @@ class Fetcher implements CrawlConstants
             }
 
             $num_queue_servers = count($this->queue_servers);
-
+echo "yo";
             $this->found_sites[self::INVERTED_INDEX][$this->current_server
                 ]->addDocumentWords($doc_keys, self::NEEDS_OFFSET_FLAG,
                 $word_lists, $meta_ids, PhraseParser::$materialized_metas,
@@ -2528,7 +2525,9 @@ class Fetcher implements CrawlConstants
                 crawlLog("..Inverting ".$site[self::URL]."...took > 5s.");
             }
             crawlTimeoutLog("..Still building inverted index. Have processed ".
-                "%s of %s documents.", $i, $num_seen);
+                "%s of %s documents.\nLast url processed was %s. Memory".
+                " usage is: %s.", $i, $num_seen, $site[self::URL],
+                memory_get_usage());
         }
         if($this->crawl_type == self::ARCHIVE_CRAWL) {
             $this->recrawl_check_scheduler = true;

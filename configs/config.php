@@ -33,6 +33,9 @@
  * @filesource
  */
 
+ini_set('pcre.recursion_limit', 5000);
+ini_set('pcre.backtrack_limit', 5000);
+
 if(!defined('BASE_DIR') ||
     defined('PROFILE_FILE_NAME')) {echo "BAD REQUEST"; exit();}
 
