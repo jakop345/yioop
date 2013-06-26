@@ -484,7 +484,7 @@ class SourceModel extends Model
                 $meta_ids = $this->calculateMetas($lang, $item['PUBDATE'],
                     $source_name, $item["GUID"]);
                 $prune_shard->addDocumentWords($doc_keys, $item['PUBDATE'],
-                    $word_lists, $meta_ids, PhraseParser::$materialized_metas, 
+                    $word_lists, $meta_ids, PhraseParser::$materialized_metas,
                     true, false);
                 if(!$news_process && (time() - $time > $max_time)) {
                     $info['start_pubdate'] = $item['PUBDATE'];
@@ -576,7 +576,7 @@ class SourceModel extends Model
         $meta_ids = $this->calculateMetas($lang, $item['pubDate'],
             $source_name, $item["guid"]);
         $feed_shard->addDocumentWords($doc_keys, $item['pubDate'], $word_lists,
-            $meta_ids, PhraseParser::$materialized_metas, true, false);
+            $meta_ids, PhraseParser::$materialized_metas, true);
         return true;
     }
 

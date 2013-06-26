@@ -861,7 +861,8 @@ function findMaterialMetas($metas, $encode_metas)
             $is_class = ($match_kinds[0] == 'class');
             if(count($match_kinds) > 1 &&
                 in_array($match_kinds[0].":", $encode_metas) &&
-                !in_array($match_kinds[1], array("all", "false")) ) {
+                !in_array($match_kinds[1], array("all", "false")) &&
+                !isset($match_kinds[2])) {
                     $found_materialized_metas[$match_kinds[0].":"][] =
                         $meta_id;
             }

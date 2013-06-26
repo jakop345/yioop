@@ -94,7 +94,8 @@ class PhraseParser
             'class-score:');
 
     /**
-     *
+     * Those meta words whose values will be encoded as part of word_ids
+     * @var array
      */
     static $materialized_metas = array("media:", "safe:", "class:");
 
