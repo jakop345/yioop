@@ -455,9 +455,12 @@ class IndexShard extends PersistentStructure implements
      *
      * @param string $word_id id of the word one wants to look up
      * @param bool $raw whether the id is our version of base64 encoded or not
+     * @param int $shift how many low order bits to drop from $word_id's
+     *     when checking for a match
      * @return array first offset, last offset, count
      */
-    function getWordInfo($word_id, $raw = false)
+    function getWordInfo($word_id, $raw = false, $shift = 0, $mask = "",
+        $threshold = -1)
     {
         if($raw == false) {
             //get rid of out modfied base64 encoding
@@ -505,7 +508,7 @@ class IndexShard extends PersistentStructure implements
             }
             if($word_string == false) {return false;}
             $id = substr($word_string, 0, $word_key_len);
-            $cmp = compareWordHashes($word_id, $id, 0);
+            $cmp = compareWordHashes($word_id, $id, $shift);
             if($cmp === 0) {
                 return $this->getWordInfoFromString(
                     substr($word_string, $word_key_len));
