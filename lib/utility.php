@@ -518,7 +518,7 @@ function toHexString($str)
 {
     $out = "";
     for($i = 0; $i < strlen($str); $i++) {
-        $out .= dechex(ord($str[$i]))." ";
+        $out .= sprintf("%02X",ord($str[$i]))." ";
     }
     return $out;
 }

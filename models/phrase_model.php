@@ -1409,7 +1409,6 @@ class PhraseModel extends ParallelModel
                                 $to_retrieve);
                             $info = IndexManager::getWordInfo($index_name,
                                 $distinct_key_id, $shift, $mask);
-
                             if($info != array()) {
                                 $tmp_keys = arrayColumnCount($info, 4, 3);
                                 $out_keys = array_merge($out_keys, $tmp_keys);
