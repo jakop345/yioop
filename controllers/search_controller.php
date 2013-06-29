@@ -1404,6 +1404,7 @@ class SearchController extends Controller implements CrawlConstants
             if($cached_link == true) {
                 header("Location: $url");
             } else {
+                $data["URL"] = $url;
                 $this->displayView("nocache", $data);
                 return;
             }
@@ -1447,6 +1448,7 @@ class SearchController extends Controller implements CrawlConstants
             $machine_uri, $cache_partition, $offset,  $crawl_time,
             $instance_num);
         if(!isset($cache_item[self::PAGE])) {
+            $data["URL"] = $url;
             $data["SUMMARY_STRING"] = $summary_string;
             $this->displayView("nocache", $data);
             return;

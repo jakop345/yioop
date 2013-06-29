@@ -64,6 +64,9 @@ class NocacheView extends View
     function renderView($data) {
         ?>
         <h1><?php e(tl('nocache_view_no_cache')); ?></h1>
+        <p><?php e(tl('nocache_view_link_site')); ?>
+        <a href="<?php e($data['URL']); ?>"><?php e($data['URL']); ?></a>.
+        </p>
         <?php if(isset($data["SUMMARY_STRING"])) {?>
            <p><?php e(tl('nocache_view_summary_contents')); ?></p>
            <pre>

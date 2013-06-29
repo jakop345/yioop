@@ -238,7 +238,7 @@ class IndexArchiveBundle implements CrawlConstants
     {
         $current_num_docs = $this->getActiveShard()->num_docs;
         $add_num_docs = $index_shard->num_docs;
-        if($current_num_docs + $add_num_docs > $this->num_docs_per_generation){
+        if($current_num_docs + $add_num_docs > $this->num_docs_per_generation) {
             if($blocking == true) {
                 return -1;
             }
