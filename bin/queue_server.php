@@ -1446,12 +1446,13 @@ class QueueServer implements CrawlConstants, Join
             crawlLog("Index data file len_urls was $len_urls num was $num, ".
                 "may be corrupt.");
         }
-
+        crawlLog("A. Load SEEN_URLS. Memory usage:".
+            memory_get_usage() ." time: ".(changeInMicrotime($start_time)));
         $sites[self::INVERTED_INDEX] = IndexShard::load("fetcher_shard",
             $pre_sites);
         unset($pre_sites);
 
-        crawlLog("A. Load SEEN_URLS, sent shard. Memory usage:".
+        crawlLog("B. Load Sent shard. Memory usage:".
             memory_get_usage() ." time: ".(changeInMicrotime($start_time)));
         $start_time = microtime();
 
@@ -1526,7 +1527,7 @@ class QueueServer implements CrawlConstants, Join
                     $summary_offsets[$hash] = $site[self::SUMMARY_OFFSET];
                 }
             }
-            crawlLog("B. Init local shard, Store Summaries memory usage".
+            crawlLog("C. Init local shard, Store Summaries memory usage".
                 memory_get_usage() .
                 " time: ".(changeInMicrotime($start_time)));
             $start_time = microtime();
@@ -1534,14 +1535,14 @@ class QueueServer implements CrawlConstants, Join
 
             $index_shard->changeDocumentOffsets($summary_offsets);
 
-            crawlLog("C. Update shard offsets. Memory usage".memory_get_usage()
+            crawlLog("D. Update shard offsets. Memory usage".memory_get_usage()
                 ." time: ".(changeInMicrotime($start_time)));
             $start_time = microtime();
 
             $this->index_archive->addIndexData($index_shard);
             $this->index_dirty = true;
         }
-        crawlLog("D. Add index shard. Memory usage".memory_get_usage().
+        crawlLog("E. Add index shard. Memory usage".memory_get_usage().
             " time: ".(changeInMicrotime($start_time)));
 
 

@@ -1195,6 +1195,8 @@ class IndexShard extends PersistentStructure implements
         $posting_len = self::POSTING_LEN;
 
         for($i = 0 ; $i < $docids_len; $i += $row_len) {
+            crawlTimeoutLog("..still changing document offsets. At" .
+                " document %s of %s.", $cnt, $num_lists);
             $doc_info_string = $this->getDocInfoSubstring($i,
                 $doc_key_len);
             list($offset, $doc_len_info) = array_values(unpack("N*",
@@ -1232,7 +1234,7 @@ class IndexShard extends PersistentStructure implements
         if($with_logging) {
             crawlLog("Saving index shard .. done merge postings to string");
         }
-        $this->prepareWordsAndPrefixes();
+        $this->prepareWordsAndPrefixes($with_logging);
         if($with_logging) {
             crawlLog("Saving index shard .. make prefixes");
         }
@@ -1287,8 +1289,10 @@ class IndexShard extends PersistentStructure implements
      * This index gives offsets of the first occurrences of the lead two char's
      * of a word_id in the words array. This method assumes that the word
      * data is already in >word_postings
+     * @param bool $with_logging whether log messages should be written
+     *      as progresses
      */
-    function prepareWordsAndPrefixes()
+    function prepareWordsAndPrefixes($with_logging = false)
     {
         $word_item_len = IndexShard::WORD_KEY_LEN + IndexShard::WORD_DATA_LEN;
         $key_len = self::WORD_KEY_LEN;
@@ -1301,6 +1305,10 @@ class IndexShard extends PersistentStructure implements
         $num_words = 0;
         $old_prefix = false;
         while($pos < $word_postings_len) {
+            if($with_logging) {
+                crawlTimeoutLog("..Outputting to position %s of" .
+                    " %s of prefixes.", $pos, $word_postings_len);
+            }
             $this->words_len += $word_item_len;
             $first = substr($this->word_postings, $pos, $key_len);
             $post_len = unpackInt(substr($this->word_postings,
@@ -1461,10 +1469,14 @@ class IndexShard extends PersistentStructure implements
         if(!$this->word_docs_packed) {
             return;
         }
+        $num_lists = count($this->words);
+        $cnt = 0;
         foreach($this->words as $word_id => $postings_info) {
             /* we are ignoring the first four bytes which contains
                generation info
              */
+            crawlTimeoutLog("..still unpacking posting lists. At" .
+                " list %s of %s.", $cnt, $num_lists);
             if((ord($postings_info[0]) & 0x80) > 0 ) {
                 $postings_info[0] = chr(ord($postings_info[0]) - 0x80);
                 $postings_info = self::HALF_BLANK . $postings_info;
@@ -1475,6 +1487,7 @@ class IndexShard extends PersistentStructure implements
                 $postings = substr($this->word_docs, $offset, $len);
                 $this->words[$word_id] = $postings;
             }
+            $cnt++;
         }
         unset($this->word_docs);
         $this->word_docs_packed = false;

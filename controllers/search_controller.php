@@ -1471,8 +1471,8 @@ class SearchController extends Controller implements CrawlConstants
         }
 
         if(in_array('yioop_nav', $ui_flags) && !((isset($_SERVER['_']) &&
-            stristr($_SERVER['_'], 'hhvm')) || 
-            (isset($_SERVER['SERVER_SOFTWARE']) && 
+            stristr($_SERVER['_'], 'hhvm')) ||
+            (isset($_SERVER['SERVER_SOFTWARE']) &&
             $_SERVER['SERVER_SOFTWARE'] == "HPHP"))) {
             $newDoc = $this->formatCachePage($cache_item, $cache_file, $url,
                 $summary_string, $crawl_time, $all_crawl_times, $terms,

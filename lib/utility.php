@@ -644,6 +644,7 @@ function crawlTimeoutLog($msg)
     $hash = crawlHash($msg);
     if(!isset($cache[$hash])) {
         $cache[$hash] = microtime();
+        return;
     }
 
     if(changeInMicrotime($cache[$hash]) < LOG_TIMEOUT) {

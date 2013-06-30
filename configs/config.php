@@ -44,8 +44,8 @@ if(!defined('BASE_DIR') ||
     We do this in config.php because it is included in most Yioop
     files.
  */
-ini_set('pcre.recursion_limit', 5000);
-ini_set('pcre.backtrack_limit', 5000);
+ini_set('pcre.recursion_limit', 2000);
+ini_set('pcre.backtrack_limit', 2000);
 
 /** Don't display any query info*/
 define('NO_DEBUG_INFO', 0);
