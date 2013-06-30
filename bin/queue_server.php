@@ -1371,7 +1371,7 @@ class QueueServer implements CrawlConstants, Join
         $index_dir =  CRAWL_DIR."/schedules/".
             self::index_data_base_name.$this->crawl_time;
         $this->processDataFile($index_dir, "processIndexArchive", $blocking);
-        crawlLog("done.");
+        crawlLog("done index data check and process.");
     }
 
     /**
@@ -1581,7 +1581,7 @@ class QueueServer implements CrawlConstants, Join
                 self::robot_data_base_name.$this->crawl_time;
 
         $this->processDataFile($robot_dir, "processRobotArchive");
-        crawlLog("done. ");
+        crawlLog("done robot check and process. ");
     }
 
     /**
@@ -1640,7 +1640,7 @@ class QueueServer implements CrawlConstants, Join
             self::etag_expires_data_base_name.$this->crawl_time;
         $this->processDataFile($etag_expires_dir, 
             "processEtagExpiresArchive");
-        crawlLog("...done");
+        crawlLog("done etag check and process.");
     }
 
     /**
