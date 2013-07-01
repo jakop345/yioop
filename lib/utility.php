@@ -636,13 +636,13 @@ function crawlLog($msg, $lname = NULL, $check_process_handler = false)
  * as progress is made through the loop (but not on every iteration, but
  * say every 30 seconds).
  *
- * @param string $msg what to be printed out after the timeout period.
- * @param bool $clear clears the cache of timeout messages.
+ * @param mixed $msg usually a string with what to be printed out after the 
+ *      timeout period. If $msg === true then clears the timout cache
  */
-function crawlTimeoutLog($msg, $clear = false)
+function crawlTimeoutLog($msg)
 {
     static $cache = array();
-    if($clear) {
+    if($msg === true) {
         $cache = array();
         return;
     }
