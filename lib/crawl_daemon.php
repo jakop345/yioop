@@ -86,8 +86,12 @@ class CrawlDaemon implements CrawlConstants
     /**
      * Tick callback function used to update the timestamp in this processes
      * lock. If lock_file does not exist it stops the process
+     *
+     * @param bool $from_logging whether called from crawlLog or not. If not
+     *      called from crawlLog assume we are called at start of the processes
+     *      so we re-init all timeout messages
      */
-    static function processHandler()
+    static function processHandler($from_logging = false)
     {
         static $time = 0;
         if(self::$mode != 'daemon') {
@@ -111,6 +115,9 @@ class CrawlDaemon implements CrawlConstants
             }
             crawlLog("Stopping $name_string ...", NULL, true);
             exit();
+        }
+        if(!$from_logging) {
+            crawlTimeoutLog("", true); //clear crawl timeout messages
         }
         $time = $now;
         file_put_contents($lock_file, $now);

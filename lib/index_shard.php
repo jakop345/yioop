@@ -1193,10 +1193,12 @@ class IndexShard extends PersistentStructure implements
         $doc_key_len = self::DOC_KEY_LEN;
         $row_len = $doc_key_len;
         $posting_len = self::POSTING_LEN;
-
+        $num_items = floor($docids_len/$row_len);
+        $item_cnt = 0;
         for($i = 0 ; $i < $docids_len; $i += $row_len) {
             crawlTimeoutLog("..still changing document offsets. At" .
-                " document %s of %s.", $cnt, $num_lists);
+                " document %s of %s.", $item_cnt, $num_items);
+            $item_cnt++;
             $doc_info_string = $this->getDocInfoSubstring($i,
                 $doc_key_len);
             list($offset, $doc_len_info) = array_values(unpack("N*",

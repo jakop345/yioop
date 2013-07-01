@@ -620,7 +620,7 @@ function crawlLog($msg, $lname = NULL, $check_process_handler = false)
         file_put_contents($logfile, $out_msg."\n", FILE_APPEND);
         if($check_handler && !$check_process_handler && 
             changeInMicrotime($last_check_time) > 5) {
-            CrawlDaemon::processHandler();
+            CrawlDaemon::processHandler(true);
             $last_check_time = microtime();
         }
     } else if (php_sapi_name() != 'cli') {
@@ -637,16 +637,19 @@ function crawlLog($msg, $lname = NULL, $check_process_handler = false)
  * say every 30 seconds).
  *
  * @param string $msg what to be printed out after the timeout period.
+ * @param bool $clear clears the cache of timeout messages.
  */
-function crawlTimeoutLog($msg)
+function crawlTimeoutLog($msg, $clear = false)
 {
     static $cache = array();
+    if($clear) {
+        $cache = array();
+        return;
+    }
     $hash = crawlHash($msg);
     if(!isset($cache[$hash])) {
         $cache[$hash] = microtime();
-        return;
     }
-
     if(changeInMicrotime($cache[$hash]) < LOG_TIMEOUT) {
         return;
     }

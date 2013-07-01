@@ -789,7 +789,8 @@ class QueueServer implements CrawlConstants, Join
 
             $this->dumpQueueToSchedules();
             //Write B-Tree root node to disk before before exiting
-            if(is_object($this->web_queue->etag_btree)) {
+            if(isset($this->web_queue) && $this->web_queue != NULL &&
+                is_object($this->web_queue->etag_btree)) {
                 $this->web_queue->etag_btree->writeRoot();
             }
         }
