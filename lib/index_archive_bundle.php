@@ -137,6 +137,11 @@ class IndexArchiveBundle implements CrawlConstants
     var $current_shard;
 
     /**
+     *  Threshold hold beyond which we don't load old index shard when
+     *  restarting and instead just advance to a new shard
+     */
+    const NO_LOAD_SIZE = 50000000;
+    /**
      * Makes or initializes an IndexArchiveBundle with the provided parameters
      *
      * @param string $dir_name folder name to store this bundle
@@ -244,34 +249,38 @@ class IndexArchiveBundle implements CrawlConstants
             }
             crawlLog("Switching Index Shard...");
             $switch_time = microtime();
-            $this->saveAndAddCurrentShardDictionary($callback);
-            //Set up new shard
-            $this->generation_info['ACTIVE']++;
-            $this->generation_info['CURRENT'] =
-                $this->generation_info['ACTIVE'];
-            $current_index_shard_file = $this->dir_name.
-                "/posting_doc_shards/index". $this->generation_info['ACTIVE'];
-            $this->current_shard = new IndexShard(
-                $current_index_shard_file, $this->generation_info['ACTIVE'],
-                    $this->num_docs_per_generation);
-            file_put_contents($this->dir_name."/generation.txt",
-                serialize($this->generation_info));
-            crawlLog("Switch Shard time:".changeInMicrotime($switch_time));
+            // Save current shard dictionary to main dictionary
+            $this->forceSave();
+            $this->addAdvanceGeneration($callback);
         }
 
         return $this->generation_info['ACTIVE'];
     }
 
+    function addAdvanceGeneration($callback = NULL)
+    {
+        $this->addCurrentShardDictionary($callback);
+        //Set up new shard
+        $this->generation_info['ACTIVE']++;
+        $this->generation_info['CURRENT'] =
+            $this->generation_info['ACTIVE'];
+        $current_index_shard_file = $this->dir_name.
+            "/posting_doc_shards/index". $this->generation_info['ACTIVE'];
+        $this->current_shard = new IndexShard(
+            $current_index_shard_file, $this->generation_info['ACTIVE'],
+                $this->num_docs_per_generation);
+        file_put_contents($this->dir_name."/generation.txt",
+            serialize($this->generation_info));
+        crawlLog("Switch Shard time:".changeInMicrotime($switch_time));
+    }
+
     /**
-     * Saves the active index shard to disk, then adds the words from this
-     * shard to the dictionary
+     * Adds the words from this shard to the dictionary
      * @param object $callback object with join function to be
      *      called if process is taking too  long
      */
-    function saveAndAddCurrentShardDictionary($callback = NULL)
+    function addCurrentShardDictionary($callback = NULL)
     {
-        // Save current shard dictionary to main dictionary
-        $this->forceSave();
         $current_index_shard_file = $this->dir_name.
             "/posting_doc_shards/index". $this->generation_info['ACTIVE'];
         /* want to do the copying of dictionary as files to conserve memory
@@ -331,6 +340,10 @@ class IndexArchiveBundle implements CrawlConstants
                     $this->current_shard->getShardHeader();
                     $this->current_shard->read_only_from_disk = true;
                 } else {
+                    if(file_size($current_index_shard_file) > 
+                        self::NO_LOAD_SIZE) {
+                        $this->addAdvanceGeneration();
+                    }
                     $this->current_shard =
                         IndexShard::load($current_index_shard_file);
                 }

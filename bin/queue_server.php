@@ -410,7 +410,7 @@ class QueueServer implements CrawlConstants, Join
             $this->deleteOrphanedBundles();
         }
         while (CrawlDaemon::processHandler()) {
-            crawlLog("{$this->server_name} peak memory usage so far".
+            crawlLog("{$this->server_name} peak memory usage so far: ".
                 memory_get_peak_usage()."!!");
 
             $info = $this->handleAdminMessages($info);
@@ -926,7 +926,9 @@ class QueueServer implements CrawlConstants, Join
         $this->writeAdminMessage("SHUTDOWN_DICTIONARY");
         if(is_object($this->index_archive)) {
             $this->
-                index_archive->saveAndAddCurrentShardDictionary();
+                index_archive->forceSave();
+            $this->
+                index_archive->addCurrentShardDictionary();
             $this->index_archive->dictionary->mergeAllTiers();
         }
         $this->db->setWorldPermissionsRecursive(
