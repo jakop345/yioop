@@ -252,11 +252,22 @@ class IndexArchiveBundle implements CrawlConstants
             // Save current shard dictionary to main dictionary
             $this->forceSave();
             $this->addAdvanceGeneration($callback);
+            crawlLog("Switch Shard time:".changeInMicrotime($switch_time));
         }
 
         return $this->generation_info['ACTIVE'];
     }
 
+    /**
+     * Starts a new generation,  the dictionary of the old shard is copied to 
+     * the bundles dictionary and a log-merge performed if needed. This
+     * function may be called by initGenerationToAdd as well as when resuming
+     * a crawl rather than loading the periodic index of save of a too large
+     * shard.
+     *
+     * @param object $callback object with join function to be
+     *      called if process is taking too long
+     */
     function addAdvanceGeneration($callback = NULL)
     {
         $this->addCurrentShardDictionary($callback);
@@ -271,7 +282,6 @@ class IndexArchiveBundle implements CrawlConstants
                 $this->num_docs_per_generation);
         file_put_contents($this->dir_name."/generation.txt",
             serialize($this->generation_info));
-        crawlLog("Switch Shard time:".changeInMicrotime($switch_time));
     }
 
     /**
@@ -343,9 +353,10 @@ class IndexArchiveBundle implements CrawlConstants
                     if(file_size($current_index_shard_file) > 
                         self::NO_LOAD_SIZE) {
                         $this->addAdvanceGeneration();
+                    } else {
+                        $this->current_shard =
+                            IndexShard::load($current_index_shard_file);
                     }
-                    $this->current_shard =
-                        IndexShard::load($current_index_shard_file);
                 }
             } else {
                 $this->current_shard = new IndexShard($current_index_shard_file,
