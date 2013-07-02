@@ -140,7 +140,7 @@ class IndexArchiveBundle implements CrawlConstants
      *  Threshold hold beyond which we don't load old index shard when
      *  restarting and instead just advance to a new shard
      */
-    const NO_LOAD_SIZE = 50000000;
+    const NO_LOAD_SIZE = 25000000;
     /**
      * Makes or initializes an IndexArchiveBundle with the provided parameters
      *

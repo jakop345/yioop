@@ -115,6 +115,21 @@ if (function_exists('lcfirst') === false) {
  */
 class NewsUpdater implements CrawlConstants
 {
+    /**
+     * The last time old feed items were pruned
+     * @var int
+     */
+    var $delete_time;
+    /**
+     * The last time feeds with no items were polled
+     * @var int
+     */
+    var $retry_time;
+    /**
+     * The last time feeds were checked for updates
+     * @var int
+     */
+    var $update_time;
 
     /**
      * Sets up the field variables so that newsupdating can begin
@@ -123,8 +138,8 @@ class NewsUpdater implements CrawlConstants
     function __construct()
     {
         $this->delete_time = 0;
-        $this->update_time = 0;
         $this->retry_time = 0;
+        $this->update_time = 0;
     }
 
     /**
