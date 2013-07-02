@@ -480,9 +480,16 @@ class WordIterator extends IndexBundleIterator
                         $this->current_doc_offset) = $offset_pair;
                 }
             }
-            $this->seen_docs =
-                ($this->current_offset - $this->start_offset)/
-                    IndexShard::POSTING_LEN;
+            if($this->current_generation == -1) {
+                $this->seen_docs =
+                    ($this->current_offset - $this->feed_start)/
+                        IndexShard::POSTING_LEN;
+            } else {
+                $this->seen_docs = ($using_feeds) ? $this->feed_count : 0;
+                $this->seen_docs +=
+                    ($this->current_offset - $this->start_offset)/
+                        IndexShard::POSTING_LEN;
+            }
         }
     }
 

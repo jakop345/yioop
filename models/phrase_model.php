@@ -1091,14 +1091,12 @@ class PhraseModel extends ParallelModel
             }
             $sort_time = changeInMicrotime($sort_start);
         }
-
         if($num_retrieved < $to_retrieve) {
             $results['TOTAL_ROWS'] = $num_retrieved;
         } else {
             $results['TOTAL_ROWS'] =  $query_iterator->num_docs;
             //this is only an approximation
         }
-
         if($save_timestamp_name == "") {
             $pages = array_slice($pages, $start_slice);
             $pages = array_slice($pages, $limit - $start_slice, $num);
