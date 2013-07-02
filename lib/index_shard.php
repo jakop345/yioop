@@ -1126,6 +1126,9 @@ class IndexShard extends PersistentStructure implements
                     $tmp_string = substr($tmp_string, $copy_data_len);
                 }
            }
+           crawlTimeoutLog("..outer loop merge index postings to string ..".
+                " processing %s of %s at offset %s less than %s", $i,
+                $num_words, $offset, $len);
            if($offset + $item_len > $len) {
                 $word_id_posts_len = strlen($postings);
                 if($write_offset < $len) {
@@ -1158,6 +1161,8 @@ class IndexShard extends PersistentStructure implements
             $this->word_postings .= $pad;
             for($j = $len + $pad_len - 1,
                 $k = $len - 1; $k >= $offset; $j--, $k--) {
+                crawlTimeoutLog("..merge index postings to string final copy ".
+                    " phase");
                 $this->word_postings[$j] = "" . $this->word_postings[$k];
                     /*way slower if directly
                     assign!!! PHP is crazy*/
