@@ -204,7 +204,7 @@ class NewsUpdater implements CrawlConstants
             return;
         }
         $something_updated = false;
-        $delta = $time - $this->delete_time;
+
 
         $delta = $time - $this->update_time;
         // every hour get items from twenty feeds whose newest items are oldest
@@ -221,6 +221,7 @@ class NewsUpdater implements CrawlConstants
         /*  every 2 hours everything older than a week and rebuild index
             do this every two hours so news articles tend to stay in order
          */
+        $delta = $time - $this->delete_time;
         if($delta > 2 * SourceModel::ONE_HOUR) {
             $this->delete_time = $time;
             crawlLog("Deleting feed items and rebuild shard...");
