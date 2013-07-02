@@ -36,6 +36,11 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 /** Loads the base class */
 require_once BASE_DIR."/models/model.php";
 
+/** IndexShards used to store feed indexes*/
+require_once BASE_DIR."/lib/index_shard.php";
+
+/** For text manipulation of feeds*/
+require_once BASE_DIR."/lib/phrase_parser.php";
 /**
  * Used to manage data related to video, news, and other search sources
  * Also, used to manage data about available subsearches seen in SearchView
@@ -296,12 +301,9 @@ class SourceModel extends Model
      *  @param int $age how many seconds old records should be ignored
      *  @param bool $try_again whether to update everything or just those
      *      feeds for which we have no items
-     *  @param bool $news_process whether this is being called from
-     *      new_update daemon or being done by the web app
      *  @return bool whether feed item update was successful
      */
-    function updateFeedItems($age = self::ONE_WEEK, $try_again = false,
-        $news_process = false)
+    function updateFeedItems($age = self::ONE_WEEK, $try_again = false)
     {
         $time = time();
         $this->db->selectDB(DB_NAME);
@@ -370,13 +372,12 @@ class SourceModel extends Model
                     "title" => "title", "description" => "summary",
                     "link" => "link", "guid" => "id", "pubDate" => "updated");
             }
-            $max_time = min(self::MAX_EXECUTION_TIME,
-                ini_get('max_execution_time')/3);
             crawlLog("Updating {$feed['NAME']}...");
             $num_added = 0;
             foreach($nodes as $node) {
                 $item = array();
                 foreach($rss_elements as $db_element => $feed_element) {
+                    crawlTimeoutLog("..still adding feed items to index.");
                     $tag_node = $node->getElementsByTagName(
                             $feed_element)->item(0);
                     $element_text = (is_object($tag_node)) ?
@@ -390,9 +391,6 @@ class SourceModel extends Model
                     $feed['NAME'], $lang, $age);
                 if($did_add) {
                     $num_added++;
-                }
-                if(!$news_process && (time() - $time > $max_time)) {
-                    break 2; // running out of time better save shard
                 }
             }
             crawlLog("...added $num_added news items.");
@@ -409,11 +407,9 @@ class SourceModel extends Model
      * it returns true
      *
      * @param int $age how many seconds old records should be deleted
-     * @param bool $news_process whether this is being called from
-     *      new_update daemon or being done by the web app
      * @return bool whether job executed to complete
      */
-    function deleteFeedItems($age, $news_process = false)
+    function deleteFeedItems($age)
     {
         $time = time();
         $feed_shard_name = WORK_DIRECTORY."/feeds/index";
@@ -466,7 +462,9 @@ class SourceModel extends Model
             $completed = true;
             $max_time = min(self::MAX_EXECUTION_TIME,
                 ini_get('max_execution_time')/3);
+            crawlLog("..still deleting. Making new index of non-pruned items.");
             while($item = $db->fetchArray($result)) {
+                crawlTimeoutLog("..still adding non-pruned items to index.");
                 if(!isset($item['SOURCE_NAME'])) continue;
                 $source_name = $item['SOURCE_NAME'];
                 if(isset($feeds[$source_name])) {
@@ -486,35 +484,17 @@ class SourceModel extends Model
                 $prune_shard->addDocumentWords($doc_keys, $item['PUBDATE'],
                     $word_lists, $meta_ids, PhraseParser::$materialized_metas,
                     true, false);
-                if(!$news_process && (time() - $time > $max_time)) {
-                    $info['start_pubdate'] = $item['PUBDATE'];
-                    $info['copy_tries']++;
-                    if($info['copy_tries'] < self::MAX_COPY_TRIES) {
-                        $completed = false;
-                    } else {
-                        $completed = true;
-                        $too_old = $item['PUBDATE'] - 1;
-                    }
-                    break; // running out of time better save progress
-                }
             }
         }
         $prune_shard->save();
         @chmod($prune_shard_name, 0777);
         @chmod($feed_shard_name, 0777);
-        if(!$completed) {
-            file_put_contents($prune_info_file, serialize($info));
-            chmod($prune_info_file, 0777);
-            return false;
-        }
 
         @rename($prune_shard_name, $feed_shard_name);
         @chmod($feed_shard_name, 0777);
         $sql = "DELETE FROM FEED_ITEM WHERE PUBDATE < '$too_old'";
         $db->execute($sql);
         @unlink($prune_info_file);
-
-        return true;
     }
 
     /**

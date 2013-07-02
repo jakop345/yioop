@@ -68,8 +68,10 @@ class MachinestatusView extends View
         ?>
         <div class="box">
         <h3 class="nomargin"><?php
-            e(tl('machinestatus_view_news_updater'));
+            e(tl('machinestatus_name_server'));
             $log_url = $base_url ."log&amp;name=news";
+            $on_news_updater = $base_url ."newsmode&amp;news_mode=news_process";
+            $off_news_updater = $base_url ."newsmode&amp;news_mode=news_off";
         ?></h3>
         <form id="newsModeForm" method="post" action=''>
         <input type="hidden" name="c" value="admin" />
@@ -78,12 +80,13 @@ class MachinestatusView extends View
         <input type="hidden" name="a" value="manageMachines" />
         <input type="hidden" name="arg" value="newsmode" />
         <table class="machine-table"><tr>
-        <th><?php e(tl('machinestatus_view_updates_type'));?></th>
-        <td><?php $this->optionsHelper->render("news-mode",
-            "news_mode", $data['NEWS_MODES'], $data['NEWS_MODE'], true);?>
-        </td>
+        <th><?php e(tl('machinestatus_view_news_updater'));?></th>
         <td>[<a href="<?php e($log_url);?>"><?php
             e(tl('machinestatus_view_log'));?></a>]</td>
+        <td><?php $this->toggleHelper->render(
+            ($data["NEWS_MODE"] == "news_process"), $on_news_updater, 
+            $off_news_updater);?>
+        </td>
         </tr></table>
         </form>
         </div><br />

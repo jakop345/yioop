@@ -65,7 +65,7 @@ define("NO_LOGGING", false);
 /**
  * Shortest time through one iteration of news updater's loop
  */
-define("MINIMUM_UPDATE_LOOP_TIME", 30);
+define("MINIMUM_UPDATE_LOOP_TIME", 10);
 
 /** for crawlDaemon function */
 require_once BASE_DIR."/lib/crawl_daemon.php";
@@ -76,12 +76,15 @@ require_once BASE_DIR."/lib/locale_functions.php";
 /** Loads common constants for web crawling*/
 require_once BASE_DIR."/lib/crawl_constants.php";
 
-/** Loads common constants for web crawling*/
-require_once BASE_DIR."/lib/locale_functions.php";
+/**Load base model class used by source model */
+require_once BASE_DIR."/models/model.php";
 
-/**Load base controller class, if needed. */
-require_once BASE_DIR."/controllers/search_controller.php";
-
+/** Source model is used to manage news feed ites*/
+if(file_exists(APP_DIR."/models/source_model.php")) {
+    require_once APP_DIR."/models/source_model.php";
+}  else {
+    require_once BASE_DIR."/models/source_model.php";
+}
 /*
  *  We'll set up multi-byte string handling to use UTF-8
  */
@@ -119,9 +122,9 @@ class NewsUpdater implements CrawlConstants
      */
     function __construct()
     {
-        $locale_tag = guessLocale();
-        setLocaleObject($locale_tag);
-        $this->searchController = NULL;
+        $this->delete_time = 0;
+        $this->update_time = 0;
+        $this->retry_time = 0;
     }
 
     /**
@@ -132,13 +135,9 @@ class NewsUpdater implements CrawlConstants
     function start()
     {
         global $argv;
-        global $INDEXING_PLUGINS;
-
-        // To use CrawlDaemon need to declare ticks first
-        declare(ticks = 200);
         CrawlDaemon::init($argv, "news_updater");
         crawlLog("\n\nInitialize logger..", "news_updater", true);
-        $this->searchController = new SearchController($INDEXING_PLUGINS);
+        $this->sourceModel = new SourceModel();
         $this->loop();
     }
 
@@ -155,14 +154,7 @@ class NewsUpdater implements CrawlConstants
             $start_time = microtime();
 
             crawlLog("Checking if news feeds should be updated...");
-            $data = array();
-            /* we use the argument false to tell the web app not to try to
-               update news independently of news_updater
-             */
-            $this->searchController->newsUpdate($data, false);
-            if(isset($data['LOG_MESSAGES'])) {
-                crawlLog($data['LOG_MESSAGES']);
-            }
+            $this->newsUpdate();
             $sleep_time = max(0, ceil(
                 MINIMUM_UPDATE_LOOP_TIME - changeInMicrotime($start_time)));
             if($sleep_time > 0) {
@@ -174,6 +166,69 @@ class NewsUpdater implements CrawlConstants
         crawlLog("News Updater shutting down!!");
     }
 
+    /**
+     *  If news_update time has passed, then updates news feeds associated with
+     *  this Yioop instance
+     *
+     *  @param array $data used by view to render itself. In this case, if there
+     *      is a problem updating the news then we will flash a message
+     *  @param bool $no_news_process if true than assume news_updater.php is
+     *      not running. If false, assume being run from news_updater.php so
+     *      update news_process cron time.
+     */
+    function newsUpdate()
+    {
+        if(!defined(SUBSEARCH_LINK)|| !SUBSEARCH_LINK) {
+            crawlLog("No news update as SUBSEARCH_LINK define false.");
+            return;
+        }
+        $time = time();
+        $rss_feeds = $this->sourceModel->getMediaSources("rss");
+        if(!$rss_feeds || count($rss_feeds) == 0) {
+            crawlLog("No news update as no news feeds.");
+            return;
+        }
+        $something_updated = false;
+        $delta = $time - $this->delete_time;
+
+        $delta = $time - $this->update_time;
+        // every hour get items from twenty feeds whose newest items are oldest
+        if($delta > SourceModel::ONE_HOUR) {
+            $this->update_time = $time;
+            crawlLog("Performing news feeds update");
+            if(!$this->sourceModel->updateFeedItems(
+                SourceModel::ONE_WEEK, false)) {
+                crawlLog("News feeds update failed.");
+            }
+            $something_updated = true;
+        }
+
+        /*  every 3 hours everything older than a week and rebuild index
+            do this every four hours so news articles tend to stay in order
+         */
+        if($delta > 3 * SourceModel::ONE_HOUR) {
+            $this->delete_time = $time;
+            crawlLog("Deleting feed items and rebuild shard...");
+            $this->sourceModel->deleteFeedItems(SourceModel::ONE_WEEK);
+            crawlLog("... delete complete, shard rebuilt");
+            $something_updated = true;
+        }
+
+        $delta = $time - $this->retry_time;
+        // each 15 minutes try to re-get feeds that have no items
+        if($delta > SourceModel::ONE_HOUR/4) {
+            $this->retry_time = $time;
+            crawlLog("Re-trying feeds with no items");
+            $this->sourceModel->updateFeedItems(SourceModel::ONE_WEEK, true);
+            crawlLog("... Re-trying complete");
+            $something_updated = true;
+        }
+
+
+        if(!$something_updated = true) {
+            crawlLog("No updates needed.");
+        }
+    }
 }
 
 

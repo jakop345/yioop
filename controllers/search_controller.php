@@ -198,12 +198,6 @@ class SearchController extends Controller implements CrawlConstants
         }
 
         $this->displayView($view, $data);
-
-        if(defined("NEWS_MODE") && NEWS_MODE != 'news_off' &&
-            count($data['PAGES']) > 0) {
-            ignore_user_abort();
-            $this->newsUpdate($data);
-        }
     }
 
     /**

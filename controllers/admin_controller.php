@@ -334,11 +334,6 @@ class AdminController extends Controller implements CrawlConstants
         $data = array();
         $data['REFRESH'] = "machinestatus";
         $data['MACHINES'] = $this->machineModel->getMachineStatuses();
-        $data['NEWS_MODES'] = array(
-            "news_off" => tl('admin_controller_news_off'),
-            "news_web" => tl('admin_controller_news_update_web'),
-            "news_process" => tl('admin_controller_news_process'),
-        );
         $profile =  $this->profileModel->getProfile(WORK_DIRECTORY);
         $data['NEWS_MODE'] = isset($profile['NEWS_MODE']) ?
             $profile['NEWS_MODE']: "";
