@@ -218,10 +218,10 @@ class NewsUpdater implements CrawlConstants
             $something_updated = true;
         }
 
-        /*  every 3 hours everything older than a week and rebuild index
-            do this every four hours so news articles tend to stay in order
+        /*  every 2 hours everything older than a week and rebuild index
+            do this every two hours so news articles tend to stay in order
          */
-        if($delta > 3 * SourceModel::ONE_HOUR) {
+        if($delta > 2 * SourceModel::ONE_HOUR) {
             $this->delete_time = $time;
             crawlLog("Deleting feed items and rebuild shard...");
             $this->sourceModel->deleteFeedItems(SourceModel::ONE_WEEK);

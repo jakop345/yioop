@@ -414,30 +414,8 @@ class SourceModel extends Model
         $time = time();
         $feed_shard_name = WORK_DIRECTORY."/feeds/index";
         $prune_shard_name = WORK_DIRECTORY."/feeds/prune_index";
-        $prune_info_file = WORK_DIRECTORY."/feeds/prune_info.txt";
-        $has_prune_shard = file_exists($prune_shard_name);
-        $has_prune_info = file_exists($prune_info_file);
-        $info = array();
-        if(!$has_prune_shard || !$has_prune_info) {
-            @unlink($prune_shard_name);
-            @unlink($prune_info_file);
-            $prune_shard =  new IndexShard($prune_shard_name);
-            $info['start_pubdate'] = $time;
-            $info['copy_tries'] = 0;
-        }
-        if($has_prune_shard && $has_prune_info) {
-            $info = unserialize(file_get_contents($prune_info_file));
-            if(!isset($info['start_pubdate'])) {
-                @unlink($prune_info_file);
-                return false;
-            }
-            $prune_shard = IndexShard::load($prune_shard_name);
-            if(!$prune_shard) {
-                @unlink($prune_shard_name); //maybe index corrupted?
-                $prune_shard =  new IndexShard($prune_shard_name);
-                return false;
-            }
-        }
+        @unlink($prune_shard_name);
+        $prune_shard =  new IndexShard($prune_shard_name);
         $too_old = $time - $age;
         if(!$prune_shard) {
             return false;
@@ -454,14 +432,11 @@ class SourceModel extends Model
 
         // we now rebuild the inverted index with the remaining items
         $sql = "SELECT * FROM FEED_ITEM ".
-            "WHERE PUBDATE < {$info['start_pubdate']} AND ".
-            "PUBDATE >= $too_old ".
+            "WHERE PUBDATE >= $too_old ".
             "ORDER BY PUBDATE DESC";
         $result = $db->execute($sql);
         if($result) {
             $completed = true;
-            $max_time = min(self::MAX_EXECUTION_TIME,
-                ini_get('max_execution_time')/3);
             crawlLog("..still deleting. Making new index of non-pruned items.");
             while($item = $db->fetchArray($result)) {
                 crawlTimeoutLog("..still adding non-pruned items to index.");
@@ -494,7 +469,6 @@ class SourceModel extends Model
         @chmod($feed_shard_name, 0777);
         $sql = "DELETE FROM FEED_ITEM WHERE PUBDATE < '$too_old'";
         $db->execute($sql);
-        @unlink($prune_info_file);
     }
 
     /**
