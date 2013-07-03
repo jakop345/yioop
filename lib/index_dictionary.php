@@ -601,7 +601,7 @@ class IndexDictionary implements CrawlConstants
             $word_id = unbase64Hash($word_id);
         }
         $word_key_len = strlen($word_id);
-        if(strlen($word_id) < 1) { //length of oldest format word
+        if(strlen($word_id) < 1) { 
             return false;
         }
         if($mask != "") {

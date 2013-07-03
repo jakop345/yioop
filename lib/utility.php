@@ -1112,7 +1112,7 @@ function crawlHashPath($string, $path_start = 0, $metas = array(),
 function compareWordHashes($id1, $id2, $shift = 0)
 {
     if(!isset($id1[8]) || !isset($id2[8])) {
-        return strcmp(substr($id1, 0,8), substr($id2, 0, 8));
+        return strcmp(substr($id1, 0, 8), substr($id2, 0, 8));
     } else if($id1[8] == "\x00") {
         return strcmp(substr($id1, 0, 9), substr($id2, 0, 9));
     } else if($shift < 32) {

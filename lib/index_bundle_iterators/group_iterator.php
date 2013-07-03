@@ -383,9 +383,12 @@ class GroupIterator extends IndexBundleIterator
         $prefix = ($is_location) ? "location:" : "info:";
         $hash_info_url=
             crawlHashWord($prefix.base64Hash($hash_url), true);
+        $filter = NULL;
         $word_iterator =
              new WordIterator($hash_info_url,
-                $index_name, true);
+                $index_name, true, $filter,
+                IndexBundleIterator::RESULTS_PER_BLOCK,
+                "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00");
         $count = 1;
         if(isset($word_iterator->dictionary_info)) {
             $count = count($word_iterator->dictionary_info);

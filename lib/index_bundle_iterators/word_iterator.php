@@ -163,7 +163,8 @@ class WordIterator extends IndexBundleIterator
      *      results
      */
     function __construct($word_key, $index_name, $raw = false, &$filter = NULL,
-        $results_per_block = IndexBundleIterator::RESULTS_PER_BLOCK)
+        $results_per_block = IndexBundleIterator::RESULTS_PER_BLOCK,
+        $mask = "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF")
     {
         if($raw == false) {
             //get rid of out modfied base64 encoding
@@ -179,7 +180,7 @@ class WordIterator extends IndexBundleIterator
         $this->index_name =  $index_name;
         $this->dictionary_info = 
             IndexManager::getWordInfo($index_name, $word_key, 0,
-            "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF");
+            $mask);
         $this->feed_shard_name = WORK_DIRECTORY."/feeds/index";
         if((!defined('NO_FEEDS') || !NO_FEEDS)
             && file_exists($this->feed_shard_name)) {

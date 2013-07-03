@@ -1140,11 +1140,11 @@ class PhraseModel extends ParallelModel
         }
         $out_pages =array();
         $cur_limit = $limit;
-        while(count($out_pages) < $to_get_count) {
+        while(count($out_pages) < $to_get_count && $get_pages) {
             $out_pages = array_merge($out_pages,
                 $this->getSummariesFromOffsets($get_pages, $queue_servers,
                 $raw, $groups_with_docs));
-            if(!$out_pages || $save_timestamp_name != "") {break;}
+            if($save_timestamp_name != "") {break;}
             $cur_limit += $num;
             $get_pages = array_slice($pages, $cur_limit, $num);
         }
@@ -1222,7 +1222,6 @@ class PhraseModel extends ParallelModel
             }
             $index++;
         }
-
         $summaries = $this->getCrawlItems($lookups, $queue_servers);
 
         if($queue_servers != NULL && !$this->isSingleLocalhost($queue_servers)
