@@ -412,8 +412,7 @@ class ParallelModel extends Model implements CrawlConstants
         if(!isset($info[0][4])) {
             return false;
         }
-        $word_iterator = new WordIterator($info[0][4], $index_name, true,
-            $mask);
+        $word_iterator = new WordIterator($info[0][4], $index_name, true);
         if(is_array($next_docs = $word_iterator->nextDocsWithWord())) {
              foreach($next_docs as $doc_key => $doc_info) {
                  $summary_offset =
