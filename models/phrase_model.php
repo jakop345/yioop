@@ -1097,12 +1097,11 @@ class PhraseModel extends ParallelModel
             $results['TOTAL_ROWS'] =  $query_iterator->num_docs;
             //this is only an approximation
         }
-        if($save_timestamp_name == "") {
+
+
+        if($raw == 1 && $save_timestamp_name == "") {
             $pages = array_slice($pages, $start_slice);
             $pages = array_slice($pages, $limit - $start_slice, $num);
-        }
-
-        if($raw == 1) {
             $results['PAGES'] = & $pages;
             return $results;
         }
@@ -1131,13 +1130,25 @@ class PhraseModel extends ParallelModel
             $summaries_time = microtime();
         }
 
+        if($save_timestamp_name == "") {
+            $get_pages = array_slice($pages, $limit, $num);
+            $to_get_count = count($get_pages);
+        }
         $groups_with_docs = false;
         if(preg_match("/\bsite:doc\b/", $original_query)) {
             $groups_with_docs = true;
         }
-
-        $out_pages = $this->getSummariesFromOffsets($pages, $queue_servers,
-            $raw, $groups_with_docs);
+        $out_pages =array();
+        $cur_limit = $limit;
+        while(count($out_pages) < $to_get_count) {
+            $out_pages = array_merge($out_pages,
+                $this->getSummariesFromOffsets($get_pages, $queue_servers,
+                $raw, $groups_with_docs));
+            if(!$out_pages || $save_timestamp_name != "") {break;}
+            $cur_limit += $num;
+            $get_pages = array_slice($pages, $cur_limit, $num);
+        }
+        $out_pages = array_slice($out_pages, 0, $num);
         if(QUERY_STATISTICS) {
             $summary_times_string = AnalyticsManager::get("SUMMARY_TIMES");
             if($summary_times_string) {
@@ -1176,7 +1187,7 @@ class PhraseModel extends ParallelModel
 
     /**
      * Used to lookup summary info for the pages provided (using their)
-     * self::SUMMARY_OFFSET field. If any of the lookupped summaries
+     * self::SUMMARY_OFFSET field. If any of the lookup-ed summaries
      * are location's then looks these up in turn. This method handles robot
      * meta tags which might forbid indexing.
      *

@@ -42,7 +42,7 @@ define("BASE_DIR", substr(
     dirname(realpath($_SERVER['PHP_SELF'])), 0,
     -strlen("/bin")));
 
-ini_set("memory_limit", "400M");  //so have enough memory to crawl sitemaps
+ini_set("memory_limit", "850M");
 
 /** Load in global configuration settings */
 require_once BASE_DIR.'/configs/config.php';
@@ -130,7 +130,6 @@ class NewsUpdater implements CrawlConstants
      * @var int
      */
     var $update_time;
-
     /**
      * Sets up the field variables so that newsupdating can begin
      *
@@ -205,7 +204,6 @@ class NewsUpdater implements CrawlConstants
         }
         $something_updated = false;
 
-
         $delta = $time - $this->update_time;
         // every hour get items from twenty feeds whose newest items are oldest
         if($delta > SourceModel::ONE_HOUR) {
@@ -218,11 +216,11 @@ class NewsUpdater implements CrawlConstants
             $something_updated = true;
         }
 
-        /*  every 2 hours everything older than a week and rebuild index
-            do this every two hours so news articles tend to stay in order
+        /*  every three hours everything older than a week and rebuild index
+            do this every there hours so news articles tend to stay in order
          */
         $delta = $time - $this->delete_time;
-        if($delta > 2 * SourceModel::ONE_HOUR) {
+        if($delta > 3 * SourceModel::ONE_HOUR) {
             $this->delete_time = $time;
             crawlLog("Deleting feed items and rebuild shard...");
             $this->sourceModel->deleteFeedItems(SourceModel::ONE_WEEK);
