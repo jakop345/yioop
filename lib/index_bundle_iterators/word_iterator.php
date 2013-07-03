@@ -161,6 +161,8 @@ class WordIterator extends IndexBundleIterator
      * @param bool $raw whether the $word_key is our variant of base64 encoded
      * @param array $filter an array of hashes of domains to filter from
      *      results
+     * @param string $mask byte msk to apply against word id, default is for
+     *      exact match
      */
     function __construct($word_key, $index_name, $raw = false, &$filter = NULL,
         $results_per_block = IndexBundleIterator::RESULTS_PER_BLOCK,
