@@ -579,8 +579,9 @@ class PhraseModel extends ParallelModel
                 if($index_version == 0) {
                     $tmp_hash = (is_array($tmp_hash)) ? $tmp_hash :
                         array($tmp_hash);
-                    $word_keys[] =  array_merge(
+                    $test =  array_merge(
                         $tmp_hash, array(crawlHash($word)));
+                    $word_keys[] = $test;
                 } else {
                     $word_keys[] = $tmp_hash;
                 }
@@ -1394,6 +1395,7 @@ class PhraseModel extends ParallelModel
                             $distinct_keys = array($distinct_word_keys[$i]);
                         }
                         $out_keys = array();
+                        $old_distinct_key_id = "";
                         foreach($distinct_keys as $distinct_key) {
                             if(is_array($distinct_key)) {
                                 if(!isset($distinct_key[2]) && 
@@ -1405,6 +1407,10 @@ class PhraseModel extends ParallelModel
                                 $mask = (isset($distinct_key[2])) ? 
                                     $distinct_key[2] : "\x00\x00\x00\x00\x00" .
                                     "\x00\x00\x00\x00\x00\x00";
+                                if(isset($distinct_key[3])) {
+                                    $old_distinct_key_id = 
+                                        unbase64Hash($distinct_key[3]);
+                                }
                                 $distinct_key_id = unbase64Hash(
                                     $distinct_key[0]);
                             } else {
@@ -1417,6 +1423,12 @@ class PhraseModel extends ParallelModel
                                 $to_retrieve);
                             $info = IndexManager::getWordInfo($index_name,
                                 $distinct_key_id, $shift, $mask);
+                            if($old_distinct_key_id != "") {
+                                $old_info = IndexManager::getWordInfo(
+                                    $index_name, $old_distinct_key_id, $shift,
+                                    $mask);
+                                $info = array_merge($info, $old_info);
+                            }
                             if($info != array()) {
                                 $tmp_keys = arrayColumnCount($info, 4, 3);
                                 $out_keys = array_merge($out_keys, $tmp_keys);

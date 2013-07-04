@@ -116,6 +116,7 @@ class IndexManager implements CrawlConstants
      */
     static function getVersion($index_name)
     {
+
         if(intval($index_name) < 1369754208) {
             return 0;
         } else {
@@ -143,7 +144,6 @@ class IndexManager implements CrawlConstants
     static function getWordInfo($index_name, $hash, $shift = 0, $mask = "",
         $threshold = -1)
     {
-
         $index = IndexManager::getIndex($index_name);
         if(!$index->dictionary) {
             return false;
