@@ -350,7 +350,7 @@ class IndexArchiveBundle implements CrawlConstants
                     $this->current_shard->getShardHeader();
                     $this->current_shard->read_only_from_disk = true;
                 } else {
-                    if(file_size($current_index_shard_file) > 
+                    if(filesize($current_index_shard_file) > 
                         self::NO_LOAD_SIZE) {
                         $this->addAdvanceGeneration();
                     } else {
