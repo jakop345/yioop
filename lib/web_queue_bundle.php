@@ -914,6 +914,8 @@ class WebQueueBundle implements Notifier
         $deleted = $this->to_crawl_table->deleted;
 
         for($i = 0; $i < $num_values; $i++) {
+            crawlTimeoutLog("..still rebuilding hash table. At entry %s of %s",
+            $i, $num_values);
             list($key, $value) = $this->to_crawl_table->getEntry($i);
             if(strcmp($key, $null) != 0
                 && strcmp($key, $deleted) != 0) {
