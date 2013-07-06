@@ -228,6 +228,7 @@ interface CrawlConstants
     const NUM_PARTITIONS = 'cz';
     const PARTITION_NUM = 'da';
     const ACTIVE_RANKERS = 'db';
+    const USER_RANKS = "dc";
 
     const NEEDS_OFFSET_FLAG = 0x7FFFFFFF;
 }

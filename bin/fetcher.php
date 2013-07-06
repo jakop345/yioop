@@ -395,6 +395,16 @@ class Fetcher implements CrawlConstants
     var $post_max_size;
 
     /**
+     * @var array
+     */
+    var $active_classifers;
+
+    /**
+     * @var array
+     */
+    var $active_rankers;
+
+    /**
      * Before receiving any data from a queue server's web app this is
      * the default assumed post_max_size in bytes
      */
@@ -450,6 +460,9 @@ class Fetcher implements CrawlConstants
         $this->no_process_links = false;
         $this->cache_pages = true;
         $this->post_max_size = self::DEFAULT_POST_MAX_SIZE;
+
+        $this->active_classifiers = array();
+        $this->active_rankers = array();
 
         //we will get the correct crawl order from a queue_server
         $this->crawl_order = self::PAGE_IMPORTANCE;
@@ -1651,7 +1664,7 @@ class Fetcher implements CrawlConstants
                 }
                 if(!empty($this->classifiers)) {
                     Classifier::labelPage($summarized_site_pages[$i],
-                        $this->classifiers, $this->active_classifers,
+                        $this->classifiers, $this->active_classifiers,
                         $this->active_rankers);
                 }
                 $i++;
