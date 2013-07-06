@@ -1121,6 +1121,13 @@ class Fetcher implements CrawlConstants
                     if(!$pages[self::START_PARTITION]) {
                         $archive_iterator->nextPages(1);
                     }
+                    if(isset($pages[self::PARTITION_NUM])) {
+                        crawlLog("  Done get data".
+                            " from file {$pages[self::PARTITION_NUM]}");
+                    }
+                    if(isset($pages[self::NUM_PARTITIONS])) {
+                        crawlLog("  of {$pages[self::NUM_PARTITIONS]} files.");
+                    }
                 }
                 if(isset($arc_data)) {
                     $info[self::ARC_DATA] = $arc_data;
@@ -1215,6 +1222,8 @@ class Fetcher implements CrawlConstants
             }
         }
         if(!empty($info[self::ACTIVE_CLASSIFIERS_DATA])){
+            $this->active_classifiers = $info[self::ACTIVE_CLASSIFIERS];
+            $this->active_rankers = $info[self::ACTIVE_RANKERS];
             /*
                The classifier data is set by the fetch controller for each
                active classifier, and is a compressed, serialized structure
@@ -1227,7 +1236,13 @@ class Fetcher implements CrawlConstants
                     $classifier = Classifier::newClassifierFromData(
                         $classifier_data);
                     $this->classifiers[] = $classifier;
-                    crawlLog("Classifying with '{$label}' classifier.");
+                    crawlLog("Loading '{$label}' classifier/ranker.");
+                    if(in_array($label, $this->active_classifiers)) {
+                        crawlLog("  Using '{$label}' as a classifier.");
+                    }
+                    if(in_array($label, $this->active_rankers)) {
+                        crawlLog("  Using '{$label}' as a ranker.");
+                    }
                 } else {
                     crawlLog("Skipping classifier '{$label}'; missing ".
                         "finalized data.");
@@ -1636,7 +1651,8 @@ class Fetcher implements CrawlConstants
                 }
                 if(!empty($this->classifiers)) {
                     Classifier::labelPage($summarized_site_pages[$i],
-                        $this->classifiers);
+                        $this->classifiers, $this->active_classifers,
+                        $this->active_rankers);
                 }
                 $i++;
             }

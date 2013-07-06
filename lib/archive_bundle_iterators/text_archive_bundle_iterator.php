@@ -325,6 +325,8 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
             $this->updatePartition($info);
             $info[self::ARC_DATA] = $this->updateBuffer("", true);
         }
+        $info[self::NUM_PARTITIONS] = $this->num_partitions;
+        $info[self::PARTITION_NUM] = $this->current_partition_num;
         $this->saveCheckpoint();
         return $info;
     }

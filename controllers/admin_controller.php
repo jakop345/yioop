@@ -940,6 +940,11 @@ class AdminController extends Controller implements CrawlConstants
             $crawl_params[self::ACTIVE_CLASSIFIERS] =
                 $seed_info['active_classifiers']['label'];
         }
+        if(isset($seed_info['active_rankers']['label'])) {
+            // Note that 'label' is actually an array of active class labels.
+            $crawl_params[self::ACTIVE_RANKERS] =
+                $seed_info['active_rankers']['label'];
+        }
         if(isset($seed_info['indexing_plugins']['plugins'])) {
             $crawl_params[self::INDEXING_PLUGINS] =
                 $seed_info['indexing_plugins']['plugins'];
@@ -1646,7 +1651,9 @@ class AdminController extends Controller implements CrawlConstants
         $seed_info["indexed_file_types"]["extensions"] = $filetypes;
 
         $data['CLASSIFIERS'] = array();
+        $data['RANKERS'] = array();
         $active_classifiers = array();
+        $active_rankers = array();
 
         foreach (Classifier::getClassifierList() as $classifier) {
             $label = $classifier->class_label;
@@ -1668,8 +1675,27 @@ class AdminController extends Controller implements CrawlConstants
             } else {
                 $data['CLASSIFIERS'][$label] = '';
             }
+            $ison = false;
+            if (isset($_REQUEST['ranker']) && !$loaded) {
+                if (isset($_REQUEST['ranker'][$label])) {
+                    $ison = true;
+                }
+            } else if ($loaded || !isset($_REQUEST['posted']) && 
+                isset($seed_info['active_rankers']['label'])) {
+                if (in_array($label,
+                    $seed_info['active_rankers']['label'])) {
+                    $ison = true;
+                }
+            }
+            if ($ison) {
+                $data['RANKERS'][$label] = 'checked="checked"';
+                $active_rankers[] = $label;
+            } else {
+                $data['RANKERS'][$label] = '';
+            }
         }
         $seed_info['active_classifiers']['label'] = $active_classifiers;
+        $seed_info['active_rankers']['label'] = $active_rankers;
 
         if(isset($seed_info['page_rules']['rule'])) {
             if(isset($seed_info['page_rules']['rule']['rule'])) {

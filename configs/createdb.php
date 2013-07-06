@@ -186,16 +186,18 @@ $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (4, 5,
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (5, 5,
     'Mélanger les indexes')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (6, 5,
-    'Options de fichier')");
+    'Classificateurs')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (7, 5,
-    'Éditeur de résultats')");
+    'Options de fichier')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (8, 5,
-    'Sources de recherche')");
+    'Éditeur de résultats')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (9, 5,
-    'Modifier les ordinateurs')");
+    'Sources de recherche')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (10, 5,
-    'Modifier les lieux')");
+    'Modifier les ordinateurs')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (11, 5,
+    'Modifier les lieux')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (12, 5,
     'Configurer')");
 
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (
@@ -232,9 +234,9 @@ $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (3, 15,
     'Quản lý chức vụ')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (
     4, 15, 'Quản lý sự bò')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (10, 15,
-    'Quản lý miền địa phương')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (11, 15,
+    'Quản lý miền địa phương')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (12, 15,
     'Sắp xếp hoạt động dựa theo hoạch định')");
 
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (1, 16,
@@ -253,17 +255,17 @@ $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (4, 20,
 'مدیریت خزش‌ها')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (5, 20,
     'ترکیب‌های خزش‌ها')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (6, 20,
-    'تنظیمات صفحه')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (7, 20,
-    'ویرایشگر نتایج')");
+    'تنظیمات صفحه')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (8, 20,
-'منابع جستجو')");
+    'ویرایشگر نتایج')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (9, 20,
-    'مدیریت دستگاه‌ها')");
+'منابع جستجو')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (10, 20,
-    'مدیریت زبان‌ها')");
+    'مدیریت دستگاه‌ها')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (11, 20,
+    'مدیریت زبان‌ها')");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (12, 20,
     'پیکربندی')");
 
 $db->execute("INSERT INTO USER_ROLE VALUES (1, 1)");

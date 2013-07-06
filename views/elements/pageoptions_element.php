@@ -144,25 +144,39 @@ class PageOptionsElement extends Element
         ?>
         </tr></table>
         <div class="top-margin"><b><?php
-            e(tl('pageoptions_element_classifiers_to_apply')) ?></b>
+            e(tl('pageoptions_element_classifiers_rankers')) ?></b>
        </div>
        <?php if (!empty($data['CLASSIFIERS'])) { ?>
-           <table class="classifiers-all"><tr>
+           <table class="classifiers-all">
+           <tr>
            <?php $cnt = 0;
                  $num_per_column = count($data['CLASSIFIERS']);
                  if ($num_per_column > 5) {
                      $num_per_column = ceil($num_per_column / 3);
                  }
-                 foreach ($data['CLASSIFIERS'] as $label => $checked) {
+                 foreach ($data['CLASSIFIERS'] as $label => $class_checked) {
+                     if(isset($data['RANKERS'][$label])) {
+                        $rank_checked = $data['RANKERS'][$label];
+                     } else {
+                        $rank_checked = "";
+                     }
                      if ($cnt % $num_per_column == 0) {
-                        ?><td><table class="classifiers-table" ><?php
+                        ?><td><table class="classifiers-table" ><tr><th></th>
+                        <th><?php e(tl('pageoptions_element_use_classify'));
+                        ?></th><th><?php e(tl('pageoptions_element_use_rank'));
+            ?></th></tr><?php
                      }
            ?>
                 <tr><td><label for="classifier-<?php e($label); ?>-id"><?php
                     e($label); ?>
-                </label></td><td><input type="checkbox" <?php e($checked) ?>
+                </label></td><td class="check"><input type="checkbox" 
+                    <?php e($class_checked) ?>
                     name="classifier[<?php  e($label); ?>]"
                     id="classifier-<?php e($label) ?>-id" value="true" /></td>
+                    <td class="check"><input type="checkbox" 
+                    <?php e($rank_checked) ?>
+                    name="ranker[<?php  e($label); ?>]"
+                    id="ranker-<?php e($label) ?>-id" value="true" /></td>
                 </tr>
            <?php
                     $cnt++;

@@ -225,6 +225,9 @@ interface CrawlConstants
     const MAX_DESCRIPTION_LEN = 'cw';
     const CACHE_PAGE_VALIDATORS = 'cx';
     const CACHE_PAGE_VALIDATION_DATA = 'cy';
+    const NUM_PARTITIONS = 'cz';
+    const PARTITION_NUM = 'da';
+    const ACTIVE_RANKERS = 'db';
 
     const NEEDS_OFFSET_FLAG = 0x7FFFFFFF;
 }

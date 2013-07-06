@@ -483,6 +483,14 @@ EOT;
         }
         $n[] = "";
 
+        $n[] = "[active_rankers]";
+        if(isset($info['active_rankers']['label'])) {
+            foreach ($info['active_rankers']['label'] as $label) {
+                $n[] = "label[] = '$label';";
+            }
+        }
+        $n[] = "";
+
         $site_types =
             array('allowed_sites' => 'url', 'disallowed_sites' => 'url',
                 'seed_sites' => 'url', 'page_rules'=>'rule');
@@ -626,7 +634,9 @@ EOT;
                 "indexed_file_types" => array(self::INDEXED_FILE_TYPES,
                     "extensions"),
                 "active_classifiers" => array(self::ACTIVE_CLASSIFIERS,
-                    'label')
+                    'label'),
+                "active_rankers" => array(self::ACTIVE_RANKERS,
+                    'label'),
             );
             foreach($updatable_site_info as $type => $type_info) {
                 if(isset($new_info[$type][$type_info[1]])) {

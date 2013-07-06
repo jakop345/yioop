@@ -1791,6 +1791,12 @@ ul.in-list li
     width: 97%;
 }
 
+.classifiers-table td.check
+{
+    padding: 0;
+    text-align: center;
+}
+
 .indexing-plugin-table
 {
    width:100%;

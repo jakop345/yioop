@@ -551,9 +551,22 @@ class FetchController extends Controller implements CrawlConstants
                    classifier so that each fetcher can reconstruct the same
                    classifiers.
                  */
+                $classifier_array = array();
                 if (isset($status[self::ACTIVE_CLASSIFIERS])) {
+                    $classifier_array = array_merge(
+                        $status[self::ACTIVE_CLASSIFIERS]);
+                    $info[self::ACTIVE_CLASSIFIERS] = 
+                        $status[self::ACTIVE_CLASSIFIERS];
+                }
+                if (isset($status[self::ACTIVE_RANKERS])) {
+                    $classifier_array = array_merge($classifier_array,
+                        $status[self::ACTIVE_RANKERS]);
+                    $info[self::ACTIVE_RANKERS] = 
+                        $status[self::ACTIVE_RANKERS];
+                }
+                if($classifier_array != array()) {
                     $classifiers_data = Classifier::loadClassifiersData(
-                            $status[self::ACTIVE_CLASSIFIERS]);
+                            $classifier_array);
                     $info[self::ACTIVE_CLASSIFIERS_DATA] = $classifiers_data;
                 }
             }

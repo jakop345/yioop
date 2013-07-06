@@ -1065,8 +1065,11 @@ class Classifier implements CrawlConstants
      * @param array $summary page summary to classify, passed by reference
      * @param array $classifiers list of Classifier instances, each prepared
      *  for classifying (via the prepareToClassify method)
+     * @param array &$active_classifiers
+     * @param array &$active_rankers
      */
-    static function labelPage(&$summary, $classifiers)
+    static function labelPage(&$summary, $classifiers, &$active_classifiers,
+        &$active_rankers)
     {
         foreach ($classifiers as $classifier) {
             $score = $classifier->classify($summary);
