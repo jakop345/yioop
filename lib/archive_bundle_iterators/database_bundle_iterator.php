@@ -210,6 +210,8 @@ class DatabaseBundleIterator extends ArchiveBundleIterator
         $db = $this->db;
         $result = $db->execute($query);
         while($row = $db->fetchArray($result)) {
+            crawlTimeoutLog("..Still getting pages from archive iterator. At %s"
+                ." of %s", $i, $num);
             $page = "";
             foreach($row as $key => $value) {
                 $page .= "$key{$this->field_value_separator}".

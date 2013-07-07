@@ -369,6 +369,8 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
         $pages = array();
         $page_count = 0;
         for($i = 0; $i < $num; $i++) {
+            crawlTimeoutLog("..Still getting pages from archive iterator. At %s"
+                ." of %s", $i, $num);
             $page = $this->nextPage($no_process);
             if(!$page) {
                 if($this->checkFileHandle()) {

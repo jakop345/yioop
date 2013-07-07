@@ -196,6 +196,8 @@ class WebArchiveBundleIterator extends ArchiveBundleIterator
         $num_to_get = 1;
         $objects = array();
         for($i = 0; $i < $num; $i += $num_to_get) {
+            crawlTimeoutLog("..Still getting pages from archive iterator. At %s"
+                ." of %s", $i, $num);
             $num_to_get = min($num, $this->partition->count -
                 $this->partition_index);
             $pre_new_objects = $this->partition->nextObjects($num_to_get);
