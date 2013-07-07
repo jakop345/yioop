@@ -2343,21 +2343,11 @@ class AdminController extends Controller implements CrawlConstants
                                 tl('admin_controller_news_mode_updated').
                                 "</h1>');";
                         } else {
-                            $cron_time = $this->cronModel->getCronTime(
-                                "news_process");
-                            $delta = time() - $cron_time;
-                            if($delta > 60) {
-                                CrawlDaemon::start("news_updater", 'none', "",
-                                    -1);
+                            CrawlDaemon::start("news_updater", 'none', "",
+                                -1);
                             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                                 tl('admin_controller_news_mode_updated').
                                 "</h1>');";
-                            } else {
-                            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                                tl('admin_controller_news_process_running').
-                                "</h1>');";
-                                $profile["NEWS_MODE"] = "news_off";
-                            }
                         }
                         $this->profileModel->updateProfile(
                             WORK_DIRECTORY, array(), $profile);
