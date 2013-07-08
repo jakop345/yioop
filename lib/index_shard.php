@@ -1721,6 +1721,7 @@ class IndexShard extends PersistentStructure implements
      */
     static function load($fname, &$data = NULL)
     {
+        crawlLog("Loading index shard $fname");
         $shard = new IndexShard($fname);
         if($data === NULL) {
             $fh = fopen($fname, "rb");
@@ -1732,6 +1733,7 @@ class IndexShard extends PersistentStructure implements
             $pos = self::HEADER_LENGTH;
         }
         self::headerToShardFields($header, $shard);
+        crawlLog("..done reading index shard header");
 
         if($data === NULL) {
             if(!($shard->prefixes_len > 0 )) return NULL;
@@ -1755,8 +1757,10 @@ class IndexShard extends PersistentStructure implements
             self::WORD_DATA_LEN);
         unset($words);
         array_walk($pre_words_array, 'IndexShard::makeWords', $shard);
+        crawlLog("..done reading making word structure");
         $shard->word_docs_packed = true;
         $shard->unpackWordDocs();
+        crawlLog("..done unpacking  posting lists");
         return $shard;
     }
 

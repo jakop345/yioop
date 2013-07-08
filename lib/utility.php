@@ -658,7 +658,7 @@ function crawlTimeoutLog($msg)
     } else {
         $out_msg = & $msg;
     }
-    crawlLog($out_msg);
+    crawlLog($out_msg." Current memory usage:".memory_get_usage());
     $cache[$hash] = microtime();
 }
 
