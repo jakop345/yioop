@@ -1757,10 +1757,10 @@ class IndexShard extends PersistentStructure implements
             self::WORD_DATA_LEN);
         unset($words);
         array_walk($pre_words_array, 'IndexShard::makeWords', $shard);
-        crawlLog("..done reading making word structure");
+        crawlLog("..done reading making index shar word structure");
         $shard->word_docs_packed = true;
         $shard->unpackWordDocs();
-        crawlLog("..done unpacking  posting lists");
+        crawlLog("..done unpacking index shard posting lists");
         return $shard;
     }
 

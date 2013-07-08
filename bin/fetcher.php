@@ -2484,8 +2484,8 @@ class Fetcher implements CrawlConstants
                 if(strlen($score_keys) % 8 != 0) {
                     $score_keys .= $keypad;
                 }
+                $doc_keys .= $score_keys;
             }
-            $doc_keys .= $score_keys;
             $this->found_sites[self::INVERTED_INDEX][$this->current_server
                 ]->addDocumentWords($doc_keys, self::NEEDS_OFFSET_FLAG,
                 $word_lists, $meta_ids, PhraseParser::$materialized_metas,
