@@ -71,11 +71,16 @@ class StaticView extends View
     if(MOBILE) {
         $logo = "resources/m-yioop.png";
     }
+    if(isset($_SERVER["PATH_INFO"])) {
+        $path_info = $_SERVER["PATH_INFO"];
+    } else {
+        $path_info = ".";
+    }
 ?>
 <div class="non-search center">
-<h1 class="logo"><a href="<?php e($_SERVER["PATH_INFO"]."/?".
+<h1 class="logo"><a href="<?php e($path_info."/?".
     CSRF_TOKEN."=".$data[CSRF_TOKEN]);?>"><img
-    src="<?php e($_SERVER["PATH_INFO"]."/".$logo); ?>"
+    src="<?php e($path_info."/".$logo); ?>"
     alt="<?php e(tl('static_view_title')); ?>" /></a><span><?php
     e($data['subtitle']);?></span></h1>
 </div>

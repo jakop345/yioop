@@ -84,7 +84,7 @@ class WebLayout extends Layout
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <?php }
             $path_info = (isset($_SERVER["PATH_INFO"])) ?
-                $_SERVER["PATH_INFO"].'/' : '';
+                $_SERVER["PATH_INFO"].'/' : '.';
         ?>
         <link rel="shortcut icon"
             href="<?php e($path_info); ?>favicon.ico" />

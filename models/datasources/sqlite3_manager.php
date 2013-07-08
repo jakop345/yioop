@@ -131,7 +131,7 @@ class Sqlite3Manager extends DatasourceManager
     /** {@inheritdoc} */
     function exec($sql)
     {
-        $result = $this->dbhandle->query($sql);
+        $result = @$this->dbhandle->query($sql);
 
         return $result;
     }
@@ -155,6 +155,9 @@ class Sqlite3Manager extends DatasourceManager
     /** {@inheritdoc} */
     function fetchArray($result)
     {
+        if(!$result) {
+            return false;
+        }
         if(!$this->pdo_flag) {
             $row = $result->fetchArray(SQLITE3_ASSOC);
         } else {

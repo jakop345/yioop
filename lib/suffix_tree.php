@@ -246,6 +246,9 @@ class SuffixTree
         $term = $this->text[$this->pos];
         $this->need_sym_link = -1;
         $this->remainder++;
+        if(!isset($this->text[$this->active_edge_index])) {
+            return;
+        }
         while($this->remainder > 0) {
             if ($this->active_len == 0) {
                 $this->active_edge_index = $this->pos;

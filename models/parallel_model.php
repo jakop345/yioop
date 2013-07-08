@@ -192,6 +192,7 @@ class ParallelModel extends Model implements CrawlConstants
                 }
                 $elapsed_times[] = $result["ELAPSED_TIME"];
                 unset($result["ELAPSED_TIME"]);
+                $ellipsis = "";
                 foreach($result as $lookup => $summary) {
                     if(isset($summaries[$lookup])) {
                         if(isset($summary[self::DESCRIPTION])) {
@@ -272,7 +273,7 @@ class ParallelModel extends Model implements CrawlConstants
         $db = $this->db;
         $db->selectDB(DB_NAME);
         foreach($lookups as $lookup => $lookup_info) {
-            $scheme = (is_string($lookup_info[0])) ?
+            $scheme = (isset($lookup_info[0]) && is_string($lookup_info[0])) ?
                 substr($lookup_info[0], 0, 3) : "";
             if(count($lookup_info) == 2 && ($scheme == 'htt' ||
                 $scheme == 'rec')) {
