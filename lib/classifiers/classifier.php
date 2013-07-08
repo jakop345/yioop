@@ -1079,17 +1079,20 @@ class Classifier implements CrawlConstants
                 if (!isset($summary[self::META_WORDS])) {
                     $summary[self::META_WORDS] = array();
                 }
-                $score = intval(floor(($score * 100) / 10) * 10);
-                $label_score = sprintf("%d", floor($score / 10) * 1000);
+                $truncated_score = intval(floor(($score * 100) / 10) * 10);
+                $label_score = sprintf("%d",
+                    floor($truncated_score / 10) * 1000);
                 $summary[self::META_WORDS][] = "class:{$label}";
                 $summary[self::META_WORDS][] = "class:{$label}:{$label_score}";
                 $min_score = intval(self::THRESHOLD * 100);
-                for ($s = $score; $s >= $min_score; $s -= 10) {
+                for ($s = $truncated_score; $s >= $min_score; $s -= 10) {
                     $summary[self::META_WORDS][] = "class:{$label}:{$s}plus";
                 }
             }
             if(in_array($label, $active_rankers)) {
-                $summary[self::USER_RANKS][$label] = $score;
+                //scores for rankings are four bytes
+                $summary[self::USER_RANKS][$label] = 
+                    intval(floor($score * 65536));
             }
         }
     }

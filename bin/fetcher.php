@@ -2377,6 +2377,7 @@ class Fetcher implements CrawlConstants
     function buildMiniInvertedIndex()
     {
         $start_time = microtime();
+        $keypad = "\x00\x00\x00\x00";
         crawlLog("  Start building mini inverted index ...  Current Memory:".
             memory_get_usage());
         $num_seen = count($this->found_sites[self::SEEN_URLS]);
@@ -2474,6 +2475,17 @@ class Fetcher implements CrawlConstants
             }
 
             $num_queue_servers = count($this->queue_servers);
+        /*    if(isset($site[self::USER_RANKS]) && 
+                count($site[self::USER_RANKS]) > 0) {
+                $score_keys = "";
+                foreach($site[self::USER_RANKS] as $label => $score) {
+                    $score_keys .= packInt($score);
+                }
+                if(strlen($score_keys) % 8 != 0) {
+                    $score_keys .= $keypad;
+                }
+            }
+            $doc_keys .= $score_keys; */
             $this->found_sites[self::INVERTED_INDEX][$this->current_server
                 ]->addDocumentWords($doc_keys, self::NEEDS_OFFSET_FLAG,
                 $word_lists, $meta_ids, PhraseParser::$materialized_metas,

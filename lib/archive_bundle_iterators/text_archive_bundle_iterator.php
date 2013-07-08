@@ -417,6 +417,7 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
         $matches = array();
         while((preg_match($this->delimiter, $this->buffer, $matches,
             PREG_OFFSET_CAPTURE)) != 1) {
+            crawlTimeoutLog("..still looking for a page in local buffer");
             $block = $this->getFileBlock();
             if(!$block ||
                 !$this->checkFileHandle() || $this->checkEof()) {
