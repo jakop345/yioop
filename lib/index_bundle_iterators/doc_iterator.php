@@ -212,6 +212,7 @@ class DocIterator extends IndexBundleIterator
         $shard = $index->getCurrentShard();
         $this->getShardInfo($this->current_generation);
         $doc_key_len = IndexShard::DOC_KEY_LEN;
+        $doc_id_len = IndexShard::DOC_ID_LEN;
         $num_docs_or_links = $shard->num_docs + $shard->num_link_docs;
         $pre_results = array();
         $num_docs_so_far = 0;

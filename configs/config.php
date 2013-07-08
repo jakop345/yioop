@@ -45,7 +45,7 @@ if(!defined('BASE_DIR') ||
     files.
  */
 ini_set('pcre.recursion_limit', 3000);
-ini_set('pcre.backtrack_limit', 1000000);
+ini_set('pcre.backtrack_limit', 100000);
 
 /** Don't display any query info*/
 define('NO_DEBUG_INFO', 0);

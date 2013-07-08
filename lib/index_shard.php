@@ -289,6 +289,11 @@ class IndexShard extends PersistentStructure implements
     const DOC_KEY_LEN = 8;
 
     /**
+     * Length of  DOC ID.
+     */
+    const DOC_ID_LEN = 24;
+
+    /**
      * Length of one posting ( a doc offset occurrence pair) in a posting list
      */
     const POSTING_LEN = 4;
@@ -623,6 +628,7 @@ class IndexShard extends PersistentStructure implements
     function makeItem($posting, $num_doc_or_links, $occurs = 0)
     {
         $doc_key_len = self::DOC_KEY_LEN;
+        $doc_id_len = self::DOC_ID_LEN;
         $offset = 0;
 
         list($doc_index, $position_list) =
@@ -692,7 +698,7 @@ class IndexShard extends PersistentStructure implements
         }
         if(!isset($item['KEY'])) {
             $doc_id = $this->getDocInfoSubstring(
-                $doc_loc + $doc_key_len, $num_keys * $doc_key_len);
+                $doc_loc + $doc_key_len, $doc_id_len);
         } else {
             $doc_id = $item['KEY'];
         }
@@ -1195,11 +1201,13 @@ class IndexShard extends PersistentStructure implements
             $this->word_docs_packed = false;
         }
         $docids_len = $this->docids_len;
+        $doc_id_len = self::DOC_ID_LEN;
         $doc_key_len = self::DOC_KEY_LEN;
         $row_len = $doc_key_len;
         $posting_len = self::POSTING_LEN;
         $num_items = floor($docids_len/$row_len);
         $item_cnt = 0;
+        crawlTimeoutLog(true);
         for($i = 0 ; $i < $docids_len; $i += $row_len) {
             crawlTimeoutLog("..still changing document offsets. At" .
                 " document %s of %s.", $item_cnt, $num_items);
@@ -1213,7 +1221,8 @@ class IndexShard extends PersistentStructure implements
             $key_count = ($num_keys % 2 == 0) ? $num_keys + 2: $num_keys + 1;
             $row_len = $doc_key_len * ($key_count);
             $id = substr($this->doc_infos, $i + $doc_key_len,
-                $num_keys * $doc_key_len);
+                $doc_id_len); /* id is only three keys of the list of keys,
+                remaining keys used for ranker */
             if(isset($docid_offsets[$id])) {
                 charCopy(packInt($docid_offsets[$id]), $this->doc_infos,
                     $i, $posting_len);

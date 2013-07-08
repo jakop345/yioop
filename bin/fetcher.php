@@ -2475,7 +2475,7 @@ class Fetcher implements CrawlConstants
             }
 
             $num_queue_servers = count($this->queue_servers);
-        /*    if(isset($site[self::USER_RANKS]) && 
+            if(isset($site[self::USER_RANKS]) && 
                 count($site[self::USER_RANKS]) > 0) {
                 $score_keys = "";
                 foreach($site[self::USER_RANKS] as $label => $score) {
@@ -2485,7 +2485,7 @@ class Fetcher implements CrawlConstants
                     $score_keys .= $keypad;
                 }
             }
-            $doc_keys .= $score_keys; */
+            $doc_keys .= $score_keys;
             $this->found_sites[self::INVERTED_INDEX][$this->current_server
                 ]->addDocumentWords($doc_keys, self::NEEDS_OFFSET_FLAG,
                 $word_lists, $meta_ids, PhraseParser::$materialized_metas,

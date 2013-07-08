@@ -1403,7 +1403,7 @@ class QueueServer implements CrawlConstants, Join
         }
         crawlLog(
             "{$this->server_name} is starting to process index data,".
-            " memory usage".memory_get_usage() . "...");
+            " memory usage: ".memory_get_usage() . "...");
         crawlLog("Processing index data in $file...");
 
         $start_time = microtime();
@@ -1424,8 +1424,8 @@ class QueueServer implements CrawlConstants, Join
         while($pos < $len_urls && $num <= $max_batch_sites_and_links) {
             crawlTimeoutLog("..still processing index data at position %s of ".
                 "out of %s", $pos, $len_urls);
-            $len_site = unpackInt(substr($seen_urls_string, $pos ,4));
-            if($len_site > 2*$this->page_range_request) {
+            $len_site = unpackInt(substr($seen_urls_string, $pos, 4));
+            if($len_site > 2 * $this->page_range_request) {
                 crawlLog("Site string too long, $len_site,".
                     " data file may be corrupted? Skip rest.");
                 $bad = true;
