@@ -224,9 +224,9 @@ class FetchController extends Controller implements CrawlConstants
             }
         }
         $chunk = false;
+        $archive_iterator = NULL;
         if($fetch_pages && $got_lock) {
             file_put_contents($lock_filename, serialize($request_start));
-            $archive_iterator = NULL;
             if($info[self::ARC_DIR] == "MIX" ||
                     file_exists($info[self::ARC_DIR])) {
                 $iterate_timestamp = $info[self::CRAWL_INDEX];
@@ -266,7 +266,7 @@ class FetchController extends Controller implements CrawlConstants
             }
             @unlink($lock_filename);
         }
-        if($archive_iterator->end_of_iterator) {
+        if($archive_iterator && $archive_iterator->end_of_iterator) {
             $info[self::END_ITERATOR] = true;
         }
         if (($chunk && $pages) || ($pages && !empty($pages))) {

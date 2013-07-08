@@ -106,12 +106,12 @@ class CrawlDaemon implements CrawlConstants
             $name_string = CrawlDaemon::getNameString(self::$name,
                 self::$subname);
             if(($now - $time) > PROCESS_TIMEOUT) {
-                crawlLog($name_string.": ".($now - $time) . " 
-                    seconds has elapsed since processHandler last called.",
+                crawlLog($name_string.": ".($now - $time) .
+                    " seconds has elapsed since processHandler last called.",
                     NULL, true);
                 crawlLog("Timeout exceeded...", NULL, true);
-                crawlLog("Timeout back trace...", true);
-                crawlLog(print_r(debug_backtrace(), true), true);
+                crawlLog("Timeout back trace...", NULL, true);
+                crawlLog(print_r(debug_backtrace(), true), NULL, true);
             }
             crawlLog("Stopping $name_string ...", NULL, true);
             exit();
