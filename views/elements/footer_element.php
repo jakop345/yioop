@@ -53,13 +53,18 @@ class FooterElement extends Element
      */
     function render($data)
     {
+        if(isset($_SERVER["PATH_INFO"])) {
+            $path_info = $_SERVER["PATH_INFO"];
+        } else {
+            $path_info = ".";
+        }
     ?>
             <div>
-            - <a href="<?php e($_SERVER["PATH_INFO"]); ?>/blog.php"><?php
+            - <a href="<?php e($path_info); ?>/blog.php"><?php
             e(tl('footer_element_blog')); ?></a> -
-            <a href="<?php e($_SERVER["PATH_INFO"]); ?>/privacy.php"><?php
+            <a href="<?php e($path_info); ?>/privacy.php"><?php
             e(tl('footer_element_privacy')); ?></a> -
-            <a href="<?php e($_SERVER["PATH_INFO"]); ?>/bot.php"><?php
+            <a href="<?php e($path_info); ?>/bot.php"><?php
             e(tl('footer_element_bot')); ?></a> - <?php if(MOBILE) {
                 e('<br /> - ');
             }
