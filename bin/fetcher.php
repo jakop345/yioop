@@ -1235,8 +1235,12 @@ class Fetcher implements CrawlConstants
             }
         }
         if(!empty($info[self::ACTIVE_CLASSIFIERS_DATA])){
-            $this->active_classifiers = $info[self::ACTIVE_CLASSIFIERS];
-            $this->active_rankers = $info[self::ACTIVE_RANKERS];
+            $this->active_classifiers = isset($info[self::ACTIVE_CLASSIFIERS])
+                 && is_array( $info[self::ACTIVE_CLASSIFIERS]) ?
+                $info[self::ACTIVE_CLASSIFIERS] : array();
+            $this->active_rankers = isset($info[self::ACTIVE_RANKERS])
+                 && is_array($info[self::ACTIVE_RANKERS]) ?
+                $info[self::ACTIVE_RANKERS] : array();
             /*
                The classifier data is set by the fetch controller for each
                active classifier, and is a compressed, serialized structure
@@ -2564,9 +2568,8 @@ class Fetcher implements CrawlConstants
                 crawlLog("..Inverting ".$site[self::URL]."...took > 5s.");
             }
             crawlTimeoutLog("..Still building inverted index. Have processed ".
-                "%s of %s documents.\nLast url processed was %s. Memory".
-                " usage is: %s.", $i, $num_seen, $site[self::URL],
-                memory_get_usage());
+                "%s of %s documents.\nLast url processed was %s.", 
+                $i, $num_seen, $site[self::URL]);
         }
         if($this->crawl_type == self::ARCHIVE_CRAWL) {
             $this->recrawl_check_scheduler = true;

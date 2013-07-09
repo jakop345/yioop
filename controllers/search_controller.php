@@ -141,7 +141,6 @@ class SearchController extends Controller implements CrawlConstants
                 return;
             }
         }
-
         $data['ELAPSED_TIME'] = changeInMicrotime($start_time);
         if ($view == "serial" || $view == "json") {
             if(isset($data["PAGES"])) {

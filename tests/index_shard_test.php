@@ -370,6 +370,8 @@ class IndexShardTest extends UnitTest
         foreach($predicted_offsets as $key =>$offset) {
             $this->assertTrue(isset($c_data[$key]),
                 "Summary key matches predicted $i");
+echo $key." ".$c_data[$key][CrawlConstants::SUMMARY_OFFSET]." ".
+    $offset."\n<br />";
             $this->assertEqual($c_data[$key][CrawlConstants::SUMMARY_OFFSET],
                 $offset,  "Summary offset matches predicted $i");
             $i++;

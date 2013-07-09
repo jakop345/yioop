@@ -628,7 +628,6 @@ class IndexShard extends PersistentStructure implements
     function makeItem($posting, $num_doc_or_links, $occurs = 0)
     {
         $doc_key_len = self::DOC_KEY_LEN;
-        $doc_id_len = self::DOC_ID_LEN;
         $offset = 0;
 
         list($doc_index, $position_list) =
@@ -644,6 +643,9 @@ class IndexShard extends PersistentStructure implements
             unpack("N*", $this->getDocInfoSubstring($doc_loc, $doc_key_len));
 
         $num_keys = $doc_int & 255;
+        $doc_id_len = ($num_keys > 3) ? self::DOC_ID_LEN : $num_keys  * 
+            $doc_key_len; /* original format allowed shorter doc ids,
+                keys might be used for other things than ranking */
         $doc_len = ($doc_int >> 8);
         $item[self::GENERATION] = $this->generation;
 
@@ -697,8 +699,19 @@ class IndexShard extends PersistentStructure implements
             $type_weight = floatval(LINK_WEIGHT);
         }
         if(!isset($item['KEY'])) {
+            $id_pos = $doc_loc + $doc_key_len;
             $doc_id = $this->getDocInfoSubstring(
-                $doc_loc + $doc_key_len, $doc_id_len);
+                $id_pos, $doc_id_len);
+            if($num_keys > 3 && $is_doc) {
+                $user_rank_string = $this->getDocInfoSubstring(
+                    $id_pos + $doc_id_len, ($num_keys - 3) * $doc_key_len);
+                $item[self::USER_RANKS] = array_values(
+                    unpack("N*", $user_rank_string));
+                $last = count($item[self::USER_RANKS]);
+                if($last > 0 && $item[self::USER_RANKS][$last - 1] == 0) {
+                    unset($item[self::USER_RANKS][$last - 1]);
+                }
+            }
         } else {
             $doc_id = $item['KEY'];
         }
@@ -726,9 +739,16 @@ class IndexShard extends PersistentStructure implements
                     $this->num_docs + $this->num_link_docs,
                     floatval(LINK_WEIGHT));
             }
-            $item[self::SCORE] = $item[self::DOC_RANK] 
-                * $item[self::RELEVANCE]; /*crude score not used for final
-                    results */
+            $aux_scores = 1;
+            if(isset($item[self::USER_RANKS])) {
+                foreach($item[self::USER_RANKS] as $score) {
+                    $aux_scores *= $score/6553.6;
+                }
+            }
+            $item[self::SCORE] = $item[self::DOC_RANK]
+                * $item[self::RELEVANCE] * $aux_scores;
+                     /*crude score not used for final
+                        results */
         }
 
         return array($doc_id, $num_keys, $item);
@@ -1201,7 +1221,6 @@ class IndexShard extends PersistentStructure implements
             $this->word_docs_packed = false;
         }
         $docids_len = $this->docids_len;
-        $doc_id_len = self::DOC_ID_LEN;
         $doc_key_len = self::DOC_KEY_LEN;
         $row_len = $doc_key_len;
         $posting_len = self::POSTING_LEN;
@@ -1218,6 +1237,8 @@ class IndexShard extends PersistentStructure implements
                 $doc_info_string));
             list($doc_len, $num_keys) =
                 $this->unpackDoclenNum($doc_len_info);
+            $doc_id_len = ($num_keys > 3) ? self::DOC_ID_LEN: $num_keys *
+                $doc_key_len;
             $key_count = ($num_keys % 2 == 0) ? $num_keys + 2: $num_keys + 1;
             $row_len = $doc_key_len * ($key_count);
             $id = substr($this->doc_infos, $i + $doc_key_len,
@@ -1491,7 +1512,7 @@ class IndexShard extends PersistentStructure implements
             /* we are ignoring the first four bytes which contains
                generation info
              */
-            crawlTimeoutLog("..still unpacking posting lists. At" .
+            crawlTimeoutLog("..still unpacking index  posting lists. At" .
                 " list %s of %s.", $cnt, $num_lists);
             if((ord($postings_info[0]) & 0x80) > 0 ) {
                 $postings_info[0] = chr(ord($postings_info[0]) - 0x80);
@@ -1757,7 +1778,7 @@ class IndexShard extends PersistentStructure implements
             self::WORD_DATA_LEN);
         unset($words);
         array_walk($pre_words_array, 'IndexShard::makeWords', $shard);
-        crawlLog("..done reading making index shar word structure");
+        crawlLog("..done reading making index shard word structure");
         $shard->word_docs_packed = true;
         $shard->unpackWordDocs();
         crawlLog("..done unpacking index shard posting lists");

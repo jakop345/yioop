@@ -1053,12 +1053,36 @@ class PhraseModel extends ParallelModel
         if($raw == 0) {
             // initialize scores
             $sort_start = microtime();
+            $max_user_ranks = 0;
             for($i = 0; $i < $result_count; $i++) {
                 $pages[$i]["OUT_SCORE"] = 0;
+                if(isset($pages[$i][self::USER_RANKS])) {
+                    $j = count($pages[$i][self::USER_RANKS]);
+                    if($max_user_ranks < $j) {
+                        $max_user_ranks = $j;
+                    }
+                }
+            }
+            if($max_user_ranks > 0) {
+                for($i = 0; $i < $result_count; $i++) {
+                    for($j = 0; $j < $max_user_ranks; $j++) {
+                        if(isset($pages[$i][self::USER_RANKS][$j])) {
+                            $pages[$i]["USCORE$j"] =
+                                $pages[$i][self::USER_RANKS][$j];
+                        } else {
+                            $pages[$i]["USCORE$j"] = 0;
+                        }
+                    }
+                }
             }
             $subscore_fields = array(self::DOC_RANK, self::RELEVANCE);
             if($use_proximity) {
                 $subscore_fields[] = self::PROXIMITY;
+            }
+            if($max_user_ranks > 0) {
+                for($j = 0; $j < $max_user_ranks; $j++) {
+                    $subscore_fields[] = "USCORE$j";
+                }
             }
             $num_fields = count($subscore_fields);
             // Compute Reciprocal Rank Fusion Score

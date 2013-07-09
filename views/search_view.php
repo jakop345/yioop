@@ -312,15 +312,23 @@ class SearchView extends View implements CrawlConstants
                 }
                 if(MOBILE && $aux_link_flag) {e("<br />");}
                 if(isset($page[self::SCORE])) {
+                    ?><span title="<?php
                     e(tl('search_view_rank',
-                        number_format($page[self::DOC_RANK], 2)));
+                        number_format($page[self::DOC_RANK], 2))."\n");
                     e(tl('search_view_relevancy',
-                        number_format($page[self::RELEVANCE], 2) ));
+                        number_format($page[self::RELEVANCE], 2) )."\n");
                     e(tl('search_view_proximity',
-                        number_format($page[self::PROXIMITY], 2) )." ");
-                    e(tl('search_view_score', $page[self::SCORE]));
+                        number_format($page[self::PROXIMITY], 2) )."\n");
+                    if(isset($page[self::USER_RANKS])) {
+                        foreach($page[self::USER_RANKS] as $label => $score) {
+                            e($label.":".number_format($score/6553.6, 2)."\n");
+                        }
+                    }
+                    ?>" ><?php
+                    e(tl('search_view_score', $page[self::SCORE]));?></span>
+                    <?php
                 }
-                 ?>
+                ?>
                 </p>
             </div>
 

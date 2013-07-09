@@ -425,12 +425,12 @@ class GroupIterator extends IndexBundleIterator
                 }
             }
             $item[self::RELEVANCE] = $relevance;
-            $item[self::SCORE] = $item[self::DOC_RANK]*pow(1.1, $relevance);
+            $item[self::SCORE] = $item[self::DOC_RANK]* $relevance;
             $item[self::KEY] = $key;
             $item[self::CRAWL_TIME] = $index_name;
             $item[self::HASH] = $hash;
             $item[self::INLINKS] = substr($key,
-                2*IndexShard::DOC_KEY_LEN, IndexShard::DOC_KEY_LEN);
+                2 * IndexShard::DOC_KEY_LEN, IndexShard::DOC_KEY_LEN);
         }
         return $item;
      }

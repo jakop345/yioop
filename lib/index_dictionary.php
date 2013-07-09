@@ -585,6 +585,9 @@ class IndexDictionary implements CrawlConstants
      function getWordInfoTier($word_id, $raw, $tier, $shift = 0,
         $mask = "", $threshold = -1)
      {
+        $previous_generation = -2;
+        $previous_id = -2;
+        $remember_generation = -2;
         if(isset($this->fhs)) {
             $this->tier_fhs[$this->read_tier] = $this->fhs;
             if(isset($this->tier_fhs[$tier])) {
@@ -601,7 +604,7 @@ class IndexDictionary implements CrawlConstants
             $word_id = unbase64Hash($word_id);
         }
         $word_key_len = strlen($word_id);
-        if(strlen($word_id) < 1) { 
+        if(strlen($word_id) < 1) {
             return false;
         }
         if($mask != "") {
@@ -715,16 +718,15 @@ class IndexDictionary implements CrawlConstants
                times within one shard and each time merged with the
                dictionary. Only the last such save has useful data.
              */
-            if($tmp[3] > $max_entry_count) {
-                $tmp[3] = 1;
-            }
-            if($previous_generation == $tmp[0] && $previous_id == $id) {
-                array_pop($info);
-            }
-            $this->checkMaskAndAdd($id, $word_id, $mask, $mask_len, $tmp,
-                $info, $total_count, $previous_generation, $previous_id);
-            if($threshold > 0 && $total_count > $threshold) {
-                return $info;
+            if($tmp[3] < $max_entry_count) {
+                if($previous_generation == $tmp[0] && $previous_id == $id) {
+                    array_pop($info);
+                }
+                $this->checkMaskAndAdd($id, $word_id, $mask, $mask_len, $tmp,
+                    $info, $total_count, $previous_generation, $previous_id);
+                if($threshold > 0 && $total_count > $threshold) {
+                    return $info;
+                }
             }
         }
         //until last record with word id
