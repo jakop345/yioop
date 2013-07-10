@@ -1912,7 +1912,7 @@ class AdminController extends Controller implements CrawlConstants
             (getLocaleDirection() == 'ltr') ? 'right': 'left';
 
         $classifiers = Classifier::getClassifierList();
-
+        $start_finalizing = false;
         if (isset($_REQUEST['arg']) &&
             in_array($_REQUEST['arg'], $possible_arguments)) {
             $label = $this->clean($_REQUEST['class_label'], 'string');
@@ -1957,6 +1957,7 @@ class AdminController extends Controller implements CrawlConstants
                     CrawlDaemon::start("classifier_trainer", $label, '', -1);
                     $classifier = $classifiers[$label];
                     $classifier->finalized = Classifier::FINALIZING;
+                    $start_finalizing = true;
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\">".
                         tl('admin_controller_finalizing_classifier').
                         '</h1>\');';
@@ -1993,14 +1994,16 @@ class AdminController extends Controller implements CrawlConstants
         }
 
         $data['classifiers'] = $classifiers;
-        $reload = false;
+        $data['reload'] = false;
         foreach($classifiers as $label => $classifier) {
             if($classifier->finalized == Classifier::FINALIZING) {
-                $reload = true;
+                $data['reload'] = true;
                 break;
             }
         }
-        if($reload) {
+        if($data['reload'] && !$start_finalizing) {
+            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\">".
+                tl('admin_controller_finalizing_classifier'). '</h1>\');';
         }
         return $data;
     }

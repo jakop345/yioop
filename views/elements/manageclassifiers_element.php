@@ -107,7 +107,8 @@ class ManageclassifiersElement extends Element
                         e(tl('manageclassifiers_finalize'));
                     }
                 } else if ($classifier->finalized == Classifier::FINALIZING) {
-                    e(tl('manageclassifiers_finalizing'));
+                    e("<span class='red'>".tl('manageclassifiers_finalizing').
+                      "</span>");
                 }
                 ?></td>
                 <td><a href="<?php e($base_url)
@@ -119,6 +120,19 @@ class ManageclassifiersElement extends Element
         </table>
         <?php } // endif for available classifiers ?>
         </div>
+        <?php if($data['reload']) { ?>
+            <script type="text/javascript">
+            var sec = 1000;
+            function classifierUpdate()
+            {
+                window.location = "?c=admin&<?php
+                    e(CSRF_TOKEN."=".$data[CSRF_TOKEN]);
+                    ?>&a=manageClassifiers";
+            }
+            setTimeout(classifierUpdate, 5 * sec);
+            </script>
+        <?php
+        } ?>
     <?php
     }
 }

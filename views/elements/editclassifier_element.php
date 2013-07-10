@@ -134,6 +134,12 @@ class EditclassifierElement extends Element
                         name="label_docs_keywords" />
                     <button class="button-box" type="submit"><?php
                         e(tl('editclassifier_load')) ?></button>
+                    <button class="button-box back-dark-gray" type="button"
+                        onclick="window.location='<?php
+                        e("?c=admin&a=manageClassifiers&arg=finalizeclassifier".
+                            "&".CSRF_TOKEN."=".$data[CSRF_TOKEN].
+                            "&class_label=".$data['class_label']); ?>'"><?php
+                        e(tl('editclassifier_finalize')) ?></button>
                 </td>
             </tr>
             <tr>

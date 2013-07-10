@@ -121,6 +121,12 @@ p
     color: gray;
 }
 
+.back-dark-gray
+{
+    background-color: #CCC;
+}
+
+
 .gray-link
 {
     color: gray;
