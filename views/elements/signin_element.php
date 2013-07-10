@@ -47,7 +47,7 @@ class SigninElement extends Element
     /**
      *  Method responsible for drawing links to settings and login panels
      *
-     *  @param array $data makes use of the YIOOP_TOKEN for anti CSRF attacks
+     *  @param array $data makes use of the CSRF_TOKEN for anti CSRF attacks
      */
     function render($data)
     {

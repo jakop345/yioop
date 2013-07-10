@@ -1347,6 +1347,7 @@ class QueueServer implements CrawlConstants, Join
         $robot_table_name = CRAWL_DIR."/".self::robot_table_name;
         if(file_exists($robot_table_name)) {
             $robot_table = unserialize(file_get_contents($robot_table_name));
+            if(!is_array($robot_table)) { return; }
             $recent = 0 ;
             foreach($robot_table as $robot_name => $robot_data) {
                 if($robot_data[2] > $recent) {

@@ -1521,8 +1521,10 @@ class IndexShard extends PersistentStructure implements
                 $postings_info = self::HALF_BLANK . $postings_info;
                 $this->words[$word_id] = $postings_info;
             } else {
-                list(, $offset, $len) = unpack("N*", substr($postings_info, 4,
+                $tmp = unpack("N*", substr($postings_info, 4,
                     8));
+                if(count($tmp) < 3) {continue; }
+                list(, $offset, $len) = $tmp;
                 $diff_offset = $offset - $base_offset;
                 $postings = substr($this->word_docs, $diff_offset, $len);
                 if($diff_offset > $mega) {

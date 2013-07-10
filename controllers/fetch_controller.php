@@ -292,6 +292,7 @@ class FetchController extends Controller implements CrawlConstants
     {
         $view = "fetch";
         $info_flag = false;
+        $logging = "";
         $necessary_fields = array('byte_counts', 'current_part', 'hash_data',
             'hash_part', 'num_parts', 'part');
         $part_flag = true;
