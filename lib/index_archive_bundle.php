@@ -232,17 +232,16 @@ class IndexArchiveBundle implements CrawlConstants
      * the dictionary of the old shard is copied to the bundles dictionary
      * and a log-merge performed if needed
      *
-     * @param object $index_shard a mini inverted index of word_key=>doc data
+     * @param int $num_docs number of docs in the shard about ot be added
      * @param object $callback object with join function to be
      *      called if process is taking too long
      * @return int the active generation after the check and possible change has
      *      been performed
      */
-    function initGenerationToAdd($index_shard, $callback = NULL,
+    function initGenerationToAdd($add_num_docs, $callback = NULL,
         $blocking = false)
     {
         $current_num_docs = $this->getActiveShard()->num_docs;
-        $add_num_docs = $index_shard->num_docs;
         if($current_num_docs + $add_num_docs > $this->num_docs_per_generation) {
             if($blocking == true) {
                 return -1;

@@ -1464,6 +1464,7 @@ class QueueServer implements CrawlConstants, Join
             count($sites[self::SEEN_URLS]) > 0) {
             $seen_sites = $sites[self::SEEN_URLS];
             $seen_sites = array_values($seen_sites);
+            unset($sites[self::SEEN_URLS]);
             $num_seen = count($seen_sites);
             crawlLog("SEEN_URLS array had $num_seen sites.");
         } else {
@@ -1496,15 +1497,10 @@ class QueueServer implements CrawlConstants, Join
                 $recent_urls_count++;
             }
         }
-
         if(isset($sites[self::INVERTED_INDEX])) {
             $index_shard =  & $sites[self::INVERTED_INDEX];
-            if($index_shard->word_docs_packed) {
-                $index_shard->unpackWordDocs();
-            }
-            $generation =
-                $this->index_archive->initGenerationToAdd($index_shard,
-                    $this, $blocking);
+            $generation = $this->index_archive->initGenerationToAdd(
+                    $index_shard->num_docs, $this, $blocking);
             if($generation == -1) {
                 crawlLog("Indexing waiting for merge tiers to ".
                     "complete before write partition. A");
@@ -1529,8 +1525,9 @@ class QueueServer implements CrawlConstants, Join
                     }
                     $summary_offsets[$hash] = $site[self::SUMMARY_OFFSET];
                 }
+                unset($seen_sites);
             }
-            crawlLog("C. Init local shard, Store Summaries memory usage".
+            crawlLog("C. Init local shard, store Summaries memory usage:".
                 memory_get_usage() .
                 " time: ".(changeInMicrotime($start_time)));
             $start_time = microtime();
@@ -1538,14 +1535,14 @@ class QueueServer implements CrawlConstants, Join
 
             $index_shard->changeDocumentOffsets($summary_offsets);
 
-            crawlLog("D. Update shard offsets. Memory usage".memory_get_usage()
+            crawlLog("D. Update shard offsets. Memory usage:".memory_get_usage()
                 ." time: ".(changeInMicrotime($start_time)));
             $start_time = microtime();
 
             $this->index_archive->addIndexData($index_shard);
             $this->index_dirty = true;
         }
-        crawlLog("E. Add index shard. Memory usage".memory_get_usage().
+        crawlLog("E. Add index shard. Memory usage:".memory_get_usage().
             " time: ".(changeInMicrotime($start_time)));
 
 

@@ -2395,6 +2395,7 @@ class Fetcher implements CrawlConstants
             $this->found_sites[self::INVERTED_INDEX][$this->current_server] =
                 new IndexShard("fetcher_shard_{$this->current_server}");
         }
+        crawlTimeoutLog(true);
         for($i = 0; $i < $num_seen; $i++) {
             $interim_time = microtime();
             $site = $this->found_sites[self::SEEN_URLS][$i];

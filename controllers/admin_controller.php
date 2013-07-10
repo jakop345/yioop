@@ -1993,6 +1993,15 @@ class AdminController extends Controller implements CrawlConstants
         }
 
         $data['classifiers'] = $classifiers;
+        $reload = false;
+        foreach($classifiers as $label => $classifier) {
+            if($classifier->finalized == Classifier::FINALIZING) {
+                $reload = true;
+                break;
+            }
+        }
+        if($reload) {
+        }
         return $data;
     }
 
