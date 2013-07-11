@@ -45,8 +45,14 @@ require_once "datasource_manager.php";
  * This is concrete class, implementing
  * the abstract class DatasourceManager
  * for the MySql DBMS. Method explanations
- * are from the parent class.
-
+ * are from the parent class. Originally,
+ * it was implemented using php mysql_ interface.
+ * In July, 2013, it was rewritten to use 
+ * mysqli_ interface as the former interface was
+ * deprecated. This was a minimal rewrite and
+ * does not yet use the more advanced features
+ * of mysqli_
+ *
  * @author Chris Pollett
  *
  * @package seek_quarry
@@ -60,35 +66,43 @@ class MysqlManager extends DatasourceManager
      */
     var $special_quote = "`";
 
+    /**
+     * Connection to DB opened by this MysqlManager instance
+     * @var resource
+     */
+    var $conn;
+
     /** {@inheritdoc} */
     function __construct()
     {
         parent::__construct();
+        $this->conn = NULL;
     }
 
     /** {@inheritdoc} */
     function connect($db_host = DB_HOST, $db_user = DB_USER,
         $db_password = DB_PASSWORD)
     {
-        return mysql_connect($db_host, $db_user, $db_password);
+        $this->conn = mysqli_connect($db_host, $db_user, $db_password);
+        return $this->conn;
     }
 
     /** {@inheritdoc} */
     function selectDB($db_name)
     {
-        return mysql_selectDB($db_name);
+        return mysqli_select_db($this->conn, $db_name);
     }
 
     /** {@inheritdoc} */
     function disconnect()
     {
-        mysql_close();
+        mysqli_close($this->conn);
     }
 
     /** {@inheritdoc} */
     function exec($sql)
     {
-        $result = mysql_query($sql);
+        $result = mysqli_query($this->conn, $sql);
 
         return $result;
     }
@@ -96,20 +110,20 @@ class MysqlManager extends DatasourceManager
     /** {@inheritdoc} */
     function affectedRows()
     {
-        return mysql_affected_rows();
+        return mysqli_affected_rows($this->conn);
     }
 
 
     /** {@inheritdoc} */
     function insertID()
     {
-        return mysql_insert_id();
+        return mysqli_insert_id($this->conn);
     }
 
     /** {@inheritdoc} */
     function fetchArray($result)
     {
-        $row = mysql_fetch_array($result, MYSQL_ASSOC);
+        $row = mysqli_fetch_array($result, MYSQLI_ASSOC);
 
         return $row;
     }
@@ -118,7 +132,7 @@ class MysqlManager extends DatasourceManager
     /** {@inheritdoc} */
     function escapeString($str)
     {
-        return mysql_real_escape_string($str);
+        return mysqli_real_escape_string($this->conn, $str);
     }
 
 

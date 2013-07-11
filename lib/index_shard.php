@@ -1409,7 +1409,7 @@ class IndexShard extends PersistentStructure implements
         while($pos < $word_postings_len) {
             if($with_logging) {
                 crawlTimeoutLog("..packing index shard words at %s of %s.",
-                    $pos, $word_postings_lens);
+                    $pos, $word_postings_len);
             }
             $word_id = substr($this->word_postings, $pos, $key_len);
             $len = unpackInt(substr($this->word_postings,
