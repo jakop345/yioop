@@ -61,13 +61,22 @@ function addRegexDelimiters($expression)
  * @param string &$destination string to copy to
  * @param int $start starting offset
  * @param int $length number of bytes to copy
+ * @param string $timeout_msg for long copys message to print if taking more
+ *      than 30 seconds
  */
-function charCopy($source, &$destination, $start, $length)
+function charCopy($source, &$destination, $start, $length, $timeout_msg = "")
 {
     $endk = $length - 1;
     $end = $start + $endk;
-    for($j = $end, $k = $endk; $j >= $start; $j--, $k--) {
-        $destination[(int)$j] = $source[(int)$k];
+    if($timeout_msg == "") {
+        for($j = $end, $k = $endk; $j >= $start; $j--, $k--) {
+            $destination[(int)$j] = $source[(int)$k];
+        }
+    } else {
+        for($j = $end, $k = $endk; $j >= $start; $j--, $k--) {
+            $destination[(int)$j] = $source[(int)$k];
+            crawlTimeoutLog($timeout_msg);
+        }
     }
 }
 
@@ -646,7 +655,7 @@ function crawlTimeoutLog($msg)
         $cache = array();
         return;
     }
-    $hash = crawlHash($msg);
+    $hash = crawlHash($msg, true);
     if(!isset($cache[$hash])) {
         $cache[$hash] = microtime();
     }

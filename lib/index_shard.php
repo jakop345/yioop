@@ -1194,7 +1194,7 @@ class IndexShard extends PersistentStructure implements
                     assign!!! PHP is crazy*/
             }
             charCopy($tmp_string, $this->word_postings,
-                $write_offset, $tmp_len);
+                $write_offset, $tmp_len, "..index shard final charCopy..");
         }
 
         $this->words = array();
@@ -1299,7 +1299,7 @@ class IndexShard extends PersistentStructure implements
             $fh = fopen($this->filename, "wb");
             fwrite($fh, $header);
             fwrite($fh, $this->prefixes);
-            $this->packWords($fh);
+            $this->packWords($fh, $with_logging);
             if($with_logging) {
                 crawlLog("Saving index shard .. wrote dictionary");
             }
@@ -1389,11 +1389,10 @@ class IndexShard extends PersistentStructure implements
      * mergeWordPostingsToString has just been called.
      *
      * @param resource $fh a file handle to write the dictionary to, if desired
-     * @param bool $to_string whether to return a string containing the packed
-     *      data
-
+     * @param bool $with_logging whether to write progress log messages every
+     *      30 seconds
      */
-    function packWords($fh = NULL)
+    function packWords($fh = NULL, $with_logging = false)
     {
         if($this->word_docs_packed) {
             return;
@@ -1408,6 +1407,10 @@ class IndexShard extends PersistentStructure implements
         $pos = 0;
         $two_doc_len = 2 * self::DOC_KEY_LEN;
         while($pos < $word_postings_len) {
+            if($with_logging) {
+                crawlTimeoutLog("..packing index shard words at %s of %s.",
+                    $pos, $word_postings_lens);
+            }
             $word_id = substr($this->word_postings, $pos, $key_len);
             $len = unpackInt(substr($this->word_postings,
                 $pos + $key_len, $posting_len));

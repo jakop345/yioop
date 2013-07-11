@@ -110,8 +110,6 @@ class CrawlDaemon implements CrawlConstants
                     " seconds has elapsed since processHandler last called.",
                     NULL, true);
                 crawlLog("Timeout exceeded...", NULL, true);
-                crawlLog("Timeout back trace...", NULL, true);
-                crawlLog(print_r(debug_backtrace(), true), NULL, true);
             }
             crawlLog("Stopping $name_string ...", NULL, true);
             exit();
