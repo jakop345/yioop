@@ -117,17 +117,6 @@ class FetchController extends Controller implements CrawlConstants
     function schedule()
     {
         $view = "fetch";
-
-        if(isset($_REQUEST['crawl_time'])) {;
-            $crawl_time = $this->clean($_REQUEST['crawl_time'], 'int');
-            if(isset($_REQUEST['check_crawl_time'])) {
-                $check_crawl_time = $this->clean(
-                    $_REQUEST['check_crawl_time'], 'int');
-            }
-        } else {
-            $crawl_time = 0;
-            $check_crawl_time = 0;
-        }
         // set up query
         $data = array();
         $schedule_filename = CRAWL_DIR."/schedules/".
@@ -143,32 +132,7 @@ class FetchController extends Controller implements CrawlConstants
                 so knows the crawl time. queue server knows time
                 only by file messages never by making curl requests
              */
-            if($crawl_time != 0 && $check_crawl_time > @fileatime(
-                CRAWL_DIR."/schedules/".self::index_closed_name.$crawl_time.
-                ".txt") && !file_exists(CRAWL_DIR.
-                    "/schedules/queue_server_messages.txt") ) {
-                $restart = true;
-                if(file_exists(CRAWL_DIR."/schedules/crawl_status.txt")) {
-                    $crawl_status = unserialize(file_get_contents(
-                        CRAWL_DIR."/schedules/crawl_status.txt"));
-                    if($crawl_status['CRAWL_TIME'] != 0) {
-                        $restart = false;
-                    }
-                }
-                if($restart == true && file_exists(CRAWL_DIR.'/cache/'.
-                    self::queue_base_name.$crawl_time)) {
-                    $crawl_params = array();
-                    $crawl_params[self::STATUS] = "RESUME_CRAWL";
-                    $crawl_params[self::CRAWL_TIME] = $crawl_time;
-                    $crawl_params[self::CRAWL_TYPE] = self::WEB_CRAWL;
-                    /*
-                        we only set crawl time. Other data such as allowed sites
-                        should come from index.
-                    */
-                    $this->crawlModel->sendStartCrawlMessage($crawl_params,
-                        NULL, NULL);
-                }
-            }
+            $this->checkRestart(self::WEB_CRAWL);
             $info = array();
             $info[self::STATUS] = self::NO_DATA_STATE;
             $data['MESSAGE'] = base64_encode(serialize($info))."\n";
@@ -210,6 +174,7 @@ class FetchController extends Controller implements CrawlConstants
                 $fetch_pages = false;
                 $info = array();
             }
+            $this->checkRestart(self::ARCHIVE_CRAWL);
         } else {
             $fetch_pages = false;
             $info = array();
@@ -282,6 +247,51 @@ class FetchController extends Controller implements CrawlConstants
         $data['MESSAGE'] = $info_string;
 
         $this->displayView($view, $data);
+    }
+
+    /**
+     * Checks if the queue server crawl needs to be restarted
+     * @param int $crawl_type if it does use restart the crawl as a crawl
+     *      of this type. For example, self::WEB_CRAWL or self::ARCHIVE_CRAWL
+     */
+    function checkRestart($crawl_type)
+    {
+        if(isset($_REQUEST['crawl_time'])) {;
+            $crawl_time = $this->clean($_REQUEST['crawl_time'], 'int');
+            if(isset($_REQUEST['check_crawl_time'])) {
+                $check_crawl_time = $this->clean(
+                    $_REQUEST['check_crawl_time'], 'int');
+            }
+        } else {
+            $crawl_time = 0;
+            $check_crawl_time = 0;
+        }
+        if($crawl_time > 0 && $check_crawl_time > @fileatime(
+            CRAWL_DIR."/schedules/".self::index_closed_name.$crawl_time.
+            ".txt") && !file_exists(CRAWL_DIR.
+                "/schedules/queue_server_messages.txt") ) {
+            $restart = true;
+            if(file_exists(CRAWL_DIR."/schedules/crawl_status.txt")) {
+                $crawl_status = unserialize(file_get_contents(
+                    CRAWL_DIR."/schedules/crawl_status.txt"));
+                if($crawl_status['CRAWL_TIME'] != 0) {
+                    $restart = false;
+                }
+            }
+            if($restart == true && file_exists(CRAWL_DIR.'/cache/'.
+                self::queue_base_name.$crawl_time)) {
+                $crawl_params = array();
+                $crawl_params[self::STATUS] = "RESUME_CRAWL";
+                $crawl_params[self::CRAWL_TIME] = $crawl_time;
+                $crawl_params[self::CRAWL_TYPE] = self::WEB_CRAWL;
+                /*
+                    we only set crawl time. Other data such as allowed sites
+                    should come from index.
+                */
+                $this->crawlModel->sendStartCrawlMessage($crawl_params,
+                    NULL, NULL);
+            }
+        }
     }
 
     /**

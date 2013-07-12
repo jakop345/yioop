@@ -271,7 +271,7 @@ class WebArchive
             $file = serialize($new_objects[$i]);
             $compressed_file = $this->compressor->compress($file);
             $len = strlen($compressed_file);
-            $out .= $this->compressor->compressInt($len).$compressed_file;
+            $out .= $this->compressor->compressInt($len) . $compressed_file;
             $offset += $len + $compressed_int_len;
         }
 
