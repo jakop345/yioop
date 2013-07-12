@@ -88,8 +88,8 @@ function upgradeDatabaseWorkDirectoryCheck()
 }
 
 /**
- * If the database data of Yioop!  is older than the version of the
- * currently running Yioop! then this function is called to try
+ * If the database data of Yioop is older than the version of the
+ * currently running Yioop then this function is called to try
  * upgrade the database to the new version
  */
 function upgradeDatabaseWorkDirectory()

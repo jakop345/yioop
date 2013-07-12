@@ -1633,15 +1633,19 @@ class IndexShard extends PersistentStructure implements
      * Reads 32 bit word as an unsigned int from the offset given in the shard
      *
      * @param int $offset a byte offset into the shard
+     * @return int desired word or false
      */
     function getShardWord($offset)
     {
         if(isset($this->blocks_words[$offset])) {
             return $this->blocks_words[$offset];
         }
-        $this->readBlockShardAtOffset(($offset >> self::SHARD_BLOCK_POWER) <<
-            self::SHARD_BLOCK_POWER);
-        return $this->blocks_words[$offset];
+        if($this->readBlockShardAtOffset(($offset >> self::SHARD_BLOCK_POWER) <<
+            self::SHARD_BLOCK_POWER)) {
+            return $this->blocks_words[$offset];
+        } else {
+            return false;
+        }
     }
 
     /**
