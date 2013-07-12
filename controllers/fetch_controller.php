@@ -251,7 +251,7 @@ class FetchController extends Controller implements CrawlConstants
 
     /**
      * Checks if the queue server crawl needs to be restarted
-     * @param int $crawl_type if it does use restart the crawl as a crawl
+     * @param string $crawl_type if it does use restart the crawl as a crawl
      *      of this type. For example, self::WEB_CRAWL or self::ARCHIVE_CRAWL
      */
     function checkRestart($crawl_type)
@@ -313,7 +313,10 @@ class FetchController extends Controller implements CrawlConstants
                 $missing = $field;
             }
         }
-
+        if(isset($_REQUEST['crawl_type'])) {
+            $this->checkRestart($this->clean(
+                $_REQUEST['crawl_type'], 'string'));
+        }
         if($part_flag && crawlHash($_REQUEST['part'])==$_REQUEST['hash_part']) {
             $upload = false;
             if(intval($_REQUEST['num_parts']) > 1) {

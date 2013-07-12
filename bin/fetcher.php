@@ -2095,7 +2095,9 @@ class Fetcher implements CrawlConstants
             "INDEX" => 0, "CACHE_PAGE_VALIDATION" => 0);
         $post_data = array('c'=>'fetch', 'a'=>'update',
             'crawl_time' => $this->crawl_time, 'machine_uri' => WEB_URI,
-            'robot_instance' => $prefix.ROBOT_INSTANCE, 'data' => '');
+            'robot_instance' => $prefix.ROBOT_INSTANCE, 'data' => '',
+            'check_crawl_time' => $this->check_crawl_time,
+            'crawl_type' => $this->crawl_type);
 
         //handle robots.txt data
         if(isset($this->found_sites[self::ROBOT_TXT])) {
