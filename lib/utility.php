@@ -1314,7 +1314,11 @@ function changeInMicrotime($start, $end = NULL)
     if( !$end ) {
         $end= microtime();
     }
-    list($start_microseconds, $start_seconds) = explode(" ", $start);
+    $tmp = explode(" ", $start);
+    if(!isset($tmp[1])) {
+        array_unshift($tmp, 0);
+    }
+    list($start_microseconds, $start_seconds) = $tmp;
     list($end_microseconds, $end_seconds) = explode(" ", $end);
 
     $change_in_seconds = intval($end_seconds) - intval($start_seconds);

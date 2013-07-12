@@ -266,9 +266,9 @@ class FetchController extends Controller implements CrawlConstants
             $crawl_time = 0;
             $check_crawl_time = 0;
         }
-        if($crawl_time > 0 && $check_crawl_time > @fileatime(
+        if($crawl_time > 0 && $check_crawl_time > intval(@fileatime(
             CRAWL_DIR."/schedules/".self::index_closed_name.$crawl_time.
-            ".txt") && !file_exists(CRAWL_DIR.
+            ".txt")) && !file_exists(CRAWL_DIR.
                 "/schedules/queue_server_messages.txt") ) {
             $restart = true;
             if(file_exists(CRAWL_DIR."/schedules/crawl_status.txt")) {
@@ -279,11 +279,11 @@ class FetchController extends Controller implements CrawlConstants
                 }
             }
             if($restart == true && file_exists(CRAWL_DIR.'/cache/'.
-                self::queue_base_name.$crawl_time)) {
+                self::index_data_base_name.$crawl_time)) {
                 $crawl_params = array();
                 $crawl_params[self::STATUS] = "RESUME_CRAWL";
                 $crawl_params[self::CRAWL_TIME] = $crawl_time;
-                $crawl_params[self::CRAWL_TYPE] = self::WEB_CRAWL;
+                $crawl_params[self::CRAWL_TYPE] = $crawl_type;
                 /*
                     we only set crawl time. Other data such as allowed sites
                     should come from index.

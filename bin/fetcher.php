@@ -2311,7 +2311,9 @@ class Fetcher implements CrawlConstants
                                and two high a post_max_size
                              */
                             crawlLog("Using smaller post size to see if helps");
-                            define('FORCE_SMALL', true);
+                            if(!defined('FORCE_SMALL')) { 
+                                define('FORCE_SMALL', true);
+                            }
                             $this->post_max_size = 1000000;
                             $info[self::POST_MAX_SIZE] = 1000001;
                             /* set to small value before try again.
