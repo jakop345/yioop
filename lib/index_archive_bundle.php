@@ -232,7 +232,7 @@ class IndexArchiveBundle implements CrawlConstants
      * the dictionary of the old shard is copied to the bundles dictionary
      * and a log-merge performed if needed
      *
-     * @param int $num_docs number of docs in the shard about ot be added
+     * @param int $num_docs number of docs in the shard about to be added
      * @param object $callback object with join function to be
      *      called if process is taking too long
      * @return int the active generation after the check and possible change has

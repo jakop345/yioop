@@ -1081,11 +1081,13 @@ class IndexShard extends PersistentStructure implements
         $this->num_link_docs += $index_shard->num_link_docs;
         $this->len_all_docs += $index_shard->len_all_docs;
         $this->len_all_link_docs += $index_shard->len_all_link_docs;
-        crawlLog("Finishing index append...mem:".memory_get_usage());
+        crawlLog("Finishing index append...Mem:".memory_get_usage());
         if($this->num_docs - $this->last_flattened_words_count >
             self::FLATTEN_FREQUENCY) {
+            crawlLog("...Post Append Flattening Index Word Postings. Mem".
+                memory_get_usage());
             $this->mergeWordPostingsToString();
-            crawlLog("...Flattened Index Word Postings mem:".
+            crawlLog("...Flattened Index Word Postings. Mem:".
                 memory_get_usage());
         }
     }
@@ -1153,8 +1155,7 @@ class IndexShard extends PersistentStructure implements
                 }
            }
            crawlTimeoutLog("..outer loop merge index postings to string ..".
-                " processing %s of %s at offset %s less than %s", $i,
-                $num_words, $offset, $len);
+                " processing %s of %s.", $i, $num_words);
            if($offset + $item_len > $len) {
                 $word_id_posts_len = strlen($postings);
                 if($write_offset < $len) {
@@ -1167,9 +1168,8 @@ class IndexShard extends PersistentStructure implements
                     } else {
                         charCopy($tmp_string, $this->word_postings,
                             $write_offset, $copy_data_len);
-                        $this->word_postings .=
-                             substr($tmp_string, $copy_data_len);
-                        $tmp_string = "";
+                        $tmp_string = substr($tmp_string, $copy_data_len);
+                        $this->word_postings .= $tmp_string;
                     }
                     $tmp_string = "";
                     $write_offset = $len;
