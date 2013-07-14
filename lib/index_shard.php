@@ -1517,7 +1517,7 @@ class IndexShard extends PersistentStructure implements
             /* we are ignoring the first four bytes which contains
                generation info
              */
-            crawlTimeoutLog("..still unpacking index  posting lists. At" .
+            crawlTimeoutLog("..still unpacking index posting lists. At" .
                 " list %s of %s.", $cnt, $num_lists);
             if((ord($postings_info[0]) & 0x80) > 0 ) {
                 $postings_info[0] = chr(ord($postings_info[0]) - 0x80);

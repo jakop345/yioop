@@ -116,16 +116,6 @@ if (function_exists('lcfirst') === false) {
 class NewsUpdater implements CrawlConstants
 {
     /**
-     * The last time old feed items were pruned
-     * @var int
-     */
-    var $delete_time;
-    /**
-     * The last time feeds with no items were polled
-     * @var int
-     */
-    var $retry_time;
-    /**
      * The last time feeds were checked for updates
      * @var int
      */
@@ -211,35 +201,20 @@ class NewsUpdater implements CrawlConstants
             crawlLog("Performing news feeds update");
             if(!$this->sourceModel->updateFeedItems(
                 SourceModel::ONE_WEEK, false)) {
-                crawlLog("News feeds update failed.");
+                crawlLog("News feeds item update failed.");
             }
             $something_updated = true;
         }
 
-        /*  every three hours everything older than a week and rebuild index
-            do this every there hours so news articles tend to stay in order
+        /*
+            if anything changed rebuild shard
          */
-        $delta = $time - $this->delete_time;
-        if($delta > 3 * SourceModel::ONE_HOUR) {
-            $this->delete_time = $time;
+        if($something_updated) {
             crawlLog("Deleting feed items and rebuild shard...");
             $this->sourceModel->deleteFeedItems(SourceModel::ONE_WEEK);
             crawlLog("... delete complete, shard rebuilt");
             $something_updated = true;
-        }
-
-        $delta = $time - $this->retry_time;
-        // each 15 minutes try to re-get feeds that have no items
-        if($delta > SourceModel::ONE_HOUR/4) {
-            $this->retry_time = $time;
-            crawlLog("Re-trying feeds with no items");
-            $this->sourceModel->updateFeedItems(SourceModel::ONE_WEEK, true);
-            crawlLog("... Re-trying complete");
-            $something_updated = true;
-        }
-
-
-        if(!$something_updated = true) {
+        } else {
             crawlLog("No updates needed.");
         }
     }

@@ -290,51 +290,37 @@ class SourceModel extends Model
 
     /**
      *  For each feed source downloads the feeds, checks which items are
-     *  not in the database, adds them and updates the inverted index for feeds
+     *  not in the database, adds them. This method does not update
+     *  the inverted index shard.
      *
      *  @param int $age how many seconds old records should be ignored
-     *  @param bool $try_again whether to update everything or just those
-     *      feeds for which we have no items
      *  @return bool whether feed item update was successful
      */
     function updateFeedItems($age = self::ONE_WEEK, $try_again = false)
     {
         $time = time();
         $this->db->selectDB(DB_NAME);
-        $feed_shard_name = WORK_DIRECTORY."/feeds/index";
-        $feed_shard = NULL;
+
         $feeds_one_go = self::MAX_FEEDS_ONE_GO;
-        if(file_exists($feed_shard_name)) {
-            $feed_shard = IndexShard::load($feed_shard_name);
+
+        $feeds = array();
+        $sql = "SELECT COUNT(*) AS CNT FROM MEDIA_SOURCE WHERE TYPE='rss'";
+        $result = $this->db->execute($sql);
+        $row = $this->db->fetchArray($result);
+        $num_feeds = (isset($row['CNT'])) ? $row['CNT'] : 0;
+        $num_bins = floor($num_feeds/$feeds_one_go) + 1;
+        $hour = date('H', $time);
+        $current_bin = $hour % $num_bins;
+        $limit = $current_bin * $feeds_one_go;
+        $sql = "SELECT * FROM MEDIA_SOURCE WHERE TYPE='rss' LIMIT ".
+            "$limit, $feeds_one_go";
+        $result = $this->db->execute($sql);
+        $i = 0;
+        while($feeds[$i] = $this->db->fetchArray($result)) {
+            $i++;
         }
-        if(!$feed_shard) {
-            @unlink($feed_shard_name); //maybe index corrupted?
-            $feed_shard =  new IndexShard($feed_shard_name);
-        }
-        if(!$feed_shard) {
-            return false;
-        }
-        if($try_again) {
-            $feeds = $this->getMediaSources("rss", $try_again);
-        } else {
-            $feeds = array();
-            $sql = "SELECT COUNT(*) AS CNT FROM MEDIA_SOURCE WHERE TYPE='rss'";
-            $result = $this->db->execute($sql);
-            $row = $this->db->fetchArray($result);
-            $num_feeds = (isset($row['CNT'])) ? $row['CNT'] : 0;
-            $num_bins = floor($num_feeds/$feeds_one_go) + 1;
-            $hour = date('H', $time);
-            $current_bin = $hour % $num_bins;
-            $limit = $current_bin * $feeds_one_go;
-            $sql = "SELECT * FROM MEDIA_SOURCE WHERE TYPE='rss' LIMIT ".
-                "$limit, $feeds_one_go";
-            $result = $this->db->execute($sql);
-            $i = 0;
-            while($feeds[$i] = $this->db->fetchArray($result)) {
-                $i++;
-            }
-            unset($feeds[$i]); //last one will be null
-        }
+        unset($feeds[$i]); //last one will be null
+
         $feeds = FetchUrl::getPages($feeds, false, 0, NULL, "SOURCE_URL",
             CrawlConstants::PAGE, true, NULL, true);
         $feed_items = array();
@@ -381,15 +367,14 @@ class SourceModel extends Model
                     }
                     $item[$db_element] = strip_tags($element_text);
                 }
-                $did_add = $this->addFeedItemIfNew($item, $feed_shard,
-                    $feed['NAME'], $lang, $age);
+                $did_add = $this->addFeedItemIfNew($item,$feed['NAME'], $lang,
+                    $age);
                 if($did_add) {
                     $num_added++;
                 }
             }
             crawlLog("...added $num_added news items.");
         }
-        $feed_shard->save();
         return true;
     }
 
@@ -432,8 +417,11 @@ class SourceModel extends Model
         if($result) {
             $completed = true;
             crawlLog("..still deleting. Making new index of non-pruned items.");
+            $i = 0;
             while($item = $db->fetchArray($result)) {
-                crawlTimeoutLog("..still adding non-pruned items to index.");
+                crawlTimeoutLog("..have added %s non-pruned items to index.",
+                    $i);
+                $i++;
                 if(!isset($item['SOURCE_NAME'])) continue;
                 $source_name = $item['SOURCE_NAME'];
                 if(isset($feeds[$source_name])) {
@@ -466,18 +454,16 @@ class SourceModel extends Model
     }
 
     /**
-     * Adds words extracted feed data in $item to $feed_shard and
-     * adds $item to db if it isn't already there
+     * Adds $item to  FEED_ITEM table in db if it isn't already there
      *
      * @param array $item data from a single news feed item
-     * @param object $feed_shard index_shard to stored extracted words in
      * @param string $source_name string name of the news feed $item was found
      *  on
      * @param int $age how many seconds old records should be ignored
      * @param string $lang locale-tag of the news feed
      * @return bool whether an item was added
      */
-    function addFeedItemIfNew($item, $feed_shard, $source_name, $lang, $age)
+    function addFeedItemIfNew($item, $source_name, $lang, $age)
     {
         if(!isset($item["link"]) || !isset($item["title"]) ||
             !isset($item["description"])) return false;
@@ -515,16 +501,6 @@ class SourceModel extends Model
             '".$db->escapeString($source_name)."')";
         $result = $db->execute($sql);
         if(!$result) return false;
-        $phrase_string = $item["title"] . " ". $item["description"];
-        $word_lists = PhraseParser::extractPhrasesInLists(
-            $phrase_string, $lang);
-        $doc_keys = crawlHash($item["link"], true) .
-            $raw_guid."d". substr(crawlHash(
-            UrlParser::getHost($item["link"])."/",true), 1);
-        $meta_ids = $this->calculateMetas($lang, $item['pubDate'],
-            $source_name, $item["guid"]);
-        $feed_shard->addDocumentWords($doc_keys, $item['pubDate'], $word_lists,
-            $meta_ids, PhraseParser::$materialized_metas, true);
         return true;
     }
 
