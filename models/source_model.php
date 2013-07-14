@@ -388,7 +388,7 @@ class SourceModel extends Model
      * @param int $age how many seconds old records should be deleted
      * @return bool whether job executed to complete
      */
-    function deleteFeedItems($age)
+    function rebuildFeedShard($age)
     {
         $time = time();
         $feed_shard_name = WORK_DIRECTORY."/feeds/index";
