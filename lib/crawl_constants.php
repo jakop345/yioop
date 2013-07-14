@@ -79,15 +79,25 @@ interface CrawlConstants
     const robot_table_name = "robot_table.txt";
     const mirror_table_name = "mirror_table.txt";
 
-
+    /** Used in priority queue*/
     const MAX = 1;
     const MIN = -1;
 
+    /** starts of daemon processes*/
     const STOP_STATE = -1;
     const CONTINUE_STATE = 1;
     const NO_DATA_STATE = 2;
     const WAITING_START_MESSAGE_STATE = 3;
     const REDO_STATE = 4;
+
+    /** Number of seconds in a day*/
+    const ONE_DAY = 86400;
+
+    /** Number of seconds in a week*/
+    const ONE_WEEK = 604800;
+
+    /** Number of seconds in an hour */
+    const ONE_HOUR = 3600;
 
     const STATUS = 'a';
     const CRAWL_TIME = 'b';

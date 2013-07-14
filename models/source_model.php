@@ -53,19 +53,7 @@ class SourceModel extends Model
 {
 
     /** Mamimum number of feeds to download in one try */
-    const MAX_FEEDS_ONE_GO = 20;
-
-    /** Number of seconds in a two minutes*/
-    const TWO_MINUTES = 120;
-
-    /** Number of seconds in a day*/
-    const ONE_DAY = 86400;
-
-    /** Number of seconds in a week*/
-    const ONE_WEEK = 604800;
-
-    /** Number of seconds in an hour */
-    const ONE_HOUR = 3600;
+    const MAX_FEEDS_ONE_GO = 100;
 
     /**
      * Just calls the parent class constructor
@@ -74,7 +62,6 @@ class SourceModel extends Model
     {
         parent::__construct();
     }
-
 
     /**
      *  Returns a list of media sources such as (video, rss sites) and their
@@ -296,7 +283,7 @@ class SourceModel extends Model
      *  @param int $age how many seconds old records should be ignored
      *  @return bool whether feed item update was successful
      */
-    function updateFeedItems($age = self::ONE_WEEK, $try_again = false)
+    function updateFeedItems($age = self::ONE_WEEK)
     {
         $time = time();
         $this->db->selectDB(DB_NAME);

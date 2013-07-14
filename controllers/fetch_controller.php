@@ -428,7 +428,7 @@ class FetchController extends Controller implements CrawlConstants
         $address = str_replace(".", "-", $_SERVER['REMOTE_ADDR']);
         $address = str_replace(":", "_", $address);
         $time = time();
-        $day = floor($time/86400);
+        $day = floor($time/self::ONE_DAY);
 
         $byte_counts = array();
         if(isset($_REQUEST['byte_counts'])) {
@@ -487,7 +487,7 @@ class FetchController extends Controller implements CrawlConstants
         $address = str_replace(".", "-", $_SERVER['REMOTE_ADDR']);
         $address = str_replace(":", "_", $address);
         $time = time();
-        $day = floor($time/86400);
+        $day = floor($time/self::ONE_DAY);
 
         if(!file_exists($dir)) {
             mkdir($dir);
