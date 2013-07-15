@@ -90,15 +90,21 @@ class NetworkIterator extends IndexBundleIterator
     var $more_results;
 
     /**
-     * Keeps track of whether the word_iterator list is empty becuase the
+     * Keeps track of whether the word_iterator list is empty because the
      * word does not appear in the index shard
      * @var int
      */
     var $filter;
 
     /**
+     * used to adaptively change the number of pages requested from each
+     * machine based on the number of machines that still have results
+     * @var int
+     */
+    var $next_results_per_block;
+
+    /**
      * the minimum number of pages to group from a block;
-     * this trumps $this->index_bundle_iterator->results_per_block
      */
     const MIN_FIND_RESULTS_PER_BLOCK = 200;
 
@@ -129,6 +135,7 @@ class NetworkIterator extends IndexBundleIterator
         $save_timestamp_name = "")
     {
         $this->results_per_block = ceil(self::MIN_FIND_RESULTS_PER_BLOCK);
+        $this->next_results_per_block = $this->results_per_block;
         $this->base_query = "q=".urlencode($query).
             "&f=serial&network=false&raw=1&its=$timestamp&guess=false";
         if($save_timestamp_name!="") { // used for archive crawls of crawl mixes
@@ -171,6 +178,7 @@ class NetworkIterator extends IndexBundleIterator
     function reset()
      {
         $this->limit = 0;
+        $this->next_results_per_block = $this->results_per_block;
         $count = count($this->queue_servers);
         for($i = 0; $i < $count; $i++) {
             $this->more_flags[$i] = true;
@@ -188,6 +196,7 @@ class NetworkIterator extends IndexBundleIterator
      {
         $this->current_block_fresh = false;
         $this->limit += $this->results_per_block;
+        $this->results_per_block = $this->next_results_per_block;
      }
 
     /**
@@ -249,6 +258,7 @@ class NetworkIterator extends IndexBundleIterator
         $max_machine_times = AnalyticsManager::get("MAX_MACHINE_TIMES");
         $max_machine_times = ($max_machine_times) ? $max_machine_times : 0;
         $max_time = 0;
+        $num_with_results = $count;
         for($j = 0; $j < $count; $j++) {
             $download = & $downloads[$j];
             if(isset($download[self::PAGE])) {
@@ -256,6 +266,7 @@ class NetworkIterator extends IndexBundleIterator
                 if(!isset($pre_result["TOTAL_ROWS"]) ||
                     $pre_result["TOTAL_ROWS"] < $this->results_per_block) {
                     $this->more_flags[$lookup[$j]] = false;
+                    $num_with_results--;
                 }
                 if(isset($pre_result["TOTAL_ROWS"])) {
                     $this->num_docs += $pre_result["TOTAL_ROWS"];
@@ -276,7 +287,11 @@ class NetworkIterator extends IndexBundleIterator
                     $pre_result['ELAPSED_TIME']."&nbsp;&nbsp;";
                 $indent = "";
             }
-
+        }
+        if($num_with_results > 0) {
+            $this->next_results_per_block = ceil(
+                floatval($count * $this->results_per_block)/
+                floatval($num_with_results));
         }
         $max_machine_times += $max_time;
         AnalyticsManager::set("MACHINE_TIMES", $machine_times);
