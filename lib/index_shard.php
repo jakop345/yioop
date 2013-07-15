@@ -1120,6 +1120,7 @@ class IndexShard extends PersistentStructure implements
         if($this->word_docs_packed) {
             return;
         }
+        crawlLog("Merge index shard postings to string to save memory.");
         ksort($this->words, SORT_STRING);
         $tmp_string = "";
         $offset = 0;
@@ -1194,7 +1195,6 @@ class IndexShard extends PersistentStructure implements
                 $this->word_postings .=
                     $word_id . packInt($word_id_posts_len). $postings;
             }
-            unset($this->words[$word_id]);
             $i++;
         }
         if($tmp_string != "") {

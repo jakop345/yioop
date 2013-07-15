@@ -242,9 +242,9 @@ class IndexArchiveBundle implements CrawlConstants
         $blocking = false)
     {
         $current_num_docs = $this->getActiveShard()->num_docs;
-        crawlLog("Current shard has ".$current_num_docs." documents.");
+        crawlLog("Current index shard has ".$current_num_docs." documents.");
         $memory_limit = metricToInt(ini_get("memory_limit"));
-        crawlLog("Memory limit is ".$memory_limit.". Usage is ".
+        crawlLog("Memory Indexer limit is ".$memory_limit.". Usage is ".
             memory_get_usage());
 
         if($current_num_docs + $add_num_docs > $this->num_docs_per_generation
