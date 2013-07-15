@@ -66,15 +66,16 @@ function addRegexDelimiters($expression)
  */
 function charCopy($source, &$destination, $start, $length, $timeout_msg = "")
 {
-    $endk = $length - 1;
-    $end = $start + $endk;
+    $endk = intval($length - 1);
+    $end = intval($start + $endk);
+    $start = intval($start);
     if($timeout_msg == "") {
         for($j = $end, $k = $endk; $j >= $start; $j--, $k--) {
-            $destination[(int)$j] = $source[(int)$k];
+            $destination[$j] = $source[$k];
         }
     } else {
         for($j = $end, $k = $endk; $j >= $start; $j--, $k--) {
-            $destination[(int)$j] = $source[(int)$k];
+            $destination[$j] = $source[$k];
             crawlTimeoutLog($timeout_msg);
         }
     }

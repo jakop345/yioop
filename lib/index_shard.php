@@ -1165,7 +1165,7 @@ class IndexShard extends PersistentStructure implements
                 $copy_to_len = min($offset - $write_offset,
                     $len - $write_offset);
                 if($copy_to_len > $copy_data_len) {
-                    charCopy(&$tmp_string, $this->word_postings, $write_offset,
+                    charCopy($tmp_string, $this->word_postings, $write_offset,
                         $copy_data_len);
                     $write_offset += $copy_data_len;
                     $tmp_string = substr($tmp_string, $copy_data_len);
@@ -1183,7 +1183,7 @@ class IndexShard extends PersistentStructure implements
                             substr($this->word_postings, 0, $write_offset);
                         $this->word_postings .= $tmp_string;
                     } else {
-                        charCopy(&$tmp_string, $this->word_postings,
+                        charCopy($tmp_string, $this->word_postings,
                             $write_offset, $copy_data_len);
                         $tmp_string = substr($tmp_string, $copy_data_len);
                         $this->word_postings .= $tmp_string;
@@ -1203,7 +1203,8 @@ class IndexShard extends PersistentStructure implements
             $pad_len = $tmp_len - $copy_data_len;
             crawlLog("Completing index merge postings to string offset ".
                 "copy phase.");
-            // php auto-pads $this->word_postings with space when index $j>$len
+            $pad = str_pad("", $pad_len, "@");
+            $this->word_postings .= $pad;
             for($j = $len + $pad_len - 1,
                 $k = $len - 1; $k >= $offset; $j--, $k--) {
                 crawlTimeoutLog("..merge index postings to string final copy ".
@@ -1214,7 +1215,7 @@ class IndexShard extends PersistentStructure implements
             }
             crawlLog("Completing index merge postings to string by doing ".
                 "final charCopy of $tmp_len characters.");
-            charCopy(&$tmp_string, $this->word_postings,
+            charCopy($tmp_string, $this->word_postings,
                 $write_offset, $tmp_len, "..index shard final charCopy..");
         }
 
