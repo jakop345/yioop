@@ -1183,6 +1183,8 @@ class IndexShard extends PersistentStructure implements
             $tmp_len = strlen($tmp_string);
             $copy_data_len = $offset - $write_offset;
             $pad_len = $tmp_len - $copy_data_len;
+            crawlLog("Completing index merge postings to string offset ".
+                "copy phase.");
             $pad = str_pad("", $pad_len, "@");
             $this->word_postings .= $pad;
             for($j = $len + $pad_len - 1,
@@ -1193,6 +1195,8 @@ class IndexShard extends PersistentStructure implements
                     /*way slower if directly
                     assign!!! PHP is crazy*/
             }
+            crawlLog("Completing index merge postings to string by doing ".
+                "final charCopy of $tmp_len characters.");
             charCopy($tmp_string, $this->word_postings,
                 $write_offset, $tmp_len, "..index shard final charCopy..");
         }
