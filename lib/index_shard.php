@@ -1095,6 +1095,23 @@ class IndexShard extends PersistentStructure implements
     /**
      * Used to flatten the words associative array to a more memory
      * efficient word_postings string.
+     *
+     * $this->words is an associative array with associations
+     *      wordid => postinglistforid
+     * this format is relatively wasteful of memory
+     *
+     * $this->word_postings is a string in the format
+     *      wordid1len1postings1wordid2len2postings2 ...
+     * wordids are lex ordered. This is more memory efficient ad the
+     * former relies on the more wasteful php implementation fo associative
+     * arrays.
+     *
+     * mergeWordPostingsToString converts the former format to the latter
+     * for each of the current wordids. This words is then set to array();
+     * Note before this operation is done $this->word_postings might have
+     * data from earlier times mergeWordPostingsToString was called, in which
+     * case the behavior is controlled by $replace.
+     *
      * @param bool $replace whether to overwrite existing word_id postings
      *     (true) or to append (false)
      */
