@@ -221,15 +221,15 @@ class HashTableTest extends UnitTest
             $this->test_objects['FILE1']->insert(crawlHash("hi$i",true), 
             "0000".packInt($i));
         }
-        $this->assertTrue((changeInMicrotime($start_time) < 1),
-            "Insert 10000 into table of size 20000 takes less than a second");
+        $this->assertTrue((changeInMicrotime($start_time) < 2),
+            "Insert 10000 into table of size 20000 takes less than 2 seconds");
         $start_time = microtime();
         for($i = 0; $i < 10000; $i++) {
             $this->test_objects['FILE1']->delete(
                 crawlHash("hi$i", true));
         }
-        $this->assertTrue((changeInMicrotime($start_time) < 1),
-            "Delete 10000 from table of size 20000 takes less than a second");
+        $this->assertTrue((changeInMicrotime($start_time) < 2),
+            "Delete 10000 from table of size 20000 takes less than 2 seconds");
     }
 
 }

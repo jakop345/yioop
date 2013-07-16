@@ -1138,8 +1138,9 @@ class IndexShard extends PersistentStructure implements
                     " processing %s of %s at offset %s less than %s", $i,
                     $num_words, $offset, $len);
                 $key = substr($this->word_postings, $offset, $key_len);
-                $key_posts_len = unpackInt(substr(
-                    $this->word_postings, $offset + $key_len, $posting_len));
+                $pack_key_posts_len = substr(
+                    $this->word_postings, $offset + $key_len, $posting_len);
+                $key_posts_len = unpackInt($pack_key_posts_len);
                 $key_postings = substr($this->word_postings,
                     $offset + $item_len, $key_posts_len);
                 $word_id_posts_len = strlen($postings);
@@ -1155,7 +1156,7 @@ class IndexShard extends PersistentStructure implements
                         $offset += $item_len + $key_posts_len;
                     }
                 } else if ($cmp < 0) {
-                    $tmp_string .= $key .packInt($key_posts_len). $key_postings;
+                    $tmp_string .= $key .$pack_key_posts_len. $key_postings;
                     $offset += $item_len + $key_posts_len;
                 } else {
                     $tmp_string .= $word_id .
@@ -1198,27 +1199,11 @@ class IndexShard extends PersistentStructure implements
             $i++;
         }
         if($tmp_string != "") {
-            $tmp_len = strlen($tmp_string);
-            $copy_data_len = $offset - $write_offset;
-            $pad_len = $tmp_len - $copy_data_len;
-            crawlLog("Completing index merge postings to string offset ".
-                "copy phase.");
-            $pad = str_pad("", $pad_len, "@");
-            $this->word_postings .= $pad;
-            for($j = $len + $pad_len - 1,
-                $k = $len - 1; $k >= $offset; $j--, $k--) {
-                crawlTimeoutLog("..merge index postings to string final copy ".
-                    " phase");
-                $this->word_postings[$j] = "" . $this->word_postings[$k];
-                    /*way slower if directly
-                    assign!!! PHP is crazy*/
-            }
-            crawlLog("Completing index merge postings to string by doing ".
-                "final charCopy of $tmp_len characters.");
-            charCopy($tmp_string, $this->word_postings,
-                $write_offset, $tmp_len, "..index shard final charCopy..");
+            $rest_posts = substr($this->word_postings, $offset);
+            $this->word_postings = substr($this->word_postings, 0,
+                $write_offset);
+            $this->word_postings .= $tmp_string. $rest_posts;
         }
-
         $this->words = array();
         $this->last_flattened_words_count = $this->num_docs;
     }

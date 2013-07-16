@@ -100,13 +100,12 @@ class WebQueueBundleTest extends UnitTest
             array("http://www.slashdot.org/", 3));
         $this->test_objects['FILE1']->addUrlsQueue($urls2);
 
-        $expected_array = array(array('http://www.google.com/', 20, 0, 3847),
-            array('http://www.ucanbuyart.com/', 15, 0, 3253),
-            array('http://www.yahoo.com/', 2, 0, 2611),
-            array('http://www.pollett.com/', 10, 0, 3182),
-            array('http://www.slashdot.org/', 3, 0, 826)
+        $expected_array = array(array('http://www.google.com/', 20, 0, 7694),
+            array('http://www.ucanbuyart.com/', 15, 0, 6507),
+            array('http://www.yahoo.com/', 2, 0, 5222),
+            array('http://www.pollett.com/', 10, 0, 6364),
+            array('http://www.slashdot.org/', 3, 0, 1653)
         );
-
         $this->assertEqual(
             $this->test_objects['FILE1']->getContents(), $expected_array,
             "Insert Queue matches predicted");
