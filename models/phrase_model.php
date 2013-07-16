@@ -1200,7 +1200,6 @@ class PhraseModel extends ParallelModel
             }
             $this->query_info['QUERY'] .= "$in2<b>Get Summaries Time</b>: ".
                 $summary_time_info."<br />";
-            $format_time = microtime();
         }
         $results['PAGES'] = & $out_pages;
         if(USE_CACHE && $save_timestamp_name == "") {

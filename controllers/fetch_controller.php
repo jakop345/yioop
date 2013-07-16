@@ -119,6 +119,13 @@ class FetchController extends Controller implements CrawlConstants
         $view = "fetch";
         // set up query
         $data = array();
+
+        if(isset($_REQUEST['crawl_time'])) {;
+            $crawl_time = $this->clean($_REQUEST['crawl_time'], 'int');
+        } else {
+            $crawl_time = 0;
+        }
+
         $schedule_filename = CRAWL_DIR."/schedules/".
             self::schedule_name."$crawl_time.txt";
 
