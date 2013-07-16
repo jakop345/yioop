@@ -1198,13 +1198,15 @@ class IndexShard extends PersistentStructure implements
             }
             $i++;
         }
+        $this->words = array();
         if($tmp_string != "") {
             $rest_posts = substr($this->word_postings, $offset);
             $this->word_postings = substr($this->word_postings, 0,
                 $write_offset);
-            $this->word_postings .= $tmp_string. $rest_posts;
+            $this->word_postings .= $tmp_string;
+            unset($tmp_string);
+            $this->word_postings .= $rest_posts;
         }
-        $this->words = array();
         $this->last_flattened_words_count = $this->num_docs;
     }
 

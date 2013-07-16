@@ -248,7 +248,7 @@ class IndexArchiveBundle implements CrawlConstants
             memory_get_usage());
 
         if($current_num_docs + $add_num_docs > $this->num_docs_per_generation
-            || (0.75 * $memory_limit) < memory_get_usage() ) {
+            || (0.7 * $memory_limit) < memory_get_usage() ) {
             if($blocking == true) {
                 return -1;
             }
