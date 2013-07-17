@@ -379,7 +379,16 @@ class MediaWikiArchiveBundleIterator extends TextArchiveBundleIterator
         list($pre_page, $references) = $this->makeReferences($pre_page);
         $pre_page = preg_replace_callback('/(\A|\n){\|(.*?)\n\|}/s',
             "makeTableCallback", $pre_page);
-        $pre_page = preg_replace($this->matches, $this->replaces,$pre_page);
+        if(strlen($pre_page) < PAGE_RANGE_REQUEST) {
+            $pre_page = preg_replace($this->matches, $this->replaces,$pre_page);
+        } else {
+            $num_matches = count($this->matches);
+            for($i = 0; $i < $num_matches; $i++) {
+                crawlTimeoutLog("..Doing wiki substitutions..");
+                $pre_page = preg_replace($this->matches[$i],
+                    $this->replaces[$i], $pre_page);
+            }
+        }
         $pre_page = preg_replace("/{{Other uses}}/i",
                 "<div class='indent'>\"$1\". (<a href='".
                 $site[self::URL]. "_(disambiguation)'>$pre_url</a>)</div>",
