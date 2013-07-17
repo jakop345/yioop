@@ -263,23 +263,23 @@ class Model implements CrawlConstants
                 }
                 continue;
             }
-
-                $word_locations = array();
+            $word_locations = array();
             foreach($words as $word) {
                 $qword = "/".preg_quote($word)."/ui";
                 preg_match_all($qword, $text_source, $positions,
                     PREG_OFFSET_CAPTURE);
+
                 if(isset($positions[0]) && is_array($positions[0])) {
                     $positions = $positions[0];
                     foreach($positions as $position) {
-                        $word_locations[$position[1]] = $word;
+                        $word_locations[] = $position[1];
                     }
                 }
 
             }
             $high = 0;
-            ksort($word_locations);
-            foreach($word_locations as $pos => $word) {
+            sort($word_locations);
+            foreach($word_locations as $pos) {
                 if($pos < $high) continue;
                 $pre_low = ($pos >= SNIPPET_LENGTH_LEFT) ?
                     $pos - SNIPPET_LENGTH_LEFT: 0;

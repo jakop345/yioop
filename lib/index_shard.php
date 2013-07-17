@@ -1520,8 +1520,6 @@ class IndexShard extends PersistentStructure implements
         }
         $num_lists = count($this->words);
         $cnt = 0;
-        $base_offset = 0;
-        $mega = 1000000;
         foreach($this->words as $word_id => $postings_info) {
             /* we are ignoring the first four bytes which contains
                generation info
@@ -1537,14 +1535,7 @@ class IndexShard extends PersistentStructure implements
                     8));
                 if(!isset($tmp[2])) {continue; }
                 list(, $offset, $len) = $tmp;
-                $diff_offset = $offset - $base_offset;
-                $postings = substr($this->word_docs, $diff_offset, $len);
-                if($diff_offset > $mega) {
-                    $num_megas = floor($diff_offset / $mega);
-                    $this->word_docs = substr($this->word_docs,
-                        $num_megas * $mega);
-                    $base_offset += $num_megas * $mega;
-                }
+                $postings = substr($this->word_docs, $offset, $len);
                 $this->words[$word_id] = $postings;
             }
             $cnt++;
