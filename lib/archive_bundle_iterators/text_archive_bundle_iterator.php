@@ -803,6 +803,7 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
                blocks.
             */
             while(!is_string($block = $this->getFileBlock())) {
+                crawlTimeoutLog("..still getting next tags data..");
                 if($this->checkEof())
                     return false;
             }

@@ -447,11 +447,13 @@ class MediaWikiArchiveBundleIterator extends TextArchiveBundleIterator
                 $ref_parts = explode("|", $reference);
                 $references .= "<div id=\"ref_$i\">$i.".
                     "<a href=\"#cite_$i\">^</a>.";
+                crawlTimeoutLog("..Making wiki references outer..");
                 if(count($ref_parts) > 0) {
                     $ref_data = array();
                     $type = trim(strtolower($ref_parts[0]));
                     array_shift($ref_parts);
                     foreach($ref_parts as $part) {
+                        crawlTimeoutLog("..Making wiki references inner..");
                         $part_parts = explode("=", $part);
                         if(isset($part_parts[1])){
                             $field = strtolower(trim($part_parts[0]));
@@ -607,6 +609,7 @@ function makeTableCallback($matches)
     $type = "td";
     $old_type = "td";
     foreach($row_data as $item) {
+        crawlTimeoutLog("..Making Wiki Tables..");
         if($first) {
             $item = trim(str_replace("\n", " ", $item));
             $out .= "<table $item>\n<tr>";

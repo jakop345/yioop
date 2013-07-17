@@ -1450,12 +1450,12 @@ function orderCallback($word_doc_a, $word_doc_b, $order_field = NULL)
  *  Callback function used to sort documents by a field in reverse order
  *
  *  Should be initialized before using in usort with a call
- *  like: orderCallback($tmp, $tmp, "field_want");
+ *  like: rorderCallback($tmp, $tmp, "field_want");
  *
  *  @param string $word_doc_a doc id of first document to compare
  *  @param string $word_doc_b doc id of second document to compare
  *  @param string $field which field of these associative arrays to sort by
- *  @return int -1 if first doc bigger 1 otherwise
+ *  @return int 1 if first doc bigger -1 otherwise
  */
 function rorderCallback($word_doc_a, $word_doc_b, $order_field = NULL)
 {
