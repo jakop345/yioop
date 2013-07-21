@@ -244,6 +244,9 @@ class AdminController extends Controller implements CrawlConstants
         //for now we allow anyone to get crawlStatus
         if($allowed) {
             $data = $this->$activity();
+            if(!is_array($data)) {
+                $data = array();
+            }
             $data['ACTIVITIES'] = $allowed_activities;
         }
         if(!in_array($activity, $this->status_activities)) {
@@ -1680,10 +1683,10 @@ class AdminController extends Controller implements CrawlConstants
                 if (isset($_REQUEST['ranker'][$label])) {
                     $ison = true;
                 }
-            } else if ($loaded || !isset($_REQUEST['posted']) && 
+            } else if ($loaded || !isset($_REQUEST['posted']) &&
                 isset($seed_info['active_rankers']['label'])) {
-                if (in_array($label,
-                    $seed_info['active_rankers']['label'])) {
+                if (isset($seed_info['active_rankers']['label']) &&
+                    in_array($label, $seed_info['active_rankers']['label'])) {
                     $ison = true;
                 }
             }
@@ -2197,6 +2200,7 @@ class AdminController extends Controller implements CrawlConstants
      */
     function manageMachines()
     {
+        $data = array();
         $data["ELEMENT"] = "managemachinesElement";
         $possible_arguments = array("addmachine", "deletemachine",
             "newsmode", "log", "update");

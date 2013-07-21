@@ -559,10 +559,13 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
                         while(!is_string($block =
                             $this->bz2_iterator->nextBlock())) {
                             if($this->bz2_iterator->eof()) {
-                                break 2;
+                                break;
                             }
                         }
                         $buffer .= $block;
+                        if($this->bz2_iterator->eof()) {
+                            break;
+                        }
                     }
                     if($buffer == "") {
                         return false;

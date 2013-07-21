@@ -33,6 +33,9 @@
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
+// to allow the calulation of longer archive schedules
+ini_set('max_execution_time', 60);
+
 /** Load base controller class if needed */
 require_once BASE_DIR."/controllers/controller.php";
 /** Loads common constants for web crawling*/

@@ -290,7 +290,7 @@ class Model implements CrawlConstants
                 $pre_high = ($pos + SNIPPET_LENGTH_RIGHT <= $len ) ?
                     $pos + SNIPPET_LENGTH_RIGHT: $len;
                 $high = mb_stripos($text_source, " ",
-                    max($pre_high - 10, $pos));
+                    max(min($pre_high - 10, 0), min($pos, $len)));
                 if($high > $pre_high + 10){
                     $high = $pre_high;
                 }

@@ -2294,7 +2294,7 @@ class Fetcher implements CrawlConstants
                     crawlLog($queue_server);
                     crawlLog("Response was:");
                     crawlLog("$info_string");
-                    $info = unserialize($info_string);
+                    $info = @unserialize($info_string);
                     $time = time();
                     $session = md5($time . AUTH_KEY);
                     $post_data['time'] = $time;
