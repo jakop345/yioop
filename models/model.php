@@ -282,12 +282,12 @@ class Model implements CrawlConstants
             foreach($word_locations as $pos) {
                 if($pos < $high) continue;
                 $pre_low = max($pos - SNIPPET_LENGTH_LEFT, 0);
-                $low = mb_stripos($text_source, " ", $pre_low);
+                $low = @mb_stripos($text_source, " ", $pre_low);
                 if($low > $pos) {
                     $low = $pre_low;
                 }
                 $pre_high = min($pos + SNIPPET_LENGTH_RIGHT, $len);
-                $high = mb_stripos($text_source, " ",
+                $high = @mb_stripos($text_source, " ",
                     max(min($pre_high - 10, 0), min($pos, $len)));
                 if($high > $pre_high + 10){
                     $high = $pre_high;
