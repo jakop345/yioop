@@ -116,7 +116,8 @@ class BTree
             $node = unserialize(file_get_contents($node_file));
             return $node;
         } else {
-            exit("Could not read node $id from disk");
+            crawlLog("Btree could not read node $id from disk");
+            return false;
         }
     }
 
@@ -149,7 +150,9 @@ class BTree
         $node_file = $this->dir."/$id.txt";
         if(file_exists($node_file)) {
             unlink($node_file);
-        } else exit("Could not delete node $id from disk");
+        } else {
+            crawlLog("Could not delete node $id from disk");
+        }
     }
 
     /**
