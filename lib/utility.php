@@ -706,7 +706,16 @@ function crawlHash($string, $raw = false)
 }
 
 /**
+ *  Used to create a 20 byte hash of a string (typically a word)
+ *  together with a string of meta data about the page that the word
+ *  appeared on (media:, safe:, class:) information
  *
+ *  @param string $string word to hash
+ *  @param bool $raw whether to base64Hash the result
+ *  @param $meta_string the up to 11 byte string of meta information
+ *  @return string first 8 bytes of md5 of $string concatenated with \x00
+ *      to indicate the hash is of a word not a phrase concatenated  with the 
+ *      padded to 11 byte $meta_string.
  */
 function crawlHashWord($string, $raw = false, $meta_string = "")
 {

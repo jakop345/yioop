@@ -83,10 +83,9 @@ abstract class Controller
 
             $this->$model_instance_name = new $model_name();
         }
-
         require_once BASE_DIR."/views/view.php";
-
         foreach($this->views as $view) {
+
             if(file_exists(APP_DIR."/views/".$view."_view.php")) {
                 require_once APP_DIR."/views/".$view."_view.php";
             } else {
@@ -97,6 +96,7 @@ abstract class Controller
 
             $this->$view_instance_name = new $view_name();
         }
+
         $this->indexing_plugins = $indexing_plugins;
         foreach($this->indexing_plugins as $plugin) {
             if(file_exists(APP_DIR.
@@ -111,7 +111,6 @@ abstract class Controller
             $plugin_instance_name = lcfirst($plugin_name);
             $this->$plugin_instance_name = new $plugin_name();
         }
-
     }
 
     /**

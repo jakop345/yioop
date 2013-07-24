@@ -55,6 +55,12 @@ if(!PROFILE) {
  */
 define("NO_CACHE", true);
 
+/** To use and manipulate classifiers */
+require_once BASE_DIR."/lib/classifiers/classifier.php";
+
+/** To manipulate crawl mixes using the controller's methods */
+require_once BASE_DIR."/controllers/classifier_controller.php";
+
 /**
  * Immediately throw an exception for all notices and warnings, rather than
  * letting execution continue.
@@ -75,10 +81,49 @@ function handleError($errno, $err_str, $err_file, $err_line)
 }
 set_error_handler('handleError');
 
-/** To use and manipulate classifiers */
-require_once BASE_DIR."/lib/classifiers/classifier.php";
-/** To manipulate crawl mixes using the controller's methods */
-require_once BASE_DIR."/controllers/classifier_controller.php";
+/**
+ * Instructions for how to use classifier tool
+ * @var string
+ */
+$INSTRUCTIONS = <<<EOD
+
+This tool is used to automate the building and testing of classifiers,
+providing an alternative to the web interface when a labeled training set is
+available.
+
+classifier_tool.php takes an activity to perform, the name of a dataset to use,
+and a label for the constructed classifier. The activity is the name of one
+of the 'run*' functions implemented by this class, without the common 'run'
+prefix (e.g., 'TrainAndTest'). The dataset is specified as the common prefix
+of two indexes that have the suffixes "Pos" and "Neg", respectively.  So if
+the prefix were "DATASET", then this tool would look for the two existing
+indexes "DATASET Pos" and "DATASET Neg" from which to draw positive and
+negative examples. Each document in these indexes should be a positive or
+negative example of the target class, according to whether it's in the "Pos"
+or "Neg" index. Finally, the label is just the label to be used for the
+constructed classifier.
+
+Beyond these options (set with the -a, -d, and -l flags), a number of other
+options may be set to alter parameters used by an activity or a classifier.
+These options are set using the -S, -I, -F, and -B flags, which correspond
+to string, integer, float, and boolean parameters respectively. These flags
+may be used repeatedly, and each expects an argument of the form NAME=VALUE,
+where NAME is the name of a parameter, and VALUE is a value parsed according
+to the flag. The NAME should match one of the keys of the options member of
+this class, where a period ('.') may be used to specify nesting.  For
+example:
+
+    -I debug=1         # set the debug level to 1
+    -B cls.use_nb=0    # tell the classifier to use Naive Bayes
+
+To build and evaluate a classifier for the label 'spam', trained using the
+two indexes "DATASET Neg" and "DATASET Pos", and a maximum of the top 25
+most informative features:
+
+php bin/classifier_tool.php -a TrainAndTest -d 'DATASET' -l 'spam'
+    -I cls.chi2.max=25
+
+EOD;
 
 /*
  *  We'll set up multi-byte string handling to use UTF-8
@@ -87,42 +132,11 @@ mb_internal_encoding("UTF-8");
 mb_regex_encoding("UTF-8");
 
 /**
- * This class is used to automate the building and testing of classifiers,
- * providing an alternative to the web interface when a labeled training set is
- * available.
+ * Class used to encapsulate all the activities of the classifier_tool.php
+ * command line script. This script allows one to automate the building and 
+ * testing of classifiers, providing an alternative to the web interface when
  *
- * ClassifierTool takes an activity to perform, the name of a dataset to use,
- * and a label for the constructed classifier. The activity is the name of one
- * of the 'run*' functions implemented by this class, without the common 'run'
- * prefix (e.g., 'TrainAndTest'). The dataset is specified as the common prefix
- * of two indexes that have the suffixes "Pos" and "Neg", respectively.  So if
- * the prefix were "DATASET", then this tool would look for the two existing
- * indexes "DATASET Pos" and "DATASET Neg" from which to draw positive and
- * negative examples. Each document in these indexes should be a positive or
- * negative example of the target class, according to whether it's in the "Pos"
- * or "Neg" index. Finally, the label is just the label to be used for the
- * constructed classifier.
- *
- * Beyond these options (set with the -a, -d, and -l flags), a number of other
- * options may be set to alter parameters used by an activity or a classifier.
- * These options are set using the -S, -I, -F, and -B flags, which correspond
- * to string, integer, float, and boolean parameters respectively. These flags
- * may be used repeatedly, and each expects an argument of the form NAME=VALUE,
- * where NAME is the name of a parameter, and VALUE is a value parsed according
- * to the flag. The NAME should match one of the keys of the options member of
- * this class, where a period ('.') may be used to specify nesting.  For
- * example:
- *
- *    -I debug=1         # set the debug level to 1
- *    -B cls.use_nb=0    # tell the classifier to use Naive Bayes
- *
- * To build and evaluate a classifier for the label 'spam', trained using the
- * two indexes "DATASET Neg" and "DATASET Pos", and a maximum of the top 25
- * most informative features:
- *
- * php bin/classifier_tool.php -a TrainAndTest -d 'DATASET' -l 'spam'
- *    -I cls.chi2.max=25
- *
+ * a labeled training set is available.
  * @author Shawn Tice
  * @package seek_quarry
  */
@@ -258,12 +272,17 @@ class ClassifierTool
      */
     function main()
     {
+        global $argv, $INSTRUCTIONS;
+        if(count($argv) < 2) {
+            echo $INSTRUCTIONS;
+            exit(1);
+        }
         list($activity, $dataset_name, $label) = $this->parseOptions();
         $method = "run{$activity}";
         if (method_exists($this, $method)) {
             $this->$method($label, $dataset_name);
         } else {
-            echo "no activity: {$activity}\n";
+            echo "no activity: {$activity}\n\n";
             exit(1);
         }
     }
