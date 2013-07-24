@@ -108,7 +108,7 @@ class IndexManager implements CrawlConstants
      *  Returns the version of the index, so that Yioop can determine
      *  how to do word lookup. This is currently very crude. The only
      *  major change to the format was when word_id's went from 8 to 20 bytes
-     *  which happened around unix time 1369754208.
+     *  which happened around Unix time 1369754208.
      *
      *  @param string $index_name unix timestamp of index
      *  @return int 0 - if the orginal format for Yioop indexes; 1 -if 20 byte
