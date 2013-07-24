@@ -161,6 +161,7 @@ if(upgradeDatabaseWorkDirectoryCheck()) {
 }
 
 if(upgradeLocalesCheck()) {
+echo "hi";
     upgradeLocales();
 }
 

@@ -34,7 +34,7 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 if(php_sapi_name() != 'cli') {
-    $locale_version = tl('view_locale_version3');
+    $locale_version = tl('view_locale_version4');
 }
 /**
  * Base View Class. A View is used to display

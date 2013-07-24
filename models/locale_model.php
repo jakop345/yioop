@@ -544,17 +544,20 @@ class LocaleModel extends Model
      * WORK_DIRECTORY locale dir are also copied. Existing static pages are not
      * modified.
      *
+     * @param array $force_folders which locale subfolders should be forced
+     *      updated to the fallback dir's version
+     *
      * @return array a pair consisting of the data from the general.ini file
      *      together with an array of msg_ids msg_strings.
      */
-    function extractMergeLocales()
+    function extractMergeLocales($force_folders = array())
     {
         $list = $this->getLocaleList();
             // getLocaleList will also create any missing locale dirs
         $strings =
             $this->getTranslateStrings($this->extract_dirs, $this->extensions);
         $general_ini = parse_ini_file(LOCALE_DIR."/general.ini", true);
-        $this->updateLocales($general_ini, $strings);
+        $this->updateLocales($general_ini, $strings, $force_folders);
 
         return array($general_ini, $strings);
     }
@@ -574,9 +577,11 @@ class LocaleModel extends Model
      * @param array $string lines from what is equivalent to an ini file
      *      of msg_id msg_string pairs these lines also have comments on the
      *      file that strings were extracted from
+     * @param array $force_folders which locale subfolders should be forced
+     *      updated to the fallback dir's version
      *
      */
-    function updateLocales($general_ini, $strings)
+    function updateLocales($general_ini, $strings, $force_folders = array())
     {
         $path = LOCALE_DIR;
         if(!$dh = @opendir($path)) {
@@ -588,7 +593,8 @@ class LocaleModel extends Model
             }
             $cur_path = $path . '/' . $obj;
             if (is_dir($cur_path)) {
-                $this->updateLocale($general_ini, $strings, $path, $obj);
+                $this->updateLocale($general_ini, $strings, $path, $obj,
+                    NULL, $force_folders);
             }
         }
     }
@@ -616,9 +622,11 @@ class LocaleModel extends Model
      * @param string $locale the particular locale in $dir to update
      * @param array $new_configure translations of identifier strings from
      *      another source such as a localizer using a web form
+     * @param array $force_folders which locale subfolders should be forced
+     *      updated to the fallback dir's version
      */
     function updateLocale($general_ini, $strings,
-        $dir, $locale, $new_configure = NULL)
+        $dir, $locale, $new_configure = NULL, $force_folders = array())
     {
         $old_configure = array();
         $cur_path = $dir . '/' . $locale;
@@ -631,10 +639,17 @@ class LocaleModel extends Model
                 $fallback_path . '/configure.ini', true);
         }
         if(file_exists($fallback_path.'/pages')) {
+            if(in_array("pages", $force_folders)) {
+                rename($cur_path.'/pages', $cur_path.'/pages'.time().'old');
+            }
             $this->updateLocaleSubFolder($cur_path.'/pages',
                 $fallback_path.'/pages', array("thtml"));
         }
         if(file_exists($fallback_path.'/resources')) {
+            if(in_array("resources", $force_folders)) {
+                rename($cur_path.'/resources', $cur_path.
+                    '/resources'.time().'old');
+            }
             $this->updateLocaleSubFolder($cur_path.'/resources',
                 $fallback_path.'/resources', array("js", "php", "ftr",
                 "txt.gz"));

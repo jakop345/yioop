@@ -57,10 +57,19 @@ function upgradeLocalesCheck()
  */
 function upgradeLocales()
 {
-    global $locale;
     if(!PROFILE) return;
     $locale = new LocaleModel();
-    $locale->extractMergeLocales();
+    $locale->initialize(DEFAULT_LOCALE);
+    $force_folders = array();
+    /* 
+        if we're upgrading version2 to 3 we want to make sure stemmer becomes
+        tokenizer
+    */
+    if(isset($locale->configure['strings']["view_locale_version2"])
+        || $locale->configure['strings']["view_locale_version3"]) {
+        $force_folders = array("resources");
+    }
+    $locale->extractMergeLocales($force_folders);
 }
 
 /**
