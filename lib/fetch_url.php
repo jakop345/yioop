@@ -462,16 +462,14 @@ class FetchUrl implements CrawlConstants
                 $all_dates = $line_parts[1];
                 $date_parts = explode(",", $all_dates);
                 if(count($date_parts) == 2) {
-                    $date_dt = new DateTime($date_parts[1]);
-                    $date_ts = $date_dt->getTimestamp();
-                    $cache_page_validators['expires'] = $date_ts;
+                    $cache_page_validators['expires'] = strtotime(
+                        $date_parts[1]);
                 } else if(count($date_parts) > 2) {
                     /*Encountered some pages with more than one Expires date
                       :O */
                     $timestamps = array();
-                    for($i = 1;$i < count($date_parts);$i += 2) {
-                        $dt = new DateTime($date_parts[$i]);
-                        $ds = $dt->getTimestamp();
+                    for($i = 1;$i < count($date_parts); $i += 2) {
+                        $ds = strtotime($date_parts[$i]);
                         $timestamps[] = $ds;
                     }
                     $lowest = min($timestamps);
