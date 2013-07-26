@@ -1915,7 +1915,7 @@ class QueueServer implements CrawlConstants, Join
         $crawl_status['VISITED_URLS_COUNT'] =$info_bundle['VISITED_URLS_COUNT'];
         $crawl_status['DESCRIPTION'] = $index_archive_info['DESCRIPTION'];
         $crawl_status['QUEUE_PEAK_MEMORY'] = memory_get_peak_usage();
-        file_put_contents($stat_file, serialize($crawl_status));
+        file_put_contents($stat_file, serialize($crawl_status), LOCK_EX);
         chmod($stat_file, 0777);
         crawlLog(
             "End checking for new URLs data memory usage".memory_get_usage());

@@ -1075,7 +1075,7 @@ class IndexShard extends PersistentStructure implements
                     " of %s.", $word_cnt, $num_words);
             $word_cnt++;
         }
-        crawlLog("..done.");
+        crawlLog("..done appending index shard words.");
         $this->docids_len += $index_shard->docids_len;
         $this->num_docs += $index_shard->num_docs;
         $this->num_link_docs += $index_shard->num_link_docs;

@@ -453,8 +453,10 @@ class FetchUrl implements CrawlConstants
                 $line_parts = preg_split("/ETag\:/i", $line);
                 if(isset($line_parts[1])) {
                     $etag_data = explode(" ", $line_parts[1]);
-                    $etag = $etag_data[1];
-                    $cache_page_validators['etag'] = $etag;
+                    if(isset($etag_data[1])) {
+                        $etag = $etag_data[1];
+                        $cache_page_validators['etag'] = $etag;
+                    }
                 }
             }
             if(stristr($line, 'Expires:')) {

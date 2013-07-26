@@ -115,7 +115,7 @@ class BmpProcessor extends ImageProcessor
 
         $can_understand_flag = substr($header, 0, 4) == "424d";
         // get parameters of image from header bytes
-        if ($can_understand_flag) {
+        if($can_understand_flag) {
             $header_parts = str_split($header, 2);
             $width  = hexdec($header_parts[19] . $header_parts[18]);
             $height = hexdec($header_parts[23] . $header_parts[22]);

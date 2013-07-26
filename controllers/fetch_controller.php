@@ -108,7 +108,8 @@ class FetchController extends Controller implements CrawlConstants
             $robot_table[$this->clean($_REQUEST['robot_instance'], "string")] =
                 array($_SERVER['REMOTE_ADDR'], $_REQUEST['machine_uri'],
                 time());
-            file_put_contents($robot_table_name, serialize($robot_table));
+            file_put_contents($robot_table_name, serialize($robot_table),
+                LOCK_EX);
         }
         if(in_array($activity, $this->activities)) {$this->$activity();}
     }
@@ -398,7 +399,7 @@ class FetchController extends Controller implements CrawlConstants
             }
             if($change == true) {
                 file_put_contents(CRAWL_DIR."/schedules/crawl_status.txt",
-                    serialize($crawl_status));
+                    serialize($crawl_status), LOCK_EX);
             }
             $info[self::CRAWL_TIME] = $crawl_status['CRAWL_TIME'];
         } else {
