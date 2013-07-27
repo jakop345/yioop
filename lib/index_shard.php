@@ -643,6 +643,11 @@ class IndexShard extends PersistentStructure implements
             unpack("N*", $this->getDocInfoSubstring($doc_loc, $doc_key_len));
 
         $num_keys = $doc_int & 255;
+        if($num_keys > 15) { /* shouldn't have more than this many keys
+                                fighting index corruption
+                                */
+            $num_keys = 3;
+        }
         $doc_id_len = ($num_keys > 3) ? self::DOC_ID_LEN : $num_keys  * 
             $doc_key_len; /* original format allowed shorter doc ids,
                 keys might be used for other things than ranking */
