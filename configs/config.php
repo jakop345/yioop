@@ -247,6 +247,16 @@ define("NUMBER_OF_LOG_FILES", 5);
 define('CACHE_ROBOT_TXT_TIME', 86400);
 
 /**
+ * Whether the scheduler should track ETag and Expires headers.
+ * This might slow down the crawl, but could save bandwidth. 
+ * If you want to turn this off set the variable to false in
+ * local_config.php
+ */
+if(!defined('USE_ETAG_EXPIRES')) {
+    define('USE_ETAG_EXPIRES', true);
+}
+
+/**
  * if the robots.txt has a Crawl-delay larger than this
  * value don't crawl the site.
  * maximum value for this is 255

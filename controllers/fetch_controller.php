@@ -467,7 +467,7 @@ class FetchController extends Controller implements CrawlConstants
             $this->addScheduleToScheduleDirectory(self::robot_data_base_name,
                 $robot_data);
         }
-        if(strlen($cache_page_validation_data) > 0) {
+        if(USE_ETAG_EXPIRES && strlen($cache_page_validation_data) > 0) {
             $this->addScheduleToScheduleDirectory(
                 self::etag_expires_data_base_name, 
                 $cache_page_validation_data);

@@ -253,7 +253,7 @@ class FetchUrl implements CrawlConstants
          */
         $if_none_match = "If-None-Match";
         $etag = null;
-        if(stristr($url, "ETag:")) {
+        if(USE_ETAG_EXPIRES && stristr($url, "ETag:")) {
             crawlLog("Adding ETag header");
             $etag_parts = preg_split("/ETag\:/i", $url);
             $etag_data = explode(" ", $etag_parts[1]);
@@ -302,7 +302,7 @@ class FetchUrl implements CrawlConstants
             $url_with_ip_if_possible = $url;
         }
         $headers[] = 'Expect:';
-        if($etag !== null) {
+        if(USE_ETAG_EXPIRES && $etag !== null) {
             $etag_header = $if_none_match.": ".$etag;
             $headers[] = $etag_header;
             crawlLog("...done");
@@ -449,7 +449,7 @@ class FetchUrl implements CrawlConstants
                         trim($robot_meta));
                 }
             }
-            if(stristr($line, 'ETag:')) {
+            if(USE_ETAG_EXPIRES && stristr($line, 'ETag:')) {
                 $line_parts = preg_split("/ETag\:/i", $line);
                 if(isset($line_parts[1])) {
                     $etag_data = explode(" ", $line_parts[1]);
@@ -459,7 +459,7 @@ class FetchUrl implements CrawlConstants
                     }
                 }
             }
-            if(stristr($line, 'Expires:')) {
+            if(USE_ETAG_EXPIRES && stristr($line, 'Expires:')) {
                 $line_parts = preg_split("/Expires\:/i", $line);
                 $all_dates = $line_parts[1];
                 $date_parts = explode(",", $all_dates);
@@ -478,7 +478,7 @@ class FetchUrl implements CrawlConstants
                     $cache_page_validators['expires'] = $lowest;
                 }
             }
-            if(!($cache_page_validators['etag'] == -1 &&
+            if(USE_ETAG_EXPIRES && !($cache_page_validators['etag'] == -1 &&
                 $cache_page_validators['expires'] == -1)) {
                 $site[CrawlConstants::CACHE_PAGE_VALIDATORS] = 
                     $cache_page_validators;

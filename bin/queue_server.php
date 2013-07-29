@@ -484,8 +484,9 @@ class QueueServer implements CrawlConstants, Join
             case self::WEB_CRAWL:
                 if($this->isOnlyIndexer()) return;
                 $this->processRobotUrls();
-                $this->processEtagExpires();
-
+                if(USE_ETAG_EXPIRES) {
+                    $this->processEtagExpires();
+                }
                 $count = $this->web_queue->to_crawl_queue->count;
                 $max_links = max(MAX_LINKS_PER_PAGE, MAX_LINKS_PER_SITEMAP);
                 if($count < NUM_URLS_QUEUE_RAM -
@@ -789,7 +790,8 @@ class QueueServer implements CrawlConstants, Join
 
             $this->dumpQueueToSchedules();
             //Write B-Tree root node to disk before before exiting
-            if(isset($this->web_queue) && $this->web_queue != NULL &&
+            if(USE_ETAG_EXPIRES && 
+                isset($this->web_queue) && $this->web_queue != NULL &&
                 is_object($this->web_queue->etag_btree)) {
                 $this->web_queue->etag_btree->writeRoot();
             }
@@ -2242,6 +2244,8 @@ class QueueServer implements CrawlConstants, Join
                 $extracted_etag = null;
                 list($url, $weight, $delay) = $site;
 
+                $key = crawlHash($url, true);
+                if(USE_ETAG_EXPIRES) {
                 /*check if we have cache validation data for a URL. If both 
                   ETag and Expires timestamp are found or only an expires
                   timestamp is found, the timestamp is compared with the current
@@ -2250,32 +2254,33 @@ class QueueServer implements CrawlConstants, Join
                   found, the ETag is appended to the URL so that it can be
                   processed by the fetcher.
                  */
-                $key = crawlHash($url, true);
-                $value = $this->web_queue->etag_btree->findValue($key);
-                if($value !== null) {
-                    $cache_validation_data = $value[1];
-                    if($cache_validation_data['etag'] !== -1 && 
-                        $cache_validation_data['expires'] !== -1) {
-                        $expires_timestamp = $cache_validation_data['expires'];
-                        $current_time = time();
-                        if($current_time < $expires_timestamp) {
-                            continue;
-                        } else {
+                    $value = $this->web_queue->etag_btree->findValue($key);
+                    if($value !== null) {
+                        $cache_validation_data = $value[1];
+                        if($cache_validation_data['etag'] !== -1 && 
+                            $cache_validation_data['expires'] !== -1) {
+                            $expires_timestamp = 
+                                $cache_validation_data['expires'];
+                            $current_time = time();
+                            if($current_time < $expires_timestamp) {
+                                continue;
+                            } else {
+                                $etag = $cache_validation_data['etag'];
+                                $extracted_etag = "ETag: ".$etag;
+                            }
+                        } else if($cache_validation_data['etag'] !== -1) {
                             $etag = $cache_validation_data['etag'];
                             $extracted_etag = "ETag: ".$etag;
-                        }
-                    } else if($cache_validation_data['etag'] !== -1) {
-                        $etag = $cache_validation_data['etag'];
-                        $extracted_etag = "ETag: ".$etag;
-                    } else if($cache_validation_data['expires'] !== -1){
-                        $expires_timestamp = $cache_validation_data['expires'];
-                        $current_time = time();
-                        if($current_time < $expires_timestamp) {
-                            continue;
+                        } else if($cache_validation_data['expires'] !== -1){
+                            $expires_timestamp = 
+                                $cache_validation_data['expires'];
+                            $current_time = time();
+                            if($current_time < $expires_timestamp) {
+                                continue;
+                            }
                         }
                     }
                 }
-
                 $host_url = UrlParser::getHost($url);
                 $dns_lookup = $this->web_queue->dnsLookup($host_url);
                 if($dns_lookup) {
