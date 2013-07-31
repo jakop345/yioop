@@ -117,7 +117,7 @@ class IndexManager implements CrawlConstants
     static function getVersion($index_name)
     {
 
-        if(intval($index_name) < 1369754208) {
+        if(intval($index_name) < VERSION_0_TIMESTAMP) {
             return 0;
         } else {
             return 1;

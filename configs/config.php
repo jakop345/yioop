@@ -248,7 +248,6 @@ define('CACHE_ROBOT_TXT_TIME', 86400);
 
 /**
  * Whether the scheduler should track ETag and Expires headers.
- * This might slow down the crawl, but could save bandwidth. 
  * If you want to turn this off set the variable to false in
  * local_config.php
  */
@@ -270,9 +269,14 @@ define('MAX_WAITING_HOSTS', 250);
 define('MIN_QUEUE_WEIGHT', 1/100000);
 
 /**  largest sized object allowed in a web archive (used to sanity check
-     reading data out of a web archive)
-*/
+ *   reading data out of a web archive)
+ */
 define('MAX_ARCHIVE_OBJECT_SIZE', 100000000);
+
+/** Treat earlier timestamps as being an indexes of format version 0 */
+if(!defined('VERSION_0_TIMESTAMP')) {
+    define('VERSION_0_TIMESTAMP', 1369754208);
+}
 
 /**
  * Code to determine how much memory current machine has
@@ -324,6 +328,7 @@ define('NUM_URLS_QUEUE_RAM', MEMORY_PROFILE * 80000);
 
 /** number of documents before next gen */
 define('NUM_DOCS_PER_GENERATION', MEMORY_PROFILE *10000);
+
 
 /** precision to round floating points document scores */
 define('PRECISION', 10);

@@ -269,7 +269,7 @@ class FetchUrl implements CrawlConstants
         if(!$minimal) {
             $url_ip_parts = explode("###", $url);
             if(count($url_ip_parts) > 1) {
-                $ip_address = urldecode(array_pop($url_ip_parts));
+                $ip_address = ltrim(urldecode(array_pop($url_ip_parts)), "#");
                 $len = strlen(inet_pton($ip_address));
                 if($len == 4 || $len == 16) {
                     if($len == 16) {
