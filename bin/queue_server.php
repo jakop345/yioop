@@ -2317,7 +2317,7 @@ class QueueServer implements CrawlConstants, Join
                 crawlLog("Deleting last 1/4 of Queue (not marking seen) ".
                     "to try to unjam!");
                 $fh = $this->web_queue->openUrlArchive();
-                for($i = $count; $i > 3 * $count/4; $i++) {
+                for($i = $count; $i > 3 * $count/4; $i--) {
                     crawlTimeoutLog("..Removing least url %s of %s ".
                         "from queue.", ($count - $i), floor($count/4));
                     $tmp = $this->web_queue->peekQueue($i, $fh);
