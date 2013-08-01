@@ -2314,10 +2314,10 @@ class QueueServer implements CrawlConstants, Join
                     SEEN_URLS_BEFORE_UPDATE_SCHEDULER * $max_links) {
                 crawlLog("Queue Full and Couldn't produce Fetch Batch!! ".
                     "Or Delete any URLS!!!");
-                crawlLog("Deleting last 1/2 of Queue (not marking seen) ".
+                crawlLog("Deleting Queue Contents (not marking seen) ".
                     "to try to unjam!");
                 $fh = $this->web_queue->openUrlArchive();
-                for($i = $count; $i > $count/2; $i--) {
+                for($i = $count; $i > 0; $i--) {
                     crawlTimeoutLog("..Removing least url %s of %s ".
                         "from queue.", ($count - $i), floor($count/2));
                     $tmp = $this->web_queue->peekQueue($i, $fh);
