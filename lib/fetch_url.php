@@ -254,7 +254,6 @@ class FetchUrl implements CrawlConstants
         $if_none_match = "If-None-Match";
         $etag = null;
         if(USE_ETAG_EXPIRES && stristr($url, "ETag:")) {
-            crawlLog("Adding ETag header");
             $etag_parts = preg_split("/ETag\:/i", $url);
             $etag_data = explode(" ", $etag_parts[1]);
             $etag = $etag_data[1];
@@ -305,7 +304,6 @@ class FetchUrl implements CrawlConstants
         if(USE_ETAG_EXPIRES && $etag !== null) {
             $etag_header = $if_none_match.": ".$etag;
             $headers[] = $etag_header;
-            crawlLog("...done");
         }
         $results = array($url, $url_with_ip_if_possible, $headers);
         return $results;

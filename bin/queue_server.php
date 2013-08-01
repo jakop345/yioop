@@ -1713,7 +1713,7 @@ class QueueServer implements CrawlConstants, Join
      */
     function processQueueUrls()
     {
-        crawlLog("Start checking for new URLs data memory usage".
+        crawlLog("Start checking for new URLs data memory usage: ".
             memory_get_usage());
 
         $info = array();
@@ -2200,12 +2200,12 @@ class QueueServer implements CrawlConstants, Join
         crawlLog("...Done selecting URLS for fetch batch time so far:".
             (changeInMicrotime($start_time)));
 
-        $num_delete = count($delete_urls);
+        $num_deletes = count($delete_urls);
         $k = 0;
         foreach($delete_urls as $delete_url) {
             $k++;
             crawlTimeoutLog("..Removing selected url %s of %s ".
-                "from queue.", $k, $num_delete);
+                "from queue.", $k, $num_deletes);
             $this->web_queue->removeQueue($delete_url);
         }
         crawlLog("...Removing selected URLS for fetch batch from queue time: ".
@@ -2309,12 +2309,24 @@ class QueueServer implements CrawlConstants, Join
                 "\nTime failing to make a fetch batch:".
                 (changeInMicrotime($start_time)).". Loop properties:$i $count");
             $max_links = max(MAX_LINKS_PER_PAGE, MAX_LINKS_PER_SITEMAP);
-            if($i >= $count && $count >= NUM_URLS_QUEUE_RAM -
+            if($num_deletes == 0 && $i >= $count &&
+                    $count >= NUM_URLS_QUEUE_RAM -
                     SEEN_URLS_BEFORE_UPDATE_SCHEDULER * $max_links) {
                 crawlLog("Queue Full and Couldn't produce Fetch Batch!! ".
-                    "Resetting Queue!!!");
-                $this->dumpQueueToSchedules();
-                $this->initializeWebQueue();
+                    "Or Delete any URLS!!!");
+                crawlLog("Deleting last 1/4 of Queue (not marking seen) ".
+                    "to try to unjam!");
+                $fh = $this->web_queue->openUrlArchive();
+                for($i = $count; $i > 3 * $count/4; $i++) {
+                    crawlTimeoutLog("..Removing least url %s of %s ".
+                        "from queue.", ($count - $i), floor($count/4));
+                    $tmp = $this->web_queue->peekQueue($i, $fh);
+                    list($url, $weight, $flag, $probe) = $tmp;
+                    if($url) {
+                        $this->web_queue->removeQueue($url);
+                    }
+                }
+                $this->web_queue->closeUrlArchive($fh);
             }
         }
 
