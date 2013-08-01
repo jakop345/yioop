@@ -98,6 +98,11 @@ class WebArchiveBundle
      */
     var $read_only_archive;
     /**
+     * What version of web archive bundle this is
+     * @var int
+     */
+    var $version;
+    /**
      * Makes or initializes an existing WebArchiveBundle with the given
      * characteristics
      *
@@ -128,6 +133,8 @@ class WebArchiveBundle
         if(file_exists($dir_name."/description.txt")) {
             $info = unserialize(
                 file_get_contents($this->dir_name."/description.txt"));
+        } else {
+            $this->version = 1;
         }
 
         if(isset($info['NUM_DOCS_PER_PARTITION'])) {
@@ -137,6 +144,9 @@ class WebArchiveBundle
         $this->count = 0;
         if(isset($info['COUNT'])) {
             $this->count = $info['COUNT'];
+        }
+        if(isset($info['VERSION'])) {
+            $this->version = $info['VERSION'];
         }
 
         if(isset($info['WRITE_PARTITION'])) {
@@ -155,6 +165,9 @@ class WebArchiveBundle
         $info['NUM_DOCS_PER_PARTITION'] = $this->num_docs_per_partition;
         $info['COUNT'] = $this->count;
         $info['WRITE_PARTITION'] = $this->write_partition;
+        if(isset($this->version)) {
+            $info['VERSION'] = $this->version;
+        }
         if(!$read_only_archive) {
             file_put_contents(
                 $this->dir_name."/description.txt", serialize($info));

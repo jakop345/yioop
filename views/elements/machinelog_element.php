@@ -61,10 +61,7 @@ class MachinelogElement extends Element
                 e(CSRF_TOKEN."=".$data[CSRF_TOKEN]) ?>"
             ><?php e(tl('machinelog_element_back_to_manage'))?></a>
             </div>
-            <form method="get" action="?c=admin&amp;<?php
-                e(CSRF_TOKEN."=".
-                $data[CSRF_TOKEN]); ?>&amp;a=manageMachines<?php
-                e($data['REFRESH_LOG'].""); ?>" >
+            <form method="get" action="javascript:logUpdate();" >
                 <table class="clear">
                 <tr><th><label for="set-filter">
                 <?php e(tl('machinelog_element_filter'));?></label></th>

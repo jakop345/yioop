@@ -249,7 +249,8 @@ class SuffixTree
         if(!isset($this->text[$this->active_edge_index])) {
             return;
         }
-        while($this->remainder > 0 && isset($this->text[$this->pos])) {
+        while($this->remainder>0 && isset($this->text[$this->active_edge_index])
+            && isset($this->text[$this->pos]) ) {
             if ($this->active_len == 0) {
                 $this->active_edge_index = $this->pos;
             }

@@ -135,7 +135,11 @@ class IndexArchiveBundle implements CrawlConstants
      * @var object
      */
     var $current_shard;
-
+    /**
+     * What version of index archive bundle this is
+     * @var int
+     */
+    var $version;
     /**
      *  Threshold hold beyond which we don't load old index shard when
      *  restarting and instead just advance to a new shard
@@ -180,7 +184,9 @@ class IndexArchiveBundle implements CrawlConstants
             $this->summaries->initCountIfNotExists("VISITED_URLS_COUNT");
         }
         $this->description = $this->summaries->description;
-
+        if(isset($this->summaries->version)) {
+            $this->version = $this->summaries->version;
+        }
         $this->num_docs_per_generation = $num_docs_per_generation;
 
         $this->dictionary = new IndexDictionary($this->dir_name."/dictionary");

@@ -212,7 +212,6 @@ class DocIterator extends IndexBundleIterator
         $shard = $index->getCurrentShard();
         $this->getShardInfo($this->current_generation);
         $doc_key_len = IndexShard::DOC_KEY_LEN;
-        $doc_id_len = IndexShard::DOC_ID_LEN;
         $num_docs_or_links = $shard->num_docs + $shard->num_link_docs;
         $pre_results = array();
         $num_docs_so_far = 0;
@@ -221,6 +220,9 @@ class DocIterator extends IndexBundleIterator
             $posting = packPosting($this->next_offset >> 4, array(1));
             list($doc_id, $num_keys, $item) =
                 $shard->makeItem($posting, $num_docs_or_links);
+            if($num_keys % 2 == 0) {
+                $num_keys++;
+            }
             $this->next_offset += ($num_keys + 1) * $doc_key_len;
             $pre_results[$doc_id] = $item;
             $num_docs_so_far ++;
@@ -230,7 +232,6 @@ class DocIterator extends IndexBundleIterator
         $results = array();
         $doc_key_len = IndexShard::DOC_KEY_LEN;
         $filter = ($this->filter == NULL) ? array() : $this->filter;
-
         foreach($pre_results as $keys => $data) {
             $host_key = substr($keys, self::HOST_KEY_POS, self::KEY_LEN);
             if(in_array($host_key, $filter) ) {

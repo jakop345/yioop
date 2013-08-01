@@ -106,9 +106,9 @@ class IndexManager implements CrawlConstants
 
     /**
      *  Returns the version of the index, so that Yioop can determine
-     *  how to do word lookup. This is currently very crude. The only
-     *  major change to the format was when word_id's went from 8 to 20 bytes
-     *  which happened around Unix time 1369754208.
+     *  how to do word lookup.The only major change to the format was
+     *  when word_id's went from 8 to 20 bytes which happened around Unix 
+     *  time 1369754208.
      *
      *  @param string $index_name unix timestamp of index
      *  @return int 0 - if the orginal format for Yioop indexes; 1 -if 20 byte
@@ -116,12 +116,14 @@ class IndexManager implements CrawlConstants
      */
     static function getVersion($index_name)
     {
-
         if(intval($index_name) < VERSION_0_TIMESTAMP) {
             return 0;
-        } else {
-            return 1;
         }
+        $tmp_index = self::getIndex($index_name);
+        if(isset($tmp_index->version)) {
+            return $tmp_index->version;
+        }
+        return 1;
     }
 
     /**
