@@ -1181,6 +1181,7 @@ class QueueServer implements CrawlConstants, Join
      */
     function clearWebQueue()
     {
+        $count = $this->web_queue->to_crawl_queue->count;
         $fh = $this->web_queue->openUrlArchive();
         for($i = $count; $i > 0; $i--) {
             crawlTimeoutLog("..Removing least url %s of %s ".
@@ -1811,7 +1812,7 @@ class QueueServer implements CrawlConstants, Join
                 $now = time(); /* no schedule should take more than one hour
                     on the other hand schedule data might be waiting for days
                     before being processed. So we clear out waiting hosts
-                    that have waited mre than an hour
+                    that have waited more than an hour
                 */
                 foreach($this->waiting_hosts as $key => $value) {
                     crawlTimeoutLog(
