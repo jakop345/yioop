@@ -1808,7 +1808,11 @@ class QueueServer implements CrawlConstants, Join
                 }
                 crawlLog("Done removing host delayed for schedule ".
                     $sites[self::SCHEDULE_TIME]);
-                $now = time(); // no schedule should take more than one hour
+                $now = time(); /* no schedule should take more than one hour
+                    on the other hand schedule data might be waiting for days
+                    before being processed. So we clear out waiting hosts
+                    that have waited mre than an hour
+                */
                 foreach($this->waiting_hosts as $key => $value) {
                     crawlTimeoutLog(
                         "..still scheduler removing waiting hosts..");
@@ -1842,7 +1846,7 @@ class QueueServer implements CrawlConstants, Join
 
         crawlLog(" time: ".(changeInMicrotime($start_time)));
 
-        crawlLog("... Queue To Crawl ...");
+        crawlLog("... Scheduler Queueing To Crawl ...");
         $start_time = microtime();
 
         if(isset($sites[self::TO_CRAWL])) {
