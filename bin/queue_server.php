@@ -847,11 +847,19 @@ class QueueServer implements CrawlConstants, Join
     /**
      * When a crawl is being shutdown, this function is called to write
      * the contents of the web queue bundle back to schedules. This allows
-     * crawls to be resumed without losing urls.
+     * crawls to be resumed without losing urls. This function can also be
+     * called if the queue gets clogged to reschedule its contents for a later
+     * time.
+     *
+     * @param bool $for_reschedule if the call was to reschedule the urls
+     *      to be crawled at a later time as opposed to being used to
+     *      save the urls because the crawl is being halted.
      */
-    function dumpQueueToSchedules()
+    function dumpQueueToSchedules($for_reschedule = false)
     {
-        $this->writeAdminMessage("SHUTDOWN_QUEUE");
+        if(!$for_reschedule) {
+            $this->writeAdminMessage("SHUTDOWN_QUEUE");
+        }
         if(!isset($this->web_queue->to_crawl_queue)) {
             crawlLog("URL queue appears to be empty or NULL");
             return;
@@ -863,9 +871,12 @@ class QueueServer implements CrawlConstants, Join
             mkdir($dir);
             chmod($dir, 0777);
         }
-
-        $day = floor($this->crawl_time/self::ONE_DAY) - 1;
-            //want before all other schedules, so will be reloaded first
+        if($for_reschedule) {
+            $day = floor($this->crawl_time/self::ONE_DAY) + 1;
+        } else {
+            $day = floor($this->crawl_time/self::ONE_DAY) - 1;
+                //want before all other schedules, so will be reloaded first
+        }
 
         $dir .= "/$day";
         if(!file_exists($dir)) {
@@ -873,10 +884,17 @@ class QueueServer implements CrawlConstants, Join
             chmod($dir, 0777);
         }
         //get rid of previous restart attempts, if present
-        $this->db->unlinkRecursive($dir, false);
+        if(!$for_reschedule) {
+            $this->db->unlinkRecursive($dir, false);
+        }
         $count = $this->web_queue->to_crawl_queue->count;
         $old_time = 1;
         $now = time();
+        $note_string = "";
+        if($for_reschedule) {
+            $now += self::ONE_DAY;
+            $note_string = "Reschedule";
+        }
         $schedule_data = array();
         $schedule_data[self::SCHEDULE_TIME] = $this->crawl_time;
         $schedule_data[self::TO_CRAWL] = array();
@@ -891,14 +909,19 @@ class QueueServer implements CrawlConstants, Join
                 continue;
             }
             $hash = crawlHash($now . $url);
+            if($for_reschedule) {
+                $schedule_time = $time + $now;
+            } else {
+                $schedule_time = $time;
+            }
             $schedule_data[self::TO_CRAWL][] = array($url, $weight, $hash);
             if($time - $old_time >= MAX_FETCH_SIZE) {
                 if(count($schedule_data[self::TO_CRAWL]) > 0) {
                     $data_string = webencode(
                         gzcompress(serialize($schedule_data)));
                     $data_hash = crawlHash($data_string);
-                    file_put_contents($dir."/At".$time."From127-0-0-1".
-                        "WithHash$data_hash.txt", $data_string);
+                    file_put_contents($dir."/At".$schedule_time."From127-0-0-1".
+                        $note_string. "WithHash$data_hash.txt", $data_string);
                     $data_string = "";
                     $schedule_data[self::TO_CRAWL] = array();
                 }
@@ -910,8 +933,13 @@ class QueueServer implements CrawlConstants, Join
             $data_string = webencode(
                 gzcompress(serialize($schedule_data)));
             $data_hash = crawlHash($data_string);
-            file_put_contents($dir."/At".$time."From127-0-0-1".
-                "WithHash$data_hash.txt", $data_string);
+            if($for_reschedule) {
+                $schedule_time = $time + $now;
+            } else {
+                $schedule_time = $time;
+            }
+            file_put_contents($dir."/At".$schedule_time."From127-0-0-1".
+                $note_string . "WithHash$data_hash.txt", $data_string);
         }
         $this->db->setWorldPermissionsRecursive(
             CRAWL_DIR.'/cache/'.
@@ -1146,6 +1174,24 @@ class QueueServer implements CrawlConstants, Join
                    CRAWL_DIR.'/cache/'.self::queue_base_name.$this->crawl_time);
             }
         }
+    }
+
+    /**
+     * Delete all the urls from the web queue does not affect filters
+     */
+    function clearWebQueue()
+    {
+        $fh = $this->web_queue->openUrlArchive();
+        for($i = $count; $i > 0; $i--) {
+            crawlTimeoutLog("..Removing least url %s of %s ".
+                "from queue.", ($count - $i), floor($count/2));
+            $tmp = $this->web_queue->peekQueue($i, $fh);
+            list($url, $weight, $flag, $probe) = $tmp;
+            if($url) {
+                $this->web_queue->removeQueue($url);
+            }
+        }
+        $this->web_queue->closeUrlArchive($fh);
     }
 
     /**
@@ -1760,6 +1806,22 @@ class QueueServer implements CrawlConstants, Join
                     unset($this->waiting_hosts[$hash_host]);
                         //allows crawl-delayed host to be scheduled again
                 }
+                crawlLog("Done removing host delayed for schedule ".
+                    $sites[self::SCHEDULE_TIME]);
+                $now = time(); // no schedule should take more than one hour
+                foreach($this->waiting_hosts as $key => $value) {
+                    crawlTimeoutLog(
+                        "..still scheduler removing waiting hosts..");
+                    if(is_array($value)) {
+                        if(intval($key) + self::ONE_HOUR < $now) {
+                            unset($this->waiting_hosts[$key]);
+                        }
+                    } else {
+                        if(intval($value) + self::ONE_HOUR < $now) {
+                            unset($this->waiting_hosts[$key]);
+                        }
+                    }
+                }
             }
         }
         crawlLog(" time: ".(changeInMicrotime($start_time)));
@@ -2300,8 +2362,8 @@ class QueueServer implements CrawlConstants, Join
                 (changeInMicrotime($new_time)));
 
             crawlLog("End Produce Fetch Memory usage".memory_get_usage() );
-            crawlLog("Created fetch batch... Queue size is now ".
-                $this->web_queue->to_crawl_queue->count.
+            crawlLog("Created fetch batch of size $num_sites. ".
+                " Queue size is now ". $this->web_queue->to_crawl_queue->count.
                 "...Total Time to create batch: ".
                 (changeInMicrotime($start_time)));
         } else {
@@ -2314,19 +2376,10 @@ class QueueServer implements CrawlConstants, Join
                     SEEN_URLS_BEFORE_UPDATE_SCHEDULER * $max_links) {
                 crawlLog("Queue Full and Couldn't produce Fetch Batch!! ".
                     "Or Delete any URLS!!!");
-                crawlLog("Deleting Queue Contents (not marking seen) ".
+                crawlLog("Rescheduling Queue Contents (not marking seen) ".
                     "to try to unjam!");
-                $fh = $this->web_queue->openUrlArchive();
-                for($i = $count; $i > 0; $i--) {
-                    crawlTimeoutLog("..Removing least url %s of %s ".
-                        "from queue.", ($count - $i), floor($count/2));
-                    $tmp = $this->web_queue->peekQueue($i, $fh);
-                    list($url, $weight, $flag, $probe) = $tmp;
-                    if($url) {
-                        $this->web_queue->removeQueue($url);
-                    }
-                }
-                $this->web_queue->closeUrlArchive($fh);
+                $this->dumpQueueToSchedules(true);
+                $this->clearWebQueue();
             }
         }
 
