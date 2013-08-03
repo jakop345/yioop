@@ -2060,7 +2060,6 @@ class QueueServer implements CrawlConstants, Join
      */
     function produceFetchBatch()
     {
-
         $i = 1; // array implementation of priority queue starts at 1 not 0
         $fetch_size = 0;
 
@@ -2149,7 +2148,7 @@ class QueueServer implements CrawlConstants, Join
                         $current_crawl_index = $next_slot;
                         $fetch_size++;
                         $i++;
-                      } else { //no more available slots so prepare to bail
+                    } else { //no more available slots so prepare to bail
                         $i = $count;
                         if($no_flags) {
                             $this->web_queue->setQueueFlag($url,
@@ -2193,11 +2192,11 @@ class QueueServer implements CrawlConstants, Join
                 if($delay > 0 ) {
                     // handle adding a url if there is a crawl delay
                     $hash_host = crawlHash($host_url);
-                    if((!isset($this->waiting_hosts[$hash_host])
-                        && $num_waiting < MAX_WAITING_HOSTS)
-                        || (isset($this->waiting_hosts[$hash_host]) &&
-                            $this->waiting_hosts[$hash_host] ==
-                            $schedule_time)) {
+                    $is_waiting_host = isset($this->waiting_hosts[$hash_host]);
+                    if((!$is_waiting_host
+                        && $num_waiting < MAX_WAITING_HOSTS) ||
+                        $is_waiting_host && $this->waiting_hosts[$hash_host] ==
+                        $schedule_time) {
 
                         $this->waiting_hosts[$hash_host] =
                            $schedule_time;
@@ -2231,6 +2230,12 @@ class QueueServer implements CrawlConstants, Join
                             $this->web_queue->setQueueFlag($url,
                                 $delay + WebQueueBundle::SCHEDULABLE);
                         }
+                    } else if(!$is_waiting_host) { 
+                        // has crawl delay but too many already waiting
+                        $delete_urls[$i] = $url;
+                        //delete from queue (so no clog) but don't mark seen
+                        $i++;
+                        continue;
                     }
                 } else { // add a url no crawl delay
                     $next_slot = $this->getEarliestSlot(
@@ -2367,7 +2372,8 @@ class QueueServer implements CrawlConstants, Join
                 (changeInMicrotime($new_time)));
 
             crawlLog("End Produce Fetch Memory usage".memory_get_usage() );
-            crawlLog("Created fetch batch of size $num_sites. ".
+            crawlLog("Created fetch batch of size $num_sites.\n".
+                "$delete_urls urls were deleted.\n".
                 " Queue size is now ". $this->web_queue->to_crawl_queue->count.
                 "...Total Time to create batch: ".
                 (changeInMicrotime($start_time)));
