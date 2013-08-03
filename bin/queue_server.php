@@ -871,11 +871,15 @@ class QueueServer implements CrawlConstants, Join
             mkdir($dir);
             chmod($dir, 0777);
         }
+        $now = time();
         if($for_reschedule) {
-            $day = floor($this->crawl_time/self::ONE_DAY) + 1;
+            $day = floor($now/self::ONE_DAY) + 1;
+            $now += self::ONE_DAY;
+            $note_string = "Reschedule";
         } else {
             $day = floor($this->crawl_time/self::ONE_DAY) - 1;
                 //want before all other schedules, so will be reloaded first
+            $note_string = "";
         }
 
         $dir .= "/$day";
@@ -889,12 +893,6 @@ class QueueServer implements CrawlConstants, Join
         }
         $count = $this->web_queue->to_crawl_queue->count;
         $old_time = 1;
-        $now = time();
-        $note_string = "";
-        if($for_reschedule) {
-            $now += self::ONE_DAY;
-            $note_string = "Reschedule";
-        }
         $schedule_data = array();
         $schedule_data[self::SCHEDULE_TIME] = $this->crawl_time;
         $schedule_data[self::TO_CRAWL] = array();
@@ -908,6 +906,12 @@ class QueueServer implements CrawlConstants, Join
             if($tmp === false || strcmp($url, "LOOKUP ERROR") == 0) {
                 continue;
             }
+            /* for fetcher hash is  a hash of link_num . hash_of_page_link_on
+             * in the case below. Either the url or hash can be used to
+             * determine if the page has been seen. In the case, of a dump
+             * we choose hash to be something so only url affects whether
+             * dedup.
+             */
             $hash = crawlHash($now . $url);
             if($for_reschedule) {
                 $schedule_time = $time + $now;
@@ -2372,14 +2376,14 @@ class QueueServer implements CrawlConstants, Join
                 (changeInMicrotime($new_time)));
 
             crawlLog("End Produce Fetch Memory usage".memory_get_usage() );
-            crawlLog("Created fetch batch of size $num_sites.\n".
-                "$delete_urls urls were deleted.\n".
+            crawlLog("Created fetch batch of size $num_sites.".
+                "$num_deletes urls were deleted.".
                 " Queue size is now ". $this->web_queue->to_crawl_queue->count.
                 "...Total Time to create batch: ".
                 (changeInMicrotime($start_time)));
         } else {
             crawlLog("No fetch batch created!! " .
-                "\nTime failing to make a fetch batch:".
+                "Time failing to make a fetch batch:".
                 (changeInMicrotime($start_time)).". Loop properties:$i $count");
             $max_links = max(MAX_LINKS_PER_PAGE, MAX_LINKS_PER_SITEMAP);
             if($num_deletes == 0 && $i >= $count &&

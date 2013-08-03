@@ -1950,8 +1950,7 @@ class Fetcher implements CrawlConstants
      * @param array $link_urls an array of urls to be crawled
      * @param int $old_weight the weight of the web page the links came from
      * @param string $site_hash a hash of the web_page on which the link was
-     *      found, for use in deduplication (this is could be computed
-     *      from the next param but add to save on recomputation)
+     *      found, for use in deduplication 
      * @param string $old_url url of page where links came from
      * @param bool whether the links are coming from a sitemap
      */
