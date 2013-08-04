@@ -74,9 +74,13 @@ function charCopy($source, &$destination, $start, $length, $timeout_msg = "")
             $destination[$j] = $source[$k];
         }
     } else {
-        for($j = $end, $k = $endk; $j >= $start; $j--, $k--) {
+        $time_out_check_frequency = 20000;
+        for($j = $end, $k = $endk, $t = 0; $j >= $start; $j--, $k--, $t++) {
             $destination[$j] = $source[$k];
-            crawlTimeoutLog($timeout_msg);
+            if($t > $time_out_check_frequency) {
+                crawlTimeoutLog($timeout_msg);
+                $t = 0;
+            }
         }
     }
 }
@@ -642,7 +646,7 @@ function crawlLog($msg, $lname = NULL, $check_process_handler = false)
 
 /**
  * Writes a log message $msg if more than LOG_TIMEOUT time has passed since 
- * function first called with that $msg. Useful in loops to write a message
+ * the last time crawlTimeoutLog was callled. Useful in loops to write a message
  * as progress is made through the loop (but not on every iteration, but
  * say every 30 seconds).
  *
@@ -651,16 +655,12 @@ function crawlLog($msg, $lname = NULL, $check_process_handler = false)
  */
 function crawlTimeoutLog($msg)
 {
-    static $cache = array();
-    if($msg === true) {
-        $cache = array();
+    static $cache_time = 0;
+    if($cache_time == 0) {
+        $cache_time = microtime();
         return;
     }
-    $hash = crawlHash($msg, true);
-    if(!isset($cache[$hash])) {
-        $cache[$hash] = microtime();
-    }
-    if(changeInMicrotime($cache[$hash]) < LOG_TIMEOUT) {
+    if(changeInMicrotime($cache_time) < LOG_TIMEOUT) {
         return;
     }
     if(func_num_args() > 1) {
@@ -669,7 +669,7 @@ function crawlTimeoutLog($msg)
         $out_msg = & $msg;
     }
     crawlLog($out_msg." Current memory usage:".memory_get_usage());
-    $cache[$hash] = microtime();
+    $cache_time = microtime();
 }
 
 /**

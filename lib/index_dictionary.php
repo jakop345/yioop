@@ -295,7 +295,7 @@ class IndexDictionary implements CrawlConstants
     function mergeTier($tier, $out_slot)
     {
         for($i = 0; $i < self::NUM_PREFIX_LETTERS; $i++) {
-            crawlLog("..processing first prefix $i of ".
+            crawlTimeoutLog("..processing first prefix $i of ".
                 self::NUM_PREFIX_LETTERS." in $tier.");
             $this-> mergeTierFiles($i, $tier, $out_slot);
         }

@@ -1173,7 +1173,7 @@ class IndexShard extends PersistentStructure implements
                     $len - $write_offset);
                 if($copy_to_len > $copy_data_len) {
                     charCopy($tmp_string, $this->word_postings, $write_offset,
-                        $copy_data_len);
+                        $copy_data_len, "merge index charCopy 1");
                     $write_offset += $copy_data_len;
                     $tmp_string = substr($tmp_string, $copy_data_len);
                 }
@@ -1191,7 +1191,8 @@ class IndexShard extends PersistentStructure implements
                         $this->word_postings .= $tmp_string;
                     } else {
                         charCopy($tmp_string, $this->word_postings,
-                            $write_offset, $copy_data_len);
+                            $write_offset, $copy_data_len, 
+                            "merge index charCopy 2");
                         $tmp_string = substr($tmp_string, $copy_data_len);
                         $this->word_postings .= $tmp_string;
                     }

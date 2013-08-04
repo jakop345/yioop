@@ -114,9 +114,6 @@ class CrawlDaemon implements CrawlConstants
             crawlLog("Stopping $name_string ...", NULL, true);
             exit();
         }
-        if(!$from_logging) {
-            crawlTimeoutLog(true); //clear crawl timeout messages
-        }
         $time = $now;
         file_put_contents($lock_file, $now);
         return true;
