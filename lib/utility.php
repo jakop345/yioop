@@ -377,7 +377,7 @@ function packListModified9($continue_bits, $cnt, $pack_list)
  * @param int &offset an offset to this string which will be updated after call
  * @return string undecoded posting
  */
-function nextPostString(&$$input_string, &$offset)
+function nextPostString(&$input_string, &$offset)
 {
     if(!isset($input_string[$offset+3])) return array();
     $flag_mask = 192;

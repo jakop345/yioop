@@ -1060,7 +1060,7 @@ class IndexShard extends PersistentStructure implements
             $new_postings_len = strlen($new_postings);
             if(!isset($this->words[$word_id])) {
                 $this->words[$word_id] = $new_postings;
-            } else  {
+            } else {
                 $this->words[$word_id] .= $new_postings;
             }
             if($add_len_flag) {
