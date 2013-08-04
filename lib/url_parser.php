@@ -852,7 +852,7 @@ class UrlParser
             $cache[$name]["paths"] = array();
             $cache[$name]["sites"] = array();
             foreach($site_array as $site) {
-                if(strcmp(substr($site, 0, 7), "domain:") == 0) {
+                if(strncmp($site, "domain:", 7) == 0) {
                     $cache[$name]["domains"][] = substr($site, 7);
                     continue;
                 }

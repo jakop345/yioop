@@ -811,7 +811,7 @@ class PhraseModel extends ParallelModel
             }
             $phrase = $letter." ".$phrase;
         }
-        if(substr($phrase, 0, 7) == 'mimetyp') {
+        if(strncmp($phrase, 'mimetyp', 7) == 0) {
             $phrase = 'mime';
         }
 
@@ -1253,8 +1253,8 @@ class PhraseModel extends ParallelModel
             foreach($summaries as $hash_url => $summary) {
                 if(!isset($summaries[$hash_url][self::HASH])) continue;
                 $hash_parts = explode('|', $summaries[$hash_url][self::HASH]);
-                if(isset($hash_parts[3]) && substr($hash_parts[3], 0, 11) ==
-                    "location%3A") {
+                if(isset($hash_parts[3]) && strncmp($hash_parts[3],
+                    "location%3A", 11) == 0) {
                     $crawl_time = $pages[$page_indexes[$hash_url]][
                         self::CRAWL_TIME];
                     $lookups[$hash_url] = array($hash_parts[1],

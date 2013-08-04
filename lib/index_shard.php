@@ -1051,7 +1051,7 @@ class IndexShard extends PersistentStructure implements
             // update doc offsets for newly added docs
             $add_len_flag = false;
             if($postings_len !=  $two_doc_len ||
-                substr($postings, 0, self::POSTING_LEN) != self::HALF_BLANK) {
+                strncmp($postings, self::HALF_BLANK, self::POSTING_LEN) != 0) {
                 $offset = 0;
                 $new_postings = "";
                 $index_shard_len = ($this->docids_len >> 4);
@@ -1436,7 +1436,7 @@ class IndexShard extends PersistentStructure implements
                 dictionary
             */
             if($len != $two_doc_len ||
-                substr($postings, 0, self::POSTING_LEN) != self::HALF_BLANK) {
+                strncmp($postings, self::HALF_BLANK, self::POSTING_LEN) != 0) {
                 $out = pack("N*",$this->generation, $this->word_docs_len, $len);
                 $this->word_docs_len += $len;
                 $this->words .= $word_id . $out;
@@ -1488,7 +1488,7 @@ class IndexShard extends PersistentStructure implements
             $pos += $key_len + $posting_len + $len;
 
             if($len != $two_doc_len ||
-                substr($postings, 0, self::POSTING_LEN) != self::HALF_BLANK) {
+                strncmp($postings,  self::HALF_BLANK, self::POSTING_LEN) != 0) {
                 if($fh != NULL) {
                     if($tmp_len < self::SHARD_BLOCK_SIZE) {
                         $tmp_string .= $postings;

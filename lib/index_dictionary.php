@@ -428,8 +428,7 @@ class IndexDictionary implements CrawlConstants
      */
     function recordCmp($record_a, $record_b)
     {
-        return strcmp(substr($record_a, 0, IndexShard::WORD_KEY_LEN),
-            substr($record_b, 0,  IndexShard::WORD_KEY_LEN));
+        return strncmp($record_a, $record_b, IndexShard::WORD_KEY_LEN);
     }
 
     /**

@@ -59,7 +59,7 @@ class VideourlHelper extends Helper
      */
     function render($url, $video_sources, $open_in_tabs = false)
     {
-        if(substr($url, 0, 3) == "url") {
+        if(strncmp($url, "url", 3) == 0) {
             $link_url_parts = explode("|", $url);
             if(count($link_url_parts) > 1) {
                 $url = htmlentities($link_url_parts[1]);

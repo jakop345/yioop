@@ -82,7 +82,7 @@ class FeedsHelper extends Helper implements CrawlConstants
             $encode_source = urlencode(
                 urlencode($page[self::SOURCE_NAME]));
             if(isset($page[self::URL])) {
-                if(substr($page[self::URL], 0, 4) == "url|") {
+                if(strncmp($page[self::URL], "url|", 4) == 0) {
                     $url_parts = explode("|", $page[self::URL]);
                     $url = $url_parts[1];
                     $title = UrlParser::simplifyUrl($url, 60);

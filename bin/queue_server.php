@@ -873,8 +873,7 @@ class QueueServer implements CrawlConstants, Join
         }
         $now = time();
         if($for_reschedule) {
-            $day = floor($now/self::ONE_DAY) + 1;
-            $now += self::ONE_DAY;
+            $day = floor($now/self::ONE_DAY);
             $note_string = "Reschedule";
         } else {
             $day = floor($this->crawl_time/self::ONE_DAY) - 1;
@@ -1448,7 +1447,7 @@ class QueueServer implements CrawlConstants, Join
         static $blocked = false;
 
         if($blocking && $blocked) {
-            crawlLog("Indexing waiting for merge tiers to ".
+            crawlLog("Indexer waiting for merge tiers to ".
                 "complete before write partition. B");
             return;
         }
@@ -1461,6 +1460,7 @@ class QueueServer implements CrawlConstants, Join
         crawlLog("Processing index data in $file...");
 
         $start_time = microtime();
+        $start_total_time = microtime();
 
         $pre_sites = webdecode(file_get_contents($file));
 
@@ -1476,11 +1476,11 @@ class QueueServer implements CrawlConstants, Join
         $max_batch_sites_and_links = SEEN_URLS_BEFORE_UPDATE_SCHEDULER *
             (max(MAX_LINKS_PER_PAGE, MAX_LINKS_PER_SITEMAP) + 1);
         while($pos < $len_urls && $num <= $max_batch_sites_and_links) {
-            crawlTimeoutLog("..still processing index data at position %s of ".
-                "out of %s", $pos, $len_urls);
+            crawlTimeoutLog("..Indexer still processing index data at position".
+                " %s of out of %s", $pos, $len_urls);
             $len_site = unpackInt(substr($seen_urls_string, $pos, 4));
             if($len_site > 2 * $this->page_range_request) {
-                crawlLog("Site string too long, $len_site,".
+                crawlLog("Indexer: Site string too long, $len_site,".
                     " data file may be corrupted? Skip rest.");
                 $bad = true;
                 break;
@@ -1503,13 +1503,13 @@ class QueueServer implements CrawlConstants, Join
             crawlLog("Index data file len_urls was $len_urls num was $num, ".
                 "may be corrupt.");
         }
-        crawlLog("A. Load SEEN_URLS. Memory usage:".
+        crawlLog("A. Indexer Load SEEN_URLS. Memory usage:".
             memory_get_usage() ." time: ".(changeInMicrotime($start_time)));
         $sites[self::INVERTED_INDEX] = IndexShard::load("fetcher_shard",
             $pre_sites);
         unset($pre_sites);
 
-        crawlLog("B. Load Sent shard. Memory usage:".
+        crawlLog("B. Indexer Load Sent shard. Memory usage:".
             memory_get_usage() ." time: ".(changeInMicrotime($start_time)));
         $start_time = microtime();
 
@@ -1520,7 +1520,7 @@ class QueueServer implements CrawlConstants, Join
             $seen_sites = array_values($seen_sites);
             unset($sites[self::SEEN_URLS]);
             $num_seen = count($seen_sites);
-            crawlLog("SEEN_URLS array had $num_seen sites.");
+            crawlLog("Indexer: SEEN_URLS array had $num_seen sites.");
         } else {
             $num_seen = 0;
         }
@@ -1556,7 +1556,7 @@ class QueueServer implements CrawlConstants, Join
             $generation = $this->index_archive->initGenerationToAdd(
                     $index_shard->num_docs, $this, $blocking);
             if($generation == -1) {
-                crawlLog("Indexing waiting for merge tiers to ".
+                crawlLog("Indexer waiting for merge tiers to ".
                     "complete before write partition. A");
                 $blocked = true;
                 return;
@@ -1581,26 +1581,27 @@ class QueueServer implements CrawlConstants, Join
                 }
                 unset($seen_sites);
             }
-            crawlLog("C. Init local shard, store Summaries memory usage:".
-                memory_get_usage() .
+            crawlLog("C. Indexer init local shard, store ".
+                "Summaries memory usage:". memory_get_usage() .
                 " time: ".(changeInMicrotime($start_time)));
             $start_time = microtime();
             // added summary offset info to inverted index data
 
             $index_shard->changeDocumentOffsets($summary_offsets);
 
-            crawlLog("D. Update shard offsets. Memory usage:".memory_get_usage()
-                ." time: ".(changeInMicrotime($start_time)));
+            crawlLog("D. Indexer Update shard offsets. Memory usage:".
+                memory_get_usage() ." time: ".(changeInMicrotime($start_time)));
             $start_time = microtime();
 
             $this->index_archive->addIndexData($index_shard);
             $this->index_dirty = true;
         }
-        crawlLog("E. Add index shard. Memory usage:".memory_get_usage().
+        crawlLog("E. Indexer Add index shard. Memory usage:".memory_get_usage().
             " time: ".(changeInMicrotime($start_time)));
 
 
-        crawlLog("Done Index Processing File: $file");
+        crawlLog("Indexer Done Index Processing File: $file. Total time: ".
+            changeInMicrotime($start_total_time));
         if(isset($recent_urls)) {
             $sites[self::RECENT_URLS] = & $recent_urls;
             $this->writeCrawlStatus($sites);
@@ -2377,7 +2378,7 @@ class QueueServer implements CrawlConstants, Join
 
             crawlLog("End Produce Fetch Memory usage".memory_get_usage() );
             crawlLog("Created fetch batch of size $num_sites.".
-                "$num_deletes urls were deleted.".
+                " $num_deletes urls were deleted.".
                 " Queue size is now ". $this->web_queue->to_crawl_queue->count.
                 "...Total Time to create batch: ".
                 (changeInMicrotime($start_time)));
