@@ -1047,22 +1047,12 @@ class IndexShard extends PersistentStructure implements
         $num_words = count($index_shard->words);
         $word_cnt = 0;
         foreach($index_shard->words as $word_id => $postings) {
-            $postings_len = strlen($postings);
             // update doc offsets for newly added docs
             $add_len_flag = false;
-            if($postings_len !=  $two_doc_len ||
+            if(strlen($postings) !=  $two_doc_len ||
                 strncmp($postings, self::HALF_BLANK, self::POSTING_LEN) != 0) {
-                $offset = 0;
-                $new_postings = "";
-                $index_shard_len = ($this->docids_len >> 4);
-                while($offset < $postings_len) {
-                    list($doc_index, $posting_list) = // this changes $offset
-                        unpackPosting($postings, $offset, false);
-                    if($posting_list === false) {continue; }
-                    $doc_index += $index_shard_len;
-                    $new_postings .=
-                        packPosting($doc_index, $posting_list, false);
-                }
+                $new_postings = addDocIndexPostings($postings,
+                    ($this->docids_len >> 4));
                 $add_len_flag = true;
             } else {
                 $new_postings = $postings;

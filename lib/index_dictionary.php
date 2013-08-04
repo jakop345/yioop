@@ -368,8 +368,8 @@ class IndexDictionary implements CrawlConstants
 
         while($remaining_a > 0 || $remaining_b > 0 ||
             $offset_a < $read_size_a || $offset_b < $read_size_b) {
-            crawlTimeoutLog("..merging tier files %s left in A file ".
-                "%s left in B file.", $remaining_a, $remaining_b);
+            crawlTimeoutLog("..merging tier files for prefix %s tier ".
+                "%s.", $prefix, $tier);
             if($offset_a >= $read_size_a && $remaining_a > 0) {
                 $read_size_a = min($remaining_a, $segment_size);
                 $work_string_a = fread($fhA, $read_size_a);

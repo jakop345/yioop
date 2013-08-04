@@ -196,6 +196,53 @@ function unpackPosting($posting, &$offset, $dedelta = true)
 }
 
 /**
+ * This method is used while appending one index shard to another. 
+ * Given a string of postings adds $add_offset add to each offset to the
+ * document map in each posting.
+ *
+ * @param string &$postings a string of index shard postings
+ * @param int $add_offset an fixed amount to add to each postings doc map offset
+ *
+ * @return string $new_postings where each doc offset has had $add_offset added
+ *      to it
+ */
+function addDocIndexPostings(&$postings, $add_offset)
+{
+    $offset = 0;
+    $new_postings = "";
+    $postings_len = strlen($postings);
+    while($offset < $postings_len) {
+        $post_string = nextPostString($postings, $offset);
+        $posting_list = call_user_func_array( "array_merge",
+            array_map("unpackListModified9", unpack("N*", $post_string)));
+        $doc_index = array_shift($posting_list);
+        if(($doc_index & (2 << 26)) > 0) {
+            $post0 = ($doc_index & ((2 << 9) - 1));
+            array_unshift($posting_list, $post0);
+            $doc_index -= $post0;
+            $doc_index -= (2 << 26);
+            $doc_index >>= 9;
+        } else {
+            $doc_index--;
+        }
+        if($posting_list === false) { continue; }
+
+        $doc_index += $add_offset;
+
+        if($doc_index >= (2 << 14) && isset($posting_list[0])
+            && $posting_list[0] < (2 << 9)  && $doc_index < (2 << 17)) {
+            $posting_list[0] += (((2 << 17) + $doc_index) << 9);
+        } else {
+            // we add 1 to doc_index to make sure not 0 (modified9 needs > 0)
+            array_unshift($posting_list, ($doc_index + 1));
+        }
+        $new_postings .= encodeModified9($posting_list);
+    }
+    return $new_postings;
+}
+
+
+/**
  * Computes the difference of a list of integers.
  * i.e., (a1, a2, a3, a4) becomes (a1, a2-a1, a3-a2, a4-a3)
  *
@@ -323,16 +370,14 @@ function packListModified9($continue_bits, $cnt, $pack_list)
 
 
 /**
- * Decoded a sequence of positive integers from a string that has been
- * encoded using Modified 9
+ * Returns the next complete posting string from $input_string being at offset.
+ * Does not do any decoding.
  *
- * @param string $int_string string to decode from
- * @param int &$offset where to string in the string, after decode
- *      points to where one was after decoding.
- * @return array sequence of positive integers that were decoded
- * @see encodeModified9
+ * @param string &$input_string a string of postings
+ * @param int &offset an offset to this string which will be updated after call
+ * @return string undecoded posting
  */
-function decodeModified9($input_string, &$offset)
+function nextPostString(&$$input_string, &$offset)
 {
     if(!isset($input_string[$offset+3])) return array();
     $flag_mask = 192;
@@ -357,6 +402,22 @@ function decodeModified9($input_string, &$offset)
     if($error) {
         return array(0, false);
     }
+    return $post_string;
+}
+
+/**
+ * Decoded a sequence of positive integers from a string that has been
+ * encoded using Modified 9
+ *
+ * @param string $int_string string to decode from
+ * @param int &$offset where to string in the string, after decode
+ *      points to where one was after decoding.
+ * @return array sequence of positive integers that were decoded
+ * @see encodeModified9
+ */
+function decodeModified9($input_string, &$offset)
+{
+    $post_string = nextPostString($input_string, $offset);
     return call_user_func_array( "array_merge",
         array_map("unpackListModified9", unpack("N*", $post_string)));
 }
@@ -656,10 +717,6 @@ function crawlLog($msg, $lname = NULL, $check_process_handler = false)
 function crawlTimeoutLog($msg)
 {
     static $cache_time = 0;
-    if($cache_time == 0) {
-        $cache_time = microtime();
-        return;
-    }
     if(changeInMicrotime($cache_time) < LOG_TIMEOUT) {
         return;
     }
@@ -1322,20 +1379,10 @@ function calculatePartition($input, $num_partition, $callback = NULL)
 function changeInMicrotime($start, $end = NULL)
 {
     if( !$end ) {
-        $end= microtime();
+        $end = microtime();
     }
-    $tmp = explode(" ", $start);
-    if(!isset($tmp[1])) {
-        array_unshift($tmp, 0);
-    }
-    list($start_microseconds, $start_seconds) = $tmp;
-    list($end_microseconds, $end_seconds) = explode(" ", $end);
-
-    $change_in_seconds = intval($end_seconds) - intval($start_seconds);
-    $change_in_microseconds =
-        floatval($end_microseconds) - floatval($start_microseconds);
-
-    return floatval( $change_in_seconds ) + $change_in_microseconds;
+    return (substr($end, 11) - substr($start, 11))
+        + (substr($end, 0, 9) - substr($start, 0, 9));
 }
 
 
