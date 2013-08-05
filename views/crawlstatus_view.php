@@ -97,11 +97,23 @@ class CrawlstatusView extends View
                     e(tl('managecrawls_element_stop_crawl'))?></button>
                 <?php
             }
-            ?><br /><a href="?c=admin&amp;a=manageCrawls<?php
+            ?><br />
+                <?php
+                if( $data['CRAWL_TIME'] != $data['CURRENT_INDEX']) { ?>
+                   [<a href="<?php e($base_url); ?>index&amp;timestamp=<?php
+                        e($data['CRAWL_TIME']); ?>"><?php
+                        e(tl('crawlstatus_view_set_index')); ?></a>]
+                <?php
+                } else { ?>
+                    [<?php e(tl('crawlstatus_view_search_index')); ?>]
+                <?php
+                }
+                ?>
+                [<a href="?c=admin&amp;a=manageCrawls<?php
                 ?>&amp;arg=options&amp;<?php
                 e(CSRF_TOKEN."=".$data[CSRF_TOKEN]); ?>&amp;ts=<?php
                 e($data['CRAWL_TIME']); ?>"><?php
-                e(tl('crawlstatus_view_changeoptions')); ?></a><?php
+                e(tl('crawlstatus_view_changeoptions')); ?></a>]<?php
         } else {
             e(tl('crawlstatus_view_no_description'));
         }

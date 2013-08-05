@@ -766,9 +766,9 @@ class PhraseModel extends ParallelModel
                 array("http"));
         }
 
+        $tag = guessLocaleFromString($phrase);
+        $main_tag = substr($tag, 0, 2);
         if($len == 1) {
-            $tag = guessLocaleFromString($phrase);
-            $main_tag = substr($tag, 0, 2);
             $letter = "";
             switch($main_tag)
             {
@@ -809,10 +809,16 @@ class PhraseModel extends ParallelModel
                     $letter = "thư";
                 break;
             }
-            $phrase = $letter." ".$phrase;
+            $phrase = $letter." ".$phrase."|".$phrase;
         }
-        if(strncmp($phrase, 'mimetyp', 7) == 0) {
-            $phrase = 'mime';
+
+        $tokenizer_name = ucfirst($main_tag)."Tokenizer";
+        if(isset($tokenizer_name::$semantic_rewrites)) {
+            $rewrites = $tokenizer_name::$semantic_rewrites;
+            $tmp = trim($phrase);
+            if(isset($rewrites[$tmp])) {
+                $phrase = $rewrites[$tmp];
+            }
         }
 
         return $phrase;

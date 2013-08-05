@@ -49,7 +49,21 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 class EnTokenizer
 {
 
-    static $no_stem_list = array("Titanic", "programming", "fishing");
+    /**
+     * Words we don't want to be stemmed
+     * @var array
+     */
+    static $no_stem_list = array("titanic", "programming", "fishing", 'ins');
+
+    /**
+     * Phrases we would like yioop to rewrite before performing a query
+     * @var array
+     */
+    static $semantic_rewrites = array(
+        "ins" => 'uscis',
+        "mimetype" => 'mime',
+        "military" => 'armed forces'
+    );
     /**
      * storage used in computing the stem
      * @var string
