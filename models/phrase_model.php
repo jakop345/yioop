@@ -1365,8 +1365,8 @@ class PhraseModel extends ParallelModel
                 $index_name = $this->index_name;
             }
             $iterators[0] = new NetworkIterator($original_query,
-                $queue_servers, $index_name, $filter, $save_timestamp_name);
-
+                $queue_servers, $index_name, $filter, $save_timestamp_name,
+                $limit_news);
         }
         if(!$network_flag) {
             $doc_iterate_hashes = array(substr(crawlHashWord("site:any"), 0, 9),

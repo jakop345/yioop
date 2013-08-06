@@ -130,14 +130,20 @@ class NetworkIterator extends IndexBundleIterator
      *      the queries on those machine can make savepoints. Note the
      *      format of save_timestamp is timestamp-query_part where query_part
      *      is the number of the item in a query presentation (usually 0).
+     * @param bool $limit_news if true the number of media:news items to
+     *      allow in search results is limited to WordIterator::LIMIT_NEWS_COUNT
+     *
      */
     function __construct($query, $queue_servers, $timestamp, &$filter = NULL,
-        $save_timestamp_name = "")
+        $save_timestamp_name = "", $limit_news = true)
     {
         $this->results_per_block = ceil(self::MIN_FIND_RESULTS_PER_BLOCK);
         $this->next_results_per_block = $this->results_per_block;
         $this->base_query = "q=".urlencode($query).
             "&f=serial&network=false&raw=1&its=$timestamp&guess=false";
+        if(!$limit_news) {
+            $this->base_query .= "&s=news";
+        }
         if($save_timestamp_name!="") { // used for archive crawls of crawl mixes
             $this->base_query .= "&save_timestamp=$save_timestamp_name";
         }
