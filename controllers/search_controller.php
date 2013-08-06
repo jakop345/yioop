@@ -627,9 +627,12 @@ class SearchController extends Controller implements CrawlConstants
      *      use of the timestamp. $save_time_stamp may also be in the format
      *      of string timestamp-query_part to handle networked queries involving
      *      presentations
+     * @param bool $limit_news if true the number of media:news items to
+     *      allow in search results is limited to WordIterator::LIMIT_NEWS_COUNT
      */
     function processQuery(&$data, $query, $activity, $arg, $results_per_page,
-        $limit = 0, $index_name = 0, $raw = 0, $save_timestamp = 0)
+        $limit = 0, $index_name = 0, $raw = 0, $save_timestamp = 0,
+        $limit_news = true)
     {
         $no_index_given = false;
         if($index_name == 0) {
@@ -687,7 +690,9 @@ class SearchController extends Controller implements CrawlConstants
         if(isset($_REQUEST['guess']) &&  $_REQUEST['guess'] == "false") {
             $guess_semantics = false;
         }
-
+        if($this->subsearch_name == 'news') {
+            $limit_news = false;
+        }
         switch($activity)
         {
             case "related":
@@ -704,7 +709,7 @@ class SearchController extends Controller implements CrawlConstants
                 $phrase_results = $this->phraseModel->getPhrasePageResults(
                     $top_query, $limit, $results_per_page, false, $filter,
                     $use_cache_if_possible, $raw, $queue_servers,
-                    $guess_semantics, $save_timestamp);
+                    $guess_semantics, $save_timestamp, $limit_news);
                 $data['PAGING_QUERY'] = "?c=search&amp;".
                     "a=related&amp;arg=".urlencode($url);
                 if(isset($this->subsearch_name) && $this->subsearch_name !="") {
@@ -725,7 +730,7 @@ class SearchController extends Controller implements CrawlConstants
                     $phrase_results = $this->phraseModel->getPhrasePageResults(
                         $query, $limit, $results_per_page, true, $filter,
                         $use_cache_if_possible, $raw, $queue_servers,
-                        $guess_semantics, $save_timestamp);
+                        $guess_semantics, $save_timestamp,  $limit_news);
                     $query = $original_query;
                 }
                 $data['PAGING_QUERY'] = "?q=".urlencode($query);
@@ -1087,18 +1092,20 @@ class SearchController extends Controller implements CrawlConstants
      * @param int $save_timestamp if this timestamp is nonzero, then save
      *      iterate position, so can resume on future queries that make
      *      use of the timestamp
+     * @param bool $limit_news if true the number of media:news items to
+     *      allow in search results is limited to WordIterator::LIMIT_NEWS_COUNT
      *
      * @return array associative array of results for the query performed
      */
     function queryRequest($query, $results_per_page, $limit = 0,
-        $grouping = 0, $save_timestamp = 0)
+        $grouping = 0, $save_timestamp = 0, $limit_news = true)
     {
         if(!API_ACCESS) {return NULL; }
         $grouping = ($grouping > 0 ) ? 2 : 0;
 
         $data = array();
         $this->processQuery($data, $query, "query", "", $results_per_page,
-                $limit, 0, $grouping, $save_timestamp);
+                $limit, 0, $grouping, $save_timestamp, $limit_news);
         return $data;
     }
 
@@ -1127,17 +1134,20 @@ class SearchController extends Controller implements CrawlConstants
      * @param int $save_timestamp if this timestamp is nonzero, then save
      *      iterate position, so can resume on future queries that make
      *      use of the timestamp
+     * @param bool $limit_news if true the number of media:news items to
+     *      allow in search results is limited to WordIterator::LIMIT_NEWS_COUNT
      *
      * @return array associative array of results for the query performed
      */
     function relatedRequest($url, $results_per_page, $limit = 0,
-        $crawl_time = 0, $grouping = 0, $save_timestamp = 0)
+        $crawl_time = 0, $grouping = 0, $save_timestamp = 0,
+        $limit_news = true)
     {
         if(!API_ACCESS) {return NULL; }
         $grouping = ($grouping > 0 ) ? 2 : 0;
         $data = array();
         $this->processQuery($data, "", "related", $url, $results_per_page,
-            $limit, $crawl_time, $grouping, $save_timestamp);
+            $limit, $crawl_time, $grouping, $save_timestamp, $limit_news);
         return $data;
     }
 

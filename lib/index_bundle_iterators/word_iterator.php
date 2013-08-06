@@ -151,28 +151,30 @@ class WordIterator extends IndexBundleIterator
     /** Length of a doc key*/
     const KEY_LEN = 8;
 
+    /** If the $limit_news constructor input is true then limit the number
+     *  of items coming from the feed shard to this count.
+     */
+    const LIMIT_NEWS_COUNT = 25;
     /**
      * Creates a word iterator with the given parameters.
      *
      * @param string $word_key hash of word or phrase to iterate docs of
      * @param string $index_name time_stamp of the to use
-     * @param int $limit the first element to return from the list of docs
-     *      iterated over
      * @param bool $raw whether the $word_key is our variant of base64 encoded
      * @param array $filter an array of hashes of domains to filter from
      *      results
-     * @param string $mask byte msk to apply against word id, default is for
+     * @param string $mask byte mask to apply against word id, default is for
      *      exact match
      */
     function __construct($word_key, $index_name, $raw = false, &$filter = NULL,
         $results_per_block = IndexBundleIterator::RESULTS_PER_BLOCK,
+        $limit_news = false,
         $mask = "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF")
     {
         if($raw == false) {
-            //get rid of out modfied base64 encoding
+            //get rid of out modified base64 encoding
             $word_key = unbase64Hash($word_key);
         }
-
         if($filter != NULL) {
             $this->filter = & $filter;
         } else {
@@ -219,7 +221,13 @@ class WordIterator extends IndexBundleIterator
         } else {
             $this->using_feeds = false;
         }
+        if($limit_news && $this->feed_count > self::LIMIT_NEWS_COUNT) {
+            $this->feed_count = self::LIMIT_NEWS_COUNT;
+            $this->feed_end = $this->feed_start +
+                IndexShard::POSTING_LEN * (self::LIMIT_NEWS_COUNT - 1);
+        }
         $this->num_docs = $this->feed_count;
+
         if ($this->dictionary_info === false) {
             $this->empty = true;
         } else {

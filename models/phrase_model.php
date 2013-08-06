@@ -204,13 +204,16 @@ class PhraseModel extends ParallelModel
      * @param int $save_timestamp if this timestamp is nonzero, then save
      *      iterate position, so can resume on future queries that make
      *      use of the timestamp
+     * @param bool $limit_news if true the number of media:news items to
+     *      allow in search results is limited to WordIterator::LIMIT_NEWS_COUNT
+     *
      * @return array an array of summary data
      */
     function getPhrasePageResults(
         $input_phrase, $low = 0, $results_per_page = NUM_RESULTS_PER_PAGE,
         $format = true, $filter = NULL, $use_cache_if_allowed = true,
         $raw = 0, $queue_servers = array(), $guess_semantics = true,
-        $save_timestamp = 0)
+        $save_timestamp = 0, $limit_news = true)
     {
         if(QUERY_STATISTICS) {
             $indent= "&nbsp;&nbsp;";
@@ -346,7 +349,8 @@ class PhraseModel extends ParallelModel
             }
             $out_results = $this->getSummariesByHash($word_structs,
                 $low, $phrase_num, $filter, $use_cache_if_allowed, $raw,
-                $queue_servers, $disjunct, $save_timestamp_name);
+                $queue_servers, $disjunct, $save_timestamp_name,
+                $limit_news);
             if(isset($out_results['PAGES']) &&
                 count($out_results['PAGES']) != 0) {
                 $out_count = 0;
@@ -976,11 +980,15 @@ class PhraseModel extends ParallelModel
      *      save iterate position, so can resume on future queries that make
      *      use of the timestamp. If used then $limit ignored and get next $num
      *      docs after $save_timestamp 's previous iterate position.
+     * @param bool $limit_news if true the number of media:news items to
+     *      allow in search results is limited to WordIterator::LIMIT_NEWS_COUNT
+     *
      * @return array document summaries
      */
     function getSummariesByHash($word_structs, $limit, $num, &$filter,
         $use_cache_if_allowed = true, $raw = 0, $queue_servers = array(),
-        $original_query = "", $save_timestamp_name = "")
+        $original_query = "", $save_timestamp_name = "",
+        $limit_news = true)
     {
         global $CACHE;
         $indent= "&nbsp;&nbsp;";
@@ -1025,7 +1033,7 @@ class PhraseModel extends ParallelModel
         }
         $query_iterator = $this->getQueryIterator($word_structs, $filter, $raw,
             $to_retrieve, $queue_servers, $original_query,
-            $save_timestamp_name);
+            $save_timestamp_name, $limit_news);
         $num_retrieved = 0;
         $pages = array();
 
@@ -1332,13 +1340,15 @@ class PhraseModel extends ParallelModel
      * @param string $save_timestamp_name if this timestamp is non empty, then
      *      when making iterator get sub-iterators to advance to gen doc_offset
      *      stored with respect to save_timestamp if exists.
+     * @param bool $limit_news if true the number of media:news items to
+     *      allow in search results is limited to WordIterator::LIMIT_NEWS_COUNT
      *
      * @return &object an iterator for iterating through results to the
      *  query
      */
     function getQueryIterator($word_structs, &$filter, $raw = 0,
         $to_retrieve, $queue_servers = array(), $original_query = "",
-        $save_timestamp_name="")
+        $save_timestamp_name="", $limit_news = true)
     {
         $iterators = array();
         $total_iterators = 0;
@@ -1469,7 +1479,8 @@ class PhraseModel extends ParallelModel
                         foreach($out_keys as $distinct_key) {
                             $tmp_word_iterators[$m] =
                                 new WordIterator($distinct_key,
-                                $index_name, true, $filter, $to_retrieve);
+                                $index_name, true, $filter, $to_retrieve,
+                                $limit_news);
                             if($tmp_word_iterators[$m]->dictionary_info !=
                                 array() ||
                                 $tmp_word_iterators[$m]->feed_count > 0) {

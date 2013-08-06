@@ -387,7 +387,7 @@ class GroupIterator extends IndexBundleIterator
         $word_iterator =
              new WordIterator($hash_info_url,
                 $index_name, true, $filter,
-                IndexBundleIterator::RESULTS_PER_BLOCK,
+                IndexBundleIterator::RESULTS_PER_BLOCK, false,
                 "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00");
         $count = 1;
         if(isset($word_iterator->dictionary_info)) {
