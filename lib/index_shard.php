@@ -1194,6 +1194,7 @@ class IndexShard extends PersistentStructure implements
             }
             $i++;
         }
+       crawlLog("..Merge Posting Final Copy");
         $this->words = array();
         if($tmp_string != "") {
             $rest_posts = substr($this->word_postings, $offset);

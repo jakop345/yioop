@@ -74,7 +74,7 @@ function charCopy($source, &$destination, $start, $length, $timeout_msg = "")
             $destination[$j] = $source[$k];
         }
     } else {
-        $time_out_check_frequency = 20000;
+        $time_out_check_frequency = 5000;
         for($j = $end, $k = $endk, $t = 0; $j >= $start; $j--, $k--, $t++) {
             $destination[$j] = $source[$k];
             if($t > $time_out_check_frequency) {
