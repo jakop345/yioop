@@ -62,7 +62,9 @@ class EnTokenizer
     static $semantic_rewrites = array(
         "ins" => 'uscis',
         "mimetype" => 'mime',
-        "military" => 'armed forces'
+        "military" => 'armed forces',
+        'full metal alchemist' => 'fullmetal alchemist',
+        'bruce schnier' => 'bruce schneier'
     );
     /**
      * storage used in computing the stem
