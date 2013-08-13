@@ -254,7 +254,7 @@ class IndexArchiveBundle implements CrawlConstants
             memory_get_usage());
 
         if($current_num_docs + $add_num_docs > $this->num_docs_per_generation
-            || (0.7 * $memory_limit) < memory_get_usage() ) {
+            || (0.65 * $memory_limit) < memory_get_usage() ) {
             if($blocking == true) {
                 return -1;
             }
@@ -263,7 +263,8 @@ class IndexArchiveBundle implements CrawlConstants
             // Save current shard dictionary to main dictionary
             $this->forceSave();
             $this->addAdvanceGeneration($callback);
-            crawlLog("Switch Shard time:".changeInMicrotime($switch_time));
+            crawlLog("Switch Index Shard time:".
+                changeInMicrotime($switch_time));
         }
 
         return $this->generation_info['ACTIVE'];
