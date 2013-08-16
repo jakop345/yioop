@@ -1042,7 +1042,7 @@ class PhraseModel extends ParallelModel
                 is_array($next_docs =
                     $query_iterator->nextDocsWithWord()) ) {
                 $pages += $next_docs;
-                $num_retrieved += count($next_docs);
+                $num_retrieved = count($pages);
             }
         }
         if($save_timestamp_name != "" && ($queue_servers == array() ||
