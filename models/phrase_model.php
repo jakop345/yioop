@@ -817,7 +817,8 @@ class PhraseModel extends ParallelModel
         }
 
         $tokenizer_name = ucfirst($main_tag)."Tokenizer";
-        if(isset($tokenizer_name::$semantic_rewrites)) {
+        if(class_exists($tokenizer_name) && 
+            isset($tokenizer_name::$semantic_rewrites)) {
             $rewrites = $tokenizer_name::$semantic_rewrites;
             $tmp = trim($phrase);
             if(isset($rewrites[$tmp])) {
