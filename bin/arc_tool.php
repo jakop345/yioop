@@ -38,7 +38,7 @@ define("BASE_DIR", substr(
     dirname(realpath($_SERVER['PHP_SELF'])), 0,
     -strlen("/bin")));
 
-ini_set("memory_limit","850M"); /*
+ini_set("memory_limit","2000M"); /*
         reindex sometimes takes more than the default 128M, 850 to be safe */
 
 /** This tool does not need logging*/
@@ -175,6 +175,10 @@ class ArcTool implements CrawlConstants
             case "posting":
                 $num = (isset($argv[5])) ? $argv[5] : 1;
                 $this->outputPostingInfo($path, $argv[3], $argv[4], $num);
+            break;
+
+            case "rebuild":
+                $this->rebuildIndexArchive($path);
             break;
 
             case "reindex":
@@ -505,7 +509,7 @@ class ArcTool implements CrawlConstants
      * but merging the tiers into one tier
      *
      * @param string $path file path to dictionary of an IndexArchiveBundle
-     * @param int $max_tier tier up to which the dicitionary tiers should be
+     * @param int $max_tier tier up to which the dictionary tiers should be
      *      merge (typically a value greater than the max_tier of the
      *      dictionary)
      */
@@ -758,6 +762,141 @@ class ArcTool implements CrawlConstants
     }
 
     /**
+     * Used to recompute both the index shards and the dictionary 
+     * of an index archive. The first step involves re-extracting the
+     * word into an inverted index from the summaries' web_archives.
+     * Then a reindex is done.
+     *
+     * @param string $archivepath file path to a IndexArchiveBundle
+     */
+    function rebuildIndexArchive($archive_path)
+    {
+        $archive_type = $this->getArchiveKind($archive_path);
+        if($archive_type != "IndexArchiveBundle") {
+            $this->badFormatMessageAndExit($archive_path);
+        }
+        $info = $archive_type::getArchiveInfo($archive_path);
+        $tmp = unserialize($info["DESCRIPTION"]);
+        $video_sources = $tmp[self::VIDEO_SOURCES];
+        $generation_info = unserialize(
+            file_get_contents("$archive_path/generation.txt"));
+        $num_generations = $generation_info['ACTIVE']+1;
+        $archive = new WebArchiveBundle($archive_path."/summaries");
+        $seen = 0;
+        $generation = 0;
+        $keypad = "\x00\x00\x00\x00";
+        while($generation < $num_generations) {
+            $partition = $archive->getPartition($generation, false);
+            $shard_name = $archive_path."/posting_doc_shards/index$generation";
+            crawlLog("Processing partition $generation");
+            if(file_exists($shard_name)) {
+                crawlLog("..Unlinking old shard $generation");
+                @unlink($shard_name);
+            }
+            $shard = new IndexShard($shard_name, $generation,
+                NUM_DOCS_PER_GENERATION, true);
+            $seen_partition = 0;
+            while($seen_partition < $partition->count) {
+                $num_to_get = min($partition->count - $seen_partition,
+                    8000);
+                $offset = $partition->iterator_pos;
+                $objects = $partition->nextObjects($num_to_get);
+                $cnt = 0;
+                foreach($objects as $object) {
+                    $cnt++;
+                    $site = $object[1];
+                    if(isset($site[self::TYPE]) && $site[self::TYPE] == "link"){
+                        $is_link = true;
+                        $doc_keys = $site[self::HTTP_CODE];
+                        $site_url = $site[self::TITLE];
+                        $host =  UrlParser::getHost($site_url);
+                        $link_parts = explode('|', $site[self::HASH]);
+                        if(isset($link_parts[5])) {
+                            $link_origin = $link_parts[5];
+                        } else {
+                            $link_origin = $site_url;
+                        }
+                        $meta_ids = PhraseParser::calculateLinkMetas($site_url,
+                            $host, $site[self::DESCRIPTION], $link_origin);
+                        $link_to = "LINK TO:";
+                    } else {
+                        $is_link = false;
+                        $site_url = str_replace('|', "%7C", $site[self::URL]);
+                        $host = UrlParser::getHost($site_url);
+                        $doc_keys = crawlHash($site_url, true) .
+                            $site[self::HASH]."d". substr(crawlHash(
+                            $host."/",true), 1);
+                        $meta_ids =  PhraseParser::calculateMetas($site,
+                            $video_sources);
+                        $link_to = "";
+                    }
+                    $so_far_cnt = $seen_partition + $cnt;
+                    $time_out_message = "..still processing $so_far_cnt ".
+                        "of {$partition->count} in partition $generation.".
+                        "\n..Last processed was: ".
+                        ($seen + 1).". $link_to$site_url. ";
+                    crawlTimeoutLog($time_out_message);
+                    $seen++;
+                    $word_lists = array();
+                    /*
+                        self::JUST_METAS check to avoid getting sitemaps in 
+                        results for popular words
+                     */
+                    $lang = NULL;
+                    if(!isset($site[self::JUST_METAS])) {
+                        $host_words = UrlParser::getWordsIfHostUrl($site_url);
+                        $path_words = UrlParser::getWordsLastPathPartUrl(
+                            $site_url);
+                        if($is_link) {
+                            $phrase_string = $site[self::DESCRIPTION];
+                        } else {
+                            $phrase_string = $host_words." ".$site[self::TITLE]
+                                . " ". $path_words . " "
+                                . $site[self::DESCRIPTION];
+                        }
+                        if(isset($site[self::LANG])) {
+                            $lang = guessLocaleFromString(
+                                mb_substr($site[self::DESCRIPTION], 0, 
+                                AD_HOC_TITLE_LENGTH), $site[self::LANG]);
+                        }
+                        $word_lists =
+                            PhraseParser::extractPhrasesInLists($phrase_string,
+                                $lang);
+                        $len = strlen($phrase_string);
+                        if(PhraseParser::computeSafeSearchScore($word_lists,
+                            $len) < 0.012) {
+                            $meta_ids[] = "safe:true";
+                            $safe = true;
+                        } else {
+                            $meta_ids[] = "safe:false";
+                            $safe = false;
+                        }
+                    }
+                    if(isset($site[self::USER_RANKS]) && 
+                        count($site[self::USER_RANKS]) > 0) {
+                        $score_keys = "";
+                        foreach($site[self::USER_RANKS] as $label => $score) {
+                            $score_keys .= packInt($score);
+                        }
+                        if(strlen($score_keys) % 8 != 0) {
+                            $score_keys .= $keypad;
+                        }
+                        $doc_keys .= $score_keys;
+                    }
+                    $shard->addDocumentWords($doc_keys, $offset,
+                        $word_lists, $meta_ids,
+                        PhraseParser::$materialized_metas, true, false);
+                    $offset = $object[0];
+                }
+                $seen_partition += $num_to_get;
+            }
+            $shard->save(false, true);
+            $generation++;
+        }
+        $this->reindexIndexArchive($archive_path);
+    }
+
+    /**
      * Used to create an archive_bundle_iterator for a non-yioop archive
      * As these iterators sometimes make use of a folder to store savepoints
      * We create a temporary folder for this purpose in the current directory
@@ -865,8 +1004,12 @@ php arc_tool.php posting bundle_name generation offset num
     /* returns info about the posting (num many postings) in bundle_name at
        the given generation and offset */
 
+php arc_tool.php rebuild bundle_name
+    /*  re-extracts words from summaries files in bundle_name into index shards
+        then builds a new dictionary */
+
 php arc_tool.php reindex bundle_name
-    // reindex the word dictionary in bundle_name
+    // reindex the word dictionary in bundle_name using existing index shards
 
 php arc_tool.php shard bundle_name generation
     /* Prints information about the number of words and frequencies of words

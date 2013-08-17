@@ -1197,12 +1197,20 @@ class IndexShard extends PersistentStructure implements
        crawlLog("..Merge Posting Final Copy");
         $this->words = array();
         if($tmp_string != "") {
-            $rest_posts = substr($this->word_postings, $offset);
-            $this->word_postings = substr($this->word_postings, 0,
-                $write_offset);
-            $this->word_postings .= $tmp_string;
-            unset($tmp_string);
-            $this->word_postings .= $rest_posts;
+            $tmp_len = strlen($tmp_string);
+            $copy_data_len = $offset - $write_offset;
+            $pad_len = $tmp_len - $copy_data_len;
+            $pad = str_pad("", $pad_len, "@");
+            $this->word_postings .= $pad;
+            for($j = $len + $pad_len - 1,
+                $k = $len - 1; $k >= $offset; $j--, $k--) {
+                $this->word_postings[$j] = "" . $this->word_postings[$k];
+                    /*way slower if directly
+                    assign!!! PHP is crazy*/
+            }
+            charCopy($tmp_string, $this->word_postings,
+                $write_offset, $tmp_len,
+                "merge index charCopy 3");
         }
         $this->last_flattened_words_count = $this->num_docs;
     }

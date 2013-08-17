@@ -2467,8 +2467,6 @@ class Fetcher implements CrawlConstants
                 }
             }
             if(!$is_link) {
-                $link_phrase_string = "";
-                $link_urls = array();
                 //store inlinks so they can be searched by
                 $num_links = count($site[self::LINKS]);
                 if($num_links > 0) {
@@ -2551,7 +2549,7 @@ class Fetcher implements CrawlConstants
                     $link_word_lists =
                         PhraseParser::extractPhrasesInLists($link_text,
                         $lang);
-                    $link_meta_ids =  PhraseParser::calculateLinkMetas($url,
+                    $link_meta_ids = PhraseParser::calculateLinkMetas($url,
                         $link_host, $link_text, $site_url);
                     if(!isset($this->found_sites[self::INVERTED_INDEX][
                         $part_num])) {
