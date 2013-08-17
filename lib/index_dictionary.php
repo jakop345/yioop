@@ -210,7 +210,7 @@ class IndexDictionary implements CrawlConstants
         if(file_exists($this->dir_name."/0/0A.dic")) {
             $out_slot ="B";
         }
-        crawlLog("Adding shard data to dictionary files...");
+        crawlLog("Adding shard data to index dictionary files...");
         $index_shard->getShardHeader();
         $base_offset = IndexShard::HEADER_LENGTH + $index_shard->prefixes_len;
         $prefix_string = $index_shard->getShardSubstring(
@@ -260,7 +260,7 @@ class IndexDictionary implements CrawlConstants
             fclose($fh);
         }
         unset($prefix_string);
-        crawlLog("Incrementally Merging tiers of dictionary");
+        crawlLog("Incrementally Merging tiers of index dictionary");
         // log merge tiers if needed
         $tier = 0;
         while($out_slot == "B") {
@@ -271,7 +271,7 @@ class IndexDictionary implements CrawlConstants
             if(file_exists($this->dir_name."/0/".($tier + 1)."A.dic")) {
                 $out_slot ="B";
             }
-            crawlLog("..Merging $tier to ".($tier +1).$out_slot);
+            crawlLog("..Merging index $tier to ".($tier +1).$out_slot);
             $this->mergeTier($tier, $out_slot);
             $tier++;
             if($tier > $this->max_tier) {
@@ -280,7 +280,7 @@ class IndexDictionary implements CrawlConstants
                     serialize($this->max_tier));
             }
         }
-        crawlLog("...Done Incremental (Not Full) Merging of Dictionary Tiers");
+        crawlLog("...Done Incremental Merging of Index Dictionary Tiers");
 
     }
 
@@ -295,7 +295,7 @@ class IndexDictionary implements CrawlConstants
     function mergeTier($tier, $out_slot)
     {
         for($i = 0; $i < self::NUM_PREFIX_LETTERS; $i++) {
-            crawlTimeoutLog("..processing first prefix $i of ".
+            crawlTimeoutLog("..processing first index prefix $i of ".
                 self::NUM_PREFIX_LETTERS." in $tier.");
             $this-> mergeTierFiles($i, $tier, $out_slot);
         }
@@ -331,7 +331,7 @@ class IndexDictionary implements CrawlConstants
         $num_prefix_letters = self::NUM_PREFIX_LETTERS;
 
         for($j = 0; $j < $num_prefix_letters; $j++) {
-            crawlTimeoutLog("..processing second prefix %s of %s.",
+            crawlTimeoutLog("..processing second index prefix %s of %s.",
                 $j, $num_prefix_letters);
             $record_a = $this->extractPrefixRecord($prefix_string_a, $j);
             $record_b = $this->extractPrefixRecord($prefix_string_b, $j);
@@ -368,7 +368,7 @@ class IndexDictionary implements CrawlConstants
 
         while($remaining_a > 0 || $remaining_b > 0 ||
             $offset_a < $read_size_a || $offset_b < $read_size_b) {
-            crawlTimeoutLog("..merging tier files for prefix %s tier ".
+            crawlTimeoutLog("..merging index tier files for prefix %s tier ".
                 "%s.", $prefix, $tier);
             if($offset_a >= $read_size_a && $remaining_a > 0) {
                 $read_size_a = min($remaining_a, $segment_size);
@@ -479,7 +479,7 @@ class IndexDictionary implements CrawlConstants
     {
         $new_tier = false;
 
-        crawlLog("Starting Full Merge of Dictionary Tiers");
+        crawlLog("Starting Full Merge of Index Dictionary Tiers");
 
         if($max_tier == -1) {
             $max_tier = $this->max_tier;
@@ -487,7 +487,7 @@ class IndexDictionary implements CrawlConstants
 
         for($i = 0; $i < self::NUM_PREFIX_LETTERS; $i++) {
             for($j = 0; $j <= $max_tier; $j++) {
-                crawlTimeoutLog("...Processing Prefix Number %s Tier %s".
+                crawlTimeoutLog("...Processing Index Prefix Number %s Tier %s".
                     " Max Tier %s", $i, $j, $max_tier);
                 if($callback != NULL) {
                     $callback->join();
@@ -514,7 +514,7 @@ class IndexDictionary implements CrawlConstants
                 serialize($max_tier));
             $this->max_tier = $max_tier;
         }
-        crawlLog("...End Full Merge of Dictionary Tiers");
+        crawlLog("...End Full Merge of Index Dictionary Tiers");
     }
 
     /**
