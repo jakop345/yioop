@@ -170,10 +170,9 @@ class WebArchiveBundle
         }
         if(!$read_only_archive) {
             //sanity check on write partitions
-            if($this->count > $this->num_docs_per_partition && 
-                $this->write_partition == 0) {
+            if($this->write_partition == 0) {
                 $partitions = glob($this->dir_name."/web_archive_*.txt.gz");
-                $this->write_partition = max(count($partitions), 0);
+                $this->write_partition = max(count($partitions) - 1, 0);
             }
             file_put_contents(
                 $this->dir_name."/description.txt", serialize($info));
