@@ -53,7 +53,8 @@ class EnTokenizer
      * Words we don't want to be stemmed
      * @var array
      */
-    static $no_stem_list = array("titanic", "programming", "fishing", 'ins');
+    static $no_stem_list = array("titanic", "programming", "fishing", 'ins',
+        "blues");
 
     /**
      * Phrases we would like yioop to rewrite before performing a query

@@ -322,7 +322,7 @@ class NetworkIterator extends IndexBundleIterator
      }
 
     /**
-     * Called to make an link for AnalyticsManager about a network query
+     * Called to make a link for AnalyticsManager about a network query
      * performed by this iterator.
      *
      * @param array $sites used by this network iterator

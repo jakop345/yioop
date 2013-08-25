@@ -1049,8 +1049,9 @@ class IndexShard extends PersistentStructure implements
         foreach($index_shard->words as $word_id => $postings) {
             // update doc offsets for newly added docs
             $add_len_flag = false;
-            if(strlen($postings) !=  $two_doc_len ||
-                strncmp($postings, self::HALF_BLANK, self::POSTING_LEN) != 0) {
+            $postings_len = strlen($postings);
+            if($postings_len > 0 && ($postings_len != $two_doc_len ||
+                strncmp($postings, self::HALF_BLANK, self::POSTING_LEN) != 0)) {
                 $new_postings = addDocIndexPostings($postings,
                     ($this->docids_len >> 4));
                 $add_len_flag = true;

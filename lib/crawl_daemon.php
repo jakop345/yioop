@@ -131,7 +131,10 @@ class CrawlDaemon implements CrawlConstants
      *      tell the daemon to stop. If the argument is terminal then the
      *      program won't be run as a daemon.
      * @param string $name the prefix to use for lock and message files
-     * @param bool $exit_type
+     * @param bool $exit_type whether this function should exit or return
+     *      by default a lock file is only written if exit (this allows
+     *      both queue server processes (Indexer and Scheduler) to use the
+     *      same lock file
      */
     static function init($argv, $name, $exit_type = 1)
     {
@@ -223,16 +226,12 @@ class CrawlDaemon implements CrawlConstants
         $tmp_subname = ($subname == 'none') ? '' : $subname;
         $lock_file = CrawlDaemon::getLockFileName($name, $tmp_subname);
 
-        if(file_exists($lock_file) && $exit <= 1) {
+        if(file_exists($lock_file)) {
             $time = intval(file_get_contents($lock_file));
             if(time() - $time < PROCESS_TIMEOUT) {
                 echo "$name appears to be already running...\n";
                 echo "Try stopping it first, then running start.";
-                if($exit) {
-                    exit();
-                } else {
-                    return;
-                }
+                exit();
             }
         }
         $php = "php";

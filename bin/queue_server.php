@@ -430,11 +430,7 @@ class QueueServer implements CrawlConstants, Join
             //check and update if necessary the crawl params of current crawl
             $this->checkUpdateCrawlParameters();
 
-            /* check for orphaned queue bundles
-               also check to make sure indexes closed properly for stopped
-               crawls
-             */
-            $this->deleteOrphanedBundles();
+            $this->updateMostRecentFetcher();
 
             $this->processCrawlData();
 
@@ -463,6 +459,11 @@ class QueueServer implements CrawlConstants, Join
     {
         crawlLog("{$this->server_name} Entering Process Crawl Data Method ");
         if($this->isAIndexer()) {
+            /* check for orphaned queue bundles
+               also check to make sure indexes closed properly for stopped
+               crawls
+             */
+            $this->deleteOrphanedBundles();
             $this->processIndexData($blocking);
             if(time() - $this->last_index_save_time > FORCE_SAVE_TIME){
                 crawlLog("Periodic Index Save... \n");
@@ -478,7 +479,7 @@ class QueueServer implements CrawlConstants, Join
             file_put_contents(CRAWL_DIR."/schedules/schedule_status.txt",
                 serialize($info));
         }
-        $this->updateMostRecentFetcher();
+
         switch($this->crawl_type)
         {
             case self::WEB_CRAWL:
@@ -787,7 +788,6 @@ class QueueServer implements CrawlConstants, Join
     function stopCrawl()
     {
         if($this->isAScheduler()) {
-
             $this->dumpQueueToSchedules();
             //Write B-Tree root node to disk before before exiting
             if(USE_ETAG_EXPIRES && 
@@ -1257,7 +1257,6 @@ class QueueServer implements CrawlConstants, Join
      */
     function deleteOrphanedBundles()
     {
-        if($this->isOnlyScheduler()) return;
         $dirs = glob(CRAWL_DIR.'/cache/*', GLOB_ONLYDIR);
         $living_stamps = array();
         foreach($dirs as $dir) {
@@ -1386,7 +1385,6 @@ class QueueServer implements CrawlConstants, Join
             }
             $old_dir = $dir;
         }
-
     }
 
     /**

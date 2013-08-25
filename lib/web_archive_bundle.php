@@ -169,6 +169,12 @@ class WebArchiveBundle
             $info['VERSION'] = $this->version;
         }
         if(!$read_only_archive) {
+            //sanity check on write partitions
+            if($this->count > $this->num_docs_per_partition && 
+                $this->write_partition == 0) {
+                $partitions = glob($this->dir_name."/web_archive_*.txt.gz");
+                $this->write_partition = max(count($partitions), 0);
+            }
             file_put_contents(
                 $this->dir_name."/description.txt", serialize($info));
         }
@@ -219,6 +225,11 @@ class WebArchiveBundle
     function setWritePartition($i)
     {
         $this->write_partition = $i;
+        if(!$this->read_only_archive) {
+            $info = $this->getArchiveInfo($this->dir_name);
+            $info['WRITE_PARTITION'] = $this->write_partition;
+            $this->setArchiveInfo($this->dir_name, $info);
+        }
         $this->getPartition($this->write_partition);
     }
 
