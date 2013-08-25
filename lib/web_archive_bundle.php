@@ -173,6 +173,7 @@ class WebArchiveBundle
             if($this->write_partition == 0) {
                 $partitions = glob($this->dir_name."/web_archive_*.txt.gz");
                 $this->write_partition = max(count($partitions) - 1, 0);
+                $info['WRITE_PARTITION'] = $this->write_partition;
             }
             file_put_contents(
                 $this->dir_name."/description.txt", serialize($info));
