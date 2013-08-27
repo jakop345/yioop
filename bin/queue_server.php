@@ -2313,7 +2313,7 @@ class QueueServer implements CrawlConstants, Join
             $num_sites = count($sites);
             $k = 0;
             foreach($sites as $site) {
-                crawlTimeoutLog("..Still Writing schedule %s".
+                crawlTimeoutLog("..Still Writing fetch schedule %s".
                     " of %s.", $k, $num_sites);
                 $k++;
                 $extracted_etag = null;
@@ -2374,7 +2374,8 @@ class QueueServer implements CrawlConstants, Join
             crawlLog("...Sort URLS and write schedule time: ".
                 (changeInMicrotime($new_time)));
 
-            crawlLog("End Produce Fetch Memory usage".memory_get_usage() );
+            crawlLog("End Produce Fetch Batch Memory usage".
+                memory_get_usage() );
             crawlLog("Created fetch batch of size $num_sites.".
                 " $num_deletes urls were deleted.".
                 " Queue size is now ". $this->web_queue->to_crawl_queue->count.

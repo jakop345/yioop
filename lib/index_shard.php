@@ -1195,14 +1195,16 @@ class IndexShard extends PersistentStructure implements
             }
             $i++;
         }
-       crawlLog("..Merge Index Posting Final Copy");
+        crawlLog("..Merge Index Posting Final Copy");
         $this->words = array();
         if($tmp_string != "") {
             $tmp_len = strlen($tmp_string);
             $copy_data_len = $offset - $write_offset;
             $pad_len = $tmp_len - $copy_data_len;
             $pad = str_pad("", $pad_len, "@");
+            crawlLog("..Merge Index Posting Final Copy -- 1");
             $this->word_postings .= $pad;
+            crawlLog("..Merge Index Posting Final Copy -- 2");
             for($j = $len + $pad_len - 1,
                 $k = $len - 1; $k >= $offset; $j--, $k--) {
                 crawlTimeoutLog("..still in merge index final copy");

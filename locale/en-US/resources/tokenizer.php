@@ -54,7 +54,7 @@ class EnTokenizer
      * @var array
      */
     static $no_stem_list = array("titanic", "programming", "fishing", 'ins',
-        "blues");
+        "blues", "factorial");
 
     /**
      * Phrases we would like yioop to rewrite before performing a query
@@ -65,7 +65,7 @@ class EnTokenizer
         "mimetype" => 'mime',
         "military" => 'armed forces',
         'full metal alchemist' => 'fullmetal alchemist',
-        'bruce schnier' => 'bruce schneier'
+        'bruce schnier' => 'bruce schneier',
     );
     /**
      * storage used in computing the stem
