@@ -68,6 +68,18 @@ class BTree
     var $root;
 
     /**
+     * Cache of recently read/written nodes
+     * @var array
+     */
+    var $node_cache;
+
+    /**
+     * time => id pairs of when nodes entered cache
+     * @var array
+     */
+    var $node_times;
+
+    /**
      * Counter for node Ids
      * @var int
      */
@@ -80,6 +92,11 @@ class BTree
     var $dir;
 
     /**
+     * Maximum number of nodes to keep in node cache
+     */
+    const MAX_NODE_CACHE_SIZE = 502;
+
+    /**
      * Creates/Loads B-Tree having specified directory and minimum_degree. The
      * default minimum_degree is 501.
      * @param string $dir is the directory for storing the B-Tree files
@@ -88,6 +105,8 @@ class BTree
     {
         $this->dir = $dir;
         $this->min_degree = $min_degree;
+        $this->node_cache = array();
+        $this->node_times = array();
         if(!is_dir($this->dir)) {
             mkdir($this->dir);
             chmod($this->dir, 0777);
@@ -111,9 +130,21 @@ class BTree
      */
     function readNode($id)
     {
+        if(isset($this->node_cache[$id])) {
+            $this->node_times[time()] = $id;
+            return $this->node_cache[$id];
+        }
         $node_file = $this->dir."/$id.txt";
         if(file_exists($node_file)) {
             $node = unserialize(file_get_contents($node_file));
+            $this->node_cache[$id] = $node;
+            $this->node_times[time()] = $id;
+            if(count($this->node_times) > self::MAX_NODE_CACHE_SIZE) {
+                $min_time = min(array_keys($this->node_times));
+                $min_id = $this->node_times[$min_time];
+                unset($this->node_times[$min_time]);
+                unset($this->node_cache[$min_id]);
+            }
             return $node;
         } else {
             crawlLog("Btree could not read node $id from disk");
@@ -127,7 +158,15 @@ class BTree
      */
     function writeNode($node)
     {
-        $node_file = $this->dir."/$node->id.txt";
+        $this->node_cache[$node->id] = $node;
+        $this->node_times[time()] = $node->id;
+        if(count($this->node_times) > self::MAX_NODE_CACHE_SIZE) {
+            $min_time = min(array_keys($this->node_times));
+            $min_id = $this->node_times[$min_time];
+            unset($this->node_times[$min_time]);
+            unset($this->node_cache[$min_id]);
+        }
+        $node_file = $this->dir."/{$node->id}.txt";
         $contents = serialize($node);
         file_put_contents($node_file, $contents);
         chmod($node_file, 0777);
