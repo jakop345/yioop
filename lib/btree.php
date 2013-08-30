@@ -94,7 +94,7 @@ class BTree
     /**
      * Maximum number of nodes to keep in node cache
      */
-    const MAX_NODE_CACHE_SIZE = 502;
+    const MAX_NODE_CACHE_SIZE = 100;
 
     /**
      * Creates/Loads B-Tree having specified directory and minimum_degree. The
