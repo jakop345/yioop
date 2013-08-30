@@ -355,7 +355,6 @@ class QueueServer implements CrawlConstants, Join
     function start()
     {
         global $argv;
-
         if(isset($argv[1]) && $argv[1] == "start") {
             $argv[2] = "none";
             $argv[3] = self::INDEXER;
@@ -2103,8 +2102,8 @@ class QueueServer implements CrawlConstants, Join
 
             // if queue error remove entry any loop
             if($tmp === false || strcmp($url, "LOOKUP ERROR") == 0) {
-                $delete_urls[$i] = $url;
-                crawlLog("Removing lookup error for $url during produce fetch");
+                $delete_urls[$i] = false;
+                crawlLog("Removing lookup error at $i during produce fetch");
                 $i++;
                 continue;
             }
@@ -2281,9 +2280,15 @@ class QueueServer implements CrawlConstants, Join
             $k++;
             crawlTimeoutLog("..Removing selected url %s of %s ".
                 "from queue.", $k, $num_deletes);
-            $this->web_queue->removeQueue($delete_url);
+            if($delete_url) {
+                $this->web_queue->removeQueue($delete_url);
+            } else {
+                /*  if there was a hash table look up error still get rid of
+                    index from priority queue */
+                $this->web_queue->to_crawl_queue->poll($k);
+            }
         }
-        crawlLog("...Removing selected URLS for fetch batch from queue time: ".
+        crawlLog("...Removed $k URLS for fetch batch from queue in time: ".
             (changeInMicrotime($new_time)));
         $new_time = microtime();
 
@@ -2383,10 +2388,11 @@ class QueueServer implements CrawlConstants, Join
                 (changeInMicrotime($start_time)));
         } else {
             crawlLog("No fetch batch created!! " .
-                "Time failing to make a fetch batch:".
-                (changeInMicrotime($start_time)).". Loop properties:$i $count");
+                "Time failing to make a fetch batch:" .
+                (changeInMicrotime($start_time)).". Loop properties:$i $count".
+                " $num_deletes urls were deleted in failed attempt.");
             $max_links = max(MAX_LINKS_PER_PAGE, MAX_LINKS_PER_SITEMAP);
-            if($num_deletes == 0 && $i >= $count &&
+            if($num_deletes < 5 && $i >= $count &&
                     $count >= NUM_URLS_QUEUE_RAM -
                     SEEN_URLS_BEFORE_UPDATE_SCHEDULER * $max_links) {
                 crawlLog("Queue Full and Couldn't produce Fetch Batch!! ".
