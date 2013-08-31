@@ -131,24 +131,42 @@ class BTree
     function readNode($id)
     {
         if(isset($this->node_cache[$id])) {
-            $this->node_times[time()] = $id;
-            return $this->node_cache[$id];
+            $node = $this->node_cache[$id];
+            //shouldn't be in cache if $node->time not set
+            unset($this->node_times[$node->time]);
+            $node->time = time();
+            $this->node_times[$node->time] = $id;
+            return $node;
         }
         $node_file = $this->dir."/$id.txt";
         if(file_exists($node_file)) {
             $node = unserialize(file_get_contents($node_file));
-            $this->node_cache[$id] = $node;
-            $this->node_times[time()] = $id;
-            if(count($this->node_times) > self::MAX_NODE_CACHE_SIZE) {
-                $min_time = min(array_keys($this->node_times));
-                $min_id = $this->node_times[$min_time];
-                unset($this->node_times[$min_time]);
-                unset($this->node_cache[$min_id]);
-            }
+            $this->unpdateNodeLRU($node);
             return $node;
         } else {
             crawlLog("Btree could not read node $id from disk");
             return false;
+        }
+    }
+
+    /**
+     *  Manages the node LRU given that $node was the last node read or written
+     *
+     *  @param object $node a node to read or write.
+     */
+    function updateNodeLRU($node)
+    {
+        if(isset($node->time)) {
+            unset($this->node_times[$node->time]);
+        }
+        $node->time = time();
+        $this->node_cache[$node->id] = $node;
+        $this->node_times[$node->time] = $node->id;
+        if(count($this->node_times) > self::MAX_NODE_CACHE_SIZE) {
+            $min_time = min(array_keys($this->node_times));
+            $min_id = $this->node_times[$min_time];
+            unset($this->node_times[$min_time]);
+            unset($this->node_cache[$min_id]);
         }
     }
 
@@ -158,14 +176,7 @@ class BTree
      */
     function writeNode($node)
     {
-        $this->node_cache[$node->id] = $node;
-        $this->node_times[time()] = $node->id;
-        if(count($this->node_times) > self::MAX_NODE_CACHE_SIZE) {
-            $min_time = min(array_keys($this->node_times));
-            $min_id = $this->node_times[$min_time];
-            unset($this->node_times[$min_time]);
-            unset($this->node_cache[$min_id]);
-        }
+        $this->unpdateNodeLRU($node);
         $node_file = $this->dir."/{$node->id}.txt";
         $contents = serialize($node);
         file_put_contents($node_file, $contents);
