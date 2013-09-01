@@ -66,19 +66,6 @@ class BTree
      * @var object
      */
     var $root;
-
-    /**
-     * Cache of recently read/written nodes
-     * @var array
-     */
-    var $node_cache;
-
-    /**
-     * time => id pairs of when nodes entered cache
-     * @var array
-     */
-    var $node_times;
-
     /**
      * Counter for node Ids
      * @var int
@@ -92,11 +79,6 @@ class BTree
     var $dir;
 
     /**
-     * Maximum number of nodes to keep in node cache
-     */
-    const MAX_NODE_CACHE_SIZE = 100;
-
-    /**
      * Creates/Loads B-Tree having specified directory and minimum_degree. The
      * default minimum_degree is 501.
      * @param string $dir is the directory for storing the B-Tree files
@@ -105,8 +87,6 @@ class BTree
     {
         $this->dir = $dir;
         $this->min_degree = $min_degree;
-        $this->node_cache = array();
-        $this->node_times = array();
         if(!is_dir($this->dir)) {
             mkdir($this->dir);
             chmod($this->dir, 0777);
@@ -130,43 +110,13 @@ class BTree
      */
     function readNode($id)
     {
-        if(isset($this->node_cache[$id])) {
-            $node = $this->node_cache[$id];
-            //shouldn't be in cache if $node->time not set
-            unset($this->node_times[$node->time]);
-            $node->time = time();
-            $this->node_times[$node->time] = $id;
-            return $node;
-        }
         $node_file = $this->dir."/$id.txt";
         if(file_exists($node_file)) {
             $node = unserialize(file_get_contents($node_file));
-            $this->unpdateNodeLRU($node);
             return $node;
         } else {
             crawlLog("Btree could not read node $id from disk");
             return false;
-        }
-    }
-
-    /**
-     *  Manages the node LRU given that $node was the last node read or written
-     *
-     *  @param object $node a node to read or write.
-     */
-    function updateNodeLRU($node)
-    {
-        if(isset($node->time)) {
-            unset($this->node_times[$node->time]);
-        }
-        $node->time = time();
-        $this->node_cache[$node->id] = $node;
-        $this->node_times[$node->time] = $node->id;
-        if(count($this->node_times) > self::MAX_NODE_CACHE_SIZE) {
-            $min_time = min(array_keys($this->node_times));
-            $min_id = $this->node_times[$min_time];
-            unset($this->node_times[$min_time]);
-            unset($this->node_cache[$min_id]);
         }
     }
 
@@ -176,7 +126,6 @@ class BTree
      */
     function writeNode($node)
     {
-        $this->unpdateNodeLRU($node);
         $node_file = $this->dir."/{$node->id}.txt";
         $contents = serialize($node);
         file_put_contents($node_file, $contents);
