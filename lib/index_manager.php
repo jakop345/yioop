@@ -154,10 +154,6 @@ class IndexManager implements CrawlConstants
             $threshold])) {
             $tmp = array();
             $test_mask = "";
-                 echo "(1)".toHexstring($hash)."\n";
-                 echo "(2)".toHexstring($shift)."\n";
-                 echo "(3)".toHexstring($mask)."\n";
-                 echo "(4)".$threshold."\n";
             $len = strlen($mask);
             if(isset(IndexManager::$dictionary[$index_name][$hash][$shift])) {
                 foreach(IndexManager::$dictionary[$index_name][$hash][$shift]
