@@ -153,6 +153,54 @@ class IndexManager implements CrawlConstants
         if(!isset(IndexManager::$dictionary[$index_name][$hash][$shift][$mask][
             $threshold])) {
             $tmp = array();
+            $test_mask = "";
+                 echo "(1)".toHexstring($hash)."\n";
+                 echo "(2)".toHexstring($shift)."\n";
+                 echo "(3)".toHexstring($mask)."\n";
+                 echo "(4)".$threshold."\n";
+            $len = strlen($mask);
+            if(isset(IndexManager::$dictionary[$index_name][$hash][$shift])) {
+                foreach(IndexManager::$dictionary[$index_name][$hash][$shift]
+                    as $test_mask => $data) {
+                    $mask_len = strlen($test_mask);
+                    if($mask_len > $len) {continue; }
+                    $mask_found = true;
+                    for($k = 0; $k < $mask_len; $k++) {
+                        if(ord($test_mask[$k]) > 0 && 
+                            $test_mask[$k] != $mask[$k]) {
+                            $mask_found = false;
+                            break;
+                        }
+                    }
+                    if($mask_found && isset(
+                        IndexManager::$dictionary[$index_name][$hash][$shift][
+                        $test_mask][$threshold]) ) {
+                        $info = IndexManager::$dictionary[$index_name][$hash][
+                            $shift][$test_mask][$threshold];
+                        $out_info = array();
+                        foreach($info as $record) {
+                            $id = $record[4];
+                            $add_flag = true;
+                            if($mask != "") {
+                                for($k = 0; $k < $len; $k++) {
+                                    $loc = 9 + $k;
+                                    if(ord($mask[$k]) > 0 && isset($id[$loc]) &&
+                                        $id[$loc] != $hash[$loc]) {
+                                        $add_flag = false;
+                                        break;
+                                    }
+                                }
+                            }
+                            if($add_flag) {
+                                $out_info[$record[0]] = $record;
+                            }
+                        }
+                        IndexManager::$dictionary[$index_name][$hash][$shift
+                            ][$mask][$threshold] = $out_info;
+                        return $out_info;
+                    }
+                }
+            }
             if((!defined('NO_FEEDS') || !NO_FEEDS)
                 && file_exists(WORK_DIRECTORY."/feeds/index")) {
                 //NO_FEEDS defined true in statistic_controller.php
@@ -169,7 +217,6 @@ class IndexManager implements CrawlConstants
                 $index->dictionary->getWordInfo($hash, true, $shift, $mask,
                 $threshold);
         }
-
         return IndexManager::$dictionary[$index_name][$hash][$shift][$mask][
             $threshold];
     }
