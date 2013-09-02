@@ -144,77 +144,83 @@ class IndexManager implements CrawlConstants
      *       that match $hash)
      */
     static function getWordInfo($index_name, $hash, $shift = 0, $mask = "",
-        $threshold = -1)
+       $threshold = -1)
     {
-        $index = IndexManager::getIndex($index_name);
-        if(!$index->dictionary) {
-            return false;
+       $index = IndexManager::getIndex($index_name);
+       if(!$index->dictionary) {
+           return false;
+       }
+       $len = strlen($mask);
+        if($len > 0) {
+            $pre_hash = substr($hash, 0, 8).
+                "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00";
         }
-        if(!isset(IndexManager::$dictionary[$index_name][$hash][$shift][$mask][
-            $threshold])) {
-            $tmp = array();
-            $test_mask = "";
-            $len = strlen($mask);
-            if(isset(IndexManager::$dictionary[$index_name][$hash][$shift])) {
-                foreach(IndexManager::$dictionary[$index_name][$hash][$shift]
-                    as $test_mask => $data) {
-                    $mask_len = strlen($test_mask);
-                    if($mask_len > $len) {continue; }
-                    $mask_found = true;
-                    for($k = 0; $k < $mask_len; $k++) {
-                        if(ord($test_mask[$k]) > 0 && 
-                            $test_mask[$k] != $mask[$k]) {
-                            $mask_found = false;
-                            break;
-                        }
-                    }
-                    if($mask_found && isset(
-                        IndexManager::$dictionary[$index_name][$hash][$shift][
-                        $test_mask][$threshold]) ) {
-                        $info = IndexManager::$dictionary[$index_name][$hash][
-                            $shift][$test_mask][$threshold];
-                        $out_info = array();
-                        foreach($info as $record) {
-                            $id = $record[4];
-                            $add_flag = true;
-                            if($mask != "") {
-                                for($k = 0; $k < $len; $k++) {
-                                    $loc = 9 + $k;
-                                    if(ord($mask[$k]) > 0 && isset($id[$loc]) &&
-                                        $id[$loc] != $hash[$loc]) {
-                                        $add_flag = false;
-                                        break;
-                                    }
-                                }
-                            }
-                            if($add_flag) {
-                                $out_info[$record[0]] = $record;
-                            }
-                        }
-                        IndexManager::$dictionary[$index_name][$hash][$shift
-                            ][$mask][$threshold] = $out_info;
-                        return $out_info;
-                    }
-                }
-            }
-            if((!defined('NO_FEEDS') || !NO_FEEDS)
-                && file_exists(WORK_DIRECTORY."/feeds/index")) {
-                //NO_FEEDS defined true in statistic_controller.php
-                $use_feeds = true;
-                $feed_shard = IndexManager::getIndex("feed");
-                $feed_info = $feed_shard->getWordInfo($hash, true, $shift);
-                if(is_array($feed_info)) {
-                    $tmp[-1] = array(-1, $feed_info[0],
-                        $feed_info[1], $feed_info[2], $feed_info[3]);
-                }
-            }
-            IndexManager::$dictionary[$index_name][$hash][$shift][$mask][
-                $threshold] = $tmp +
-                $index->dictionary->getWordInfo($hash, true, $shift, $mask,
-                $threshold);
-        }
-        return IndexManager::$dictionary[$index_name][$hash][$shift][$mask][
-            $threshold];
+       if(!isset(IndexManager::$dictionary[$index_name][$hash][$shift][
+            $mask][$threshold])) {
+           $tmp = array();
+           $test_mask = "";
+           if(isset(IndexManager::$dictionary[$index_name][$pre_hash][
+                $shift])) {
+               foreach(IndexManager::$dictionary[$index_name][$pre_hash][
+                    $shift] as $test_mask => $data) {
+                   $mask_len = strlen($test_mask);
+                   if($mask_len > $len) {continue; }
+                   $mask_found = true;
+                   for($k = 0; $k < $mask_len; $k++) {
+                       if(ord($test_mask[$k]) > 0 && 
+                           $test_mask[$k] != $mask[$k]) {
+                           $mask_found = false;
+                           break;
+                       }
+                   }
+                   if($mask_found && isset(
+                       IndexManager::$dictionary[$index_name][$pre_hash][
+                            $shift][$test_mask][$threshold]) ) {
+                       $info = IndexManager::$dictionary[$index_name][$pre_hash
+                            ][$shift][$test_mask][$threshold];
+                       $out_info = array();
+                       foreach($info as $record) {
+                           $id = $record[4];
+                           $add_flag = true;
+                           if($mask != "") {
+                               for($k = 0; $k < $len; $k++) {
+                                   $loc = 9 + $k;
+                                   if(ord($mask[$k]) > 0 && isset($id[$loc]) &&
+                                       $id[$loc] != $hash[$loc]) {
+                                       $add_flag = false;
+                                       break;
+                                   }
+                               }
+                           }
+                           if($add_flag) {
+                               $out_info[$record[0]] = $record;
+                           }
+                       }
+                       IndexManager::$dictionary[$index_name][$hash][$shift
+                           ][$mask][$threshold] = $out_info;
+                       return $out_info;
+                   }
+               }
+           }
+           if((!defined('NO_FEEDS') || !NO_FEEDS)
+               && file_exists(WORK_DIRECTORY."/feeds/index")) {
+               //NO_FEEDS defined true in statistic_controller.php
+               $use_feeds = true;
+               $feed_shard = IndexManager::getIndex("feed");
+               $feed_info = $feed_shard->getWordInfo($hash, true, $shift);
+               if(is_array($feed_info)) {
+                   $tmp[-1] = array(-1, $feed_info[0],
+                       $feed_info[1], $feed_info[2], $feed_info[3]);
+               }
+           }
+           IndexManager::$dictionary[$index_name][$hash][$shift][$mask][
+               $threshold] = $tmp +
+               $index->dictionary->getWordInfo($hash, true, $shift, $mask,
+               $threshold);
+       }
+
+       return IndexManager::$dictionary[$index_name][$hash][$shift][$mask][
+           $threshold];
     }
 
     /**
