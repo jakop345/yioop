@@ -154,6 +154,8 @@ class IndexManager implements CrawlConstants
         if($len > 0) {
             $pre_hash = substr($hash, 0, 8).
                 "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00";
+        } else {
+            $pre_hash = $hash;
         }
        if(!isset(IndexManager::$dictionary[$index_name][$hash][$shift][
             $mask][$threshold])) {

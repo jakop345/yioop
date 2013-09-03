@@ -772,7 +772,7 @@ class IndexDictionary implements CrawlConstants
      * @param int $mask_len this should be strlen($mask)
      * @param array $record current record from dictionary that we may or may
      *      not add to info
-     * @param array &$info quarduple array we are adding to
+     * @param array &$info quadruple array we are adding to
      * @param int &$total_count count of items in $info
      * @param int &$previous_generation last generation added to $info
      * @param int &$previous_id last exact if added to $infos
@@ -782,11 +782,11 @@ class IndexDictionary implements CrawlConstants
     {
         $record[4] = $id;
         $add_flag = true;
-        if($mask != "") {
-            for($k = 0; $k < $mask_len; $k++) {
-                $loc = 9 + $k;
-                if(ord($mask[$k]) > 0 && isset($id[$loc]) &&
-                    $id[$loc] != $word_id[$loc]) {
+        if($mask != "" && substr_compare($id, $word_id, 9, $mask_len) != 0) {
+            $k = 0;
+            while(($k = strpos($mask, "\xFF", $k)) !== false) {
+                $loc = $k + 9;
+                if(isset($id[$loc]) && $id[$loc] != $word_id[$loc]) {
                     $add_flag = false;
                     break;
                 }
