@@ -587,14 +587,7 @@ class IndexDictionary implements CrawlConstants
         $previous_generation = -2;
         $previous_id = -2;
         $remember_generation = -2;
-        if(isset($this->fhs)) {
-            $this->tier_fhs[$this->read_tier] = $this->fhs;
-            if(isset($this->tier_fhs[$tier])) {
-                $this->fhs = $this->tier_fhs[$tier];
-            } else {
-                $this->fhs = array();
-            }
-        } else {
+        if(!isset($this->fhs)) {
             $this->fhs = array();
         }
         $this->read_tier = $tier;
@@ -856,28 +849,29 @@ class IndexDictionary implements CrawlConstants
     function &readBlockDictAtOffset($file_num, $bytes)
     {
         $false = false;
-        if(isset($this->blocks[$file_num][$bytes])) {
-            return $this->blocks[$file_num][$bytes];
+        $tier = $this->read_tier;
+        if(isset($this->blocks[$file_num][$tier][$bytes])) {
+            return $this->blocks[$file_num][$tier][$bytes];
         }
-        if(!isset($this->fhs[$file_num]) || $this->fhs[$file_num] === NULL) {
-            $file_name = $this->dir_name."/$file_num/".$this->read_tier."A.dic";
+        if(!isset($this->fhs[$file_num][$tier]) || 
+            $this->fhs[$file_num][$tier] === NULL) {
+            $file_name = $this->dir_name."/$file_num/".$tier."A.dic";
             if(!file_exists($file_name)) return $false;
-            $this->fhs[$file_num] = fopen($file_name, "rb");
-            if($this->fhs[$file_num] === false) return $false;
-            $this->file_lens[$file_num] = filesize($file_name);
+            $this->fhs[$file_num][$tier] = fopen($file_name, "rb");
+            if($this->fhs[$file_num][$tier] === false) return $false;
+            $this->file_lens[$file_num][$tier] = filesize($file_name);
         }
-        if($bytes >= $this->file_lens[$file_num]) {
-
+        if($bytes >= $this->file_lens[$file_num][$tier]) {
             return $false;
         }
-        $seek = fseek($this->fhs[$file_num], $bytes, SEEK_SET);
+        $seek = fseek($this->fhs[$file_num][$tier], $bytes, SEEK_SET);
         if($seek < 0) {
             return $false;
         }
-        $this->blocks[$file_num][$bytes] = fread($this->fhs[$file_num],
-            self::DICT_BLOCK_SIZE);
+        $this->blocks[$file_num][$tier][$bytes] = fread(
+            $this->fhs[$file_num][$tier], self::DICT_BLOCK_SIZE);
 
-        return $this->blocks[$file_num][$bytes];
+        return $this->blocks[$file_num][$tier][$bytes];
     }
 
 
