@@ -695,7 +695,7 @@ function crawlLog($msg, $lname = NULL, $check_process_handler = false)
         file_put_contents($logfile, $out_msg."\n", FILE_APPEND);
         if($check_handler && !$check_process_handler && 
             changeInMicrotime($last_check_time) > 5) {
-            CrawlDaemon::processHandler(true);
+            CrawlDaemon::processHandler();
             $last_check_time = microtime();
         }
     } else if (php_sapi_name() != 'cli') {

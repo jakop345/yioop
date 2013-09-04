@@ -1197,6 +1197,8 @@ class IndexShard extends PersistentStructure implements
         }
         crawlLog("..Merge Index Posting Final Copy");
         $this->words = array();
+        // garbage collection may take a while, call with true so don't time out
+        CrawlDaemon::processHandler(true);
         if($tmp_string != "") {
             $tmp_len = strlen($tmp_string);
             $copy_data_len = $offset - $write_offset;
@@ -1217,6 +1219,7 @@ class IndexShard extends PersistentStructure implements
                 "merge index charCopy 3");
         }
         $this->last_flattened_words_count = $this->num_docs;
+        crawlLog("..Done Merge Index Posting Final Copy");
     }
 
     /**
