@@ -1175,12 +1175,12 @@ function crawlHashPath($string, $path_start = 0, $metas = array(),
 
 /**
  *  Used to compare to ids for index dictionary lookup. ids
- *  might be either a crawlHash or a 5 byte crawlHash together
- *  with 3 byte hash path for suffix tree lookup. In the latter
+ *  might be either a crawlHash or a 8 byte crawlHash together
+ *  with 12 byte hash path for suffix tree lookup. In the latter
  *  case the shift variable can be used to match up to a subtree
  *
- *  @param string $id1 16 byte word id to compare
- *  @param string $id2 16 byte word id to compare
+ *  @param string $id1 20 byte word id to compare
+ *  @param string $id2 20 byte word id to compare
  *  @param int $shift bit shift to apply before saying paths equal
  *  @return int negative if $id1 smaller, positive if bigger, and 0 if
  *      same
@@ -1188,17 +1188,16 @@ function crawlHashPath($string, $path_start = 0, $metas = array(),
 function compareWordHashes($id1, $id2, $shift = 0)
 {
     if(!isset($id1[8]) || !isset($id2[8])) {
-        return strcmp(substr($id1, 0, 8), substr($id2, 0, 8));
+        return strncmp($id1, $id2, 8);
     } else if($id1[8] == "\x00") {
-        return strcmp(substr($id1, 0, 9), substr($id2, 0, 9));
+        return strncmp($id1, $id2, 9);
     } else if($shift < 32) {
-        $cmp = strcmp(substr($id1, 0, 16), substr($id2, 0, 16));
+        $cmp = strncmp($id1, $id2, 16);
     } else if ($shift < 64) {
-        $cmp = strcmp(substr($id1, 0,12), substr($id2, 0, 12));
+        $cmp = strncmp($id1, $id2, 12);
     } else {
-        $cmp = strcmp(substr($id1, 0,8), substr($id2, 0, 8));
+        $cmp = strncmp($id1, $id2, 8);
     }
-
     if($cmp != 0) {
         return $cmp;
     }

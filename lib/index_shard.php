@@ -629,7 +629,6 @@ class IndexShard extends PersistentStructure implements
     {
         $doc_key_len = self::DOC_KEY_LEN;
         $offset = 0;
-
         list($doc_index, $position_list) =
             unpackPosting($posting, $offset);
         $item[self::POSITION_LIST] = $position_list;
@@ -755,7 +754,6 @@ class IndexShard extends PersistentStructure implements
                      /*crude score not used for final
                         results */
         }
-
         return array($doc_id, $num_keys, $item);
 
     }
@@ -1753,7 +1751,6 @@ class IndexShard extends PersistentStructure implements
     static function getWordInfoFromString($str, $include_generation = false)
     {
         list(, $generation, $first_offset, $len) = unpack("N*", $str);
-
         $last_offset = $first_offset + $len - self::POSTING_LEN;
         $count = $len >> 2;
         if($include_generation) {

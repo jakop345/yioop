@@ -1475,6 +1475,7 @@ class Fetcher implements CrawlConstants
                 $tmp_loc = array_pop($site[self::LOCATION]);
                 $tmp_loc = UrlParser::canonicalLink(
                     $tmp_loc, $site[self::URL]);
+                $site[self::LOCATION] = array_push($tmp_loc);
                 $doc_info = array();
                 $doc_info[self::LINKS][$tmp_loc] =
                     "location:".$site[self::URL];
@@ -1662,14 +1663,14 @@ class Fetcher implements CrawlConstants
                             $summarized_site_pages[$i][self::LINKS],
                             $summarized_site_pages[$i][self::URL]);
                 }
-                if($this->page_rule_parser != NULL) {
-                    $this->page_rule_parser->executeRuleTrees(
-                        $summarized_site_pages[$i]);
-                }
                 if(!empty($this->classifiers)) {
                     Classifier::labelPage($summarized_site_pages[$i],
                         $this->classifiers, $this->active_classifiers,
                         $this->active_rankers);
+                }
+                if($this->page_rule_parser != NULL) {
+                    $this->page_rule_parser->executeRuleTrees(
+                        $summarized_site_pages[$i]);
                 }
                 $i++;
             }

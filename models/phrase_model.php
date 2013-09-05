@@ -1037,7 +1037,6 @@ class PhraseModel extends ParallelModel
             $save_timestamp_name, $limit_news);
         $num_retrieved = 0;
         $pages = array();
-
         if(is_object($query_iterator)) {
             while($num_retrieved < $to_retrieve &&
                 is_array($next_docs =
@@ -1261,25 +1260,36 @@ class PhraseModel extends ParallelModel
             $index++;
         }
         $summaries = $this->getCrawlItems($lookups, $queue_servers);
-
-        if($queue_servers != NULL && !$this->isSingleLocalhost($queue_servers)
-            && $raw == 0){
-            $lookups = array();
-            foreach($summaries as $hash_url => $summary) {
-                if(!isset($summaries[$hash_url][self::HASH])) continue;
+        $lookups = array();
+        foreach($summaries as $hash_url => $summary) {
+            $lookup_url = false;
+            if(isset($summaries[$hash_url][self::LOCATION])) {
+                $tmp_url = explode(" => ", 
+                    $summaries[$hash_url][self::DESCRIPTION]);
+                if(isset($tmp_url[1])) {
+                    $lookup_url = trim($tmp_url[1]);
+                }
+            } else if (isset($summaries[$hash_url][self::HASH])){
                 $hash_parts = explode('|', $summaries[$hash_url][self::HASH]);
                 if(isset($hash_parts[3]) && strncmp($hash_parts[3],
                     "location%3A", 11) == 0) {
-                    $crawl_time = $pages[$page_indexes[$hash_url]][
-                        self::CRAWL_TIME];
-                    $lookups[$hash_url] = array($hash_parts[1],
-                        $crawl_time);
-                    unset($summaries[$hash_url]);
+                    $lookup_url = $hash_parts[1];
                 }
             }
-            $loc_summaries = $this->getCrawlItems($lookups, $queue_servers);
+            if($lookup_url) {
+                $crawl_time = $pages[$page_indexes[$hash_url]][
+                    self::CRAWL_TIME];
+                $lookups[$hash_url] = array($lookup_url,
+                    $crawl_time);
+                unset($summaries[$hash_url]);
+            }
+        }
+
+        $loc_summaries = $this->getCrawlItems($lookups, $queue_servers);
+        if(is_array($loc_summaries)) {
             $summaries = array_merge($summaries, $loc_summaries);
         }
+
         $out_pages = array();
         $seen_hashes = array();
         foreach($pages as $page) {

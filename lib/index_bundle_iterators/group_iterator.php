@@ -195,7 +195,6 @@ class GroupIterator extends IndexBundleIterator
     {
         // first get a block of documents on which grouping can be done
         $pages =  $this->getPagesToGroup();
-
         $this->count_block_unfiltered = count($pages);
         if(!is_array($pages)) {
             return $pages;
@@ -207,11 +206,9 @@ class GroupIterator extends IndexBundleIterator
                which urls we've seen this block
             */
             $pre_out_pages = $this->groupByHashUrl($pages);
-
            /*get doc page for groups of link data if exists and don't have
              also aggregate by hash
            */
-
            $this->groupByHashAndAggregate($pre_out_pages);
            $this->count_block = count($pre_out_pages);
             /*
@@ -221,6 +218,7 @@ class GroupIterator extends IndexBundleIterator
             $pages = $this->computeOutPages($pre_out_pages);
         }
         $this->pages = $pages;
+
         return $pages;
     }
 
@@ -234,7 +232,6 @@ class GroupIterator extends IndexBundleIterator
         $pages = array();
         $count = 0;
         $done = false;
-
         do {
             $new_pages = $this->index_bundle_iterator->currentDocsWithWord();
             if(!is_array($new_pages)) {
@@ -252,6 +249,7 @@ class GroupIterator extends IndexBundleIterator
                 $done = true;
             }
         } while($done != true);
+
         return $pages;
     }
 
@@ -313,22 +311,10 @@ class GroupIterator extends IndexBundleIterator
      */
     function groupByHashAndAggregate(&$pre_out_pages)
     {
+
         foreach($pre_out_pages as $hash_url => $data) {
             $hash = $pre_out_pages[$hash_url][0][self::HASH];
-            if(!$this->network_flag) {
-                $is_location = (crawlHash($hash_url."LOCATION", true) == $hash);
-                if(!$data[0][self::IS_DOC] || $is_location) {
-                    $item = $this->lookupDoc($data[0][self::KEY],
-                        $data[0][self::CRAWL_TIME],
-                        $is_location, 3);
-                    if($item != false) {
-                        array_unshift($pre_out_pages[$hash_url], $item);
-                    }
-                }
-            }
-
             $this->aggregateScores($hash_url, $pre_out_pages[$hash_url]);
-
             if(isset($pre_out_pages[$hash_url][0][self::HASH])) {
                 $hash = $pre_out_pages[$hash_url][0][self::HASH];
                 if(isset($this->grouped_hashes[$hash])) {
@@ -345,6 +331,7 @@ class GroupIterator extends IndexBundleIterator
                 }
             }
         }
+
         // delete all except highest scoring group with given hash
         foreach($this->current_seen_hashes as $hash => $url_data) {
             if(count($url_data) == 1) continue;
@@ -366,74 +353,6 @@ class GroupIterator extends IndexBundleIterator
             }
         }
     }
-
-    /**
-     * Looks up a doc for a link doc_key, so can get its summary info
-     *
-     * @param string $doc_key key to look up doc of
-     * @param bool $is_location we are doing look up because doc had a refresh
-     * @param int $depth max recursion depth to carry out lookup to if need
-     *      to follow location redirects
-     *
-     * @return array consisting of info about the doc
-     */
-     function lookupDoc($doc_key, $index_name, $is_location = false, $depth = 3)
-     {
-        $hash_url = substr($doc_key, 0, IndexShard::DOC_KEY_LEN);
-        $prefix = ($is_location) ? "location:" : "info:";
-        $hash_info_url=
-            crawlHashWord($prefix.base64Hash($hash_url), true);
-        $filter = NULL;
-        $word_iterator =
-             new WordIterator($hash_info_url,
-                $index_name, true, $filter,
-                IndexBundleIterator::RESULTS_PER_BLOCK, false,
-                "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00");
-        $count = 1;
-        if(isset($word_iterator->dictionary_info)) {
-            $count = count($word_iterator->dictionary_info);
-        }
-        if($count > 1) {
-            /* if a page is recrawled it gets a second info page,
-               this is to ensure we look up the most recent
-            */
-            $gen_off = array();
-            list($gen_off[0], $gen_off[1], , ) =
-                 $word_iterator->dictionary_info[
-                 $word_iterator->num_generations - 1];
-            $word_iterator->advance($gen_off);
-        }
-        $doc_array = $word_iterator->currentDocsWithWord();
-        $item = false;
-        if(is_array($doc_array) && count($doc_array) == 1) {
-            $relevance =  $this->computeRelevance(
-                $word_iterator->current_generation,
-                $word_iterator->current_offset);
-            $keys = array_keys($doc_array);
-            $key = $keys[0];
-            $item = $doc_array[$key];
-            $hash = substr($key, IndexShard::DOC_KEY_LEN,
-                IndexShard::DOC_KEY_LEN);
-            $is2_location = (crawlHash($hash_url. "LOCATION", true) == $hash);
-            if($depth > 0) {
-                if($is2_location) {
-                    return $this->lookupDoc($key, $index_name, $is2_location,
-                        $depth - 1);
-                } else if(!isset($item[self::IS_DOC]) || !$item[self::IS_DOC]) {
-                    return $this->lookupDoc($key, $index_name, false,
-                        $depth - 1);
-                }
-            }
-            $item[self::RELEVANCE] = $relevance;
-            $item[self::SCORE] = $item[self::DOC_RANK]* $relevance;
-            $item[self::KEY] = $key;
-            $item[self::CRAWL_TIME] = $index_name;
-            $item[self::HASH] = $hash;
-            $item[self::INLINKS] = substr($key,
-                2 * IndexShard::DOC_KEY_LEN, IndexShard::DOC_KEY_LEN);
-        }
-        return $item;
-     }
 
     /**
      * For a collection of grouped pages generates a grouped summary for each

@@ -661,8 +661,8 @@ class IndexDictionary implements CrawlConstants
             return false;
         }
         //now extract the info
-        $word_string = substr($word_string, $word_key_len);
         $info = array();
+        $word_string = substr($word_string, $word_key_len);
         $tmp = IndexShard::getWordInfoFromString($word_string, true);
         if($tmp[3] < $max_entry_count) {
             $previous_generation = $tmp[0];
