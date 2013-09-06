@@ -673,19 +673,20 @@ class QueueServer implements CrawlConstants, Join
     {
         $old_info = $info;
         $is_scheduler = $this->isOnlyScheduler();
-        $message_file = "queue_server_messages.txt";
-        $scheduler_file = "scheduler_messages.txt";
-        if($is_scheduler) {
-            $message_file = $scheduler_file;
-        }
-        if(file_exists(CRAWL_DIR."/schedules/$message_file")) {
-            $info = unserialize(file_get_contents(
-                CRAWL_DIR."/schedules/$message_file"));
-            if($this->isOnlyIndexer()) {
-                rename(CRAWL_DIR."/schedules/$message_file",
-                    CRAWL_DIR."/schedules/$scheduler_file");
+        $message_file = CRAWL_DIR."/schedules/queue_server_messages.txt";
+        if(file_exists($message_file)) {
+            $info = unserialize(file_get_contents($message_file));
+            if(!isset($info[$this->server_type])) {
+                $info[$this->server_type] = true;
+                if($this->server_type == self::BOTH ||
+                  (isset($info[self::INDEXER]) && isset($info[self::SCHEDULER]))
+                  ) {
+                    unlink($message_file);
+                } else {
+                    file_put_contents($message_file, serialize($info), LOCK_EX);
+                }
             } else {
-                unlink(CRAWL_DIR."/schedules/$message_file");
+                return $old_info;
             }
             switch($info[self::STATUS])
             {

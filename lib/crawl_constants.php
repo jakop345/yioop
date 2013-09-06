@@ -47,7 +47,7 @@ interface CrawlConstants
     /**
      *  Used to say what kind of queue_server this is
      */
-    const BOTH = 0;
+    const BOTH = "IndexerAndScheduler";
     /**
      *  Used to say what kind of queue_server this is
      */
