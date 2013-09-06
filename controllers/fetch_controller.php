@@ -556,10 +556,10 @@ class FetchController extends Controller implements CrawlConstants
         $info[self::CRAWL_TIME] = $crawl_time;
 
         $status_filename = CRAWL_DIR."/schedules/name_server_messages.txt";
-        if($crawl_time != 0 && $crawl_time != $prev_crawl_time &&
-                file_exists($status_filename)) {
+        if($crawl_time != 0 && file_exists($status_filename)) {
             $status = unserialize(file_get_contents($status_filename));
-            if($status[self::STATUS] != 'STOP_CRAWL') {
+            if($status[self::STATUS] != 'STOP_CRAWL'  && 
+                $crawl_time != $prev_crawl_time) {
                 $to_copy_fields = array(self::CRAWL_TYPE, self::CRAWL_INDEX,
                     self::ARC_DIR, self::ARC_TYPE, self::RESTRICT_SITES_BY_URL,
                     self::INDEXED_FILE_TYPES, self::ALLOWED_SITES,
