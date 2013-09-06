@@ -560,6 +560,7 @@ class FetchController extends Controller implements CrawlConstants
             $status = unserialize(file_get_contents($status_filename));
             if($status[self::STATUS] == 'STOP_CRAWL') {
                 $info[self::STATUS] == 'STOP_CRAWL';
+                $info[self::CRAWL_TIME] = 0;
             }
             if($status[self::STATUS] != 'STOP_CRAWL'  && 
                 $crawl_time != $prev_crawl_time) {
