@@ -415,7 +415,7 @@ class QueueServer implements CrawlConstants, Join
             $info = $this->handleAdminMessages($info);
 
             if( $info[self::STATUS] == self::WAITING_START_MESSAGE_STATE) {
-                crawlLog("Waiting for start message\n");
+                crawlLog("{$this->server_name} is waiting for start message\n");
                 sleep(QUEUE_SLEEP_TIME);
                 continue;
             }
@@ -423,7 +423,8 @@ class QueueServer implements CrawlConstants, Join
             if($info[self::STATUS] == self::STOP_STATE) {
                 continue;
             }
-
+            crawlLog("{$this->server_name} active crawl is ".
+                "{$this->crawl_time}.");
             $start_loop_time = time();
 
             //check and update if necessary the crawl params of current crawl
