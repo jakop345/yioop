@@ -220,15 +220,18 @@ class IndexDictionary implements CrawlConstants
                 IndexShard:: WORD_DATA_LEN;
         $num_prefix_letters = self::NUM_PREFIX_LETTERS;
         $prefix_item_size = self::PREFIX_ITEM_SIZE;
+        $prefix_header_size = self::PREFIX_HEADER_SIZE;
         for($i = 0; $i < $num_prefix_letters; $i++) {
 
             $last_offset = $next_offset;
             // adjust prefix values
             $first_offset_flag = true;
             $last_set = -1;
+
             for($j = 0; $j < $num_prefix_letters; $j++) {
+                $rec_num = ($i << 8) + $j;
                 $prefix_info = $this->extractPrefixRecord($prefix_string,
-                        ($i << 8) + $j);
+                        $rec_num);
                 if($prefix_info !== false) {
                     list($offset, $count) = $prefix_info;
                     if($first_offset_flag) {
@@ -239,16 +242,16 @@ class IndexDictionary implements CrawlConstants
                     $out = pack("N*", $offset, $count);
                     $last_set = $j;
                     $last_out = $prefix_info;
-                    charCopy($out, $prefix_string,
-                        (($i << 8) + $j) * $prefix_item_size,
+                    charCopy($out, $prefix_string, $rec_num * $prefix_item_size,
                         $prefix_item_size);
                 }
             }
+
             // write prefixes
             $fh = fopen($this->dir_name."/$i/0".$out_slot.".dic", "wb");
-            fwrite($fh, substr($prefix_string,
-                $i*self::PREFIX_HEADER_SIZE, self::PREFIX_HEADER_SIZE));
-            $j = self::NUM_PREFIX_LETTERS;
+            fwrite($fh, substr($prefix_string, $i * $prefix_header_size,
+                $prefix_header_size));
+            $j = $num_prefix_letters;
             // write words
             if($last_set >= 0) {
                 list($offset, $count) = $last_out;
@@ -316,13 +319,13 @@ class IndexDictionary implements CrawlConstants
         $file_b = $this->dir_name."/$prefix/$tier"."B.dic";
         $size_a = filesize($file_a);
         $size_b = filesize($file_b);
-
+        $prefix_header_size = self::PREFIX_HEADER_SIZE;
         $fhA = fopen( $file_a, "rb");
         $fhB = fopen( $file_b, "rb");
         $fhOut = fopen( $this->dir_name."/$prefix/".($tier + 1).
             "$out_slot.dic", "wb");
-        $prefix_string_a = fread($fhA, self::PREFIX_HEADER_SIZE);
-        $prefix_string_b = fread($fhB, self::PREFIX_HEADER_SIZE);
+        $prefix_string_a = fread($fhA, $prefix_header_size);
+        $prefix_string_b = fread($fhB, $prefix_header_size);
         $prefix_string_out = "";
         $offset = 0;
         $word_key_len = IndexShard:: WORD_KEY_LEN;
@@ -353,8 +356,8 @@ class IndexDictionary implements CrawlConstants
             }
         }
         fwrite($fhOut, $prefix_string_out);
-        $remaining_a = $size_a - self::PREFIX_HEADER_SIZE;
-        $remaining_b = $size_b - self::PREFIX_HEADER_SIZE;
+        $remaining_a = $size_a - $prefix_header_size;
+        $remaining_b = $size_b - $prefix_header_size;
         $done = false;
         $work_string_a = "";
         $read_size_a = 0;
@@ -425,10 +428,9 @@ class IndexDictionary implements CrawlConstants
      * @param int $record_num which record to extract
      * @return array $offset, $count  array
      */
-    function extractPrefixRecord(&$prefix_string, $record_num)
+    function extractPrefixRecord($prefix_string, $record_num)
     {
-
-        $record = substr($prefix_string, self::PREFIX_ITEM_SIZE*$record_num,
+        $record = substr($prefix_string, self::PREFIX_ITEM_SIZE * $record_num,
              self::PREFIX_ITEM_SIZE);
         if($record == IndexShard::BLANK) {
             return false;
