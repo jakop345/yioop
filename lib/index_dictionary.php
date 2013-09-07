@@ -325,8 +325,8 @@ class IndexDictionary implements CrawlConstants
         $prefix_string_b = fread($fhB, self::PREFIX_HEADER_SIZE);
         $prefix_string_out = "";
         $offset = 0;
-        $word_item_len = IndexShard:: WORD_KEY_LEN + 
-                IndexShard:: WORD_DATA_LEN;
+        $word_key_len = IndexShard:: WORD_KEY_LEN;
+        $word_item_len = $word_key_len + IndexShard:: WORD_DATA_LEN;
         $blank = IndexShard::BLANK;
         $num_prefix_letters = self::NUM_PREFIX_LETTERS;
 
@@ -396,7 +396,7 @@ class IndexDictionary implements CrawlConstants
             } else if ($offset_a >= $read_size_a) {
                 $out .= $record_b;
                 $offset_b += $word_item_len;
-            } else if ($this->recordCmp($record_a, $record_b) < 0){
+            } else if (strncmp($record_a, $record_b, $word_key_len) < 0){
                 $out .= $record_a;
                 $offset_a += $word_item_len;
             } else {
@@ -416,19 +416,6 @@ class IndexDictionary implements CrawlConstants
         unlink($file_a);
         unlink($file_b);
         fclose($fhOut);
-    }
-
-    /**
-     * Does a lexicographical comparison of the word_ids of two word records.
-     *
-     * @param string $record_a first record to compare
-     * @param string $record_b second record to compare
-     * @return int less than 0 if $record_a less than $record_b;
-     *      greater than 0 if $record_b is less than $record_a; 0 otherwise
-     */
-    function recordCmp($record_a, $record_b)
-    {
-        return strncmp($record_a, $record_b, IndexShard::WORD_KEY_LEN);
     }
 
     /**

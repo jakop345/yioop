@@ -73,7 +73,7 @@ require_once BASE_DIR."/lib/url_parser.php";
 /**  For crawlHash function */
 require_once BASE_DIR."/lib/utility.php";
 
-/** For crawlDaemon function  */
+/** For CrawlDaemon::processHandler function  */
 require_once BASE_DIR."/lib/crawl_daemon.php";
 /**  */
 require_once BASE_DIR."/lib/fetch_url.php";

@@ -47,6 +47,8 @@ require_once "utility.php";
  *Loads common constants for web crawling
  */
 require_once  BASE_DIR.'/lib/crawl_constants.php';
+/** For CrawlDaemon::processHandler function  */
+require_once BASE_DIR."/lib/crawl_daemon.php";
 
 /**
  * Data structure used to store one generation worth of the word document
