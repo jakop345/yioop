@@ -33,6 +33,17 @@
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
+/** Register File Types We Handle*/
+$add_extensions = array("csv", "tab", "tsv", "txt");
+$INDEXED_FILE_TYPES = array_merge($INDEXED_FILE_TYPES, $add_extensions);
+$add_types = array(
+    "text/plain" => "TextProcessor",
+    "text/csv" => "TextProcessor",
+    "text/x-java-source" => "TextProcessor",
+    "text/tab-separated-values" => "TextProcessor"
+);
+$PAGE_PROCESSORS =  array_merge($PAGE_PROCESSORS, $add_types);
+
 /**
  * Load the base class
  */

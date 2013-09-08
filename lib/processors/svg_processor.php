@@ -33,6 +33,11 @@
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
+/** Register File Types We Handle*/
+$INDEXED_FILE_TYPES[] = "svg";
+$IMAGE_TYPES[] = "svg";
+$PAGE_PROCESSORS["image/svg+xml"] = "SvgProcessor";
+
 /**
  * Load base class, if needed.
  */

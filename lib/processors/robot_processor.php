@@ -33,6 +33,10 @@
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
+/** Register File Types We Handle*/
+$PAGE_PROCESSORS["text/robot"] = "RobotProcessor";
+
+
 /**
  * Load the base class
  */

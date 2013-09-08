@@ -33,6 +33,10 @@
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
+/** Register File Types We Handle*/
+$INDEXED_FILE_TYPES[] = "pdf";
+$PAGE_PROCESSORS["application/pdf"] = "PdfProcessor";
+
 /**
  * Load in the base class if necessary
  */

@@ -413,90 +413,45 @@ define('NORMALIZE_FREQUENCY', 10000);
 
 /**
  * @global array file extensions which can be handled by the search engine,
- * other extensions will be ignored
+ * other extensions will be ignored. This array is populated in the individual 
+ * lib/processors page processors
  */
-$INDEXED_FILE_TYPES =
-    array(
-            "unknown",
-            "asp",
-            "aspx",
-            "atom",
-            "bmp",
-            "cgi",
-            "cfm",
-            "cfml",
-            "csv",
-            "do",
-            "doc",
-            "epub",
-            "gif",
-            "html",
-            "htm",
-            "jsp",
-            "jpg",
-            "jpeg",
-            "pdf",
-            "php",
-            "pl",
-            "py",
-            "ppt",
-            "pptx",
-            "png",
-            "rtf",
-            "rss",
-            "shtml",
-            "svg",
-            "tab",
-            "tsv",
-            "txt",
-            "xlsx",
-            "xml");
+$INDEXED_FILE_TYPES = array("unknown");
 
 /**
- * @global array filetypes which should be considered images
+ * @global array filetypes which should be considered images. This
+ *      array is populated in the individual lib/processors page processors
  */
-$IMAGE_TYPES = array("gif","jpg", "bmp", "png", "jpeg", "svg");
+$IMAGE_TYPES = array();
 
 /**
  * @global array associates mimetypes that can be processed by the search
- * engine with the processor class that can process them
+ * engine with the processor class that can process them. This
+ * array is populated in the individual lib/processors page processors
  */
-$PAGE_PROCESSORS = array(   "text/html" => "HtmlProcessor",
-                            "text/asp" => "HtmlProcessor",
-                            "text/xml" => "XmlProcessor",
-                            "text/robot" => "RobotProcessor",
+$PAGE_PROCESSORS = array();
 
-                            "application/xml" => "XmlProcessor",
-                            "application/xhtml+xml" => "HtmlProcessor",
+/**
+ * @global array of indexing plugins, array itself is populated in the plugins
+ *      after the plugin checks if it can run.
+ */
+$INDEXING_PLUGINS = array();
+/** get any indexing plugins */
+$plugin_dir = BASE_DIR."/lib/indexing_plugins/";
+$plugin_dir_len = strlen($plugin_dir);
+$plugin_ext_len = strlen("_plugin.php");
+foreach(glob("$plugin_dir*_plugin.php") as $filename) {
+    $tmp_plug_name = substr($filename, $plugin_dir_len, -$plugin_ext_len);
+    if($tmp_plug_name != "indexing") {
+        $INDEXING_PLUGINS[] = $tmp_plug_name;
+    }
+}
 
-                            "application/rss+xml" => "RssProcessor",
-                            "application/atom+xml" => "RssProcessor",
-                            "application/pdf" => "PdfProcessor",
-
-                            "application/msword" => "DocProcessor",
-                            "application/vnd.ms-powerpoint" => "PptProcessor",
-                            "application/vnd.openxmlformats-officedocument.
-                                presentationml.presentation"=> "PptxProcessor",
-                            "application/epub+zip" => "EpubProcessor",
-                            "application/vnd.openxmlformats-officedocument.
-                                spreadsheetml.sheet" => "XlsxProcessor",
-
-                            "text/rtf" => "RtfProcessor",
-                            "text/plain" => "TextProcessor",
-                            "text/csv" => "TextProcessor",
-                            "text/x-java-source" => "TextProcessor",
-                            "text/tab-separated-values" => "TextProcessor",
-                            "image/jpeg" => "JpgProcessor",
-                            "image/gif" => "GifProcessor",
-                            "image/png" => "PngProcessor",
-                            "image/bmp" => "BmpProcessor",
-                            "image/svg+xml"=> "SvgProcessor"
-);
-
-if(defined('PHP_VERSION_ID') && PHP_VERSION_ID >= 50300) {
-    $INDEXING_PLUGINS = array("recipe");
-} else {
-    $INDEXING_PLUGINS = array();
+/** get locally defined indexing plugins */
+$plugin_dir = APP_DIR."/lib/indexing_plugins/";
+$plugin_dir_len = strlen($plugin_dir);
+foreach(glob("$plugin_dir*_plugin.php") as $filename) {
+    $INDEXING_PLUGINS[] = substr($filename, $plugin_dir_len, -$plugin_ext_len);
 }
 
 $MOD9_PACK_POSSIBILITIES = array(

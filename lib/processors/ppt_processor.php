@@ -33,6 +33,10 @@
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
+/** Register File Types We Handle*/
+$INDEXED_FILE_TYPES[] = "ppt";
+$PAGE_PROCESSORS["application/vnd.ms-powerpoint"] = "PptProcessor";
+
 /**
  * Load base class, if needed
  */

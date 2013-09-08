@@ -142,6 +142,7 @@ class SearchController extends Controller implements CrawlConstants
             }
         }
         $data['ELAPSED_TIME'] = changeInMicrotime($start_time);
+
         if ($view == "serial" || $view == "json") {
             if(isset($data["PAGES"])) {
                 $count = count($data["PAGES"]);
@@ -668,7 +669,6 @@ class SearchController extends Controller implements CrawlConstants
                 array_merge($this->phraseModel->additional_meta_words,
                     $tmp_meta_words);
         }
-
         $this->crawlModel->index_name = $index_name;
 
         $original_query = $query;

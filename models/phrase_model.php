@@ -1284,12 +1284,10 @@ class PhraseModel extends ParallelModel
                 unset($summaries[$hash_url]);
             }
         }
-
         $loc_summaries = $this->getCrawlItems($lookups, $queue_servers);
         if(is_array($loc_summaries)) {
             $summaries = array_merge($summaries, $loc_summaries);
         }
-
         $out_pages = array();
         $seen_hashes = array();
         foreach($pages as $page) {

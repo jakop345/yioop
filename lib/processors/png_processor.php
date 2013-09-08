@@ -33,6 +33,11 @@
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
+/** Register File Types We Handle*/
+$INDEXED_FILE_TYPES[] = "png";
+$IMAGE_TYPES[] = "png";
+$PAGE_PROCESSORS["image/png"] = "PngProcessor";
+
 /** Used for the getDocumentFilename method in UrlParser */
 require_once BASE_DIR."/lib/url_parser.php";
 /** Load base class, if needed */

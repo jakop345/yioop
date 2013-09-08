@@ -33,6 +33,17 @@
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
+/** Register File Types We Handle*/
+$add_extensions = array("asp", "aspx", "cgi", "cfm", "cfml", "do", "htm",
+    "html", "jsp", "php", "pl", "py", "shtml");
+
+$INDEXED_FILE_TYPES = array_merge($INDEXED_FILE_TYPES, $add_extensions);
+
+$PAGE_PROCESSORS["text/html"] = "HtmlProcessor";
+$PAGE_PROCESSORS["text/asp"] = "HtmlProcessor";
+$PAGE_PROCESSORS["application/xhtml+xml"] = "HtmlProcessor";
+
+
 /**
  * Load base class, if needed.
  */

@@ -32,6 +32,11 @@
  */
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
+/** Register File Types We Handle*/
+$INDEXED_FILE_TYPES[] = "pptx";
+$PAGE_PROCESSORS["application/vnd.openxmlformats-officedocument.".
+    "presentationml.presentation"] = "PptxProcessor";
+
 /**
  * Load base class, if needed.
  */

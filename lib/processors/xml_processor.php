@@ -33,6 +33,11 @@
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
+/** Register File Types We Handle*/
+$INDEXED_FILE_TYPES[] = "xml";
+$PAGE_PROCESSORS["text/xml"] = "XmlProcessor";
+$PAGE_PROCESSORS["application/xml"] = "XmlProcessor";
+
 /**
  * Load base class, if needed.
  */

@@ -33,6 +33,10 @@
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
+/** Register File Types We Handle*/
+$INDEXED_FILE_TYPES[] = "epub";
+$PAGE_PROCESSORS["application/epub+zip"] = "EpubProcessor";
+
 /**
  * Load base class, if needed.
  */

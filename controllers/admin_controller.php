@@ -49,6 +49,22 @@ require_once BASE_DIR."/lib/crawl_daemon.php";
 foreach(glob(BASE_DIR."/lib/processors/*_processor.php") as $filename) {
     require_once $filename;
 }
+/** get locally defined processors for different file types */
+foreach(glob(APP_DIR."/lib/processors/*_processor.php") as $filename) {
+    require_once $filename;
+}
+
+/** get any indexing plugins */
+foreach(glob(BASE_DIR."/lib/indexing_plugins/*_plugin.php") as $filename) {
+    require_once $filename;
+}
+
+/** get locally defined indexing plugins */
+foreach(glob(APP_DIR."/lib/indexing_plugins/*_plugin.php")
+    as $filename) {
+    require_once $filename;
+}
+
 /**
  * Controller used to handle admin functionalities such as
  * modify login and password, CREATE, UPDATE,DELETE operations

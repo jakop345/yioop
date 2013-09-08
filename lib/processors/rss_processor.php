@@ -33,6 +33,11 @@
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
+/** Register File Types We Handle*/
+$INDEXED_FILE_TYPES[] = "rss";
+$PAGE_PROCESSORS["application/rss+xml"] = "RssProcessor";
+$PAGE_PROCESSORS["application/atom+xml"] = "RssProcessor";
+
 /**
  * Load base class, if needed.
  */

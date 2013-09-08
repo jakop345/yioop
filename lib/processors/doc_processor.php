@@ -33,6 +33,10 @@
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
+/** Register File Types We Handle*/
+$INDEXED_FILE_TYPES[] = "doc";
+$PAGE_PROCESSORS["application/msword"] = "DocProcessor";
+
 /**
  * Load the parent class
  */

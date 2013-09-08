@@ -504,7 +504,6 @@ class WordIterator extends IndexBundleIterator
         }
     }
 
-
     /**
      * Switches which index shard is being used to return occurrences of
      * the word to the next shard containing the word

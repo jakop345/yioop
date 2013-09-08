@@ -34,7 +34,6 @@
  * @copyright 2009 - 2012
  * @filesource
  */
-
 if(php_sapi_name() != 'cli') {echo "BAD REQUEST"; exit();}
 
 /** Calculate base directory of script @ignore */
@@ -355,7 +354,7 @@ function searchFile($filename, $set_pattern = false)
     static $pattern = "/";
 
     if($set_pattern) {
-        $pattern = $set_pattern;
+        $pattern = preg_quote($set_pattern);
     }
     $path_parts = pathinfo($filename);
     if(!isset($path_parts['extension'])) {

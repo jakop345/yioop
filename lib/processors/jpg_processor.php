@@ -35,6 +35,13 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 ini_set("gd.jpeg_ignore_warning", 1);
 
+/** Register File Types We Handle*/
+$INDEXED_FILE_TYPES[] = "jpg";
+$INDEXED_FILE_TYPES[] = "jpeg";
+$IMAGE_TYPES[] = "jpg";
+$IMAGE_TYPES[] = "jpeg";
+$PAGE_PROCESSORS["image/jpeg"] = "JpgProcessor";
+
 /** Used for the getDocumentFilename method in UrlParser */
 require_once BASE_DIR."/lib/url_parser.php";
 /** Load base class, if needed */

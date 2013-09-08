@@ -90,7 +90,10 @@ require_once BASE_DIR."/lib/join.php";
 foreach(glob(BASE_DIR."/lib/indexing_plugins/*_plugin.php") as $filename) {
     require_once $filename;
 }
-
+/** get any local indexing plugins */
+foreach(glob(APP_DIR."/lib/indexing_plugins/*_plugin.php") as $filename) {
+    require_once $filename;
+}
 /*
  *  We'll set up multi-byte string handling to use UTF-8
  */

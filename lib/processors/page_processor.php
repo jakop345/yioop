@@ -43,6 +43,12 @@ require_once BASE_DIR."/lib/crawl_constants.php";
 /**
  * Base class common to all processors of web page data
  *
+ * Subclasses PageProcessor stored in 
+ *      WORK_DIRECTORY/app/lib/processors
+ * will be detected by Yioop. So one can add code there to make it easier
+ * to upgrade Yioop. I.e., your site specific code can stay in the work
+ * directory and you merely need to replace the Yioop folder when upgrading.
+ *
  * @author Chris Pollett
  * @package seek_quarry
  * @subpackage processor

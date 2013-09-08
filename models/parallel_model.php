@@ -310,7 +310,12 @@ class ParallelModel extends Model implements CrawlConstants
                     if(strcmp($index_name, "feed") != 0) {
                         $index = IndexManager::getIndex($index_name);
                         $index->setCurrentShard($generation, true);
-                        $page = @$index->getPage($summary_offset);
+                        if(is_integer($summary_offset) && 
+                            is_integer($generation)) {
+                            $page = @$index->getPage($summary_offset);
+                        } else {
+                            $page = NULL;
+                        }
                     } else {
                         $guid = base64Hash(substr($key,
                             IndexShard::DOC_KEY_LEN,

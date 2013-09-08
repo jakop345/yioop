@@ -33,6 +33,12 @@
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
+/** Un Register plugin if php version not high enough to have spi*/
+if(!defined('PHP_VERSION_ID') || PHP_VERSION_ID < 50300) {
+    $INDEXING_PLUGINS = array_values(
+        array_diff($INDEXING_PLUGINS, array("recipe")));
+}
+
 /**
  * Ratio of clusters/total number of recipes seen
  */

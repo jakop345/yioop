@@ -59,6 +59,12 @@ require_once BASE_DIR."/models/datasources/".DBMS."_manager.php";
  * associated with as well as getAdditionalMetaWords() to say what
  * additional meta words the plugin injects into the index.
  *
+ * Subclasses of IndexingPlugin stored in 
+ *      WORK_DIRECTORY/app/lib/indexing_plugins
+ * will be detected by Yioop. So one can add code there to make it easier
+ * to upgrade Yioop. I.e., your site specific code can stay in the work
+ * directory and you merely need to replace the Yioop folder when upgrading.
+ *
  * @author Priya Gangaraju, Chris Pollett
  * @package seek_quarry
  * @subpackage indexing_plugin

@@ -79,8 +79,19 @@ foreach(glob(BASE_DIR."/lib/processors/*_processor.php") as $filename) {
     require_once $filename;
 }
 
+/** get locally defined processors for different file types */
+foreach(glob(APP_DIR."/lib/processors/*_processor.php") as $filename) {
+    require_once $filename;
+}
+
 /** get any indexing plugins */
 foreach(glob(BASE_DIR."/lib/indexing_plugins/*_plugin.php") as $filename) {
+    require_once $filename;
+}
+
+/** get locally defined indexing plugins */
+foreach(glob(APP_DIR."/lib/indexing_plugins/*_plugin.php")
+    as $filename) {
     require_once $filename;
 }
 
@@ -1283,6 +1294,22 @@ class Fetcher implements CrawlConstants
                     $this->plugin_processors[$processor][] = $plugin_name;
                 }
             }
+            foreach($this->indexed_file_types as $file_type) {
+                $processor = ucfirst($file_type)."Processor";
+                if(!class_exists($processor)) {continue; }
+                if(!isset($this->plugin_processors[$processor])) {
+                    $this->plugin_processors[$processor] = array();
+                }
+                $parent_processor = $processor;
+                while(($parent_processor = 
+                    get_parent_class($parent_processor)) && 
+                    $parent_processor != "PageProcessor") {
+                    if(isset($this->plugin_processors[$parent_processor])) {
+                        $this->plugin_processors[$processor] += 
+                            $this->plugin_processors[$parent_processor];
+                    }
+                }
+            }
         }
         if(isset($info[self::POST_MAX_SIZE])) {
             $this->post_max_size = $info[self::POST_MAX_SIZE];
@@ -1545,6 +1572,10 @@ class Fetcher implements CrawlConstants
                 crawlLog("  Using Processor...".$page_processor);
                 $doc_info = $processor->handle($site[self::PAGE],
                     $site[self::URL]);
+                if(!$doc_info) {
+                    crawlLog("  Processing Yielded No Data For: ".
+                        $site[self::URL]);
+                }
                 if($page_processor != "RobotProcessor" &&
                     !isset($doc_info[self::JUST_METAS])) {
                     $this->pruneLinks($doc_info, CrawlConstants::LINKS,
@@ -1672,6 +1703,13 @@ class Fetcher implements CrawlConstants
                     $this->page_rule_parser->executeRuleTrees(
                         $summarized_site_pages[$i]);
                 }
+                $metas = isset($summarized_site_pages[$i][self::ROBOT_METAS]) ?
+                    $summarized_site_pages[$i][self::ROBOT_METAS] : array();
+                if(array_intersect($metas,
+                    array("NOARCHIVE", "NOINDEX", "JUSTFOLLOW", "NONE")) !=
+                    array()) {
+                    $stored_site_pages[$i] = false;
+                }
                 $i++;
             }
         } // end for
@@ -1679,10 +1717,11 @@ class Fetcher implements CrawlConstants
         $num_pages = count($stored_site_pages);
 
         if($num_pages > 0 && $this->cache_pages) {
+            $filter_stored = array_filter($stored_site_pages);
             $cache_page_partition = $this->web_archive->addPages(
-                self::OFFSET, $stored_site_pages);
+                self::OFFSET, $filter_stored);
         } else if ($num_pages > 0) {
-            $this->web_archive->addCount(count($stored_site_pages));
+            $this->web_archive->addCount(count($filter_stored));
         }
 
         for($i = 0; $i < $num_pages; $i++) {
@@ -2243,8 +2282,15 @@ class Fetcher implements CrawlConstants
                 $i, $num_seen);
                 $i++;
                 $site = array_shift($this->found_sites[self::SEEN_URLS]);
-                $site_string = gzcompress(serialize($site));
-                $compress_urls.= packInt(strlen($site_string)).$site_string;
+                if(!isset($site[self::ROBOT_METAS]) ||
+                 !in_array("JUSTFOLLOW", $site[self::ROBOT_METAS]) ||
+                 isset($site[self::JUST_METAS])) {
+                    $site_string = gzcompress(serialize($site));
+                    $compress_urls.= packInt(strlen($site_string)).$site_string;
+                } else {
+                    crawlLog("..filtering ".$site[self::URL] . 
+                        " because of JUSTFOLLOW.");
+                }
             }
             unset($this->found_sites[self::SEEN_URLS]);
         }
@@ -2402,7 +2448,10 @@ class Fetcher implements CrawlConstants
         for($i = 0; $i < $num_seen; $i++) {
             $interim_time = microtime();
             $site = $this->found_sites[self::SEEN_URLS][$i];
-            if(!isset($site[self::HASH])) {continue; }
+            if(!isset($site[self::HASH]) ||
+                (isset($site[self::ROBOT_METAS]) &&
+                 in_array("JUSTFOLLOW", $site[self::ROBOT_METAS]))) 
+                {continue; }
 
             $doc_rank = false;
             if($this->crawl_type == self::ARCHIVE_CRAWL &&
@@ -2501,9 +2550,9 @@ class Fetcher implements CrawlConstants
                 $this->no_process_links is set when doing things like
                 mix recrawls. In this case links likely already will appear
                 in what indexing, so don't index again. $site[self::JUST_META]
-                is set when have a sitemap. In this case link info is not
-                particularly useful for indexing and can greatly slow building
-                inverted index.
+                is set when have a sitemap or robots.txt (this case set later).
+                In this case link  info is not particularly useful for indexing
+                and can greatly slow building inverted index.
              */
             if(!$this->no_process_links && !isset($site[self::JUST_METAS])) {
                 foreach($site[self::LINKS] as $url => $link_text) {

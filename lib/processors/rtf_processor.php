@@ -33,6 +33,10 @@
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
+/** Register File Types We Handle*/
+$INDEXED_FILE_TYPES[] = "rtf";
+$PAGE_PROCESSORS["text/rtf"] = "RtfProcessor";
+
 /**
  * Load base class, if needed
  */

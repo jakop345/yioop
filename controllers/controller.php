@@ -69,7 +69,7 @@ abstract class Controller
 
     function __construct($indexing_plugins = array())
     {
-
+        global $INDEXED_FILE_TYPES;
         require_once BASE_DIR."/models/model.php";
 
         foreach($this->models as $model) {

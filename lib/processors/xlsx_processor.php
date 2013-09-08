@@ -33,6 +33,11 @@
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
+/** Register File Types We Handle*/
+$INDEXED_FILE_TYPES[] = "xlsx";
+$PAGE_PROCESSORS["application/vnd.openxmlformats-officedocument.".
+    "spreadsheetml.sheet"] = "XlsxProcessor";
+
 /**
  * Load base class, if needed.
  */
