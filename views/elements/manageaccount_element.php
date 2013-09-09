@@ -55,7 +55,7 @@ class ManageaccountElement extends Element
     {?>
         <div class="current-activity">
             <h2><?php e(tl('manageaccount_element_change_password'))?></h2>
-            <form id="changePasswordForm" method="post" action=''>
+            <form id="changePasswordForm" method="post" action='#'>
             <input type="hidden" name="c" value="admin" />
             <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
                 e($data[CSRF_TOKEN]); ?>" />

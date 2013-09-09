@@ -109,7 +109,7 @@ class SearchsourcesElement extends Element
             <td><a href="<?php e($base_url.'&arg=deletesource&ts='.
                 $source['TIMESTAMP']); ?>"><?php
                 e(tl('searchsources_element_deletemedia'));
-            ?></a></td>
+            ?></a></td></tr>
         <?php
         } ?>
         </table>
@@ -167,10 +167,11 @@ class SearchsourcesElement extends Element
             <td><a href="<?php e($base_url.'&amp;arg=deletesubsearch&amp;fn='.
                 $search['FOLDER_NAME']); ?>"><?php
                 e(tl('searchsources_element_deletesubsearch'));
-            ?></a></td>
+            ?></a></td></tr>
         <?php
         } ?>
-        <table>
+        </table>
+        </form>
         </div>
         <script type= "text/javascript">
         function switchSourceType()

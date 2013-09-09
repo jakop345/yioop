@@ -97,7 +97,7 @@ class ManagelocalesElement extends Element
         </form>
 
         <h2><?php e(tl('managelocales_element_delete_locale'))?></h2>
-        <form id="deleteLocaleForm" method="post" action=''>
+        <form id="deleteLocaleForm" method="post" action='#'>
         <input type="hidden" name="c" value="admin" />
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />

@@ -99,7 +99,7 @@ class PageOptionsElement extends Element
             ?></div>
         <div class="top-margin"><b><label for="cache-pages"><?php
             e(tl('pageoptions_element_save_cache'))?>
-            </label><input
+            </label></b><input
             id='cache-pages' type="checkbox" name="cache_pages"
             value="true"
             <?php if(isset($data['CACHE_PAGES']) && $data['CACHE_PAGES']) {
@@ -264,30 +264,34 @@ class PageOptionsElement extends Element
                 $data['SIGNIN_LINK']){ e("checked='checked'");}?>
             />
         </td></tr>
-        <tr><td><?php e(tl('pageoptions_element_cache_link')); ?></label>
-        </td><td><label for="cache-link"><input id='cache-link' type="checkbox"
+        <tr><td><label for="cache-link"><?php 
+            e(tl('pageoptions_element_cache_link')); ?></label>
+        </td><td><input id='cache-link' type="checkbox"
             name="CACHE_LINK" value="true"
             <?php if(isset($data['CACHE_LINK']) && $data['CACHE_LINK']){
                 e("checked='checked'");}?>
             /></td></tr>
         </table></td>
         <td><table class="search-page-table">
-        <tr><td><?php e(tl('pageoptions_element_similar_link')); ?></label></td>
-        <td><label for="similar-link"><input id='similar-link'
+        <tr><td><label for="similar-link"><?php
+            e(tl('pageoptions_element_similar_link')); ?></label></td>
+        <td><input id='similar-link'
             type="checkbox" name="SIMILAR_LINK" value="true"
             <?php if(isset($data['SIMILAR_LINK']) &&
                 $data['SIMILAR_LINK']){
                 e("checked='checked'");}?>
             /></td>
         </tr>
-        <tr><td><?php e(tl('pageoptions_element_in_link')); ?></label></td>
-        <td><label for="in-link"><input id='in-link' type="checkbox"
+        <tr><td><label for="in-link"><?php
+            e(tl('pageoptions_element_in_link')); ?></label></td>
+        <td><input id='in-link' type="checkbox"
             name="IN_LINK" value="true"
             <?php if(isset($data['IN_LINK']) && $data['IN_LINK']){
                 e("checked='checked'");}?>
             /></td></tr>
-        <tr><td><?php e(tl('pageoptions_element_ip_link')); ?></label></td>
-        <td><label for="ip-link"><input id='ip-link' type="checkbox"
+        <tr><td><label for="ip-link"><?php
+            e(tl('pageoptions_element_ip_link')); ?></label></td>
+        <td><input id='ip-link' type="checkbox"
             name="IP_LINK" value="true"
             <?php if(isset($data['IP_LINK']) && $data['IP_LINK']){
                 e("checked='checked'");}?>

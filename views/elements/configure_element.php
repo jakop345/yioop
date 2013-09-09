@@ -112,7 +112,7 @@ class ConfigureElement extends Element
         <div class="top-margin"><span <?php if(!MOBILE) { ?>
             style="position:relative; top:-3.2em;" <?php } ?>><label
             for="locale"><?php
-            e(tl('configure_element_default_language')); ?></span>
+            e(tl('configure_element_default_language')); ?></label></span>
         <?php $this->view->languageElement->render($data); ?>
         </div>
         <?php if($data['PROFILE']) { ?>

@@ -56,7 +56,7 @@ class ManageusersElement extends Element
     ?>
         <div class="current-activity">
         <h2><?php e(tl('manageusers_element_add_user'))?></h2>
-        <form id="addUserForm" method="post" action='#'>
+        <form id="addUserForm" method="post" action=''>
         <input type="hidden" name="c" value="admin" />
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />
@@ -72,7 +72,7 @@ class ManageusersElement extends Element
              e(tl('manageusers_element_password'))?></label></td>
             <td><input type="password" id="pass-word"
                 name="password"  maxlength="80" class="narrow-field"/></td></tr>
-            <td><label for="retype-password"><?php
+        <tr><td><label for="retype-password"><?php
                 e(tl('manageusers_element_retype_password'))?></label></td>
             <td><input type="password" id="retype-password"
                 name="retypepassword"  maxlength="80"
