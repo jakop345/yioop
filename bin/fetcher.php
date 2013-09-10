@@ -1502,7 +1502,8 @@ class Fetcher implements CrawlConstants
                 $tmp_loc = array_pop($site[self::LOCATION]);
                 $tmp_loc = UrlParser::canonicalLink(
                     $tmp_loc, $site[self::URL]);
-                $site[self::LOCATION] = array_push($tmp_loc);
+                $site[self::LOCATION] = array_push($site[self::LOCATION],
+                    $tmp_loc);
                 $doc_info = array();
                 $doc_info[self::LINKS][$tmp_loc] =
                     "location:".$site[self::URL];
