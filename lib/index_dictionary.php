@@ -771,7 +771,8 @@ class IndexDictionary implements CrawlConstants
     {
         $record[4] = $id;
         $add_flag = true;
-        if($mask != "" && substr_compare($id, $word_id, 9, $mask_len) != 0) {
+        if($mask != "" && strlen($id) > 9 && strlen($word_id) > 9 &&
+            substr_compare($id, $word_id, 9, $mask_len) != 0) {
             $k = 0;
             $old_k = 0;
             while(($k = strpos($mask, "\xFF", $old_k)) !== false) {

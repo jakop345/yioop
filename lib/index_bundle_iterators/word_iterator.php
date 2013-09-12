@@ -235,10 +235,10 @@ class WordIterator extends IndexBundleIterator
             if($this->num_generations == 0) {
                 $this->empty = true;
             } else {
-                for($i = 0; $i < $this->num_generations; $i++) {
-                    list(, , , $num_docs) =
-                        $this->dictionary_info[$i];
-                    $this->num_docs += $num_docs;
+                foreach ($this->dictionary_info as $info) {
+                    if(isset($info[3])) {
+                        $this->num_docs += $info[3];
+                    }
                 }
                 $this->empty = false;
             }
