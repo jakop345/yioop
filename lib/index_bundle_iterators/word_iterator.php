@@ -185,8 +185,6 @@ class WordIterator extends IndexBundleIterator
         $this->dictionary_info = 
             IndexManager::getWordInfo($index_name, $word_key, 0,
             $mask);
-        ksort($this->dictionary_info);
-        $this->dictionary_info = array_values($this->dictionary_info);
         $this->feed_shard_name = WORK_DIRECTORY."/feeds/index";
         if((!defined('NO_FEEDS') || !NO_FEEDS)
             && file_exists($this->feed_shard_name)) {
@@ -230,6 +228,8 @@ class WordIterator extends IndexBundleIterator
         }
         $this->num_docs = $this->feed_count;
 
+        ksort($this->dictionary_info);
+        $this->dictionary_info = array_values($this->dictionary_info);
         if ($this->dictionary_info === false) {
             $this->empty = true;
         } else {
