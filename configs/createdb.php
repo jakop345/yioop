@@ -80,7 +80,7 @@ if(!$profile_model->createDatabaseTables($db, $dbinfo)) {
     exit();
 }
 
-$db->execute("INSERT INTO VERSION VALUES (16)");
+$db->execute("INSERT INTO VERSION VALUES (17)");
 
 //default account is root without a password
 $sql ="INSERT INTO USER VALUES (1, 'root', '".crawlCrypt('')."' ) ";
@@ -130,50 +130,77 @@ $db->execute("INSERT INTO ROLE_ACTIVITY VALUES (1, 9)");
 $db->execute("INSERT INTO ROLE_ACTIVITY VALUES (1, 10)");
 $db->execute("INSERT INTO ROLE_ACTIVITY VALUES (1, 11)");
 $db->execute("INSERT INTO ROLE_ACTIVITY VALUES (1, 12)");
+$db->execute("INSERT INTO ROLE_ACTIVITY VALUES (1, 13)");
 
 $db->execute("INSERT INTO ACTIVITY VALUES (1, 1, 'manageAccount')");
 $db->execute("INSERT INTO ACTIVITY VALUES (2, 2, 'manageUsers')");
 $db->execute("INSERT INTO ACTIVITY VALUES (3, 3, 'manageRoles')");
-$db->execute("INSERT INTO ACTIVITY VALUES (4, 4, 'manageCrawls')");
-$db->execute("INSERT INTO ACTIVITY VALUES (5, 5, 'mixCrawls')");
-$db->execute("INSERT INTO ACTIVITY VALUES (6, 6, 'manageClassifiers')");
-$db->execute("INSERT INTO ACTIVITY VALUES (7, 7, 'pageOptions')");
-$db->execute("INSERT INTO ACTIVITY VALUES (8, 8, 'resultsEditor')");
-$db->execute("INSERT INTO ACTIVITY VALUES (9, 9, 'searchSources')");
-$db->execute("INSERT INTO ACTIVITY VALUES (10, 10, 'manageMachines')");
-$db->execute("INSERT INTO ACTIVITY VALUES (11, 11, 'manageLocales')");
-$db->execute("INSERT INTO ACTIVITY VALUES (12, 12, 'configure')");
+$db->execute("UPDATE ACTIVITY SET METHOD_NAME = 'manageGroups' where 
+    ACTIVITY_ID = 4 AND TRANSLATION_ID = 4)");
+$db->execute("UPDATE ACTIVITY SET METHOD_NAME = 'manageCrawls' where 
+    ACTIVITY_ID = 5 AND TRANSLATION_ID = 5)");
+$db->execute("UPDATE ACTIVITY SET METHOD_NAME = 'mixCrawls' where 
+    ACTIVITY_ID = 6 AND TRANSLATION_ID = 6)");
+$db->execute("UPDATE ACTIVITY SET METHOD_NAME ='manageClassifiers' where
+    ACTIVITY_ID = 7 AND TRANSLATION_ID = 7)");
+$db->execute("UPDATE ACTIVITY SET METHOD_NAME = 'pageOptions' where 
+    ACTIVITY_ID = 8 AND TRANSLATION_ID = 8)");
+$db->execute("UPDATE ACTIVITY SET METHOD_NAME = 'resultsEditor' where 
+    ACTIVITY_ID = 9 AND TRANSLATION_ID = 9)");
+$db->execute("UPDATE ACTIVITY SET METHOD_NAME = 'searchSources' where 
+    ACTIVITY_ID = 10 AND TRANSLATION_ID = 10)");
+$db->execute("UPDATE ACTIVITY SET METHOD_NAME = 'manageMachines' where 
+    ACTIVITY_ID = 11 AND TRANSLATION_ID = 11)");
+$db->execute("UPDATE ACTIVITY SET METHOD_NAME = 'manageLocales' where 
+    ACTIVITY_ID = 12 AND TRANSLATION_ID = 12)");
+$db->execute("INSERT INTO ACTIVITY VALUES (13, 13, 'configure')");
+
 
 $db->execute("INSERT INTO TRANSLATION VALUES (1,'db_activity_manage_account')");
 $db->execute("INSERT INTO TRANSLATION VALUES (2, 'db_activity_manage_users')");
 $db->execute("INSERT INTO TRANSLATION VALUES (3, 'db_activity_manage_roles')");
-$db->execute("INSERT INTO TRANSLATION VALUES (4, 'db_activity_manage_crawl')");
-$db->execute("INSERT INTO TRANSLATION VALUES (5, 'db_activity_mix_crawls')");
-$db->execute("INSERT INTO TRANSLATION VALUES (6,
-    'db_activity_manage_classifiers')");
-$db->execute("INSERT INTO TRANSLATION VALUES (7, 'db_activity_file_options')");
-$db->execute("INSERT INTO TRANSLATION VALUES (8,'db_activity_results_editor')");
-$db->execute("INSERT INTO TRANSLATION VALUES(9,'db_activity_search_services')");
-$db->execute("INSERT INTO TRANSLATION VALUES(10,
-    'db_activity_manage_machines')");
-$db->execute("INSERT INTO TRANSLATION VALUES (11,
-    'db_activity_manage_locales')");
-$db->execute("INSERT INTO TRANSLATION VALUES (12, 'db_activity_configure')");
-
+$db->execute("UPDATE TRANSLATION SET IDENTIFIER_STRING =
+    'db_activity_manage_groups' where TRANSLATION_ID = 4)");
+$db->execute("UPDATE TRANSLATION SET IDENTIFIER_STRING =
+    'db_activity_manage_crawl' where TRANSLATION_ID = 5)");
+$db->execute("UPDATE TRANSLATION SET IDENTIFIER_STRING =
+    'db_activity_mix_crawls' where TRANSLATION_ID = 6)");
+$db->execute("UPDATE TRANSLATION SET IDENTIFIER_STRING =
+    'db_activity_manage_classifiers' where TRANSLATION_ID = 7)");
+$db->execute("UPDATE TRANSLATION SET IDENTIFIER_STRING =
+    'db_activity_file_options' where TRANSLATION_ID = 8)");
+$db->execute("UPDATE TRANSLATION SET IDENTIFIER_STRING =
+    'db_activity_results_editor' where TRANSLATION_ID = 9)");
+$db->execute("UPDATE TRANSLATION SET IDENTIFIER_STRING =
+    'db_activity_search_services' where TRANSLATION_ID = 10)");
+$db->execute("UPDATE TRANSLATION SET IDENTIFIER_STRING =
+    'db_activity_manage_machines' where TRANSLATION_ID = 11)");
+$db->execute("UPDATE TRANSLATION SET IDENTIFIER_STRING =
+    'db_activity_manage_locales' where TRANSLATION_ID = 12)");
+$db->execute("INSERT INTO TRANSLATION VALUES (13, 'db_activity_configure')");
 
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (1, 1, 'Manage Account' )");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (2, 1, 'Manage Users')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (3, 1, 'Manage Roles')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (4, 1, 'Manage Crawls')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (5, 1, 'Mix Crawls')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (6, 1, 'Classifiers')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (7, 1, 'Page Options')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (8, 1, 'Results Editor')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (9, 1, 'Search Sources')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (10,
-    1, 'Manage Machines')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (11, 1, 'Manage Locales')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (12, 1, 'Configure')");
+$db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION = 'Manage Groups' where 
+     TRANSLATION_ID= 4 AND LOCALE_ID=1)");
+$db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION = 'Manage Crawls' where 
+     TRANSLATION_ID= 5 AND LOCALE_ID= 1)");
+$db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION = 'Mix Crawls' where 
+     TRANSLATION_ID= 6 AND LOCALE_ID=1)"); 
+$db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION = 'Classifiers' where 
+     TRANSLATION_ID=7 AND LOCALE_ID=1)");
+$db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION = 'Page Options' where 
+     TRANSLATION_ID=8 AND LOCALE_ID=1)");
+$db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION = 'Results Editor'  
+     where TRANSLATION_ID= 9 AND LOCALE_ID=1)");
+$db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION = 'Search Sources' 
+     where TRANSLATION_ID= 10 AND LOCALE_ID= 1)");
+$db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION = 'Manage Machines' 
+     where  TRANSLATION_ID= 11 AND LOCALE_ID= 1)");
+$db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION = 'Manage Locales' where
+     TRANSLATION_ID= 12 AND LOCALE_ID=1)");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (13, 1, 'Configure')");
 
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (1, 5,
     'Modifier votre compte' )");
@@ -181,23 +208,25 @@ $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (2, 5,
     'Modifier les utilisateurs')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (3, 5,
     'Modifier les rôles')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (4, 5,
-    'Modifier les indexes')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (5, 5,
-    'Mélanger les indexes')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (6, 5,
-    'Classificateurs')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (7, 5,
-    'Options de fichier')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (8, 5,
-    'Éditeur de résultats')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (9, 5,
-    'Sources de recherche')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (10, 5,
-    'Modifier les ordinateurs')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (11, 5,
-    'Modifier les lieux')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (12, 5,
+$db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION = 
+    'Modifier les indexes' where TRANSLATION_ID= 4 AND LOCALE_ID= 5)");
+$db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
+    'Mélanger les indexes' where TRANSLATION_ID = 5 AND LOCALE_ID= 5)");
+$db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
+    'Mélanger les indexes' where TRANSLATION_ID= 6 AND LOCALE_ID= 5)");
+$db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
+    'Classificateurs' where TRANSLATION_ID = 7 AND LOCALE_ID = 5)");
+$db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
+    'Options de fichier' where TRANSLATION_ID = 8 AND LOCALE_ID= 5)");
+$db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
+    'Éditeur de résultats' where TRANSLATION_ID = 9 AND LOCALE_ID = 5)");
+$db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
+    'Sources de recherche' where TRANSLATION_ID = 10 AND LOCALE_ID = 5)");
+$db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION = 
+    'Modifier les ordinateurs' where TRANSLATION_ID =  11 AND LOCALE_ID = 5)");
+$db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION = 
+    'Modifier les lieux' where TRANSLATION_ID = 12 AND LOCALE_ID = 5)");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (13, 5,
     'Configurer')");
 
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (
@@ -206,12 +235,16 @@ $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (
     2, 9, 'ユーザー管理')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (
     3, 9, '役割管理')");
+$db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
+     '検索管理' where TRANSLATION_ID= 4 AND LOCALE_ID = 9)");
+$db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
+    'ローケル管理' where TRANSLATION_ID = 10 AND LOCALE_ID =9)");
+$db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
+    '設定' where TRANSLATION_ID = 11 AND LOCALE_ID = 9)");
+$db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
+     '設定' where TRANSLATION_ID = 12 AND LOCALE_ID = 9)");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (
-    4, 9, '検索管理')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (
-    10, 9, 'ローケル管理')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (
-    11, 9, '設定')");
+    13, 9, '設定')");
 
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (1, 10,
     '사용자 계정 관리' )");
@@ -219,12 +252,17 @@ $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (
     2, 10, '사용자 관리')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (3, 10,
     '사용자 권한 관리')");
+$db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
+    '크롤 관리' where TRANSLATION_ID = 4 AND LOCALE_ID = 10)");
+$db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
+    '로케일 관리' where TRANSLATION_ID = 10 AND LOCALE_ID = 10)");
+$db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
+    '구성' where TRANSLATION_ID = 11 AND LOCALE_ID = 10)");
+$db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
+    '구성' where TRANSLATION_ID = 12 AND LOCALE_ID = 10)");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (
-    4, 10, '크롤 관리')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (
-    10, 10, '로케일 관리')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (
-    11, 10, '구성')");
+    13, 10, '구성')");
+
 
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (1, 15,
     'Quản lý tài khoản' )");
@@ -232,11 +270,17 @@ $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (2, 15,
     'Quản lý tên sử dụng')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (3, 15,
     'Quản lý chức vụ')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (
-    4, 15, 'Quản lý sự bò')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (11, 15,
-    'Quản lý miền địa phương')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (12, 15,
+$db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION = 
+    'Quản lý sự bò' where TRANSLATION_ID = 4 AND LOCALE_ID =15)");
+$db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
+    'Quản lý miền địa phương' where TRANSLATION_ID = 10 AND LOCALE_ID = 15)");
+$db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
+    'Sắp xếp hoạt động dựa theo hoạch định' where TRANSLATION_ID = 11 AND
+    LOCALE_ID =15)");
+$db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
+    'Sắp xếp hoạt động dựa theo hoạch định' where TRANSLATION_ID =12 AND
+    LOCALE_ID = 15)");
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (13, 15,
     'Sắp xếp hoạt động dựa theo hoạch định')");
 
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (1, 16,
@@ -251,21 +295,34 @@ $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (2, 20,
     'مدیریت کاربران')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (3, 20,
     'مدیریت نقش‌ها')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (4, 20,
-'مدیریت خزش‌ها')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (5, 20,
-    'ترکیب‌های خزش‌ها')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (7, 20,
-    'تنظیمات صفحه')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (8, 20,
-    'ویرایشگر نتایج')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (9, 20,
-'منابع جستجو')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (10, 20,
-    'مدیریت دستگاه‌ها')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (11, 20,
-    'مدیریت زبان‌ها')");
-$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (12, 20,
+$db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
+'مدیریت خزش‌ها' where TRANSLATION_ID = 4  LOCALE_ID = 20)");
+
+$db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
+    'ترکیب‌های خزش‌ها' where TRANSLATION_ID = 5 AND LOCALE_ID =20)");
+    
+$db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
+    'تنظیمات صفحه' where TRANSLATION_ID = 6 AND LOCALE_ID =20)");
+    
+$db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
+    'ویرایشگر نتایج' where TRANSLATION_ID = 7 AND LOCALE_ID =20)");
+    
+$db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
+'منابع جستجو' where TRANSLATION_ID = 8 AND LOCALE_ID =20)");
+
+$db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
+    'مدیریت دستگاه‌ها' where TRANSLATION_ID = 9 AND LOCALE_ID =20)");
+    
+$db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
+    'مدیریت زبان‌ها' where TRANSLATION_ID = 10 AND LOCALE_ID =20)");
+    
+$db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
+    'پیکربندی' where TRANSLATION_ID = 11 AND LOCALE_ID = 20)");
+    
+$db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
+    'پیکربندی' where TRANSLATION_ID = 12 AND LOCALE_ID = 20)");
+    
+$db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (13, 20,
     'پیکربندی')");
 
 $db->execute("INSERT INTO USER_ROLE VALUES (1, 1)");

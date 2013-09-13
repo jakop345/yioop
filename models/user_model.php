@@ -215,6 +215,24 @@ class UserModel extends Model
         }
         return $usernames;
     }
+     /**
+     *  Returns an array of all user_names and user_ids
+     *
+     *  @return array a list of user
+     */
+   function getUserListGroups()
+    {
+        $this->db->selectDB(DB_NAME);
+         $sql = "SELECT U.USER_ID AS USER_ID, U.USER_NAME AS USER_NAME ".
+            " FROM USER U";
+        $result = $this->db->execute($sql);
+        $i = 0;
+        while($users[$i] = $this->db->fetchArray($result)) {
+            $i++;
+        }
+        unset($users[$i]); //last one will be null
+        return $users;
+    }
 
 
     /**

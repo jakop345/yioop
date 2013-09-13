@@ -49,22 +49,6 @@ require_once BASE_DIR."/lib/crawl_daemon.php";
 foreach(glob(BASE_DIR."/lib/processors/*_processor.php") as $filename) {
     require_once $filename;
 }
-/** get locally defined processors for different file types */
-foreach(glob(APP_DIR."/lib/processors/*_processor.php") as $filename) {
-    require_once $filename;
-}
-
-/** get any indexing plugins */
-foreach(glob(BASE_DIR."/lib/indexing_plugins/*_plugin.php") as $filename) {
-    require_once $filename;
-}
-
-/** get locally defined indexing plugins */
-foreach(glob(APP_DIR."/lib/indexing_plugins/*_plugin.php")
-    as $filename) {
-    require_once $filename;
-}
-
 /**
  * Controller used to handle admin functionalities such as
  * modify login and password, CREATE, UPDATE,DELETE operations
@@ -83,23 +67,23 @@ class AdminController extends Controller implements CrawlConstants
      * is used to see how many pages crawled by the current crawl
      * @var array
      */
-    var $views = array("admin", "signin", "crawlstatus", "machinestatus");
+    var $views = array("admin","signin","crawlstatus", "machinestatus");
     /**
      * Says which models to load for this controller.
      * @var array
      */
     var $models = array(
         "signin", "user", "activity", "crawl", "role", "locale", "profile",
-        "searchfilters", "source", "machine", "cron");
+        "searchfilters", "source", "machine", "cron", "group");
     /**
      * Says which activities (roughly methods invoke from the web) this
      * controller will respond to
      * @var array
      */
     var $activities = array("signin", "manageAccount", "manageUsers",
-        "manageRoles", "manageCrawls", "pageOptions", "manageClassifiers",
-        "resultsEditor", "manageMachines", "manageLocales", "crawlStatus",
-        "mixCrawls", "machineStatus", "searchSources", "configure");
+        "manageRoles", "manageGroups","manageCrawls","pageOptions",
+        "manageClassifiers","resultsEditor", "manageMachines", "manageLocales",
+        "crawlStatus","mixCrawls","machineStatus","searchSources","configure");
     /**
      * An array of activities which are periodically updated within other
      * activities that they live. For example, within manage crawl,
@@ -232,7 +216,7 @@ class AdminController extends Controller implements CrawlConstants
         } else {
             $activity = "manageAccount";
         }
-        $allowed = false;
+        $allowed = true;
         if(!PROFILE) {
             $allowed_activities = array( array(
                 "ACTIVITY_NAME" =>
@@ -748,6 +732,230 @@ class AdminController extends Controller implements CrawlConstants
             }
         }
 
+        return $data;
+    }
+
+    function manageGroups()
+      {
+        $possible_arguments = array("addgroup", "deletegroup",
+        "viewgroups", "selectgroup", "adduser", "deleteuser",
+        "addrole", "deleterole", "updategroup");
+        $data["ELEMENT"] = "managegroupsElement";
+        $data['SCRIPT'] =
+            "selectGroup = elt('select-group'); selectGroup.onchange =".
+            " submitViewGroups;";
+        if(isset($_REQUEST['groupname']))
+         {
+            $groupname = $this->clean($_REQUEST['groupname'], "string" );
+         }
+        if($_SESSION['USER_ID'] == '1')
+         {
+              $groups = $this->groupModel->getGroupList();
+         }else {
+         $groups = $this->groupModel->getGroupListbyUser($_SESSION['USER_ID']);
+          }
+        $group_ids = array();
+        $base_option = tl('admin_controller_select_groupname');
+        $data['GROUP_NAMES'] = array();
+        $data['GROUP_NAMES'][-1] = $base_option;
+        if(isset($_REQUEST['groupname'])) {
+            $groupname = $this->clean($_REQUEST['groupname'], "string" );
+        }
+         foreach($groups as $group) {
+            $data['GROUP_NAMES'][$group['GROUP_ID']]= $group['GROUP_NAME'];
+            $group_ids[] = $group['GROUP_ID'];
+        }
+        if($_SESSION['USER_ID'] == '1'){
+        $groups = $this->groupModel->getGroupList();
+        }else {
+        $groups = $this->groupModel->getGroupListbyCreater($_SESSION['USER_ID']);
+        }
+        $group_ids = array();
+        $base_option = tl('admin_controller_select_groupname');
+        $data['DELETE_GROUP_NAMES'] = array();
+        $data['DELETE_GROUP_NAMES'][-1] = $base_option;
+        if(isset($_REQUEST['groupname'])) {
+            $groupname = $this->clean($_REQUEST['groupname'], "string" );
+        }
+         foreach($groups as $deletegroup) {
+              $data['DELETE_GROUP_NAMES'][$deletegroup['GROUP_ID']]=
+                  $deletegroup['GROUP_NAME'];
+            $group_ids[] = $deletegroup['GROUP_ID'];
+        }
+        $data['SELECT_GROUP'] = -1;
+        $data['SELECT_USER'] = -1;
+        if(isset($_REQUEST['selectgroup'])) {
+            $select_group = $this->clean($_REQUEST['selectgroup'], "string" );
+        } else {
+            $select_group = "";
+        }
+        if(isset($_REQUEST['arg']) &&
+        !($_REQUEST['arg'] == 'deletegroup'
+        || $_REQUEST['arg'] == 'addgroup')){
+            $data['SELECT_GROUP'] = $select_group;
+            $grouproles = $this->groupModel->getGroupRoles($select_group);
+            $data['GROUP_ROLES']= $grouproles;
+            $rolenames = $this->roleModel->getRoleList();
+            $base_option = tl('admin_controller_select_rolename');
+        if(isset($_REQUEST['arg']) &&
+        !($_REQUEST['arg'] == 'deletegroup'
+        || $_REQUEST['arg'] == 'addgroup')){
+        $data['ROLE_NAMES'] = array();
+            $role_ids = array();
+             $data['ROLE_NAMES'][-1] = $base_option;
+              foreach($rolenames as $rolename) {
+              $data['ROLE_NAMES'][$rolename['ROLE_ID']]= $rolename['ROLE_NAME'];
+                $role_ids[] = $rolename['ROLE_ID'];
+           }
+        }
+            if(isset($_REQUEST['selectrole'])) {
+                $select_role = $this->clean($_REQUEST['selectrole'], "string" );
+            } else {
+                $select_role = "";
+            }
+            $usergroups = $this->groupModel->getGroupUsers($select_group);
+            $data['GROUP_USERS'] =$usergroups;
+            if($select_group != "-1"){
+            $usernames = $this->userModel->getUserListGroups();
+            $base_option = tl('admin_controller_select_username');
+            $data['USER_NAMES'] = array();
+            $user_ids = array();
+            $data['USER_NAMES'][-1] = $base_option;
+          foreach($usernames as $user) {
+                $user_ids[] = $user['USER_ID'];
+                if($select_user == $user['USER_ID']) {
+                    $select_username = $user['USER_NAME'];
+                }
+            }
+         foreach($usernames as $username){
+           $data['USER_NAMES'] [$username['USER_ID']] = $username['USER_NAME'];
+             $user_ids[] = $username['USER_ID'];
+            }
+            }
+         if(isset($_REQUEST['selectuser'])) {
+                $select_user = $this->clean($_REQUEST['selectuser'], "string" );
+            } else {
+                $select_user = "";
+            }
+         if(isset($_REQUEST['selectactivity'])) {
+                $select_activity =
+                    $this->clean($_REQUEST['selectactivity'], "int" );
+            } else {
+                $select_activity = "";
+            }
+            if($select_activity != "") {
+                $data['SELECT_ACTIVITY'] = $select_activity;
+            } else {
+                $data['SELECT_ACTIVITY'] = -1;
+            }
+            }
+        if(isset($_REQUEST['arg']) &&
+            in_array($_REQUEST['arg'], $possible_arguments)) {
+            switch($_REQUEST['arg'])
+            {
+                case "addgroup":
+                    $data['SELECT_GROUP'] = -1;
+                    if($this->groupModel->getGroupId($groupname) > 0) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('admin_controller_groupname_exists').
+                            "</h1>')";
+                        return $data;
+                    }
+                  $this->groupModel->addGroup($groupname, $_SESSION['USER_ID']);
+                  $groupid = $this->groupModel->getGroupId($groupname);
+                  $data['GROUP_NAMES'][$groupid] = $groupname;
+                  $data['DELETE_GROUP_NAMES'][$groupid] = $groupname;
+                  $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('admin_controller_groupname_added').
+                        "</h1>')";
+                break;
+                 case "deletegroup":
+                    if($select_group == -1){
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                      tl('admin_controller_groupname_doesnt_exists')."</h1>')";
+                    }else{
+                     $this->groupModel->deleteGroup($select_group);
+                    unset($data['GROUP_NAMES'][$select_group]);
+                    unset($data['DELETE_GROUP_NAMES'][$select_group]);
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('admin_controller_groupname_deleted')."</h1>')";
+                    }
+                break;
+                case "adduser":
+                    if(!in_array($select_user, $user_ids)) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('admin_controller_username_doesnt_exists').
+                            "</h1>')";
+                        return $data;
+                    }
+                   $this->groupModel->addUserGroup($select_group, $select_user);
+                    unset($data['AVAILABLE_USERS'][$select_user]);
+                      $data['GROUP_USERS'] =
+                        $this->groupModel->getGroupUsers($select_group);
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('admin_controller_user_added')."</h1>')";
+                break;
+                case "deleteuser":
+                $this->groupModel->deleteUserGroup($select_group, $select_user);
+                  $data['GROUP_USERS'] =
+                        $this->groupModel->getGroupUsers($select_group);
+                    $data['AVAILABLE_USERS'][$select_user] =
+                        $user_names[$select_user];
+                    $data['SELECT_USER'] = -1;
+                   unset($data['GROUP_NAMES'][$select_group]);
+                   unset($data['GROUP_USERS']);
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('admin_controller_user_deleted')."</h1>')";
+                break;
+                case "addrole":
+                    if(!in_array($select_group, $group_ids)) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('admin_controller_groupname_doesnt_exists').
+                            "</h1>')";
+                        return $data;
+                    }
+                    if(!in_array($select_role, $role_ids)) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('admin_controller_rolename_doesnt_exists').
+                            "</h1>')";
+                        return $data;
+                    }
+                    $this->groupModel->addGroupRole(
+                        $select_group, $select_role);
+                    unset($data['AVAILABLE_ROLES'][$select_role]);
+                    $data['GROUP_ROLES'] =
+                        $this->groupModel->getGroupRoles($select_group);
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('admin_controller_rolename_added')."</h1>')";
+                break;
+                case "deleterole":
+                    if(!in_array($select_group, $group_ids)) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('admin_controller_groupname_doesnt_exists').
+                            "</h1>')";
+                        return $data;
+                    }
+                    if(!in_array($select_role, $role_ids)) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('admin_controller_rolename_doesnt_exists').
+                            "</h1>')";
+                        return $data;
+                    }
+                    $this->groupModel->deleteGroupRole(
+                        $select_group, $select_role);
+                    $data['GROUP_ROLES'] =
+                        $this->groupModel->getGroupRoles($select_group);
+                    $data['AVAILABLE_ACTIVITIES'][$select_role] =
+                        $role_names[$select_role];
+                    $data['SELECT_ROLE'] = -1;
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('admin_controller_role_deleted')."</h1>')";
+                break;
+                case "updategroup":
+                $this->groupModel->updateUserGroup(
+                        $select_user, $select_group);
+          }
+    }
         return $data;
     }
 
@@ -1681,7 +1889,7 @@ class AdminController extends Controller implements CrawlConstants
                 if (isset($_REQUEST['classifier'][$label])) {
                     $ison = true;
                 }
-            } else if ($loaded || !isset($_REQUEST['posted']) && 
+            } else if ($loaded || !isset($_REQUEST['posted']) &&
                 isset($seed_info['active_classifiers']['label'])) {
                 if (in_array($label,
                     $seed_info['active_classifiers']['label'])) {

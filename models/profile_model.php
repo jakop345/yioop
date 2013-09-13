@@ -320,6 +320,10 @@ EOT;
                 TITLE VARCHAR(512), LINK VARCHAR(256),
                 DESCRIPTION VARCHAR(4096),
                 PUBDATE INT, SOURCE_NAME VARCHAR(16))",
+                "CREATE TABLE GROUPS (GROUP_ID INTEGER PRIMARY KEY $auto_increment ,
+                        GROUP_NAME VARCHAR(128), CREATED_TIME INT(11), CREATER_ID INT(11))",
+             "CREATE TABLE USER_GROUPS (USER_ID INTEGER , GROUP_ID INTEGER, PRIMARY KEY (GROUP_ID, USER_ID) )",
+             "CREATE TABLE GROUP_ROLES (GROUP_ID INTEGER , ROLE_ID INTEGER)",
             );
         foreach($create_statements as $statement) {;
             if(!$dbm->execute($statement)) {return false;}
