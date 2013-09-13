@@ -768,7 +768,7 @@ class AdminController extends Controller implements CrawlConstants
         if($_SESSION['USER_ID'] == '1'){
         $groups = $this->groupModel->getGroupList();
         }else {
-        $groups = $this->groupModel->getGroupListbyCreater($_SESSION['USER_ID']);
+       $groups = $this->groupModel->getGroupListbyCreater($_SESSION['USER_ID']);
         }
         $group_ids = array();
         $base_option = tl('admin_controller_select_groupname');
@@ -833,7 +833,7 @@ class AdminController extends Controller implements CrawlConstants
             }
             }
          if(isset($_REQUEST['selectuser'])) {
-                $select_user = $this->clean($_REQUEST['selectuser'], "string" );
+              $select_user = $this->clean($_REQUEST['selectuser'], "string" );
             } else {
                 $select_user = "";
             }
@@ -888,8 +888,8 @@ class AdminController extends Controller implements CrawlConstants
                             "</h1>')";
                         return $data;
                     }
-                   $this->groupModel->addUserGroup($select_group, $select_user);
-                    unset($data['AVAILABLE_USERS'][$select_user]);
+               $this->groupModel->addUserGroup($select_group, $select_user);
+                 unset($data['AVAILABLE_USERS'][$select_user]);
                       $data['GROUP_USERS'] =
                         $this->groupModel->getGroupUsers($select_group);
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".

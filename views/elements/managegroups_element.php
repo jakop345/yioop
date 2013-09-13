@@ -61,12 +61,14 @@ function render($data)
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />
        <input type="hidden" name="arg" value="updategroup" />
-       <input type="radio" name="selectuser" value="<?php e($group_user['USER_ID'])?>">
+       <input type="radio" name="selectuser" value=
+           "<?php e($group_user['USER_ID'])?>">
         <?php e($group_user['USER_NAME']); ?></input><br/>
     <?php } ?>
     <hr/>
        <input type="submit" value="submit" 
-       onclick="return confirm('<?php e(tl('managegroups_element_transfer_admin'))?>');"/>
+       onclick=
+     "return confirm('<?php e(tl('managegroups_element_transfer_admin'))?>');"/>
        <input type="button" value="cancel" onclick="closeoverlay();"/>
        </form>
     </div>
@@ -92,7 +94,8 @@ function render($data)
         </form>
         <h2><?php e(tl('managegroups_element_delete_group'))?></h2>
         <form id="deleteGroupForm" method="post" action='#' 
-        onsubmit="return confirm('<?php e(tl('managegroups_element_delete_groupname'))?>');">
+        onsubmit=
+    "return confirm('<?php e(tl('managegroups_element_delete_groupname'))?>');">
         <input type="hidden" name="c" value="admin" />
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />

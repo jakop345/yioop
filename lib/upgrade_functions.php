@@ -578,23 +578,23 @@ function upgradeDatabaseVersion17(&$db)
     $db->execute("CREATE TABLE GROUP_ROLES (GROUP_ID INTEGER , 
         ROLE_ID INTEGER)");
 
-    $db->execute("UPDATE ACTIVITY SET METHOD_NAME = 'manageGroups' where 
+    $db->execute("UPDATE ACTIVITY SET METHOD_NAME = 'manageGroups' where
         ACTIVITY_ID = 4 AND TRANSLATION_ID = 4)");
-    $db->execute("UPDATE ACTIVITY SET METHOD_NAME = 'manageCrawls' where 
+    $db->execute("UPDATE ACTIVITY SET METHOD_NAME = 'manageCrawls' where
         ACTIVITY_ID = 5 AND TRANSLATION_ID = 5)");
-    $db->execute("UPDATE ACTIVITY SET METHOD_NAME = 'mixCrawls' where 
+    $db->execute("UPDATE ACTIVITY SET METHOD_NAME = 'mixCrawls' where
         ACTIVITY_ID = 6 AND TRANSLATION_ID = 6)");
     $db->execute("UPDATE ACTIVITY SET METHOD_NAME ='manageClassifiers' where
         ACTIVITY_ID = 7 AND TRANSLATION_ID = 7)");
-    $db->execute("UPDATE ACTIVITY SET METHOD_NAME = 'pageOptions' where 
+    $db->execute("UPDATE ACTIVITY SET METHOD_NAME = 'pageOptions' where
         ACTIVITY_ID = 8 AND TRANSLATION_ID = 8)");
-    $db->execute("UPDATE ACTIVITY SET METHOD_NAME = 'resultsEditor' where 
+    $db->execute("UPDATE ACTIVITY SET METHOD_NAME = 'resultsEditor' where
         ACTIVITY_ID = 9 AND TRANSLATION_ID = 9)");
-    $db->execute("UPDATE ACTIVITY SET METHOD_NAME = 'searchSources' where 
+    $db->execute("UPDATE ACTIVITY SET METHOD_NAME = 'searchSources' where
         ACTIVITY_ID = 10 AND TRANSLATION_ID = 10)");
-    $db->execute("UPDATE ACTIVITY SET METHOD_NAME = 'manageMachines' where 
+    $db->execute("UPDATE ACTIVITY SET METHOD_NAME = 'manageMachines' where
         ACTIVITY_ID = 11 AND TRANSLATION_ID = 11)");
-    $db->execute("UPDATE ACTIVITY SET METHOD_NAME = 'manageLocales' where 
+    $db->execute("UPDATE ACTIVITY SET METHOD_NAME = 'manageLocales' where
         ACTIVITY_ID = 12 AND TRANSLATION_ID = 12)");
     $db->execute("INSERT INTO ACTIVITY VALUES (13, 13, 'configure')");
 
@@ -619,23 +619,23 @@ function upgradeDatabaseVersion17(&$db)
     $db->execute("INSERT INTO TRANSLATION VALUES (13, 
          'db_activity_configure')");
 
-    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION = 'Manage Groups' 
+    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION = 'Manage Groups'
          where TRANSLATION_ID= 4 AND LOCALE_ID= 1)");
-    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION = 'Manage Crawls'  
+    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION = 'Manage Crawls'
          where TRANSLATION_ID= 5 AND LOCALE_ID= 1)");
-    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION = 'Mix Crawls'  
+    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION = 'Mix Crawls'
          where TRANSLATION_ID= 6 AND LOCALE_ID= 1)"); 
-    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION = 'Classifiers' 
+    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION = 'Classifiers'
          where TRANSLATION_ID= 7 AND LOCALE_ID= 1)");
-    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION = 'Page Options' 
+    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION = 'Page Options'
          where TRANSLATION_ID= 8 AND LOCALE_ID= 1)");
-    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION = 'Results Editor'  
+    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION = 'Results Editor'
          where TRANSLATION_ID= 9 AND LOCALE_ID= 1)");
-    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION = 'Search Sources' 
+    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION = 'Search Sources'
          where TRANSLATION_ID= 10 AND LOCALE_ID= 1)");
-    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION = 'Manage Machines' 
+    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION = 'Manage Machines'
          where  TRANSLATION_ID= 11 AND LOCALE_ID= 1)");
-    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION = 'Manage Locales' 
+    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION = 'Manage Locales'
          where TRANSLATION_ID= 12 AND LOCALE_ID=1)");
     $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (13, 1, 'Configure')");
 
