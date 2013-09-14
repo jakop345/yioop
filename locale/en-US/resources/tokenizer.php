@@ -54,7 +54,7 @@ class EnTokenizer
      * @var array
      */
     static $no_stem_list = array("titanic", "programming", "fishing", 'ins',
-        "blues", "factorial");
+        "blues", "factorial", "pbs");
 
     /**
      * Phrases we would like yioop to rewrite before performing a query

@@ -1711,6 +1711,7 @@ class Fetcher implements CrawlConstants
                     array()) {
                     $stored_site_pages[$i] = false;
                 }
+                $stored_site_pages[$i][self::INDEX] = $i;
                 $i++;
             }
         } // end for
@@ -1724,12 +1725,14 @@ class Fetcher implements CrawlConstants
         } else if ($num_pages > 0) {
             $this->web_archive->addCount(count($filter_stored));
         }
-
         for($i = 0; $i < $num_pages; $i++) {
             $summarized_site_pages[$i][self::INDEX] = $num_items + $i;
-            if(isset($stored_site_pages[$i][self::OFFSET])) {
+        }
+        foreach($filter_stored as $stored) {
+            $i= $stored[self::INDEX];
+            if(isset($stored[self::OFFSET])) {
                 $summarized_site_pages[$i][self::OFFSET] =
-                    $stored_site_pages[$i][self::OFFSET];
+                    $stored[self::OFFSET];
                 $summarized_site_pages[$i][self::CACHE_PAGE_PARTITION] =
                     $cache_page_partition;
             }
