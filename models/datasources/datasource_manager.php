@@ -101,8 +101,6 @@ abstract class DatasourceManager
      */
     abstract function exec($sql);
 
-
-
     /**
      * Returns the number of rows affected by the last sql statement
      *

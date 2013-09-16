@@ -87,7 +87,7 @@ class UserModel extends Model
             " USER_ROLE UR, ROLE_ACTIVITY RA, TRANSLATION T ".
             "WHERE UR.USER_ID = '$user_id' ".
             "AND UR.ROLE_ID=RA.ROLE_ID AND T.TRANSLATION_ID=A.TRANSLATION_ID ".
-            "AND RA.ACTIVITY_ID = A.ACTIVITY_ID";
+            "AND RA.ACTIVITY_ID = A.ACTIVITY_ID ORDER BY A.ACTIVITY_ID ASC";
 
         $result = $this->db->execute($sql);
         $i = 0;
@@ -194,9 +194,7 @@ class UserModel extends Model
         unset($roles[$i]); //last one will be null
 
         return $roles;
-
     }
-
 
     /**
      *  Returns an array of all user_names
@@ -215,12 +213,13 @@ class UserModel extends Model
         }
         return $usernames;
     }
-     /**
+
+    /**
      *  Returns an array of all user_names and user_ids
      *
      *  @return array a list of user
      */
-   function getUserListGroups()
+    function getUserListGroups()
     {
         $this->db->selectDB(DB_NAME);
          $sql = "SELECT U.USER_ID AS USER_ID, U.USER_NAME AS USER_NAME ".
@@ -233,7 +232,6 @@ class UserModel extends Model
         unset($users[$i]); //last one will be null
         return $users;
     }
-
 
     /**
      * Add a user with a given username and password to the list of users
@@ -298,5 +296,4 @@ class UserModel extends Model
         $result = $this->db->execute($sql);
     }
 }
-
- ?>
+?>

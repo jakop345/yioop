@@ -66,7 +66,7 @@ function upgradeLocales()
         tokenizer
     */
     if(isset($locale->configure['strings']["view_locale_version2"])
-        || $locale->configure['strings']["view_locale_version3"]) {
+        || isset($locale->configure['strings']["view_locale_version3"])) {
         $force_folders = array("resources");
     }
     $locale->extractMergeLocales($force_folders);
@@ -501,45 +501,15 @@ function upgradeDatabaseVersion16(&$db)
     $db->execute("DELETE FROM VERSION WHERE ID < 15");
     $db->execute("UPDATE VERSION SET ID=16 WHERE ID=15");
 
-    $db->execute("INSERT INTO ROLE_ACTIVITY VALUES (1, 12)");
 
-    $db->execute("UPDATE ACTIVITY
-        SET ACTIVITY_ID = ACTIVITY_ID + 100,
-            TRANSLATION_ID = TRANSLATION_ID + 100
-        WHERE ACTIVITY_ID > 5 AND ACTIVITY_ID < 1000");
-
-    $db->execute("INSERT INTO ACTIVITY
-        VALUES (6, 6, 'manageClassifiers')");
-
-    $db->execute("UPDATE ACTIVITY
-        SET ACTIVITY_ID = ACTIVITY_ID - 99,
-            TRANSLATION_ID = TRANSLATION_ID - 99
-        WHERE ACTIVITY_ID > 6 AND ACTIVITY_ID < 1000");
-
-    $db->execute("UPDATE sqlite_sequence SET seq = 12
-        WHERE name = 'ACTIVITY'");
-
-    $db->execute("UPDATE TRANSLATION
-        SET TRANSLATION_ID = TRANSLATION_ID + 100
-        WHERE TRANSLATION_ID > 5 AND TRANSLATION_ID < 1000");
-
-    $db->execute("INSERT INTO TRANSLATION
-        VALUES (6, 'db_activity_manage_classifiers')");
-
-    $db->execute("UPDATE TRANSLATION
-        SET TRANSLATION_ID = TRANSLATION_ID - 99
-        WHERE TRANSLATION_ID > 6 AND TRANSLATION_ID < 1000");
-
-    $db->execute("UPDATE TRANSLATION_LOCALE
-        SET TRANSLATION_ID = TRANSLATION_ID + 100
-        WHERE TRANSLATION_ID > 5 AND TRANSLATION_ID < 1000");
-
-    $db->execute("INSERT INTO TRANSLATION_LOCALE
-        VALUES (6, 1, 'Classifiers')");
-
-    $db->execute("UPDATE TRANSLATION_LOCALE
-        SET TRANSLATION_ID = TRANSLATION_ID - 99
-        WHERE TRANSLATION_ID > 6 AND TRANSLATION_ID < 1000");
+    addActivityAtId($db, 'db_activity_manage_classifiers',
+        "manageClassifiers", 4);
+    updateTranslationForStringId($db, 'db_activity_manage_classifiers', 'en-US',
+        'Manage Classifiers');
+    updateTranslationForStringId($db, 'db_activity_manage_classifiers', 'fr-FR',
+        'Manage Classifiers');
+    updateTranslationForStringId($db, 'db_activity_manage_groups', 'fr-FR',
+        'Classificateurs');
 
     $old_archives_path = WORK_DIRECTORY."/cache/archives";
     $new_archives_path = WORK_DIRECTORY."/archives";
@@ -558,174 +528,113 @@ function upgradeDatabaseVersion16(&$db)
 
     upgradeLocales();
 }
+
 /**
  * Upgrades a Version 16 version of the Yioop! database to a Version 17 version
  * @param object $db datasource to use to upgrade
  */
 function upgradeDatabaseVersion17(&$db)
 {
+    $dbinfo = array("DBMS" => DBMS, "DB_HOST" => DB_HOST, 
+        "DB_NAME" => DB_NAME, "DB_PASSWORD" => DB_PASSWORD);
+    $auto_increment = $db->autoIncrement($dbinfo);
     $db->execute("DELETE FROM VERSION WHERE ID < 16");
     $db->execute("UPDATE VERSION SET ID=17 WHERE ID=16");
 
-    $db->execute("INSERT INTO ROLE_ACTIVITY VALUES (1, 12)");
-    $db->execute("INSERT INTO ROLE_ACTIVITY VALUES (1, 13)");
-
-    $db->execute("CREATE TABLE GROUPS (GROUP_ID INTEGER PRIMARY KEY 
+    $db->execute("CREATE TABLE GROUPS (GROUP_ID INTEGER PRIMARY KEY
         $auto_increment ,GROUP_NAME VARCHAR(128), CREATED_TIME INT(11),
            CREATER_ID INT(11))");
-    $db->execute("CREATE TABLE USER_GROUPS (USER_ID INTEGER , 
+    $db->execute("CREATE TABLE USER_GROUPS (USER_ID INTEGER ,
         GROUP_ID INTEGER,PRIMARY KEY (GROUP_ID, USER_ID) )");
-    $db->execute("CREATE TABLE GROUP_ROLES (GROUP_ID INTEGER , 
+    $db->execute("CREATE TABLE GROUP_ROLES (GROUP_ID INTEGER ,
         ROLE_ID INTEGER)");
 
-    $db->execute("UPDATE ACTIVITY SET METHOD_NAME = 'manageGroups' where
-        ACTIVITY_ID = 4 AND TRANSLATION_ID = 4)");
-    $db->execute("UPDATE ACTIVITY SET METHOD_NAME = 'manageCrawls' where
-        ACTIVITY_ID = 5 AND TRANSLATION_ID = 5)");
-    $db->execute("UPDATE ACTIVITY SET METHOD_NAME = 'mixCrawls' where
-        ACTIVITY_ID = 6 AND TRANSLATION_ID = 6)");
-    $db->execute("UPDATE ACTIVITY SET METHOD_NAME ='manageClassifiers' where
-        ACTIVITY_ID = 7 AND TRANSLATION_ID = 7)");
-    $db->execute("UPDATE ACTIVITY SET METHOD_NAME = 'pageOptions' where
-        ACTIVITY_ID = 8 AND TRANSLATION_ID = 8)");
-    $db->execute("UPDATE ACTIVITY SET METHOD_NAME = 'resultsEditor' where
-        ACTIVITY_ID = 9 AND TRANSLATION_ID = 9)");
-    $db->execute("UPDATE ACTIVITY SET METHOD_NAME = 'searchSources' where
-        ACTIVITY_ID = 10 AND TRANSLATION_ID = 10)");
-    $db->execute("UPDATE ACTIVITY SET METHOD_NAME = 'manageMachines' where
-        ACTIVITY_ID = 11 AND TRANSLATION_ID = 11)");
-    $db->execute("UPDATE ACTIVITY SET METHOD_NAME = 'manageLocales' where
-        ACTIVITY_ID = 12 AND TRANSLATION_ID = 12)");
-    $db->execute("INSERT INTO ACTIVITY VALUES (13, 13, 'configure')");
-
-    $db->execute("UPDATE TRANSLATION SET IDENTIFIER_STRING =
-        'db_activity_manage_groups' where TRANSLATION_ID = 4)");
-    $db->execute("UPDATE TRANSLATION SET IDENTIFIER_STRING =
-        'db_activity_manage_crawl' where TRANSLATION_ID = 5)");
-    $db->execute("UPDATE TRANSLATION SET IDENTIFIER_STRING =
-        'db_activity_mix_crawls' where TRANSLATION_ID = 6)");
-    $db->execute("UPDATE TRANSLATION SET IDENTIFIER_STRING =
-        'db_activity_manage_classifiers' where TRANSLATION_ID = 7)");
-    $db->execute("UPDATE TRANSLATION SET IDENTIFIER_STRING =
-        'db_activity_file_options' where TRANSLATION_ID = 8)");
-    $db->execute("UPDATE TRANSLATION SET IDENTIFIER_STRING =
-        'db_activity_results_editor' where TRANSLATION_ID = 9)");
-    $db->execute("UPDATE TRANSLATION SET IDENTIFIER_STRING =
-        'db_activity_search_services' where TRANSLATION_ID = 10)");
-    $db->execute("UPDATE TRANSLATION SET IDENTIFIER_STRING =
-        'db_activity_manage_machines' where TRANSLATION_ID = 11)");
-    $db->execute("UPDATE TRANSLATION SET IDENTIFIER_STRING =
-        'db_activity_manage_locales' where TRANSLATION_ID = 12)");
-    $db->execute("INSERT INTO TRANSLATION VALUES (13, 
-         'db_activity_configure')");
-
-    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION = 'Manage Groups'
-         where TRANSLATION_ID= 4 AND LOCALE_ID= 1)");
-    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION = 'Manage Crawls'
-         where TRANSLATION_ID= 5 AND LOCALE_ID= 1)");
-    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION = 'Mix Crawls'
-         where TRANSLATION_ID= 6 AND LOCALE_ID= 1)"); 
-    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION = 'Classifiers'
-         where TRANSLATION_ID= 7 AND LOCALE_ID= 1)");
-    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION = 'Page Options'
-         where TRANSLATION_ID= 8 AND LOCALE_ID= 1)");
-    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION = 'Results Editor'
-         where TRANSLATION_ID= 9 AND LOCALE_ID= 1)");
-    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION = 'Search Sources'
-         where TRANSLATION_ID= 10 AND LOCALE_ID= 1)");
-    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION = 'Manage Machines'
-         where  TRANSLATION_ID= 11 AND LOCALE_ID= 1)");
-    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION = 'Manage Locales'
-         where TRANSLATION_ID= 12 AND LOCALE_ID=1)");
-    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (13, 1, 'Configure')");
-
-    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION = 
-        'Modifier les indexes' where TRANSLATION_ID= 4 AND LOCALE_ID= 5)");
-    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
-        'Mélanger les indexes' where TRANSLATION_ID = 5 AND LOCALE_ID= 5)");
-    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
-        'Mélanger les indexes' where TRANSLATION_ID= 6 AND LOCALE_ID= 5)");
-    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
-        'Classificateurs' where TRANSLATION_ID = 7 AND LOCALE_ID = 5)");
-    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
-        'Options de fichier' where TRANSLATION_ID = 8 AND LOCALE_ID= 5)");
-    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
-        'Éditeur de résultats' where TRANSLATION_ID = 9 AND LOCALE_ID = 5)");
-    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
-        'Sources de recherche' where TRANSLATION_ID = 10 AND LOCALE_ID = 5)");
-    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION = 
-    'Modifier les ordinateurs' where TRANSLATION_ID =  11 AND LOCALE_ID = 5)");
-    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION = 
-        'Modifier les lieux' where TRANSLATION_ID = 12 AND LOCALE_ID = 5)");
-    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (13, 5,
-        'Configurer')");
-
-    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
-        '検索管理' where TRANSLATION_ID= 4 AND LOCALE_ID = 9)");
-    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
-       'ローケル管理' where TRANSLATION_ID = 10 AND LOCALE_ID =9)");
-    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
-        '設定' where TRANSLATION_ID = 11 AND LOCALE_ID = 9)");
-    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
-        '設定' where TRANSLATION_ID = 12 AND LOCALE_ID = 9)");
-   $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (
-        13, 9, '設定')");
-
-    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
-        '크롤 관리' where TRANSLATION_ID = 4 AND LOCALE_ID = 10)");
-    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
-        '로케일 관리' where TRANSLATION_ID = 10 AND LOCALE_ID = 10)");
-    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
-        '구성' where TRANSLATION_ID = 11 AND LOCALE_ID = 10)");
-    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
-        '구성' where TRANSLATION_ID = 12 AND LOCALE_ID = 10)");
-    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (
-        13, 10, '구성')");
-
-    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION = 
-        'Quản lý sự bò' where TRANSLATION_ID = 4 AND LOCALE_ID =15)");
-    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
-      'Quản lý miền địa phương' where TRANSLATION_ID = 10 AND LOCALE_ID = 15)");
-    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
-        'Sắp xếp hoạt động dựa theo hoạch định' where TRANSLATION_ID = 11 AND
-        LOCALE_ID =15)");
-    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
-        'Sắp xếp hoạt động dựa theo hoạch định' where TRANSLATION_ID =12 AND
-        LOCALE_ID = 15)");
-    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (13, 15,
-        'Sắp xếp hoạt động dựa theo hoạch định')");
-
-     $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
-      'مدیریت خزش‌ها' where TRANSLATION_ID = 4  LOCALE_ID = 20)");
-
-    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
-    'ترکیب‌های خزش‌ها' where TRANSLATION_ID = 5 AND LOCALE_ID =20)");
-    
-    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
-    'تنظیمات صفحه' where TRANSLATION_ID = 6 AND LOCALE_ID =20)");
-    
-    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
-    'ویرایشگر نتایج' where TRANSLATION_ID = 7 AND LOCALE_ID =20)");
-    
-    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
-     'منابع جستجو' where TRANSLATION_ID = 8 AND LOCALE_ID =20)");
-
-    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
-    'مدیریت دستگاه‌ها' where TRANSLATION_ID = 9 AND LOCALE_ID =20)");
-    
-    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
-    'مدیریت زبان‌ها' where TRANSLATION_ID = 10 AND LOCALE_ID =20)");
-    
-    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
-    'پیکربندی' where TRANSLATION_ID = 11 AND LOCALE_ID = 20)");
-    
-    $db->execute("UPDATE TRANSLATION_LOCALE SET TRANSLATION =
-    'پیکربندی' where TRANSLATION_ID = 12 AND LOCALE_ID = 20)");
-    
-    $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (13, 20,
-    'پیکربندی')");
-
+    addActivityAtId($db, 'db_activity_manage_groups', "manageGroups", 4);
+    updateTranslationForStringId($db, 'db_activity_manage_groups', 'en-US',
+        'Manage Groups');
+    updateTranslationForStringId($db, 'db_activity_manage_groups', 'fr-FR',
+        'Modifier les groupes');
 
     upgradeLocales();
+}
+
+/**
+ * Used to insert a new activity into the database at a given acitivity_id
+ *
+ * Inserting at an ID rather than at the end is useful since activities are
+ * displayed in admin panel in order of increasing id.
+ *
+ * @param resource &db database handle where Yioop database stored
+ * @param string $string_id message identifier to give translations for
+ *      for activity
+ * @param string admin_controller method to be called to perform this activity
+ * @param int $activity_id the id location at which to create this activity
+ *      activity at and below this location will be shifted down by 1.
+ */
+function addActivityAtId(&$db, $string_id, $method_name, $activity_id)
+{
+    
+    $db->execute("UPDATE ACTIVITY SET ACTIVITY_ID = ACTIVITY_ID + 1 WHERE ".
+        "ACTIVITY_ID >= $activity_id");
+    $sql = "SELECT * FROM ACTIVITY WHERE ACTIVITY_ID >= $activity_id
+        ORDER BY ACTIVITY_ID DESC";
+    $result = $db->execute($sql);
+    while($row = $db->fetchArray($result)) {
+        $db->execute("INSERT INTO ACTIVITY VALUES
+            (".($row['ACTIVITY_ID'] + 1).", {$row['TRANSLATION_ID']},
+            '{$row['METHOD_NAME']}')");
+        $db->execute("DELETE FROM ACTIVITY WHERE ACTIVITY_ID =
+            {$row['ACTIVITY_ID']}");
     }
+    $db->execute("UPDATE ROLE_ACTIVITY SET ACTIVITY_ID = ACTIVITY_ID + 1 " .
+        "WHERE ACTIVITY_ID >= $activity_id");
+    //give root account permissions on the activity.
+    $db->execute("INSERT INTO ROLE_ACTIVITY VALUES (1, $activity_id)");
+    $sql = "SELECT COUNT(*) AS NUM FROM TRANSLATION";
+    $result = $db->execute($sql);
+    if(!$result || !($row = $db->fetchArray($result))) {
+        echo "Upgrade activity error";
+        exit();
+    }
+    //some search id start at 1000, so +1001 ensures we steer clear of them
+    $translation_id = $row['NUM'] + 1001;
+    $db->execute("INSERT INTO ACTIVITY
+        VALUES ($activity_id, $translation_id, '$method_name')");
+    $db->execute("INSERT INTO TRANSLATION
+        VALUES ($translation_id, '$string_id')");
+}
+
+/**
+ * Adds or replaces a translation for a database message string for a given
+ * IANA locale tag.
+ *
+ * @param resource &db database handle where Yioop database stored
+ * @param string $string_id message identifier to give translation for
+ * @param string $locale_tag  the IANA language tag to update the strings of
+ * @param string $translation the translation for $string_id in the language
+ *      $locale_tag
+ */
+function updateTranslationForStringId(&$db, $string_id, $locale_tag,
+    $translation)
+{
+    $sql = "SELECT LOCALE_ID FROM LOCALE ".
+        "WHERE LOCALE_TAG = '$locale_tag' LIMIT 1";
+    $result = $db->execute($sql);
+    $row = $db->fetchArray($result);
+    $locale_id = $row['LOCALE_ID'];
+
+    $sql = "SELECT TRANSLATION_ID FROM TRANSLATION ".
+        "WHERE IDENTIFIER_STRING = '$string_id' LIMIT 1";
+    $result = $db->execute($sql);
+    $row = $db->fetchArray($result);
+    $translate_id = $row['TRANSLATION_ID'];
+    $sql = "DELETE FROM TRANSLATION_LOCALE ".
+        "WHERE TRANSLATION_ID ='$translate_id' AND ".
+        "LOCALE_ID = '$locale_id'";
+    $result = $db->execute($sql);
+
+    $sql = "INSERT INTO TRANSLATION_LOCALE VALUES ".
+        "('$translate_id', '$locale_id', '$translation')";
+    $result = $db->execute($sql);
+}
 ?>

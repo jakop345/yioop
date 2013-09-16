@@ -780,7 +780,7 @@ ul.in-list li
 }
 
 /*
-   If query infomation is available then web_layout will
+   If query information is available then web_layout will
    render statistics about all the SQL and search engine
    queries that were executed for a page. These styles
    control how this diagnostic info renders
@@ -1835,6 +1835,11 @@ ul.in-list li
     width: 0.25in;
 }
 
+.overlay
+{
+    margin:100px auto;
+}
+
 /*
   Styles for the classifiers settings pages
  */
@@ -1912,16 +1917,22 @@ ul.in-list li
 {
     color: black;
 }
-.divOverlay 
+
+#transfer
 {
     z-index: 10000; 
     filter: alpha(opacity=50); 
-    filter:progid:DXImageTransform.Microsoft.Alpha(opacity=50);  
-    -moz-opacity: .50; 
-    -khtml-opacity: 0.5;
     opacity: 0.7;
-    background-color:#000000;
-    position: fixed; align=middle;top:0px; left:0px; width:100%; height:100%;
-    color:#FFFFFF; 
-    text-align:center; vertical-align:middle;visibility:hidden;
+    background-color: black;
+    position: fixed; 
+    align: middle;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    color: white; 
+    text-align:center;
+    vertical-align: middle;
+    visibility: hidden;
 }
+
