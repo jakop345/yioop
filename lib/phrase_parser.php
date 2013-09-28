@@ -581,7 +581,7 @@ class PhraseParser
             }
         }
         if(isset($site[CrawlConstants::LOCATION]) &&
-            count($site[CrawlConstants::LOCATION]) > 0){
+            is_array($site[CrawlConstants::LOCATION])){
             foreach($site[CrawlConstants::LOCATION] as $location) {
                 $meta_ids[] = 'info:'.$location;
                 $meta_ids[] = 'info:'.crawlHash($location);

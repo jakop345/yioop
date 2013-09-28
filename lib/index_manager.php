@@ -249,7 +249,6 @@ class IndexManager implements CrawlConstants
         if(!is_array($hashes)) {
             $hashes = array($hashes);
         }
-        $hashes = array_unique($hashes);
         foreach($hashes as $hash) {
             if(is_array($hash)) {
                 $dictionary_info = 

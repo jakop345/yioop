@@ -294,6 +294,7 @@ class UrlParser
     static function getPath($url, $with_query_string = false)
     {
         $url_parts = @parse_url($url);
+
         if(!isset($url_parts['path'])) {
             return NULL;
         }
@@ -669,7 +670,6 @@ class UrlParser
      */
     static function canonicalLink($link, $site, $no_fragment = true)
     {
-
         if(!self::isSchemeHttpOrHttps($link)) {return NULL;}
 
         if(isset($link[0]) &&
@@ -683,9 +683,7 @@ class UrlParser
             $query = self::getQuery($link);
             $fragment = self::getFragment($link);
         } else {
-
             $host = self::getHost($site);
-
             if($link !=NULL && $link[0] =="/") {
                 $path = $link;
             } else {
@@ -701,12 +699,17 @@ class UrlParser
                     !isset($site_path_parts['extension'])) {
                     $pre_path .="/".$site_path_parts['basename'];
                 }
-
                 if(strlen($link) > 0) {
                      $pre_path = ($link[0] !="#") ? $pre_path."/".$link :
                         $pre_path . $link;
                 }
-                $path = self::getPath($pre_path);
+                $path = $pre_path;
+                $path2 = $path;
+                do {
+                    $path = $path2;
+                    $path2 = str_replace("//","/", $path);
+                } while($path != $path2);
+                $path = self::getPath($path);
                 $so_far_link = $host . $pre_path;
                 $query = self::getQuery($so_far_link);
                 $fragment = self::getFragment($so_far_link);
@@ -727,7 +730,6 @@ class UrlParser
         // handle paths with dot in it
         $path = preg_replace('/(\.\/)+/', "", $path);
         $path = str_replace(" ", "%20", $path);
-
 
         $link_path_parts = pathinfo($path);
 
