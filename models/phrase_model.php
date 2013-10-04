@@ -515,7 +515,12 @@ class PhraseModel extends ParallelModel
         }
 
         //stemmed, if have stemmer
-        $words = array_merge($base_words, $found_metas);
+        $index_version = IndexManager::getVersion($index_name);
+        $add_metas = $found_metas;
+        if(count($base_words) > 0 && $index_version > 0) {
+            $add_metas = array_diff($found_metas, $found_materialized_metas);
+        }
+        $words = array_merge($base_words, $add_metas);
         if(count($words) == 0 && count($disallow_phrases) > 0) {
             $words[] = "site:any";
         }
@@ -548,7 +553,6 @@ class PhraseModel extends ParallelModel
                 $this->query_info['QUERY'] .= ")<br />";
             }
         }
-        $index_version = IndexManager::getVersion($index_name);
         if(isset($words) && count($words) == 1 &&
             count($disallow_phrases) < 1) {;
             $phrase_string = $words[0];
@@ -559,10 +563,14 @@ class PhraseModel extends ParallelModel
                 $phrase_hash = array_merge(array($tmp_hash),
                     array(crawlHash($phrase_string)));
             } else {
-                // notice in single word case don't use materialized meta stuff
-                $phrase_hash = allCrawlHashPaths($phrase_string);
+                if($found_materialized_metas == array()) {
+                    $phrase_hash = allCrawlHashPaths($phrase_string);
+                } else {
+                    $phrase_hash = allCrawlHashPaths($word,
+                        $found_materialized_metas,
+                        PhraseParser::$materialized_metas);
+                }
             }
-
             $word_struct = array("KEYS" => array($phrase_hash),
                 "QUOTE_POSITIONS" => NULL, "DISALLOW_KEYS" => array(),
                 "WEIGHT" => $weight, "INDEX_NAME" => $index_name,
@@ -992,6 +1000,7 @@ class PhraseModel extends ParallelModel
         $limit_news = true)
     {
         global $CACHE;
+
         $indent= "&nbsp;&nbsp;";
         $in2 = $indent . $indent;
         $in3 = $in2 . $indent;

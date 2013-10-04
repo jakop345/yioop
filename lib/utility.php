@@ -954,8 +954,8 @@ function findMaterialMetas($metas, $encode_metas)
 }
 
 /**
- * Give an array of values for meta words (for example, media:video, lang:en) 
- * and an array of names of meta words to be encoded into word_id's 
+ * Give an array of values for meta words (for example, media:video)
+ * and an array of names of meta words to be encoded into word_id's
  * (for example, media:, safe:, class:) returns a string mask for the
  * byte positions in a word_id after the 9th byte. The format of a word id
  * in the case of a single word is described in the documentation for
