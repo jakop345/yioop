@@ -513,7 +513,6 @@ class PhraseModel extends ParallelModel
             $num_words = count($base_words);
             $quote_state = ($quote_state) ? false : true;
         }
-
         //stemmed, if have stemmer
         $index_version = IndexManager::getVersion($index_name);
         $add_metas = $found_metas;
@@ -598,7 +597,7 @@ class PhraseModel extends ParallelModel
                     $word_keys[] = $tmp_hash;
                 }
             }
-            if(count($word_keys) == 0) {
+            if(!isset($word_keys) || count($word_keys) == 0) {
                 $word_keys = NULL;
                 $word_struct = NULL;
             }
@@ -694,6 +693,7 @@ class PhraseModel extends ParallelModel
             $meta_words = array_merge($meta_words, array_keys(
                 $this->additional_meta_words));
         }
+        $materialized_match_conflict = false;
         foreach($meta_words as $meta_word) {
             $pattern = "/(\s)($meta_word(\S)+)/";
             preg_match_all($pattern, $phrase, $matches);
@@ -702,10 +702,19 @@ class PhraseModel extends ParallelModel
                 $matches = $matches[2];
                 $found_metas = array_merge($found_metas, $matches);
                 if(in_array($meta_word, PhraseParser::$materialized_metas)) {
+                    $seen_matches = array();
+                    $seen_match_count = 0;
                     foreach($matches as $pre_material_match) {
                         $match_kinds = explode(":", $pre_material_match);
-                        if(!in_array($match_kinds[1], array("all", "false")) ){
+                        if(!in_array($match_kinds[1], array("all"))){
                             $found_materialized_metas[] = $pre_material_match;
+                            if($seen_match_count > 0 &&
+                                !isset($seen_matches[$pre_material_match])) {
+                                $materialized_match_conflict = true;
+                                break 2;
+                            }
+                            $seen_matches[$pre_material_match] = true;
+                            $seen_match_count++;
                         }
                     }
                 }
@@ -727,7 +736,14 @@ class PhraseModel extends ParallelModel
             }
             $phrase_string = preg_replace($pattern, "", $phrase_string);
         }
+        if($materialized_match_conflict) {
+            $found_metas = array();
+            $found_materialized_metas = array();
+            $disallow_phrases = array();
+            $phrase_string = "";
+        }
         $found_metas = array_unique($found_metas);
+
         $found_materialized_metas = array_unique($found_materialized_metas);
 
         $disallow_phrases = array_unique($disallow_phrases);
