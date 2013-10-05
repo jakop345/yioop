@@ -207,13 +207,13 @@ class IndexManager implements CrawlConstants
            if((!defined('NO_FEEDS') || !NO_FEEDS)
                && file_exists(WORK_DIRECTORY."/feeds/index")) {
                //NO_FEEDS defined true in statistic_controller.php
-               $use_feeds = true;
-               $feed_shard = IndexManager::getIndex("feed");
-               $feed_info = $feed_shard->getWordInfo($hash, true, $shift);
-               if(is_array($feed_info)) {
-                   $tmp[-1] = array(-1, $feed_info[0],
-                       $feed_info[1], $feed_info[2], $feed_info[3]);
-               }
+                $use_feeds = true;
+                $feed_shard = IndexManager::getIndex("feed");
+                $feed_info = $feed_shard->getWordInfo($hash, true, $shift);
+                if(is_array($feed_info)) {
+                    $tmp[-1] = array(-1, $feed_info[0],
+                        $feed_info[1], $feed_info[2], $feed_info[3]);
+                }
            }
            IndexManager::$dictionary[$index_name][$hash][$shift][$mask][
                $threshold] = $tmp +

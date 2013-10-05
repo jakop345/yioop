@@ -566,7 +566,7 @@ class PhraseModel extends ParallelModel
                 if($found_materialized_metas == array()) {
                     $phrase_hash = allCrawlHashPaths($phrase_string);
                 } else {
-                    $phrase_hash = allCrawlHashPaths($word,
+                    $phrase_hash = allCrawlHashPaths($phrase_string,
                         $found_materialized_metas,
                         PhraseParser::$materialized_metas);
                 }
