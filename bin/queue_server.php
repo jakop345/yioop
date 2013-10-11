@@ -1262,8 +1262,13 @@ class QueueServer implements CrawlConstants, Join
     function deleteOrphanedBundles()
     {
         $dirs = glob(CRAWL_DIR.'/cache/*', GLOB_ONLYDIR);
+        $num_dirs = count($dirs);
         $living_stamps = array();
+        $dir_cnt = 0;
         foreach($dirs as $dir) {
+            $dir_cnt++;
+            crawlTimeoutLog("..Indexer still deleting %s of %s orphaned dirs",
+                $dir_cnt, $num_dirs);
             if(strlen(
                 $pre_timestamp = strstr($dir, self::queue_base_name)) > 0) {
                 $timestamp =
@@ -1299,6 +1304,7 @@ class QueueServer implements CrawlConstants, Join
             }
         }
         $files = glob(CRAWL_DIR.'/schedules/*');
+        $file_cnt = 0;
         $names_dir = array(self::schedule_data_base_name,
             self::index_data_base_name, self::robot_data_base_name,
             self::name_archive_iterator, self::fetch_archive_iterator);
@@ -1306,6 +1312,9 @@ class QueueServer implements CrawlConstants, Join
             self::save_point);
         $names = array_merge($name_files, $names_dir);
         foreach($files as $file) {
+            $file_cnt++;
+            crawlTimeoutLog("..Indexer still deleting %s of %s orphaned files",
+                $file_cnt, $file_cnt);
             $timestamp = "";
             foreach($names as $name) {
                 $unlink_flag = false;
