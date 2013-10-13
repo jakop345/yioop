@@ -508,9 +508,12 @@ class PhraseModel extends ParallelModel
                 $new_words =
                     PhraseParser::extractPhrases($phrase_part, $locale_tag,
                          $index_name);
+                if(strpos($new_words[0], " ") > 0 && 
+                    $found_materialized_metas == array()) {
+                    array_pop($new_words);
+                }
                 $base_words = array_merge($base_words, $new_words);
             }
-
             $num_words = count($base_words);
             $quote_state = ($quote_state) ? false : true;
         }
@@ -554,7 +557,7 @@ class PhraseModel extends ParallelModel
             }
         }
         if(isset($words) && count($words) == 1 &&
-            count($disallow_phrases) < 1) {;
+            count($disallow_phrases) < 1 && !strpos($words[0], " ")) {
             $phrase_string = $words[0];
             if($index_version == 0) {
                 $tmp_hash = allCrawlHashPaths($phrase_string);
@@ -707,7 +710,7 @@ class PhraseModel extends ParallelModel
                     $seen_match_count = 0;
                     foreach($matches as $pre_material_match) {
                         $match_kinds = explode(":", $pre_material_match);
-                        if(!in_array($match_kinds[1], array("all")) && !
+                        if(!in_array($match_kinds[1], array("all")) && 
                             !isset($match_kinds[2])){
                             $found_materialized_metas[] = $pre_material_match;
                             if($seen_match_count > 0 &&

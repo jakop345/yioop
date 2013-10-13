@@ -164,7 +164,8 @@ class PhraseParser
             $index_name, $threshold);
         if($count_whole_phrase >= $threshold
             || $num > MAX_QUERY_TERMS / 2) {
-            array_unshift($terms, $whole_phrase);
+           // array_unshift($terms, $whole_phrase);
+            $terms = array($whole_phrase, $terms[0]);
             return $terms;
         }
         if($index_name != 'feed' && 
