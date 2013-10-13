@@ -467,6 +467,7 @@ class PhraseModel extends ParallelModel
         list($found_metas, $found_materialized_metas, $disallow_phrases,
             $phrase_string, $query_string, $index_name, $weight) =
             $this->extractMetaWordInfo($phrase);
+
         /*
             we search using the stemmed/char-grammed words, but we format
             snippets in the results by bolding either
@@ -706,7 +707,8 @@ class PhraseModel extends ParallelModel
                     $seen_match_count = 0;
                     foreach($matches as $pre_material_match) {
                         $match_kinds = explode(":", $pre_material_match);
-                        if(!in_array($match_kinds[1], array("all"))){
+                        if(!in_array($match_kinds[1], array("all")) && !
+                            !isset($match_kinds[2])){
                             $found_materialized_metas[] = $pre_material_match;
                             if($seen_match_count > 0 &&
                                 !isset($seen_matches[$pre_material_match])) {
@@ -736,12 +738,14 @@ class PhraseModel extends ParallelModel
             }
             $phrase_string = preg_replace($pattern, "", $phrase_string);
         }
+
         if($materialized_match_conflict) {
             $found_metas = array();
             $found_materialized_metas = array();
             $disallow_phrases = array();
             $phrase_string = "";
         }
+
         $found_metas = array_unique($found_metas);
 
         $found_materialized_metas = array_unique($found_materialized_metas);
