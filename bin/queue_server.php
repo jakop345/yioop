@@ -1296,7 +1296,8 @@ class QueueServer implements CrawlConstants, Join
                         $timestamp. ". Will contain all but last shard before ".
                         "crash.");
                     $index_archive = new IndexArchiveBundle($dir, false);
-                    $index_archive->dictionary->mergeAllTiers();
+                    //do a fast merge all
+                    $index_archive->dictionary->mergeAllTiers(NULL, -1, true);
                     touch(CRAWL_DIR."/schedules/crawl_status.txt", time());
                     file_put_contents($close_file, "1");
                 }

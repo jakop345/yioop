@@ -463,8 +463,11 @@ class IndexDictionary implements CrawlConstants
      * @param int $max_tier the maximum tier to merge to merge till --
      *      if not set then $this->max_tier used. Otherwise, one would
      *      typically set to a value bigger than $this->max_tier
+     * @param bool $fast_merge_all if true then merge away B slots but don't
+     *      merge everything to a top tier
      */
-    function mergeAllTiers($callback = NULL, $max_tier = -1)
+    function mergeAllTiers($callback = NULL, $max_tier = -1,
+        $fast_merge_all = false)
     {
         $new_tier = false;
 
@@ -488,10 +491,10 @@ class IndexDictionary implements CrawlConstants
                     $out_slot = ($higher_a) ? "B" : "A";
                     $this->mergeTierFiles($i, $j, $out_slot);
                     if($j == $max_tier) {$new_tier = true;}
-                } else if ($a_exists && $higher_a) {
+                } else if ($a_exists && $higher_a && !$fast_merge_all) {
                     rename($this->dir_name."/$i/".$j."A.dic",
                         $this->dir_name."/$i/".($j + 1)."B.dic");
-                } else if ($a_exists && $j < $max_tier) {
+                } else if ($a_exists && $j < $max_tier && !$fast_merge_all) {
                     rename($this->dir_name."/$i/".$j."A.dic",
                         $this->dir_name."/$i/".($j + 1)."A.dic");
                 }
