@@ -396,7 +396,7 @@ define('LOG_TIMEOUT', 30);
  *  Maximum time a crawl daemon process can go before calling
  *  @see CrawlDaemon::processHandler
  */
-define('PROCESS_TIMEOUT', 180);
+define('PROCESS_TIMEOUT', 240);
 
 /**
  *  Number of error page 400 or greater seen from a host before crawl-delay
@@ -522,6 +522,9 @@ define("CRAWL_TIME_OUT", 1800);
 
 /** maximum number of terms allowed in a conjunctive search query */
 define ('MAX_QUERY_TERMS', 10);
+
+/** When to switch to using suffice tree approach */
+define ('SUFFIX_TREE_THRESHOLD', 3);
 
 /** default number of search results to display per page */
 define ('NUM_RESULTS_PER_PAGE', 10);

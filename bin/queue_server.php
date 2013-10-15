@@ -1298,6 +1298,7 @@ class QueueServer implements CrawlConstants, Join
                     $index_archive = new IndexArchiveBundle($dir, false);
                     //do a fast merge all
                     $index_archive->dictionary->mergeAllTiers(NULL, -1, true);
+                    crawlLog("... index fast merge all tiers completed!");
                     touch(CRAWL_DIR."/schedules/crawl_status.txt", time());
                     file_put_contents($close_file, "1");
                 }

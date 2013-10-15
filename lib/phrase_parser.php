@@ -163,8 +163,7 @@ class PhraseParser
         $count_whole_phrase = IndexManager::numDocsTerm($whole_phrase,
             $index_name, $threshold);
         if($count_whole_phrase >= $threshold
-            || $num > 3) {
-           // array_unshift($terms, $whole_phrase);
+            || $num > SUFFIX_TREE_THRESHOLD) {
             $terms = array($whole_phrase, $terms[0]);
             return $terms;
         }
