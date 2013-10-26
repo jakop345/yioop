@@ -286,6 +286,13 @@ class QueueServer implements CrawlConstants, Join
     var $indexing_plugins;
 
     /**
+     * This is a array of crawl parameters for indexing_plugins which might do
+     * post processing after the crawl. 
+     * @var array
+     */
+    var $indexing_plugins_data;
+
+    /**
      * List of media sources mainly to determine the value of the media:
      * meta word (in particular, if it should be video or not)
      * @var array
@@ -346,6 +353,7 @@ class QueueServer implements CrawlConstants, Join
         $this->max_description_len = MAX_DESCRIPTION_LEN;
         $this->server_type = self::BOTH;
         $this->indexing_plugins = array();
+        $this->indexing_plugins_data = array();
         $this->video_sources = array();
         $this->server_name = "IndexerAndScheduler";
     }
@@ -992,6 +1000,11 @@ class QueueServer implements CrawlConstants, Join
                 $plugin_name = $plugin."Plugin";
                 $this->$plugin_instance_name =
                     new $plugin_name();
+                if(method_exists($plugin_name, "setConfiguration") &&
+                    isset($this->indexing_plugins_data[$plugin])) {
+                    $this->$plugin_instance_name->setConfiguration(
+                        $this->indexing_plugins_data[$plugin]);
+                }
                 if($this->$plugin_instance_name) {
                     crawlLog(
                         "... executing $plugin_instance_name");
@@ -1043,6 +1056,7 @@ class QueueServer implements CrawlConstants, Join
             "disallowed_sites" => self::DISALLOWED_SITES,
             "page_rules" => self::PAGE_RULES,
             "indexing_plugins" => self::INDEXING_PLUGINS,
+            "indexing_plugins_data" => self::INDEXING_PLUGINS_DATA,
             "video_sources" => self::VIDEO_SOURCES,
         );
         $try_to_set_from_old_index = array();
@@ -1228,6 +1242,7 @@ class QueueServer implements CrawlConstants, Join
             "page_rules" => self::PAGE_RULES,
             "indexed_file_types" => self::INDEXED_FILE_TYPES,
             "indexing_plugins" => self::INDEXING_PLUGINS,
+            "indexing_plugins_data" => self::INDEXING_PLUGINS_DATA,
             "video_sources" => self::VIDEO_SOURCES,
         );
         $keys = array_keys($updatable_info);
@@ -2032,7 +2047,7 @@ class QueueServer implements CrawlConstants, Join
     }
 
     /**
-     * Used to create an encode a string representing with meta info for
+     * Used to create encode a string representing with meta info for
      * a fetcher schedule.
      *
      * @param int $schedule_time timestamp of the schedule
@@ -2054,6 +2069,7 @@ class QueueServer implements CrawlConstants, Join
         $sites[self::ALLOWED_SITES] = $this->allowed_sites;
         $sites[self::DISALLOWED_SITES] = $this->disallowed_sites;
         $sites[self::INDEXING_PLUGINS] =  $this->indexing_plugins;
+        $sites[self::INDEXING_PLUGINS_DATA] =  $this->indexing_plugins_data;
         $sites[self::VIDEO_SOURCES] = $this->video_sources;
         $sites[self::PAGE_RANGE_REQUEST] = $this->page_range_request;
         $sites[self::MAX_DESCRIPTION_LEN] = $this->max_description_len;

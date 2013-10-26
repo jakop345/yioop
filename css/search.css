@@ -78,6 +78,18 @@ p
     float: right;
 }
 
+.html-ltr .float-opposite
+{
+    float: right;
+    clear: both;
+}
+
+.html-rtl .float-opposite
+{
+    float: left;
+    clear: both;
+}
+
 .align-right
 {
     text-align: right;
@@ -197,6 +209,17 @@ p
 }
 
 .mobile .tall-text-area
+{
+    width: 90%;
+}
+
+.medium-text-area
+{
+    width: 100%;
+    height: 2.5in;
+}
+
+.mobile .medium-text-area
 {
     width: 90%;
 }
@@ -1757,46 +1780,6 @@ ul.in-list li
     border: 1px ridge black;
 }
 
-.meta-words-table
-{
-   width: 100%;
-}
-
-.meta-words-table,
-.meta-words-table td,
-.meta-words-table th
-{
-    border: 1px ridge black;
-}
-.meta-words-table th
-{
-    text-align: center;
-    padding: 0.04in;
-}
-
-.meta-words-table td.input-word
-{
-    width: 1.5in;
-}
-
-.meta-words-table td.input-word input
-{
-    margin: 0.05in;
-    width: 1.3in;
-}
-
-.meta-words-table td.input-url
-{
-    margin: 0.03in;
-    width: 100%;
-}
-
-.meta-words-table td.input-url input
-{
-    margin: 0.05in;
-    width: 97%;
-}
-
 .classifiers-table td.check
 {
     padding: 0;
@@ -1805,7 +1788,9 @@ ul.in-list li
 
 .indexing-plugin-table
 {
-   width:100%;
+    margin-left: 0.3in;
+    margin-right: 0.3in;
+    padding: 3px;
 }
 
 .indexing-plugin-table,
@@ -1821,12 +1806,43 @@ ul.in-list li
     padding: 0.04in;
 }
 
-.indexing-plugin-table td.check
+.html-ltr .indexing-plugin-table td.check
 {
     padding: 0.1in;
-    text-align: center;
-    width: 75%;
+    text-align: left;
+}
 
+.html-rtl .indexing-plugin-table td.check
+{
+    padding: 0.1in;
+    text-align: left;
+}
+
+.indexing-plugin-lightbox
+{
+    display: none;
+    position:absolute;
+    top: 0%;
+    left: 0%;
+    width:100%;
+    height:14.5in;
+    background-color:gray;
+    opacity:0.95;
+    z-index:100;
+}
+
+.light-content
+{
+    position: absolute;
+    top: 8.5in;
+    left: 20%;
+    width: 60%;
+    height: 4in;
+    padding: 16px;
+    border: 16px solid #8A4;
+    background-color: white;
+    z-index:101;
+    overflow: auto;
 }
 
 .restrict-sites-by-url
@@ -1839,6 +1855,8 @@ ul.in-list li
 {
     margin:100px auto;
 }
+
+
 
 /*
   Styles for the classifiers settings pages
@@ -1920,7 +1938,7 @@ ul.in-list li
 
 #transfer
 {
-    z-index: 10000; 
+    z-index: 10000;
     filter: alpha(opacity=50); 
     opacity: 0.7;
     background-color: black;
@@ -1935,4 +1953,6 @@ ul.in-list li
     vertical-align: middle;
     visibility: hidden;
 }
+
+
 

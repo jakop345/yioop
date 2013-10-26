@@ -1287,11 +1287,19 @@ class Fetcher implements CrawlConstants
             $this->video_sources = $info[self::VIDEO_SOURCES];
         }
         if(isset($info[self::INDEXING_PLUGINS])) {
+            $this->plugin_processors = array();
             foreach($info[self::INDEXING_PLUGINS] as $plugin) {
                 $plugin_name = $plugin."Plugin";
                 $processors = $plugin_name::getProcessors();
+                $plugin_object = new $plugin_name();
+                if(method_exists($plugin_name, "setConfiguration") &&
+                    isset($info[self::INDEXING_PLUGINS_DATA][$plugin])) {
+                    $plugin_object->setConfiguration(
+                        $info[self::INDEXING_PLUGINS_DATA][$plugin]);
+                }
                 foreach($processors as $processor) {
-                    $this->plugin_processors[$processor][] = $plugin_name;
+                    $this->plugin_processors[$processor][$plugin_name] = 
+                        $plugin_object;
                 }
             }
             foreach($this->indexed_file_types as $file_type) {
@@ -1309,6 +1317,9 @@ class Fetcher implements CrawlConstants
                             $this->plugin_processors[$parent_processor];
                     }
                 }
+            }
+            foreach($this->plugin_processors as $processor => $plugins) {
+                $this->plugin_processors[$processor] = array_values($plugins);
             }
         }
         if(isset($info[self::POST_MAX_SIZE])) {

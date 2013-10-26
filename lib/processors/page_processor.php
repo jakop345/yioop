@@ -78,16 +78,11 @@ abstract class PageProcessor implements CrawlConstants
      *      processor
      */
     function __construct($plugins = array(), $max_description_len = NULL) {
-        $this->indexing_plugins = array_unique($plugins);
+        $this->indexing_plugins = $plugins;
         if($max_description_len != NULL) {
             self::$max_description_len = $max_description_len;
         } else {
             self::$max_description_len = MAX_DESCRIPTION_LEN;
-        }
-        foreach($plugins as $plugin) {
-            $plugin_name = ucfirst($plugin);
-            $plugin_instance_name = lcfirst($plugin);
-            $this->$plugin_instance_name = new $plugin_name();
         }
     }
 
@@ -111,10 +106,10 @@ abstract class PageProcessor implements CrawlConstants
         if($summary != NULL && isset($this->indexing_plugins) &&
             is_array($this->indexing_plugins) ) {
             $summary[self::SUBDOCS] = array();
-            foreach($this->indexing_plugins as $plugin) {
+            foreach($this->indexing_plugins as $plugin_instance) {
                 $subdoc = NULL;
-                $plugin_instance_name = lcfirst($plugin);
-                $plugin_instance = $this->$plugin_instance_name;
+                $class_name = get_class($plugin_instance);
+                $subtype = lcfirst(substr($class_name, 0, -strlen("Plugin")));
                 $subdocs_description = $plugin_instance->pageProcessing(
                     $page, $url);
                 if(is_array($subdocs_description)
@@ -126,8 +121,7 @@ abstract class PageProcessor implements CrawlConstants
                         $subdoc[self::LANG] = $summary[self::LANG];
                         $subdoc[self::LINKS] = $summary[self::LINKS];
                         $subdoc[self::PAGE] = $page;
-                        $subdoc[self::SUBDOCTYPE] = lcfirst(
-                            substr($plugin, 0, -strlen("Plugin")));
+                        $subdoc[self::SUBDOCTYPE] = $subtypes;
                         $summary[self::SUBDOCS][] = $subdoc;
                     }
                 }

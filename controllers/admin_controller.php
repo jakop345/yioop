@@ -1137,6 +1137,17 @@ class AdminController extends Controller implements CrawlConstants
             $url_parts = explode("{}", $url);
             $crawl_params[self::VIDEO_SOURCES][] = $url_parts[0];
         }
+        if(isset($crawl_params[self::INDEXING_PLUGINS]) &&
+            is_array($crawl_params[self::INDEXING_PLUGINS])) {
+            foreach($crawl_params[self::INDEXING_PLUGINS] as $plugin_prefix) {
+                $plugin_name = $plugin_prefix."Plugin";
+                $plugin = new $plugin_name();
+                if(method_exists($plugin_name, "loadConfiguration")) {
+                    $crawl_params[self::INDEXING_PLUGINS_DATA][$plugin_prefix] =
+                        $plugin->loadConfiguration();
+                }
+            }
+        }
 
         /*
            Write the new crawl parameters to the name server, so
@@ -1312,6 +1323,7 @@ class AdminController extends Controller implements CrawlConstants
                 $seed_info[$property] = $seed_current[$property];
             }
         }
+
         if(!$no_further_changes && isset($_REQUEST['crawl_indexes'])
             && in_array($_REQUEST['crawl_indexes'],
             array_keys($data['available_crawl_indexes']))) {
@@ -1857,9 +1869,18 @@ class AdminController extends Controller implements CrawlConstants
                 : array();
         foreach($this->indexing_plugins as $plugin) {
             $plugin_name = ucfirst($plugin);
-            $data['INDEXING_PLUGINS'][$plugin_name] =
+            $data['INDEXING_PLUGINS'][$plugin_name]['checked'] =
                 (in_array($plugin_name, $included_plugins)) ?
                 "checked='checked'" : "";
+            $class_name = $plugin_name."Plugin";
+            if(method_exists($class_name, 'configureHandler') &&
+                method_exists($class_name, 'configureView')) {
+                $data['INDEXING_PLUGINS'][$plugin_name]['configure'] = true;
+                $plugin_object = new $class_name();
+                $plugin_object->configureHandler($data);
+            } else {
+                $data['INDEXING_PLUGINS'][$plugin_name]['configure'] = false;
+            }
         }
 
         $profile =  $this->profileModel->getProfile(WORK_DIRECTORY);

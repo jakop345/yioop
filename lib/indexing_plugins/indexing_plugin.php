@@ -51,13 +51,59 @@ require_once BASE_DIR."/models/datasources/".DBMS."_manager.php";
  * web pages mark pages that have recipes on them with the meta word
  * recipe:all, then after the crawl is over do post processing such
  * as clustering the recipe's found and add additional meta words to
- * retrieve recipe's by principle ingredient. Subclasses of IndexingPlugin
- * do in crawl processing by overriding the pageProcessing method, they
- * do post crawl processing by overriding the postProcessing method. In
- * addition a subclass should override the static functions
- * getProcessors() to say what PageProcessor's the plugin should be
- * associated with as well as getAdditionalMetaWords() to say what
- * additional meta words the plugin injects into the index.
+ * retrieve recipe's by principle ingredient.
+ *
+ * Yioop comes included with two example subclasses of IndexingPlugins to
+ * illustrate how to write plugins: recipe_plugin.php and word_filter.php.
+ *
+ * Subclasses of IndexingPlugin typically override some of the following four
+ * methods:
+ *
+ * static getProcessors() -- returns an array of strings of page processor names
+ *      which a plugin should be used with. For example, a plugin might want to
+ *      alter the summary whenever an HtmlProcessor is used on a page, so
+ *      this array should contain HtmlProcessor, but on the other hand, the
+ *      plugin might not need to alter anything when the JpgProcessor is in use,
+ *      so the returned array shouldn't contain JpgProcessor
+ *
+ * pageProcessing($page, $url) -- which is called by a page processor
+ *     when a page is being processed. It returns additional subdoc page summary
+ *     info which is then handed back to the fetcher (@see pageProcessing method
+ *     below for more info.)
+ *
+ * pageSummaryProcessing(&$summary) -- which is called by a page processor in a 
+ *     fetcher after the initial summary has been generated (by processor itself
+ *     and all plugins which are associated with the processor). This method can
+ *     be used to further modify the summary
+ *
+ * getAdditionalMetaWords() -- which is called when meta words are extracted
+ *      from a query at search time. This allows the plugin to specify its own
+ *      meta words to be extracted from the query. @see getAdditionalMetaWords
+ *      for more details on the return type of this method.
+ *
+ * If you would like to write a plugin which can be configured on the 
+ * Admin > Page Options page, then you need to write four other methods:
+ *
+ * loadConfiguration() -- which can read plugin configuration data from 
+ *     persistent storage on the name server into an array or object when a
+ *     crawl is started. This data is then automatically serialized and sent to
+ *     queue servers as part of starting a crawl
+ *
+ * setConfiguration() -- which takes a configuration array or object and uses
+ *      it to initialize an instance of the plugin on a queue_server or on a
+ *      fetcher.
+ *
+ * configureHandler(&$data) -- which is called by the AdminController
+ *      pageOptions activity method to let the plugin handle any configuration
+ *      $_REQUEST data sent by this activity with regard to the plugin and to
+ *      also let plugin modify the $data which might be sent to the plugin's
+ *      view. This method would typically be called on the name server and
+ *      so can be used to save (or to call a method which saves) any
+ *      configuration data extracted from the request.
+ *
+ * configureView(&$data) -- which is called to draw the HTML configure screen
+ *      used by the plugin given the information in &$data. This might display
+ *      a form a user would use to alter the behavior of the plugin
  *
  * Subclasses of IndexingPlugin stored in 
  *      WORK_DIRECTORY/app/lib/indexing_plugins

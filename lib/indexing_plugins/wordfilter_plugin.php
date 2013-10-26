@@ -53,7 +53,7 @@ require_once BASE_DIR."/lib/crawl_constants.php";
  * $this->filter_terms which consists of a list of term => array of actions
  * pairs. Actions can either be directives that might appear within a ROBOTS
  * meta tag of an HTML document: NOINDEX, NOFOLLOW, NOCACHE, NOARCHIVE, NOODP,
- * NOYDIR, NONE or can be the word NOPROCESS, JUSTFOLLOW, NOTCONTAINS. 
+ * NOYDIR, NONE or can be the word NOPROCESS, JUSTFOLLOW, NOTCONTAINS.
  * Usually, if checkFilter returns true then pageSummaryProcessing adds the 
  * meta words to the document summary and returns. If one of the actions
  * was NOTCONTAIN, then only if checkFilter returned false are the meta words
@@ -67,8 +67,10 @@ require_once BASE_DIR."/lib/crawl_constants.php";
  * This plugin has been created with a dummy list of filter words. By doing a
  * crawl on the test site contain in the archive
  *      tests/word-filter-test-crawl.zip
- * one can  test how it behaves on those terms. If one wants to make use of
- * this plugin on real web data one probably wants to create a subclass of this
+ * one can  test how it behaves on those terms. To make use of
+ * this plugin on real web data one probably wants to alter the choice of words.
+ * This can be done from Admin > Page Options > Crawl Time tab by clicking on 
+ * the Configure link next to the plugin. Alternatively, one could subclass this
  * plugin in WORK_DIRECTORY/app/lib/indexing_plugins where one has a different
  * array of filter_terms. To get a more sophisticated filtering process than a
  * mere word-in-document-true-or-false check one would override checkFilter.
@@ -95,6 +97,7 @@ class WordfilterPlugin extends IndexingPlugin implements CrawlConstants
         "term1" => array("NOPROCESS"),
         "term2" => array("NOFOLLOW", "NOSNIPPET")
     );
+
     /**
      * This method adds robots metas to or removes entirely a summary
      * produced by a text page processor or its subsclasses depending on
@@ -150,6 +153,127 @@ class WordfilterPlugin extends IndexingPlugin implements CrawlConstants
         return false;
     }
 
+
+    /**
+     *  Serializes to a file words and behaviors that should be used with this
+     *  plugin
+     *
+     *  @param array $configuration an associative array of word => actions
+     *      that say how this plugin should behave
+     */
+    function saveConfiguration($confguration)
+    {
+        $config_file = WORK_DIRECTORY."/data/word_filter_plugin.txt";
+        file_put_contents($config_file, serialize($confguration));
+    }
+
+    /**
+     *  Reads plugin configuration data from data/word_filter_plugin.txt
+     *  on the name server into an array. Used when a crawl is started. This
+     *  data is then automatically serialized by admin controller and sent to
+     *  queue servers as part of starting a crawl
+     *
+     *  @return array configuration associative array
+     */
+    function loadConfiguration()
+    {
+        $config_file = WORK_DIRECTORY."/data/word_filter_plugin.txt";
+        if(file_exists($config_file)) {
+            $configuration = @unserialize(
+                file_get_contents($config_file));
+        } else {
+            $configuration = $this->filter_terms;
+        }
+        return $configuration;
+    }
+
+    /**
+     *  takes a configuration array of word=>actions and sets them as the words
+     *  and actions for this instance of the plugin. Typically used on a 
+     *  queue_server or on a fetcher.
+     *
+     *  @param array $configuration a word => actions associative array
+     */
+    function setConfiguration($configuration)
+    {
+        $this->filter_terms = $configuration;
+    }
+
+    /**
+     *  Behaves as a "controller" for the configuration page of the plugin.
+     *  It is called by the AdminController pageOptions activity method to
+     *  let the plugin handle any configuration $_REQUEST data sent by this
+     *  activity with regard to the plugin. This method sees if the $_REQUEST
+     *  has word filter plugin configuration data, and if so cleans and saves
+     *  it. It then modidfies $data so that if the plugin's configuration view
+     *  is drawn it makes use of the current plugin configuration info.
+     *
+     *  @param array &$data info to be used by the admin view to draw itself.
+     */
+    function configureHandler(&$data)
+    {
+        if(isset($_REQUEST['filter_words'])) {
+            $pre_filter_words =  str_replace("&amp;", "&",
+                $_REQUEST['filter_words']);
+            $pre_filter_words = @htmlentities($pre_filter_words,
+                ENT_QUOTES, "UTF-8");
+            $word_actions = explode("\n", $pre_filter_words);
+            foreach($word_actions as $word_action) {
+                if(mb_stripos($word_action, ":") > 0) {
+                    list($word, $actions_string,) = explode(":", $word_action);
+                    $actions_string = mb_ereg_replace("\s+", "",
+                        $actions_string);
+                    $actions = explode(",", $actions_string);
+                    $configuration[trim($word)] = $actions;
+                }
+            }
+            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                tl('wordfilter_plugin_settings_saved')."</h1>')";
+
+        }
+        if(!isset($configuration)) {
+            $configuration = $this->loadConfiguration();
+        }
+        if(!is_array($configuration)) {
+            $configuration = array();
+        }
+        $this->saveConfiguration($configuration);
+        $filter_words = "";
+        foreach($configuration as $word => $actions) {
+            $filter_words .= "$word:".implode(",", $actions)."\n";
+        }
+        $data["filter_words"] = $filter_words;
+    }
+
+    /**
+     *  Used to draw the HTML configure screen for the word filter plugin.
+     *
+     *  @param array &$data contains configuration data to be used in drawing
+     *      the view
+     */
+    function configureView(&$data)
+    {
+        ?>
+        <h2 class="center"><?php e(tl('wordfilter_plugin_preferences')); ?></h2>
+        <form  method="post" action='?'>
+        <input type="hidden" name="c" value="admin" />
+        <input type="hidden" name="a" value="pageOptions" />
+        <input type="hidden" id='option-type' name="option_type"
+            value="crawl_time" />
+        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
+            e($data[CSRF_TOKEN]); ?>" />
+        <textarea class="medium-text-area" name="filter_words" ><?php 
+            e($data["filter_words"])?></textarea>
+        <div class="center slight-pad">
+            <button class="button-box"
+            type="submit"><?php
+                e(tl('wordfilter_plugin_save'));
+            ?></button>
+        </div>
+        </form>
+        <?php
+    }
+
     /**
      * Which mime type page processors this plugin should do additional
      * processing for
@@ -160,6 +284,7 @@ class WordfilterPlugin extends IndexingPlugin implements CrawlConstants
     {
         return array("TextProcessor"); //will apply to all subclasses
     }
+
 
 }
 

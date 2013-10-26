@@ -98,7 +98,7 @@ class LocaleModel extends Model
      * Directories to try to extract translatable identifier strings from
      * @var array
      */
-    var $extract_dirs = array("controllers", "views");
+    var $extract_dirs = array("controllers", "views", "lib/indexing_plugins");
     /**
      * File extensions of files to try to extract translatable strings from
      * @var array

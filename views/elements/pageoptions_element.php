@@ -208,14 +208,21 @@ class PageOptionsElement extends Element
                 <?php
                 $k = 0;
                 foreach($data['INDEXING_PLUGINS'] as
-                    $plugin => $toggleState) {
+                    $plugin => $plugin_data) {
                 ?>
                 <tr><td><?php e($plugin. "Plugin"); ?></td>
                 <td class="check"><input type="checkbox"
                     name="INDEXING_PLUGINS[<?php e($k); ?>]"
                     value = "<?php e($plugin) ?>"
-                    <?php e($toggleState); ?>
-                    /></td></tr>
+                    <?php e($plugin_data['checked']); ?>
+                    /><?php
+                    if($plugin_data['configure']) { ?>
+                        [<a href="javascript:setDisplay('plugin-<?php
+                            e($plugin) ?>', true);" ><?php
+                            e(tl('pageoptions_element_configure'));
+                        ?></a>]<?php
+                    }
+                ?></td></tr>
             <?php
                 $k++;
             }
@@ -382,9 +389,31 @@ class PageOptionsElement extends Element
         } ?>
         </div>
         </div>
-
+        <?php
+        foreach($data['INDEXING_PLUGINS'] as
+            $plugin => $plugin_data) {
+            $class_name = $plugin."Plugin";
+            if($plugin_data['configure']) {
+            ?>
+                <div class="indexing-plugin-lightbox" id="plugin-<?php
+                    e("$plugin"); ?>" >
+                <div class="light-content">
+                <div class="float-opposite"><a  href="javascript:setDisplay(
+                    'plugin-<?php
+                    e($plugin) ?>', false);"><?php 
+                    e(tl('page_element_plugin_back'));
+                ?></a></div>
+                <?php
+                    $plugin_object = new $class_name();
+                    $plugin_object->configureView($data);
+                ?>
+            </div>
+            </div>
+        <?php
+            }
+        }
+        ?>
         <script type="text/javascript">
-
         function switchTab(newtab, oldtab, oldtab2)
         {
             setDisplay(newtab, true);
