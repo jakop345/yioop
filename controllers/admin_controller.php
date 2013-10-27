@@ -451,8 +451,11 @@ class AdminController extends Controller implements CrawlConstants
                 $select_role_ids[] = $role['ROLE_ID'];
             }
             $available_roles = array();
+            $tmp = array();
             foreach($all_roles as $role) {
-                if(!in_array($role['ROLE_ID'], $select_role_ids)) {
+                if(!in_array($role['ROLE_ID'], $select_role_ids) &&
+                    !isset($tmp[$role['ROLE_ID']])) {
+                    $tmp[$role['ROLE_ID']] = true;
                     $available_roles[] = $role;
                 }
             }
@@ -627,8 +630,11 @@ class AdminController extends Controller implements CrawlConstants
             foreach($data['ROLE_ACTIVITIES'] as $activity) {
                 $role_activity_ids[] = $activity["ACTIVITY_ID"];
             }
+            $tmp = array();
             foreach($all_activities as $activity) {
-                if(!in_array($activity["ACTIVITY_ID"], $role_activity_ids)) {
+                if(!in_array($activity["ACTIVITY_ID"], $role_activity_ids) &&
+                    !isset($tmp[$activity["ACTIVITY_ID"]])) {
+                    $tmp[$activity["ACTIVITY_ID"]] = true;
                     $available_activities[] = $activity;
                 }
             }
