@@ -446,9 +446,16 @@ class AdminController extends Controller implements CrawlConstants
                 }
             }
 
-            $available_roles = @array_diff_assoc(
-                $all_roles, $data['SELECT_ROLES']);
-
+            $select_role_ids = array();
+            foreach($data['SELECT_ROLES'] as $role) {
+                $select_role_ids[] = $role['ROLE_ID'];
+            }
+            $available_roles = array();
+            foreach($all_roles as $role) {
+                if(!in_array($role['ROLE_ID'], $select_role_ids)) {
+                    $available_roles[] = $role;
+                }
+            }
 
             $data['AVAILABLE_ROLES'][-1] =
                 tl('admin_controller_select_rolename');
@@ -615,8 +622,16 @@ class AdminController extends Controller implements CrawlConstants
                     $activity['ACTIVITY_NAME'];
             }
 
-            $available_activities =
-                @array_diff_assoc($all_activities, $data['ROLE_ACTIVITIES']);
+            $available_activities = array();
+            $role_activity_ids = array();
+            foreach($data['ROLE_ACTIVITIES'] as $activity) {
+                $role_activity_ids[] = $activity["ACTIVITY_ID"];
+            }
+            foreach($all_activities as $activity) {
+                if(!in_array($activity, $role_activity_ids)) {
+                    $available_activities[] = $activity;
+                }
+            }
             $data['AVAILABLE_ACTIVITIES'][-1] =
                 tl('admin_controller_select_activityname');
 
