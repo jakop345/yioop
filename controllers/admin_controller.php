@@ -446,7 +446,7 @@ class AdminController extends Controller implements CrawlConstants
                 }
             }
 
-            $available_roles = array_diff_assoc(
+            $available_roles = @array_diff_assoc(
                 $all_roles, $data['SELECT_ROLES']);
 
 
@@ -616,7 +616,7 @@ class AdminController extends Controller implements CrawlConstants
             }
 
             $available_activities =
-                array_diff_assoc($all_activities, $data['ROLE_ACTIVITIES']);
+                @array_diff_assoc($all_activities, $data['ROLE_ACTIVITIES']);
             $data['AVAILABLE_ACTIVITIES'][-1] =
                 tl('admin_controller_select_activityname');
 
