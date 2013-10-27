@@ -134,15 +134,16 @@ class ActivityModel extends Model
 
         $sql = "SELECT A.ACTIVITY_ID AS ACTIVITY_ID, ".
             "A.METHOD_NAME AS METHOD_NAME, ".
-            " T.IDENTIFIER_STRING AS IDENTIFIER_STRING FROM ".
+            " T.IDENTIFIER_STRING AS IDENTIFIER_STRING, ".
+            " T.TRANSLATION_ID AS TRANSLATION_ID FROM ".
             " ACTIVITY A, TRANSLATION T WHERE  ".
             " T.TRANSLATION_ID = A.TRANSLATION_ID";
 
         $result = $db->execute($sql);
         $i = 0;
-        while($activities[$i] = $db->fetchArray($result)) {
-            $id = $activities[$i]['ACTIVITY_ID'];
 
+        while($activities[$i] = $db->fetchArray($result)) {
+            $id = $activities[$i]['TRANSLATION_ID'];
             $sub_sql = "SELECT TRANSLATION AS ACTIVITY_NAME ".
                 "FROM TRANSLATION_LOCALE ".
                 " WHERE TRANSLATION_ID=$id AND LOCALE_ID=$locale_id LIMIT 1";
