@@ -628,7 +628,7 @@ class AdminController extends Controller implements CrawlConstants
                 $role_activity_ids[] = $activity["ACTIVITY_ID"];
             }
             foreach($all_activities as $activity) {
-                if(!in_array($activity, $role_activity_ids)) {
+                if(!in_array($activity["ACTIVITY_ID"], $role_activity_ids)) {
                     $available_activities[] = $activity;
                 }
             }
