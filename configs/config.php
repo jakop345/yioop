@@ -531,4 +531,13 @@ define ('NUM_RESULTS_PER_PAGE', 10);
 
 /** Number of recently crawled urls to display on admin screen */
 define ('NUM_RECENT_URLS_TO_DISPLAY', 10);
+
+/** Maximum time a set of results can stay in query cache before it is
+    invalidated */
+define ('MAX_QUERY_CACHE_TIME', 2*86400); //two days
+
+/** Minimum time a set of results can stay in query cache before it is
+    invalidated */
+define ('MIN_QUERY_CACHE_TIME', 3600); //one hour
+
 ?>

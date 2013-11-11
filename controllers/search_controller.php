@@ -704,7 +704,7 @@ class SearchController extends Controller implements CrawlConstants
                     $this->getTopPhrases($crawl_item, 3, $index_name);
                 $top_query = implode(" ", $top_phrases);
                 $filter = $this->searchfiltersModel->getFilter();
-                $this->phraseModel->editedPageSummaries =
+                $this->phraseModel->edited_page_summaries =
                     $this->searchfiltersModel->getEditedPageSummaries();
                 $phrase_results = $this->phraseModel->getPhrasePageResults(
                     $top_query, $limit, $results_per_page, false, $filter,
@@ -725,7 +725,7 @@ class SearchController extends Controller implements CrawlConstants
             default:
                 if(trim($query) != "") {
                     $filter = $this->searchfiltersModel->getFilter();
-                    $this->phraseModel->editedPageSummaries =
+                    $this->phraseModel->edited_page_summaries =
                         $this->searchfiltersModel->getEditedPageSummaries();
                     $phrase_results = $this->phraseModel->getPhrasePageResults(
                         $query, $limit, $results_per_page, true, $filter,

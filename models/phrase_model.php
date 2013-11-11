@@ -1032,9 +1032,13 @@ class PhraseModel extends ParallelModel
             $lookup_time = microtime();
         }
         $use_proximity = false;
+        $time = time();
         if(count($word_structs) > 1 || (isset($word_structs[0]["KEYS"])
             && count($word_structs[0]["KEYS"]) > 1)) {
             $use_proximity = true;
+        }
+        if(!isset($filter['time'])) {
+            $filter['time'] = 0;
         }
         $pages = array();
         $generation = 0;
@@ -1049,11 +1053,46 @@ class PhraseModel extends ParallelModel
         }
         if(USE_CACHE && $save_timestamp_name == "") {
             $mem_tmp = serialize($raw).serialize($word_structs);
-
             $summary_hash = crawlHash($mem_tmp.":".$limit.":".$num);
             if($use_cache_if_allowed) {
                 $cache_success = true;
                 $results = $CACHE->get($summary_hash);
+                if(!isset($results['TIME']) || $filter['time'] >
+                    $results['TIME']) {
+                    //if filter has changed since cached, then invalidate cache
+                    $results = false;
+                }
+                if(isset($results['TIME'])) {
+                    $cached_time = $time - $results['TIME'];
+                } else {
+                    $cached_time = $time;
+                }
+                if($cached_time > MAX_QUERY_CACHE_TIME) {
+                    $results = false;
+                }
+                if(isset($results['PAGES'])) {
+                    $close_prefix = WORK_DIRECTORY."/schedules/".
+                        self::index_closed_name;
+                    $has_changeable_results = false;
+                    $last_index_closed = "";
+                    foreach($results['PAGES'] as $page) {
+                        $current_closed = $close_prefix .
+                            $page[self::CRAWL_TIME].".txt";
+                        if($current_closed != $last_index_closed) {
+                            $last_index_closed = $current_closed;
+                            if(!file_exists($current_closed)) {
+                                //either feed result or from active crawl
+                                $has_changeable_results = true;
+                                break;
+                            }
+                        }
+                    }
+                    if($has_changeable_results) {
+                        if($cached_time > MIN_QUERY_CACHE_TIME) {
+                            $results = false;
+                        }
+                    }
+                }
                 if(QUERY_STATISTICS) {
                     $this->query_info['QUERY'] .=
                         "$in2<b>Cache Lookup Time</b>: ".
@@ -1248,6 +1287,7 @@ class PhraseModel extends ParallelModel
                 $summary_time_info."<br />";
         }
         $results['PAGES'] = & $out_pages;
+        $results['TIME'] = time();
         if(USE_CACHE && $save_timestamp_name == "") {
             $CACHE->set($summary_hash, $results);
         }

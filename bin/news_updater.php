@@ -213,7 +213,6 @@ class NewsUpdater implements CrawlConstants
             crawlLog("Deleting feed items and rebuild shard...");
             $this->sourceModel->rebuildFeedShard(SourceModel::ONE_WEEK);
             crawlLog("... delete complete, shard rebuilt");
-            $something_updated = true;
         } else {
             crawlLog("No updates needed.");
         }

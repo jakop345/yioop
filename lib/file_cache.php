@@ -40,7 +40,6 @@ require_once BASE_DIR."/models/datasources/".DBMS."_manager.php";
 
 /**
  * Library of functions used to implement a simple file cache
- * This might be used on systems that don't have memcache
  *
  * @author Chris Pollett
  *
@@ -56,14 +55,14 @@ class FileCache
     var $dir_name;
 
     /**
-     * How many seconds a bin is vulnerable to be deleted as expired
-     */
-    const SECONDS_IN_A_BIN = 3600;
-
-    /**
      * Total number of bins to cycle between
      */
     const NUMBER_OF_BINS = 24;
+
+    /**
+     * Maximum number of files in a bin
+     */
+    const MAX_FILES_IN_A_BIN = 1000;
 
     /**
      * Creates the directory for the file cache, sets how frequently
@@ -103,31 +102,41 @@ class FileCache
     /**
      * Stores in the cache a key-value pair
      *
+     * Only when a key is set is there a check for whether to invalidate
+     * a cache bin. It is deleted as invalid if the following two conditions 
+     * both hold:
+     * The last time it was expired is more than SECONDS_IN_A_BIN seconds ago, 
+     * and the number of cache items is more than self::MAX_FILES_IN_A_BIN.
+     *
      * @param string $key to associate with value
      * @param mixed $value to store
      */
     function set($key, $value)
     {
-        $expire_block = floor(time() / self::SECONDS_IN_A_BIN)
-            % self::NUMBER_OF_BINS;
         $checksum_block = $this->checksum($key);
         $checksum_dir = $this->dir_name."/$checksum_block";
-        if($expire_block == $checksum_block ) {
-            $last_expired =
+        if(file_exists("$checksum_dir/last_expired.txt")) {
+            $data =
                 unserialize(
                     file_get_contents("$checksum_dir/last_expired.txt"));
-            if(time() - $last_expired > self::SECONDS_IN_A_BIN) {
-                $db_class = ucfirst(DBMS)."Manager";
-                $db = new $db_class();
-                $db->unlinkRecursive($checksum_dir);
-            }
         }
+        if(!isset($data['last_expired'])) {
+            $data = array('last_expired' => time(), 'count' => 0);
+        }
+        if((time() - $data['last_expired'] > MIN_QUERY_CACHE_TIME &&
+            $data['count'] > self::MAX_FILES_IN_A_BIN) ||
+            $data['count'] > 10 * self::MAX_FILES_IN_A_BIN) {
+            $db_class = ucfirst(DBMS)."Manager";
+            $db = new $db_class();
+            $db->unlinkRecursive($checksum_dir);
+        }
+        $data['count']++;
         if(!file_exists($checksum_dir)) {
             mkdir($checksum_dir);
-            $last_expired = time();
-            file_put_contents("$checksum_dir/last_expired.txt",
-                serialize($last_expired));
+            $data['last_expired'] = time();
         }
+        file_put_contents("$checksum_dir/last_expired.txt",
+            serialize($data));
         $cache_file = "$checksum_dir/".webencode($key);
         file_put_contents($cache_file, serialize($value));
     }

@@ -112,6 +112,7 @@ class SearchfiltersModel extends Model implements CrawlConstants
 
     /**
      *  Sets a list of hostnames to be filtered from search results
+     *  Also, in the 'time' filed records when the set happened.
      *
      *  @param array $urls to be filtered
      */
@@ -119,11 +120,11 @@ class SearchfiltersModel extends Model implements CrawlConstants
     {
         $url_count = count($urls);
         file_put_contents($this->dir_name."/urls.txt", serialize($urls));
-
         $hash_urls = array();
         foreach($urls as $url) {
             $hash_urls[] = substr(crawlHash($url, true), 1);
         }
+        $hash_urls['time'] = time();
         file_put_contents($this->dir_name."/hash_urls.txt",
             serialize($hash_urls));
 

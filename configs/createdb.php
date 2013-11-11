@@ -271,7 +271,7 @@ $db->execute("INSERT INTO MIX_COMPONENTS VALUES(
 $db->execute("INSERT INTO CRAWL_MIXES VALUES (4, 'news')");
 $db->execute("INSERT INTO MIX_GROUPS VALUES(4, 0, 1)");
 $db->execute("INSERT INTO MIX_COMPONENTS VALUES(4, 0, 1, 1,
-    'media:news no:cache')");
+    'media:news')");
 
 $db->execute("INSERT INTO SUBSEARCH VALUES('db_subsearch_images',
     'images','m:2',50)");
