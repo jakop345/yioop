@@ -1040,6 +1040,8 @@ class PhraseModel extends ParallelModel
         if(!isset($filter['time'])) {
             $filter['time'] = 0;
         }
+        $filter_time = $filter['time'];
+        unset($filter['time']); //iterators don't expect time field
         $pages = array();
         $generation = 0;
         $to_retrieve = ceil(($limit+$num)/self::NUM_CACHE_PAGES) *
@@ -1057,7 +1059,7 @@ class PhraseModel extends ParallelModel
             if($use_cache_if_allowed) {
                 $cache_success = true;
                 $results = $CACHE->get($summary_hash);
-                if(!isset($results['TIME']) || $filter['time'] >
+                if(!isset($results['TIME']) || $filter_time >
                     $results['TIME']) {
                     //if filter has changed since cached, then invalidate cache
                     $results = false;
