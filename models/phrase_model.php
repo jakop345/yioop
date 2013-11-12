@@ -1076,17 +1076,18 @@ class PhraseModel extends ParallelModel
                     $close_prefix = WORK_DIRECTORY."/schedules/".
                         self::index_closed_name;
                     $has_changeable_results = false;
-                    $last_index_closed = "";
+                    $seen_times = array();
                     foreach($results['PAGES'] as $page) {
+                        if(in_array($page[self::CRAWL_TIME], $seen_times)) {
+                            continue;
+                        }
+                        $seen_times[] = $page[self::CRAWL_TIME];
                         $current_closed = $close_prefix .
                             $page[self::CRAWL_TIME].".txt";
-                        if($current_closed != $last_index_closed) {
-                            $last_index_closed = $current_closed;
-                            if(!file_exists($current_closed)) {
-                                //either feed result or from active crawl
-                                $has_changeable_results = true;
-                                break;
-                            }
+                        if(!file_exists($current_closed)) {
+                            //either feed result or from active crawl
+                            $has_changeable_results = true;
+                            break;
                         }
                     }
                     if($has_changeable_results) {
