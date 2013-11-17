@@ -242,7 +242,10 @@ class CrawlDaemon implements CrawlConstants
             stristr($_SERVER['_'], 'hhvm')) ||
            (isset($_SERVER['SERVER_SOFTWARE']) &&
             $_SERVER['SERVER_SOFTWARE'] == "HPHP")) {
-            $php = 'hhvm -f';
+            $php = 'hhvm -f ';
+            if(defined("HHVM_PATH") ) {
+                $php = HHVM_PATH."/".$php;
+            }
         }
         if(strstr(PHP_OS, "WIN")) {
             $base_dir = str_replace("/", "\\", BASE_DIR);
