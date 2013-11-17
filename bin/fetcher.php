@@ -1728,12 +1728,12 @@ class Fetcher implements CrawlConstants
         } // end for
 
         $num_pages = count($stored_site_pages);
-
+        $filter_stored = array_filter($stored_site_pages);
         if($num_pages > 0 && $this->cache_pages) {
-            $filter_stored = array_filter($stored_site_pages);
             $cache_page_partition = $this->web_archive->addPages(
                 self::OFFSET, $filter_stored);
         } else if ($num_pages > 0) {
+            
             $this->web_archive->addCount(count($filter_stored));
         }
         for($i = 0; $i < $num_pages; $i++) {
