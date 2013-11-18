@@ -1447,6 +1447,7 @@ class PhraseModel extends ParallelModel
         $total_iterators = 0;
         $network_flag = false;
         $min_group_flag = false;
+        $min_group_override = false;
         if($queue_servers != array() &&
             !$this->isSingleLocalhost($queue_servers)) {
             $network_flag = true;
@@ -1514,6 +1515,7 @@ class PhraseModel extends ParallelModel
                         $doc_iterate_hashes)) {
                         $word_iterators[$i] = new DocIterator(
                             $index_name, $filter, $to_retrieve);
+                        $min_group_override = true;
                     } else {
                         //can happen if exact phrase search suffix approach used
                         if(isset($distinct_word_keys[$i][0][0]) && 
@@ -1578,6 +1580,7 @@ class PhraseModel extends ParallelModel
                             if($tmp_word_iterators[$m]->dictionary_info !=
                                 array() ||
                                 $tmp_word_iterators[$m]->feed_count > 0) {
+                                $min_group_override = true;
                                 $m++;
                             } else {
                                 unset($tmp_word_iterators[$m]);
@@ -1653,7 +1656,7 @@ class PhraseModel extends ParallelModel
                     $group_iterator->results_per_block/$num_servers);
         } else if($save_timestamp_name != "") {
             $group_iterator->save_iterators = $iterators;
-        } else if($min_group_flag) {
+        } else if($min_group_flag && !$min_group_override) {
             $group_iterator->results_per_block = max(MIN_RESULTS_TO_GROUP/20,
                 1);
             $to_retrieve = -1;
