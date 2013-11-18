@@ -1221,7 +1221,7 @@ class PhraseModel extends ParallelModel
             $pages = array_slice($pages, $limit - $start_slice, $num);
             $results['PAGES'] = & $pages;
             if($old_to_retrieve != $to_retrieve) {
-                $results['HARD_QUERY'] = $to_retrieve;
+                $results['HARD_QUERY'] = $old_to_retrieve;
             }
             return $results;
         }
