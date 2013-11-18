@@ -1417,6 +1417,8 @@ class PhraseModel extends ParallelModel
      * @param int $raw ($raw == 0) normal grouping, ($raw == 1)
      *      no grouping done on data also no summaries returned (only lookup
      *      info), $raw > 1 return summaries but no grouping
+     * @param int $to_retrieve number of items to retrieve from location in
+     *      in interator
      * @param array $queue_servers a list of urls of yioop machines which might
      *      be used during lookup
      * @param string $original_query if set, the orginal query that corresponds
@@ -1430,13 +1432,14 @@ class PhraseModel extends ParallelModel
      * @return &object an iterator for iterating through results to the
      *  query
      */
-    function getQueryIterator($word_structs, &$filter, $raw = 0,
+    function getQueryIterator($word_structs, &$filter, $raw,
         $to_retrieve, $queue_servers = array(), $original_query = "",
         $save_timestamp_name="", $limit_news = true)
     {
         $iterators = array();
         $total_iterators = 0;
         $network_flag = false;
+        $min_group_flag = false;
         if($queue_servers != array() &&
             !$this->isSingleLocalhost($queue_servers)) {
             $network_flag = true;
@@ -1606,6 +1609,7 @@ class PhraseModel extends ParallelModel
                     $base_iterator = new IntersectIterator(
                         $word_iterators, $word_iterator_map, $quote_positions,
                         $weight);
+                    $min_group_flag = true;
                 }
                 if($save_timestamp_name != "") {
                     if(isset($save_point[$save_count]) &&
@@ -1636,13 +1640,15 @@ class PhraseModel extends ParallelModel
                 new GroupIterator($union_iterator, $total_iterators,
                     $this->current_machine, $network_flag);
         }
-
         if($network_flag) {
             $union_iterator->results_per_block =
                 ceil(SERVER_ALPHA *
                     $group_iterator->results_per_block/$num_servers);
         } else if($save_timestamp_name != "") {
             $group_iterator->save_iterators = $iterators;
+        } else if($min_group_flag) {
+            $group_iterator->results_per_block = max(MIN_RESULTS_TO_GROUP/20,
+                1);
         }
         return $group_iterator;
     }
