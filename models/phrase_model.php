@@ -1644,6 +1644,10 @@ class PhraseModel extends ParallelModel
             $union_iterator->results_per_block =
                 ceil(SERVER_ALPHA *
                     $group_iterator->results_per_block/$num_servers);
+            if($min_group_flag) {
+                $group_iterator->results_per_block = max(
+                    MIN_RESULTS_TO_GROUP/20, 1);
+            }
         } else if($save_timestamp_name != "") {
             $group_iterator->save_iterators = $iterators;
         } else if($min_group_flag) {
