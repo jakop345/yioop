@@ -1113,11 +1113,6 @@ class PhraseModel extends ParallelModel
         $query_iterator = $this->getQueryIterator($word_structs, $filter, $raw,
             $to_retrieve, $queue_servers, $original_query,
             $save_timestamp_name, $limit_news);
-        if($old_to_retrieve != $to_retrieve) {
-            $to_retrieve = ceil(($limit +
-                $query_iterator->results_per_block)/self::NUM_CACHE_PAGES) *
-                self::NUM_CACHE_PAGES;
-        }
         $num_retrieved = 0;
         $pages = array();
         if(is_object($query_iterator)) {
@@ -1126,12 +1121,6 @@ class PhraseModel extends ParallelModel
                     $query_iterator->nextDocsWithWord()) ) {
                 $pages += $next_docs;
                 $num_retrieved = count($pages);
-                if(isset($query_iterator->hard_query) && 
-                    $query_iterator->hard_query) {
-                    $to_retrieve = ceil(($limit +
-                        $query_iterator->hard_query) /
-                        self::NUM_CACHE_PAGES) * self::NUM_CACHE_PAGES;
-                }
             }
         }
         if($save_timestamp_name != "" && ($queue_servers == array() ||

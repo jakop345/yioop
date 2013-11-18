@@ -294,15 +294,15 @@ class NetworkIterator extends IndexBundleIterator
                         }
                     }
                 }
-                if(isset($pre_result["HARD_QUERY"])) {
-                    $this->hard_query = $pre_result["HARD_QUERY"];
-                }
                 $max_time = max($max_time, $pre_result['ELAPSED_TIME']);
                 $lookup_link = $this->makeLookupLink($sites, $lookup[$j]);
                 $machine_times .= $indent . $lookup_link .
                     $pre_result['ELAPSED_TIME']."&nbsp;&nbsp;";
                 $indent = "";
             }
+        }
+        if(isset($pre_result["HARD_QUERY"])) {
+            $this->results_per_block  = $pre_result["HARD_QUERY"];
         }
         if($num_with_results > 0) {
             $this->next_results_per_block = ceil(
