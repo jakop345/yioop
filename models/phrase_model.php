@@ -386,6 +386,9 @@ class PhraseModel extends ParallelModel
             ksort($results['PAGES']);
             $results["PAGES"] = array_values($results["PAGES"]);
         }
+        if(isset($out_results['HARD_QUERY'])) {
+            $results['HARD_QUERY'] = $out_results['HARD_QUERY'];
+        }
         if(count($results) == 0) {
             $results = NULL;
         }

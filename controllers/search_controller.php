@@ -749,6 +749,9 @@ class SearchController extends Controller implements CrawlConstants
              $phrase_results['PAGES']: array();
         $data['SAVE_POINT'] = (isset($phrase_results["SAVE_POINT"])) ?
              $phrase_results["SAVE_POINT"]: array( 0 => 1);
+        if(isset($phrase_results["HARD_QUERY"])) {
+            $data['HARD_QUERY'] = $phrase_results["HARD_QUERY"];
+        }
         $data['TOTAL_ROWS'] = (isset($phrase_results['TOTAL_ROWS'])) ?
             $phrase_results['TOTAL_ROWS'] : 0;
         $data['LIMIT'] = $limit;
