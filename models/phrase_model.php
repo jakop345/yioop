@@ -1106,9 +1106,15 @@ class PhraseModel extends ParallelModel
                 }
             }
         }
+        $old_to_retrieve = $to_retrieve;
         $query_iterator = $this->getQueryIterator($word_structs, $filter, $raw,
             $to_retrieve, $queue_servers, $original_query,
             $save_timestamp_name, $limit_news);
+        if($old_to_retrieve != $to_retrieve) {
+            $to_retrieve = ceil(($limit +
+                $query_iterator->results_per_block)/self::NUM_CACHE_PAGES) *
+                self::NUM_CACHE_PAGES;
+        }
         $num_retrieved = 0;
         $pages = array();
         if(is_object($query_iterator)) {
@@ -1117,6 +1123,12 @@ class PhraseModel extends ParallelModel
                     $query_iterator->nextDocsWithWord()) ) {
                 $pages += $next_docs;
                 $num_retrieved = count($pages);
+                if(isset($query_iterator->hard_query) && 
+                    $query_iterator->hard_query) {
+                    $to_retrieve = ceil(($limit +
+                        $query_iterator->hard_query) /
+                        self::NUM_CACHE_PAGES) * self::NUM_CACHE_PAGES;
+                }
             }
         }
         if($save_timestamp_name != "" && ($queue_servers == array() ||
@@ -1216,6 +1228,9 @@ class PhraseModel extends ParallelModel
             $pages = array_slice($pages, $start_slice);
             $pages = array_slice($pages, $limit - $start_slice, $num);
             $results['PAGES'] = & $pages;
+            if($old_to_retrieve != $to_retrieve) {
+                $results['HARD_QUERY'] = $to_retrieve;
+            }
             return $results;
         }
 
@@ -1649,7 +1664,7 @@ class PhraseModel extends ParallelModel
         } else if($min_group_flag) {
             $group_iterator->results_per_block = max(MIN_RESULTS_TO_GROUP/20,
                 1);
-            $to_retrieve = $group_iterator->results_per_block;
+            $to_retrieve = -1;
         }
         return $group_iterator;
     }

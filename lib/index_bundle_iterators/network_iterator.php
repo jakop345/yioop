@@ -104,6 +104,11 @@ class NetworkIterator extends IndexBundleIterator
     var $next_results_per_block;
 
     /**
+     * @var int
+     */
+    var $hard_query;
+
+    /**
      * the minimum number of pages to group from a block;
      */
     const MIN_FIND_RESULTS_PER_BLOCK = 200;
@@ -139,6 +144,7 @@ class NetworkIterator extends IndexBundleIterator
     {
         $this->results_per_block = ceil(self::MIN_FIND_RESULTS_PER_BLOCK);
         $this->next_results_per_block = $this->results_per_block;
+        $this->hard_query = false;
         $this->base_query = "q=".urlencode($query).
             "&f=serial&network=false&raw=1&its=$timestamp&guess=false";
         if(!$limit_news) {
@@ -186,6 +192,7 @@ class NetworkIterator extends IndexBundleIterator
         $this->limit = 0;
         $this->next_results_per_block = $this->results_per_block;
         $count = count($this->queue_servers);
+        $this->hard_query = false;
         for($i = 0; $i < $count; $i++) {
             $this->more_flags[$i] = true;
         }
@@ -286,6 +293,9 @@ class NetworkIterator extends IndexBundleIterator
                                 $j;
                         }
                     }
+                }
+                if(isset($pre_result["HARD_QUERY"])) {
+                    $this->hard_query = $pre_result["HARD_QUERY"];
                 }
                 $max_time = max($max_time, $pre_result['ELAPSED_TIME']);
                 $lookup_link = $this->makeLookupLink($sites, $lookup[$j]);
