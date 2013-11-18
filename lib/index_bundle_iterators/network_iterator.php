@@ -302,7 +302,7 @@ class NetworkIterator extends IndexBundleIterator
             }
         }
         if(isset($pre_result["HARD_QUERY"])) {
-            $this->results_per_block  = $pre_result["HARD_QUERY"];
+            $this->hard_query  = $pre_result["HARD_QUERY"];
         }
         if($num_with_results > 0) {
             $this->next_results_per_block = ceil(

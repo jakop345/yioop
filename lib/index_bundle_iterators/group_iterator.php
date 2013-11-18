@@ -243,6 +243,10 @@ class GroupIterator extends IndexBundleIterator
                 $pages += $new_pages;
                 $count = count($pages);
             }
+            if(isset($this->index_bundle_iterator->hard_query)) {
+                $this->results_per_block = 
+                    $this->index_bundle_iterator->hard_query;
+            }
             if($count < $this->results_per_block && !$done) {
                 $this->index_bundle_iterator->advance();
             } else {
