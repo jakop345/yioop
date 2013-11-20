@@ -1503,6 +1503,7 @@ class PhraseModel extends ParallelModel
                 $word_iterators = array();
                 $word_iterator_map = array();
                 if($num_word_keys < 1) {continue;}
+                $sum = 0;
                 for($i = 0; $i < $total_iterators; $i++) {
                     $current_key = (is_string($distinct_word_keys[$i]) ) ?
                         $distinct_word_keys[$i] : (is_string(
@@ -1565,7 +1566,11 @@ class PhraseModel extends ParallelModel
                             }
                             if($info != array()) {
                                 $tmp_keys = arrayColumnCount($info, 4, 3);
+                                $sum += array_sum($tmp_keys);
                                 $out_keys = array_merge($out_keys, $tmp_keys);
+                            }
+                            if($sum > $lookup_cutoff) {
+                                break;
                             }
                         }
                         arsort($out_keys);
