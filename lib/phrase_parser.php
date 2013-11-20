@@ -169,8 +169,8 @@ class PhraseParser
         } else if ($count_whole_phrase > 0) {
             foreach($terms as $term) {
                 $count_term = IndexManager::numDocsTerm($term,
-                    $index_name, $threshold);
-                if($count_term > 100 * $count_whole_phrase) {
+                    $index_name, 5 * $threshold);
+                if($count_term > 50 * $count_whole_phrase) {
                     $terms = array($whole_phrase, $terms[0]);
                     return $terms;
                 }
