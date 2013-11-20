@@ -175,6 +175,25 @@ class PhraseParser
                     return $terms;
                 }
             }
+        } else if($num > 2){
+            $start_terms = $first_terms;
+            $last_term = array_pop($start_terms);
+            $start_phrase = implode(" ", $start_terms);
+            $count_start = IndexManager::numDocsTerm($start_phrase,
+                $index_name, $threshold);
+            if($count_start >= $threshold) {
+                $terms = array($start_phrase, $last_term, $terms[0]);
+                return $terms;
+            }
+            $end_terms = $first_terms;
+            $first_term = array_shift($end_terms);
+            $end_phrase = implode(" ", $end_terms);
+            $count_end = IndexManager::numDocsTerm($end_phrase,
+                $index_name, $threshold);
+            if($count_end >= $threshold) {
+                $terms = array($first_term, $end_phrase);
+                return $terms;
+            }
         }
         if($index_name != 'feed' && 
             IndexManager::getVersion($index_name) == 0) {
