@@ -166,6 +166,15 @@ class PhraseParser
             || $num > SUFFIX_TREE_THRESHOLD) {
             $terms = array($whole_phrase, $terms[0]);
             return $terms;
+        } else if ($count_whole_phrase > 0) {
+            foreach($terms as $term) {
+                $count_term = IndexManager::numDocsTerm($term,
+                    $index_name, $threshold);
+                if($count_term > 100 * $count_whole_phrase) {
+                    $terms = array($whole_phrase, $terms[0]);
+                    return $terms;
+                }
+            }
         }
         if($index_name != 'feed' && 
             IndexManager::getVersion($index_name) == 0) {
