@@ -349,8 +349,7 @@ class PhraseModel extends ParallelModel
                     }
                     list($word_struct, $format_words) =
                         $this->parseWordStructConjunctiveQuery($disjunct,
-                            $queue_servers, $guess_semantics, 
-                            $use_cache_if_allowed);
+                            $guess_semantics);
                     if($word_struct != NULL) {
                         $word_structs[] = $word_struct;
                     }
@@ -472,13 +471,10 @@ class PhraseModel extends ParallelModel
      * @param string &$phrase string to extract struct from, if the phrase
      *  semantics is guessed or an if condition is processed the value of
      *  phrase will be altered. (Helps for feeding to network queries)
-     * @param array $queue_servers a list of urls of yioop machines which might
-     *      be used during lookup
      * @param bool $guess_semantics whether to do query rewriting before parse
      * @return array struct representing the conjunctive query
      */
-    function parseWordStructConjunctiveQuery(&$phrase, $queue_servers = array(),
-        $guess_semantics = true)
+    function parseWordStructConjunctiveQuery(&$phrase, $guess_semantics = true)
     {
         $indent= "&nbsp;&nbsp;";
         $in2 = $indent . $indent;
