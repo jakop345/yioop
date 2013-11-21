@@ -215,6 +215,7 @@ class PhraseModel extends ParallelModel
         $raw = 0, $queue_servers = array(), $guess_semantics = true,
         $save_timestamp = 0, $limit_news = true)
     {
+        global $CACHE;
         if(QUERY_STATISTICS) {
             $indent= "&nbsp;&nbsp;";
             $in2 = $indent . $indent;
@@ -312,6 +313,7 @@ class PhraseModel extends ParallelModel
                 $low;
             $disjunct_phrases = explode("|", $phrase);
             $word_structs = array();
+            $format_words = array();
             if(QUERY_STATISTICS) {
                 $this->query_info['QUERY'] .= $indent .
                     "<b>Presentation $prs_cnt:</b><br />";
@@ -321,19 +323,37 @@ class PhraseModel extends ParallelModel
                     "<i>High</i>: ".$result_bounds[0][1]."<br />";
                 $prs_cnt++;
             }
-
-            foreach($disjunct_phrases as $disjunct) {
+            $cache_results = false;
+            if(USE_CACHE && $save_timestamp == "" &&
+                $use_cache_if_allowed) {
+                $cache_results = $CACHE->get($phrase);
                 if(QUERY_STATISTICS) {
-
-                    $this->query_info['QUERY'] .= "$in2<b>Disjunct $dis_cnt:"
-                        . "</b><br />";
-                    $dis_cnt++;
+                    $this->query_info['QUERY'] .=
+                        "$in2<b>Parse done by Cache Lookup</b><br />";
                 }
-                list($word_struct, $format_words) =
-                    $this->parseWordStructConjunctiveQuery($disjunct,
-                        $queue_servers, $guess_semantics);
-                if($word_struct != NULL) {
-                    $word_structs[] = $word_struct;
+
+            }
+            if($cache_results) {
+                list($word_structs, $format_words) = $cache_results;
+            } else {
+                foreach($disjunct_phrases as $disjunct) {
+                    if(QUERY_STATISTICS) {
+
+                        $this->query_info['QUERY'] .="$in2<b>Disjunct $dis_cnt:"
+                            . "</b><br />";
+                        $dis_cnt++;
+                    }
+                    list($word_struct, $format_words) =
+                        $this->parseWordStructConjunctiveQuery($disjunct,
+                            $queue_servers, $guess_semantics, 
+                            $use_cache_if_allowed);
+                    if($word_struct != NULL) {
+                        $word_structs[] = $word_struct;
+                    }
+                }
+                if(USE_CACHE && $save_timestamp == "") {
+                    $CACHE->set($phrase, array($word_structs, 
+                        $format_words));
                 }
             }
             if(QUERY_STATISTICS) {
@@ -349,7 +369,7 @@ class PhraseModel extends ParallelModel
             }
             $out_results = $this->getSummariesByHash($word_structs,
                 $low, $phrase_num, $filter, $use_cache_if_allowed, $raw,
-                $queue_servers, $disjunct, $save_timestamp_name,
+                $queue_servers, $phrase, $save_timestamp_name,
                 $limit_news);
             if(isset($out_results['PAGES']) &&
                 count($out_results['PAGES']) != 0) {
