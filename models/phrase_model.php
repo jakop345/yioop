@@ -229,7 +229,6 @@ class PhraseModel extends ParallelModel
         }
         $results = NULL;
         $word_structs = array();
-
         /*
             this is a quick and dirty parsing and will usually work,
             exceptions would be # or | in quotes or if someone tried
@@ -284,6 +283,11 @@ class PhraseModel extends ParallelModel
             }
         }
         $orig_stimestamp = $save_timestamp;
+        $network = false;
+        if($queue_servers != array() &&
+            !$this->isSingleLocalhost($queue_servers)) {
+            $network = true;
+        }
         foreach($query_parts as $phrase => $pre_result_bounds) {
 
             $phrase_high = $pre_result_bounds[0][1];
@@ -311,7 +315,6 @@ class PhraseModel extends ParallelModel
 
             $phrase_num = max(min($phrase_high, $results_high), $results_high) -
                 $low;
-            $disjunct_phrases = explode("|", $phrase);
             $word_structs = array();
             $format_words = array();
             if(QUERY_STATISTICS) {
@@ -335,7 +338,8 @@ class PhraseModel extends ParallelModel
             }
             if($cache_results) {
                 list($word_structs, $format_words) = $cache_results;
-            } else {
+            } else if(!$network) {
+                $disjunct_phrases = explode("|", $phrase);
                 foreach($disjunct_phrases as $disjunct) {
                     if(QUERY_STATISTICS) {
 
