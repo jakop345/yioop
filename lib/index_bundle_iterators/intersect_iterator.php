@@ -427,9 +427,12 @@ class IntersectIterator extends IndexBundleIterator
      */
     function syncGenDocOffsetsAmongstIterators()
     {
+        static $sync_time = 0;
         if($this->sync_timer_on) {
             $timer_on = true;
-            $sync_time = time();
+            if($sync_time === 0) {
+                $sync_time = time();
+            }
             $time_out = self::SYNC_TIMEOUT + $sync_time;
         }
         if(($biggest_gen_offset = $this->index_bundle_iterators[
@@ -443,6 +446,9 @@ class IntersectIterator extends IndexBundleIterator
                 $this->index_bundle_iterators[
                     $i]->currentGenDocOffsetWithWord();
             $gen_doc_offset[$i] = $cur_gen_doc_offset;
+            if($timer_on && time() > $time_out) {
+                return -1;
+            }
             if($cur_gen_doc_offset == -1) {
                 return -1;
             }
