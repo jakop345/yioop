@@ -104,6 +104,18 @@ class IntersectIterator extends IndexBundleIterator
     var $weight;
 
     /**
+     *  Whether to run a timer that shuts down the intersect iterator if
+     *  syncGenDocOffsetsAmongstIterators takes longer than the time out period
+     */
+    var $sync_timer_on;
+
+    /**
+     *  Number of seconds before timeout and stop 
+     *  syncGenDocOffsetsAmongstIterators if slow
+     */
+    const SYNC_TIMEOUT = 5;
+
+    /**
      * Creates an intersect iterator with the given parameters.
      *
      * @param object $index_bundle_iterator to use as a source of documents
@@ -120,6 +132,7 @@ class IntersectIterator extends IndexBundleIterator
         $this->quote_positions = $quote_positions;
         $this->weight = $weight;
         $this->results_per_block = 1;
+        $this->sync_timer_on = false;
 
         /*
              We take an initial guess of the num_docs we return as the sum
@@ -414,6 +427,11 @@ class IntersectIterator extends IndexBundleIterator
      */
     function syncGenDocOffsetsAmongstIterators()
     {
+        if($this->sync_timer_on) {
+            $timer_on = true;
+            $sync_time = time();
+            $time_out = self::SYNC_TIMEOUT + $sync_time;
+        }
         if(($biggest_gen_offset = $this->index_bundle_iterators[
                         0]->currentGenDocOffsetWithWord()) == -1) {
             return -1;
@@ -443,6 +461,9 @@ class IntersectIterator extends IndexBundleIterator
         $last_changed = -1;
         $i = 0;
         while($i != $last_changed) {
+            if($timer_on && time() > $time_out) {
+                return -1;
+            }
             if($last_changed == -1) $last_changed = 0;
             if($this->genDocOffsetCmp($gen_doc_offset[$i],
                 $biggest_gen_offset) < 0) {

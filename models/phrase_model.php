@@ -1645,6 +1645,11 @@ class PhraseModel extends ParallelModel
                         $word_iterators, $word_iterator_map, $quote_positions,
                         $weight);
                     $min_group_flag = true;
+                    if($save_timestamp_name == "") {
+                        $base_iterator->sync_timer_on = true;
+                    } else {
+                        $base_iterator->sync_timer_on = false;
+                    }
                 }
                 if($save_timestamp_name != "") {
                     if(isset($save_point[$save_count]) &&
