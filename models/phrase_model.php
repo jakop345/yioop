@@ -355,7 +355,7 @@ class PhraseModel extends ParallelModel
                     }
                 }
                 if(USE_CACHE && $save_timestamp == "") {
-                    $CACHE->set($phrase, array($word_structs, 
+                    $CACHE->set($phrase, array($word_structs,
                         $format_words));
                 }
             }
@@ -1057,7 +1057,8 @@ class PhraseModel extends ParallelModel
         $use_proximity = false;
         $time = time();
         if(count($word_structs) > 1 || (isset($word_structs[0]["KEYS"])
-            && count($word_structs[0]["KEYS"]) > 1)) {
+            && count($word_structs[0]["KEYS"]) > 1) ||
+            ($word_structs == array() && str_count(" ",$original_query) > 1)) {
             $use_proximity = true;
         }
         if(!isset($filter['time'])) {
@@ -1077,7 +1078,8 @@ class PhraseModel extends ParallelModel
             $start_slice = 0;
         }
         if(USE_CACHE && $save_timestamp_name == "") {
-            $mem_tmp = serialize($raw).serialize($word_structs);
+            $mem_tmp = serialize($raw).serialize($word_structs).
+                $original_query;
             $summary_hash = crawlHash($mem_tmp.":".$limit.":".$num);
             if($use_cache_if_allowed) {
                 $cache_success = true;
