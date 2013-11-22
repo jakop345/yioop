@@ -1058,7 +1058,8 @@ class PhraseModel extends ParallelModel
         $time = time();
         if(count($word_structs) > 1 || (isset($word_structs[0]["KEYS"])
             && count($word_structs[0]["KEYS"]) > 1) ||
-            ($word_structs == array() && str_count(" ",$original_query) > 1)) {
+            ($word_structs == array() && 
+            substr_count($original_query, " ") > 1)) {
             $use_proximity = true;
         }
         if(!isset($filter['time'])) {
