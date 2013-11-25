@@ -543,7 +543,7 @@ function upgradeDatabaseVersion17(&$db)
 
     $db->execute("CREATE TABLE GROUPS (GROUP_ID INTEGER PRIMARY KEY
         $auto_increment ,GROUP_NAME VARCHAR(128), CREATED_TIME INT(11),
-           CREATER_ID INT(11))");
+           CREATOR_ID INT(11))");
     $db->execute("CREATE TABLE USER_GROUPS (USER_ID INTEGER ,
         GROUP_ID INTEGER,PRIMARY KEY (GROUP_ID, USER_ID) )");
     $db->execute("CREATE TABLE GROUP_ROLES (GROUP_ID INTEGER ,
