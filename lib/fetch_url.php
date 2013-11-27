@@ -51,7 +51,7 @@ class FetchUrl implements CrawlConstants
 {
 
     /**
-     * Make multi_curl requests for an array of sites with urls
+     * Make multi_curl requests for an array of sites with urls or onion urls
      *
      * @param array $sites  an array containing urls of pages to request
      * @param bool $timer  flag, true means print timing statistics to log
@@ -115,6 +115,10 @@ class FetchUrl implements CrawlConstants
                 curl_setopt($sites[$i][0], CURLOPT_RETURNTRANSFER, true);
                 curl_setopt($sites[$i][0], CURLOPT_CONNECTTIMEOUT,PAGE_TIMEOUT);
                 curl_setopt($sites[$i][0], CURLOPT_TIMEOUT, PAGE_TIMEOUT);
+                if (stripos($url,'.onion') !== false) {
+                    curl_setopt($sites[$i][0], CURLOPT_PROXY, '127.0.0.1:9150');
+                    curl_setopt($sites[$i][0], CURLOPT_PROXYTYPE, 7);
+                }
                 if(!$minimal) {
                     curl_setopt($sites[$i][0], CURLOPT_HEADER, true);
                 }
@@ -267,6 +271,10 @@ class FetchUrl implements CrawlConstants
         $headers = array();
         if(!$minimal) {
             $url_ip_parts = explode("###", $url);
+            if (isset($url_ip_parts[0]) && (stripos($url_ip_parts[0],'.onion') !== false) ) {
+                $url_ip_parts = array($url_ip_parts[0]);
+                $url = $url_ip_parts[0];
+            }
             if(count($url_ip_parts) > 1) {
                 $ip_address = ltrim(urldecode(array_pop($url_ip_parts)), "#");
                 $len = strlen(inet_pton($ip_address));
@@ -297,6 +305,7 @@ class FetchUrl implements CrawlConstants
             } else {
                 $url_with_ip_if_possible = $url;
             }
+
         } else {
             $url_with_ip_if_possible = $url;
         }
@@ -566,6 +575,10 @@ class FetchUrl implements CrawlConstants
         curl_setopt($agents[$host], CURLOPT_FAILONERROR, true);
         curl_setopt($agents[$host], CURLOPT_TIMEOUT, SINGLE_PAGE_TIMEOUT);
         curl_setopt($agents[$host], CURLOPT_CONNECTTIMEOUT, PAGE_TIMEOUT);
+        if (stripos($url,'.onion') !== false) {
+            curl_setopt($agents[$host], CURLOPT_PROXY, '127.0.0.1:9150');
+            curl_setopt($agents[$host], CURLOPT_PROXYTYPE, 7);
+        }
         //make lighttpd happier
         curl_setopt($agents[$host], CURLOPT_HTTPHEADER, array('Expect:'));
         if($post_data != NULL) {
