@@ -60,7 +60,9 @@ class SubsearchElement extends Element
             $data['SUBSEARCH'] = "";
         }
         $drop_threshold = 3;
-
+        if(MOBILE) {
+        $drop_threshold = 0;
+        }
         if(count($data["SUBSEARCHES"]) > $drop_threshold + 1) {
             $subdropdown = true;
         } else {

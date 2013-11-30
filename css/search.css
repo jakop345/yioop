@@ -519,6 +519,7 @@ body.mobile
     z-index: 4;
 }
 
+
 #more-on
 {
     display: none;
@@ -537,7 +538,6 @@ li.outer div
     width:1.25in;
     z-index:3;
 }
-
 
 .html-ltr li.outer div
 {
@@ -558,9 +558,10 @@ li.outer div
 
 .mobile li.outer div
 {
-    left: 110px;
+    left: 2px;
     position: relative;
-    right: 110px;
+    right: 2px;
+    width: 80px;
 }
 
 ul.in-list
@@ -568,11 +569,22 @@ ul.in-list
     background-color: white;
 }
 
+.mobile ul.in-list
+{
+    padding-left:2px;
+    margin-left:0;
+}
+
 ul.in-list li
 {
     list-style-type: none;
     padding-bottom: 0.05in;
     padding-top: 0.05in;
+}
+.mobile ul.in-list li
+{
+    padding-bottom: 2px;
+    padding-top: 2px;
 }
 
 .html-rtl .subsearch ul
@@ -1022,6 +1034,13 @@ ul.in-list li
     position: relative;
     top: -0.6in;
     z-index: 1;
+}
+.mobile .spell
+{
+    position: relative;
+    top:-15px;
+    left: 4px;
+    right: 4px;
 }
 
 .search-box
