@@ -113,7 +113,7 @@ class IntersectIterator extends IndexBundleIterator
      *  Number of seconds before timeout and stop 
      *  syncGenDocOffsetsAmongstIterators if slow
      */
-    const SYNC_TIMEOUT = 5;
+    const SYNC_TIMEOUT = 4;
 
     /**
      * Creates an intersect iterator with the given parameters.
