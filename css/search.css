@@ -1374,13 +1374,14 @@ ul.in-list li
     margin-right: 2px;
     padding: 2px;
     position: relative;
-    top: 15px;
+    top: 5px;
 }
 
 .mobile .image-list img
 {
     height: 50px;
     width: 50px;
+    padding:2px;
 }
 
 /*
