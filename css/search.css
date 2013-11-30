@@ -215,8 +215,8 @@ p
 
 .medium-text-area
 {
-    width: 100%;
     height: 2.5in;
+    width: 100%;
 }
 
 .mobile .medium-text-area
@@ -248,8 +248,8 @@ p
 .mobile .center
 {
     left: -40px;
-    right: -40px;
     position: relative;
+    right: -40px;
     top: 10px;
 }
 
@@ -1592,20 +1592,17 @@ ul.in-list li
 .mobile .current-activity
 {
     clear:both;
-    position: relative;
-    top:120px;
-    left: 5px;
-    right:5px;
-    margin:0;
-    padding:0;
-    margin-right: 3px;
-    padding-right: 1px;
-    padding-left: 1px;
-    padding-bottom: 1px;
-    width: 310px;
-    min-width: 0;
-    min-height: 200px;
     font-size:12pt;
+    left: 5px;
+    margin:0;
+    margin-right: 3px;
+    min-height: 200px;
+    min-width: 0;
+    padding: 0 1px 1px 1px;
+    position: relative;
+    right:5px;
+    top:120px;
+    width: 310px;
 }
 
 .current-activity h2
@@ -1697,8 +1694,8 @@ ul.in-list li
     border: 1px solid black;
     border-bottom: 0px;
     margin: 0;
-    padding: 5px 5px 0px 5px;
     overflow: hidden;
+    padding: 5px 5px 0px 5px;
     text-decoration: none;
 }
 
@@ -1840,29 +1837,30 @@ ul.in-list li
 
 .indexing-plugin-lightbox
 {
+    background-color:gray;
     display: none;
+    height:14.5in;
+    left: 0%;
+    opacity:0.95;
     position:absolute;
     top: 0%;
-    left: 0%;
     width:100%;
-    height:14.5in;
-    background-color:gray;
-    opacity:0.95;
     z-index:100;
 }
 
 .light-content
 {
+    background-color: white;
+    border: 16px solid #8A4;
+    height: 4in;
+    left: 20%;
+    overflow: auto;
+    padding: 16px;
     position: absolute;
     top: 8.5in;
-    left: 20%;
     width: 60%;
-    height: 4in;
-    padding: 16px;
-    border: 16px solid #8A4;
-    background-color: white;
     z-index:101;
-    overflow: auto;
+
 }
 
 .restrict-sites-by-url
@@ -1889,9 +1887,9 @@ ul.in-list li
 #label-docs-form th,
 #label-docs-queue .actions
 {
-    width: 1.0in;
-    padding: 0.1in 0.2in 0.1in 0in;
     font-weight: normal;
+    padding: 0.1in 0.2in 0.1in 0in;
+    width: 1.0in;
 }
 
 #label-docs-queue .actions
@@ -1929,10 +1927,10 @@ ul.in-list li
 #label-docs-queue tr.notinclass a.notinclass,
 #label-docs-queue tr.skip a.skip
 {
-    text-decoration: none;
     color: black;
     cursor: default;
     font-weight: bold;
+    text-decoration: none;
 }
 
 #label-docs-queue p
@@ -1958,20 +1956,20 @@ ul.in-list li
 
 #transfer
 {
-    z-index: 10000;
-    filter: alpha(opacity=50); 
-    opacity: 0.7;
-    background-color: black;
-    position: fixed; 
     align: middle;
-    top: 0px;
-    left: 0px;
-    width: 100%;
-    height: 100%;
+    background-color: black;
     color: white; 
+    filter: alpha(opacity=50);
+    height: 100%;
+    left: 0px;
+    opacity: 0.7;
+    position: fixed;
     text-align:center;
+    top: 0px;
     vertical-align: middle;
     visibility: hidden;
+    width: 100%;
+    z-index: 200;
 }
 
 
