@@ -411,9 +411,14 @@ define('ERROR_CRAWL_DELAY', 20);
 /** how often should we make in OPIC the sum of weights totals MAX_URLS */
 define('NORMALIZE_FREQUENCY', 10000);
 
+/** Proxy to use when try to download TOR pages */
+if(!defined('TOR_PROXY')) {
+    define('TOR_PROXY', '127.0.0.1:9150');
+}
+
 /**
  * @global array file extensions which can be handled by the search engine,
- * other extensions will be ignored. This array is populated in the individual 
+ * other extensions will be ignored. This array is populated in the individual
  * lib/processors page processors
  */
 $INDEXED_FILE_TYPES = array("unknown");

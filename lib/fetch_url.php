@@ -116,7 +116,7 @@ class FetchUrl implements CrawlConstants
                 curl_setopt($sites[$i][0], CURLOPT_CONNECTTIMEOUT,PAGE_TIMEOUT);
                 curl_setopt($sites[$i][0], CURLOPT_TIMEOUT, PAGE_TIMEOUT);
                 if (stripos($url,'.onion') !== false) {
-                    curl_setopt($sites[$i][0], CURLOPT_PROXY, '127.0.0.1:9150');
+                    curl_setopt($sites[$i][0], CURLOPT_PROXY, TOR_PROXY);
                     curl_setopt($sites[$i][0], CURLOPT_PROXYTYPE, 7);
                 }
                 if(!$minimal) {
@@ -575,8 +575,8 @@ class FetchUrl implements CrawlConstants
         curl_setopt($agents[$host], CURLOPT_FAILONERROR, true);
         curl_setopt($agents[$host], CURLOPT_TIMEOUT, SINGLE_PAGE_TIMEOUT);
         curl_setopt($agents[$host], CURLOPT_CONNECTTIMEOUT, PAGE_TIMEOUT);
-        if (stripos($url,'.onion') !== false) {
-            curl_setopt($agents[$host], CURLOPT_PROXY, '127.0.0.1:9150');
+        if (stripos($site,'.onion') !== false) {
+            curl_setopt($agents[$host], CURLOPT_PROXY, TOR_PROXY);
             curl_setopt($agents[$host], CURLOPT_PROXYTYPE, 7);
         }
         //make lighttpd happier

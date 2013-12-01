@@ -161,10 +161,10 @@ class WordfilterPlugin extends IndexingPlugin implements CrawlConstants
      *  @param array $configuration an associative array of word => actions
      *      that say how this plugin should behave
      */
-    function saveConfiguration($confguration)
+    function saveConfiguration($configuration)
     {
         $config_file = WORK_DIRECTORY."/data/word_filter_plugin.txt";
-        file_put_contents($config_file, serialize($confguration));
+        file_put_contents($config_file, serialize($configuration));
     }
 
     /**
