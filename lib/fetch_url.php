@@ -223,8 +223,8 @@ class FetchUrl implements CrawlConstants
                     $sites[$i][self::TYPE] = strtolower(trim($type_parts[0]));
                 }
 
-                curl_multi_remove_handle($agent_handler, $sites[$i][0]);
-                // curl_close($sites[$i][0]);
+                //curl_multi_remove_handle($agent_handler, $sites[$i][0]);
+                curl_close($sites[$i][0]);
             } //end big if
 
         } //end for
