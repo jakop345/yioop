@@ -113,6 +113,8 @@ require_once BASE_DIR."/lib/fetch_url.php";
 require_once BASE_DIR."/lib/crawl_constants.php";
 /** used to build mini-inverted index*/
 require_once BASE_DIR."/lib/index_shard.php";
+/** Used to extract Git internal urls from given Git url*/
+require_once BASE_DIR."/lib/fetch_git_repository_urls.php";
 
 /*
  *  We'll set up multi-byte string handling to use UTF-8
@@ -416,10 +418,52 @@ class Fetcher implements CrawlConstants
     var $active_rankers;
 
     /**
+     * To keep track of total number of Git internal urls
+     *
+     * @var int
+     */
+    var $total_git_urls;
+
+    /**
+     * To store all the internal git urls fetched
+     *
+     * @var array
+     */
+    var $all_git_urls;
+
+    /**
+     * To map programming languages with their extensions
+     *
+     * @var array
+     */
+    var $programming_language_extension;
+
+    /**
      * Before receiving any data from a queue server's web app this is
      * the default assumed post_max_size in bytes
      */
     const DEFAULT_POST_MAX_SIZE = 2000000;
+
+    /**
+     * constant indicating Git repository
+     */
+    const REPOSITORY_GIT = 'git';
+
+    /**
+     * constant indicating Git repository
+     */
+    const GIT_URL_CONTINUE = '@@@@';
+
+    /**
+     * An indicator to tell no actions to be taken
+     */
+    const INDICATOR_NONE = 'none';
+
+    /**
+     * A indicator to represent next position after the access code in Git
+     * tree object
+     */
+     const HEX_NULL_CHARACTER = "\x00";
 
     /**
      * Sets up the field variables so that crawling can begin
@@ -474,6 +518,11 @@ class Fetcher implements CrawlConstants
 
         $this->active_classifiers = array();
         $this->active_rankers = array();
+
+        $this->total_git_urls = 0;
+        $this->all_git_urls = array();
+        $this->programming_language_extension = array('java' => 'java',
+            'py' => 'py');
 
         //we will get the correct crawl order from a queue_server
         $this->crawl_order = self::PAGE_IMPORTANCE;
@@ -707,10 +756,26 @@ class Fetcher implements CrawlConstants
         $site_pages = array_merge($site_pages,
             FetchUrl::getPages($filtered_sites, true,
                 $this->page_range_request, $tmp_dir));
-
+        for($j = 0; $j < count($site_pages); $j++) {
+            if(isset($site_pages[$j][self::REPOSITORY_TYPE])) {
+                $git_repository_url = $site_pages[$j][self::URL];
+                $git_compressed_content = FetchGitRepositoryUrls::getGitdata(
+                    $git_repository_url);
+                $git_uncompressed_content = gzuncompress(
+                    $git_compressed_content);
+                $length = strlen ($git_uncompressed_content);
+                $git_hash_end = strpos($git_uncompressed_content,
+                    self::HEX_NULL_CHARACTER);
+                $git_uncompressed_content = substr($git_uncompressed_content,
+                    $git_hash_end + 1, $length);
+                $site_pages[$j][self::PAGE] = $git_uncompressed_content;
+                $mime_type = UrlParser::guessMimeTypeFromFileName(
+                    $site_pages[$j][self::FILE_NAME]);
+                $site_pages[$j][self::TYPE] = $mime_type;
+            }
+        }
         list($downloaded_pages, $schedule_again_pages) =
             $this->reschedulePages($site_pages);
-
         if($can_schedule_again == true) {
             //only schedule to crawl again on fail sites without crawl-delay
             crawlLog("  Scheduling again..");
@@ -1379,9 +1444,26 @@ class Fetcher implements CrawlConstants
                 // only download if host doesn't seem congested
                 if(!isset($this->hosts_with_errors[$host]) ||
                     $this->hosts_with_errors[$host] < DOWNLOAD_ERROR_THRESHOLD){
-                    $seeds[$i][self::URL] = $site_pair['value'][0];
-                    $seeds[$i][self::WEIGHT] = $site_pair['value'][1];
-                    $seeds[$i][self::CRAWL_DELAY] = $site_pair['value'][2];
+                    $url_to_check = $site_pair['value'][0];
+                    $extension = UrlParser::getDocumentType($url_to_check);
+                    $repository_indicator = FetchGitRepositoryUrls::
+                        checkForRepository($extension);
+                    if($repository_indicator == self::REPOSITORY_GIT) {
+                        $git_internal_urls = FetchGitRepositoryUrls::
+                            setGitRepositoryUrl($url_to_check, $i, $seeds,
+                                $repository_indicator, $site_pair,
+                                    $this->total_git_urls, $this->all_git_urls);
+                        $i = $git_internal_urls['position'];
+                        $git_url_index = $git_internal_urls['index'];
+                        $seeds = $git_internal_urls['seeds'];
+                        $repository_indicator = $git_internal_urls['indicator'];
+                        $this->total_git_urls = $git_internal_urls['count'];
+                        $this->all_git_urls = $git_internal_urls['all'];
+                    } else {
+                        $seeds[$i][self::URL] = $site_pair['value'][0];
+                        $seeds[$i][self::WEIGHT] = $site_pair['value'][1];
+                        $seeds[$i][self::CRAWL_DELAY] = $site_pair['value'][2];
+                    }
                     /*
                       Crawl delay is only used in scheduling on the queue_server
                       on the fetcher, we only use crawl-delay to determine
@@ -1403,10 +1485,28 @@ class Fetcher implements CrawlConstants
         } //end while
 
         foreach($delete_indices as $delete_index) {
+            $extension = UrlParser::getDocumentType(
+                $this->to_crawl[$delete_index][0]);
+            $repository_type = FetchGitRepositoryUrls::checKForRepository(
+                $extension);
+            $git_set = false;
             if($to_crawl_flag == true) {
-                unset($this->to_crawl[$delete_index]);
+                if($repository_type != self::REPOSITORY_GIT) {
+                    unset($this->to_crawl[$delete_index]);
+                }
             } else {
                 unset($this->to_crawl_again[$delete_index]);
+            }
+            if($repository_type == self::REPOSITORY_GIT) {
+                if(!$git_set) {
+                    $next_url_start = $url_to_check . self::GIT_URL_CONTINUE.
+                        $git_url_index;
+                    $git_set = true;
+                    $this->to_crawl[$delete_index][0] = $next_url_start;
+                }
+                if($repository_indicator == self::INDICATOR_NONE) {
+                    unset($this->to_crawl[$delete_index]);
+                }
             }
         }
 
@@ -1501,7 +1601,19 @@ class Fetcher implements CrawlConstants
             } else {
                 $type = $site[self::TYPE];
             }
-
+            if(isset($site[self::FILE_NAME])) {
+                $extension = UrlParser::getDocumentType($site[self::FILE_NAME]);
+                if($extension == $this->programming_language_extension['java']){
+                    $type = "text/java";
+                } else if($extension == $this->programming_language_extension[
+                    'py']){
+                    $type = "text/py";
+                } else {
+                    $type = $site[self::TYPE];
+                }
+            } else {
+                $type = $site[self::TYPE];
+            }
             $handled = false;
             /*deals with short URLs and directs them to the original link
               for robots.txt don't want to introduce stuff that can be
@@ -1582,8 +1694,17 @@ class Fetcher implements CrawlConstants
                     }
                 }
                 crawlLog("  Using Processor...".$page_processor);
+                if(isset($site[self::REPOSITORY_TYPE]) &&
+                    $site[self::REPOSITORY_TYPE] == self::REPOSITORY_GIT) {
+                    $tmp_url_store = $site[self::URL];
+                    $site[self::URL] = $site[self::FILE_NAME];
+                }
                 $doc_info = $processor->handle($site[self::PAGE],
                     $site[self::URL]);
+                if(isset($site[self::REPOSITORY_TYPE]) &&
+                    $site[self::REPOSITORY_TYPE] == self::REPOSITORY_GIT) {
+                    $site[self::URL] = $tmp_url_store;
+                }
                 if(!$doc_info) {
                     crawlLog("  Processing Yielded No Data For: ".
                         $site[self::URL]);
@@ -1659,11 +1780,22 @@ class Fetcher implements CrawlConstants
 
                 $summarized_site_pages[$i][self::URL] =
                     strip_tags($site[self::URL]);
-                $summarized_site_pages[$i][self::TITLE] = strip_tags(
-                    $site[self::DOC_INFO][self::TITLE]);
+                if(isset($site[self::REPOSITORY_TYPE]) &&
+                    $site[self::REPOSITORY_TYPE] == self::REPOSITORY_GIT) {
+                     $summarized_site_pages[$i][self::TITLE] =
+                         $site[self::FILE_NAME];
+                } else {
+                     $summarized_site_pages[$i][self::TITLE] = strip_tags(
+                         $site[self::DOC_INFO][self::TITLE]);
                     // stripping html to be on the safe side
-                $summarized_site_pages[$i][self::DESCRIPTION] =
-                    strip_tags($site[self::DOC_INFO][self::DESCRIPTION]);
+                }
+                if(!isset($site[self::REPOSITORY_TYPE])) {
+                    $summarized_site_pages[$i][self::DESCRIPTION] =
+                        strip_tags($site[self::DOC_INFO][self::DESCRIPTION]);
+                } else {
+                    $summarized_site_pages[$i][self::DESCRIPTION] =
+                        $site[self::DOC_INFO][self::DESCRIPTION];
+                }
                 if(isset($site[self::DOC_INFO][self::JUST_METAS]) ||
                     isset($site[self::ROBOT_PATHS])) {
                     $summarized_site_pages[$i][self::JUST_METAS] = true;
@@ -2510,8 +2642,19 @@ class Fetcher implements CrawlConstants
                 if($is_link) {
                     $phrase_string = $site[self::DESCRIPTION];
                 } else {
-                    $phrase_string = $host_words." ".$site[self::TITLE] .
+                    if(isset($site[self::LANG])) {
+                        if(isset($this->programming_language_extension[$site[
+                            self::LANG]])) {
+                            $phrase_string = $site[self::DESCRIPTION];
+                        } else {
+                            $phrase_string = $host_words." ".$site[self::TITLE]
+                                . " ". $path_words . " ". $site[self::
+                                    DESCRIPTION];
+                        }
+                    } else {
+                        $phrase_string = $host_words." ".$site[self::TITLE] .
                             " ". $path_words . " ". $site[self::DESCRIPTION];
+                    }
                 }
                 if(isset($site[self::LANG])) {
                     $lang = guessLocaleFromString(
@@ -2522,8 +2665,9 @@ class Fetcher implements CrawlConstants
                     PhraseParser::extractPhrasesInLists($phrase_string,
                         $lang);
                 $len = strlen($phrase_string);
-                if(PhraseParser::computeSafeSearchScore($word_lists, $len) <
-                    0.012) {
+                if(isset($this->programming_language_extension[$lang]) ||
+                    PhraseParser::computeSafeSearchScore($word_lists, $len) <
+                        0.012) {
                     $meta_ids[] = "safe:true";
                     $safe = true;
                 } else {
@@ -2569,7 +2713,8 @@ class Fetcher implements CrawlConstants
                 In this case link  info is not particularly useful for indexing
                 and can greatly slow building inverted index.
              */
-            if(!$this->no_process_links && !isset($site[self::JUST_METAS])) {
+            if(!$this->no_process_links && !isset($site[self::JUST_METAS]) &&
+                !isset($this->programming_language_extension[$lang])) {
                 foreach($site[self::LINKS] as $url => $link_text) {
                     /* this mysterious check means won't index links from
                       robots.txt. Sitemap will still be in TO_CRAWL, but that's

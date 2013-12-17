@@ -85,6 +85,18 @@ class PhraseModel extends ParallelModel
     var $query_info;
 
     /**
+     * Used to hold extension of programming language which is used the language
+     * @var string
+     */
+    var $programming_language_map;
+
+   /**
+     * A indicator to indicate source code files
+     * @var string
+     */
+    var $program_indicator;
+
+    /**
      * Number of pages to cache in one go in memcache or filecache
      * Size chosen based on 1MB max object size for memcache or filecache
      */
@@ -95,6 +107,8 @@ class PhraseModel extends ParallelModel
     function __construct($db_name = DB_NAME)
     {
         parent::__construct($db_name);
+        $this->programming_language_map = array('java' => 'java', 'py' => 'py');
+        $this->program_indicator = false;
     }
 
     /**
@@ -476,6 +490,7 @@ class PhraseModel extends ParallelModel
      */
     function parseWordStructConjunctiveQuery(&$phrase, $guess_semantics = true)
     {
+        $query = $phrase;
         $indent= "&nbsp;&nbsp;";
         $in2 = $indent . $indent;
         $in3 = $in2 . $indent;
@@ -496,7 +511,10 @@ class PhraseModel extends ParallelModel
             snippets in the results by bolding either
          */
         $query_words = explode(" ", $query_string); //not stemmed
-
+        if($this->program_indicator) {
+            $query_string = $query;
+            $this->program_indicator = false;
+        }
         $locale_tag = guessLocaleFromString($query_string);
 
         $quote_state = false;
@@ -825,6 +843,9 @@ class PhraseModel extends ParallelModel
         }
 
         $tag = guessLocaleFromString($phrase);
+        if(isset($this->programming_language_map[$tag])) {
+            $this->program_indicator = true;
+        }
         $main_tag = substr($tag, 0, 2);
         if($len == 1) {
             $letter = "";

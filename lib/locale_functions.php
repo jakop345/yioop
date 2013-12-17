@@ -106,6 +106,7 @@ function guessLocale()
  */
 function guessLocaleFromString($phrase_string, $locale_tag = NULL)
 {
+    $query_string = $phrase_string;
     $locale_tag = ($locale_tag == NULL) ? getLocaleTag() : $locale_tag;
     $phrase_string = mb_ereg_replace(PUNCT."|[0-9]|\s", "", $phrase_string);
     $phrase_string = mb_convert_encoding($phrase_string, "UTF-32", "UTF-8");
@@ -150,8 +151,38 @@ function guessLocaleFromString($phrase_string, $locale_tag = NULL)
             }
         }
     }
+    if($locale_tag == 'en-US') {
+        $locale_tag = checkQuery($query_string);
+    }
     return $locale_tag;
 }
+
+/**
+ * Tries to find wether query belongs to a programming language
+ *
+ *  @param string $query query entered by user
+ *
+ *  @return string $lang programming language for the the query provided
+ */
+function checkQuery($query)
+{
+    $programming_language_map = array('java:' => 'java', 'python:' => 'py');
+    $control_word = "/^(java:|python:)/";
+    $position = preg_match($control_word, trim($query),
+        $matches, PREG_OFFSET_CAPTURE);
+    if(isset($matches[0][0])) {
+        $matched_word = $matches[0][0];
+        if(isset($programming_language_map[$matched_word])) {
+            $lang = $programming_language_map[$matched_word];
+        } else {
+            $lang = 'en-US';
+        }
+    } else {
+        $lang = 'en-US';
+    }
+    return $lang;
+}
+
 /**
  * Tries to guess at a language tag based on the name of a character
  * encoding

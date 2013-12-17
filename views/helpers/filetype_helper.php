@@ -80,10 +80,17 @@ class FiletypeHelper extends Helper
             case "application/vnd.ms-powerpoint":
                 echo " [PPT]";
             break;
+            case "application/vnd.openxmlformats-officedocument." .
+                "presentationml.presentation":
+                echo " [PPTX]";
+            break;
             case "application/rss+xml":
                 echo " [RSS]";
             break;
             case "application/rtf":
+                echo " [RTF]";
+            break;
+            case "text/rtf":
                 echo " [RTF]";
             break;
             case "text/tab-separated-values":
@@ -95,7 +102,20 @@ class FiletypeHelper extends Helper
             case "application/vnd.ms-excel":
                 echo " [XLS]";
             break;
+            case "application/vnd.openxmlformats-officedocument." .
+                "spreadsheetml.sheet":
+                echo " [XLSX]";
+            break;
             case "text/xml":
+                echo " [XML]";
+            break;
+            case "text/java":
+                echo " [Java]";
+            break;
+            case "text/py":
+                echo " [PYTHON]";
+            break;
+            case "text/gitxml":
                 echo " [XML]";
             break;
         }

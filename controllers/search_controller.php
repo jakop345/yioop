@@ -128,13 +128,17 @@ class SearchController extends Controller implements CrawlConstants
                     $save_timestamp);
                     // calculate the results of a search if there is one
             } else {
-                $ui_array = array("highlight", "yioop_nav", "history",
-                    "summaries", "version");
-                if(isset($_REQUEST['from_cache'])) {
-                    $ui_array[] = "cache_link_referrer";
-                }
-                if(isset($_REQUEST['hist_open'])) {
-                    $ui_array[] = "hist_ui_open";
+                if(isset($_REQUEST['repository'])) {
+                    $ui_array = array();
+                } else {
+                    $ui_array = array("highlight", "yioop_nav", "history",
+                        "summaries", "version");
+                    if(isset($_REQUEST['from_cache'])) {
+                        $ui_array[] = "cache_link_referrer";
+                    }
+                    if(isset($_REQUEST['hist_open'])) {
+                        $ui_array[] = "hist_ui_open";
+                    }
                 }
                 $this->cacheRequestAndOutput($arg, $ui_array, $query,
                     $index_timestamp);

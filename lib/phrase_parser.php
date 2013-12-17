@@ -100,6 +100,28 @@ class PhraseParser
     static $materialized_metas = array("media:", "safe:", "class:");
 
     /**
+     * A list of meta words that might be extracted from a query
+     * @var array
+     */
+    static $programming_language_map = array('java' => 'java',
+            'py' => 'python');
+
+    /**
+     * Constant storing the string
+     */
+    const TOKENIZER = 'Tokenizer';
+
+    /**
+     * Indicates the control word for programming languages
+     */
+    const CONTROL_WORD_INDICATOR = ':';
+
+    /**
+     * Indicates the control word for programming languages
+     */
+    const REGEX_INITIAL_POSITION = 1;
+
+    /**
      * Converts a summary of a web page into a string of space separated words
      *
      * @param array $page associative array of page summary data. Contains
@@ -141,9 +163,14 @@ class PhraseParser
     static function extractPhrases($string, $lang = NULL, $index_name = NULL,
         $exact_match = false, $threshold = 10)
     {
-        self::canonicalizePunctuatedTerms($string, $lang);
+        if(isset(self::$programming_language_map[$lang])) {
+            $control_word = self::$programming_language_map[$lang] .
+                self::CONTROL_WORD_INDICATOR;
+            $string = trim(substr($string, strlen($control_word) + 1));
+        } else {
+            self::canonicalizePunctuatedTerms($string, $lang);
+        }
         $terms = self::stemCharGramSegment($string, $lang);
-
         $num = count($terms);
         if($index_name == NULL || $num <= 1) {
             return $terms;
@@ -233,7 +260,9 @@ class PhraseParser
      */
     static function extractPhrasesInLists($string, $lang = NULL)
     {
-        self::canonicalizePunctuatedTerms($string, $lang);
+        if(!isset(self::$programming_language_map[$lang])) {
+            self::canonicalizePunctuatedTerms($string, $lang);
+        }
         return self::extractMaximalTermsAndFilterPhrases($string, $lang);
     }
 
@@ -341,13 +370,261 @@ class PhraseParser
      */
     static function stemCharGramSegment($string, $lang)
     {
-        mb_internal_encoding("UTF-8");
-        $string = mb_strtolower($string);
-        $string = mb_ereg_replace("\s+|".PUNCT, " ", $string);
-        $terms = self::segmentSegment($string, $lang);
-        $terms = self::charGramTerms($terms, $lang);
-        $terms = self::stemTerms($terms, $lang);
+        if(isset(self::$programming_language_map[$lang])) {
+            mb_internal_encoding("UTF-8");
+            $tokenizer_name = self::$programming_language_map[$lang] .
+                self::TOKENIZER;
+            $terms = self::$tokenizer_name($string, $lang);
+        } else {
+            mb_internal_encoding("UTF-8");
+            $string = mb_strtolower($string);
+            $string = mb_ereg_replace("\s+|".PUNCT, " ", $string);
+            $terms = self::segmentSegment($string, $lang);
+            $terms = self::charGramTerms($terms, $lang);
+            $terms = self::stemTerms($terms, $lang);
+        }
         return $terms;
+    }
+
+    /**
+     * Given a string tokenizes into Java tokens
+     *
+     * @param string $string what to extract terms from
+     * @param string $lang indicates programming language
+     *
+     * @return array the terms computed from the string
+     */
+    static function javaTokenizer($string, $lang)
+    {
+        //Comments
+        $single_line_comments = "(\/\/).*?(\n)";
+        $multiline_comments = "\\/\\*[^(\\/\\*)]*?\\*\\/";
+        $javadoc_comments = "\/\*([^*]|[\r\n]|(\*+([^*\/]|[\r\n])))*\*+\/";
+        $multiple_line_comments = "$javadoc_comments|$multiline_comments";
+        $comments = "($multiple_line_comments|$single_line_comments)";
+        //Identifiers
+        $alphabetic = "[A-Za-z]";
+        $id_start = "($alphabetic)|\\".'$'."|\_";
+        $numeric = "[0-9]";
+        $repeat = "$id_start|$numeric";
+        $identifiers = "($id_start)($repeat)*";
+        //Keywords
+        $keywords_part1 = "abstract|assert|boolean|break|byte|case|catch|char";
+        $keywords_part2 = "class|const|continue|default|do|double|else|extends";
+        $keywords_part3 = "final|finally|float|for|goto|if|implements|import";
+        $keywords_part4 = "instanceof|int|interface|long|native|new|package";
+        $keywords_part5 = "private|protected|public|return|short|static";
+        $keywords_part6 = "strictfp|super|synchronized|switch|this|throw";
+        $keywords_part7 = "throws|transient|try|void|volatile|while";
+        $keywords_string1 = "$keywords_part1|$keywords_part2|$keywords_part3";
+        $keywords_string2 = "$keywords_part4|$keywords_part5|$keywords_part6";
+        $keywords_string3 = "$keywords_part7";
+        $keywords = "($keywords_string1|$keywords_string2|$keywords_string3)";
+        //Seperators
+        $seperators = "(;|,|\.|\(|\)|\{|\}|\[|\])";
+        //Operators
+        $operators_part1 = "\+|\-|\*|\/|&|\||\^|%|<<|>>|=|>|<|!|~|\?|:";
+        $operators_part2 = "\-\-|\+\+|>>>|==|<=|>=|!=|&&|\|\|";
+        $operators_part3 = "\+=|\-=|\*=|\/=|&=|\|=|\^=|%=|<<=|>>=|>>>=";
+        $operators = "($operators_part3|$operators_part2|$operators_part1)";
+        //Null Literal
+        $null_literal = "null";
+        //Boolean Literal
+        $boolean_literal = "true|false";
+        //Floating point Literal
+        $non_zero_digit = "1|2|3|4|5|6|7|8|9";
+        $digit = "0|$non_zero_digit";
+        $digits = "($digit)($digit)*";
+        $exponent_part = "(e|E)([\+|\-])($digits)";
+        $float_part1 = "($digits)($exponent_part)";
+        $float_part2 = "($digits)(\.)($digits)?($exponent_part)?";
+        $float_part3 = "(\.$digits)($exponent_part)?";
+        $floating_point_numeral = "$float_part1|$float_part2|$float_part3";
+        //Integer Literal
+        $decimal_numeral = "0|($non_zero_digit)($digits){0,1}";
+        $hex_numeral = "0[x|X][0-9A-Fa-f]+";
+        $octal_numeral = "0[0-7]+";
+        $integer_numeral = "($hex_numeral|$octal_numeral|$decimal_numeral)";
+        //Character Literal
+        $special_part1 = "\!|%|\^|&|\*|\(|\)|\-|\+|\=|\{|\}|\||~|\[|\]|\\|;";
+        $special_part2 = "'|\:|\<|\>|\?|,|\.|\/|#|@|`|_";
+        $special = "$special_part1|$special_part2";
+        $alphanumeric = "[A-Za-z0-9]";
+        $graphic = "$alphanumeric|$special";
+        $escape = "\\n|\\t|\\v|\\a|\\b|\\r|\\f|\\\\|\\'|\\\"";
+        $char_literal = "(\'($graphic)\'|\'\s\'|\'($escape)\')";
+        //String Literal
+        $string_literal = "(\"($graphic|\s|$escape)*?[^\\\]\")";
+        //Literals
+        $literals_part1 = "$string_literal|$floating_point_numeral";
+        $literals_part2 = "$integer_numeral|$char_literal|$boolean_literal";
+        $literals_part3 = "$null_literal";
+        $literals = "($literals_part1|$literals_part2|$literals_part3)";
+        //Java Tokens
+        $tokens_part1 = "$comments|$literals|$operators";
+        $tokens_part2 = "$seperators|$keywords|$identifiers";
+        $tokens = "($tokens_part1|$tokens_part2)";
+        $length = strlen($string);
+        $current_length = $length;
+        $position = self::REGEX_INITIAL_POSITION;
+        $results = array();
+        while($position == 1 && $current_length > 0) {
+            $temp_results = array();
+            $position = preg_match("/$tokens/", $string, $matches,
+                PREG_OFFSET_CAPTURE);
+            if(isset($matches[0][0])) {
+                $text = preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", "\n",
+                    $matches[0][0]);
+                $lines = explode("\n", trim($text));
+                $line = implode(' ', $lines);
+                $data = preg_replace("/[\t\s]+/", ' ', trim($line));
+                $temp_results = explode(" ", trim($data));
+                foreach($temp_results as $result) {
+                    if(!empty($result)) {
+                        $results[] = self::$programming_language_map[$lang] .
+                            self::CONTROL_WORD_INDICATOR . trim($result);
+                    }
+                }
+                $current_length = (strlen($matches[0][0]));
+                $string = trim(substr($string, $current_length, $length));
+            }
+        }
+        return $results;
+    }
+
+    /**
+     * Given a string tokenizes into Python tokens
+     *
+     * @param string $string what to extract terms from
+     * @param string $lang indicates programming language
+     *
+     * @return array the terms computed from the string
+     */
+    static function pythonTokenizer($string, $lang)
+    {
+        //Comments
+        $ordinary_part1 = "_|\(|\)|\[|\]|\{|\}|\+|\-|\*|\/|%";
+        $ordinary_part2 = "\!|&|\||\^|~|\<|\=|\>|,|\.|\:|;|$|\?|#|\@";
+        $ordinary = "$ordinary_part1|$ordinary_part2";
+        $lower = "a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z";
+        $upper = "A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z";
+        $digit = "0|1|2|3|4|5|6|7|8|9";
+        $graphic = "$lower|$upper|$digit|$ordinary";
+        $text_chars = "$graphic|\s|\"|\'";
+        $comments = "#($text_chars|\\\)*?(\n)";
+        //Identifiers
+        $id_start = "$lower|$upper|\_";
+        $repeat = "$id_start|$digit";
+        $identifiers = "($id_start)($repeat)*";
+        //Keywords
+        $keywords_part1 = "False|None|True|and|as|assert|break|class|continue";
+        $keywords_part2 = "finally|for|from|global|elif|import|in|def|del|if";
+        $keywords_part3 = "is|lambda|nonlocal|not|or|pass|raise|else|except";
+        $keywords_part4 = "return|try|while|with|yield";
+        $keywords_string1 = "$keywords_part1|$keywords_part2";
+        $keywords_string2 = "$keywords_part3|$keywords_part4";
+        $keywords = "($keywords_string1|$keywords_string2)";
+        //Operators
+        $operators_part1 = "is|in|or|not|and|\+|\-|\*|\/|%|<|>|&";
+        $operators_part2 = "\*\*|==|!=|<=|>=|\/\/";
+        $operators_part3 = "<<|>>|\^|~|\|";
+        $operators = "($operators_part3|$operators_part2|$operators_part1)";
+        //Delimiters
+        $delimiters_part1 = "\.|,|:|;|@|=|\(|\)|\{|\}|\[|\]";
+        $delimiters_part2 = "\+=|\-=|\*=|\/=|\/\/=|%=|\*\*=";
+        $delimiters_part3 = "&=|\|=|\^=|<<=|>>=";
+        $delimiters = "$delimiters_part3|$delimiters_part2|$delimiters_part1";
+        //Floating point Literal
+        $digits = "($digit)($digit)*";
+        $mantissa = "($digits)\.($digit)*|\.($digits)";
+        $exponent = "e[\+|\-]$digits|E[\+|\-]$digits";
+        $float_literal = "($mantissa)($exponent)*|($digits)($exponent)";
+        //Integer Literal
+        $non_zero_digit = "1|2|3|4|5|6|7|8|9";
+        $binary_digit = "0|1";
+        $octal_digit = "0|1|2|3|4|5|6|7";
+        $hex_digit = "$digit|a|b|c|d|e|f|A|B|C|D|E|F";
+        $decimal_literal = "0+|($non_zero_digit)($digit)*";
+        $binary_literal_part1 = "0b($binary_digit)($binary_digit)*";
+        $binary_literal_part2 = "0B($binary_digit)($binary_digit)*";
+        $binary_literal = "$binary_literal_part1|$binary_literal_part2";
+        $octal_literal_part1 = "0O($octal_digit)($octal_digit)*";
+        $octal_literal_part2 = "0o($octal_digit)($octal_digit)*";
+        $octal_literal = "$octal_literal_part1|$octal_literal_part2";
+        $hex_literal_part1 ="0X($hex_digit)($hex_digit)*";
+        $hex_literal_part2 ="0x($hex_digit)($hex_digit)*";
+        $hex_literal = "$hex_literal_part1|$hex_literal_part2";
+        $integer_literal_part1 = "($binary_literal)|($octal_literal)";
+        $integer_literal_part2 = "($hex_literal)|($decimal_literal)";
+        $integer_literal = "$integer_literal_part1|$integer_literal_part2";
+        //Boolean Literal
+        $boolean_literal = "True|False";
+        //None Type Literal
+        $none_literal = "None";
+        //String Literal
+        $esc_a = "\\\o[$octal_digit]{3}|\\\h[$hex_digit]{2}|\\\[$text_chars]";
+        $unicode = "[^\\x00-\\x80]+";
+        $esc_u = "$esc_a|\\\n$unicode|\\\u[$hex_digit]{4}|\\\U[$hex_digit]{8}";
+        $raw_opt = "r|R";
+        $bytes_opt = "b|B";
+        $single_quoted_element1 = "($graphic|$esc_u|\\s|\\t|\')*";
+        $single_quoted_element2 = "($graphic|$esc_u|\\s|\\t|\")*";
+        $single_quoted_string1 = "(\"$single_quoted_element1\")";
+        $single_quoted_string2 = "(\'$single_quoted_element2\')";
+        $single_quoted_string = "$single_quoted_string1|$single_quoted_string2";
+        $triple_quoted_element = "$text_chars|$esc_u";
+        $triple_quoted_string1 = "(\"\"\"($triple_quoted_element)*?\"\"\")";
+        $triple_quoted_string2 = "(\'\'\'($triple_quoted_element)*?\'\'\')";
+        $triple_quoted_string = "$triple_quoted_string1|$triple_quoted_string2";
+        $string_literal_part1 = "($raw_opt)?($triple_quoted_string)";
+        $string_literal_part2 = "($raw_opt)?($single_quoted_string)";
+        $string_literal = "$string_literal_part1|$string_literal_part2";
+        //Byte Literal
+        $single_quoted_element3 = "($graphic|$esc_a|\\s|\\t|\')*";
+        $single_quoted_element4 = "($graphic|$esc_a|\\s|\\t|\")*";
+        $single_quoted_byte1 = "(\"$single_quoted_element3\")";
+        $single_quoted_byte2 = "(\'$single_quoted_element4\')";
+        $single_quoted_byte = "$single_quoted_byte1|$single_quoted_byte2";
+        $triple_quoted_byte1 = "(\"\"\"($triple_quoted_element)*?\"\"\")";
+        $triple_quoted_byte2 = "(\'\'\'($triple_quoted_element)*?\'\'\')";
+        $triple_quoted_byte = "$triple_quoted_byte1|$triple_quoted_byte2";
+        $bytes_literal_part1 = "($bytes_opt)($raw_opt)?($triple_quoted_byte)";
+        $bytes_literal_part2 = "($bytes_opt)($raw_opt)?($single_quoted_byte)";
+        $bytes_literal = "$bytes_literal_part1|$bytes_literal_part2";
+        //Literals
+        $literals_part1 = "$string_literal|$bytes_literal|$float_literal";
+        $literals_part2 = "$integer_literal|$boolean_literal|$none_literal";
+        $literals = "($literals_part1|$literals_part2)";
+        //Python Tokens
+        $tokens_part1 = "$comments|$literals|$delimiters";
+        $tokens_part2 = "$operators|$keywords|$identifiers";
+        $tokens = "($tokens_part1|$tokens_part2)";
+        $length = strlen($string);
+        $current_length = $length;
+        $position = self::REGEX_INITIAL_POSITION;
+        $results = array();
+        while($position == 1 && $current_length > 0) {
+            $temp_results = array();
+            $position = preg_match("/$tokens/", $string, $matches,
+                PREG_OFFSET_CAPTURE);
+            if(isset($matches[0][0])) {
+                $text = preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", "\n",
+                    $matches[0][0]);
+                $lines = explode("\n", trim($text));
+                $line = implode(' ', $lines);
+                $data = preg_replace("/[\t\s]+/", ' ', trim($line));
+                $temp_results = explode(" ", trim($data));
+                foreach($temp_results as $result) {
+                    if(!empty($result)) {
+                        $results[] = self::$programming_language_map[$lang] .
+                            self::CONTROL_WORD_INDICATOR . trim($result);
+                    }
+                }
+                $current_length = (strlen($matches[0][0]));
+                $string = trim(substr($string, $current_length, $length));
+            }
+        }
+        return $results;
     }
 
     /**

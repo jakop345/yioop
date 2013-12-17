@@ -64,6 +64,11 @@ class SearchView extends View implements CrawlConstants
     var $layout = "web";
 
     /**
+     * Represent extension of Git urls
+     */
+    const GIT_EXTENSION = ".git";
+
+    /**
      *  Draws the main landing pages as well as search result pages
      *
      *  @param array $data  PAGES contains all the summaries of web pages
@@ -215,9 +220,21 @@ class SearchView extends View implements CrawlConstants
                 ?>
 
                 <h2>
-                <a href="<?php  e(htmlentities($link_url));  ?>" rel="nofollow"
-                 <?php if($data["OPEN_IN_TABS"]) {
-                    ?> target="_blank" <?php }?> ><?php
+                <?php
+                    if(strpos($link_url, self::GIT_EXTENSION)) { ?>
+                    <a href="?<?php e(CSRF_TOKEN."=".$data[CSRF_TOKEN]);
+                        ?>&amp;c=search&amp;a=cache&amp;q=<?php
+                        e($data['QUERY']); ?>&amp;arg=<?php
+                        e(urlencode($url));
+                        ?>&amp;its=<?php e($page[self::CRAWL_TIME]);?>
+                        &amp;repository=git"
+                        rel='nofollow'>
+                <?php } else { ?>
+                    <a href="<?php  e(htmlentities($link_url));  ?>"
+                        rel="nofollow"
+                        <?php if($data["OPEN_IN_TABS"]) {
+                        ?> target="_blank" <?php }?> >
+                <?php }
                  if(isset($page[self::THUMB]) && $page[self::THUMB] != 'NULL') {
                     ?><img src="<?php e($page[self::THUMB]); ?>" alt="<?php
                         e($title); ?>"  /> <?php

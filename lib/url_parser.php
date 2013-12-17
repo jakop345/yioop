@@ -978,6 +978,64 @@ class UrlParser
         }
         return $out_links;
     }
+
+    /**
+     *  Guess mime type based on extension of the file in Git object
+     * 
+     *  @param string $$file_name name of the file
+     *  @return string $mime_type for the given file name
+     */
+    static function guessMimeTypeFromFileName($file_name)
+    {
+        $mime_type_map = array(
+            "bmp" => 'image/bmp',
+            "doc" => 'application/msword',
+            "epub" => 'application/epub+zip',
+            "gif" => 'image/gif',
+            "asp" => 'text/asp',
+            "aspx" => 'text/asp',
+            'cgi' => 'text/html',
+            "cfm" => 'text/html',
+            "cfml" => 'text/html',
+            "do" => 'text/html',
+            "htm" => 'text/html',
+            "html" => 'text/html',
+            "jsp" => 'text/html',
+            "php" => 'text/html',
+            "pl" => 'text/html',
+            "java" => 'text/java',
+            "py" => 'text/py',
+            "shtml" => 'text/html',
+            "jpg" => 'image/jpeg',
+            "jpeg" => 'image/jpeg',
+            "pdf" => 'application/pdf',
+            "png" => 'image/png',
+            "ppt" => 'application/vnd.ms-powerpoint',
+            "pptx" => 'application/vnd.openxmlformats-officedocument.'.
+                'presentationml.presentation',
+            "rss" => 'application/rss+xml',
+            "rtf" => 'text/rtf',
+            "svg" => 'image/svg+xml',
+            "csv" => 'text/csv',
+            "tab" => 'text/tab-separated-values',
+            "tsv" => 'text/x-java-source',
+            "txt" => 'text/plain',
+            "xlsx" => 'application/vnd.openxmlformats-officedocument.'.
+                'spreadsheetml.sheet',
+            "xml" => 'text/gitxml',
+            "js" => 'text/plain',
+            "c" => 'text/plain',
+            "cc" => 'text/plain',
+            "cs" => 'text/plain'
+        );
+        $extension = UrlParser::getDocumentType($file_name);
+        if(isset($mime_type_map[$extension])) {
+            $mime_type = $mime_type_map[$extension];
+        } else {
+            $mime_type = "text/plain";
+        }
+        return $mime_type;
+    }
 }
 
 ?>

@@ -240,7 +240,9 @@ interface CrawlConstants
     const ACTIVE_RANKERS = 'db';
     const USER_RANKS = "dc";
     const INDEXING_PLUGINS_DATA = "dd";
-
+    const REPOSITORY_TYPE = 'de';
+    const FILE_NAME = 'df';
+    const SHA_HASH = 'dg';
     const NEEDS_OFFSET_FLAG = 0x7FFFFFFF;
 }
 ?>
