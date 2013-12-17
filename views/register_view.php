@@ -73,11 +73,11 @@ class RegisterView extends View
                 <div class="login">
                     <table>
                         <tr>
-                            <td class="table-label"><b>
+                            <th class="table-label">
                                 <label for="firstname"><?php
                                     e(tl('register_view_firstname'));
-                                ?></label>:</b>
-                            </td>
+                                ?></label>
+                            </th>
                             <td class="table-input">
                                 <?php $first ="";
                                 if(isset($data['FIRST'])) {
@@ -92,11 +92,11 @@ class RegisterView extends View
                                     ?'<span class="red">*</span>':''; ?></td>
                         </tr>
                         <tr>
-                            <td class="table-label"><b>
+                            <th class="table-label">
                                 <label for="lastname"><?php
                                     e(tl('register_view_lastname'));
-                                ?></label>:</b>
-                            </td>
+                                ?></label>
+                            </th>
                             <td class="table-input">
                                 <?php $last ="";
                                 if(isset($data['LAST'])) {
@@ -111,10 +111,10 @@ class RegisterView extends View
                                      ?'<span class="red">*</span>':'';?></td>
                         </tr>
                         <tr>
-                            <td class="table-label"><b><label for="username">
+                            <th class="table-label"><label for="username">
                                 <?php
-                                e(tl('register_view_username')); ?></label>:</b>
-                            </td>
+                                e(tl('register_view_username')); ?></label>
+                            </th>
                             <td class="table-input">
                                 <?php $user ="";
                                 if(isset($data['USER'])) {
@@ -129,9 +129,9 @@ class RegisterView extends View
                                     ?'<span class="red">*</span>':'';?></td>
                         </tr>
                         <tr>
-                            <td class="table-label"><b><label for="email"><?php
-                                e(tl('register_view_email')); ?></label>:</b>
-                            </td>
+                            <th class="table-label"><label for="email"><?php
+                                e(tl('register_view_email')); ?></label>
+                            </th>
                             <td class="table-input">
                                 <?php $email ="";
                                 if(isset($data['EMAIL'])) {
@@ -145,11 +145,11 @@ class RegisterView extends View
                                     ? '<span class="red">*</span>':'';?></td>
                         </tr>
                         <tr>
-                            <td class="table-label"><b>
+                            <th class="table-label">
                                 <label for="password"><?php
                                     e(tl('register_view_password'));
-                                ?></label>:</b>
-                            </td>
+                                ?></label>
+                            </th>
                             <td class="table-input">
                                 <input id="password" type="password"
                                     class="narrow-field" maxlength="80"
@@ -158,11 +158,11 @@ class RegisterView extends View
                                     ? '<span class="red">*</span>':'';?></td>
                         </tr>
                         <tr>
-                            <td class="table-label"><b>
+                            <th class="table-label">
                                 <label for="repassword"><?php
                                      e(tl('register_view_retypepassword'));
-                                ?></label>:</b>
-                            </td>
+                                ?></label>
+                            </th>
                             <td class="table-input">
                                 <input id="repassword" type="password"
                                     class="narrow-field" maxlength="80"

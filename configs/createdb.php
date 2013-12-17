@@ -85,7 +85,7 @@ $db->execute("INSERT INTO VERSION VALUES (17)");
 
 //default account is root without a password
 $sql ="INSERT INTO USER VALUES (1, 'admin', 'admin','root',
-		'root@dev.null',1,'".crawlCrypt('')."','".crawlCrypt('1')."' ) ";
+        'root@dev.null',1,'".crawlCrypt('')."','".crawlCrypt('1')."' ) ";
 $db->execute($sql);
 
 /* we insert 1 by 1 rather than comma separate as sqlite
@@ -245,30 +245,12 @@ foreach($activities as $activity => $translation_info) {
 }
 
 $new_user_activities = array(
-    "manageAccount" => array('db_activity_manage_account',
-        array(
-            "en-US" => 'Manage Account',
-            "fa" => 'مدیریت حساب',
-            "fr-FR" => 'Modifier votre compte',
-            "ja" => 'アカウント管理',
-            "ko" => '사용자 계정 관리',
-            "vi-VN" => 'Quản lý tài khoản',
-            "zh-CN" => '管理帳號',
-        )),
-    "manageGroups" => array('db_activity_manage_groups',
-        array(
-            "en-US" => 'Manage Groups',
-            "fr-FR" => 'Modifier les groupes',
-        )),
-    "mixCrawls" => array('db_activity_mix_crawls',
-        array(
-            "en-US" => 'Mix Crawls',
-            "fa" => 'ترکیب‌های خزش‌ها',
-            "fr-FR" => 'Mélanger les indexes',
-        )),
+    "manageAccount",
+    "manageGroups",
+    "mixCrawls"
 );
 
-foreach($new_user_activities as $new_activity => $translation_info) {
+foreach($new_user_activities as $new_activity) {
     $i = 1;
     foreach($activities as $key => $value) {
         if($new_activity == $key){

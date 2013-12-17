@@ -948,9 +948,9 @@ class UrlParser
 
     /**
      *  Prunes a list of url => text pairs down to max_link many pairs
-     *  by choosin those whose text has the most information. Information
+     *  by choosing those whose text has the most information. Information
      *  crudely measured by the length of the gzipped version of the text.
-     * 
+     *
      *  @param array $links list of pairs $url=>$text 
      *  @param int $max_links maximum number of links from $links to return
      *  @return array $out_links extracted from $links accodring to the
@@ -981,8 +981,8 @@ class UrlParser
 
     /**
      *  Guess mime type based on extension of the file in Git object
-     * 
-     *  @param string $$file_name name of the file
+     *
+     *  @param string $file_name name of the file
      *  @return string $mime_type for the given file name
      */
     static function guessMimeTypeFromFileName($file_name)
