@@ -56,48 +56,60 @@ class SigninView extends View
      *  @param array $data  contains the anti CSRF token
      *  the view
      */
-    function renderView($data) {
-    $logo = "resources/yioop.png";
-    if(MOBILE) {
-        $logo = "resources/m-yioop.png";
-    }
-?>
-<div class="landing non-search">
-<h1 class="logo"><a href="./?<?php e(CSRF_TOKEN."=".$data[CSRF_TOKEN])
-        ?>"><img src="<?php e($logo); ?>" alt="Yioop!"
-        /></a><span> - <?php e(tl('signin_view_signin')); ?></span></h1>
-<form class="user_settings" method="post" action="#">
-<div class="login">
-    <table>
-    <tr>
-    <td class="table-label" ><b><label for="username"><?php
-        e(tl('signin_view_username')); ?></label>:</b></td><td
-            class="table-input"><input id="username" type="text"
-            class="narrow-field" maxlength="80" name="u"/>
-    </td><td></td></tr>
-    <tr>
-    <td class="table-label" ><b><label for="password"><?php
-        e(tl('signin_view_password')); ?></label>:</b></td><td
-        class="table-input"><input id="password" type="password"
-        class="narrow-field" maxlength="80" name="p" /></td>
-    <td><input type="hidden" name="<?php e(CSRF_TOKEN);?>" value="<?php
-        e($data[CSRF_TOKEN]); ?>" />
-    </td>
-    </tr>
-    <tr><td>&nbsp;</td><td class="center">
-    <button  type="submit" name="c" value="admin"><?php
-        e(tl('signin_view_login')); ?></button>
-    </td><td>&nbsp;</td></tr>
-    </table>
-</div>
-</form>
+    function renderView($data)
+    {
+        $logo = "resources/yioop.png";
+        if(MOBILE) {
+            $logo = "resources/m-yioop.png";
+        }
+        ?>
+        <div class="landing non-search">
+            <h1 class="logo"><a href="./?<?php
+                e(CSRF_TOKEN."=".$data[CSRF_TOKEN]) ?>"><img
+                src="<?php e($logo); ?>" alt="Yioop!"/></a>
+                <span> - <?php e(tl('signin_view_signin')); ?></span></h1>
+            <form class="user_settings" method="post" action="#">
+                <div class="login">
+                <table>
+                    <tr>
+                        <td class="table-label" ><b><label for="username"><?php
+                        e(tl('signin_view_username')); ?></label>:</b></td>
+                        <td class="table-input"><input id="username" type="text"
+                            class="narrow-field" maxlength="80" name="u"/></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td class="table-label" ><b><label for="password"><?php
+                            e(tl('signin_view_password')); ?></label>:</b></td>
+                        <td class="table-input"><input id="password"
+                            type="password" class="narrow-field"
+                            maxlength="80" name="p" /></td>
+                        <td><input type="hidden"
+                            name="<?php e(CSRF_TOKEN);?>" value="<?php
+                            e($data[CSRF_TOKEN]); ?>" />
+                        </td>
+                    </tr>
+                    <tr><td>&nbsp;</td><td class="center">
+                        <button  type="submit" name="c" value="admin"><?php
+                        e(tl('signin_view_login')); ?></button>
+                        </td><td>&nbsp;</td>
+                    </tr>
+                </table>
+            </div>
+        </form>
 
-<div class="signin-exit"><a href="."><?php
-    e(tl('signin_view_return_yioop')); ?></a></div>
-</div>
+        <div class="signin-exit"><a href="."><?php
+            e(tl('signin_view_return_yioop')); ?></a>
+            <?php if(ANONYMOUS_ACCOUNT) {
+                ?><br/><a href="./?c=register&amp;<?php
+                e(CSRF_TOKEN."=".$data[CSRF_TOKEN])?>&amp;"><?php
+                e(tl('signin_view_create_account')); ?></a>
+            <?php }
+        ?></div>
+    </div>
+        <div class='landing-spacer'></div>
 
-<div class='landing-spacer'></div>
-<?php
+        <?php
     }
 }
 ?>

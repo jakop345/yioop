@@ -50,8 +50,8 @@ require_once(BASE_DIR.'/lib/url_parser.php');
 class ProfileModel extends Model
 {
     var $profile_fields = array('USER_AGENT_SHORT',
-            'DEFAULT_LOCALE', 'DEBUG_LEVEL', 'DBMS','DB_HOST',
-            'DB_NAME', 'DB_USER', 'DB_PASSWORD',
+            'DEFAULT_LOCALE', 'DEBUG_LEVEL','ANONYMOUS_ACCOUNT','DBMS',
+            'DB_HOST','DB_NAME', 'DB_USER', 'DB_PASSWORD',
             'NAME_SERVER', 'AUTH_KEY', "ROBOT_DESCRIPTION", 'WEB_URI',
             'USE_MEMCACHE', 'MEMCACHE_SERVERS', 'USE_FILECACHE',
             'WORD_SUGGEST', 'CACHE_LINK', 'SIMILAR_LINK',
@@ -270,7 +270,6 @@ EOT;
      *
      * @param object $dbm a DatabaseManager open to some DBMS and with a
      *      blank database selected
-     * @param $dbinfo connection parameters to the database
      * @return bool whether all of the creates were sucessful or not
      */
     function createDatabaseTables($dbm, $dbinfo)
@@ -280,7 +279,9 @@ EOT;
         $create_statements = array(
             "CREATE TABLE VERSION(ID INTEGER PRIMARY KEY)",
             "CREATE TABLE USER(USER_ID INTEGER PRIMARY KEY $auto_increment,
-                USER_NAME VARCHAR(16) UNIQUE,  PASSWORD VARCHAR(16))",
+                FIRST_NAME VARCHAR(16), LAST_NAME VARCHAR(16), 
+                USER_NAME VARCHAR(16) UNIQUE, EMAIL VARCHAR(32),
+                ACTIVE INTEGER,PASSWORD VARCHAR(16), HASH VARCHAR (32))",
             "CREATE TABLE USER_SESSION(USER_ID INTEGER PRIMARY KEY,
                 SESSION VARCHAR(4096))",
             "CREATE TABLE TRANSLATION (TRANSLATION_ID INTEGER PRIMARY KEY
@@ -327,12 +328,13 @@ EOT;
             "CREATE TABLE USER_GROUP (USER_ID INTEGER , GROUP_ID INTEGER,
                    PRIMARY KEY (GROUP_ID, USER_ID) )",
             "CREATE TABLE GROUP_ROLE (GROUP_ID INTEGER , ROLE_ID INTEGER)",
-        );
+            );
         /* NOTE: We are not using singular name GROUP for GROUPS as
            is a reserved SQL keyword
          */
-        foreach($create_statements as $statement) {
-            if(!$dbm->execute($statement)) {return false;}
+        foreach($create_statements as $statement) {;
+            if(!$dbm->execute($statement)) {echo $auto_increment; return false;
+            }
         }
         return true;
     }

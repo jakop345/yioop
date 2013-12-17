@@ -93,9 +93,34 @@ class SigninModel extends Model
 
         return ($username == $row['USER_NAME'] &&
             crawlCrypt($password, $row['PASSWORD']) == $row['PASSWORD']) ;
-
     }
 
+     /**
+     * Checks that a username email pair is valid
+     *
+     * @param string $username the username to check
+     * @param string $email the email to check
+     * @return bool  where the email is that of the given user
+     *      (or at least hashes to the same thing)
+     */
+
+    function checkValidEmail($username, $email)
+    {
+        $this->db->selectDB(DB_NAME);
+
+        $username = $this->db->escapeString($username);
+        $email = $this->db->escapeString($email);
+            $sql = "SELECT USER_NAME, EMAIL FROM USER ".
+            "WHERE USER_NAME = '$username' LIMIT 1";
+
+        $result = $this->db->execute($sql);
+        if(!$result) {
+            return false;
+        }
+        $row = $this->db->fetchArray($result);
+
+        return ($username == $row['USER_NAME'] && $email == $row['EMAIL']) ;
+    }
 
     /**
      *  Get the user_id associated with a given username
@@ -114,7 +139,6 @@ class SigninModel extends Model
         $user_id = $row['USER_ID'];
         return $user_id;
     }
-
 
     /**
      *  Get the user_name associated with a given userid
@@ -135,13 +159,52 @@ class SigninModel extends Model
         return $username;
    }
 
+     /**
+     *  Get the email associated with a given userid
+     *
+     *  @param string $user_id the userid to look up
+     *  @return string the corresponding email
+     */
+   function getEmail($user_id, $limit = 1)
+   {
+        $this->db->selectDB(DB_NAME);
+
+        $user_id = $this->db->escapeString($user_id);
+
+        $sql = "SELECT EMAIL FROM USER WHERE
+                    USER_ID = '$user_id' LIMIT $limit";
+        $result = $this->db->execute($sql);
+        $row = $this->db->fetchArray($result);
+        $email = $row['EMAIL'];
+        return $email;
+   }
+
+    /**
+     *  Changes the email of a given user
+     *
+     *  @param string $username username of user to change email of
+     *  @param string $email new email for user
+     *  @return bool update successful or not.
+     */
+
+    function changeEmail($username, $email)
+    {
+        $username = $this->db->escapeString($username);
+        $email = $this->db->escapeString($email);
+
+        $sql = "UPDATE USER SET EMAIL= '$email'
+                    WHERE USER_NAME = '$username' ";
+
+        $result = $this->db->execute($sql);
+        return $result != false;
+    }
 
     /**
      *  Changes the password of a given user
      *
      *  @param string $username username of user to change password of
      *  @param string $password new password for user
-     *  @return boob update successful or not.
+     *  @return bool update successful or not.
      */
     function changePassword($username, $password)
     {

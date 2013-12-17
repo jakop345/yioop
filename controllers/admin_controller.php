@@ -85,6 +85,13 @@ class AdminController extends Controller implements CrawlConstants
         "manageClassifiers","resultsEditor", "manageMachines", "manageLocales",
         "crawlStatus","mixCrawls","machineStatus","searchSources","configure");
     /**
+     * Says which activities (roughly methods invoke from the web) this
+     * controller will respond to
+     * @var array
+     */
+    var $new_user_activities = array("manageAccount", "manageGroups",
+        "mixCrawls");
+    /**
      * An array of activities which are periodically updated within other
      * activities that they live. For example, within manage crawl,
      * the current crawl status is updated every 20 or so seconds.
@@ -350,17 +357,20 @@ class AdminController extends Controller implements CrawlConstants
      */
     function manageAccount()
     {
-        $possible_arguments = array("changepassword");
-
+        $possible_arguments = array("changepassword","changeemail");
         $data["ELEMENT"] = "manageaccountElement";
         $data['SCRIPT'] = "";
+        $data['MESSAGE'] = "";
+        $old_email = $this->signinModel->getEmail($_SESSION['USER_ID']);
+        $data["OLD_EMAIL"] = $old_email;
 
         if(isset($_REQUEST['arg']) &&
             in_array($_REQUEST['arg'], $possible_arguments)) {
             switch($_REQUEST['arg'])
             {
                 case "changepassword":
-                    if($_REQUEST['retypepassword'] != $_REQUEST['newpassword']){
+                    if($_REQUEST['re_type_password'] !=
+                            $_REQUEST['new_password']){
                         $data["MESSAGE"] =
                             tl('admin_controller_passwords_dont_match');
                         $data['SCRIPT'] .=
@@ -371,7 +381,7 @@ class AdminController extends Controller implements CrawlConstants
                     $username =
                         $this->signinModel->getUserName($_SESSION['USER_ID']);
                     $result = $this->signinModel->checkValidSignin($username,
-                    $this->clean($_REQUEST['oldpassword'], "string") );
+                    $this->clean($_REQUEST['old_password'], "string") );
                     if(!$result) {
                         $data["MESSAGE"] =
                             tl('admin_controller_invalid_old_password');
@@ -380,14 +390,40 @@ class AdminController extends Controller implements CrawlConstants
                         return $data;
                     }
                     $this->signinModel->changePassword($username,
-                        $this->clean($_REQUEST['newpassword'], "string"));
+                        $this->clean($_REQUEST['new_password'], "string"));
                     $data["MESSAGE"] = tl('admin_controller_change_password');
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         $data["MESSAGE"]."</h1>')";
                 break;
-                }
-        }
 
+                case "changeemail":
+                   if($_REQUEST['re_type_email'] != $_REQUEST['new_email']) {
+                        $data["MESSAGE"] =
+                            tl('admin_controller_emails_dont_match');
+                        $data['SCRIPT'] .=
+                            "doMessage('<h1 class=\"red\" >". $data["MESSAGE"].
+                            "</h1>')";
+                        return $data;
+                    }
+                    $username =
+                        $this->signinModel->getUserName($_SESSION['USER_ID']);
+                    $result = $this->signinModel->checkValidEmail($username,
+                    $this->clean($_REQUEST['old_email'], "string") );
+                    if(!$result) {
+                        $data["MESSAGE"] =
+                            tl('admin_controller_invalid_old_email');
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            $data["MESSAGE"]."</h1>')";
+                        return $data;
+                    }
+                    $this->signinModel->changeEmail($username,
+                        $this->clean($_REQUEST['new_email'], "string"));
+                    $data["MESSAGE"] = tl('admin_controller_change_email');
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        $data["MESSAGE"]."</h1>')";
+                break;
+              }
+        }
         return $data;
     }
 
@@ -3373,8 +3409,8 @@ class AdminController extends Controller implements CrawlConstants
             break;
             case "profile":
                 $this->updateProfileFields($data, $profile,
-                    array('USE_FILECACHE', 'USE_MEMCACHE', "WEB_ACCESS",
-                        'RSS_ACCESS', 'API_ACCESS'));
+                    array('USE_FILECACHE', 'USE_MEMCACHE', "ANONYMOUS_ACCOUNT",
+                        "WEB_ACCESS", 'RSS_ACCESS', 'API_ACCESS'));
                 $data['DEBUG_LEVEL'] = 0;
                 $data['DEBUG_LEVEL'] |=
                     (isset($_REQUEST["ERROR_INFO"])) ? ERROR_INFO : 0;

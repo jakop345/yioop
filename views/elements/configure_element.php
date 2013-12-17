@@ -136,6 +136,19 @@ class ConfigureElement extends Element
                         e("checked='checked'");}?>/><?php
                         e(tl('configure_element_test_info')); ?></label>
             </fieldset>
+            <div class = "top-margin">
+            <fieldset class="extra-wide-field"><legend><?php
+                e(tl('configure_element_user_accounts'))?></legend>
+                <label for="user_accounts"><input
+                    id='user_accounts' type="checkbox"
+                    name="ANONYMOUS_ACCOUNT" value="true"
+                    <?php
+                    if($data['ANONYMOUS_ACCOUNT'] == true) {
+                        e("checked='checked'");
+                    }
+                    ?> /><?php e(tl('configure_element_email_registration'));
+                    ?></label>
+            </fieldset>
             </div>
             <div class="top-margin">
             <fieldset class="extra-wide-field"><legend><?php

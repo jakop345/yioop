@@ -233,6 +233,7 @@ class UserModel extends Model
         return $users;
     }
 
+
     /**
      * Add a user with a given username and password to the list of users
      * that can login to the admin panel
@@ -240,13 +241,49 @@ class UserModel extends Model
      * @param string $username  the username of the user to be added
      * @param string $password  the password of the user to be added
      */
-    function addUser($username, $password)
+    function addUser( $username,$password)
     {
         $this->db->selectDB(DB_NAME);
-        $sql = "INSERT INTO USER(USER_NAME, PASSWORD) VALUES ('".
-            $this->db->escapeString($username)."', '".
-            crawlCrypt($this->db->escapeString($password))."' ) ";
+        $sql = "INSERT INTO USER(USER_NAME, PASSWORD, ACTIVE) VALUES ('".
+          $this->db->escapeString($username)."', '".
+          crawlCrypt($this->db->escapeString($password))."',1 ) ";
+          $result = $this->db->execute($sql);
+    }
+
+    /**
+     * Register a user with firstname, lastname, username, email 
+     *
+     * @param string $firstname the firstname of the user to be added
+     * @param string $lastname the lastname of the user to be added
+     * @param string $username the username of the user to be added
+     * @param string $email the email of the user to be added
+     * @param string $password  the password of the user to be added
+     */
+    function registerUser($firstname, $lastname, $username, $email, $password)
+    {
+        $this->db->selectDB(DB_NAME);
+        $sql = "INSERT INTO USER(FIRST_NAME, LAST_NAME, 
+                USER_NAME, EMAIL,ACTIVE, PASSWORD, HASH) VALUES ('".
+        $this->db->escapeString($firstname)."', '".
+        $this->db->escapeString($lastname)."', '".
+        $this->db->escapeString($username)."', '".
+        $this->db->escapeString($email)."', 1,'".
+            crawlCrypt($this->db->escapeString($password))."','".
+            crawlCrypt($this->db->escapeString($username))."') ";
         $result = $this->db->execute($sql);
+
+        $this->db->selectDB(DB_NAME);
+        $sql = "SELECT USER_ID FROM ".
+            " USER WHERE USER_NAME = '" .
+            $this->db->escapeString($username) . "' ";
+        $result = $this->db->execute($sql);
+        if(!$row = $this->db->fetchArray($result) ) {
+            $last_id = -1;
+        }
+        $last_id = $row['USER_ID'];
+        $sql = "INSERT INTO USER_ROLE  VALUES ('".
+            $this->db->escapeString($last_id)."',2) ";
+        $result_id = $this->db->execute($sql);
     }
 
 

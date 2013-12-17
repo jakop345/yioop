@@ -54,6 +54,39 @@ class ManageaccountElement extends Element
     function render($data)
     {?>
         <div class="current-activity">
+            <h2><?php e(tl('manageaccount_element_change_email'))?></h2>
+            <form id="changePasswordForm" method="post" action='#'>
+            <input type="hidden" name="c" value="admin" />
+            <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
+                e($data[CSRF_TOKEN]); ?>" />
+            <input type="hidden" name="a" value="manageAccount" />
+            <input type="hidden" name="arg" value="changeemail" />
+
+            <table class="name-table">
+            <tr><td><label for="old-email"><?php
+                e(tl('manageaccount_element_old_email'))?></label></td>
+                <td><input type="txt" id="old-email"
+                    name="old_email"  maxlength="80" class="narrow-field"
+                    value = "<?php e($data['OLD_EMAIL']);?>"/>
+                </td></tr>
+            <tr><td><label for="new-email"><?php
+                e(tl('manageaccount_element_new_email'))?></label></td>
+                <td><input type="text" id="new-email"
+                    name="new_email"  maxlength="80" class="narrow-field"/>
+                </td></tr>
+            <tr><td><label for="retype-email"><?php
+                e(tl('manageaccount_element_retype_email'))?></label></td>
+                <td><input type="text" id="retype-email"
+                    name="re_type_email"  maxlength="80"
+                    class="narrow-field" />
+                </td></tr>
+            <tr><td></td>
+                <td class="center"><button
+                    class="button-box" type="submit"><?php
+                    e(tl('manageaccount_element_save')); ?></button></td></tr>
+            </table>
+            </form>
+
             <h2><?php e(tl('manageaccount_element_change_password'))?></h2>
             <form id="changePasswordForm" method="post" action='#'>
             <input type="hidden" name="c" value="admin" />
@@ -66,17 +99,17 @@ class ManageaccountElement extends Element
             <tr><td><label for="old-password"><?php
                 e(tl('manageaccount_element_old_password'))?></label></td>
                 <td><input type="password" id="old-password"
-                    name="oldpassword"  maxlength="80" class="narrow-field"/>
+                    name="old_password"  maxlength="80" class="narrow-field"/>
                 </td></tr>
             <tr><td><label for="new-password"><?php
                 e(tl('manageaccount_element_new_password'))?></label></td>
                 <td><input type="password" id="new-password"
-                    name="newpassword"  maxlength="80" class="narrow-field"/>
+                    name="new_password"  maxlength="80" class="narrow-field"/>
                 </td></tr>
             <tr><td><label for="retype-password"><?php
                 e(tl('manageaccount_element_retype_password'))?></label></td>
-                <td><input type="password" id="retype-password"
-                    name="retypepassword"  maxlength="80"
+                <td><input type="password" id="re-type-password"
+                    name="re_type_password"  maxlength="80"
                     class="narrow-field" />
                 </td></tr>
             <tr><td></td>

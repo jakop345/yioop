@@ -84,7 +84,8 @@ if(!$profile_model->createDatabaseTables($db, $dbinfo)) {
 $db->execute("INSERT INTO VERSION VALUES (17)");
 
 //default account is root without a password
-$sql ="INSERT INTO USER VALUES (1, 'root', '".crawlCrypt('')."' ) ";
+$sql ="INSERT INTO USER VALUES (1, 'admin', 'admin','root',
+		'root@dev.null',1,'".crawlCrypt('')."','".crawlCrypt('1')."' ) ";
 $db->execute($sql);
 
 /* we insert 1 by 1 rather than comma separate as sqlite
@@ -124,6 +125,7 @@ foreach($locales as $locale) {
 }
 
 $db->execute("INSERT INTO ROLE VALUES (1, 'Admin' )");
+$db->execute("INSERT INTO ROLE VALUES (2, 'User' )");
 $db->execute("INSERT INTO USER_ROLE VALUES (1, 1)");
 
 $activities = array(
@@ -232,13 +234,49 @@ foreach($activities as $activity => $translation_info) {
     $db->execute("INSERT INTO ACTIVITY VALUES ($i, $i, '$activity')");
     //give admin role the ability to have that activity
     $db->execute("INSERT INTO ROLE_ACTIVITY VALUES (1, $i)");
-    $db->execute("INSERT INTO TRANSLATION VALUES($i,'{$translation_info[0]}')");
+    $db->execute("INSERT INTO TRANSLATION
+            VALUES($i,'{$translation_info[0]}')");
     foreach($translation_info[1] as $locale_tag => $translation) {
         $index = $locale_index[$locale_tag];
         $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES ($i, $index,
             '$translation')");
     }
     $i++;
+}
+
+$new_user_activities = array(
+    "manageAccount" => array('db_activity_manage_account',
+        array(
+            "en-US" => 'Manage Account',
+            "fa" => 'مدیریت حساب',
+            "fr-FR" => 'Modifier votre compte',
+            "ja" => 'アカウント管理',
+            "ko" => '사용자 계정 관리',
+            "vi-VN" => 'Quản lý tài khoản',
+            "zh-CN" => '管理帳號',
+        )),
+    "manageGroups" => array('db_activity_manage_groups',
+        array(
+            "en-US" => 'Manage Groups',
+            "fr-FR" => 'Modifier les groupes',
+        )),
+    "mixCrawls" => array('db_activity_mix_crawls',
+        array(
+            "en-US" => 'Mix Crawls',
+            "fa" => 'ترکیب‌های خزش‌ها',
+            "fr-FR" => 'Mélanger les indexes',
+        )),
+);
+
+foreach($new_user_activities as $new_activity => $translation_info) {
+    $i = 1;
+    foreach($activities as $key => $value) {
+        if($new_activity == $key){
+        //give new user role the ability to have that activity
+            $db->execute("INSERT INTO ROLE_ACTIVITY VALUES (2, $i)");
+        }
+        $i++;
+    }
 }
 
 $db->execute("INSERT INTO MEDIA_SOURCE VALUES ('1342634195',

@@ -126,11 +126,11 @@ if (function_exists('lcfirst') === false) {
 }
 
 $available_controllers = array( "admin", "archive",  "cache", "crawl",
-    "fetch",  "machine", "resource", "search", "settings", "statistics",
-    "static", "classifier");
+    "register","fetch",  "machine", "resource", "search", "settings",
+    "statistics", "static", "classifier");
 if(!WEB_ACCESS) {
 $available_controllers = array("admin", "archive", "cache", "crawl", "fetch",
-     "machine");
+     "register", "machine");
 }
 
 //the request variable c is used to determine the controller
@@ -178,7 +178,7 @@ if(file_exists(APP_DIR."/index.php")) {
  */
 if(file_exists(APP_DIR."/controllers/".$controller_name."_controller.php")) {
     require_once(APP_DIR."/controllers/".$controller_name."_controller.php");
-} else {
+} else { 
     require_once(BASE_DIR."/controllers/".$controller_name."_controller.php");
 }
 $controller_class = ucfirst($controller_name)."Controller";
