@@ -55,7 +55,8 @@ class AdminView extends View
         "mixcrawls", "managegroups", "managelocales", "editlocales",
         "crawloptions","editmix", "pageoptions", "manageclassifiers",
         "editclassifier","resultseditor", "searchsources", "managemachines",
-        "machinelog","editstatic", "configure");
+        "machinelog","editstatic", "configure", "blogpages", "editblogpages",
+        "createblogpages");
     /** Names of helper objects that the view uses to help draw itself
      *  @var array
      */
@@ -93,7 +94,6 @@ class AdminView extends View
         $this->activityElement->render($data);
         if(isset($data['ELEMENT'])) {
             $element = $data['ELEMENT'];
-
             $this->$element->render($data);
         }
         if(PROFILE) {

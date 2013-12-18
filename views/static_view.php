@@ -45,11 +45,6 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 class StaticView extends View
 {
 
-    /** This view is makes use of the localized static page overview.thtml
-     *  @var array
-     */
-    var $pages = array('privacy', 'blog', 'bot', "404", "409");
-
     /** Names of element objects that the view uses to display itself
      *  @var array
      */

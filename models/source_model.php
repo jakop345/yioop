@@ -55,11 +55,6 @@ class SourceModel extends Model
     /** Mamimum number of feeds to download in one try */
     const MAX_FEEDS_ONE_GO = 100;
 
-    /** Mamimum number of characters in a feed item component such as 
-        description or title
-     */
-    const MAX_ELEMENT_LENGTH = 2000;
-
     /**
      * Just calls the parent class constructor
      */
@@ -357,8 +352,7 @@ class SourceModel extends Model
                     if($feed_element == "link" && $element_text == "") {
                         $element_text = $tag_node->getAttribute("href");
                     }
-                    $item[$db_element] = mb_substr(strip_tags($element_text),
-                        0, self::MAX_ELEMENT_LENGTH);
+                    $item[$db_element] = strip_tags($element_text);
                 }
                 $did_add = $this->addFeedItemIfNew($item,$feed['NAME'], $lang,
                     $age);
@@ -431,6 +425,7 @@ class SourceModel extends Model
                     UrlParser::getHost($item["LINK"])."/",true), 1);
                 $meta_ids = $this->calculateMetas($lang, $item['PUBDATE'],
                     $source_name, $item["GUID"]);
+
                 $prune_shard->addDocumentWords($doc_keys, $item['PUBDATE'],
                     $word_lists, $meta_ids, PhraseParser::$materialized_metas,
                     true, false);

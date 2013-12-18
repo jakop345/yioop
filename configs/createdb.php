@@ -81,11 +81,15 @@ if(!$profile_model->createDatabaseTables($db, $dbinfo)) {
     exit();
 }
 
-$db->execute("INSERT INTO VERSION VALUES (17)");
+$db->execute("INSERT INTO VERSION VALUES (18)");
 
 //default account is root without a password
 $sql ="INSERT INTO USER VALUES (1, 'admin', 'admin','root',
         'root@dev.null',1,'".crawlCrypt('')."','".crawlCrypt('1')."' ) ";
+$db->execute($sql);
+
+//default public group with group id 1
+$sql = "INSERT INTO GROUPS VALUES(1,'public','".time()."','1')";
 $db->execute($sql);
 
 /* we insert 1 by 1 rather than comma separate as sqlite
@@ -172,6 +176,10 @@ $activities = array(
             "ko" => '크롤 관리',
             "vi-VN" => 'Quản lý sự bò',
         )),
+    "blogPages" => array('db_activity_blogs_pages',
+        array(
+            "en-US" => 'Blogs and Pages',
+        )),
     "mixCrawls" => array('db_activity_mix_crawls',
         array(
             "en-US" => 'Mix Crawls',
@@ -247,7 +255,8 @@ foreach($activities as $activity => $translation_info) {
 $new_user_activities = array(
     "manageAccount",
     "manageGroups",
-    "mixCrawls"
+    "mixCrawls",
+    "blogPages"
 );
 
 foreach($new_user_activities as $new_activity) {

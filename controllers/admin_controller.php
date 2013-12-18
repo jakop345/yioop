@@ -74,7 +74,7 @@ class AdminController extends Controller implements CrawlConstants
      */
     var $models = array(
         "signin", "user", "activity", "crawl", "role", "locale", "profile",
-        "searchfilters", "source", "machine", "cron", "group");
+        "searchfilters", "source", "machine", "cron", "group", "blogpage");
     /**
      * Says which activities (roughly methods invoke from the web) this
      * controller will respond to
@@ -83,14 +83,15 @@ class AdminController extends Controller implements CrawlConstants
     var $activities = array("signin", "manageAccount", "manageUsers",
         "manageRoles", "manageGroups","manageCrawls","pageOptions",
         "manageClassifiers","resultsEditor", "manageMachines", "manageLocales",
-        "crawlStatus","mixCrawls","machineStatus","searchSources","configure");
+        "crawlStatus","mixCrawls","machineStatus","searchSources","configure",
+        "blogPages");
     /**
      * Says which activities (roughly methods invoke from the web) this
      * controller will respond to
      * @var array
      */
     var $new_user_activities = array("manageAccount", "manageGroups",
-        "mixCrawls");
+        "mixCrawls", "blogPages");
     /**
      * An array of activities which are periodically updated within other
      * activities that they live. For example, within manage crawl,
@@ -1051,6 +1052,546 @@ class AdminController extends Controller implements CrawlConstants
             break;
         }
 
+        return $data;
+    }
+
+    /**
+     * Used to handle the blogs and pages activity.
+     *
+     * This activity allows users to create,edit, and delete blogs.
+     * It allows users to add feeditems to blogs, edit and delete feeditems
+     * Allows users to add groups to blogs and provides access control to blogs
+     * @return array $data information about blogs in the system
+     */
+    function blogPages()
+    {
+        $data["ELEMENT"] = "blogpagesElement";
+        $data['SCRIPT'] = "";
+        if(isset($_SESSION['USER_ID'])) {
+            $user = $_SESSION['USER_ID'];
+        } else {
+            $user = $_SERVER['REMOTE_ADDR'];
+        }
+        $user = $_SESSION['USER_ID'];
+        $group_ids = array();
+        if(isset($_REQUEST['selectgroup'])) {
+            $select_group =
+                 $this->clean($_REQUEST['selectgroup'], "string");
+                 $data['SELECT_GROUP'] = $select_group;
+        } else {
+            $select_group = "";
+        }
+        if($_SESSION['USER_ID'] == '1') {
+             $groups = $this->groupModel->getGroupList();
+             $is_admin = true;
+        } else {
+            $is_admin = false;
+            $groups =
+                $this->groupModel->getGroupListbyUser($_SESSION['USER_ID']);
+            foreach($groups as $group) {
+                array_push($group_ids, $group['GROUP_ID']);
+            }
+        }
+        $recent_blogs =
+            $this->blogpageModel->recentBlog($user, $group_ids, $is_admin);
+        $data['RECENT_BLOGS'] = $recent_blogs;
+        $base_option = tl('admin_controller_select_groupname');
+        $data['GROUP_NAMES'][-1] = $base_option;
+        foreach($groups as $group) {
+            $data['GROUP_NAMES'][$group['GROUP_ID']]= $group['GROUP_NAME'];
+
+            $group_ids[] = $group['GROUP_ID'];
+        }
+        $possible_arguments = array("addblog", "searchblog", "deleteblog",
+            "editblog","editdescription","updatedescription",
+            "addblogentry","addfeeditem","deletefeed","updatefeed",
+            "editfeed","updateblogusers","addbloggroup",
+            "deletebloggroup");
+        if(isset($_REQUEST['arg']) &&
+            in_array($_REQUEST['arg'], $possible_arguments)) {
+            switch($_REQUEST['arg'])
+            {
+                case "addblog":
+                    $data['SOURCE_TYPES'] =
+                        array(-1 => tl('admin_controller_source_type'),
+                        "blog" => tl('admin_controller_blog'),
+                        "page" => tl('admin_controller_page'));
+                    $source_type_flag = false;
+                    if(isset($_REQUEST['sourcetype']) &&
+                        in_array($_REQUEST['sourcetype'],
+                        array_keys($data['SOURCE_TYPES']))) {
+                        $data['SOURCE_TYPE'] = $_REQUEST['sourcetype'];
+                        $source_type_flag = true;
+                    } else {
+                        $data['SOURCE_TYPE'] = -1;
+                    }
+                    $locales = $this->localeModel->getLocaleList();
+                    $data["LANGUAGES"] = array();
+                    foreach($locales as $locale) {
+                        $data["LANGUAGES"][$locale['LOCALE_TAG']] =
+                        $locale['LOCALE_NAME'];
+                    }
+                    if(isset($_REQUEST['sourcelocaletag']) &&
+                        in_array($_REQUEST['sourcelocaletag'],
+                        array_keys($data["LANGUAGES"]))) {
+                            $data['SOURCE_LOCALE_TAG'] =
+                                $_REQUEST['sourcelocaletag'];
+                    } else {
+                        $data['SOURCE_LOCALE_TAG'] = DEFAULT_LOCALE;
+                    }
+                    $must_have =
+                        array("title", "description", "sourcelocaletag");
+                    $missing_must_have = false;
+                    foreach ($must_have as $clean_me) {
+                        $data[$clean_me] = (isset($_REQUEST[$clean_me])) ?
+                            $this->clean($_REQUEST[$clean_me], "string" ) : "";
+                        if(in_array($clean_me, $must_have)
+                            && $data[$clean_me] == "" ) {
+                            $missing_must_have = true;
+                        }
+                    }
+                    if(!$source_type_flag || $missing_must_have) {
+                        break;
+                    }
+                    if(isset($_SESSION['USER_ID'])) {
+                        $user = $_SESSION['USER_ID'];
+                    } else {
+                        $user = $_SERVER['REMOTE_ADDR'];
+                    }
+                    if($data['SOURCE_TYPE'] == 'page'){
+
+                    $groupid = $this->groupModel->getGroupId($select_group);
+                    if(isset($_REQUEST['selectgroup'])) {
+                        $select_group =
+                        $this->clean($_REQUEST['selectgroup'], "string" );
+                        $data['SELECT_GROUP'] = $select_group;
+                    } else {
+                        $select_group = "";
+                    }
+                    $data['SELECT_GROUP'] = $select_group;
+                        $result = $this->blogpageModel->addPage(
+                            $data['title'], $data['description'],
+                            $data['SOURCE_TYPE'], $data['SOURCE_LOCALE_TAG'],
+                            $user, $select_group);
+                        if($result){
+                            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('admin_controller_page_added').
+                            "</h1>');";
+                    }
+                    }else{
+                        $user = $_SESSION['USER_ID'];
+                        $groupid = $this->groupModel->getGroupId($select_group);
+                        $data['SELECT_GROUP'] = $select_group;
+                        $this->blogpageModel->addBlog(
+                            $data['title'], $data['description'], $user,
+                            $data['SOURCE_TYPE'], $data['sourcelocaletag'],
+                            $select_group);
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('admin_controller_blog_added').
+                            "</h1>');";
+                    }
+                    $data["ELEMENT"] = "blogpagesElement";
+                    $recent_blogs =
+                        $this->blogpageModel->recentBlog(
+                        $user, $group_ids, $is_admin);
+                    $data['RECENT_BLOGS'] = $recent_blogs;
+                break;
+
+                case "searchblog":
+                    if(!isset($_REQUEST['title'])) { break; }
+
+                    $data["ELEMENT"] = "blogpagesElement";
+                    $data['SELECT_GROUP'] = "";
+                    $data['description'] = "";
+                    $is_blogs_empty = false;
+                    $data['title'] = $this->clean($_REQUEST['title'],
+                        "string");
+                    if($data['title'] != "") {
+                        $blogs =
+                            $this->blogpageModel->searchBlog(
+                                $data['title'],
+                                $user, $group_ids, $is_admin);
+                        $data['BLOGS'] = $blogs;
+                        if(empty($blogs)){ 
+                            $is_blogs_empty = true;
+                        }
+                    } else {
+                        $is_blogs_empty = true;
+                    }
+                    if($is_blogs_empty) {
+                        $data["ELEMENT"] = "createblogpagesElement";
+                        $data['SOURCE_TYPES'] =
+                            array(-1 => tl('admin_controller_source_type'),
+                                "blog" => tl('admin_controller_blog'),
+                                "page" => tl('admin_controller_page')
+                            );
+                        $source_type_flag = false;
+                        if(isset($_REQUEST['sourcetype']) &&
+                            in_array($_REQUEST['sourcetype'],
+                            array_keys($data['SOURCE_TYPES']))) {
+                            $data['SOURCE_TYPE'] = $_REQUEST['sourcetype'];
+                            $source_type_flag = true;
+                        } else {
+                            $data['SOURCE_TYPE'] = -1;
+                        }
+                        $locales = $this->localeModel->getLocaleList();
+                        $data["LANGUAGES"] = array();
+                        foreach($locales as $locale) {
+                            $data["LANGUAGES"][$locale['LOCALE_TAG']] =
+                                $locale['LOCALE_NAME'];
+                        }
+                        if(isset($_REQUEST['sourcelocaletag']) && in_array(
+                            $_REQUEST['sourcelocaletag'],
+                            array_keys($data["LANGUAGES"]))
+                            ) {
+                            $data['SOURCE_LOCALE_TAG'] =
+                                $_REQUEST['sourcelocaletag'];
+                        } else {
+                            $data['SOURCE_LOCALE_TAG'] = DEFAULT_LOCALE;
+                        }
+                    }
+                break;
+
+                case "deleteblog":
+                    if(!isset($_REQUEST['id'])) { break; }
+
+                    $timestamp = $this->clean($_REQUEST['id'], "string" );
+                    $title = "";
+                    if(isset($_REQUEST['title'])) {
+                        $title = $this->clean($_REQUEST['title'], "string" );
+                    }
+                    $this->blogpageModel->deleteBlog($timestamp, $title, $user);
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('admin_controller_blog_deleted').
+                        "</h1>');";
+                    $data['RECENT_BLOGS'] =  $this->blogpageModel->recentBlog(
+                        $user, $group_ids, $is_admin);
+                break;
+
+                case "editblog":
+                    if(!isset($_REQUEST['id'])) { break; }
+
+                    $timestamp = $this->clean($_REQUEST['id'], "string" );
+                    $data["ELEMENT"] = "editblogpagesElement";
+                    $data['SOURCE_TYPES'] = array(
+                            -1 => tl('admin_controller_source_type'),
+                            "blog" => tl('admin_controller_blog'),
+                            "page" => tl('admin_controller_page')
+                        );
+                    $source_type_flag = false;
+                    if(isset($_REQUEST['sourcetype']) && in_array(
+                        $_REQUEST['sourcetype'],
+                        array_keys($data['SOURCE_TYPES']))
+                        ) {
+                        $data['SOURCE_TYPE'] = $_REQUEST['sourcetype'];
+                        $source_type_flag = true;
+                    } else {
+                        $data['SOURCE_TYPE'] = -1;
+                    }
+                    $locales = $this->localeModel->getLocaleList();
+                    $data["LANGUAGES"] = array();
+                    foreach($locales as $locale) {
+                        $data["LANGUAGES"][$locale['LOCALE_TAG']]
+                            = $locale['LOCALE_NAME'];
+                    }
+                    if(isset($_REQUEST['sourcelocaletag']) && in_array(
+                        $_REQUEST['sourcelocaletag'],
+                        array_keys($data["LANGUAGES"]))) {
+                        $data['SOURCE_LOCALE_TAG'] =
+                            $_REQUEST['sourcelocaletag'];
+                    } else {
+                        $data['SOURCE_LOCALE_TAG'] = DEFAULT_LOCALE;
+                    }
+                    $edit_blogs= $this->blogpageModel->editBlog($timestamp);
+                    $blog_users =
+                    $this->blogpageModel->getBlogUsers($edit_blogs[0]);
+                    $edit_blogs[0]['BLOG_USERS'] = $blog_users;
+                    $data['EDIT_BLOGS'] = $edit_blogs;
+                    $title = $edit_blogs['0']['NAME'];
+                    if(isset($_SESSION['USER_ID'])) {
+                        $user = $_SESSION['USER_ID'];
+                    } else {
+                        $user = $_SERVER['REMOTE_ADDR'];
+                    }
+                    $user = $_SESSION['USER_ID'];
+                    $feed_items=$this->blogpageModel->getFeed($title, $user);
+                    $data['FEED_ITEMS'] = $feed_items;
+                    if(isset($_SESSION['USER_ID'])) {
+                        $username = $this->signinModel->getUserName(
+                            $_SESSION['USER_ID']);
+                        $data['USER_NAME'] = $username;
+                        $owner_id = $this->blogpageModel->
+                            getBlogOwner($timestamp);
+                        if($owner_id == $user || $user == '1'){
+                            $data['IS_OWNER'] = true;
+                        }
+                    }
+                break;
+
+                case "editdescription":
+                    if(!isset($_REQUEST['id'])) { break; }
+                    $timestamp = $this->clean($_REQUEST['id'], "string" );
+                    $data["ELEMENT"] = "editblogpagesElement";
+                    $data['SOURCE_TYPES'] =
+                        array(-1 => tl('admin_controller_source_type'),
+                            "blog" => tl('admin_controller_blog'),
+                            "page" => tl('admin_controller_page'));
+                    $source_type_flag = false;
+                    if(isset($_REQUEST['sourcetype']) && in_array(
+                       $_REQUEST['sourcetype'],
+                       array_keys($data['SOURCE_TYPES']))
+                       ) {
+                       $data['SOURCE_TYPE'] = $_REQUEST['sourcetype'];
+                       $source_type_flag = true;
+                    } else {
+                        $data['SOURCE_TYPE'] = -1;
+                    }
+                    $locales = $this->localeModel->getLocaleList();
+                    $data["LANGUAGES"] = array();
+                    foreach($locales as $locale) {
+                        $data["LANGUAGES"][$locale['LOCALE_TAG']] =
+                            $locale['LOCALE_NAME'];
+                    }
+                    if(isset($_REQUEST['sourcelocaletag']) && in_array(
+                        $_REQUEST['sourcelocaletag'],
+                        array_keys($data["LANGUAGES"]))) {
+                        $data['SOURCE_LOCALE_TAG'] =
+                        $_REQUEST['sourcelocaletag'];
+                    } else {
+                        $data['SOURCE_LOCALE_TAG'] = DEFAULT_LOCALE;
+                    }
+                    $blog_group = $this->blogpageModel->
+                        getBlogGroup($timestamp);
+                    $data['BLOG_GROUP'] = $blog_group;
+                    $data['EDIT_BLOGS'] =
+                        $this->blogpageModel->editBlog($timestamp);
+                    $data['IS_EDIT_DESC'] = true;
+                break;
+
+                case "updatedescription":
+                    if(isset($_REQUEST['id'])) {
+                        $timestamp = $this->clean($_REQUEST['id'], "string" );
+                    }
+                    if(isset($_REQUEST['description'])) {
+                        $description =
+                            $this->clean($_REQUEST['description'], "string" );
+                    }
+                    if(isset($_REQUEST['title'])) {
+                        $title = $this->clean($_REQUEST['title'], "string" );
+                    }
+                    $data['EDIT_BLOGS'] =
+                        $this->blogpageModel->editDescription($timestamp,
+                            $title, $description);
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('admin_controller_blog_updated') . "</h1>');";
+                    $data["ELEMENT"] = "blogpagesElement";
+                    $recent_blogs =
+                    $this->blogpageModel->
+                        recentBlog($user, $group_ids, $is_admin);
+                    $data['RECENT_BLOGS'] = $recent_blogs;
+                break;
+
+                case "addblogentry":
+                    if(!isset($_REQUEST['id'])) { break; }
+                    $timestamp = $this->clean($_REQUEST['id'], "string" );
+                    $data["ELEMENT"] = "editblogpagesElement";
+                    $data['SOURCE_TYPES'] =
+                        array(-1 => tl('admin_controller_source_type'),
+                        "blog" => tl('admin_controller_blog'),
+                        "page" => tl('admin_controller_page'));
+                        $source_type_flag = false;
+                    if(isset($_REQUEST['sourcetype']) && in_array(
+                        $_REQUEST['sourcetype'],
+                        array_keys($data['SOURCE_TYPES']) )
+                        ) {
+                        $data['SOURCE_TYPE'] = $_REQUEST['sourcetype'];
+                        $source_type_flag = true;
+                    } else {
+                        $data['SOURCE_TYPE'] = -1;
+                    }
+                    $locales = $this->localeModel->getLocaleList();
+                    $data["LANGUAGES"] = array();
+                    foreach($locales as $locale) {
+                        $data["LANGUAGES"][$locale['LOCALE_TAG']] =
+                        $locale['LOCALE_NAME'];
+                    }
+                    if(isset($_REQUEST['sourcelocaletag']) &&
+                        in_array($_REQUEST['sourcelocaletag'],
+                        array_keys($data["LANGUAGES"]))) {
+                            $data['SOURCE_LOCALE_TAG'] =
+                            $_REQUEST['sourcelocaletag'];
+                    } else {
+                       $data['SOURCE_LOCALE_TAG'] = DEFAULT_LOCALE;
+                    }
+                    $data['EDIT_BLOGS'] =
+                        $this->blogpageModel->editBlog($timestamp);
+                    $data['IS_ADD_BLOG'] = true;
+                break;
+
+                case "addfeeditem":
+                    if(isset($_SESSION['USER_ID'])) {
+                        $user = $_SESSION['USER_ID'];
+                    } else {
+                        $user = $_SERVER['REMOTE_ADDR'];
+                    }
+                    $user = $_SESSION['USER_ID'];
+                    if(isset($_REQUEST['id'])) {
+                        $timestamp = $this->clean($_REQUEST['id'], "string" );
+                    }
+                    if(isset($_REQUEST['title'])) {
+                        $title = $this->clean($_REQUEST['title'], "string" );
+                    }
+                    if(isset($_REQUEST['description'])) {
+                        $description =
+                            $this->clean($_REQUEST['description'], "string" );
+                    }
+                    if(isset($_REQUEST['title_entry'])) { ;
+                        $title_entry =
+                            $this->clean($_REQUEST['title_entry'], "string" );
+                    }
+                    $feed_items= $this->blogpageModel->addEntry($timestamp,
+                        $title_entry, $description, $title, $user);
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('admin_controller_feed_added').
+                        "</h1>');";
+                break;
+
+                case "editfeed":
+                    if(!isset($_REQUEST['id'])) { break; }
+
+                    $timestamp = $this->clean($_REQUEST['id'], "string" );
+                    $data["ELEMENT"] = "editblogpagesElement";
+                    $data['SOURCE_TYPES'] =
+                        array(-1 => tl('admin_controller_source_type'),
+                        "blog" => tl('admin_controller_blog'),
+                        "page" => tl('admin_controller_page'));
+                    $source_type_flag = false;
+                    if(isset($_REQUEST['sourcetype']) &&
+                        in_array($_REQUEST['sourcetype'],
+                        array_keys($data['SOURCE_TYPES']))) {
+                            $data['SOURCE_TYPE'] = $_REQUEST['sourcetype'];
+                            $source_type_flag = true;
+                    } else {
+                        $data['SOURCE_TYPE'] = -1;
+                    }
+                    $locales = $this->localeModel->getLocaleList();
+                    $data["LANGUAGES"] = array();
+                    foreach($locales as $locale) {
+                        $data["LANGUAGES"][$locale['LOCALE_TAG']] =
+                        $locale['LOCALE_NAME'];
+                    }
+                    if(isset($_REQUEST['sourcelocaletag']) &&
+                        in_array($_REQUEST['sourcelocaletag'],
+                        array_keys($data["LANGUAGES"]))) {
+                            $data['SOURCE_LOCALE_TAG'] =
+                            $_REQUEST['sourcelocaletag'];
+                    } else {
+                        $data['SOURCE_LOCALE_TAG'] = DEFAULT_LOCALE;
+                    }
+                    $data['EDIT_BLOGS'] =
+                        $this->blogpageModel->editBlog($timestamp);
+                    $data['IS_EDIT_FEED'] = true;
+                    if(isset($_REQUEST['fid'])) {
+                        $guid = $this->clean($_REQUEST['fid'], "string" );
+                    }
+                    $feed_items = $this->blogpageModel->getFeedByGUID($guid);
+                    $data['FEED_ITEMS'] = $feed_items;
+                    $owner_id = $this->blogpageModel->getBlogOwner($timestamp);
+                    if($owner_id == $user || $user == '1'){
+                        $data['IS_OWNER'] = true;
+                    }
+                break;
+
+                case "updatefeed":
+                    if(isset($_REQUEST['id'])) {
+                        $timestamp = $this->clean($_REQUEST['id'], "string" );
+                    }
+                    if(isset($_REQUEST['description'])) {
+                        $description =
+                            $this->clean($_REQUEST['description'], "string" );
+                    }
+                    if(isset($_REQUEST['title'])) {
+                        $title = $this->clean($_REQUEST['title'], "string" );
+                    }
+                    if(isset($_REQUEST['fid'])) {
+                        $guid = $this->clean($_REQUEST['fid'], "string" );
+                    }
+                    $update_feeds= $this->blogpageModel->
+                        updateFeed ($guid,$title, $description);
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('admin_controller_feed_updated').
+                        "</h1>');";
+                break;
+
+                case "deletefeed":
+                    if(isset($_REQUEST['id'])) {
+                        $guid = $this->clean($_REQUEST['id'], "string" );
+                        $this->blogpageModel->deleteFeed($guid);
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('admin_controller_feed_deleted').
+                            "</h1>');";
+                    }
+                break;
+
+                case "updateblogusers":
+                    if(isset($_REQUEST['selectuser'])) {
+                        $select_user =
+                        $this->clean($_REQUEST['selectuser'], "string" );
+                    } else {
+                        $select_user = "";
+                    }
+                    if($select_user != "" ) {
+                        $userid = $this->signinModel->getUserId($select_user);
+                        $data['SELECT_USER'] = $select_user;
+
+                    }
+                    if(isset($_REQUEST['blogName'])) {
+                        $blog_name =
+                            $this->clean($_REQUEST['blogName'], "string");
+                    } else {
+                        $blog_name = "";
+                    }
+                    $this->blogpageModel->
+                        updateBlogUsers($select_user, $blog_name);
+                    $recent_blogs =
+                    $this->blogpageModel->
+                        recentBlog($user, $group_ids, $is_admin);
+                    $data['RECENT_BLOGS'] = $recent_blogs;
+                break;
+
+                case "addbloggroup":
+                    if(isset($_REQUEST['id'])) {
+                        $timestamp = $this->clean($_REQUEST['id'], "string" );
+                    }
+                    if(isset($_REQUEST['selectgroup'])) {
+                        $select_group =
+                        $this->clean($_REQUEST['selectgroup'], "string" );
+                        $data['SELECT_GROUP'] = $select_group;
+                    } else {
+                        $select_group = "";
+                    }
+                    $groupid = $this->groupModel->getGroupId($select_group);
+                    $data['SELECT_GROUP'] = $select_group;
+                    $this->blogpageModel->addGroup($timestamp,$select_group);
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('admin_controller_group_added').
+                        "</h1>');";
+                break;
+
+                case "deletebloggroup":
+                    if(isset($_REQUEST['id'])) {
+                        $timestamp = $this->clean($_REQUEST['id'], "string" );
+                    }
+                    if(isset($_REQUEST['gid'])) {
+                        $groupid = $this->clean($_REQUEST['gid'], "string" );
+                    }
+                    $this->blogpageModel->deleteGroup($timestamp,$groupid);
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('admin_controller_group_deleted').
+                        "</h1>');";
+                break;
+            }
+        }
         return $data;
     }
 

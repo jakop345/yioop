@@ -207,6 +207,11 @@ p
     height: 4in;
     width: 100%;
 }
+.small-text-area
+{
+    height: 2.5in;
+    width: 100%;
+}
 
 .mobile .tall-text-area
 {

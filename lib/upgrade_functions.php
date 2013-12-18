@@ -85,7 +85,7 @@ function upgradeDatabaseWorkDirectoryCheck()
         $result = @$model->db->execute($sql);
         if($result !== false) {
             $row = $model->db->fetchArray($result);
-            if(isset($row['ID']) && $row['ID'] >= 17) {
+            if(isset($row['ID']) && $row['ID'] >= 18) {
                 return false;
             } else {
                 return true;
@@ -103,7 +103,8 @@ function upgradeDatabaseWorkDirectoryCheck()
  */
 function upgradeDatabaseWorkDirectory()
 {
-    $versions = array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16, 17);
+    $versions = array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16,
+                    17, 18);
     $model = new Model();
     $model->db->selectDB(DB_NAME);
     $sql = "SELECT ID FROM VERSION";
@@ -554,6 +555,32 @@ function upgradeDatabaseVersion17(&$db)
         'Manage Groups');
     updateTranslationForStringId($db, 'db_activity_manage_groups', 'fr-FR',
         'Modifier les groupes');
+
+    upgradeLocales();
+}
+
+/**
+ * Upgrades a Version 17 version of the Yioop! database to a Version 18 version
+ * @param object $db datasource to use to upgrade
+ */
+function upgradeDatabaseVersion18(&$db)
+{
+    $dbinfo = array("DBMS" => DBMS, "DB_HOST" => DB_HOST,
+        "DB_NAME" => DB_NAME, "DB_PASSWORD" => DB_PASSWORD);
+    $auto_increment = $db->autoIncrement($dbinfo);
+    $db->execute("DELETE FROM VERSION WHERE ID < 17");
+    $db->execute("UPDATE VERSION SET ID=18 WHERE ID=17");
+
+    $db->execute("CREATE TABLE ACCESS (NAME VARCHAR(16), ID INTEGER,
+                TYPE VARCHAR(16))");
+    $db->execute("CREATE TABLE BLOG_DESCRIPTION (TIMESTAMP INT(11) UNIQUE,
+                DESCRIPTION VARCHAR(4096))");
+
+    addActivityAtId($db, 'db_activity_blogs_pages', "BlogPages", 6);
+    updateTranslationForStringId($db, 'db_activity_blogs_pages', 'en-US',
+        'Blogs and Pages');
+    updateTranslationForStringId($db, 'db_activity_blogs_pages', 'fr-FR',
+        'les blogs et les pages');
 
     upgradeLocales();
 }

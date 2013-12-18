@@ -49,7 +49,7 @@ class StaticController extends Controller
      * Says which models to load for this controller.
      * @var array
      */
-    var $models = array();
+    var $models = array("blogpage");
     /**
      * Says which views to load for this controller.
      * @var array
@@ -102,10 +102,16 @@ class StaticController extends Controller
      */
     function show_page()
     {
+        if(isset($_SESSION['USER_ID'])) {
+            $user = $_SESSION['USER_ID'];
+        } else {
+            $user = $_SERVER['REMOTE_ADDR'];
+        }
         $data = array();
         if(isset($_REQUEST['p']) &&
-            in_array($_REQUEST['p'], $this->staticView->pages)) {
-            $data['page'] = $_REQUEST['p'];
+            in_array($_REQUEST['p'], $this->staticView->pages) &&
+            $this->blogpageModel->isPageAccessible($user, $_REQUEST['p'])) {
+                $data['page'] = $_REQUEST['p'];
         } else {
             $data['page'] = "blog";
         }
