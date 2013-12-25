@@ -192,7 +192,7 @@ EOT;
                 $robot_path = LOCALE_DIR."/".DEFAULT_LOCALE."/pages/bot.thtml";
                 file_put_contents($robot_path,
                     $new_profile_data['ROBOT_DESCRIPTION']);
-                @chmod("$directory/bot.txt", 0777);
+                @chmod($robot_path, 0777);
             }
             return true;
         }

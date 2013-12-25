@@ -576,7 +576,7 @@ function upgradeDatabaseVersion18(&$db)
     $db->execute("CREATE TABLE BLOG_DESCRIPTION (TIMESTAMP INT(11) UNIQUE,
                 DESCRIPTION VARCHAR(4096))");
 
-    addActivityAtId($db, 'db_activity_blogs_pages', "BlogPages", 6);
+    addActivityAtId($db, 'db_activity_blogs_pages', "blogPages", 6);
     updateTranslationForStringId($db, 'db_activity_blogs_pages', 'en-US',
         'Blogs and Pages');
     updateTranslationForStringId($db, 'db_activity_blogs_pages', 'fr-FR',

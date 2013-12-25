@@ -74,6 +74,9 @@ require_once(BASE_DIR."/models/datasources/".DBMS."_manager.php");
  * Load e() function
  */
 require_once BASE_DIR."/lib/utility.php";
+if((DEBUG_LEVEL & ERROR_INFO) == ERROR_INFO) {
+    set_error_handler("yioop_error_handler");
+}
 /**
  * Load global functions related to localization
  */
@@ -126,18 +129,21 @@ if (function_exists('lcfirst') === false) {
 }
 
 $available_controllers = array( "admin", "archive",  "cache", "crawl",
-    "register","fetch",  "machine", "resource", "search", "settings",
+    "fetch",  "machine", "resource", "search", "settings",
     "statistics", "static", "classifier");
 if(!WEB_ACCESS) {
 $available_controllers = array("admin", "archive", "cache", "crawl", "fetch",
-     "register", "machine");
+     "machine");
+}
+if(ANONYMOUS_ACCOUNT) {
+    $available_controllers[] = "register";
 }
 
 //the request variable c is used to determine the controller
 if(!isset($_REQUEST['c'])) {
     $controller_name = "search";
 } else {
-   $controller_name = $_REQUEST['c'];
+    $controller_name = $_REQUEST['c'];
 }
 
 if(!checkAllowedController($controller_name))

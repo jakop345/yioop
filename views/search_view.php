@@ -363,7 +363,12 @@ class SearchView extends View implements CrawlConstants
         ?>
 
         <div class="landing-footer">
-            <div><b><?php e($data['INDEX_INFO']);?></b> <?php
+            <div><b><?php 
+            if(isset($data['INDEX_INFO'])) {
+                e($data['INDEX_INFO']);
+            } else {
+                e(tl('search_view_no_index_set'));
+            } ?></b> <?php
             if(isset($data["HAS_STATISTICS"]) && $data["HAS_STATISTICS"]) {
             ?>[<a href="index.php?<?php e(CSRF_TOKEN."=".$data[CSRF_TOKEN]);
                 ?>&amp;c=statistics&amp;its=<?php e($data['its']);?>"><?php
@@ -374,12 +379,11 @@ class SearchView extends View implements CrawlConstants
 
         </div>
         <?php
-        if(!isset($data['PAGES'])) {?>
+        if(!isset($data['PAGES'])) { ?>
+            </div>
 
-        </div>
-
-        <div class='landing-spacer'></div>
-        <?php
+            <div class='landing-spacer'></div>
+            <?php
         }
 
     }

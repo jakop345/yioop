@@ -124,9 +124,8 @@ class BlogpageModel extends Model
     /**
      *  Delete the feed item of a blog from the database using provided string
      *  @param string $guid guid is the unique id for the feeditem
-     *  @param string $title title of the feed item
      */
-    function deleteFeed($guid, $title)
+    function deleteFeed($guid)
     {
         $this->db->selectDB(DB_NAME);
         $sql = "SELECT TITLE FROM FEED_ITEM WHERE GUID = '$guid'";
@@ -152,8 +151,8 @@ class BlogpageModel extends Model
             $result2=  $this->db->fetchArray($result); 
             $blog_name = $result2["NAME"];
         $sql = "INSERT INTO ACCESS( NAME, ID, TYPE) VALUES ('".
-                $this->db->escapeString($blog_name)."','".
-                $select_group ."', 'group')";
+            $this->db->escapeString($blog_name)."','".
+            $select_group ."', 'group')";
         $blog_group = $this->db->execute($sql);
     }
 
@@ -166,9 +165,9 @@ class BlogpageModel extends Model
     {
         $this->db->selectDB(DB_NAME);
         $sql = "SELECT NAME FROM MEDIA_SOURCE WHERE TIMESTAMP = '$timestamp'";
-            $result = $this->db->execute($sql); 
-            $result2=  $this->db->fetchArray($result); 
-            $blog_name = $result2["NAME"];
+        $result = $this->db->execute($sql); 
+        $result2=  $this->db->fetchArray($result); 
+        $blog_name = $result2["NAME"];
 
         $sql = "SELECT ID FROM ACCESS WHERE NAME = '$blog_name'
             AND TYPE = 'group'";
@@ -177,11 +176,11 @@ class BlogpageModel extends Model
         while($groups[$i] = $this->db->fetchArray($group_id)) {
             $groupid = $groups[$i]['ID']; 
             $sql = "SELECT GROUP_NAME FROM GROUPS WHERE GROUP_ID = '$groupid'";
-                $result4 = $this->db->execute($sql); 
-                $group_name = $this->db->fetchArray($result4);
-                $groups[$i]['GROUP_NAME']= $group_name['GROUP_NAME'];
-                $groups[$i]['TIMESTAMP']= $timestamp;
-                $i++;
+            $result4 = $this->db->execute($sql); 
+            $group_name = $this->db->fetchArray($result4);
+            $groups[$i]['GROUP_NAME']= $group_name['GROUP_NAME'];
+            $groups[$i]['TIMESTAMP']= $timestamp;
+            $i++;
         }
         unset($groups[$i]); //last one will be null
         return $groups;
@@ -196,9 +195,9 @@ class BlogpageModel extends Model
     {
         $this->db->selectDB(DB_NAME);
         $sql = "SELECT NAME FROM MEDIA_SOURCE WHERE TIMESTAMP = '$timestamp'";
-            $result = $this->db->execute($sql);
-            $result2=  $this->db->fetchArray($result);
-            $blog_name = $result2["NAME"];
+        $result = $this->db->execute($sql);
+        $result2=  $this->db->fetchArray($result);
+        $blog_name = $result2["NAME"];
         $sql = "DELETE FROM ACCESS WHERE NAME = '$blog_name'
             AND ID = '$group_id' AND TYPE = 'group'";
         $this->db->execute($sql);
@@ -233,7 +232,7 @@ class BlogpageModel extends Model
         if($is_admin === false){
             $sql = "SELECT TIMESTAMP,NAME,TYPE from MEDIA_SOURCE WHERE NAME
                 IN (SELECT NAME FROM ACCESS
-                WHERE NAME like '%$title%' AND ID != '$user'
+                WHERE NAME LIKE '%$title%' AND ID != '$user'
                 AND ID IN ($groups_Ids));";
             $result = $this->db->execute($sql);
             while($blogs[$i] = $this->db->fetchArray($result)) {
@@ -272,18 +271,19 @@ class BlogpageModel extends Model
             $blogs[$i]['EDITABLE'] = true;
             $i++;
         }
-        if($is_admin === false){
-        $group_string = "'".implode ("','", $group_ids)."'";
+        if($is_admin === false) {
+            $group_string = "'".implode ("','", $group_ids)."'";
             $sql = "SELECT TIMESTAMP,NAME,TYPE FROM MEDIA_SOURCE WHERE NAME
                 IN (SELECT NAME FROM ACCESS  WHERE TYPE = 'group' AND 
                 ID IN ($group_string)) AND TYPE = 'blog'
                 ORDER BY TIMESTAMP DESC LIMIT $limit ";
-        $result = $this->db->execute($sql); 
-        while($blogs[$i] = $this->db->fetchArray($result)) {
-            if(in_array($blogs[$i]['NAME'], $blognames)){
-            unset($blogs[$i]);
-        }
-        $i++;
+                $result = $this->db->execute($sql); 
+            while($blogs[$i] = $this->db->fetchArray($result)) {
+                if(!empty($blognames) && 
+                    in_array($blogs[$i]['NAME'], $blognames)){
+                    unset($blogs[$i]);
+                }
+                $i++;
             }
         }
         unset($blogs[$i]); //last one will be null
@@ -364,11 +364,11 @@ class BlogpageModel extends Model
             $blog_name = $blogs[$i]['NAME'];
             $sql = "SELECT id FROM ACCESS WHERE NAME = '$blog_name'
                 AND TYPE = 'group'";
-                $blog = $this->db->execute($sql);
-                $row  = $this->db->fetchArray($blog);
-                $group_id = $row['id'];
-                $sql = "SELECT GROUP_NAME FROM GROUPS WHERE
-                    GROUP_ID = '$group_id'";
+            $blog = $this->db->execute($sql);
+            $row  = $this->db->fetchArray($blog);
+            $group_id = $row['ID'];
+            $sql = "SELECT GROUP_NAME FROM GROUPS WHERE
+                GROUP_ID = '$group_id'";
             $blog_group = $this->db->execute($sql);
             $group_name  = $this->db->fetchArray($blog_group);
             $name = $group_name['GROUP_NAME'];
@@ -407,19 +407,19 @@ class BlogpageModel extends Model
     function getFeed($title, $user)
     {
         $this->db->selectDB(DB_NAME);
-        $sql = "SELECT guid,title,description FROM FEED_ITEM
-            WHERE source_name = '".
+        $sql = "SELECT guid, title, description FROM FEED_ITEM
+            WHERE source_name='".
             $this->db->escapeString($title)."'";
             $result = $this->db->execute($sql);
         $i = 0;
         while($blogs[$i] = $this->db->fetchArray($result)) {
              $sql = "SELECT ID FROM ACCESS WHERE NAME = '".
-                $this->db->escapeString($blogs[$i]['title'])."'";
+                $this->db->escapeString($blogs[$i]['TITLE'])."'";
                 $feed_result = $this->db->execute($sql);
             if($row = $this->db->fetchArray($feed_result) ) {
                 if ($row['ID'] == $user || $user == 1){
                     $blogs[$i]['IS_OWNER'] = true; 
-            } else { $blogs[$i]['IS_OWNER'] = false;}
+                } else { $blogs[$i]['IS_OWNER'] = false;}
             }
             $i++;
         }
@@ -524,8 +524,9 @@ class BlogpageModel extends Model
             $this->db->escapeString($title_entry)."','".
             $user."','user')";
         $this->db->execute($sql);
+        $guid = uniqid();
         $sql = "INSERT INTO FEED_ITEM(GUID,TITLE,DESCRIPTION,
-            PUBDATE,SOURCE_NAME) VALUES (uuid(),'".
+            PUBDATE,SOURCE_NAME) VALUES ('$guid','".
             $this->db->escapeString($title_entry)."','".
             $this->db->escapeString($description)."','".
             $timestampe."','".
@@ -544,8 +545,8 @@ class BlogpageModel extends Model
      * @param int $select_group id of the group
      * @return bool file input/output result
      */
-    function addPage($title, $description, $source_type,
-                        $language, $user, $select_group)
+    function addPage($title, $description, $source_type, $language, $user,
+        $select_group)
     {
         $this->db->selectDB(DB_NAME);
         $timestamp = time();

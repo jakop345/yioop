@@ -863,7 +863,7 @@ EOT;
     {
       $strings = array();
 
-      if(!$dh = @opendir($dir)) {
+      if(!is_dir($dir) || !$dh = @opendir($dir)) {
          return array();
       }
 

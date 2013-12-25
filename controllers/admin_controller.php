@@ -1306,7 +1306,7 @@ class AdminController extends Controller implements CrawlConstants
                     $blog_users =
                     $this->blogpageModel->getBlogUsers($edit_blogs[0]);
                     $edit_blogs[0]['BLOG_USERS'] = $blog_users;
-                    $data['EDIT_BLOGS'] = $edit_blogs;
+                    $data['EDIT_BLOGS'] = $edit_blogs[0];
                     $title = $edit_blogs['0']['NAME'];
                     if(isset($_SESSION['USER_ID'])) {
                         $user = $_SESSION['USER_ID'];
@@ -1363,8 +1363,8 @@ class AdminController extends Controller implements CrawlConstants
                     $blog_group = $this->blogpageModel->
                         getBlogGroup($timestamp);
                     $data['BLOG_GROUP'] = $blog_group;
-                    $data['EDIT_BLOGS'] =
-                        $this->blogpageModel->editBlog($timestamp);
+                    $edit_blogs = $this->blogpageModel->editBlog($timestamp);
+                    $data['EDIT_BLOGS'] = $edit_blogs[0];
                     $data['IS_EDIT_DESC'] = true;
                 break;
 
@@ -1379,9 +1379,13 @@ class AdminController extends Controller implements CrawlConstants
                     if(isset($_REQUEST['title'])) {
                         $title = $this->clean($_REQUEST['title'], "string" );
                     }
-                    $data['EDIT_BLOGS'] =
+
+                    $edit_blogs =
                         $this->blogpageModel->editDescription($timestamp,
-                            $title, $description);
+                        $title, $description);
+                    if(!empty($edit_blogs)){
+                        $data['EDIT_BLOGS'] = $edit_blogs[0];
+                    }
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('admin_controller_blog_updated') . "</h1>');";
                     $data["ELEMENT"] = "blogpagesElement";
@@ -1423,8 +1427,8 @@ class AdminController extends Controller implements CrawlConstants
                     } else {
                        $data['SOURCE_LOCALE_TAG'] = DEFAULT_LOCALE;
                     }
-                    $data['EDIT_BLOGS'] =
-                        $this->blogpageModel->editBlog($timestamp);
+                    $edit_blogs = $this->blogpageModel->editBlog($timestamp);
+                    $data['EDIT_BLOGS'] = $edit_blogs[0];
                     $data['IS_ADD_BLOG'] = true;
                 break;
 
@@ -1438,6 +1442,7 @@ class AdminController extends Controller implements CrawlConstants
                     if(isset($_REQUEST['id'])) {
                         $timestamp = $this->clean($_REQUEST['id'], "string" );
                     }
+                    $title = "";
                     if(isset($_REQUEST['title'])) {
                         $title = $this->clean($_REQUEST['title'], "string" );
                     }
@@ -1488,8 +1493,9 @@ class AdminController extends Controller implements CrawlConstants
                     } else {
                         $data['SOURCE_LOCALE_TAG'] = DEFAULT_LOCALE;
                     }
-                    $data['EDIT_BLOGS'] =
-                        $this->blogpageModel->editBlog($timestamp);
+
+                    $edit_blogs = $this->blogpageModel->editBlog($timestamp);
+                    $data['EDIT_BLOGS'] = $edit_blogs[0];
                     $data['IS_EDIT_FEED'] = true;
                     if(isset($_REQUEST['fid'])) {
                         $guid = $this->clean($_REQUEST['fid'], "string" );

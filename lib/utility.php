@@ -22,7 +22,8 @@
  *
  *  END LICENSE
  *
- * A library of string, log, hash, time, and conversion functions
+ * A library of string, error reporting, log, hash, time, and conversion
+ * functions
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -33,6 +34,50 @@
  * @filesource
  */
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
+
+
+/**
+ * User defined function to perform error handling for yioop if
+ * the error box was checked in the configure menu.
+ *
+ * @param int $errno the level of the error raised, as an integer
+ * @param string $errstr the error message
+ * @param string $errfile the filename the error occurred in
+ * @param int $errline the line number of the error
+ * @param array $errcontext the context (variables and their values)
+ *      at the point the error occurred
+ */
+function yioop_error_handler($errno, $errstr, $errfile, $errline,
+    $errcontext)
+{
+    $num_lines_of_backtrace = 2;
+    $error_types = array(
+        E_NOTICE => 'NOTICE:', E_WARNING => 'WARNING:');
+    $type = (isset($error_types[$errno])) ? $error_types[$errno]:
+        "PHP OTHER ERROR";
+    echo "<pre>\n";
+    echo "$type $errstr at line $errline in $errfile\n";
+    $backtrace = debug_backtrace();
+    array_shift($backtrace);
+    $i = 0;
+    foreach($backtrace as $call) {
+        $function = "";
+        if(isset($call['class'])) {
+            $function .= $call['class']."->";
+        }
+        if(isset($call['function'])) {
+            $function .= $call['function'];
+        }
+        echo "  Called from $function line {$call['line']}".
+            " in {$call['file']}\n";
+        $i++;
+        if($i >= $num_lines_of_backtrace) {break; }
+    }
+    if(count($backtrace) > $num_lines_of_backtrace) {
+        echo "  Called from ...\n";
+    }
+    echo "</pre>";
+}
 
 /**
  * Adds delimiters to a regex that may or may not have them

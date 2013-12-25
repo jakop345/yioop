@@ -54,7 +54,7 @@ class EditBlogPagesElement extends Element
         $localize_url = $pre_base_url . "&amp;a=manageLocales".
             "&amp;arg=editlocale&amp;selectlocale=".$data['LOCALE_TAG'];
         if(isset($data['EDIT_BLOGS'])) { ?>
-        <div id="transfer">
+            <div id="transfer">
                 <div class="overlay">
                     <form  method="post" action='#'>
                         <input type="hidden" name="c" value="admin"/>
@@ -64,18 +64,20 @@ class EditBlogPagesElement extends Element
                         <input type="hidden" name="arg"
                             value="updateblogusers"/>
                         <input type="hidden" name="blogName" value=
-                            "<?php e($data['EDIT_BLOGS'][0]['NAME']); ?>"/>
+                            "<?php e($data['EDIT_BLOGS']['NAME']); ?>"/>
                         <?php
-                        if(isset($data['EDIT_BLOGS'][0]['BLOG_USERS'])) { ?>
-                        <?php
-                        foreach($data['EDIT_BLOGS'][0]['BLOG_USERS'] as $blog)
-                        { ?><input type="radio" name="selectuser"
-                            value="<?php e($blog['USER_ID']); ?>">
-                            <?php e($blog['USER_NAME']); ?><br/><?php } }?><hr/>
-                        <input type="submit"
-                            value="submit"
-                            onclick=
-"return confirm('<?php e(tl('managegroups_element_transfer_admin'))?>');"/>
+                        if(isset($data['EDIT_BLOGS']['BLOG_USERS'])) {
+                            foreach($data['EDIT_BLOGS']['BLOG_USERS'] as $blog){
+                                ?><input type="radio" name="selectuser"
+                                value="<?php e($blog['USER_ID']); ?>">
+                                <?php e($blog['USER_NAME']); ?><br/>
+                            <?php
+                            }
+                        } ?>
+                        <hr/>
+                        <input type="submit" value="submit" onclick=
+                            "return confirm('<?php 
+                            e(tl('managegroups_element_transfer_admin'))?>');"/>
                         <input type="button" value="cancel"
                             onclick="closeOverlay();"/>
                     </form>
@@ -83,18 +85,22 @@ class EditBlogPagesElement extends Element
             </div>
             <?php
         } ?><div class="current-activity">
-                <h2><?php e(tl('editblogpages_element_edit_blogpages')); ?></h2>
+            <h2><?php e(tl('editblogpages_element_edit_blogpages')); ?></h2>
             <?php
             if(isset($data['IS_OWNER']) &&  $data['IS_OWNER'] === true) {
-                foreach($data['EDIT_BLOGS'] as $edit_blog) { ?>[<?php
+                if(isset($data['EDIT_BLOGS'])) { 
+                    ?>[<?php
                     $edit_url =
                     $base_url.'&amp;arg=editdescription&amp;id='.
-                    $edit_blog['TIMESTAMP'];
+                    $data['EDIT_BLOGS']['TIMESTAMP'];
                     ?><a href = "<?php e($edit_url); ?>"><?php
                     e(tl('editblogpages_element_edit_settings'));?></a>]
                     [<a href="#" onclick='return showOverlay();'><?php
-             e(tl('editblogpages_element_transfer')); ?></a>] <?php } } ?>
-            <?php if(isset($data['IS_EDIT_DESC']) &&
+                    e(tl('editblogpages_element_transfer')); ?></a>]
+                    <?php
+                }
+             }
+            if(isset($data['IS_EDIT_DESC']) &&
                 $data['IS_EDIT_DESC'] === true) { ?>
                 <form method="post" action='#'>
                     <input type="hidden" name="c" value="admin" />
@@ -121,39 +127,41 @@ class EditBlogPagesElement extends Element
                        <?php }
                        ?></tr>
                     </table>
-                    <?php if(isset($data['BLOG_GROUP'])) { ?>
-                        <?php if(count($data['BLOG_GROUP']) > 0) { ?>
+                    <?php 
+                    if(isset($data['BLOG_GROUP'])) {
+                        if(count($data['BLOG_GROUP']) > 0) { ?>
                             <table class = "role-table">
-                            <?php foreach($data['BLOG_GROUP'] as $blog_group){?>
-                                <?php if($blog_group['ID'] != -1) {
-                        ?><tr>
-                            <td><?php e($blog_group['GROUP_NAME']); ?></td>
-                             <?php $delete_url = $base_url.
-                                '&amp;arg=deletebloggroup&amp;id=' .
-                                $blog_group['TIMESTAMP'].'&amp;gid='.
-                                $blog_group['ID']
-                            ?><td>
-                                <a href="<?php e($delete_url); ?>"><?php
+                            <?php
+                            foreach($data['BLOG_GROUP'] as $blog_group) {
+                                 if($blog_group['ID'] != -1) {
+                                    ?><tr>
+                                    <td><?php e($blog_group['GROUP_NAME']); 
+                                    ?></td>
+                                    <?php $delete_url = $base_url.
+                                    '&amp;arg=deletebloggroup&amp;id=' .
+                                    $blog_group['TIMESTAMP'].'&amp;gid='.
+                                    $blog_group['ID']
+                                    ?><td>
+                                    <a href="<?php e($delete_url); ?>"><?php
                                     e(tl('editblogpages_element_deleteblog'));
-                                ?></a>
-                            </td>
-                        </tr>
-                        <?php
+                                    ?></a>
+                                        </td>
+                                    </tr>
+                                <?php
                                 }
-                            } ?><?php
+                            }
                         }
                     } ?>
                     </table>
                 </form>
-        <?php } ?>
+        <?php
+        } ?>
         <form method="post" action='#'>
             <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
                 e($data[CSRF_TOKEN]); ?>"/>
             <input type="hidden" name="a" value="blogPages"/>
-            <input type="hidden" name="c" value="admin"/>
             <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
                 e($data[CSRF_TOKEN]); ?>"/>
-            <input type="hidden" name="a" value="blogPages"/>
             <?php if(isset($data['IS_EDIT_DESC']) &&
                 $data['IS_EDIT_DESC'] === true) { ?>
                 <input type="hidden" name="arg" value="updatedescription"/>
@@ -172,14 +180,14 @@ class EditBlogPagesElement extends Element
                             e(tl('editblogpages_element_sourcetype'))?></b>
                         </label></td>
                         <td>
-                        <?php foreach($data['EDIT_BLOGS'] as $edit_blog) { ?>
+                        <?php if(isset($data['EDIT_BLOGS'])) { ?>
                         <?php $this->view->optionsHelper->render("source-type",
                             "sourcetype", $data['SOURCE_TYPES'],
-                            $edit_blog['TYPE']);?></td></tr>
+                        $data['EDIT_BLOGS']['TYPE']);?></td></tr>
                     <tr><th><label for="source-name"><?php
                         e(tl('editblogpages_element_typename')); ?></label></th>
                         <td><input type="text" id="source-name" name="title"
-                        value = "<?php e($edit_blog['NAME']); ?>"
+                        value = "<?php e($data['EDIT_BLOGS']['NAME']); ?>"
                         maxlength="80" class="wide-field" /></td>
                     </tr>
                     <tr><th id="locale-text">
@@ -198,7 +206,8 @@ class EditBlogPagesElement extends Element
                     e(tl('editblogpages_element_description'));
                     ?></b></label></div>
                 <textarea class="tall-text-area" id="descriptionfield"
-                    name="description"><?php e($edit_blog['DESCRIPTION']);
+                    name="description"><?php
+                        e($data['EDIT_BLOGS']['DESCRIPTION']);
                     ?></textarea>
                 <div class="center slight-pad"><button class="button-box"
                     type="submit"><?php
@@ -209,13 +218,14 @@ class EditBlogPagesElement extends Element
             ?><table class="name-table">
                 <tr><th><label><?php
                     e(tl('editblogpages_element_sourcetype'))?></label>
-                    </th><td><?php foreach($data['EDIT_BLOGS'] as $edit_blog) {
-                    ?><p><?php e($edit_blog['TYPE']); ?></p><?php } ?></td>
+                    </th><td><?php if(isset($data['EDIT_BLOGS'])) {
+                    ?><p><?php e($data['EDIT_BLOGS']['TYPE']); ?></p><?php }
+                        ?></td>
                 </tr>
                 <tr><th><label><?php
                     e(tl('editblogpages_element_typename')); ?></label></th>
-                    <td><?php foreach($data['EDIT_BLOGS'] as $edit_blog) {
-                        ?><p><?php e($edit_blog['NAME']); ?></p>
+                    <td><?php if(isset($data['EDIT_BLOGS'])) {
+                        ?><p><?php e($data['EDIT_BLOGS']['NAME']); ?></p>
                     </td>
                 </tr>
                 <tr><th id="locale-text"><label><?php
@@ -227,8 +237,8 @@ class EditBlogPagesElement extends Element
                 <tr><th><label><?php
                         e(tl('editblogpages_element_description'));?></label>
                     </th>
-                    <td><?php foreach($data['EDIT_BLOGS'] as $edit_blog) {
-                        ?><p><?php e($edit_blog['DESCRIPTION']);?></p>
+                    <td><?php if(isset($data['EDIT_BLOGS'])) {
+                        ?><p><?php e($data['EDIT_BLOGS']['DESCRIPTION']);?></p>
                     <?php } ?></td>
                 </tr><?php } ?></table>
 
@@ -259,13 +269,13 @@ class EditBlogPagesElement extends Element
                 e(tl('editblogpages_element_feed_title')); ?></label></th><td>
                 <input type="text" id="source-name" name="title"
                     value = "<?php if(isset($data['FEED_ITEMS'])
-                    ){e($data['FEED_ITEMS'][0]['title']);}else{e('');} ?>"
+                    ){e($data['FEED_ITEMS'][0]['TITLE']);}else{e('');} ?>"
                     maxlength="80" class="wide-field" /></td></tr></table>
                 <div class="top-margin"><label for="descriptionfield"><b><?php
                   e(tl('editblogpages_element_feeditems'));?></b></label></div>
                 <textarea class="tall-text-area" id="descriptionfield"
                     name="description"><?php if(isset($data['FEED_ITEMS'])){
-                    e($data['FEED_ITEMS'][0]['description']); }
+                    e($data['FEED_ITEMS'][0]['DESCRIPTION']); }
                     else { e("");}?></textarea>
                 <div class="center slight-pad"><button class="button-box"
                     type="submit"><?php
@@ -275,7 +285,7 @@ class EditBlogPagesElement extends Element
             } else if (!isset($data['IS_ADD_BLOG']) ||
                 $data['IS_ADD_BLOG'] !== true) {
             ?>[<a href = "<?php e($base_url.'&amp;arg=addblogentry&amp;id='.
-                  $edit_blog['TIMESTAMP']); ?>"><?php
+                        $data['EDIT_BLOGS']['TIMESTAMP']); ?>"><?php
                   e(tl('editblogpages_element_add_blogentry'));?></a>]
             <?php if(isset($data['FEED_ITEMS']) &&
                 count($data['FEED_ITEMS']) > 0) { ?>
@@ -292,25 +302,25 @@ class EditBlogPagesElement extends Element
                     </tr>
                     <?php foreach($data['FEED_ITEMS'] as $feed_items) {
                     ?><tr>
-                        <td><?php e($feed_items['title']);?></td>
-                        <td><?php e($feed_items['description']); ?></td>
+                        <td><?php e($feed_items['TITLE']);?></td>
+                        <td><?php e($feed_items['DESCRIPTION']); ?></td>
                         <td>
                             <?php if($feed_items['IS_OWNER'] === true || (
                             isset($data['IS_OWNER']) &&
                             $data['IS_OWNER'] === true)) { ?><?php
                                 $edit_blog_url = $base_url .
                                 '&amp;arg=editfeed&amp;id='.
-                                $edit_blog['TIMESTAMP'].'&amp;fid=' .
-                                $feed_items['guid']; 
+                                    $data['EDIT_BLOGS']['TIMESTAMP'].'&amp;
+                                    fid=' . $feed_items['GUID']; 
                                 ?><a href="<?php e($edit_blog_url); ?>"><?php
                                 e(tl('editblogpages_element_editblog')); ?></a>
                          <?php } ?></td>
                         <td>
                             <?php if($feed_items['IS_OWNER'] === true ||
-                            $data['IS_OWNER'] === true) { ?><?php 
+                            isset($data['IS_OWNER']) === true) { ?><?php 
                                 $delete_url = $base_url.
                                 '&amp;arg=deletefeed&amp;id=' .
-                                $feed_items['guid'];
+                                $feed_items['GUID'];
                                 ?><a href="<?php e($delete_url); ?>"><?php
                                 e(tl('editblogpages_element_deleteblog'));
                                 ?></a>
