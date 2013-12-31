@@ -72,10 +72,12 @@ class ConfigureElement extends Element
         <form id="configureDirectoryForm" method="post"
             action='?c=admin&amp;a=configure&amp;<?php
             e(CSRF_TOKEN."=".$data[CSRF_TOKEN]); ?>' >
-        <?php if(isset($data['lang'])) { ?>
+        <?php
+        if(isset($data['lang'])) { ?>
             <input type="hidden" name="lang" value="<?php
                 e($data['lang']); ?>" />
-        <?php }?>
+        <?php
+        } ?>
         <input type="hidden" name="arg" value="directory" />
         <h2><label for="directory-path"><?php
             e(tl('configure_element_work_directory'))?></label></h2>
@@ -136,18 +138,51 @@ class ConfigureElement extends Element
                         e("checked='checked'");}?>/><?php
                         e(tl('configure_element_test_info')); ?></label>
             </fieldset>
+            </div>
             <div class = "top-margin">
-            <fieldset class="extra-wide-field"><legend><?php
-                e(tl('configure_element_user_accounts'))?></legend>
-                <label for="user_accounts"><input
-                    id='user_accounts' type="checkbox"
-                    name="ANONYMOUS_ACCOUNT" value="true"
-                    <?php
-                    if($data['ANONYMOUS_ACCOUNT'] == true) {
-                        e("checked='checked'");
-                    }
-                    ?> /><?php e(tl('configure_element_email_registration'));
-                    ?></label>
+            <fieldset class="extra-wide-field">
+                <legend><label
+                for="account-registration"><?php
+                e(tl('configure_element_account_registration'));
+                ?>
+                </label></legend>
+                    <?php $this->view->optionsHelper->render(
+                        "account-registration", "REGISTRATION_TYPE",
+                        $data['REGISTRATION_TYPES'],
+                        $data['REGISTRATION_TYPE']);
+                ?>
+                <div id="registration-info">
+                <div class="top-margin"><b><label for="mail-server"><?php
+                    e(tl('configure_element_mail_server'))?></label></b>
+                    <input type="text" id="mail-server" name="MAIL_SERVER"
+                        value="<?php e($data['MAIL_SERVER']); ?>"
+                        class="wide-field" />
+                </div>
+                <div class="top-margin"><b><label for="mail-serverport"><?php
+                    e(tl('configure_element_mail_serverport'))?></label></b>
+                    <input type="text" id="mail-port" name="MAIL_SERVERPORT"
+                        value="<?php e($data['MAIL_SERVERPORT']); ?>"
+                        class="wide-field" />
+                </div>
+                <div class="top-margin"><b><label for="mail-username"><?php
+                    e(tl('configure_element_mail_username'))?></label></b>
+                    <input type="text" id="mail-username" name="MAIL_USERNAME"
+                        value="<?php e($data['MAIL_USERNAME']); ?>"
+                        class="wide-field" />
+                </div>
+                <div class="top-margin"><b><label for="mail-password"><?php
+                    e(tl('configure_element_mail_password'))?></label></b>
+                    <input type="text" id="mail-password" name="MAIL_PASSWORD"
+                        value="<?php e($data['MAIL_PASSWORD']); ?>"
+                        class="wide-field" />
+                </div>
+                <div class="top-margin"><b><label for="mail-security"><?php
+                    e(tl('configure_element_mail_security'))?></label></b>
+                    <input type="text" id="mail-security" name="MAIL_SECURITY"
+                        value="<?php e($data['MAIL_SECURITY']); ?>"
+                        class="wide-field" />
+                </div>
+                </div>
             </fieldset>
             </div>
             <div class="top-margin">
@@ -178,7 +213,8 @@ class ConfigureElement extends Element
                     <?php $this->view->optionsHelper->render(
                         "database-system", "DBMS",
                         $data['DBMSS'], $data['DBMS']);
-                ?></div>
+                ?>
+                </div>
                 <div class="top-margin"><b><label for="database-name"><?php
                     e(tl('configure_element_databasename'))?></label></b>
                     <input type="text" id="database-name" name="DB_NAME"
@@ -228,28 +264,32 @@ class ConfigureElement extends Element
                         <input type="checkbox" id="use-memcache"
                             name="USE_MEMCACHE" value="true" <?php
                             e($data['USE_MEMCACHE'] ? "checked='checked'" :
-                                "" ); ?> /></div>
+                                "" ); ?> />
+                </div>
                 <div id="memcache">
                     <div class="top-margin"><label for="memcache-servers"
                     ><b><?php e(tl('configure_element_memcache_servers'));
-                    ?></b></label></div>
-                <textarea class="short-text-area" id="memcache-servers"
+                    ?></b></label>
+                    </div>
+                    <textarea class="short-text-area" id="memcache-servers"
                     name="MEMCACHE_SERVERS"><?php e($data['MEMCACHE_SERVERS']);
-                ?></textarea>
+                    ?></textarea>
                 </div>
-               <?php } ?>
+               <?php
+                } ?>
                 <div id="filecache">
                 <div class="top-margin"><label for="use-filecache"><b><?php
                     e(tl('configure_element_use_filecache'))?></b></label>
                         <input type="checkbox" id="use-filecache"
                             name="USE_FILECACHE" value="true" <?php
                             e($data['USE_FILECACHE'] ? "checked='checked'" :
-                                "" ); ?> /></div>
+                                "" ); ?> />
+                </div>
                 </div>
             </fieldset>
             </div>
-            </div>
-            <div class="top-margin"><fieldset><legend><?php
+            <div class="top-margin">
+            <fieldset><legend><?php
                 e(tl('configure_element_crawl_robot'))?></legend>
                 <div><b><label for="crawl-robot-name"><?php
                     e(tl('configure_element_robot_name'))?></label></b>
@@ -268,7 +308,8 @@ class ConfigureElement extends Element
                 </div>
                 <div class="top-margin"><label for="robot-description"><b><?php
                     e(tl('configure_element_robot_description'));
-                    ?></b></label></div>
+                    ?></b></label>
+                </div>
                 <textarea class="tall-text-area" name="ROBOT_DESCRIPTION" ><?php
                     e($data['ROBOT_DESCRIPTION']);
                 ?></textarea>
@@ -277,6 +318,7 @@ class ConfigureElement extends Element
             <div class="top-margin center">
             <button class="button-box" type="submit"><?php
                 e(tl('configure_element_submit')); ?></button>
+            </div>
             </div>
             </div>
         <?php } ?>

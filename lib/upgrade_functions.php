@@ -586,6 +586,21 @@ function upgradeDatabaseVersion18(&$db)
 }
 
 /**
+ * Upgrades a Version 18 version of the Yioop! database to a Version 19 version
+ * @param object $db datasource to use to upgrade
+ */
+function upgradeDatabaseVersion19(&$db)
+{
+    $db->execute("DELETE FROM VERSION WHERE ID < 18");
+    $db->execute("UPDATE VERSION SET ID=19 WHERE ID=18");
+    $db->execute("ALTER TABLE USER ADD COLUMN FIRST_NAME VARCHAR(16)");
+    $db->execute("ALTER TABLE USER ADD COLUMN LAST_NAME VARCHAR(16)");
+    $db->execute("ALTER TABLE USER ADD COLUMN EMAIL VARCHAR(32)");
+    $db->execute("ALTER TABLE USER ADD COLUMN ACTIVE INTEGER");
+    $db->execute("ALTER TABLE USER ADD COLUMN HASH VARCHAR(32)");
+}
+
+/**
  * Used to insert a new activity into the database at a given acitivity_id
  *
  * Inserting at an ID rather than at the end is useful since activities are

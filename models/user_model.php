@@ -286,7 +286,7 @@ class UserModel extends Model
     {
         $this->db->selectDB(DB_NAME);
         $sql = "INSERT INTO USER(FIRST_NAME, LAST_NAME, 
-                USER_NAME, EMAIL,ACTIVE, PASSWORD, HASH) VALUES ('".
+                USER_NAME, EMAIL, ACTIVE, PASSWORD, HASH) VALUES ('".
         $this->db->escapeString($firstname)."', '".
         $this->db->escapeString($lastname)."', '".
         $this->db->escapeString($username)."', '".
@@ -305,7 +305,7 @@ class UserModel extends Model
         }
         $last_id = $row['USER_ID'];
         $sql = "INSERT INTO USER_ROLE  VALUES ('".
-            $this->db->escapeString($last_id)."',2) ";
+            $this->db->escapeString($last_id)."', 2) ";
         $result_id = $this->db->execute($sql);
     }
 

@@ -80,11 +80,15 @@ class AdminController extends Controller implements CrawlConstants
      * controller will respond to
      * @var array
      */
-    var $activities = array("signin", "manageAccount", "manageUsers",
-        "manageRoles", "manageGroups","manageCrawls","pageOptions",
+    var $activities = array("manageCrawls", "pageOptions",
         "manageClassifiers","resultsEditor", "manageMachines", "manageLocales",
         "crawlStatus","mixCrawls","machineStatus","searchSources","configure",
         "blogPages");
+    /**
+     *  @var array
+     */
+    var $components = array("accountaccess");
+
     /**
      * Says which activities (roughly methods invoke from the web) this
      * controller will respond to
@@ -99,8 +103,6 @@ class AdminController extends Controller implements CrawlConstants
      * @var array
      */
     var $status_activities = array("crawlStatus", "machineStatus");
-
-
 
     /**
      * This is the main entry point for handling requests to administer the
@@ -251,7 +253,7 @@ class AdminController extends Controller implements CrawlConstants
 
         //for now we allow anyone to get crawlStatus
         if($allowed) {
-            $data = $this->$activity();
+            $data = $this->call($activity);
             if(!is_array($data)) {
                 $data = array();
             }
@@ -261,20 +263,6 @@ class AdminController extends Controller implements CrawlConstants
             $data['CURRENT_ACTIVITY'] =
                 $this->activityModel->getActivityNameFromMethodName($activity);
         }
-        return $data;
-    }
-
-    /**
-     * This method is data to signin a user and initialize the data to be
-     * display in a view
-     *
-     * @return array empty array of data to show so far in view
-     */
-    function signin()
-    {
-        $data = array();
-        $_SESSION['USER_ID'] =
-            $this->signinModel->getUserId($_REQUEST['username']);
         return $data;
     }
 
@@ -352,710 +340,6 @@ class AdminController extends Controller implements CrawlConstants
     }
 
     /**
-     * Used to handle the change current user password admin activity
-     *
-     * @return array $data SCRIPT field contains success or failure message
-     */
-    function manageAccount()
-    {
-        $possible_arguments = array("changepassword","changeemail");
-        $data["ELEMENT"] = "manageaccountElement";
-        $data['SCRIPT'] = "";
-        $data['MESSAGE'] = "";
-        $old_email = $this->signinModel->getEmail($_SESSION['USER_ID']);
-        $data["OLD_EMAIL"] = $old_email;
-
-        if(isset($_REQUEST['arg']) &&
-            in_array($_REQUEST['arg'], $possible_arguments)) {
-            switch($_REQUEST['arg'])
-            {
-                case "changepassword":
-                    if($_REQUEST['re_type_password'] !=
-                            $_REQUEST['new_password']){
-                        $data["MESSAGE"] =
-                            tl('admin_controller_passwords_dont_match');
-                        $data['SCRIPT'] .=
-                            "doMessage('<h1 class=\"red\" >". $data["MESSAGE"].
-                            "</h1>')";
-                        return $data;
-                    }
-                    $username =
-                        $this->signinModel->getUserName($_SESSION['USER_ID']);
-                    $result = $this->signinModel->checkValidSignin($username,
-                    $this->clean($_REQUEST['old_password'], "string") );
-                    if(!$result) {
-                        $data["MESSAGE"] =
-                            tl('admin_controller_invalid_old_password');
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            $data["MESSAGE"]."</h1>')";
-                        return $data;
-                    }
-                    $this->signinModel->changePassword($username,
-                        $this->clean($_REQUEST['new_password'], "string"));
-                    $data["MESSAGE"] = tl('admin_controller_change_password');
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        $data["MESSAGE"]."</h1>')";
-                break;
-
-                case "changeemail":
-                   if($_REQUEST['re_type_email'] != $_REQUEST['new_email']) {
-                        $data["MESSAGE"] =
-                            tl('admin_controller_emails_dont_match');
-                        $data['SCRIPT'] .=
-                            "doMessage('<h1 class=\"red\" >". $data["MESSAGE"].
-                            "</h1>')";
-                        return $data;
-                    }
-                    $username =
-                        $this->signinModel->getUserName($_SESSION['USER_ID']);
-                    $result = $this->signinModel->checkValidEmail($username,
-                    $this->clean($_REQUEST['old_email'], "string") );
-                    if(!$result) {
-                        $data["MESSAGE"] =
-                            tl('admin_controller_invalid_old_email');
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            $data["MESSAGE"]."</h1>')";
-                        return $data;
-                    }
-                    $this->signinModel->changeEmail($username,
-                        $this->clean($_REQUEST['new_email'], "string"));
-                    $data["MESSAGE"] = tl('admin_controller_change_email');
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        $data["MESSAGE"]."</h1>')";
-                break;
-              }
-        }
-        return $data;
-    }
-
-    /**
-     * Used to handle the manage user activity.
-     *
-     * This activity allows new users to be added, old users to be
-     * deleted and allows roles to be added to/deleted from a user
-     *
-     * @return array $data infomation about users of the system, roles, etc.
-     *      as well as status messages on performing a given sub activity
-     */
-    function manageUsers()
-    {
-        $possible_arguments = array("adduser",
-            "deleteuser", "adduserrole", "deleteuserrole");
-
-        $data["ELEMENT"] = "manageusersElement";
-        $data['SCRIPT'] =
-            "selectUser = elt('select-user'); ".
-            "selectUser.onchange = submitViewUserRole;";
-
-        $usernames = $this->userModel->getUserList();
-        if(isset($_REQUEST['username'])) {
-            $username = $this->clean($_REQUEST['username'], "string" );
-        }
-        $base_option = tl('admin_controller_select_username');
-        $data['USER_NAMES'] = array();
-        $data['USER_NAMES'][""] = $base_option;
-
-        foreach($usernames as $name) {
-            $data['USER_NAMES'][$name]= $name;
-        }
-
-        if(isset($_REQUEST['selectuser'])) {
-            $select_user = $this->clean($_REQUEST['selectuser'], "string" );
-        } else {
-            $select_user = "";
-        }
-        if($select_user != "" ) {
-            $userid = $this->signinModel->getUserId($select_user);
-            $data['SELECT_USER'] = $select_user;
-            $data['SELECT_ROLES'] = $this->userModel->getUserRoles($userid);
-            $all_roles = $this->roleModel->getRoleList();
-            $role_ids = array();
-            if(isset($_REQUEST['selectrole'])) {
-                $select_role = $this->clean($_REQUEST['selectrole'], "string" );
-            } else {
-                $select_role = "";
-            }
-
-            foreach($all_roles as $role) {
-                $role_ids[] = $role['ROLE_ID'];
-                if($select_role == $role['ROLE_ID']) {
-                    $select_rolename = $role['ROLE_NAME'];
-                }
-            }
-
-            $select_role_ids = array();
-            foreach($data['SELECT_ROLES'] as $role) {
-                $select_role_ids[] = $role['ROLE_ID'];
-            }
-            $available_roles = array();
-            $tmp = array();
-            foreach($all_roles as $role) {
-                if(!in_array($role['ROLE_ID'], $select_role_ids) &&
-                    !isset($tmp[$role['ROLE_ID']])) {
-                    $tmp[$role['ROLE_ID']] = true;
-                    $available_roles[] = $role;
-                }
-            }
-
-            $data['AVAILABLE_ROLES'][-1] =
-                tl('admin_controller_select_rolename');
-
-            foreach($available_roles as $role) {
-                $data['AVAILABLE_ROLES'][$role['ROLE_ID']]= $role['ROLE_NAME'];
-            }
-
-            if($select_role != "") {
-                $data['SELECT_ROLE'] = $select_role;
-            } else {
-                $data['SELECT_ROLE'] = -1;
-            }
-        } else {
-            $data['SELECT_USER'] = -1;
-        }
-
-        if(isset($_REQUEST['arg']) &&
-            in_array($_REQUEST['arg'], $possible_arguments)) {
-
-            switch($_REQUEST['arg'])
-            {
-                case "adduser":
-                    $data['SELECT_ROLE'] = -1;
-                    unset($data['AVAILABLE_ROLES']);
-                    unset($data['SELECT_ROLES']);
-                    if($_REQUEST['retypepassword'] != $_REQUEST['password']) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('admin_controller_passwords_dont_match').
-                            "</h1>')";
-                        return $data;
-                    }
-
-                    if($this->signinModel->getUserId($username) > 0) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('admin_controller_username_exists')."</h1>')";
-                        return $data;
-                    }
-                    $this->userModel->addUser($username,
-                        $this->clean($_REQUEST['password'], "string"));
-                    $data['USER_NAMES'][$username] = $username;
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('admin_controller_username_added')."</h1>')";
-                break;
-
-                case "deleteuser":
-                    $data['SELECT_ROLE'] = -1;
-                    unset($data['AVAILABLE_ROLES']);
-                    unset($data['SELECT_ROLES']);
-                    if(!($this->signinModel->getUserId($username) > 0)) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('admin_controller_username_doesnt_exists').
-                            "</h1>')";
-                        return $data;
-                    }
-                    $this->userModel->deleteUser($username);
-                    unset($data['USER_NAMES'][$username]);
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('admin_controller_username_deleted')."</h1>')";
-
-                break;
-
-                case "adduserrole":
-                    if( $userid <= 0 ) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('admin_controller_username_doesnt_exists').
-                            "</h1>')";
-                        return $data;
-                    }
-                    if(!in_array($select_role, $role_ids)) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('admin_controller_rolename_doesnt_exists').
-                            "</h1>')";
-                        return $data;
-                    }
-                    $this->userModel->addUserRole($userid, $select_role);
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('admin_controller_rolename_added').
-                        "</h1>')";
-                    unset($data['AVAILABLE_ROLES'][$select_role]);
-                    $data['SELECT_ROLE'] = -1;
-                    $data['SELECT_ROLES'] =
-                        $this->userModel->getUserRoles($userid);
-                break;
-
-                case "deleteuserrole":
-                    if($userid <= 0) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('admin_controller_username_doesnt_exists').
-                            "</h1>')";
-                        return $data;
-                    }
-                    if(!in_array($select_role, $role_ids)) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('admin_controller_rolename_doesnt_exists').
-                            "</h1>')";
-                        return $data;
-                    }
-                    $this->userModel->deleteUserRole($userid, $select_role);
-                    $data['SELECT_ROLES'] =
-                        $this->userModel->getUserRoles($userid);
-                    $data['AVAILABLE_ROLES'][$select_role] = $select_rolename;
-                    $data['SELECT_ROLE'] = -1;
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('admin_controller_rolename_deleted')."</h1>')";
-                break;
-            }
-        }
-
-        return $data;
-    }
-
-    /**
-     * Used to handle the manage role activity.
-     *
-     * This activity allows new roles to be added, old roles to be
-     * deleted and allows activities to be added to/deleted from a role
-     *
-     * @return array $data information about roles in the system, activities,
-     *      etc. as well as status messages on performing a given sub activity
-     *
-     */
-    function manageRoles()
-    {
-        $possible_arguments =
-            array("addrole", "deleterole", "addactivity", "deleteactivity");
-
-        $data["ELEMENT"] = "managerolesElement";
-        $data['SCRIPT'] =
-            "selectRole = elt('select-role'); selectRole.onchange =".
-            " submitViewRoleActivities;";
-
-        $roles = $this->roleModel->getRoleList();
-        $role_ids = array();
-        $base_option = tl('admin_controller_select_rolename');
-        $data['ROLE_NAMES'] = array();
-        $data['ROLE_NAMES'][-1] = $base_option;
-        if(isset($_REQUEST['rolename'])) {
-            $rolename = $this->clean($_REQUEST['rolename'], "string" );
-        }
-        foreach($roles as $role) {
-            $data['ROLE_NAMES'][$role['ROLE_ID']]= $role['ROLE_NAME'];
-            $role_ids[] = $role['ROLE_ID'];
-        }
-        $data['SELECT_ROLE'] = -1;
-
-
-        if(isset($_REQUEST['selectrole'])) {
-            $select_role = $this->clean($_REQUEST['selectrole'], "string" );
-        } else {
-            $select_role = "";
-        }
-
-        if($select_role != "" ) {
-            $data['SELECT_ROLE'] = $select_role;
-            $data['ROLE_ACTIVITIES'] =
-                $this->roleModel->getRoleActivities($select_role);
-            $all_activities = $this->activityModel->getActivityList();
-            $activity_ids = array();
-            $activity_names = array();
-            foreach($all_activities as $activity) {
-                $activity_ids[] = $activity['ACTIVITY_ID'];
-                $activity_names[$activity['ACTIVITY_ID']] =
-                    $activity['ACTIVITY_NAME'];
-            }
-
-            $available_activities = array();
-            $role_activity_ids = array();
-            foreach($data['ROLE_ACTIVITIES'] as $activity) {
-                $role_activity_ids[] = $activity["ACTIVITY_ID"];
-            }
-            $tmp = array();
-            foreach($all_activities as $activity) {
-                if(!in_array($activity["ACTIVITY_ID"], $role_activity_ids) &&
-                    !isset($tmp[$activity["ACTIVITY_ID"]])) {
-                    $tmp[$activity["ACTIVITY_ID"]] = true;
-                    $available_activities[] = $activity;
-                }
-            }
-            $data['AVAILABLE_ACTIVITIES'][-1] =
-                tl('admin_controller_select_activityname');
-
-
-            foreach($available_activities as $activity) {
-                $data['AVAILABLE_ACTIVITIES'][$activity['ACTIVITY_ID']] =
-                    $activity['ACTIVITY_NAME'];
-            }
-
-            if(isset($_REQUEST['selectactivity'])) {
-                $select_activity =
-                    $this->clean($_REQUEST['selectactivity'], "int" );
-
-            } else {
-                $select_activity = "";
-            }
-            if($select_activity != "") {
-                $data['SELECT_ACTIVITY'] = $select_activity;
-            } else {
-                $data['SELECT_ACTIVITY'] = -1;
-            }
-
-        }
-        if(isset($_REQUEST['arg']) &&
-            in_array($_REQUEST['arg'], $possible_arguments)) {
-
-            switch($_REQUEST['arg'])
-            {
-                case "addrole":
-                    unset($data['ROLE_ACTIVITIES']);
-                    unset($data['AVAILABLE_ACTIVITIES']);
-                    $data['SELECT_ROLE'] = -1;
-                    if($this->roleModel->getRoleId($rolename) > 0) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('admin_controller_rolename_exists').
-                            "</h1>')";
-                        return $data;
-                    }
-
-                    $this->roleModel->addRole($rolename);
-                    $roleid = $this->roleModel->getRoleId($rolename);
-                    $data['ROLE_NAMES'][$roleid] = $rolename;
-
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('admin_controller_rolename_added').
-                        "</h1>')";
-                break;
-
-                case "deleterole":
-                    $data['SELECT_ROLE'] = -1;
-                    unset($data['ROLE_ACTIVITIES']);
-                    unset($data['AVAILABLE_ACTIVITIES']);
-
-                    if(!in_array($select_role, $role_ids)) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('admin_controller_rolename_doesnt_exists').
-                            "</h1>')";
-                        return $data;
-                    }
-                    $this->roleModel->deleteRole($select_role);
-                    unset($data['ROLE_NAMES'][$select_role]);
-
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('admin_controller_rolename_deleted')."</h1>')";
-                break;
-
-                case "addactivity":
-                    if(!in_array($select_role, $role_ids)) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('admin_controller_rolename_doesnt_exists').
-                            "</h1>')";
-                        return $data;
-                    }
-                    if(!in_array($select_activity, $activity_ids)) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('admin_controller_activityname_doesnt_exists').
-                            "</h1>')";
-                        return $data;
-                    }
-                    $this->roleModel->addActivityRole(
-                        $select_role, $select_activity);
-                    unset($data['AVAILABLE_ACTIVITIES'][$select_activity]);
-                    $data['ROLE_ACTIVITIES'] =
-                        $this->roleModel->getRoleActivities($select_role);
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('admin_controller_activity_added')."</h1>')";
-                break;
-
-                case "deleteactivity":
-                    if(!in_array($select_role, $role_ids)) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('admin_controller_rolename_doesnt_exists').
-                            "</h1>')";
-                        return $data;
-                    }
-
-                    if(!in_array($select_activity, $activity_ids)) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('admin_controller_activityname_doesnt_exists').
-                            "</h1>')";
-                        return $data;
-                    }
-                    $this->roleModel->deleteActivityRole(
-                        $select_role, $select_activity);
-                    $data['ROLE_ACTIVITIES'] =
-                        $this->roleModel->getRoleActivities($select_role);
-                    $data['AVAILABLE_ACTIVITIES'][$select_activity] =
-                        $activity_names[$select_activity];
-                    $data['SELECT_ACTIVITY'] = -1;
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('admin_controller_activity_deleted')."</h1>')";
-                break;
-            }
-        }
-
-        return $data;
-    }
-
-    /**
-     * Used to handle the manage group activity.
-     *
-     * This activity allows new groups to be created out of a set of users.
-     * It allows admin rights for the group to be transfered and it allows roles
-     * to be added to a group. One can also delete groups and roles from groups.
-     *
-     * @return array $data information about groups in the system
-     */
-    function manageGroups()
-    {
-        $possible_arguments = array("addgroup", "deletegroup",
-            "viewgroups", "selectgroup", "adduser", "deleteuser",
-            "addrole", "deleterole", "updategroup");
-
-        $data["ELEMENT"] = "managegroupsElement";
-        $data['SCRIPT'] =
-            "selectGroup = elt('select-group'); selectGroup.onchange =".
-            " submitViewGroups;";
-
-        if(isset($_REQUEST['groupname'])) {
-            $groupname = $this->clean($_REQUEST['groupname'], "string" );
-        }
-
-        if($_SESSION['USER_ID'] == '1') {
-            $groups = $this->groupModel->getGroupList();
-        } else {
-            $groups = $this->groupModel->getGroupListbyUser(
-                $_SESSION['USER_ID']);
-        }
-
-        $group_ids = array();
-        $base_option = tl('admin_controller_select_groupname');
-        $data['GROUP_NAMES'] = array();
-        $data['GROUP_NAMES'][-1] = $base_option;
-
-        if(isset($_REQUEST['groupname'])) {
-            $groupname = $this->clean($_REQUEST['groupname'], "string" );
-        }
-
-        foreach($groups as $group) {
-            $data['GROUP_NAMES'][$group['GROUP_ID']]= $group['GROUP_NAME'];
-            $group_ids[] = $group['GROUP_ID'];
-        }
-
-        if($_SESSION['USER_ID'] == '1') {
-            $groups = $this->groupModel->getGroupList();
-        } else {
-            $groups = $this->groupModel->getGroupListbyCreator(
-                $_SESSION['USER_ID']);
-        }
-
-        $group_ids = array();
-        $base_option = tl('admin_controller_select_groupname');
-        $data['DELETE_GROUP_NAMES'] = array();
-        $data['DELETE_GROUP_NAMES'][-1] = $base_option;
-
-        if(isset($_REQUEST['groupname'])) {
-            $groupname = $this->clean($_REQUEST['groupname'], "string" );
-        }
-
-        foreach($groups as $deletegroup) {
-            $data['DELETE_GROUP_NAMES'][$deletegroup['GROUP_ID']]=
-                $deletegroup['GROUP_NAME'];
-            $group_ids[] = $deletegroup['GROUP_ID'];
-        }
-
-        $data['SELECT_GROUP'] = -1;
-        $data['SELECT_USER'] = -1;
-
-        if(isset($_REQUEST['selectgroup'])) {
-            $select_group = $this->clean($_REQUEST['selectgroup'], "string" );
-        } else {
-            $select_group = "";
-        }
-
-        if(isset($_REQUEST['arg']) && !($_REQUEST['arg'] == 'deletegroup'
-            || $_REQUEST['arg'] == 'addgroup')) {
-
-            $data['SELECT_GROUP'] = $select_group;
-            $grouproles = $this->groupModel->getGroupRoles($select_group);
-            $data['GROUP_ROLES'] = $grouproles;
-            $rolenames = $this->roleModel->getRoleList();
-            $base_option = tl('admin_controller_select_rolename');
-
-            if(isset($_REQUEST['arg']) && !($_REQUEST['arg'] == 'deletegroup'
-                || $_REQUEST['arg'] == 'addgroup')) {
-                $data['ROLE_NAMES'] = array();
-                $role_ids = array();
-                $data['ROLE_NAMES'][-1] = $base_option;
-
-                foreach($rolenames as $rolename) {
-                    $data['ROLE_NAMES'][$rolename['ROLE_ID']] =
-                        $rolename['ROLE_NAME'];
-                    $role_ids[] = $rolename['ROLE_ID'];
-                }
-            }
-
-            if(isset($_REQUEST['selectrole'])) {
-                $select_role = $this->clean($_REQUEST['selectrole'], "string");
-            } else {
-                $select_role = "";
-            }
-
-            $usergroups = $this->groupModel->getGroupUsers($select_group);
-            $data['GROUP_USERS'] =$usergroups;
-
-            if(isset($_REQUEST['selectuser'])) {
-                $select_user = $this->clean($_REQUEST['selectuser'], "string" );
-            } else {
-                $select_user = "";
-            }
-
-            if($select_group != "-1") {
-                $usernames = $this->userModel->getUserListGroups();
-                $base_option = tl('admin_controller_select_username');
-                $data['USER_NAMES'] = array();
-                $user_ids = array();
-                $data['USER_NAMES'][-1] = $base_option;
-                foreach($usernames as $user) {
-                    $user_ids[] = $user['USER_ID'];
-                    if($select_user == $user['USER_ID']) {
-                        $select_username = $user['USER_NAME'];
-                    }
-                }
-                foreach($usernames as $username) {
-                    $data['USER_NAMES'] [$username['USER_ID']] =
-                        $username['USER_NAME'];
-                    $user_ids[] = $username['USER_ID'];
-                }
-            }
-
-
-            if(isset($_REQUEST['selectactivity'])) {
-                $select_activity =
-                    $this->clean($_REQUEST['selectactivity'], "int" );
-            } else {
-                $select_activity = "";
-            }
-
-            if($select_activity != "") {
-                $data['SELECT_ACTIVITY'] = $select_activity;
-            } else {
-                $data['SELECT_ACTIVITY'] = -1;
-            }
-        }
-
-        if(!isset($_REQUEST['arg']) || !in_array($_REQUEST['arg'],
-            $possible_arguments)) {
-            return $data;
-        }
-        $data['SELECT_ROLE'] = -1;
-        switch($_REQUEST['arg'])
-        {
-            case "addgroup":
-                $data['SELECT_GROUP'] = -1;
-                if($this->groupModel->getGroupId($groupname) > 0) {
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('admin_controller_groupname_exists').
-                        "</h1>')";
-                    return $data;
-                }
-                $this->groupModel->addGroup(
-                    $groupname, $_SESSION['USER_ID']);
-                $groupid = $this->groupModel->getGroupId($groupname);
-                $data['GROUP_NAMES'][$groupid] = $groupname;
-                $data['DELETE_GROUP_NAMES'][$groupid] = $groupname;
-                $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                    tl('admin_controller_groupname_added').
-                    "</h1>')";
-            break;
-            case "deletegroup":
-                if($select_group == -1){
-                $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                  tl('admin_controller_groupname_doesnt_exists')."</h1>')";
-                }else{
-                 $this->groupModel->deleteGroup($select_group);
-                unset($data['GROUP_NAMES'][$select_group]);
-                unset($data['DELETE_GROUP_NAMES'][$select_group]);
-                $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                    tl('admin_controller_groupname_deleted')."</h1>')";
-                }
-            break;
-            case "adduser":
-                if(!in_array($select_user, $user_ids)) {
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('admin_controller_username_doesnt_exists').
-                        "</h1>')";
-                    return $data;
-                }
-                $this->groupModel->addUserGroup(
-                    $select_group, $select_user);
-                unset($data['AVAILABLE_USERS'][$select_user]);
-                $data['GROUP_USERS'] =
-                    $this->groupModel->getGroupUsers($select_group);
-                $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                    tl('admin_controller_user_added')."</h1>')";
-            break;
-            case "deleteuser":
-                $this->groupModel->deleteUserGroup(
-                    $select_group, $select_user);
-                $data['GROUP_USERS'] =
-                    $this->groupModel->getGroupUsers($select_group);
-                $data['AVAILABLE_USERS'][$select_user] =
-                    $user_names[$select_user];
-                $data['SELECT_USER'] = -1;
-                unset($data['GROUP_NAMES'][$select_group]);
-                unset($data['GROUP_USERS']);
-                $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                    tl('admin_controller_user_deleted')."</h1>')";
-            break;
-            case "addrole":
-                if(!in_array($select_group, $group_ids)) {
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('admin_controller_groupname_doesnt_exists').
-                        "</h1>')";
-                    return $data;
-                }
-                if(!in_array($select_role, $role_ids)) {
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('admin_controller_rolename_doesnt_exists').
-                        "</h1>')";
-                    return $data;
-                }
-                $this->groupModel->addGroupRole($select_group, $select_role);
-                unset($data['AVAILABLE_ROLES'][$select_role]);
-                $data['GROUP_ROLES'] =
-                    $this->groupModel->getGroupRoles($select_group);
-                $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                    tl('admin_controller_rolename_added')."</h1>')";
-            break;
-            case "deleterole":
-                if(!in_array($select_group, $group_ids)) {
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('admin_controller_groupname_doesnt_exists').
-                        "</h1>')";
-                    return $data;
-                }
-                if(!in_array($select_role, $role_ids)) {
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('admin_controller_rolename_doesnt_exists').
-                        "</h1>')";
-                    return $data;
-                }
-                $this->groupModel->deleteGroupRole($select_group, $select_role);
-                $data['GROUP_ROLES'] =
-                    $this->groupModel->getGroupRoles($select_group);
-                if(isset($rolenames[$select_role])) {
-                    $data['AVAILABLE_ACTIVITIES'][$select_role] =
-                        $rolenames[$select_role];
-                }
-                $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                    tl('admin_controller_role_deleted')."</h1>')";
-            break;
-            case "updategroup":
-                $this->groupModel->updateUserGroup($select_user, $select_group);
-            break;
-        }
-
-        return $data;
-    }
-
-    /**
      * Used to handle the blogs and pages activity.
      *
      * This activity allows users to create,edit, and delete blogs.
@@ -1095,7 +379,7 @@ class AdminController extends Controller implements CrawlConstants
         $recent_blogs =
             $this->blogpageModel->recentBlog($user, $group_ids, $is_admin);
         $data['RECENT_BLOGS'] = $recent_blogs;
-        $base_option = tl('admin_controller_select_groupname');
+        $base_option = tl('accountaccess_component_select_groupname');
         $data['GROUP_NAMES'][-1] = $base_option;
         foreach($groups as $group) {
             $data['GROUP_NAMES'][$group['GROUP_ID']]= $group['GROUP_NAME'];
@@ -3956,7 +3240,7 @@ class AdminController extends Controller implements CrawlConstants
             break;
             case "profile":
                 $this->updateProfileFields($data, $profile,
-                    array('USE_FILECACHE', 'USE_MEMCACHE', "ANONYMOUS_ACCOUNT",
+                    array('USE_FILECACHE', 'USE_MEMCACHE', "REGISTRATION_TYPE",
                         "WEB_ACCESS", 'RSS_ACCESS', 'API_ACCESS'));
                 $data['DEBUG_LEVEL'] = 0;
                 $data['DEBUG_LEVEL'] |=
@@ -4057,7 +3341,22 @@ class AdminController extends Controller implements CrawlConstants
                     $data['SCRIPT'] .= "logindbms['$dbms'] = false;\n";
                 }
             }
-
+            $data['REGISTRATION_TYPES'] = array (
+                    'disable_registration' => 
+                        tl('admin_controller_configure_disable_registration'),
+                    'no_activation' => 
+                        tl('admin_controller_configure_no_activation'),
+                    'email_registration' => 
+                        tl('admin_controller_configure_email_activation'),
+                    'admin_activation' =>
+                        tl('admin_controller_configure_admin_activation'),
+                );
+             $data['show_mail_info'] = "false";
+            if(isset($_REQUEST['REGISTRATION_TYPE']) &&
+                in_array($_REQUEST['REGISTRATION_TYPE'], array(
+                'email_registration', 'admin_activation'))) {
+                $data['show_mail_info'] = "true";
+            }
             if(!isset($data['ROBOT_DESCRIPTION']) ||
                 strlen($data['ROBOT_DESCRIPTION']) == 0) {
                 $data['ROBOT_DESCRIPTION'] =
@@ -4077,6 +3376,16 @@ class AdminController extends Controller implements CrawlConstants
                 $data['advanced'] = "true";
             }
             $data['SCRIPT'] .= <<< EOD
+    elt('account-registration').onchange = function () {
+        var show_mail_info = false;
+        no_mail_registration = ['disable_registration', 'no_activation'];
+        if(no_mail_registration.indexOf(elt('account-registration').value) 
+            < 0) {
+            show_mail_info = true;
+        }
+        setDisplay('registration-info', show_mail_info);
+    };
+    setDisplay('registration-info', {$data['show_mail_info']});
     elt('database-system').onchange = function () {
         setDisplay('login-dbms', self.logindbms[elt('database-system').value]);
     };

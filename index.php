@@ -135,7 +135,8 @@ if(!WEB_ACCESS) {
 $available_controllers = array("admin", "archive", "cache", "crawl", "fetch",
      "machine");
 }
-if(ANONYMOUS_ACCOUNT) {
+if(in_array(REGISTRATION_TYPE, array('no_activation', 'email_registration',
+    'admin_activation'))) {
     $available_controllers[] = "register";
 }
 

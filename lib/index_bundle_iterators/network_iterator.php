@@ -43,7 +43,7 @@ require_once BASE_DIR.'/lib/index_bundle_iterators/index_bundle_iterator.php';
  */
 require_once BASE_DIR.'/lib/fetch_url.php';
 /**
- *
+ * To record network timing statistics
  */
 require_once BASE_DIR.'/lib/analytics_manager.php';
 

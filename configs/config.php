@@ -142,6 +142,12 @@ if(file_exists(WORK_DIRECTORY.PROFILE_FILE_NAME)) {
     define('WEB_ACCESS', true);
     define('RSS_ACCESS', true);
     define('API_ACCESS', true);
+    define('REGISTRATION_TYPE', 'disable_registration');
+    define('MAIL_SERVER', '');
+    define('MAIL_PORT', '');
+    define('MAIL_USERNAME', '');
+    define('MAIL_PASSWORD', '');
+    define('MAIL_SECURITY', '');
     define('DB_NAME', "default");
     define('DB_USER', '');
     define('DB_PASSWORD', '');

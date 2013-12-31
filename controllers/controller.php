@@ -34,9 +34,14 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- * Load crawlHash function
+ * Load crawlHash  and timing functions
  */
 require_once BASE_DIR."/lib/utility.php";
+
+/**
+ * For getting mail message timing statistics if present
+ */
+require_once BASE_DIR.'/lib/analytics_manager.php';
 
 /**
  * Base controller class for all controllers on
@@ -62,6 +67,27 @@ abstract class Controller
     var $views = array();
 
     /**
+     * Says which activities (roughly methods invoke from the web) this
+     * controller will respond to
+     * @var array
+     */
+    var $activities = array();
+
+
+    /**
+     * Components are collections of activities (a little like traits) which
+     * can be reused.
+     *
+     * @var array
+     */
+    var $components = array();
+
+    /**
+     *
+     */
+    var $activity_component = array();
+
+    /**
      * Says which post processing indexing plugins are available
      * @var array
      */
@@ -70,8 +96,8 @@ abstract class Controller
     function __construct($indexing_plugins = array())
     {
         global $INDEXED_FILE_TYPES;
-        require_once BASE_DIR."/models/model.php";
 
+        require_once BASE_DIR."/models/model.php";
         foreach($this->models as $model) {
             if(file_exists(APP_DIR."/models/".$model."_model.php")) {
                 require_once APP_DIR."/models/".$model."_model.php";
@@ -83,9 +109,30 @@ abstract class Controller
 
             $this->$model_instance_name = new $model_name();
         }
+
+        require_once BASE_DIR."/controllers/components/component.php";
+        foreach($this->components as $component) {
+            if(file_exists(APP_DIR . "/controllers/components/" .
+                $component."_component.php")) {
+                require_once APP_DIR . "/controllers/components/" .
+                    $component."_component.php";
+            }  else {
+                require_once BASE_DIR . "/controllers/components/" .
+                    $component."_component.php";
+            }
+            $component_name = ucfirst($component)."Component";
+            $component_instance_name = lcfirst($component_name);
+
+            $this->$component_instance_name = new $component_name($this);
+            foreach($this->$component_instance_name->activities as $activity) {
+                $this->activity_component[$activity] =
+                    $this->$component_instance_name;
+                $this->activities[] = $activity;
+            }
+        }
+
         require_once BASE_DIR."/views/view.php";
         foreach($this->views as $view) {
-
             if(file_exists(APP_DIR."/views/".$view."_view.php")) {
                 require_once APP_DIR."/views/".$view."_view.php";
             } else {
@@ -164,9 +211,28 @@ abstract class Controller
                     );
             $data['TOTAL_ELAPSED_TIME'] +=
                     $locale_info['TOTAL_ELAPSED_TIME'];
+            $mail_total_time = AnalyticsManager::get("MAIL_TOTAL_TIME");
+            $mail_messages = AnalyticsManager::get("MAIL_MESSAGES");
+            if($mail_total_time && $mail_messages) {
+                $data['QUERY_STATISTICS'] = array_merge($mail_messages,
+                    $data['QUERY_STATISTICS']
+                    );
+                $data['TOTAL_ELAPSED_TIME'] += $mail_total_time;
+            }
         }
         $this->$view_instance_name->render($data);
     }
+
+    /**
+     *
+     */
+     function call($activity)
+     {
+        if(isset($this->activity_component[$activity])) {
+            return $this->activity_component[$activity]->$activity();
+        }
+        return $this->$activity();
+     }
 
     /**
      * Generates a cross site request forgery preventing token based on the

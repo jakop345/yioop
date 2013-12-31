@@ -50,7 +50,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 function yioop_error_handler($errno, $errstr, $errfile, $errline,
     $errcontext)
 {
-    $num_lines_of_backtrace = 2;
+    $num_lines_of_backtrace = 5;
     $error_types = array(
         E_NOTICE => 'NOTICE:', E_WARNING => 'WARNING:');
     $type = (isset($error_types[$errno])) ? $error_types[$errno]:

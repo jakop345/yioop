@@ -37,6 +37,11 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  *  Load base controller class, if needed
  */
 require_once BASE_DIR."/controllers/controller.php";
+/**
+ * Timing functions
+ */
+require_once BASE_DIR."/lib/mail_server.php";
+
 
 /**
  * Controller used to handle search requests to SeekQuarry
@@ -78,7 +83,8 @@ class RegisterController extends Controller
         $data[CSRF_TOKEN] = $this->generateCSRFToken($user);
         $token_okay = $this->checkCSRFToken(CSRF_TOKEN, $user);
         $regex_email=
-    '/^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,3})$/';
+            '/^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+'.
+            '(\.[a-z0-9-]+)*(\.[a-z]{2,3})$/';
         $data = array();
         $view = "register";
         $fields = array("first", "last", "user",
@@ -90,7 +96,7 @@ class RegisterController extends Controller
                 if(empty($_REQUEST[$field]) || !isset($_REQUEST[$field])) {
                     $error = true;
                     $data[] = $field;
-                }else if($field == "email" &&
+                } else if($field == "email" &&
                     !preg_match($regex_email,
                     $this->clean($_REQUEST['email'], "string" ))) {
                         $error = true;
@@ -99,8 +105,8 @@ class RegisterController extends Controller
             }
             if(isset($_REQUEST['password'])
                 && isset($_REQUEST['repassword'])
-                && $this->clean($_REQUEST['password'], "string" )!=
-                $this->clean($_REQUEST['repassword'], "string" )){
+                && $this->clean($_REQUEST['password'], "string" ) !=
+                $this->clean($_REQUEST['repassword'], "string" )) {
                 $error = true;
                 $data[] = "password";
             }
@@ -118,6 +124,12 @@ class RegisterController extends Controller
                 tl('register_controller_error_fields')."</h1>')";
             } else {
                 $view = "search";
+/*$server = new MailServer('smtp.domain', 587, 'username', 'password', 'tls');
+$to = "chris@pollett.org";
+$from = "chris@pollett.org";
+$subject = "Test Mail";
+$message = "This is a test";
+$server->send($subject, $from, $to, $message);*/
                 $this->userModel->
                     registerUser($this->clean($_REQUEST['first'], "string" ),
                     $this->clean($_REQUEST['last'], "string" ),

@@ -94,11 +94,14 @@ class SigninView extends View
 
         <div class="signin-exit"><a href="."><?php
                 e(tl('signin_view_return_yioop')); ?></a>
-                <?php if(ANONYMOUS_ACCOUNT) {
+                <?php
+                if(in_array(REGISTRATION_TYPE, array('no_activation', 
+                    'email_registration', 'admin_activation'))) {
                     ?><br/><a href="./?c=register&amp;<?php
                     e(CSRF_TOKEN."=".$data[CSRF_TOKEN])?>&amp;"><?php
                     e(tl('signin_view_create_account')); ?></a>
-                <?php }
+                <?php
+                }
             ?></div>
         </div>
         <div class='landing-spacer'></div>
