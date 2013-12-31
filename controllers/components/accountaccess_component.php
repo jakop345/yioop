@@ -695,7 +695,7 @@ class AccountaccessComponent extends Component
                 unset($data['GROUP_NAMES'][$select_group]);
                 unset($data['DELETE_GROUP_NAMES'][$select_group]);
                 $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                    tl('admin_controller_groupname_deleted')."</h1>')";
+                    tl('accountaccess_component_groupname_deleted')."</h1>')";
                 }
             break;
             case "adduser":
@@ -724,7 +724,7 @@ class AccountaccessComponent extends Component
                 unset($data['GROUP_NAMES'][$select_group]);
                 unset($data['GROUP_USERS']);
                 $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                    tl('admin_controller_user_deleted')."</h1>')";
+                    tl('accountaccess_component_user_deleted')."</h1>')";
             break;
             case "addrole":
                 if(!in_array($select_group, $group_ids)) {
@@ -759,7 +759,8 @@ class AccountaccessComponent extends Component
                         "</h1>')";
                     return $data;
                 }
-                $parent->groupModel->deleteGroupRole($select_group, $select_role);
+                $parent->groupModel->deleteGroupRole($select_group, $select_role
+                    );
                 $data['GROUP_ROLES'] =
                     $parent->groupModel->getGroupRoles($select_group);
                 if(isset($rolenames[$select_role])) {
@@ -770,7 +771,8 @@ class AccountaccessComponent extends Component
                     tl('accountaccess_component_role_deleted')."</h1>')";
             break;
             case "updategroup":
-                $parent->groupModel->updateUserGroup($select_user, $select_group);
+                $parent->groupModel->updateUserGroup($select_user, $select_group
+                    );
             break;
         }
         return $data;
