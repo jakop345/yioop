@@ -82,10 +82,14 @@ class BlogmixesComponent extends Component
                 array_push($group_ids, $group['GROUP_ID']);
             }
         }
+        $data['SOURCE_TYPES'] =
+            array(-1 => tl('blogmixes_component_source_type'),
+            "blog" => tl('blogmixes_component_blog'),
+            "page" => tl('blogmixes_component_page'));
         $recent_blogs =
             $parent->blogpageModel->recentBlog($user, $group_ids, $is_admin);
         $data['RECENT_BLOGS'] = $recent_blogs;
-        $base_option = tl('accountaccess_component_select_groupname');
+        $base_option = tl('blogmixes_component_select_groupname');
         $data['GROUP_NAMES'][-1] = $base_option;
         foreach($groups as $group) {
             $data['GROUP_NAMES'][$group['GROUP_ID']]= $group['GROUP_NAME'];
@@ -102,10 +106,6 @@ class BlogmixesComponent extends Component
             switch($_REQUEST['arg'])
             {
                 case "addblog":
-                    $data['SOURCE_TYPES'] =
-                        array(-1 => tl('admin_controller_source_type'),
-                        "blog" => tl('admin_controller_blog'),
-                        "page" => tl('admin_controller_page'));
                     $source_type_flag = false;
                     if(isset($_REQUEST['sourcetype']) &&
                         in_array($_REQUEST['sourcetype'],
@@ -165,7 +165,7 @@ class BlogmixesComponent extends Component
                             $user, $select_group);
                         if($result){
                             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('admin_controller_page_added').
+                            tl('blogmixes_component_page_added').
                             "</h1>');";
                     }
                     }else{
@@ -178,7 +178,7 @@ class BlogmixesComponent extends Component
                             $data['SOURCE_TYPE'], $data['sourcelocaletag'],
                             $select_group);
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('admin_controller_blog_added').
+                            tl('blogmixes_component_blog_added').
                             "</h1>');";
                     }
                     $data["ELEMENT"] = "blogpagesElement";
@@ -211,11 +211,6 @@ class BlogmixesComponent extends Component
                     }
                     if($is_blogs_empty) {
                         $data["ELEMENT"] = "createblogpagesElement";
-                        $data['SOURCE_TYPES'] =
-                            array(-1 => tl('admin_controller_source_type'),
-                                "blog" => tl('admin_controller_blog'),
-                                "page" => tl('admin_controller_page')
-                            );
                         $source_type_flag = false;
                         if(isset($_REQUEST['sourcetype']) &&
                             in_array($_REQUEST['sourcetype'],
@@ -251,9 +246,10 @@ class BlogmixesComponent extends Component
                     if(isset($_REQUEST['title'])) {
                         $title = $parent->clean($_REQUEST['title'], "string" );
                     }
-                    $parent->blogpageModel->deleteBlog($timestamp, $title, $user);
+                    $parent->blogpageModel->deleteBlog($timestamp, $title,
+                        $user);
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('admin_controller_blog_deleted').
+                        tl('blogmixes_component_blog_deleted').
                         "</h1>');";
                     $data['RECENT_BLOGS'] =  $parent->blogpageModel->recentBlog(
                         $user, $group_ids, $is_admin);
@@ -264,11 +260,6 @@ class BlogmixesComponent extends Component
 
                     $timestamp = $parent->clean($_REQUEST['id'], "string");
                     $data["ELEMENT"] = "editblogpagesElement";
-                    $data['SOURCE_TYPES'] = array(
-                            -1 => tl('admin_controller_source_type'),
-                            "blog" => tl('admin_controller_blog'),
-                            "page" => tl('admin_controller_page')
-                        );
                     $source_type_flag = false;
                     if(isset($_REQUEST['sourcetype']) && in_array(
                         $_REQUEST['sourcetype'],
@@ -323,10 +314,6 @@ class BlogmixesComponent extends Component
                     if(!isset($_REQUEST['id'])) { break; }
                     $timestamp = $parent->clean($_REQUEST['id'], "string" );
                     $data["ELEMENT"] = "editblogpagesElement";
-                    $data['SOURCE_TYPES'] =
-                        array(-1 => tl('admin_controller_source_type'),
-                            "blog" => tl('admin_controller_blog'),
-                            "page" => tl('admin_controller_page'));
                     $source_type_flag = false;
                     if(isset($_REQUEST['sourcetype']) && in_array(
                        $_REQUEST['sourcetype'],
@@ -378,7 +365,7 @@ class BlogmixesComponent extends Component
                         $data['EDIT_BLOGS'] = $edit_blogs[0];
                     }
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('admin_controller_blog_updated') . "</h1>');";
+                        tl('blogmixes_component_blog_updated') . "</h1>');";
                     $data["ELEMENT"] = "blogpagesElement";
                     $recent_blogs =
                     $parent->blogpageModel->
@@ -390,10 +377,6 @@ class BlogmixesComponent extends Component
                     if(!isset($_REQUEST['id'])) { break; }
                     $timestamp = $parent->clean($_REQUEST['id'], "string" );
                     $data["ELEMENT"] = "editblogpagesElement";
-                    $data['SOURCE_TYPES'] =
-                        array(-1 => tl('admin_controller_source_type'),
-                        "blog" => tl('admin_controller_blog'),
-                        "page" => tl('admin_controller_page'));
                         $source_type_flag = false;
                     if(isset($_REQUEST['sourcetype']) && in_array(
                         $_REQUEST['sourcetype'],
@@ -448,7 +431,7 @@ class BlogmixesComponent extends Component
                     $feed_items= $parent->blogpageModel->addEntry($timestamp,
                         $title_entry, $description, $title, $user);
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('admin_controller_feed_added').
+                        tl('blogmixes_component_feed_added').
                         "</h1>');";
                 break;
 
@@ -457,10 +440,6 @@ class BlogmixesComponent extends Component
 
                     $timestamp = $parent->clean($_REQUEST['id'], "string" );
                     $data["ELEMENT"] = "editblogpagesElement";
-                    $data['SOURCE_TYPES'] =
-                        array(-1 => tl('admin_controller_source_type'),
-                        "blog" => tl('admin_controller_blog'),
-                        "page" => tl('admin_controller_page'));
                     $source_type_flag = false;
                     if(isset($_REQUEST['sourcetype']) &&
                         in_array($_REQUEST['sourcetype'],
@@ -493,7 +472,7 @@ class BlogmixesComponent extends Component
                     }
                     $feed_items = $parent->blogpageModel->getFeedByGUID($guid);
                     $data['FEED_ITEMS'] = $feed_items;
-                    $owner_id = $parent->blogpageModel->getBlogOwner($timestamp);
+                    $owner_id=$parent->blogpageModel->getBlogOwner($timestamp);
                     if($owner_id == $user || $user == '1'){
                         $data['IS_OWNER'] = true;
                     }
@@ -516,7 +495,7 @@ class BlogmixesComponent extends Component
                     $update_feeds= $parent->blogpageModel->
                         updateFeed($guid,$title, $description);
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('admin_controller_feed_updated').
+                        tl('blogmixes_component_feed_updated').
                         "</h1>');";
                 break;
 
@@ -525,7 +504,7 @@ class BlogmixesComponent extends Component
                         $guid = $parent->clean($_REQUEST['id'], "string" );
                         $parent->blogpageModel->deleteFeed($guid);
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('admin_controller_feed_deleted').
+                            tl('blogmixes_component_feed_deleted').
                             "</h1>');";
                     }
                 break;
@@ -571,7 +550,7 @@ class BlogmixesComponent extends Component
                     $data['SELECT_GROUP'] = $select_group;
                     $parent->blogpageModel->addGroup($timestamp,$select_group);
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('admin_controller_group_added').
+                        tl('blogmixes_component_group_added').
                         "</h1>');";
                 break;
 
@@ -584,7 +563,7 @@ class BlogmixesComponent extends Component
                     }
                     $parent->blogpageModel->deleteGroup($timestamp,$groupid);
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('admin_controller_group_deleted').
+                        tl('blogmixes_component_group_deleted').
                         "</h1>');";
                 break;
             }
@@ -619,12 +598,12 @@ class BlogmixesComponent extends Component
             $machine_urls = NULL;
         }
         $crawls = $parent->crawlModel->getCrawlList(false, true, $machine_urls);
-        $data['available_crawls'][0] = tl('admin_controller_select_crawl');
-        $data['available_crawls'][1] = tl('admin_controller_default_crawl');
+        $data['available_crawls'][0] = tl('blogmixes_component_select_crawl');
+        $data['available_crawls'][1] = tl('blogmixes_component_default_crawl');
         $data['SCRIPT'] = "c = [];c[0]='".
-            tl('admin_controller_select_crawl')."';";
+            tl('blogmixes_component_select_crawl')."';";
         $data['SCRIPT'] .= "c[1]='".
-            tl('admin_controller_default_crawl')."';";
+            tl('blogmixes_component_default_crawl')."';";
         foreach($crawls as $crawl) {
             $data['available_crawls'][$crawl['CRAWL_TIME']] =
                 $crawl['DESCRIPTION'];
@@ -651,12 +630,12 @@ class BlogmixesComponent extends Component
                         $mix['MIX_NAME'] = $parent->clean($_REQUEST['MIX_NAME'],
                             'string');
                     } else {
-                        $mix['MIX_NAME'] = tl('admin_controller_unnamed');
+                        $mix['MIX_NAME'] = tl('blogmixes_component_unnamed');
                     }
                     $mix['GROUPS'] = array();
                     $parent->crawlModel->setCrawlMix($mix);
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('admin_controller_mix_created')."</h1>');";
+                        tl('blogmixes_component_mix_created')."</h1>');";
 
                 case "editmix":
                     //$data passed by reference
@@ -665,7 +644,7 @@ class BlogmixesComponent extends Component
 
                 case "index":
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('crawl_component_set_index')."</h1>')";
+                        tl('blogmixes_component_set_index')."</h1>')";
 
                     $timestamp = $parent->clean($_REQUEST['timestamp'], "int");
                     $parent->crawlModel->setCurrentIndexDatabaseName(
@@ -676,7 +655,7 @@ class BlogmixesComponent extends Component
                     if(!isset($_REQUEST['timestamp'])|| !isset($mix_ids) ||
                         !in_array($_REQUEST['timestamp'], $mix_ids)) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('admin_controller_mix_doesnt_exists').
+                            tl('blogmixes_component_mix_doesnt_exists').
                             "</h1>')";
                         return $data;
                     }
@@ -684,7 +663,7 @@ class BlogmixesComponent extends Component
                     $data['available_mixes'] =
                         $parent->crawlModel->getMixList(true);
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('admin_controller_mix_deleted')."</h1>')";
+                        tl('blogmixes_component_mix_deleted')."</h1>')";
                 break;
             }
         }
@@ -721,16 +700,22 @@ class BlogmixesComponent extends Component
 
         //set up an array of translation for javascript-land
         $data['SCRIPT'] .= "tl = {".
-            'editmix_element_add_crawls:"'. tl('editmix_element_add_crawls') .
-            '",' . 'editmix_element_num_results:"'.
-                tl('editmix_element_num_results').'",'.
-            'editmix_element_del_grp:"'.tl('editmix_element_del_grp').'",'.
-            'editmix_element_weight:"'.tl('editmix_element_weight').'",'.
-            'editmix_element_name:"'.tl('editmix_element_name').'",'.
-            'editmix_add_keywords:"'.tl('editmix_add_keywords').'",'.
-            'editmix_element_actions:"'.tl('editmix_element_actions').'",'.
-            'editmix_add_query:"'.tl('editmix_add_query').'",'.
-            'editmix_element_delete:"'.tl('editmix_element_delete').'"'.
+            'blogmixes_component_add_crawls:"'.
+                tl('blogmixes_component_add_crawls') .
+            '",' . 'blogmixes_component_num_results:"'.
+                tl('blogmixes_component_num_results').'",'.
+            'blogmixes_component_del_grp:"'.
+                tl('blogmixes_component_del_grp').'",'.
+            'blogmixes_component_weight:"'.
+                tl('blogmixes_component_weight').'",'.
+            'blogmixes_component_name:"'.tl('blogmixes_component_name').'",'.
+            'blogmixes_component_add_keywords:"'.
+                tl('blogmixes_component_add_keywords').'",'.
+            'blogmixes_component_actions:"'.
+                tl('blogmixes_component_actions').'",'.
+            'blogmixes_component_add_query:"'.
+                tl('blogmixes_component_add_query').'",'.
+            'blogmixes_component_delete:"'.tl('blogmixes_component_delete').'"'.
             '};';
         //clean and save the crawl mix sent from the browser
         if(isset($_REQUEST['update']) && $_REQUEST['update'] ==
@@ -757,8 +742,8 @@ class BlogmixesComponent extends Component
                             foreach($group_data['COMPONENTS'] as $component) {
                                 $row = array();
                                 $row['CRAWL_TIMESTAMP'] =
-                                    $parent->clean($component['CRAWL_TIMESTAMP'],
-                                    "int");
+                                    $parent->clean(
+                                        $component['CRAWL_TIMESTAMP'], "int");
                                 $row['WEIGHT'] = $parent->clean(
                                     $component['WEIGHT'], "float");
                                 $row['KEYWORDS'] = $parent->clean(
@@ -782,7 +767,7 @@ class BlogmixesComponent extends Component
             $data['MIX'] = $mix;
             $parent->crawlModel->setCrawlMix($mix);
             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                tl('admin_controller_mix_saved')."</h1>');";
+                tl('blogmixes_component_mix_saved')."</h1>');";
         }
 
         $data['SCRIPT'] .= 'groups = [';
@@ -813,5 +798,4 @@ class BlogmixesComponent extends Component
         }
         $data['SCRIPT'] .= ']; drawGroups();';
     }
-
 }

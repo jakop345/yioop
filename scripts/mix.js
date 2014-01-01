@@ -112,16 +112,16 @@ function drawGroup(group_num, num_results)
 function makeBlankMixTable(tbl, num_groups, num_results)
 {
     var tdata = "<tr><td colspan=\"2\"><label for=\"add-crawls-"+num_groups+
-        "\">"+tl['editmix_element_add_crawls']+"</label>"+
+        "\">"+tl['blogmixes_component_add_crawls']+"</label>"+
         drawCrawlSelect(num_groups)+"</td><td><label for=\"num-results-"+
-        num_groups+"\">"+tl['editmix_element_num_results']+"</label>"+
+        num_groups+"\">"+tl['blogmixes_component_num_results']+"</label>"+
         drawNumResultSelect(num_groups, num_results)+
             "<td><a href=\"javascript:removeGroup("+num_groups+")\">"+
-            tl['editmix_element_del_grp']+'</a></td></tr>'+
-            "<tr><th>"+tl['editmix_element_weight']+'</th>'+
-            "<th>"+tl['editmix_element_name']+'</th>'+
-            "<th>"+tl['editmix_add_keywords']+'</th>'+
-            "<th>"+tl['editmix_element_actions']+"</th></tr>";
+            tl['blogmixes_component_del_grp']+'</a></td></tr>'+
+            "<tr><th>"+tl['blogmixes_component_weight']+'</th>'+
+            "<th>"+tl['blogmixes_component_element_name']+'</th>'+
+            "<th>"+tl['blogmixes_component_add_keywords']+'</th>'+
+            "<th>"+tl['blogmixes_component_actions']+"</th></tr>";
     tbl.innerHTML = tdata;
 }
 
@@ -197,13 +197,13 @@ function drawCrawl(i, j, ts, name, weight, keywords)
         "<td>"+drawWeightSelect(i, j, weight)+"</td><td>"+name+
         "</td><td><input type='hidden' name= \"mix[GROUPS]["+i+
         "][COMPONENTS]["+j+"][CRAWL_TIMESTAMP]\"' value=\""+ts+"\" />"+
-        "<input title=\""+tl['editmix_add_query']+"\" "+
+        "<input title=\""+tl['blogmixes_component_add_query']+"\" "+
         "name=\"mix[GROUPS]["+i+"][COMPONENTS]["+j+"][KEYWORDS]\" "+
         "value=\""+ keywords+"\" onchange=\"updateKeywords("+i+","+j+
         ", this.value)\""+
         "class=\"widefield\"/></td><td><a href=\""+
         "javascript:removeCrawl("+i+", "+j+");\">"+
-        tl['editmix_element_delete']+"</a></td>";
+        tl['blogmixes_component_delete']+"</a></td>";
 }
 
 /*
