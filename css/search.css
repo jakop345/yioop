@@ -1484,24 +1484,27 @@ ul.in-list li
     margin-right: 0;
 }
 
-.html-ltr .activity-menu
+.html-ltr .component-container
 {
-    border-radius: 8px;
     float: left;
-    padding: 0;
-    position: relative;
-    top: 30px;
-    width: 2.5in;
+    width: 2.6in;
 }
 
+.html-rtl .component-container
+{
+    float: right;
+    width: 2.6in;
+}
+
+.html-ltr .activity-menu,
 .html-rtl .activity-menu
 {
     border-radius: 8px;
-    float: right;
     padding: 0;
     position: relative;
     top: 30px;
     width: 2.5in;
+    margin-bottom:.1in;
 }
 
 .mobile .activity-menu
@@ -1519,8 +1522,9 @@ ul.in-list li
     border-top-right-radius: 8px;
     border-top-left-radius: 8px;
     color: #222;
+    font-size:14pt;
     margin: 0;
-    padding: .05in .15in .05in .15in;
+    padding: .01in .05in .01in .05in;
 }
 
 .mobile .activity-menu h2
@@ -1539,7 +1543,7 @@ ul.in-list li
     list-style-position: inside;
     list-style-type: none;
     margin: 0;
-    padding: 0.10in;
+    padding: 0.05in;
 }
 
 .activity-menu li.bottom-border
@@ -1566,7 +1570,6 @@ ul.in-list li
     padding: 0;
     margin: 0;
 }
-
 
 .current-activity
 {

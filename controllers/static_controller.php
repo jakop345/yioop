@@ -85,7 +85,7 @@ class StaticController extends Controller
             $activity = "show_page";
         }
         $data['VIEW'] = $view;
-        $data = array_merge($data, $this->$activity());
+        $data = array_merge($data, $this->call($activity));
 
         $data[CSRF_TOKEN] = $this->generateCSRFToken($user);
 

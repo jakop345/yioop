@@ -1,0 +1,817 @@
+<?php
+/**
+ *  SeekQuarry/Yioop --
+ *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ *
+ *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
+ *
+ *  LICENSE:
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *  END LICENSE
+ *
+ * @author Chris Pollett chris@pollett.org
+ * @package seek_quarry
+ * @subpackage component
+ * @license http://www.gnu.org/licenses/ GPL3
+ * @link http://www.seekquarry.com/
+ * @copyright 2009 - 2013
+ * @filesource
+ */
+
+if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
+
+/**
+ * 
+ *
+ * @author Chris Pollett
+ * @package seek_quarry
+ * @subpackage component
+ */
+class BlogmixesComponent extends Component
+{
+    var $activities = array("blogPages", "mixCrawls");
+
+    /**
+     * Used to handle the blogs and pages activity.
+     *
+     * This activity allows users to create,edit, and delete blogs.
+     * It allows users to add feeditems to blogs, edit and delete feeditems
+     * Allows users to add groups to blogs and provides access control to blogs
+     * @return array $data information about blogs in the system
+     */
+    function blogPages()
+    {
+        $parent = $this->parent;
+        $data["ELEMENT"] = "blogpagesElement";
+        $data['SCRIPT'] = "";
+        if(isset($_SESSION['USER_ID'])) {
+            $user = $_SESSION['USER_ID'];
+        } else {
+            $user = $_SERVER['REMOTE_ADDR'];
+        }
+        $user = $_SESSION['USER_ID'];
+        $group_ids = array();
+        if(isset($_REQUEST['selectgroup'])) {
+            $select_group =
+                 $parent->clean($_REQUEST['selectgroup'], "string");
+                 $data['SELECT_GROUP'] = $select_group;
+        } else {
+            $select_group = "";
+        }
+        if($_SESSION['USER_ID'] == '1') {
+             $groups = $parent->groupModel->getGroupList();
+             $is_admin = true;
+        } else {
+            $is_admin = false;
+            $groups =
+                $parent->groupModel->getGroupListbyUser($_SESSION['USER_ID']);
+            foreach($groups as $group) {
+                array_push($group_ids, $group['GROUP_ID']);
+            }
+        }
+        $recent_blogs =
+            $parent->blogpageModel->recentBlog($user, $group_ids, $is_admin);
+        $data['RECENT_BLOGS'] = $recent_blogs;
+        $base_option = tl('accountaccess_component_select_groupname');
+        $data['GROUP_NAMES'][-1] = $base_option;
+        foreach($groups as $group) {
+            $data['GROUP_NAMES'][$group['GROUP_ID']]= $group['GROUP_NAME'];
+
+            $group_ids[] = $group['GROUP_ID'];
+        }
+        $possible_arguments = array("addblog", "searchblog", "deleteblog",
+            "editblog","editdescription","updatedescription",
+            "addblogentry","addfeeditem","deletefeed","updatefeed",
+            "editfeed","updateblogusers","addbloggroup",
+            "deletebloggroup");
+        if(isset($_REQUEST['arg']) &&
+            in_array($_REQUEST['arg'], $possible_arguments)) {
+            switch($_REQUEST['arg'])
+            {
+                case "addblog":
+                    $data['SOURCE_TYPES'] =
+                        array(-1 => tl('admin_controller_source_type'),
+                        "blog" => tl('admin_controller_blog'),
+                        "page" => tl('admin_controller_page'));
+                    $source_type_flag = false;
+                    if(isset($_REQUEST['sourcetype']) &&
+                        in_array($_REQUEST['sourcetype'],
+                        array_keys($data['SOURCE_TYPES']))) {
+                        $data['SOURCE_TYPE'] = $_REQUEST['sourcetype'];
+                        $source_type_flag = true;
+                    } else {
+                        $data['SOURCE_TYPE'] = -1;
+                    }
+                    $locales = $parent->localeModel->getLocaleList();
+                    $data["LANGUAGES"] = array();
+                    foreach($locales as $locale) {
+                        $data["LANGUAGES"][$locale['LOCALE_TAG']] =
+                        $locale['LOCALE_NAME'];
+                    }
+                    if(isset($_REQUEST['sourcelocaletag']) &&
+                        in_array($_REQUEST['sourcelocaletag'],
+                        array_keys($data["LANGUAGES"]))) {
+                            $data['SOURCE_LOCALE_TAG'] =
+                                $_REQUEST['sourcelocaletag'];
+                    } else {
+                        $data['SOURCE_LOCALE_TAG'] = DEFAULT_LOCALE;
+                    }
+                    $must_have =
+                        array("title", "description", "sourcelocaletag");
+                    $missing_must_have = false;
+                    foreach ($must_have as $clean_me) {
+                        $data[$clean_me] = (isset($_REQUEST[$clean_me])) ?
+                            $parent->clean($_REQUEST[$clean_me], "string" ):"";
+                        if(in_array($clean_me, $must_have)
+                            && $data[$clean_me] == "" ) {
+                            $missing_must_have = true;
+                        }
+                    }
+                    if(!$source_type_flag || $missing_must_have) {
+                        break;
+                    }
+                    if(isset($_SESSION['USER_ID'])) {
+                        $user = $_SESSION['USER_ID'];
+                    } else {
+                        $user = $_SERVER['REMOTE_ADDR'];
+                    }
+                    if($data['SOURCE_TYPE'] == 'page'){
+
+                    $groupid = $parent->groupModel->getGroupId($select_group);
+                    if(isset($_REQUEST['selectgroup'])) {
+                        $select_group =
+                        $parent->clean($_REQUEST['selectgroup'], "string" );
+                        $data['SELECT_GROUP'] = $select_group;
+                    } else {
+                        $select_group = "";
+                    }
+                    $data['SELECT_GROUP'] = $select_group;
+                        $result = $parent->blogpageModel->addPage(
+                            $data['title'], $data['description'],
+                            $data['SOURCE_TYPE'], $data['SOURCE_LOCALE_TAG'],
+                            $user, $select_group);
+                        if($result){
+                            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('admin_controller_page_added').
+                            "</h1>');";
+                    }
+                    }else{
+                        $user = $_SESSION['USER_ID'];
+                        $groupid = $parent->groupModel->getGroupId(
+                            $select_group);
+                        $data['SELECT_GROUP'] = $select_group;
+                        $parent->blogpageModel->addBlog(
+                            $data['title'], $data['description'], $user,
+                            $data['SOURCE_TYPE'], $data['sourcelocaletag'],
+                            $select_group);
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('admin_controller_blog_added').
+                            "</h1>');";
+                    }
+                    $data["ELEMENT"] = "blogpagesElement";
+                    $recent_blogs =
+                        $parent->blogpageModel->recentBlog(
+                        $user, $group_ids, $is_admin);
+                    $data['RECENT_BLOGS'] = $recent_blogs;
+                break;
+
+                case "searchblog":
+                    if(!isset($_REQUEST['title'])) { break; }
+
+                    $data["ELEMENT"] = "blogpagesElement";
+                    $data['SELECT_GROUP'] = "";
+                    $data['description'] = "";
+                    $is_blogs_empty = false;
+                    $data['title'] = $parent->clean($_REQUEST['title'],
+                        "string");
+                    if($data['title'] != "") {
+                        $blogs =
+                            $parent->blogpageModel->searchBlog(
+                                $data['title'],
+                                $user, $group_ids, $is_admin);
+                        $data['BLOGS'] = $blogs;
+                        if(empty($blogs)){ 
+                            $is_blogs_empty = true;
+                        }
+                    } else {
+                        $is_blogs_empty = true;
+                    }
+                    if($is_blogs_empty) {
+                        $data["ELEMENT"] = "createblogpagesElement";
+                        $data['SOURCE_TYPES'] =
+                            array(-1 => tl('admin_controller_source_type'),
+                                "blog" => tl('admin_controller_blog'),
+                                "page" => tl('admin_controller_page')
+                            );
+                        $source_type_flag = false;
+                        if(isset($_REQUEST['sourcetype']) &&
+                            in_array($_REQUEST['sourcetype'],
+                            array_keys($data['SOURCE_TYPES']))) {
+                            $data['SOURCE_TYPE'] = $_REQUEST['sourcetype'];
+                            $source_type_flag = true;
+                        } else {
+                            $data['SOURCE_TYPE'] = -1;
+                        }
+                        $locales = $parent->localeModel->getLocaleList();
+                        $data["LANGUAGES"] = array();
+                        foreach($locales as $locale) {
+                            $data["LANGUAGES"][$locale['LOCALE_TAG']] =
+                                $locale['LOCALE_NAME'];
+                        }
+                        if(isset($_REQUEST['sourcelocaletag']) && in_array(
+                            $_REQUEST['sourcelocaletag'],
+                            array_keys($data["LANGUAGES"]))
+                            ) {
+                            $data['SOURCE_LOCALE_TAG'] =
+                                $_REQUEST['sourcelocaletag'];
+                        } else {
+                            $data['SOURCE_LOCALE_TAG'] = DEFAULT_LOCALE;
+                        }
+                    }
+                break;
+
+                case "deleteblog":
+                    if(!isset($_REQUEST['id'])) { break; }
+
+                    $timestamp = $parent->clean($_REQUEST['id'], "string" );
+                    $title = "";
+                    if(isset($_REQUEST['title'])) {
+                        $title = $parent->clean($_REQUEST['title'], "string" );
+                    }
+                    $parent->blogpageModel->deleteBlog($timestamp, $title, $user);
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('admin_controller_blog_deleted').
+                        "</h1>');";
+                    $data['RECENT_BLOGS'] =  $parent->blogpageModel->recentBlog(
+                        $user, $group_ids, $is_admin);
+                break;
+
+                case "editblog":
+                    if(!isset($_REQUEST['id'])) { break; }
+
+                    $timestamp = $parent->clean($_REQUEST['id'], "string");
+                    $data["ELEMENT"] = "editblogpagesElement";
+                    $data['SOURCE_TYPES'] = array(
+                            -1 => tl('admin_controller_source_type'),
+                            "blog" => tl('admin_controller_blog'),
+                            "page" => tl('admin_controller_page')
+                        );
+                    $source_type_flag = false;
+                    if(isset($_REQUEST['sourcetype']) && in_array(
+                        $_REQUEST['sourcetype'],
+                        array_keys($data['SOURCE_TYPES']))
+                        ) {
+                        $data['SOURCE_TYPE'] = $_REQUEST['sourcetype'];
+                        $source_type_flag = true;
+                    } else {
+                        $data['SOURCE_TYPE'] = -1;
+                    }
+                    $locales = $parent->localeModel->getLocaleList();
+                    $data["LANGUAGES"] = array();
+                    foreach($locales as $locale) {
+                        $data["LANGUAGES"][$locale['LOCALE_TAG']]
+                            = $locale['LOCALE_NAME'];
+                    }
+                    if(isset($_REQUEST['sourcelocaletag']) && in_array(
+                        $_REQUEST['sourcelocaletag'],
+                        array_keys($data["LANGUAGES"]))) {
+                        $data['SOURCE_LOCALE_TAG'] =
+                            $_REQUEST['sourcelocaletag'];
+                    } else {
+                        $data['SOURCE_LOCALE_TAG'] = DEFAULT_LOCALE;
+                    }
+                    $edit_blogs= $parent->blogpageModel->editBlog($timestamp);
+                    $blog_users =
+                    $parent->blogpageModel->getBlogUsers($edit_blogs[0]);
+                    $edit_blogs[0]['BLOG_USERS'] = $blog_users;
+                    $data['EDIT_BLOGS'] = $edit_blogs[0];
+                    $title = $edit_blogs['0']['NAME'];
+                    if(isset($_SESSION['USER_ID'])) {
+                        $user = $_SESSION['USER_ID'];
+                    } else {
+                        $user = $_SERVER['REMOTE_ADDR'];
+                    }
+                    $user = $_SESSION['USER_ID'];
+                    $feed_items=$parent->blogpageModel->getFeed($title, $user);
+                    $data['FEED_ITEMS'] = $feed_items;
+                    if(isset($_SESSION['USER_ID'])) {
+                        $username = $parent->signinModel->getUserName(
+                            $_SESSION['USER_ID']);
+                        $data['USER_NAME'] = $username;
+                        $owner_id = $parent->blogpageModel->
+                            getBlogOwner($timestamp);
+                        if($owner_id == $user || $user == '1'){
+                            $data['IS_OWNER'] = true;
+                        }
+                    }
+                break;
+
+                case "editdescription":
+                    if(!isset($_REQUEST['id'])) { break; }
+                    $timestamp = $parent->clean($_REQUEST['id'], "string" );
+                    $data["ELEMENT"] = "editblogpagesElement";
+                    $data['SOURCE_TYPES'] =
+                        array(-1 => tl('admin_controller_source_type'),
+                            "blog" => tl('admin_controller_blog'),
+                            "page" => tl('admin_controller_page'));
+                    $source_type_flag = false;
+                    if(isset($_REQUEST['sourcetype']) && in_array(
+                       $_REQUEST['sourcetype'],
+                       array_keys($data['SOURCE_TYPES']))
+                       ) {
+                       $data['SOURCE_TYPE'] = $_REQUEST['sourcetype'];
+                       $source_type_flag = true;
+                    } else {
+                        $data['SOURCE_TYPE'] = -1;
+                    }
+                    $locales = $parent->localeModel->getLocaleList();
+                    $data["LANGUAGES"] = array();
+                    foreach($locales as $locale) {
+                        $data["LANGUAGES"][$locale['LOCALE_TAG']] =
+                            $locale['LOCALE_NAME'];
+                    }
+                    if(isset($_REQUEST['sourcelocaletag']) && in_array(
+                        $_REQUEST['sourcelocaletag'],
+                        array_keys($data["LANGUAGES"]))) {
+                        $data['SOURCE_LOCALE_TAG'] =
+                        $_REQUEST['sourcelocaletag'];
+                    } else {
+                        $data['SOURCE_LOCALE_TAG'] = DEFAULT_LOCALE;
+                    }
+                    $blog_group = $parent->blogpageModel->
+                        getBlogGroup($timestamp);
+                    $data['BLOG_GROUP'] = $blog_group;
+                    $edit_blogs = $parent->blogpageModel->editBlog($timestamp);
+                    $data['EDIT_BLOGS'] = $edit_blogs[0];
+                    $data['IS_EDIT_DESC'] = true;
+                break;
+
+                case "updatedescription":
+                    if(isset($_REQUEST['id'])) {
+                        $timestamp = $parent->clean($_REQUEST['id'], "string" );
+                    }
+                    if(isset($_REQUEST['description'])) {
+                        $description =
+                            $parent->clean($_REQUEST['description'], "string" );
+                    }
+                    if(isset($_REQUEST['title'])) {
+                        $title = $parent->clean($_REQUEST['title'], "string" );
+                    }
+
+                    $edit_blogs =
+                        $parent->blogpageModel->editDescription($timestamp,
+                        $title, $description);
+                    if(!empty($edit_blogs)){
+                        $data['EDIT_BLOGS'] = $edit_blogs[0];
+                    }
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('admin_controller_blog_updated') . "</h1>');";
+                    $data["ELEMENT"] = "blogpagesElement";
+                    $recent_blogs =
+                    $parent->blogpageModel->
+                        recentBlog($user, $group_ids, $is_admin);
+                    $data['RECENT_BLOGS'] = $recent_blogs;
+                break;
+
+                case "addblogentry":
+                    if(!isset($_REQUEST['id'])) { break; }
+                    $timestamp = $parent->clean($_REQUEST['id'], "string" );
+                    $data["ELEMENT"] = "editblogpagesElement";
+                    $data['SOURCE_TYPES'] =
+                        array(-1 => tl('admin_controller_source_type'),
+                        "blog" => tl('admin_controller_blog'),
+                        "page" => tl('admin_controller_page'));
+                        $source_type_flag = false;
+                    if(isset($_REQUEST['sourcetype']) && in_array(
+                        $_REQUEST['sourcetype'],
+                        array_keys($data['SOURCE_TYPES']) )
+                        ) {
+                        $data['SOURCE_TYPE'] = $_REQUEST['sourcetype'];
+                        $source_type_flag = true;
+                    } else {
+                        $data['SOURCE_TYPE'] = -1;
+                    }
+                    $locales = $parent->localeModel->getLocaleList();
+                    $data["LANGUAGES"] = array();
+                    foreach($locales as $locale) {
+                        $data["LANGUAGES"][$locale['LOCALE_TAG']] =
+                        $locale['LOCALE_NAME'];
+                    }
+                    if(isset($_REQUEST['sourcelocaletag']) &&
+                        in_array($_REQUEST['sourcelocaletag'],
+                        array_keys($data["LANGUAGES"]))) {
+                            $data['SOURCE_LOCALE_TAG'] =
+                            $_REQUEST['sourcelocaletag'];
+                    } else {
+                       $data['SOURCE_LOCALE_TAG'] = DEFAULT_LOCALE;
+                    }
+                    $edit_blogs = $parent->blogpageModel->editBlog($timestamp);
+                    $data['EDIT_BLOGS'] = $edit_blogs[0];
+                    $data['IS_ADD_BLOG'] = true;
+                break;
+
+                case "addfeeditem":
+                    if(isset($_SESSION['USER_ID'])) {
+                        $user = $_SESSION['USER_ID'];
+                    } else {
+                        $user = $_SERVER['REMOTE_ADDR'];
+                    }
+                    $user = $_SESSION['USER_ID'];
+                    if(isset($_REQUEST['id'])) {
+                        $timestamp = $parent->clean($_REQUEST['id'], "string" );
+                    }
+                    $title = "";
+                    if(isset($_REQUEST['title'])) {
+                        $title = $parent->clean($_REQUEST['title'], "string" );
+                    }
+                    if(isset($_REQUEST['description'])) {
+                        $description =
+                            $parent->clean($_REQUEST['description'], "string" );
+                    }
+                    if(isset($_REQUEST['title_entry'])) { ;
+                        $title_entry =
+                            $parent->clean($_REQUEST['title_entry'], "string" );
+                    }
+                    $feed_items= $parent->blogpageModel->addEntry($timestamp,
+                        $title_entry, $description, $title, $user);
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('admin_controller_feed_added').
+                        "</h1>');";
+                break;
+
+                case "editfeed":
+                    if(!isset($_REQUEST['id'])) { break; }
+
+                    $timestamp = $parent->clean($_REQUEST['id'], "string" );
+                    $data["ELEMENT"] = "editblogpagesElement";
+                    $data['SOURCE_TYPES'] =
+                        array(-1 => tl('admin_controller_source_type'),
+                        "blog" => tl('admin_controller_blog'),
+                        "page" => tl('admin_controller_page'));
+                    $source_type_flag = false;
+                    if(isset($_REQUEST['sourcetype']) &&
+                        in_array($_REQUEST['sourcetype'],
+                        array_keys($data['SOURCE_TYPES']))) {
+                            $data['SOURCE_TYPE'] = $_REQUEST['sourcetype'];
+                            $source_type_flag = true;
+                    } else {
+                        $data['SOURCE_TYPE'] = -1;
+                    }
+                    $locales = $parent->localeModel->getLocaleList();
+                    $data["LANGUAGES"] = array();
+                    foreach($locales as $locale) {
+                        $data["LANGUAGES"][$locale['LOCALE_TAG']] =
+                        $locale['LOCALE_NAME'];
+                    }
+                    if(isset($_REQUEST['sourcelocaletag']) &&
+                        in_array($_REQUEST['sourcelocaletag'],
+                        array_keys($data["LANGUAGES"]))) {
+                            $data['SOURCE_LOCALE_TAG'] =
+                            $_REQUEST['sourcelocaletag'];
+                    } else {
+                        $data['SOURCE_LOCALE_TAG'] = DEFAULT_LOCALE;
+                    }
+
+                    $edit_blogs = $parent->blogpageModel->editBlog($timestamp);
+                    $data['EDIT_BLOGS'] = $edit_blogs[0];
+                    $data['IS_EDIT_FEED'] = true;
+                    if(isset($_REQUEST['fid'])) {
+                        $guid = $parent->clean($_REQUEST['fid'], "string" );
+                    }
+                    $feed_items = $parent->blogpageModel->getFeedByGUID($guid);
+                    $data['FEED_ITEMS'] = $feed_items;
+                    $owner_id = $parent->blogpageModel->getBlogOwner($timestamp);
+                    if($owner_id == $user || $user == '1'){
+                        $data['IS_OWNER'] = true;
+                    }
+                break;
+
+                case "updatefeed":
+                    if(isset($_REQUEST['id'])) {
+                        $timestamp = $parent->clean($_REQUEST['id'], "string" );
+                    }
+                    if(isset($_REQUEST['description'])) {
+                        $description =
+                            $parent->clean($_REQUEST['description'], "string" );
+                    }
+                    if(isset($_REQUEST['title'])) {
+                        $title = $parent->clean($_REQUEST['title'], "string" );
+                    }
+                    if(isset($_REQUEST['fid'])) {
+                        $guid = $parent->clean($_REQUEST['fid'], "string" );
+                    }
+                    $update_feeds= $parent->blogpageModel->
+                        updateFeed($guid,$title, $description);
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('admin_controller_feed_updated').
+                        "</h1>');";
+                break;
+
+                case "deletefeed":
+                    if(isset($_REQUEST['id'])) {
+                        $guid = $parent->clean($_REQUEST['id'], "string" );
+                        $parent->blogpageModel->deleteFeed($guid);
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('admin_controller_feed_deleted').
+                            "</h1>');";
+                    }
+                break;
+
+                case "updateblogusers":
+                    if(isset($_REQUEST['selectuser'])) {
+                        $select_user =
+                        $parent->clean($_REQUEST['selectuser'], "string" );
+                    } else {
+                        $select_user = "";
+                    }
+                    if($select_user != "" ) {
+                        $parent= $this->signinModel->getUserId($select_user);
+                        $data['SELECT_USER'] = $select_user;
+
+                    }
+                    if(isset($_REQUEST['blogName'])) {
+                        $blog_name =
+                            $parent->clean($_REQUEST['blogName'], "string");
+                    } else {
+                        $blog_name = "";
+                    }
+                    $parent->blogpageModel->
+                        updateBlogUsers($select_user, $blog_name);
+                    $recent_blogs =
+                    $parent->blogpageModel->
+                        recentBlog($user, $group_ids, $is_admin);
+                    $data['RECENT_BLOGS'] = $recent_blogs;
+                break;
+
+                case "addbloggroup":
+                    if(isset($_REQUEST['id'])) {
+                        $timestamp = $parent->clean($_REQUEST['id'], "string" );
+                    }
+                    if(isset($_REQUEST['selectgroup'])) {
+                        $select_group =
+                        $parent->clean($_REQUEST['selectgroup'], "string" );
+                        $data['SELECT_GROUP'] = $select_group;
+                    } else {
+                        $select_group = "";
+                    }
+                    $groupid = $parent->groupModel->getGroupId($select_group);
+                    $data['SELECT_GROUP'] = $select_group;
+                    $parent->blogpageModel->addGroup($timestamp,$select_group);
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('admin_controller_group_added').
+                        "</h1>');";
+                break;
+
+                case "deletebloggroup":
+                    if(isset($_REQUEST['id'])) {
+                        $timestamp = $parent->clean($_REQUEST['id'], "string" );
+                    }
+                    if(isset($_REQUEST['gid'])) {
+                        $groupid = $parent->clean($_REQUEST['gid'], "string" );
+                    }
+                    $parent->blogpageModel->deleteGroup($timestamp,$groupid);
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('admin_controller_group_deleted').
+                        "</h1>');";
+                break;
+            }
+        }
+        return $data;
+    }
+
+
+    /**
+     * Handles admin request related to the crawl mix activity
+     *
+     * The crawl mix activity allows a user to create/edit crawl mixes:
+     * weighted combinations of search indexes
+     *
+     * @return array $data info about available crawl mixes and changes to them
+     *      as well as any messages about the success or failure of a
+     *      sub activity.
+     */
+    function mixCrawls()
+    {
+        $parent = $this->parent;
+        $possible_arguments = array(
+            "createmix", "deletemix", "editmix", "index");
+
+        $data["ELEMENT"] = "mixcrawlsElement";
+
+        $data['mix_default'] = 0;
+        $machine_urls = $parent->machineModel->getQueueServerUrls();
+        $num_machines = count($machine_urls);
+        if($num_machines <  1 || ($num_machines ==  1 &&
+            UrlParser::isLocalhostUrl($machine_urls[0]))) {
+            $machine_urls = NULL;
+        }
+        $crawls = $parent->crawlModel->getCrawlList(false, true, $machine_urls);
+        $data['available_crawls'][0] = tl('admin_controller_select_crawl');
+        $data['available_crawls'][1] = tl('admin_controller_default_crawl');
+        $data['SCRIPT'] = "c = [];c[0]='".
+            tl('admin_controller_select_crawl')."';";
+        $data['SCRIPT'] .= "c[1]='".
+            tl('admin_controller_default_crawl')."';";
+        foreach($crawls as $crawl) {
+            $data['available_crawls'][$crawl['CRAWL_TIME']] =
+                $crawl['DESCRIPTION'];
+            $data['SCRIPT'] .= 'c['.$crawl['CRAWL_TIME'].']="'.
+                $crawl['DESCRIPTION'].'";';
+        }
+        $mixes = $parent->crawlModel->getMixList(true);
+        if(count($mixes) > 0 ) {
+            $data['available_mixes']= $mixes;
+            $mix_ids = array();
+            foreach($mixes as $mix) {
+                $mix_ids[] = $mix['MIX_TIMESTAMP'];
+            }
+        }
+
+        $mix = array();
+        if(isset($_REQUEST['arg']) &&
+            in_array($_REQUEST['arg'], $possible_arguments)) {
+            switch($_REQUEST['arg'])
+            {
+                case "createmix":
+                    $mix['MIX_TIMESTAMP'] = time();
+                    if(isset($_REQUEST['MIX_NAME'])) {
+                        $mix['MIX_NAME'] = $parent->clean($_REQUEST['MIX_NAME'],
+                            'string');
+                    } else {
+                        $mix['MIX_NAME'] = tl('admin_controller_unnamed');
+                    }
+                    $mix['GROUPS'] = array();
+                    $parent->crawlModel->setCrawlMix($mix);
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('admin_controller_mix_created')."</h1>');";
+
+                case "editmix":
+                    //$data passed by reference
+                    $this->editMix($data, $mix_ids, $mix);
+                break;
+
+                case "index":
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('admin_controller_set_index')."</h1>')";
+
+                    $timestamp = $parent->clean($_REQUEST['timestamp'], "int");
+                    $parent->crawlModel->setCurrentIndexDatabaseName(
+                        $timestamp);
+                break;
+
+                case "deletemix":
+                    if(!isset($_REQUEST['timestamp'])|| !isset($mix_ids) ||
+                        !in_array($_REQUEST['timestamp'], $mix_ids)) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('admin_controller_mix_doesnt_exists').
+                            "</h1>')";
+                        return $data;
+                    }
+                    $parent->crawlModel->deleteCrawlMix($_REQUEST['timestamp']);
+                    $data['available_mixes'] =
+                        $parent->crawlModel->getMixList(true);
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('admin_controller_mix_deleted')."</h1>')";
+                break;
+            }
+        }
+
+        $crawl_time = $parent->crawlModel->getCurrentIndexDatabaseName();
+        if(isset($crawl_time) ) {
+            $data['CURRENT_INDEX'] = (int)$crawl_time;
+        } else {
+            $data['CURRENT_INDEX'] = -1;
+        }
+
+        return $data;
+    }
+
+    /**
+     * Handles admin request related to the editing a crawl mix activity
+     *
+     * @return array $data info about the groups and their contents for a
+     *      particular crawl mix
+     */
+    function editMix(&$data, &$mix_ids, $mix)
+    {
+        $parent = $this->parent;
+        $data["leftorright"] =
+            (getLocaleDirection() == 'ltr') ? "right": "left";
+        $data["ELEMENT"] = "editmixElement";
+
+        if(isset($_REQUEST['timestamp'])) {
+            $mix = $parent->crawlModel->getCrawlMix(
+                $_REQUEST['timestamp']);
+        }
+        $data['MIX'] = $mix;
+        $data['INCLUDE_SCRIPTS'] = array("mix");
+
+        //set up an array of translation for javascript-land
+        $data['SCRIPT'] .= "tl = {".
+            'editmix_element_add_crawls:"'. tl('editmix_element_add_crawls') .
+            '",' . 'editmix_element_num_results:"'.
+                tl('editmix_element_num_results').'",'.
+            'editmix_element_del_grp:"'.tl('editmix_element_del_grp').'",'.
+            'editmix_element_weight:"'.tl('editmix_element_weight').'",'.
+            'editmix_element_name:"'.tl('editmix_element_name').'",'.
+            'editmix_add_keywords:"'.tl('editmix_add_keywords').'",'.
+            'editmix_element_actions:"'.tl('editmix_element_actions').'",'.
+            'editmix_add_query:"'.tl('editmix_add_query').'",'.
+            'editmix_element_delete:"'.tl('editmix_element_delete').'"'.
+            '};';
+        //clean and save the crawl mix sent from the browser
+        if(isset($_REQUEST['update']) && $_REQUEST['update'] ==
+            "update") {
+            $mix = $_REQUEST['mix'];
+            $mix['MIX_TIMESTAMP'] =
+                $parent->clean($mix['MIX_TIMESTAMP'], "int");
+            $mix['MIX_NAME'] =$parent->clean($mix['MIX_NAME'],
+                "string");
+            $comp = array();
+            if(isset($mix['GROUPS'])) {
+
+                if($mix['GROUPS'] != NULL) {
+                    foreach($mix['GROUPS'] as $group_id => $group_data) {
+                        if(isset($group_data['RESULT_BOUND'])) {
+                            $mix['GROUPS'][$group_id]['RESULT_BOUND'] =
+                                $parent->clean($group_data['RESULT_BOUND'],
+                                    "int");
+                        } else {
+                            $mix['GROUPS']['RESULT_BOUND'] = 0;
+                        }
+                        if(isset($group_data['COMPONENTS'])) {
+                            $comp = array();
+                            foreach($group_data['COMPONENTS'] as $component) {
+                                $row = array();
+                                $row['CRAWL_TIMESTAMP'] =
+                                    $parent->clean($component['CRAWL_TIMESTAMP'],
+                                    "int");
+                                $row['WEIGHT'] = $parent->clean(
+                                    $component['WEIGHT'], "float");
+                                $row['KEYWORDS'] = $parent->clean(
+                                    $component['KEYWORDS'],
+                                    "string");
+                                $comp[] =$row;
+                            }
+                            $mix['GROUPS'][$group_id]['COMPONENTS'] = $comp;
+                        } else {
+                            $mix['GROUPS'][$group_id]['COMPONENTS'] = array();
+                        }
+                    }
+                } else {
+                    $mix['COMPONENTS'] = array();
+                }
+
+            } else {
+                $mix['GROUPS'] = $data['MIX']['GROUPS'];
+            }
+
+            $data['MIX'] = $mix;
+            $parent->crawlModel->setCrawlMix($mix);
+            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                tl('admin_controller_mix_saved')."</h1>');";
+        }
+
+        $data['SCRIPT'] .= 'groups = [';
+        $not_first = "";
+        foreach($mix['GROUPS'] as $group_id => $group_data) {
+            $data['SCRIPT'] .= $not_first.'{';
+            $not_first= ",";
+            if(isset($group_data['RESULT_BOUND'])) {
+                $data['SCRIPT'] .= "num_results:".$group_data['RESULT_BOUND'];
+            } else {
+                $data['SCRIPT'] .= "num_results:1 ";
+            }
+            $data['SCRIPT'] .= ", components:[";
+            if(isset($group_data['COMPONENTS'])) {
+                $comma = "";
+                foreach($group_data['COMPONENTS'] as $component) {
+                    $crawl_ts = $component['CRAWL_TIMESTAMP'];
+                    $crawl_name = $data['available_crawls'][$crawl_ts];
+                    $data['SCRIPT'] .= $comma." [$crawl_ts, '$crawl_name', ".
+                        $component['WEIGHT'].", ";
+                    $comma = ",";
+                    $keywords = (isset($component['KEYWORDS'])) ?
+                        $component['KEYWORDS'] : "";
+                    $data['SCRIPT'] .= "'$keywords'] ";
+                }
+            }
+            $data['SCRIPT'] .= "] }";
+        }
+        $data['SCRIPT'] .= ']; drawGroups();';
+    }
+
+}

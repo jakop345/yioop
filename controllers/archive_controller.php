@@ -85,7 +85,7 @@ class ArchiveController extends Controller implements CrawlConstants
         if(!$this->checkRequest()) {return; }
 
         $activity = $this->clean($_REQUEST['a'], "string");
-        $this->$activity();
+        $this->call($activity);
 
     }
 

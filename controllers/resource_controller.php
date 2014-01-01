@@ -79,7 +79,9 @@ class ResourceController extends Controller implements CrawlConstants
             && !$this->checkRequest())) {return; }
         $activity = $_REQUEST['a'];
 
-        if(in_array($activity, $this->activities)) {$this->$activity();}
+        if(in_array($activity, $this->activities)) {
+            $this->call($activity);
+        }
     }
 
     /**

@@ -1,1 +1,6 @@
-لطفن رباتتان را توصیف کنید
+title=Bot
+
+description=Describes the web crawler used with this
+web site
+END_HEAD_VARS
+Please Describe Your Robot

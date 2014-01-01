@@ -111,7 +111,9 @@ class FetchController extends Controller implements CrawlConstants
             file_put_contents($robot_table_name, serialize($robot_table),
                 LOCK_EX);
         }
-        if(in_array($activity, $this->activities)) {$this->$activity();}
+        if(in_array($activity, $this->activities)) {
+            $this->call($activity);
+        }
     }
 
     /**

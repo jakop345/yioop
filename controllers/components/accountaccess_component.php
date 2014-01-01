@@ -24,7 +24,7 @@
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
- * @subpackage controller
+ * @subpackage component
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
  * @copyright 2009 - 2013
@@ -34,13 +34,11 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- * Base component class for all components on
- * the SeekQuarry site. A component consists of a collection of
- * activities and their auxiliary methods can be used by a controller
+ * 
  *
  * @author Chris Pollett
  * @package seek_quarry
- * @subpackage controller
+ * @subpackage component
  */
 class AccountaccessComponent extends Component
 {

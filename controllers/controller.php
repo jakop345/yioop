@@ -354,7 +354,66 @@ abstract class Controller
 
         return $clean_value;
     }
-
+    /**
+     * Converts an array of lines of strings into a single string with
+     * proper newlines, each line having been trimmed and potentially
+     * cleaned
+     *
+     * @param array $arr the array of lines to be process
+     * @param string $endline_string what string should be used to indicate
+     *      the end of a line
+     * @param bool $clean whether to clean each line
+     * @return string a concatenated string of cleaned lines
+     */
+    function convertArrayLines($arr, $endline_string="\n", $clean = false)
+    {
+        $output = "";
+        $eol = "";
+        foreach($arr as $line) {
+            $output .= $eol;
+            $out_line = trim($line);
+            if($clean) {
+                $out_line = $this->clean($out_line, "string");
+            }
+            $output .= trim($out_line);
+            $eol = $endline_string;
+        }
+        return $output;
+    }
+    /**
+     * Cleans a string consisting of lines, typically of urls into an array of
+     * clean lines. This is used in handling data from the crawl options
+     * text areas.
+     *
+     * @param string $str contains the url data
+     * @param string $line_type does additional cleaning depending on the type
+     *      of the lines. For instance, if is "url" then a line not beginning
+     *      with a url scheme will have http:// prepended.
+     * @return $lines an array of clean lines
+     */
+    function convertStringCleanArray($str, $line_type="url")
+    {
+        if($line_type == "url") {
+            $pre_lines = preg_split("/(\s)+/", $str);
+        } else {
+            $pre_lines = preg_split('/\n+/', $str);
+        }
+        $lines = array();
+        foreach($pre_lines as $line) {
+            $pre_line = trim($this->clean($line, "string"));
+            if(strlen($pre_line) > 0) {
+                if($line_type == "url") {
+                    $start_line = substr($pre_line, 0, 6);
+                    if(!in_array($start_line,
+                        array("file:/", "http:/", "domain", "https:"))) {
+                        $pre_line = "http://". $pre_line;
+                    }
+                }
+                $lines[] = $pre_line;
+            }
+        }
+        return $lines;
+    }
     /**
      * Checks the request if a request is for a valid activity and if it uses
      * the correct authorization key

@@ -24,7 +24,7 @@
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
- * @subpackage controller
+ * @subpackage component
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
  * @copyright 2009 - 2013
@@ -40,7 +40,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  *
  * @author Chris Pollett
  * @package seek_quarry
- * @subpackage controller
+ * @subpackage component
  */
 class Component
 {

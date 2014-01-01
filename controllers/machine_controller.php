@@ -89,7 +89,9 @@ class MachineController extends Controller implements CrawlConstants
 
         $activity = $_REQUEST['a'];
 
-        if(in_array($activity, $this->activities)) {$this->$activity();}
+        if(in_array($activity, $this->activities)) {
+            $this->call($activity);
+        }
     }
 
     /**

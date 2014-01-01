@@ -54,14 +54,16 @@ class ActivityElement extends Element
     function render($data)
     {
     ?>
-        <div class="frame activity-menu">
-        <h2><?php e(tl('activity_element_activities')); ?></h2>
-        <ul>
+
         <?php
         if(isset($data['ACTIVITIES'])) {
-            $count = count($data['ACTIVITIES']);
-            $activities = $data['ACTIVITIES'];
             if(MOBILE) {
+                ?>
+                <div class="frame activity-menu">
+                <h2><?php e(tl('activity_element_activities')); ?></h2>
+                <?php
+                $count = count($data['ACTIVITIES']);
+                $activities = $data['ACTIVITIES'];
                 $out_activities = array();
                 $base_url = "?c=admin&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
                     "&amp;a=";
@@ -86,25 +88,42 @@ class ActivityElement extends Element
 
                 activity_select.onchange = activityChange;
                 </script>
+                </div>
                 <?php
             } else {
-                for($i =0 ; $i < $count; $i++) {
-                    if($i < $count - 1) {
-                        $class="class='bottom-border'";
-                    } else {
-                        $class="";
+                ?>
+                <div class="component-container">
+                <?php
+                foreach($data['COMPONENT_ACTIVITIES'] as
+                    $component_name => $activities) {
+                    $count = count($activities);
+                    ?>
+                    <div class="frame activity-menu">
+                    <h2><?php e($component_name); ?></h2>
+                    <ul>
+                    <?php
+                    for($i = 0 ; $i < $count; $i++) {
+                        if($i < $count - 1) {
+                            $class="class='bottom-border'";
+                        } else {
+                            $class="";
+                        }
+                        e("<li $class><a href='?c=admin&amp;".CSRF_TOKEN."=".
+                            $data[CSRF_TOKEN]."&amp;a=".
+                            $activities[$i]['METHOD_NAME']."'>".
+                            $activities[$i]['ACTIVITY_NAME']."</a></li>");
                     }
-                    e("<li $class><a href='?c=admin&amp;".CSRF_TOKEN."=".
-                        $data[CSRF_TOKEN]."&amp;a=".
-                        $activities[$i]['METHOD_NAME']."'>".
-                        $activities[$i]['ACTIVITY_NAME']."</a></li>");
+                    ?>
+                    </ul>
+                    </div>
+                    <?php
                 }
+                ?>
+                </div>
+                <?php
             }
         }
-        ?>
-        </ul>
-        </div>
-    <?php
+
     }
 }
 ?>

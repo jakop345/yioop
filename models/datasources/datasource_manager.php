@@ -241,7 +241,7 @@ abstract class DatasourceManager
     function traverseDirectory($dir, $callback, $rootToo = true)
     {
         $results = array();
-        if(!$dh = @opendir($dir)) {
+        if(!is_dir($dir) || !$dh = @opendir($dir)) {
             return $results;
         }
 

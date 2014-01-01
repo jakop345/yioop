@@ -288,6 +288,7 @@ class ConfigureElement extends Element
                 </div>
             </fieldset>
             </div>
+            </div>
             <div class="top-margin">
             <fieldset><legend><?php
                 e(tl('configure_element_crawl_robot'))?></legend>
@@ -318,7 +319,6 @@ class ConfigureElement extends Element
             <div class="top-margin center">
             <button class="button-box" type="submit"><?php
                 e(tl('configure_element_submit')); ?></button>
-            </div>
             </div>
             </div>
         <?php } ?>
