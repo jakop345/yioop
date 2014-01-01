@@ -3,7 +3,7 @@
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage element
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2013
+ * @copyright 2009 - 2014
  * @filesource
  */
 
@@ -95,7 +95,7 @@ class EditclassifierElement extends Element
             if (!is_null($classifier->accuracy)) {
                 printf('%.1f%%', $classifier->accuracy * 100);
             } else {
-                e(tl('editclassifier_na'));
+                e(tl('crawl_component_na'));
             }?></span>
             [<a id="update-accuracy" href="#update-accuracy"
             <?php if ($classifier->total < 10) {

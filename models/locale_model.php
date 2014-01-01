@@ -3,7 +3,7 @@
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage model
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2013
+ * @copyright 2009 - 2014
  * @filesource
  */
 
@@ -658,7 +658,7 @@ class LocaleModel extends Model
         $n[] = <<<EOT
 ; ***** BEGIN LICENSE BLOCK *****
 ;  SeekQuarry/Yioop Open Source Pure PHP Search Engine, Crawler, and Indexer
-;  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
+;  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
 ;
 ;  This program is free software: you can redistribute it and/or modify
 ;  it under the terms of the GNU General Public License as published by

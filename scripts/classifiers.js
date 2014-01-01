@@ -2,7 +2,7 @@
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -26,7 +26,7 @@
  * @subpackage javascript
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2013s
+ * @copyright 2009 - 2014s
  * @filesource
  */
 
@@ -190,7 +190,7 @@ var Classifier = (function() {
         self.lastKeywords = self.elt.label_docs_keywords.value;
 
         var loading = loadingText(self.elt.label_docs_status,
-            tl['editclassifier_loading']);
+            tl['crawl_component_loading']);
 
         sendRequest({
             'url': '?c=classifier&a=classify&arg=getdocs',
@@ -212,7 +212,7 @@ var Classifier = (function() {
                 }
                 if (response.add_count) {
                     // Only present when mass-labeling.
-                    msg = format(tl['editclassifier_added_examples'],
+                    msg = format(tl['crawl_component_added_examples'],
                         response.add_count, self.lastSourceType);
                     self.setStatus(msg);
                     self.drawStatistics(response);
@@ -222,7 +222,7 @@ var Classifier = (function() {
             },
             'onFailure': function() {
                 loading.clear();
-                self.setStatus(tl['editclassifier_load_failed']);
+                self.setStatus(tl['crawl_component_load_failed']);
             }
         });
     }
@@ -240,7 +240,7 @@ var Classifier = (function() {
     self.sendNewLabel = function(doc, label)
     {
         var loading = loadingText(self.elt.label_docs_status,
-            tl['editclassifier_loading']);
+            tl['crawl_component_loading']);
         sendRequest({
             'url': '?c=classifier&a=classify&arg=addlabel',
             'postdata': {
@@ -274,7 +274,7 @@ var Classifier = (function() {
             },
             'onFailure': function() {
                 loading.clear();
-                self.setStatus(tl['editclassifier_label_update_failed']);
+                self.setStatus(tl['crawl_component_label_update_failed']);
             }
         });
 
@@ -290,7 +290,7 @@ var Classifier = (function() {
      */
     self.requestAccuracyUpdate = function()
     {
-        var updating = tl['editclassifier_updating'];
+        var updating = tl['crawl_component_updating'];
         var loading = loadingText(self.elt.update_accuracy, updating, {
             'dots': false,
             'className': 'disabled'
@@ -313,7 +313,7 @@ var Classifier = (function() {
             },
             'onFailure': function() {
                 loading.clear();
-                self.setStatus(tl['editclassifier_acc_update_failed']);
+                self.setStatus(tl['crawl_component_acc_update_failed']);
             }
         });
     }
@@ -380,7 +380,7 @@ var Classifier = (function() {
         self.elt.positive_count.innerHTML = response.positive;
         self.elt.negative_count.innerHTML = response.negative;
         if (response.accuracy === null) {
-            self.elt.accuracy.innerHTML = tl['editclassifier_na'];
+            self.elt.accuracy.innerHTML = tl['crawl_component_na'];
         } else {
             self.elt.accuracy.innerHTML = format('{1}%',
                 (response.accuracy * 100).toFixed(1));
@@ -401,7 +401,7 @@ var Classifier = (function() {
     {
         var msg;
         if (!num_docs) {
-            msg = tl['editclassifier_no_docs'];
+            msg = tl['crawl_component_no_docs'];
         } else {
             var count, plus;
             if (num_docs == MAX_UNLABELLED_BUFFER_SIZE) {
@@ -411,7 +411,7 @@ var Classifier = (function() {
                 count = num_docs;
                 plus = '';
             }
-            msg = format(tl['editclassifier_num_docs'], count, plus);
+            msg = format(tl['crawl_component_num_docs'], count, plus);
         }
         self.setStatus(msg);
     }
@@ -440,11 +440,11 @@ var Classifier = (function() {
         tr.id = 'doc-' + doc.id;
         tr.innerHTML =
             tags('td', {'class': 'actions'},
-                self.buildActionLinkHTML(tl['editclassifier_in_class'],
+                self.buildActionLinkHTML(tl['crawl_component_in_class'],
                     'inclass', doc),
-                self.buildActionLinkHTML(tl['editclassifier_not_in_class'],
+                self.buildActionLinkHTML(tl['crawl_component_not_in_class'],
                     'notinclass', doc),
-                self.buildActionLinkHTML(tl['editclassifier_skip'],
+                self.buildActionLinkHTML(tl['crawl_component_skip'],
                     'skip', doc)
             ) +
             tags('td', {'class': 'info'},
@@ -496,8 +496,8 @@ var Classifier = (function() {
     self.buildPredictionHTML = function(doc)
     {
         label = (doc.positive ? '' : 'not ') + self.classLabel;
-        var prediction = format(tl['editclassifier_prediction'], label);
-        var scores = format(tl['editclassifier_scores'],
+        var prediction = format(tl['crawl_component_prediction'], label);
+        var scores = format(tl['crawl_component_scores'],
             (doc.confidence * 100).toFixed(1),
             (doc.disagreement * 100).toFixed(1));
         return format('<b>{1}</b> ({2})', prediction, scores);

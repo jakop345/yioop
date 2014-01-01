@@ -3,7 +3,7 @@
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2013  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *
@@ -27,7 +27,7 @@
  * @subpackage component
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2009 - 2013
+ * @copyright 2009 - 2014
  * @filesource
  */
 
@@ -83,7 +83,7 @@ class CrawlComponent extends Component implements CrawlConstants
 
                 case "stop":
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('admin_controller_stop_crawl')."</h1>')";
+                        tl('crawl_component_stop_crawl')."</h1>')";
                     @unlink(CRAWL_DIR."/schedules/crawl_params.txt");
 
                     $info = array();
@@ -97,7 +97,7 @@ class CrawlComponent extends Component implements CrawlConstants
 
                 case "resume":
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('admin_controller_resume_crawl')."</h1>')";
+                        tl('crawl_component_resume_crawl')."</h1>')";
                     $crawl_params = array();
                     $crawl_params[self::STATUS] = "RESUME_CRAWL";
                     $crawl_params[self::CRAWL_TIME] =
@@ -127,19 +127,19 @@ class CrawlComponent extends Component implements CrawlConstants
                             $machine_urls);
 
                          $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('admin_controller_delete_crawl_success').
+                            tl('crawl_component_delete_crawl_success').
                             "</h1>'); crawlStatusUpdate(); ";
                      } else {
                         $data['SCRIPT'] .= "crawlStatusUpdate(); ".
                             "doMessage('<h1 class=\"red\" >".
-                            tl('admin_controller_delete_crawl_fail').
+                            tl('crawl_component_delete_crawl_fail').
                             "</h1>')";
                      }
                 break;
 
                 case "index":
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('admin_controller_set_index')."</h1>')";
+                        tl('crawl_component_set_index')."</h1>')";
 
                     $timestamp = $parent->clean($_REQUEST['timestamp'], "int");
                     $parent->crawlModel->setCurrentIndexDatabaseName($timestamp);
@@ -165,7 +165,7 @@ class CrawlComponent extends Component implements CrawlConstants
     {
         $parent = $this->parent;
         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-            tl('admin_controller_starting_new_crawl')."</h1>')";
+            tl('crawl_component_starting_new_crawl')."</h1>')";
 
         $crawl_params = array();
         $crawl_params[self::STATUS] = "NEW_CRAWL";
@@ -175,7 +175,7 @@ class CrawlComponent extends Component implements CrawlConstants
         if(isset($_REQUEST['description'])) {
             $description = $parent->clean($_REQUEST['description'], "string");
         } else {
-            $description = tl('admin_controller_no_description');
+            $description = tl('crawl_component_no_description');
         }
         $crawl_params['DESCRIPTION'] = $description;
         $crawl_params[self::VIDEO_SOURCES] = array();
@@ -311,14 +311,14 @@ class CrawlComponent extends Component implements CrawlConstants
         $indexes_by_crawl_time = array();
         $update_flag = false;
         $data['available_options'] = array(
-            tl('admin_controller_use_below'),
-            tl('admin_controller_use_defaults'));
+            tl('crawl_component_use_below'),
+            tl('crawl_component_use_defaults'));
         $data['available_crawl_indexes'] = array();
-        $data['options_default'] = tl('admin_controller_use_below');
+        $data['options_default'] = tl('crawl_component_use_below');
         foreach($crawls as $crawl) {
             if(strlen($crawl['DESCRIPTION']) > 0 ) {
                 $data['available_options'][$crawl['CRAWL_TIME']] =
-                    tl('admin_controller_previous_crawl')." ".
+                    tl('crawl_component_previous_crawl')." ".
                     $crawl['DESCRIPTION'];
             }
         }
@@ -411,9 +411,9 @@ class CrawlComponent extends Component implements CrawlConstants
 
         $data['available_crawl_orders'] = array(
             self::BREADTH_FIRST =>
-                tl('admin_controller_breadth_first'),
+                tl('crawl_component_breadth_first'),
             self::PAGE_IMPORTANCE =>
-                tl('admin_controller_page_importance'));
+                tl('crawl_component_page_importance'));
 
         if(!$no_further_changes && isset($_REQUEST['crawl_order'])
             &&  in_array($_REQUEST['crawl_order'],
@@ -479,7 +479,7 @@ class CrawlComponent extends Component implements CrawlConstants
                 if($parent->crawlModel->injectUrlsCurrentCrawl(
                     $timestamp, $inject_urls, $machine_urls)) {
                     $add_message = "<br />".
-                        tl('admin_controller_urls_injected');
+                        tl('crawl_component_urls_injected');
                 }
         }
         if($update_flag) {
@@ -490,7 +490,7 @@ class CrawlComponent extends Component implements CrawlConstants
                 $parent->crawlModel->setSeedInfo($seed_info);
             }
             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                tl('admin_controller_update_seed_info').
+                tl('crawl_component_update_seed_info').
                 "$add_message</h1>');";
         }
         return $data;
@@ -536,10 +536,10 @@ class CrawlComponent extends Component implements CrawlConstants
                         Classifier::setClassifier($classifier);
                         $classifiers[$label] = $classifier;
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\">".
-                            tl('admin_controller_new_classifier').'</h1>\');';
+                            tl('crawl_component_new_classifier').'</h1>\');';
                     } else {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\">".
-                            tl('admin_controller_classifier_exists').
+                            tl('crawl_component_classifier_exists').
                             '</h1>\');';
                     }
                     break;
@@ -551,7 +551,7 @@ class CrawlComponent extends Component implements CrawlConstants
                             $machine_urls);
                     } else {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\">".
-                            tl('admin_controller_no_classifier').
+                            tl('crawl_component_no_classifier').
                             '</h1>\');';
                     }
                     break;
@@ -570,7 +570,7 @@ class CrawlComponent extends Component implements CrawlConstants
                     $classifier->finalized = Classifier::FINALIZING;
                     $start_finalizing = true;
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\">".
-                        tl('admin_controller_finalizing_classifier').
+                        tl('crawl_component_finalizing_classifier').
                         '</h1>\');';
                     break;
 
@@ -593,11 +593,11 @@ class CrawlComponent extends Component implements CrawlConstants
                             $parent->crawlModel->deleteCrawlMix($mix_time);
                         }
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\">".
-                            tl('admin_controller_classifier_deleted').
+                            tl('crawl_component_classifier_deleted').
                             '</h1>\');';
                     } else {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\">".
-                            tl('admin_controller_no_classifier').
+                            tl('crawl_component_no_classifier').
                             '</h1>\');';
                     }
                     break;
@@ -614,7 +614,7 @@ class CrawlComponent extends Component implements CrawlConstants
         }
         if($data['reload'] && !$start_finalizing) {
             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\">".
-                tl('admin_controller_finalizing_classifier'). '</h1>\');';
+                tl('crawl_component_finalizing_classifier'). '</h1>\');';
         }
         return $data;
     }
@@ -659,7 +659,7 @@ class CrawlComponent extends Component implements CrawlConstants
                     $data['class_label'] = $new_label;
                 } else {
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\">".
-                        tl('admin_controller_classifier_exists').
+                        tl('crawl_component_classifier_exists').
                         '</h1>\');';
                 }
             }
@@ -669,34 +669,34 @@ class CrawlComponent extends Component implements CrawlConstants
 
         // Translations for the classification javascript.
         $data['SCRIPT'] .= "window.tl = {".
-            'editclassifier_load_failed:"'.
-                tl('editclassifier_load_failed').'",'.
-            'editclassifier_loading:"'.
-                tl('editclassifier_loading').'",'.
-            'editclassifier_added_examples:"'.
-                tl('editclassifier_added_examples').'",'.
-            'editclassifier_label_update_failed:"'.
-                tl('editclassifier_label_update_failed').'",'.
-            'editclassifier_updating:"'.
-                tl('editclassifier_updating').'",'.
-            'editclassifier_acc_update_failed:"'.
-                tl('editclassifier_acc_update_failed').'",'.
-            'editclassifier_na:"'.
-                tl('editclassifier_na').'",'.
-            'editclassifier_no_docs:"'.
-                tl('editclassifier_no_docs').'",'.
-            'editclassifier_num_docs:"'.
-                tl('editclassifier_num_docs').'",'.
-            'editclassifier_in_class:"'.
-                tl('editclassifier_in_class').'",'.
-            'editclassifier_not_in_class:"'.
-                tl('editclassifier_not_in_class').'",'.
-            'editclassifier_skip:"'.
-                tl('editclassifier_skip').'",'.
-            'editclassifier_prediction:"'.
-                tl('editclassifier_prediction').'",'.
-            'editclassifier_scores:"'.
-                tl('editclassifier_scores').'"'.
+            'crawl_component_load_failed:"'.
+                tl('crawl_component_load_failed').'",'.
+            'crawl_component_loading:"'.
+                tl('crawl_component_loading').'",'.
+            'crawl_component_added_examples:"'.
+                tl('crawl_component_added_examples').'",'.
+            'crawl_component_label_update_failed:"'.
+                tl('crawl_component_label_update_failed').'",'.
+            'crawl_component_updating:"'.
+                tl('crawl_component_updating').'",'.
+            'crawl_component_acc_update_failed:"'.
+                tl('crawl_component_acc_update_failed').'",'.
+            'crawl_component_na:"'.
+                tl('crawl_component_na').'",'.
+            'crawl_component_no_docs:"'.
+                tl('crawl_component_no_docs').'",'.
+            'crawl_component_num_docs:"'.
+                tl('crawl_component_num_docs').'",'.
+            'crawl_component_in_class:"'.
+                tl('crawl_component_in_class').'",'.
+            'crawl_component_not_in_class:"'.
+                tl('crawl_component_not_in_class').'",'.
+            'crawl_component_skip:"'.
+                tl('crawl_component_skip').'",'.
+            'crawl_component_prediction:"'.
+                tl('crawl_component_prediction').'",'.
+            'crawl_component_scores:"'.
+                tl('crawl_component_scores').'"'.
             '};';
 
         /*
@@ -735,24 +735,24 @@ class CrawlComponent extends Component implements CrawlConstants
             $machine_urls = NULL;
         }
         $data['available_options'] = array(
-            tl('admin_controller_use_below'),
-            tl('admin_controller_use_defaults'));
+            tl('crawl_component_use_below'),
+            tl('crawl_component_use_defaults'));
         $crawls = $parent->crawlModel->getCrawlList(false, true, $machine_urls);
-        $data['options_default'] = tl('admin_controller_use_below');
+        $data['options_default'] = tl('crawl_component_use_below');
         foreach($crawls as $crawl) {
             if(strlen($crawl['DESCRIPTION']) > 0 ) {
                 $data['available_options'][$crawl['CRAWL_TIME']] =
-                    tl('admin_controller_previous_crawl')." ".
+                    tl('crawl_component_previous_crawl')." ".
                     $crawl['DESCRIPTION'];
             }
         }
         $seed_info = $parent->crawlModel->getSeedInfo();
-        $data['RECRAWL_FREQS'] = array(-1=>tl('admin_controller_recrawl_never'),
-            1=>tl('admin_controller_recrawl_1day'),
-            2=>tl('admin_controller_recrawl_2day'),
-            3=>tl('admin_controller_recrawl_3day'),
-            7=>tl('admin_controller_recrawl_7day'),
-            14=>tl('admin_controller_recrawl_14day'));
+        $data['RECRAWL_FREQS'] = array(-1=>tl('crawl_component_recrawl_never'),
+            1=>tl('crawl_component_recrawl_1day'),
+            2=>tl('crawl_component_recrawl_2day'),
+            3=>tl('crawl_component_recrawl_3day'),
+            7=>tl('crawl_component_recrawl_7day'),
+            14=>tl('crawl_component_recrawl_14day'));
         $data['SIZE_VALUES'] = array(10000=>10000, 50000=>50000,
             100000=>100000, 500000=>500000, 1000000=>1000000,
             5000000=>5000000, 10000000=>10000000);
@@ -1017,7 +1017,7 @@ class CrawlComponent extends Component implements CrawlConstants
         $parent->crawlModel->setSeedInfo($seed_info);
         if($change == true && $data['option_type'] != 'test_options') {
             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                tl('admin_controller_page_options_updated')."</h1>')";
+                tl('crawl_component_page_options_updated')."</h1>')";
         }
         $test_processors = array(
             "text/html" => "HtmlProcessor",
@@ -1043,7 +1043,7 @@ class CrawlComponent extends Component implements CrawlConstants
             $parent->clean($_REQUEST['TESTPAGE'], 'string') : "";
         if($data['option_type'] == 'test_options' && $data['TESTPAGE'] !="") {
             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                tl('admin_controller_page_options_running_tests')."</h1>')";
+                tl('crawl_component_page_options_running_tests')."</h1>')";
             $site = array();
             $site[self::ENCODING] = "UTF-8";
             $site[self::URL] = "http://test-site.yioop.com/";
@@ -1194,7 +1194,7 @@ class CrawlComponent extends Component implements CrawlConstants
             $data['disallowed_sites'] = implode("\n", $disallowed_sites);
             $parent->searchfiltersModel->set($disallowed_sites);
             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                tl('admin_controller_results_editor_update')."</h1>')";
+                tl('crawl_component_results_editor_update')."</h1>')";
         }
         if(!isset($data['disallowed_sites'])) {
             $data['disallowed_sites'] =
@@ -1208,7 +1208,7 @@ class CrawlComponent extends Component implements CrawlConstants
         if($data["URL"] != "") {
             $data["URL"] = UrlParser::canonicalLink($data["URL"],"");
         }
-        $tmp = tl('admin_controller_edited_pages');
+        $tmp = tl('crawl_component_edited_pages');
         $data["URL_LIST"] = array ($tmp => $tmp);
         $summaries = $parent->searchfiltersModel->getEditedPageSummaries();
         foreach($summaries as $hash => $summary) {
@@ -1221,13 +1221,13 @@ class CrawlComponent extends Component implements CrawlConstants
                     $missing_page_field = ($data["URL"] == "") ? true: false;
                     if($missing_page_field) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('admin_controller_results_editor_need_url').
+                            tl('crawl_component_results_editor_need_url').
                             "</h1>')";
                     } else {
                         $parent->searchfiltersModel->updateResultPage(
                             $data["URL"], $data["TITLE"], $data["DESCRIPTION"]);
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('admin_controller_results_editor_page_updated').
+                            tl('crawl_component_results_editor_page_updated').
                             "</h1>')";
                     }
                 break;
@@ -1240,7 +1240,7 @@ class CrawlComponent extends Component implements CrawlConstants
                         $data["DESCRIPTION"] = $summaries[$hash_url][
                             self::DESCRIPTION];
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('admin_controller_results_editor_page_loaded').
+                            tl('crawl_component_results_editor_page_loaded').
                             "</h1>')";
                     }
                 break;
@@ -1270,10 +1270,10 @@ class CrawlComponent extends Component implements CrawlConstants
         $data = array();
         $data["ELEMENT"] = "searchsourcesElement";
         $data['SCRIPT'] = "";
-        $data['SOURCE_TYPES'] = array(-1 => tl('admin_controller_media_kind'),
-            "video" => tl('admin_controller_video'),
-            "rss" => tl('admin_controller_rss_feed'),
-            "page" => tl('crawl_compoenent_static_page'));
+        $data['SOURCE_TYPES'] = array(-1 => tl('crawl_component_media_kind'),
+            "video" => tl('crawl_component_video'),
+            "rss" => tl('crawl_component_rss_feed'),
+            "page" => tl('crawl_component_static_page'));
         $source_type_flag = false;
         if(isset($_REQUEST['sourcetype']) &&
             in_array($_REQUEST['sourcetype'],
@@ -1287,7 +1287,7 @@ class CrawlComponent extends Component implements CrawlConstants
         $search_lists = $parent->crawlModel->getCrawlList(false, true,
             $machine_urls);
         $data["SEARCH_LISTS"] = array(-1 =>
-            tl('admin_controller_sources_indexes'));
+            tl('crawl_component_sources_indexes'));
         foreach($search_lists as $item) {
             $data["SEARCH_LISTS"]["i:".$item["CRAWL_TIME"]] =
                 $item["DESCRIPTION"];
@@ -1340,7 +1340,7 @@ class CrawlComponent extends Component implements CrawlConstants
                         $r['sourcename'], $r['sourcetype'], $r['sourceurl'],
                         $r['sourcethumbnail'], $r['sourcelocaletag']);
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('admin_controller_media_source_added').
+                        tl('crawl_component_media_source_added').
                         "</h1>');";
                 break;
                 case "deletesource":
@@ -1348,7 +1348,7 @@ class CrawlComponent extends Component implements CrawlConstants
                     $timestamp = $parent->clean($_REQUEST['ts'], "string");
                     $parent->sourceModel->deleteMediaSource($timestamp);
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('admin_controller_media_source_deleted').
+                        tl('crawl_component_media_source_deleted').
                         "</h1>');";
                 break;
                 case "addsubsearch":
@@ -1364,7 +1364,7 @@ class CrawlComponent extends Component implements CrawlConstants
                         $r['foldername'], $r['indexsource'],
                         $data['PER_PAGE_SELECTED']);
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('admin_controller_subsearch_added').
+                        tl('crawl_component_subsearch_added').
                         "</h1>');";
                 break;
                 case "deletesubsearch":
@@ -1372,7 +1372,7 @@ class CrawlComponent extends Component implements CrawlConstants
                     $folder_name = $parent->clean($_REQUEST['fn'], "string");
                     $parent->sourceModel->deleteSubsearch($folder_name);
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('admin_controller_subsearch_deleted').
+                        tl('crawl_component_subsearch_deleted').
                         "</h1>');";
                 break;
             }
