@@ -85,7 +85,7 @@ class ManagemachinesElement extends Element
             <td><?php $this->view->optionsHelper->render(
                 "parent-machine-name", "parent",
                 $data['REPLICATABLE_MACHINES'],
-                tl('admin_controller_select_machine'));
+                tl('system_component_select_machine'));
                 ?></td>
         </tr>
         <tr id="m2"><th><label for="queue-box"><?php
@@ -116,7 +116,7 @@ class ManagemachinesElement extends Element
             <td><?php $this->view->optionsHelper->render(
                 "delete-machine-name", "name",
                 $data['DELETABLE_MACHINES'],
-                tl('admin_controller_select_machine'));
+                tl('system_component_select_machine'));
                 ?></td><td><button class="button-box" type="submit"><?php
                 e(tl('managemachines_element_submit')); ?></button></td>
         </tr>

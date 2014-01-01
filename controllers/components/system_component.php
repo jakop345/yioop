@@ -80,7 +80,7 @@ class SystemComponent extends Component
             16 => 16
         );
         $machines = $parent->machineModel->getMachineList();
-        $tmp = tl('admin_controller_select_machine');
+        $tmp = tl('system_component_select_machine');
         $data['DELETABLE_MACHINES'] = array(
             $tmp => $tmp
         );
@@ -151,18 +151,18 @@ class SystemComponent extends Component
                             $r["num_fetchers"], $r["parent"]);
 
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('admin_controller_machine_added').
+                            tl('system_component_machine_added').
                             "</h1>');";
                         $data['MACHINE_NAMES'][] = $r["name"];
                         $data['DELETABLE_MACHINES'][$r["name"]] = $r["name"];
                         sort($data['MACHINE_NAMES']);
                     } else if ($allset && $machine_exists ) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('admin_controller_machine_exists').
+                            tl('system_component_machine_exists').
                             "</h1>');";
                     } else {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('admin_controller_machine_incomplete').
+                            tl('system_component_machine_incomplete').
                             "</h1>');";
                     }
                 break;
@@ -171,7 +171,7 @@ class SystemComponent extends Component
                     if(!isset($r["name"]) ||
                         !in_array($r["name"], $data['MACHINE_NAMES'])) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('admin_controller_machine_doesnt_exists').
+                            tl('system_component_machine_doesnt_exists').
                             "</h1>');";
                     } else {
                         $machines = $parent->machineModel->getMachineStatuses();
@@ -188,7 +188,7 @@ class SystemComponent extends Component
                         }
                         if($service_in_use) {
                             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                           tl('admin_controller_stop_service_first')."</h1>');";
+                           tl('system_component_stop_service_first')."</h1>');";
                             break;
                         }
                         $parent->machineModel->deleteMachine($r["name"]);
@@ -201,7 +201,7 @@ class SystemComponent extends Component
                             array_diff($data['DELETABLE_MACHINES'], $tmp_array);
                         $data['DELETABLE_MACHINES'] = array_merge($diff);
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('admin_controller_machine_deleted')."</h1>');";
+                            tl('system_component_machine_deleted')."</h1>');";
                     }
                 break;
 
@@ -215,20 +215,20 @@ class SystemComponent extends Component
                         if($profile["NEWS_MODE"] != "news_process") {
                             CrawlDaemon::stop("news_updater", "", false);
                             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                                tl('admin_controller_news_mode_updated').
+                                tl('system_component_news_mode_updated').
                                 "</h1>');";
                         } else {
                             CrawlDaemon::start("news_updater", 'none', "",
                                 -1);
                             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                                tl('admin_controller_news_mode_updated').
+                                tl('system_component_news_mode_updated').
                                 "</h1>');";
                         }
                         $parent->profileModel->updateProfile(
                             WORK_DIRECTORY, array(), $profile);
                     } else {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('admin_controller_news_update_failed').
+                            tl('system_component_news_update_failed').
                             "</h1>');";
                     }
                 break;
@@ -291,7 +291,7 @@ class SystemComponent extends Component
                     if(!isset($data["LOG_FILE_DATA"])
                         || $data["LOG_FILE_DATA"] == ""){
                         $data["LOG_FILE_DATA"] =
-                            tl('admin_controller_no_machine_log');
+                            tl('system_component_no_machine_log');
                     }
                     $lines =array_reverse(explode("\n",$data["LOG_FILE_DATA"]));
                     $data["LOG_FILE_DATA"] = implode("\n", $lines);
@@ -320,11 +320,11 @@ class SystemComponent extends Component
                         $parent->machineModel->update($r["name"],
                             $action, $r["fetcher_num"], $is_mirror);
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('admin_controller_machine_servers_updated').
+                            tl('system_component_machine_servers_updated').
                             "</h1>');";
                     } else {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('admin_controller_machine_no_action').
+                            tl('system_component_machine_no_action').
                             "</h1>');";
                     }
 
@@ -359,7 +359,7 @@ class SystemComponent extends Component
         $data["ELEMENT"] = "managelocalesElement";
 
         $data["LOCALES"] = $parent->localeModel->getLocaleList();
-        $data['LOCALE_NAMES'][-1] = tl('admin_controller_select_localename');
+        $data['LOCALE_NAMES'][-1] = tl('system_component_select_localename');
 
         $locale_ids = array();
 
@@ -403,14 +403,14 @@ class SystemComponent extends Component
                     $data["LOCALES"] = $parent->localeModel->getLocaleList();
                     $data['LOCALE_NAMES'][$localetag] = $localename;
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('admin_controller_locale_added')."</h1>')";
+                        tl('system_component_locale_added')."</h1>')";
                 break;
 
                 case "deletelocale":
 
                     if(!in_array($select_locale, $locale_ids)) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('admin_controller_localename_doesnt_exists').
+                            tl('system_component_localename_doesnt_exists').
                             "</h1>')";
                         return $data;
                     }
@@ -419,7 +419,7 @@ class SystemComponent extends Component
                     unset($data['LOCALE_NAMES'][$select_locale]);
 
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('admin_controller_localename_deleted')."</h1>')";
+                        tl('system_component_localename_deleted')."</h1>')";
                 break;
 
                 case "editlocale":
@@ -428,7 +428,7 @@ class SystemComponent extends Component
                         (getLocaleDirection() == 'ltr') ? "right": "left";
                     $data["ELEMENT"] = "editlocalesElement";
                     $data['STATIC_PAGES'][-1]=
-                        tl('admin_controller_select_staticpages');
+                        tl('system_component_select_staticpages');
                     $data['STATIC_PAGES'] +=
                         $parent->localeModel->getStaticPageList($select_locale);
                     $data['CURRENT_LOCALE_NAME'] =
@@ -447,7 +447,7 @@ class SystemComponent extends Component
                                 $data['CURRENT_LOCALE_TAG'],
                                 $_REQUEST['PAGE_DATA']);
                             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                                tl('admin_controller_staticpage_updated').
+                                tl('system_component_staticpage_updated').
                                 "</h1>')";
                         }
                         $data['PAGE_NAME'] =
@@ -474,7 +474,7 @@ class SystemComponent extends Component
                         $parent->localeModel->updateStringData(
                             $select_locale, $safe_strings);
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('admin_controller_localestrings_updated').
+                            tl('system_component_localestrings_updated').
                             "</h1>')";
                     } else {
                         $parent->localeModel->extractMergeLocales();
@@ -544,7 +544,7 @@ class SystemComponent extends Component
             }
             if($data['PROFILE'] == false) {
                 $data["MESSAGE"] =
-                    tl('admin_controller_configure_use_absolute_path');
+                    tl('system_component_configure_use_absolute_path');
                 $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                     $data["MESSAGE"]. "</h1>');" .
                     "setTimeout('window.location.href= ".
@@ -556,7 +556,7 @@ class SystemComponent extends Component
             if(strstr($dir."/", BASE_DIR."/")) {
                 $data['PROFILE'] = false;
                 $data["MESSAGE"] =
-                    tl('admin_controller_configure_diff_base_dir');
+                    tl('system_component_configure_configure_diff_base_dir');
                 $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                     $data["MESSAGE"]. "</h1>');" .
                     "setTimeout('window.location.href= ".
@@ -589,7 +589,7 @@ class SystemComponent extends Component
                     $parent->profileModel->setWorkDirectoryConfigFile(
                         $data['WORK_DIRECTORY']);
                     $data["MESSAGE"] =
-                        tl('admin_controller_configure_work_dir_set');
+                        tl('system_component_configure_work_dir_set');
                     $data['SCRIPT'] .=
                         "doMessage('<h1 class=\"red\" >".
                         $data["MESSAGE"]. "</h1>');setTimeout(".
@@ -603,7 +603,7 @@ class SystemComponent extends Component
                         $profile['DB_NAME'] = 'default';
                         $data['DB_NAME'] = 'default';
                         $profile['USER_AGENT_SHORT'] =
-                            tl('admin_controller_name_your_bot');
+                            tl('system_component_name_your_bot');
                         $data['USER_AGENT_SHORT'] =
                             $profile['USER_AGENT_SHORT'];
                         $uri = UrlParser::getPath($_SERVER['REQUEST_URI']);
@@ -627,7 +627,7 @@ class SystemComponent extends Component
                                     setWorkDirectoryConfigFile(
                                         $data['WORK_DIRECTORY'])) {
                                 $data["MESSAGE"] =
-                            tl('admin_controller_configure_work_profile_made');
+                            tl('system_component_configure_work_profile_made');
                                 $data['SCRIPT'] .=
                                     "doMessage('<h1 class=\"red\" >".
                                     $data["MESSAGE"]. "</h1>');" .
@@ -640,7 +640,7 @@ class SystemComponent extends Component
                             } else {
                                 $data['PROFILE'] = false;
                         $data["MESSAGE"] =
-                            tl('admin_controller_configure_no_set_config');
+                            tl('system_component_configure_no_set_config');
                                 $data['SCRIPT'] .=
                                     "doMessage('<h1 class=\"red\" >".
                                     $data["MESSAGE"] . "</h1>');" .
@@ -652,7 +652,7 @@ class SystemComponent extends Component
                                 $data['WORK_DIRECTORY']);
                             $data['PROFILE'] = false;
                         $data["MESSAGE"] =
-                            tl('admin_controller_configure_no_create_profile');
+                            tl('system_component_configure_no_create_profile');
                             $data['SCRIPT'] .=
                                 "doMessage('<h1 class=\"red\" >".
                                 $data["MESSAGE"].
@@ -663,7 +663,7 @@ class SystemComponent extends Component
                         $parent->profileModel->setWorkDirectoryConfigFile(
                             $data['WORK_DIRECTORY']);
                         $data["MESSAGE"] =
-                            tl('admin_controller_configure_work_dir_invalid');
+                            tl('system_component_configure_work_dir_invalid');
                         $data['SCRIPT'] .=
                             "doMessage('<h1 class=\"red\" >". $data["MESSAGE"].
                                 "</h1>');".
@@ -675,7 +675,7 @@ class SystemComponent extends Component
                     $parent->profileModel->setWorkDirectoryConfigFile(
                         $data['WORK_DIRECTORY']);
                     $data["MESSAGE"] =
-                        tl('admin_controller_configure_work_dir_invalid');
+                        tl('system_component_configure_work_dir_invalid');
                     $data['SCRIPT'] .=
                         "doMessage('<h1 class=\"red\" >". $data["MESSAGE"] .
                             "</h1>');" .
@@ -723,7 +723,7 @@ class SystemComponent extends Component
                 }
                 if($db_problem) {
                     $data['MESSAGE'] =
-                        tl('admin_controller_configure_no_change_db');
+                        tl('system_component_configure_no_change_db');
                     $data['SCRIPT'] .=
                         "doMessage('<h1 class=\"red\" >". $data['MESSAGE'].
                         "</h1>');";
@@ -738,7 +738,7 @@ class SystemComponent extends Component
                 if($parent->profileModel->updateProfile(
                     $data['WORK_DIRECTORY'], $profile, $old_profile)) {
                     $data['MESSAGE'] =
-                        tl('admin_controller_configure_profile_change');
+                        tl('system_component_configure_profile_change');
                     $data['SCRIPT'] =
                         "doMessage('<h1 class=\"red\" >". $data['MESSAGE'].
                         "</h1>');";
@@ -753,7 +753,7 @@ class SystemComponent extends Component
                 } else {
                     $data['PROFILE'] = false;
                     $data["MESSAGE"] =
-                        tl('admin_controller_configure_no_change_profile');
+                        tl('system_component_configure_no_change_profile');
                     $data['SCRIPT'] .=
                         "doMessage('<h1 class=\"red\" >". $data["MESSAGE"].
                         "</h1>');";
@@ -789,13 +789,13 @@ class SystemComponent extends Component
             }
             $data['REGISTRATION_TYPES'] = array (
                     'disable_registration' => 
-                        tl('admin_controller_configure_disable_registration'),
+                        tl('system_component_configure_disable_registration'),
                     'no_activation' => 
-                        tl('admin_controller_configure_no_activation'),
+                        tl('system_component_configure_no_activation'),
                     'email_registration' => 
-                        tl('admin_controller_configure_email_activation'),
+                        tl('system_component_configure_email_activation'),
                     'admin_activation' =>
-                        tl('admin_controller_configure_admin_activation'),
+                        tl('system_component_configure_admin_activation'),
                 );
              $data['show_mail_info'] = "false";
             if(isset($_REQUEST['REGISTRATION_TYPE']) &&
@@ -806,7 +806,7 @@ class SystemComponent extends Component
             if(!isset($data['ROBOT_DESCRIPTION']) ||
                 strlen($data['ROBOT_DESCRIPTION']) == 0) {
                 $data['ROBOT_DESCRIPTION'] =
-                    tl('admin_controller_describe_robot');
+                    tl('system_component_describe_robot');
             } else {
                 //since the description might contain tags we apply htmlentities
                 $data['ROBOT_DESCRIPTION'] =
@@ -908,7 +908,7 @@ EOD;
             }
         }
         if(!defined('PHP_VERSION_ID') || PHP_VERSION_ID < 50300) {
-            $missing_required .= $comma.tl("admin_controller_php_version");
+            $missing_required .= $comma.tl("system_component_php_version");
             $comma = ", ";
         }
 
@@ -916,23 +916,23 @@ EOD;
         $br = "";
 
         if(!is_writable(BASE_DIR."/configs/config.php")) {
-            $out .= tl('admin_controller_no_write_config_php');
+            $out .= tl('system_component_no_write_config_php');
             $br = "<br />";
         }
 
         if(defined(WORK_DIRECTORY) && !is_writable(WORK_DIRECTORY)) {
-            $out .= $br. tl('admin_controller_no_write_work_dir');
+            $out .= $br. tl('system_component_no_write_work_dir');
             $br = "<br />";
         }
 
         if(intval(ini_get("post_max_size")) < 2) {
-            $out .= $br. tl('admin_controller_post_size_small');
+            $out .= $br. tl('system_component_post_size_small');
             $br = "<br />";
         }
 
         if($missing_required != "") {
             $out .= $br.
-                tl('admin_controller_missing_required', $missing_required);
+                tl('system_component_missing_required', $missing_required);
             $br = "<br />";
         }
 
@@ -955,17 +955,17 @@ EOD;
 
         if($missing_optional != "") {
             $out .= $br.
-                tl('admin_controller_missing_optional', $missing_optional);
+                tl('system_component_missing_optional', $missing_optional);
             $br = "<br />";
         }
 
         if($out == "") {
-            $out = tl('admin_controller_check_passed');
+            $out = tl('system_component_check_passed');
         } else {
             $out = "<span class='red'>$out</span>";
         }
         if(file_exists(BASE_DIR."/configs/local_config.php")) {
-            $out .= "<br />".tl('admin_controller_using_local_config');
+            $out .= "<br />".tl('system_component_using_local_config');
         }
         return $out;
      }
