@@ -3,7 +3,8 @@
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2011  Priya Gangaraju priya.gangaraju@gmail.com
+ *  Copyright (C) 2011 - 2014 Priya Gangaraju priya.gangaraju@gmail.com,
+ *      Chris Pollett, chris@pollett.org
  *
  *  LICENSE:
  *
@@ -22,12 +23,13 @@
  *
  *  END LICENSE
  *
- * @author Priya Gangaraju priya.gangaraju@gmail.com
+ * @author Priya Gangaraju priya.gangaraju@gmail.com, Chris Pollett
+ *      chris@pollett.org
  * @package seek_quarry
  * @subpackage indexing_plugin
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
- * @copyright 2011
+ * @copyright 2011 -2014
  * @filesource
  */
 

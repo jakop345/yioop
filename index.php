@@ -35,6 +35,11 @@
  * @filesource
  */
 
+/** Version number for upgrade function
+ *  @var int
+ */
+define('YIOOP_VERSION', 19);
+
 /** Calculate base directory of script
  *  @ignore
  */

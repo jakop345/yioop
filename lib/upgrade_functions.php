@@ -33,7 +33,7 @@
  * @filesource
  */
 
- /**
+/**
  * Checks to see if the locale data of Yioop! in the work dir is older than the
  * currently running Yioop!
  */
@@ -85,7 +85,7 @@ function upgradeDatabaseWorkDirectoryCheck()
         $result = @$model->db->execute($sql);
         if($result !== false) {
             $row = $model->db->fetchArray($result);
-            if(isset($row['ID']) && $row['ID'] >= 18) {
+            if(isset($row['ID']) && $row['ID'] >= YIOOP_VERSION) {
                 return false;
             } else {
                 return true;
@@ -103,8 +103,7 @@ function upgradeDatabaseWorkDirectoryCheck()
  */
 function upgradeDatabaseWorkDirectory()
 {
-    $versions = array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16,
-                    17, 18);
+    $versions = range(0, YIOOP_VERSION);
     $model = new Model();
     $model->db->selectDB(DB_NAME);
     $sql = "SELECT ID FROM VERSION";

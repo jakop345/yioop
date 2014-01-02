@@ -1489,10 +1489,12 @@ function convertPixels($value)
  */
 function deleteFileOrDir($file_or_dir)
 {
-    if(is_file($file_or_dir)) {
-        unlink($file_or_dir);
-    } else {
-        rmdir($file_or_dir);
+    if(file_exists($file_or_dir)) {
+        if(is_file($file_or_dir)) {
+            unlink($file_or_dir);
+        } else {
+            rmdir($file_or_dir);
+        }
     }
 }
 

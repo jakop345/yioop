@@ -745,10 +745,17 @@ EOT;
             $mask = CRAWL_DIR."/cache/".self::network_crawllist_base_name.
                 "*.txt";
             array_map( "unlink", glob( $mask ) );
-            @unlink(CRAWL_DIR."/cache/".self::network_base_name.
-                "$timestamp.txt");
-            @unlink(CRAWL_DIR."/cache/".self::statistics_base_name.
-                "$timestamp.txt");
+            $delete_files = array(
+                CRAWL_DIR."/cache/".self::network_base_name.
+                    "$timestamp.txt",
+                CRAWL_DIR."/cache/".self::statistics_base_name.
+                    "$timestamp.txt"
+            );
+            foreach($delete_files as $delete_file) {
+                if(file_exists($delete_file)) {
+                    unlink($delete_file);
+                }
+            }
             if(!in_array(NAME_SERVER, $machine_urls)) {
                 array_unshift($machine_urls, NAME_SERVER);
             }
@@ -757,21 +764,18 @@ EOT;
                 $machine_urls, serialize($timestamp));
             return;
         }
-
-        $this->db->unlinkRecursive(
-            CRAWL_DIR.'/cache/'.self::index_data_base_name . $timestamp, true);
-        $this->db->unlinkRecursive(
-            CRAWL_DIR.'/schedules/'.self::index_data_base_name .
-            $timestamp, true);
-        $this->db->unlinkRecursive(
+        $delete_dirs = array(
+            CRAWL_DIR.'/cache/'.self::index_data_base_name . $timestamp,
+            CRAWL_DIR.'/schedules/'.self::index_data_base_name . $timestamp,
             CRAWL_DIR.'/schedules/' . self::schedule_data_base_name.$timestamp,
-            true);
-        $this->db->unlinkRecursive(
-            CRAWL_DIR.'/schedules/'.self::robot_data_base_name.
-            $timestamp, true);
-        $this->db->unlinkRecursive(
-            CRAWL_DIR.'/schedules/'.self::name_archive_iterator.
-            $timestamp, true);
+            CRAWL_DIR.'/schedules/'.self::robot_data_base_name . $timestamp,
+            CRAWL_DIR.'/schedules/'.self::name_archive_iterator . $timestamp,
+        );
+        foreach($delete_dirs as $delete_dir) {
+            if(file_exists($delete_dir)) {
+                $this->db->unlinkRecursive($delete_dir, true);
+            }
+        }
         $save_point_files = glob(CRAWL_DIR.'/schedules/'.self::save_point.
             $timestamp."*.txt");
         foreach($save_point_files as $save_point_file) {

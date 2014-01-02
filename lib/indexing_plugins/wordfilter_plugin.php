@@ -3,7 +3,7 @@
  *  SeekQuarry/Yioop --
  *  Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2013  Chris Pollett chris@pollett.org
+ *  Copyright (C) 2013 - 2014 Chris Pollett chris@pollett.org
  *
  *  LICENSE:
  *

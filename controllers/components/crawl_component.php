@@ -84,7 +84,10 @@ class CrawlComponent extends Component implements CrawlConstants
                 case "stop":
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('crawl_component_stop_crawl')."</h1>')";
-                    @unlink(CRAWL_DIR."/schedules/crawl_params.txt");
+                    $crawl_param_file = CRAWL_DIR."/schedules/crawl_params.txt";
+                    if(file_exists($crawl_param_file)) {
+                        unlink($crawl_param_file);
+                    }
 
                     $info = array();
                     $info[self::STATUS] = "STOP_CRAWL";

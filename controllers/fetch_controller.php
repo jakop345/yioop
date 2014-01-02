@@ -279,9 +279,11 @@ class FetchController extends Controller implements CrawlConstants
             $crawl_time = 0;
             $check_crawl_time = 0;
         }
-        if($crawl_time > 0 && $check_crawl_time > intval(@fileatime(
-            CRAWL_DIR."/schedules/".self::index_closed_name.$crawl_time.
-            ".txt")) && !file_exists(CRAWL_DIR.
+        $index_schedule_file = CRAWL_DIR."/schedules/".self::index_closed_name.
+            $crawl_time. ".txt";
+        if($crawl_time > 0 && file_exists($index_schedule_file) && 
+            $check_crawl_time > intval(fileatime($index_schedule_file)) && 
+            !file_exists(CRAWL_DIR.
                 "/schedules/queue_server_messages.txt") ) {
             $restart = true;
             if(file_exists(CRAWL_DIR."/schedules/crawl_status.txt")) {

@@ -81,7 +81,7 @@ if(!$profile_model->createDatabaseTables($db, $dbinfo)) {
     exit();
 }
 
-$db->execute("INSERT INTO VERSION VALUES (18)");
+$db->execute("INSERT INTO VERSION VALUES (19)");
 
 //default account is root without a password
 $sql ="INSERT INTO USER VALUES (1, 'admin', 'admin','root',
