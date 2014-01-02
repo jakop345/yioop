@@ -66,12 +66,14 @@ class RegisterController extends Controller
      */
     var $models = array("user");
 
+    var $activities = array("createAccount", "resetPassword",
+        "emailVerification");
+
     /**
      *  Allows users to create accounts.
      *  Validates the input form when creating an account
      *
      */
-
     function processRequest()
     {
         $data = array();
@@ -82,6 +84,8 @@ class RegisterController extends Controller
         }
         $data[CSRF_TOKEN] = $this->generateCSRFToken($user);
         $token_okay = $this->checkCSRFToken(CSRF_TOKEN, $user);
+        $data[CSRF_TOKEN] = $this->generateCSRFToken(
+                $_SERVER['REMOTE_ADDR']);
         $regex_email=
             '/^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+'.
             '(\.[a-z0-9-]+)*(\.[a-z]{2,3})$/';
@@ -131,18 +135,21 @@ $subject = "Test Mail";
 $message = "This is a test";
 $server->send($subject, $from, $to, $message);*/
                 $this->userModel->
-                    registerUser($this->clean($_REQUEST['first'], "string" ),
-                    $this->clean($_REQUEST['last'], "string" ),
+                    addUser(
                     $this->clean($_REQUEST['user'], "string" ),
-                    $this->clean($_REQUEST['email'], "string" ),
-                    $this->clean($_REQUEST['password'], "string" ));
+                    $this->clean($_REQUEST['password'], "string" )
+                    $this->clean($_REQUEST['first'], "string" ),
+                    $this->clean($_REQUEST['last'], "string" ),
+                    $this->clean($_REQUEST['email'], "string" ));
                 $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                tl('register_controller_account_created')."</h1>')";
+                    tl('register_controller_account_created')."</h1>')";
             }
         }
-        $data[CSRF_TOKEN] = $this->generateCSRFToken(
-                $_SERVER['REMOTE_ADDR']);
         $this->displayView($view, $data);
+    }
+
+    function createAccount()
+    {
     }
 }
 

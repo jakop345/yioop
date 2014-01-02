@@ -592,11 +592,29 @@ function upgradeDatabaseVersion19(&$db)
 {
     $db->execute("DELETE FROM VERSION WHERE ID < 18");
     $db->execute("UPDATE VERSION SET ID=19 WHERE ID=18");
-    $db->execute("ALTER TABLE USER ADD COLUMN FIRST_NAME VARCHAR(16)");
-    $db->execute("ALTER TABLE USER ADD COLUMN LAST_NAME VARCHAR(16)");
-    $db->execute("ALTER TABLE USER ADD COLUMN EMAIL VARCHAR(32)");
-    $db->execute("ALTER TABLE USER ADD COLUMN ACTIVE INTEGER");
-    $db->execute("ALTER TABLE USER ADD COLUMN HASH VARCHAR(32)");
+    $dbinfo = array("DBMS" => DBMS, "DB_HOST" => DB_HOST, "DB_NAME" => DB_NAME,
+        "DB_PASSWORD" => DB_PASSWORD);
+    $sql = "ALTER TABLE USER RENAME TO USER_OLD";
+    $db->execute($sql);
+    $auto_increment = $db->autoIncrement($dbinfo);
+    $db->execute("CREATE TABLE USER(USER_ID INTEGER PRIMARY KEY 
+        $auto_increment, FIRST_NAME VARCHAR(16), LAST_NAME VARCHAR(16),
+        USER_NAME VARCHAR(16) UNIQUE, EMAIL VARCHAR(32),
+        ACTIVE INTEGER, PASSWORD CHAR(60), HASH VARCHAR(32))");
+    $sql = "SELECT USER_ID, USER_NAME FROM USER_OLD";
+    $result = $db->execute($sql);
+    while($row = $db->fetchArray($result)) {
+        $sql = "INSERT INTO USER (USER_ID, USER_NAME, ACTIVE)
+            VALUES ('{$row['USER_ID']}', '{$row['USER_NAME']}', 2)";
+        $db->execute($sql);
+    }
+    $db->disconnect();
+    $db->connect();
+    $db->dbname = NULL;
+    $db->selectDB(DB_NAME);
+    $sql = "DROP TABLE USER_OLD";
+    $db->execute($sql);
+
 }
 
 /**

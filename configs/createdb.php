@@ -131,6 +131,7 @@ foreach($locales as $locale) {
 $db->execute("INSERT INTO ROLE VALUES (1, 'Admin' )");
 $db->execute("INSERT INTO ROLE VALUES (2, 'User' )");
 $db->execute("INSERT INTO USER_ROLE VALUES (1, 1)");
+$db->execute("INSERT INTO USER_GROUP VALUES (1, 1)");
 
 $activities = array(
     "manageAccount" => array('db_activity_manage_account',

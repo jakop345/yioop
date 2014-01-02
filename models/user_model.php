@@ -254,35 +254,13 @@ class UserModel extends Model
      *
      * @param string $username  the username of the user to be added
      * @param string $password  the password of the user to be added
-     */
-    function addUser($username, $password, $limit = 1)
-     {
-         $this->db->selectDB(DB_NAME);
-         $sql = "INSERT INTO USER(USER_NAME, PASSWORD) VALUES ('".
-             $this->db->escapeString($username)."', '".
-         crawlCrypt($this->db->escapeString($password))."' ) ";
-         $result = $this->db->execute($sql);
-         $sql = "SELECT USER_ID FROM USER WHERE 
-             USER_NAME = '$username' LIMIT $limit";
-         $result = $this->db->execute($sql);
-         if(!$result) return false;
-             $row = $this->db->fetchArray($result);
-         $user_id = $row['USER_ID'];
-         $sql = "INSERT INTO USER_GROUP(USER_ID,GROUP_ID) VALUES('".
-             $this->db->escapeString($user_id)."', '1')";
-         $result = $this->db->execute($sql);
-    }
-
-    /**
-     * Register a user with firstname, lastname, username, email 
-     *
      * @param string $firstname the firstname of the user to be added
      * @param string $lastname the lastname of the user to be added
-     * @param string $username the username of the user to be added
      * @param string $email the email of the user to be added
-     * @param string $password  the password of the user to be added
+     * @return bool whether the operation was successful
      */
-    function registerUser($firstname, $lastname, $username, $email, $password)
+    function addUser($username, $password, $firstname='', $lastname='',
+        $email='')
     {
         $this->db->selectDB(DB_NAME);
         $sql = "INSERT INTO USER(FIRST_NAME, LAST_NAME, 
@@ -294,21 +272,35 @@ class UserModel extends Model
             crawlCrypt($this->db->escapeString($password))."','".
             crawlCrypt($this->db->escapeString($username))."') ";
         $result = $this->db->execute($sql);
-
-        $this->db->selectDB(DB_NAME);
-        $sql = "SELECT USER_ID FROM ".
-            " USER WHERE USER_NAME = '" .
-            $this->db->escapeString($username) . "' ";
-        $result = $this->db->execute($sql);
-        if(!$row = $this->db->fetchArray($result) ) {
-            $last_id = -1;
+        if(!$user_id = $this->getUserId($username)) {
+            return false;
         }
-        $last_id = $row['USER_ID'];
+        $sql = "INSERT INTO USER_GROUP (USER_ID, GROUP_ID) VALUES('".
+            $this->db->escapeString($user_id)."', '1')";
+        $result = $this->db->execute($sql);
         $sql = "INSERT INTO USER_ROLE  VALUES ('".
-            $this->db->escapeString($last_id)."', 2) ";
+            $this->db->escapeString($user_id)."', 2) ";
         $result_id = $this->db->execute($sql);
+        return true;
     }
 
+    /**
+     *
+     * @param string $username
+     */
+    function getUserId($username)
+    {
+        $this->db->selectDB(DB_NAME);
+        $sql = "SELECT USER_ID FROM USER WHERE 
+         USER_NAME = '$username' LIMIT 1";
+        $result = $this->db->execute($sql);
+        if(!$result) {
+            return false;
+        }
+        $row = $this->db->fetchArray($result);
+        $user_id = $row['USER_ID'];
+        return $user_id;
+    }
 
     /**
      * Deletes a user by username from the list of users that can login to
@@ -319,6 +311,15 @@ class UserModel extends Model
     function deleteUser($username)
     {
         $this->db->selectDB(DB_NAME);
+        $userid = $this->getUserId($username);
+        if($userid) {
+            $sql = "DELETE FROM USER_ROLE WHERE USER_ID='".
+                $this->db->escapeString($userid)."'";
+            $result = $this->db->execute($sql);
+            $sql = "DELETE FROM USER_GROUP WHERE USER_ID='".
+                $this->db->escapeString($userid)."'";
+            $result = $this->db->execute($sql);
+        }
         $sql = "DELETE FROM USER WHERE USER_NAME='".
             $this->db->escapeString($username)."'";
         $result = $this->db->execute($sql);
@@ -334,7 +335,7 @@ class UserModel extends Model
     function addUserRole($userid, $roleid)
     {
         $this->db->selectDB(DB_NAME);
-        $sql = "INSERT INTO USER_ROLE  VALUES ('".
+        $sql = "INSERT INTO USER_ROLE VALUES ('".
             $this->db->escapeString($userid)."', '".
             $this->db->escapeString($roleid)."' ) ";
         $result = $this->db->execute($sql);

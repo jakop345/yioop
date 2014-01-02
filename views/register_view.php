@@ -185,8 +185,11 @@ class RegisterView extends View
                     </table>
                 </div>
             </form>
-                <div class="signin-exit"><a href="."><?php
-                    e(tl('signin_view_return_yioop')); ?></a>
+                <div class="signin-exit">
+                    <ul>
+                    <li><a href="."><?php
+                    e(tl('signin_view_return_yioop')); ?></a></li>
+                    </ul>
                 </div>
         </div>
             <div class='landing-spacer'></div>

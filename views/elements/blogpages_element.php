@@ -109,7 +109,8 @@ class BlogPagesElement extends Element
                             <th><?php 
                                 e(tl('blogpages_element_action'));?></th>
                         </tr>
-                        <?php foreach($data['RECENT_BLOGS'] as $recent_blogs) {
+                        <?php
+                        foreach($data['RECENT_BLOGS'] as $recent_blogs) {
                         ?><tr>
                             <td>
                                 <a href =
@@ -121,14 +122,16 @@ class BlogPagesElement extends Element
                             <?php $delete_url = $base_url .
                                 '&amp;arg=deleteblog&amp;id=' .
                                 $recent_blogs['TIMESTAMP'];
-                                ?><td> <?php
-                                    if($recent_blogs['EDITABLE'] === true) {
-                                ?><a href="<?php e($delete_url);?>"><?php
-                                e(tl('blogpages_element_deleteblog'));
-                                ?></a><?php
+                                ?><td><?php
+                                if(isset($recent_blogs['EDITABLE']) && 
+                                    $recent_blogs['EDITABLE'] === true) {
+                                    ?><a href="<?php e($delete_url);?>"><?php
+                                    e(tl('blogpages_element_deleteblog'));
+                                    ?></a><?php
                                 } ?></td>
                         </tr>
-                        <?php } ?>
+                        <?php 
+                        } ?>
                     </table>
                 <?php } ?>
             </div>

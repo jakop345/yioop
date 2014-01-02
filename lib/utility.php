@@ -1327,10 +1327,9 @@ function webdecode($str)
 }
 
 /**
- * The search engine project's variation on the Unix crypt function using the
- * crawlHash function instead of DES
- *
- * The crawlHash function is used to encrypt passwords stored in the database
+ * The crawlHash function is used to encrypt passwords stored in the database.
+ * It tries to use the best version the Blowfish variant of php's crypt
+ * function available on the current system.
  *
  * @param string $string the string to encrypt
  * @param int $salt salt value to be used (needed to verify if a password is
@@ -1339,13 +1338,26 @@ function webdecode($str)
  */
 function crawlCrypt($string, $salt = NULL)
 {
-    if($salt == NULL) {
-        $salt = rand(10000, 99999);
-    } else {
-        $len = strlen($salt);
-        $salt = substr($salt, $len - 5, 5);
+    if($salt !== NULL) {
+        return crypt($string, $salt);
     }
-    return crawlHash($string.$salt).$salt;
+    /* The length of the salt and its starting prefix say which hash
+       function crypt uses. Blowfish's begins with $2a$, $2x$, or $2y$
+       followed by the base 2 logarithm of the iteration count for blowfish.
+       The more secure 2y is only available after PHP 5.3.7
+     */
+    $salt = '$2y$12$';
+    if(!defined('PHP_VERSION_ID') || PHP_VERSION_ID < 50307) {
+        $salt = '$2a$12$';
+    }
+    if(function_exists('mcrypt_create_iv')) {
+        $salt .= strtr(base64_encode(mcrypt_create_iv(16,
+            MCRYPT_DEV_URANDOM)), '+', '.');
+    } else {
+        $salt .= substr(str_replace('+', '.', base64_encode(
+            pack('N4', mt_rand(), mt_rand(), mt_rand(), mt_rand()))), 0, 22);
+    }
+    return crypt($string, $salt);
 }
 
 /**
