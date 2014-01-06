@@ -75,6 +75,7 @@ class FetchUrl implements CrawlConstants
         $key=CrawlConstants::URL, $value = CrawlConstants::PAGE, $minimal=false,
         $post_data = NULL, $follow = false)
     {
+        global $PROXY_URLS;
         $agent_handler = curl_multi_init();
 
         $active = NULL;
@@ -117,7 +118,14 @@ class FetchUrl implements CrawlConstants
                 curl_setopt($sites[$i][0], CURLOPT_TIMEOUT, PAGE_TIMEOUT);
                 if (stripos($url,'.onion') !== false) {
                     curl_setopt($sites[$i][0], CURLOPT_PROXY, TOR_PROXY);
-                    curl_setopt($sites[$i][0], CURLOPT_PROXYTYPE, 7);
+                    curl_setopt($sites[$i][0], CURLOPT_PROXYTYPE,
+                        CURLPROXY_SOCKS5);
+                } else if(is_array($PROXY_URLS)) {
+                    $select_proxy = rand(0, count($PROXY_URLS)-1);
+                    curl_setopt($sites[$i][0], CURLOPT_PROXY,
+                        $PROXY_URLS[$select_proxy]);
+                    curl_setopt($sites[$i][0], CURLOPT_PROXYTYPE,
+                        CURLPROXY_HTTP);
                 }
                 if(!$minimal) {
                     curl_setopt($sites[$i][0], CURLOPT_HEADER, true);
@@ -249,8 +257,9 @@ class FetchUrl implements CrawlConstants
      */
     static function prepareUrlHeaders($url, $minimal = false)
     {
-        $url = str_replace("&amp;", "&", $url);
+        global $PROXY_URLS;
 
+        $url = str_replace("&amp;", "&", $url);
         /*Check if an ETag was added by the queue server. If found, create
           If-None_Match header with the ETag and add it to the headers. Remove
           ETag from URL
@@ -271,7 +280,8 @@ class FetchUrl implements CrawlConstants
         $headers = array();
         if(!$minimal) {
             $url_ip_parts = explode("###", $url);
-            if (isset($url_ip_parts[0]) && (stripos($url_ip_parts[0],'.onion') !== false) ) {
+            if ($PROXY_URLS === NULL && isset($url_ip_parts[0]) &&
+                (stripos($url_ip_parts[0],'.onion') !== false) ) {
                 $url_ip_parts = array($url_ip_parts[0]);
                 $url = $url_ip_parts[0];
             }
@@ -577,7 +587,7 @@ class FetchUrl implements CrawlConstants
         curl_setopt($agents[$host], CURLOPT_CONNECTTIMEOUT, PAGE_TIMEOUT);
         if (stripos($site,'.onion') !== false) {
             curl_setopt($agents[$host], CURLOPT_PROXY, TOR_PROXY);
-            curl_setopt($agents[$host], CURLOPT_PROXYTYPE, 7);
+            curl_setopt($agents[$host], CURLOPT_PROXYTYPE, CURLPROXY_SOCKS5);
         }
         //make lighttpd happier
         curl_setopt($agents[$host], CURLOPT_HTTPHEADER, array('Expect:'));
