@@ -121,11 +121,11 @@ class FetchUrl implements CrawlConstants
                     curl_setopt($sites[$i][0], CURLOPT_PROXYTYPE,
                         CURLPROXY_SOCKS5);
                 } else if(is_array($PROXY_URLS)) {
-                    $select_proxy = rand(0, count($PROXY_URLS)-1);
+                    $select_proxy = rand(0, count($PROXY_URLS) - 1);
                     curl_setopt($sites[$i][0], CURLOPT_PROXY,
                         $PROXY_URLS[$select_proxy]);
                     curl_setopt($sites[$i][0], CURLOPT_PROXYTYPE,
-                        CURLPROXY_HTTP);
+                        PROXY_TYPE);
                 }
                 if(!$minimal) {
                     curl_setopt($sites[$i][0], CURLOPT_HEADER, true);
@@ -280,8 +280,8 @@ class FetchUrl implements CrawlConstants
         $headers = array();
         if(!$minimal) {
             $url_ip_parts = explode("###", $url);
-            if ($PROXY_URLS === NULL && isset($url_ip_parts[0]) &&
-                (stripos($url_ip_parts[0],'.onion') !== false) ) {
+            if ($PROXY_URLS != NULL || (isset($url_ip_parts[0]) &&
+                (stripos($url_ip_parts[0],'.onion') !== false)) ) {
                 $url_ip_parts = array($url_ip_parts[0]);
                 $url = $url_ip_parts[0];
             }

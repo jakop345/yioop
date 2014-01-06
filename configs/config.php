@@ -426,12 +426,16 @@ if(!defined('TOR_PROXY')) {
 
 /** If rather than directly crawling the web one wants Yioop to crawl through
  *  a proxy service, enter the URLs below. This should an array of urls
- *  likes array('http://some_url1:some_port1', 'http://some_url1:some_port2');
+ *  likes array('some_ip1:some_port1', 'some_ip2:some_port2');
  *  Yioop will randomly choose from among the proxies
  */
 if(!isset($PROXY_URLS)) {
     $PROXY_URLS = NULL; //if use define in local_config.php
-} else {
+}
+/**
+ *  Proxy type to be used with $PROXY_URLS
+ */
+if(!defined('PROXY_TYPE')) {
     define('PROXY_TYPE', CURLPROXY_HTTP);
 }
 /**
