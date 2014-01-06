@@ -845,6 +845,7 @@ class SystemComponent extends Component
         var value = (advanced.value == 'true') ? true : false;
         setDisplay('advance-configure', value);
         setDisplay('advance-robot', value);
+        elt('account-registration').onchange();
     }
 EOD;
             if(class_exists("Memcache")) {

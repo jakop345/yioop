@@ -59,6 +59,18 @@ require_once BASE_DIR."/lib/utility.php";
 class MailServer
 {
     /**
+     * Email address of default mail sender
+     * @var string
+     */
+    var $sender_email;
+
+    /**
+     * Hostname of default mail sender
+     * @var string
+     */
+    var $sender_host;
+
+    /**
      * Domain name of the SMTP server
      * @var string
      */
@@ -120,6 +132,8 @@ class MailServer
      *  Encapuslates the domain and credentials of a SMTP server
      *  in a MailServer object
      *
+     *  @param string $sender_email who mail will be sent from (can be 
+     *      overwritten)
      *  @param string $server domain name of machine will connect to
      *  @param int $port port on that machine
      *  @param string $login username to use for authentication ("" if no
@@ -128,9 +142,12 @@ class MailServer
      *      auth)
      *  @param mixed $secure false is SSL and TLS not used, otherwise SSL or TLS
      */
-    function __construct($server, $port, $login, $password,
+    function __construct($sender_email, $server, $port, $login, $password,
         $secure = false)
     {
+        $this->sender_email = $sender_email;
+        $mail_parts = explode("@", $this->sender_email);
+        $this->sender_host = $mail_parts[1];
         $this->server = $server;
         if($secure == "ssl") {
             'ssl://'.$server;
@@ -160,8 +177,7 @@ class MailServer
             $this->messages .= "SMTP error\n";
             return false;
         }
-        $hostname = isset($_SERVER['SERVER_NAME']) ? $_SERVER['SERVER_NAME'] :
-            gethostname();
+        $hostname = $this->sender_host;
         $this->smtpCommand("HELO $hostname");
         if($this->secure == 'tls') {
             if($this->smtpCommand('STARTTLS') != self::SERVER_READY) {
@@ -245,6 +261,9 @@ class MailServer
     function send($subject, $from, $to, $message)
     {
         $start_time = microtime();
+        if($from == "") {
+            $from = $this->sender_email;
+        }
         $this->messages = "";
         $eol = self::EOL;
         $mail  = "Date: " . date(DATE_RFC822) . $eol;

@@ -81,19 +81,18 @@ p
 .html-ltr .float-opposite
 {
     float: right;
-    clear: both;
 }
 
 .html-rtl .float-opposite
 {
     float: left;
-    clear: both;
 }
 
 .align-right
 {
     text-align: right;
 }
+
 
 .blockquote
 {
@@ -817,6 +816,26 @@ ul.in-list li
     text-align: center;
     top: -20px;
     width: 320px;
+}
+
+.html-ltr .signin-exit li
+{
+    text-align:left;
+    list-style-type: square;
+    margin-left:2.5in;
+}
+
+.html-rtl ul .signin-exit
+{
+    text-align:right;
+    list-style-type: square;
+    margin-right:2.5in;
+}
+
+.mobile .signin-exit li
+{
+    margin-left:25%;
+    margin-right:25%;
 }
 
 /*

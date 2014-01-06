@@ -95,7 +95,7 @@ class SigninModel extends Model
             crawlCrypt($password, $row['PASSWORD']) == $row['PASSWORD']) ;
     }
 
-     /**
+    /**
      * Checks that a username email pair is valid
      *
      * @param string $username the username to check

@@ -198,13 +198,13 @@ class GroupModel extends Model
     *
     *  @return array an array of group_id, group_name pairs
     */
-    function getGroupListbyUser($userid)
+    function getUserGroups($userid)
     {
         $this->db->selectDB(DB_NAME);
         $groups = array();
         $sql = "SELECT UG.GROUP_ID AS GROUP_ID, UG.USER_ID AS USER_ID," .
             " G.GROUP_NAME AS GROUP_NAME FROM USER_GROUP UG, GROUPS G" .
-            " where USER_ID = $userid and UG.GROUP_ID = G.GROUP_ID";
+            " where USER_ID = $userid AND UG.GROUP_ID = G.GROUP_ID";
         $result = $this->db->execute($sql);
         $i = 0;
         while($groups[$i] = $this->db->fetchArray($result)) {
@@ -254,10 +254,10 @@ class GroupModel extends Model
     /**
      *  Add an allowed user to an existing group
      *
-     *  @param string $groupid  the group id of the group to add the user to
      *  @param string $userid the id of the user to add
+     *  @param string $groupid  the group id of the group to add the user to
      */
-    function addUserGroup($groupid, $userid)
+    function addUserGroup($userid, $groupid)
     {
         $this->db->selectDB(DB_NAME);
         $sql = "INSERT INTO USER_GROUP VALUES ('".
@@ -267,11 +267,12 @@ class GroupModel extends Model
     }
 
     /**
-     *  Delete a user by its userid
+     *  Delete a user from a group by userid an groupid
      *
      *  @param string $userid  the userid of the user to delete
+     *  @param string $groupid  the group id of the group to delete
      */
-    function deleteUserGroup($groupid, $userid)
+    function deleteUserGroup($userid, $groupid)
     {
         $this->db->selectDB(DB_NAME);
         $sql = "DELETE FROM USER_GROUP WHERE USER_ID='".

@@ -74,7 +74,6 @@ class AccountaccessComponent extends Component
         $data['MESSAGE'] = "";
         $old_email = $parent->signinModel->getEmail($_SESSION['USER_ID']);
         $data["OLD_EMAIL"] = $old_email;
-
         if(isset($_REQUEST['arg']) &&
             in_array($_REQUEST['arg'], $possible_arguments)) {
             switch($_REQUEST['arg'])
@@ -152,109 +151,208 @@ class AccountaccessComponent extends Component
     function manageUsers()
     {
         $parent = $this->parent;
-        $possible_arguments = array("adduser",
-            "deleteuser", "adduserrole", "deleteuserrole");
+        $possible_arguments = array("adduser", 'edituser',
+            "deleteuser", "adduserrole", "deleteuserrole",
+            "addusergroup", "deleteusergroup", "updatestatus");
 
         $data["ELEMENT"] = "manageusersElement";
-        $data['SCRIPT'] =
-            "selectUser = elt('select-user'); ".
-            "selectUser.onchange = submitViewUserRole;";
-
-        $usernames = $parent->userModel->getUserList();
-        if(isset($_REQUEST['username'])) {
-            $username = $parent->clean($_REQUEST['username'], "string" );
+        $data['SCRIPT'] = "";
+        $data['STATUS_CODES'] = array(
+            ACTIVE_STATUS => tl('accountaccess_component_active_status'),
+            INACTIVE_STATUS => tl('accountaccess_component_inactive_status'),
+            BANNED_STATUS => tl('accountaccess_component_banned_status'),
+        );
+        $data['FORM_TYPE'] = "adduser";
+        $username = "";
+        if(isset($_REQUEST['user_name'])) {
+            $username = $parent->clean($_REQUEST['user_name'], "string" );
         }
-        $base_option = tl('accountaccess_component_select_username');
-        $data['USER_NAMES'] = array();
-        $data['USER_NAMES'][""] = $base_option;
-
-        foreach($usernames as $name) {
-            $data['USER_NAMES'][$name]= $name;
-        }
-
-        if(isset($_REQUEST['selectuser'])) {
-            $select_user = $parent->clean($_REQUEST['selectuser'], "string" );
-        } else {
-            $select_user = "";
-        }
-        if($select_user != "" ) {
-            $userid = $parent->signinModel->getUserId($select_user);
-            $data['SELECT_USER'] = $select_user;
-            $data['SELECT_ROLES'] = $parent->userModel->getUserRoles($userid);
-            $all_roles = $parent->roleModel->getRoleList();
-            $role_ids = array();
-            if(isset($_REQUEST['selectrole'])) {
-                $select_role = $parent->clean($_REQUEST['selectrole'],"string");
-            } else {
-                $select_role = "";
+        if(isset($_REQUEST['arg']) && $_REQUEST['arg'] == 'edituser') {
+            if(isset($_REQUEST['selectrole']) && $_REQUEST['selectrole'] >= 0) {
+                $_REQUEST['arg'] = "adduserrole";
             }
+            if(isset($_REQUEST['selectgroup'])&&$_REQUEST['selectgroup'] >= 0) {
+                $_REQUEST['arg'] = "addusergroup";
+            }
+        }
+        if($username != "") {
+            $userid = $parent->signinModel->getUserId($username);
+            $data['SELECT_USER'] = $username;
+            if($userid) {
+                $data['SELECT_ROLES'] = 
+                    $parent->userModel->getUserRoles($userid);
+                $all_roles = $parent->roleModel->getRoleList();
+                $role_ids = array();
+                if(isset($_REQUEST['selectrole'])) {
+                    $select_role = $parent->clean($_REQUEST['selectrole'],
+                        "string");
+                } else {
+                    $select_role = "";
+                }
+                foreach($all_roles as $role) {
+                    $role_ids[] = $role['ROLE_ID'];
+                    if($select_role == $role['ROLE_ID']) {
+                        $select_rolename = $role['ROLE_NAME'];
+                    }
+                }
+                $select_role_ids = array();
+                foreach($data['SELECT_ROLES'] as $role) {
+                    $select_role_ids[] = $role['ROLE_ID'];
+                }
+                $available_roles = array();
+                $tmp = array();
+                foreach($all_roles as $role) {
+                    if(!in_array($role['ROLE_ID'], $select_role_ids) &&
+                        !isset($tmp[$role['ROLE_ID']])) {
+                        $tmp[$role['ROLE_ID']] = true;
+                        $available_roles[] = $role;
+                    }
+                }
 
-            foreach($all_roles as $role) {
-                $role_ids[] = $role['ROLE_ID'];
-                if($select_role == $role['ROLE_ID']) {
-                    $select_rolename = $role['ROLE_NAME'];
+                $data['AVAILABLE_ROLES'][-1] =
+                    tl('accountaccess_component_add_role');
+
+                foreach($available_roles as $role) {
+                    $data['AVAILABLE_ROLES'][$role['ROLE_ID']]= 
+                        $role['ROLE_NAME'];
+                }
+
+                if($select_role != "") {
+                    $data['SELECT_ROLE'] = $select_role;
+                } else {
+                    $data['SELECT_ROLE'] = -1;
+                }
+
+                $data['SELECT_GROUPS'] =
+                    $parent->groupModel->getUserGroups($userid);
+                $all_groups = $parent->groupModel->getGroupList();
+                $group_ids = array();
+                if(isset($_REQUEST['selectgroup'])) {
+                    $select_group = $parent->clean
+                        ($_REQUEST['selectgroup'],"string");
+                } else {
+                    $select_group = "";
+                }
+
+                foreach($all_groups as $group) {
+                    $group_ids[] = $group['GROUP_ID'];
+                    if($select_group == $group['GROUP_ID']) {
+                        $select_groupname = $group['GROUP_NAME'];
+                    }
+                }
+
+                $select_group_ids = array();
+                foreach($data['SELECT_GROUPS'] as $group) {
+                    $select_group_ids[] = $group['GROUP_ID'];
+                }
+                $available_groups = array();
+                $tmp = array();
+                foreach($all_groups as $group) {
+                    if(!in_array($group['GROUP_ID'], $select_group_ids) &&
+                        !isset($tmp[$group['GROUP_ID']])) {
+                        $tmp[$group['GROUP_ID']] = true;
+                        $available_groups[] = $group;
+                    }
+                }
+
+                $data['AVAILABLE_GROUPS'][-1] =
+                    tl('accountaccess_component_add_group');
+
+                foreach($available_groups as $group) {
+                    $data['AVAILABLE_GROUPS'][$group['GROUP_ID']]= 
+                        $group['GROUP_NAME'];
+                }
+
+                if($select_role != "") {
+                    $data['SELECT_GROUP'] = $select_group;
+                } else {
+                    $data['SELECT_GROUP'] = -1;
                 }
             }
-
-            $select_role_ids = array();
-            foreach($data['SELECT_ROLES'] as $role) {
-                $select_role_ids[] = $role['ROLE_ID'];
-            }
-            $available_roles = array();
-            $tmp = array();
-            foreach($all_roles as $role) {
-                if(!in_array($role['ROLE_ID'], $select_role_ids) &&
-                    !isset($tmp[$role['ROLE_ID']])) {
-                    $tmp[$role['ROLE_ID']] = true;
-                    $available_roles[] = $role;
-                }
-            }
-
-            $data['AVAILABLE_ROLES'][-1] =
-                tl('accountaccess_component_select_rolename');
-
-            foreach($available_roles as $role) {
-                $data['AVAILABLE_ROLES'][$role['ROLE_ID']]= $role['ROLE_NAME'];
-            }
-
-            if($select_role != "") {
-                $data['SELECT_ROLE'] = $select_role;
-            } else {
-                $data['SELECT_ROLE'] = -1;
-            }
-        } else {
-            $data['SELECT_USER'] = -1;
         }
+
+        $data['CURRENT_USER'] = array(
+            "user_name" => "",
+            "first_name" => "",
+            "last_name" => "",
+            "email" => "",
+            "status" => "",
+            "password" => "",
+            "repassword" => ""
+        );
 
         if(isset($_REQUEST['arg']) &&
             in_array($_REQUEST['arg'], $possible_arguments)) {
-
             switch($_REQUEST['arg'])
             {
                 case "adduser":
-                    $data['SELECT_ROLE'] = -1;
-                    unset($data['AVAILABLE_ROLES']);
-                    unset($data['SELECT_ROLES']);
                     if($_REQUEST['retypepassword'] != $_REQUEST['password']) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_passwords_dont_match').
                             "</h1>')";
-                        return $data;
-                    }
-
-                    if($parent->signinModel->getUserId($username) > 0) {
+                    } else if($parent->signinModel->getUserId($username) > 0) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('accountaccess_component_username_exists').
+                            tl('accountaccess_component_user_exists').
                             "</h1>')";
-                        return $data;
+                    } else if(!isset($data['STATUS_CODES'][
+                        $_REQUEST['status']])) {
+                        $_REQUEST['status'] = INACTIVE_STATUS;
+                    } else {
+                        $parent->userModel->addUser($username,
+                            $parent->clean($_REQUEST['password'], "string"),
+                            $parent->clean($_REQUEST['first_name'], "string"),
+                            $parent->clean($_REQUEST['last_name'], "string"),
+                            $parent->clean($_REQUEST['email'], "string"),
+                            $_REQUEST['status']
+                            );
+                        $data['USER_NAMES'][$username] = $username;
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('accountaccess_component_user_added').
+                            "</h1>')";
                     }
-                    $parent->userModel->addUser($username,
-                        $parent->clean($_REQUEST['password'], "string"));
-                    $data['USER_NAMES'][$username] = $username;
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('accountaccess_component_username_added')."</h1>')";
                 break;
-
+                case "edituser":
+                    $data['FORM_TYPE'] = "edituser";
+                    $user = $parent->userModel->getUser($username);
+                    $update = false;
+                    $error = false;
+                    foreach($data['CURRENT_USER'] as $field => $value) {
+                        $upper_field = strtoupper($field);
+                        if(isset($_REQUEST[$field]) && $field != 'user_name') {
+                            if($field != "password" || ($_REQUEST["password"]
+                                != md5("password") && $_REQUEST["password"] ==
+                                $_REQUEST["retypepassword"])) {
+                                $user[$upper_field] = $parent->clean(
+                                    $_REQUEST[$field], "string");
+                                $data['CURRENT_USER'][$field] = 
+                                    $user[$upper_field];
+                                $update = true;
+                            } else if($_REQUEST["password"] !=
+                                $_REQUEST["retypepassword"]) {
+                                $error = true;
+                                break;
+                            }
+                        } else if (isset($user[$upper_field])){
+                            if($field != "password" && 
+                                $field != "retypepassword") {
+                                $data['CURRENT_USER'][$field] =
+                                    $user[$upper_field];
+                            }
+                        }
+                    }
+                    $data['CURRENT_USER']['password'] = md5("password");
+                    $data['CURRENT_USER']['retypepassword'] = md5("password");
+                    if($error) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('accountaccess_component_passwords_dont_match').
+                            "</h1>')";
+                    } else if($update) {
+                        $parent->userModel->updateUser($user);
+                        $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
+                            tl('accountaccess_component_user_updated').
+                            "</h1>');";
+                    }
+                break;
                 case "deleteuser":
                     $data['SELECT_ROLE'] = -1;
                     unset($data['AVAILABLE_ROLES']);
@@ -264,13 +362,13 @@ class AccountaccessComponent extends Component
                             tl('accountaccess_component_username_doesnt_exists'
                                 ).
                             "</h1>')";
-                        return $data;
+                    } else {
+                        $parent->userModel->deleteUser($username);
+                        unset($data['USER_NAMES'][$username]);
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('accountaccess_component_user_deleted') .
+                                "</h1>')";
                     }
-                    $parent->userModel->deleteUser($username);
-                    unset($data['USER_NAMES'][$username]);
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('accountaccess_component_username_deleted') .
-                            "</h1>')";
                 break;
 
                 case "adduserrole":
@@ -278,47 +376,128 @@ class AccountaccessComponent extends Component
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_username_doesnt_exists'
                                 ). "</h1>')";
-                        return $data;
-                    }
-                    if(!in_array($select_role, $role_ids)) {
+                    } else  if(!in_array($select_role, $role_ids)) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_rolename_doesnt_exists'
                             ). "</h1>')";
-                        return $data;
+                    } else {
+                        $data['FORM_TYPE'] = "edituser";
+                        $user = $parent->userModel->getUser($username);
+                        foreach($user as $field => $value) {
+                            $data['CURRENT_USER'][strtolower($field)] = $value;
+                        }
+                        $parent->userModel->addUserRole($userid, $select_role);
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('accountaccess_component_rolename_added').
+                            "</h1>');\n";
+                        unset($data['AVAILABLE_ROLES'][$select_role]);
+                        $data['SELECT_ROLE'] = -1;
+                        $data['SELECT_ROLES'] =
+                            $parent->userModel->getUserRoles($userid);
                     }
-                    $parent->userModel->addUserRole($userid, $select_role);
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('accountaccess_component_rolename_added'). "</h1>')";
-                    unset($data['AVAILABLE_ROLES'][$select_role]);
-                    $data['SELECT_ROLE'] = -1;
-                    $data['SELECT_ROLES'] =
-                        $parent->userModel->getUserRoles($userid);
+                break;
+
+                case "addusergroup":
+                    if( $userid <= 0 ) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('accountaccess_component_username_doesnt_exists'
+                                ). "</h1>')";
+                    } else if(!in_array($select_group, $group_ids)) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('accountaccess_component_groupname_doesnt_exists'
+                            ). "</h1>')";
+                    } else {
+                        $data['FORM_TYPE'] = "edituser";
+                        $user = $parent->userModel->getUser($username);
+                        foreach($user as $field => $value) {
+                            $data['CURRENT_USER'][strtolower($field)] = $value;
+                        }
+                        $parent->groupModel->addUserGroup($userid,
+                            $select_group);
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('accountaccess_component_groupname_added').
+                            "</h1>');\n";
+                        unset($data['AVAILABLE_GROUPS'][$select_group]);
+                        $data['SELECT_GROUP'] = -1;
+                        $data['SELECT_GROUPS'] =
+                            $parent->groupModel->getUserGroups($userid);
+                    }
                 break;
 
                 case "deleteuserrole":
                     if($userid <= 0) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_username_doesnt_exists'
-                                ). "</h1>')";
-                        return $data;
-                    }
-                    if(!in_array($select_role, $role_ids)) {
+                                ). "</h1>');\n";
+                    } else if(!in_array($select_role, $role_ids)) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_rolename_doesnt_exists'
-                                ). "</h1>')";
-                        return $data;
+                                ). "</h1>');\n";
+                    } else {
+                        $data['FORM_TYPE'] = "edituser";
+                        $user = $parent->userModel->getUser($username);
+                        foreach($user as $field => $value) {
+                            $data['CURRENT_USER'][strtolower($field)] = $value;
+                        }
+                        $parent->userModel->deleteUserRole($userid,
+                            $select_role);
+                        $data['SELECT_ROLES'] =
+                            $parent->userModel->getUserRoles($userid);
+                        $data['AVAILABLE_ROLES'][$select_role] =
+                            $select_rolename;
+                        $data['SELECT_ROLE'] = -1;
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('accountaccess_component_rolename_deleted') .
+                            "</h1>');\n";
                     }
-                    $parent->userModel->deleteUserRole($userid, $select_role);
-                    $data['SELECT_ROLES'] =
-                        $parent->userModel->getUserRoles($userid);
-                    $data['AVAILABLE_ROLES'][$select_role] = $select_rolename;
-                    $data['SELECT_ROLE'] = -1;
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('accountaccess_component_rolename_deleted') .
-                        "</h1>')";
+                break;
+
+                case "deleteusergroup":
+                    if($userid <= 0) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('accountaccess_component_username_doesnt_exists'
+                                ). "</h1>');\n";
+                    } else if(!in_array($select_group, $group_ids)) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('accountaccess_component_rolename_doesnt_exists'
+                                ). "</h1>');\n";
+                    } else {
+                        $data['FORM_TYPE'] = "edituser";
+                        $user = $parent->userModel->getUser($username);
+                        foreach($user as $field => $value) {
+                            $data['CURRENT_USER'][strtolower($field)] = $value;
+                        }
+                        $parent->groupModel->deleteUserGroup($userid,
+                            $select_group);
+                        $data['SELECT_GROUPS'] =
+                            $parent->groupModel->getUserGroups($userid);
+                        $data['AVAILABLE_GROUPS'][$select_group] =
+                            $select_groupname;
+                        $data['SELECT_GROUP'] = -1;
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('accountaccess_component_group_deleted') .
+                            "</h1>');\n";
+                    }
+                break;
+
+                case "updatestatus":
+                    $userid = $parent->signinModel->getUserId($username);
+                    if(!isset($data['STATUS_CODES'][$_REQUEST['userstatus']]) ||
+                        $userid == 1) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('accountaccess_component_username_doesnt_exists'
+                                ). "</h1>');\n";
+                    } else {
+                        $parent->userModel->updateUserStatus($userid,
+                            $_REQUEST['userstatus']);
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('accountaccess_component_userstatus_updated') .
+                            "</h1>');\n";
+                    }
                 break;
             }
         }
+        $data["USERS"] = $parent->userModel->getUsers();
         return $data;
     }
 
@@ -539,7 +718,7 @@ class AccountaccessComponent extends Component
         if($_SESSION['USER_ID'] == '1') {
             $groups = $parent->groupModel->getGroupList();
         } else {
-            $groups = $parent->groupModel->getGroupListbyUser(
+            $groups = $parent->groupModel->getUserGroups(
                 $_SESSION['USER_ID']);
         }
 
@@ -626,7 +805,7 @@ class AccountaccessComponent extends Component
             }
 
             if($select_group != "-1") {
-                $usernames = $parent->userModel->getUserListGroups();
+                $usernames = $parent->userModel->getUserIdUsernameList();
                 $base_option = tl('accountaccess_component_select_username');
                 $data['USER_NAMES'] = array();
                 $user_ids = array();
@@ -703,8 +882,7 @@ class AccountaccessComponent extends Component
                         "</h1>')";
                     return $data;
                 }
-                $parent->groupModel->addUserGroup(
-                    $select_group, $select_user);
+                $parent->groupModel->addUserGroup($select_user, $select_group);
                 unset($data['AVAILABLE_USERS'][$select_user]);
                 $data['GROUP_USERS'] =
                     $parent->groupModel->getGroupUsers($select_group);
@@ -713,7 +891,7 @@ class AccountaccessComponent extends Component
             break;
             case "deleteuser":
                 $parent->groupModel->deleteUserGroup(
-                    $select_group, $select_user);
+                    $select_user, $select_group);
                 $data['GROUP_USERS'] =
                     $parent->groupModel->getGroupUsers($select_group);
                 $data['AVAILABLE_USERS'][$select_user] =

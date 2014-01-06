@@ -58,7 +58,7 @@ class RegisterController extends Controller
      * Load the RegisterView
      * @var array
      */
-    var $views = array("register", "search");
+    var $views = array("register", "signin");
     /**
      * LocaleModel used to get the available languages/locales, CrawlModel
      * is used to get a list of available crawls
@@ -66,9 +66,11 @@ class RegisterController extends Controller
      */
     var $models = array("user");
 
-    var $activities = array("createAccount", "resetPassword",
-        "emailVerification");
+    var $activities = array("createAccount", "processAccountData",
+        "resetPassword", "emailVerification");
 
+    var $register_fields = array("first", "last", "user",
+            "email", "password", "repassword");
     /**
      *  Allows users to create accounts.
      *  Validates the input form when creating an account
@@ -76,80 +78,146 @@ class RegisterController extends Controller
      */
     function processRequest()
     {
-        $data = array();
         if(isset($_SESSION['USER_ID'])) {
             $user = $_SESSION['USER_ID'];
         } else {
             $user = $_SERVER['REMOTE_ADDR'];
         }
-        $data[CSRF_TOKEN] = $this->generateCSRFToken($user);
+        $activity = isset($_REQUEST['a']) ? 
+            $this->clean($_REQUEST['a'], 'string') : 'createAccount';
         $token_okay = $this->checkCSRFToken(CSRF_TOKEN, $user);
-        $data[CSRF_TOKEN] = $this->generateCSRFToken(
-                $_SERVER['REMOTE_ADDR']);
-        $regex_email=
-            '/^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+'.
-            '(\.[a-z0-9-]+)*(\.[a-z]{2,3})$/';
+
+        if(!in_array($activity, $this->activities) || !$token_okay) {
+            $activity = 'createAccount';
+        }
+        $data = $this->call($activity);
+        $data[CSRF_TOKEN] = $this->generateCSRFToken($user);
+        $view = (isset($data['REFRESH'])) ? $data['REFRESH'] : 'register';
+        $this->displayView($view, $data);
+    }
+
+    /**
+     *
+     */
+    function createAccount()
+    {
         $data = array();
-        $view = "register";
-        $fields = array("first", "last", "user",
-            "email", "password", "repassword");
+        $fields = $this->register_fields;
+        foreach($fields as $field) {
+            $data[strtoupper($field)] = "";
+        }
+        return $data;
+    }
+
+    /**
+     *
+     */
+    function processAccountData()
+    {
+        $data["ELEMENT"] = "manageaccountElement";
         $data['SCRIPT'] = "";
-        $error = false;
-        if($token_okay && isset($_REQUEST['submit'])) {
-            foreach($fields as $field) {
-                if(empty($_REQUEST[$field]) || !isset($_REQUEST[$field])) {
-                    $error = true;
-                    $data[] = $field;
-                } else if($field == "email" &&
-                    !preg_match($regex_email,
-                    $this->clean($_REQUEST['email'], "string" ))) {
-                        $error = true;
-                        $data[] = "email";
-                }
-            }
-            if(isset($_REQUEST['password'])
-                && isset($_REQUEST['repassword'])
-                && $this->clean($_REQUEST['password'], "string" ) !=
-                $this->clean($_REQUEST['repassword'], "string" )) {
-                $error = true;
-                $data[] = "password";
-            }
-            if($error) {
-                $data['RESULT'] = "true";
-                $data['FIRST'] = isset($_REQUEST['first']) ?
-                    $this->clean($_REQUEST['first'], "string") : "";
-                $data['LAST'] = isset($_REQUEST['last']) ?
-                    $this->clean($_REQUEST['last'], "string") : "";
-                $data['USER'] = isset($_REQUEST['user']) ?
-                    $this->clean($_REQUEST['user'], "string") : "";
-                $data['EMAIL'] = isset($_REQUEST['email']) ?
-                    $this->clean($_REQUEST['email'], "string") : "";
+        $data['MESSAGE'] = "";
+        $data['SCRIPT'] = "";
+        $error = $this->getCleanFields($data);
+        if($error) {
+            $data['RESULT'] = "true";
+            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+            tl('register_controller_error_fields')."</h1>')";
+            $data['REFRESH'] = "register";
+            return $data;
+        }
+        if($this->userModel->getUserId($data['USER'])) {
+            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+            tl('register_controller_user_already_exists')."</h1>')";
+            $data['REFRESH'] = "register";
+            return $data;
+        }
+        switch(REGISTRATION_TYPE)
+        {
+            case 'no_activation':
+                $data['REFRESH'] = "signin";
+                $this->userModel->addUser($data['USER'], $data['PASSWORD'],
+                    $data['FIRST'], $data['LAST'], $data['EMAIL']);
                 $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                tl('register_controller_error_fields')."</h1>')";
-            } else {
-                $view = "search";
+                    tl('register_controller_account_created')."</h1>')";
+            break;
+            case 'email_registration':
 /*$server = new MailServer('smtp.domain', 587, 'username', 'password', 'tls');
 $to = "chris@pollett.org";
 $from = "chris@pollett.org";
 $subject = "Test Mail";
 $message = "This is a test";
 $server->send($subject, $from, $to, $message);*/
-                $this->userModel->
-                    addUser(
-                    $this->clean($_REQUEST['user'], "string" ),
-                    $this->clean($_REQUEST['password'], "string" )
-                    $this->clean($_REQUEST['first'], "string" ),
-                    $this->clean($_REQUEST['last'], "string" ),
-                    $this->clean($_REQUEST['email'], "string" ));
+            break;
+            case 'admin_activation':
+                $data['REFRESH'] = "signin";
+                $this->userModel->addUser($data['USER'], $data['PASSWORD'],
+                    $data['FIRST'], $data['LAST'], $data['EMAIL'], true);
                 $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                    tl('register_controller_account_created')."</h1>')";
-            }
+                    tl('register_controller_account_request_made')."</h1>')";
+                $server = new MailServer(MAIL_SENDER, MAIL_SERVER,
+                    MAIL_SERVERPORT, MAIL_USERNAME, MAIL_PASSWORD,
+                    MAIL_SECURITY);
+                $subject = tl('register_controller_admin_activation_request');
+                $message = tl('register_controller_admin_activation_message',
+                    $data['FIRST'], $data['LAST'], $data['USER']);
+                $server->send($subject, MAIL_SENDER, MAIL_SENDER, $message);
+            break;
         }
-        $this->displayView($view, $data);
+        return $data;
     }
 
-    function createAccount()
+    /**
+     *
+     */
+    function resetPassword()
     {
+
+    }
+
+    /**
+     *
+     */
+    function emailVerification()
+    {
+    }
+
+    function getCleanFields(&$data)
+    {
+        $fields = $this->register_fields;
+        $missing = array();
+        $regex_email=
+            '/^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+'.
+            '(\.[a-z0-9-]+)*(\.[a-z]{2,3})$/';
+        $error = false;
+        foreach($fields as $field) {
+            if(empty($_REQUEST[$field]) || !isset($_REQUEST[$field])) {
+                $error = true;
+                $missing[] = $field;
+                $data[strtoupper($field)] = "";
+            } else if($field == "email" &&
+                !preg_match($regex_email,
+                $this->clean($_REQUEST['email'], "string" ))) {
+                $error = true;
+                $missing[] = "email";
+                $data[strtoupper($field)] = "";
+            } else {
+                $data[strtoupper($field)] = $this->clean($_REQUEST[$field],
+                    "string");
+            }
+        }
+        if(isset($_REQUEST['password'])
+            && isset($_REQUEST['repassword'])
+            && $this->clean($_REQUEST['password'], "string" ) !=
+            $this->clean($_REQUEST['repassword'], "string" )) {
+            $error = true;
+            $missing[] = "password";
+            $missing[] = "repassword";
+            $data["PASSWORD"] = "";
+            $data["REPASSWORD"] = "";
+        }
+        $data['MISSING'] = $missing;
+        return $error;
     }
 }
 

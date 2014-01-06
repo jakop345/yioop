@@ -77,7 +77,7 @@ class BlogmixesComponent extends Component
         } else {
             $is_admin = false;
             $groups =
-                $parent->groupModel->getGroupListbyUser($_SESSION['USER_ID']);
+                $parent->groupModel->getUserGroups($_SESSION['USER_ID']);
             foreach($groups as $group) {
                 array_push($group_ids, $group['GROUP_ID']);
             }

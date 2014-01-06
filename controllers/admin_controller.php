@@ -141,6 +141,12 @@ class AdminController extends Controller implements CrawlConstants
                 $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
                     tl('admin_controller_login_successful')."</h1>')";
                 $data = array_merge($data, $this->processSession());
+                if(isset($data['INACTIVE'])) {
+                    $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
+                        tl('admin_controller_account_not_active')."</h1>')";
+                    $view = "signin";
+                    unset($_SESSION['USER_ID']);
+                }
                 $view = "admin";
             } else {
                 $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
@@ -247,6 +253,10 @@ class AdminController extends Controller implements CrawlConstants
         } else {
             $allowed_activities =
                  $this->userModel->getUserActivities($_SESSION['USER_ID']);
+        }
+        if($allowed_activities == array()) {
+            $data['INACTIVE'] = true;
+            return $data;
         }
         foreach($allowed_activities as $allowed_activity) {
             if($activity == $allowed_activity['METHOD_NAME']) {

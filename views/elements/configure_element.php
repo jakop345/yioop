@@ -152,6 +152,12 @@ class ConfigureElement extends Element
                         $data['REGISTRATION_TYPE']);
                 ?>
                 <div id="registration-info">
+                <div class="top-margin"><b><label for="mail-sender"><?php
+                    e(tl('configure_element_mail_sender'))?></label></b>
+                    <input type="text" id="mail-server" name="MAIL_SENDER"
+                        value="<?php e($data['MAIL_SENDER']); ?>"
+                        class="wide-field" />
+                </div>
                 <div class="top-margin"><b><label for="mail-server"><?php
                     e(tl('configure_element_mail_server'))?></label></b>
                     <input type="text" id="mail-server" name="MAIL_SERVER"

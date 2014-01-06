@@ -85,11 +85,12 @@ $db->execute("INSERT INTO VERSION VALUES (19)");
 
 //default account is root without a password
 $sql ="INSERT INTO USER VALUES (1, 'admin', 'admin','root',
-        'root@dev.null',1,'".crawlCrypt('')."','".crawlCrypt('1')."' ) ";
+        'root@dev.null', '".crawlCrypt('')."', '".ACTIVE_STATUS.
+        "', '".crawlCrypt('1')."' ) ";
 $db->execute($sql);
 
 //default public group with group id 1
-$sql = "INSERT INTO GROUPS VALUES(1,'public','".time()."','1')";
+$sql = "INSERT INTO GROUPS VALUES(PUBLIC_GROUP_ID,'public','".time()."','1')";
 $db->execute($sql);
 
 /* we insert 1 by 1 rather than comma separate as sqlite

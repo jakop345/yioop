@@ -586,6 +586,10 @@ function upgradeDatabaseVersion18(&$db)
 
 /**
  * Upgrades a Version 18 version of the Yioop! database to a Version 19 version
+ * This is a major upgrade in that crawlCrypt was changed, so old passwords 
+ * won't work. All accounts are copied over to the new system but are defaulted
+ * to inactive. The root account is copied over but its password is reset to
+ * blank
  * @param object $db datasource to use to upgrade
  */
 function upgradeDatabaseVersion19(&$db)
@@ -597,15 +601,21 @@ function upgradeDatabaseVersion19(&$db)
     $sql = "ALTER TABLE USER RENAME TO USER_OLD";
     $db->execute($sql);
     $auto_increment = $db->autoIncrement($dbinfo);
-    $db->execute("CREATE TABLE USER(USER_ID INTEGER PRIMARY KEY 
-        $auto_increment, FIRST_NAME VARCHAR(16), LAST_NAME VARCHAR(16),
+    $db->execute("CREATE TABLE USER(USER_ID INTEGER PRIMARY KEY $auto_increment,
+        FIRST_NAME VARCHAR(16), LAST_NAME VARCHAR(16),
         USER_NAME VARCHAR(16) UNIQUE, EMAIL VARCHAR(32),
-        ACTIVE INTEGER, PASSWORD CHAR(60), HASH VARCHAR(32))");
+        PASSWORD CHAR(60), STATUS INTEGER, HASH VARCHAR(100))");
     $sql = "SELECT USER_ID, USER_NAME FROM USER_OLD";
     $result = $db->execute($sql);
     while($row = $db->fetchArray($result)) {
-        $sql = "INSERT INTO USER (USER_ID, USER_NAME, ACTIVE)
-            VALUES ('{$row['USER_ID']}', '{$row['USER_NAME']}', 2)";
+        $status = ($row['USER_NAME'] == 'root') ? ACTIVE_STATUS : 
+            INACTIVE_STATUS;
+        $sql = "INSERT INTO USER (USER_ID, USER_NAME, FIRST_NAME, LAST_NAME,
+            EMAIL, PASSWORD, STATUS, HASH)
+            VALUES ('{$row['USER_ID']}', '{$row['USER_NAME']}', 
+            '{$row['FIRST_NAME']}', '{$row['LAST_NAME']}', '{$row['EMAIL']}',
+            '".crawlCrypt('')."', '".$status."', '".
+            time().'$'.md5($row['USER_NAME'].AUTH_KEY.time())."')";
         $db->execute($sql);
     }
     $db->disconnect();

@@ -98,10 +98,10 @@ class SigninView extends View
                 if(in_array(REGISTRATION_TYPE, array('no_activation', 
                     'email_registration', 'admin_activation'))) {
                     ?>
-                    <li><a href="./?c=register&amp;a=resetPassword<?php
+                    <li><a href="./?c=register&amp;a=resetPassword&amp;<?php
                         e(CSRF_TOKEN."=".$data[CSRF_TOKEN])?>&amp;"><?php
                         e(tl('signin_view_reset_password')); ?></a></li>
-                    <li><a href="./?c=register&amp;a=createAccount<?php
+                    <li><a href="./?c=register&amp;a=createAccount&amp;<?php
                         e(CSRF_TOKEN."=".$data[CSRF_TOKEN])?>&amp;"><?php
                         e(tl('signin_view_create_account')); ?></a></li>
                 <?php

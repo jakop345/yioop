@@ -53,111 +53,181 @@ class ManageusersElement extends Element
      */
     function render($data)
     {
+        $edituser= ($data['FORM_TYPE'] == "edituser") ? true: false;
+        $base_url = "?c=admin&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
+            "&amp;a=manageUsers";
     ?>
         <div class="current-activity">
-        <h2><?php e(tl('manageusers_element_add_user'))?></h2>
+        <?php
+            if($edituser) {
+                e("<div class='float-opposite'><a href='$base_url'>".
+                    tl('manageusers_element_adduser_form')."</a></div>");
+                e("<h2>".tl('manageusers_element_user_info'). "</h2>");
+            } else {
+                e("<h2>".tl('manageusers_element_add_user'). "</h2>");
+            }?>
         <form id="addUserForm" method="post" action=''>
         <input type="hidden" name="c" value="admin" />
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="manageUsers" />
-        <input type="hidden" name="arg" value="adduser" />
-
+        <input type="hidden" name="arg" value="<?php 
+            e($data['FORM_TYPE']);?>" />
         <table class="name-table">
         <tr><td><label for="user-name"><?php
-            e(tl('manageusers_element_username'))?></label></td>
+            e(tl('manageusers_element_username'))?>:</label></td>
             <td><input type="text" id="user-name"
-                name="username"  maxlength="80" class="narrow-field"/></td></tr>
-        <tr><td><label for="pass-word"><?php
-             e(tl('manageusers_element_password'))?></label></td>
-            <td><input type="password" id="pass-word"
-                name="password"  maxlength="80" class="narrow-field"/></td></tr>
-        <tr><td><label for="retype-password"><?php
-                e(tl('manageusers_element_retype_password'))?></label></td>
-            <td><input type="password" id="retype-password"
-                name="retypepassword"  maxlength="80"
+                name="user_name"  maxlength="80"
+                value="<?php e($data['CURRENT_USER']['user_name']); ?>"
+                class="narrow-field" <?php
+                if($edituser) {
+                    e(' disabled="disabled" ');
+                }
+                ?> /></td></tr>
+        <tr><td><label for="first-name"><?php
+                e(tl('manageusers_element_firstname')); ?>:</label></td>
+            <td><input type="text" id="first-name"
+                name="first_name"  maxlength="80"
+                value="<?php e($data['CURRENT_USER']['first_name']); ?>"
                 class="narrow-field"/></td></tr>
+        <tr><td><label for="last-name"><?php
+                e(tl('manageusers_element_lastname')); ?>:</label></td>
+            <td><input type="text" id="last-name"
+                name="last_name"  maxlength="80"
+                value="<?php e($data['CURRENT_USER']['last_name']); ?>"
+                class="narrow-field"/></td></tr>
+        <tr><td><label for="e-mail"><?php
+                e(tl('manageusers_element_email')); ?>:</label></td>
+            <td><input type="text" id="e-mail"
+                name="email"  maxlength="80"
+                value="<?php e($data['CURRENT_USER']['email']); ?>"
+                class="narrow-field"/></td></tr>
+        <tr><td><label for="update-userstatus-currentuser"><?php
+                e(tl('manageusers_element_status')); ?>:</label></td>
+            <td><?php
+                $this->view->optionsHelper->render(
+                    "update-userstatus-currentuser",
+                    "status", $data['STATUS_CODES'],
+                    $data['CURRENT_USER']['status']);?></td></tr>
+        <?php
+        if($data["FORM_TYPE"] == 'edituser') {
+        ?>
+            <tr><td style="vertical-align:top"><?php
+                    e(tl('manageusers_element_roles')); ?>:</td>
+                <td><div style="border:2px solid black;padding:5px"><table><?php
+                foreach($data['SELECT_ROLES'] as $role_array) {
+                    e("<tr><td><b>".
+                        $role_array['ROLE_NAME'].
+                        "</b></td><td><a href='?c=admin&amp;a=manageUsers".
+                        "&amp;arg=deleteuserrole&amp;selectrole=".
+                        $role_array['ROLE_ID']);
+                    e("&amp;user_name=".$data['CURRENT_USER']['user_name'].
+                        "&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
+                        "'>Delete</a></td>");
+                }
+                ?>
+                </table>
+                <?php $this->view->optionsHelper->render("add-userrole",
+                        "selectrole", $data['AVAILABLE_ROLES'],
+                        $data['SELECT_ROLE']); ?>
+                </div>
+                </td></tr>
+            <tr><td style="vertical-align:top"><?php
+                    e(tl('manageusers_element_groups')); ?>:</td>
+                <td><div style="border:2px solid black;padding:5px"><table><?php
+                foreach($data['SELECT_GROUPS'] as $group_array) {
+                    e("<tr><td><b>".
+                        $group_array['GROUP_NAME'].
+                        "</b></td><td><a href='?c=admin&amp;a=manageUsers".
+                        "&amp;arg=deleteusergroup&amp;selectgroup=".
+                        $group_array['GROUP_ID']);
+                    e("&amp;user_name=".$data['CURRENT_USER']['user_name'].
+                        "&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
+                        "'>Delete</a></td>");
+                }
+                ?>
+                </table>
+                <?php $this->view->optionsHelper->render("add-usergroup",
+                        "selectgroup", $data['AVAILABLE_GROUPS'],
+                        $data['SELECT_GROUP']); ?>
+                </div>
+                </td></tr>
+        <?php
+        }
+        ?>
+        <tr><td><label for="pass-word"><?php
+             e(tl('manageusers_element_password'))?>:</label></td>
+            <td><input type="password" id="pass-word"
+                name="password" maxlength="80"
+                value="<?php e($data['CURRENT_USER']['password']); ?>"
+                class="narrow-field"/></td></tr>
+        <tr><td><label for="retype-password"><?php
+                e(tl('manageusers_element_retype_password'))?>:</label></td>
+            <td><input type="password" id="retype-password"
+                name="retypepassword" maxlength="80"
+                value="<?php e($data['CURRENT_USER']['password']); ?>"
+                class="narrow-field"/></td></tr>
+
         <tr><td></td><td class="center"><button class="button-box"
-            type="submit"><?php e(tl('manageusers_element_submit'));
+            type="submit"><?php e(tl('manageusers_element_save'));
             ?></button></td>
         </tr>
         </table>
         </form>
-
-        <h2><?php e(tl('manageusers_element_delete_user'))?></h2>
-        <form id="deleteUserForm" method="post" action=''>
-        <input type="hidden" name="c" value="admin" />
-        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
-            e($data[CSRF_TOKEN]); ?>" />
-        <input type="hidden" name="a" value="manageUsers" />
-        <input type="hidden" name="arg" value="deleteuser" />
-
-        <table class="name-table">
-        <tr><td><label for="delete-username"><?php
-            e(tl('manageusers_element_delete_username'))?></label></td>
-            <td><?php $this->view->optionsHelper->render(
-                "delete-username", "username", $data['USER_NAMES'], "");
-                ?></td><td><button class="button-box" type="submit"><?php
-                e(tl('manageusers_element_submit')); ?></button></td>
-        </tr>
-        </table>
-        </form>
-
-        <h2><?php e(tl('manageusers_element_view_user_roles'))?></h2>
-        <form id="viewUserRoleForm" method="get" action='' >
-        <input type="hidden" name="c" value="admin" />
-        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
-            e($data[CSRF_TOKEN]); ?>" />
-        <input type="hidden" name="a" value="manageUsers" />
-        <input type="hidden" name="arg" value="viewuserroles" />
-        <table class="name-table">
-        <tr><td><label for="select-user"><?php
-            e(tl('manageusers_element_select_user'))?></label></td>
-            <td><?php $this->view->optionsHelper->render("select-user",
-                "selectuser", $data['USER_NAMES'], $data['SELECT_USER']);
-                ?></td></tr>
-        </table>
-        </form>
+        <h2><?php e(tl('manageusers_element_users')); ?></h2>
+        <table class="role-table">
+            <tr>
+                <th><?php e(tl('manageusers_element_username'));?></th>
+                <th><?php e(tl('manageusers_element_firstname'));?></th>
+                <th><?php e(tl('manageusers_element_lastname'));?></th>
+                <th><?php e(tl('manageusers_element_email'));?></th>
+                <th><?php e(tl('manageusers_element_status'));?></th>
+                <th colspan='2'><?php 
+                    e(tl('manageusers_element_actions'));?></th>
+            </tr>
         <?php
-        if(isset($data['SELECT_ROLES'])) {
-            if(count($data['AVAILABLE_ROLES']) > 0) {
-            ?>
-                <form id="addUserRoleForm" method="get" action='' >
-                <input type="hidden" name="c" value="admin" />
-                <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
-                    e($data[CSRF_TOKEN]); ?>" />
-                <input type="hidden" name="a" value="manageUsers" />
-                <input type="hidden" name="arg" value="adduserrole" />
-                <input type="hidden" name="selectuser" value="<?php
-                    e($data['SELECT_USER']); ?>" />
-                <table summary="organizes the fields and columns of the
-                    view user role form" cellpadding="5px">
-                <tr><td><label for="add-role"><?php
-                    e(tl('manageusers_element_add_role'))?></label></td>
-                <td><?php $this->view->optionsHelper->render("add-userrole",
-                    "selectrole", $data['AVAILABLE_ROLES'],
-                    $data['SELECT_ROLE']); ?></td>
-                <td><button class="button-box" type="submit"><?php
-                    e(tl('manageusers_element_submit')); ?></button></td></tr>
-                </table>
-                </form>
+            $delete_url = $base_url . "&amp;arg=deleteuser&amp;";
+            $edit_url = $base_url . "&amp;arg=edituser&amp;";
+            foreach($data['USERS'] as $user) {
+                echo "<tr>";
+                foreach($user as $colname => $user_column) {
+                    if(strcmp($colname,"STATUS") == 0) {
+                        ?><td>
+                        <form  method="get" action='#' >
+                        <input type="hidden" name="c" value="admin" />
+                        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" 
+                            value="<?php e($data[CSRF_TOKEN]); ?>" />
+                        <input type="hidden" name="a" value="manageUsers" />
+                        <input type="hidden" name="arg" value="updatestatus" />
+                        <input type="hidden" name="user_name" value="<?php
+                            e($user['USER_NAME']); ?>" />
+                        <?php
+                        $this->view->optionsHelper->render(
+                            "update-userstatus-{$user['USER_NAME']}",
+                            "userstatus", $data['STATUS_CODES'],
+                            $user['STATUS'], true);
+                        ?>
+                        </form>
+                        </td>
+                        <?php
+                    } else {
+                        echo "<td>$user_column</td>";
+                    }
+                }
+                ?>
+                <td><a href="<?php e($edit_url . 'user_name='.
+                    $user['USER_NAME']); ?>"><?php
+                    e(tl('manageusers_element_edit'));
+                    ?></a></td>
+                <td><a href="<?php e($delete_url . 'user_name='.
+                    $user['USER_NAME']); ?>"><?php 
+                    e(tl('manageusers_element_delete'));
+                    ?></a></td>
+                </tr>
             <?php
             }
-            ?>
-            <table class="role-table" ><?php
-            foreach($data['SELECT_ROLES'] as $role_array) {
-                echo "<tr><td>".$role_array['ROLE_NAME'].
-                    "</td><td><a href='?c=admin&amp;a=manageUsers".
-                    "&amp;arg=deleteuserrole&amp;selectrole=".
-                    $role_array['ROLE_ID'];
-                echo "&amp;selectuser=".$data['SELECT_USER'].
-                    "&".CSRF_TOKEN."=".$data[CSRF_TOKEN]."'>Delete</a></td>";
-            }
-            ?>
-            </table>
-        <?php
-        }
         ?>
+        </table>
         <script type="text/javascript">
         function submitViewUserRole()
         {

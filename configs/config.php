@@ -551,4 +551,14 @@ define ('MAX_QUERY_CACHE_TIME', 2*86400); //two days
     invalidated */
 define ('MIN_QUERY_CACHE_TIME', 3600); //one hour
 
+/** */
+define('PUBLIC_GROUP_ID', 1);
+
+/** */
+define('ACTIVE_STATUS', 1);
+/** */
+define('INACTIVE_STATUS', 2);
+
+/** */
+define('BANNED_STATUS', 3);
 ?>
