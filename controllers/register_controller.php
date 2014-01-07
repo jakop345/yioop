@@ -83,13 +83,15 @@ class RegisterController extends Controller
         } else {
             $user = $_SERVER['REMOTE_ADDR'];
         }
-        $activity = isset($_REQUEST['a']) ? 
+        $activity = isset($_REQUEST['a']) ?
             $this->clean($_REQUEST['a'], 'string') : 'createAccount';
         $token_okay = $this->checkCSRFToken(CSRF_TOKEN, $user);
 
-        if(!in_array($activity, $this->activities) || !$token_okay) {
+        if(!in_array($activity, $this->activities) || (!$token_okay
+            && $activity != "emailVerification")) {
             $activity = 'createAccount';
         }
+
         $data = $this->call($activity);
         $data[CSRF_TOKEN] = $this->generateCSRFToken($user);
         $view = (isset($data['REFRESH'])) ? $data['REFRESH'] : 'register';
@@ -114,9 +116,6 @@ class RegisterController extends Controller
      */
     function processAccountData()
     {
-        $data["ELEMENT"] = "manageaccountElement";
-        $data['SCRIPT'] = "";
-        $data['MESSAGE'] = "";
         $data['SCRIPT'] = "";
         $error = $this->getCleanFields($data);
         if($error) {
@@ -142,17 +141,32 @@ class RegisterController extends Controller
                     tl('register_controller_account_created')."</h1>')";
             break;
             case 'email_registration':
-/*$server = new MailServer('smtp.domain', 587, 'username', 'password', 'tls');
-$to = "chris@pollett.org";
-$from = "chris@pollett.org";
-$subject = "Test Mail";
-$message = "This is a test";
-$server->send($subject, $from, $to, $message);*/
+                $data['REFRESH'] = "signin";
+                $this->userModel->addUser($data['USER'], $data['PASSWORD'],
+                    $data['FIRST'], $data['LAST'], $data['EMAIL'],
+                    INACTIVE_STATUS);
+                $user = $this->userModel->getUser($data['USER']);
+                $server = new MailServer(MAIL_SENDER, MAIL_SERVER,
+                    MAIL_SERVERPORT, MAIL_USERNAME, MAIL_PASSWORD,
+                    MAIL_SECURITY);
+                $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                    tl('register_controller_registration_email_sent')."</h1>')";
+                $subject = tl('register_controller_admin_activation_request');
+                $message = tl('register_controller_admin_email_salutation',
+                    $data['FIRST'], $data['LAST'])."\n";
+                $message .= tl('register_controller_admin_email_test')."\n";
+                $creation_time = vsprintf('%d.%06d', gettimeofday());
+                $message .= NAME_SERVER.
+                    "?c=register&a=emailVerification"
+                    ."&email=".$user['EMAIL']."&time=".$user['CREATION_TIME'].
+                    "&hash=".$user['HASH'];
+                $server->send($subject, MAIL_SENDER, MAIL_SENDER, $message);
             break;
             case 'admin_activation':
                 $data['REFRESH'] = "signin";
                 $this->userModel->addUser($data['USER'], $data['PASSWORD'],
-                    $data['FIRST'], $data['LAST'], $data['EMAIL'], true);
+                    $data['FIRST'], $data['LAST'], $data['EMAIL'],
+                    INACTIVE_STATUS);
                 $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                     tl('register_controller_account_request_made')."</h1>')";
                 $server = new MailServer(MAIL_SENDER, MAIL_SERVER,
@@ -180,6 +194,38 @@ $server->send($subject, $from, $to, $message);*/
      */
     function emailVerification()
     {
+        $data = array();
+        $data['REFRESH'] = "signin";
+        $data['SCRIPT'] = "";
+        $clean_fields = array("email", "time", "hash");
+        $verify = array();
+        $error = false;
+        foreach($clean_fields as $field) {
+            if(isset($_REQUEST[$field])) {
+                $verify[$field] = $this->clean($_REQUEST[$field], "string");
+            } else {
+                $error = true;
+                break;
+            }
+        }
+        if($error) {
+            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                tl('register_controller_email_verification_error')."</h1>')";
+        } else {
+            $user = $this->userModel->getUserByEmailTime($verify["email"],
+                $verify["time"]);
+            if(isset($user["HASH"]) && $user["HASH"] == $verify["hash"]) {
+                $this->userModel->updateUserStatus($user["USER_ID"],
+                    ACTIVE_STATUS);
+                $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                    tl('register_controller_account_activated')."</h1>')";
+            } else {
+                $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                    tl('register_controller_email_verification_error').
+                    "</h1>')";
+            }
+        }
+        return $data;
     }
 
     function getCleanFields(&$data)

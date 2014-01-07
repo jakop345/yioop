@@ -346,6 +346,24 @@ class UserModel extends Model
     }
 
     /**
+     *
+     * @param string $email
+     * @param string $creation_time
+     */
+    function getUserByEmailTime($email, $creation_time)
+    {
+        $this->db->selectDB(DB_NAME);
+        $sql = "SELECT * FROM USER WHERE 
+         EMAIL = '$email' AND CREATION_TIME='$creation_time' LIMIT 1";
+        $result = $this->db->execute($sql);
+        if(!$result) {
+            return false;
+        }
+        $row = $this->db->fetchArray($result);
+        return $row;
+    }
+
+    /**
      * get a status of user by user_id
      *
      * @param string $user_id id of the user
@@ -377,15 +395,17 @@ class UserModel extends Model
         $email='', $status = ACTIVE_STATUS)
     {
         $this->db->selectDB(DB_NAME);
+        $creation_time = vsprintf('%d.%06d', gettimeofday());
         $sql = "INSERT INTO USER(FIRST_NAME, LAST_NAME, 
-            USER_NAME, EMAIL, PASSWORD, STATUS, HASH) VALUES ('".
-            $this->db->escapeString($firstname)."', '".
-            $this->db->escapeString($lastname)."', '".
-            $this->db->escapeString($username)."', '".
-            $this->db->escapeString($email)."', '".
-            crawlCrypt($this->db->escapeString($password))."','".
+            USER_NAME, EMAIL, PASSWORD, STATUS, HASH, CREATION_TIME) VALUES ('".
+            $this->db->escapeString($firstname)."', '" .
+            $this->db->escapeString($lastname)."', '" .
+            $this->db->escapeString($username)."', '" .
+            $this->db->escapeString($email)."', '" .
+            crawlCrypt($this->db->escapeString($password)) . "','" .
             $this->db->escapeString($status)."', '".
-            time().'$'.md5($row['USER_NAME'].AUTH_KEY.time())."') ";
+            md5($username.AUTH_KEY.$creation_time) . "', '" .
+            $creation_time . "') ";
         $result = $this->db->execute($sql);
         if(!$user_id = $this->getUserId($username)) {
             return false;

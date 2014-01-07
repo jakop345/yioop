@@ -610,12 +610,14 @@ function upgradeDatabaseVersion19(&$db)
     while($row = $db->fetchArray($result)) {
         $status = ($row['USER_NAME'] == 'root') ? ACTIVE_STATUS : 
             INACTIVE_STATUS;
+        $creation_time = vsprintf('%d.%06d', gettimeofday());
         $sql = "INSERT INTO USER (USER_ID, USER_NAME, FIRST_NAME, LAST_NAME,
             EMAIL, PASSWORD, STATUS, HASH)
             VALUES ('{$row['USER_ID']}', '{$row['USER_NAME']}', 
             '{$row['FIRST_NAME']}', '{$row['LAST_NAME']}', '{$row['EMAIL']}',
             '".crawlCrypt('')."', '".$status."', '".
-            time().'$'.md5($row['USER_NAME'].AUTH_KEY.time())."')";
+            md5($row['USER_NAME'].AUTH_KEY.$creation_time)."', '".
+            $creation_time."')";
         $db->execute($sql);
     }
     $db->disconnect();

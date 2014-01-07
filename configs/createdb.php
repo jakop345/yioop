@@ -83,10 +83,12 @@ if(!$profile_model->createDatabaseTables($db, $dbinfo)) {
 
 $db->execute("INSERT INTO VERSION VALUES (19)");
 
+$creation_time = vsprintf('%d.%06d', gettimeofday());
+
 //default account is root without a password
 $sql ="INSERT INTO USER VALUES (1, 'admin', 'admin','root',
         'root@dev.null', '".crawlCrypt('')."', '".ACTIVE_STATUS.
-        "', '".crawlCrypt('1')."' ) ";
+        "', '".crawlCrypt('root'.AUTH_KEY.$creation_time)."','$creation_time')";
 $db->execute($sql);
 
 //default public group with group id 1
