@@ -109,7 +109,7 @@ class StaticController extends Controller
         }
         $data = array();
         if(isset($_REQUEST['p']) &&
-            in_array($_REQUEST['p'], $this->staticView->pages) &&
+            in_array($_REQUEST['p'], $this->staticView->pages) ||
             $this->blogpageModel->isPageAccessible($user, $_REQUEST['p'])) {
                 $data['page'] = $_REQUEST['p'];
         } else {
