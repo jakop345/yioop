@@ -178,7 +178,8 @@ class ConfigureElement extends Element
                 </div>
                 <div class="top-margin"><b><label for="mail-password"><?php
                     e(tl('configure_element_mail_password'))?></label></b>
-                    <input type="text" id="mail-password" name="MAIL_PASSWORD"
+                    <input type="password" id="mail-password"
+                        name="MAIL_PASSWORD"
                         value="<?php e($data['MAIL_PASSWORD']); ?>"
                         class="wide-field" />
                 </div>

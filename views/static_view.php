@@ -62,30 +62,30 @@ class StaticView extends View
      *  the view
      */
     function renderView($data) {
-    $logo = "resources/yioop.png";
-    if(MOBILE) {
-        $logo = "resources/m-yioop.png";
-    }
-    if(isset($_SERVER["PATH_INFO"])) {
-        $path_info = $_SERVER["PATH_INFO"];
-    } else {
-        $path_info = ".";
-    }
-?>
-<div class="non-search center">
-<h1 class="logo"><a href="<?php e($path_info."/?".
-    CSRF_TOKEN."=".$data[CSRF_TOKEN]);?>"><img
-    src="<?php e($path_info."/".$logo); ?>"
-    alt="<?php e(tl('static_view_title')); ?>" /></a><span><?php
-    e($data['subtitle']);?></span></h1>
-</div>
-<div class="content">
-<?php e($this->page_objects[$data['page']]); ?>
-</div>
-<div class="landing-footer">
-<?php  $this->footerElement->render($data);?>
-</div>
-<?php
+        $logo = "resources/yioop.png";
+        if(MOBILE) {
+            $logo = "resources/m-yioop.png";
+        }
+        if(isset($_SERVER["PATH_INFO"])) {
+            $path_info = $_SERVER["PATH_INFO"];
+        } else {
+            $path_info = ".";
+        }
+        ?>
+        <div class="non-search center">
+        <h1 class="logo"><a href="<?php e($path_info."/?".
+            CSRF_TOKEN."=".$data[CSRF_TOKEN]);?>"><img
+            src="<?php e($path_info."/".$logo); ?>"
+            alt="<?php e(tl('static_view_title')); ?>" /></a><span><?php
+            e($data['subtitle']);?></span></h1>
+        </div>
+        <div class="content">
+            <?php e($this->page_objects[$data['page']]); ?>
+        </div>
+        <div class="landing-footer">
+            <?php  $this->footerElement->render($data);?>
+        </div>
+        <?php
     }
 }
 ?>
