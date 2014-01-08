@@ -50,7 +50,7 @@ require_once(BASE_DIR.'/lib/url_parser.php');
 class ProfileModel extends Model
 {
     var $profile_fields = array('USER_AGENT_SHORT',
-            'DEFAULT_LOCALE', 'DEBUG_LEVEL','REGISTRATION_TYPE',
+            'DEFAULT_LOCALE', 'DEBUG_LEVEL','REGISTRATION_TYPE', "USE_MAIL_PHP",
             'MAIL_SENDER', 'MAIL_SERVER', 'MAIL_SERVERPORT', 'MAIL_USERNAME',
             'MAIL_PASSWORD', 'MAIL_SECURITY',
             'DBMS', 'DB_HOST','DB_NAME', 'DB_USER', 'DB_PASSWORD',

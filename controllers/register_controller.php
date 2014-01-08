@@ -157,8 +157,8 @@ class RegisterController extends Controller
                 $message .= tl('register_controller_admin_email_test')."\n";
                 $creation_time = vsprintf('%d.%06d', gettimeofday());
                 $message .= NAME_SERVER.
-                    "?c=register&a=emailVerification"
-                    ."&email=".$user['EMAIL']."&time=".$user['CREATION_TIME'].
+                    "?c=register&a=emailVerification&email=".
+                    $user['EMAIL']."&time=".$user['CREATION_TIME'].
                     "&hash=".$user['HASH'];
                 $server->send($subject, MAIL_SENDER, MAIL_SENDER, $message);
             break;

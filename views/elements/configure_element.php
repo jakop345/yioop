@@ -139,59 +139,6 @@ class ConfigureElement extends Element
                         e(tl('configure_element_test_info')); ?></label>
             </fieldset>
             </div>
-            <div class = "top-margin">
-            <fieldset class="extra-wide-field">
-                <legend><label
-                for="account-registration"><?php
-                e(tl('configure_element_account_registration'));
-                ?>
-                </label></legend>
-                    <?php $this->view->optionsHelper->render(
-                        "account-registration", "REGISTRATION_TYPE",
-                        $data['REGISTRATION_TYPES'],
-                        $data['REGISTRATION_TYPE']);
-                ?>
-                <div id="registration-info">
-                <div class="top-margin"><b><label for="mail-sender"><?php
-                    e(tl('configure_element_mail_sender'))?></label></b>
-                    <input type="text" id="mail-server" name="MAIL_SENDER"
-                        value="<?php e($data['MAIL_SENDER']); ?>"
-                        class="wide-field" />
-                </div>
-                <div class="top-margin"><b><label for="mail-server"><?php
-                    e(tl('configure_element_mail_server'))?></label></b>
-                    <input type="text" id="mail-server" name="MAIL_SERVER"
-                        value="<?php e($data['MAIL_SERVER']); ?>"
-                        class="wide-field" />
-                </div>
-                <div class="top-margin"><b><label for="mail-serverport"><?php
-                    e(tl('configure_element_mail_serverport'))?></label></b>
-                    <input type="text" id="mail-port" name="MAIL_SERVERPORT"
-                        value="<?php e($data['MAIL_SERVERPORT']); ?>"
-                        class="wide-field" />
-                </div>
-                <div class="top-margin"><b><label for="mail-username"><?php
-                    e(tl('configure_element_mail_username'))?></label></b>
-                    <input type="text" id="mail-username" name="MAIL_USERNAME"
-                        value="<?php e($data['MAIL_USERNAME']); ?>"
-                        class="wide-field" />
-                </div>
-                <div class="top-margin"><b><label for="mail-password"><?php
-                    e(tl('configure_element_mail_password'))?></label></b>
-                    <input type="password" id="mail-password"
-                        name="MAIL_PASSWORD"
-                        value="<?php e($data['MAIL_PASSWORD']); ?>"
-                        class="wide-field" />
-                </div>
-                <div class="top-margin"><b><label for="mail-security"><?php
-                    e(tl('configure_element_mail_security'))?></label></b>
-                    <input type="text" id="mail-security" name="MAIL_SECURITY"
-                        value="<?php e($data['MAIL_SECURITY']); ?>"
-                        class="wide-field" />
-                </div>
-                </div>
-            </fieldset>
-            </div>
             <div class="top-margin">
             <fieldset class="extra-wide-field"><legend><?php
                 e(tl('configure_element_site_access'))?></legend>
@@ -248,6 +195,67 @@ class ConfigureElement extends Element
                             name="DB_PASSWORD" value="<?php
                             e($data['DB_PASSWORD']); ?>" class="wide-field" />
                     </div>
+                </div>
+            </fieldset>
+            </div>
+            <div class = "top-margin">
+            <fieldset class="extra-wide-field">
+                <legend><label
+                for="account-registration"><?php
+                e(tl('configure_element_account_registration'));
+                ?>
+                </label></legend>
+                    <?php $this->view->optionsHelper->render(
+                        "account-registration", "REGISTRATION_TYPE",
+                        $data['REGISTRATION_TYPES'],
+                        $data['REGISTRATION_TYPE']);
+                ?>
+                <div id="registration-info">
+                <div class="top-margin"><b><label for="mail-sender"><?php
+                    e(tl('configure_element_mail_sender'))?></label></b>
+                    <input type="text" id="mail-server" name="MAIL_SENDER"
+                        value="<?php e($data['MAIL_SENDER']); ?>"
+                        class="wide-field" />
+                </div>
+                <div class="top-margin"><b><label for="use-php-mail"><?php
+                    e(tl('configure_element_use_php_mail'))?></label></b>
+                    <input type="checkbox" id="use-php-mail" name="USE_MAIL_PHP"
+                        value="true" <?php if( $data['USE_MAIL_PHP']==true){
+                        e("checked='checked'");}?> />
+                </div>
+                <div id="smtp-info">
+                <div class="top-margin"><b><label for="mail-server"><?php
+                    e(tl('configure_element_mail_server'))?></label></b>
+                    <input type="text" id="mail-server" name="MAIL_SERVER"
+                        value="<?php e($data['MAIL_SERVER']); ?>"
+                        class="wide-field" />
+                </div>
+                <div class="top-margin"><b><label for="mail-serverport"><?php
+                    e(tl('configure_element_mail_serverport'))?></label></b>
+                    <input type="text" id="mail-port" name="MAIL_SERVERPORT"
+                        value="<?php e($data['MAIL_SERVERPORT']); ?>"
+                        class="wide-field" />
+                </div>
+                <div class="top-margin"><b><label for="mail-username"><?php
+                    e(tl('configure_element_mail_username'))?></label></b>
+                    <input type="text" id="mail-username" name="MAIL_USERNAME"
+                        value="<?php e($data['MAIL_USERNAME']); ?>"
+                        class="wide-field" />
+                </div>
+                <div class="top-margin"><b><label for="mail-password"><?php
+                    e(tl('configure_element_mail_password'))?></label></b>
+                    <input type="password" id="mail-password"
+                        name="MAIL_PASSWORD"
+                        value="<?php e($data['MAIL_PASSWORD']); ?>"
+                        class="wide-field" />
+                </div>
+                <div class="top-margin"><b><label for="mail-security"><?php
+                    e(tl('configure_element_mail_security'))?></label></b>
+                    <input type="text" id="mail-security" name="MAIL_SECURITY"
+                        value="<?php e($data['MAIL_SECURITY']); ?>"
+                        class="wide-field" />
+                </div>
+                </div>
                 </div>
             </fieldset>
             </div>

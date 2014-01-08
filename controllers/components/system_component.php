@@ -686,8 +686,8 @@ class SystemComponent extends Component
             break;
             case "profile":
                 $parent->updateProfileFields($data, $profile,
-                    array('USE_FILECACHE', 'USE_MEMCACHE', "REGISTRATION_TYPE",
-                        "WEB_ACCESS", 'RSS_ACCESS', 'API_ACCESS'));
+                    array('USE_FILECACHE', 'USE_MEMCACHE', 'USE_MAIL_PHP',
+                        'WEB_ACCESS', 'RSS_ACCESS', 'API_ACCESS'));
                 $data['DEBUG_LEVEL'] = 0;
                 $data['DEBUG_LEVEL'] |=
                     (isset($_REQUEST["ERROR_INFO"])) ? ERROR_INFO : 0;
@@ -821,6 +821,7 @@ class SystemComponent extends Component
             if(isset($_REQUEST['advanced']) && $_REQUEST['advanced']=='true') {
                 $data['advanced'] = "true";
             }
+            $data['no_mail_php'] =  ($data["USE_MAIL_PHP"]) ? "false" :"true";
             $data['SCRIPT'] .= <<< EOD
     elt('account-registration').onchange = function () {
         var show_mail_info = false;
@@ -832,6 +833,11 @@ class SystemComponent extends Component
         setDisplay('registration-info', show_mail_info);
     };
     setDisplay('registration-info', {$data['show_mail_info']});
+    elt('use-php-mail').onchange = function () {
+        setDisplay('smtp-info', (elt('use-php-mail').checked == false));
+    };
+    setDisplay('smtp-info', {$data['no_mail_php']});
+
     elt('database-system').onchange = function () {
         setDisplay('login-dbms', self.logindbms[elt('database-system').value]);
     };

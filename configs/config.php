@@ -143,6 +143,7 @@ if(file_exists(WORK_DIRECTORY.PROFILE_FILE_NAME)) {
     define('RSS_ACCESS', true);
     define('API_ACCESS', true);
     define('REGISTRATION_TYPE', 'disable_registration');
+    define('USE_MAIL_PHP', true);
     define('MAIL_SERVER', '');
     define('MAIL_PORT', '');
     define('MAIL_USERNAME', '');
