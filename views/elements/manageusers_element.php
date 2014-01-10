@@ -53,8 +53,6 @@ class ManageusersElement extends Element
      */
     function render($data)
     {
-        $base_url = "?c=admin&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
-            "&amp;a=manageUsers";
     ?>
         <div class="current-activity">
         <?php
@@ -63,67 +61,36 @@ class ManageusersElement extends Element
         } else {
             $this->renderUserForm($data);
         }
+        if(MOBILE) {
+            $this->mobileTitleNumUserControls($data);
+        } else {
+            $this->desktopTitleNumUserControls($data);
+        }
         ?>
-        <div class="table-margin float-opposite">
-            <form  method="get" action='#' >
-            <?php
-            $bound_url = $base_url."&amp;arg=".$data['FORM_TYPE'];
-            if(isset($data['CURRENT_USER']['user_name']) && 
-                $data['CURRENT_USER']['user_name'] != "") {
-                $bound_url .="&amp;user_name=".$data['CURRENT_USER'][
-                    'user_name'];
-            }
-            if($data['START_ROW'] > 0) {
-                ?>
-                <a href="<?php e($bound_url); ?>&amp;start_row=<?php
-                    e($data['PREV_START']); ?>&amp;end_row=<?php 
-                    e($data['PREV_END']); ?>&amp;users_show=<?php 
-                    e($data['users_show'].$data['PAGING']); ?>">&lt;&lt;</a>
-                <?php
-            }
-            e("<b>".tl('manageusers_element_row_range', $data['START_ROW'],
-                $data['END_ROW'], $data['NUM_USERS'])."</b>");
-            if($data['END_ROW'] < $data['NUM_USERS']) {
-                ?>
-                <a href="<?php e($bound_url); ?>&amp;start_row=<?php
-                    e($data['NEXT_START']); ?>&amp;end_row=<?php 
-                    e($data['NEXT_END']); ?>&amp;users_show=<?php 
-                    e($data['users_show'].$data['PAGING']); ?>" >&gt;&gt;</a>
-                <?php
-            }
-            ?>
-            <input type="hidden" name="c" value="admin" />
-            <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" 
-                value="<?php e($data[CSRF_TOKEN]); ?>" />
-            <input type="hidden" name="a" value="manageUsers" />
-            <?php
-                e("<b>".tl('manageusers_element_show')."</b>");
-                $this->view->optionsHelper->render(
-                    "users-show", "users_show", $data['USERS_SHOW_CHOICES'],
-                    $data['users_show'], true);
-            ?>
-            [<a href="<?php e($base_url . '&amp;arg=searchusers');
-                ?>"><?php e(tl('manageusers_element_search'));?></a>]
-            </form>
-        </div>
-        <h2><?php e(tl('manageusers_element_users')); ?></h2>
-
         <table class="role-table">
             <tr>
                 <th><?php e(tl('manageusers_element_username'));?></th>
+                <?php if(!MOBILE) { ?>
                 <th><?php e(tl('manageusers_element_firstname'));?></th>
                 <th><?php e(tl('manageusers_element_lastname'));?></th>
                 <th><?php e(tl('manageusers_element_email'));?></th>
+                <?php } ?>
                 <th><?php e(tl('manageusers_element_status'));?></th>
                 <th colspan='2'><?php 
                     e(tl('manageusers_element_actions'));?></th>
             </tr>
         <?php
+            $base_url = "?c=admin&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
+                "&amp;a=manageUsers";
             $delete_url = $base_url . "&amp;arg=deleteuser&amp;";
             $edit_url = $base_url . "&amp;arg=edituser&amp;";
+            $mobile_columns = array('USER_NAME', 'STATUS');
             foreach($data['USERS'] as $user) {
                 echo "<tr>";
                 foreach($user as $colname => $user_column) {
+                    if(MOBILE && !in_array($colname, $mobile_columns)) {
+                        continue;
+                    }
                     if(strcmp($colname,"STATUS") == 0) {
                         ?><td>
                         <?php
@@ -184,7 +151,115 @@ class ManageusersElement extends Element
         }
         </script>
         </div>
-    <?php
+        <?php
+    }
+
+    /**
+     *
+     */
+    function mobileTitleNumUserControls($data)
+    {
+        $base_url = "?c=admin&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
+            "&amp;a=manageUsers";
+        ?>
+        <h2><?php e(tl('manageusers_element_users')); ?>&nbsp;&nbsp;[<a 
+                href="<?php e($base_url . '&amp;arg=searchusers');
+                ?>"><?php e(tl('manageusers_element_search'));?></a>]</h2>
+        <div>
+            <form  method="get" action='#' >
+            <?php
+            $bound_url = $base_url."&amp;arg=".$data['FORM_TYPE'];
+            if(isset($data['CURRENT_USER']['user_name']) && 
+                $data['CURRENT_USER']['user_name'] != "") {
+                $bound_url .="&amp;user_name=".$data['CURRENT_USER'][
+                    'user_name'];
+            } ?>
+            <input type="hidden" name="c" value="admin" />
+            <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" 
+                value="<?php e($data[CSRF_TOKEN]); ?>" />
+            <input type="hidden" name="a" value="manageUsers" />
+            <?php
+            e("<b>".tl('manageusers_element_show')."</b>");
+            $this->view->optionsHelper->render(
+                "users-show", "users_show", $data['USERS_SHOW_CHOICES'],
+                $data['users_show'], true);
+            e("<br />");
+            if($data['START_ROW'] > 0) {
+                ?>
+                <a href="<?php e($bound_url); ?>&amp;start_row=<?php
+                    e($data['PREV_START']); ?>&amp;end_row=<?php 
+                    e($data['PREV_END']); ?>&amp;users_show=<?php 
+                    e($data['users_show'].$data['PAGING']); ?>">&lt;&lt;</a>
+                <?php
+            }
+            e("<b>".tl('manageusers_element_row_range', $data['START_ROW'],
+                $data['END_ROW'], $data['NUM_USERS'])."</b>");
+            if($data['END_ROW'] < $data['NUM_USERS']) {
+                ?>
+                <a href="<?php e($bound_url); ?>&amp;start_row=<?php
+                    e($data['NEXT_START']); ?>&amp;end_row=<?php 
+                    e($data['NEXT_END']); ?>&amp;users_show=<?php 
+                    e($data['users_show'].$data['PAGING']); ?>" >&gt;&gt;</a>
+                <?php
+            }
+            ?>
+            </form>
+        </div>
+        <?php
+    }
+
+    /**
+     *
+     */
+    function desktopTitleNumUserControls($data)
+    {
+        $base_url = "?c=admin&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
+            "&amp;a=manageUsers";
+        ?>
+        <div class="table-margin float-opposite">
+            <form  method="get" action='#' >
+            <?php
+            $bound_url = $base_url."&amp;arg=".$data['FORM_TYPE'];
+            if(isset($data['CURRENT_USER']['user_name']) && 
+                $data['CURRENT_USER']['user_name'] != "") {
+                $bound_url .="&amp;user_name=".$data['CURRENT_USER'][
+                    'user_name'];
+            }
+            if($data['START_ROW'] > 0) {
+                ?>
+                <a href="<?php e($bound_url); ?>&amp;start_row=<?php
+                    e($data['PREV_START']); ?>&amp;end_row=<?php 
+                    e($data['PREV_END']); ?>&amp;users_show=<?php 
+                    e($data['users_show'].$data['PAGING']); ?>">&lt;&lt;</a>
+                <?php
+            }
+            e("<b>".tl('manageusers_element_row_range', $data['START_ROW'],
+                $data['END_ROW'], $data['NUM_USERS'])."</b>");
+            if($data['END_ROW'] < $data['NUM_USERS']) {
+                ?>
+                <a href="<?php e($bound_url); ?>&amp;start_row=<?php
+                    e($data['NEXT_START']); ?>&amp;end_row=<?php 
+                    e($data['NEXT_END']); ?>&amp;users_show=<?php 
+                    e($data['users_show'].$data['PAGING']); ?>" >&gt;&gt;</a>
+                <?php
+            }
+            ?>
+            <input type="hidden" name="c" value="admin" />
+            <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" 
+                value="<?php e($data[CSRF_TOKEN]); ?>" />
+            <input type="hidden" name="a" value="manageUsers" />
+            <?php
+                e("<b>".tl('manageusers_element_show')."</b>");
+                $this->view->optionsHelper->render(
+                    "users-show", "users_show", $data['USERS_SHOW_CHOICES'],
+                    $data['users_show'], true);
+            ?>
+            [<a href="<?php e($base_url . '&amp;arg=searchusers');
+                ?>"><?php e(tl('manageusers_element_search'));?></a>]
+            </form>
+        </div>
+        <h2><?php e(tl('manageusers_element_users')); ?></h2>
+        <?php
     }
 
     /**
@@ -343,6 +418,7 @@ class ManageusersElement extends Element
         e("<div class='float-opposite'><a href='$base_url'>".
             tl('manageusers_element_adduser_form')."</a></div>");
         e("<h2>".tl('manageusers_element_search_user'). "</h2>");
+        $item_sep = (MOBILE) ? "<br />" : "</td><td>";
         ?>
         <form id="userForm" method="post" action='#' autocomplete="off">
         <input type="hidden" name="c" value="admin" />
@@ -352,81 +428,90 @@ class ManageusersElement extends Element
         <input type="hidden" name="arg" value="<?php
             e($data['FORM_TYPE']);?>" />
         <table class="name-table">
-        <tr><td><label for="user-name"><?php
-            e(tl('manageusers_element_username'))?>:</label></td>
-            <td><?php
+        <tr><td><label for="user-name"><b><?php
+            e(tl('manageusers_element_username'))?>:</b></label>
+            <?php
+                e($item_sep);
                 $this->view->optionsHelper->render(
                     "user-comparison", "user_comparison", 
                     $data['COMPARISON_TYPES'],
                     $data['user_comparison']);
-            ?></td>
-            <td><input type="text" id="user-name"
+                e($item_sep);
+            ?><input type="text" id="user-name"
                 name="user_name"  maxlength="80"
                 value="<?php e($data['user_name']); ?>"
-                class="narrow-field"  /></td>
-            <td><?php
+                class="narrow-field"  />
+            <?php
+                e($item_sep);
                 $this->view->optionsHelper->render(
                     "user-sort", "user_sort", 
                     $data['SORT_TYPES'],
                     $data['user_sort']);
             ?></td></tr>
-        <tr><td><label for="first-name"><?php
-                e(tl('manageusers_element_firstname')); ?>:</label></td>
-            <td><?php
+        <tr><td><label for="first-name"><b><?php
+                e(tl('manageusers_element_firstname')); ?>:</b></label>
+            <?php
+                e($item_sep);
                 $this->view->optionsHelper->render(
                     "first-comparison", "first_comparison", 
                     $data['COMPARISON_TYPES'],
                     $data['first_comparison']);
-            ?></td>
-            <td><input type="text" id="first-name"
+                e($item_sep);
+            ?><input type="text" id="first-name"
                 name="first_name"  maxlength="80"
                 value="<?php e($data['first_name']); ?>"
-                class="narrow-field"/></td>
-            <td><?php
+                class="narrow-field"/>
+            <?php
+                e($item_sep);
                 $this->view->optionsHelper->render(
                     "first-sort", "first_sort", 
                     $data['SORT_TYPES'],
                     $data['first_sort']);
             ?></td></tr>
-        <tr><td><label for="last-name"><?php
-                e(tl('manageusers_element_lastname')); ?>:</label></td>
-            <td><?php
+        <tr><td><label for="last-name"><b><?php
+                e(tl('manageusers_element_lastname')); ?>:</b></label>
+            <?php
+                e($item_sep);
                 $this->view->optionsHelper->render(
                     "last-comparison", "last_comparison", 
                     $data['COMPARISON_TYPES'],
                     $data['last_comparison']);
-            ?></td>
-            <td><input type="text" id="last-name"
+                e($item_sep);
+            ?><input type="text" id="last-name"
                 name="last_name"  maxlength="80"
                 value="<?php e($data['last_name']); ?>"
-                class="narrow-field"/></td>
-            <td><?php
+                class="narrow-field"/>
+            <?php
+                e($item_sep);
                 $this->view->optionsHelper->render(
                     "last-sort", "last_sort", 
                     $data['SORT_TYPES'],
                     $data['last_sort']);
             ?></td></tr>
-        <tr><td><label for="e-mail"><?php
-                e(tl('manageusers_element_email')); ?>:</label></td>
-            <td><?php
+        <tr><td><label for="e-mail"><b><?php
+                e(tl('manageusers_element_email')); ?>:</b></label>
+            <?php
+                e($item_sep);
                 $this->view->optionsHelper->render(
                     "email-comparison", "email_comparison", 
                     $data['COMPARISON_TYPES'],
                     $data['email_comparison']);
-            ?></td>
-            <td><input type="text" id="e-mail"
+                e($item_sep);
+            ?><input type="text" id="e-mail"
                 name="email_name" maxlength="80"
                 value="<?php e($data['email_name']); ?>"
-                class="narrow-field"/></td>
-            <td><?php
+                class="narrow-field"/>
+            <?php
+                e($item_sep);
                 $this->view->optionsHelper->render(
                     "email-sort", "email_sort", 
                     $data['SORT_TYPES'],
                     $data['email_sort']);
             ?></td></tr>
-        <tr><td><label for="search-userstatus-user"><?php
-                e(tl('manageusers_element_status')); ?>:</label></td>
-            <td><?php
+        <tr><td><label for="search-userstatus-user"><b><?php
+                e(tl('manageusers_element_status')); ?>:</b></label>
+            <?php
+                e($item_sep);
                 $this->view->optionsHelper->render(
                     "status-comparison", "status_comparison", 
                     $data['STATUS_COMPARISON_TYPES'],
@@ -434,11 +519,11 @@ class ManageusersElement extends Element
             ?>
             <style type="text/css">
             #status-comparison {
-                width:100%
+                width:100%;
             }
-            </style></td>
-            </td>
-            <td><?php
+            </style>
+            <?php
+            e($item_sep);
             $this->view->optionsHelper->render(
                 "search-userstatus-user",
                 "status_name", $data['STATUS_CODES'],
@@ -448,16 +533,21 @@ class ManageusersElement extends Element
             #search-userstatus-user {
                 width:100%
             }
-            </style></td>
-            <td><?php
+            </style>
+            <?php
+                e($item_sep);
                 $this->view->optionsHelper->render(
                     "status-sort", "status_sort", 
                     $data['SORT_TYPES'],
                     $data['status_sort']);
             ?></td></tr>
-        <tr><td></td><td></td><td class="center"><button class="button-box"
-            type="submit"><?php e(tl('manageusers_element_search'));
-            ?></button></td>
+        <tr><?php if(!MOBILE) {?><td></td><td></td> <?php } ?>
+            <td <?php if(!MOBILE) {
+                    ?>class="center" <?php 
+                }
+                ?>><button class="button-box"
+                type="submit"><?php e(tl('manageusers_element_search'));
+                ?></button></td>
         </tr>
         </table>
         </form>
