@@ -203,7 +203,7 @@ class ManageusersElement extends Element
             e("<h2>".tl('manageusers_element_add_user'). "</h2>");
         }
         ?>
-        <form id="userForm" method="post" action=''>
+        <form id="userForm" method="post" action='#' autocomplete="off">
         <input type="hidden" name="c" value="admin" />
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />
@@ -338,7 +338,7 @@ class ManageusersElement extends Element
             tl('manageusers_element_adduser_form')."</a></div>");
         e("<h2>".tl('manageusers_element_search_user'). "</h2>");
         ?>
-        <form id="userForm" method="post" action=''>
+        <form id="userForm" method="post" action='#' autocomplete="off">
         <input type="hidden" name="c" value="admin" />
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />
