@@ -53,20 +53,157 @@ class ManageusersElement extends Element
      */
     function render($data)
     {
-        $edituser= ($data['FORM_TYPE'] == "edituser") ? true: false;
         $base_url = "?c=admin&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
             "&amp;a=manageUsers";
     ?>
         <div class="current-activity">
         <?php
-            if($edituser) {
-                e("<div class='float-opposite'><a href='$base_url'>".
-                    tl('manageusers_element_adduser_form')."</a></div>");
-                e("<h2>".tl('manageusers_element_user_info'). "</h2>");
-            } else {
-                e("<h2>".tl('manageusers_element_add_user'). "</h2>");
-            }?>
-        <form id="addUserForm" method="post" action=''>
+        if($data['FORM_TYPE'] == "searchusers") {
+            $this->renderSearchForm($data);
+        } else {
+            $this->renderUserForm($data);
+        }
+        ?>
+        <div class="table-margin float-opposite">
+            <form  method="get" action='#' >
+            <?php
+            $bound_url = $base_url."&amp;arg=".$data['FORM_TYPE'];
+            if(isset($data['CURRENT_USER']['user_name']) && 
+                $data['CURRENT_USER']['user_name'] != "") {
+                $bound_url .="&amp;user_name=".$data['CURRENT_USER'][
+                    'user_name'];
+            }
+            if($data['START_ROW'] > 0) {
+                ?>
+                <a href="<?php e($bound_url); ?>&amp;start_row=<?php
+                    e($data['PREV_START']); ?>&amp;end_row=<?php 
+                    e($data['PREV_END']); ?>&amp;users_show=<?php 
+                    e($data['users_show'].$data['PAGING']); ?>">&lt;&lt;</a>
+                <?php
+            }
+            e("<b>".tl('manageusers_element_row_range', $data['START_ROW'],
+                $data['END_ROW'], $data['NUM_USERS'])."</b>");
+            if($data['END_ROW'] < $data['NUM_USERS']) {
+                ?>
+                <a href="<?php e($bound_url); ?>&amp;start_row=<?php
+                    e($data['NEXT_START']); ?>&amp;end_row=<?php 
+                    e($data['NEXT_END']); ?>&amp;users_show=<?php 
+                    e($data['users_show'].$data['PAGING']); ?>" >&gt;&gt;</a>
+                <?php
+            }
+            ?>
+            <input type="hidden" name="c" value="admin" />
+            <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" 
+                value="<?php e($data[CSRF_TOKEN]); ?>" />
+            <input type="hidden" name="a" value="manageUsers" />
+            <?php
+                e("<b>".tl('manageusers_element_show')."</b>");
+                $this->view->optionsHelper->render(
+                    "users-show", "users_show", $data['USERS_SHOW_CHOICES'],
+                    $data['users_show'], true);
+            ?>
+            [<a href="<?php e($base_url . '&amp;arg=searchusers');
+                ?>"><?php e(tl('manageusers_element_search'));?></a>]
+            </form>
+        </div>
+        <h2><?php e(tl('manageusers_element_users')); ?></h2>
+
+        <table class="role-table">
+            <tr>
+                <th><?php e(tl('manageusers_element_username'));?></th>
+                <th><?php e(tl('manageusers_element_firstname'));?></th>
+                <th><?php e(tl('manageusers_element_lastname'));?></th>
+                <th><?php e(tl('manageusers_element_email'));?></th>
+                <th><?php e(tl('manageusers_element_status'));?></th>
+                <th colspan='2'><?php 
+                    e(tl('manageusers_element_actions'));?></th>
+            </tr>
+        <?php
+            $delete_url = $base_url . "&amp;arg=deleteuser&amp;";
+            $edit_url = $base_url . "&amp;arg=edituser&amp;";
+            foreach($data['USERS'] as $user) {
+                echo "<tr>";
+                foreach($user as $colname => $user_column) {
+                    if(strcmp($colname,"STATUS") == 0) {
+                        ?><td>
+                        <?php
+                        if($user['USER_NAME'] == 'root') {
+                            e("<span class='gray'>&nbsp;&nbsp;".
+                                $data['STATUS_CODES'][$user['STATUS']].
+                                "</span>");
+                        } else {
+                        ?>
+                        <form  method="get" action='#' >
+                        <input type="hidden" name="c" value="admin" />
+                        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" 
+                            value="<?php e($data[CSRF_TOKEN]); ?>" />
+                        <input type="hidden" name="a" value="manageUsers" />
+                        <input type="hidden" name="arg" value="updatestatus" />
+                        <input type="hidden" name="user_name" value="<?php
+                            e($user['USER_NAME']); ?>" />
+                        <?php
+                        $this->view->optionsHelper->render(
+                            "update-userstatus-{$user['USER_NAME']}",
+                            "userstatus", $data['STATUS_CODES'],
+                            $user['STATUS'], true);
+                        ?>
+                        </form>
+                        <?php
+                        }
+                        ?>
+                        </td>
+                        <?php
+                    } else {
+                        echo "<td>$user_column</td>";
+                    }
+                }
+                ?>
+                <td><a href="<?php e($edit_url . 'user_name='.
+                    $user['USER_NAME']); ?>"><?php
+                    e(tl('manageusers_element_edit'));
+                    ?></a></td>
+                <td><?php
+                    if($user['USER_NAME'] == 'root') {
+                        e('<span class="gray">'.
+                            tl('manageusers_element_delete').'</span>');
+                    } else {
+                    ?>
+                        <a href="<?php e($delete_url . 'user_name='.
+                        $user['USER_NAME']); ?>"><?php 
+                        e(tl('manageusers_element_delete'));
+                    }?></a></td>
+                </tr>
+            <?php
+            }
+        ?>
+        </table>
+        <script type="text/javascript">
+        function submitViewUserRole()
+        {
+            elt('viewUserRoleForm').submit();
+        }
+        </script>
+        </div>
+    <?php
+    }
+
+    /**
+     *
+     */
+    function renderUserForm($data)
+    {
+        $base_url = "?c=admin&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
+            "&amp;a=manageUsers";
+        $edituser = ($data['FORM_TYPE'] == "edituser") ? true: false;
+        if($edituser) {
+            e("<div class='float-opposite'><a href='$base_url'>".
+                tl('manageusers_element_adduser_form')."</a></div>");
+            e("<h2>".tl('manageusers_element_user_info'). "</h2>");
+        } else {
+            e("<h2>".tl('manageusers_element_add_user'). "</h2>");
+        }
+        ?>
+        <form id="userForm" method="post" action=''>
         <input type="hidden" name="c" value="admin" />
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />
@@ -105,25 +242,40 @@ class ManageusersElement extends Element
         <tr><td><label for="update-userstatus-currentuser"><?php
                 e(tl('manageusers_element_status')); ?>:</label></td>
             <td><?php
-                $this->view->optionsHelper->render(
-                    "update-userstatus-currentuser",
-                    "status", $data['STATUS_CODES'],
-                    $data['CURRENT_USER']['status']);?></td></tr>
+                if($data['CURRENT_USER']['user_name'] == 'root') {
+                    e("<div class='light-gray-box'><span class='gray'>".
+                        $data['STATUS_CODES'][$data['CURRENT_USER']['status']].
+                        "</span></div><input type='hidden' name='status' ".
+                        "value='".$data['CURRENT_USER']['status']."' />");
+                } else {
+                    $this->view->optionsHelper->render(
+                        "update-userstatus-currentuser",
+                        "status", $data['STATUS_CODES'],
+                        $data['CURRENT_USER']['status']);
+                }?></td></tr>
         <?php
-        if($data["FORM_TYPE"] == 'edituser') {
+        if($edituser) {
         ?>
             <tr><td style="vertical-align:top"><?php
                     e(tl('manageusers_element_roles')); ?>:</td>
-                <td><div style="border:2px solid black;padding:5px"><table><?php
+                <td><div class='light-gray-box'><table><?php
                 foreach($data['SELECT_ROLES'] as $role_array) {
                     e("<tr><td><b>".
                         $role_array['ROLE_NAME'].
-                        "</b></td><td><a href='?c=admin&amp;a=manageUsers".
-                        "&amp;arg=deleteuserrole&amp;selectrole=".
-                        $role_array['ROLE_ID']);
-                    e("&amp;user_name=".$data['CURRENT_USER']['user_name'].
-                        "&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
-                        "'>Delete</a></td>");
+                        "</b></td>");
+                    if($data['CURRENT_USER']['user_name'] == 'root' &&
+                        $role_array['ROLE_NAME'] == 'Admin') {
+                        e("<td><span class='gray'>".
+                            tl('manageusers_element_delete')."</span></td>");
+                    } else {
+                        e("<td><a href='?c=admin&amp;a=manageUsers".
+                            "&amp;arg=deleteuserrole&amp;selectrole=".
+                            $role_array['ROLE_ID']);
+                        e("&amp;user_name=".$data['CURRENT_USER']['user_name'].
+                            "&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
+                            "'>Delete</a></td>");
+                    }
+                    e("</tr>");
                 }
                 ?>
                 </table>
@@ -134,16 +286,14 @@ class ManageusersElement extends Element
                 </td></tr>
             <tr><td style="vertical-align:top"><?php
                     e(tl('manageusers_element_groups')); ?>:</td>
-                <td><div style="border:2px solid black;padding:5px"><table><?php
+                <td><div class='light-gray-box'><table><?php
                 foreach($data['SELECT_GROUPS'] as $group_array) {
-                    e("<tr><td><b>".
-                        $group_array['GROUP_NAME'].
-                        "</b></td><td><a href='?c=admin&amp;a=manageUsers".
+                    e("<td><a href='?c=admin&amp;a=manageUsers".
                         "&amp;arg=deleteusergroup&amp;selectgroup=".
                         $group_array['GROUP_ID']);
                     e("&amp;user_name=".$data['CURRENT_USER']['user_name'].
                         "&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
-                        "'>Delete</a></td>");
+                        "'>".tl('manageusers_element_delete')."</a></td>");
                 }
                 ?>
                 </table>
@@ -174,68 +324,138 @@ class ManageusersElement extends Element
         </tr>
         </table>
         </form>
-        <h2><?php e(tl('manageusers_element_users')); ?></h2>
-        <table class="role-table">
-            <tr>
-                <th><?php e(tl('manageusers_element_username'));?></th>
-                <th><?php e(tl('manageusers_element_firstname'));?></th>
-                <th><?php e(tl('manageusers_element_lastname'));?></th>
-                <th><?php e(tl('manageusers_element_email'));?></th>
-                <th><?php e(tl('manageusers_element_status'));?></th>
-                <th colspan='2'><?php 
-                    e(tl('manageusers_element_actions'));?></th>
-            </tr>
         <?php
-            $delete_url = $base_url . "&amp;arg=deleteuser&amp;";
-            $edit_url = $base_url . "&amp;arg=edituser&amp;";
-            foreach($data['USERS'] as $user) {
-                echo "<tr>";
-                foreach($user as $colname => $user_column) {
-                    if(strcmp($colname,"STATUS") == 0) {
-                        ?><td>
-                        <form  method="get" action='#' >
-                        <input type="hidden" name="c" value="admin" />
-                        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" 
-                            value="<?php e($data[CSRF_TOKEN]); ?>" />
-                        <input type="hidden" name="a" value="manageUsers" />
-                        <input type="hidden" name="arg" value="updatestatus" />
-                        <input type="hidden" name="user_name" value="<?php
-                            e($user['USER_NAME']); ?>" />
-                        <?php
-                        $this->view->optionsHelper->render(
-                            "update-userstatus-{$user['USER_NAME']}",
-                            "userstatus", $data['STATUS_CODES'],
-                            $user['STATUS'], true);
-                        ?>
-                        </form>
-                        </td>
-                        <?php
-                    } else {
-                        echo "<td>$user_column</td>";
-                    }
-                }
-                ?>
-                <td><a href="<?php e($edit_url . 'user_name='.
-                    $user['USER_NAME']); ?>"><?php
-                    e(tl('manageusers_element_edit'));
-                    ?></a></td>
-                <td><a href="<?php e($delete_url . 'user_name='.
-                    $user['USER_NAME']); ?>"><?php 
-                    e(tl('manageusers_element_delete'));
-                    ?></a></td>
-                </tr>
-            <?php
-            }
+    }
+
+    /**
+     *
+     */
+    function renderSearchForm($data)
+    {
+        $base_url = "?c=admin&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
+            "&amp;a=manageUsers";
+        e("<div class='float-opposite'><a href='$base_url'>".
+            tl('manageusers_element_adduser_form')."</a></div>");
+        e("<h2>".tl('manageusers_element_search_user'). "</h2>");
         ?>
+        <form id="userForm" method="post" action=''>
+        <input type="hidden" name="c" value="admin" />
+        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
+            e($data[CSRF_TOKEN]); ?>" />
+        <input type="hidden" name="a" value="manageUsers" />
+        <input type="hidden" name="arg" value="<?php 
+            e($data['FORM_TYPE']);?>" />
+        <table class="name-table">
+        <tr><td><label for="user-name"><?php
+            e(tl('manageusers_element_username'))?>:</label></td>
+            <td><?php
+                $this->view->optionsHelper->render(
+                    "user-comparison", "user_comparison", 
+                    $data['COMPARISON_TYPES'],
+                    $data['user_comparison']);
+            ?></td>
+            <td><input type="text" id="user-name"
+                name="user_name"  maxlength="80"
+                value="<?php e($data['user_name']); ?>"
+                class="narrow-field"  /></td>
+            <td><?php
+                $this->view->optionsHelper->render(
+                    "user-sort", "user_sort", 
+                    $data['SORT_TYPES'],
+                    $data['user_sort']);
+            ?></td></tr>
+        <tr><td><label for="first-name"><?php
+                e(tl('manageusers_element_firstname')); ?>:</label></td>
+            <td><?php
+                $this->view->optionsHelper->render(
+                    "first-comparison", "first_comparison", 
+                    $data['COMPARISON_TYPES'],
+                    $data['first_comparison']);
+            ?></td>
+            <td><input type="text" id="first-name"
+                name="first_name"  maxlength="80"
+                value="<?php e($data['first_name']); ?>"
+                class="narrow-field"/></td>
+            <td><?php
+                $this->view->optionsHelper->render(
+                    "first-sort", "first_sort", 
+                    $data['SORT_TYPES'],
+                    $data['first_sort']);
+            ?></td></tr>
+        <tr><td><label for="last-name"><?php
+                e(tl('manageusers_element_lastname')); ?>:</label></td>
+            <td><?php
+                $this->view->optionsHelper->render(
+                    "last-comparison", "last_comparison", 
+                    $data['COMPARISON_TYPES'],
+                    $data['last_comparison']);
+            ?></td>
+            <td><input type="text" id="last-name"
+                name="last_name"  maxlength="80"
+                value="<?php e($data['last_name']); ?>"
+                class="narrow-field"/></td>
+            <td><?php
+                $this->view->optionsHelper->render(
+                    "last-sort", "last_sort", 
+                    $data['SORT_TYPES'],
+                    $data['last_sort']);
+            ?></td></tr>
+        <tr><td><label for="e-mail"><?php
+                e(tl('manageusers_element_email')); ?>:</label></td>
+            <td><?php
+                $this->view->optionsHelper->render(
+                    "email-comparison", "email_comparison", 
+                    $data['COMPARISON_TYPES'],
+                    $data['email_comparison']);
+            ?></td>
+            <td><input type="text" id="e-mail"
+                name="email_name" maxlength="80"
+                value="<?php e($data['email_name']); ?>"
+                class="narrow-field"/></td>
+            <td><?php
+                $this->view->optionsHelper->render(
+                    "email-sort", "email_sort", 
+                    $data['SORT_TYPES'],
+                    $data['email_sort']);
+            ?></td></tr>
+        <tr><td><label for="search-userstatus-user"><?php
+                e(tl('manageusers_element_status')); ?>:</label></td>
+            <td><?php
+                $this->view->optionsHelper->render(
+                    "status-comparison", "status_comparison", 
+                    $data['STATUS_COMPARISON_TYPES'],
+                    $data['status_comparison']);
+            ?>
+            <style type="text/css">
+            #status-comparison {
+                width:100%
+            }
+            </style></td>
+            </td>
+            <td><?php
+            $this->view->optionsHelper->render(
+                "search-userstatus-user",
+                "status_name", $data['STATUS_CODES'],
+                $data['status_name']);
+            ?>
+            <style type="text/css">
+            #search-userstatus-user {
+                width:100%
+            }
+            </style></td>
+            <td><?php
+                $this->view->optionsHelper->render(
+                    "status-sort", "status_sort", 
+                    $data['SORT_TYPES'],
+                    $data['status_sort']);
+            ?></td></tr>
+        <tr><td></td><td></td><td class="center"><button class="button-box"
+            type="submit"><?php e(tl('manageusers_element_search'));
+            ?></button></td>
+        </tr>
         </table>
-        <script type="text/javascript">
-        function submitViewUserRole()
-        {
-            elt('viewUserRoleForm').submit();
-        }
-        </script>
-        </div>
-    <?php
+        </form>
+        <?php
     }
 }
 ?>

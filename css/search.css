@@ -88,6 +88,16 @@ p
     float: left;
 }
 
+.html-ltr .float-same
+{
+    float: left;
+}
+
+.html-rtl .float-same
+{
+    float: right;
+}
+
 .align-right
 {
     text-align: right;
@@ -130,6 +140,11 @@ p
 .gray
 {
     color: gray;
+}
+
+.light-gray
+{
+    color: #BBB;
 }
 
 .back-dark-gray
@@ -271,6 +286,18 @@ p
 {
     border: 1px ridge #ccc;
     padding: 3px;
+}
+
+.black-box
+{
+    border:2px ridge black;
+    padding:5px;
+}
+
+.light-gray-box
+{
+    border:2px ridge #BBB;
+    padding:5px;
 }
 
 .slight-pad
@@ -1503,6 +1530,13 @@ ul.in-list li
     margin-right: 0;
 }
 
+.tiny-button-box
+{
+    font-size: 12pt;
+    margin:1px;
+    padding:1px;
+}
+
 .html-ltr .component-container
 {
     float: left;
@@ -1665,6 +1699,32 @@ ul.in-list li
 .current-activity pre
 {
     font-size: 10pt;
+}
+
+.table-margin
+{
+    font-size:14pt;
+}
+.tiny-field
+{
+    font-size:12pt;
+    height: 13pt;
+    width: .6in;
+}
+.html-ltr .table-margin
+{
+    position:relative;
+    margin-right: 0.5in;
+    padding:2px;
+    top: 0.15in;
+}
+
+.html-rtl .table-margin
+{
+    position:relative;
+    margin-left: 0.5in;
+    padding:2px;
+    top: 0.15in;
 }
 
 .html-ltr .role-table,
@@ -1900,8 +1960,6 @@ ul.in-list li
 {
     margin:100px auto;
 }
-
-
 
 /*
   Styles for the classifiers settings pages

@@ -151,7 +151,7 @@ class AccountaccessComponent extends Component
     function manageUsers()
     {
         $parent = $this->parent;
-        $possible_arguments = array("adduser", 'edituser',
+        $possible_arguments = array("adduser", 'edituser', 'searchusers',
             "deleteuser", "adduserrole", "deleteuserrole",
             "addusergroup", "deleteusergroup", "updatestatus");
 
@@ -162,10 +162,34 @@ class AccountaccessComponent extends Component
             INACTIVE_STATUS => tl('accountaccess_component_inactive_status'),
             BANNED_STATUS => tl('accountaccess_component_banned_status'),
         );
+        $data['USERS_SHOW_CHOICES'] = array(
+            10 => 10, 20 => 20, 50 => 50, 100 => 100, 200=> 200
+        );
+        $data['COMPARISON_TYPES'] = array(
+            "=" => tl('accountaccess_component_equal'),
+            "!=" => tl('accountaccess_component_not_equal'),
+            "CONTAINS" => tl('accountaccess_component_contains'),
+            "BEGINS WITH" => tl('accountaccess_component_begins_with'),
+            "ENDS WITH" => tl('accountaccess_component_ends_with'),
+        );
+        $data['STATUS_COMPARISON_TYPES'] = array(
+            "=" => tl('accountaccess_component_equal'),
+            "!=" => tl('accountaccess_component_not_equal'),
+        );
+        $data['SORT_TYPES'] = array(
+            "NONE" => tl('accountaccess_component_no_sort'),
+            "ASC" => tl('accountaccess_component_sort_ascending'),
+            "DESC" => tl('accountaccess_component_sort_descending'),
+        );
         $data['FORM_TYPE'] = "adduser";
+        $search_array = array();
         $username = "";
         if(isset($_REQUEST['user_name'])) {
             $username = $parent->clean($_REQUEST['user_name'], "string" );
+        }
+        if($username == "" && isset($_REQUEST['arg']) && $_REQUEST['arg'] 
+            != "searchusers") {
+            unset($_REQUEST['arg']);
         }
         if(isset($_REQUEST['arg']) && $_REQUEST['arg'] == 'edituser') {
             if(isset($_REQUEST['selectrole']) && $_REQUEST['selectrole'] >= 0) {
@@ -179,108 +203,15 @@ class AccountaccessComponent extends Component
             $userid = $parent->signinModel->getUserId($username);
             $data['SELECT_USER'] = $username;
             if($userid) {
-                $data['SELECT_ROLES'] = 
-                    $parent->userModel->getUserRoles($userid);
-                $all_roles = $parent->roleModel->getRoleList();
-                $role_ids = array();
-                if(isset($_REQUEST['selectrole'])) {
-                    $select_role = $parent->clean($_REQUEST['selectrole'],
-                        "string");
-                } else {
-                    $select_role = "";
-                }
-                foreach($all_roles as $role) {
-                    $role_ids[] = $role['ROLE_ID'];
-                    if($select_role == $role['ROLE_ID']) {
-                        $select_rolename = $role['ROLE_NAME'];
-                    }
-                }
-                $select_role_ids = array();
-                foreach($data['SELECT_ROLES'] as $role) {
-                    $select_role_ids[] = $role['ROLE_ID'];
-                }
-                $available_roles = array();
-                $tmp = array();
-                foreach($all_roles as $role) {
-                    if(!in_array($role['ROLE_ID'], $select_role_ids) &&
-                        !isset($tmp[$role['ROLE_ID']])) {
-                        $tmp[$role['ROLE_ID']] = true;
-                        $available_roles[] = $role;
-                    }
-                }
-
-                $data['AVAILABLE_ROLES'][-1] =
-                    tl('accountaccess_component_add_role');
-
-                foreach($available_roles as $role) {
-                    $data['AVAILABLE_ROLES'][$role['ROLE_ID']]= 
-                        $role['ROLE_NAME'];
-                }
-
-                if($select_role != "") {
-                    $data['SELECT_ROLE'] = $select_role;
-                } else {
-                    $data['SELECT_ROLE'] = -1;
-                }
-
-                $data['SELECT_GROUPS'] =
-                    $parent->groupModel->getUserGroups($userid);
-                $all_groups = $parent->groupModel->getGroupList();
-                $group_ids = array();
-                if(isset($_REQUEST['selectgroup'])) {
-                    $select_group = $parent->clean
-                        ($_REQUEST['selectgroup'],"string");
-                } else {
-                    $select_group = "";
-                }
-
-                foreach($all_groups as $group) {
-                    $group_ids[] = $group['GROUP_ID'];
-                    if($select_group == $group['GROUP_ID']) {
-                        $select_groupname = $group['GROUP_NAME'];
-                    }
-                }
-
-                $select_group_ids = array();
-                foreach($data['SELECT_GROUPS'] as $group) {
-                    $select_group_ids[] = $group['GROUP_ID'];
-                }
-                $available_groups = array();
-                $tmp = array();
-                foreach($all_groups as $group) {
-                    if(!in_array($group['GROUP_ID'], $select_group_ids) &&
-                        !isset($tmp[$group['GROUP_ID']])) {
-                        $tmp[$group['GROUP_ID']] = true;
-                        $available_groups[] = $group;
-                    }
-                }
-
-                $data['AVAILABLE_GROUPS'][-1] =
-                    tl('accountaccess_component_add_group');
-
-                foreach($available_groups as $group) {
-                    $data['AVAILABLE_GROUPS'][$group['GROUP_ID']]= 
-                        $group['GROUP_NAME'];
-                }
-
-                if($select_role != "") {
-                    $data['SELECT_GROUP'] = $select_group;
-                } else {
-                    $data['SELECT_GROUP'] = -1;
-                }
+                $data = array_merge($data, $this->getRoleArrays($userid));
+                $data = array_merge($data, $this->getGroupArrays($userid));
             }
         }
 
-        $data['CURRENT_USER'] = array(
-            "user_name" => "",
-            "first_name" => "",
-            "last_name" => "",
-            "email" => "",
-            "status" => "",
-            "password" => "",
-            "repassword" => ""
-        );
-
+        $data['CURRENT_USER'] = array("user_name" => "", "first_name" => "",
+            "last_name" => "", "email" => "", "status" => "", "password" => "",
+            "repassword" => "");
+        $data['PAGING'] = "";
         if(isset($_REQUEST['arg']) &&
             in_array($_REQUEST['arg'], $possible_arguments)) {
             switch($_REQUEST['arg'])
@@ -495,12 +426,180 @@ class AccountaccessComponent extends Component
                             "</h1>');\n";
                     }
                 break;
+
+                case "searchusers":
+                    $data['STATUS_CODES'][0] = 
+                        tl('accountaccess_component_any_status');
+                    ksort($data['STATUS_CODES']);
+                    $data["FORM_TYPE"] = "searchusers";
+                    $comparison_fields = array('user',
+                        'first', 'last', 'email', 'status');
+                    $paging = "";
+                    foreach($comparison_fields as $comparison_start) {
+                        $comparison = $comparison_start."_comparison";
+                        $comparison_types = ($comparison == 'status_comparison')
+                            ? 'STATUS_COMPARISON_TYPES' : 'COMPARISON_TYPES';
+                        $data[$comparison] = (isset($_REQUEST[$comparison]) &&
+                            isset($data[$comparison_types][
+                            $_REQUEST[$comparison]])) ?$_REQUEST[$comparison] :
+                            "=";
+                        $paging .= "&amp;$comparison=".
+                            urlencode($data[$comparison]);
+                    }
+                    foreach($comparison_fields as $sort_start) {
+                        $sort = $sort_start."_sort";
+                        $data[$sort] = (isset($_REQUEST[$sort]) &&
+                            isset($data['SORT_TYPES'][
+                            $_REQUEST[$sort]])) ?$_REQUEST[$sort] :
+                            "NONE";
+                        $paging .= "&amp;$sort=".urlencode($data[$sort]);
+                    }
+                    $search_array = array();
+                    foreach($comparison_fields as $field) {
+                        $field_name = $field."_name";
+                        $field_comparison = $field."_comparison";
+                        $field_sort = $field."_sort";
+                        $data[$field_name] = (isset($_REQUEST[$field_name])) ?
+                            $parent->clean($_REQUEST[$field_name], "string") :
+                            "";
+                        $search_array[] = array($field,
+                            $data[$field_comparison], $data[$field_name],
+                            $data[$field_sort]);
+                        $paging .= "&amp;$field_name=".
+                            urlencode($data[$field_name]);
+                    }
+                    $data['PAGING'] = $paging;
+                break;
             }
         }
-        $data["USERS"] = $parent->userModel->getUsers();
+        $num_users = $parent->userModel->getUserCount($search_array);
+        $data['NUM_USERS'] = $num_users;
+        $users_show = (isset($_REQUEST['users_show']) && 
+            isset($data['USERS_SHOW_CHOICES'][$_REQUEST['users_show']])) ?
+            $parent->clean($_REQUEST['users_show'], 'int') : 50;
+        $data['users_show'] = $users_show;
+        $data['START_ROW'] = 0;
+        if(isset($_REQUEST['start_row'])) {
+            $data['START_ROW'] = min(
+                max(0, $parent->clean($_REQUEST['start_row'],"int")),
+                $num_users);
+        }
+        $data['END_ROW'] = $data['START_ROW'] + $users_show;
+        if(isset($_REQUEST['start_row'])) {
+            $data['END_ROW'] = max($data['START_ROW'],
+                    min($parent->clean($_REQUEST['end_row'],"int"),$num_users));
+        }
+        $data["USERS"] = $parent->userModel->getUsers($data['START_ROW'],
+            $users_show, $search_array);
+        $data['NEXT_START'] = $data['END_ROW'];
+        $data['NEXT_END'] = min($data['NEXT_START'] + $users_show, $num_users);
+        $data['PREV_START'] = max(0, $data['START_ROW'] - $users_show);
+        $data['PREV_END'] = $data['START_ROW'];
         return $data;
     }
 
+    /**
+     *
+     */
+    function getRoleArrays($userid)
+    {
+        $parent = $this->parent;
+        $data['SELECT_ROLES'] = $parent->userModel->getUserRoles($userid);
+        $all_roles = $parent->roleModel->getRoleList();
+        $role_ids = array();
+        if(isset($_REQUEST['selectrole'])) {
+            $select_role = $parent->clean($_REQUEST['selectrole'], "string");
+        } else {
+            $select_role = "";
+        }
+        foreach($all_roles as $role) {
+            $role_ids[] = $role['ROLE_ID'];
+            if($select_role == $role['ROLE_ID']) {
+                $select_rolename = $role['ROLE_NAME'];
+            }
+        }
+        $select_role_ids = array();
+        foreach($data['SELECT_ROLES'] as $role) {
+            $select_role_ids[] = $role['ROLE_ID'];
+        }
+        $available_roles = array();
+        $tmp = array();
+        foreach($all_roles as $role) {
+            if(!in_array($role['ROLE_ID'], $select_role_ids) &&
+                !isset($tmp[$role['ROLE_ID']])) {
+                $tmp[$role['ROLE_ID']] = true;
+                $available_roles[] = $role;
+            }
+        }
+
+        $data['AVAILABLE_ROLES'][-1] =
+            tl('accountaccess_component_add_role');
+
+        foreach($available_roles as $role) {
+            $data['AVAILABLE_ROLES'][$role['ROLE_ID']]= $role['ROLE_NAME'];
+        }
+
+        if($select_role != "") {
+            $data['SELECT_ROLE'] = $select_role;
+        } else {
+            $data['SELECT_ROLE'] = -1;
+        }
+        return $data;
+    }
+
+    /**
+     *
+     */
+    function getGroupArrays($userid)
+    {
+        $parent = $this->parent;
+        $data = array();
+        $data['SELECT_GROUPS'] =
+            $parent->groupModel->getUserGroups($userid);
+        $all_groups = $parent->groupModel->getGroupList();
+        $group_ids = array();
+        if(isset($_REQUEST['selectgroup'])) {
+            $select_group = $parent->clean($_REQUEST['selectgroup'],"string");
+        } else {
+            $select_group = "";
+        }
+
+        foreach($all_groups as $group) {
+            $group_ids[] = $group['GROUP_ID'];
+            if($select_group == $group['GROUP_ID']) {
+                $select_groupname = $group['GROUP_NAME'];
+            }
+        }
+
+        $select_group_ids = array();
+        foreach($data['SELECT_GROUPS'] as $group) {
+            $select_group_ids[] = $group['GROUP_ID'];
+        }
+        $available_groups = array();
+        $tmp = array();
+        foreach($all_groups as $group) {
+            if(!in_array($group['GROUP_ID'], $select_group_ids) &&
+                !isset($tmp[$group['GROUP_ID']])) {
+                $tmp[$group['GROUP_ID']] = true;
+                $available_groups[] = $group;
+            }
+        }
+
+        $data['AVAILABLE_GROUPS'][-1] =
+            tl('accountaccess_component_add_group');
+
+        foreach($available_groups as $group) {
+            $data['AVAILABLE_GROUPS'][$group['GROUP_ID']]= $group['GROUP_NAME'];
+        }
+
+        if($select_group != "") {
+            $data['SELECT_GROUP'] = $select_group;
+        } else {
+            $data['SELECT_GROUP'] = -1;
+        }
+
+        return $data;
+    }
     /**
      * Used to handle the manage role activity.
      *

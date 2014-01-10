@@ -79,9 +79,9 @@ require_once(BASE_DIR."/models/datasources/".DBMS."_manager.php");
  * Load e() function
  */
 require_once BASE_DIR."/lib/utility.php";
-//if((DEBUG_LEVEL & ERROR_INFO) == ERROR_INFO) {
-//    set_error_handler("yioop_error_handler");
-//}
+if((DEBUG_LEVEL & ERROR_INFO) == ERROR_INFO) {
+    set_error_handler("yioop_error_handler");
+}
 /**
  * Load global functions related to localization
  */

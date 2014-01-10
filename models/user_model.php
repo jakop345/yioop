@@ -240,37 +240,13 @@ class UserModel extends Model
     /**
      *
      */
-    function getUsers($restrict_to_group = "", $order_by="" , $dir="",
-        $limit=0, $num=100)
+    function getUsers($limit=0, $num=100, $search_array = array())
     {
-        $restrict_to_group =$this->db->escapeString($restrict_to_group);
-        $user_columns = array("USER_ID", "FIRST_NAME", "LAST_NAME",
-            "USER_NAME", "EMAIL");
-        if(!in_array($order_by, $user_columns)) {
-            $order_by = "USER_NAME";
-        }
-        if(!in_array($dir, array("ASC, DESC"))) {
-            $dir = "ASC";
-        }
-        if(!is_int($limit)) {
-            $limit = 0;
-        }
-        if(!is_int($num)) {
-            $num = 100;
-        }
-        if($restrict_to_group == "") {
-            $sql = "SELECT USER_NAME, FIRST_NAME, LAST_NAME,
-                EMAIL, STATUS FROM USER ORDER BY $order_by $dir 
-                LIMIT $limit, $num";
-        } else {
-            $sql = "SELECT  U.USER_NAME AS USER_NAME,
-                U.FIRST_NAME AS FIRST_NAME, U.LAST_NAME AS LAST_NAME,
-                U.EMAIL AS EMAIL, U.STATUS AS STATUS FROM USER U, USER_GROUP UG,
-                GROUPS G WHERE G.GROUP_NAME = '$restrict_to_group' AND
-                U.USER_ID=UG.USER_ID AND UG.GROUP_ID=G.GROUP_ID
-                ORDER BY $order_by $dir LIMIT $limit, $num";
-        }
-
+        $limit = "LIMIT $limit, $num";
+        list($where, $order_by) = 
+            $this->searchArrayToWhereOrderClauses($search_array);
+        $sql = "SELECT USER_NAME, FIRST_NAME, LAST_NAME,
+            EMAIL, STATUS FROM USER $where $order_by $limit";
         $result = $this->db->execute($sql);
         $i = 0;
         while($users[$i] = $this->db->fetchArray($result)) {
@@ -278,6 +254,80 @@ class UserModel extends Model
         }
         unset($users[$i]); //last one will be null
         return $users;
+    }
+
+
+    /**
+     * Returns the number of users in the user table
+     *
+     * @return int number of users
+     */
+    function getUserCount($search_array = array())
+    {
+        $this->db->selectDB(DB_NAME);
+        list($where, $order_by) = 
+            $this->searchArrayToWhereOrderClauses($search_array);
+        $sql = "SELECT COUNT(*) AS NUM FROM USER $where";
+        $result = $this->db->execute($sql);
+        $row = $this->db->fetchArray($result);
+        return $row['NUM'];
+    }
+
+    /**
+     *
+     */
+    function searchArrayToWhereOrderClauses($search_array)
+    {
+        $user_columns = array("first"=>"FIRST_NAME", "last" => "LAST_NAME",
+            "user" => "USER_NAME", "email"=>"EMAIL", "status"=>"STATUS");
+        $where = "";
+        $order_by = "";
+        $order_by_comma = "";
+        $where_and = "";
+        $sort_types = array("ASC", "DESC");
+        foreach($search_array as $row) {
+            $field_name = $user_columns[$row[0]];
+            $comparison = $row[1];
+            $value = $row[2];
+            $sort_dir = $row[3];
+            if($value != "" && ($field_name != 'STATUS' || $value != "0")) {
+                if($where == "") {
+                    $where = " WHERE ";
+                }
+                $where .= $where_and;
+                switch($comparison) {
+                    case "=":
+                         $where .= $field_name."='".$this->db->escapeString(
+                            $value)."'";
+                    break;
+                    case "!=":
+                         $where .= $field_name."!='".$this->db->escapeString(
+                            $value)."'";
+                    break;
+                    case "CONTAINS":
+                         $where .= $field_name." LIKE '%".
+                            $this->db->escapeString( $value)."%'";
+                    break;
+                    case "BEGINS WITH":
+                         $where .= $field_name." LIKE '".
+                            $this->db->escapeString( $value)."%'";
+                    break;
+                    case "ENDS WITH":
+                         $where .= $field_name." LIKE '%".
+                            $this->db->escapeString( $value)."'";
+                    break;
+                }
+                $where_and = " AND ";
+            }
+            if(in_array($sort_dir, $sort_types)) {
+                if($order_by == "") {
+                    $order_by = " ORDER BY ";
+                }
+                $order_by .= $order_by_comma.$field_name." ".$sort_dir;
+                $order_by_comma = ", ";
+            }
+        }
+        return array($where, $order_by);
     }
 
     /**
