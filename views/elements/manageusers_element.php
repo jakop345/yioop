@@ -188,7 +188,10 @@ class ManageusersElement extends Element
     }
 
     /**
+     *  Draws the add user and edit user forms
      *
+     *  @param array $data consists of values of user fields set
+     *      so far as well as values of the drops downs on the form
      */
     function renderUserForm($data)
     {
@@ -328,7 +331,10 @@ class ManageusersElement extends Element
     }
 
     /**
+     *  Draws the search for users forms
      *
+     *  @param array $data consists of values of user fields set
+     *      so far as well as values of the drops downs on the form
      */
     function renderSearchForm($data)
     {
@@ -343,7 +349,7 @@ class ManageusersElement extends Element
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="manageUsers" />
-        <input type="hidden" name="arg" value="<?php 
+        <input type="hidden" name="arg" value="<?php
             e($data['FORM_TYPE']);?>" />
         <table class="name-table">
         <tr><td><label for="user-name"><?php

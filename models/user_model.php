@@ -297,24 +297,24 @@ class UserModel extends Model
                 $where .= $where_and;
                 switch($comparison) {
                     case "=":
-                         $where .= $field_name."='".$this->db->escapeString(
-                            $value)."'";
+                         $where .= "UPPER($field_name)=UPPER('".
+                            $this->db->escapeString($value)."')";
                     break;
                     case "!=":
-                         $where .= $field_name."!='".$this->db->escapeString(
-                            $value)."'";
+                         $where .= "UPPER($field_name)!=UPPER('".
+                            $this->db->escapeString($value)."')";
                     break;
                     case "CONTAINS":
-                         $where .= $field_name." LIKE '%".
-                            $this->db->escapeString( $value)."%'";
+                         $where .= "UPPER($field_name) LIKE UPPER('%".
+                            $this->db->escapeString( $value)."%')";
                     break;
                     case "BEGINS WITH":
-                         $where .= $field_name." LIKE '".
-                            $this->db->escapeString( $value)."%'";
+                         $where .= "UPPER($field_name) LIKE UPPER('".
+                            $this->db->escapeString( $value)."%')";
                     break;
                     case "ENDS WITH":
-                         $where .= $field_name." LIKE '%".
-                            $this->db->escapeString( $value)."'";
+                         $where .= "UPPER($field_name) LIKE UPPER('%".
+                            $this->db->escapeString( $value)."')";
                     break;
                 }
                 $where_and = " AND ";
@@ -364,29 +364,11 @@ class UserModel extends Model
      *
      * @param string $username
      */
-    function getUserId($username)
-    {
-        $this->db->selectDB(DB_NAME);
-        $sql = "SELECT USER_ID FROM USER WHERE 
-         USER_NAME = '$username' LIMIT 1";
-        $result = $this->db->execute($sql);
-        if(!$result) {
-            return false;
-        }
-        $row = $this->db->fetchArray($result);
-        $user_id = $row['USER_ID'];
-        return $user_id;
-    }
-
-    /**
-     *
-     * @param string $username
-     */
     function getUser($username)
     {
         $this->db->selectDB(DB_NAME);
         $sql = "SELECT * FROM USER WHERE 
-         USER_NAME = '$username' LIMIT 1";
+         UPPER(USER_NAME) = UPPER('$username') LIMIT 1";
         $result = $this->db->execute($sql);
         if(!$result) {
             return false;
@@ -403,8 +385,8 @@ class UserModel extends Model
     function getUserByEmailTime($email, $creation_time)
     {
         $this->db->selectDB(DB_NAME);
-        $sql = "SELECT * FROM USER WHERE 
-         EMAIL = '$email' AND CREATION_TIME='$creation_time' LIMIT 1";
+        $sql = "SELECT * FROM USER WHERE UPPER(EMAIL) = UPPER('$email')
+            AND CREATION_TIME='$creation_time' LIMIT 1";
         $result = $this->db->execute($sql);
         if(!$result) {
             return false;

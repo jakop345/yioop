@@ -123,24 +123,6 @@ class SigninModel extends Model
     }
 
     /**
-     *  Get the user_id associated with a given username
-     *
-     *  @param string $username the username to look up
-     *  @return string the corresponding userid
-     */
-    function getUserId($username)
-    {
-        $this->db->selectDB(DB_NAME);
-
-        $sql = "SELECT USER_ID FROM USER WHERE USER_NAME = '$username' LIMIT 1";
-        $result = $this->db->execute($sql);
-        if(!$result) return false;
-        $row = $this->db->fetchArray($result);
-        $user_id = $row['USER_ID'];
-        return $user_id;
-    }
-
-    /**
      *  Get the user_name associated with a given userid
      *
      *  @param string $user_id the userid to look up

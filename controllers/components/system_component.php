@@ -34,7 +34,10 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- * 
+ * This component is used to handle activities related to the configuration
+ * of a Yioop installation, translations of text appearing in the installation,
+ * as well as control of specifying what machines make up the installation
+ * and which processes they run.
  *
  * @author Chris Pollett
  * @package seek_quarry

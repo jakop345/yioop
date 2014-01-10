@@ -419,5 +419,27 @@ EOD;
         }
         return $string_id;
     }
+
+    /**
+     *  Get the user_id associated with a given username
+     *  (In base class as used as an internal method in both signin and
+     *   user models)
+     *
+     *  @param string $username the username to look up
+     *  @return string the corresponding userid
+     */
+    function getUserId($username)
+    {
+        $this->db->selectDB(DB_NAME);
+        $sql = "SELECT USER_ID FROM USER WHERE
+            UPPER(USER_NAME) = UPPER('$username') LIMIT 1";
+        $result = $this->db->execute($sql);
+        if(!$result) {
+            return false;
+        }
+        $row = $this->db->fetchArray($result);
+        $user_id = $row['USER_ID'];
+        return $user_id;
+    }
 }
 ?>

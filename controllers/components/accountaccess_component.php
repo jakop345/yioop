@@ -34,7 +34,11 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- * 
+ * Component of the Yioop control panel used to handle activitys for
+ * managing accounts, users, roles, and groups. i.e., Settings of users
+ * and groups, what roles and groups a user has, what roles and users
+ * a group has, and what activities make up a role. It is used by
+ * AdminController
  *
  * @author Chris Pollett
  * @package seek_quarry
@@ -499,7 +503,10 @@ class AccountaccessComponent extends Component
     }
 
     /**
+     * Sets up the arrays to hold the dropdown for the roles a given user could
+     * add (AVAILABLE_ROLES) to those that they already have
      *
+     * @param int $userid the id of the user we are adding roles for
      */
     function getRoleArrays($userid)
     {
@@ -548,7 +555,10 @@ class AccountaccessComponent extends Component
     }
 
     /**
+     * Sets up the arrays to hold the dropdown for the groups a given user could
+     * add (AVAILABLE_GROUPS) to those that they already have
      *
+     * @param int $userid the id of the user we are adding groups to
      */
     function getGroupArrays($userid)
     {

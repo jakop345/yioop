@@ -36,7 +36,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 /**
  * Base component class for all components on
  * the SeekQuarry site. A component consists of a collection of
- * activities and their auxiliary methods can be used by a controller
+ * activities and their auxiliary methods that can be used by a controller
  *
  * @author Chris Pollett
  * @package seek_quarry

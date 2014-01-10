@@ -160,7 +160,7 @@ class RegisterController extends Controller
                     "?c=register&a=emailVerification&email=".
                     $user['EMAIL']."&time=".$user['CREATION_TIME'].
                     "&hash=".$user['HASH'];
-                $server->send($subject, MAIL_SENDER, MAIL_SENDER, $message);
+                $server->send($subject, MAIL_SENDER, $data['EMAIL'], $message);
             break;
             case 'admin_activation':
                 $data['REFRESH'] = "signin";
