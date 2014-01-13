@@ -81,7 +81,7 @@ class SettingsView extends View
     e(tl('settings_view_settings')); ?></span>
 </h1>
 <div class="settings">
-<form class="user_settings" method="get" action=".">
+<form method="get" action=".">
 <table>
 
 <tr>

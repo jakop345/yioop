@@ -49,7 +49,10 @@ class RegisterView extends View
      *  @var string
      */
     var $layout = "web";
-
+    /** Names of helper objects that the view uses to help draw itself
+     *  @var array
+     */
+    var $helpers = array('options');
     /**
      *  Draws the create account web page.
      *
@@ -68,15 +71,16 @@ class RegisterView extends View
         }
         ?>
         <div class="landing non-search">
+        <div class="small-top">
             <h1 class="logo"><a href="./?<?php
                 e(CSRF_TOKEN."=".$data[CSRF_TOKEN]) ?>"><img
                 src="<?php e($logo); ?>" alt="Yioop!"/></a>
                 <span> - <?php e(tl('register_view_create_account'));
                 ?></span></h1>
-            <form class="user_settings" method="post" action="#">
+            <form method="post" action="#">
             <input type="hidden" name="c" value="register" />
             <input type="hidden" name="a" value="processAccountData" />
-                <div class="login">
+                <div class="register">
                     <table>
                         <tr>
                             <th class="table-label">
@@ -89,8 +93,7 @@ class RegisterView extends View
                                     class="narrow-field" maxlength="80"
                                     name="first" autocomplete="off"
                                     value = "<?php e($data['FIRST']); ?>"/>
-                            </td>
-                            <td><?php echo in_array("first", $missing)
+                                <?php echo in_array("first", $missing)
                                     ?'<span class="red">*</span>':''; ?></td>
                         </tr>
                         <tr>
@@ -104,8 +107,7 @@ class RegisterView extends View
                                     class="narrow-field" maxlength="80"
                                     name="last" autocomplete="off"
                                     value = "<?php e($data['LAST']); ?>"/>
-                            </td>
-                            <td><?php echo in_array("last", $missing)
+                                <?php echo in_array("last", $missing)
                                      ?'<span class="red">*</span>':'';?></td>
                         </tr>
                         <tr>
@@ -118,8 +120,7 @@ class RegisterView extends View
                                     class="narrow-field" maxlength="80"
                                     name="user" autocomplete="off"
                                     value = "<?php e($data['USER']); ?>"/>
-                            </td>
-                            <td><?php echo in_array("user", $missing)
+                                <?php echo in_array("user", $missing)
                                     ?'<span class="red">*</span>':'';?></td>
                         </tr>
                         <tr>
@@ -131,8 +132,7 @@ class RegisterView extends View
                                     class="narrow-field" maxlength="80"
                                     name="email" autocomplete="off"
                                     value = "<?php e($data['EMAIL']); ?>"/>
-                            </td>
-                            <td><?php echo in_array("email", $missing)
+                                <?php echo in_array("email", $missing)
                                     ? '<span class="red">*</span>':'';?></td>
                         </tr>
                         <tr>
@@ -145,8 +145,8 @@ class RegisterView extends View
                                 <input id="password" type="password"
                                     class="narrow-field" maxlength="80"
                                     name="password" value="<?php 
-                                    e($data['PASSWORD']); ?>" /></td>
-                            <td><?php echo in_array("password", $missing)
+                                    e($data['PASSWORD']); ?>" />
+                                <?php echo in_array("password", $missing)
                                     ? '<span class="red">*</span>':'';?></td>
                         </tr>
                         <tr>
@@ -159,16 +159,47 @@ class RegisterView extends View
                                 <input id="repassword" type="password"
                                     class="narrow-field" maxlength="80"
                                     name="repassword" value="<?php
-                                    e($data['REPASSWORD']); ?>" /></td>
-                            <td><?php echo in_array("repassword", $missing)
+                                    e($data['REPASSWORD']); ?>" />
+                                <?php echo in_array("repassword", $missing)
                                     ?'<span class="red">*</span>':''; ?></td>
                         </tr>
+                        <?php
+                        $question_sets = array(
+                            tl('register_view_human_check')=>$data['CAPTCHAS'],
+                            tl('register_view_account_recovery')
+                                =>$data['RECOVERY']);
+                        $i = 0;
+                        foreach($question_sets as $name => $set) {
+                            $first = true;
+                            $num = count($set);
+                            foreach($set as $question) {
+                                if($first) { ?>
+                                    <tr><th class="table-label"
+                                        rowspan='<?php e($num); ?>'><?php
+                                        e($name);
+                                    ?></th><td class="table-input border-top">
+                                <?php
+                                } else { ?>
+                                    <tr><td class="table-input">
+                                <?php
+                                }
+                                $this->optionsHelper->render(
+                                    "question-$i", "question_$i", 
+                                    $question, $data["question_$i"]);
+                                $first = false;
+                                e(in_array("question_$i", $missing)
+                                    ?'<span class="red">*</span>':'');
+                                e("</td></tr>");
+                                $i++;
+                            }
+                        }
+                        ?>
+                        <tr>
+                            <td></td>
+                            <td class="table-input border-top">
                         <input type="hidden"
                                 name="<?php e(CSRF_TOKEN);?>"
                                 value="<?php e($data[CSRF_TOKEN]); ?>"/>
-                        <tr>
-                            <td></td>
-                            <td class="center">
                                 <button  type="submit"><?php
                                     e(tl('register_create_account'));
                                 ?></button>
@@ -184,7 +215,8 @@ class RegisterView extends View
                     </ul>
                 </div>
         </div>
-            <div class='landing-spacer'></div>
+        </div>
+            <div class='tall-landing-spacer'></div>
     <?php
         }
     }

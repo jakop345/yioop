@@ -117,6 +117,7 @@ class AdminController extends Controller implements CrawlConstants
         } else {
             $user = $_SERVER['REMOTE_ADDR'];
         }
+        $data['SCRIPT'] = "";
         $data[CSRF_TOKEN] = $this->generateCSRFToken($user);
         $token_okay = $this->checkCSRFToken(CSRF_TOKEN, $user);
         if($token_okay) {
@@ -127,6 +128,10 @@ class AdminController extends Controller implements CrawlConstants
                 } else {
                     $view = $data['REFRESH'];
                 }
+            } else if (!isset($_SESSION['REMOTE_ADDR'])) {
+                $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
+                    tl('admin_controller_need_cookies')."</h1>');";
+                unset($_SESSION['USER_ID']);
             } else if ($this->checkSignin()){
                 $user_id = $this->signinModel->getUserId(
                     $this->clean($_REQUEST['u'], "string"));
@@ -142,8 +147,8 @@ class AdminController extends Controller implements CrawlConstants
                     tl('admin_controller_login_successful')."</h1>')";
                 $data = array_merge($data, $this->processSession());
                 if(isset($data['INACTIVE'])) {
-                    $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
-                        tl('admin_controller_account_not_active')."</h1>')";
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('admin_controller_account_not_active')."</h1>');";
                     $view = "signin";
                     unset($_SESSION['USER_ID']);
                 }
@@ -171,7 +176,7 @@ class AdminController extends Controller implements CrawlConstants
             unset($_SESSION['USER_ID']);
             $data[CSRF_TOKEN] = $this->generateCSRFToken(
                 $_SERVER['REMOTE_ADDR']);
-            $data['SCRIPT'] = "var u; if ((u = elt('username')) && u.focus) ".
+            $data['SCRIPT'] .= "var u; if ((u = elt('username')) && u.focus) ".
                "u.focus();";
         }
         $data['COMPONENT_ACTIVITIES'] = array();
@@ -194,6 +199,7 @@ class AdminController extends Controller implements CrawlConstants
                 }
             }
         }
+        $_SESSION['REMOTE_ADDR'] = $_SERVER['REMOTE_ADDR'];
         $this->displayView($view, $data);
     }
 

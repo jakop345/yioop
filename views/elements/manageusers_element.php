@@ -289,7 +289,7 @@ class ManageusersElement extends Element
         <input type="hidden" name="arg" value="<?php 
             e($data['FORM_TYPE']);?>" />
         <table class="name-table">
-        <tr><td><label for="user-name"><?php
+        <tr><td class="table-label"><label for="user-name"><?php
             e(tl('manageusers_element_username'))?>:</label></td>
             <td><input type="text" id="user-name"
                 name="user_name"  maxlength="80"
@@ -299,25 +299,26 @@ class ManageusersElement extends Element
                     e(' disabled="disabled" ');
                 }
                 ?> /></td></tr>
-        <tr><td><label for="first-name"><?php
+        <tr><td class="table-label"><label for="first-name"><?php
                 e(tl('manageusers_element_firstname')); ?>:</label></td>
             <td><input type="text" id="first-name"
                 name="first_name"  maxlength="80"
                 value="<?php e($data['CURRENT_USER']['first_name']); ?>"
                 class="narrow-field"/></td></tr>
-        <tr><td><label for="last-name"><?php
+        <tr><td class="table-label"><label for="last-name"><?php
                 e(tl('manageusers_element_lastname')); ?>:</label></td>
             <td><input type="text" id="last-name"
                 name="last_name"  maxlength="80"
                 value="<?php e($data['CURRENT_USER']['last_name']); ?>"
                 class="narrow-field"/></td></tr>
-        <tr><td><label for="e-mail"><?php
+        <tr><td class="table-label"><label for="e-mail"><?php
                 e(tl('manageusers_element_email')); ?>:</label></td>
             <td><input type="text" id="e-mail"
                 name="email"  maxlength="80"
                 value="<?php e($data['CURRENT_USER']['email']); ?>"
                 class="narrow-field"/></td></tr>
-        <tr><td><label for="update-userstatus-currentuser"><?php
+        <tr><td class="table-label"><label
+                for="update-userstatus-currentuser"><?php
                 e(tl('manageusers_element_status')); ?>:</label></td>
             <td><?php
                 if($data['CURRENT_USER']['user_name'] == 'root') {
@@ -334,7 +335,7 @@ class ManageusersElement extends Element
         <?php
         if($edituser) {
         ?>
-            <tr><td style="vertical-align:top"><?php
+            <tr><td class="table-label" style="vertical-align:top"><?php
                     e(tl('manageusers_element_roles')); ?>:</td>
                 <td><div class='light-gray-box'><table><?php
                 foreach($data['SELECT_ROLES'] as $role_array) {
@@ -362,7 +363,7 @@ class ManageusersElement extends Element
                         $data['SELECT_ROLE']); ?>
                 </div>
                 </td></tr>
-            <tr><td style="vertical-align:top"><?php
+            <tr><td class="table-label" style="vertical-align:top"><?php
                     e(tl('manageusers_element_groups')); ?>:</td>
                 <td><div class='light-gray-box'><table><?php
                 foreach($data['SELECT_GROUPS'] as $group_array) {
@@ -383,13 +384,13 @@ class ManageusersElement extends Element
         <?php
         }
         ?>
-        <tr><td><label for="pass-word"><?php
+        <tr><td class="table-label"><label for="pass-word"><?php
              e(tl('manageusers_element_password'))?>:</label></td>
             <td><input type="password" id="pass-word"
                 name="password" maxlength="80"
                 value="<?php e($data['CURRENT_USER']['password']); ?>"
                 class="narrow-field"/></td></tr>
-        <tr><td><label for="retype-password"><?php
+        <tr><td class="table-label"><label for="retype-password"><?php
                 e(tl('manageusers_element_retype_password'))?>:</label></td>
             <td><input type="password" id="retype-password"
                 name="retypepassword" maxlength="80"
@@ -428,8 +429,8 @@ class ManageusersElement extends Element
         <input type="hidden" name="arg" value="<?php
             e($data['FORM_TYPE']);?>" />
         <table class="name-table">
-        <tr><td><label for="user-name"><b><?php
-            e(tl('manageusers_element_username'))?>:</b></label>
+        <tr><td class="table-label"><label for="user-name"><?php
+            e(tl('manageusers_element_username'))?>:</label>
             <?php
                 e($item_sep);
                 $this->view->optionsHelper->render(
@@ -448,8 +449,8 @@ class ManageusersElement extends Element
                     $data['SORT_TYPES'],
                     $data['user_sort']);
             ?></td></tr>
-        <tr><td><label for="first-name"><b><?php
-                e(tl('manageusers_element_firstname')); ?>:</b></label>
+        <tr><td class="table-label"><label for="first-name"><?php
+                e(tl('manageusers_element_firstname')); ?>:</label>
             <?php
                 e($item_sep);
                 $this->view->optionsHelper->render(
@@ -468,8 +469,8 @@ class ManageusersElement extends Element
                     $data['SORT_TYPES'],
                     $data['first_sort']);
             ?></td></tr>
-        <tr><td><label for="last-name"><b><?php
-                e(tl('manageusers_element_lastname')); ?>:</b></label>
+        <tr><td class="table-label"><label for="last-name"><?php
+                e(tl('manageusers_element_lastname')); ?>:</label>
             <?php
                 e($item_sep);
                 $this->view->optionsHelper->render(
@@ -488,8 +489,8 @@ class ManageusersElement extends Element
                     $data['SORT_TYPES'],
                     $data['last_sort']);
             ?></td></tr>
-        <tr><td><label for="e-mail"><b><?php
-                e(tl('manageusers_element_email')); ?>:</b></label>
+        <tr><td class="table-label"><label for="e-mail"><?php
+                e(tl('manageusers_element_email')); ?>:</label>
             <?php
                 e($item_sep);
                 $this->view->optionsHelper->render(
@@ -508,8 +509,8 @@ class ManageusersElement extends Element
                     $data['SORT_TYPES'],
                     $data['email_sort']);
             ?></td></tr>
-        <tr><td><label for="search-userstatus-user"><b><?php
-                e(tl('manageusers_element_status')); ?>:</b></label>
+        <tr><td class="table-label"><label for="search-userstatus-user"><?php
+                e(tl('manageusers_element_status')); ?>:</label>
             <?php
                 e($item_sep);
                 $this->view->optionsHelper->render(

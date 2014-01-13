@@ -66,7 +66,7 @@ class SigninView extends View
         <h1 class="logo"><a href="./?<?php e(CSRF_TOKEN."=".$data[CSRF_TOKEN])
                 ?>"><img src="<?php e($logo); ?>" alt="Yioop!"
                 /></a><span> - <?php e(tl('signin_view_signin')); ?></span></h1>
-        <form class="user_settings" method="post" action="#">
+        <form method="post" action="#">
         <div class="login">
             <table>
             <tr>

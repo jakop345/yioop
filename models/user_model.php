@@ -468,6 +468,8 @@ class UserModel extends Model
             $result = $this->db->execute($sql);
             $sql = "DELETE FROM USER_GROUP WHERE USER_ID='".$userid."'";
             $result = $this->db->execute($sql);
+            $sql = "DELETE FROM USER_SESSION WHERE USER_ID='".$userid."'";
+            $result = $this->db->execute($sql);
         }
         $sql = "DELETE FROM USER WHERE USER_ID='".$userid."'";;
         $result = $this->db->execute($sql);

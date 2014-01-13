@@ -66,11 +66,101 @@ class RegisterController extends Controller
      */
     var $models = array("user");
 
+    /**
+     * @var array
+     */
     var $activities = array("createAccount", "processAccountData",
         "resetPassword", "emailVerification");
 
+    /**
+     * @var array
+     */
     var $register_fields = array("first", "last", "user",
             "email", "password", "repassword");
+
+    /**
+     * @var array
+     */
+    var $captchas_qa;
+
+    /**
+     * @var array
+     */
+    var $recovery_qa;
+
+    /**
+     * @var int
+     */
+    const NUM_CAPTCHA_QUESTIONS = 5;
+    /**
+     * @var int
+     */
+    const NUM_CAPTCHA_CHOICES = 5;
+    /**
+     * @var int
+     */
+    const NUM_RECOVERY_QUESTIONS = 3;
+
+    /**
+     *
+     */
+    function __construct()
+    {
+        $this->captchas_qa = array(
+            array(tl('register_controller_question0_most'),
+                tl('register_controller_question0_least'),
+                tl('register_controller_question0_choices')),
+            array(tl('register_controller_question1_most'),
+                tl('register_controller_question1_least'),
+                tl('register_controller_question1_choices')),
+            array(tl('register_controller_question2_most'),
+                tl('register_controller_question2_least'),
+                tl('register_controller_question2_choices')),
+            array(tl('register_controller_question3_most'),
+                tl('register_controller_question3_least'),
+                tl('register_controller_question3_choices')),
+            array(tl('register_controller_question4_most'),
+                tl('register_controller_question4_least'),
+                tl('register_controller_question4_choices')),
+            array(tl('register_controller_question5_most'),
+                tl('register_controller_question5_least'),
+                tl('register_controller_question5_choices')),
+            array(tl('register_controller_question6_most'),
+                tl('register_controller_question6_least'),
+                tl('register_controller_question6_choices')),
+            array(tl('register_controller_question7_most'),
+                tl('register_controller_question7_least'),
+                tl('register_controller_question7_choices')),
+            array(tl('register_controller_question8_most'),
+                tl('register_controller_question8_least'),
+                tl('register_controller_question8_choices')),
+            array(tl('register_controller_question9_most'),
+                tl('register_controller_question9_least'),
+                tl('register_controller_question9_choices')),
+            );
+        $this->recovery_qa = array(
+            array(tl('register_controller_recovery1_more'),
+                tl('register_controller_recovery1_less'),
+                tl('register_controller_recovery1_choices')),
+            array(tl('register_controller_recovery2_more'),
+                tl('register_controller_recovery2_less'),
+                tl('register_controller_recovery2_choices')),
+            array(tl('register_controller_recovery3_more'),
+                tl('register_controller_recovery3_less'),
+                tl('register_controller_recovery3_choices')),
+            array(tl('register_controller_recovery4_more'),
+                tl('register_controller_recovery4_less'),
+                tl('register_controller_recovery4_choices')),
+            array(tl('register_controller_recovery5_more'),
+                tl('register_controller_recovery5_less'),
+                tl('register_controller_recovery5_choices')),
+            array(tl('register_controller_recovery6_more'),
+                tl('register_controller_recovery6_less'),
+                tl('register_controller_recovery6_choices'))
+            );
+        parent::__construct();
+    }
+
     /**
      *  Allows users to create accounts.
      *  Validates the input form when creating an account
@@ -92,10 +182,72 @@ class RegisterController extends Controller
             $activity = 'createAccount';
         }
 
-        $data = $this->call($activity);
+        $data = array();
+        if($activity == 'processAccountData') {
+            $data = $this->dataIntegrityCheck();
+            if(isset($data["REFRESH"]) && $data["REFRESH"] == 'register') {
+                $activity = 'createAccount';
+            }
+            if($activity == 'processAccountData') {
+                if(!isset($_SESSION['CAPTCHA_ANSWERS']) ) {
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('register_controller_need_cookies')."</h1>')";
+                    $activity = 'createAccount';
+                } else if(!$this->checkCaptchaAnswers()) {
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('register_controller_failed_human')."</h1>')";
+                    for($i = 0; $i < self::NUM_CAPTCHA_QUESTIONS; $i++) {
+                        $data["question_$i"] = "-1";
+                    }
+                    unset($_SESSION['CAPTCHAS']);
+                    $activity = 'createAccount';
+                }
+            }
+        }
+        $new_data = $this->call($activity);
+        $data = array_merge($new_data,$data);
+        if(isset($new_data['SCRIPT']) && $new_data['SCRIPT'] != "") {
+            $data['SCRIPT'] .= ";".$new_data['SCRIPT'];
+        }
         $data[CSRF_TOKEN] = $this->generateCSRFToken($user);
         $view = (isset($data['REFRESH'])) ? $data['REFRESH'] : 'register';
         $this->displayView($view, $data);
+    }
+
+
+    /**
+     *
+     */
+    function dataIntegrityCheck()
+    {
+        $data['SCRIPT'] = "";
+        $error = $this->getCleanFields($data);
+        if($error) {
+            $data['RESULT'] = "true";
+            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+            tl('register_controller_error_fields')."</h1>')";
+            $data['REFRESH'] = "register";
+        } else if($this->userModel->getUserId($data['USER'])) {
+            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+            tl('register_controller_user_already_exists')."</h1>')";
+            $data['REFRESH'] = "register";
+        }
+        return $data;
+    }
+
+    /**
+     *
+     */
+    function checkCaptchaAnswers()
+    {
+        $captcha_passed = true;
+        for($i = 0; $i < self::NUM_CAPTCHA_QUESTIONS; $i++) {
+            $field = "question_".$i;
+            if($_REQUEST[$field] != $_SESSION['CAPTCHA_ANSWERS'][$i]) {
+                $captcha_passed = false;
+            }
+        }
+        return $captcha_passed;
     }
 
     /**
@@ -108,29 +260,86 @@ class RegisterController extends Controller
         foreach($fields as $field) {
             $data[strtoupper($field)] = "";
         }
+        for($i = 0; $i < self::NUM_CAPTCHA_QUESTIONS +
+            self::NUM_CAPTCHA_CHOICES; $i++) {
+            $data["question_$i"] = "-1";
+        }
+        if(!isset($_SESSION['CAPTCHAS'])||!isset($_SESSION['CAPTCHA_ANSWERS'])){
+            list($captchas, $answers) = $this->selectQuestionsAnswers(
+                $this->captchas_qa, self::NUM_CAPTCHA_QUESTIONS,
+                self::NUM_CAPTCHA_CHOICES);
+            $data['CAPTCHAS'] = $captchas;
+            $_SESSION['CAPTCHA_ANSWERS'] = $answers;
+            $_SESSION['CAPTCHAS'] = $data['CAPTCHAS'];
+        } else {
+            $data['CAPTCHAS'] = $_SESSION['CAPTCHAS'];
+        }
+        if(!isset($_SESSION['RECOVERY'])) {
+            list($data['RECOVERY'], ) = $this->selectQuestionsAnswers(
+                $this->recovery_qa, self::NUM_RECOVERY_QUESTIONS);
+            $_SESSION['RECOVERY'] = $data['RECOVERY'];
+        } else {
+            $data['RECOVERY'] = $_SESSION['RECOVERY'];
+        }
         return $data;
     }
 
     /**
      *
      */
+    function selectQuestionsAnswers($question_answers, $num_select,
+        $num_choices = -1)
+    {
+        $questions = array();
+        $answers = array();
+        $size_qa = count($question_answers);
+        for($i = 0; $i < $num_select; $i++) {
+            do {
+                $question_choice = mt_rand(0, $size_qa - 1);
+            }while(isset($questions[$question_choice]));
+            $more_less = rand(0, 1);
+            $answer_possibilities =
+                explode(",", $question_answers[$question_choice][2]);
+            $selected_possibilities = array();
+            $size_possibilities = count($answer_possibilities);
+            if($num_choices < 0) {
+                $num = $size_possibilities;
+            } else {
+                $num = $num_choices;
+            }
+            for($j = 0; $j < $num; $j++) {
+                do {
+                    $selected_possibility = mt_rand(0, $size_possibilities - 1);
+                } while(isset($selected_possibilities[$selected_possibility]));
+                $selected_possibilities[$selected_possibility] =
+                    $answer_possibilities[$selected_possibility];
+            }
+            $questions[$question_choice] = array("-1" =>
+                    $question_answers[$question_choice][$more_less]);
+            $tmp = array_values($selected_possibilities);
+            $questions[$question_choice] +=  array_combine($tmp, $tmp);
+            if($more_less) {
+                ksort($selected_possibilities);
+                $selected_possibilities = array_values($selected_possibilities);
+                $answers[$i] = $selected_possibilities[0];
+            } else {
+                krsort($selected_possibilities);
+                $selected_possibilities = array_values($selected_possibilities);
+                $answers[$i] = $selected_possibilities[0];
+            }
+        }
+        $questions = array_values($questions);
+        return array($questions, $answers);
+    }
+
+
+    /**
+     *
+     */
     function processAccountData()
     {
+        $data = $this->dataIntegrityCheck();
         $data['SCRIPT'] = "";
-        $error = $this->getCleanFields($data);
-        if($error) {
-            $data['RESULT'] = "true";
-            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-            tl('register_controller_error_fields')."</h1>')";
-            $data['REFRESH'] = "register";
-            return $data;
-        }
-        if($this->userModel->getUserId($data['USER'])) {
-            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-            tl('register_controller_user_already_exists')."</h1>')";
-            $data['REFRESH'] = "register";
-            return $data;
-        }
         switch(REGISTRATION_TYPE)
         {
             case 'no_activation':
@@ -178,6 +387,8 @@ class RegisterController extends Controller
                 $server->send($subject, MAIL_SENDER, MAIL_SENDER, $message);
             break;
         }
+        $user = $this->userModel->getUser($data['USER']);
+        $this->userModel->setUserSession($user['USER_ID'], $_SESSION);
         return $data;
     }
 
@@ -261,6 +472,25 @@ class RegisterController extends Controller
             $missing[] = "repassword";
             $data["PASSWORD"] = "";
             $data["REPASSWORD"] = "";
+        }
+        $num_questions = self::NUM_CAPTCHA_QUESTIONS + 
+            self::NUM_RECOVERY_QUESTIONS;
+        $num_captchas = self::NUM_CAPTCHA_QUESTIONS;
+        for($i = 0; $i < $num_questions; $i++) {
+            $field = "question_$i";
+            $captchas = isset($_SESSION['CAPTCHAS'][$i]) ?
+                $_SESSION['CAPTCHAS'][$i] : array();
+            $recovery = isset($_SESSION['RECOVERY'][$i  - $num_captchas]) ?
+                $_SESSION['RECOVERY'][$i  - $num_captchas] : array();
+            $current_dropdown = ($i< $num_captchas) ?
+                $captchas : $recovery;
+            if(!isset($_REQUEST[$field]) || $_REQUEST[$field] == "-1" ||
+                !in_array($_REQUEST[$field], $current_dropdown)) {
+                $error = true;
+                $missing[] = $field;
+            } else {
+                $data[$field] = $_REQUEST[$field];
+            }
         }
         $data['MISSING'] = $missing;
         return $error;
