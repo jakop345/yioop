@@ -37,6 +37,8 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 require_once BASE_DIR."/models/model.php";
 
 /**
+ * Used to keep track of ip address of failed account creation and login
+ * attempts
  *
  * @author Chris Pollett
  * @package seek_quarry
@@ -45,19 +47,21 @@ require_once BASE_DIR."/models/model.php";
 class VisitorModel extends Model
 {
 
-
     /**
-     *  {@inheritdoc}
-     */
-    function __construct()
-    {
-        parent::__construct();
-    }
-
-    /**
+     *  Looks up an ip address to get the last time it was seen and the
+     *  duration of the last time out period. If the last time it was seen
+     *  was more than the forget age then it is removed from the visitor
+     *  table and treated as in never seen (i.e., this function returns
+     *  false if never seen before)
      *
-     *  @param string
-     *  @return array 
+     *  @param string $ip_address the ipv4 or ipv6 address as a string
+     *  @return array associtaive array containing ADDRESS, the ip address;
+     *      PAGE_NAME, the name of the static page to show if within the
+     *      timeout period, END_TIME, time in seconds of current epoch until
+     *      timeout period is over; DELAY, the current length of a timeout
+     *      in seconds that a failed account creation or recovery should incur;
+     *      FORGET_AGE, how long without a visit by this ip until the address
+     *      should be treated as never seen before.
      */
     function getVisitor($ip_address)
     {
@@ -78,7 +82,9 @@ class VisitorModel extends Model
     }
 
     /**
+     *  Deletes an ip address from the VISITOR table
      *
+     *  @param string $ip_address the ipv4 or ipv6 address as a string
      */
     function removeVisitor($ip_address)
     {
@@ -88,7 +94,20 @@ class VisitorModel extends Model
     }
 
     /**
+     *  This creates or updates a visitor table entry for an ip address.
+     *  These entries are used to keep track of which ip should be made to
+     *  see a timeout static page because of failing to input captcha or
+     *  recovery info correctly.
      *
+     *  @param string $ip_address ipv4 or ipv6 address to insert or update.
+     *  @param string $page_name name of static page (served by
+     *      StaticController) to display if ip is in a timeout period
+     *  @param int $start_delay only is used if ip address does not
+     *      already have an entry in the VISITOR table in which case it
+     *      is the initial timeout period a user must wait if the there is
+     *      a captcha or receovery info error
+     *  @param int $forget_age how long without a visit by this ip until the
+     *      address should be treated as never seen before
      */
     function updateVisitor($ip_address, $page_name, $start_delay = 1,
         $forget_age = self::ONE_WEEK)
