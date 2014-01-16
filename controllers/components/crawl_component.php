@@ -34,7 +34,8 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- * 
+ * This component is used to provide activities for the admin controller related
+ * to configuring and performing a web or archive crawl
  *
  * @author Chris Pollett
  * @package seek_quarry

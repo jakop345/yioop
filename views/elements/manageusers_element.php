@@ -155,7 +155,11 @@ class ManageusersElement extends Element
     }
 
     /**
+     *  Draws the heading before the user table as well as the controls
+     *  for what user to see (mobile phone case).
      *
+     *  @param array $data needed for dropdown values for number of users to
+     *      display
      */
     function mobileTitleNumUserControls($data)
     {
@@ -209,7 +213,11 @@ class ManageusersElement extends Element
     }
 
     /**
+     *  Draws the heading before the user table as well as the controls
+     *  for what user to see (desktop, laptop, tablet case).
      *
+     *  @param array $data needed for dropdown values for number of users to
+     *      display
      */
     function desktopTitleNumUserControls($data)
     {

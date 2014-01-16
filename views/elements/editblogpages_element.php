@@ -45,7 +45,10 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 class EditBlogPagesElement extends Element
 {
     /**
-     *  @param array $data
+     *  Used to draw forms related to manipulating blog posts
+     *
+     *  @param array $data hold data for various dropdowns related to who
+     *      can see a post, the description of the blog, and the blog items
      */
     function render($data)
     {

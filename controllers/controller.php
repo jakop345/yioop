@@ -224,7 +224,10 @@ abstract class Controller
     }
 
     /**
+     *  Used to invoke an activity method of the current controller or one
+     *  its components
      *
+     * @param $activity method to invoke
      */
      function call($activity)
      {

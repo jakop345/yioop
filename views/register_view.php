@@ -56,7 +56,7 @@ class RegisterView extends View
      *  Draws the create account web page.
      *
      *  @param array $data  contains the anti CSRF token
-     *  the view
+     *      the view, data for captcha and recover dropdowns
      */
     function renderView($data)
     {

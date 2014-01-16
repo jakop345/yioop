@@ -368,10 +368,13 @@ class AdminController extends Controller implements CrawlConstants
 
 
     /**
+     * Used to update the yioop installation profile based on $_REQUEST data
      *
-     * @param array &$data
-     * @param array &$profile
-     * @param array $check_box_fields
+     * @param array &$data field data to be sent to the view
+     * @param array &$profile used to contain the current and updated profile
+     *      field values
+     * @param array $check_box_fields fields whose data comes from a html
+     *      checkbox
      */
     function updateProfileFields(&$data, &$profile, $check_box_fields = array())
     {

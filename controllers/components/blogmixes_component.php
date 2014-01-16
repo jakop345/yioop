@@ -34,11 +34,12 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- * 
+ *  Provides activities to AdminController related to creating, updating
+ *  blogs (and blog entries), static web pages, and crawl mixes.
  *
- * @author Chris Pollett
- * @package seek_quarry
- * @subpackage component
+ *  @author Chris Pollett
+ *  @package seek_quarry
+ *  @subpackage component
  */
 class BlogmixesComponent extends Component
 {

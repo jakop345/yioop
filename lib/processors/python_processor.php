@@ -90,7 +90,6 @@ class PythonProcessor extends TextProcessor
         return $summary;
     }
 
-
     /**
      *  Tries to determine the language of the document by looking at the
      *  $sample_text and $url provided
@@ -109,101 +108,6 @@ class PythonProcessor extends TextProcessor
         return $lang;
     }
 
-    /**
-     * Gets the text between two tags in a document starting at the current
-     * position.
-     *
-     * @param string $string document to extract text from
-     * @param int $cur_pos current location to look if can extract text
-     * @param string $start_tag starting tag that we want to extract after
-     * @param string $end_tag ending tag that we want to extract until
-     * @return array pair consisting of when in the document we are after
-     *      the end tag, together with the data between the two tags
-     */
-    static function getBetweenTags($string, $cur_pos, $start_tag, $end_tag)
-    {
-        $len = strlen($string);
-        if(($between_start = strpos($string, $start_tag, $cur_pos)) ===
-            false ) {
-            return array($len, "");
-        }
-
-        $between_start  += strlen($start_tag);
-        if(($between_end = strpos($string, $end_tag, $between_start)) ===
-            false ) {
-            $between_end = $len;
-        }
-
-        $cur_pos = $between_end + strlen($end_tag);
-
-        $between_string = substr($string, $between_start,
-            $between_end - $between_start);
-        return array($cur_pos, $between_string);
-
-    }
-
-    /**
-     * Tries to extract http or https links from a string of text.
-     * Does this by a very approximate regular expression.
-     *
-     * @param string $page text string of a document
-     * @return array a set of http or https links that were extracted from
-     *      the document
-     */
-    static function extractHttpHttpsUrls($page)
-    {
-        $pattern =
-            '@((http|https)://([^ \t\r\n\v\f\'\"\;\,<>\{\}])*)@i';
-        $sites = array();
-        preg_match_all($pattern, $page, $matches);
-        $i = 0;
-        foreach($matches[0] as $url) {
-            if(!isset($sites[$url]) && strlen($url) < MAX_URL_LENGTH &&
-                strlen($url) > 4) {
-                $sites[$url] = preg_replace("/\s+/", " ", strip_tags($url));
-                $i++;
-                if($i >= MAX_LINKS_TO_EXTRACT) {break;}
-            }
-        }
-        return $sites;
-    }
-
-    /**
-     * If an end of file is reached before closed tags are seen, this methods
-     * closes these tags in the correct order.
-     *
-     * @param string &$page a reference to an xml or html document
-     */
-    static function closeDanglingTags(&$page)
-    {
-        $l_pos = strrpos($page, "<");
-        $g_pos = strrpos($page, ">");
-        if($g_pos && $l_pos > $g_pos) {
-            $page = substr($page, 0, $l_pos);
-        }
-        // put all opened tags into an array
-        preg_match_all("#<([a-z]+)( .*)?(?!/)>#iU", $page, $result);
-        $openedtags = $result[1];
-
-        // put all closed tags into an array
-        preg_match_all("#</([a-z]+)>#iU", $page, $result);
-        $closedtags=$result[1];
-        $len_opened = count($openedtags);
-        // all tags are closed
-        if(count($closedtags) == $len_opened){
-            return;
-        }
-
-        $openedtags = array_reverse($openedtags);
-        // close tags
-        for($i=0;$i < $len_opened;$i++) {
-            if (!in_array($openedtags[$i],$closedtags)){
-              $page .= '</'.$openedtags[$i].'>';
-            } else {
-              unset($closedtags[array_search($openedtags[$i],$closedtags)]);
-            }
-        }
-    }
 }
 
 ?>

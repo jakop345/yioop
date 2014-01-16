@@ -545,7 +545,7 @@ define ('MIRROR_NOTIFY_FREQUENCY', 60);
     filters (fetcher) will be force saved in seconds*/
 define('FORCE_SAVE_TIME', 3600);
 
-    /** Number of seconds of no fetcher contact before crawl is deemed dead*/
+/** Number of seconds of no fetcher contact before crawl is deemed dead*/
 define("CRAWL_TIME_OUT", 1800);
 
 /** maximum number of terms allowed in a conjunctive search query */
@@ -568,14 +568,19 @@ define ('MAX_QUERY_CACHE_TIME', 2*86400); //two days
     invalidated */
 define ('MIN_QUERY_CACHE_TIME', 3600); //one hour
 
-/** */
+/** ID of the group to which all Yioop users belong */
 define('PUBLIC_GROUP_ID', 1);
-
-/** */
+/** USER STATUS value used for a user who can log in and perform activities */
 define('ACTIVE_STATUS', 1);
-/** */
+/**
+ *  USER STATUS value used for a user whose account is created, but which
+ *  still needs to undergo admin or email verification/activation
+ */
 define('INACTIVE_STATUS', 2);
 
-/** */
+/**
+ * USER STATUS of used to indicate an account which can no longer perform
+ * activities but which might be retained to preserve old blog posts.
+ */
 define('BANNED_STATUS', 3);
 ?>

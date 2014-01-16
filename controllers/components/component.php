@@ -45,17 +45,24 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 class Component
 {
     /**
+     * An array of activities this component provides to a controller
      *
+     * @var array
      */
     var $activities = array();
 
     /**
+     * Reference to the controller this component lives on
      *
+     * @var object
      */
     var $parent = NULL;
 
     /**
+     *  Sets up this component by storing in its parent field a reference to
+     *   controller this component lives on
      *
+     *  @param object reference to the controller this component lives on
      */
     function __construct($parent_controller)
     {

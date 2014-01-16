@@ -315,9 +315,16 @@ class UrlParser
     }
 
     /**
+     * Returns as a two element array the host and path of a url
      *
+     * @param string $url initial url to get host and path of
+     * @param bool $with_login_and_port controls whether the host should
+     *      should contain login and port info
+     * @param bool $with_query_string says whether the path should contain
+     *      the query string as well
+     * @return array host and the path as a pair
      */
-    static function getHostAndPath($url, $with_login_and_port = true, 
+    static function getHostAndPath($url, $with_login_and_port = true,
         $with_query_string = false)
     {
         $url_parts = @parse_url($url);

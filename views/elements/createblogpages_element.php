@@ -45,7 +45,12 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 class CreateBlogPagesElement extends Element
 {
     /**
-     *  @param array $data
+     * Used to display the form allowing someone to create a new blog or
+     * or static page
+     *
+     *  @param array $data used to hold dropdown for the time of object to
+     *      create as well as the dropdown for groups that will have initial
+     *      access to it
      */
     function render($data)
     {

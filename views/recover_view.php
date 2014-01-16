@@ -56,7 +56,7 @@ class RecoverView extends View
      *  following the recover password email
      *
      *  @param array $data  contains the anti CSRF token
-     *  the view
+     *      the view, data for captcha and recover dropdowns
      */
     function renderView($data) 
     {
