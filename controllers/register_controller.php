@@ -58,25 +58,26 @@ class RegisterController extends Controller
      * Load the RegisterView
      * @var array
      */
-    var $views = array("register", "signin");
+    var $views = array("recover", "register", "signin");
     /**
      * LocaleModel used to get the available languages/locales, CrawlModel
      * is used to get a list of available crawls
      * @var array
      */
-    var $models = array("user");
+    var $models = array("user", "visitor");
 
     /**
      * @var array
      */
     var $activities = array("createAccount", "processAccountData",
-        "resetPassword", "emailVerification");
+        "recoverPassword", "recoverComplete",
+        "processRecoverData", "emailVerification");
 
     /**
      * @var array
      */
-    var $register_fields = array("first", "last", "user",
-            "email", "password", "repassword");
+    var $register_fields = array("first", "last", "user", "email", "password",
+        "repassword");
 
     /**
      * @var array
@@ -173,64 +174,215 @@ class RegisterController extends Controller
         } else {
             $user = $_SERVER['REMOTE_ADDR'];
         }
+        $visitor = $this->visitorModel->getVisitor($_SERVER['REMOTE_ADDR']);
+        if(isset($visitor['END_TIME']) && $visitor['END_TIME'] > time()) {
+            $_SESSION['value'] = date('Y-m-d H:i:s', $visitor['END_TIME']);
+            $url = BASE_URL."?c=static&p=".$visitor['PAGE_NAME'];
+            header("Location:".$url);
+            exit();
+        }
+        $data = array();
+        $data['REFRESH'] = "register";
         $activity = isset($_REQUEST['a']) ?
             $this->clean($_REQUEST['a'], 'string') : 'createAccount';
         $token_okay = $this->checkCSRFToken(CSRF_TOKEN, $user);
 
         if(!in_array($activity, $this->activities) || (!$token_okay
-            && $activity != "emailVerification")) {
+            && !in_array($activity, array("emailVerification",
+            "recoverPassword", "recoverComplete")) )) {
             $activity = 'createAccount';
         }
+        $data["check_user"] = true;
+        $this->preactivityPrerequisiteCheck($activity,
+            'processAccountData', 'createAccount', $data);
+        $data["check_fields"] = array("user");
+        unset($data["check_user"]);
+        for($i = 0; $i < self::NUM_CAPTCHA_QUESTIONS; $i++) {
+            $data["check_fields"][] = "question_$i";
+        }
+        $this->preactivityPrerequisiteCheck($activity,
+            'processRecoverData', 'recoverPassword', $data);
+        unset($data["check_fields"]);
+        $new_data = $this->call($activity);
+        $data = array_merge($new_data, $data);
+        if(isset($new_data['REFRESH'])) {
+            $data['REFRESH'] = $new_data['REFRESH'];
+        }
+        if(isset($new_data['SCRIPT']) && $new_data['SCRIPT'] != "") {
+            $data['SCRIPT'] .= $new_data['SCRIPT'];
+        }
+        $data[CSRF_TOKEN] = $this->generateCSRFToken($user);
+        $view = $data['REFRESH'];
+        if(!isset($_SESSION['REMOTE_ADDR'])) {
+            $view = "signin";
+            $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
+                tl('register_controller_need_cookies')."</h1>');";
+            $this->visitorModel->updateVisitor(
+                $_SERVER['REMOTE_ADDR'], "register_time_out");
+        }
+        //used to ensure that we have sessions active
+        $_SESSION['REMOTE_ADDR'] = $_SERVER['REMOTE_ADDR'];
+        $this->displayView($view, $data);
+    }
 
+    /**
+     *
+     */
+    function recoverComplete()
+    {
         $data = array();
-        if($activity == 'processAccountData') {
-            $data = $this->dataIntegrityCheck();
-            if(isset($data["REFRESH"]) && $data["REFRESH"] == 'register') {
-                $activity = 'createAccount';
+        $data['REFRESH'] = "signin";
+        $fields = array("user", "hash", "time");
+        if(isset($_REQUEST['finish_hash'])) {
+            $fields = array("user", "finish_hash", "time", "password",
+                "repassword");
+        }
+        $recover_fail = "doMessage('<h1 class=\"red\" >".
+            tl('register_controller_account_recover_fail')."</h1>');";
+        foreach($fields as $field) {
+            if(isset($_REQUEST[$field])) {
+                $data[$field] = $this->clean($_REQUEST[$field], "string");
+            } else {
+                $data['SCRIPT'] = $recover_fail;
+                return $data;
             }
-            if($activity == 'processAccountData') {
+        }
+        $user = $this->userModel->getUser($data["user"]);
+        if(!$user) {
+            $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
+                tl('register_controller_account_recover_fail')."</h1>');";
+            return $data;
+        }
+        $user_session = $this->userModel->getUserSession($user["USER_ID"]);
+        if(isset($data['finish_hash'])) {
+            $finish_hash = urlencode(crawlCrypt($user['HASH'].$data["time"].
+                $user['CREATION_TIME'] . AUTH_KEY,
+                urldecode($data['finish_hash'])));
+            if($finish_hash != $data['finish_hash'] ||
+                !$this->checkRecoveryQuestions($user)) {
+                $this->visitorModel->updateVisitor(
+                    $_SERVER['REMOTE_ADDR'], "register_time_out");
+                $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
+                    tl('register_controller_account_recover_fail')."</h1>');";
+                return $data;
+            }
+            if($data["password"] == $data["repassword"]) {
+                if(isset($user_session['LAST_RECOVERY_TIME']) &&
+                    $user_session['LAST_RECOVERY_TIME'] > $data["time"]) {
+                    $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
+                        tl('register_controller_recovered_already')."</h1>');";
+                    return $data;
+                } else if(time() - $data["time"] > CrawlConstants::ONE_DAY) {
+                    $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
+                        tl('register_controller_recovery_expired')."</h1>');";
+                    return $data;
+                } else {
+                    $user["PASSWORD"] = crawlCrypt($data["password"]);
+                    $this->userModel->updateUser($user);
+                    $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
+                        tl('register_controller_password_changed')."</h1>');";
+                    $user_session['LAST_RECOVERY_TIME'] = time();
+                    $this->userModel->setUserSession($user["USER_ID"],
+                        $user_session);
+                    return $data;
+                }
+            } else {
+                $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
+                    tl('register_controller_passwords_dont_match')."</h1>');";
+            }
+        } else {
+            $hash = crawlCrypt(
+                $user['HASH'].$data["time"].$user['USER_NAME'].AUTH_KEY,
+                $data['hash']);
+            if($hash != $data['hash']) {
+                $this->visitorModel->updateVisitor(
+                    $_SERVER['REMOTE_ADDR'], "register_time_out");
+                $data['SCRIPT'] = $recover_fail;
+                return $data;
+            } else if(isset($user_session['LAST_RECOVERY_TIME']) &&
+                    $user_session['LAST_RECOVERY_TIME'] > $data["time"]) {
+                $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
+                    tl('register_controller_recovered_already')."</h1>');";
+                return $data;
+            } else if(time() - $data["time"] > CrawlConstants::ONE_DAY) {
+                $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
+                    tl('register_controller_recovery_expired')."</h1>');";
+                return $data;
+            }
+        }
+        if(!isset($user_session['RECOVERY']) || 
+            !isset($user_session['RECOVERY_ANSWERS'])) {
+            $data['SCRIPT'] = $recover_fail;
+            return $data;
+        }
+        $data['PASSWORD'] = "";
+        $data['REPASSWORD'] = "";
+        for($i = 0; $i < self::NUM_RECOVERY_QUESTIONS; $i++) {
+            $data["question_$i"] = "";
+        }
+        $data["RECOVERY"] = $user_session['RECOVERY'];
+        $data["REFRESH"] = "recover";
+        $data["RECOVER_COMPLETE"] = true;
+        $data['finish_hash'] = urlencode(crawlCrypt($user['HASH'].$data["time"].
+                $user['CREATION_TIME'] . AUTH_KEY));
+        return $data;
+    }
+
+    /**
+     *
+     */
+    function preactivityPrerequisiteCheck(&$activity,
+        $activity_success, $activity_fail, &$data)
+    {
+        if($activity == $activity_success) {
+            $this->dataIntegrityCheck($data);
+            if(!$data["SUCCESS"]) {
+                $activity = $activity_fail;
+            }
+            if($activity == $activity_success) {
                 if(!isset($_SESSION['CAPTCHA_ANSWERS']) ) {
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('register_controller_need_cookies')."</h1>')";
+                        tl('register_controller_need_cookies')."</h1>');";
                     $activity = 'createAccount';
+                    $this->visitorModel->updateVisitor(
+                        $_SERVER['REMOTE_ADDR'], "register_time_out");
                 } else if(!$this->checkCaptchaAnswers()) {
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('register_controller_failed_human')."</h1>')";
+                        tl('register_controller_failed_human')."</h1>');";
                     for($i = 0; $i < self::NUM_CAPTCHA_QUESTIONS; $i++) {
                         $data["question_$i"] = "-1";
                     }
                     unset($_SESSION['CAPTCHAS']);
-                    $activity = 'createAccount';
+                    unset($_SESSION['CAPTCHA_ANSWERS']);
+                    $this->visitorModel->updateVisitor(
+                        $_SERVER['REMOTE_ADDR'], "register_time_out");
+                    $activity = $activity_fail;
                 }
             }
         }
-        $new_data = $this->call($activity);
-        $data = array_merge($new_data,$data);
-        if(isset($new_data['SCRIPT']) && $new_data['SCRIPT'] != "") {
-            $data['SCRIPT'] .= ";".$new_data['SCRIPT'];
-        }
-        $data[CSRF_TOKEN] = $this->generateCSRFToken($user);
-        $view = (isset($data['REFRESH'])) ? $data['REFRESH'] : 'register';
-        $this->displayView($view, $data);
     }
 
 
     /**
      *
      */
-    function dataIntegrityCheck()
+    function dataIntegrityCheck(&$data)
     {
-        $data['SCRIPT'] = "";
-        $error = $this->getCleanFields($data);
-        if($error) {
-            $data['RESULT'] = "true";
+        if(!isset($data['SCRIPT'])) {
+            $data['SCRIPT'] = "";
+        }
+        $data['SUCCESS'] = true;
+        $this->getCleanFields($data);
+        if($data['MISSING'] != array()) {
+            $data['SUCCESS'] = false;
             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-            tl('register_controller_error_fields')."</h1>')";
-            $data['REFRESH'] = "register";
-        } else if($this->userModel->getUserId($data['USER'])) {
+            tl('register_controller_error_fields')."</h1>');";
+            
+        } else if(isset($data["check_user"]) && 
+            $this->userModel->getUserId($data['USER'])) {
+            $data['SUCCESS'] = false;
             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-            tl('register_controller_user_already_exists')."</h1>')";
-            $data['REFRESH'] = "register";
+            tl('register_controller_user_already_exists')."</h1>');";
         }
         return $data;
     }
@@ -245,6 +397,7 @@ class RegisterController extends Controller
             $field = "question_".$i;
             if($_REQUEST[$field] != $_SESSION['CAPTCHA_ANSWERS'][$i]) {
                 $captcha_passed = false;
+                break;
             }
         }
         return $captcha_passed;
@@ -253,7 +406,39 @@ class RegisterController extends Controller
     /**
      *
      */
+    function checkRecoveryQuestions($user)
+    {
+        $user_session = $this->userModel->getUserSession($user["USER_ID"]);
+        if(!isset($user_session['RECOVERY_ANSWERS'])) {
+            return false;
+        }
+        $recovery_passed = true;
+        for($i = 0; $i < self::NUM_RECOVERY_QUESTIONS; $i++) {
+            $field = "question_".$i;
+            if($_REQUEST[$field] != $user_session['RECOVERY_ANSWERS'][$i]) {
+                $recovery_passed = false;
+                $this->visitorModel->updateVisitor(
+                    $_SERVER['REMOTE_ADDR'], "register_time_out");
+                break;
+            }
+        }
+        return $recovery_passed;
+    }
+
+
+    /**
+     *
+     */
     function createAccount()
+    {
+        $data = $this->setupQuestionViewData();
+        return $data;
+    }
+
+    /**
+     *
+     */
+    function setupQuestionViewData()
     {
         $data = array();
         $fields = $this->register_fields;
@@ -338,7 +523,8 @@ class RegisterController extends Controller
      */
     function processAccountData()
     {
-        $data = $this->dataIntegrityCheck();
+        $data = array();
+        $this->getCleanFields($data);
         $data['SCRIPT'] = "";
         switch(REGISTRATION_TYPE)
         {
@@ -359,17 +545,26 @@ class RegisterController extends Controller
                     MAIL_SERVERPORT, MAIL_USERNAME, MAIL_PASSWORD,
                     MAIL_SECURITY);
                 $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                    tl('register_controller_registration_email_sent')."</h1>')";
+                    tl('register_controller_registration_email_sent').
+                    "</h1>');";
                 $subject = tl('register_controller_admin_activation_request');
                 $message = tl('register_controller_admin_email_salutation',
                     $data['FIRST'], $data['LAST'])."\n";
-                $message .= tl('register_controller_admin_email_test')."\n";
+                $message .= tl('register_controller_email_body')."\n";
                 $creation_time = vsprintf('%d.%06d', gettimeofday());
-                $message .= NAME_SERVER.
+                $message .= BASE_URL.
                     "?c=register&a=emailVerification&email=".
                     $user['EMAIL']."&time=".$user['CREATION_TIME'].
-                    "&hash=".$user['HASH'];
+                    "&hash=".urlencode(crawlCrypt($user['HASH']));
                 $server->send($subject, MAIL_SENDER, $data['EMAIL'], $message);
+                $num_questions = self::NUM_CAPTCHA_QUESTIONS +
+                    self::NUM_RECOVERY_QUESTIONS;
+                $start = self::NUM_CAPTCHA_QUESTIONS;
+                for($i = $start; $i < $num_questions; $i++) {
+                    $j = $i - $start;
+                    $_SESSION["RECOVERY_ANSWERS"][$j] =
+                        $this->clean($_REQUEST["question_$i"],"string");
+                }
             break;
             case 'admin_activation':
                 $data['REFRESH'] = "signin";
@@ -377,7 +572,7 @@ class RegisterController extends Controller
                     $data['FIRST'], $data['LAST'], $data['EMAIL'],
                     INACTIVE_STATUS);
                 $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                    tl('register_controller_account_request_made')."</h1>')";
+                    tl('register_controller_account_request_made')."</h1>');";
                 $server = new MailServer(MAIL_SENDER, MAIL_SERVER,
                     MAIL_SERVERPORT, MAIL_USERNAME, MAIL_PASSWORD,
                     MAIL_SECURITY);
@@ -388,16 +583,71 @@ class RegisterController extends Controller
             break;
         }
         $user = $this->userModel->getUser($data['USER']);
-        $this->userModel->setUserSession($user['USER_ID'], $_SESSION);
+        if(isset($user['USER_ID'])) {
+            $this->userModel->setUserSession($user['USER_ID'], $_SESSION);
+        }
+        unset($_SESSION['CAPTCHA_ANSWERS']);
+        unset($_SESSION['CAPTCHAS']);
+        unset($_SESSION['RECOVERY_ANSWERS']);
+        unset($_SESSION['RECOVERY']);
         return $data;
     }
 
     /**
      *
      */
-    function resetPassword()
+    function recoverPassword()
     {
+        $data = $this->setupQuestionViewData();
+        $data['REFRESH'] = "recover";
+        return $data;
+    }
 
+    /**
+     *
+     */
+    function processRecoverData()
+    {
+        $data = array();
+        $this->getCleanFields($data);
+        $data['SCRIPT'] = "";
+        $data["REFRESH"] = "signin";
+        $user = $this->userModel->getUser($data['USER']);
+        if(!$user) {
+            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                tl('register_controller_account_recover_fail')."</h1>');";
+            $this->visitorModel->updateVisitor(
+                $_SERVER['REMOTE_ADDR'], "register_time_out");
+            return $data;
+        }
+        $session = $this->userModel->getUserSession($user["USER_ID"]);
+        if(!isset($session['RECOVERY']) || 
+            !isset($session['RECOVERY_ANSWERS'])) {
+            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                tl('register_controller_account_recover_fail')."</h1>');";
+            return $data;
+        }
+        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+            tl('register_controller_account_recover_email')."</h1>');";
+        $server = new MailServer(MAIL_SENDER, MAIL_SERVER,
+            MAIL_SERVERPORT, MAIL_USERNAME, MAIL_PASSWORD,
+            MAIL_SECURITY);
+        $subject = tl('register_controller_recover_request');
+        $message = tl('register_controller_admin_email_salutation',
+            $user['FIRST_NAME'], $user['LAST_NAME'])."\n";
+        $message .= tl('register_controller_recover_body')."\n";
+        $time = time();
+        $message .= BASE_URL.
+            "?c=register&a=recoverComplete&user=".
+            $user['USER_NAME']."&time=".$time.
+            "&hash=".urlencode(crawlCrypt(
+                $user['HASH'].$time.$user['USER_NAME'].AUTH_KEY));
+        $server->send($subject, MAIL_SENDER, $user['EMAIL'], $message);
+        unset($_SESSION['CAPTCHA_ANSWERS']);
+        unset($_SESSION['CAPTCHAS']);
+        unset($_SESSION['RECOVERY_ANSWERS']);
+        unset($_SESSION['RECOVERY']);
+        return $data;
     }
 
     /**
@@ -421,32 +671,50 @@ class RegisterController extends Controller
         }
         if($error) {
             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                tl('register_controller_email_verification_error')."</h1>')";
+                tl('register_controller_email_verification_error')."</h1>');";
         } else {
             $user = $this->userModel->getUserByEmailTime($verify["email"],
                 $verify["time"]);
-            if(isset($user["HASH"]) && $user["HASH"] == $verify["hash"]) {
-                $this->userModel->updateUserStatus($user["USER_ID"],
-                    ACTIVE_STATUS);
+            if(isset($user['STATUS']) && $user['STATUS'] == ACTIVE_STATUS) {
                 $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                    tl('register_controller_account_activated')."</h1>')";
+                    tl('register_controller_already_activated')."</h1>');";
             } else {
-                $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                    tl('register_controller_email_verification_error').
-                    "</h1>')";
+                $hash = crawlCrypt($user["HASH"], $verify["hash"]);
+                if(isset($user["HASH"]) && $hash == $verify["hash"]) {
+                    $this->userModel->updateUserStatus($user["USER_ID"],
+                        ACTIVE_STATUS);
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('register_controller_account_activated')."</h1>');";
+                } else {
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('register_controller_email_verification_error').
+                        "</h1>');";
+                    $this->visitorModel->updateVisitor(
+                        $_SERVER['REMOTE_ADDR'], "register_time_out");
+                }
             }
         }
+        unset($_SESSION['CAPTCHA_ANSWERS']);
+        unset($_SESSION['CAPTCHAS']);
+        unset($_SESSION['RECOVERY_ANSWERS']);
+        unset($_SESSION['RECOVERY']);
+        $_SESSION['REMOTE_ADDR'] = $_SERVER['REMOTE_ADDR'];
         return $data;
     }
 
     function getCleanFields(&$data)
     {
         $fields = $this->register_fields;
+        if(isset($data["check_fields"])) {
+            $fields = $data["check_fields"];
+        }
+        if(!isset($data["SCRIPT"])) {
+            $data["SCRIPT"] = "";
+        }
         $missing = array();
         $regex_email=
             '/^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+'.
             '(\.[a-z0-9-]+)*(\.[a-z]{2,3})$/';
-        $error = false;
         foreach($fields as $field) {
             if(empty($_REQUEST[$field]) || !isset($_REQUEST[$field])) {
                 $error = true;
@@ -478,6 +746,9 @@ class RegisterController extends Controller
         $num_captchas = self::NUM_CAPTCHA_QUESTIONS;
         for($i = 0; $i < $num_questions; $i++) {
             $field = "question_$i";
+            if(!in_array($field, $fields)) {
+                continue;
+            }
             $captchas = isset($_SESSION['CAPTCHAS'][$i]) ?
                 $_SESSION['CAPTCHAS'][$i] : array();
             $recovery = isset($_SESSION['RECOVERY'][$i  - $num_captchas]) ?
@@ -486,14 +757,12 @@ class RegisterController extends Controller
                 $captchas : $recovery;
             if(!isset($_REQUEST[$field]) || $_REQUEST[$field] == "-1" ||
                 !in_array($_REQUEST[$field], $current_dropdown)) {
-                $error = true;
                 $missing[] = $field;
             } else {
                 $data[$field] = $_REQUEST[$field];
             }
         }
         $data['MISSING'] = $missing;
-        return $error;
     }
 }
 

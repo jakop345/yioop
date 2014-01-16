@@ -115,6 +115,9 @@ class StaticController extends Controller
         } else {
             $data['page'] = "blog";
         }
+        if(isset($_SESSION['value'])) {
+            $data['value'] = $this->clean($_SESSION['value'], "string");
+        }
         if((isset($this->staticView->head_objects[$data['page']]['title']))) {
             $data["subtitle"]=" - ".
             $this->staticView->head_objects[$data['page']]['title'];

@@ -80,7 +80,13 @@ class StaticView extends View
             e($data['subtitle']);?></span></h1>
         </div>
         <div class="content">
-            <?php e($this->page_objects[$data['page']]); ?>
+            <?php if(isset($data["value"])) {
+                    $page = sprintf($this->page_objects[$data['page']], 
+                        $data["value"]);
+                    e($page);
+                } else {
+                    e($this->page_objects[$data['page']]); 
+                }?>
         </div>
         <div class="landing-footer">
             <?php  $this->footerElement->render($data);?>

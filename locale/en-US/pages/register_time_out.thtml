@@ -1,0 +1,8 @@
+title=Create/Recover Account
+
+END_HEAD_VARS
+<h2>Account Timeout</h2>
+<p>A number of incorrect captcha responses or recover password requests
+have been made from this IP address. Please wait until
+%s to access this site.
+</p>

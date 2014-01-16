@@ -155,7 +155,7 @@ class AdminController extends Controller implements CrawlConstants
                 $view = "admin";
             } else {
                 $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
-                    tl('admin_controller_login_failed')."</h1>')";
+                    tl('admin_controller_login_failed')."</h1>');";
                 unset($_SESSION['USER_ID']);
             }
         } else if($this->checkCSRFToken(CSRF_TOKEN, "config")) {

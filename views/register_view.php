@@ -34,8 +34,7 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- * This View is responsible for drawing the login
- * screen for the admin panel of the Seekquarry app
+ * Draws the page that allows a user to register for an account
  *
  * @author Mallika Perepa (creator), Chris Pollett
  * @package seek_quarry
@@ -59,7 +58,7 @@ class RegisterView extends View
      *  @param array $data  contains the anti CSRF token
      *  the view
      */
-    function renderView($data) 
+    function renderView($data)
     {
         $logo = "resources/yioop.png";
         if(MOBILE) {
@@ -208,15 +207,15 @@ class RegisterView extends View
                     </table>
                 </div>
             </form>
-                <div class="signin-exit">
-                    <ul>
-                    <li><a href="."><?php
-                    e(tl('signin_view_return_yioop')); ?></a></li>
-                    </ul>
-                </div>
+            <div class="signin-exit">
+                <ul>
+                <li><a href="."><?php
+                e(tl('signin_view_return_yioop')); ?></a></li>
+                </ul>
+            </div>
         </div>
         </div>
-            <div class='tall-landing-spacer'></div>
+        <div class='tall-landing-spacer'></div>
     <?php
         }
     }

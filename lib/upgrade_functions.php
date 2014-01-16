@@ -596,6 +596,9 @@ function upgradeDatabaseVersion19(&$db)
 {
     $db->execute("DELETE FROM VERSION WHERE ID < 18");
     $db->execute("UPDATE VERSION SET ID=19 WHERE ID=18");
+    $db->execute("CREATE TABLE VISITOR(ADDRESS VARCHAR(39),
+        PAGE_NAME VARCHAR(16), END_TIME INTEGER, DELAY INTEGER,
+        FORGET_AGE INTEGER)");
     $dbinfo = array("DBMS" => DBMS, "DB_HOST" => DB_HOST, "DB_NAME" => DB_NAME,
         "DB_PASSWORD" => DB_PASSWORD);
     $sql = "ALTER TABLE USER RENAME TO USER_OLD";
@@ -603,8 +606,8 @@ function upgradeDatabaseVersion19(&$db)
     $auto_increment = $db->autoIncrement($dbinfo);
     $db->execute("CREATE TABLE USER(USER_ID INTEGER PRIMARY KEY $auto_increment,
         FIRST_NAME VARCHAR(16), LAST_NAME VARCHAR(16),
-        USER_NAME VARCHAR(16) UNIQUE, EMAIL VARCHAR(32),
-        PASSWORD CHAR(60), STATUS INTEGER, HASH VARCHAR(100))");
+        USER_NAME VARCHAR(16) UNIQUE, EMAIL VARCHAR(60),
+        PASSWORD CHAR(60), STATUS INTEGER, HASH CHAR(60))");
     $sql = "SELECT USER_ID, USER_NAME FROM USER_OLD";
     $result = $db->execute($sql);
     while($row = $db->fetchArray($result)) {
@@ -616,7 +619,7 @@ function upgradeDatabaseVersion19(&$db)
             VALUES ('{$row['USER_ID']}', '{$row['USER_NAME']}', 
             '{$row['FIRST_NAME']}', '{$row['LAST_NAME']}', '{$row['EMAIL']}',
             '".crawlCrypt('')."', '".$status."', '".
-            md5($row['USER_NAME'].AUTH_KEY.$creation_time)."', '".
+            crawlCrypt($row['USER_NAME'].AUTH_KEY.$creation_time)."', '".
             $creation_time."')";
         $db->execute($sql);
     }

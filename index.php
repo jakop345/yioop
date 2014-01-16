@@ -45,6 +45,10 @@ define('YIOOP_VERSION', 19);
  */
 $pathinfo = pathinfo($_SERVER['SCRIPT_FILENAME']);
 define("BASE_DIR", $pathinfo["dirname"].'/');
+$pathinfo = pathinfo($_SERVER['SCRIPT_NAME']);
+$http = isset($_SERVER['HTTPS']) ? "https://" : "http://";
+//used in register controller to create links back to server
+define("BASE_URL", $http.$_SERVER['SERVER_NAME'].$pathinfo["dirname"]."/");
 
 /**
  * Check for paths of the form index.php/something which yioop doesn't support

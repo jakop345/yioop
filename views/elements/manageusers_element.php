@@ -352,7 +352,7 @@ class ManageusersElement extends Element
                             $role_array['ROLE_ID']);
                         e("&amp;user_name=".$data['CURRENT_USER']['user_name'].
                             "&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
-                            "'>Delete</a></td>");
+                            "'>".tl('manageusers_element_delete')."</a></td>");
                     }
                     e("</tr>");
                 }
@@ -367,6 +367,9 @@ class ManageusersElement extends Element
                     e(tl('manageusers_element_groups')); ?>:</td>
                 <td><div class='light-gray-box'><table><?php
                 foreach($data['SELECT_GROUPS'] as $group_array) {
+                    e("<tr><td><b>".
+                        $group_array['GROUP_NAME'].
+                        "</b></td>");
                     e("<td><a href='?c=admin&amp;a=manageUsers".
                         "&amp;arg=deleteusergroup&amp;selectgroup=".
                         $group_array['GROUP_ID']);

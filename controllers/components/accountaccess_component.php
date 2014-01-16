@@ -203,6 +203,7 @@ class AccountaccessComponent extends Component
                 $_REQUEST['arg'] = "addusergroup";
             }
         }
+        $userid = -1;
         if($username != "") {
             $userid = $parent->signinModel->getUserId($username);
             $data['SELECT_USER'] = $username;
@@ -210,8 +211,23 @@ class AccountaccessComponent extends Component
                 $data = array_merge($data, $this->getRoleArrays($userid));
                 $data = array_merge($data, $this->getGroupArrays($userid));
             }
+            $select_role = "-1";
+            if(isset($data['SELECT_ROLE'])) {
+                $select_role = $data['SELECT_ROLE'];
+            }
+            $role_ids = array();
+            if(isset($data['ROLE_IDS'])) {
+                $role_ids = $data['ROLE_IDS'];
+            }
+            $select_group = "-1";
+            if(isset($data['SELECT_GROUP'])) {
+                $select_group = $data['SELECT_GROUP'];
+            }
+            $group_ids = array();
+            if(isset($data['GROUP_IDS'])) {
+                $group_ids = $data['GROUP_IDS'];
+            }
         }
-
         $data['CURRENT_USER'] = array("user_name" => "", "first_name" => "",
             "last_name" => "", "email" => "", "status" => "", "password" => "",
             "repassword" => "");
@@ -312,9 +328,23 @@ class AccountaccessComponent extends Component
                             tl('accountaccess_component_username_doesnt_exists'
                                 ). "</h1>')";
                     } else  if(!in_array($select_role, $role_ids)) {
+                        $data['FORM_TYPE'] = "edituser";
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_rolename_doesnt_exists'
                             ). "</h1>')";
+                        $user = $parent->userModel->getUser($username);
+                        foreach($user as $field => $value) {
+                            $data['CURRENT_USER'][strtolower($field)] = $value;
+                        }
+                    } else if(!isset($data['AVAILABLE_ROLES'][$select_role])){
+                        $data['FORM_TYPE'] = "edituser";
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('accountaccess_component_rolename_already_added'
+                            ). "</h1>')";
+                        $user = $parent->userModel->getUser($username);
+                        foreach($user as $field => $value) {
+                            $data['CURRENT_USER'][strtolower($field)] = $value;
+                        }
                     } else {
                         $data['FORM_TYPE'] = "edituser";
                         $user = $parent->userModel->getUser($username);
@@ -333,14 +363,29 @@ class AccountaccessComponent extends Component
                 break;
 
                 case "addusergroup":
+
                     if( $userid <= 0 ) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_username_doesnt_exists'
                                 ). "</h1>')";
                     } else if(!in_array($select_group, $group_ids)) {
+                        $data['FORM_TYPE'] = "edituser";
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_groupname_doesnt_exists'
                             ). "</h1>')";
+                        $user = $parent->userModel->getUser($username);
+                        foreach($user as $field => $value) {
+                            $data['CURRENT_USER'][strtolower($field)] = $value;
+                        }
+                    } else if(!isset($data['AVAILABLE_GROUPS'][$select_group])){
+                        $data['FORM_TYPE'] = "edituser";
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('accountaccess_component_groupname_already_added'
+                            ). "</h1>')";
+                        $user = $parent->userModel->getUser($username);
+                        foreach($user as $field => $value) {
+                            $data['CURRENT_USER'][strtolower($field)] = $value;
+                        }
                     } else {
                         $data['FORM_TYPE'] = "edituser";
                         $user = $parent->userModel->getUser($username);
@@ -379,7 +424,7 @@ class AccountaccessComponent extends Component
                         $data['SELECT_ROLES'] =
                             $parent->userModel->getUserRoles($userid);
                         $data['AVAILABLE_ROLES'][$select_role] =
-                            $select_rolename;
+                            $data['SELECT_ROLENAME'];
                         $data['SELECT_ROLE'] = -1;
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_rolename_deleted') .
@@ -394,7 +439,7 @@ class AccountaccessComponent extends Component
                                 ). "</h1>');\n";
                     } else if(!in_array($select_group, $group_ids)) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('accountaccess_component_rolename_doesnt_exists'
+                            tl('accountaccess_component_groupname_doesnt_exists'
                                 ). "</h1>');\n";
                     } else {
                         $data['FORM_TYPE'] = "edituser";
@@ -407,7 +452,7 @@ class AccountaccessComponent extends Component
                         $data['SELECT_GROUPS'] =
                             $parent->groupModel->getUserGroups($userid);
                         $data['AVAILABLE_GROUPS'][$select_group] =
-                            $select_groupname;
+                            $data['SELECT_GROUPNAME'];
                         $data['SELECT_GROUP'] = -1;
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_group_deleted') .
@@ -519,6 +564,7 @@ class AccountaccessComponent extends Component
         } else {
             $select_role = "";
         }
+        $select_rolename = "";
         foreach($all_roles as $role) {
             $role_ids[] = $role['ROLE_ID'];
             if($select_role == $role['ROLE_ID']) {
@@ -538,7 +584,7 @@ class AccountaccessComponent extends Component
                 $available_roles[] = $role;
             }
         }
-
+        $data['ROLE_IDS'] = $role_ids;
         $data['AVAILABLE_ROLES'][-1] =
             tl('accountaccess_component_add_role');
 
@@ -548,6 +594,7 @@ class AccountaccessComponent extends Component
 
         if($select_role != "") {
             $data['SELECT_ROLE'] = $select_role;
+            $data['SELECT_ROLENAME'] = $select_rolename;
         } else {
             $data['SELECT_ROLE'] = -1;
         }
@@ -573,14 +620,14 @@ class AccountaccessComponent extends Component
         } else {
             $select_group = "";
         }
-
+        $select_groupname = "";
         foreach($all_groups as $group) {
             $group_ids[] = $group['GROUP_ID'];
             if($select_group == $group['GROUP_ID']) {
                 $select_groupname = $group['GROUP_NAME'];
             }
         }
-
+        $data['GROUP_IDS'] = $group_ids;
         $select_group_ids = array();
         foreach($data['SELECT_GROUPS'] as $group) {
             $select_group_ids[] = $group['GROUP_ID'];
@@ -604,6 +651,7 @@ class AccountaccessComponent extends Component
 
         if($select_group != "") {
             $data['SELECT_GROUP'] = $select_group;
+            $data['SELECT_GROUPNAME'] = $select_groupname;
         } else {
             $data['SELECT_GROUP'] = -1;
         }

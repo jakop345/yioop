@@ -436,7 +436,7 @@ class UserModel extends Model
             $this->db->escapeString($email)."', '" .
             crawlCrypt($this->db->escapeString($password)) . "','" .
             $this->db->escapeString($status)."', '".
-            md5($username.AUTH_KEY.$creation_time) . "', '" .
+            crawlCrypt($username.AUTH_KEY.$creation_time) . "', '" .
             $creation_time . "') ";
         $result = $this->db->execute($sql);
         if(!$user_id = $this->getUserId($username)) {

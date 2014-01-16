@@ -236,16 +236,17 @@ EOT;
     {
         $test_dbm = $this->testDatabaseManager($dbinfo);
 
-        if($test_dbm === false || $test_dbm === true) {return $test_dbm;}
+        if($test_dbm === false || $test_dbm === true) {return $test_dbm; }
 
         /*
             Don't copy MACHINE table as will be local to installation
          */
-        $copy_tables = array("VERSION", "USER", "USER_SESSION", "TRANSLATION",
-            "LOCALE", "TRANSLATION_LOCALE", "ROLE",
-            "ROLE_ACTIVITY", "ACTIVITY", "USER_ROLE", "CURRENT_WEB_INDEX",
-            "CRAWL_MIXES", "MIX_GROUPS", "MIX_COMPONENTS", "MEDIA_SOURCE",
-            "SUBSEARCH", "FEED_ITEM");
+        $copy_tables = array("ACCESS", "ACTIVITY", "BLOG_DESCRIPTION",
+            "CRAWL_MIXES", "CURRENT_WEB_INDEX", "FEED_ITEM", "GROUPS",
+            "GROUP_ROLE", "LOCALE", "MEDIA_SOURCE", "MIX_COMPONENTS",
+            "MIX_GROUPS", "ROLE", "ROLE_ACTIVITY", "SUBSEARCH", "TRANSLATION",
+            "TRANSLATION_LOCALE", "USER", "USER_GROUP", "USER_ROLE",
+            "USER_SESSION", "VERSION");
 
         if(!($create_ok = $this->createDatabaseTables($test_dbm, $dbinfo))) {
             return false;
@@ -278,53 +279,19 @@ EOT;
     {
         $auto_increment = $dbm->autoIncrement($dbinfo);
 
+        //create table statemetents (should be kept alphabetical)
         $create_statements = array(
-            "CREATE TABLE VERSION(ID INTEGER PRIMARY KEY)",
-            "CREATE TABLE USER(USER_ID INTEGER PRIMARY KEY $auto_increment,
-                FIRST_NAME VARCHAR(16), LAST_NAME VARCHAR(16),
-                USER_NAME VARCHAR(16) UNIQUE, EMAIL VARCHAR(32),
-                PASSWORD CHAR(60), STATUS INTEGER, HASH VARCHAR(32),
-                CREATION_TIME VARCHAR(20))",
-            "CREATE TABLE USER_SESSION(USER_ID INTEGER PRIMARY KEY,
-                SESSION VARCHAR(4096))",
-            "CREATE TABLE TRANSLATION (TRANSLATION_ID INTEGER PRIMARY KEY
-                $auto_increment, IDENTIFIER_STRING VARCHAR(512) UNIQUE)",
-            "CREATE TABLE LOCALE(LOCALE_ID INTEGER PRIMARY KEY
-                $auto_increment, LOCALE_TAG VARCHAR(16),
-                LOCALE_NAME VARCHAR(256),
-                WRITING_MODE CHAR(5))",
-            "CREATE TABLE TRANSLATION_LOCALE (TRANSLATION_ID INTEGER,
-                LOCALE_ID INTEGER, TRANSLATION VARCHAR(4096) )",
-            "CREATE TABLE ROLE (ROLE_ID INTEGER PRIMARY KEY $auto_increment,
-                NAME VARCHAR(512))",
-            "CREATE TABLE ROLE_ACTIVITY (ROLE_ID INTEGER, ACTIVITY_ID INTEGER)",
+            "CREATE TABLE ACCESS (NAME VARCHAR(16), ID INTEGER, 
+                TYPE VARCHAR(16))",
+            "CREATE TABLE ACTIVE_FETCHER (NAME VARCHAR(16), FETCHER_ID INT(4))",
             "CREATE TABLE ACTIVITY (ACTIVITY_ID INTEGER PRIMARY KEY
                 $auto_increment, TRANSLATION_ID INTEGER,
                 METHOD_NAME VARCHAR(256))",
-            "CREATE TABLE USER_ROLE (USER_ID INTEGER, ROLE_ID INTEGER)",
-            "CREATE TABLE CURRENT_WEB_INDEX (CRAWL_TIME INT(11) )",
-            "CREATE TABLE CRAWL_MIXES (MIX_TIMESTAMP INT(11) PRIMARY KEY,
-                MIX_NAME VARCHAR(16) UNIQUE)",
-            "CREATE TABLE MIX_GROUPS (MIX_TIMESTAMP INT(11), GROUP_ID INT(4),
-                RESULT_BOUND INT(4))",
-            "CREATE TABLE MIX_COMPONENTS (MIX_TIMESTAMP INT(11),
-                GROUP_ID INT(4), CRAWL_TIMESTAMP INT(11), WEIGHT REAL,
-                KEYWORDS VARCHAR(256))",
-            "CREATE TABLE MACHINE (NAME VARCHAR(16) PRIMARY KEY,
-                URL VARCHAR(256) UNIQUE, HAS_QUEUE_SERVER INT,
-                NUM_FETCHERS INT(4), PARENT VARCHAR(16) )",
-            "CREATE TABLE ACTIVE_FETCHER (NAME VARCHAR(16), FETCHER_ID INT(4))",
-            "CREATE TABLE SUBSEARCH (LOCALE_STRING VARCHAR(32) PRIMARY KEY,
-                FOLDER_NAME VARCHAR(16), INDEX_IDENTIFIER CHAR(13),
-                PER_PAGE INT)",
-            "CREATE TABLE MEDIA_SOURCE (TIMESTAMP INT(11) PRIMARY KEY,
-                NAME VARCHAR(16) UNIQUE, TYPE VARCHAR(16),
-                SOURCE_URL VARCHAR(256), THUMB_URL VARCHAR(256),
-                LANGUAGE VARCHAR(7))",
-            "CREATE TABLE ACCESS (NAME VARCHAR(16), ID INTEGER, 
-                TYPE VARCHAR(16))",
             "CREATE TABLE BLOG_DESCRIPTION (TIMESTAMP INT(11) UNIQUE, 
                 DESCRIPTION VARCHAR(4096))",
+            "CREATE TABLE CRAWL_MIXES (MIX_TIMESTAMP INT(11) PRIMARY KEY,
+                MIX_NAME VARCHAR(16) UNIQUE)",
+            "CREATE TABLE CURRENT_WEB_INDEX (CRAWL_TIME INT(11) )",
             "CREATE TABLE FEED_ITEM (GUID VARCHAR(11) PRIMARY KEY,
                 TITLE VARCHAR(512), LINK VARCHAR(256),
                 DESCRIPTION VARCHAR(4096),
@@ -332,13 +299,49 @@ EOT;
             "CREATE TABLE GROUPS (GROUP_ID INTEGER PRIMARY KEY $auto_increment,
                 GROUP_NAME VARCHAR(128), CREATED_TIME INT(11),
                 CREATOR_ID INT(11))",
+            /* NOTE: We are not using singular name GROUP for GROUPS as
+               is a reserved SQL keyword
+             */
+            "CREATE TABLE GROUP_ROLE (GROUP_ID INTEGER , ROLE_ID INTEGER)",
+            "CREATE TABLE LOCALE(LOCALE_ID INTEGER PRIMARY KEY
+                $auto_increment, LOCALE_TAG VARCHAR(16),
+                LOCALE_NAME VARCHAR(256), WRITING_MODE CHAR(5))",
+            "CREATE TABLE MACHINE (NAME VARCHAR(16) PRIMARY KEY,
+                URL VARCHAR(256) UNIQUE, HAS_QUEUE_SERVER INT,
+                NUM_FETCHERS INT(4), PARENT VARCHAR(16) )",
+            "CREATE TABLE MEDIA_SOURCE (TIMESTAMP INT(11) PRIMARY KEY,
+                NAME VARCHAR(16) UNIQUE, TYPE VARCHAR(16),
+                SOURCE_URL VARCHAR(256), THUMB_URL VARCHAR(256),
+                LANGUAGE VARCHAR(7))",
+            "CREATE TABLE MIX_COMPONENTS (MIX_TIMESTAMP INT(11),
+                GROUP_ID INT(4), CRAWL_TIMESTAMP INT(11), WEIGHT REAL,
+                KEYWORDS VARCHAR(256))",
+            "CREATE TABLE MIX_GROUPS (MIX_TIMESTAMP INT(11), GROUP_ID INT(4),
+                RESULT_BOUND INT(4))",
+            "CREATE TABLE ROLE (ROLE_ID INTEGER PRIMARY KEY $auto_increment,
+                NAME VARCHAR(512))",
+            "CREATE TABLE ROLE_ACTIVITY (ROLE_ID INTEGER, ACTIVITY_ID INTEGER)",
+            "CREATE TABLE SUBSEARCH (LOCALE_STRING VARCHAR(32) PRIMARY KEY,
+                FOLDER_NAME VARCHAR(16), INDEX_IDENTIFIER CHAR(13),
+                PER_PAGE INT)",
+            "CREATE TABLE TRANSLATION (TRANSLATION_ID INTEGER PRIMARY KEY
+                $auto_increment, IDENTIFIER_STRING VARCHAR(512) UNIQUE)",
+            "CREATE TABLE TRANSLATION_LOCALE (TRANSLATION_ID INTEGER,
+                LOCALE_ID INTEGER, TRANSLATION VARCHAR(4096) )",
+            "CREATE TABLE USER(USER_ID INTEGER PRIMARY KEY $auto_increment,
+                FIRST_NAME VARCHAR(16), LAST_NAME VARCHAR(16),
+                USER_NAME VARCHAR(16) UNIQUE, EMAIL VARCHAR(60),
+                PASSWORD CHAR(60), STATUS INTEGER, HASH CHAR(60),
+                CREATION_TIME VARCHAR(20))",
             "CREATE TABLE USER_GROUP (USER_ID INTEGER , GROUP_ID INTEGER,
                    PRIMARY KEY (GROUP_ID, USER_ID) )",
-            "CREATE TABLE GROUP_ROLE (GROUP_ID INTEGER , ROLE_ID INTEGER)",
+            "CREATE TABLE USER_ROLE (USER_ID INTEGER, ROLE_ID INTEGER)",
+            "CREATE TABLE USER_SESSION(USER_ID INTEGER PRIMARY KEY,
+                SESSION VARCHAR(4096))",
+            "CREATE TABLE VISITOR(ADDRESS VARCHAR(39), PAGE_NAME VARCHAR(16),
+                END_TIME INTEGER, DELAY INTEGER, FORGET_AGE INTEGER)",
+            "CREATE TABLE VERSION(ID INTEGER PRIMARY KEY)",
             );
-        /* NOTE: We are not using singular name GROUP for GROUPS as
-           is a reserved SQL keyword
-         */
         foreach($create_statements as $statement) {;
             if(!$dbm->execute($statement)) {echo $auto_increment; return false;
             }
