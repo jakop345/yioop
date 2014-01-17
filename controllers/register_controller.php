@@ -38,35 +38,40 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  */
 require_once BASE_DIR."/controllers/controller.php";
 /**
- * Timing functions
+ * Used to manage the process of sending emails to users
  */
 require_once BASE_DIR."/lib/mail_server.php";
 
 
 /**
- * Controller used to handle search requests to SeekQuarry
- * search site. Used to both get and display
- * search results.
+ * Controller used to handle account registration and retrieval for
+ * the Yioop website
  *
- * @author Mallika Perepa
+ * @author Mallika Perepa (Creator), Chris Pollett (extensive rewrite)
  * @package seek_quarry
  * @subpackage controller
  */
 class RegisterController extends Controller
 {
     /**
-     * Load the RegisterView
+     * To create an new account the register view is used, for password
+     * reset/recovery the recover view is used, and on completion of forms/
+     * on errors the signin page is returned.
      * @var array
      */
     var $views = array("recover", "register", "signin");
     /**
-     * LocaleModel used to get the available languages/locales, CrawlModel
-     * is used to get a list of available crawls
+     * List of models used by this controller
+     * User model is used to add/update users; the Visitor model is
+     * used to keep track of ip address of failed captcha or recovery questions
+     * attempts
      * @var array
      */
     var $models = array("user", "visitor");
 
     /**
+     * Holds a list of the allowed activities. These encompass various
+     * stages of the account creation and account recovery processes
      * @var array
      */
     var $activities = array("createAccount", "processAccountData",
@@ -74,36 +79,57 @@ class RegisterController extends Controller
         "processRecoverData", "emailVerification");
 
     /**
+     * Non-recovery question fields needed to register a Yioop account.
      * @var array
      */
     var $register_fields = array("first", "last", "user", "email", "password",
         "repassword");
 
     /**
+     * An array of triples, each triple consisting of a question of the form
+     * Which is the most..? followed by one of the form Which is the least ..?
+     * followed by a string which is a comma separated list of possibilities
+     * arranged from least to most. The values for these triples are determined
+     * via the translate function tl. So can be set under Manage Locales
+     * by editing their values for the desired locale.
      * @var array
      */
     var $captchas_qa;
 
     /**
+     * An array of triples, each triple consisting of a question of the form
+     * Which is your favorite..? followed by one of the form 
+     * Which is your like the least..? followed by a string which is a comma
+     * separated choices. The values for these triples are determined
+     * via the translate function tl. So can be set under Manage Locales
+     * by editing their values for the desired locale.
      * @var array
      */
     var $recovery_qa;
 
     /**
+     * Number of captcha questions from the complete set of questions to
+     * present someone when register for an account
      * @var int
      */
     const NUM_CAPTCHA_QUESTIONS = 5;
     /**
+     * For each captcha question how many items from least-most list to
+     * present to a user to pick from. Which NUM_CAPTCHA_CHOICEs many items
+     * to use is chosen randomly
      * @var int
      */
     const NUM_CAPTCHA_CHOICES = 5;
     /**
+     * Number of recovery questions from the complete set of questions to
+     * present someone when register for an account
      * @var int
      */
     const NUM_RECOVERY_QUESTIONS = 3;
 
     /**
-     *
+     *  Besides invoking the base controller, sets up in field variables
+     *  the captcha and recovery question and possible answers.
      */
     function __construct()
     {
@@ -163,9 +189,11 @@ class RegisterController extends Controller
     }
 
     /**
-     *  Allows users to create accounts.
-     *  Validates the input form when creating an account
-     *
+     *  Main entry method for this controller. Determine which account
+     *  creation/recovery activity needs to be performed. Calls the
+     *  appropriate method, then sends the return $data to aview
+     *  determined by that activity. $this->displayView then renders that
+     *  view
      */
     function processRequest()
     {
@@ -226,7 +254,236 @@ class RegisterController extends Controller
     }
 
     /**
+     *  Sets up the form variables need to present the initial account creation
+     *  form. If this form is submitted with missing fields, this method
+     *  would also be called to set up an appropriate MISSING field
      *
+     *  @return array $data field correspond to values needed for account
+     *      creation form
+     */
+    function createAccount()
+    {
+        $data = $this->setupQuestionViewData();
+        return $data;
+    }
+
+    /**
+     *  Used to process account data from completely filled in create account
+     *  forms. Depending on the registration type: no_activation,
+     *  email registration, or admin activation, either the account is
+     *  immediately activated or it is created in an active state and an email
+     *  to the person who could activate it is sent.
+     *
+     *  @return array $data will contain a SCRIPT field with the
+     *      Javascript doMessage call saying whether this step was successful
+     *      or not
+     */
+    function processAccountData()
+    {
+        $data = array();
+        $this->getCleanFields($data);
+        $data['SCRIPT'] = "";
+        switch(REGISTRATION_TYPE)
+        {
+            case 'no_activation':
+                $data['REFRESH'] = "signin";
+                $this->userModel->addUser($data['USER'], $data['PASSWORD'],
+                    $data['FIRST'], $data['LAST'], $data['EMAIL']);
+                $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                    tl('register_controller_account_created')."</h1>')";
+            break;
+            case 'email_registration':
+                $data['REFRESH'] = "signin";
+                $this->userModel->addUser($data['USER'], $data['PASSWORD'],
+                    $data['FIRST'], $data['LAST'], $data['EMAIL'],
+                    INACTIVE_STATUS);
+                $user = $this->userModel->getUser($data['USER']);
+                $server = new MailServer(MAIL_SENDER, MAIL_SERVER,
+                    MAIL_SERVERPORT, MAIL_USERNAME, MAIL_PASSWORD,
+                    MAIL_SECURITY);
+                $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                    tl('register_controller_registration_email_sent').
+                    "</h1>');";
+                $subject = tl('register_controller_admin_activation_request');
+                $message = tl('register_controller_admin_email_salutation',
+                    $data['FIRST'], $data['LAST'])."\n";
+                $message .= tl('register_controller_email_body')."\n";
+                $creation_time = vsprintf('%d.%06d', gettimeofday());
+                $message .= BASE_URL.
+                    "?c=register&a=emailVerification&email=".
+                    $user['EMAIL']."&time=".$user['CREATION_TIME'].
+                    "&hash=".urlencode(crawlCrypt($user['HASH']));
+                $server->send($subject, MAIL_SENDER, $data['EMAIL'], $message);
+                $num_questions = self::NUM_CAPTCHA_QUESTIONS +
+                    self::NUM_RECOVERY_QUESTIONS;
+                $start = self::NUM_CAPTCHA_QUESTIONS;
+                for($i = $start; $i < $num_questions; $i++) {
+                    $j = $i - $start;
+                    $_SESSION["RECOVERY_ANSWERS"][$j] =
+                        $this->clean($_REQUEST["question_$i"],"string");
+                }
+            break;
+            case 'admin_activation':
+                $data['REFRESH'] = "signin";
+                $this->userModel->addUser($data['USER'], $data['PASSWORD'],
+                    $data['FIRST'], $data['LAST'], $data['EMAIL'],
+                    INACTIVE_STATUS);
+                $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                    tl('register_controller_account_request_made')."</h1>');";
+                $server = new MailServer(MAIL_SENDER, MAIL_SERVER,
+                    MAIL_SERVERPORT, MAIL_USERNAME, MAIL_PASSWORD,
+                    MAIL_SECURITY);
+                $subject = tl('register_controller_admin_activation_request');
+                $message = tl('register_controller_admin_activation_message',
+                    $data['FIRST'], $data['LAST'], $data['USER']);
+                $server->send($subject, MAIL_SENDER, MAIL_SENDER, $message);
+            break;
+        }
+        $user = $this->userModel->getUser($data['USER']);
+        if(isset($user['USER_ID'])) {
+            $this->userModel->setUserSession($user['USER_ID'], $_SESSION);
+        }
+        unset($_SESSION['CAPTCHA_ANSWERS']);
+        unset($_SESSION['CAPTCHAS']);
+        unset($_SESSION['RECOVERY_ANSWERS']);
+        unset($_SESSION['RECOVERY']);
+        return $data;
+    }
+
+
+    /**
+     *  Used to verify the email sent to a user try to set up an account. 
+     *  If the email is legit the account is activated
+     *
+     *  @return array $data will contain a SCRIPT field with the
+     *      Javascript doMessage call saying whether verification was
+     *      successful or not
+     */
+    function emailVerification()
+    {
+        $data = array();
+        $data['REFRESH'] = "signin";
+        $data['SCRIPT'] = "";
+        $clean_fields = array("email", "time", "hash");
+        $verify = array();
+        $error = false;
+        foreach($clean_fields as $field) {
+            if(isset($_REQUEST[$field])) {
+                $verify[$field] = $this->clean($_REQUEST[$field], "string");
+            } else {
+                $error = true;
+                break;
+            }
+        }
+        if($error) {
+            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                tl('register_controller_email_verification_error')."</h1>');";
+        } else {
+            $user = $this->userModel->getUserByEmailTime($verify["email"],
+                $verify["time"]);
+            if(isset($user['STATUS']) && $user['STATUS'] == ACTIVE_STATUS) {
+                $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                    tl('register_controller_already_activated')."</h1>');";
+            } else {
+                $hash = crawlCrypt($user["HASH"], $verify["hash"]);
+                if(isset($user["HASH"]) && $hash == $verify["hash"]) {
+                    $this->userModel->updateUserStatus($user["USER_ID"],
+                        ACTIVE_STATUS);
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('register_controller_account_activated')."</h1>');";
+                } else {
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('register_controller_email_verification_error').
+                        "</h1>');";
+                    $this->visitorModel->updateVisitor(
+                        $_SERVER['REMOTE_ADDR'], "register_time_out");
+                }
+            }
+        }
+        unset($_SESSION['CAPTCHA_ANSWERS']);
+        unset($_SESSION['CAPTCHAS']);
+        unset($_SESSION['RECOVERY_ANSWERS']);
+        unset($_SESSION['RECOVERY']);
+        $_SESSION['REMOTE_ADDR'] = $_SERVER['REMOTE_ADDR'];
+        return $data;
+    }
+
+    /**
+     *  Sets up the form variables need to present the initial recover account
+     *  form. If this form is submitted with missing fields, this method
+     *  would also be called to set up an appropriate MISSING field
+     *
+     *  @return array $data field correspond to values needed for account
+     *      recovery form
+     */
+    function recoverPassword()
+    {
+        $data = $this->setupQuestionViewData();
+        $data['REFRESH'] = "recover";
+        return $data;
+    }
+
+    /**
+     *  Called with the data from the initial recover form was completely
+     *  provided and captcha was correct. This method 
+     *  sends the recover email provided the account had
+     *  recover questions set otherwise sets up an error message.
+     *
+     *  @return array $data will contain a SCRIPT field with the
+     *      Javascript doMessage call saying whether email sent or if there
+     *      was a problem
+     */
+    function processRecoverData()
+    {
+        $data = array();
+        $this->getCleanFields($data);
+        $data['SCRIPT'] = "";
+        $data["REFRESH"] = "signin";
+        $user = $this->userModel->getUser($data['USER']);
+        if(!$user) {
+            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                tl('register_controller_account_recover_fail')."</h1>');";
+            $this->visitorModel->updateVisitor(
+                $_SERVER['REMOTE_ADDR'], "register_time_out");
+            return $data;
+        }
+        $session = $this->userModel->getUserSession($user["USER_ID"]);
+        if(!isset($session['RECOVERY']) || 
+            !isset($session['RECOVERY_ANSWERS'])) {
+            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                tl('register_controller_account_recover_fail')."</h1>');";
+            return $data;
+        }
+        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+            tl('register_controller_account_recover_email')."</h1>');";
+        $server = new MailServer(MAIL_SENDER, MAIL_SERVER,
+            MAIL_SERVERPORT, MAIL_USERNAME, MAIL_PASSWORD,
+            MAIL_SECURITY);
+        $subject = tl('register_controller_recover_request');
+        $message = tl('register_controller_admin_email_salutation',
+            $user['FIRST_NAME'], $user['LAST_NAME'])."\n";
+        $message .= tl('register_controller_recover_body')."\n";
+        $time = time();
+        $message .= BASE_URL.
+            "?c=register&a=recoverComplete&user=".
+            $user['USER_NAME']."&time=".$time.
+            "&hash=".urlencode(crawlCrypt(
+                $user['HASH'].$time.$user['USER_NAME'].AUTH_KEY));
+        $server->send($subject, MAIL_SENDER, $user['EMAIL'], $message);
+        unset($_SESSION['CAPTCHA_ANSWERS']);
+        unset($_SESSION['CAPTCHAS']);
+        unset($_SESSION['RECOVERY_ANSWERS']);
+        unset($_SESSION['RECOVERY']);
+        return $data;
+    }
+
+    /**
+     *  This activity either verifies the recover email and sets up the
+     *  appropriate  data for a change password form or it verifies the 
+     *  change password form data and changes the password. If verifications
+     *  error messages are set up
+     *
+     *  @return array form data to be used by recover or signin views
      */
     function recoverComplete()
     {
@@ -328,115 +585,15 @@ class RegisterController extends Controller
         return $data;
     }
 
-    /**
-     *
-     */
-    function preactivityPrerequisiteCheck(&$activity,
-        $activity_success, $activity_fail, &$data)
-    {
-        if($activity == $activity_success) {
-            $this->dataIntegrityCheck($data);
-            if(!$data["SUCCESS"]) {
-                $activity = $activity_fail;
-            }
-            if($activity == $activity_success) {
-                if(!isset($_SESSION['CAPTCHA_ANSWERS']) ) {
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('register_controller_need_cookies')."</h1>');";
-                    $activity = 'createAccount';
-                    $this->visitorModel->updateVisitor(
-                        $_SERVER['REMOTE_ADDR'], "register_time_out");
-                } else if(!$this->checkCaptchaAnswers()) {
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('register_controller_failed_human')."</h1>');";
-                    for($i = 0; $i < self::NUM_CAPTCHA_QUESTIONS; $i++) {
-                        $data["question_$i"] = "-1";
-                    }
-                    unset($_SESSION['CAPTCHAS']);
-                    unset($_SESSION['CAPTCHA_ANSWERS']);
-                    $this->visitorModel->updateVisitor(
-                        $_SERVER['REMOTE_ADDR'], "register_time_out");
-                    $activity = $activity_fail;
-                }
-            }
-        }
-    }
 
 
     /**
+     *  Sets up the captcha question and or recovery questions in a $data
+     *  associative array so that they can be drawn by the register or recover
+     *  views.
      *
-     */
-    function dataIntegrityCheck(&$data)
-    {
-        if(!isset($data['SCRIPT'])) {
-            $data['SCRIPT'] = "";
-        }
-        $data['SUCCESS'] = true;
-        $this->getCleanFields($data);
-        if($data['MISSING'] != array()) {
-            $data['SUCCESS'] = false;
-            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-            tl('register_controller_error_fields')."</h1>');";
-            
-        } else if(isset($data["check_user"]) && 
-            $this->userModel->getUserId($data['USER'])) {
-            $data['SUCCESS'] = false;
-            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-            tl('register_controller_user_already_exists')."</h1>');";
-        }
-        return $data;
-    }
-
-    /**
-     *
-     */
-    function checkCaptchaAnswers()
-    {
-        $captcha_passed = true;
-        for($i = 0; $i < self::NUM_CAPTCHA_QUESTIONS; $i++) {
-            $field = "question_".$i;
-            if($_REQUEST[$field] != $_SESSION['CAPTCHA_ANSWERS'][$i]) {
-                $captcha_passed = false;
-                break;
-            }
-        }
-        return $captcha_passed;
-    }
-
-    /**
-     *
-     */
-    function checkRecoveryQuestions($user)
-    {
-        $user_session = $this->userModel->getUserSession($user["USER_ID"]);
-        if(!isset($user_session['RECOVERY_ANSWERS'])) {
-            return false;
-        }
-        $recovery_passed = true;
-        for($i = 0; $i < self::NUM_RECOVERY_QUESTIONS; $i++) {
-            $field = "question_".$i;
-            if($_REQUEST[$field] != $user_session['RECOVERY_ANSWERS'][$i]) {
-                $recovery_passed = false;
-                $this->visitorModel->updateVisitor(
-                    $_SERVER['REMOTE_ADDR'], "register_time_out");
-                break;
-            }
-        }
-        return $recovery_passed;
-    }
-
-
-    /**
-     *
-     */
-    function createAccount()
-    {
-        $data = $this->setupQuestionViewData();
-        return $data;
-    }
-
-    /**
-     *
+     *  @return array $data associate array with field to help the register and
+     *      recover view draw themselves
      */
     function setupQuestionViewData()
     {
@@ -470,7 +627,23 @@ class RegisterController extends Controller
     }
 
     /**
+     *  Picks $num_select most/least questions from an array of triplets of
+     *  the form a string question: Which is the most ..?, a string
+     *  question: Which is the least ..?, followed by a comma separated list 
+     *  of choices ranked from least to most. For each question pick, 
+     *  $num_choices many items from the last element of the triplet are 
+     *  chosen.
      *
+     *  @param array $questions_answers an array t_1, t_2, t_3, t_4, where
+     *      each t_i is a triplet as described above
+     *  @param int $num_select number of triples from the list to pick
+     *      for each triple pick either the most question or the least
+     *      question
+     *  @param int $num_choices from the list component of a triplet we
+     *      we pick this many elements
+     *  @return array a pair consisting of an array of questions and possible
+     *      choice for least/most, and another array of the correct answers
+     *      to the lest most problem.
      */
     function selectQuestionsAnswers($question_answers, $num_select,
         $num_choices = -1)
@@ -517,191 +690,140 @@ class RegisterController extends Controller
         return array($questions, $answers);
     }
 
-
     /**
+     *  Used to select which activity a controller will do. If the $activity
+     *  is $activity_success, then this method checks the prereqs for 
+     *  $activity_success. If they are not met then the view $data array is
+     *  updated with an error message and $activity_fail is set to be the
+     *  next activity. If the prereq is met then the $activity is left as
+     *  $activity_success. If $activity was not initially equal to
+     *  $activity_success then this method does nothing.
      *
+     *  @param string &$activity current tentative activity
+     *  @param string $activity_success activity to test for and to test prereqs
+     *      for.
+     *  @param string $activity_fail if prereqs not met which acitivty to switch
+     *      to
+     *  @param array &$data data to help render the view this controller draws
      */
-    function processAccountData()
+    function preactivityPrerequisiteCheck(&$activity,
+        $activity_success, $activity_fail, &$data)
     {
-        $data = array();
-        $this->getCleanFields($data);
-        $data['SCRIPT'] = "";
-        switch(REGISTRATION_TYPE)
-        {
-            case 'no_activation':
-                $data['REFRESH'] = "signin";
-                $this->userModel->addUser($data['USER'], $data['PASSWORD'],
-                    $data['FIRST'], $data['LAST'], $data['EMAIL']);
-                $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                    tl('register_controller_account_created')."</h1>')";
-            break;
-            case 'email_registration':
-                $data['REFRESH'] = "signin";
-                $this->userModel->addUser($data['USER'], $data['PASSWORD'],
-                    $data['FIRST'], $data['LAST'], $data['EMAIL'],
-                    INACTIVE_STATUS);
-                $user = $this->userModel->getUser($data['USER']);
-                $server = new MailServer(MAIL_SENDER, MAIL_SERVER,
-                    MAIL_SERVERPORT, MAIL_USERNAME, MAIL_PASSWORD,
-                    MAIL_SECURITY);
-                $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                    tl('register_controller_registration_email_sent').
-                    "</h1>');";
-                $subject = tl('register_controller_admin_activation_request');
-                $message = tl('register_controller_admin_email_salutation',
-                    $data['FIRST'], $data['LAST'])."\n";
-                $message .= tl('register_controller_email_body')."\n";
-                $creation_time = vsprintf('%d.%06d', gettimeofday());
-                $message .= BASE_URL.
-                    "?c=register&a=emailVerification&email=".
-                    $user['EMAIL']."&time=".$user['CREATION_TIME'].
-                    "&hash=".urlencode(crawlCrypt($user['HASH']));
-                $server->send($subject, MAIL_SENDER, $data['EMAIL'], $message);
-                $num_questions = self::NUM_CAPTCHA_QUESTIONS +
-                    self::NUM_RECOVERY_QUESTIONS;
-                $start = self::NUM_CAPTCHA_QUESTIONS;
-                for($i = $start; $i < $num_questions; $i++) {
-                    $j = $i - $start;
-                    $_SESSION["RECOVERY_ANSWERS"][$j] =
-                        $this->clean($_REQUEST["question_$i"],"string");
+        if($activity == $activity_success) {
+            $this->dataIntegrityCheck($data);
+            if(!$data["SUCCESS"]) {
+                $activity = $activity_fail;
+            }
+            if($activity == $activity_success) {
+                if(!isset($_SESSION['CAPTCHA_ANSWERS']) ) {
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('register_controller_need_cookies')."</h1>');";
+                    $activity = 'createAccount';
+                    $this->visitorModel->updateVisitor(
+                        $_SERVER['REMOTE_ADDR'], "register_time_out");
+                } else if(!$this->checkCaptchaAnswers()) {
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('register_controller_failed_human')."</h1>');";
+                    for($i = 0; $i < self::NUM_CAPTCHA_QUESTIONS; $i++) {
+                        $data["question_$i"] = "-1";
+                    }
+                    unset($_SESSION['CAPTCHAS']);
+                    unset($_SESSION['CAPTCHA_ANSWERS']);
+                    $this->visitorModel->updateVisitor(
+                        $_SERVER['REMOTE_ADDR'], "register_time_out");
+                    $activity = $activity_fail;
                 }
-            break;
-            case 'admin_activation':
-                $data['REFRESH'] = "signin";
-                $this->userModel->addUser($data['USER'], $data['PASSWORD'],
-                    $data['FIRST'], $data['LAST'], $data['EMAIL'],
-                    INACTIVE_STATUS);
-                $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                    tl('register_controller_account_request_made')."</h1>');";
-                $server = new MailServer(MAIL_SENDER, MAIL_SERVER,
-                    MAIL_SERVERPORT, MAIL_USERNAME, MAIL_PASSWORD,
-                    MAIL_SECURITY);
-                $subject = tl('register_controller_admin_activation_request');
-                $message = tl('register_controller_admin_activation_message',
-                    $data['FIRST'], $data['LAST'], $data['USER']);
-                $server->send($subject, MAIL_SENDER, MAIL_SENDER, $message);
-            break;
+            }
         }
-        $user = $this->userModel->getUser($data['USER']);
-        if(isset($user['USER_ID'])) {
-            $this->userModel->setUserSession($user['USER_ID'], $_SESSION);
-        }
-        unset($_SESSION['CAPTCHA_ANSWERS']);
-        unset($_SESSION['CAPTCHAS']);
-        unset($_SESSION['RECOVERY_ANSWERS']);
-        unset($_SESSION['RECOVERY']);
-        return $data;
     }
 
-    /**
-     *
-     */
-    function recoverPassword()
-    {
-        $data = $this->setupQuestionViewData();
-        $data['REFRESH'] = "recover";
-        return $data;
-    }
 
     /**
+     *  Add SCRIPT tags for errors to the view $data array if there were any
+     *  missing fields on a create account or recover account form.
+     *  also adds error info if try to create an existing using.
      *
+     *  @param array &$data contains info for the view on which the above
+     *      forms are to be drawn.
      */
-    function processRecoverData()
+    function dataIntegrityCheck(&$data)
     {
-        $data = array();
+        if(!isset($data['SCRIPT'])) {
+            $data['SCRIPT'] = "";
+        }
+        $data['SUCCESS'] = true;
         $this->getCleanFields($data);
-        $data['SCRIPT'] = "";
-        $data["REFRESH"] = "signin";
-        $user = $this->userModel->getUser($data['USER']);
-        if(!$user) {
+        if($data['MISSING'] != array()) {
+            $data['SUCCESS'] = false;
             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                tl('register_controller_account_recover_fail')."</h1>');";
-            $this->visitorModel->updateVisitor(
-                $_SERVER['REMOTE_ADDR'], "register_time_out");
-            return $data;
-        }
-        $session = $this->userModel->getUserSession($user["USER_ID"]);
-        if(!isset($session['RECOVERY']) || 
-            !isset($session['RECOVERY_ANSWERS'])) {
+            tl('register_controller_error_fields')."</h1>');";
+            
+        } else if(isset($data["check_user"]) && 
+            $this->userModel->getUserId($data['USER'])) {
+            $data['SUCCESS'] = false;
             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                tl('register_controller_account_recover_fail')."</h1>');";
-            return $data;
+            tl('register_controller_user_already_exists')."</h1>');";
         }
-        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-            tl('register_controller_account_recover_email')."</h1>');";
-        $server = new MailServer(MAIL_SENDER, MAIL_SERVER,
-            MAIL_SERVERPORT, MAIL_USERNAME, MAIL_PASSWORD,
-            MAIL_SECURITY);
-        $subject = tl('register_controller_recover_request');
-        $message = tl('register_controller_admin_email_salutation',
-            $user['FIRST_NAME'], $user['LAST_NAME'])."\n";
-        $message .= tl('register_controller_recover_body')."\n";
-        $time = time();
-        $message .= BASE_URL.
-            "?c=register&a=recoverComplete&user=".
-            $user['USER_NAME']."&time=".$time.
-            "&hash=".urlencode(crawlCrypt(
-                $user['HASH'].$time.$user['USER_NAME'].AUTH_KEY));
-        $server->send($subject, MAIL_SENDER, $user['EMAIL'], $message);
-        unset($_SESSION['CAPTCHA_ANSWERS']);
-        unset($_SESSION['CAPTCHAS']);
-        unset($_SESSION['RECOVERY_ANSWERS']);
-        unset($_SESSION['RECOVERY']);
-        return $data;
     }
 
     /**
+     *  Checks whether the answers to the captcha question presented to a user
+     *  are all correct or if any were mis-answered
      *
+     *  @return bool true if only if all were correct
      */
-    function emailVerification()
+    function checkCaptchaAnswers()
     {
-        $data = array();
-        $data['REFRESH'] = "signin";
-        $data['SCRIPT'] = "";
-        $clean_fields = array("email", "time", "hash");
-        $verify = array();
-        $error = false;
-        foreach($clean_fields as $field) {
-            if(isset($_REQUEST[$field])) {
-                $verify[$field] = $this->clean($_REQUEST[$field], "string");
-            } else {
-                $error = true;
+        $captcha_passed = true;
+        for($i = 0; $i < self::NUM_CAPTCHA_QUESTIONS; $i++) {
+            $field = "question_".$i;
+            if($_REQUEST[$field] != $_SESSION['CAPTCHA_ANSWERS'][$i]) {
+                $captcha_passed = false;
                 break;
             }
         }
-        if($error) {
-            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                tl('register_controller_email_verification_error')."</h1>');";
-        } else {
-            $user = $this->userModel->getUserByEmailTime($verify["email"],
-                $verify["time"]);
-            if(isset($user['STATUS']) && $user['STATUS'] == ACTIVE_STATUS) {
-                $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                    tl('register_controller_already_activated')."</h1>');";
-            } else {
-                $hash = crawlCrypt($user["HASH"], $verify["hash"]);
-                if(isset($user["HASH"]) && $hash == $verify["hash"]) {
-                    $this->userModel->updateUserStatus($user["USER_ID"],
-                        ACTIVE_STATUS);
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('register_controller_account_activated')."</h1>');";
-                } else {
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('register_controller_email_verification_error').
-                        "</h1>');";
-                    $this->visitorModel->updateVisitor(
-                        $_SERVER['REMOTE_ADDR'], "register_time_out");
-                }
-            }
-        }
-        unset($_SESSION['CAPTCHA_ANSWERS']);
-        unset($_SESSION['CAPTCHAS']);
-        unset($_SESSION['RECOVERY_ANSWERS']);
-        unset($_SESSION['RECOVERY']);
-        $_SESSION['REMOTE_ADDR'] = $_SERVER['REMOTE_ADDR'];
-        return $data;
+        return $captcha_passed;
     }
 
+    /**
+     *  Checks whether the answers to the account recovery questions match those
+     *  provided earlier by an account user
+     *
+     *  @param array $user who to check recovery answers for
+     *  @return bool true if only if all were correct
+     */
+    function checkRecoveryQuestions($user)
+    {
+        $user_session = $this->userModel->getUserSession($user["USER_ID"]);
+        if(!isset($user_session['RECOVERY_ANSWERS'])) {
+            return false;
+        }
+        $recovery_passed = true;
+        for($i = 0; $i < self::NUM_RECOVERY_QUESTIONS; $i++) {
+            $field = "question_".$i;
+            if($_REQUEST[$field] != $user_session['RECOVERY_ANSWERS'][$i]) {
+                $recovery_passed = false;
+                $this->visitorModel->updateVisitor(
+                    $_SERVER['REMOTE_ADDR'], "register_time_out");
+                break;
+            }
+        }
+        return $recovery_passed;
+    }
+
+    /**
+     *  Used to clean the inputs for form variables
+     *  for creating/recovering an account. It also puts
+     *  in blank values for missing fields into a "MISSING"
+     *  array
+     *
+     *  @param array &$data an array of data to be sent to the view
+     *      After this method is done it will have cleaned versions
+     *      of the $_REQUEST variables from create or recover account
+     *      forms as well as a "MISSING" field which is an array of
+     *      those items which did not have values on the create/recover
+     *      account form
+     */
     function getCleanFields(&$data)
     {
         $fields = $this->register_fields;
