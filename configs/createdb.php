@@ -229,6 +229,11 @@ $activities = array(
             "ko" => '로케일 관리',
             "vi-VN" => 'Quản lý miền địa phương',
         )),
+    "serverSettings" => array('db_activity_server_settings',
+        array(
+            "en-US" => 'Server Settings',
+            "fr-FR" => 'Serveurs',
+        )),
     "configure" => array('db_activity_configure',
         array(
             "en-US" => 'Configure',

@@ -103,7 +103,7 @@ class FetchUrl implements CrawlConstants
                 }
                 curl_setopt($sites[$i][0], CURLOPT_USERAGENT, USER_AGENT);
                 curl_setopt($sites[$i][0], CURLOPT_IPRESOLVE,
-                    CURL_IPRESOLVE_V4);
+                    CURL_IPRESOLVE_WHATEVER);
                 curl_setopt($sites[$i][0], CURLOPT_URL, $url);
                 if(strcmp(substr($url,-10), "robots.txt") == 0 ) {
                     $follow = true; /*wikipedia redirects their robot page. grr

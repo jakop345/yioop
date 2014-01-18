@@ -45,7 +45,8 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  */
 class SystemComponent extends Component
 {
-    var $activities = array("manageMachines", "manageLocales", "configure");
+    var $activities = array("manageMachines", "manageLocales", 
+        "serverSettings", "configure");
 
     /**
      * Handles admin request related to the managing the machines which perform
@@ -493,6 +494,158 @@ class SystemComponent extends Component
     }
 
     /**
+     *
+     */
+    function serverSettings()
+    {
+        $parent = $this->parent;
+        $data = array();
+        $profile = array();
+        $arg = "";
+        if(isset($_REQUEST['arg'])) {
+            $arg = $_REQUEST['arg'];
+        }
+        $data['SCRIPT'] = "";
+        $data["ELEMENT"] = "serversettingsElement";
+        switch($arg)
+        {
+            case "update":
+                $parent->updateProfileFields($data, $profile,
+                    array('USE_FILECACHE', 'USE_MEMCACHE', 'USE_MAIL_PHP'));
+
+                $old_profile =
+                    $parent->profileModel->getProfile(WORK_DIRECTORY);
+
+                $db_problem = false;
+                if((isset($profile['DBMS']) &&
+                    $profile['DBMS'] != $old_profile['DBMS']) ||
+                    (isset($profile['DB_NAME']) &&
+                    $profile['DB_NAME'] != $old_profile['DB_NAME']) ||
+                    (isset($profile['DB_HOST']) &&
+                    $profile['DB_HOST'] != $old_profile['DB_HOST'])) {
+                    if(!$parent->profileModel->migrateDatabaseIfNecessary(
+                        $profile)) {
+                        $db_problem = true;
+                    }
+                } else if ((isset($profile['DB_USER']) &&
+                    $profile['DB_USER'] != $old_profile['DB_USER']) ||
+                    (isset($profile['DB_PASSWORD']) &&
+                    $profile['DB_PASSWORD'] != $old_profile['DB_PASSWORD'])) {
+
+                    if($parent->profileModel->testDatabaseManager(
+                        $profile) !== true) {
+                        $db_problem = true;
+                    }
+                }
+                if($db_problem) {
+                    $data['MESSAGE'] =
+                        tl('system_component_configure_no_change_db');
+                    $data['SCRIPT'] .=
+                        "doMessage('<h1 class=\"red\" >". $data['MESSAGE'].
+                        "</h1>');";
+                    $data['DBMS'] = $old_profile['DBMS'];
+                    $data['DB_NAME'] = $old_profile['DB_NAME'];
+                    $data['DB_HOST'] = $old_profile['DB_HOST'];
+                    $data['DB_USER'] = $old_profile['DB_USER'];
+                    $data['DB_PASSWORD'] = $old_profile['DB_PASSWORD'];
+                    break;
+                }
+
+                if($parent->profileModel->updateProfile(
+                    WORK_DIRECTORY, $profile, $old_profile)) {
+                    $data['MESSAGE'] =
+                        tl('system_component_configure_profile_change');
+                    $data['SCRIPT'] =
+                        "doMessage('<h1 class=\"red\" >". $data['MESSAGE'].
+                        "</h1>');";
+                } else {
+                    $data['PROFILE'] = false;
+                    $data["MESSAGE"] =
+                        tl('system_component_configure_no_change_profile');
+                    $data['SCRIPT'] .=
+                        "doMessage('<h1 class=\"red\" >". $data["MESSAGE"].
+                        "</h1>');";
+                    break;
+                }
+
+            break;
+
+            default:
+                $data = array_merge($data,
+                    $parent->profileModel->getProfile(WORK_DIRECTORY));
+                $data['MEMCACHE_SERVERS'] = str_replace(
+                    "|Z|","\n", $data['MEMCACHE_SERVERS']);
+                $data['PROXY_SERVERS'] = str_replace(
+                    "|Z|","\n", $data['PROXY_SERVERS']);
+            break;
+        }
+        $data['DBMSS'] = array();
+        $data['SCRIPT'] .= "logindbms = Array();\n";
+        foreach($parent->profileModel->getDbmsList() as $dbms) {
+            $data['DBMSS'][$dbms] = $dbms;
+            if($parent->profileModel->loginDbms($dbms)) {
+                $data['SCRIPT'] .= "logindbms['$dbms'] = true;\n";
+            } else {
+                $data['SCRIPT'] .= "logindbms['$dbms'] = false;\n";
+            }
+        }
+        $data['REGISTRATION_TYPES'] = array (
+                'disable_registration' => 
+                    tl('system_component_configure_disable_registration'),
+                'no_activation' => 
+                    tl('system_component_configure_no_activation'),
+                'email_registration' => 
+                    tl('system_component_configure_email_activation'),
+                'admin_activation' =>
+                    tl('system_component_configure_admin_activation'),
+            );
+        $data['show_mail_info'] = "false";
+        if(isset($data['REGISTRATION_TYPE']) &&
+            in_array($data['REGISTRATION_TYPE'], array(
+            'email_registration', 'admin_activation'))) {
+            $data['show_mail_info'] = "true";
+        }
+        $data['no_mail_php'] =  ($data["USE_MAIL_PHP"]) ? "false" :"true";
+        $data['SCRIPT'] .= <<< EOD
+    elt('account-registration').onchange = function () {
+        var show_mail_info = false;
+        no_mail_registration = ['disable_registration', 'no_activation'];
+        if(no_mail_registration.indexOf(elt('account-registration').value) 
+            < 0) {
+            show_mail_info = true;
+        }
+        setDisplay('registration-info', show_mail_info);
+    };
+    setDisplay('registration-info', {$data['show_mail_info']});
+    elt('use-php-mail').onchange = function () {
+        setDisplay('smtp-info', (elt('use-php-mail').checked == false));
+    };
+    setDisplay('smtp-info', {$data['no_mail_php']});
+
+    elt('database-system').onchange = function () {
+        setDisplay('login-dbms', self.logindbms[elt('database-system').value]);
+    };
+    setDisplay('login-dbms', logindbms[elt('database-system').value]);
+    elt('use-proxy').onchange = function () {
+        setDisplay('proxy', (elt('use-proxy').checked) ? true : false);
+    };
+    setDisplay('proxy', (elt('use-proxy').checked) ? true : false);
+EOD;
+        if(class_exists("Memcache")) {
+            $data['SCRIPT'] .= <<< EOD
+    elt('use-memcache').onchange = function () {
+        setDisplay('filecache', (elt('use-memcache').checked) ? false: true);
+        setDisplay('memcache', (elt('use-memcache').checked) ? true : false);
+    };
+    setDisplay('filecache', (elt('use-memcache').checked) ? false : true);
+    setDisplay('memcache', (elt('use-memcache').checked) ? true : false);
+EOD;
+        }
+        return $data;
+    }
+
+
+    /**
      * Responsible for handling admin request related to the configure activity
      *
      * The configure activity allows a user to set the work directory for
@@ -689,8 +842,7 @@ class SystemComponent extends Component
             break;
             case "profile":
                 $parent->updateProfileFields($data, $profile,
-                    array('USE_FILECACHE', 'USE_MEMCACHE', 'USE_MAIL_PHP',
-                        'WEB_ACCESS', 'RSS_ACCESS', 'API_ACCESS'));
+                    array('WEB_ACCESS', 'RSS_ACCESS', 'API_ACCESS'));
                 $data['DEBUG_LEVEL'] = 0;
                 $data['DEBUG_LEVEL'] |=
                     (isset($_REQUEST["ERROR_INFO"])) ? ERROR_INFO : 0;
@@ -703,40 +855,6 @@ class SystemComponent extends Component
                 $old_profile =
                     $parent->profileModel->getProfile($data['WORK_DIRECTORY']);
 
-                $db_problem = false;
-                if((isset($profile['DBMS']) &&
-                    $profile['DBMS'] != $old_profile['DBMS']) ||
-                    (isset($profile['DB_NAME']) &&
-                    $profile['DB_NAME'] != $old_profile['DB_NAME']) ||
-                    (isset($profile['DB_HOST']) &&
-                    $profile['DB_HOST'] != $old_profile['DB_HOST'])) {
-                    if(!$parent->profileModel->migrateDatabaseIfNecessary(
-                        $profile)) {
-                        $db_problem = true;
-                    }
-                } else if ((isset($profile['DB_USER']) &&
-                    $profile['DB_USER'] != $old_profile['DB_USER']) ||
-                    (isset($profile['DB_PASSWORD']) &&
-                    $profile['DB_PASSWORD'] != $old_profile['DB_PASSWORD'])) {
-
-                    if($parent->profileModel->testDatabaseManager(
-                        $profile) !== true) {
-                        $db_problem = true;
-                    }
-                }
-                if($db_problem) {
-                    $data['MESSAGE'] =
-                        tl('system_component_configure_no_change_db');
-                    $data['SCRIPT'] .=
-                        "doMessage('<h1 class=\"red\" >". $data['MESSAGE'].
-                        "</h1>');";
-                    $data['DBMS'] = $old_profile['DBMS'];
-                    $data['DB_NAME'] = $old_profile['DB_NAME'];
-                    $data['DB_HOST'] = $old_profile['DB_HOST'];
-                    $data['DB_USER'] = $old_profile['DB_USER'];
-                    $data['DB_PASSWORD'] = $old_profile['DB_PASSWORD'];
-                    break;
-                }
 
                 if($parent->profileModel->updateProfile(
                     $data['WORK_DIRECTORY'], $profile, $old_profile)) {
@@ -771,8 +889,6 @@ class SystemComponent extends Component
                     $data = array_merge($data,
                         $parent->profileModel->getProfile(
                             $data['WORK_DIRECTORY']));
-                    $data['MEMCACHE_SERVERS'] = str_replace(
-                        "|Z|","\n", $data['MEMCACHE_SERVERS']);
                 } else {
                     $data['WORK_DIRECTORY'] = "";
                     $data['PROFILE'] = false;
@@ -780,32 +896,6 @@ class SystemComponent extends Component
         }
         $data['advanced'] = "false";
         if($data['PROFILE']) {
-            $data['DBMSS'] = array();
-            $data['SCRIPT'] .= "logindbms = Array();\n";
-            foreach($parent->profileModel->getDbmsList() as $dbms) {
-                $data['DBMSS'][$dbms] = $dbms;
-                if($parent->profileModel->loginDbms($dbms)) {
-                    $data['SCRIPT'] .= "logindbms['$dbms'] = true;\n";
-                } else {
-                    $data['SCRIPT'] .= "logindbms['$dbms'] = false;\n";
-                }
-            }
-            $data['REGISTRATION_TYPES'] = array (
-                    'disable_registration' => 
-                        tl('system_component_configure_disable_registration'),
-                    'no_activation' => 
-                        tl('system_component_configure_no_activation'),
-                    'email_registration' => 
-                        tl('system_component_configure_email_activation'),
-                    'admin_activation' =>
-                        tl('system_component_configure_admin_activation'),
-                );
-             $data['show_mail_info'] = "false";
-            if(isset($_REQUEST['REGISTRATION_TYPE']) &&
-                in_array($_REQUEST['REGISTRATION_TYPE'], array(
-                'email_registration', 'admin_activation'))) {
-                $data['show_mail_info'] = "true";
-            }
             if(!isset($data['ROBOT_DESCRIPTION']) ||
                 strlen($data['ROBOT_DESCRIPTION']) == 0) {
                 $data['ROBOT_DESCRIPTION'] =
@@ -815,36 +905,11 @@ class SystemComponent extends Component
                 $data['ROBOT_DESCRIPTION'] =
                     $parent->clean($data['ROBOT_DESCRIPTION'], "string");
             }
-            if(!isset($data['MEMCACHE_SERVERS']) ||
-                strlen($data['MEMCACHE_SERVERS']) == 0) {
-                $data['MEMCACHE_SERVERS'] =
-                    "localhost";
-            }
 
             if(isset($_REQUEST['advanced']) && $_REQUEST['advanced']=='true') {
                 $data['advanced'] = "true";
             }
-            $data['no_mail_php'] =  ($data["USE_MAIL_PHP"]) ? "false" :"true";
             $data['SCRIPT'] .= <<< EOD
-    elt('account-registration').onchange = function () {
-        var show_mail_info = false;
-        no_mail_registration = ['disable_registration', 'no_activation'];
-        if(no_mail_registration.indexOf(elt('account-registration').value) 
-            < 0) {
-            show_mail_info = true;
-        }
-        setDisplay('registration-info', show_mail_info);
-    };
-    setDisplay('registration-info', {$data['show_mail_info']});
-    elt('use-php-mail').onchange = function () {
-        setDisplay('smtp-info', (elt('use-php-mail').checked == false));
-    };
-    setDisplay('smtp-info', {$data['no_mail_php']});
-
-    elt('database-system').onchange = function () {
-        setDisplay('login-dbms', self.logindbms[elt('database-system').value]);
-    };
-    setDisplay('login-dbms', logindbms[elt('database-system').value]);
     setDisplay('advance-configure', {$data['advanced']});
     setDisplay('advance-robot', {$data['advanced']});
     function toggleAdvance() {
@@ -854,22 +919,11 @@ class SystemComponent extends Component
         var value = (advanced.value == 'true') ? true : false;
         setDisplay('advance-configure', value);
         setDisplay('advance-robot', value);
-        elt('account-registration').onchange();
     }
 EOD;
-            if(class_exists("Memcache")) {
-                $data['SCRIPT'] .= <<< EOD
-    elt('use-memcache').onchange = function () {
-        setDisplay('filecache', (elt('use-memcache').checked) ? false: true);
-        setDisplay('memcache', (elt('use-memcache').checked) ? true : false);
-    };
-    setDisplay('filecache', (elt('use-memcache').checked) ? false : true);
-    setDisplay('memcache', (elt('use-memcache').checked) ? true : false);
-EOD;
-            }
         }
         $data['SCRIPT'] .=
-            "elt('locale').onchange = ".
+            "\nelt('locale').onchange = ".
             "function () { elt('configureProfileForm').submit();};\n";
 
         return $data;

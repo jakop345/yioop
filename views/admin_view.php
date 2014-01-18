@@ -50,13 +50,14 @@ class AdminView extends View
     /** Names of element objects that the view uses to display itself
      *  @var array
      */
-    var $elements = array("language", "activity", "signin",
-        "managecrawls", "manageaccount", "manageusers", "manageroles",
-        "mixcrawls", "managegroups", "managelocales", "editlocales",
-        "crawloptions","editmix", "pageoptions", "manageclassifiers",
-        "editclassifier","resultseditor", "searchsources", "managemachines",
-        "machinelog","editstatic", "configure", "blogpages", "editblogpages",
-        "createblogpages");
+    var $elements = array("activity", "blogpages", "configure",
+        "crawloptions", "createblogpages", "editblogpages",
+        "editclassifier", "editlocales", "editmix", "editstatic",
+        "language", "machinelog", "manageaccount", "manageclassifiers",
+        "managecrawls", "managegroups", "managelocales", "managemachines",
+        "manageroles", "manageusers", "mixcrawls", "pageoptions",
+        "resultseditor", "searchsources", "serversettings", "signin"
+        );
     /** Names of helper objects that the view uses to help draw itself
      *  @var array
      */

@@ -179,26 +179,6 @@ class AdminController extends Controller implements CrawlConstants
             $data['SCRIPT'] .= "var u; if ((u = elt('username')) && u.focus) ".
                "u.focus();";
         }
-        $data['COMPONENT_ACTIVITIES'] = array();
-        $component_translations = array(
-            "accountaccess" => tl('admin_controller_account_access'),
-            "blogmixes" => tl('blogmixes_component_blogs_pages_mixes'),
-            "crawl" => tl('admin_controller_crawl_settings'),
-            "system" => tl('admin_controller_system_settings')
-        );
-        if(isset($data["ACTIVITIES"])) {
-            foreach($this->components as $component) {
-                $component_name = $component."Component";
-                foreach($data["ACTIVITIES"] as $activity) {
-                    if(in_array($activity['METHOD_NAME'],
-                        $this->$component_name->activities)) {
-                        $data['COMPONENT_ACTIVITIES'][
-                            $component_translations[$component]][] =
-                            $activity;
-                    }
-                }
-            }
-        }
         $_SESSION['REMOTE_ADDR'] = $_SERVER['REMOTE_ADDR'];
         $this->displayView($view, $data);
     }
@@ -289,6 +269,26 @@ class AdminController extends Controller implements CrawlConstants
         if(!in_array($activity, $this->status_activities)) {
             $data['CURRENT_ACTIVITY'] =
                 $this->activityModel->getActivityNameFromMethodName($activity);
+        }
+        $data['COMPONENT_ACTIVITIES'] = array();
+        $component_translations = array(
+            "accountaccess" => tl('admin_controller_account_access'),
+            "blogmixes" => tl('blogmixes_component_blogs_pages_mixes'),
+            "crawl" => tl('admin_controller_crawl_settings'),
+            "system" => tl('admin_controller_system_settings')
+        );
+        if(isset($data["ACTIVITIES"])) {
+            foreach($this->components as $component) {
+                $component_name = $component."Component";
+                foreach($data["ACTIVITIES"] as $activity) {
+                    if(in_array($activity['METHOD_NAME'],
+                        $this->$component_name->activities)) {
+                        $data['COMPONENT_ACTIVITIES'][
+                            $component_translations[$component]][] =
+                            $activity;
+                    }
+                }
+            }
         }
         return $data;
     }
@@ -381,7 +381,8 @@ class AdminController extends Controller implements CrawlConstants
         foreach($this->profileModel->profile_fields as $field) {
             if(isset($_REQUEST[$field])) {
                 if($field != "ROBOT_DESCRIPTION" &&
-                    $field != "MEMCACHE_SERVERS") {
+                    $field != "MEMCACHE_SERVERS" &&
+                    $field != "PROXY_SERVERS") {
                     $clean_field =
                         $this->clean($_REQUEST[$field], "string");
                 } else {
@@ -393,7 +394,7 @@ class AdminController extends Controller implements CrawlConstants
                 }
                 $data[$field] = $clean_field;
                 $profile[$field] = $data[$field];
-                if($field == "MEMCACHE_SERVERS") {
+                if($field == "MEMCACHE_SERVERS" || $field == "PROXY_SERVERS") {
                     $mem_array = preg_split("/(\s)+/", $clean_field);
                     $profile[$field] =
                         $this->convertArrayLines(

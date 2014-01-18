@@ -49,18 +49,18 @@ require_once(BASE_DIR.'/lib/url_parser.php');
  */
 class ProfileModel extends Model
 {
-    var $profile_fields = array('USER_AGENT_SHORT',
-            'DEFAULT_LOCALE', 'DEBUG_LEVEL','REGISTRATION_TYPE', "USE_MAIL_PHP",
-            'MAIL_SENDER', 'MAIL_SERVER', 'MAIL_SERVERPORT', 'MAIL_USERNAME',
-            'MAIL_PASSWORD', 'MAIL_SECURITY',
-            'DBMS', 'DB_HOST','DB_NAME', 'DB_USER', 'DB_PASSWORD',
-            'NAME_SERVER', 'AUTH_KEY', "ROBOT_DESCRIPTION", 'WEB_URI',
-            'USE_MEMCACHE', 'MEMCACHE_SERVERS', 'USE_FILECACHE',
-            'WORD_SUGGEST', 'CACHE_LINK', 'SIMILAR_LINK',
-            'IN_LINK', 'IP_LINK', 'SIGNIN_LINK', 'SUBSEARCH_LINK',
-            'ROBOT_INSTANCE', "WEB_ACCESS", "RSS_ACCESS", "API_ACCESS",
-            'TITLE_WEIGHT','DESCRIPTION_WEIGHT','LINK_WEIGHT',
-            'MIN_RESULTS_TO_GROUP','SERVER_ALPHA', 'NEWS_MODE');
+    var $profile_fields = array('API_ACCESS', 'AUTH_KEY', 'CACHE_LINK',
+        'DEBUG_LEVEL', 'DESCRIPTION_WEIGHT', 'DB_HOST', 'DBMS', 'DB_NAME',
+        'DB_PASSWORD', 'DB_USER', 'DEFAULT_LOCALE', 'IN_LINK', 'IP_LINK',
+        'LINK_WEIGHT', 'MAIL_PASSWORD', 'MAIL_SECURITY', 'MAIL_SENDER',
+        'MAIL_SERVER', 'MAIL_SERVERPORT', 'MAIL_USERNAME', 'MEMCACHE_SERVERS',
+        'MIN_RESULTS_TO_GROUP', 'NAME_SERVER', 'NEWS_MODE', 'PROXY_SERVERS',
+        'REGISTRATION_TYPE', 'ROBOT_DESCRIPTION', 'ROBOT_INSTANCE',
+        'RSS_ACCESS', 'SERVER_ALPHA', 'SIGNIN_LINK', 'SIMILAR_LINK',
+        'SUBSEARCH_LINK', 'TITLE_WEIGHT', 'TOR_PROXY', 'USE_FILECACHE',
+        'USE_MAIL_PHP', 'USE_MEMCACHE', 'USE_PROXY', 'USER_AGENT_SHORT',
+        'WEB_URI', 'WEB_ACCESS', 'WORD_SUGGEST'
+        );
     /**
      *  {@inheritdoc}
      */
@@ -175,6 +175,7 @@ EOT;
             } else {
                     $profile[$field] = "";
             }
+
             if($field == "NEWS_MODE" && $profile[$field] == "") {
                 $profile[$field] = "news_off";
             }
@@ -246,7 +247,7 @@ EOT;
             "GROUP_ROLE", "LOCALE", "MEDIA_SOURCE", "MIX_COMPONENTS",
             "MIX_GROUPS", "ROLE", "ROLE_ACTIVITY", "SUBSEARCH", "TRANSLATION",
             "TRANSLATION_LOCALE", "USER", "USER_GROUP", "USER_ROLE",
-            "USER_SESSION", "VERSION");
+            "USER_SESSION", "VERSION", "VISITOR");
 
         if(!($create_ok = $this->createDatabaseTables($test_dbm, $dbinfo))) {
             return false;
@@ -403,13 +404,19 @@ EOT;
                 return false;
             }
         }
-
-        /* check if need to create db contents.
-           We check if any locale exists as proxy for contents being okay
+        /*  check if need to create db contents.
+            We check if any locale exists as proxy for contents being okay.
+            Temporarily disable more aggressive yioop error handler while do
+            this
          */
-
+        if((DEBUG_LEVEL & ERROR_INFO) == ERROR_INFO) {
+            restore_error_handler();
+        }
         $sql = "SELECT LOCALE_ID FROM LOCALE";
         $result = $test_dbm->execute($sql);
+        if((DEBUG_LEVEL & ERROR_INFO) == ERROR_INFO) {
+            set_error_handler("yioop_error_handler");
+        }
         if($result !== false && $test_dbm->fetchArray($result) !== false) {
             return true;
         }

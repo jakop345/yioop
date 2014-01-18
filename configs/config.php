@@ -164,6 +164,8 @@ if(file_exists(WORK_DIRECTORY.PROFILE_FILE_NAME)) {
     define('DEFAULT_LOCALE', "en-US");
     define('AUTH_KEY', 0);
     define('USE_MEMCACHE', false);
+    define('USE_PROXY', false);
+    define('TOR_PROXY', '127.0.0.1:9150');
     define('WORD_SUGGEST', true);
     define('CACHE_LINK', true);
     define('SIMILAR_LINK', true);
@@ -235,10 +237,14 @@ define('USER_AGENT',
 if(USE_MEMCACHE) {
     $memcache_hosts = explode("|Z|", MEMCACHE_SERVERS);
     foreach($memcache_hosts as $host)
-    $MEMCACHES[] = array("host" => $host, "port" => "11211"
+        $MEMCACHES[] = array("host" => $host, "port" => "11211"
     );
     unset($memcache_hosts);
     unset($host);
+}
+
+if(USE_PROXY) {
+    $PROXY_URLS = explode("|Z|", PROXY_SERVERS);
 }
 
 /** maximum size of a log file before it is rotated */
