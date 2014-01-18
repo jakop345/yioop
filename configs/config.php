@@ -166,6 +166,7 @@ if(file_exists(WORK_DIRECTORY.PROFILE_FILE_NAME)) {
     define('USE_MEMCACHE', false);
     define('USE_PROXY', false);
     define('TOR_PROXY', '127.0.0.1:9150');
+    define('PROXY_SERVERS', NULL);
     define('WORD_SUGGEST', true);
     define('CACHE_LINK', true);
     define('SIMILAR_LINK', true);
@@ -241,10 +242,6 @@ if(USE_MEMCACHE) {
     );
     unset($memcache_hosts);
     unset($host);
-}
-
-if(USE_PROXY) {
-    $PROXY_URLS = explode("|Z|", PROXY_SERVERS);
 }
 
 /** maximum size of a log file before it is rotated */
@@ -420,31 +417,9 @@ define('DOWNLOAD_ERROR_THRESHOLD', 50);
 /** Crawl-delay to set in the event that DOWNLOAD_ERROR_THRESHOLD exceeded*/
 define('ERROR_CRAWL_DELAY', 20);
 
-
 /** how often should we make in OPIC the sum of weights totals MAX_URLS */
 define('NORMALIZE_FREQUENCY', 10000);
 
-/** Proxy to use when trying to download TOR .onion pages (won't use on
- *  all pages)
- */
-if(!defined('TOR_PROXY')) {
-    define('TOR_PROXY', '127.0.0.1:9150');
-}
-
-/** If rather than directly crawling the web one wants Yioop to crawl through
- *  a proxy service, enter the URLs below. This should an array of urls
- *  likes array('some_ip1:some_port1', 'some_ip2:some_port2');
- *  Yioop will randomly choose from among the proxies
- */
-if(!isset($PROXY_URLS)) {
-    $PROXY_URLS = NULL; //if use define in local_config.php
-}
-/**
- *  Proxy type to be used with $PROXY_URLS
- */
-if(!defined('PROXY_TYPE')) {
-    define('PROXY_TYPE', CURLPROXY_HTTP);
-}
 /**
  * @global array file extensions which can be handled by the search engine,
  * other extensions will be ignored. This array is populated in the individual

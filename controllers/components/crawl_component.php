@@ -110,6 +110,11 @@ class CrawlComponent extends Component implements CrawlConstants
                         $crawl_params[self::CRAWL_TIME], $machine_urls);
                     $parent->getCrawlParametersFromSeedInfo($crawl_params,
                         $seed_info);
+                    $crawl_params[self::TOR_PROXY] = TOR_PROXY;
+                    if(USE_PROXY) {
+                        $crawl_params[self::PROXY_SERVERS] =
+                            explode("|Z|", PROXY_SERVERS);
+                    }
                    /*
                        Write the new crawl parameters to the name server, so
                        that it can pass them along in the case of a new archive
@@ -182,6 +187,10 @@ class CrawlComponent extends Component implements CrawlConstants
             $description = tl('crawl_component_no_description');
         }
         $crawl_params['DESCRIPTION'] = $description;
+        $crawl_params[self::TOR_PROXY] = TOR_PROXY;
+        if(USE_PROXY) {
+            $crawl_params[self::PROXY_SERVERS] = explode("|Z|", PROXY_SERVERS);
+        }
         $crawl_params[self::VIDEO_SOURCES] = array();
         $sources =
             $parent->sourceModel->getMediaSources('video');

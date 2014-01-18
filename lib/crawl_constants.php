@@ -243,6 +243,8 @@ interface CrawlConstants
     const REPOSITORY_TYPE = 'de';
     const FILE_NAME = 'df';
     const SHA_HASH = 'dg';
+    const TOR_PROXY = 'dh';
+    const PROXY_SERVERS = 'di';
     const NEEDS_OFFSET_FLAG = 0x7FFFFFFF;
 }
 ?>

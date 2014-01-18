@@ -511,7 +511,8 @@ class SystemComponent extends Component
         {
             case "update":
                 $parent->updateProfileFields($data, $profile,
-                    array('USE_FILECACHE', 'USE_MEMCACHE', 'USE_MAIL_PHP'));
+                    array('USE_FILECACHE', 'USE_MEMCACHE', 'USE_MAIL_PHP',
+                        'USE_PROXY'));
 
                 $old_profile =
                     $parent->profileModel->getProfile(WORK_DIRECTORY);

@@ -1505,8 +1505,9 @@ class SearchController extends Controller implements CrawlConstants
         }
 
         $dom = new DOMDocument();
+        restore_error_handler();
         $did_dom = @$dom->loadHTML('<?xml encoding="UTF-8">' . $cache_file);
-
+        set_error_handler("yioop_error_handler");
         foreach ($dom->childNodes as $item) {
             if($item->nodeType == XML_PI_NODE)
                 $dom->removeChild($item); // remove hack

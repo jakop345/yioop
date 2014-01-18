@@ -439,6 +439,18 @@ class Fetcher implements CrawlConstants
     var $programming_language_extension;
 
     /**
+     *
+     * @var string
+     */
+    var $tor_proxy;
+
+    /**
+     *
+     * @var string
+     */
+    var $proxy_servers;
+
+    /**
      * Before receiving any data from a queue server's web app this is
      * the default assumed post_max_size in bytes
      */
@@ -518,6 +530,9 @@ class Fetcher implements CrawlConstants
 
         $this->active_classifiers = array();
         $this->active_rankers = array();
+
+        $this->tor_proxy = "";
+        $this->proxy_servers = array();
 
         $this->total_git_urls = 0;
         $this->all_git_urls = array();
@@ -755,7 +770,8 @@ class Fetcher implements CrawlConstants
         }
         $site_pages = array_merge($site_pages,
             FetchUrl::getPages($filtered_sites, true,
-                $this->page_range_request, $tmp_dir));
+                $this->page_range_request, $tmp_dir, self::URL, self::PAGE,
+                false, NULL, false, $this->tor_proxy, $this->proxy_servers) );
         for($j = 0; $j < count($site_pages); $j++) {
             if(isset($site_pages[$j][self::REPOSITORY_TYPE])) {
                 $git_repository_url = $site_pages[$j][self::URL];
@@ -1304,7 +1320,9 @@ class Fetcher implements CrawlConstants
             self::INDEXED_FILE_TYPES => 'indexed_file_types',
             self::RESTRICT_SITES_BY_URL => 'restrict_sites_by_url',
             self::ALLOWED_SITES => 'allowed_sites',
-            self::DISALLOWED_SITES => 'disallowed_sites');
+            self::DISALLOWED_SITES => 'disallowed_sites',
+            self::TOR_PROXY => 'tor_proxy',
+            self::PROXY_SERVERS => 'proxy_servers');
         foreach($update_fields as $info_field => $field) {
             if(isset($info[$info_field])) {
                 $this->$field = $info[$info_field];

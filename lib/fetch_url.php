@@ -73,9 +73,9 @@ class FetchUrl implements CrawlConstants
     static function getPages($sites, $timer = false,
         $page_range_request = PAGE_RANGE_REQUEST, $temp_dir = NULL,
         $key=CrawlConstants::URL, $value = CrawlConstants::PAGE, $minimal=false,
-        $post_data = NULL, $follow = false)
+        $post_data = NULL, $follow = false, $tor_proxy = "", 
+        $proxy_servers=array())
     {
-        global $PROXY_URLS;
         $agent_handler = curl_multi_init();
 
         $active = NULL;
@@ -94,7 +94,8 @@ class FetchUrl implements CrawlConstants
         for($i = 0; $i < $num_sites; $i++) {
             if(isset($sites[$i][$key])) {
                 list($sites[$i][$key], $url, $headers) =
-                    self::prepareUrlHeaders($sites[$i][$key], $minimal);
+                    self::prepareUrlHeaders($sites[$i][$key], $minimal,
+                    $proxy_servers);
                 $sites[$i][0] = curl_init();
                 if(!$minimal) {
                     $ip_holder[$i] = fopen("$temp_dir/tmp$i.txt", 'w+');
@@ -116,16 +117,34 @@ class FetchUrl implements CrawlConstants
                 curl_setopt($sites[$i][0], CURLOPT_RETURNTRANSFER, true);
                 curl_setopt($sites[$i][0], CURLOPT_CONNECTTIMEOUT,PAGE_TIMEOUT);
                 curl_setopt($sites[$i][0], CURLOPT_TIMEOUT, PAGE_TIMEOUT);
-                if (stripos($url,'.onion') !== false) {
-                    curl_setopt($sites[$i][0], CURLOPT_PROXY, TOR_PROXY);
-                    curl_setopt($sites[$i][0], CURLOPT_PROXYTYPE,
-                        CURLPROXY_SOCKS5);
-                } else if(is_array($PROXY_URLS)) {
-                    $select_proxy = rand(0, count($PROXY_URLS) - 1);
+                if (stripos($url,'.onion') !== false && $tor_proxy != "") {
+                    curl_setopt($sites[$i][0], CURLOPT_PROXY, $tor_proxy);
+                    //CURLPROXY_SOCKS5_HOSTNAME = 7
+                    curl_setopt($sites[$i][0], CURLOPT_PROXYTYPE, 7);
+                    crawlLog("Using Tor proxy for $url..");
+                } else if($proxy_servers != array()) {
+                    $select_proxy = rand(0, count($proxy_servers) - 1);
+                    $proxy_server = $proxy_servers[$select_proxy];
+                    $proxy_parts = explode(":", $proxy_server);
+                    $proxy_ip = $proxy_parts[0];
+                    if(!isset($proxy_parts[2]) || strtolower($proxy_parts[2]) ==
+                        'http') {
+                        $proxy_type = CURLPROXY_HTTP;
+                    } else if(strtolower($proxy_parts[2]) == 'socks5') {
+                        $proxy_type = CURLPROXY_SOCKS5;
+                    } else {
+                        $proxy_type = $proxy_parts[2];
+                    }
+                    if(isset($proxy_parts[1])) {
+                        $proxy_port = $proxy_parts[1];
+                    } else {
+                        $proxy_port = "80";
+                    }
                     curl_setopt($sites[$i][0], CURLOPT_PROXY,
-                        $PROXY_URLS[$select_proxy]);
+                        "$proxy_ip:$proxy_port");
                     curl_setopt($sites[$i][0], CURLOPT_PROXYTYPE,
-                        PROXY_TYPE);
+                        $proxy_type);
+                    crawlLog("Selecting proxy $select_proxy for $url");
                 }
                 if(!$minimal) {
                     curl_setopt($sites[$i][0], CURLOPT_HEADER, true);
@@ -253,12 +272,13 @@ class FetchUrl implements CrawlConstants
      *   afte ###
      * @param bool $minimal don't try to do replacement, but do add an Expect
      *      header
+     * @param array $proxy_servers if not empty an array of proxy servers
+     *      used to crawl through
      * @return array 3-tuple (orig url, url with replacement, http header array)
      */
-    static function prepareUrlHeaders($url, $minimal = false)
+    static function prepareUrlHeaders($url, $minimal = false,
+        $proxy_servers = array())
     {
-        global $PROXY_URLS;
-
         $url = str_replace("&amp;", "&", $url);
         /*Check if an ETag was added by the queue server. If found, create
           If-None_Match header with the ETag and add it to the headers. Remove
@@ -280,7 +300,7 @@ class FetchUrl implements CrawlConstants
         $headers = array();
         if(!$minimal) {
             $url_ip_parts = explode("###", $url);
-            if ($PROXY_URLS != NULL || (isset($url_ip_parts[0]) &&
+            if ($proxy_servers != array() || (isset($url_ip_parts[0]) &&
                 (stripos($url_ip_parts[0],'.onion') !== false)) ) {
                 $url_ip_parts = array($url_ip_parts[0]);
                 $url = $url_ip_parts[0];
@@ -585,10 +605,6 @@ class FetchUrl implements CrawlConstants
         curl_setopt($agents[$host], CURLOPT_FAILONERROR, true);
         curl_setopt($agents[$host], CURLOPT_TIMEOUT, SINGLE_PAGE_TIMEOUT);
         curl_setopt($agents[$host], CURLOPT_CONNECTTIMEOUT, PAGE_TIMEOUT);
-        if (stripos($site,'.onion') !== false) {
-            curl_setopt($agents[$host], CURLOPT_PROXY, TOR_PROXY);
-            curl_setopt($agents[$host], CURLOPT_PROXYTYPE, CURLPROXY_SOCKS5);
-        }
         //make lighttpd happier
         curl_setopt($agents[$host], CURLOPT_HTTPHEADER, array('Expect:'));
         if($post_data != NULL) {
