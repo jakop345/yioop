@@ -118,47 +118,6 @@ abstract class View
             $this->$helper_instance_name = new $helper_name();
         }
 
-        $files = scandir(LOCALE_DIR."/".getLocaleTag()."/pages/");
-
-        //read in localized static page elements
-        foreach($files as $file){
-            if(!is_dir($file)){
-                $page = preg_replace("/\\.[^.\\s]{3,5}$/", "", $file);
-                array_push($this->pages, $page);
-                $page_file =
-                    LOCALE_DIR."/".getLocaleTag()."/pages/".$page.".thtml";
-                $fallback =
-                    LOCALE_DIR."/".DEFAULT_LOCALE."/pages/".$page.".thtml";
-
-                if(file_exists($page_file)) {
-                    $page_string = file_get_contents($page_file);
-                } else if (file_exists($fallback)) {
-                    $page_string = file_get_contents($fallback);
-                } else {
-                    $page_string = "";
-                }
-                $page_parts = explode("END_HEAD_VARS", $page_string);
-                $this->head_objects[$page] = array();
-                if(count($page_parts) > 1) {
-                    $this->page_objects[$page]  = $page_parts[1];
-                    $head_lines = explode("\n\n", $page_parts[0]);
-                    foreach($head_lines as $line) {
-                        $semi_pos =  (strpos($line, ";")) ? strpos($line, ";"):
-                            strlen($line);
-                        $line = substr($line, 0, $semi_pos);
-                        $line_parts = explode("=",$line);
-                        if(count($line_parts) == 2) {
-                            $this->head_objects[$page][
-                                 trim(addslashes($line_parts[0]))] =
-                                    addslashes(trim($line_parts[1]));
-                        }
-                    }
-                } else {
-                    $this->page_objects[$page] = $page_parts[0];
-                }
-            }
-        }
-
         //read in and instantiate the Layout on which the View will be drawn
         require_once BASE_DIR."/views/layouts/layout.php";
 

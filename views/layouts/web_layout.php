@@ -55,7 +55,8 @@ class WebLayout extends Layout
      *  @param array $data  an array of data set up by the controller to be
      *  be used in drawing the WebLayout and its View.
      */
-    function render($data) {
+    function render($data)
+    {
     ?>
     <!DOCTYPE html>
 

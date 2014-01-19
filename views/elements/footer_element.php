@@ -64,6 +64,8 @@ class FooterElement extends Element
             e(tl('footer_element_blog')); ?></a> -
             <a href="<?php e($path_info); ?>/privacy.php"><?php
             e(tl('footer_element_privacy')); ?></a> -
+            <a href="<?php e($path_info); ?>/terms.php"><?php
+            e(tl('footer_element_terms')); ?></a> -
             <a href="<?php e($path_info); ?>/bot.php"><?php
             e(tl('footer_element_bot')); ?></a> - <?php if(MOBILE) {
                 e('<br /> - ');

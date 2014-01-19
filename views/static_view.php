@@ -61,7 +61,8 @@ class StaticView extends View
      *  @param array $data  contains the static page contents
      *  the view
      */
-    function renderView($data) {
+    function renderView($data)
+    {
         $logo = "resources/yioop.png";
         if(MOBILE) {
             $logo = "resources/m-yioop.png";

@@ -60,11 +60,12 @@ class StaticController extends Controller
      * this controller will respond to
      * @var array
      */
-    var $activities = array("show_page");
+    var $activities = array("showPage");
 
     /**
-     *  This is the main entry point for handling people arriving to the
-     * SeekQuarry site.
+     *  This is the main entry point for handling people arriving to view
+     *  a static page. It determines which page to draw and class the view
+     *  to draw it.
      */
     function processRequest()
     {
@@ -79,28 +80,26 @@ class StaticController extends Controller
             if(in_array($_REQUEST['a'], $this->activities)) {
                 $activity = $_REQUEST['a'];
             } else {
-                $activity = "show_page";
+                $activity = "showPage";
             }
         } else {
-            $activity = "show_page";
+            $activity = "showPage";
         }
         $data['VIEW'] = $view;
         $data = array_merge($data, $this->call($activity));
-
         $data[CSRF_TOKEN] = $this->generateCSRFToken($user);
-
         $this->displayView($view, $data);
-
     }
 
 
     /**
-     * This activity is used to display one of a set of static pages used
+     * This activity is used to display one a static pages used
      * by the Yioop Web Site
      *
-     * @return array $data has which static page to display
+     * @return array $data has title and page contents of the static page to
+     *      display
      */
-    function show_page()
+    function showPage()
     {
         if(isset($_SESSION['USER_ID'])) {
             $user = $_SESSION['USER_ID'];
@@ -108,25 +107,72 @@ class StaticController extends Controller
             $user = $_SERVER['REMOTE_ADDR'];
         }
         $data = array();
-        if(isset($_REQUEST['p']) &&
-            in_array($_REQUEST['p'], $this->staticView->pages) ||
-            $this->blogpageModel->isPageAccessible($user, $_REQUEST['p'])) {
-                $data['page'] = $_REQUEST['p'];
+        if(isset($_REQUEST['p'])) {
+            $page = $this->clean($_REQUEST['p'], "string");
+            $page = preg_replace("@(\.\.|\/)@", "", $page);
         } else {
-            $data['page'] = "blog";
+            $page = "404";
+        }
+        $page_string = $this->getPage($page);
+        if($page_string == "") {
+            $page = "404";
+            $page_string = $this->getPage($page);
+        }
+        $data['page'] = $page;
+        $page_parts = explode("END_HEAD_VARS", $page_string);
+        $static_view = $this->staticView;
+        $static_view->head_objects[$page] = array();
+        if(count($page_parts) > 1) {
+            $static_view->page_objects[$page]  = $page_parts[1];
+            $head_lines = preg_split("/\s\n/", $page_parts[0]);
+            foreach($head_lines as $line) {
+                $semi_pos =  (strpos($line, ";")) ? strpos($line, ";"):
+                    strlen($line);
+                $line = substr($line, 0, $semi_pos);
+                $line_parts = explode("=",$line);
+                if(count($line_parts) == 2) {
+                    $static_view->head_objects[$page][
+                         trim(addslashes($line_parts[0]))] =
+                            addslashes(trim($line_parts[1]));
+                }
+            }
+        } else {
+            $static_view->page_objects[$page] = $page_parts[0];
         }
         if(isset($_SESSION['value'])) {
             $data['value'] = $this->clean($_SESSION['value'], "string");
         }
-        if((isset($this->staticView->head_objects[$data['page']]['title']))) {
+        if((isset($static_view->head_objects[$data['page']]['title']))) {
             $data["subtitle"]=" - ".
-            $this->staticView->head_objects[$data['page']]['title'];
-            $this->staticView->head_objects[$data['page']]['title'] = "Yioop!".
+                $static_view->head_objects[$data['page']]['title'];
+            $static_view->head_objects[$data['page']]['title'] = "Yioop!".
                 $data["subtitle"];
         } else {
             $data["subtitle"] = "";
         }
         return $data;
+    }
+
+    /**
+     *  Used to read in the file containing the static page
+     *
+     *  @param string $page name of file less extension to read in
+     *  @return string text of static page
+     */
+    function getPage($page)
+    {
+        $page_file =
+            LOCALE_DIR."/".getLocaleTag()."/pages/".$page.".thtml";
+        $fallback =
+            LOCALE_DIR."/".DEFAULT_LOCALE."/pages/".$page.".thtml";
+        if(file_exists($page_file)) {
+            $page_string = file_get_contents($page_file);
+        } else if (file_exists($fallback)) {
+            $page_string = file_get_contents($fallback);
+        } else {
+            $page_string = "";
+        }
+        return $page_string;
     }
 }
 ?>
