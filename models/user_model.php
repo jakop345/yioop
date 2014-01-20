@@ -49,6 +49,12 @@ require_once BASE_DIR."/lib/utility.php";
  */
 class UserModel extends Model
 {
+    /**
+     *
+     */
+    var $search_table_column_map = array("first"=>"FIRST_NAME",
+        "last" => "LAST_NAME", "user" => "USER_NAME", "email"=>"EMAIL",
+        "status"=>"STATUS");
 
     /**
      * Just calls the parent class constructor
@@ -271,63 +277,6 @@ class UserModel extends Model
         $result = $this->db->execute($sql);
         $row = $this->db->fetchArray($result);
         return $row['NUM'];
-    }
-
-    /**
-     *
-     */
-    function searchArrayToWhereOrderClauses($search_array)
-    {
-        $user_columns = array("first"=>"FIRST_NAME", "last" => "LAST_NAME",
-            "user" => "USER_NAME", "email"=>"EMAIL", "status"=>"STATUS");
-        $where = "";
-        $order_by = "";
-        $order_by_comma = "";
-        $where_and = "";
-        $sort_types = array("ASC", "DESC");
-        foreach($search_array as $row) {
-            $field_name = $user_columns[$row[0]];
-            $comparison = $row[1];
-            $value = $row[2];
-            $sort_dir = $row[3];
-            if($value != "" && ($field_name != 'STATUS' || $value != "0")) {
-                if($where == "") {
-                    $where = " WHERE ";
-                }
-                $where .= $where_and;
-                switch($comparison) {
-                    case "=":
-                         $where .= "UPPER($field_name)=UPPER('".
-                            $this->db->escapeString($value)."')";
-                    break;
-                    case "!=":
-                         $where .= "UPPER($field_name)!=UPPER('".
-                            $this->db->escapeString($value)."')";
-                    break;
-                    case "CONTAINS":
-                         $where .= "UPPER($field_name) LIKE UPPER('%".
-                            $this->db->escapeString( $value)."%')";
-                    break;
-                    case "BEGINS WITH":
-                         $where .= "UPPER($field_name) LIKE UPPER('".
-                            $this->db->escapeString( $value)."%')";
-                    break;
-                    case "ENDS WITH":
-                         $where .= "UPPER($field_name) LIKE UPPER('%".
-                            $this->db->escapeString( $value)."')";
-                    break;
-                }
-                $where_and = " AND ";
-            }
-            if(in_array($sort_dir, $sort_types)) {
-                if($order_by == "") {
-                    $order_by = " ORDER BY ";
-                }
-                $order_by .= $order_by_comma.$field_name." ".$sort_dir;
-                $order_by_comma = ", ";
-            }
-        }
-        return array($where, $order_by);
     }
 
     /**

@@ -86,13 +86,15 @@ $db->execute("INSERT INTO VERSION VALUES (19)");
 $creation_time = vsprintf('%d.%06d', gettimeofday());
 
 //default account is root without a password
-$sql ="INSERT INTO USER VALUES (1, 'admin', 'admin','root',
+$sql ="INSERT INTO USER VALUES (".ROOT_ID.", 'admin', 'admin','root',
         'root@dev.null', '".crawlCrypt('')."', '".ACTIVE_STATUS.
         "', '".crawlCrypt('root'.AUTH_KEY.$creation_time)."','$creation_time')";
 $db->execute($sql);
 
 //default public group with group id 1
-$sql = "INSERT INTO GROUPS VALUES(PUBLIC_GROUP_ID,'public','".time()."','1')";
+$creation_time = vsprintf('%d.%06d', gettimeofday());
+$sql = "INSERT INTO GROUPS VALUES(".PUBLIC_GROUP_ID.",'Public','".
+    $creation_time."','".ROOT_ID."')";
 $db->execute($sql);
 
 /* we insert 1 by 1 rather than comma separate as sqlite
@@ -131,10 +133,20 @@ foreach($locales as $locale) {
     $i++;
 }
 
-$db->execute("INSERT INTO ROLE VALUES (1, 'Admin' )");
-$db->execute("INSERT INTO ROLE VALUES (2, 'User' )");
-$db->execute("INSERT INTO USER_ROLE VALUES (1, 1)");
-$db->execute("INSERT INTO USER_GROUP VALUES (1, 1)");
+$db->execute("INSERT INTO ROLE VALUES (".ROOT_ROLE.", 'Admin' )");
+$db->execute("INSERT INTO ROLE VALUES (".USER_ROLE.", 'User' )");
+$db->execute("INSERT INTO USER_ROLE VALUES (".ROOT_ID.", ".ROOT_ROLE.")");
+$db->execute("INSERT INTO USER_GROUP VALUES (".ROOT_ID.", ".
+    PUBLIC_GROUP_ID.")");
+$db->execute("INSERT INTO USER_GROUP VALUES (".PUBLIC_USER_ID.", ".
+    PUBLIC_GROUP_ID.")");
+$public_pages = array("404", "409", "blog", "bot", "privacy", 
+    "register_time_out", "terms");
+foreach($public_pages as $page) {
+    $sql = "INSERT INTO ACCESS VALUES ('".$page."', '".
+        PUBLIC_GROUP_ID."', 'group')";
+    $db->execute($sql);
+}
 
 $activities = array(
     "manageAccount" => array('db_activity_manage_account',
@@ -250,7 +262,7 @@ foreach($activities as $activity => $translation_info) {
     // set-up activity
     $db->execute("INSERT INTO ACTIVITY VALUES ($i, $i, '$activity')");
     //give admin role the ability to have that activity
-    $db->execute("INSERT INTO ROLE_ACTIVITY VALUES (1, $i)");
+    $db->execute("INSERT INTO ROLE_ACTIVITY VALUES (".ROOT_ROLE.", $i)");
     $db->execute("INSERT INTO TRANSLATION
             VALUES($i,'{$translation_info[0]}')");
     foreach($translation_info[1] as $locale_tag => $translation) {
@@ -273,7 +285,8 @@ foreach($new_user_activities as $new_activity) {
     foreach($activities as $key => $value) {
         if($new_activity == $key){
         //give new user role the ability to have that activity
-            $db->execute("INSERT INTO ROLE_ACTIVITY VALUES (2, $i)");
+            $db->execute("INSERT INTO ROLE_ACTIVITY VALUES (".
+                USER_ROLE.", $i)");
         }
         $i++;
     }

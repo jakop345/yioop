@@ -298,7 +298,7 @@ EOT;
                 DESCRIPTION VARCHAR(4096),
                 PUBDATE INT, SOURCE_NAME VARCHAR(16))",
             "CREATE TABLE GROUPS (GROUP_ID INTEGER PRIMARY KEY $auto_increment,
-                GROUP_NAME VARCHAR(128), CREATED_TIME INT(11),
+                GROUP_NAME VARCHAR(128), CREATED_TIME VARCHAR(20),
                 CREATOR_ID INT(11))",
             /* NOTE: We are not using singular name GROUP for GROUPS as
                is a reserved SQL keyword

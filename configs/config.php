@@ -543,14 +543,23 @@ define ('NUM_RECENT_URLS_TO_DISPLAY', 10);
 
 /** Maximum time a set of results can stay in query cache before it is
     invalidated */
-define ('MAX_QUERY_CACHE_TIME', 2*86400); //two days
+define ('MAX_QUERY_CACHE_TIME', 2 * 86400); //two days
 
 /** Minimum time a set of results can stay in query cache before it is
     invalidated */
 define ('MIN_QUERY_CACHE_TIME', 3600); //one hour
 
+/** ID of the root user */
+define('ROOT_ID', 1);
+/** Role of the root user */
+define('ROOT_ROLE', 1);
+/** Default role of an active user */
+define('USER_ROLE', 2);
 /** ID of the group to which all Yioop users belong */
-define('PUBLIC_GROUP_ID', 1);
+define('PUBLIC_GROUP_ID', 2);
+/** ID of the group to which all Yioop users belong */
+define('PUBLIC_USER_ID', 2);
+
 /** USER STATUS value used for a user who can log in and perform activities */
 define('ACTIVE_STATUS', 1);
 /**

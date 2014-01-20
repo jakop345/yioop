@@ -593,17 +593,18 @@ class BlogpageModel extends Model
         if($user_id == 1){
             return true;
         }
-        $this->db->selectDB(DB_NAME);
-        $sql = "SELECT USER_ID FROM USER_GROUP WHERE GROUP_ID IN (SELECT ID
-                FROM ACCESS WHERE NAME = '".
-                $this->db->escapeString($title)."' AND TYPE = 'group')";
-        $result = $this->db->execute($sql);
-        $num_rows = 0;
-        while($row = $this->db->fetchArray($result)) {
-            if($user_id == $row['USER_ID']){
-                return true;
-            }
+        if($user_id = $_SERVER['REMOTE_ADDR']) {
+            $user_id = PUBLIC_USER_ID;
         }
+        $this->db->selectDB(DB_NAME);
+        $sql = "SELECT USER_ID FROM USER_GROUP WHERE USER_ID ='$user_id'
+            AND GROUP_ID IN (SELECT ID FROM ACCESS WHERE NAME = '".
+            $this->db->escapeString($title)."' AND TYPE = 'group')";
+        if(($result = $this->db->execute($sql)) && 
+            ($row = $this->db->fetchArray($result))) {
+            return true;
+        }
+        $num_rows = 0;
         return false;
     }
 }

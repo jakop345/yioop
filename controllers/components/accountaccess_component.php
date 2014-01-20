@@ -533,7 +533,7 @@ class AccountaccessComponent extends Component
                 max(0, $parent->clean($_REQUEST['start_row'],"int")),
                 $num_users);
         }
-        $data['END_ROW'] = $data['START_ROW'] + $users_show;
+        $data['END_ROW'] = min($data['START_ROW'] + $users_show, $num_users);
         if(isset($_REQUEST['start_row'])) {
             $data['END_ROW'] = max($data['START_ROW'],
                     min($parent->clean($_REQUEST['end_row'],"int"),$num_users));
@@ -671,39 +671,47 @@ class AccountaccessComponent extends Component
     function manageRoles()
     {
         $parent = $this->parent;
-        $possible_arguments =
-            array("addrole", "deleterole", "addactivity", "deleteactivity");
-
+        $possible_arguments = array("addactivity", "addrole",
+                "deleteactivity","deleterole", "editrole", "searchroles");
         $data["ELEMENT"] = "managerolesElement";
-        $data['SCRIPT'] =
-            "selectRole = elt('select-role'); selectRole.onchange =".
-            " submitViewRoleActivities;";
+        $data['SCRIPT'] = "";
+        $data['ROLES_SHOW_CHOICES'] = array(
+            10 => 10, 20 => 20, 50 => 50, 100 => 100, 200=> 200
+        );
+        $data['COMPARISON_TYPES'] = array(
+            "=" => tl('accountaccess_component_equal'),
+            "!=" => tl('accountaccess_component_not_equal'),
+            "CONTAINS" => tl('accountaccess_component_contains'),
+            "BEGINS WITH" => tl('accountaccess_component_begins_with'),
+            "ENDS WITH" => tl('accountaccess_component_ends_with'),
+        );
+        $data['SORT_TYPES'] = array(
+            "NONE" => tl('accountaccess_component_no_sort'),
+            "ASC" => tl('accountaccess_component_sort_ascending'),
+            "DESC" => tl('accountaccess_component_sort_descending'),
+        );
+        $data['FORM_TYPE'] = "addrole";
 
-        $roles = $parent->roleModel->getRoleList();
-        $role_ids = array();
-        $base_option = tl('accountaccess_component_select_rolename');
-        $data['ROLE_NAMES'] = array();
-        $data['ROLE_NAMES'][-1] = $base_option;
-        if(isset($_REQUEST['rolename'])) {
-            $rolename = $parent->clean($_REQUEST['rolename'], "string" );
+        $search_array = array();
+        $data['CURRENT_ROLE'] = array("name" => "");
+        $data['PAGING'] = "";
+        if(isset($_REQUEST['arg']) && $_REQUEST['arg'] == 'editrole') {
+            if(isset($_REQUEST['selectactivity']) && 
+                $_REQUEST['selectactivity'] >= 0) {
+                $_REQUEST['arg'] = "addactivity";
+            }
         }
-        foreach($roles as $role) {
-            $data['ROLE_NAMES'][$role['ROLE_ID']]= $role['ROLE_NAME'];
-            $role_ids[] = $role['ROLE_ID'];
-        }
-        $data['SELECT_ROLE'] = -1;
-
-
-        if(isset($_REQUEST['selectrole'])) {
-            $select_role = $parent->clean($_REQUEST['selectrole'], "string" );
+        if(isset($_REQUEST['name'])) {
+            $name = $parent->clean($_REQUEST['name'], "string" );
+             $data['CURRENT_ROLE']['name'] = $name;
         } else {
-            $select_role = "";
+            $name = "";
         }
 
-        if($select_role != "" ) {
-            $data['SELECT_ROLE'] = $select_role;
+        if($name != "" ) {
+            $role_id = $parent->roleModel->getRoleId($name);
             $data['ROLE_ACTIVITIES'] =
-                $parent->roleModel->getRoleActivities($select_role);
+                $parent->roleModel->getRoleActivities($role_id);
             $all_activities = $parent->activityModel->getActivityList();
             $activity_ids = array();
             $activity_names = array();
@@ -747,7 +755,6 @@ class AccountaccessComponent extends Component
             } else {
                 $data['SELECT_ACTIVITY'] = -1;
             }
-
         }
         if(isset($_REQUEST['arg']) &&
             in_array($_REQUEST['arg'], $possible_arguments)) {
@@ -755,95 +762,168 @@ class AccountaccessComponent extends Component
             switch($_REQUEST['arg'])
             {
                 case "addrole":
-                    unset($data['ROLE_ACTIVITIES']);
-                    unset($data['AVAILABLE_ACTIVITIES']);
-                    $data['SELECT_ROLE'] = -1;
-                    if($parent->roleModel->getRoleId($rolename) > 0) {
+                    if($parent->roleModel->getRoleId($name) > 0) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_rolename_exists').
                             "</h1>')";
-                        return $data;
-                    }
-
-                    $parent->roleModel->addRole($rolename);
-                    $roleid = $parent->roleModel->getRoleId($rolename);
-                    $data['ROLE_NAMES'][$roleid] = $rolename;
-
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('accountaccess_component_rolename_added').
-                        "</h1>')";
+                    } else {
+                        $parent->roleModel->addRole($name);
+                        $data['CURRENT_ROLE']['name'] = "";
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('accountaccess_component_rolename_added').
+                            "</h1>')";
+                   }
+                   $data['CURRENT_ROLE']['name'] = "";
                 break;
 
                 case "deleterole":
-                    $data['SELECT_ROLE'] = -1;
-                    unset($data['ROLE_ACTIVITIES']);
-                    unset($data['AVAILABLE_ACTIVITIES']);
-
-                    if(!in_array($select_role, $role_ids)) {
+                    if(($role_id = $parent->roleModel->getRoleId($name)) <= 0) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_rolename_doesnt_exists'
                             ). "</h1>')";
-                        return $data;
+                    } else {
+                        $parent->roleModel->deleteRole($role_id);
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('accountaccess_component_rolename_deleted').
+                            "</h1>')";
                     }
-                    $parent->roleModel->deleteRole($select_role);
-                    unset($data['ROLE_NAMES'][$select_role]);
+                    $data['CURRENT_ROLE']['name'] = "";
+                break;
 
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('accountaccess_component_rolename_deleted').
-                        "</h1>')";
+                case "editrole":
+                    $data['FORM_TYPE'] = "editrole";
+                    $role = $parent->roleModel->getRole($name);
+                    $update = false;
+                    foreach($data['CURRENT_ROLE'] as $field => $value) {
+                        $upper_field = strtoupper($field);
+                        if(isset($_REQUEST[$field]) && $field != 'name') {
+                            $role[$upper_field] = $parent->clean(
+                                $_REQUEST[$field], "string");
+                            $data['CURRENT_ROLE'][$field] = 
+                                $role[$upper_field];
+                            $update = true;
+                        } else if (isset($role[$upper_field])){
+                            $data['CURRENT_ROLE'][$field] =
+                                $role[$upper_field];
+                        }
+                    }
+                    if($update) {
+                        $parent->roleModel->updateRole($role);
+                        $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
+                            tl('accountaccess_component_role_updated').
+                            "</h1>');";
+                    }
+                break;
+                case "searchroles":
+                    $data['FORM_TYPE'] = "searchroles";
+                    $comparison_fields = array('name');
+                    $paging = "";
+                    foreach($comparison_fields as $comparison_start) {
+                        $comparison = $comparison_start."_comparison";
+                        $data[$comparison] = (isset($_REQUEST[$comparison]) &&
+                            isset($data['COMPARISON_TYPES'][
+                            $_REQUEST[$comparison]])) ?$_REQUEST[$comparison] :
+                            "=";
+                        $paging .= "&amp;$comparison=".
+                            urlencode($data[$comparison]);
+                    }
+                    foreach($comparison_fields as $sort_start) {
+                        $sort = $sort_start."_sort";
+                        $data[$sort] = (isset($_REQUEST[$sort]) &&
+                            isset($data['SORT_TYPES'][
+                            $_REQUEST[$sort]])) ?$_REQUEST[$sort] :
+                            "NONE";
+                        $paging .= "&amp;$sort=".urlencode($data[$sort]);
+                    }
+                    $search_array = array();
+                    foreach($comparison_fields as $field) {
+                        $field_name = $field;
+                        $field_comparison = $field."_comparison";
+                        $field_sort = $field."_sort";
+                        $data[$field_name] = (isset($_REQUEST[$field_name])) ?
+                            $parent->clean($_REQUEST[$field_name], "string") :
+                            "";
+                        $search_array[] = array($field,
+                            $data[$field_comparison], $data[$field_name],
+                            $data[$field_sort]);
+                        $paging .= "&amp;$field_name=".
+                            urlencode($data[$field_name]);
+                    }
+                    $data['PAGING'] = $paging;
                 break;
 
                 case "addactivity":
-                    if(!in_array($select_role, $role_ids)) {
+                    $data['FORM_TYPE'] = "editrole";
+                    if(($role_id = $parent->roleModel->getRoleId($name)) <= 0) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_rolename_doesnt_exists'
-                                ). "</h1>')";
-                        return $data;
-                    }
-                    if(!in_array($select_activity, $activity_ids)) {
+                            ). "</h1>')";
+                    } else if(!in_array($select_activity, $activity_ids)) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl(
                             'accountaccess_component_activityname_doesnt_exists'
                             ). "</h1>')";
-                        return $data;
+                    } else {
+                        $parent->roleModel->addActivityRole(
+                            $role_id, $select_activity);
+                        unset($data['AVAILABLE_ACTIVITIES'][$select_activity]);
+                        $data['ROLE_ACTIVITIES'] =
+                            $parent->roleModel->getRoleActivities($role_id);
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('accountaccess_component_activity_added').
+                            "</h1>')";
                     }
-                    $parent->roleModel->addActivityRole(
-                        $select_role, $select_activity);
-                    unset($data['AVAILABLE_ACTIVITIES'][$select_activity]);
-                    $data['ROLE_ACTIVITIES'] =
-                        $parent->roleModel->getRoleActivities($select_role);
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('accountaccess_component_activity_added')."</h1>')";
                 break;
 
                 case "deleteactivity":
-                    if(!in_array($select_role, $role_ids)) {
+                   $data['FORM_TYPE'] = "editrole";
+                   if(($role_id = $parent->roleModel->getRoleId($name)) <= 0) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_rolename_doesnt_exists'
-                                ). "</h1>')";
-                        return $data;
-                    }
-
-                    if(!in_array($select_activity, $activity_ids)) {
+                            ). "</h1>')";
+                    } else if(!in_array($select_activity, $activity_ids)) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl(
                             'accountaccess_component_activityname_doesnt_exists'
                             ). "</h1>')";
-                        return $data;
+                    } else {
+                        $parent->roleModel->deleteActivityRole(
+                            $role_id, $select_activity);
+                        $data['ROLE_ACTIVITIES'] =
+                            $parent->roleModel->getRoleActivities($role_id);
+                        $data['AVAILABLE_ACTIVITIES'][$select_activity] =
+                            $activity_names[$select_activity];
+                        $data['SELECT_ACTIVITY'] = -1;
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('accountaccess_component_activity_deleted').
+                            "</h1>')";
                     }
-                    $parent->roleModel->deleteActivityRole(
-                        $select_role, $select_activity);
-                    $data['ROLE_ACTIVITIES'] =
-                        $parent->roleModel->getRoleActivities($select_role);
-                    $data['AVAILABLE_ACTIVITIES'][$select_activity] =
-                        $activity_names[$select_activity];
-                    $data['SELECT_ACTIVITY'] = -1;
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('accountaccess_component_activity_deleted').
-                        "</h1>')";
                 break;
             }
         }
+        $num_roles = $parent->roleModel->getRoleCount($search_array);
+        $data['NUM_ROLES'] = $num_roles;
+        $roles_show = (isset($_REQUEST['roles_show']) && 
+            isset($data['ROLES_SHOW_CHOICES'][$_REQUEST['roles_show']])) ?
+            $parent->clean($_REQUEST['roles_show'], 'int') : 50;
+        $data['roles_show'] = $roles_show;
+        $data['START_ROW'] = 0;
+        if(isset($_REQUEST['start_row'])) {
+            $data['START_ROW'] = min(
+                max(0, $parent->clean($_REQUEST['start_row'],"int")),
+                $num_roles);
+        }
+        $data['END_ROW'] = min($data['START_ROW'] + $roles_show, $num_roles);
+        if(isset($_REQUEST['start_row'])) {
+            $data['END_ROW'] = max($data['START_ROW'],
+                    min($parent->clean($_REQUEST['end_row'],"int"),$num_roles));
+        }
+        $data["ROLES"] = $parent->roleModel->getRoles($data['START_ROW'],
+            $roles_show, $search_array);
+        $data['NEXT_START'] = $data['END_ROW'];
+        $data['NEXT_END'] = min($data['NEXT_START'] + $roles_show, $num_roles);
+        $data['PREV_START'] = max(0, $data['START_ROW'] - $roles_show);
+        $data['PREV_END'] = $data['START_ROW'];
         return $data;
     }
 

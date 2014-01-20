@@ -48,7 +48,10 @@ require_once BASE_DIR."/lib/utility.php";
  */
 class RoleModel extends Model
 {
-
+    /**
+     *
+     */
+    var $search_table_column_map = array("name"=>"NAME");
 
     /**
      *  {@inheritdoc}
@@ -166,6 +169,58 @@ class RoleModel extends Model
         return $row['ROLE_ID'];
     }
 
+    /**
+     *
+     */
+    function getRoles($limit=0, $num=100, $search_array = array())
+    {
+        $limit = "LIMIT $limit, $num";
+        list($where, $order_by) = 
+            $this->searchArrayToWhereOrderClauses($search_array);
+        $sql = "SELECT NAME FROM ROLE $where $order_by $limit";
+        $result = $this->db->execute($sql);
+        $i = 0;
+        while($roles[$i] = $this->db->fetchArray($result)) {
+            $i++;
+        }
+        unset($roles[$i]); //last one will be null
+        return $roles;
+    }
+
+
+    /**
+     * Returns the number of users in the user table
+     *
+     * @return int number of users
+     */
+    function getRoleCount($search_array = array())
+    {
+        $this->db->selectDB(DB_NAME);
+        list($where, $order_by) = 
+            $this->searchArrayToWhereOrderClauses($search_array);
+        $sql = "SELECT COUNT(*) AS NUM FROM ROLE $where";
+        $result = $this->db->execute($sql);
+        $row = $this->db->fetchArray($result);
+        return $row['NUM'];
+    }
+
+    /**
+     *
+     * @param string $rolename
+     */
+    function getRole($rolename)
+    {
+        $this->db->selectDB(DB_NAME);
+        $sql = "SELECT * FROM ROLE WHERE 
+         UPPER(NAME) = UPPER('$rolename') LIMIT 1";
+        $result = $this->db->execute($sql);
+        if(!$result) {
+            return false;
+        }
+        $row = $this->db->fetchArray($result);
+        return $row;
+    }
+    
 
     /**
      *  Add a rolename to the database using provided string

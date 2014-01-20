@@ -110,6 +110,9 @@ class StaticController extends Controller
         if(isset($_REQUEST['p'])) {
             $page = $this->clean($_REQUEST['p'], "string");
             $page = preg_replace("@(\.\.|\/)@", "", $page);
+            if(!$this->blogpageModel->isPageAccessible($user, $page)) {
+                $page = "404";
+            }
         } else {
             $page = "404";
         }

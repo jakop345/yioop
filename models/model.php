@@ -91,7 +91,7 @@ class Model implements CrawlConstants
      */
     var $edited_page_summaries = NULL;
 
-
+    var $search_table_column_map = array();
     /**
      * Sets up the database manager that will be used and name of the search
      * engine database
@@ -440,6 +440,61 @@ EOD;
         $row = $this->db->fetchArray($result);
         $user_id = $row['USER_ID'];
         return $user_id;
+    }
+
+    /**
+     *
+     */
+    function searchArrayToWhereOrderClauses($search_array)
+    {
+        $where = "";
+        $order_by = "";
+        $order_by_comma = "";
+        $where_and = "";
+        $sort_types = array("ASC", "DESC");
+        foreach($search_array as $row) {
+            $field_name = $this->search_table_column_map[$row[0]];
+            $comparison = $row[1];
+            $value = $row[2];
+            $sort_dir = $row[3];
+            if($value != "" && ($field_name != 'STATUS' || $value != "0")) {
+                if($where == "") {
+                    $where = " WHERE ";
+                }
+                $where .= $where_and;
+                switch($comparison) {
+                    case "=":
+                         $where .= "UPPER($field_name)=UPPER('".
+                            $this->db->escapeString($value)."')";
+                    break;
+                    case "!=":
+                         $where .= "UPPER($field_name)!=UPPER('".
+                            $this->db->escapeString($value)."')";
+                    break;
+                    case "CONTAINS":
+                         $where .= "UPPER($field_name) LIKE UPPER('%".
+                            $this->db->escapeString( $value)."%')";
+                    break;
+                    case "BEGINS WITH":
+                         $where .= "UPPER($field_name) LIKE UPPER('".
+                            $this->db->escapeString( $value)."%')";
+                    break;
+                    case "ENDS WITH":
+                         $where .= "UPPER($field_name) LIKE UPPER('%".
+                            $this->db->escapeString( $value)."')";
+                    break;
+                }
+                $where_and = " AND ";
+            }
+            if(in_array($sort_dir, $sort_types)) {
+                if($order_by == "") {
+                    $order_by = " ORDER BY ";
+                }
+                $order_by .= $order_by_comma.$field_name." ".$sort_dir;
+                $order_by_comma = ", ";
+            }
+        }
+        return array($where, $order_by);
     }
 }
 ?>
