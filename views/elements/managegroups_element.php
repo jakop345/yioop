@@ -52,30 +52,8 @@ class ManagegroupsElement extends Element
      */
     function render($data)
     {
-        if(isset($data['GROUP_USERS'])) { ?>
-            <div id="transfer">
-            <div class="overlay">
-                <form id ="groupform" method="post" action='#'>
-                    <input type="hidden" name="c" value="admin"/>
-                    <input type="hidden" name="<?php e(CSRF_TOKEN); ?>"
-                        value="<?php e($data[CSRF_TOKEN]); ?>"/>
-                    <input type="hidden" name="arg" value="updategroup" />
-                <?php
-                foreach($data['GROUP_USERS'] as $group_user) { ?>
-                    <input type="radio" name="selectuser" value="<?php
-                        e($group_user['USER_ID']); ?>"><?php
-                        e($group_user['USER_NAME']); ?><br/>
-                <?php
-                }?><hr/>
-             <input type="submit" value="submit" onclick="return confirm('<?php
-                e(tl('managegroups_element_transfer_admin'))?>');"/>
-                <input type="button" value="cancel" onclick="closeOverlay();"/>
-                </form>
-            </div>
-            </div>
-            <?php
-        } ?>
-
+        $this->renderTransferAdmin($data);
+        ?>
         <div class="current-activity" >
             <h2><?php e(tl('managegroups_element_add_group'))?></h2>
             <form id="addGroupForm" method="post" action='#'>
@@ -284,6 +262,36 @@ class ManagegroupsElement extends Element
         </script>
         </div>
         <?php
+    }
+
+    /**
+     *
+     */
+    function renderTransferAdmin($data)
+    {
+        if(isset($data['GROUP_USERS'])) { ?>
+            <div id="transfer">
+            <div class="overlay">
+                <form id ="groupform" method="post" action='#'>
+                    <input type="hidden" name="c" value="admin"/>
+                    <input type="hidden" name="<?php e(CSRF_TOKEN); ?>"
+                        value="<?php e($data[CSRF_TOKEN]); ?>"/>
+                    <input type="hidden" name="arg" value="updategroup" />
+                <?php
+                foreach($data['GROUP_USERS'] as $group_user) { ?>
+                    <input type="radio" name="selectuser" value="<?php
+                        e($group_user['USER_ID']); ?>"><?php
+                        e($group_user['USER_NAME']); ?><br/>
+                <?php
+                }?><hr/>
+             <input type="submit" value="submit" onclick="return confirm('<?php
+                e(tl('managegroups_element_transfer_admin'))?>');"/>
+                <input type="button" value="cancel" onclick="closeOverlay();"/>
+                </form>
+            </div>
+            </div>
+            <?php
+        }
     }
 }
 ?>
