@@ -320,7 +320,7 @@ class CrawlComponent extends Component implements CrawlConstants
             $tmp["ARC_TYPE"] = "MixArchiveBundle";
             $indexes[] = $tmp;
         }
-
+        $add_message = "";
         $indexes_by_crawl_time = array();
         $update_flag = false;
         $data['available_options'] = array(
@@ -379,6 +379,28 @@ class CrawlComponent extends Component implements CrawlConstants
             $data['ts'] = $timestamp;
         } else {
             $seed_info = $parent->crawlModel->getSeedInfo();
+        }
+        if(isset($_REQUEST['suggest']) && $_REQUEST['suggest']=='add') {
+            $suggest_urls = $parent->crawlModel->getSuggestSites();
+            $seed_info['seed_sites']['url'] = 
+            $tmp_urls = array_merge(
+                $seed_info['seed_sites']['url'], $suggest_urls);
+            $urls = array();
+            foreach($tmp_urls as $url) {
+                $trim_url = trim($url);
+                if(strlen($trim_url) > 0) {
+                    $urls[$trim_url] = "";
+                }
+            }
+            $seed_info['seed_sites']['url'] = array_keys($urls);
+            $parent->crawlModel->setSeedInfo($seed_info);
+            $add_message= tl('crawl_component_add_suggest');
+            $update_flag = true;
+        }
+        if(isset($_REQUEST['suggest']) && $_REQUEST['suggest']=='clear') {
+            $parent->crawlModel->clearSuggestSites();
+            $add_message= tl('crawl_component_clear_suggest');
+            $update_flag = true;
         }
         $page_options_properties = array('indexed_file_types',
             'active_classifiers', 'page_rules', 'indexing_plugins');
@@ -481,7 +503,6 @@ class CrawlComponent extends Component implements CrawlConstants
             $data['SCRIPT'] .=
                 "switchTab('archivetab', 'webcrawltab');";
         }
-        $add_message = "";
         if(isset($_REQUEST['ts']) &&
             isset($_REQUEST['inject_sites'])) {
                 $timestamp = $parent->clean($_REQUEST['ts'],
@@ -504,7 +525,7 @@ class CrawlComponent extends Component implements CrawlConstants
             }
             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                 tl('crawl_component_update_seed_info').
-                "$add_message</h1>');";
+                " $add_message</h1>');";
         }
         return $data;
     }

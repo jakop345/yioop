@@ -44,8 +44,11 @@ if(!defined("POST_PROCESSING") && !defined("NO_LOGGING")) {
     define("NO_LOGGING", true);
 }
 /**
- * This is class is used to handle
- * db results for a given phrase search
+ * This is class is used to handle getting/setting crawl parameters, CRUD
+ * operations on current crawls, start, stop, status of crawls,
+ * getting cache files out of crawls, determining
+ * what is the default index to be used, marshalling/unmarshalling crawl mixes,
+ * and handling data from suggest-a-url forms
  *
  * @author Chris Pollett
  *
@@ -54,12 +57,18 @@ if(!defined("POST_PROCESSING") && !defined("NO_LOGGING")) {
  */
 class CrawlModel extends ParallelModel implements CrawlConstants
 {
+    /**
+     * File to be used to store suggest-a-url form data
+     * @var string
+     */
+    var $suggest_url_file;
 
     /**
      *  {@inheritdoc}
      */
     function __construct($db_name = DB_NAME)
     {
+        $this->suggest_url_file = WORK_DIRECTORY."/data/suggest_url.txt";
         parent::__construct($db_name);
     }
 
@@ -396,10 +405,8 @@ class CrawlModel extends ParallelModel implements CrawlConstants
      * WORK_DIRECTORY
      *
      * @param array $info an array containing information about the crawl
-     * such as crawl_order, whether restricted_by_url, seed_sites,
-     * allowed_sites and disallowed_sites
      */
-    function setSeedInfo($info)
+    function setSeedInfo($info, $name="")
     {
         if(!isset($info['general']['crawl_index'])) {
             $info['general']['crawl_index']='12345678';
@@ -417,7 +424,7 @@ class CrawlModel extends ParallelModel implements CrawlConstants
         $n[] = <<<EOT
 ; ***** BEGIN LICENSE BLOCK *****
 ;  SeekQuarry/Yioop Open Source Pure PHP Search Engine, Crawler, and Indexer
-;  Copyright (C) 2009, 2010  Chris Pollett chris@pollett.org
+;  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
 ;
 ;  This program is free software: you can redistribute it and/or modify
 ;  it under the terms of the GNU General Public License as published by
@@ -653,7 +660,58 @@ EOT;
         }
     }
 
+    /**
+     *
+     */
+    function getSuggestSites()
+    {
+        $suggest_file = $this->suggest_url_file;
+        if(file_exists($suggest_file)) {
+            $urls = file($suggest_file);
+        } else {
+            $urls = array();
+        }
+        return $urls;
+    }
 
+    /**
+     *
+     */
+    function appendSuggestSites($url)
+    {
+        $suggest_file = $this->suggest_url_file;
+        $suggest_size = strlen($url);
+        if(file_exists($suggest_file)) {
+            $suggest_size += filesize($suggest_file);
+        } else {
+            $this->clearSuggestSites();
+        }
+        if($suggest_size < MAX_SUGGEST_URL_FILE_SIZE) {
+            $urls = file($suggest_file);
+            $urls[] = $url;
+            $urls = array_unique($urls);
+            $out_string = "";
+            $delim = "";
+            foreach($urls as $url) {
+                $trim_url = trim($url);
+                if(strlen($trim_url) > 0) {
+                    $out_string .= $delim.$trim_url;
+                    $delim = "\n";
+                }
+            }
+            file_put_contents($suggest_file, $out_string, LOCK_EX);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     *
+     */
+    function clearSuggestSites()
+    {
+        file_put_contents($this->suggest_url_file, "", LOCK_EX);
+    }
 
     /**
      * Get a description associated with a Web Crawl or Crawl Mix

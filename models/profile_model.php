@@ -299,7 +299,7 @@ EOT;
                 PUBDATE INT, SOURCE_NAME VARCHAR(16))",
             "CREATE TABLE GROUPS (GROUP_ID INTEGER PRIMARY KEY $auto_increment,
                 GROUP_NAME VARCHAR(128), CREATED_TIME VARCHAR(20),
-                CREATOR_ID INT(11))",
+                OWNER_ID INT(11), VISIBLE BOOLEAN DEFAULT TRUE)",
             /* NOTE: We are not using singular name GROUP for GROUPS as
                is a reserved SQL keyword
              */

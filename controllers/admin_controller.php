@@ -85,7 +85,7 @@ class AdminController extends Controller implements CrawlConstants
     /**
      *  @var array
      */
-    var $components = array("accountaccess", "blogmixes", "crawl", "system");
+    var $components = array("accountaccess", "crawl", "blogmixes", "system");
 
     /**
      * An array of activities which are periodically updated within other

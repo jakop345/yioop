@@ -51,47 +51,27 @@ class SubsearchElement extends Element
     function render($data)
     {
         if(!SUBSEARCH_LINK) { return; }
-        if(!isset($data["SUBSEARCHES"]) || $data["SUBSEARCHES"] == NULL) {
-            $data["SUBSEARCHES"] = array();
-        }
-        array_unshift($data["SUBSEARCHES"], array("FOLDER_NAME" => "",
-            "SUBSEARCH_NAME" => tl('subsearch_element_web')));
         if(!isset($data['SUBSEARCH'])) {
             $data['SUBSEARCH'] = "";
         }
-        $drop_threshold = 3;
+        $drop_threshold = 4;
         if(MOBILE) {
-        $drop_threshold = 0;
-        }
-        if(count($data["SUBSEARCHES"]) > $drop_threshold + 1) {
-            $subdropdown = true;
-        } else {
-            $subdropdown = false;
+            $drop_threshold = 0;
         }
         ?>
-
             <div class="subsearch" >
             <ul class="out-list">
                 <?php
                 $i = 0;
-                $class= "outer";
+                $found = false;
                 foreach($data["SUBSEARCHES"] as $search) {
-                    if ($subdropdown && $i >= $drop_threshold) {
-                        e("<li class='outer'><span id='more-off'><a ".
-                            " href='#' onclick=\"setDisplay('more-menu',".
-                            " true); setDisplay('more-off',".
-                            " false); setDisplay('more-on', 'inline')\" ><b>".
+                    if ($i >= $drop_threshold && ($found || MOBILE)) {
+                        e("<li class='outer'><a ".
+                            " href='?".CSRF_TOKEN.
+                                "=".$data[CSRF_TOKEN]."&amp;a=more' ><b>".
                             tl('subsearch_element_more').
-                            "</b></a></span><span ".
-                            "id='more-on'><a href='?' onclick=\"setDisplay(".
-                            "'more-on', false); setDisplay('more-off',".
-                            " 'inline'); setDisplay('more-menu',".
-                            " false)\" \" ><b >"
-                            .tl('subsearch_element_more')."</b>".
-                            "</a></span><div id='more-menu'>".
-                            "<ul class='in-list'>");
-                        $subdropdown = false;
-                        $class= "inner";
+                            "</b></a>");
+                        break;
                     }
                     $i++;
                     $source = "?s={$search["FOLDER_NAME"]}";
@@ -101,9 +81,10 @@ class SubsearchElement extends Element
                         $delim = "?";
                     }
                     if($search['FOLDER_NAME'] == $data['SUBSEARCH']) {
-                        e("<li class='$class'><b>".
+                        e("<li class='outer'><b>".
                             "{$search['SUBSEARCH_NAME']}</b></li>");
-                    } else {
+                        $found = true;
+                    } else if($i <= $drop_threshold) {
                         $query = "";
                         if(isset($data[CSRF_TOKEN])) {
                             $query .= $delim.CSRF_TOKEN.
@@ -114,7 +95,7 @@ class SubsearchElement extends Element
                                 $query .= "&amp;q={$data['QUERY']}";
                             }
                         }
-                        e("<li class='$class'><a href='$source$query'>".
+                        e("<li class='outer'><a href='$source$query'>".
                             "{$search['SUBSEARCH_NAME']}</a></li>");
                     }
                 }

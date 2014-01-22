@@ -65,7 +65,7 @@ class GroupModel extends Model
         $this->db->selectDB(DB_NAME);
         $group_id = $this->db->escapeString($group_id);
         $users = array();
-        $sql = "SELECT UG.USER_ID, U.USER_NAME, UG.GROUP_ID, G.CREATOR_ID" .
+        $sql = "SELECT UG.USER_ID, U.USER_NAME, UG.GROUP_ID, G.OWNER_ID" .
             " FROM USER_GROUP UG, USER U, GROUPS G".
             " where UG.GROUP_ID = '$group_id' AND UG.USER_ID = U.USER_ID AND" .
             " G.GROUP_ID = UG.GROUP_ID";
@@ -113,14 +113,14 @@ class GroupModel extends Model
      *
      *  @param string $groupname  the groupname to be added
      */
-    function addGroup($groupname, $userid)
+    function addGroup($groupname, $userid, $public=TRUE)
     {
         $this->db->selectDB(DB_NAME);
-        $timestamp = time();
+        $timestamp = microTimestamp();
 
-        $sql = "INSERT INTO GROUPS (GROUP_NAME, CREATOR_ID, CREATED_TIME) ".
+        $sql = "INSERT INTO GROUPS (GROUP_NAME, OWNER_ID, CREATED_TIME) ".
             "VALUES ('".$this->db->escapeString($groupname)."',
-            $userid, $timestamp);";
+            $userid, $timestamp, '$public');";
         $this->db->execute($sql);
 
         $this->db->selectDB(DB_NAME);
@@ -215,7 +215,7 @@ class GroupModel extends Model
     }
 
     /**
-     *  Get a list of all groups which are created by the creator_id. Group
+     *  Get a list of all groups which are created by the owner_id. Group
      *  names are not  localized since these are
      *  created by end user admins of the search engine
      *
@@ -225,9 +225,9 @@ class GroupModel extends Model
     {
         $this->db->selectDB(DB_NAME);
         $groups = array();
-        $sql = "SELECT G.GROUP_ID AS GROUP_ID, G.CREATOR_ID AS USER_ID," .
+        $sql = "SELECT G.GROUP_ID AS GROUP_ID, G.OWNER_ID AS USER_ID," .
             "G.GROUP_NAME AS GROUP_NAME " .
-            " FROM GROUPS G WHERE CREATOR_ID = $userid";
+            " FROM GROUPS G WHERE OWNER_ID = $userid";
         $result = $this->db->execute($sql);
         $i = 0;
         while($groups[$i] = $this->db->fetchArray($result)) {
@@ -238,7 +238,7 @@ class GroupModel extends Model
     }
 
     /**
-     *  To update the CREATOR_ID of a group
+     *  To update the OWNER_ID of a group
      *
      *  @param string $groupid  the group id  to transfer admin privileges
      *  @param string $userid the id of the user who becomes the admin of group
@@ -246,7 +246,7 @@ class GroupModel extends Model
     function updateUserGroup($userid, $group_id)
     {
         $this->db->selectDB(DB_NAME);
-        $sql = "UPDATE GROUPS SET CREATOR_ID= $userid " .
+        $sql = "UPDATE GROUPS SET OWNER_ID= $userid " .
             " WHERE GROUP_ID= $group_id;";
         $this->db->execute($sql);
     }

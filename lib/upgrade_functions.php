@@ -613,7 +613,7 @@ function upgradeDatabaseVersion19(&$db)
     while($row = $db->fetchArray($result)) {
         $status = ($row['USER_NAME'] == 'root') ? ACTIVE_STATUS : 
             INACTIVE_STATUS;
-        $creation_time = vsprintf('%d.%06d', gettimeofday());
+        $creation_time = microTimestamp();
         $sql = "INSERT INTO USER (USER_ID, USER_NAME, FIRST_NAME, LAST_NAME,
             EMAIL, PASSWORD, STATUS, HASH)
             VALUES ('{$row['USER_ID']}', '{$row['USER_NAME']}', 

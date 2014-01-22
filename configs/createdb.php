@@ -83,7 +83,7 @@ if(!$profile_model->createDatabaseTables($db, $dbinfo)) {
 
 $db->execute("INSERT INTO VERSION VALUES (19)");
 
-$creation_time = vsprintf('%d.%06d', gettimeofday());
+$creation_time = microTimestamp();
 
 //default account is root without a password
 $sql ="INSERT INTO USER VALUES (".ROOT_ID.", 'admin', 'admin','root',
@@ -92,9 +92,9 @@ $sql ="INSERT INTO USER VALUES (".ROOT_ID.", 'admin', 'admin','root',
 $db->execute($sql);
 
 //default public group with group id 1
-$creation_time = vsprintf('%d.%06d', gettimeofday());
+$creation_time = microTimestamp();
 $sql = "INSERT INTO GROUPS VALUES(".PUBLIC_GROUP_ID.",'Public','".
-    $creation_time."','".ROOT_ID."')";
+    $creation_time."','".ROOT_ID."', 'TRUE')";
 $db->execute($sql);
 
 /* we insert 1 by 1 rather than comma separate as sqlite

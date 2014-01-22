@@ -137,7 +137,16 @@ class CrawloptionsElement extends Element
         ?></textarea>
         <?php if(!isset($data['ts'])) { ?>
         <div class="top-margin"><label for="seed-sites"><b><?php
-            e(tl('crawloptions_element_seed_sites'))?></b></label></div>
+            e(tl('crawloptions_element_seed_sites'))?></b></label>
+            [<a href="?c=admin&amp;a=manageCrawls&amp;arg=options<?php
+                e('&amp;'.CSRF_TOKEN.'='.$data[CSRF_TOKEN]);
+                ?>&amp;suggest=add"><?php
+            e(tl('crawloptions_element_add_suggest_urls')); ?></a>]
+            [<a href="?c=admin&amp;a=manageCrawls&amp;arg=options<?php
+                e('&amp;'.CSRF_TOKEN.'='.$data[CSRF_TOKEN]);
+                ?>&amp;suggest=clear"><?php 
+                e(tl('crawloptions_element_clear_suggest_urls'));
+                ?></a>]</div>
         <textarea class="tall-text-area" id="seed-sites"
             name="seed_sites" ><?php e($data['seed_sites']);
         ?></textarea>

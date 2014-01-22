@@ -159,13 +159,13 @@ class ManagegroupsElement extends Element
                 <?php
                 foreach($data['GROUP_USERS'] as $group_user) {
                     if($_SESSION['USER_ID'] != $group_user['USER_ID']
-                        && $_SESSION['USER_ID'] != $group_user['CREATOR_ID']) {
+                        && $_SESSION['USER_ID'] != $group_user['OWNER_ID']) {
                     ?><tr><td><?php e($group_user['USER_NAME']) ?></td></tr>
                     <?php } else {
                         $base_url = "?c=admin&amp;".CSRF_TOKEN."=".
                             $data[CSRF_TOKEN]."&amp;a=manageGroups".
                             "&amp;arg=deleteuser";
-                       if($group_user['USER_ID']!= $group_user['CREATOR_ID']) {
+                       if($group_user['USER_ID']!= $group_user['OWNER_ID']) {
                             ?>
                     <tr><td><?php e($group_user['USER_NAME']); ?>
                             </td><td><a href="<?php

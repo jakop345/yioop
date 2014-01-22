@@ -79,7 +79,7 @@ class SearchController extends Controller implements CrawlConstants
      * controller will respond to
      * @var array
      */
-    var $activities = array("query", "cache", "related", "signout");
+    var $activities = array("query", "more", "cache", "related", "signout");
 
     /**
      * Name of the sub-search currently in use
@@ -263,6 +263,8 @@ class SearchController extends Controller implements CrawlConstants
     function initializeSubsearches()
     {
         $subsearches = $this->sourceModel->getSubsearches();
+        array_unshift($subsearches, array("FOLDER_NAME" => "",
+            "SUBSEARCH_NAME" => tl('search_controller_web')));
         $no_query = false;
         if(isset($_REQUEST["s"])) {
             $search_found = false;
@@ -328,7 +330,7 @@ class SearchController extends Controller implements CrawlConstants
             }
             if(isset($_REQUEST['arg'])) {
                 $arg = $_REQUEST['arg'];
-            } else {
+            } else if($activity != "more"){
                 $activity = "query";
             }
         }
@@ -363,7 +365,11 @@ class SearchController extends Controller implements CrawlConstants
         } else {
             $data['OPEN_IN_TABS'] = false;
         }
-
+        if($activity == "more") {
+            $data['MORE'] = true;
+            $data['NO_QUERY'] = true;
+            $_SESSION['REMOTE_ADDR'] = $_SERVER['REMOTE_ADDR'];
+        }
         return array($query, $activity, $arg);
     }
 

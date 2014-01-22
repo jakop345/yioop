@@ -1446,6 +1446,13 @@ function changeInMicrotime($start, $end = NULL)
         + (substr($end, 0, 9) - substr($start, 0, 9));
 }
 
+/**
+ *
+ */
+function microTimestamp()
+{
+    return vsprintf('%d.%06d', gettimeofday());
+}
 
 /**
  *  Converts a CSS unit string into its equivalent in pixels. This is

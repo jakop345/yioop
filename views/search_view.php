@@ -51,12 +51,12 @@ class SearchView extends View implements CrawlConstants
     /** Names of helper objects that the view uses to help draw itself
      *  @var array
      */
-    var $helpers = array("pagination", "filetype", "displayresults",
-        "videourl", "images", "feeds");
+    var $helpers = array("displayresults", "feeds", "filetype",
+        "images", "pagination", "videourl");
     /** Names of element objects that the view uses to display itself
      *  @var array
      */
-    var $elements = array("signin", "subsearch", "footer");
+    var $elements = array("footer", "moreoptions", "signin", "subsearch");
 
     /** This view is drawn on a web layout
      *  @var string
@@ -81,8 +81,6 @@ class SearchView extends View implements CrawlConstants
     {
         $data['LAND'] = (!isset($data['PAGES'])) ? 'landing-' : '';
         if(SIGNIN_LINK || SUBSEARCH_LINK) {?>
-
-
         <div class="<?php e($data['LAND']);?>top-bar"><?php
             $this->subsearchElement->render($data);
             $this->signinElement->render($data);
@@ -92,9 +90,9 @@ class SearchView extends View implements CrawlConstants
         <?php
         }
         $logo = "resources/yioop.png";
-        if(!isset($data['PAGES'])) {?>
-
-        <div class="landing">
+        $is_landing = (!isset($data['PAGES']) && !isset($data['MORE']));
+        if($is_landing) { ?>
+            <div class="landing">
         <?php
         } else if(MOBILE) {
             $logo = "resources/m-yioop.png";
@@ -108,13 +106,11 @@ class SearchView extends View implements CrawlConstants
             /></a>
         </h1>
         <?php
-        if(isset($data['PAGES'])) {?>
-
-        <div class="serp">
-        <?php
+        if(isset($data['PAGES'])){?>
+            <div class="serp">
+            <?php
         }
         ?>
-
         <div class="search-box">
             <form id="search-form" method="get" action='?'
                 onsubmit="processSubmit()">
@@ -147,10 +143,44 @@ class SearchView extends View implements CrawlConstants
             </ul>
         </div>
         <?php
-        if(isset($data['PAGES'])) {
-            ?>
+        if(isset($data['PAGES']) && !isset($data['MORE'])) {
+            ?></div><?php
+            $this->renderSearchResults($data);
+        } else if(isset($data['MORE'])) {
+            ?></div><div class="medium-top"><?php
+            $this->moreoptionsElement->render($data);
+            ?></div><?php
+        }
+        ?>
+        <div class="landing-footer">
+            <div><b><?php 
+            if(isset($data['INDEX_INFO'])) {
+                e($data['INDEX_INFO']);
+            } else {
+                e(tl('search_view_no_index_set'));
+            } ?></b> <?php
+            if(isset($data["HAS_STATISTICS"]) && $data["HAS_STATISTICS"]) {
+            ?>[<a href="index.php?<?php e(CSRF_TOKEN."=".$data[CSRF_TOKEN]);
+                ?>&amp;c=statistics&amp;its=<?php e($data['its']);?>"><?php
+                e(tl('search_view_more_statistics')); ?></a>]
+            <?php
+            }
+            ?></div><?php  $this->footerElement->render($data);?>
 
         </div>
+        <?php
+        if($is_landing) { ?>
+            </div>
+            <div class='landing-spacer'></div>
+            <?php
+        }
+    }
+
+    /**
+     *
+     */
+    function renderSearchResults($data)
+    { ?>
         <div id="spell-check" class="spell"><span class="hidden"
         >123</span></div>
         <h2 class="serp-stats"><?php
@@ -166,7 +196,6 @@ class SearchView extends View implements CrawlConstants
             }
         ?></h2>
         <div class="serp-results">
-
             <?php
             foreach($data['PAGES'] as $page) {
                 if(isset($page[self::URL])) {
@@ -356,36 +385,8 @@ class SearchView extends View implements CrawlConstants
                     $data[CSRF_TOKEN]."&amp;its=".$data['its'],
                 $data['LIMIT'], $data['RESULTS_PER_PAGE'], $data['TOTAL_ROWS']);
             ?>
-
         </div>
-        <?php
-        }
-        ?>
-
-        <div class="landing-footer">
-            <div><b><?php 
-            if(isset($data['INDEX_INFO'])) {
-                e($data['INDEX_INFO']);
-            } else {
-                e(tl('search_view_no_index_set'));
-            } ?></b> <?php
-            if(isset($data["HAS_STATISTICS"]) && $data["HAS_STATISTICS"]) {
-            ?>[<a href="index.php?<?php e(CSRF_TOKEN."=".$data[CSRF_TOKEN]);
-                ?>&amp;c=statistics&amp;its=<?php e($data['its']);?>"><?php
-                e(tl('search_view_more_statistics')); ?></a>]
-            <?php
-            }
-            ?></div><?php  $this->footerElement->render($data);?>
-
-        </div>
-        <?php
-        if(!isset($data['PAGES'])) { ?>
-            </div>
-
-            <div class='landing-spacer'></div>
-            <?php
-        }
-
+    <?php
     }
 }
 ?>

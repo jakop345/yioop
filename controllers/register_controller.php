@@ -59,7 +59,7 @@ class RegisterController extends Controller
      * on errors the signin page is returned.
      * @var array
      */
-    var $views = array("recover", "register", "signin");
+    var $views = array("recover", "register", "signin", "suggest");
     /**
      * List of models used by this controller
      * User model is used to add/update users; the Visitor model is
@@ -67,16 +67,16 @@ class RegisterController extends Controller
      * attempts
      * @var array
      */
-    var $models = array("user", "visitor");
+    var $models = array("user", "visitor", "crawl");
 
     /**
      * Holds a list of the allowed activities. These encompass various
      * stages of the account creation and account recovery processes
      * @var array
      */
-    var $activities = array("createAccount", "processAccountData",
-        "recoverPassword", "recoverComplete",
-        "processRecoverData", "emailVerification");
+    var $activities = array("createAccount", "emailVerification",
+        "processAccountData", "processRecoverData", "recoverPassword",
+        "recoverComplete", "suggestUrl");
 
     /**
      * Non-recovery question fields needed to register a Yioop account.
@@ -216,8 +216,8 @@ class RegisterController extends Controller
         $token_okay = $this->checkCSRFToken(CSRF_TOKEN, $user);
 
         if(!in_array($activity, $this->activities) || (!$token_okay
-            && !in_array($activity, array("emailVerification",
-            "recoverPassword", "recoverComplete")) )) {
+            && in_array($activity, array("processAccountData",
+            "processRecoverData")) )) {
             $activity = 'createAccount';
         }
         $data["check_user"] = true;
@@ -245,6 +245,7 @@ class RegisterController extends Controller
             $view = "signin";
             $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
                 tl('register_controller_need_cookies')."</h1>');";
+                print_r($_REQUEST);
             $this->visitorModel->updateVisitor(
                 $_SERVER['REMOTE_ADDR'], "register_time_out");
         }
@@ -585,7 +586,88 @@ class RegisterController extends Controller
         return $data;
     }
 
-
+    /**
+     *
+     *  @return array $data
+     */
+    function suggestUrl()
+    {
+        $data["REFRESH"] = "suggest";
+        $num_captchas = self::NUM_CAPTCHA_QUESTIONS;
+        for($i = 0; $i < $num_captchas; $i++) {
+            $data["question_$i"] = "-1";
+        }
+        $data['url'] = "";
+        if(isset($_REQUEST['url'])) {
+            $data['url'] = $this->clean($_REQUEST['url'], "string");
+        }
+        if(!isset($_SESSION['CAPTCHAS'])||!isset($_SESSION['CAPTCHA_ANSWERS'])){
+            list($captchas, $answers) = $this->selectQuestionsAnswers(
+                $this->captchas_qa, $num_captchas, self::NUM_CAPTCHA_CHOICES);
+            $data['CAPTCHAS'] = $captchas;
+            $_SESSION['CAPTCHA_ANSWERS'] = $answers;
+            $_SESSION['CAPTCHAS'] = $data['CAPTCHAS'];
+        } else {
+            $data['CAPTCHAS'] = $_SESSION['CAPTCHAS'];
+        }
+        $missing = array();
+        $save = isset($_REQUEST['arg']) && $_REQUEST['arg'];
+        for($i = 0; $i < $num_captchas; $i++) {
+            $field = "question_$i";
+            $captchas = isset($_SESSION['CAPTCHAS'][$i]) ?
+                $_SESSION['CAPTCHAS'][$i] : array();
+            if($save) {
+                if(!isset($_REQUEST[$field]) || $_REQUEST[$field] == "-1" ||
+                    !in_array($_REQUEST[$field], $captchas)) {
+                    $missing[] = $field;
+                } else {
+                    $data[$field] = $_REQUEST[$field];
+                }
+            }
+        }
+        $data['MISSING'] = $missing;
+        if($save && isset($_REQUEST['url'])) {
+            $url = $this->clean($_REQUEST['url'], "string");
+            $suggest_host = UrlParser::getHost($url);
+            $scheme = UrlParser::getScheme($url);
+            if(!$suggest_host || !in_array($scheme, array("http", "https"))) {
+                $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
+                    tl('register_controller_invalid_url')."</h1>');";
+                return $data;
+            }
+            if($missing != array()) {
+                $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
+                    tl('register_controller_error_fields')."</h1>');";
+                return $data;
+            }
+            if(!$this->checkCaptchaAnswers()) {
+                $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
+                    tl('register_controller_failed_human')."</h1>');";
+                for($i = 0; $i < $num_captchas; $i++) {
+                    $data["question_$i"] = "-1";
+                }
+                unset($_SESSION['CAPTCHAS']);
+                unset($_SESSION['CAPTCHA_ANSWERS']);
+                $this->visitorModel->updateVisitor(
+                    $_SERVER['REMOTE_ADDR'], "register_time_out");
+                return $data;
+            }
+            if(!$this->crawlModel->appendSuggestSites($url)) {
+                $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
+                    tl('register_controller_suggest_full')."</h1>');";
+                return $data;
+            }
+            $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
+                tl('register_controller_url_submitted')."</h1>');";
+            for($i = 0; $i < $num_captchas; $i++) {
+                $data["question_$i"] = "-1";
+            }
+            unset($_SESSION['CAPTCHAS']);
+            unset($_SESSION['CAPTCHA_ANSWERS']);
+            $data['url'] ="";
+        }
+        return $data;
+    }
 
     /**
      *  Sets up the captcha question and or recovery questions in a $data
@@ -757,7 +839,6 @@ class RegisterController extends Controller
             $data['SUCCESS'] = false;
             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
             tl('register_controller_error_fields')."</h1>');";
-            
         } else if(isset($data["check_user"]) && 
             $this->userModel->getUserId($data['USER'])) {
             $data['SUCCESS'] = false;
@@ -838,7 +919,7 @@ class RegisterController extends Controller
             '/^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+'.
             '(\.[a-z0-9-]+)*(\.[a-z]{2,3})$/';
         foreach($fields as $field) {
-            if(empty($_REQUEST[$field]) || !isset($_REQUEST[$field])) {
+            if(!isset($_REQUEST[$field]) || empty($_REQUEST[$field])) {
                 $error = true;
                 $missing[] = $field;
                 $data[strtoupper($field)] = "";
@@ -886,6 +967,8 @@ class RegisterController extends Controller
         }
         $data['MISSING'] = $missing;
     }
+
+
 }
 
 ?>

@@ -34,6 +34,8 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
+ * Element used to draw forms to set up the various external servers
+ * that might be connected with a Yioop installation
  *
  * @author Chris Pollett
  * @package seek_quarry
@@ -43,6 +45,8 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 class ServersettingsElement extends Element
 {
     /**
+     *  Method that draw forms to set up the various external servers
+     * that might be connected with a Yioop installation
      *
      * @param array $data holds data on the profile elements which have been
      *      filled in as well as data about which form fields to display

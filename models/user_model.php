@@ -376,7 +376,7 @@ class UserModel extends Model
         $email='', $status = ACTIVE_STATUS)
     {
         $this->db->selectDB(DB_NAME);
-        $creation_time = vsprintf('%d.%06d', gettimeofday());
+        $creation_time = microTimestamp();
         $sql = "INSERT INTO USER(FIRST_NAME, LAST_NAME, 
             USER_NAME, EMAIL, PASSWORD, STATUS, HASH, CREATION_TIME) VALUES ('".
             $this->db->escapeString($firstname)."', '" .

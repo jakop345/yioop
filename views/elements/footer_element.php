@@ -44,7 +44,6 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 class FooterElement extends Element
 {
-
     /**
      *  Element used to render the login screen for the admin control panel
      *
@@ -58,6 +57,8 @@ class FooterElement extends Element
         } else {
             $path_info = ".";
         }
+        $tools = (isset($data[CSRF_TOKEN])) ? "?a=more&amp;".CSRF_TOKEN.
+            "=".$data[CSRF_TOKEN] : "?a=more";
     ?>
             <div>
             - <a href="<?php e($path_info); ?>/blog.php"><?php
@@ -66,6 +67,8 @@ class FooterElement extends Element
             e(tl('footer_element_privacy')); ?></a> -
             <a href="<?php e($path_info); ?>/terms.php"><?php
             e(tl('footer_element_terms')); ?></a> -
+            <a href="<?php e($path_info); ?>/<?php e($tools); ?>"><?php
+            e(tl('footer_element_tools')); ?></a> -
             <a href="<?php e($path_info); ?>/bot.php"><?php
             e(tl('footer_element_bot')); ?></a> - <?php if(MOBILE) {
                 e('<br /> - ');

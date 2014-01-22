@@ -549,6 +549,12 @@ define ('MAX_QUERY_CACHE_TIME', 2 * 86400); //two days
     invalidated */
 define ('MIN_QUERY_CACHE_TIME', 3600); //one hour
 
+/** Maximum number of bytes that the file that the suggest-a-url form
+ *  send data to can be.
+ */
+define ('MAX_SUGGEST_URL_FILE_SIZE', 100000);
+
+
 /** ID of the root user */
 define('ROOT_ID', 1);
 /** Role of the root user */

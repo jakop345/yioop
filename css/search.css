@@ -272,6 +272,18 @@ p
     top: 10px;
 }
 
+.sides-margin
+{
+    margin-left:0.6in;
+    margin-right:0.6in;
+}
+
+.reduce-top
+{
+    position: relative;
+    top: -.1in;
+}
+
 .top-margin
 {
     margin-top: .2in;
@@ -474,8 +486,9 @@ body.mobile
  */
 .html-ltr .user-nav
 {
-    margin: 0 0.5in 0 0;
-    min-width: 10in;
+    margin: 0 0.55in 0 0;
+    min-width: 9.5in;
+    max-width: 10.5in;
     padding:0;
     text-align: right;
 }
@@ -483,8 +496,9 @@ body.mobile
 .html-rtl .user-nav
 {
 
-    margin:0 0 0 0.5in;
-    min-width: 10in;
+    margin:0 0 0 0.55in;
+    min-width: 9.5in;
+    max-width: 10.5in;
     padding:0;
     text-align: left;
 }
@@ -669,8 +683,7 @@ ul.in-list li
 .html-ltr .landing
 {
     clear: both;
-    left: 15%;
-    min-width: 6in;
+    left: 1in;
     position: absolute;
     top: 1.5in;
 }
@@ -678,9 +691,8 @@ ul.in-list li
 .html-rtl .landing
 {
     clear: both;
-    min-width: 6in;
     position: absolute;
-    right: 15%;
+    right: 1in;
     top: 1.5in;
 
 }
@@ -689,6 +701,17 @@ ul.in-list li
 {
     position: relative;
     top:-.8in;
+}
+
+.medium-top
+{
+    position: relative;
+    top:-.4in;
+}
+
+.square-list
+{
+    list-style-type: square;
 }
 
 .mobile .landing
@@ -749,7 +772,7 @@ ul.in-list li
 
 .landing .logo
 {
-    min-width: 8in;
+    min-width: 6in;
     position: relative;
     text-align: center;
     top: 0;
@@ -840,7 +863,15 @@ ul.in-list li
 {
     clear: both;
     margin-top: 0.25in;
+    min-width:8.5in;
     text-align: center;
+}
+
+.mobile .landing-footer,
+.mobile .setting-footer,
+.mobile .signin-exit
+{
+    min-width:0;
 }
 
 .mobile .landing-footer
@@ -863,6 +894,7 @@ ul.in-list li
     position: relative;
     right: -10px;
     text-align: center;
+    min-width:0;
     top: -20px;
     width: 320px;
 }
@@ -1060,10 +1092,9 @@ ul.in-list li
 {
     color: #666;
     font-size: 14pt;
-    float:right;
-    margin: 0.2in 0 0 0;
+    float:left;
+    margin: 0.2in 0 0 5.5in;
     padding: 0;
-    right: 1.5in;
     position: relative;
     top: -1in;
 }
@@ -1072,9 +1103,8 @@ ul.in-list li
 {
     color: #666;
     font-size: 14pt;
-    float: left;
-    left:1.5in;
-    margin: 0.2in 0 0 0;
+    float: right;
+    margin: 0.2in 5.5in 0 0;
     padding: 0;
     position: relative;
     top: -1in;
@@ -1149,16 +1179,22 @@ ul.in-list li
     border-color: #AAA;
     border-radius: 0.07in;
     border-style: solid;
-    border-width: 0.05in;
-    padding: 0.1in;
+    border-width: 0.02in;
+    padding: 0.07in;
     position: relative;
     top: 14pt;
-    width: 8in;
+    width: 7in;
+}
+
+.html-ltr .search-box
+{
+    padding-left: 0.2in;
 }
 
 .landing .search-box
 {
     position: relative;
+    width: 8in;
     top: 0;
 }
 
@@ -1182,19 +1218,25 @@ ul.in-list li
     font-size: 16pt;
 }
 
+.landing .search-box input
+{
+    width: 6.75in;
+}
+
 .search-box input
 {
     border: 0;
     font-size: 16pt;
     margin: 0;
-    padding: 0;
-    padding-bottom: 0.05in;
-    width: 6.5in;
+    padding: 0.05in;
+    padding-bottom: 0.1in;
+    width: 5.75in;
 }
 
 .mobile .search-box input
 {
     font-size: 12pt;
+    padding-bottom: 4px;
     width: 180px;
 }
 
@@ -1551,6 +1593,7 @@ ul.in-list li
 {
     color: black;
     font-size: 16pt;
+    height:.4in;
     left: -0.05in;
     margin-left: 0;
     position: relative;
@@ -1564,6 +1607,7 @@ ul.in-list li
 {
     color: black;
     font-size: 16pt;
+    height:.4in;
     margin-right: 0;
     position: relative;
     right: -0.05in;
@@ -1575,8 +1619,10 @@ ul.in-list li
 .mobile .button-box
 {
     font-size: 12pt;
+    height:30px;
     margin-left: 0;
     margin-right: 0;
+    margin-bottom: 1px;
 }
 
 .tiny-button-box
