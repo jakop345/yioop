@@ -113,7 +113,9 @@ class MoreoptionsElement extends Element
             ?>
             </ul></td>
             <?php
-            if(!isset($data["ADMIN"]) || !$data["ADMIN"]) {?>
+            if((!isset($data["ADMIN"]) || !$data["ADMIN"]) &&
+                in_array(REGISTRATION_TYPE, array('no_activation',
+                'email_registration', 'admin_activation'))) {?>
                 <td><ul  class='square-list'>
                 <li><a href="./?c=register&amp;a=createAccount&amp;<?php
                         e(CSRF_TOKEN."=".$data[CSRF_TOKEN])?>&amp;"><?php
