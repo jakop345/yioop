@@ -83,10 +83,10 @@ class MoreoptionsElement extends Element
             if($cur_row >= $num_rows) {
                 e("</ul></td>");
                 $cur_row = 0;
-            }
-            if($cur_column >= $num_columns) {
-                e("</tr>");
-                $cur_column = 0;
+                if($cur_column >= $num_columns) {
+                    e("</tr>");
+                    $cur_column = 0;
+                }
             }
         } ?>
         </table>
@@ -98,10 +98,12 @@ class MoreoptionsElement extends Element
                 e(getLocaleTag());
                 e((isset($data['its'])) ? '&amp;its='.$data['its'] : '');
                 ?>"><?php
-            e(tl('signin_element_settings')); ?></a></li>
-            </ul></td>
-            <td><ul  class='square-list'>
+                e(tl('signin_element_settings')); ?></a></li>
+            <?php if(!MOBILE) { ?>
+                </ul></td>
+                <td><ul  class='square-list'>
             <?php
+            }
             if(!isset($data["ADMIN"]) || !$data["ADMIN"]) {
                 ?><li><a href="./?c=admin"><?php
                     e(tl('signin_element_signin')); ?></a></li><?php
@@ -110,13 +112,14 @@ class MoreoptionsElement extends Element
                 e(CSRF_TOKEN."=".$data[CSRF_TOKEN])?>"><?php
                         e(tl('signin_element_admin')); ?></a></li><?php
             }
+            if(!MOBILE) {e('</ul></td>');}
             ?>
-            </ul></td>
+
             <?php
             if((!isset($data["ADMIN"]) || !$data["ADMIN"]) &&
                 in_array(REGISTRATION_TYPE, array('no_activation',
-                'email_registration', 'admin_activation'))) {?>
-                <td><ul  class='square-list'>
+                'email_registration', 'admin_activation'))) {
+                if(!MOBILE){ e("<td><ul  class='square-list'>"); } ?>
                 <li><a href="./?c=register&amp;a=createAccount&amp;<?php
                         e(CSRF_TOKEN."=".$data[CSRF_TOKEN])?>&amp;"><?php
                         e(tl('signin_view_create_account')); ?></a></li>
