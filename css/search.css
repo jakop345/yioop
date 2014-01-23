@@ -1220,7 +1220,7 @@ ul.in-list li
 
 .landing .search-box input
 {
-    width: 6.75in;
+    width: 6.45in;
 }
 
 .search-box input
@@ -1230,7 +1230,7 @@ ul.in-list li
     margin: 0;
     padding: 0.05in;
     padding-bottom: 0.1in;
-    width: 5.75in;
+    width: 5.45in;
 }
 
 .mobile .search-box input
@@ -1256,12 +1256,13 @@ ul.in-list li
     border-left-style: solid;
     border-right-style: solid;
     border-top-style: none;
-    border-width: 0.05in;
+    border-width: 2px;
     border-bottom-right-radius: 0.05in;
     border-bottom-left-radius: 0.05in;
     border-top-left-radius: 0.05in;
     margin: 0;
-    margin-left: 0.023in;
+    margin-left: 0.09in;
+    margin-right: 0.09in;
     overflow-x: hidden;
     overflow-y: auto;
     padding-bottom: 0;
@@ -1289,7 +1290,7 @@ ul.in-list li
     font-size: 16pt;
     margin: 0;
     padding: 0;
-    padding-bottom: 0.05in;
+    padding-bottom: 0.1in;
     visibility: hidden;
     width: 6.30in;
 }
@@ -1305,7 +1306,7 @@ ul.in-list li
     padding-left: 0.1in;
     padding-right: 0.1in;
     padding-top: 0;
-    width: 30.10in;
+    width: 6.30in;
 }
 
 .suggest-list li span
