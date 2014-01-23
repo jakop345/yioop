@@ -661,7 +661,10 @@ EOT;
     }
 
     /**
+     *  Returns an array of urls which were stored via the suggest-a-url
+     *  form in suggest_view.php
      *
+     *  @return array urls that have been suggested
      */
     function getSuggestSites()
     {
@@ -675,7 +678,13 @@ EOT;
     }
 
     /**
+     *  Add new distinct urls to those already saved in the suggest_url_file
+     *  If the supplied url is not new or the file size
+     *  exceeds MAX_SUGGEST_URL_FILE_SIZE then it is not added.
      *
+     *  @param string $url to add
+     *  @return string true if the url was added or already existed
+     *      in the file; false otherwise
      */
     function appendSuggestSites($url)
     {
@@ -706,7 +715,7 @@ EOT;
     }
 
     /**
-     *
+     *  Resets the suggest_url_file to be the empty file
      */
     function clearSuggestSites()
     {

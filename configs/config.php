@@ -553,8 +553,9 @@ define ('MIN_QUERY_CACHE_TIME', 3600); //one hour
  *  send data to can be.
  */
 define ('MAX_SUGGEST_URL_FILE_SIZE', 100000);
-
-
+/** Maximum number of a user can suggest to the suggest-a-url form in one day
+ */
+define ('MAX_SUGGEST_URLS_ONE_DAY', 10);
 /** ID of the root user */
 define('ROOT_ID', 1);
 /** Role of the root user */

@@ -1,0 +1,8 @@
+title=One-day Suggest Url Time Out
+
+END_HEAD_VARS
+<h2>Account Timeout</h2>
+<p>The maximum number of URLs that can be submitted from an
+IP address in one day has been exceeded. Please wait until
+%s to try again.
+</p>

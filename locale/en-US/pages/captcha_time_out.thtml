@@ -2,7 +2,7 @@ title=Captcha/Recover Time Out
 
 END_HEAD_VARS
 <h2>Account Timeout</h2>
-<p>A number of incorrect captcha responses or recover password requests
+<p>A large number of captcha refreshes or recover password requests
 have been made from this IP address. Please wait until
-%s to access this site.
+%s to try again.
 </p>

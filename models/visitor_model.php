@@ -63,19 +63,21 @@ class VisitorModel extends Model
      *      FORGET_AGE, how long without a visit by this ip until the address
      *      should be treated as never seen before.
      */
-    function getVisitor($ip_address)
+    function getVisitor($ip_address, $page_name = 'captcha_time_out')
     {
         $this->db->selectDB(DB_NAME);
         $ip_address = $this->db->escapeString($ip_address);
-        $sql = "SELECT * FROM VISITOR WHERE ADDRESS='$ip_address' LIMIT 1";
+        $sql = "SELECT * FROM VISITOR WHERE ADDRESS='$ip_address'
+        AND PAGE_NAME='$page_name' LIMIT 1";
         $result = $this->db->execute($sql);
         if(!$result || !$row = $this->db->fetchArray($result))
         {
             return false;
         }
         $now = time();
-        if($row['FORGET_AGE']>0 && $row["END_TIME"]-$now >$row['FORGET_AGE']) {
-            $this->removeVisitor($ip_address);
+        if($row['FORGET_AGE'] > 0 &&
+            ($now - $row["END_TIME"]) > $row['FORGET_AGE']){
+            $this->removeVisitor($ip_address, $page_name);
             return false;
         }
         return $row;
@@ -85,11 +87,14 @@ class VisitorModel extends Model
      *  Deletes an ip address from the VISITOR table
      *
      *  @param string $ip_address the ipv4 or ipv6 address as a string
+     *  @param string $page_name
      */
-    function removeVisitor($ip_address)
+    function removeVisitor($ip_address, $page_name = 'captcha_time_out')
     {
-        $ip_address = $this->db->escapeString($ip_address);
-        $sql = "DELETE FROM VISITOR WHERE ADDRESS='$ip_address'";
+        $ip_address = $this->db->escapeString($ip_address, "string");
+        $page_name = $this->db->escapeString($page_name, "string");
+        $sql = "DELETE FROM VISITOR WHERE ADDRESS='$ip_address' AND
+            PAGE_NAME='$page_name'";
         $this->db->execute($sql);
     }
 
@@ -108,27 +113,36 @@ class VisitorModel extends Model
      *      a captcha or receovery info error
      *  @param int $forget_age how long without a visit by this ip until the
      *      address should be treated as never seen before
+     *  @param int string $count_till_double how many accesses before start
+     *      double the delay
      */
     function updateVisitor($ip_address, $page_name, $start_delay = 1,
-        $forget_age = self::ONE_WEEK)
+        $forget_age = self::ONE_WEEK, $count_till_double = 1)
     {
         $ip_address = $this->db->escapeString($ip_address);
         $page_name = $this->db->escapeString($page_name);
         $start_delay = $this->db->escapeString($start_delay);
         $forget_age = $this->db->escapeString($forget_age);
-        $visitor = $this->getVisitor($ip_address);
+        $visitor = $this->getVisitor($ip_address, $page_name);
         if(!$visitor) {
             $end_time = time() + $start_delay;
             $sql = "INSERT INTO VISITOR VALUES ('$ip_address', '$page_name',
-                '$end_time', '$start_delay', '$forget_age')";
+                '$end_time', '$start_delay', '$forget_age', '1')";
             $this->db->execute($sql);
             return;
         }
-        $delay = 2 * $visitor['DELAY'];
-        $end_time = time() + $delay;
-        $sql = "UPDATE VISITOR SET PAGE_NAME='$page_name', DELAY='$delay',
-            END_TIME='$end_time', FORGET_AGE='$forget_age'
-            WHERE ADDRESS='$ip_address'";
+        $access_count = $visitor['ACCESS_COUNT'];
+        if($access_count >= $count_till_double) {
+            $delay = 2 * $visitor['DELAY'];
+            $end_time = time() + $delay;
+        } else {
+            $access_count++;
+            $delay = $visitor['DELAY'];
+            $end_time = time();
+        }
+        $sql = "UPDATE VISITOR SET DELAY='$delay', END_TIME='$end_time',
+            FORGET_AGE='$forget_age', ACCESS_COUNT='$access_count'
+            WHERE ADDRESS='$ip_address' AND PAGE_NAME='$page_name'";
         $this->db->execute($sql);
     }
 }

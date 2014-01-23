@@ -45,7 +45,7 @@ require_once BASE_DIR."/lib/mail_server.php";
 
 /**
  * Controller used to handle account registration and retrieval for
- * the Yioop website
+ * the Yioop website. Also handles data for suggest a url
  *
  * @author Mallika Perepa (Creator), Chris Pollett (extensive rewrite)
  * @package seek_quarry
@@ -202,12 +202,17 @@ class RegisterController extends Controller
         } else {
             $user = $_SERVER['REMOTE_ADDR'];
         }
-        $visitor = $this->visitorModel->getVisitor($_SERVER['REMOTE_ADDR']);
-        if(isset($visitor['END_TIME']) && $visitor['END_TIME'] > time()) {
-            $_SESSION['value'] = date('Y-m-d H:i:s', $visitor['END_TIME']);
-            $url = BASE_URL."?c=static&p=".$visitor['PAGE_NAME'];
-            header("Location:".$url);
-            exit();
+        $visitor_check_names = array('captcha_time_out', 
+            'suggest_day_exceeded');
+        foreach($visitor_check_names as $name) {
+            $visitor = $this->visitorModel->getVisitor($_SERVER['REMOTE_ADDR'],
+                $name);
+            if(isset($visitor['END_TIME']) && $visitor['END_TIME'] > time()) {
+                $_SESSION['value'] = date('Y-m-d H:i:s', $visitor['END_TIME']);
+                $url = BASE_URL."?c=static&p=".$visitor['PAGE_NAME'];
+                header("Location:".$url);
+                exit();
+            }
         }
         $data = array();
         $data['REFRESH'] = "register";
@@ -242,12 +247,14 @@ class RegisterController extends Controller
         $data[CSRF_TOKEN] = $this->generateCSRFToken($user);
         $view = $data['REFRESH'];
         if(!isset($_SESSION['REMOTE_ADDR'])) {
-            $view = "signin";
-            $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
-                tl('register_controller_need_cookies')."</h1>');";
-                print_r($_REQUEST);
+            if($_REQUEST['a'] != 'createAccount' && !(
+                $_REQUEST['a'] == 'suggestUrl' && !isset($_REQUEST['arg']))) {
+                $view = "signin";
+                $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
+                    tl('register_controller_need_cookies')."</h1>');";
+            }
             $this->visitorModel->updateVisitor(
-                $_SERVER['REMOTE_ADDR'], "register_time_out");
+                $_SERVER['REMOTE_ADDR'], "captcha_time_out");
         }
         //used to ensure that we have sessions active
         $_SESSION['REMOTE_ADDR'] = $_SERVER['REMOTE_ADDR'];
@@ -397,7 +404,7 @@ class RegisterController extends Controller
                         tl('register_controller_email_verification_error').
                         "</h1>');";
                     $this->visitorModel->updateVisitor(
-                        $_SERVER['REMOTE_ADDR'], "register_time_out");
+                        $_SERVER['REMOTE_ADDR'], "captcha_time_out");
                 }
             }
         }
@@ -445,7 +452,7 @@ class RegisterController extends Controller
             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                 tl('register_controller_account_recover_fail')."</h1>');";
             $this->visitorModel->updateVisitor(
-                $_SERVER['REMOTE_ADDR'], "register_time_out");
+                $_SERVER['REMOTE_ADDR'], "captcha_time_out");
             return $data;
         }
         $session = $this->userModel->getUserSession($user["USER_ID"]);
@@ -519,7 +526,7 @@ class RegisterController extends Controller
             if($finish_hash != $data['finish_hash'] ||
                 !$this->checkRecoveryQuestions($user)) {
                 $this->visitorModel->updateVisitor(
-                    $_SERVER['REMOTE_ADDR'], "register_time_out");
+                    $_SERVER['REMOTE_ADDR'], "captcha_time_out");
                 $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
                     tl('register_controller_account_recover_fail')."</h1>');";
                 return $data;
@@ -554,7 +561,7 @@ class RegisterController extends Controller
                 $data['hash']);
             if($hash != $data['hash']) {
                 $this->visitorModel->updateVisitor(
-                    $_SERVER['REMOTE_ADDR'], "register_time_out");
+                    $_SERVER['REMOTE_ADDR'], "captcha_time_out");
                 $data['SCRIPT'] = $recover_fail;
                 return $data;
             } else if(isset($user_session['LAST_RECOVERY_TIME']) &&
@@ -587,8 +594,12 @@ class RegisterController extends Controller
     }
 
     /**
+     *  Used to handle data from the suggest-a-url to crawl form
+     *  (suggest_view.php). Basically, it saves any data submitted to
+     *  a file which can then be imported in manageCrawls
      *
-     *  @return array $data
+     *  @return array $data contains fields with the current value for
+     *      the url (if set but not submitted) as well as for a captcha
      */
     function suggestUrl()
     {
@@ -649,7 +660,7 @@ class RegisterController extends Controller
                 unset($_SESSION['CAPTCHAS']);
                 unset($_SESSION['CAPTCHA_ANSWERS']);
                 $this->visitorModel->updateVisitor(
-                    $_SERVER['REMOTE_ADDR'], "register_time_out");
+                    $_SERVER['REMOTE_ADDR'], "captcha_time_out");
                 return $data;
             }
             if(!$this->crawlModel->appendSuggestSites($url)) {
@@ -659,11 +670,19 @@ class RegisterController extends Controller
             }
             $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
                 tl('register_controller_url_submitted')."</h1>');";
+            $this->visitorModel->updateVisitor(
+                $_SERVER['REMOTE_ADDR'], "suggest_day_exceeded", 
+                self::ONE_DAY, self::ONE_DAY, MAX_SUGGEST_URLS_ONE_DAY);
             for($i = 0; $i < $num_captchas; $i++) {
                 $data["question_$i"] = "-1";
             }
             unset($_SESSION['CAPTCHAS']);
             unset($_SESSION['CAPTCHA_ANSWERS']);
+            list($captchas, $answers) = $this->selectQuestionsAnswers(
+                $this->captchas_qa, $num_captchas, self::NUM_CAPTCHA_CHOICES);
+            $data['CAPTCHAS'] = $captchas;
+            $_SESSION['CAPTCHA_ANSWERS'] = $answers;
+            $_SESSION['CAPTCHAS'] = $data['CAPTCHAS'];
             $data['url'] ="";
         }
         return $data;
@@ -802,7 +821,7 @@ class RegisterController extends Controller
                         tl('register_controller_need_cookies')."</h1>');";
                     $activity = 'createAccount';
                     $this->visitorModel->updateVisitor(
-                        $_SERVER['REMOTE_ADDR'], "register_time_out");
+                        $_SERVER['REMOTE_ADDR'], "captcha_time_out");
                 } else if(!$this->checkCaptchaAnswers()) {
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('register_controller_failed_human')."</h1>');";
@@ -812,7 +831,7 @@ class RegisterController extends Controller
                     unset($_SESSION['CAPTCHAS']);
                     unset($_SESSION['CAPTCHA_ANSWERS']);
                     $this->visitorModel->updateVisitor(
-                        $_SERVER['REMOTE_ADDR'], "register_time_out");
+                        $_SERVER['REMOTE_ADDR'], "captcha_time_out");
                     $activity = $activity_fail;
                 }
             }
@@ -885,7 +904,7 @@ class RegisterController extends Controller
             if($_REQUEST[$field] != $user_session['RECOVERY_ANSWERS'][$i]) {
                 $recovery_passed = false;
                 $this->visitorModel->updateVisitor(
-                    $_SERVER['REMOTE_ADDR'], "register_time_out");
+                    $_SERVER['REMOTE_ADDR'], "captcha_time_out");
                 break;
             }
         }

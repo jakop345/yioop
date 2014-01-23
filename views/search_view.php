@@ -147,9 +147,14 @@ class SearchView extends View implements CrawlConstants
             ?></div><?php
             $this->renderSearchResults($data);
         } else if(isset($data['MORE'])) {
-            ?></div><div class="medium-top"><?php
-            $this->moreoptionsElement->render($data);
             ?></div><?php
+            if(isset($data['INDEX_INFO'])) {
+                e("<div class='medium-top'>");
+            }
+            $this->moreoptionsElement->render($data);
+            if(isset($data['INDEX_INFO'])) {
+                e("</div>");
+            }
         }
         ?>
         <div class="landing-footer">
