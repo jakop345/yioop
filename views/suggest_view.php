@@ -79,6 +79,8 @@ class SuggestView extends View
             <input type="hidden" name="c" value="register" />
             <input type="hidden" name="a" value="suggestUrl" />
             <input type="hidden" name="arg" value="save" />
+            <input type="hidden" name="build_time" value="<?php 
+                e($data['build_time']); ?>" />
                 <div class="register">
                     <table>
                         <tr>

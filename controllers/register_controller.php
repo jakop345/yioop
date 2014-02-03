@@ -605,8 +605,22 @@ class RegisterController extends Controller implements CrawlConstants
     {
         $data["REFRESH"] = "suggest";
         $num_captchas = self::NUM_CAPTCHA_QUESTIONS;
+        $clear = false;
+        if(!isset($_SESSION['BUILD_TIME']) || !isset($_REQUEST['build_time']) ||
+            $_SESSION['BUILD_TIME'] != $_REQUEST['build_time']) {
+            $clear = true;
+            if(isset($_REQUEST['url'])) { unset($_REQUEST['url']); }
+            if(isset($_REQUEST['arg'])) {
+                unset($_REQUEST['arg']);
+            }
+            $data['build_time'] = time();
+            $_SESSION['BUILD_TIME'] = $data['build_time'];
+        }
         for($i = 0; $i < $num_captchas; $i++) {
             $data["question_$i"] = "-1";
+            if($clear && isset($_REQUEST["question_$i"])) {
+                unset($_REQUEST["question_$i"]);
+            }
         }
         $data['url'] = "";
         if(isset($_REQUEST['url'])) {
@@ -616,6 +630,8 @@ class RegisterController extends Controller implements CrawlConstants
             list($captchas, $answers) = $this->selectQuestionsAnswers(
                 $this->captchas_qa, $num_captchas, self::NUM_CAPTCHA_CHOICES);
             $data['CAPTCHAS'] = $captchas;
+            $data['build_time'] = time();
+            $_SESSION['BUILD_TIME'] = $data['build_time'];
             $_SESSION['CAPTCHA_ANSWERS'] = $answers;
             $_SESSION['CAPTCHAS'] = $data['CAPTCHAS'];
         } else {
@@ -687,6 +703,8 @@ class RegisterController extends Controller implements CrawlConstants
             $data['CAPTCHAS'] = $captchas;
             $_SESSION['CAPTCHA_ANSWERS'] = $answers;
             $_SESSION['CAPTCHAS'] = $data['CAPTCHAS'];
+            $data['build_time'] = time();
+            $_SESSION['BUILD_TIME'] = $data['build_time'];
             $data['url'] ="";
         }
         return $data;
