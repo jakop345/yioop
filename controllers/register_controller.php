@@ -639,6 +639,10 @@ class RegisterController extends Controller implements CrawlConstants
         $data['MISSING'] = $missing;
         if($save && isset($_REQUEST['url'])) {
             $url = $this->clean($_REQUEST['url'], "string");
+            $url_parts = @parse_url($url);
+            if(!isset($url_parts['scheme'])) {
+                $url = "http://".$url;
+            }
             $suggest_host = UrlParser::getHost($url);
             $scheme = UrlParser::getScheme($url);
             if(!$suggest_host || !in_array($scheme, array("http", "https"))) {
