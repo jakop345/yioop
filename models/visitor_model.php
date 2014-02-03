@@ -125,7 +125,7 @@ class VisitorModel extends Model
         $forget_age = $this->db->escapeString($forget_age);
         $visitor = $this->getVisitor($ip_address, $page_name);
         if(!$visitor) {
-            $end_time = time() + $start_delay;
+            $end_time = time();
             $sql = "INSERT INTO VISITOR VALUES ('$ip_address', '$page_name',
                 '$end_time', '$start_delay', '$forget_age', '1')";
             $this->db->execute($sql);

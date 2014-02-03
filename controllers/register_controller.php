@@ -202,7 +202,7 @@ class RegisterController extends Controller implements CrawlConstants
         } else {
             $user = $_SERVER['REMOTE_ADDR'];
         }
-        $visitor_check_names = array('captcha_time_out', 
+        $visitor_check_names = array('captcha_time_out',
             'suggest_day_exceeded');
         foreach($visitor_check_names as $name) {
             $visitor = $this->visitorModel->getVisitor($_SERVER['REMOTE_ADDR'],
