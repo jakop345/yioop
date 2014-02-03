@@ -1529,7 +1529,9 @@ function deleteFileOrDir($file_or_dir)
  */
 function setWorldPermissions($file)
 {
+    restore_error_handler();
     chmod($file, 0777);
+    set_error_handler("yioop_error_handler");
 }
 
 /**
