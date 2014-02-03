@@ -393,7 +393,9 @@ class CrawlComponent extends Component implements CrawlConstants
                 }
             }
             $seed_info['seed_sites']['url'] = array_keys($urls);
-            $parent->crawlModel->setSeedInfo($seed_info);
+            if(!isset($_REQUEST['ts'])) {
+                $parent->crawlModel->setSeedInfo($seed_info);
+            }
             $add_message= tl('crawl_component_add_suggest');
             $update_flag = true;
         }

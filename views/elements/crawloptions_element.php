@@ -152,7 +152,16 @@ class CrawloptionsElement extends Element
         ?></textarea>
         <?php } else { ?>
         <div class="top-margin"><label for="inject-sites"><b><?php
-            e(tl('crawloptions_element_inject_sites'))?></b></label></div>
+            e(tl('crawloptions_element_inject_sites'))?></b></label>
+            [<a href="?c=admin&amp;a=manageCrawls&amp;arg=options<?php
+                e('&amp;'.CSRF_TOKEN.'='.$data[CSRF_TOKEN].'&amp;ts='.
+                $data['ts']); ?>&amp;suggest=add"><?php
+            e(tl('crawloptions_element_add_suggest_urls')); ?></a>]
+            [<a href="?c=admin&amp;a=manageCrawls&amp;arg=options<?php
+                e('&amp;'.CSRF_TOKEN.'='.$data[CSRF_TOKEN]);
+                ?>&amp;suggest=clear"><?php 
+                e(tl('crawloptions_element_clear_suggest_urls'));
+                ?></a>]</div></div>
         <textarea class="short-text-area" id="inject-sites"
             name="inject_sites" ></textarea>
         <?php } ?>

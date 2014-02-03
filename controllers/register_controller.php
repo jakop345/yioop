@@ -51,7 +51,7 @@ require_once BASE_DIR."/lib/mail_server.php";
  * @package seek_quarry
  * @subpackage controller
  */
-class RegisterController extends Controller
+class RegisterController extends Controller implements CrawlConstants
 {
     /**
      * To create an new account the register view is used, for password

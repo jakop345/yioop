@@ -445,7 +445,8 @@ EOD;
     /**
      *
      */
-    function searchArrayToWhereOrderClauses($search_array)
+    function searchArrayToWhereOrderClauses($search_array,
+        $any_fields=array('status'))
     {
         $where = "";
         $order_by = "";
@@ -457,7 +458,8 @@ EOD;
             $comparison = $row[1];
             $value = $row[2];
             $sort_dir = $row[3];
-            if($value != "" && ($field_name != 'STATUS' || $value != "0")) {
+            if($value != "" && (!in_array($row[0], $any_fields) 
+                || $value != "0")) {
                 if($where == "") {
                     $where = " WHERE ";
                 }

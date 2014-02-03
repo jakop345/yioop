@@ -22,7 +22,7 @@
  *
  *  END LICENSE
  *
- * @author Mallika Perepa
+ * @author Mallika Perepa (Creator), Chris Pollett (rewrote)
  * @package seek_quarry
  * @subpackage element
  * @license http://www.gnu.org/licenses/ GPL3
@@ -34,7 +34,7 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- * Used to draw the admin screen on which admin users can create groups, delete
+ * Used to draw the admin screen on which users can create groups, delete
  * groups and add and delete users and roles to a group
  *
  * @author Mallika Perepa
@@ -52,246 +52,534 @@ class ManagegroupsElement extends Element
      */
     function render($data)
     {
-        $this->renderTransferAdmin($data);
         ?>
         <div class="current-activity" >
-            <h2><?php e(tl('managegroups_element_add_group'))?></h2>
-            <form id="addGroupForm" method="post" action='#'>
-                <input type="hidden" name="c" value="admin" />
-                <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
-                    e($data[CSRF_TOKEN]); ?>" />
-                <input type="hidden" name="a" value="manageGroups" />
-                <input type="hidden" name="arg" value="addgroup" />
-                <table class="name-table">
-                    <tr>
-                        <td><label for="group-name"><?php
-                            e(tl('managegroups_element_groupname'))?></label>
-                        </td>
-                        <td><input type="text" id="group-name" name="groupname"
-                            maxlength="80" class="narrow-field"/>
-                        </td>
-                        <td class="center"><button class="button-box"
-                            type="submit"><?php
-                            e(tl('managegroups_element_submit')); ?></button>
-                        </td>
-                    </tr>
-                </table>
-            </form>
-
-        <h2><?php e(tl('managegroups_element_delete_group'))?></h2>
-            <form id="deleteGroupForm" method="post" action='#'
-                onsubmit="return confirm('<?php
-                    e(tl('managegroups_element_delete_groupname'))?>');">
-                <input type="hidden" name="c" value="admin" />
-                <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
-                    e($data[CSRF_TOKEN]); ?>" />
-                <input type="hidden" name="a" value="manageGroups" />
-                <input type="hidden" name="arg" value="deletegroup" />
-                <table class="name-table">
-                    <tr>
-                        <td><label for="delete-groupname"><?php
-                            e(tl('manageusers_element_delete_groupname'));
-                            ?></label>
-                        </td>
-                        <td><?php $this->view->optionsHelper->render(
-                            "delete-groupname", "selectgroup",
-                            $data['DELETE_GROUP_NAMES'], "-1"); ?>
-                        </td>
-                        <td><button class="button-box" type="submit"><?php
-                            e(tl('managegroups_element_submit')); ?></button>
-                        </td>
-                    </tr>
-                </table>
-            </form>
-        <h2><?php e(tl('managegroups_element_view_groups'))?></h2>
-            <form id="viewGroupForm" method="get" action='#' >
-                <input type="hidden" name="c" value="admin" />
-                <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
-                    e($data[CSRF_TOKEN]); ?>" />
-                <input type="hidden" name="a" value="manageGroups" />
-                <input type="hidden" name="arg" value="viewgroups" />
-                <table class="name-table">
-                    <tr>
-                        <td><label for="select-group"><?php
-                            e(tl('managegroups_element_select_group'))?></label>
-                        </td>
-                        <td><?php $this->view->optionsHelper->render(
-                            "select-group","selectgroup", $data['GROUP_NAMES'],
-                             $data['SELECT_GROUP']); ?>
-                        </td>
-                    </tr>
-                </table>
-            </form>
         <?php
-        if(isset($data['USER_NAMES'])) {
-            if(count($data['USER_NAMES']) > 0) { ?>
-                <form id="adduserForm" method="get" action='#'>
-                    <input type="hidden" name="c" value="admin" />
-                    <input type="hidden" name="<?php e(CSRF_TOKEN); ?>"
-                        value="<?php e($data[CSRF_TOKEN]); ?>" />
-                    <input type="hidden" name="a" value="manageGroups" />
-                    <input type="hidden" name="arg" value="adduser" />
-                    <input type="hidden" name="selectgroup"
-                        value="<?php e($data['SELECT_GROUP']); ?>" />
-                    <table class="name-table">
-                        <tr>
-                            <td><label for="select-user"><?php
-                                e(tl('managegroups_element_add_user'));
-                                ?></label>
-                            </td>
-                            <td><?php
-                                $this->view->optionsHelper->
-                                    render("select-user","selectuser",
-                                    $data['USER_NAMES'],
-                                    $data['SELECT_USER']); ?>
-                            </td>
-                            <td><button class="button-box" type="submit"><?php
-                                e(tl('managegroups_element_submit'));
-                                ?></button></td>
-                        </tr>
-                    </table>
-                </form>
-                <?php
-            } ?>
-            <?php
-            if(isset($data['GROUP_USERS'])) { ?>
-                <table class="role-table">
-                <?php
-                foreach($data['GROUP_USERS'] as $group_user) {
-                    if($_SESSION['USER_ID'] != $group_user['USER_ID']
-                        && $_SESSION['USER_ID'] != $group_user['OWNER_ID']) {
-                    ?><tr><td><?php e($group_user['USER_NAME']) ?></td></tr>
-                    <?php } else {
-                        $base_url = "?c=admin&amp;".CSRF_TOKEN."=".
-                            $data[CSRF_TOKEN]."&amp;a=manageGroups".
-                            "&amp;arg=deleteuser";
-                       if($group_user['USER_ID']!= $group_user['OWNER_ID']) {
-                            ?>
-                    <tr><td><?php e($group_user['USER_NAME']); ?>
-                            </td><td><a href="<?php
-        e($base_url . '&amp;'.'selectgroup='.$group_user['GROUP_ID']. '&amp;'.
-                        'selectuser='.$group_user['USER_ID']); ?>"
-                  onclick="return confirm('<?php
-                                e(tl('managegroups_element_delete_groupuser'))
-                                ?>');" ><?php
-                   e(tl('managegroups_element_delete')) ?></a>
-                            </td></tr><?php
-                        } else { ?>
-                            <tr><td> <?php e($group_user['USER_NAME']); ?></td>
-                                <td><a href='#'
-                                    onclick='return showOverlay();'><?php
-                                    e(tl('managegroups_element_transfer'));
-                                ?></a></td>
-                            </tr><?php
+        switch($data['FORM_TYPE'])
+        {
+            case "changeowner":
+                $this->renderChangeOwnerForm($data);
+            break;
+            case "inviteusers":
+                $this->renderInviteUsersForm($data);
+            break;
+            case "search":
+                $this->renderSearchForm($data);
+            break;
+            default:
+                $this->renderGroupsForm($data);
+        }
+
+        $data['TABLE_TITLE'] = tl('managegroups_element_groups');
+        $data['ACTIVITY'] = 'manageGroups';
+        $data['VIEW'] = $this->view;
+        $data['NO_FLOAT_TABLE'] = true;
+        $this->view->pagingtableHelper->render($data);
+        ?>
+        <table class="role-table table-margin">
+            <tr>
+                <th><?php e(tl('managegroups_element_groupname'));?></th>
+                <th><?php e(tl('managegroups_element_groupowner'));?></th>
+                <th><?php e(tl('managegroups_element_registertype'));?></th>
+                <th><?php e(tl('managegroups_element_memberaccess'));?></th>
+                <th colspan='2'><?php 
+                    e(tl('managegroups_element_actions'));?></th>
+            </tr>
+        <?php
+            $base_url = "?c=admin&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
+                "&amp;a=manageGroups";
+            $is_root = ($_SESSION['USER_ID'] == ROOT_ID);
+            $delete_url = $base_url . "&amp;arg=deletegroup&amp;";
+            $unsubscribe_url = $base_url . "&amp;arg=unsubscribe&amp;";
+            $join_url = $base_url . "&amp;arg=joingroup&amp;";
+            $edit_url = $base_url . "&amp;arg=editgroup&amp;";
+            $transfer_url = $base_url . "&amp;arg=changeowner&amp;";
+            $mobile_columns = array('GROUP_NAME', 'OWNER');
+            $id_columns = array("GROUP_ID", "OWNER_ID");
+            $access_columns = array("MEMBER_ACCESS");
+            $dropdown_columns = array("MEMBER_ACCESS", "REGISTER_TYPE");
+            $choice_arrays = array(
+                "MEMBER_ACCESS" => array("ACCESS_CODES", "memberaccess"),
+                "REGISTER_TYPE" =>  array("REGISTER_CODES", "registertype"),
+            );
+            foreach($data['GROUPS'] as $group) {
+                echo "<tr>";
+                foreach($group as $col_name => $group_column) {
+                    if(in_array($col_name, $id_columns) || (
+                        MOBILE && !in_array($col_name, $mobile_columns))) {
+                        continue;
+                    }
+                    if($col_name == "STATUS") {
+                        $group_column = 
+                            $data['MEMBERSHIP_CODES'][$group[$col_name]];
+                        if($group['STATUS'] == ACTIVE_STATUS) {
+                            continue;
                         }
                     }
-                } ?>
-                </table><?php
-            }
-
-            if(isset($data['GROUP_ROLES'])) {
-                if(count($data['ROLE_NAMES'])>0 && $data['ROLE_NAMES'] != -1){?>
-                    <form id="addGroupRoleForm" method="get" action='#' >
+                    if($col_name == "MEMBER_ACCESS" &&
+                        $group['STATUS'] != ACTIVE_STATUS) {
+                        continue;
+                    }
+                    if(in_array($col_name, $dropdown_columns)) {
+                        ?><td>
+                        <?php
+                        $choice_array = $choice_arrays[$col_name][0];
+                        $arg_name = $choice_arrays[$col_name][1];
+                        
+                        if($group['GROUP_ID'] == PUBLIC_GROUP_ID ||
+                            $group["OWNER_ID"] != $_SESSION['USER_ID']) {
+                            e("<span class='gray'>".
+                                $data[$choice_array][$group[$col_name]].
+                                "</span>");
+                        } else {
+                        ?>
+                        <form  method="get" action='#' >
                         <input type="hidden" name="c" value="admin" />
-                        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>"
-                        value="<?php e($data[CSRF_TOKEN]); ?>" />
+                        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" 
+                            value="<?php e($data[CSRF_TOKEN]); ?>" />
                         <input type="hidden" name="a" value="manageGroups" />
-                        <input type="hidden" name="arg" value="addrole" />
-                        <input type="hidden" name="selectgroup"
-                        value="<?php e($data['SELECT_GROUP']);?>" />
-                        <table class="name-table">
-                            <tr>
-                                <td><label for="add-role"><?php
-                                e(tl('managegroups_element_add_group_role'));
-                                ?></label></td>
-                                <td><?php
-                                    $this->view->optionsHelper->
-                                        render("add-role",
-                                    "selectrole", $data['ROLE_NAMES'],
-                                    $data['SELECT_ROLE']); ?>
-                                </td>
-                                <td><button class="button-box" type="submit">
-                                    <?php e(tl('managegroups_element_submit'));
-                                    ?></button>
-                                </td></tr>
-                        </table>
-                    </form>
-                    <?php
-                }
-
-                if(isset($data['GROUP_ROLES'])) {
-                    if(count($data['GROUP_ROLES']) > 0 &&
-                        $data['GROUP_ROLES'] != -1) { ?>
-                        <table class="role-table"><?php
-                            $base_url = "?c=admin&amp;a=manageGroups&amp;arg=".
-                                "deleterole&amp;".CSRF_TOKEN."=".
-                                $data[CSRF_TOKEN];
-                            foreach($data['GROUP_ROLES'] as $group_role) { ?>
-                                <tr><td><?php e($group_role['ROLE_NAME']);
-                                    ?></td>
-                                    <td><a href="<?php e($base_url.
-                                        '&amp;selectgroup='.
-                                        $group_role['GROUP_ID'] . '&amp;' .
-                                        'selectrole='.$group_role['ROLE_ID']);
-                                        ?>" ><?php
-                                        e(tl('managegroups_element_delete'));
-                                        ?></a>
-                                </td></tr>
-                             <?php
-                             } ?>
-                         </table><?php
+                        <input type="hidden" name="arg" value="<?php 
+                            e($arg_name); ?>" />
+                        <input type="hidden" name="group_id" value="<?php
+                            e($group['GROUP_ID']); ?>" />
+                        <?php
+                        $this->view->optionsHelper->render(
+                            "update-$arg_name-{$group['GROUP_ID']}",
+                            $arg_name, $data[$choice_array],
+                            $group[$col_name], true);
+                        ?>
+                        </form>
+                        <?php
+                        }
+                        ?>
+                        </td>
+                        <?php
+                    } else if($col_name == 'OWNER' && ($is_root ||
+                        $group["OWNER_ID"] == $_SESSION['USER_ID'])) {
+                        if($group['GROUP_ID'] == PUBLIC_GROUP_ID) {
+                            e("<td><b>$group_column</b></td>");
+                        } else {
+                            e("<td><b><a href='".$transfer_url."group_id=".
+                                $group['GROUP_ID']."'>$group_column".
+                                "</a></b></td>");
+                        }
+                    } else {
+                        e("<td>$group_column</td>");
                     }
                 }
+                ?>
+                <td><?php
+                    if($group['OWNER_ID']!=$_SESSION['USER_ID']||
+                        $group['GROUP_NAME'] == 'Public') {
+                        if($group['STATUS'] == INVITED_STATUS) {
+                            ?><a href="<?php e($join_url . 'group_id='.
+                                $group['GROUP_ID'].'&amp;user_id=' .
+                                $_SESSION['USER_ID']); ?>"><?php 
+                                e(tl('managegroups_element_join'));
+                            ?></a><?php
+                        } else {
+                            e('<span class="gray">'.
+                                tl('managegroups_element_edit').'</span>');
+                        }
+                    } else {
+                        ?><a href="<?php e($edit_url . 'group_id='.
+                            $group['GROUP_ID']); ?>"><?php
+                            e(tl('managegroups_element_edit'));
+                    }?></a></td>
+                <td><?php
+                    if($group['GROUP_NAME'] == 'Public') {
+                        e('<span class="gray">'.
+                            tl('managegroups_element_delete').'</span>');
+                    } else if($_SESSION['USER_ID']!=$group['OWNER_ID']) {?>
+                        <a href="<?php e($unsubscribe_url . 'group_id='.
+                            $group['GROUP_ID'].'&amp;user_id=' .
+                            $_SESSION['USER_ID']); ?>"><?php 
+                            if($group['STATUS'] == INVITED_STATUS) {
+                                e(tl('managegroups_element_decline'));
+                            } else {
+                                e(tl('managegroups_element_unsubscribe'));
+                            }
+                        ?></a></td><?php
+                    }  else {?>
+                        <a href="<?php e($delete_url . 'group_id='.
+                        $group['GROUP_ID']); ?>"><?php 
+                        e(tl('managegroups_element_delete'));
+                    }?></a></td>
+                </tr>
+            <?php
             }
+        ?>
+        </table>
+
+        </div>
+        <?php
+    }
+
+
+    /**
+     *  Draws the add groups and edit groups forms
+     *
+     *  @param array $data consists of values of groups fields set
+     *      so far as well as values of the drops downs on the form
+     */
+    function renderGroupsForm($data)
+    {
+        $base_url = "?c=admin&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
+            "&amp;a=manageGroups";
+        $editgroup = ($data['FORM_TYPE'] == "editgroup") ? true: false;
+        $creategroup = ($data['FORM_TYPE'] == "creategroup") ? true: false;
+        if($editgroup) {
+            e("<div class='float-opposite'><a href='$base_url'>".
+                tl('managegroups_element_addgroup_form')."</a></div>");
+            e("<h2>".tl('managegroups_element_group_info'). "</h2>");
+        } else if($creategroup) {
+            e("<h2>".tl('managegroups_element_create_group'). "</h2>");
+        } else {
+            e("<h2>".tl('managegroups_element_add_group'). "</h2>");
+        }
+
+        ?>
+        <form id="addGroupForm" method="post" action='./'>
+        <input type="hidden" name="c" value="admin" />
+        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
+            e($data[CSRF_TOKEN]); ?>" />
+        <input type="hidden" name="a" value="manageGroups" />
+        <input type="hidden" name="arg" value="<?php
+            e($data['FORM_TYPE']);?>" />
+        <input type="hidden" name="group_id" value="<?php
+            e($data['CURRENT_GROUP']['id']); ?>" />
+        <table class="name-table">
+        <tr><th class="table-label"><label for="group-name"><?php
+            e(tl('managegroups_element_groupname'))?></label>:</th>
+            <td><input type="text" id="group-name"
+                name="name"  maxlength="80"
+                value="<?php e($data['CURRENT_GROUP']['name']); ?>"
+                class="narrow-field" <?php
+                if($editgroup) {
+                    e(' disabled="disabled" ');
+                }
+                ?> /></td></tr>
+        <?php if($creategroup || $editgroup) { ?>
+            <tr><th class="table-label"><label for="register-type"><?php
+                e(tl('managegroups_element_register'))?></label>:</th>
+                <td><?php 
+                    $this->view->optionsHelper->render(
+                        "register-type", "register", $data["REGISTER_CODES"], 
+                         $data['CURRENT_GROUP']['register']);
+                    ?></td></tr>
+            <tr><th class="table-label"><label for="member-access"><?php
+                e(tl('managegroups_element_memberaccess'))?></label>:</th>
+                <td><?php 
+                    $this->view->optionsHelper->render(
+                        "member-access", "member_access", $data["ACCESS_CODES"],
+                        $data['CURRENT_GROUP']['member_access']);
+                    ?></td></tr>
+        <?php
+        }
+        if($editgroup) {
+        ?>
+            <tr><th class="table-label" style="vertical-align:top"><?php
+                    e(tl('managegroups_element_group_users')); ?>:</th>
+                <td><div class='light-gray-box'><table><?php
+                foreach($data['GROUP_USERS'] as $user_array) {
+                    $action_url = $base_url."&amp;user_id=" .
+                        $user_array['USER_ID'] . "&amp;group_id=".
+                        $data['CURRENT_GROUP']['id'];
+                    e("<tr><td><b>".
+                        $user_array['USER_NAME'].
+                        "</b></td>");
+                    if($data['CURRENT_GROUP']['owner'] ==
+                        $user_array['USER_NAME']) {
+                        e("<td>".
+                            $data['MEMBERSHIP_CODES'][$user_array['STATUS']] .
+                            "</td>");
+                        e("<td></td><td><span class='gray'>".
+                            tl('managegroups_element_delete')."</span></td>");
+                    } else {
+                        e("<td>".$data['MEMBERSHIP_CODES'][
+                            $user_array['STATUS']]);
+                        e("</td>");
+                        switch($user_array['STATUS'])
+                        {
+                            case INACTIVE_STATUS:
+                                e("<td><a href='$action_url".
+                                    "&amp;arg=activateuser'>".
+                                    tl('managegroups_element_activate').
+                                    '</a></td>');
+                            break;
+                            case ACTIVE_STATUS:
+                                e("<td><a href='$action_url".
+                                    "&amp;arg=banuser'>".
+                                    tl('managegroups_element_ban').
+                                    '</a></td>');
+                            break;
+                            case BANNED_STATUS:
+                                e("<td><a href='$action_url".
+                                    "&amp;arg=reinstateuser'>".
+                                    tl('managegroups_element_unban')
+                                    .'</a></td>');
+                            break;
+                            default:
+                            e("<td></td>");
+                            break;
+                        }
+
+                        e("<td><a href='$action_url&amp;arg=deleteuser'>".
+                            tl('managegroups_element_delete')."</a></td>");
+                    }
+                    e("</tr>");
+                }
+                ?>
+                </table>
+                <div class='center'>
+                [<?php
+                e("<a href='$action_url&amp;arg=inviteusers'>".
+                    tl('managegroups_element_invite')."</a>");
+                ?>]
+                </div>
+                </div>
+                </td></tr>
+        <?php
         }
         ?>
-
-        <script type="text/javascript">
-        function submitViewGroups()
-        {
-            elt('viewGroupForm').submit();
-        }
-        function showOverlay()
-        {
-            elt('transfer').style.visibility = "visible";
-        }
-        function closeOverlay()
-        {
-            elt('transfer').style.visibility = "hidden";
-        }
-        </script>
-        </div>
+        <tr><td></td><td class="center"><button class="button-box"
+            type="submit"><?php e(tl('managegroups_element_save'));
+            ?></button></td>
+        </tr>
+        </table>
+        </form>
         <?php
     }
 
     /**
      *
      */
-    function renderTransferAdmin($data)
+    function renderInviteUsersForm($data)
     {
-        if(isset($data['GROUP_USERS'])) { ?>
-            <div id="transfer">
-            <div class="overlay">
-                <form id ="groupform" method="post" action='#'>
-                    <input type="hidden" name="c" value="admin"/>
-                    <input type="hidden" name="<?php e(CSRF_TOKEN); ?>"
-                        value="<?php e($data[CSRF_TOKEN]); ?>"/>
-                    <input type="hidden" name="arg" value="updategroup" />
-                <?php
-                foreach($data['GROUP_USERS'] as $group_user) { ?>
-                    <input type="radio" name="selectuser" value="<?php
-                        e($group_user['USER_ID']); ?>"><?php
-                        e($group_user['USER_NAME']); ?><br/>
-                <?php
-                }?><hr/>
-             <input type="submit" value="submit" onclick="return confirm('<?php
-                e(tl('managegroups_element_transfer_admin'))?>');"/>
-                <input type="button" value="cancel" onclick="closeOverlay();"/>
-                </form>
-            </div>
-            </div>
+        $base_url = "?c=admin&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
+            "&amp;a=manageGroups&amp;arg=editgroup&amp;group_id=".
+            $data['CURRENT_GROUP']['id'];
+        ?>
+        <div class='float-opposite'><a href='<?php e($base_url); ?>'><?php
+            e(tl('managegroups_element_group_info')); ?></a></div>
+        <h2><?php e(tl('managegroups_element_invite_users_group')); ?></h2>
+        <form id="addGroupForm" method="post" action='./'>
+        <input type="hidden" name="c" value="admin" />
+        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
+            e($data[CSRF_TOKEN]); ?>" />
+        <input type="hidden" name="a" value="manageGroups" />
+        <input type="hidden" name="arg" value="<?php
+            e($data['FORM_TYPE']);?>" />
+        <input type="hidden" name="group_id" value="<?php
+            e($data['CURRENT_GROUP']['id']); ?>" />
+        <div>
+        <b><label for="group-name"><?php
+            e(tl('managegroups_element_groupname'))?></label>:</b>
+            <input type="text" id="group-name"
+                name="name"  maxlength="80"
+                value="<?php e($data['CURRENT_GROUP']['name']); ?>"
+                class="narrow-field" disabled="disabled" />
+        </div>
+        <div>
+        <b><label for="users-names"><?php
+            e(tl('managegroups_element_usernames')); ?></label></b>
+        </div>
+        <div class="center">
+        <textarea class="short-text-area" id='users-names'
+            name='users_names'></textarea>
+        <button class="button-box"
+            type="submit"><?php e(tl('managegroups_element_invite'));
+            ?></button>
+        </form>
+        </div>
+        <?php
+    }
+
+
+    /**
+     *
+     */
+    function renderChangeOwnerForm($data)
+    {
+        $base_url = "?c=admin&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
+            "&amp;a=manageGroups";
+        ?>
+        <div class='float-opposite'><a href='<?php e($base_url); ?>'><?php
+            e(tl('managegroups_element_addgroup_form')); ?></a></div>
+        <h2><?php e(tl('managegroups_element_transfer_group_owner')); ?></h2>
+        <form id="addGroupForm" method="post" action='./'>
+        <input type="hidden" name="c" value="admin" />
+        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
+            e($data[CSRF_TOKEN]); ?>" />
+        <input type="hidden" name="a" value="manageGroups" />
+        <input type="hidden" name="arg" value="<?php
+            e($data['FORM_TYPE']);?>" />
+        <input type="hidden" name="group_id" value="<?php
+            e($data['CURRENT_GROUP']['id']); ?>" />
+        <table class="name-table">
+        <tr>
+            <th class="table-label"><label for="group-name"><?php
+                e(tl('managegroups_element_groupname'))?></label>:</th>
+            <td><input type="text" id="group-name"
+                name="name"  maxlength="80"
+                value="<?php e($data['CURRENT_GROUP']['name']); ?>"
+                class="narrow-field" disabled="disabled" /></td>
+        </tr>
+        <tr>
+            <th class="table-label"><label for="new-owner"><?php
+                e(tl('managegroups_element_new_group_owner')); ?></label>:</th>
+            <td><input type="text"  id='new-owner'
+                name='new_owner' maxlength="80" class="narrow-field" /></td>
+        </tr>
+        <tr>
+            <th>&nbsp;</th><td>&nbsp;<button class="button-box"
+                type="submit"><?php e(tl('managegroups_element_change_owner'));
+                ?></button></td>
+        </tr>
+        </table>
+        </form>
+        <?php
+    }
+
+    /**
+     *  Draws the search for roles forms
+     *
+     *  @param array $data consists of values of role fields set
+     *      so far as well as values of the drops downs on the form
+     */
+    function renderSearchForm($data)
+    {
+        $base_url = "?c=admin&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
+            "&amp;a=manageGroups";
+        e("<div class='float-opposite'><a href='$base_url'>".
+            tl('managegroups_element_addgroup_form')."</a></div>");
+        e("<h2>".tl('managegroups_element_search_group'). "</h2>");
+        $item_sep = (MOBILE) ? "<br />" : "</td><td>";
+        ?>
+        <form id="searchForm" method="post" action='./' autocomplete="off">
+        <input type="hidden" name="c" value="admin" />
+        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
+            e($data[CSRF_TOKEN]); ?>" />
+        <input type="hidden" name="a" value="manageGroups" />
+        <input type="hidden" name="arg" value="search" />
+        <table class="name-table">
+        <tr><td class="table-label"><label for="group-name"><?php
+            e(tl('managegroups_element_groupname'))?>:</label>
             <?php
-        }
+                e($item_sep);
+                $this->view->optionsHelper->render(
+                    "name-comparison", "name_comparison", 
+                    $data['COMPARISON_TYPES'],
+                    $data['name_comparison']);
+                e($item_sep);
+            ?><input type="text" id="group-name"
+                name="name"  maxlength="80"
+                value="<?php e($data['name']); ?>"
+                class="narrow-field"  />
+            <?php
+                e($item_sep);
+                $this->view->optionsHelper->render(
+                    "name-sort", "name_sort", 
+                    $data['SORT_TYPES'],
+                    $data['name_sort']);
+            ?></td></tr>
+        <tr><td class="table-label"><label for="owner-name"><?php
+            e(tl('managegroups_element_groupowner'))?>:</label>
+            <?php
+                e($item_sep);
+                $this->view->optionsHelper->render(
+                    "owner-comparison", "owner_comparison", 
+                    $data['COMPARISON_TYPES'],
+                    $data['owner_comparison']);
+                e($item_sep);
+            ?><input type="text" id="owner-name"
+                name="owner"  maxlength="80"
+                value="<?php e($data['owner']); ?>"
+                class="narrow-field"  />
+            <?php
+                e($item_sep);
+                $this->view->optionsHelper->render(
+                    "owner-sort", "owner_sort", 
+                    $data['SORT_TYPES'],
+                    $data['owner_sort']);
+            ?></td></tr>
+        <tr><td class="table-label"><label for="search-registertype"><?php
+                e(tl('managegroups_element_registertype')); ?>:</label>
+            <?php
+                e($item_sep);
+                $this->view->optionsHelper->render(
+                    "register-comparison", "register_comparison", 
+                    $data['DROPDOWN_COMPARISON_TYPES'],
+                    $data['register_comparison']);
+            ?>
+            <style type="text/css">
+            #register-comparison {
+                width:100%;
+            }
+            </style>
+            <?php
+            e($item_sep);
+            $this->view->optionsHelper->render(
+                "search-registertype",
+                "register", $data['REGISTER_CODES'],
+                $data['register']);
+            ?>
+            <style type="text/css">
+            #search-registertype {
+                width:100%
+            }
+            </style>
+            <?php
+                e($item_sep);
+                $this->view->optionsHelper->render(
+                    "register-sort", "register_sort", 
+                    $data['SORT_TYPES'],
+                    $data['register_sort']);
+            ?></td></tr>
+        <tr><td class="table-label"><label for="search-groupaccess"><?php
+                e(tl('manageusers_element_member_access')); ?>:</label>
+            <?php
+                e($item_sep);
+                $this->view->optionsHelper->render(
+                    "access-comparison", "access_comparison", 
+                    $data['DROPDOWN_COMPARISON_TYPES'],
+                    $data['access_comparison']);
+            ?>
+            <style type="text/css">
+            #access-comparison {
+                width:100%;
+            }
+            </style>
+            <?php
+            e($item_sep);
+            $this->view->optionsHelper->render(
+                "search-groupaccess",
+                "access", $data['ACCESS_CODES'],
+                $data['access']);
+            ?>
+            <style type="text/css">
+            #search-groupaccess {
+                width:100%
+            }
+            </style>
+            <?php
+                e($item_sep);
+                $this->view->optionsHelper->render(
+                    "access-sort", "access_sort", 
+                    $data['SORT_TYPES'],
+                    $data['access_sort']);
+            ?></td></tr>
+        <tr><?php if(!MOBILE) {?><td></td><td></td> <?php } ?>
+            <td <?php if(!MOBILE) {
+                    ?>class="center" <?php 
+                }
+                ?>><button class="button-box"
+                type="submit"><?php e(tl('managegroups_element_search'));
+                ?></button></td>
+        </tr>
+        </table>
+        </form>
+        <?php
     }
 }
 ?>

@@ -546,8 +546,6 @@ function upgradeDatabaseVersion17(&$db)
            CREATOR_ID INT(11))");
     $db->execute("CREATE TABLE USER_GROUP (USER_ID INTEGER ,
         GROUP_ID INTEGER,PRIMARY KEY (GROUP_ID, USER_ID) )");
-    $db->execute("CREATE TABLE GROUP_ROLE (GROUP_ID INTEGER ,
-        ROLE_ID INTEGER)");
 
     addActivityAtId($db, 'db_activity_manage_groups', "manageGroups", 4);
     updateTranslationForStringId($db, 'db_activity_manage_groups', 'en-US',

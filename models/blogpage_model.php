@@ -590,17 +590,17 @@ class BlogpageModel extends Model
      */
     function isPageAccessible($user_id, $title)
     {
-        if($user_id == 1){
+        if($user_id == ROOT_ID){
             return true;
         }
-        if($user_id = $_SERVER['REMOTE_ADDR']) {
+        if($user_id == $_SERVER['REMOTE_ADDR']) {
             $user_id = PUBLIC_USER_ID;
         }
         $this->db->selectDB(DB_NAME);
         $sql = "SELECT USER_ID FROM USER_GROUP WHERE USER_ID ='$user_id'
             AND GROUP_ID IN (SELECT ID FROM ACCESS WHERE NAME = '".
             $this->db->escapeString($title)."' AND TYPE = 'group')";
-        if(($result = $this->db->execute($sql)) && 
+        if(($result = $this->db->execute($sql)) &&
             ($row = $this->db->fetchArray($result))) {
             return true;
         }

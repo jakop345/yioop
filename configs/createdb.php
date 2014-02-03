@@ -90,12 +90,36 @@ $sql ="INSERT INTO USER VALUES (".ROOT_ID.", 'admin', 'admin','root',
         'root@dev.null', '".crawlCrypt('')."', '".ACTIVE_STATUS.
         "', '".crawlCrypt('root'.AUTH_KEY.$creation_time)."','$creation_time')";
 $db->execute($sql);
+// public account is an inactive account for used for public permissions
+//default account is root without a password
+$sql ="INSERT INTO USER VALUES (".PUBLIC_USER_ID.", 'all', 'all','public',
+        'public@dev.null', '".crawlCrypt('')."', '".INACTIVE_STATUS.
+        "', '".crawlCrypt('public'.AUTH_KEY.$creation_time)."',
+        '$creation_time')";
+$db->execute($sql);
 
 //default public group with group id 1
 $creation_time = microTimestamp();
 $sql = "INSERT INTO GROUPS VALUES(".PUBLIC_GROUP_ID.",'Public','".
-    $creation_time."','".ROOT_ID."', 'TRUE')";
+    $creation_time."','".ROOT_ID."', '".PUBLIC_JOIN."', '".GROUP_READ.
+    "')";
 $db->execute($sql);
+
+
+$db->execute("INSERT INTO ROLE VALUES (".ADMIN_ROLE.", 'Admin' )");
+$db->execute("INSERT INTO ROLE VALUES (".USER_ROLE.", 'User' )");
+$db->execute("INSERT INTO USER_ROLE VALUES (".ROOT_ID.", ".ADMIN_ROLE.")");
+$db->execute("INSERT INTO USER_GROUP VALUES (".ROOT_ID.", ".
+    PUBLIC_GROUP_ID.", ".ACTIVE_STATUS.")");
+$db->execute("INSERT INTO USER_GROUP VALUES (".PUBLIC_USER_ID.", ".
+    PUBLIC_GROUP_ID.", ".ACTIVE_STATUS.")");
+$public_pages = array("404", "409", "blog", "bot", "privacy", 
+    "captcha_time_out", "suggest_day_exceeded", "terms");
+foreach($public_pages as $page) {
+    $sql = "INSERT INTO ACCESS VALUES ('".$page."', '".
+        PUBLIC_GROUP_ID."', 'group')";
+    $db->execute($sql);
+}
 
 /* we insert 1 by 1 rather than comma separate as sqlite
    does not support comma separated inserts
@@ -131,21 +155,6 @@ foreach($locales as $locale) {
         '{$locale[1]}', '{$locale[2]}')");
     $locale_index[$locale[0]] = $i;
     $i++;
-}
-
-$db->execute("INSERT INTO ROLE VALUES (".ROOT_ROLE.", 'Admin' )");
-$db->execute("INSERT INTO ROLE VALUES (".USER_ROLE.", 'User' )");
-$db->execute("INSERT INTO USER_ROLE VALUES (".ROOT_ID.", ".ROOT_ROLE.")");
-$db->execute("INSERT INTO USER_GROUP VALUES (".ROOT_ID.", ".
-    PUBLIC_GROUP_ID.")");
-$db->execute("INSERT INTO USER_GROUP VALUES (".PUBLIC_USER_ID.", ".
-    PUBLIC_GROUP_ID.")");
-$public_pages = array("404", "409", "blog", "bot", "privacy", 
-    "captcha_time_out", "suggest_day_exceeded", "terms");
-foreach($public_pages as $page) {
-    $sql = "INSERT INTO ACCESS VALUES ('".$page."', '".
-        PUBLIC_GROUP_ID."', 'group')";
-    $db->execute($sql);
 }
 
 $activities = array(
@@ -262,7 +271,7 @@ foreach($activities as $activity => $translation_info) {
     // set-up activity
     $db->execute("INSERT INTO ACTIVITY VALUES ($i, $i, '$activity')");
     //give admin role the ability to have that activity
-    $db->execute("INSERT INTO ROLE_ACTIVITY VALUES (".ROOT_ROLE.", $i)");
+    $db->execute("INSERT INTO ROLE_ACTIVITY VALUES (".ADMIN_ROLE.", $i)");
     $db->execute("INSERT INTO TRANSLATION
             VALUES($i,'{$translation_info[0]}')");
     foreach($translation_info[1] as $locale_tag => $translation) {

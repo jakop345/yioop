@@ -155,7 +155,7 @@ class AccountaccessComponent extends Component
     function manageUsers()
     {
         $parent = $this->parent;
-        $possible_arguments = array("adduser", 'edituser', 'searchusers',
+        $possible_arguments = array("adduser", 'edituser', 'search',
             "deleteuser", "adduserrole", "deleteuserrole",
             "addusergroup", "deleteusergroup", "updatestatus");
 
@@ -165,9 +165,6 @@ class AccountaccessComponent extends Component
             ACTIVE_STATUS => tl('accountaccess_component_active_status'),
             INACTIVE_STATUS => tl('accountaccess_component_inactive_status'),
             BANNED_STATUS => tl('accountaccess_component_banned_status'),
-        );
-        $data['USERS_SHOW_CHOICES'] = array(
-            10 => 10, 20 => 20, 50 => 50, 100 => 100, 200=> 200
         );
         $data['COMPARISON_TYPES'] = array(
             "=" => tl('accountaccess_component_equal'),
@@ -192,7 +189,7 @@ class AccountaccessComponent extends Component
             $username = $parent->clean($_REQUEST['user_name'], "string" );
         }
         if($username == "" && isset($_REQUEST['arg']) && $_REQUEST['arg'] 
-            != "searchusers") {
+            != "search") {
             unset($_REQUEST['arg']);
         }
         if(isset($_REQUEST['arg']) && $_REQUEST['arg'] == 'edituser') {
@@ -267,6 +264,13 @@ class AccountaccessComponent extends Component
                     $user = $parent->userModel->getUser($username);
                     $update = false;
                     $error = false;
+                    if($user["USER_ID"] == PUBLIC_USER_ID) {
+                        $data['FORM_TYPE'] = "adduser";
+                        $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
+                            tl('accountaccess_component_cant_edit_public_user').
+                            "</h1>');";
+                        break;
+                    }
                     foreach($data['CURRENT_USER'] as $field => $value) {
                         $upper_field = strtoupper($field);
                         if(isset($_REQUEST[$field]) && $field != 'user_name') {
@@ -305,12 +309,16 @@ class AccountaccessComponent extends Component
                     }
                 break;
                 case "deleteuser":
-                    $data['SELECT_ROLE'] = -1;
-                    unset($data['AVAILABLE_ROLES']);
-                    unset($data['SELECT_ROLES']);
-                    if(!($parent->signinModel->getUserId($username) > 0)) {
+                    $userid = 
+                        $parent->signinModel->getUserId($username);
+                    if($userid <= 0) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_username_doesnt_exists'
+                                ).
+                            "</h1>')";
+                    } else if(in_array($userid,array(ROOT_ID, PUBLIC_USER_ID))){
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('accountaccess_component_cant_delete_builtin'
                                 ).
                             "</h1>')";
                     } else {
@@ -476,11 +484,11 @@ class AccountaccessComponent extends Component
                     }
                 break;
 
-                case "searchusers":
+                case "search":
                     $data['STATUS_CODES'][0] = 
                         tl('accountaccess_component_any_status');
                     ksort($data['STATUS_CODES']);
-                    $data["FORM_TYPE"] = "searchusers";
+                    $data["FORM_TYPE"] = "search";
                     $comparison_fields = array('user',
                         'first', 'last', 'email', 'status');
                     $paging = "";
@@ -522,27 +530,27 @@ class AccountaccessComponent extends Component
             }
         }
         $num_users = $parent->userModel->getUserCount($search_array);
-        $data['NUM_USERS'] = $num_users;
-        $users_show = (isset($_REQUEST['users_show']) && 
-            isset($data['USERS_SHOW_CHOICES'][$_REQUEST['users_show']])) ?
-            $parent->clean($_REQUEST['users_show'], 'int') : 50;
-        $data['users_show'] = $users_show;
+        $data['NUM_TOTAL'] = $num_users;
+        $num_show = (isset($_REQUEST['num_show']) &&
+            isset($parent->adminView->pagingtableHelper->show_choices[
+                $_REQUEST['num_show']])) ? $_REQUEST['num_show'] : 50;
+        $data['num_show'] = $num_show;
         $data['START_ROW'] = 0;
         if(isset($_REQUEST['start_row'])) {
             $data['START_ROW'] = min(
                 max(0, $parent->clean($_REQUEST['start_row'],"int")),
                 $num_users);
         }
-        $data['END_ROW'] = min($data['START_ROW'] + $users_show, $num_users);
+        $data['END_ROW'] = min($data['START_ROW'] + $num_show, $num_users);
         if(isset($_REQUEST['start_row'])) {
             $data['END_ROW'] = max($data['START_ROW'],
                     min($parent->clean($_REQUEST['end_row'],"int"),$num_users));
         }
         $data["USERS"] = $parent->userModel->getUsers($data['START_ROW'],
-            $users_show, $search_array);
+            $num_show, $search_array);
         $data['NEXT_START'] = $data['END_ROW'];
-        $data['NEXT_END'] = min($data['NEXT_START'] + $users_show, $num_users);
-        $data['PREV_START'] = max(0, $data['START_ROW'] - $users_show);
+        $data['NEXT_END'] = min($data['NEXT_START'] + $num_show, $num_users);
+        $data['PREV_START'] = max(0, $data['START_ROW'] - $num_show);
         $data['PREV_END'] = $data['START_ROW'];
         return $data;
     }
@@ -672,12 +680,9 @@ class AccountaccessComponent extends Component
     {
         $parent = $this->parent;
         $possible_arguments = array("addactivity", "addrole",
-                "deleteactivity","deleterole", "editrole", "searchroles");
+                "deleteactivity","deleterole", "editrole", "search");
         $data["ELEMENT"] = "managerolesElement";
         $data['SCRIPT'] = "";
-        $data['ROLES_SHOW_CHOICES'] = array(
-            10 => 10, 20 => 20, 50 => 50, 100 => 100, 200=> 200
-        );
         $data['COMPARISON_TYPES'] = array(
             "=" => tl('accountaccess_component_equal'),
             "!=" => tl('accountaccess_component_not_equal'),
@@ -814,8 +819,8 @@ class AccountaccessComponent extends Component
                             "</h1>');";
                     }
                 break;
-                case "searchroles":
-                    $data['FORM_TYPE'] = "searchroles";
+                case "search":
+                    $data['FORM_TYPE'] = "search";
                     $comparison_fields = array('name');
                     $paging = "";
                     foreach($comparison_fields as $comparison_start) {
@@ -902,27 +907,27 @@ class AccountaccessComponent extends Component
             }
         }
         $num_roles = $parent->roleModel->getRoleCount($search_array);
-        $data['NUM_ROLES'] = $num_roles;
-        $roles_show = (isset($_REQUEST['roles_show']) && 
-            isset($data['ROLES_SHOW_CHOICES'][$_REQUEST['roles_show']])) ?
-            $parent->clean($_REQUEST['roles_show'], 'int') : 50;
-        $data['roles_show'] = $roles_show;
+        $data['NUM_TOTAL'] = $num_roles;
+        $num_show = (isset($_REQUEST['num_show']) &&
+            isset($parent->adminView->pagingtableHelper->show_choices[
+                $_REQUEST['num_show']])) ? $_REQUEST['num_show'] : 50;
+        $data['num_show'] = $num_show;
         $data['START_ROW'] = 0;
         if(isset($_REQUEST['start_row'])) {
             $data['START_ROW'] = min(
                 max(0, $parent->clean($_REQUEST['start_row'],"int")),
-                $num_roles);
+                $num_users);
         }
-        $data['END_ROW'] = min($data['START_ROW'] + $roles_show, $num_roles);
+        $data['END_ROW'] = min($data['START_ROW'] + $num_show, $num_roles);
         if(isset($_REQUEST['start_row'])) {
             $data['END_ROW'] = max($data['START_ROW'],
                     min($parent->clean($_REQUEST['end_row'],"int"),$num_roles));
         }
         $data["ROLES"] = $parent->roleModel->getRoles($data['START_ROW'],
-            $roles_show, $search_array);
+            $num_show, $search_array);
         $data['NEXT_START'] = $data['END_ROW'];
-        $data['NEXT_END'] = min($data['NEXT_START'] + $roles_show, $num_roles);
-        $data['PREV_START'] = max(0, $data['START_ROW'] - $roles_show);
+        $data['NEXT_END'] = min($data['NEXT_START'] + $num_show, $num_roles);
+        $data['PREV_START'] = max(0, $data['START_ROW'] - $num_show);
         $data['PREV_END'] = $data['START_ROW'];
         return $data;
     }
@@ -939,256 +944,507 @@ class AccountaccessComponent extends Component
     function manageGroups()
     {
         $parent = $this->parent;
-        $possible_arguments = array("addgroup", "deletegroup",
-            "viewgroups", "selectgroup", "adduser", "deleteuser",
-            "addrole", "deleterole", "updategroup");
+        $possible_arguments = array("activateuser",
+            "addgroup", "banuser", "changeowner",
+            "creategroup", "deletegroup", "deleteuser", "editgroup",
+            "inviteusers", "joingroup", "memberaccess",
+            "registertype", "reinstateuser", "search", "unsubscribe"
+            );
 
         $data["ELEMENT"] = "managegroupsElement";
-        $data['SCRIPT'] =
-            "selectGroup = elt('select-group'); selectGroup.onchange =".
-            " submitViewGroups;";
+        $data['SCRIPT'] = "";
+        $data['FORM_TYPE'] = "addgroup";
+        $data['MEMBERSHIP_CODES'] = array(
+            INACTIVE_STATUS => tl('accountaccess_component_request_join'),
+            INVITED_STATUS => tl('accountaccess_component_invited'),
+            ACTIVE_STATUS => tl('accountaccess_component_active_status'),
+            BANNED_STATUS => tl('accountaccess_component_banned_status')
+        );
+        $data['REGISTER_CODES'] = array(
+            NO_JOIN => tl('accountaccess_component_no_join'),
+            REQUEST_JOIN => tl('accountaccess_component_by_request'),
+            PUBLIC_JOIN => tl('accountaccess_component_public_join')
+        );
+        $data['ACCESS_CODES'] = array(
+            GROUP_PRIVATE => tl('accountaccess_component_private'),
+            GROUP_READ => tl('accountaccess_component_read'),
+            GROUP_READ_WRITE => tl('accountaccess_component_read_write')
+        );
+        $data['COMPARISON_TYPES'] = array(
+            "=" => tl('accountaccess_component_equal'),
+            "!=" => tl('accountaccess_component_not_equal'),
+            "CONTAINS" => tl('accountaccess_component_contains'),
+            "BEGINS WITH" => tl('accountaccess_component_begins_with'),
+            "ENDS WITH" => tl('accountaccess_component_ends_with'),
+        );
+        $data['DROPDOWN_COMPARISON_TYPES'] = array(
+            "=" => tl('accountaccess_component_equal'),
+            "!=" => tl('accountaccess_component_not_equal')
+        );
+        $data['SORT_TYPES'] = array(
+            "NONE" => tl('accountaccess_component_no_sort'),
+            "ASC" => tl('accountaccess_component_sort_ascending'),
+            "DESC" => tl('accountaccess_component_sort_descending'),
+        );
 
-        if(isset($_REQUEST['groupname'])) {
-            $groupname = $parent->clean($_REQUEST['groupname'], "string" );
-        }
+        $search_array = array();
 
-        if($_SESSION['USER_ID'] == '1') {
-            $groups = $parent->groupModel->getGroupList();
-        } else {
-            $groups = $parent->groupModel->getUserGroups(
+        $data['CURRENT_GROUP'] = array("name" => "","id" => "", "owner" =>"",
+            "register" => -1, "member_access" => -1);
+        $data['PAGING'] = "";
+        $name = "";
+        /* start owner verify code / get current group
+           $group_id is only set in this block (except creategroup) and it 
+           is only not NULL if $group['OWNER_ID'] == $_SESSION['USER_ID'] where
+           this is also the only place group loaded using $group_id
+        */
+        if(isset($_REQUEST['group_id']) && $_REQUEST['group_id'] != "") {
+            $group_id = $parent->clean($_REQUEST['group_id'], "string" );
+            $group = $parent->groupModel->getGroupById($group_id,
                 $_SESSION['USER_ID']);
-        }
-
-        $group_ids = array();
-        $base_option = tl('accountaccess_component_select_groupname');
-        $data['GROUP_NAMES'] = array();
-        $data['GROUP_NAMES'][-1] = $base_option;
-
-        if(isset($_REQUEST['groupname'])) {
-            $groupname = $parent->clean($_REQUEST['groupname'], "string" );
-        }
-
-        foreach($groups as $group) {
-            $data['GROUP_NAMES'][$group['GROUP_ID']]= $group['GROUP_NAME'];
-            $group_ids[] = $group['GROUP_ID'];
-        }
-
-        if($_SESSION['USER_ID'] == '1') {
-            $groups = $parent->groupModel->getGroupList();
+            if($group && ($group['OWNER_ID'] == $_SESSION['USER_ID'] ||
+                ($_SESSION['USER_ID'] == ROOT_ID && $_REQUEST['arg'] ==
+                "changeowner"))) {
+                $name = $group['GROUP_NAME'];
+                $data['CURRENT_GROUP']['name'] = $name;
+                $data['CURRENT_GROUP']['id'] = $group['GROUP_ID'];
+                $data['CURRENT_GROUP']['owner'] = $group['OWNER'];
+                $data['CURRENT_GROUP']['register'] = 
+                    $group['REGISTER_TYPE'];
+                $data['CURRENT_GROUP']['member_access'] = 
+                    $group['MEMBER_ACCESS'];
+            } else if(!in_array($_REQUEST['arg'], array("deletegroup",
+                "joingroup", "unsubscribe"))) {
+                $group_id = NULL;
+                $group = NULL;
+            }
+        } else if(isset($_REQUEST['name'])){
+            $name = $parent->clean($_REQUEST['name'], "string");
+            $data['CURRENT_GROUP']['name'] = $name;
+            $group_id = NULL;
+            $group = NULL;
         } else {
-            $groups = $parent->groupModel->getGroupListbyCreator(
-                $_SESSION['USER_ID']);
+            $group_id = NULL;
+            $group = NULL;
         }
+        /* end ownership verify */
 
-        $group_ids = array();
-        $base_option = tl('accountaccess_component_select_groupname');
-        $data['DELETE_GROUP_NAMES'] = array();
-        $data['DELETE_GROUP_NAMES'][-1] = $base_option;
-
-        if(isset($_REQUEST['groupname'])) {
-            $groupname = $parent->clean($_REQUEST['groupname'], "string" );
-        }
-
-        foreach($groups as $deletegroup) {
-            $data['DELETE_GROUP_NAMES'][$deletegroup['GROUP_ID']]=
-                $deletegroup['GROUP_NAME'];
-            $group_ids[] = $deletegroup['GROUP_ID'];
-        }
-
-        $data['SELECT_GROUP'] = -1;
-        $data['SELECT_USER'] = -1;
-
-        if(isset($_REQUEST['selectgroup'])) {
-            $select_group = $parent->clean($_REQUEST['selectgroup'], "string" );
-        } else {
-            $select_group = "";
-        }
-
-        if(isset($_REQUEST['arg']) && !($_REQUEST['arg'] == 'deletegroup'
-            || $_REQUEST['arg'] == 'addgroup')) {
-
-            $data['SELECT_GROUP'] = $select_group;
-            $grouproles = $parent->groupModel->getGroupRoles($select_group);
-            $data['GROUP_ROLES'] = $grouproles;
-            $rolenames = $parent->roleModel->getRoleList();
-            $base_option = tl('accountaccess_component_select_rolename');
-
-            if(isset($_REQUEST['arg']) && !($_REQUEST['arg'] == 'deletegroup'
-                || $_REQUEST['arg'] == 'addgroup')) {
-                $data['ROLE_NAMES'] = array();
-                $role_ids = array();
-                $data['ROLE_NAMES'][-1] = $base_option;
-
-                foreach($rolenames as $rolename) {
-                    $data['ROLE_NAMES'][$rolename['ROLE_ID']] =
-                        $rolename['ROLE_NAME'];
-                    $role_ids[] = $rolename['ROLE_ID'];
-                }
-            }
-
-            if(isset($_REQUEST['selectrole'])) {
-                $select_role = $parent->clean($_REQUEST['selectrole'],"string");
-            } else {
-                $select_role = "";
-            }
-
-            $usergroups = $parent->groupModel->getGroupUsers($select_group);
-            $data['GROUP_USERS'] =$usergroups;
-
-            if(isset($_REQUEST['selectuser'])) {
-                $select_user = $parent->clean($_REQUEST['selectuser'],"string");
-            } else {
-                $select_user = "";
-            }
-
-            if($select_group != "-1") {
-                $usernames = $parent->userModel->getUserIdUsernameList();
-                $base_option = tl('accountaccess_component_select_username');
-                $data['USER_NAMES'] = array();
-                $user_ids = array();
-                $data['USER_NAMES'][-1] = $base_option;
-                foreach($usernames as $user) {
-                    $user_ids[] = $user['USER_ID'];
-                    if($select_user == $user['USER_ID']) {
-                        $select_username = $user['USER_NAME'];
+        if(isset($_REQUEST['arg']) &&
+            in_array($_REQUEST['arg'], $possible_arguments)) {
+            switch($_REQUEST['arg'])
+            {
+                case "activateuser":
+                    $data['FORM_TYPE'] = "editgroup";
+                    $user_id = (isset($_REQUEST['user_id'])) ? 
+                        $parent->clean($_REQUEST['user_id'], 'int'): 0;
+                    if($user_id && $group_id &&
+                        $parent->groupModel->checkUserGroup($user_id,
+                        $group_id)) {
+                        $parent->groupModel->updateStatusUserGroup($user_id,
+                            $group_id, ACTIVE_STATUS);
+                        $data['GROUP_USERS'] =
+                            $parent->groupModel->getGroupUsers($group_id);
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('accountaccess_component_user_activated').
+                            "</h1>')";
+                    } else {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('accountaccess_component_no_user_activated').
+                            "</h1>')";
                     }
-                }
-                foreach($usernames as $username) {
-                    $data['USER_NAMES'] [$username['USER_ID']] =
-                        $username['USER_NAME'];
-                    $user_ids[] = $username['USER_ID'];
-                }
-            }
-
-
-            if(isset($_REQUEST['selectactivity'])) {
-                $select_activity =
-                    $parent->clean($_REQUEST['selectactivity'], "int" );
-            } else {
-                $select_activity = "";
-            }
-
-            if($select_activity != "") {
-                $data['SELECT_ACTIVITY'] = $select_activity;
-            } else {
-                $data['SELECT_ACTIVITY'] = -1;
+                break;
+                case "addgroup":
+                    if(($add_id = $parent->groupModel->getGroupId($name)) > 0 ||
+                        $name =="" ) {
+                        $register = 
+                            $parent->groupModel->getRegisterType($add_id);
+                        if($add_id > 0 && $register && $register != NO_JOIN) {
+                            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                                tl('accountaccess_component_group_joined').
+                                "</h1>')";
+                            $join_type = ($register == REQUEST_JOIN &&
+                                $_SESSION['USER_ID'] != ROOT_ID) ?
+                                INACTIVE_STATUS : ACTIVE_STATUS;
+                            $parent->groupModel->addUserGroup(
+                                $_SESSION['USER_ID'], $add_id, $join_type);
+                        } else {
+                            $data['CURRENT_GROUP'] = array("name" => "",
+                                "id" => "", "owner" =>"", "register" => -1,
+                                "member_access" => -1);
+                            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('accountaccess_component_groupname_unavailable').
+                                "</h1>')";
+                        }
+                    } else {
+                        $data['FORM_TYPE'] = "creategroup";
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('accountaccess_component_name_available').
+                            "</h1>')";
+                    }
+                break;
+                case "banuser":
+                    $data['FORM_TYPE'] = "editgroup";
+                    $user_id = (isset($_REQUEST['user_id'])) ? 
+                        $parent->clean($_REQUEST['user_id'], 'int'): 0;
+                    if($user_id && $group_id &&
+                        $parent->groupModel->checkUserGroup($user_id, 
+                        $group_id)) {
+                        $parent->groupModel->updateStatusUserGroup($user_id, 
+                            $group_id, BANNED_STATUS);
+                        $data['GROUP_USERS'] =
+                            $parent->groupModel->getGroupUsers($group_id);
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('accountaccess_component_user_banned').
+                            "</h1>')";
+                    } else {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('accountaccess_component_no_user_banned').
+                            "</h1>')";
+                    }
+                break;
+                case "changeowner":
+                    $data['FORM_TYPE'] = "changeowner";
+                    if(isset($_REQUEST['new_owner'])) {
+                        $new_owner_name = $parent->clean($_REQUEST['new_owner'],
+                            'string');
+                        $new_owner = $parent->userModel->getUser(
+                            $new_owner_name);
+                        if(isset($new_owner['USER_ID']) ) {
+                            if($parent->groupModel->checkUserGroup(
+                                $new_owner['USER_ID'], $group_id)) {
+                                $parent->groupModel->changeOwnerGroup(
+                                    $new_owner['USER_ID'], $group_id);
+                                $data['SCRIPT'] .= 
+                                    "doMessage('<h1 class=\"red\" >".
+                                    tl('accountaccess_component_owner_changed').
+                                    "</h1>')";
+                                $data['FORM_TYPE'] = "changegroup";
+                                $data['CURRENT_GROUP'] = array("name" => "",
+                                    "id" => "", "owner" =>"", "register" => -1,
+                                    "member_access" => -1);
+                            } else {
+                                $data['SCRIPT'] .= 
+                                    "doMessage('<h1 class=\"red\" >".
+                                    tl('accountaccess_component_not_in_group').
+                                    "</h1>')";
+                            }
+                        } else {
+                            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                                tl('accountaccess_component_not_a_user').
+                                "</h1>')";
+                        }
+                    }
+                break;
+                case "creategroup":
+                    if($parent->groupModel->getGroupId($name) > 0) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('accountaccess_component_groupname_exists').
+                            "</h1>')";
+                    } else {
+                        $group_fields = array(
+                            "member_access" => array("ACCESS_CODES",
+                                GROUP_READ),
+                            "register" => array("REGISTER_CODES",
+                                REQUEST_JOIN)
+                        );
+                        foreach($group_fields as $field => $info) {
+                            if(!isset($_REQUEST[$field]) ||
+                                !in_array($_REQUEST[$field], 
+                                array_keys($data[$info[0]]))) {
+                                $_REQUEST[$field] = $info[1];
+                            }
+                        }
+                        $parent->groupModel->addGroup($name,
+                            $_SESSION['USER_ID'], $_REQUEST['register'],
+                            $_REQUEST['member_access']);
+                        //one exception to setting $group_id
+                        $group_id = $parent->groupModel->getGroupId($name);
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('accountaccess_component_groupname_added').
+                            "</h1>')";
+                    }
+                    $data['FORM_TYPE'] = "addgroup";
+                    $data['CURRENT_GROUP'] = array("name" => "",
+                        "id" => "", "owner" =>"", "register" => -1,
+                        "member_access" => -1);
+                break;
+                case "deletegroup":
+                    $data['CURRENT_GROUP'] = array("name" => "",
+                        "id" => "", "owner" =>"", "register" => -1,
+                        "member_access" => -1);
+                    if( $group_id <= 0) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                          tl('accountaccess_component_groupname_doesnt_exists').
+                            "</h1>')";
+                    } else if(($group &&
+                        $group['OWNER_ID'] == $_SESSION['USER_ID']) ||
+                        $_SESSION['USER_ID'] == ROOT_ID) {
+                        $parent->groupModel->deleteGroup($group_id);
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('accountaccess_component_group_deleted').
+                            "</h1>')";
+                    } else {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('accountaccess_component_no_delete_group').
+                            "</h1>')";
+                    }
+                break;
+                case "deleteuser":
+                    $data['FORM_TYPE'] = "editgroup";
+                    $user_id = (isset($_REQUEST['user_id'])) ? 
+                        $parent->clean($_REQUEST['user_id'], 'int'): 0;
+                    if($parent->groupModel->deletableUser(
+                        $user_id, $group_id)) {
+                        $parent->groupModel->deleteUserGroup(
+                            $user_id, $group_id);
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('accountaccess_component_user_deleted').
+                            "</h1>')";
+                    } else {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('accountaccess_component_no_delete_user_group').
+                            "</h1>')";
+                    }
+                    $data['GROUP_USERS'] =
+                        $parent->groupModel->getGroupUsers($group_id);
+                break;
+                case "editgroup":
+                    $data['FORM_TYPE'] = "editgroup";
+                    $update_fields = array(
+                        array('register', 'REGISTER_TYPE','REGISTER_CODES'),
+                        array('member_access', 'MEMBER_ACCESS', 'ACCESS_CODES')
+                        );
+                    $this->updateGroup($data, $group, $update_fields);
+                    $data['CURRENT_GROUP']['register'] = 
+                        $group['REGISTER_TYPE'];
+                    $data['CURRENT_GROUP']['member_access'] = 
+                        $group['MEMBER_ACCESS'];
+                    $data['GROUP_USERS'] =
+                        $parent->groupModel->getGroupUsers($group_id);
+                break;
+                case "inviteusers":
+                    $data['FORM_TYPE'] = "inviteusers";
+                    if(isset($_REQUEST['users_names'])) {
+                        $users_string = $parent->clean($_REQUEST['users_names'],
+                            "string");
+                        $pre_user_names = preg_split("/\s+|\,/", $users_string);
+                        $users_invited = false;
+                        foreach($pre_user_names as $user_name) {
+                            $user_name = trim($user_name);
+                            $user = $parent->userModel->getUser($user_name);
+                            if($user) {
+                                if(!$parent->groupModel->checkUserGroup(
+                                    $user['USER_ID'], $group_id)) {
+                                    $parent->groupModel->addUserGroup(
+                                        $user['USER_ID'], $group_id,
+                                        INVITED_STATUS);
+                                    $users_invited = true;
+                                }
+                            }
+                        }
+                        if($users_invited) {
+                            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                                tl('accountaccess_component_users_invited').
+                                "</h1>')";
+                        } else {
+                            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                                tl('accountaccess_component_no_users_invited').
+                                "</h1>')";
+                        }
+                        $data['FORM_TYPE'] = "editgroup";
+                        $data['GROUP_USERS'] =
+                            $parent->groupModel->getGroupUsers($group_id);
+                    }
+                    
+                break;
+                case "joingroup":
+                    $user_id = (isset($_REQUEST['user_id'])) ? 
+                        $parent->clean($_REQUEST['user_id'], 'int'): 0;
+                    if($user_id && $group_id &&
+                        $parent->groupModel->checkUserGroup($user_id,
+                        $group_id, INVITED_STATUS)) {
+                        $parent->groupModel->updateStatusUserGroup($user_id,
+                            $group_id, ACTIVE_STATUS);
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('accountaccess_component_joined').
+                            "</h1>')";
+                    } else {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('accountaccess_component_no_unsubscribe').
+                            "</h1>')";
+                    }
+                break;
+                case "memberaccess":
+                    $update_fields = array(
+                        array('memberaccess', 'MEMBER_ACCESS', 'ACCESS_CODES'));
+                    $this->updateGroup($data, $group, $update_fields);
+                    $data['CURRENT_GROUP'] = array("name" => "",
+                        "id" => "", "owner" =>"", "register" => -1,
+                        "member_access" => -1);
+                break;
+                case "registertype":
+                    $update_fields = array(
+                        array('registertype', 'REGISTER_TYPE',
+                            'REGISTER_CODES'));
+                    $this->updateGroup($data, $group, $update_fields);
+                    $data['CURRENT_GROUP'] = array("name" => "",
+                        "id" => "", "owner" =>"", "register" => -1,
+                        "member_access" => -1);
+                break;
+                case "reinstateuser":
+                    $data['FORM_TYPE'] = "editgroup";
+                    $user_id = (isset($_REQUEST['user_id'])) ? 
+                        $parent->clean($_REQUEST['user_id'], 'int'): 0;
+                    if($user_id && $group_id &&
+                        $parent->groupModel->checkUserGroup($user_id,
+                        $group_id)) {
+                        $parent->groupModel->updateStatusUserGroup($user_id,
+                            $group_id, ACTIVE_STATUS);
+                        $data['GROUP_USERS'] =
+                            $parent->groupModel->getGroupUsers($group_id);
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('accountaccess_component_user_reinstated').
+                            "</h1>')";
+                    } else {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('accountaccess_component_no_user_reinstated').
+                            "</h1>')";
+                    }
+                break;
+                case "search":
+                    $data['FORM_TYPE'] = "search";
+                    $data['REGISTER_CODES'][0] =
+                        tl('accountaccess_component_any');
+                    ksort($data['REGISTER_CODES']);
+                    $data['ACCESS_CODES'][INACTIVE_STATUS * 10] = 
+                        tl('accountaccess_component_request_join');
+                    $data['ACCESS_CODES'][INVITED_STATUS * 10] = 
+                        tl('accountaccess_component_invited');
+                    $data['ACCESS_CODES'][BANNED_STATUS * 10] = 
+                        tl('accountaccess_component_banned_status');
+                    $data['ACCESS_CODES'][0] =
+                        tl('accountaccess_component_any');
+                    ksort($data['ACCESS_CODES']);
+                    $comparison_fields = array('name', 'owner', 'register',
+                        'access');
+                    $paging = "";
+                    foreach($comparison_fields as $comparison_start) {
+                        $comparison = $comparison_start."_comparison";
+                        $data[$comparison] = (isset($_REQUEST[$comparison]) &&
+                            isset($data['COMPARISON_TYPES'][
+                            $_REQUEST[$comparison]])) ?$_REQUEST[$comparison] :
+                            "=";
+                        $paging .= "&amp;$comparison=".
+                            urlencode($data[$comparison]);
+                    }
+                    foreach($comparison_fields as $sort_start) {
+                        $sort = $sort_start."_sort";
+                        $data[$sort] = (isset($_REQUEST[$sort]) &&
+                            isset($data['SORT_TYPES'][
+                            $_REQUEST[$sort]])) ?$_REQUEST[$sort] :
+                            "NONE";
+                        $paging .= "&amp;$sort=".urlencode($data[$sort]);
+                    }
+                    $search_array = array();
+                    foreach($comparison_fields as $field) {
+                        $field_name = $field;
+                        $field_comparison = $field."_comparison";
+                        $field_sort = $field."_sort";
+                        $data[$field_name] = (isset($_REQUEST[$field_name])) ?
+                            $parent->clean($_REQUEST[$field_name], "string") :
+                            "";
+                        if($field_name=='access' && $data[$field_name] >=10) {
+                            $search_array[] = array("status",
+                                $data[$field_comparison], $data[$field_name]/10,
+                                $data[$field_sort]);
+                        } else {
+                            $search_array[] = array($field,
+                                $data[$field_comparison], $data[$field_name],
+                                $data[$field_sort]);
+                        }
+                        $paging .= "&amp;$field_name=".
+                            urlencode($data[$field_name]);
+                    }
+                    $data['PAGING'] = $paging;
+                break;
+                case "unsubscribe":
+                    $user_id = (isset($_REQUEST['user_id'])) ? 
+                        $parent->clean($_REQUEST['user_id'], 'int'): 0;
+                    if($user_id && $group_id &&
+                        $parent->groupModel->checkUserGroup($user_id,
+                        $group_id)) {
+                        $parent->groupModel->deleteUserGroup($user_id,
+                            $group_id);
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('accountaccess_component_unsubscribe').
+                            "</h1>')";
+                    } else {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('accountaccess_component_no_unsubscribe').
+                            "</h1>')";
+                    }
+                break;
             }
         }
-
-        if(!isset($_REQUEST['arg']) || !in_array($_REQUEST['arg'],
-            $possible_arguments)) {
-            return $data;
+        $current_id = $_SESSION["USER_ID"];
+        $num_groups = $parent->groupModel->getGroupsCount($search_array,
+            $current_id);
+        $data['NUM_TOTAL'] = $num_groups;
+        $num_show = (isset($_REQUEST['num_show']) &&
+            isset($parent->adminView->pagingtableHelper->show_choices[
+                $_REQUEST['num_show']])) ? $_REQUEST['num_show'] : 50;
+        $data['num_show'] = $num_show;
+        $data['START_ROW'] = 0;
+        if(isset($_REQUEST['start_row'])) {
+            $data['START_ROW'] = min(
+                max(0, $parent->clean($_REQUEST['start_row'],"int")),
+                $num_users);
         }
-        $data['SELECT_ROLE'] = -1;
-        switch($_REQUEST['arg'])
-        {
-            case "addgroup":
-                $data['SELECT_GROUP'] = -1;
-                if($parent->groupModel->getGroupId($groupname) > 0) {
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('accountaccess_component_groupname_exists').
-                        "</h1>')";
-                    return $data;
-                }
-                $parent->groupModel->addGroup(
-                    $groupname, $_SESSION['USER_ID']);
-                $groupid = $parent->groupModel->getGroupId($groupname);
-                $data['GROUP_NAMES'][$groupid] = $groupname;
-                $data['DELETE_GROUP_NAMES'][$groupid] = $groupname;
-                $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                    tl('accountaccess_component_groupname_added').
-                    "</h1>')";
-            break;
-            case "deletegroup":
-                if($select_group == -1){
-                $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                  tl('accountaccess_component_groupname_doesnt_exists').
-                    "</h1>')";
-                }else{
-                 $parent->groupModel->deleteGroup($select_group);
-                unset($data['GROUP_NAMES'][$select_group]);
-                unset($data['DELETE_GROUP_NAMES'][$select_group]);
-                $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                    tl('accountaccess_component_groupname_deleted')."</h1>')";
-                }
-            break;
-            case "adduser":
-                if(!in_array($select_user, $user_ids)) {
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('accountaccess_component_username_doesnt_exists').
-                        "</h1>')";
-                    return $data;
-                }
-                $parent->groupModel->addUserGroup($select_user, $select_group);
-                unset($data['AVAILABLE_USERS'][$select_user]);
-                $data['GROUP_USERS'] =
-                    $parent->groupModel->getGroupUsers($select_group);
-                $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                    tl('accountaccess_component_user_added')."</h1>')";
-            break;
-            case "deleteuser":
-                $parent->groupModel->deleteUserGroup(
-                    $select_user, $select_group);
-                $data['GROUP_USERS'] =
-                    $parent->groupModel->getGroupUsers($select_group);
-                $data['AVAILABLE_USERS'][$select_user] =
-                    $usernames[$select_user];
-                $data['SELECT_USER'] = -1;
-                unset($data['GROUP_NAMES'][$select_group]);
-                unset($data['GROUP_USERS']);
-                $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                    tl('accountaccess_component_user_deleted')."</h1>')";
-            break;
-            case "addrole":
-                if(!in_array($select_group, $group_ids)) {
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('accountaccess_component_groupname_doesnt_exists').
-                        "</h1>')";
-                    return $data;
-                }
-                if(!in_array($select_role, $role_ids)) {
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('accountaccess_component_rolename_doesnt_exists').
-                        "</h1>')";
-                    return $data;
-                }
-                $parent->groupModel->addGroupRole($select_group, $select_role);
-                unset($data['AVAILABLE_ROLES'][$select_role]);
-                $data['GROUP_ROLES'] =
-                    $parent->groupModel->getGroupRoles($select_group);
-                $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                    tl('accountaccess_component_rolename_added')."</h1>')";
-            break;
-            case "deleterole":
-                if(!in_array($select_group, $group_ids)) {
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('accountaccess_component_groupname_doesnt_exists').
-                        "</h1>')";
-                    return $data;
-                }
-                if(!in_array($select_role, $role_ids)) {
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('accountaccess_component_rolename_doesnt_exists').
-                        "</h1>')";
-                    return $data;
-                }
-                $parent->groupModel->deleteGroupRole($select_group, $select_role
-                    );
-                $data['GROUP_ROLES'] =
-                    $parent->groupModel->getGroupRoles($select_group);
-                if(isset($rolenames[$select_role])) {
-                    $data['AVAILABLE_ACTIVITIES'][$select_role] =
-                        $rolenames[$select_role];
-                }
-                $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                    tl('accountaccess_component_role_deleted')."</h1>')";
-            break;
-            case "updategroup":
-                $parent->groupModel->updateUserGroup($select_user, $select_group
-                    );
-            break;
+        $data['END_ROW'] = min($data['START_ROW'] + $num_show, $num_groups);
+        if(isset($_REQUEST['start_row'])) {
+            $data['END_ROW'] = max($data['START_ROW'],
+                min($parent->clean($_REQUEST['end_row'],"int"), $num_groups));
         }
+        $data["GROUPS"] = $parent->groupModel->getGroups($data['START_ROW'],
+            $num_show, $search_array, $current_id);
+        $data['NEXT_START'] = $data['END_ROW'];
+        $data['NEXT_END'] = min($data['NEXT_START'] + $num_show, $num_groups);
+        $data['PREV_START'] = max(0, $data['START_ROW'] - $num_show);
+        $data['PREV_END'] = $data['START_ROW'];
         return $data;
     }
 
+    /**
+     *
+     */
+    function updateGroup(&$data, &$group, $update_fields)
+    {
+        $parent = $this->parent;
+        $changed = false;
+        if(!isset($group["OWNER_ID"]) ||
+            $group["OWNER_ID"] != $_SESSION['USER_ID']) {
+            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                tl('accountaccess_component_no_permission')."</h1>');";
+            return;
+        }
+        foreach($update_fields as $row) {
+            list($request_field, $group_field, $check_field) = $row;
+            if(isset($_REQUEST[$request_field]) &&
+                in_array($_REQUEST[$request_field],
+                    array_keys($data[$check_field]))) {
+                $group[$group_field] =
+                    $_REQUEST[$request_field];
+                $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                    tl('accountaccess_component_group_updated')."</h1>');";
+                $changed = true;
+            } else if(isset($_REQUEST[$request_field]) &&
+                $_REQUEST[$request_field] != "") {
+                $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                    tl('accountaccess_component_unknown_access')."</h1>');";
+            }
+        }
+        if($changed) {
+            $parent->groupModel->updateGroup($group);
+        }
+    }
 }

@@ -207,43 +207,6 @@ class UserModel extends Model
     }
 
     /**
-     *  Returns an array of all user_names
-     *
-     *  @return array a list of usernames
-     */
-    function getUserList()
-    {
-        $this->db->selectDB(DB_NAME);
-
-        $sql = "SELECT USER_NAME FROM USER ORDER BY USER_NAME ASC";
-        $result = $this->db->execute($sql);
-        $usernames = array();
-        while($row = $this->db->fetchArray($result)) {
-            $usernames[] = $row['USER_NAME'];
-        }
-        return $usernames;
-    }
-
-    /**
-     *  Returns an array of all user_names and user_ids
-     *
-     *  @return array a list of user
-     */
-    function getUserIdUsernameList()
-    {
-        $this->db->selectDB(DB_NAME);
-         $sql = "SELECT U.USER_ID AS USER_ID, U.USER_NAME AS USER_NAME ".
-            " FROM USER U";
-        $result = $this->db->execute($sql);
-        $i = 0;
-        while($users[$i] = $this->db->fetchArray($result)) {
-            $i++;
-        }
-        unset($users[$i]); //last one will be null
-        return $users;
-    }
-
-    /**
      *
      */
     function getUsers($limit=0, $num=100, $search_array = array())
@@ -251,7 +214,12 @@ class UserModel extends Model
         $limit = "LIMIT $limit, $num";
         list($where, $order_by) = 
             $this->searchArrayToWhereOrderClauses($search_array);
-        $sql = "SELECT USER_NAME, FIRST_NAME, LAST_NAME,
+        $add_where = " WHERE ";
+        if($where != "") {
+            $add_where = " AND ";
+        }
+        $where .= $add_where. "USER_ID != '".PUBLIC_USER_ID."'";
+        $sql = "SELECT USER_ID, USER_NAME, FIRST_NAME, LAST_NAME,
             EMAIL, STATUS FROM USER $where $order_by $limit";
         $result = $this->db->execute($sql);
         $i = 0;
@@ -273,6 +241,11 @@ class UserModel extends Model
         $this->db->selectDB(DB_NAME);
         list($where, $order_by) = 
             $this->searchArrayToWhereOrderClauses($search_array);
+        $add_where = " WHERE ";
+        if($where != "") {
+            $add_where = " AND ";
+        }
+        $where .= $add_where. "USER_ID != '".PUBLIC_USER_ID."'";
         $sql = "SELECT COUNT(*) AS NUM FROM USER $where";
         $result = $this->db->execute($sql);
         $row = $this->db->fetchArray($result);
@@ -392,10 +365,11 @@ class UserModel extends Model
             return false;
         }
         $user_id = $this->db->escapeString($user_id);
-        $sql = "INSERT INTO USER_GROUP (USER_ID, GROUP_ID) VALUES('".
-            $user_id."', '" . PUBLIC_GROUP_ID . "')";
+        $sql = "INSERT INTO USER_GROUP (USER_ID, GROUP_ID, STATUS) VALUES('".
+            $user_id."', '" . PUBLIC_GROUP_ID . "', '" . ACTIVE_STATUS . "')";
         $result = $this->db->execute($sql);
-        $sql = "INSERT INTO USER_ROLE  VALUES ('". $user_id."', 2) ";
+        $sql = "INSERT INTO USER_ROLE  VALUES ('". $user_id."', ".
+            USER_ROLE.") ";
         $result_id = $this->db->execute($sql);
         return true;
     }

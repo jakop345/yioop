@@ -56,16 +56,16 @@ class ManagerolesElement extends Element
     { ?>
         <div class="current-activity">
         <?php
-        if($data['FORM_TYPE'] == "searchroles") {
+        if($data['FORM_TYPE'] == "search") {
             $this->renderSearchForm($data);
         } else {
             $this->renderRoleForm($data);
         }
-        if(MOBILE) {
-            $this->mobileTitleNumRoleControls($data);
-        } else {
-            $this->desktopTitleNumRoleControls($data);
-        }
+        $data['TABLE_TITLE'] = tl('manageroles_element_roles');
+        $data['ACTIVITY'] = 'manageRoles';
+        $data['VIEW'] = $this->view;
+        $data['NO_FLOAT_TABLE'] = true;
+        $this->view->pagingtableHelper->render($data);
         ?>
         <table class="role-table table-margin">
             <tr>
@@ -106,122 +106,6 @@ class ManagerolesElement extends Element
         </div>
     <?php
     }
-    /**
-     *  Draws the heading before the role table as well as the controls
-     *  for what role to see (mobile phone case).
-     *
-     *  @param array $data needed for dropdown values for number of roles to
-     *      display
-     */
-    function mobileTitleNumRoleControls($data)
-    {
-        $base_url = "?c=admin&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
-            "&amp;a=manageRoles";
-        ?>
-        <h2><?php e(tl('manageroles_element_roles')); ?>&nbsp;&nbsp;[<a 
-                href="<?php e($base_url . '&amp;arg=searchroles');
-                ?>"><?php e(tl('manageroles_element_search'));?></a>]</h2>
-        <div>
-            <form  method="get" action='#' >
-            <?php
-            $bound_url = $base_url."&amp;arg=".$data['FORM_TYPE'];
-            if(isset($data['CURRENT_ROLE']['name']) && 
-                $data['CURRENT_role']['name'] != "") {
-                $bound_url .="&amp;name=".$data['CURRENT_ROLE'][
-                    'name'];
-            } ?>
-            <input type="hidden" name="c" value="admin" />
-            <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" 
-                value="<?php e($data[CSRF_TOKEN]); ?>" />
-            <input type="hidden" name="a" value="manageRoles" />
-            <?php
-            e("<b>".tl('manageroles_element_show')."</b>");
-            $this->view->optionsHelper->render(
-                "roles-show", "roles_show", $data['ROLES_SHOW_CHOICES'],
-                $data['roles_show'], true);
-            e("<br />");
-            if($data['START_ROW'] > 0) {
-                ?>
-                <a href="<?php e($bound_url); ?>&amp;start_row=<?php
-                    e($data['PREV_START']); ?>&amp;end_row=<?php 
-                    e($data['PREV_END']); ?>&amp;roles_show=<?php 
-                    e($data['roles_show'].$data['PAGING']); ?>">&lt;&lt;</a>
-                <?php
-            }
-            e("<b>".tl('manageroles_element_row_range', $data['START_ROW'],
-                $data['END_ROW'], $data['NUM_ROLES'])."</b>");
-            if($data['END_ROW'] < $data['NUM_ROLES']) {
-                ?>
-                <a href="<?php e($bound_url); ?>&amp;start_row=<?php
-                    e($data['NEXT_START']); ?>&amp;end_row=<?php 
-                    e($data['NEXT_END']); ?>&amp;roles_show=<?php 
-                    e($data['roles_show'].$data['PAGING']); ?>" >&gt;&gt;</a>
-                <?php
-            }
-            ?>
-            </form>
-        </div>
-        <?php
-    }
-
-    /**
-     *  Draws the heading before the role table as well as the controls
-     *  for what role to see (desktop, laptop, tablet case).
-     *
-     *  @param array $data needed for dropdown values for number of roles to
-     *      display
-     */
-    function desktopTitleNumRoleControls($data)
-    {
-        $base_url = "?c=admin&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
-            "&amp;a=manageRoles";
-        ?>
-        <h2><?php e(tl('manageroles_element_roles')); ?></h2>
-
-        <div>
-            <form  method="get" action='#' >
-            <?php
-            $bound_url = $base_url."&amp;arg=".$data['FORM_TYPE'];
-            if(isset($data['CURRENT_ROLE']['name']) && 
-                $data['CURRENT_ROLE']['name'] != "") {
-                $bound_url .="&amp;name=".$data['CURRENT_ROLE'][
-                    'name'];
-            }
-            if($data['START_ROW'] > 0) {
-                ?>
-                <a href="<?php e($bound_url); ?>&amp;start_row=<?php
-                    e($data['PREV_START']); ?>&amp;end_row=<?php 
-                    e($data['PREV_END']); ?>&amp;roles_show=<?php 
-                    e($data['roles_show'].$data['PAGING']); ?>">&lt;&lt;</a>
-                <?php
-            }
-            e("<b>".tl('manageroles_element_row_range', $data['START_ROW'],
-                $data['END_ROW'], $data['NUM_ROLES'])."</b>");
-            if($data['END_ROW'] < $data['NUM_ROLES']) {
-                ?>
-                <a href="<?php e($bound_url); ?>&amp;start_row=<?php
-                    e($data['NEXT_START']); ?>&amp;end_row=<?php 
-                    e($data['NEXT_END']); ?>&amp;roles_show=<?php 
-                    e($data['roles_show'].$data['PAGING']); ?>" >&gt;&gt;</a>
-                <?php
-            }
-            ?>
-            <input type="hidden" name="c" value="admin" />
-            <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" 
-                value="<?php e($data[CSRF_TOKEN]); ?>" />
-            <input type="hidden" name="a" value="manageRoles" />
-            <?php
-                e("<b>".tl('manageroles_element_show')."</b>");
-                $this->view->optionsHelper->render(
-                    "roles-show", "roles_show", $data['ROLES_SHOW_CHOICES'],
-                    $data['roles_show'], true);
-            ?>
-            [<a href="<?php e($base_url . '&amp;arg=searchroles');
-                ?>"><?php e(tl('manageroles_element_search'));?></a>]
-            </form>
-        </div>
-        <?php
-    }
 
     /**
      *  Draws the add role and edit role forms
@@ -250,21 +134,21 @@ class ManagerolesElement extends Element
         <input type="hidden" name="arg" value="<?php
             e($data['FORM_TYPE']);?>" />
         <table class="name-table">
-        <tr><td class="table-label"><label for="role-name"><?php
-            e(tl('manageroles_element_rolename'))?></label>:</td>
-            <td><input type="text" id="role-name"
+        <tr><th class="table-label"><label for="role-name"><?php
+            e(tl('manageroles_element_rolename'))?></label>:</th>
+            <th><input type="text" id="role-name"
                 name="name"  maxlength="80"
                 value="<?php e($data['CURRENT_ROLE']['name']); ?>"
                 class="narrow-field" <?php
                 if($editrole) {
                     e(' disabled="disabled" ');
                 }
-                ?> /></td></tr>
+                ?> /></th></tr>
         <?php
         if($editrole) {
         ?>
-            <tr><td class="table-label" style="vertical-align:top"><?php
-                    e(tl('manageroles_element_role_activities')); ?>:</td>
+            <tr><th class="table-label" style="vertical-align:top"><?php
+                    e(tl('manageroles_element_role_activities')); ?>:</th>
                 <td><div class='light-gray-box'><table><?php
                 foreach($data['ROLE_ACTIVITIES'] as $activity_array) {
                     e("<tr><td><b>".
@@ -327,11 +211,10 @@ class ManagerolesElement extends Element
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="manageRoles" />
-        <input type="hidden" name="arg" value="<?php
-            e($data['FORM_TYPE']);?>" />
+        <input type="hidden" name="arg" value="search" />
         <table class="name-table">
-        <tr><td class="table-label"><label for="role-name"><?php
-            e(tl('manageroles_element_rolename'))?>:</label>
+        <tr><td class="table-label"><label for="role-name"><b><?php
+            e(tl('manageroles_element_rolename'))?>:</b></label>
             <?php
                 e($item_sep);
                 $this->view->optionsHelper->render(

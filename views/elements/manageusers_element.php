@@ -56,16 +56,17 @@ class ManageusersElement extends Element
     ?>
         <div class="current-activity">
         <?php
-        if($data['FORM_TYPE'] == "searchusers") {
+        if($data['FORM_TYPE'] == "search") {
             $this->renderSearchForm($data);
         } else {
             $this->renderUserForm($data);
         }
-        if(MOBILE) {
-            $this->mobileTitleNumUserControls($data);
-        } else {
-            $this->desktopTitleNumUserControls($data);
-        }
+        $data['TABLE_TITLE'] = tl('manageusers_element_users');
+        $data['ACTIVITY'] = 'manageUsers';
+        $data['VIEW'] = $this->view;
+        $this->view->pagingtableHelper->render($data);
+
+        $default_accounts = array(ROOT_ID, PUBLIC_USER_ID);
         ?>
         <table class="role-table">
             <tr>
@@ -88,13 +89,14 @@ class ManageusersElement extends Element
             foreach($data['USERS'] as $user) {
                 echo "<tr>";
                 foreach($user as $colname => $user_column) {
-                    if(MOBILE && !in_array($colname, $mobile_columns)) {
+                    if($colname == "USER_ID" || (
+                        MOBILE && !in_array($colname, $mobile_columns))) {
                         continue;
                     }
                     if(strcmp($colname,"STATUS") == 0) {
                         ?><td>
                         <?php
-                        if($user['USER_NAME'] == 'root') {
+                        if(in_array($user['USER_ID'], $default_accounts)) {
                             e("<span class='gray'>&nbsp;&nbsp;".
                                 $data['STATUS_CODES'][$user['STATUS']].
                                 "</span>");
@@ -125,12 +127,19 @@ class ManageusersElement extends Element
                     }
                 }
                 ?>
-                <td><a href="<?php e($edit_url . 'user_name='.
-                    $user['USER_NAME']); ?>"><?php
-                    e(tl('manageusers_element_edit'));
-                    ?></a></td>
                 <td><?php
-                    if($user['USER_NAME'] == 'root') {
+                    if($user['USER_ID'] == PUBLIC_USER_ID) {
+                        e('<span class="gray">'.
+                            tl('manageusers_element_edit').'</span>');
+                    } else {?>
+                        <a href="<?php e($edit_url . 'user_name='.
+                        $user['USER_NAME']); ?>"><?php
+                        e(tl('manageusers_element_edit'));
+                        ?></a></td>
+                        <?php
+                    } ?>
+                <td><?php
+                    if(in_array($user['USER_ID'], $default_accounts)) {
                         e('<span class="gray">'.
                             tl('manageusers_element_delete').'</span>');
                     } else {
@@ -151,122 +160,6 @@ class ManageusersElement extends Element
         }
         </script>
         </div>
-        <?php
-    }
-
-    /**
-     *  Draws the heading before the user table as well as the controls
-     *  for what user to see (mobile phone case).
-     *
-     *  @param array $data needed for dropdown values for number of users to
-     *      display
-     */
-    function mobileTitleNumUserControls($data)
-    {
-        $base_url = "?c=admin&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
-            "&amp;a=manageUsers";
-        ?>
-        <h2><?php e(tl('manageusers_element_users')); ?>&nbsp;&nbsp;[<a 
-                href="<?php e($base_url . '&amp;arg=searchusers');
-                ?>"><?php e(tl('manageusers_element_search'));?></a>]</h2>
-        <div>
-            <form  method="get" action='#' >
-            <?php
-            $bound_url = $base_url."&amp;arg=".$data['FORM_TYPE'];
-            if(isset($data['CURRENT_USER']['user_name']) && 
-                $data['CURRENT_USER']['user_name'] != "") {
-                $bound_url .="&amp;user_name=".$data['CURRENT_USER'][
-                    'user_name'];
-            } ?>
-            <input type="hidden" name="c" value="admin" />
-            <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" 
-                value="<?php e($data[CSRF_TOKEN]); ?>" />
-            <input type="hidden" name="a" value="manageUsers" />
-            <?php
-            e("<b>".tl('manageusers_element_show')."</b>");
-            $this->view->optionsHelper->render(
-                "users-show", "users_show", $data['USERS_SHOW_CHOICES'],
-                $data['users_show'], true);
-            e("<br />");
-            if($data['START_ROW'] > 0) {
-                ?>
-                <a href="<?php e($bound_url); ?>&amp;start_row=<?php
-                    e($data['PREV_START']); ?>&amp;end_row=<?php 
-                    e($data['PREV_END']); ?>&amp;users_show=<?php 
-                    e($data['users_show'].$data['PAGING']); ?>">&lt;&lt;</a>
-                <?php
-            }
-            e("<b>".tl('manageusers_element_row_range', $data['START_ROW'],
-                $data['END_ROW'], $data['NUM_USERS'])."</b>");
-            if($data['END_ROW'] < $data['NUM_USERS']) {
-                ?>
-                <a href="<?php e($bound_url); ?>&amp;start_row=<?php
-                    e($data['NEXT_START']); ?>&amp;end_row=<?php 
-                    e($data['NEXT_END']); ?>&amp;users_show=<?php 
-                    e($data['users_show'].$data['PAGING']); ?>" >&gt;&gt;</a>
-                <?php
-            }
-            ?>
-            </form>
-        </div>
-        <?php
-    }
-
-    /**
-     *  Draws the heading before the user table as well as the controls
-     *  for what user to see (desktop, laptop, tablet case).
-     *
-     *  @param array $data needed for dropdown values for number of users to
-     *      display
-     */
-    function desktopTitleNumUserControls($data)
-    {
-        $base_url = "?c=admin&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
-            "&amp;a=manageUsers";
-        ?>
-        <div class="table-margin float-opposite">
-            <form  method="get" action='#' >
-            <?php
-            $bound_url = $base_url."&amp;arg=".$data['FORM_TYPE'];
-            if(isset($data['CURRENT_USER']['user_name']) && 
-                $data['CURRENT_USER']['user_name'] != "") {
-                $bound_url .="&amp;user_name=".$data['CURRENT_USER'][
-                    'user_name'];
-            }
-            if($data['START_ROW'] > 0) {
-                ?>
-                <a href="<?php e($bound_url); ?>&amp;start_row=<?php
-                    e($data['PREV_START']); ?>&amp;end_row=<?php 
-                    e($data['PREV_END']); ?>&amp;users_show=<?php 
-                    e($data['users_show'].$data['PAGING']); ?>">&lt;&lt;</a>
-                <?php
-            }
-            e("<b>".tl('manageusers_element_row_range', $data['START_ROW'],
-                $data['END_ROW'], $data['NUM_USERS'])."</b>");
-            if($data['END_ROW'] < $data['NUM_USERS']) {
-                ?>
-                <a href="<?php e($bound_url); ?>&amp;start_row=<?php
-                    e($data['NEXT_START']); ?>&amp;end_row=<?php 
-                    e($data['NEXT_END']); ?>&amp;users_show=<?php 
-                    e($data['users_show'].$data['PAGING']); ?>" >&gt;&gt;</a>
-                <?php
-            }
-            ?>
-            <input type="hidden" name="c" value="admin" />
-            <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" 
-                value="<?php e($data[CSRF_TOKEN]); ?>" />
-            <input type="hidden" name="a" value="manageUsers" />
-            <?php
-                e("<b>".tl('manageusers_element_show')."</b>");
-                $this->view->optionsHelper->render(
-                    "users-show", "users_show", $data['USERS_SHOW_CHOICES'],
-                    $data['users_show'], true);
-            ?>
-            [<a href="<?php e($base_url . '&amp;arg=searchusers');
-                ?>"><?php e(tl('manageusers_element_search'));?></a>]
-            </form>
-        </div>
-        <h2><?php e(tl('manageusers_element_users')); ?></h2>
         <?php
     }
 
@@ -297,8 +190,8 @@ class ManageusersElement extends Element
         <input type="hidden" name="arg" value="<?php 
             e($data['FORM_TYPE']);?>" />
         <table class="name-table">
-        <tr><td class="table-label"><label for="user-name"><?php
-            e(tl('manageusers_element_username'))?>:</label></td>
+        <tr><th class="table-label"><label for="user-name"><?php
+            e(tl('manageusers_element_username'))?>:</label></th>
             <td><input type="text" id="user-name"
                 name="user_name"  maxlength="80"
                 value="<?php e($data['CURRENT_USER']['user_name']); ?>"
@@ -307,27 +200,27 @@ class ManageusersElement extends Element
                     e(' disabled="disabled" ');
                 }
                 ?> /></td></tr>
-        <tr><td class="table-label"><label for="first-name"><?php
-                e(tl('manageusers_element_firstname')); ?>:</label></td>
+        <tr><th class="table-label"><label for="first-name"><?php
+                e(tl('manageusers_element_firstname')); ?>:</label></th>
             <td><input type="text" id="first-name"
                 name="first_name"  maxlength="80"
                 value="<?php e($data['CURRENT_USER']['first_name']); ?>"
                 class="narrow-field"/></td></tr>
-        <tr><td class="table-label"><label for="last-name"><?php
-                e(tl('manageusers_element_lastname')); ?>:</label></td>
+        <tr><th class="table-label"><label for="last-name"><?php
+                e(tl('manageusers_element_lastname')); ?>:</label></th>
             <td><input type="text" id="last-name"
                 name="last_name"  maxlength="80"
                 value="<?php e($data['CURRENT_USER']['last_name']); ?>"
                 class="narrow-field"/></td></tr>
-        <tr><td class="table-label"><label for="e-mail"><?php
-                e(tl('manageusers_element_email')); ?>:</label></td>
+        <tr><th class="table-label"><label for="e-mail"><?php
+                e(tl('manageusers_element_email')); ?>:</label></th>
             <td><input type="text" id="e-mail"
                 name="email"  maxlength="80"
                 value="<?php e($data['CURRENT_USER']['email']); ?>"
                 class="narrow-field"/></td></tr>
-        <tr><td class="table-label"><label
+        <tr><th class="table-label"><label
                 for="update-userstatus-currentuser"><?php
-                e(tl('manageusers_element_status')); ?>:</label></td>
+                e(tl('manageusers_element_status')); ?>:</label></th>
             <td><?php
                 if($data['CURRENT_USER']['user_name'] == 'root') {
                     e("<div class='light-gray-box'><span class='gray'>".
@@ -343,8 +236,8 @@ class ManageusersElement extends Element
         <?php
         if($edituser) {
         ?>
-            <tr><td class="table-label" style="vertical-align:top"><?php
-                    e(tl('manageusers_element_roles')); ?>:</td>
+            <tr><th class="table-label" style="vertical-align:top"><?php
+                    e(tl('manageusers_element_roles')); ?>:</th>
                 <td><div class='light-gray-box'><table><?php
                 foreach($data['SELECT_ROLES'] as $role_array) {
                     e("<tr><td><b>".
@@ -371,8 +264,8 @@ class ManageusersElement extends Element
                         $data['SELECT_ROLE']); ?>
                 </div>
                 </td></tr>
-            <tr><td class="table-label" style="vertical-align:top"><?php
-                    e(tl('manageusers_element_groups')); ?>:</td>
+            <tr><th class="table-label" style="vertical-align:top"><?php
+                    e(tl('manageusers_element_groups')); ?>:</th>
                 <td><div class='light-gray-box'><table><?php
                 foreach($data['SELECT_GROUPS'] as $group_array) {
                     e("<tr><td><b>".
@@ -395,14 +288,14 @@ class ManageusersElement extends Element
         <?php
         }
         ?>
-        <tr><td class="table-label"><label for="pass-word"><?php
-             e(tl('manageusers_element_password'))?>:</label></td>
+        <tr><th class="table-label"><label for="pass-word"><?php
+             e(tl('manageusers_element_password'))?>:</label></th>
             <td><input type="password" id="pass-word"
                 name="password" maxlength="80"
                 value="<?php e($data['CURRENT_USER']['password']); ?>"
                 class="narrow-field"/></td></tr>
-        <tr><td class="table-label"><label for="retype-password"><?php
-                e(tl('manageusers_element_retype_password'))?>:</label></td>
+        <tr><th class="table-label"><label for="retype-password"><?php
+                e(tl('manageusers_element_retype_password'))?>:</label></th>
             <td><input type="password" id="retype-password"
                 name="retypepassword" maxlength="80"
                 value="<?php e($data['CURRENT_USER']['password']); ?>"
@@ -437,8 +330,7 @@ class ManageusersElement extends Element
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="manageUsers" />
-        <input type="hidden" name="arg" value="<?php
-            e($data['FORM_TYPE']);?>" />
+        <input type="hidden" name="arg" value="search" />
         <table class="name-table">
         <tr><td class="table-label"><label for="user-name"><?php
             e(tl('manageusers_element_username'))?>:</label>

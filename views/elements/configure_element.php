@@ -189,7 +189,7 @@ class ConfigureElement extends Element
             </div>
             <div class="top-margin center">
             <button class="button-box" type="submit"><?php
-                e(tl('configure_element_submit')); ?></button>
+                e(tl('serversettings_element_submit')); ?></button>
             </div>
             </div>
         <?php } ?>

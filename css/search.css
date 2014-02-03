@@ -1813,7 +1813,7 @@ ul.in-list li
     position:relative;
     margin-right: 0.5in;
     padding:2px;
-    top: 0.15in;
+    top: 0.1in;
 }
 
 .html-rtl .table-margin
@@ -1821,7 +1821,7 @@ ul.in-list li
     position:relative;
     margin-left: 0.5in;
     padding:2px;
-    top: 0.15in;
+    top: 0.1in;
 }
 
 .html-ltr .role-table,

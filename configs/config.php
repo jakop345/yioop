@@ -559,7 +559,7 @@ define ('MAX_SUGGEST_URLS_ONE_DAY', 10);
 /** ID of the root user */
 define('ROOT_ID', 1);
 /** Role of the root user */
-define('ROOT_ROLE', 1);
+define('ADMIN_ROLE', 1);
 /** Default role of an active user */
 define('USER_ROLE', 2);
 /** ID of the group to which all Yioop users belong */
@@ -574,10 +574,26 @@ define('ACTIVE_STATUS', 1);
  *  still needs to undergo admin or email verification/activation
  */
 define('INACTIVE_STATUS', 2);
-
 /**
  * USER STATUS of used to indicate an account which can no longer perform
  * activities but which might be retained to preserve old blog posts.
  */
 define('BANNED_STATUS', 3);
+
+/** */
+define('INVITED_STATUS', 4);
+
+/** */
+define('NO_JOIN', 1);
+/** */
+define('REQUEST_JOIN', 2);
+/** */
+define('PUBLIC_JOIN', 3);
+
+/** */
+define('GROUP_PRIVATE', 1);
+/** */
+define('GROUP_READ', 2);
+/** */
+define('GROUP_READ_WRITE', 3);
 ?>

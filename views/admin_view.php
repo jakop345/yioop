@@ -61,7 +61,7 @@ class AdminView extends View
     /** Names of helper objects that the view uses to help draw itself
      *  @var array
      */
-    var $helpers = array('options');
+    var $helpers = array('options', 'pagingtable');
 
     /**
      * Renders the list of admin activities and draws the current activity
