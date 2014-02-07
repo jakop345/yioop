@@ -50,16 +50,10 @@ require_once BASE_DIR."/lib/url_parser.php";
 class ResourceController extends Controller implements CrawlConstants
 {
     /**
-     * Only outputs JSON data so don't need view
-     * @var array
-     */
-    var $views = array();
-    /**
      * These are the activities supported by this controller
      * @var array
      */
     var $activities = array("get", "syncList", "syncNotify", "suggest");
-
 
     /**
      * Checks that the request seems to be coming from a legitimate fetcher

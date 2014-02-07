@@ -54,14 +54,6 @@ require_once BASE_DIR."/lib/mail_server.php";
 class RegisterController extends Controller implements CrawlConstants
 {
     /**
-     * To create an new account the register view is used, for password
-     * reset/recovery the recover view is used, and on completion of forms/
-     * on errors the signin page is returned.
-     * @var array
-     */
-    var $views = array("recover", "register", "signin", "suggest");
-
-    /**
      * Holds a list of the allowed activities. These encompass various
      * stages of the account creation and account recovery processes
      * @var array

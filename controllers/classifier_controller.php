@@ -66,12 +66,6 @@ require_once BASE_DIR."/lib/archive_bundle_iterators/".
 class ClassifierController extends Controller implements CrawlConstants
 {
     /**
-     * Only outputs JSON data so don't need view
-     * @var array
-     */
-    var $views = array();
-
-    /**
      * These are the activities supported by this controller
      * @var array
      */

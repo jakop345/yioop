@@ -51,11 +51,6 @@ require_once BASE_DIR."/lib/crawl_constants.php";
 class ArchiveController extends Controller implements CrawlConstants
 {
     /**
-     * This controller does not make use of any views
-     * @var array
-     */
-    var $views = array();
-    /**
      * The only legal activity this controller will accept is a request
      * for the cache of a web page
      * @var array

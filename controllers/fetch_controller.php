@@ -62,11 +62,6 @@ foreach(glob(BASE_DIR."/lib/archive_bundle_iterators/*_bundle_iterator.php")
 class FetchController extends Controller implements CrawlConstants
 {
     /**
-     * Load FetchView to return results to fetcher
-     * @var array
-     */
-    var $views = array("fetch");
-    /**
      * These are the activities supported by this controller
      * @var array
      */

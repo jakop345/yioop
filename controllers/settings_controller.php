@@ -50,12 +50,6 @@ require_once BASE_DIR."/controllers/controller.php";
 class SettingsController extends Controller
 {
     /**
-     * Load the SettingsView
-     * @var array
-     */
-    var $views = array("settings");
-
-    /**
      *  Sets up the available perpage language options.
      *  If handling data sent from a  form, it stores cleaned versions of
      *  the number of results per page and language options into a sesssion

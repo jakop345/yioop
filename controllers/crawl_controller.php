@@ -59,11 +59,6 @@ require_once BASE_DIR."/lib/url_parser.php";
 class CrawlController extends Controller implements CrawlConstants
 {
     /**
-     * Only outputs serialized php data so don't need view
-     * @var array
-     */
-    var $views = array();
-    /**
      * These are the activities supported by this controller
      * @var array
      */
