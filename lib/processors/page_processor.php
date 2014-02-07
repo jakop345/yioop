@@ -60,7 +60,7 @@ abstract class PageProcessor implements CrawlConstants
      *
      * @var array
      */
-    var $indexing_plugins;
+    var $plugin_instances;
 
     /**
      * Max number of chars to extract for description from a page to index.
@@ -78,7 +78,7 @@ abstract class PageProcessor implements CrawlConstants
      *      processor
      */
     function __construct($plugins = array(), $max_description_len = NULL) {
-        $this->indexing_plugins = $plugins;
+        $this->plugin_instances = $plugins;
         if($max_description_len != NULL) {
             self::$max_description_len = $max_description_len;
         } else {
@@ -103,10 +103,10 @@ abstract class PageProcessor implements CrawlConstants
     function handle($page, $url)
     {
         $summary = $this->process($page, $url);
-        if($summary != NULL && isset($this->indexing_plugins) &&
-            is_array($this->indexing_plugins) ) {
+        if($summary != NULL && isset($this->plugin_instances) &&
+            is_array($this->plugin_instances) ) {
             $summary[self::SUBDOCS] = array();
-            foreach($this->indexing_plugins as $plugin_instance) {
+            foreach($this->plugin_instances as $plugin_instance) {
                 $subdoc = NULL;
                 $class_name = get_class($plugin_instance);
                 $subtype = lcfirst(substr($class_name, 0, -strlen("Plugin")));

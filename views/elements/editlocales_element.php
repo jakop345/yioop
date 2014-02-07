@@ -75,7 +75,7 @@ class EditlocalesElement extends Element
             e($data['CURRENT_LOCALE_TAG']); ?>" />
         <div class="top-margin"><b><label for="static-pages"><?php
             e(tl('editlocales_element_static_pages'))?></label></b>
-            <?php $this->view->optionsHelper->render("static-pages",
+            <?php $this->view->helper("options")->render("static-pages",
             "static_page", $data['STATIC_PAGES'], -1);
             ?></div>
         </form>

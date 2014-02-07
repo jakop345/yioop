@@ -54,12 +54,6 @@ class SettingsController extends Controller
      * @var array
      */
     var $views = array("settings");
-    /**
-     * LocaleModel used to get the available languages/locales, CrawlModel
-     * is used to get a list of available crawls
-     * @var array
-     */
-    var $models = array("locale", "crawl", "user", "machine");
 
     /**
      *  Sets up the available perpage language options.
@@ -72,6 +66,7 @@ class SettingsController extends Controller
         $data = array();
         $view = "settings";
         $changed_settings_flag = false;
+        $crawl_model = $this->model("crawl");
 
         if(isset($_SESSION['USER_ID'])) {
             $user = $_SESSION['USER_ID'];
@@ -82,7 +77,7 @@ class SettingsController extends Controller
         $data[CSRF_TOKEN] = $this->generateCSRFToken($user);
         $token_okay = $this->checkCSRFToken(CSRF_TOKEN, $user);
 
-        $languages = $this->localeModel->getLocaleList();
+        $languages = $this->model("locale")->getLocaleList();
         foreach($languages as $language) {
             $data['LANGUAGES'][$language['LOCALE_TAG']] =
                 $language['LOCALE_NAME'];
@@ -120,16 +115,16 @@ class SettingsController extends Controller
             $data['OPEN_IN_TABS'] = false;
         }
 
-        $machine_urls = $this->machineModel->getQueueServerUrls();
+        $machine_urls = $this->model("machine")->getQueueServerUrls();
 
-        $crawls = $this->crawlModel->getCrawlList(false, true, $machine_urls,
+        $crawls = $crawl_model->getCrawlList(false, true, $machine_urls,
             true);
         $data['CRAWLS'] = array();
         foreach($crawls as $crawl) {
             $data['CRAWLS'][$crawl['CRAWL_TIME']] = $crawl['DESCRIPTION'].
                 " ... ".$crawl['COUNT']." urls";
         }
-        $mixes = $this->crawlModel->getMixList();
+        $mixes = $crawl_model->getMixList();
         foreach($mixes as $mix) {
             $data['CRAWLS'][$mix['MIX_TIMESTAMP']] = $mix['MIX_NAME'].
                 " ... ".tl('settings_controller_crawl_mix');
@@ -144,14 +139,14 @@ class SettingsController extends Controller
             in_array($_REQUEST['its'],$crawl_stamps)){
             $data['its'] = $_REQUEST['its'];
         } else {
-            $data['its'] = $this->crawlModel->getCurrentIndexDatabaseName();
+            $data['its'] = $crawl_model->getCurrentIndexDatabaseName();
         }
 
         if($changed_settings_flag) {
             $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
                 tl('settings_controller_settings_saved')."</h1>')";
             if($user != $_SERVER['REMOTE_ADDR']) {
-                $this->userModel->setUserSession($user, $_SESSION);
+                $this->model("user")->setUserSession($user, $_SESSION);
             }
         }
 

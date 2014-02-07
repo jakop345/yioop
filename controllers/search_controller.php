@@ -57,24 +57,6 @@ require_once BASE_DIR."/lib/locale_functions.php";
 class SearchController extends Controller implements CrawlConstants
 {
     /**
-     * Says which models to load for this controller.
-     * PhraseModel is used to extract words from the query; CrawlModel
-     * is used for cached web page requests
-     * @var array
-     */
-    var $models = array("phrase", "crawl", "searchfilters", "machine",
-        "source", "cron");
-    /**
-     * Says which views to load for this controller.
-     * The SearchView is used for displaying general search results as well
-     * as the initial search screen; NocacheView
-     * is used on a cached web page request that fails; RssView is used
-     * to present search results according to the opensearch.org rss results
-     * format.
-     * @var array
-     */
-    var $views = array("search",  "nocache", "rss");
-    /**
      * Says which activities (roughly methods invoke from the web) this
      * controller will respond to
      * @var array
@@ -262,7 +244,7 @@ class SearchController extends Controller implements CrawlConstants
      */
     function initializeSubsearches()
     {
-        $subsearches = $this->sourceModel->getSubsearches();
+        $subsearches = $this->model("source")->getSubsearches();
         array_unshift($subsearches, array("FOLDER_NAME" => "",
             "SUBSEARCH_NAME" => tl('search_controller_web')));
         $no_query = false;
@@ -397,12 +379,13 @@ class SearchController extends Controller implements CrawlConstants
         } else {
             $current_machine = 0;
         }
-        $this->phraseModel->current_machine = $current_machine;
-        $this->crawlModel->current_machine = $current_machine;
+        $crawl_model = $this->model("crawl");
+        $this->model("phrase")->current_machine = $current_machine;
+        $crawl_model->current_machine = $current_machine;
 
-        $machine_urls = $this->machineModel->getQueueServerUrls();
+        $machine_urls = $this->model("machine")->getQueueServerUrls();
 
-        $current_its = $this->crawlModel->getCurrentIndexDatabaseName();
+        $current_its = $crawl_model->getCurrentIndexDatabaseName();
         $index_timestamp = $this->getIndexTimestamp();
         $is_mix = false;
         if($index_timestamp != $current_its) {
@@ -410,9 +393,9 @@ class SearchController extends Controller implements CrawlConstants
                 if($index_timestamp != 0 ) {
                     //validate timestamp against list
                     //(some crawlers replay deleted crawls)
-                    $crawls = $this->crawlModel->getCrawlList(false, true,
+                    $crawls = $crawl_model->getCrawlList(false, true,
                         $machine_urls, true);
-                    if($this->crawlModel->isCrawlMix($index_timestamp)) {
+                    if($crawl_model->isCrawlMix($index_timestamp)) {
                         $is_mix = true;
                     }
                     $found_crawl = false;
@@ -436,13 +419,13 @@ class SearchController extends Controller implements CrawlConstants
         }
         $index_info = NULL;
         if($web_flag && $index_timestamp != 0) {
-            $index_info =  $this->crawlModel->getInfoTimestamp(
+            $index_info =  $crawl_model->getInfoTimestamp(
                 $index_timestamp, $machine_urls);
             if($index_info == array() || ((!isset($index_info["COUNT"]) ||
                 $index_info["COUNT"] == 0) && !$is_mix)) {
                 if($index_timestamp != $current_its) {
                     $index_timestamp = $current_its;
-                    $index_info =  $this->crawlModel->getInfoTimestamp(
+                    $index_info =  $crawl_model->getInfoTimestamp(
                         $index_timestamp, $machine_urls);
                     if($index_info == array()) { $index_info = NULL; }
                 }
@@ -476,7 +459,8 @@ class SearchController extends Controller implements CrawlConstants
                 $_SESSION['its'];
             $index_timestamp = $this->clean($its, "int");
         } else {
-            $index_timestamp = $this->crawlModel->getCurrentIndexDatabaseName();
+            $index_timestamp =
+                $this->model("crawl")->getCurrentIndexDatabaseName();
         }
         return $index_timestamp;
     }
@@ -646,8 +630,11 @@ class SearchController extends Controller implements CrawlConstants
         $limit_news = true)
     {
         $no_index_given = false;
+        $crawl_model = $this->model("crawl");
+        $phrase_model = $this->model("phrase");
+        $filters_model = $this->model("searchfilters");
         if($index_name == 0) {
-            $index_name = $this->crawlModel->getCurrentIndexDatabaseName();
+            $index_name = $crawl_model->getCurrentIndexDatabaseName();
             if(!$index_name) {
                 $pattern = "/(\s)((i:|index:)(\S)+)/";
                 $indexes = preg_grep($pattern, array($query));
@@ -658,7 +645,7 @@ class SearchController extends Controller implements CrawlConstants
                 }
             }
         }
-        $is_mix = $this->crawlModel->isCrawlMix($index_name);
+        $is_mix = $crawl_model->isCrawlMix($index_name);
         if($no_index_given) {
             $data["ERROR"] = tl('search_controller_no_index_set');
             $data['SCRIPT'] =
@@ -669,17 +656,15 @@ class SearchController extends Controller implements CrawlConstants
             return $data;
         }
 
-        $this->phraseModel->index_name = $index_name;
-        $this->phraseModel->additional_meta_words = array();
+        $phrase_model->index_name = $index_name;
+        $phrase_model->additional_meta_words = array();
         foreach($this->indexing_plugins as $plugin) {
-            $plugin_name = ucfirst($plugin)."Plugin";
-            $plugin_obj = new $plugin_name();
-            $tmp_meta_words = $plugin_obj->getAdditionalMetaWords();
-            $this->phraseModel->additional_meta_words =
-                array_merge($this->phraseModel->additional_meta_words,
+            $tmp_meta_words = $this->plugin($plugin)->getAdditionalMetaWords();
+            $phrase_model->additional_meta_words =
+                array_merge($phrase_model->additional_meta_words,
                     $tmp_meta_words);
         }
-        $this->crawlModel->index_name = $index_name;
+        $crawl_model->index_name = $index_name;
 
         $original_query = $query;
         list($query, $raw, $use_network, $use_cache_if_possible,
@@ -693,7 +678,7 @@ class SearchController extends Controller implements CrawlConstants
         }
         if($use_network &&
             (!isset($_REQUEST['network']) || $_REQUEST['network'] == "true")) {
-            $queue_servers = $this->machineModel->getQueueServerUrls();
+            $queue_servers = $this->model("machine")->getQueueServerUrls();
         } else {
             $queue_servers = array();
         }
@@ -708,15 +693,15 @@ class SearchController extends Controller implements CrawlConstants
             case "related":
                 $data['QUERY'] = "related:$arg";
                 $url = $arg;
-                $crawl_item = $this->crawlModel->getCrawlItem($url,
+                $crawl_item = $crawl_model->getCrawlItem($url,
                     $queue_servers);
                 $top_phrases  =
                     $this->getTopPhrases($crawl_item, 3, $index_name);
                 $top_query = implode(" ", $top_phrases);
-                $filter = $this->searchfiltersModel->getFilter();
-                $this->phraseModel->edited_page_summaries =
-                    $this->searchfiltersModel->getEditedPageSummaries();
-                $phrase_results = $this->phraseModel->getPhrasePageResults(
+                $filter = $filters_model->getFilter();
+                $phrase_model->edited_page_summaries =
+                    $filters_model->getEditedPageSummaries();
+                $phrase_results = $phrase_model->getPhrasePageResults(
                     $top_query, $limit, $results_per_page, false, $filter,
                     $use_cache_if_possible, $raw, $queue_servers,
                     $guess_semantics, $save_timestamp, $limit_news);
@@ -734,13 +719,14 @@ class SearchController extends Controller implements CrawlConstants
             case "query":
             default:
                 if(trim($query) != "") {
-                    $filter = $this->searchfiltersModel->getFilter();
-                    $this->phraseModel->edited_page_summaries =
-                        $this->searchfiltersModel->getEditedPageSummaries();
-                    $phrase_results = $this->phraseModel->getPhrasePageResults(
-                        $query, $limit, $results_per_page, true, $filter,
-                        $use_cache_if_possible, $raw, $queue_servers,
-                        $guess_semantics, $save_timestamp,  $limit_news);
+                    $filter = $filters_model->getFilter();
+                    $phrase_model->edited_page_summaries =
+                        $filters_model->getEditedPageSummaries();
+                    $phrase_results = 
+                        $phrase_model->getPhrasePageResults(
+                            $query, $limit, $results_per_page, true, $filter,
+                            $use_cache_if_possible, $raw, $queue_servers,
+                            $guess_semantics, $save_timestamp,  $limit_news);
                     $query = $original_query;
                 }
                 $data['PAGING_QUERY'] = "?q=".urlencode($query);
@@ -753,7 +739,8 @@ class SearchController extends Controller implements CrawlConstants
             break;
         }
 
-        $data['VIDEO_SOURCES'] = $this->sourceModel->getMediaSources("video");
+        $data['VIDEO_SOURCES'] =
+            $this->model("source")->getMediaSources("video");
         $data['RAW'] = $raw;
         $data['PAGES'] = (isset($phrase_results['PAGES'])) ?
              $phrase_results['PAGES']: array();
@@ -785,6 +772,7 @@ class SearchController extends Controller implements CrawlConstants
     function calculateControlWords($query, $raw, $is_mix, $index_name)
     {
         $original_query = $query;
+        $crawl_model = $this->model("crawl");
         if(trim($query) != "") {
             if($this->subsearch_identifier != "") {
                 $replace = " {$this->subsearch_identifier}";
@@ -810,7 +798,7 @@ class SearchController extends Controller implements CrawlConstants
                 $is_mix = true;
                 $index_name = $mix_name;
             } else {
-                $tmp = $this->crawlModel->getCrawlMixTimestamp(
+                $tmp = $crawl_model->getCrawlMixTimestamp(
                     $mix_name);
                 if($tmp != false) {
                     $index_name = $tmp;
@@ -819,9 +807,9 @@ class SearchController extends Controller implements CrawlConstants
             }
         }
         if($is_mix) {
-            $mix = $this->crawlModel->getCrawlMix($index_name);
+            $mix = $crawl_model->getCrawlMix($index_name);
             $query =
-                $this->phraseModel->rewriteMixQuery($query, $mix);
+                $this->model("phrase")->rewriteMixQuery($query, $mix);
         }
 
         $pattern = "/(\s)(raw:(\S)+)/";
@@ -896,12 +884,13 @@ class SearchController extends Controller implements CrawlConstants
      */
     function getTopPhrases($crawl_item, $num, $crawl_time = 0)
     {
-        $queue_servers = $this->machineModel->getQueueServerUrls();
+        $crawl_model = $this->model("crawl");
+        $queue_servers = $this->model("machine")->getQueueServerUrls();
         if($crawl_time == 0) {
-            $crawl_time = $this->crawlModel->getCurrentIndexDatabaseName();
+            $crawl_time = $crawl_model->getCurrentIndexDatabaseName();
         }
-        $this->phraseModel->index_name = $crawl_time;
-        $this->crawlModel->index_name = $crawl_time;
+        $this->model("phrase")->index_name = $crawl_time;
+        $crawl_model->index_name = $crawl_time;
 
         $phrase_string =
             PhraseParser::extractWordStringPageSummary($crawl_item);
@@ -914,7 +903,8 @@ class SearchController extends Controller implements CrawlConstants
                 $crawl_item[self::LANG]);
         $words = array_keys($page_word_counts);
 
-        $word_counts = $this->crawlModel->countWords($words, $queue_servers);
+        $word_counts =
+            $crawl_model->countWords($words, $queue_servers);
 
         $word_ratios = array();
         foreach($page_word_counts as $word => $count) {
@@ -1131,7 +1121,7 @@ class SearchController extends Controller implements CrawlConstants
      */
     function clearQuerySavepoint($save_timestamp)
     {
-        $this->phraseModel->clearQuerySavePoint($save_timestamp);
+        $this->model("phrase")->clearQuerySavePoint($save_timestamp);
     }
 
     /**
@@ -1210,6 +1200,7 @@ class SearchController extends Controller implements CrawlConstants
     {
         global $CACHE, $IMAGE_TYPES;
 
+        $crawl_model = $this->model("crawl");
         $flag = 0;
         $crawl_item = NULL;
         $all_future_times = array();
@@ -1228,14 +1219,14 @@ class SearchController extends Controller implements CrawlConstants
                 return;
             }
         }
-        $queue_servers = $this->machineModel->getQueueServerUrls();
+        $queue_servers = $this->model("machine")->getQueueServerUrls();
         if($crawl_time == 0) {
-            $crawl_time = $this->crawlModel->getCurrentIndexDatabaseName();
+            $crawl_time = $crawl_model->getCurrentIndexDatabaseName();
         }
 
         //Get all crawl times
         $crawl_times = array();
-        $all_crawl_details = $this->crawlModel->getCrawlList(false, true,
+        $all_crawl_details = $crawl_model->getCrawlList(false, true,
             $queue_servers);
         foreach($all_crawl_details as $crawl_details) {
             if($crawl_details['CRAWL_TIME'] != 0) {
@@ -1300,9 +1291,9 @@ class SearchController extends Controller implements CrawlConstants
                 $queue_servers = $nonnet_crawl_items['queue_servers'];
             }
         }
-        $this->phraseModel->index_name = $crawl_time;
-        $this->crawlModel->index_name = $crawl_time;
-        $crawl_item = $this->crawlModel->getCrawlItem($url, $queue_servers);
+        $this->model("phrase")->index_name = $crawl_time;
+        $crawl_model->index_name = $crawl_time;
+        $crawl_item = $crawl_model->getCrawlItem($url, $queue_servers);
         // A crawl item is able to override the default UI_FLAGS
         if(isset($crawl_item[self::UI_FLAGS]) &&
             is_string($crawl_item[self::UI_FLAGS])) {
@@ -1354,7 +1345,7 @@ class SearchController extends Controller implements CrawlConstants
         }
         $offset = $crawl_item[self::OFFSET];
         $cache_partition = $crawl_item[self::CACHE_PAGE_PARTITION];
-        $cache_item = $this->crawlModel->getCacheFile($machine,
+        $cache_item = $crawl_model->getCacheFile($machine,
             $machine_uri, $cache_partition, $offset,  $crawl_time,
             $instance_num);
         if(!isset($cache_item[self::PAGE])) {
@@ -1408,7 +1399,7 @@ class SearchController extends Controller implements CrawlConstants
      */
     function imageCachePage($url, $cache_item, $cache_file, $queue_servers)
     {
-        $inlinks = $this->phraseModel->getPhrasePageResults(
+        $inlinks = $this->model("phrase")->getPhrasePageResults(
             "link:$url", 0, 1, true, NULL, false, 0, $queue_servers);
         $in_url = isset($inlinks["PAGES"][0][self::URL]) ?
             $inlinks["PAGES"][0][self::URL] : "";
@@ -1742,11 +1733,13 @@ class SearchController extends Controller implements CrawlConstants
     {
         $all_crawl_times = array();
         $all_crawl_items = array();
+        $crawl_model = $this->model("crawl");
         $all_crawl_items['queue_servers'] = $queue_servers;
         foreach($crawl_times as $time) {
             $crawl_time = (string)$time;
-            $this->crawlModel->index_name = $crawl_time;
-            $crawl_item = $this->crawlModel->getCrawlItem($url, $queue_servers);
+            $crawl_model->index_name = $crawl_time;
+            $crawl_item =
+                $crawl_model->getCrawlItem($url, $queue_servers);
             if($crawl_item != NULL) {
                 array_push($all_crawl_times, $crawl_time);
                 $all_crawl_items[$crawl_time] = $crawl_item;

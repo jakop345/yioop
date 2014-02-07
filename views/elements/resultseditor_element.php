@@ -65,7 +65,7 @@ class ResultsEditorElement extends Element
             e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="resultsEditor" />
         <input type="hidden" name="arg" value="load_url" />
-        <?php $this->view->optionsHelper->render(
+        <?php $this->view->helper("options")->render(
                 "edited-result-pages", "LOAD_URL",
                 $data['URL_LIST'],
                 tl('resultseditor_element_url_list'));

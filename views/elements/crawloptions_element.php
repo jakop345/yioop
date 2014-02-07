@@ -106,12 +106,12 @@ class CrawloptionsElement extends Element
         <?php if(!isset($data['ts'])) { ?>
         <div class="top-margin"><label for="load-options"><b><?php
             e(tl('crawloptions_element_load_options'))?></b></label><?php
-            $this->view->optionsHelper->render("load-options", "load_option",
+            $this->view->helper("options")->render("load-options","load_option",
                 $data['available_options'], $data['options_default']);
         ?></div>
         <div class="top-margin"><label for="crawl-order"><b><?php
             e(tl('crawloptions_element_crawl_order'))?></b></label><?php
-            $this->view->optionsHelper->render("crawl-order", "crawl_order",
+            $this->view->helper("options")->render("crawl-order", "crawl_order",
                 $data['available_crawl_orders'], $data['crawl_order']);
         ?>
         </div>
@@ -170,7 +170,8 @@ class CrawloptionsElement extends Element
         <?php if(!isset($data['ts'])) { ?>
         <div class="top-margin"><label for="load-options"><b><?php
             e(tl('crawloptions_element_reindex_crawl'))?></b></label><?php
-            $this->view->optionsHelper->render("crawl-indexes", "crawl_indexes",
+            $this->view->helper("options")->render("crawl-indexes",
+                "crawl_indexes",
                 $data['available_crawl_indexes'], $data['crawl_index']);
         ?></div>
         <?php if(!API_ACCESS) { ?>

@@ -52,17 +52,6 @@ class StatisticsView extends View
     var $layout = "web";
 
     /**
-     * Names of element objects that the view uses to display itself
-     * @var array
-     */
-    var $elements = array();
-    /**
-     * Names of helper objects that the view uses to help draw itself
-     * @var array
-     */
-    var $helpers = array();
-
-    /**
      * Draws the web page used to display statistics about the default crawl
      *
      * @param array $data   contains anti CSRF token as well

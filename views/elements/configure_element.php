@@ -115,7 +115,7 @@ class ConfigureElement extends Element
             style="position:relative; top:-3.2em;" <?php } ?>><label
             for="locale"><?php
             e(tl('configure_element_default_language')); ?></label></span>
-        <?php $this->view->languageElement->render($data); ?>
+        <?php $this->view->element("language")->render($data); ?>
         </div>
         <?php if($data['PROFILE']) { ?>
             <div id="advance-configure">

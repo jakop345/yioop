@@ -59,11 +59,6 @@ require_once BASE_DIR."/lib/url_parser.php";
 class CrawlController extends Controller implements CrawlConstants
 {
     /**
-     * No models used by this controller
-     * @var array
-     */
-    var $models = array("crawl");
-    /**
      * Only outputs serialized php data so don't need view
      * @var array
      */
@@ -108,7 +103,7 @@ class CrawlController extends Controller implements CrawlConstants
 
     function crawlStalled()
     {
-        echo webencode(serialize($this->crawlModel->crawlStalled()));
+        echo webencode(serialize($this->model("crawl")->crawlStalled()));
     }
 
     /**
@@ -121,7 +116,7 @@ class CrawlController extends Controller implements CrawlConstants
      */
     function crawlStatus()
     {
-        echo webencode(serialize($this->crawlModel->crawlStatus()));
+        echo webencode(serialize($this->model("crawl")->crawlStatus()));
     }
 
     /**
@@ -137,7 +132,7 @@ class CrawlController extends Controller implements CrawlConstants
         if(isset($_REQUEST["arg"]) ) {
             $timestamp = unserialize(webdecode($_REQUEST["arg"]));
         }
-        echo webencode(serialize($this->crawlModel->getCrawlSeedInfo(
+        echo webencode(serialize($this->model("crawl")->getCrawlSeedInfo(
             $timestamp)));
     }
 
@@ -151,7 +146,7 @@ class CrawlController extends Controller implements CrawlConstants
         if(isset($_REQUEST["arg"]) ) {
             list($timestamp, $info) = unserialize(webdecode($_REQUEST["arg"]));
             if($timestamp && $info) {
-                $this->crawlModel->getCrawlSeedInfo($timestamp, $info);
+                $this->model("crawl")->getCrawlSeedInfo($timestamp, $info);
             }
         }
     }
@@ -169,7 +164,7 @@ class CrawlController extends Controller implements CrawlConstants
         if(isset($_REQUEST["arg"]) ) {
             $timestamp = unserialize(webdecode($_REQUEST["arg"]));
         }
-        echo webencode(serialize($this->crawlModel->getInfoTimestamp(
+        echo webencode(serialize($this->model("crawl")->getInfoTimestamp(
             $timestamp)));
     }
 
@@ -190,7 +185,7 @@ class CrawlController extends Controller implements CrawlConstants
             if($arg == 3 || $arg == 1) {$return_arc_bundles = true; }
             if($arg == 3 || $arg == 2) {$return_recrawls = true; }
         }
-        echo webencode(serialize($this->crawlModel->getCrawlList(
+        echo webencode(serialize($this->model("crawl")->getCrawlList(
             $return_arc_bundles, $return_recrawls)));
     }
 
@@ -203,7 +198,7 @@ class CrawlController extends Controller implements CrawlConstants
      */
     function combinedCrawlInfo()
     {
-        $combined =  $this->crawlModel->combinedCrawlInfo();
+        $combined =  $this->model("crawl")->combinedCrawlInfo();
         echo webencode(serialize($combined));
     }
 
@@ -217,7 +212,7 @@ class CrawlController extends Controller implements CrawlConstants
             return;
         }
         $timestamp = unserialize(webdecode($_REQUEST["arg"]));
-        $this->crawlModel->deleteCrawl($timestamp);
+        $this->model("crawl")->deleteCrawl($timestamp);
     }
 
     /**
@@ -237,7 +232,7 @@ class CrawlController extends Controller implements CrawlConstants
             unserialize(webdecode($_REQUEST["arg"]));
         $inject_urls = partitionByHash($inject_urls,
             NULL, $num, $i, "UrlParser::getHost");
-        $this->crawlModel->injectUrlsCurrentCrawl($timestamp,
+        $this->model("crawl")->injectUrlsCurrentCrawl($timestamp,
             $inject_urls, NULL);
     }
 
@@ -248,6 +243,7 @@ class CrawlController extends Controller implements CrawlConstants
      */
      function getCrawlItems()
      {
+        $crawl_model = $this->model("crawl");
         $start_time = microtime();
         if(!isset($_REQUEST["arg"]) || !isset($_REQUEST["num"])
             || !isset($_REQUEST["i"])) {
@@ -255,7 +251,7 @@ class CrawlController extends Controller implements CrawlConstants
         }
         $num = $this->clean($_REQUEST["num"], "int");
         $i = $this->clean($_REQUEST["i"], "int");
-        $this->crawlModel->current_machine = $i;
+        $crawl_model->current_machine = $i;
         $lookups = unserialize(webdecode($_REQUEST["arg"]));
         $our_lookups = array();
         foreach($lookups as $lookup => $lookup_info) {
@@ -276,7 +272,7 @@ class CrawlController extends Controller implements CrawlConstants
                 }
             }
         }
-        $items = $this->crawlModel->getCrawlItems($our_lookups);
+        $items = $crawl_model->getCrawlItems($our_lookups);
         $items["ELAPSED_TIME"] = changeInMicrotime($start_time);
 
         echo webencode(serialize($items));
@@ -293,10 +289,11 @@ class CrawlController extends Controller implements CrawlConstants
         if(!isset($_REQUEST["arg"]) ) {
             return;
         }
+        $crawl_model = $this->model("crawl");
         list($words, $index_name) = unserialize(webdecode($_REQUEST["arg"]));
-        $this->crawlModel->index_name = $index_name;
+        $crawl_model->index_name = $index_name;
         echo webencode(serialize(
-            $this->crawlModel->countWords($words)));
+            $crawl_model->countWords($words)));
      }
 
     /**
@@ -305,7 +302,7 @@ class CrawlController extends Controller implements CrawlConstants
      */
     function sendStopCrawlMessage()
     {
-        $this->crawlModel->sendStopCrawlMessage();
+        $this->model("crawl")->sendStopCrawlMessage();
     }
 
 
@@ -326,7 +323,7 @@ class CrawlController extends Controller implements CrawlConstants
         $seed_info['seed_sites']['url'] =
             partitionByHash($seed_info['seed_sites']['url'],
             NULL, $num, $i, "UrlParser::getHost");
-        $this->crawlModel->sendStartCrawlMessage($crawl_params, $seed_info,
+        $this->model("crawl")->sendStartCrawlMessage($crawl_params, $seed_info,
             NULL);
     }
 
@@ -343,7 +340,7 @@ class CrawlController extends Controller implements CrawlConstants
             return;
         }
         $save_timestamp = $this->clean($_REQUEST["arg"], "int");
-        $this->crawlModel->clearQuerySavePoint($save_timestamp);
+        $this->model("crawl")->clearQuerySavePoint($save_timestamp);
     }
 }
 ?>

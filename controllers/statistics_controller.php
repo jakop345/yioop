@@ -56,16 +56,6 @@ define("NO_FEEDS", true);
 class StatisticsController extends Controller implements CrawlConstants
 {
     /**
-     * No models used by this controller
-     * @var array
-     */
-    var $models = array("crawl", "machine", "phrase", "user");
-    /**
-     * Only outputs JSON data so don't need view
-     * @var array
-     */
-    var $views = array("statistics");
-    /**
      * Machines (string urls) which may have portions of the web crawl
      * statistics are being generated for
      * @var array
@@ -116,12 +106,12 @@ class StatisticsController extends Controller implements CrawlConstants
         } else {
             $user_id = $_SERVER['REMOTE_ADDR'];
         }
-        $this->machine_urls = $this->machineModel->getQueueServerUrls();
+        $this->machine_urls = $this->model("machine")->getQueueServerUrls();
         if(isset($_REQUEST['its'])) {
             $this->index_time_stamp = $this->clean($_REQUEST['its'], "string");
             //validate timestamp against list
             //(some crawlers replay deleted crawls)
-            $crawls = $this->crawlModel->getCrawlList(false,true,
+            $crawls = $this->model("crawl")->getCrawlList(false,true,
                 $this->machine_urls, true);
             $found_crawl = false;
             foreach($crawls as $crawl) {
@@ -138,7 +128,7 @@ class StatisticsController extends Controller implements CrawlConstants
         }
         if(!isset($this->index_time_stamp) || $this->index_time_stamp == "") {
             $this->index_time_stamp =
-                $this->crawlModel->getCurrentIndexDatabaseName();
+                $this->model("crawl")->getCurrentIndexDatabaseName();
         }
         if($this->index_time_stamp == 0) {
             unset($_SESSION['its']);
@@ -156,7 +146,7 @@ class StatisticsController extends Controller implements CrawlConstants
         if((!$stats_file_exists || isset($data["UNFINISHED"])) &&
             $user_id != $_SERVER['REMOTE_ADDR']) {
             //check if user allowed to make statistics
-            $activities = $this->userModel->getUserActivities($user_id);
+            $activities = $this->model("user")->getUserActivities($user_id);
             $allowed_to_make_statistics = false;
             foreach($activities as $activity) {
                 if($activity['METHOD_NAME'] == "manageCrawls") {
@@ -186,7 +176,7 @@ class StatisticsController extends Controller implements CrawlConstants
         }
         $data[CSRF_TOKEN] = $this->generateCSRFToken($user_id);
         $data["its"] = $this->index_time_stamp;
-        $this->statisticsView->head_objects["robots"] = "NOINDEX, NOFOLLOW";
+        $this->view("statistics")->head_objects["robots"] = "NOINDEX, NOFOLLOW";
         $this->displayView($view, $data);
     }
 
@@ -207,7 +197,7 @@ class StatisticsController extends Controller implements CrawlConstants
         global $INDEXED_FILE_TYPES;
 
         if(!isset($data["COUNT"])) {
-            $tmp =  $this->crawlModel->getInfoTimestamp(
+            $tmp =  $this->model("crawl")->getInfoTimestamp(
                 $this->index_time_stamp, $this->machine_urls);
             $tmp["user_id"] = $data["user_id"];
             $tmp["REMOTE_ADDR"] = $data["REMOTE_ADDR"];
@@ -370,7 +360,7 @@ class StatisticsController extends Controller implements CrawlConstants
      */
     function countQuery($query)
     {
-        $results = $this->phraseModel->getPhrasePageResults(
+        $results = $this->model("phrase")->getPhrasePageResults(
             "$query i:{$this->index_time_stamp}", 0,
             1, true, NULL, false, 0, $this->machine_urls);
         return (isset($results["TOTAL_ROWS"])) ? $results["TOTAL_ROWS"] : -1;

@@ -113,8 +113,10 @@ class GroupModel extends Model
             $last_id = -1;
         }
         $last_id = $row['GROUP_ID'];
-        $sql= "INSERT INTO USER_GROUP (USER_ID, GROUP_ID, STATUS) VALUES
-            ($user_id, $last_id, ".ACTIVE_STATUS.")";
+        $now = time();
+        $sql= "INSERT INTO USER_GROUP (USER_ID, GROUP_ID, STATUS,
+            JOIN_DATE) VALUES
+            ($user_id, $last_id, ".ACTIVE_STATUS.", $now)";
         $this->db->execute($sql);
     }
 
@@ -128,6 +130,7 @@ class GroupModel extends Model
         unset($group['GROUP_NAME']);
         unset($group['OWNER']); //column not in table
         unset($group['STATUS']); // column not in table
+        unset($group['JOIN_DATE']); // column not in table
         $this->db->selectDB(DB_NAME);
         $sql = "UPDATE GROUPS SET ";
         $comma ="";
@@ -247,7 +250,7 @@ class GroupModel extends Model
         $sql = "SELECT G.GROUP_ID AS GROUP_ID,
             G.GROUP_NAME AS GROUP_NAME, G.OWNER_ID AS OWNER_ID,
             O.USER_NAME AS OWNER, REGISTER_TYPE, UG.STATUS AS STATUS,
-            G.MEMBER_ACCESS FROM GROUPS G, USER O,
+            G.MEMBER_ACCESS, UG.JOIN_DATE AS JOIN_DATE FROM GROUPS G, USER O,
             USER_GROUP UG
             $where $order_by $limit";
         $result = $this->db->execute($sql);
@@ -292,8 +295,8 @@ class GroupModel extends Model
         $sql = "SELECT G.GROUP_ID AS GROUP_ID,
             G.GROUP_NAME AS GROUP_NAME, G.OWNER_ID AS OWNER_ID,
             O.USER_NAME AS OWNER, REGISTER_TYPE, UG.STATUS,
-            G.MEMBER_ACCESS FROM GROUPS G, USER O,
-            USER_GROUP UG $where LIMIT 1";
+            G.MEMBER_ACCESS AS MEMBER_ACCESS, UG.JOIN_DATE AS JOIN_DATE
+            FROM GROUPS G, USER O, USER_GROUP UG $where LIMIT 1";
         $result = $this->db->execute($sql);
         $group = false;
         if($result) {
@@ -396,11 +399,12 @@ class GroupModel extends Model
      */
     function addUserGroup($user_id, $group_id, $status = ACTIVE_STATUS)
     {
+        $join_date = time();
         $this->db->selectDB(DB_NAME);
         $sql = "INSERT INTO USER_GROUP VALUES ('".
             $this->db->escapeString($user_id) . "', '".
             $this->db->escapeString($group_id) . "', '".
-            $this->db->escapeString($status) . "')";
+            $this->db->escapeString($status) . "', $join_date)";
         $this->db->execute($sql);
     }
 

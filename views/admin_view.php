@@ -47,21 +47,6 @@ class AdminView extends View
      *  @var string
      */
     var $layout = "web";
-    /** Names of element objects that the view uses to display itself
-     *  @var array
-     */
-    var $elements = array("activity", "blogpages", "configure",
-        "crawloptions", "createblogpages", "editblogpages",
-        "editclassifier", "editlocales", "editmix", "editstatic",
-        "language", "machinelog", "manageaccount", "manageclassifiers",
-        "managecrawls", "managegroups", "managelocales", "managemachines",
-        "manageroles", "manageusers", "mixcrawls", "pageoptions",
-        "resultseditor", "searchsources", "serversettings", "signin"
-        );
-    /** Names of helper objects that the view uses to help draw itself
-     *  @var array
-     */
-    var $helpers = array('options', 'pagingtable');
 
     /**
      * Renders the list of admin activities and draws the current activity
@@ -78,7 +63,7 @@ class AdminView extends View
         if(PROFILE) {
         ?>
         <div class="top-bar"><?php
-            $this->signinElement->render($data);
+            $this->element("signin")->render($data);
         ?>
         </div><?php
         }
@@ -92,10 +77,10 @@ class AdminView extends View
         if(!MOBILE) {e(' ['.$data['CURRENT_ACTIVITY'].']');}?></span></h1>
 
         <?php
-        $this->activityElement->render($data);
+        $this->element("activity")->render($data);
         if(isset($data['ELEMENT'])) {
             $element = $data['ELEMENT'];
-            $this->$element->render($data);
+            $this->element($element)->render($data);
         }
         if(PROFILE) {
         ?>

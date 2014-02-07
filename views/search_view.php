@@ -48,16 +48,6 @@ require_once BASE_DIR."/lib/crawl_constants.php";
 
 class SearchView extends View implements CrawlConstants
 {
-    /** Names of helper objects that the view uses to help draw itself
-     *  @var array
-     */
-    var $helpers = array("displayresults", "feeds", "filetype",
-        "images", "pagination", "videourl");
-    /** Names of element objects that the view uses to display itself
-     *  @var array
-     */
-    var $elements = array("footer", "moreoptions", "signin", "subsearch");
-
     /** This view is drawn on a web layout
      *  @var string
      */
@@ -82,8 +72,8 @@ class SearchView extends View implements CrawlConstants
         $data['LAND'] = (!isset($data['PAGES'])) ? 'landing-' : '';
         if(SIGNIN_LINK || SUBSEARCH_LINK) {?>
         <div class="<?php e($data['LAND']);?>top-bar"><?php
-            $this->subsearchElement->render($data);
-            $this->signinElement->render($data);
+            $this->element("subsearch")->render($data);
+            $this->element("signin")->render($data);
             ?>
 
         </div>
@@ -154,7 +144,7 @@ class SearchView extends View implements CrawlConstants
                 }
                 e("</div><div $top>");
             }
-            $this->moreoptionsElement->render($data);
+            $this->element("moreoptions")->render($data);
             if(isset($data['INDEX_INFO'])) {
                 e("</div>");
             }
@@ -173,7 +163,7 @@ class SearchView extends View implements CrawlConstants
                 e(tl('search_view_more_statistics')); ?></a>]
             <?php
             }
-            ?></div><?php  $this->footerElement->render($data);?>
+            ?></div><?php  $this->element("footer")->render($data);?>
 
         </div>
         <?php
@@ -243,12 +233,12 @@ class SearchView extends View implements CrawlConstants
                 $base_query = "?".CSRF_TOKEN."=".$data[CSRF_TOKEN].
                         "&amp;c=search";
                 if(isset($page['IMAGES'])) {
-                    $this->imagesHelper->render($page['IMAGES'],
+                    $this->helper("images")->render($page['IMAGES'],
                         $base_query."&amp;q={$data['QUERY']}", $subsearch);
                     e( "           </div>");
                     continue;
                 } else if(isset($page['FEEDS'])){
-                    $this->feedsHelper->render($page['FEEDS'],
+                    $this->helper("feeds")->render($page['FEEDS'],
                         $base_query, $data['QUERY'],  $subsearch,
                         $data['OPEN_IN_TABS']);
                     e( "           </div>");
@@ -279,14 +269,14 @@ class SearchView extends View implements CrawlConstants
                  } else {
                     echo $title;
                     if(isset($page[self::TYPE])) {
-                        $this->filetypeHelper->render($page[self::TYPE]);
+                        $this->helper("filetype")->render($page[self::TYPE]);
                     }
                     $check_video = true;
                 }
                 ?></a>
                 </h2>
                 <?php if($check_video) {
-                    $this->videourlHelper->render($url,
+                    $this->helper("videourl")->render($url,
                         $data['VIDEO_SOURCES'], $data["OPEN_IN_TABS"]);
                 }
                 ?>
@@ -299,7 +289,7 @@ class SearchView extends View implements CrawlConstants
                             $page[self::DESCRIPTION] : "";
                         $description = mb_convert_encoding($description, 
                             "UTF-8", "UTF-8");
-                        e("<p>".$this->displayresultsHelper->
+                        e("<p>".$this->helper("displayresults")->
                             render($description)."</p>");
                     }?>
                 <p class="serp-links-score"><?php
@@ -388,7 +378,7 @@ class SearchView extends View implements CrawlConstants
 
             <?php
             } //end foreach
-            $this->paginationHelper->render(
+            $this->helper("pagination")->render(
                 $data['PAGING_QUERY']."&amp;".CSRF_TOKEN."=".
                     $data[CSRF_TOKEN]."&amp;its=".$data['its'],
                 $data['LIMIT'], $data['RESULTS_PER_PAGE'], $data['TOTAL_ROWS']);

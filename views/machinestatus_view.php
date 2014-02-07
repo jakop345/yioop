@@ -46,13 +46,6 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 class MachinestatusView extends View
 {
     /**
-     * Names of helper objects that the view uses to help draw itself
-     * toggle is used to draw an On/Off switch
-     * @var array
-     */
-    var $helpers = array('toggle', 'options');
-
-    /**
      * Draws the ManagestatusView to the output buffer
      *
      * @param array $data  contains on/off status info for each of the machines
@@ -83,7 +76,7 @@ class MachinestatusView extends View
         <th><?php e(tl('machinestatus_view_news_updater'));?></th>
         <td>[<a href="<?php e($log_url);?>"><?php
             e(tl('machinestatus_view_log'));?></a>]</td>
-        <td><?php $this->toggleHelper->render(
+        <td><?php $this->helper("toggle")->render(
             ($data["NEWS_MODE"] == "news_process"), $on_news_updater, 
             $off_news_updater);?>
         </td>
@@ -112,7 +105,7 @@ class MachinestatusView extends View
                     </th>
                 <td>[<a href="<?php e($log_url);?>"><?php
                     e(tl('machinestatus_view_log'));?>]</td><td><?php
-                    $this->toggleHelper->render(
+                    $this->helper("toggle")->render(
                         isset($m['STATUSES']["mirror"]) ,
                         $on_mirror, $off_mirror);
                 ?></td>
@@ -128,7 +121,7 @@ class MachinestatusView extends View
                 </th><td>[<a href="<?php e($log_url);?>"><?php
                     e(tl('machinestatus_view_log'));?>]</a>
                     </td><td><?php
-                    $this->toggleHelper->render(
+                    $this->helper("toggle")->render(
                         isset($m['STATUSES']["queue_server"]) ,
                         $on_queue_server, $off_queue_server);
                 ?></td>
@@ -166,7 +159,7 @@ class MachinestatusView extends View
                     $toggle = true;
                     $caution = ($m['STATUSES']["fetcher"][$i] == 0);
                 }
-                $this->toggleHelper->render(
+                $this->helper("toggle")->render(
                     $toggle, $on_fetcher, $off_fetcher, $caution);?></td>
                 </tr>
                 </table>

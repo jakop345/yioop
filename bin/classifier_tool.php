@@ -210,7 +210,7 @@ class ClassifierTool
     function __construct()
     {
         $this->classifierController = new ClassifierController();
-        $this->crawlModel = $this->classifierController->crawlModel;
+        $this->crawlModel = $this->classifierController->model("crawl");
     }
 
     /**

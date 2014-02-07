@@ -47,10 +47,7 @@ class RecoverView extends View
      *  @var string
      */
     var $layout = "web";
-    /** Names of helper objects that the view uses to help draw itself
-     *  @var array
-     */
-    var $helpers = array('options');
+
     /**
      *  Draws the recover password web page and the page one get after
      *  following the recover password email
@@ -160,7 +157,7 @@ class RecoverView extends View
                                 <tr><td class="table-input">
                             <?php
                             }
-                            $this->optionsHelper->render(
+                            $this->helper("options")->render(
                                 "question-$i", "question_$i", 
                                 $question, $data["question_$i"]);
                             $first = false;

@@ -512,7 +512,7 @@ class BlogpageModel extends Model
      *  @param id $user id of the user
      *  @param string $title_entry title of the feed item
      */
-    function addEntry($timestamp, $title_entry, $description, $title,$user)
+    function addEntry($timestamp, $title_entry, $description, $title, $user)
     {
         $this->db->selectDB(DB_NAME);
         $timestampe = time();

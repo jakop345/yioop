@@ -46,8 +46,6 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  */
 class AccountaccessComponent extends Component
 {
-    var $activities = array("signin", "manageAccount", "manageUsers",
-        "manageRoles", "manageGroups");
 
     /**
      * This method is data to signin a user and initialize the data to be
@@ -60,7 +58,7 @@ class AccountaccessComponent extends Component
         $parent = $this->parent;
         $data = array();
         $_SESSION['USER_ID'] =
-            $parent->signinModel->getUserId($_REQUEST['username']);
+            $parent->model("signin")->getUserId($_REQUEST['username']);
         return $data;
     }
 
@@ -72,11 +70,12 @@ class AccountaccessComponent extends Component
     function manageAccount()
     {
         $parent = $this->parent;
+        $signin_model = $parent->model("signin");
         $possible_arguments = array("changepassword","changeemail");
-        $data["ELEMENT"] = "manageaccountElement";
+        $data["ELEMENT"] = "manageaccount";
         $data['SCRIPT'] = "";
         $data['MESSAGE'] = "";
-        $old_email = $parent->signinModel->getEmail($_SESSION['USER_ID']);
+        $old_email = $signin_model->getEmail($_SESSION['USER_ID']);
         $data["OLD_EMAIL"] = $old_email;
         if(isset($_REQUEST['arg']) &&
             in_array($_REQUEST['arg'], $possible_arguments)) {
@@ -93,8 +92,8 @@ class AccountaccessComponent extends Component
                         return $data;
                     }
                     $username =
-                        $parent->signinModel->getUserName($_SESSION['USER_ID']);
-                    $result = $parent->signinModel->checkValidSignin($username,
+                        $signin_model->getUserName($_SESSION['USER_ID']);
+                    $result = $signin_model->checkValidSignin($username,
                         $parent->clean($_REQUEST['old_password'], "string") );
                     if(!$result) {
                         $data["MESSAGE"] =
@@ -103,7 +102,7 @@ class AccountaccessComponent extends Component
                             $data["MESSAGE"]."</h1>')";
                         return $data;
                     }
-                    $parent->signinModel->changePassword($username,
+                    $signin_model->changePassword($username,
                         $parent->clean($_REQUEST['new_password'], "string"));
                     $data["MESSAGE"] =
                         tl('accountaccess_component_change_password');
@@ -121,8 +120,8 @@ class AccountaccessComponent extends Component
                         return $data;
                     }
                     $username =
-                        $parent->signinModel->getUserName($_SESSION['USER_ID']);
-                    $result = $parent->signinModel->checkValidEmail($username,
+                        $signin_model->getUserName($_SESSION['USER_ID']);
+                    $result = $signin_model->checkValidEmail($username,
                         $parent->clean($_REQUEST['old_email'], "string") );
                     if(!$result) {
                         $data["MESSAGE"] =
@@ -131,7 +130,7 @@ class AccountaccessComponent extends Component
                             $data["MESSAGE"]."</h1>')";
                         return $data;
                     }
-                    $parent->signinModel->changeEmail($username,
+                    $signin_model->changeEmail($username,
                         $parent->clean($_REQUEST['new_email'], "string"));
                     $data["MESSAGE"] = tl('accountaccess_component_change_email'
                         );
@@ -155,11 +154,14 @@ class AccountaccessComponent extends Component
     function manageUsers()
     {
         $parent = $this->parent;
+        $signin_model = $parent->model("signin");
+        $user_model = $parent->model("user");
+        $group_model = $parent->model("group");
         $possible_arguments = array("adduser", 'edituser', 'search',
             "deleteuser", "adduserrole", "deleteuserrole",
             "addusergroup", "deleteusergroup", "updatestatus");
 
-        $data["ELEMENT"] = "manageusersElement";
+        $data["ELEMENT"] = "manageusers";
         $data['SCRIPT'] = "";
         $data['STATUS_CODES'] = array(
             ACTIVE_STATUS => tl('accountaccess_component_active_status'),
@@ -202,7 +204,7 @@ class AccountaccessComponent extends Component
         }
         $userid = -1;
         if($username != "") {
-            $userid = $parent->signinModel->getUserId($username);
+            $userid = $signin_model->getUserId($username);
             $data['SELECT_USER'] = $username;
             if($userid) {
                 $data = array_merge($data, $this->getRoleArrays($userid));
@@ -238,7 +240,7 @@ class AccountaccessComponent extends Component
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_passwords_dont_match').
                             "</h1>')";
-                    } else if($parent->signinModel->getUserId($username) > 0) {
+                    } else if($signin_model->getUserId($username) > 0) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_user_exists').
                             "</h1>')";
@@ -246,7 +248,7 @@ class AccountaccessComponent extends Component
                         $_REQUEST['status']])) {
                         $_REQUEST['status'] = INACTIVE_STATUS;
                     } else {
-                        $parent->userModel->addUser($username,
+                        $user_model->addUser($username,
                             $parent->clean($_REQUEST['password'], "string"),
                             $parent->clean($_REQUEST['first_name'], "string"),
                             $parent->clean($_REQUEST['last_name'], "string"),
@@ -261,7 +263,7 @@ class AccountaccessComponent extends Component
                 break;
                 case "edituser":
                     $data['FORM_TYPE'] = "edituser";
-                    $user = $parent->userModel->getUser($username);
+                    $user = $user_model->getUser($username);
                     $update = false;
                     $error = false;
                     if($user["USER_ID"] == PUBLIC_USER_ID) {
@@ -302,7 +304,7 @@ class AccountaccessComponent extends Component
                             tl('accountaccess_component_passwords_dont_match').
                             "</h1>')";
                     } else if($update) {
-                        $parent->userModel->updateUser($user);
+                        $user_model->updateUser($user);
                         $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_user_updated').
                             "</h1>');";
@@ -310,7 +312,7 @@ class AccountaccessComponent extends Component
                 break;
                 case "deleteuser":
                     $userid = 
-                        $parent->signinModel->getUserId($username);
+                        $signin_model->getUserId($username);
                     if($userid <= 0) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_username_doesnt_exists'
@@ -322,7 +324,7 @@ class AccountaccessComponent extends Component
                                 ).
                             "</h1>')";
                     } else {
-                        $parent->userModel->deleteUser($username);
+                        $user_model->deleteUser($username);
                         unset($data['USER_NAMES'][$username]);
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_user_deleted') .
@@ -340,7 +342,7 @@ class AccountaccessComponent extends Component
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_rolename_doesnt_exists'
                             ). "</h1>')";
-                        $user = $parent->userModel->getUser($username);
+                        $user = $user_model->getUser($username);
                         foreach($user as $field => $value) {
                             $data['CURRENT_USER'][strtolower($field)] = $value;
                         }
@@ -349,24 +351,24 @@ class AccountaccessComponent extends Component
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_rolename_already_added'
                             ). "</h1>')";
-                        $user = $parent->userModel->getUser($username);
+                        $user = $user_model->getUser($username);
                         foreach($user as $field => $value) {
                             $data['CURRENT_USER'][strtolower($field)] = $value;
                         }
                     } else {
                         $data['FORM_TYPE'] = "edituser";
-                        $user = $parent->userModel->getUser($username);
+                        $user = $user_model->getUser($username);
                         foreach($user as $field => $value) {
                             $data['CURRENT_USER'][strtolower($field)] = $value;
                         }
-                        $parent->userModel->addUserRole($userid, $select_role);
+                        $user_model->addUserRole($userid, $select_role);
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_rolename_added').
                             "</h1>');\n";
                         unset($data['AVAILABLE_ROLES'][$select_role]);
                         $data['SELECT_ROLE'] = -1;
                         $data['SELECT_ROLES'] =
-                            $parent->userModel->getUserRoles($userid);
+                            $user_model->getUserRoles($userid);
                     }
                 break;
 
@@ -381,7 +383,7 @@ class AccountaccessComponent extends Component
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_groupname_doesnt_exists'
                             ). "</h1>')";
-                        $user = $parent->userModel->getUser($username);
+                        $user = $user_model->getUser($username);
                         foreach($user as $field => $value) {
                             $data['CURRENT_USER'][strtolower($field)] = $value;
                         }
@@ -390,17 +392,17 @@ class AccountaccessComponent extends Component
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_groupname_already_added'
                             ). "</h1>')";
-                        $user = $parent->userModel->getUser($username);
+                        $user = $user_model->getUser($username);
                         foreach($user as $field => $value) {
                             $data['CURRENT_USER'][strtolower($field)] = $value;
                         }
                     } else {
                         $data['FORM_TYPE'] = "edituser";
-                        $user = $parent->userModel->getUser($username);
+                        $user = $user_model->getUser($username);
                         foreach($user as $field => $value) {
                             $data['CURRENT_USER'][strtolower($field)] = $value;
                         }
-                        $parent->groupModel->addUserGroup($userid,
+                        $group_model->addUserGroup($userid,
                             $select_group);
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_groupname_added').
@@ -408,7 +410,7 @@ class AccountaccessComponent extends Component
                         unset($data['AVAILABLE_GROUPS'][$select_group]);
                         $data['SELECT_GROUP'] = -1;
                         $data['SELECT_GROUPS'] =
-                            $parent->groupModel->getUserGroups($userid);
+                            $group_model->getUserGroups($userid);
                     }
                 break;
 
@@ -423,14 +425,14 @@ class AccountaccessComponent extends Component
                                 ). "</h1>');\n";
                     } else {
                         $data['FORM_TYPE'] = "edituser";
-                        $user = $parent->userModel->getUser($username);
+                        $user = $user_model->getUser($username);
                         foreach($user as $field => $value) {
                             $data['CURRENT_USER'][strtolower($field)] = $value;
                         }
-                        $parent->userModel->deleteUserRole($userid,
+                        $user_model->deleteUserRole($userid,
                             $select_role);
                         $data['SELECT_ROLES'] =
-                            $parent->userModel->getUserRoles($userid);
+                            $user_model->getUserRoles($userid);
                         $data['AVAILABLE_ROLES'][$select_role] =
                             $data['SELECT_ROLENAME'];
                         $data['SELECT_ROLE'] = -1;
@@ -451,14 +453,14 @@ class AccountaccessComponent extends Component
                                 ). "</h1>');\n";
                     } else {
                         $data['FORM_TYPE'] = "edituser";
-                        $user = $parent->userModel->getUser($username);
+                        $user = $user_model->getUser($username);
                         foreach($user as $field => $value) {
                             $data['CURRENT_USER'][strtolower($field)] = $value;
                         }
-                        $parent->groupModel->deleteUserGroup($userid,
+                        $group_model->deleteUserGroup($userid,
                             $select_group);
                         $data['SELECT_GROUPS'] =
-                            $parent->groupModel->getUserGroups($userid);
+                            $group_model->getUserGroups($userid);
                         $data['AVAILABLE_GROUPS'][$select_group] =
                             $data['SELECT_GROUPNAME'];
                         $data['SELECT_GROUP'] = -1;
@@ -469,14 +471,14 @@ class AccountaccessComponent extends Component
                 break;
 
                 case "updatestatus":
-                    $userid = $parent->signinModel->getUserId($username);
+                    $userid = $signin_model->getUserId($username);
                     if(!isset($data['STATUS_CODES'][$_REQUEST['userstatus']]) ||
                         $userid == 1) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_username_doesnt_exists'
                                 ). "</h1>');\n";
                     } else {
-                        $parent->userModel->updateUserStatus($userid,
+                        $user_model->updateUserStatus($userid,
                             $_REQUEST['userstatus']);
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_userstatus_updated') .
@@ -529,10 +531,10 @@ class AccountaccessComponent extends Component
                 break;
             }
         }
-        $num_users = $parent->userModel->getUserCount($search_array);
+        $num_users = $user_model->getUserCount($search_array);
         $data['NUM_TOTAL'] = $num_users;
         $num_show = (isset($_REQUEST['num_show']) &&
-            isset($parent->adminView->pagingtableHelper->show_choices[
+            isset($parent->view("admin")->helper("pagingtable")->show_choices[
                 $_REQUEST['num_show']])) ? $_REQUEST['num_show'] : 50;
         $data['num_show'] = $num_show;
         $data['START_ROW'] = 0;
@@ -546,7 +548,7 @@ class AccountaccessComponent extends Component
             $data['END_ROW'] = max($data['START_ROW'],
                     min($parent->clean($_REQUEST['end_row'],"int"),$num_users));
         }
-        $data["USERS"] = $parent->userModel->getUsers($data['START_ROW'],
+        $data["USERS"] = $user_model->getUsers($data['START_ROW'],
             $num_show, $search_array);
         $data['NEXT_START'] = $data['END_ROW'];
         $data['NEXT_END'] = min($data['NEXT_START'] + $num_show, $num_users);
@@ -564,8 +566,8 @@ class AccountaccessComponent extends Component
     function getRoleArrays($userid)
     {
         $parent = $this->parent;
-        $data['SELECT_ROLES'] = $parent->userModel->getUserRoles($userid);
-        $all_roles = $parent->roleModel->getRoleList();
+        $data['SELECT_ROLES'] = $parent->model("user")->getUserRoles($userid);
+        $all_roles = $parent->model("role")->getRoleList();
         $role_ids = array();
         if(isset($_REQUEST['selectrole'])) {
             $select_role = $parent->clean($_REQUEST['selectrole'], "string");
@@ -618,10 +620,11 @@ class AccountaccessComponent extends Component
     function getGroupArrays($userid)
     {
         $parent = $this->parent;
+        $group_model = $parent->model("group");
         $data = array();
         $data['SELECT_GROUPS'] =
-            $parent->groupModel->getUserGroups($userid);
-        $all_groups = $parent->groupModel->getGroupList();
+            $group_model->getUserGroups($userid);
+        $all_groups = $group_model->getGroupList();
         $group_ids = array();
         if(isset($_REQUEST['selectgroup'])) {
             $select_group = $parent->clean($_REQUEST['selectgroup'],"string");
@@ -679,9 +682,10 @@ class AccountaccessComponent extends Component
     function manageRoles()
     {
         $parent = $this->parent;
+        $role_model = $parent->model("role");
         $possible_arguments = array("addactivity", "addrole",
                 "deleteactivity","deleterole", "editrole", "search");
-        $data["ELEMENT"] = "managerolesElement";
+        $data["ELEMENT"] = "manageroles";
         $data['SCRIPT'] = "";
         $data['COMPARISON_TYPES'] = array(
             "=" => tl('accountaccess_component_equal'),
@@ -714,10 +718,10 @@ class AccountaccessComponent extends Component
         }
 
         if($name != "" ) {
-            $role_id = $parent->roleModel->getRoleId($name);
+            $role_id = $role_model->getRoleId($name);
             $data['ROLE_ACTIVITIES'] =
-                $parent->roleModel->getRoleActivities($role_id);
-            $all_activities = $parent->activityModel->getActivityList();
+                $role_model->getRoleActivities($role_id);
+            $all_activities = $parent->model("activity")->getActivityList();
             $activity_ids = array();
             $activity_names = array();
             foreach($all_activities as $activity) {
@@ -767,12 +771,12 @@ class AccountaccessComponent extends Component
             switch($_REQUEST['arg'])
             {
                 case "addrole":
-                    if($parent->roleModel->getRoleId($name) > 0) {
+                    if($role_model->getRoleId($name) > 0) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_rolename_exists').
                             "</h1>')";
                     } else {
-                        $parent->roleModel->addRole($name);
+                        $role_model->addRole($name);
                         $data['CURRENT_ROLE']['name'] = "";
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_rolename_added').
@@ -782,12 +786,12 @@ class AccountaccessComponent extends Component
                 break;
 
                 case "deleterole":
-                    if(($role_id = $parent->roleModel->getRoleId($name)) <= 0) {
+                    if(($role_id = $role_model->getRoleId($name)) <= 0) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_rolename_doesnt_exists'
                             ). "</h1>')";
                     } else {
-                        $parent->roleModel->deleteRole($role_id);
+                        $role_model->deleteRole($role_id);
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_rolename_deleted').
                             "</h1>')";
@@ -797,7 +801,7 @@ class AccountaccessComponent extends Component
 
                 case "editrole":
                     $data['FORM_TYPE'] = "editrole";
-                    $role = $parent->roleModel->getRole($name);
+                    $role = $role_model->getRole($name);
                     $update = false;
                     foreach($data['CURRENT_ROLE'] as $field => $value) {
                         $upper_field = strtoupper($field);
@@ -813,7 +817,7 @@ class AccountaccessComponent extends Component
                         }
                     }
                     if($update) {
-                        $parent->roleModel->updateRole($role);
+                        $role_model->updateRole($role);
                         $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_role_updated').
                             "</h1>');";
@@ -859,7 +863,7 @@ class AccountaccessComponent extends Component
 
                 case "addactivity":
                     $data['FORM_TYPE'] = "editrole";
-                    if(($role_id = $parent->roleModel->getRoleId($name)) <= 0) {
+                    if(($role_id = $role_model->getRoleId($name)) <= 0) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_rolename_doesnt_exists'
                             ). "</h1>')";
@@ -869,11 +873,11 @@ class AccountaccessComponent extends Component
                             'accountaccess_component_activityname_doesnt_exists'
                             ). "</h1>')";
                     } else {
-                        $parent->roleModel->addActivityRole(
+                        $role_model->addActivityRole(
                             $role_id, $select_activity);
                         unset($data['AVAILABLE_ACTIVITIES'][$select_activity]);
                         $data['ROLE_ACTIVITIES'] =
-                            $parent->roleModel->getRoleActivities($role_id);
+                            $role_model->getRoleActivities($role_id);
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_activity_added').
                             "</h1>')";
@@ -882,7 +886,7 @@ class AccountaccessComponent extends Component
 
                 case "deleteactivity":
                    $data['FORM_TYPE'] = "editrole";
-                   if(($role_id = $parent->roleModel->getRoleId($name)) <= 0) {
+                   if(($role_id = $role_model->getRoleId($name)) <= 0) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_rolename_doesnt_exists'
                             ). "</h1>')";
@@ -892,10 +896,10 @@ class AccountaccessComponent extends Component
                             'accountaccess_component_activityname_doesnt_exists'
                             ). "</h1>')";
                     } else {
-                        $parent->roleModel->deleteActivityRole(
+                        $role_model->deleteActivityRole(
                             $role_id, $select_activity);
                         $data['ROLE_ACTIVITIES'] =
-                            $parent->roleModel->getRoleActivities($role_id);
+                            $role_model->getRoleActivities($role_id);
                         $data['AVAILABLE_ACTIVITIES'][$select_activity] =
                             $activity_names[$select_activity];
                         $data['SELECT_ACTIVITY'] = -1;
@@ -906,10 +910,10 @@ class AccountaccessComponent extends Component
                 break;
             }
         }
-        $num_roles = $parent->roleModel->getRoleCount($search_array);
+        $num_roles = $role_model->getRoleCount($search_array);
         $data['NUM_TOTAL'] = $num_roles;
         $num_show = (isset($_REQUEST['num_show']) &&
-            isset($parent->adminView->pagingtableHelper->show_choices[
+            isset($parent->view("admin")->helper("pagingtable")->show_choices[
                 $_REQUEST['num_show']])) ? $_REQUEST['num_show'] : 50;
         $data['num_show'] = $num_show;
         $data['START_ROW'] = 0;
@@ -923,7 +927,7 @@ class AccountaccessComponent extends Component
             $data['END_ROW'] = max($data['START_ROW'],
                     min($parent->clean($_REQUEST['end_row'],"int"),$num_roles));
         }
-        $data["ROLES"] = $parent->roleModel->getRoles($data['START_ROW'],
+        $data["ROLES"] = $role_model->getRoles($data['START_ROW'],
             $num_show, $search_array);
         $data['NEXT_START'] = $data['END_ROW'];
         $data['NEXT_END'] = min($data['NEXT_START'] + $num_show, $num_roles);
@@ -944,6 +948,7 @@ class AccountaccessComponent extends Component
     function manageGroups()
     {
         $parent = $this->parent;
+        $group_model = $parent->model("group");
         $possible_arguments = array("activateuser",
             "addgroup", "banuser", "changeowner",
             "creategroup", "deletegroup", "deleteuser", "editgroup",
@@ -951,7 +956,7 @@ class AccountaccessComponent extends Component
             "registertype", "reinstateuser", "search", "unsubscribe"
             );
 
-        $data["ELEMENT"] = "managegroupsElement";
+        $data["ELEMENT"] = "managegroups";
         $data['SCRIPT'] = "";
         $data['FORM_TYPE'] = "addgroup";
         $data['MEMBERSHIP_CODES'] = array(
@@ -1000,7 +1005,7 @@ class AccountaccessComponent extends Component
         */
         if(isset($_REQUEST['group_id']) && $_REQUEST['group_id'] != "") {
             $group_id = $parent->clean($_REQUEST['group_id'], "string" );
-            $group = $parent->groupModel->getGroupById($group_id,
+            $group = $group_model->getGroupById($group_id,
                 $_SESSION['USER_ID']);
             if($group && ($group['OWNER_ID'] == $_SESSION['USER_ID'] ||
                 ($_SESSION['USER_ID'] == ROOT_ID && $_REQUEST['arg'] ==
@@ -1038,12 +1043,12 @@ class AccountaccessComponent extends Component
                     $user_id = (isset($_REQUEST['user_id'])) ? 
                         $parent->clean($_REQUEST['user_id'], 'int'): 0;
                     if($user_id && $group_id &&
-                        $parent->groupModel->checkUserGroup($user_id,
+                        $group_model->checkUserGroup($user_id,
                         $group_id)) {
-                        $parent->groupModel->updateStatusUserGroup($user_id,
+                        $group_model->updateStatusUserGroup($user_id,
                             $group_id, ACTIVE_STATUS);
                         $data['GROUP_USERS'] =
-                            $parent->groupModel->getGroupUsers($group_id);
+                            $group_model->getGroupUsers($group_id);
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_user_activated').
                             "</h1>')";
@@ -1054,10 +1059,10 @@ class AccountaccessComponent extends Component
                     }
                 break;
                 case "addgroup":
-                    if(($add_id = $parent->groupModel->getGroupId($name)) > 0 ||
+                    if(($add_id = $group_model->getGroupId($name)) > 0 ||
                         $name =="" ) {
                         $register = 
-                            $parent->groupModel->getRegisterType($add_id);
+                            $group_model->getRegisterType($add_id);
                         if($add_id > 0 && $register && $register != NO_JOIN) {
                             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                                 tl('accountaccess_component_group_joined').
@@ -1065,7 +1070,7 @@ class AccountaccessComponent extends Component
                             $join_type = ($register == REQUEST_JOIN &&
                                 $_SESSION['USER_ID'] != ROOT_ID) ?
                                 INACTIVE_STATUS : ACTIVE_STATUS;
-                            $parent->groupModel->addUserGroup(
+                            $group_model->addUserGroup(
                                 $_SESSION['USER_ID'], $add_id, $join_type);
                         } else {
                             $data['CURRENT_GROUP'] = array("name" => "",
@@ -1087,12 +1092,12 @@ class AccountaccessComponent extends Component
                     $user_id = (isset($_REQUEST['user_id'])) ? 
                         $parent->clean($_REQUEST['user_id'], 'int'): 0;
                     if($user_id && $group_id &&
-                        $parent->groupModel->checkUserGroup($user_id, 
+                        $group_model->checkUserGroup($user_id, 
                         $group_id)) {
-                        $parent->groupModel->updateStatusUserGroup($user_id, 
+                        $group_model->updateStatusUserGroup($user_id, 
                             $group_id, BANNED_STATUS);
                         $data['GROUP_USERS'] =
-                            $parent->groupModel->getGroupUsers($group_id);
+                            $group_model->getGroupUsers($group_id);
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_user_banned').
                             "</h1>')";
@@ -1107,12 +1112,12 @@ class AccountaccessComponent extends Component
                     if(isset($_REQUEST['new_owner'])) {
                         $new_owner_name = $parent->clean($_REQUEST['new_owner'],
                             'string');
-                        $new_owner = $parent->userModel->getUser(
+                        $new_owner = $parent->model("user")->getUser(
                             $new_owner_name);
                         if(isset($new_owner['USER_ID']) ) {
-                            if($parent->groupModel->checkUserGroup(
+                            if($group_model->checkUserGroup(
                                 $new_owner['USER_ID'], $group_id)) {
-                                $parent->groupModel->changeOwnerGroup(
+                                $group_model->changeOwnerGroup(
                                     $new_owner['USER_ID'], $group_id);
                                 $data['SCRIPT'] .= 
                                     "doMessage('<h1 class=\"red\" >".
@@ -1136,7 +1141,7 @@ class AccountaccessComponent extends Component
                     }
                 break;
                 case "creategroup":
-                    if($parent->groupModel->getGroupId($name) > 0) {
+                    if($group_model->getGroupId($name) > 0) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_groupname_exists').
                             "</h1>')";
@@ -1154,11 +1159,11 @@ class AccountaccessComponent extends Component
                                 $_REQUEST[$field] = $info[1];
                             }
                         }
-                        $parent->groupModel->addGroup($name,
+                        $group_model->addGroup($name,
                             $_SESSION['USER_ID'], $_REQUEST['register'],
                             $_REQUEST['member_access']);
                         //one exception to setting $group_id
-                        $group_id = $parent->groupModel->getGroupId($name);
+                        $group_id = $group_model->getGroupId($name);
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_groupname_added').
                             "</h1>')";
@@ -1179,7 +1184,7 @@ class AccountaccessComponent extends Component
                     } else if(($group &&
                         $group['OWNER_ID'] == $_SESSION['USER_ID']) ||
                         $_SESSION['USER_ID'] == ROOT_ID) {
-                        $parent->groupModel->deleteGroup($group_id);
+                        $group_model->deleteGroup($group_id);
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_group_deleted').
                             "</h1>')";
@@ -1193,9 +1198,9 @@ class AccountaccessComponent extends Component
                     $data['FORM_TYPE'] = "editgroup";
                     $user_id = (isset($_REQUEST['user_id'])) ? 
                         $parent->clean($_REQUEST['user_id'], 'int'): 0;
-                    if($parent->groupModel->deletableUser(
+                    if($group_model->deletableUser(
                         $user_id, $group_id)) {
-                        $parent->groupModel->deleteUserGroup(
+                        $group_model->deleteUserGroup(
                             $user_id, $group_id);
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_user_deleted').
@@ -1206,7 +1211,7 @@ class AccountaccessComponent extends Component
                             "</h1>')";
                     }
                     $data['GROUP_USERS'] =
-                        $parent->groupModel->getGroupUsers($group_id);
+                        $group_model->getGroupUsers($group_id);
                 break;
                 case "editgroup":
                     $data['FORM_TYPE'] = "editgroup";
@@ -1220,7 +1225,7 @@ class AccountaccessComponent extends Component
                     $data['CURRENT_GROUP']['member_access'] = 
                         $group['MEMBER_ACCESS'];
                     $data['GROUP_USERS'] =
-                        $parent->groupModel->getGroupUsers($group_id);
+                        $group_model->getGroupUsers($group_id);
                 break;
                 case "inviteusers":
                     $data['FORM_TYPE'] = "inviteusers";
@@ -1231,11 +1236,11 @@ class AccountaccessComponent extends Component
                         $users_invited = false;
                         foreach($pre_user_names as $user_name) {
                             $user_name = trim($user_name);
-                            $user = $parent->userModel->getUser($user_name);
+                            $user = $parent->model("user")->getUser($user_name);
                             if($user) {
-                                if(!$parent->groupModel->checkUserGroup(
+                                if(!$group_model->checkUserGroup(
                                     $user['USER_ID'], $group_id)) {
-                                    $parent->groupModel->addUserGroup(
+                                    $group_model->addUserGroup(
                                         $user['USER_ID'], $group_id,
                                         INVITED_STATUS);
                                     $users_invited = true;
@@ -1253,7 +1258,7 @@ class AccountaccessComponent extends Component
                         }
                         $data['FORM_TYPE'] = "editgroup";
                         $data['GROUP_USERS'] =
-                            $parent->groupModel->getGroupUsers($group_id);
+                            $group_model->getGroupUsers($group_id);
                     }
                     
                 break;
@@ -1261,9 +1266,9 @@ class AccountaccessComponent extends Component
                     $user_id = (isset($_REQUEST['user_id'])) ? 
                         $parent->clean($_REQUEST['user_id'], 'int'): 0;
                     if($user_id && $group_id &&
-                        $parent->groupModel->checkUserGroup($user_id,
+                        $group_model->checkUserGroup($user_id,
                         $group_id, INVITED_STATUS)) {
-                        $parent->groupModel->updateStatusUserGroup($user_id,
+                        $group_model->updateStatusUserGroup($user_id,
                             $group_id, ACTIVE_STATUS);
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_joined').
@@ -1296,12 +1301,12 @@ class AccountaccessComponent extends Component
                     $user_id = (isset($_REQUEST['user_id'])) ? 
                         $parent->clean($_REQUEST['user_id'], 'int'): 0;
                     if($user_id && $group_id &&
-                        $parent->groupModel->checkUserGroup($user_id,
+                        $group_model->checkUserGroup($user_id,
                         $group_id)) {
-                        $parent->groupModel->updateStatusUserGroup($user_id,
+                        $group_model->updateStatusUserGroup($user_id,
                             $group_id, ACTIVE_STATUS);
                         $data['GROUP_USERS'] =
-                            $parent->groupModel->getGroupUsers($group_id);
+                            $group_model->getGroupUsers($group_id);
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_user_reinstated').
                             "</h1>')";
@@ -1371,9 +1376,9 @@ class AccountaccessComponent extends Component
                     $user_id = (isset($_REQUEST['user_id'])) ? 
                         $parent->clean($_REQUEST['user_id'], 'int'): 0;
                     if($user_id && $group_id &&
-                        $parent->groupModel->checkUserGroup($user_id,
+                        $group_model->checkUserGroup($user_id,
                         $group_id)) {
-                        $parent->groupModel->deleteUserGroup($user_id,
+                        $group_model->deleteUserGroup($user_id,
                             $group_id);
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_unsubscribe').
@@ -1387,11 +1392,11 @@ class AccountaccessComponent extends Component
             }
         }
         $current_id = $_SESSION["USER_ID"];
-        $num_groups = $parent->groupModel->getGroupsCount($search_array,
+        $num_groups = $group_model->getGroupsCount($search_array,
             $current_id);
         $data['NUM_TOTAL'] = $num_groups;
         $num_show = (isset($_REQUEST['num_show']) &&
-            isset($parent->adminView->pagingtableHelper->show_choices[
+            isset($parent->view("admin")->helper("pagingtable")->show_choices[
                 $_REQUEST['num_show']])) ? $_REQUEST['num_show'] : 50;
         $data['num_show'] = $num_show;
         $data['START_ROW'] = 0;
@@ -1405,7 +1410,7 @@ class AccountaccessComponent extends Component
             $data['END_ROW'] = max($data['START_ROW'],
                 min($parent->clean($_REQUEST['end_row'],"int"), $num_groups));
         }
-        $data["GROUPS"] = $parent->groupModel->getGroups($data['START_ROW'],
+        $data["GROUPS"] = $group_model->getGroups($data['START_ROW'],
             $num_show, $search_array, $current_id);
         $data['NEXT_START'] = $data['END_ROW'];
         $data['NEXT_END'] = min($data['NEXT_START'] + $num_show, $num_groups);
@@ -1444,7 +1449,7 @@ class AccountaccessComponent extends Component
             }
         }
         if($changed) {
-            $parent->groupModel->updateGroup($group);
+            $parent->model("group")->updateGroup($group);
         }
     }
 }

@@ -46,16 +46,6 @@ require_once BASE_DIR."/controllers/controller.php";
 class StaticController extends Controller
 {
     /**
-     * Says which models to load for this controller.
-     * @var array
-     */
-    var $models = array("blogpage");
-    /**
-     * Says which views to load for this controller.
-     * @var array
-     */
-    var $views = array("static");
-    /**
      * Says which activities (roughly methods invoke from the web)
      * this controller will respond to
      * @var array
@@ -110,7 +100,7 @@ class StaticController extends Controller
         if(isset($_REQUEST['p'])) {
             $page = $this->clean($_REQUEST['p'], "string");
             $page = preg_replace("@(\.\.|\/)@", "", $page);
-            if(!$this->blogpageModel->isPageAccessible($user, $page)) {
+            if(!$this->model("blogpage")->isPageAccessible($user, $page)) {
                 $page = "404";
             }
         } else {
@@ -123,7 +113,7 @@ class StaticController extends Controller
         }
         $data['page'] = $page;
         $page_parts = explode("END_HEAD_VARS", $page_string);
-        $static_view = $this->staticView;
+        $static_view = $this->view("static");
         $static_view->head_objects[$page] = array();
         if(count($page_parts) > 1) {
             $static_view->page_objects[$page]  = $page_parts[1];

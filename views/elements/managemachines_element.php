@@ -37,7 +37,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * Used to draw the admin screen on which admin users can add/delete
  * and manage machines which might act as fetchers or queue_servers.
  * The managing protion of this element is actually done via an ajax
- * call of the mMchinestatusView
+ * call of the MachinestatusView
  *
  * @author Chris Pollett
  * @package seek_quarry
@@ -82,7 +82,7 @@ class ManagemachinesElement extends Element
                 onclick="toggleReplica(this.checked)" /></td></tr>
          <tr id="m1"><th><label for="parent-machine-name"><?php
             e(tl('managemachines_element_parent_name'))?></label></th>
-            <td><?php $this->view->optionsHelper->render(
+            <td><?php $this->view->helper("options")->render(
                 "parent-machine-name", "parent",
                 $data['REPLICATABLE_MACHINES'],
                 tl('system_component_select_machine'));
@@ -94,7 +94,7 @@ class ManagemachinesElement extends Element
                 name="has_queue_server" value="true" /></td></tr>
         <tr id="m3"><th><label for="fetcher-number"><?php
             e(tl('managemachines_element_num_fetchers'))?></label></th><td>
-            <?php $this->view->optionsHelper->render("fetcher-number",
+            <?php $this->view->helper("options")->render("fetcher-number",
             "num_fetchers", $data['FETCHER_NUMBERS'],$data['FETCHER_NUMBER']);
             ?></td></tr>
         <tr><th></th><td><button class="button-box" type="submit"><?php
@@ -113,7 +113,7 @@ class ManagemachinesElement extends Element
         <table class="name-table">
          <tr><th><label for="delete-machine-name"><?php
             e(tl('managemachines_element_machine_name'))?></label></th>
-            <td><?php $this->view->optionsHelper->render(
+            <td><?php $this->view->helper("options")->render(
                 "delete-machine-name", "name",
                 $data['DELETABLE_MACHINES'],
                 tl('system_component_select_machine'));

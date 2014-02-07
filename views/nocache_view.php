@@ -49,10 +49,6 @@ class NocacheView extends View
      *  @var string
      */
     var $layout = "web";
-    /** Names of element objects that the view uses to display itself
-     *  @var array
-     */
-    var $elements = array("language");
 
     /**
      *  Draws a simple message saying no cache available of

@@ -616,7 +616,7 @@ class ConfigureTool
     function copyProfileFields($data)
     {
         $profile = array();
-        foreach($this->admin->profileModel->profile_fields as $field) {
+        foreach($this->admin->model("profile")->profile_fields as $field) {
             if(isset($data[$field])) {
                 $profile[$field] = $data[$field];
             }

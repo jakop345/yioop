@@ -65,7 +65,7 @@ class ManagerolesElement extends Element
         $data['ACTIVITY'] = 'manageRoles';
         $data['VIEW'] = $this->view;
         $data['NO_FLOAT_TABLE'] = true;
-        $this->view->pagingtableHelper->render($data);
+        $this->view->helper("pagingtable")->render($data);
         ?>
         <table class="role-table table-margin">
             <tr>
@@ -172,7 +172,8 @@ class ManagerolesElement extends Element
                 </table>
                 <?php 
                     if(count($data['AVAILABLE_ACTIVITIES']) > 1) {
-                        $this->view->optionsHelper->render("add-roleactivity",
+                        $this->view->helper("options")->render(
+                            "add-roleactivity",
                             "selectactivity", $data['AVAILABLE_ACTIVITIES'],
                             $data['SELECT_ACTIVITY']);
                     }
@@ -217,7 +218,7 @@ class ManagerolesElement extends Element
             e(tl('manageroles_element_rolename'))?>:</b></label>
             <?php
                 e($item_sep);
-                $this->view->optionsHelper->render(
+                $this->view->helper("options")->render(
                     "name-comparison", "name_comparison", 
                     $data['COMPARISON_TYPES'],
                     $data['name_comparison']);
@@ -228,7 +229,7 @@ class ManagerolesElement extends Element
                 class="narrow-field"  />
             <?php
                 e($item_sep);
-                $this->view->optionsHelper->render(
+                $this->view->helper("options")->render(
                     "name-sort", "name_sort", 
                     $data['SORT_TYPES'],
                     $data['name_sort']);

@@ -45,11 +45,6 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 class StaticView extends View
 {
 
-    /** Names of element objects that the view uses to display itself
-     *  @var array
-     */
-    var $elements = array("footer");
-
     /** This view is drawn on a web layout
      *  @var string
      */
@@ -90,7 +85,7 @@ class StaticView extends View
                 }?>
         </div>
         <div class="landing-footer">
-            <?php  $this->footerElement->render($data);?>
+            <?php  $this->element("footer")->render($data);?>
         </div>
         <?php
     }

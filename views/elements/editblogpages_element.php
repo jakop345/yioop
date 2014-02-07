@@ -117,7 +117,7 @@ class EditBlogPagesElement extends Element
                                 e(tl('createblogpages_element_add_group'))
                                 ?></label></th>
                             <?php if(isset($data['GROUP_NAMES']) ) {
-                            ?><td><?php $this->view->optionsHelper->render(
+                            ?><td><?php $this->view->helper("options")->render(
                                 "select-group",
                                 "selectgroup", $data['GROUP_NAMES'],
                                 isset($data['SELECT_GROUP']));
@@ -184,7 +184,8 @@ class EditBlogPagesElement extends Element
                         </label></td>
                         <td>
                         <?php if(isset($data['EDIT_BLOGS'])) { ?>
-                        <?php $this->view->optionsHelper->render("source-type",
+                        <?php $this->view->helper("options")->render(
+                            "source-type",
                             "sourcetype", $data['SOURCE_TYPES'],
                         $data['EDIT_BLOGS']['TYPE']);?></td></tr>
                     <tr><th><label for="source-name"><?php
@@ -199,7 +200,7 @@ class EditBlogPagesElement extends Element
                             ?></label>
                         </th>
                         <td>
-                        <?php $this->view->optionsHelper->render(
+                        <?php $this->view->helper("options")->render(
                             "source-locale-tag", "sourcelocaletag",
                             $data['LANGUAGES'], $data['SOURCE_LOCALE_TAG']); ?>
                         </td>

@@ -114,7 +114,7 @@ class ServersettingsElement extends Element
                 e(tl('configure_element_database_setup'))?></legend>
                 <div ><label for="database-system"><b><?php
                     e(tl('serversettings_element_database_system')); ?></b></label>
-                    <?php $this->view->optionsHelper->render(
+                    <?php $this->view->helper("options")->render(
                         "database-system", "DBMS",
                         $data['DBMSS'], $data['DBMS']);
                 ?>
@@ -155,7 +155,7 @@ class ServersettingsElement extends Element
                 e(tl('serversettings_element_account_registration'));
                 ?>
                 </label></legend>
-                    <?php $this->view->optionsHelper->render(
+                    <?php $this->view->helper("options")->render(
                         "account-registration", "REGISTRATION_TYPE",
                         $data['REGISTRATION_TYPES'],
                         $data['REGISTRATION_TYPE']);

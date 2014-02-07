@@ -43,9 +43,6 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  */
 class CrawlComponent extends Component implements CrawlConstants
 {
-    var $activities = array("manageCrawls", "manageClassifiers", "pageOptions",
-        "resultsEditor", "searchSources");
-
     /**
      * Used to handle the manage crawl activity.
      *
@@ -60,16 +57,17 @@ class CrawlComponent extends Component implements CrawlConstants
     function manageCrawls()
     {
         $parent = $this->parent;
+        $crawl_model = $parent->model("crawl");
         $possible_arguments =
             array("start", "resume", "delete", "stop", "index", "options");
 
-        $data["ELEMENT"] = "managecrawlsElement";
+        $data["ELEMENT"] = "managecrawls";
         $data['SCRIPT'] = "doUpdate();";
 
         if(isset($_REQUEST['arg']) &&
             in_array($_REQUEST['arg'], $possible_arguments)) {
 
-            $machine_urls = $parent->machineModel->getQueueServerUrls();
+            $machine_urls = $parent->model("machine")->getQueueServerUrls();
             $num_machines = count($machine_urls);
             if($num_machines <  1 || ($num_machines ==  1 &&
                 UrlParser::isLocalhostUrl($machine_urls[0]))) {
@@ -96,7 +94,7 @@ class CrawlComponent extends Component implements CrawlConstants
                         "/schedules/name_server_messages.txt";
                     file_put_contents($filename, serialize($info));
 
-                    $parent->crawlModel->sendStopCrawlMessage($machine_urls);
+                    $crawl_model->sendStopCrawlMessage($machine_urls);
                 break;
 
                 case "resume":
@@ -106,7 +104,7 @@ class CrawlComponent extends Component implements CrawlConstants
                     $crawl_params[self::STATUS] = "RESUME_CRAWL";
                     $crawl_params[self::CRAWL_TIME] =
                         $parent->clean($_REQUEST['timestamp'], "int");
-                    $seed_info = $parent->crawlModel->getCrawlSeedInfo(
+                    $seed_info = $crawl_model->getCrawlSeedInfo(
                         $crawl_params[self::CRAWL_TIME], $machine_urls);
                     $parent->getCrawlParametersFromSeedInfo($crawl_params,
                         $seed_info);
@@ -124,7 +122,7 @@ class CrawlComponent extends Component implements CrawlConstants
                         "/schedules/name_server_messages.txt";
                     file_put_contents($filename, serialize($crawl_params));
                     chmod($filename, 0777);
-                    $parent->crawlModel->sendStartCrawlMessage($crawl_params,
+                    $crawl_model->sendStartCrawlMessage($crawl_params,
                         NULL, $machine_urls);
                 break;
 
@@ -132,7 +130,7 @@ class CrawlComponent extends Component implements CrawlConstants
                     if(isset($_REQUEST['timestamp'])) {
                          $timestamp =
                             $parent->clean($_REQUEST['timestamp'], "int");
-                         $parent->crawlModel->deleteCrawl($timestamp,
+                         $crawl_model->deleteCrawl($timestamp,
                             $machine_urls);
 
                          $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
@@ -151,7 +149,7 @@ class CrawlComponent extends Component implements CrawlConstants
                         tl('crawl_component_set_index')."</h1>')";
 
                     $timestamp = $parent->clean($_REQUEST['timestamp'], "int");
-                    $parent->crawlModel->setCurrentIndexDatabaseName($timestamp);
+                    $crawl_model->setCurrentIndexDatabaseName($timestamp);
                 break;
 
                 case "options":
@@ -173,13 +171,14 @@ class CrawlComponent extends Component implements CrawlConstants
     function startCrawl(&$data, $machine_urls, $seed_info = NULL)
     {
         $parent = $this->parent;
+        $crawl_model = $parent->model("crawl");
         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
             tl('crawl_component_starting_new_crawl')."</h1>')";
 
         $crawl_params = array();
         $crawl_params[self::STATUS] = "NEW_CRAWL";
         $crawl_params[self::CRAWL_TIME] = time();
-        $seed_info = $parent->crawlModel->getSeedInfo();
+        $seed_info = $crawl_model->getSeedInfo();
         $this->getCrawlParametersFromSeedInfo($crawl_params, $seed_info);
         if(isset($_REQUEST['description'])) {
             $description = $parent->clean($_REQUEST['description'], "string");
@@ -193,7 +192,7 @@ class CrawlComponent extends Component implements CrawlConstants
         }
         $crawl_params[self::VIDEO_SOURCES] = array();
         $sources =
-            $parent->sourceModel->getMediaSources('video');
+            $parent->model("source")->getMediaSources('video');
         foreach($sources as $source) {
             $url = $source['SOURCE_URL'];
             $url_parts = explode("{}", $url);
@@ -201,12 +200,12 @@ class CrawlComponent extends Component implements CrawlConstants
         }
         if(isset($crawl_params[self::INDEXING_PLUGINS]) &&
             is_array($crawl_params[self::INDEXING_PLUGINS])) {
-            foreach($crawl_params[self::INDEXING_PLUGINS] as $plugin_prefix) {
-                $plugin_name = $plugin_prefix."Plugin";
-                $plugin = new $plugin_name();
-                if(method_exists($plugin_name, "loadConfiguration")) {
-                    $crawl_params[self::INDEXING_PLUGINS_DATA][$plugin_prefix] =
-                        $plugin->loadConfiguration();
+            foreach($crawl_params[self::INDEXING_PLUGINS] as $plugin) {
+                $plugin_class = $plugin."Plugin";
+                $plugin_obj = $parent->plugin($plugin);
+                if(method_exists($plugin_class, "loadConfiguration")) {
+                    $crawl_params[self::INDEXING_PLUGINS_DATA][$plugin] =
+                        $plugin_obj->loadConfiguration();
                 }
             }
         }
@@ -221,7 +220,7 @@ class CrawlComponent extends Component implements CrawlConstants
         file_put_contents($filename, serialize($crawl_params));
         chmod($filename, 0777);
 
-        $parent->crawlModel->sendStartCrawlMessage($crawl_params,
+        $crawl_model->sendStartCrawlMessage($crawl_params,
             $seed_info, $machine_urls);
     }
 
@@ -305,13 +304,14 @@ class CrawlComponent extends Component implements CrawlConstants
     function editCrawlOption(&$data, $machine_urls)
     {
         $parent = $this->parent;
+        $crawl_model= $parent->model("crawl");
         $data["leftorright"] = (getLocaleDirection() == 'ltr') ?
             "right": "left";
-        $data["ELEMENT"] = "crawloptionsElement";
-        $crawls = $parent->crawlModel->getCrawlList(false, false,
+        $data["ELEMENT"] = "crawloptions";
+        $crawls = $crawl_model->getCrawlList(false, false,
             $machine_urls);
-        $indexes = $parent->crawlModel->getCrawlList(true, true, $machine_urls);
-        $mixes = $parent->crawlModel->getMixList(false);
+        $indexes = $crawl_model->getCrawlList(true, true, $machine_urls);
+        $mixes = $crawl_model->getMixList(false);
         foreach($mixes as $mix) {
             $tmp = array();
             $tmp["DESCRIPTION"] = "MIX::".$mix["MIX_NAME"];
@@ -341,10 +341,10 @@ class CrawlComponent extends Component implements CrawlConstants
             $indexes_by_crawl_time[$crawl['CRAWL_TIME']] =& $indexes[$i];
         }
         $no_further_changes = false;
-        $seed_current = $parent->crawlModel->getSeedInfo();
+        $seed_current = $crawl_model->getSeedInfo();
         if(isset($_REQUEST['load_option']) &&
             $_REQUEST['load_option'] == 1) {
-            $seed_info = $parent->crawlModel->getSeedInfo(true);
+            $seed_info = $crawl_model->getSeedInfo(true);
             if(isset(
                 $seed_current['general']['page_range_request'])) {
                 $seed_info['general']['page_range_request'] =
@@ -367,21 +367,21 @@ class CrawlComponent extends Component implements CrawlConstants
             $_REQUEST['load_option'] > 1 ) {
             $timestamp =
                 $parent->clean($_REQUEST['load_option'], "int");
-            $seed_info = $parent->crawlModel->getCrawlSeedInfo(
+            $seed_info = $crawl_model->getCrawlSeedInfo(
                 $timestamp, $machine_urls);
             $update_flag = true;
             $no_further_changes = true;
         } else if(isset($_REQUEST['ts'])) {
             $timestamp =
                 $parent->clean($_REQUEST['ts'], "int");
-            $seed_info = $parent->crawlModel->getCrawlSeedInfo(
+            $seed_info = $crawl_model->getCrawlSeedInfo(
                 $timestamp, $machine_urls);
             $data['ts'] = $timestamp;
         } else {
-            $seed_info = $parent->crawlModel->getSeedInfo();
+            $seed_info = $crawl_model->getSeedInfo();
         }
         if(isset($_REQUEST['suggest']) && $_REQUEST['suggest']=='add') {
-            $suggest_urls = $parent->crawlModel->getSuggestSites();
+            $suggest_urls = $crawl_model->getSuggestSites();
             $seed_info['seed_sites']['url'] = 
             $tmp_urls = array_merge(
                 $seed_info['seed_sites']['url'], $suggest_urls);
@@ -394,13 +394,13 @@ class CrawlComponent extends Component implements CrawlConstants
             }
             $seed_info['seed_sites']['url'] = array_keys($urls);
             if(!isset($_REQUEST['ts'])) {
-                $parent->crawlModel->setSeedInfo($seed_info);
+                $crawl_model->setSeedInfo($seed_info);
             }
             $add_message= tl('crawl_component_add_suggest');
             $update_flag = true;
         }
         if(isset($_REQUEST['suggest']) && $_REQUEST['suggest']=='clear') {
-            $parent->crawlModel->clearSuggestSites();
+            $crawl_model->clearSuggestSites();
             $add_message= tl('crawl_component_clear_suggest');
             $update_flag = true;
         }
@@ -512,7 +512,7 @@ class CrawlComponent extends Component implements CrawlConstants
                 $inject_urls =
                     $parent->convertStringCleanArray(
                     $_REQUEST['inject_sites']);
-                if($parent->crawlModel->injectUrlsCurrentCrawl(
+                if($crawl_model->injectUrlsCurrentCrawl(
                     $timestamp, $inject_urls, $machine_urls)) {
                     $add_message = "<br />".
                         tl('crawl_component_urls_injected');
@@ -520,10 +520,10 @@ class CrawlComponent extends Component implements CrawlConstants
         }
         if($update_flag) {
             if(isset($_REQUEST['ts'])) {
-                $parent->crawlModel->setCrawlSeedInfo($timestamp,
+                $crawl_model->setCrawlSeedInfo($timestamp,
                     $seed_info, $machine_urls);
             } else {
-                $parent->crawlModel->setSeedInfo($seed_info);
+                $crawl_model->setSeedInfo($seed_info);
             }
             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                 tl('crawl_component_update_seed_info').
@@ -542,13 +542,14 @@ class CrawlComponent extends Component implements CrawlConstants
     function manageClassifiers()
     {
         $parent = $this->parent;
+        $crawl_model = $parent->model("crawl");
         $possible_arguments = array('createclassifier', 'editclassifier',
             'finalizeclassifier', 'deleteclassifier');
 
-        $data['ELEMENT'] = 'manageclassifiersElement';
+        $data['ELEMENT'] = 'manageclassifiers';
         $data['SCRIPT'] = '';
 
-        $machine_urls = $parent->machineModel->getQueueServerUrls();
+        $machine_urls = $parent->model("machine")->getQueueServerUrls();
         $num_machines = count($machine_urls);
         if ($num_machines < 1 || ($num_machines == 1 &&
             UrlParser::isLocalhostUrl($machine_urls[0]))) {
@@ -621,12 +622,12 @@ class CrawlComponent extends Component implements CrawlConstants
                         unset($classifiers[$label]);
                         Classifier::deleteClassifier($label);
                         $mix_name = Classifier::getCrawlMixName($label);
-                        $mix_time = $parent->crawlModel->getCrawlMixTimestamp(
+                        $mix_time = $crawl_model->getCrawlMixTimestamp(
                             $mix_name);
                         if ($mix_time) {
-                            $parent->crawlModel->deleteCrawlMixIteratorState(
+                            $crawl_model->deleteCrawlMixIteratorState(
                                 $mix_time);
-                            $parent->crawlModel->deleteCrawlMix($mix_time);
+                            $crawl_model->deleteCrawlMix($mix_time);
                         }
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\">".
                             tl('crawl_component_classifier_deleted').
@@ -673,11 +674,12 @@ class CrawlComponent extends Component implements CrawlConstants
     function editClassifier(&$data, $classifiers, $machine_urls)
     {
         $parent = $this->parent;
-        $data['ELEMENT'] = 'editclassifierElement';
+        $data['ELEMENT'] = 'editclassifier';
         $data['INCLUDE_SCRIPTS'] = array('classifiers');
 
         // We want recrawls, but not archive crawls.
-        $crawls = $parent->crawlModel->getCrawlList(false, true, $machine_urls);
+        $crawls = $parent->model("crawl")->getCrawlList(false, true,
+            $machine_urls);
         $data['CRAWLS'] = $crawls;
 
         $classifier = $classifiers[$data['class_label']];
@@ -762,9 +764,11 @@ class CrawlComponent extends Component implements CrawlConstants
         global $INDEXED_FILE_TYPES;
 
         $parent = $this->parent;
-        $data["ELEMENT"] = "pageoptionsElement";
+        $crawl_model = $parent->model("crawl");
+        $profile_model = $parent->model("profile");
+        $data["ELEMENT"] = "pageoptions";
         $data['SCRIPT'] = "";
-        $machine_urls = $parent->machineModel->getQueueServerUrls();
+        $machine_urls = $parent->model("machine")->getQueueServerUrls();
         $num_machines = count($machine_urls);
         if($num_machines <  1 || ($num_machines ==  1 &&
             UrlParser::isLocalhostUrl($machine_urls[0]))) {
@@ -773,7 +777,7 @@ class CrawlComponent extends Component implements CrawlConstants
         $data['available_options'] = array(
             tl('crawl_component_use_below'),
             tl('crawl_component_use_defaults'));
-        $crawls = $parent->crawlModel->getCrawlList(false, true, $machine_urls);
+        $crawls = $crawl_model->getCrawlList(false, true, $machine_urls);
         $data['options_default'] = tl('crawl_component_use_below');
         foreach($crawls as $crawl) {
             if(strlen($crawl['DESCRIPTION']) > 0 ) {
@@ -782,7 +786,7 @@ class CrawlComponent extends Component implements CrawlConstants
                     $crawl['DESCRIPTION'];
             }
         }
-        $seed_info = $parent->crawlModel->getSeedInfo();
+        $seed_info = $crawl_model->getSeedInfo();
         $data['RECRAWL_FREQS'] = array(-1=>tl('crawl_component_recrawl_never'),
             1=>tl('crawl_component_recrawl_1day'),
             2=>tl('crawl_component_recrawl_2day'),
@@ -803,10 +807,10 @@ class CrawlComponent extends Component implements CrawlConstants
         if(isset($_REQUEST['load_option']) &&
             $_REQUEST['load_option'] > 0) {
             if($_REQUEST['load_option'] == 1) {
-                $seed_loaded = $parent->crawlModel->getSeedInfo(true);
+                $seed_loaded = $crawl_model->getSeedInfo(true);
             } else {
                 $timestamp = $parent->clean($_REQUEST['load_option'], "int");
-                $seed_loaded = $parent->crawlModel->getCrawlSeedInfo(
+                $seed_loaded = $crawl_model->getCrawlSeedInfo(
                     $timestamp, $machine_urls);
             }
             $copy_options = array("general" => array("page_recrawl_frequency",
@@ -835,7 +839,7 @@ class CrawlComponent extends Component implements CrawlConstants
             $update_flag = true;
             $loaded = true;
         } else {
-            $seed_info = $parent->crawlModel->getSeedInfo();
+            $seed_info = $crawl_model->getSeedInfo();
             if(isset($_REQUEST["page_recrawl_frequency"]) &&
                 in_array($_REQUEST["page_recrawl_frequency"],
                     array_keys($data['RECRAWL_FREQS']))) {
@@ -912,7 +916,7 @@ class CrawlComponent extends Component implements CrawlConstants
             }
         }
 
-        $profile =  $parent->profileModel->getProfile(WORK_DIRECTORY);
+        $profile =  $profile_model->getProfile(WORK_DIRECTORY);
         if(!isset($_REQUEST['load_option'])) {
             $data = array_merge($data, $profile);
         } else {
@@ -939,8 +943,7 @@ class CrawlComponent extends Component implements CrawlConstants
             }
         }
         if($change == true) {
-            $parent->profileModel->updateProfile(WORK_DIRECTORY, array(),
-                $profile);
+            $profile_model->updateProfile(WORK_DIRECTORY, array(), $profile);
         }
 
         $data['INDEXED_FILE_TYPES'] = array();
@@ -1050,7 +1053,7 @@ class CrawlComponent extends Component implements CrawlConstants
                 "'crawltimetab', 'searchtimetab');\n";
         }
 
-        $parent->crawlModel->setSeedInfo($seed_info);
+        $crawl_model->setSeedInfo($seed_info);
         if($change == true && $data['option_type'] != 'test_options') {
             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                 tl('crawl_component_page_options_updated')."</h1>')";
@@ -1214,7 +1217,8 @@ class CrawlComponent extends Component implements CrawlConstants
     function resultsEditor()
     {
         $parent = $this->parent;
-        $data["ELEMENT"] = "resultseditorElement";
+        $filters_model = $parent->model("searchfilters");
+        $data["ELEMENT"] = "resultseditor";
         $data['SCRIPT'] = "";
 
         if(isset($_REQUEST['disallowed_sites'])) {
@@ -1228,13 +1232,13 @@ class CrawlComponent extends Component implements CrawlConstants
                 }
             }
             $data['disallowed_sites'] = implode("\n", $disallowed_sites);
-            $parent->searchfiltersModel->set($disallowed_sites);
+            $filters_model->set($disallowed_sites);
             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                 tl('crawl_component_results_editor_update')."</h1>')";
         }
         if(!isset($data['disallowed_sites'])) {
             $data['disallowed_sites'] =
-                implode("\n", $parent->searchfiltersModel->getUrls());
+                implode("\n", $filters_model->getUrls());
         }
         foreach (array("URL", "TITLE", "DESCRIPTION") as $field) {
             $data[$field] = (isset($_REQUEST[$field])) ?
@@ -1246,7 +1250,7 @@ class CrawlComponent extends Component implements CrawlConstants
         }
         $tmp = tl('crawl_component_edited_pages');
         $data["URL_LIST"] = array ($tmp => $tmp);
-        $summaries = $parent->searchfiltersModel->getEditedPageSummaries();
+        $summaries = $filters_model->getEditedPageSummaries();
         foreach($summaries as $hash => $summary) {
             $data["URL_LIST"][$summary[self::URL]] = $summary[self::URL];
         }
@@ -1260,7 +1264,7 @@ class CrawlComponent extends Component implements CrawlConstants
                             tl('crawl_component_results_editor_need_url').
                             "</h1>')";
                     } else {
-                        $parent->searchfiltersModel->updateResultPage(
+                        $filters_model->updateResultPage(
                             $data["URL"], $data["TITLE"], $data["DESCRIPTION"]);
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('crawl_component_results_editor_page_updated').
@@ -1301,10 +1305,12 @@ class CrawlComponent extends Component implements CrawlConstants
     function searchSources()
     {
         $parent = $this->parent;
+        $crawl_model = $parent->model("crawl");
+        $source_model = $parent->model("source");
         $possible_arguments = array("addsource", "deletesource",
             "addsubsearch", "deletesubsearch");
         $data = array();
-        $data["ELEMENT"] = "searchsourcesElement";
+        $data["ELEMENT"] = "searchsources";
         $data['SCRIPT'] = "";
         $data['SOURCE_TYPES'] = array(-1 => tl('crawl_component_media_kind'),
             "video" => tl('crawl_component_video'),
@@ -1319,8 +1325,8 @@ class CrawlComponent extends Component implements CrawlConstants
         } else {
             $data['SOURCE_TYPE'] = -1;
         }
-        $machine_urls = $parent->machineModel->getQueueServerUrls();
-        $search_lists = $parent->crawlModel->getCrawlList(false, true,
+        $machine_urls = $parent->model("machine")->getQueueServerUrls();
+        $search_lists = $crawl_model->getCrawlList(false, true,
             $machine_urls);
         $data["SEARCH_LISTS"] = array(-1 =>
             tl('crawl_component_sources_indexes'));
@@ -1328,7 +1334,7 @@ class CrawlComponent extends Component implements CrawlConstants
             $data["SEARCH_LISTS"]["i:".$item["CRAWL_TIME"]] =
                 $item["DESCRIPTION"];
         }
-        $search_lists= $parent->crawlModel->getMixList();
+        $search_lists= $crawl_model->getMixList();
         foreach($search_lists as $item) {
             $data["SEARCH_LISTS"]["m:".$item["MIX_TIMESTAMP"]] =
                 $item["MIX_NAME"];
@@ -1342,7 +1348,7 @@ class CrawlComponent extends Component implements CrawlConstants
         } else {
             $data['PER_PAGE_SELECTED'] = NUM_RESULTS_PER_PAGE;
         }
-        $locales = $parent->localeModel->getLocaleList();
+        $locales = $parent->model("locale")->getLocaleList();
         $data["LANGUAGES"] = array();
         foreach($locales as $locale) {
             $data["LANGUAGES"][$locale['LOCALE_TAG']] = $locale['LOCALE_NAME'];
@@ -1372,7 +1378,7 @@ class CrawlComponent extends Component implements CrawlConstants
                         if(in_array($clean_me, $must_have) &&
                             $r[$clean_me] == "" ) break 2;
                     }
-                    $parent->sourceModel->addMediaSource(
+                    $source_model->addMediaSource(
                         $r['sourcename'], $r['sourcetype'], $r['sourceurl'],
                         $r['sourcethumbnail'], $r['sourcelocaletag']);
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
@@ -1382,7 +1388,7 @@ class CrawlComponent extends Component implements CrawlConstants
                 case "deletesource":
                     if(!isset($_REQUEST['ts'])) break;
                     $timestamp = $parent->clean($_REQUEST['ts'], "string");
-                    $parent->sourceModel->deleteMediaSource($timestamp);
+                    $source_model->deleteMediaSource($timestamp);
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('crawl_component_media_source_deleted').
                         "</h1>');";
@@ -1396,7 +1402,7 @@ class CrawlComponent extends Component implements CrawlConstants
                         if(in_array($clean_me, $must_have) &&
                             $r[$clean_me] == "" ) break 2;
                     }
-                    $parent->sourceModel->addSubsearch(
+                    $source_model->addSubsearch(
                         $r['foldername'], $r['indexsource'],
                         $data['PER_PAGE_SELECTED']);
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
@@ -1406,21 +1412,21 @@ class CrawlComponent extends Component implements CrawlConstants
                 case "deletesubsearch":
                     if(!isset($_REQUEST['fn'])) break;
                     $folder_name = $parent->clean($_REQUEST['fn'], "string");
-                    $parent->sourceModel->deleteSubsearch($folder_name);
+                    $source_model->deleteSubsearch($folder_name);
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('crawl_component_subsearch_deleted').
                         "</h1>');";
                 break;
             }
         }
-        $data["MEDIA_SOURCES"] = $parent->sourceModel->getMediaSources();
-        $subsearches = $parent->sourceModel->getSubsearches();
+        $data["MEDIA_SOURCES"] = $source_model->getMediaSources();
+        $subsearches = $source_model->getSubsearches();
         $data["SUBSEARCHES"] = array();
         foreach($subsearches as $search) {
             if(isset($data["SEARCH_LISTS"][$search['INDEX_IDENTIFIER']])) {
                 $data["SUBSEARCHES"][] = $search;
             } else {
-                $parent->sourceModel->deleteSubsearch($search["FOLDER_NAME"]);
+                $source_model->deleteSubsearch($search["FOLDER_NAME"]);
             }
         }
         $data['SCRIPT'] .= "source_type = elt('source-type');".

@@ -62,8 +62,10 @@ class SystemComponent extends Component
     function manageMachines()
     {
         $parent = $this->parent;
+        $machine_model = $parent->model("machine");
+        $profile_model = $parent->model("profile");
         $data = array();
-        $data["ELEMENT"] = "managemachinesElement";
+        $data["ELEMENT"] = "managemachines";
         $possible_arguments = array("addmachine", "deletemachine",
             "newsmode", "log", "update");
         $data['SCRIPT'] = "doUpdate();";
@@ -83,7 +85,7 @@ class SystemComponent extends Component
             8 => 8,
             16 => 16
         );
-        $machines = $parent->machineModel->getMachineList();
+        $machines = $machine_model->getMachineList();
         $tmp = tl('system_component_select_machine');
         $data['DELETABLE_MACHINES'] = array(
             $tmp => $tmp
@@ -150,7 +152,7 @@ class SystemComponent extends Component
             {
                 case "addmachine":
                     if($allset == true && !$machine_exists) {
-                        $parent->machineModel->addMachine(
+                        $machine_model->addMachine(
                             $r["name"], $r["url"], $r["has_queue_server"],
                             $r["num_fetchers"], $r["parent"]);
 
@@ -178,7 +180,7 @@ class SystemComponent extends Component
                             tl('system_component_machine_doesnt_exists').
                             "</h1>');";
                     } else {
-                        $machines = $parent->machineModel->getMachineStatuses();
+                        $machines = $machine_model->getMachineStatuses();
                         $service_in_use = false;
                         foreach($machines as $machine) {
                             if($machine['NAME'] == $r["name"]) {
@@ -195,7 +197,7 @@ class SystemComponent extends Component
                            tl('system_component_stop_service_first')."</h1>');";
                             break;
                         }
-                        $parent->machineModel->deleteMachine($r["name"]);
+                        $machine_model->deleteMachine($r["name"]);
                         $tmp_array = array($r["name"]);
                         $diff =
                             array_diff($data['MACHINE_NAMES'],  $tmp_array);
@@ -210,7 +212,7 @@ class SystemComponent extends Component
                 break;
 
                 case "newsmode":
-                    $profile =  $parent->profileModel->getProfile(
+                    $profile =  $profile_model->getProfile(
                         WORK_DIRECTORY);
                     $news_modes = array("news_off", "news_web", "news_process");
                     if(isset($_REQUEST['news_mode']) && in_array(
@@ -228,7 +230,7 @@ class SystemComponent extends Component
                                 tl('system_component_news_mode_updated').
                                 "</h1>');";
                         }
-                        $parent->profileModel->updateProfile(
+                        $profile_model->updateProfile(
                             WORK_DIRECTORY, array(), $profile);
                     } else {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
@@ -258,7 +260,7 @@ class SystemComponent extends Component
                     } else {
                         $data["NO_REFRESH"] = false;
                     }
-                    $data["ELEMENT"] = "machinelogElement";
+                    $data["ELEMENT"] = "machinelog";
                     $filter= "";
                     if(isset($_REQUEST['f'])) {
                         $filter =
@@ -268,7 +270,7 @@ class SystemComponent extends Component
                     $data["REFRESH_LOG"] = "&time=". $data["time"];
                     $data["LOG_TYPE"] = "";
                     if(isset($r['fetcher_num']) && isset($r['name'])) {
-                        $data["LOG_FILE_DATA"] = $parent->machineModel->getLog(
+                        $data["LOG_FILE_DATA"] = $machine_model->getLog(
                             $r["name"], $r["fetcher_num"], $filter);
                         $data["LOG_TYPE"] = $r['name'].
                             " fetcher ".$r["fetcher_num"];
@@ -276,14 +278,14 @@ class SystemComponent extends Component
                             "&fetcher_num=".$r['fetcher_num'];
                     } else if(isset($r["mirror_name"])) {
                         $data["LOG_TYPE"] = $r['mirror_name']." mirror";
-                        $data["LOG_FILE_DATA"] = $parent->machineModel->getLog(
+                        $data["LOG_FILE_DATA"] = $machine_model->getLog(
                             $r["mirror_name"], NULL, $filter,  true);
                     } else if(isset($r['name'])) {
                         $data["LOG_TYPE"] = $r['name']." queue_server";
                         if($r['name'] == "news") {
                             $data["LOG_TYPE"] = "Name Server News Updater";
                         }
-                        $data["LOG_FILE_DATA"] = $parent->machineModel->getLog(
+                        $data["LOG_FILE_DATA"] = $machine_model->getLog(
                             $r["name"], NULL, $filter);
                         $data["REFRESH_LOG"] .=
                             "&arg=log&name=".$r['name'];
@@ -321,7 +323,7 @@ class SystemComponent extends Component
                             $action = "stop";
                             $is_mirror = true;
                         }
-                        $parent->machineModel->update($r["name"],
+                        $machine_model->update($r["name"],
                             $action, $r["fetcher_num"], $is_mirror);
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('system_component_machine_servers_updated').
@@ -357,12 +359,13 @@ class SystemComponent extends Component
     function manageLocales()
     {
         $parent = $this->parent;
+        $locale_model = $parent->model("locale");
         $possible_arguments = array("addlocale", "deletelocale", "editlocale");
 
         $data['SCRIPT'] = "";
-        $data["ELEMENT"] = "managelocalesElement";
+        $data["ELEMENT"] = "managelocales";
 
-        $data["LOCALES"] = $parent->localeModel->getLocaleList();
+        $data["LOCALES"] = $locale_model->getLocaleList();
         $data['LOCALE_NAMES'][-1] = tl('system_component_select_localename');
 
         $locale_ids = array();
@@ -401,10 +404,10 @@ class SystemComponent extends Component
             switch($_REQUEST['arg'])
             {
                 case "addlocale":
-                    $parent->localeModel->addLocale(
+                    $locale_model->addLocale(
                         $localename, $localetag, $writingmode);
-                    $parent->localeModel->extractMergeLocales();
-                    $data["LOCALES"] = $parent->localeModel->getLocaleList();
+                    $locale_model->extractMergeLocales();
+                    $data["LOCALES"] = $locale_model->getLocaleList();
                     $data['LOCALE_NAMES'][$localetag] = $localename;
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('system_component_locale_added')."</h1>')";
@@ -418,8 +421,8 @@ class SystemComponent extends Component
                             "</h1>')";
                         return $data;
                     }
-                    $parent->localeModel->deleteLocale($select_locale);
-                    $data["LOCALES"] = $parent->localeModel->getLocaleList();
+                    $locale_model->deleteLocale($select_locale);
+                    $data["LOCALES"] = $locale_model->getLocaleList();
                     unset($data['LOCALE_NAMES'][$select_locale]);
 
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
@@ -430,11 +433,11 @@ class SystemComponent extends Component
                     if(!isset($select_locale)) break;
                     $data["leftorright"] =
                         (getLocaleDirection() == 'ltr') ? "right": "left";
-                    $data["ELEMENT"] = "editlocalesElement";
+                    $data["ELEMENT"] = "editlocales";
                     $data['STATIC_PAGES'][-1]=
                         tl('system_component_select_staticpages');
                     $data['STATIC_PAGES'] +=
-                        $parent->localeModel->getStaticPageList($select_locale);
+                        $locale_model->getStaticPageList($select_locale);
                     $data['CURRENT_LOCALE_NAME'] =
                         $data['LOCALE_NAMES'][$select_locale];
                     $data['CURRENT_LOCALE_TAG'] = $select_locale;
@@ -443,10 +446,10 @@ class SystemComponent extends Component
                     $page_keys = array_keys($tmp_pages);
                     if(isset($_REQUEST['static_page']) &&
                         in_array($_REQUEST['static_page'], $page_keys)) {
-                        $data["ELEMENT"] = "editstaticElement";
+                        $data["ELEMENT"] = "editstatic";
                         $data['STATIC_PAGE'] = $_REQUEST['static_page'];
                         if(isset($_REQUEST['PAGE_DATA'])) {
-                            $parent->localeModel->setStaticPage(
+                            $locale_model->setStaticPage(
                                 $_REQUEST['static_page'],
                                 $data['CURRENT_LOCALE_TAG'],
                                 $_REQUEST['PAGE_DATA']);
@@ -457,7 +460,7 @@ class SystemComponent extends Component
                         $data['PAGE_NAME'] =
                             $data['STATIC_PAGES'][$data['STATIC_PAGE']];
                         $data['PAGE_DATA'] =
-                            $parent->localeModel->getStaticPage(
+                            $locale_model->getStaticPage(
                                 $_REQUEST['static_page'],
                                 $data['CURRENT_LOCALE_TAG']);
                         /*since page data can contain tags we clean it
@@ -475,18 +478,18 @@ class SystemComponent extends Component
                             $clean_value = $parent->clean($value, "string");
                             $safe_strings[$clean_key] = $clean_value;
                         }
-                        $parent->localeModel->updateStringData(
+                        $locale_model->updateStringData(
                             $select_locale, $safe_strings);
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('system_component_localestrings_updated').
                             "</h1>')";
                     } else {
-                        $parent->localeModel->extractMergeLocales();
+                        $locale_model->extractMergeLocales();
                     }
                     $data['STRINGS'] =
-                        $parent->localeModel->getStringData($select_locale);
+                        $locale_model->getStringData($select_locale);
                     $data['DEFAULT_STRINGS'] =
-                        $parent->localeModel->getStringData(DEFAULT_LOCALE);
+                        $locale_model->getStringData(DEFAULT_LOCALE);
                 break;
             }
         }
@@ -499,6 +502,7 @@ class SystemComponent extends Component
     function serverSettings()
     {
         $parent = $this->parent;
+        $profile_model = $parent->model("profile");
         $data = array();
         $profile = array();
         $arg = "";
@@ -506,7 +510,7 @@ class SystemComponent extends Component
             $arg = $_REQUEST['arg'];
         }
         $data['SCRIPT'] = "";
-        $data["ELEMENT"] = "serversettingsElement";
+        $data["ELEMENT"] = "serversettings";
         switch($arg)
         {
             case "update":
@@ -515,7 +519,7 @@ class SystemComponent extends Component
                         'USE_PROXY'));
 
                 $old_profile =
-                    $parent->profileModel->getProfile(WORK_DIRECTORY);
+                    $profile_model->getProfile(WORK_DIRECTORY);
 
                 $db_problem = false;
                 if((isset($profile['DBMS']) &&
@@ -524,7 +528,7 @@ class SystemComponent extends Component
                     $profile['DB_NAME'] != $old_profile['DB_NAME']) ||
                     (isset($profile['DB_HOST']) &&
                     $profile['DB_HOST'] != $old_profile['DB_HOST'])) {
-                    if(!$parent->profileModel->migrateDatabaseIfNecessary(
+                    if(!$profile_model->migrateDatabaseIfNecessary(
                         $profile)) {
                         $db_problem = true;
                     }
@@ -533,7 +537,7 @@ class SystemComponent extends Component
                     (isset($profile['DB_PASSWORD']) &&
                     $profile['DB_PASSWORD'] != $old_profile['DB_PASSWORD'])) {
 
-                    if($parent->profileModel->testDatabaseManager(
+                    if($profile_model->testDatabaseManager(
                         $profile) !== true) {
                         $db_problem = true;
                     }
@@ -552,7 +556,7 @@ class SystemComponent extends Component
                     break;
                 }
 
-                if($parent->profileModel->updateProfile(
+                if($profile_model->updateProfile(
                     WORK_DIRECTORY, $profile, $old_profile)) {
                     $data['MESSAGE'] =
                         tl('system_component_configure_profile_change');
@@ -573,7 +577,7 @@ class SystemComponent extends Component
 
             default:
                 $data = array_merge($data,
-                    $parent->profileModel->getProfile(WORK_DIRECTORY));
+                    $profile_model->getProfile(WORK_DIRECTORY));
                 $data['MEMCACHE_SERVERS'] = str_replace(
                     "|Z|","\n", $data['MEMCACHE_SERVERS']);
                 $data['PROXY_SERVERS'] = str_replace(
@@ -582,9 +586,9 @@ class SystemComponent extends Component
         }
         $data['DBMSS'] = array();
         $data['SCRIPT'] .= "logindbms = Array();\n";
-        foreach($parent->profileModel->getDbmsList() as $dbms) {
+        foreach($profile_model->getDbmsList() as $dbms) {
             $data['DBMSS'][$dbms] = $dbms;
-            if($parent->profileModel->loginDbms($dbms)) {
+            if($profile_model->loginDbms($dbms)) {
                 $data['SCRIPT'] .= "logindbms['$dbms'] = true;\n";
             } else {
                 $data['SCRIPT'] .= "logindbms['$dbms'] = false;\n";
@@ -660,11 +664,12 @@ EOD;
     function configure()
     {
         $parent = $this->parent;
+        $profile_model = $parent->model("profile");
         $data = array();
         $profile = array();
 
         $data['SYSTEM_CHECK'] = $this->systemCheck();
-        $languages = $parent->localeModel->getLocaleList();
+        $languages = $parent->model("locale")->getLocaleList();
         foreach($languages as $language) {
             $data['LANGUAGES'][$language['LOCALE_TAG']] =
                 $language['LOCALE_NAME'];
@@ -675,7 +680,7 @@ EOD;
             setLocaleObject($data['lang']);
         }
 
-        $data["ELEMENT"] = "configureElement";
+        $data["ELEMENT"] = "configure";
         $data['SCRIPT'] = "";
 
         $data['PROFILE'] = false;
@@ -740,10 +745,9 @@ EOD;
                 if(!isset($data['WORK_DIRECTORY'])) {break;}
                 if($data['PROFILE'] &&
                     file_exists($data['WORK_DIRECTORY']."/profile.php")) {
-                    $data = array_merge($data,
-                        $parent->profileModel->getProfile(
+                    $data = array_merge($data, $profile_model->getProfile(
                             $data['WORK_DIRECTORY']));
-                    $parent->profileModel->setWorkDirectoryConfigFile(
+                    $profile_model->setWorkDirectoryConfigFile(
                         $data['WORK_DIRECTORY']);
                     $data["MESSAGE"] =
                         tl('system_component_configure_work_dir_set');
@@ -753,7 +757,7 @@ EOD;
                         "'window.location.href=window.location.href', 3000);";
                 } else if ($data['PROFILE'] &&
                     strlen($data['WORK_DIRECTORY']) > 0) {
-                    if($parent->profileModel->makeWorkDirectory(
+                    if($profile_model->makeWorkDirectory(
                         $data['WORK_DIRECTORY'])) {
                         $profile['DBMS'] = 'sqlite3';
                         $data['DBMS'] = 'sqlite3';
@@ -776,13 +780,12 @@ EOD;
                             $_SERVER['SERVER_NAME'])."-".time();
                         $profile['ROBOT_INSTANCE'] = $robot_instance;
                         $data['ROBOT_INSTANCE'] = $profile['ROBOT_INSTANCE'];
-                        if($parent->profileModel->updateProfile(
+                        if($profile_model->updateProfile(
                             $data['WORK_DIRECTORY'], array(), $profile)) {
                             if((defined('WORK_DIRECTORY') &&
                                 $data['WORK_DIRECTORY'] == WORK_DIRECTORY) ||
-                                $parent->profileModel->
-                                    setWorkDirectoryConfigFile(
-                                        $data['WORK_DIRECTORY'])) {
+                                $profile_model->setWorkDirectoryConfigFile(
+                                    $data['WORK_DIRECTORY'])) {
                                 $data["MESSAGE"] =
                             tl('system_component_configure_work_profile_made');
                                 $data['SCRIPT'] .=
@@ -791,7 +794,7 @@ EOD;
                                     "setTimeout('window.location.href= ".
                                     "window.location.href', 3000);";
                                 $data = array_merge($data,
-                                    $parent->profileModel->getProfile(
+                                    $profile_model->getProfile(
                                         $data['WORK_DIRECTORY']));
                                 $data['PROFILE'] = true;
                             } else {
@@ -805,7 +808,7 @@ EOD;
                                     "window.location.href', 3000);";
                             }
                         } else {
-                            $parent->profileModel->setWorkDirectoryConfigFile(
+                            $profile_model->setWorkDirectoryConfigFile(
                                 $data['WORK_DIRECTORY']);
                             $data['PROFILE'] = false;
                         $data["MESSAGE"] =
@@ -817,7 +820,7 @@ EOD;
                                 "window.location.href', 3000);";
                         }
                     } else {
-                        $parent->profileModel->setWorkDirectoryConfigFile(
+                        $profile_model->setWorkDirectoryConfigFile(
                             $data['WORK_DIRECTORY']);
                         $data["MESSAGE"] =
                             tl('system_component_configure_work_dir_invalid');
@@ -829,7 +832,7 @@ EOD;
                         $data['PROFILE'] = false;
                     }
                 } else {
-                    $parent->profileModel->setWorkDirectoryConfigFile(
+                    $profile_model->setWorkDirectoryConfigFile(
                         $data['WORK_DIRECTORY']);
                     $data["MESSAGE"] =
                         tl('system_component_configure_work_dir_invalid');
@@ -854,10 +857,10 @@ EOD;
                 $profile['DEBUG_LEVEL'] = $data['DEBUG_LEVEL'];
 
                 $old_profile =
-                    $parent->profileModel->getProfile($data['WORK_DIRECTORY']);
+                    $profile_model->getProfile($data['WORK_DIRECTORY']);
 
 
-                if($parent->profileModel->updateProfile(
+                if($profile_model->updateProfile(
                     $data['WORK_DIRECTORY'], $profile, $old_profile)) {
                     $data['MESSAGE'] =
                         tl('system_component_configure_profile_change');
@@ -888,8 +891,7 @@ EOD;
                 if(isset($data['WORK_DIRECTORY']) &&
                     file_exists($data['WORK_DIRECTORY']."/profile.php")) {
                     $data = array_merge($data,
-                        $parent->profileModel->getProfile(
-                            $data['WORK_DIRECTORY']));
+                        $profile_model->getProfile($data['WORK_DIRECTORY']));
                 } else {
                     $data['WORK_DIRECTORY'] = "";
                     $data['PROFILE'] = false;

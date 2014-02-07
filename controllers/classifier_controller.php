@@ -66,12 +66,6 @@ require_once BASE_DIR."/lib/archive_bundle_iterators/".
 class ClassifierController extends Controller implements CrawlConstants
 {
     /**
-     * Models used by this controller
-     * @var array
-     */
-    var $models = array("crawl", "phrase");
-
-    /**
      * Only outputs JSON data so don't need view
      * @var array
      */
@@ -113,7 +107,7 @@ class ClassifierController extends Controller implements CrawlConstants
             $index = $this->clean($_REQUEST['index'], 'int');
             if (intval($index) == 1) {
                 // TODO Fail in case that there's no current index
-                $index = $this->crawlModel->getCurrentIndexDatabaseName();
+                $index = $this->model("crawl")->getCurrentIndexDatabaseName();
             }
             $source_type = $this->clean($_REQUEST['type'], 'string');
             $keywords = $this->clean($_REQUEST['keywords'], 'string');
@@ -254,17 +248,18 @@ class ClassifierController extends Controller implements CrawlConstants
      */
     function buildClassifierCrawlMix($label, $crawl_time, $keywords)
     {
+        $crawl_model = $this->model("crawl");
         $mix_time = time();
         $mix_name = Classifier::getCrawlMixName($label);
 
         // Replace any existing crawl mix.
-        $old_time = $this->crawlModel->getCrawlMixTimestamp($mix_name);
+        $old_time = $crawl_model->getCrawlMixTimestamp($mix_name);
         if ($old_time) {
-            $this->crawlModel->deleteCrawlMixIteratorState($old_time);
-            $this->crawlModel->deleteCrawlMix($old_time);
+            $crawl_model->deleteCrawlMixIteratorState($old_time);
+            $crawl_model->deleteCrawlMix($old_time);
         }
 
-        $this->crawlModel->setCrawlMix(array(
+        $crawl_model->setCrawlMix(array(
             'MIX_TIMESTAMP' => $mix_time,
             'MIX_NAME' => $mix_name,
             'GROUPS' => array(
@@ -292,7 +287,7 @@ class ClassifierController extends Controller implements CrawlConstants
     function retrieveClassifierCrawlMix($label)
     {
         $mix_name = Classifier::getCrawlMixName($label);
-        $mix_time = $this->crawlModel->getCrawlMixTimestamp($mix_name);
+        $mix_time = $this->model("crawl")->getCrawlMixTimestamp($mix_name);
         return new MixArchiveBundleIterator($mix_time, $mix_time);
     }
 
@@ -313,20 +308,21 @@ class ClassifierController extends Controller implements CrawlConstants
     function prepareUnlabelledDocument($page, $score, $disagreement,
         $crawl_time, $keywords)
     {
+        $phrase_model = $this->model("phrase");
         // Highlight the query keywords, if any.
         $disjunct_phrases = explode("|", $keywords);
         $words = array();
         foreach ($disjunct_phrases as $disjunct_phrase) {
             list($word_struct, $format_words) =
-                $this->phraseModel->parseWordStructConjunctiveQuery(
+                $phrase_model->parseWordStructConjunctiveQuery(
                     $disjunct_phrase);
             $words = array_merge($words, $format_words);
         }
-        $title = $this->phraseModel->boldKeywords(
+        $title = $phrase_model->boldKeywords(
             $page[self::TITLE], $words);
-        $description = $this->phraseModel->getSnippets(
+        $description = $phrase_model->getSnippets(
             strip_tags($page[self::DESCRIPTION]), $words, 400);
-        $description = $this->phraseModel->boldKeywords(
+        $description = $phrase_model->boldKeywords(
             $description, $words);
         $cache_link = "?c=search&amp;a=cache".
             "&amp;q=".urlencode($keywords).

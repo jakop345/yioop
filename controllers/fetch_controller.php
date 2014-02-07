@@ -62,11 +62,6 @@ foreach(glob(BASE_DIR."/lib/archive_bundle_iterators/*_bundle_iterator.php")
 class FetchController extends Controller implements CrawlConstants
 {
     /**
-     * No models used by this controller
-     * @var array
-     */
-    var $models = array("machine", "crawl", "cron");
-    /**
      * Load FetchView to return results to fetcher
      * @var array
      */
@@ -303,7 +298,7 @@ class FetchController extends Controller implements CrawlConstants
                     we only set crawl time. Other data such as allowed sites
                     should come from index.
                 */
-                $this->crawlModel->sendStartCrawlMessage($crawl_params,
+                $this->model("crawl")->sendStartCrawlMessage($crawl_params,
                     NULL, NULL);
             }
         }
@@ -530,6 +525,7 @@ class FetchController extends Controller implements CrawlConstants
         $info = array();
         $info[self::STATUS] = self::CONTINUE_STATE;
         $view = "fetch";
+        $cron_model = $this->model("cron");
 
         if(isset($_REQUEST['crawl_time'])) {;
             $prev_crawl_time = $this->clean($_REQUEST['crawl_time'], 'int');
@@ -537,13 +533,13 @@ class FetchController extends Controller implements CrawlConstants
             $prev_crawl_time = 0;
         }
 
-        $cron_time = $this->cronModel->getCronTime("fetcher_restart");
+        $cron_time = $cron_model->getCronTime("fetcher_restart");
         $delta = time() - $cron_time;
         if($delta > self::CRON_INTERVAL) {
-            $this->cronModel->updateCronTime("fetcher_restart");
+            $cron_model->updateCronTime("fetcher_restart");
             $this->doCronTasks();
         } else if ($delta == 0) {
-            $this->cronModel->updateCronTime("fetcher_restart");
+            $cron_model->updateCronTime("fetcher_restart");
         }
 
         $local_filename = CRAWL_DIR."/schedules/crawl_status.txt";
@@ -607,7 +603,8 @@ class FetchController extends Controller implements CrawlConstants
             }
         }
 
-        $info[self::QUEUE_SERVERS] = $this->machineModel->getQueueServerUrls();
+        $info[self::QUEUE_SERVERS] =
+            $this->model("machine")->getQueueServerUrls();
         $info[self::SAVED_CRAWL_TIMES] = $this->getCrawlTimes();
         $info[self::POST_MAX_SIZE] = metricToInt(ini_get("post_max_size"));
         if(count($info[self::QUEUE_SERVERS]) == 0) {
@@ -626,7 +623,7 @@ class FetchController extends Controller implements CrawlConstants
      */
     function doCronTasks()
     {
-        $this->machineModel->restartCrashedFetchers();
+        $this->model("machine")->restartCrashedFetchers();
     }
 
     /**

@@ -44,6 +44,20 @@ require_once BASE_DIR."/lib/utility.php";
 require_once BASE_DIR.'/lib/analytics_manager.php';
 
 /**
+ * Base class for models which might be used by a Controller
+ */
+require_once BASE_DIR."/models/model.php";
+
+/**
+ * Base class for components which might be used by a Controller
+ */
+require_once BASE_DIR."/controllers/components/component.php";
+
+/**
+ * Base class for views which might be used by a View
+ */
+require_once BASE_DIR."/views/view.php";
+/**
  * Base controller class for all controllers on
  * the SeekQuarry site.
  *
@@ -53,18 +67,18 @@ require_once BASE_DIR.'/lib/analytics_manager.php';
  */
 abstract class Controller
 {
+
     /**
-     * Array of the model classes used by this controller
-     * (contructor loads these)
+     * Array of instances of views  used by this controller
      * @var array
      */
-    var $models = array();
+    var $view_instances = array();
+
     /**
-     * Array of the view classes used by this controller
-     * (contructor loads these)
+     * Array of instances of models used by this controller
      * @var array
      */
-    var $views = array();
+    var $model_instances;
 
     /**
      * Says which activities (roughly methods invoke from the web) this
@@ -73,14 +87,13 @@ abstract class Controller
      */
     var $activities = array();
 
-
     /**
      * Components are collections of activities (a little like traits) which
      * can be reused.
      *
      * @var array
      */
-    var $components = array();
+    var $component_activities = array();
 
     /**
      *
@@ -95,23 +108,30 @@ abstract class Controller
 
     function __construct($indexing_plugins = array())
     {
-        global $INDEXED_FILE_TYPES;
+        global $INDEXED_FILE_TYPES, $COMPONENT_ACTIVITIES;
 
-        require_once BASE_DIR."/models/model.php";
-        foreach($this->models as $model) {
-            if(file_exists(APP_DIR."/models/".$model."_model.php")) {
-                require_once APP_DIR."/models/".$model."_model.php";
-            }  else {
-                require_once BASE_DIR."/models/".$model."_model.php";
+        foreach($COMPONENT_ACTIVITIES as $component => $activities) {
+            foreach($activities as $activity) {
+                $this->activity_component[$activity] = $component;
+                $this->activities[] = $activity;
             }
-            $model_name = ucfirst($model)."Model";
-            $model_instance_name = lcfirst($model_name);
-
-            $this->$model_instance_name = new $model_name();
         }
+        $this->component_activities = $COMPONENT_ACTIVITIES;
+        $this->component_instances = array();
+        $this->indexing_plugins = $indexing_plugins;
+        $this->model_instances = array();
+        $this->view_instances = array();
+    }
 
-        require_once BASE_DIR."/controllers/components/component.php";
-        foreach($this->components as $component) {
+    /**
+     * Dynamic loader for Component objects which might live on the current
+     * Component
+     *
+     * @param string $component name of model to return
+     */
+    function component($component)
+    {
+        if(!isset($this->component_instances[$component])) {
             if(file_exists(APP_DIR . "/controllers/components/" .
                 $component."_component.php")) {
                 require_once APP_DIR . "/controllers/components/" .
@@ -121,43 +141,72 @@ abstract class Controller
                     $component."_component.php";
             }
             $component_name = ucfirst($component)."Component";
-            $component_instance_name = lcfirst($component_name);
-
-            $this->$component_instance_name = new $component_name($this);
-            foreach($this->$component_instance_name->activities as $activity) {
-                $this->activity_component[$activity] =
-                    $this->$component_instance_name;
-                $this->activities[] = $activity;
-            }
+            $this->component_instances[$component] = new $component_name($this);
         }
+        return $this->component_instances[$component];
+    }
 
-        require_once BASE_DIR."/views/view.php";
-        foreach($this->views as $view) {
-            if(file_exists(APP_DIR."/views/".$view."_view.php")) {
-                require_once APP_DIR."/views/".$view."_view.php";
+    /**
+     * Dynamic loader for Model objects which might live on the current
+     * Controller
+     *
+     * @param string $model name of model to return
+     */
+    function model($model)
+    {
+        if(!isset($this->model_instances[$model])) {
+            if(file_exists(APP_DIR."/models/".$model."_model.php")){
+                require_once APP_DIR."/models/".$model."_model.php";
             } else {
-                require_once BASE_DIR."/views/".$view."_view.php";
+                require_once BASE_DIR."/models/".$model."_model.php";
             }
-            $view_name = ucfirst($view)."View";
-            $view_instance_name = lcfirst($view_name);
-
-            $this->$view_instance_name = new $view_name();
+            $model_name = ucfirst($model)."Model";
+            $this->model_instances[$model] = new $model_name();
         }
+        return $this->model_instances[$model];
+    }
 
-        $this->indexing_plugins = $indexing_plugins;
-        foreach($this->indexing_plugins as $plugin) {
+    /**
+     * Dynamic loader for Plugin objects which might live on the current
+     * View
+     *
+     * @param string $plugin name of Plugin to return
+     */
+    function plugin($plugin)
+    {
+        if(!isset($this->plugin_instances[$plugin])) {
             if(file_exists(APP_DIR.
-                    "/lib/indexing_plugins/".$plugin."_plugin.php")) {
+                "/lib/indexing_plugins/".$plugin."_plugin.php")){
                 require_once APP_DIR.
-                    "/lib/indexing_plugins/".$plugin."_plugin.php";
+                "/lib/indexing_plugins/".$plugin."_plugin.php";
             } else {
                 require_once BASE_DIR .
                     "/lib/indexing_plugins/".$plugin."_plugin.php";
             }
             $plugin_name = ucfirst($plugin)."Plugin";
-            $plugin_instance_name = lcfirst($plugin_name);
-            $this->$plugin_instance_name = new $plugin_name();
+            $this->plugin_instances[$plugin] = new $plugin_name();
         }
+        return $this->plugin_instances[$plugin];
+    }
+
+    /**
+     * Dynamic loader for View objects which might live on the current
+     * Controller
+     *
+     * @param string $view name of view to return
+     */
+    function view($view)
+    {
+        if(!isset($this->view_instances[$view])) {
+            if(file_exists(APP_DIR."/views/".$view."_view.php")){
+                require_once APP_DIR."/views/".$view."_view.php";
+            } else {
+                require_once BASE_DIR."/views/".$view."_view.php";
+            }
+            $view_name = ucfirst($view)."View";
+            $this->view_instances[$view] = new $view_name();
+        }
+        return $this->view_instances[$view];
     }
 
     /**
@@ -175,8 +224,6 @@ abstract class Controller
      */
     function displayView($view, $data)
     {
-        $view_name = ucfirst($view)."View";
-        $view_instance_name = lcfirst($view_name);
         $data['LOCALE_TAG'] = getLocaleTag();
         $data['LOCALE_DIR'] = getLocaleDirection();
         $data['BLOCK_PROGRESSION'] = getBlockProgression();
@@ -194,15 +241,13 @@ abstract class Controller
             }
             $data['YIOOP_INSTANCE'] = $protocol . $machine . $machine_uri;
             $data['TOTAL_ELAPSED_TIME'] = 0;
-            foreach($this->models as $model) {
-                $model_name = ucfirst($model)."Model";
-                $model_instance_name = lcfirst($model_name);
+            foreach($this->model_instances as $model_name => $model) {
                 $data['QUERY_STATISTICS'] = array_merge(
-                    $this->$model_instance_name->db->query_log,
+                    $model->db->query_log,
                     $data['QUERY_STATISTICS']
                     );
                 $data['TOTAL_ELAPSED_TIME'] +=
-                    $this->$model_instance_name->db->total_time;
+                    $model->db->total_time;
             }
             $locale_info = getLocaleQueryStatistics();
             $data['QUERY_STATISTICS'] = array_merge(
@@ -220,7 +265,7 @@ abstract class Controller
                 $data['TOTAL_ELAPSED_TIME'] += $mail_total_time;
             }
         }
-        $this->$view_instance_name->render($data);
+        $this->view($view)->render($data);
     }
 
     /**
@@ -232,7 +277,8 @@ abstract class Controller
      function call($activity)
      {
         if(isset($this->activity_component[$activity])) {
-            return $this->activity_component[$activity]->$activity();
+            return $this->component(
+                $this->activity_component[$activity])->$activity();
         }
         return $this->$activity();
      }

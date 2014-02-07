@@ -428,6 +428,21 @@ define('NORMALIZE_FREQUENCY', 10000);
 $INDEXED_FILE_TYPES = array("unknown");
 
 /**
+ * @global array which activities are in which Component classes (use this
+ *      array so don't have to instantiate classes to find out. Keys are
+ *      names of components, values are the activities in that component.
+ */
+$COMPONENT_ACTIVITIES = array(
+    "accountaccess" => array("signin", "manageAccount", "manageUsers",
+        "manageRoles", "manageGroups"),
+    "blogmixes" => array("blogPages", "mixCrawls"),
+    "crawl" => array("manageCrawls", "manageClassifiers", "pageOptions",
+        "resultsEditor", "searchSources"),
+    "system" => array("manageMachines", "manageLocales", 
+        "serverSettings", "configure")
+);
+
+/**
  * @global array filetypes which should be considered images. This
  *      array is populated in the individual lib/processors page processors
  */

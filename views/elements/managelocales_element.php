@@ -107,7 +107,8 @@ class ManagelocalesElement extends Element
         <table class="name-table" >
         <tr><td><label for="delete-localename"><?php
             e(tl('managelocales_element_delete_localelabel'))?></label></td>
-            <td><?php $this->view->optionsHelper->render("delete-localename",
+            <td><?php $this->view->helper("options")->render(
+                "delete-localename",
                 "selectlocale", $data['LOCALE_NAMES'], "-1"); ?></td>
             <td><button class="button-box" type="submit"><?php
                 e(tl('managelocales_element_submit')); ?></button></td>

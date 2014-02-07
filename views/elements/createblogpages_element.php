@@ -71,7 +71,7 @@ class CreateBlogPagesElement extends Element
                         e(tl('createblogpages_element_sourcetype')); ?></label>
                         </th>
                         <td>
-                            <?php $this->view->optionsHelper->
+                            <?php $this->view->helper("options")->
                             render("source-type","sourcetype",
                             $data['SOURCE_TYPES'],
                             $data['SOURCE_TYPE']); ?>
@@ -93,7 +93,7 @@ class CreateBlogPagesElement extends Element
                         </th>
                         <td>
                             <?php
-                                $this->view->optionsHelper->
+                                $this->view->helper("options")->
                                  render("source-locale-tag",
                                 "sourcelocaletag", $data['LANGUAGES'],
                                 $data['SOURCE_LOCALE_TAG']); ?>
@@ -106,7 +106,8 @@ class CreateBlogPagesElement extends Element
                         </th>
                         <td>
                             <?php 
-                            $this->view->optionsHelper->render("select-group",
+                            $this->view->helper("options")->render(
+                                "select-group",
                                 "selectgroup", $data['GROUP_NAMES'],
                             $data['SELECT_GROUP']); ?>
                         </td>

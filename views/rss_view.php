@@ -48,11 +48,6 @@ require_once BASE_DIR."/lib/crawl_constants.php";
 
 class RssView extends View implements CrawlConstants
 {
-    /** Names of helper objects that the view uses to help draw itself
-     *  @var array
-     */
-    var $helpers = array("pagination", "filetype", "displayresults");
-
     /** This view is drawn on a web layout
      *  @var string
      */
@@ -77,7 +72,7 @@ class RssView extends View implements CrawlConstants
                 <item>
                 <title><?php  e(strip_tags($page[self::TITLE]));
                     if(isset($page[self::TYPE])) {
-                        $this->filetypeHelper->render($page[self::TYPE]);
+                        $this->helper("filetype")->render($page[self::TYPE]);
                     }?></title>
 
                 <link><?php if(!isset($page[self::TYPE]) ||

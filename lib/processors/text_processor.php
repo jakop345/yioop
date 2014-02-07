@@ -35,6 +35,9 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /** Register File Types We Handle*/
 $add_extensions = array("csv", "tab", "tsv", "txt");
+if(!isset($INDEXED_FILE_TYPES)) {
+    $INDEXED_FILE_TYPES = array();
+}
 $INDEXED_FILE_TYPES = array_merge($INDEXED_FILE_TYPES, $add_extensions);
 $add_types = array(
     "text/plain" => "TextProcessor",

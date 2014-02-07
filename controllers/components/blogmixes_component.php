@@ -43,8 +43,6 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  */
 class BlogmixesComponent extends Component
 {
-    var $activities = array("blogPages", "mixCrawls");
-
     /**
      * Used to handle the blogs and pages activity.
      *
@@ -56,7 +54,11 @@ class BlogmixesComponent extends Component
     function blogPages()
     {
         $parent = $this->parent;
-        $data["ELEMENT"] = "blogpagesElement";
+        $group_model = $parent->model("group");
+        $blogpage_model = $parent->model("blogpage");
+        $signin_model = $parent->model("signin");
+        $locale_model = $parent->model("locale");
+        $data["ELEMENT"] = "blogpages";
         $data['SCRIPT'] = "";
         if(isset($_SESSION['USER_ID'])) {
             $user = $_SESSION['USER_ID'];
@@ -73,12 +75,12 @@ class BlogmixesComponent extends Component
             $select_group = "";
         }
         if($_SESSION['USER_ID'] == '1') {
-             $groups = $parent->groupModel->getGroupList();
+             $groups = $group_model->getGroupList();
              $is_admin = true;
         } else {
             $is_admin = false;
             $groups =
-                $parent->groupModel->getUserGroups($_SESSION['USER_ID']);
+                $group_model->getUserGroups($_SESSION['USER_ID']);
             foreach($groups as $group) {
                 array_push($group_ids, $group['GROUP_ID']);
             }
@@ -88,7 +90,7 @@ class BlogmixesComponent extends Component
             "blog" => tl('blogmixes_component_blog'),
             "page" => tl('blogmixes_component_page'));
         $recent_blogs =
-            $parent->blogpageModel->recentBlog($user, $group_ids, $is_admin);
+            $blogpage_model->recentBlog($user, $group_ids, $is_admin);
         $data['RECENT_BLOGS'] = $recent_blogs;
         $base_option = tl('blogmixes_component_select_groupname');
         $data['GROUP_NAMES'][-1] = $base_option;
@@ -116,7 +118,7 @@ class BlogmixesComponent extends Component
                     } else {
                         $data['SOURCE_TYPE'] = -1;
                     }
-                    $locales = $parent->localeModel->getLocaleList();
+                    $locales = $locale_model->getLocaleList();
                     $data["LANGUAGES"] = array();
                     foreach($locales as $locale) {
                         $data["LANGUAGES"][$locale['LOCALE_TAG']] =
@@ -151,7 +153,7 @@ class BlogmixesComponent extends Component
                     }
                     if($data['SOURCE_TYPE'] == 'page'){
 
-                    $groupid = $parent->groupModel->getGroupId($select_group);
+                    $groupid = $group_model->getGroupId($select_group);
                     if(isset($_REQUEST['selectgroup'])) {
                         $select_group =
                         $parent->clean($_REQUEST['selectgroup'], "string" );
@@ -160,7 +162,7 @@ class BlogmixesComponent extends Component
                         $select_group = "";
                     }
                     $data['SELECT_GROUP'] = $select_group;
-                        $result = $parent->blogpageModel->addPage(
+                        $result = $blogpage_model->addPage(
                             $data['title'], $data['description'],
                             $data['SOURCE_TYPE'], $data['SOURCE_LOCALE_TAG'],
                             $user, $select_group);
@@ -171,10 +173,10 @@ class BlogmixesComponent extends Component
                     }
                     }else{
                         $user = $_SESSION['USER_ID'];
-                        $groupid = $parent->groupModel->getGroupId(
+                        $groupid = $group_model->getGroupId(
                             $select_group);
                         $data['SELECT_GROUP'] = $select_group;
-                        $parent->blogpageModel->addBlog(
+                        $blogpage_model->addBlog(
                             $data['title'], $data['description'], $user,
                             $data['SOURCE_TYPE'], $data['sourcelocaletag'],
                             $select_group);
@@ -182,9 +184,9 @@ class BlogmixesComponent extends Component
                             tl('blogmixes_component_blog_added').
                             "</h1>');";
                     }
-                    $data["ELEMENT"] = "blogpagesElement";
+                    $data["ELEMENT"] = "blogpages";
                     $recent_blogs =
-                        $parent->blogpageModel->recentBlog(
+                        $blogpage_model->recentBlog(
                         $user, $group_ids, $is_admin);
                     $data['RECENT_BLOGS'] = $recent_blogs;
                 break;
@@ -192,7 +194,7 @@ class BlogmixesComponent extends Component
                 case "searchblog":
                     if(!isset($_REQUEST['title'])) { break; }
 
-                    $data["ELEMENT"] = "blogpagesElement";
+                    $data["ELEMENT"] = "blogpages";
                     $data['SELECT_GROUP'] = "";
                     $data['description'] = "";
                     $is_blogs_empty = false;
@@ -200,7 +202,7 @@ class BlogmixesComponent extends Component
                         "string");
                     if($data['title'] != "") {
                         $blogs =
-                            $parent->blogpageModel->searchBlog(
+                            $blogpage_model->searchBlog(
                                 $data['title'],
                                 $user, $group_ids, $is_admin);
                         $data['BLOGS'] = $blogs;
@@ -211,7 +213,7 @@ class BlogmixesComponent extends Component
                         $is_blogs_empty = true;
                     }
                     if($is_blogs_empty) {
-                        $data["ELEMENT"] = "createblogpagesElement";
+                        $data["ELEMENT"] = "createblogpages";
                         $source_type_flag = false;
                         if(isset($_REQUEST['sourcetype']) &&
                             in_array($_REQUEST['sourcetype'],
@@ -221,7 +223,7 @@ class BlogmixesComponent extends Component
                         } else {
                             $data['SOURCE_TYPE'] = -1;
                         }
-                        $locales = $parent->localeModel->getLocaleList();
+                        $locales = $locale_model->getLocaleList();
                         $data["LANGUAGES"] = array();
                         foreach($locales as $locale) {
                             $data["LANGUAGES"][$locale['LOCALE_TAG']] =
@@ -247,12 +249,12 @@ class BlogmixesComponent extends Component
                     if(isset($_REQUEST['title'])) {
                         $title = $parent->clean($_REQUEST['title'], "string" );
                     }
-                    $parent->blogpageModel->deleteBlog($timestamp, $title,
+                    $blogpage_model->deleteBlog($timestamp, $title,
                         $user);
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('blogmixes_component_blog_deleted').
                         "</h1>');";
-                    $data['RECENT_BLOGS'] =  $parent->blogpageModel->recentBlog(
+                    $data['RECENT_BLOGS'] =  $blogpage_model->recentBlog(
                         $user, $group_ids, $is_admin);
                 break;
 
@@ -260,7 +262,7 @@ class BlogmixesComponent extends Component
                     if(!isset($_REQUEST['id'])) { break; }
 
                     $timestamp = $parent->clean($_REQUEST['id'], "string");
-                    $data["ELEMENT"] = "editblogpagesElement";
+                    $data["ELEMENT"] = "editblogpages";
                     $source_type_flag = false;
                     if(isset($_REQUEST['sourcetype']) && in_array(
                         $_REQUEST['sourcetype'],
@@ -271,7 +273,7 @@ class BlogmixesComponent extends Component
                     } else {
                         $data['SOURCE_TYPE'] = -1;
                     }
-                    $locales = $parent->localeModel->getLocaleList();
+                    $locales = $locale_model->getLocaleList();
                     $data["LANGUAGES"] = array();
                     foreach($locales as $locale) {
                         $data["LANGUAGES"][$locale['LOCALE_TAG']]
@@ -285,9 +287,9 @@ class BlogmixesComponent extends Component
                     } else {
                         $data['SOURCE_LOCALE_TAG'] = DEFAULT_LOCALE;
                     }
-                    $edit_blogs= $parent->blogpageModel->editBlog($timestamp);
+                    $edit_blogs= $blogpage_model->editBlog($timestamp);
                     $blog_users =
-                    $parent->blogpageModel->getBlogUsers($edit_blogs[0]);
+                        $blogpage_model->getBlogUsers($edit_blogs[0]);
                     $edit_blogs[0]['BLOG_USERS'] = $blog_users;
                     $data['EDIT_BLOGS'] = $edit_blogs[0];
                     $title = $edit_blogs['0']['NAME'];
@@ -297,13 +299,13 @@ class BlogmixesComponent extends Component
                         $user = $_SERVER['REMOTE_ADDR'];
                     }
                     $user = $_SESSION['USER_ID'];
-                    $feed_items=$parent->blogpageModel->getFeed($title, $user);
+                    $feed_items = $blogpage_model->getFeed($title, $user);
                     $data['FEED_ITEMS'] = $feed_items;
                     if(isset($_SESSION['USER_ID'])) {
-                        $username = $parent->signinModel->getUserName(
+                        $username = $signin_model->getUserName(
                             $_SESSION['USER_ID']);
                         $data['USER_NAME'] = $username;
-                        $owner_id = $parent->blogpageModel->
+                        $owner_id = $blogpage_model->
                             getBlogOwner($timestamp);
                         if($owner_id == $user || $user == '1'){
                             $data['IS_OWNER'] = true;
@@ -314,7 +316,7 @@ class BlogmixesComponent extends Component
                 case "editdescription":
                     if(!isset($_REQUEST['id'])) { break; }
                     $timestamp = $parent->clean($_REQUEST['id'], "string" );
-                    $data["ELEMENT"] = "editblogpagesElement";
+                    $data["ELEMENT"] = "editblogpages";
                     $source_type_flag = false;
                     if(isset($_REQUEST['sourcetype']) && in_array(
                        $_REQUEST['sourcetype'],
@@ -325,7 +327,7 @@ class BlogmixesComponent extends Component
                     } else {
                         $data['SOURCE_TYPE'] = -1;
                     }
-                    $locales = $parent->localeModel->getLocaleList();
+                    $locales = $locale_model->getLocaleList();
                     $data["LANGUAGES"] = array();
                     foreach($locales as $locale) {
                         $data["LANGUAGES"][$locale['LOCALE_TAG']] =
@@ -339,10 +341,10 @@ class BlogmixesComponent extends Component
                     } else {
                         $data['SOURCE_LOCALE_TAG'] = DEFAULT_LOCALE;
                     }
-                    $blog_group = $parent->blogpageModel->
+                    $blog_group = $blogpage_model->
                         getBlogGroup($timestamp);
                     $data['BLOG_GROUP'] = $blog_group;
-                    $edit_blogs = $parent->blogpageModel->editBlog($timestamp);
+                    $edit_blogs = $blogpage_model->editBlog($timestamp);
                     $data['EDIT_BLOGS'] = $edit_blogs[0];
                     $data['IS_EDIT_DESC'] = true;
                 break;
@@ -359,25 +361,23 @@ class BlogmixesComponent extends Component
                         $title = $parent->clean($_REQUEST['title'], "string" );
                     }
 
-                    $edit_blogs =
-                        $parent->blogpageModel->editDescription($timestamp,
+                    $edit_blogs = $blogpage_model->editDescription($timestamp,
                         $title, $description);
                     if(!empty($edit_blogs)){
                         $data['EDIT_BLOGS'] = $edit_blogs[0];
                     }
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('blogmixes_component_blog_updated') . "</h1>');";
-                    $data["ELEMENT"] = "blogpagesElement";
+                    $data["ELEMENT"] = "blogpages";
                     $recent_blogs =
-                    $parent->blogpageModel->
-                        recentBlog($user, $group_ids, $is_admin);
+                    $blogpage_model->recentBlog($user, $group_ids, $is_admin);
                     $data['RECENT_BLOGS'] = $recent_blogs;
                 break;
 
                 case "addblogentry":
                     if(!isset($_REQUEST['id'])) { break; }
                     $timestamp = $parent->clean($_REQUEST['id'], "string" );
-                    $data["ELEMENT"] = "editblogpagesElement";
+                    $data["ELEMENT"] = "editblogpages";
                         $source_type_flag = false;
                     if(isset($_REQUEST['sourcetype']) && in_array(
                         $_REQUEST['sourcetype'],
@@ -388,7 +388,7 @@ class BlogmixesComponent extends Component
                     } else {
                         $data['SOURCE_TYPE'] = -1;
                     }
-                    $locales = $parent->localeModel->getLocaleList();
+                    $locales = $locale_model->getLocaleList();
                     $data["LANGUAGES"] = array();
                     foreach($locales as $locale) {
                         $data["LANGUAGES"][$locale['LOCALE_TAG']] =
@@ -402,7 +402,7 @@ class BlogmixesComponent extends Component
                     } else {
                        $data['SOURCE_LOCALE_TAG'] = DEFAULT_LOCALE;
                     }
-                    $edit_blogs = $parent->blogpageModel->editBlog($timestamp);
+                    $edit_blogs = $blogpage_model->editBlog($timestamp);
                     $data['EDIT_BLOGS'] = $edit_blogs[0];
                     $data['IS_ADD_BLOG'] = true;
                 break;
@@ -429,7 +429,7 @@ class BlogmixesComponent extends Component
                         $title_entry =
                             $parent->clean($_REQUEST['title_entry'], "string" );
                     }
-                    $feed_items= $parent->blogpageModel->addEntry($timestamp,
+                    $feed_items= $blogpage_model->addEntry($timestamp,
                         $title_entry, $description, $title, $user);
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('blogmixes_component_feed_added').
@@ -440,7 +440,7 @@ class BlogmixesComponent extends Component
                     if(!isset($_REQUEST['id'])) { break; }
 
                     $timestamp = $parent->clean($_REQUEST['id'], "string" );
-                    $data["ELEMENT"] = "editblogpagesElement";
+                    $data["ELEMENT"] = "editblogpages";
                     $source_type_flag = false;
                     if(isset($_REQUEST['sourcetype']) &&
                         in_array($_REQUEST['sourcetype'],
@@ -450,7 +450,7 @@ class BlogmixesComponent extends Component
                     } else {
                         $data['SOURCE_TYPE'] = -1;
                     }
-                    $locales = $parent->localeModel->getLocaleList();
+                    $locales = $locale_model->getLocaleList();
                     $data["LANGUAGES"] = array();
                     foreach($locales as $locale) {
                         $data["LANGUAGES"][$locale['LOCALE_TAG']] =
@@ -465,15 +465,15 @@ class BlogmixesComponent extends Component
                         $data['SOURCE_LOCALE_TAG'] = DEFAULT_LOCALE;
                     }
 
-                    $edit_blogs = $parent->blogpageModel->editBlog($timestamp);
+                    $edit_blogs = $blogpage_model->editBlog($timestamp);
                     $data['EDIT_BLOGS'] = $edit_blogs[0];
                     $data['IS_EDIT_FEED'] = true;
                     if(isset($_REQUEST['fid'])) {
                         $guid = $parent->clean($_REQUEST['fid'], "string" );
                     }
-                    $feed_items = $parent->blogpageModel->getFeedByGUID($guid);
+                    $feed_items = $blogpage_model->getFeedByGUID($guid);
                     $data['FEED_ITEMS'] = $feed_items;
-                    $owner_id=$parent->blogpageModel->getBlogOwner($timestamp);
+                    $owner_id = $blogpage_model->getBlogOwner($timestamp);
                     if($owner_id == $user || $user == '1'){
                         $data['IS_OWNER'] = true;
                     }
@@ -493,7 +493,7 @@ class BlogmixesComponent extends Component
                     if(isset($_REQUEST['fid'])) {
                         $guid = $parent->clean($_REQUEST['fid'], "string" );
                     }
-                    $update_feeds= $parent->blogpageModel->
+                    $update_feeds= $blogpage_model->
                         updateFeed($guid,$title, $description);
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('blogmixes_component_feed_updated').
@@ -503,7 +503,7 @@ class BlogmixesComponent extends Component
                 case "deletefeed":
                     if(isset($_REQUEST['id'])) {
                         $guid = $parent->clean($_REQUEST['id'], "string" );
-                        $parent->blogpageModel->deleteFeed($guid);
+                        $blogpage_model->deleteFeed($guid);
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('blogmixes_component_feed_deleted').
                             "</h1>');";
@@ -518,7 +518,7 @@ class BlogmixesComponent extends Component
                         $select_user = "";
                     }
                     if($select_user != "" ) {
-                        $parent= $this->signinModel->getUserId($select_user);
+                        $parent= $signin_model->getUserId($select_user);
                         $data['SELECT_USER'] = $select_user;
 
                     }
@@ -528,11 +528,9 @@ class BlogmixesComponent extends Component
                     } else {
                         $blog_name = "";
                     }
-                    $parent->blogpageModel->
-                        updateBlogUsers($select_user, $blog_name);
+                    $blogpage_model->updateBlogUsers($select_user, $blog_name);
                     $recent_blogs =
-                    $parent->blogpageModel->
-                        recentBlog($user, $group_ids, $is_admin);
+                    $blogpage_model->recentBlog($user, $group_ids, $is_admin);
                     $data['RECENT_BLOGS'] = $recent_blogs;
                 break;
 
@@ -547,9 +545,9 @@ class BlogmixesComponent extends Component
                     } else {
                         $select_group = "";
                     }
-                    $groupid = $parent->groupModel->getGroupId($select_group);
+                    $groupid = $group_model->getGroupId($select_group);
                     $data['SELECT_GROUP'] = $select_group;
-                    $parent->blogpageModel->addGroup($timestamp,$select_group);
+                    $blogpage_model->addGroup($timestamp,$select_group);
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('blogmixes_component_group_added').
                         "</h1>');";
@@ -562,7 +560,7 @@ class BlogmixesComponent extends Component
                     if(isset($_REQUEST['gid'])) {
                         $groupid = $parent->clean($_REQUEST['gid'], "string" );
                     }
-                    $parent->blogpageModel->deleteGroup($timestamp,$groupid);
+                    $blogpage_model->deleteGroup($timestamp,$groupid);
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('blogmixes_component_group_deleted').
                         "</h1>');";
@@ -586,19 +584,20 @@ class BlogmixesComponent extends Component
     function mixCrawls()
     {
         $parent = $this->parent;
+        $crawl_model = $parent->model("crawl");
         $possible_arguments = array(
             "createmix", "deletemix", "editmix", "index");
 
-        $data["ELEMENT"] = "mixcrawlsElement";
+        $data["ELEMENT"] = "mixcrawls";
 
         $data['mix_default'] = 0;
-        $machine_urls = $parent->machineModel->getQueueServerUrls();
+        $machine_urls = $parent->model("machine")->getQueueServerUrls();
         $num_machines = count($machine_urls);
         if($num_machines <  1 || ($num_machines ==  1 &&
             UrlParser::isLocalhostUrl($machine_urls[0]))) {
             $machine_urls = NULL;
         }
-        $crawls = $parent->crawlModel->getCrawlList(false, true, $machine_urls);
+        $crawls = $crawl_model->getCrawlList(false, true, $machine_urls);
         $data['available_crawls'][0] = tl('blogmixes_component_select_crawl');
         $data['available_crawls'][1] = tl('blogmixes_component_default_crawl');
         $data['SCRIPT'] = "c = [];c[0]='".
@@ -611,7 +610,7 @@ class BlogmixesComponent extends Component
             $data['SCRIPT'] .= 'c['.$crawl['CRAWL_TIME'].']="'.
                 $crawl['DESCRIPTION'].'";';
         }
-        $mixes = $parent->crawlModel->getMixList(true);
+        $mixes = $crawl_model->getMixList(true);
         if(count($mixes) > 0 ) {
             $data['available_mixes']= $mixes;
             $mix_ids = array();
@@ -634,7 +633,7 @@ class BlogmixesComponent extends Component
                         $mix['MIX_NAME'] = tl('blogmixes_component_unnamed');
                     }
                     $mix['GROUPS'] = array();
-                    $parent->crawlModel->setCrawlMix($mix);
+                    $crawl_model->setCrawlMix($mix);
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('blogmixes_component_mix_created')."</h1>');";
 
@@ -648,7 +647,7 @@ class BlogmixesComponent extends Component
                         tl('blogmixes_component_set_index')."</h1>')";
 
                     $timestamp = $parent->clean($_REQUEST['timestamp'], "int");
-                    $parent->crawlModel->setCurrentIndexDatabaseName(
+                    $crawl_model->setCurrentIndexDatabaseName(
                         $timestamp);
                 break;
 
@@ -660,16 +659,16 @@ class BlogmixesComponent extends Component
                             "</h1>')";
                         return $data;
                     }
-                    $parent->crawlModel->deleteCrawlMix($_REQUEST['timestamp']);
+                    $crawl_model->deleteCrawlMix($_REQUEST['timestamp']);
                     $data['available_mixes'] =
-                        $parent->crawlModel->getMixList(true);
+                        $crawl_model->getMixList(true);
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('blogmixes_component_mix_deleted')."</h1>')";
                 break;
             }
         }
 
-        $crawl_time = $parent->crawlModel->getCurrentIndexDatabaseName();
+        $crawl_time = $crawl_model->getCurrentIndexDatabaseName();
         if(isset($crawl_time) ) {
             $data['CURRENT_INDEX'] = (int)$crawl_time;
         } else {
@@ -688,12 +687,13 @@ class BlogmixesComponent extends Component
     function editMix(&$data, &$mix_ids, $mix)
     {
         $parent = $this->parent;
+        $crawl_model = $parent->model("crawl");
         $data["leftorright"] =
             (getLocaleDirection() == 'ltr') ? "right": "left";
-        $data["ELEMENT"] = "editmixElement";
+        $data["ELEMENT"] = "editmix";
 
         if(isset($_REQUEST['timestamp'])) {
-            $mix = $parent->crawlModel->getCrawlMix(
+            $mix = $crawl_model->getCrawlMix(
                 $_REQUEST['timestamp']);
         }
         $data['MIX'] = $mix;
@@ -766,7 +766,7 @@ class BlogmixesComponent extends Component
             }
 
             $data['MIX'] = $mix;
-            $parent->crawlModel->setCrawlMix($mix);
+            $crawl_model->setCrawlMix($mix);
             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                 tl('blogmixes_component_mix_saved')."</h1>');";
         }

@@ -84,17 +84,17 @@ class PageOptionsElement extends Element
         <div id='crawltimetab'>
         <div class="top-margin"><label for="load-options"><b><?php
             e(tl('pageoptions_element_load_options'))?></b></label><?php
-            $this->view->optionsHelper->render("load-options", "load_option",
+            $this->view->helper("options")->render("load-options","load_option",
                 $data['available_options'], $data['options_default']);
         ?></div>
         <div class="top-margin"><b><label for="page-range-request"><?php
             e(tl('pageoptions_element_page_range'))?></label></b>
-            <?php $this->view->optionsHelper->render("page-range-request",
+            <?php $this->view->helper("options")->render("page-range-request",
             "page_range_request", $data['SIZE_VALUES'], $data['PAGE_SIZE']);
             ?></div>
         <div class="top-margin"><b><label for="max-description-len"><?php
             e(tl('pageoptions_element_max_description'))?></label></b>
-            <?php $this->view->optionsHelper->render("max-description-len",
+            <?php $this->view->helper("options")->render("max-description-len",
             "max_description_len", $data['LEN_VALUES'], $data['MAX_LEN']);
             ?></div>
         <div class="top-margin"><b><label for="cache-pages"><?php
@@ -109,8 +109,9 @@ class PageOptionsElement extends Element
         </div>
         <div class="top-margin"><b><label for="allow-recrawl"><?php
             e(tl('pageoptions_element_allow_recrawl'))?></label></b>
-            <?php $this->view->optionsHelper->render("page-recrawl-frequency",
-            "page_recrawl_frequency", $data['RECRAWL_FREQS'],
+            <?php $this->view->helper("options")->render(
+                "page-recrawl-frequency",
+                "page_recrawl_frequency", $data['RECRAWL_FREQS'],
                 $data['PAGE_RECRAWL_FREQUENCY']);
             ?></div>
         <div class="top-margin"><b><?php
@@ -345,7 +346,7 @@ class PageOptionsElement extends Element
             e(tl('pageoptions_element_page_type'))?></label></b>
             <?php
             $types = $data['MIME_TYPES'];
-            $this->view->optionsHelper->render("page-type",
+            $this->view->helper("options")->render("page-type",
             "page_type", array_combine($types, $types),
             $data["page_type"]);
             ?></div>

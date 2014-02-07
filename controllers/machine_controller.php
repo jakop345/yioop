@@ -52,11 +52,6 @@ require_once BASE_DIR."/lib/crawl_daemon.php";
 class MachineController extends Controller implements CrawlConstants
 {
     /**
-     * No models used by this controller
-     * @var array
-     */
-    var $models = array();
-    /**
      * Only outputs JSON data so don't need view
      * @var array
      */

@@ -77,7 +77,7 @@ class ActivityElement extends Element
                     }
                 }
 
-                $this->view->optionsHelper->render(
+                $this->view->helper("options")->render(
                     "activity", "a", $out_activities,  $current);
                 ?>
                 <script type="text/javascript">

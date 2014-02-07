@@ -64,7 +64,7 @@ class ManageusersElement extends Element
         $data['TABLE_TITLE'] = tl('manageusers_element_users');
         $data['ACTIVITY'] = 'manageUsers';
         $data['VIEW'] = $this->view;
-        $this->view->pagingtableHelper->render($data);
+        $this->view->helper("pagingtable")->render($data);
 
         $default_accounts = array(ROOT_ID, PUBLIC_USER_ID);
         ?>
@@ -111,7 +111,7 @@ class ManageusersElement extends Element
                         <input type="hidden" name="user_name" value="<?php
                             e($user['USER_NAME']); ?>" />
                         <?php
-                        $this->view->optionsHelper->render(
+                        $this->view->helper("options")->render(
                             "update-userstatus-{$user['USER_NAME']}",
                             "userstatus", $data['STATUS_CODES'],
                             $user['STATUS'], true);
@@ -228,7 +228,7 @@ class ManageusersElement extends Element
                         "</span></div><input type='hidden' name='status' ".
                         "value='".$data['CURRENT_USER']['status']."' />");
                 } else {
-                    $this->view->optionsHelper->render(
+                    $this->view->helper("options")->render(
                         "update-userstatus-currentuser",
                         "status", $data['STATUS_CODES'],
                         $data['CURRENT_USER']['status']);
@@ -259,7 +259,7 @@ class ManageusersElement extends Element
                 }
                 ?>
                 </table>
-                <?php $this->view->optionsHelper->render("add-userrole",
+                <?php $this->view->helper("options")->render("add-userrole",
                         "selectrole", $data['AVAILABLE_ROLES'],
                         $data['SELECT_ROLE']); ?>
                 </div>
@@ -280,7 +280,7 @@ class ManageusersElement extends Element
                 }
                 ?>
                 </table>
-                <?php $this->view->optionsHelper->render("add-usergroup",
+                <?php $this->view->helper("options")->render("add-usergroup",
                         "selectgroup", $data['AVAILABLE_GROUPS'],
                         $data['SELECT_GROUP']); ?>
                 </div>
@@ -336,7 +336,7 @@ class ManageusersElement extends Element
             e(tl('manageusers_element_username'))?>:</label>
             <?php
                 e($item_sep);
-                $this->view->optionsHelper->render(
+                $this->view->helper("options")->render(
                     "user-comparison", "user_comparison", 
                     $data['COMPARISON_TYPES'],
                     $data['user_comparison']);
@@ -347,7 +347,7 @@ class ManageusersElement extends Element
                 class="narrow-field"  />
             <?php
                 e($item_sep);
-                $this->view->optionsHelper->render(
+                $this->view->helper("options")->render(
                     "user-sort", "user_sort", 
                     $data['SORT_TYPES'],
                     $data['user_sort']);
@@ -356,7 +356,7 @@ class ManageusersElement extends Element
                 e(tl('manageusers_element_firstname')); ?>:</label>
             <?php
                 e($item_sep);
-                $this->view->optionsHelper->render(
+                $this->view->helper("options")->render(
                     "first-comparison", "first_comparison", 
                     $data['COMPARISON_TYPES'],
                     $data['first_comparison']);
@@ -367,7 +367,7 @@ class ManageusersElement extends Element
                 class="narrow-field"/>
             <?php
                 e($item_sep);
-                $this->view->optionsHelper->render(
+                $this->view->helper("options")->render(
                     "first-sort", "first_sort", 
                     $data['SORT_TYPES'],
                     $data['first_sort']);
@@ -376,7 +376,7 @@ class ManageusersElement extends Element
                 e(tl('manageusers_element_lastname')); ?>:</label>
             <?php
                 e($item_sep);
-                $this->view->optionsHelper->render(
+                $this->view->helper("options")->render(
                     "last-comparison", "last_comparison", 
                     $data['COMPARISON_TYPES'],
                     $data['last_comparison']);
@@ -387,7 +387,7 @@ class ManageusersElement extends Element
                 class="narrow-field"/>
             <?php
                 e($item_sep);
-                $this->view->optionsHelper->render(
+                $this->view->helper("options")->render(
                     "last-sort", "last_sort", 
                     $data['SORT_TYPES'],
                     $data['last_sort']);
@@ -396,7 +396,7 @@ class ManageusersElement extends Element
                 e(tl('manageusers_element_email')); ?>:</label>
             <?php
                 e($item_sep);
-                $this->view->optionsHelper->render(
+                $this->view->helper("options")->render(
                     "email-comparison", "email_comparison", 
                     $data['COMPARISON_TYPES'],
                     $data['email_comparison']);
@@ -407,7 +407,7 @@ class ManageusersElement extends Element
                 class="narrow-field"/>
             <?php
                 e($item_sep);
-                $this->view->optionsHelper->render(
+                $this->view->helper("options")->render(
                     "email-sort", "email_sort", 
                     $data['SORT_TYPES'],
                     $data['email_sort']);
@@ -416,7 +416,7 @@ class ManageusersElement extends Element
                 e(tl('manageusers_element_status')); ?>:</label>
             <?php
                 e($item_sep);
-                $this->view->optionsHelper->render(
+                $this->view->helper("options")->render(
                     "status-comparison", "status_comparison", 
                     $data['STATUS_COMPARISON_TYPES'],
                     $data['status_comparison']);
@@ -428,7 +428,7 @@ class ManageusersElement extends Element
             </style>
             <?php
             e($item_sep);
-            $this->view->optionsHelper->render(
+            $this->view->helper("options")->render(
                 "search-userstatus-user",
                 "status_name", $data['STATUS_CODES'],
                 $data['status_name']);
@@ -440,7 +440,7 @@ class ManageusersElement extends Element
             </style>
             <?php
                 e($item_sep);
-                $this->view->optionsHelper->render(
+                $this->view->helper("options")->render(
                     "status-sort", "status_sort", 
                     $data['SORT_TYPES'],
                     $data['status_sort']);

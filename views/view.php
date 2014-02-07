@@ -36,6 +36,15 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 if(php_sapi_name() != 'cli') {
     $locale_version = tl('view_locale_version4');
 }
+
+//base class for Element's needed for this View
+require_once BASE_DIR."/views/elements/element.php";
+
+//base class for  Helper's needed for this View
+require_once BASE_DIR."/views/helpers/helper.php";
+
+//base class for Layout on which the View will be drawn
+require_once BASE_DIR."/views/layouts/layout.php";
 /**
  * Base View Class. A View is used to display
  * the output of controller activity
@@ -44,27 +53,9 @@ if(php_sapi_name() != 'cli') {
  * @package seek_quarry
  * @subpackage view
  */
+
 abstract class View
 {
-    /**
-     * Names of element objects that the view uses to display itself
-     * @var array
-     */
-    var $elements = array();
-
-    /**
-     * Names of helper objects that the view uses to help draw itself
-     * @var array
-     */
-    var $helpers = array();
-
-    /**
-     * Localized static page elements used by this view
-     * @var array
-     */
-    var $pages = array();
-
-
     /** The name of the type of layout object that the view is drawn on
      *  @var string
      */
@@ -83,44 +74,6 @@ abstract class View
      */
     function __construct()
     {
-        //read in and instantiate Element's needed for this View
-        require_once BASE_DIR."/views/elements/element.php";
-        foreach($this->elements as $element) {
-            if(file_exists(
-                APP_DIR."/views/elements/".$element."_element.php")) {
-                require_once
-                    APP_DIR."/views/elements/".$element."_element.php";
-            } else {
-                require_once
-                    BASE_DIR."/views/elements/".$element."_element.php";
-            }
-            $element_name = ucfirst($element)."Element";
-            $element_instance_name = lcfirst($element_name);
-
-            $this->$element_instance_name = new $element_name($this);
-        }
-
-        //read in and instantiate Helper's needed for this View
-        require_once BASE_DIR."/views/helpers/helper.php";
-
-        foreach($this->helpers as $helper) {
-            if(file_exists(
-                APP_DIR."/views/helpers/".$helper."_helper.php")) {
-                require_once
-                    APP_DIR."/views/helpers/".$helper."_helper.php";
-            } else {
-                require_once BASE_DIR."/views/helpers/".$helper."_helper.php";
-            }
-
-            $helper_name = ucfirst($helper)."Helper";
-            $helper_instance_name = lcfirst($helper_name);
-
-            $this->$helper_instance_name = new $helper_name();
-        }
-
-        //read in and instantiate the Layout on which the View will be drawn
-        require_once BASE_DIR."/views/layouts/layout.php";
-
         $layout_name = ucfirst($this->layout)."Layout";
         if($this->layout != "") {
             if(file_exists(
@@ -134,6 +87,47 @@ abstract class View
         }
 
         $this->layout_object = new $layout_name($this);
+    }
+
+    /**
+     * Dynamic loader for Element objects which might live on the current
+     * View
+     *
+     * @param string $element name of Element to return
+     */
+    function element($element)
+    {
+        if(!isset($this->element_instances[$element])) {
+            if(file_exists(APP_DIR."/views/elements/".$element."_element.php")){
+                require_once APP_DIR."/views/elements/".$element."_element.php";
+            } else {
+                require_once BASE_DIR.
+                    "/views/elements/".$element."_element.php";
+            }
+            $element_name = ucfirst($element)."Element";
+            $this->element_instances[$element] = new $element_name($this);
+        }
+        return $this->element_instances[$element];
+    }
+
+    /**
+     * Dynamic loader for Helper objects which might live on the current
+     * View
+     *
+     * @param $string element name of Helper to return
+     */
+    function helper($helper)
+    {
+        if(!isset($this->helper_instances[$helper])) {
+            if(file_exists(APP_DIR."/views/helpers/".$helper."_helper.php")){
+                require_once APP_DIR."/views/helpers/".$helper."_helper.php";
+            } else {
+                require_once BASE_DIR."/views/helpers/".$helper."_helper.php";
+            }
+            $helper_name = ucfirst($helper)."Helper";
+            $this->helper_instances[$helper] = new $helper_name();
+        }
+        return $this->helper_instances[$helper];
     }
 
     /**

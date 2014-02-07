@@ -50,11 +50,6 @@ require_once BASE_DIR."/lib/url_parser.php";
 class ResourceController extends Controller implements CrawlConstants
 {
     /**
-     * Models used by this controller
-     * @var array
-     */
-    var $models = array("crawl");
-    /**
      * Only outputs JSON data so don't need view
      * @var array
      */
@@ -202,8 +197,8 @@ class ResourceController extends Controller implements CrawlConstants
         // substrings to exclude from our list
         $excludes = array(".DS", "__MACOSX", "queries", "QueueBundle", "tmp",
             "thumb");
-        $sync_files = $this->crawlModel->getDeltaFileInfo(CRAWL_DIR."/cache",
-            $last_sync, $excludes);
+        $sync_files = $this->model("crawl")->getDeltaFileInfo(
+            CRAWL_DIR."/cache", $last_sync, $excludes);
 
         if (count($sync_files) > 0 ) {
             $info[self::STATUS] = self::CONTINUE_STATE;

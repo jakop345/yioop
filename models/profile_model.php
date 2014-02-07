@@ -335,7 +335,8 @@ EOT;
                 PASSWORD CHAR(60), STATUS INTEGER, HASH CHAR(60),
                 CREATION_TIME VARCHAR(20))",
             "CREATE TABLE USER_GROUP (USER_ID INTEGER , GROUP_ID INTEGER,
-                   STATUS INTEGER, PRIMARY KEY (GROUP_ID, USER_ID) )",
+                   STATUS INTEGER, JOIN_DATE INT(11),
+                   PRIMARY KEY (GROUP_ID, USER_ID) )",
             "CREATE TABLE USER_ROLE (USER_ID INTEGER, ROLE_ID INTEGER,
                 PRIMARY KEY (ROLE_ID, USER_ID))",
             "CREATE TABLE USER_SESSION(USER_ID INTEGER PRIMARY KEY,
@@ -346,8 +347,10 @@ EOT;
                 ACCESS_COUNT INTEGER)",
             "CREATE TABLE VERSION(ID INTEGER PRIMARY KEY)",
             );
-        foreach($create_statements as $statement) {;
-            if(!$dbm->execute($statement)) {echo $auto_increment; return false;
+        foreach($create_statements as $statement) {
+            if(!$dbm->execute($statement)) {
+                echo $statement." ERROR!";
+                return false;
             }
         }
         return true;

@@ -68,13 +68,7 @@ class AdminController extends Controller implements CrawlConstants
      * @var array
      */
     var $views = array("admin","signin","crawlstatus", "machinestatus");
-    /**
-     * Says which models to load for this controller.
-     * @var array
-     */
-    var $models = array(
-        "signin", "user", "activity", "crawl", "role", "locale", "profile",
-        "searchfilters", "source", "machine", "cron", "group", "blogpage");
+
     /**
      * Says which activities (roughly methods invoke from the web) this
      * controller will respond to (note: more activities will be loaded from
@@ -82,10 +76,6 @@ class AdminController extends Controller implements CrawlConstants
      * @var array
      */
     var $activities = array("crawlStatus", "machineStatus");
-    /**
-     *  @var array
-     */
-    var $components = array("accountaccess", "crawl", "blogmixes", "system");
 
     /**
      * An array of activities which are periodically updated within other
@@ -133,9 +123,9 @@ class AdminController extends Controller implements CrawlConstants
                     tl('admin_controller_need_cookies')."</h1>');";
                 unset($_SESSION['USER_ID']);
             } else if ($this->checkSignin()){
-                $user_id = $this->signinModel->getUserId(
+                $user_id = $this->model("signin")->getUserId(
                     $this->clean($_REQUEST['u'], "string"));
-                $session = $this->userModel->getUserSession($user_id);
+                $session = $this->model("user")->getUserSession($user_id);
                 if(is_array($session)) {
                     $_SESSION = $session;
                 }
@@ -204,7 +194,7 @@ class AdminController extends Controller implements CrawlConstants
      */
     function checkSignin()
     {
-        $result = $this->signinModel->checkValidSignin(
+        $result = $this->model("signin")->checkValidSignin(
         $this->clean($_REQUEST['u'], "string"),
         $this->clean($_REQUEST['p'], "string") );
         return $result;
@@ -230,15 +220,16 @@ class AdminController extends Controller implements CrawlConstants
             $activity = "manageAccount";
         }
         $allowed = true;
+        $activity_model = $this->model("activity");
         if(!PROFILE) {
             $allowed_activities = array( array(
                 "ACTIVITY_NAME" =>
-                $this->activityModel->getActivityNameFromMethodName($activity),
+                $activity_model->getActivityNameFromMethodName($activity),
                 'METHOD_NAME' => $activity));
             $allowed = true;
         } else {
             $allowed_activities =
-                 $this->userModel->getUserActivities($_SESSION['USER_ID']);
+                 $this->model("user")->getUserActivities($_SESSION['USER_ID']);
         }
         if($allowed_activities == array()) {
             $data['INACTIVE'] = true;
@@ -268,8 +259,9 @@ class AdminController extends Controller implements CrawlConstants
         }
         if(!in_array($activity, $this->status_activities)) {
             $data['CURRENT_ACTIVITY'] =
-                $this->activityModel->getActivityNameFromMethodName($activity);
+                $activity_model->getActivityNameFromMethodName($activity);
         }
+
         $data['COMPONENT_ACTIVITIES'] = array();
         $component_translations = array(
             "accountaccess" => tl('admin_controller_account_access'),
@@ -278,11 +270,9 @@ class AdminController extends Controller implements CrawlConstants
             "system" => tl('admin_controller_system_settings')
         );
         if(isset($data["ACTIVITIES"])) {
-            foreach($this->components as $component) {
-                $component_name = $component."Component";
+            foreach($this->component_activities as $component => $activities) {
                 foreach($data["ACTIVITIES"] as $activity) {
-                    if(in_array($activity['METHOD_NAME'],
-                        $this->$component_name->activities)) {
+                    if(in_array($activity['METHOD_NAME'], $activities)) {
                         $data['COMPONENT_ACTIVITIES'][
                             $component_translations[$component]][] =
                             $activity;
@@ -305,20 +295,21 @@ class AdminController extends Controller implements CrawlConstants
     {
         $data = array();
         $data['REFRESH'] = "crawlstatus";
+        $crawl_model = $this->model("crawl");
 
-        $crawl_time = $this->crawlModel->getCurrentIndexDatabaseName();
+        $crawl_time = $crawl_model->getCurrentIndexDatabaseName();
         if(isset($crawl_time) ) {
             $data['CURRENT_INDEX'] = (int)$crawl_time;
         } else {
             $data['CURRENT_INDEX'] = -1;
         }
 
-        $machine_urls = $this->machineModel->getQueueServerUrls();
+        $machine_urls = $this->model("machine")->getQueueServerUrls();
         list($stalled, $status, $data['RECENT_CRAWLS']) =
-            $this->crawlModel->combinedCrawlInfo($machine_urls);
+            $crawl_model->combinedCrawlInfo($machine_urls);
 
         if($stalled) {
-            $this->crawlModel->sendStopCrawlMessage($machine_urls);
+            $crawl_model->sendStopCrawlMessage($machine_urls);
         }
 
         $data = array_merge($data, $status);
@@ -346,7 +337,7 @@ class AdminController extends Controller implements CrawlConstants
     }
 
     /**
-     * Gets data from the machineModel concerning the on/off states
+     * Gets data from the machine model concerning the on/off states
      * of the machines managed by this Yioop instance and then passes
      * this data the the machinestatus view.
      * @return array $data MACHINES field has information about each
@@ -359,8 +350,8 @@ class AdminController extends Controller implements CrawlConstants
     {
         $data = array();
         $data['REFRESH'] = "machinestatus";
-        $data['MACHINES'] = $this->machineModel->getMachineStatuses();
-        $profile =  $this->profileModel->getProfile(WORK_DIRECTORY);
+        $data['MACHINES'] = $this->model("machine")->getMachineStatuses();
+        $profile =  $this->model("profile")->getProfile(WORK_DIRECTORY);
         $data['NEWS_MODE'] = isset($profile['NEWS_MODE']) ?
             $profile['NEWS_MODE']: "";
         return $data;
@@ -378,7 +369,7 @@ class AdminController extends Controller implements CrawlConstants
      */
     function updateProfileFields(&$data, &$profile, $check_box_fields = array())
     {
-        foreach($this->profileModel->profile_fields as $field) {
+        foreach($this->model("profile")->profile_fields as $field) {
             if(isset($_REQUEST[$field])) {
                 if($field != "ROBOT_DESCRIPTION" &&
                     $field != "MEMCACHE_SERVERS" &&

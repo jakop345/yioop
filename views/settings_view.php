@@ -51,17 +51,6 @@ class SettingsView extends View
      */
     var $layout = "web";
     /**
-     * Names of element objects that the view uses to display itself
-     * @var array
-     */
-    var $elements = array("language");
-    /**
-     * Names of helper objects that the view uses to help draw itself
-     * @var array
-     */
-    var $helpers = array('options');
-
-    /**
      * sDraws the web page on which users can control their search settings.
      *
      * @param array $data   contains anti CSRF token as well
@@ -87,7 +76,7 @@ class SettingsView extends View
 <tr>
 <td class="table-label"><label for="per-page"><b><?php
     e(tl('settings_view_results_per_page')); ?></b></label></td><td
-    class="table-input"><?php $this->optionsHelper->render(
+    class="table-input"><?php $this->helper("options")->render(
     "per-page", "perpage", $data['PER_PAGE'], $data['PER_PAGE_SELECTED']); ?>
 </td></tr>
 <tr>
@@ -100,12 +89,12 @@ class SettingsView extends View
 <tr>
 <td class="table-label"><label for="index-ts"><b><?php
     e(tl('settings_view_search_index')); ?></b></label></td><td
-    class="table-input"><?php $this->optionsHelper->render(
+    class="table-input"><?php $this->helper("options")->render(
     "index-ts", "index_ts", $data['CRAWLS'], $data['its']); ?>
 </td></tr>
 <tr><td class="table-label"><label for="locale"><b><?php
     e(tl('settings_view_language_label')); ?></b></label></td><td
-    class="table-input"><?php $this->languageElement->render($data); ?>
+    class="table-input"><?php $this->element("language")->render($data); ?>
 </td></tr>
 
 <tr><td class="cancel"><input type="hidden" name="<?php

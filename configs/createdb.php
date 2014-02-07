@@ -105,14 +105,14 @@ $sql = "INSERT INTO GROUPS VALUES(".PUBLIC_GROUP_ID.",'Public','".
     "')";
 $db->execute($sql);
 
-
+$now = time();
 $db->execute("INSERT INTO ROLE VALUES (".ADMIN_ROLE.", 'Admin' )");
 $db->execute("INSERT INTO ROLE VALUES (".USER_ROLE.", 'User' )");
 $db->execute("INSERT INTO USER_ROLE VALUES (".ROOT_ID.", ".ADMIN_ROLE.")");
 $db->execute("INSERT INTO USER_GROUP VALUES (".ROOT_ID.", ".
-    PUBLIC_GROUP_ID.", ".ACTIVE_STATUS.")");
+    PUBLIC_GROUP_ID.", ".ACTIVE_STATUS.", $now)");
 $db->execute("INSERT INTO USER_GROUP VALUES (".PUBLIC_USER_ID.", ".
-    PUBLIC_GROUP_ID.", ".ACTIVE_STATUS.")");
+    PUBLIC_GROUP_ID.", ".ACTIVE_STATUS.", $now)");
 $public_pages = array("404", "409", "blog", "bot", "privacy", 
     "captcha_time_out", "suggest_day_exceeded", "terms");
 foreach($public_pages as $page) {

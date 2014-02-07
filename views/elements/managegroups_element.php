@@ -74,7 +74,7 @@ class ManagegroupsElement extends Element
         $data['ACTIVITY'] = 'manageGroups';
         $data['VIEW'] = $this->view;
         $data['NO_FLOAT_TABLE'] = true;
-        $this->view->pagingtableHelper->render($data);
+        $this->view->helper("pagingtable")->render($data);
         ?>
         <table class="role-table table-margin">
             <tr>
@@ -95,7 +95,7 @@ class ManagegroupsElement extends Element
             $edit_url = $base_url . "&amp;arg=editgroup&amp;";
             $transfer_url = $base_url . "&amp;arg=changeowner&amp;";
             $mobile_columns = array('GROUP_NAME', 'OWNER');
-            $id_columns = array("GROUP_ID", "OWNER_ID");
+            $ignore_columns = array("GROUP_ID", "OWNER_ID", "JOIN_DATE");
             $access_columns = array("MEMBER_ACCESS");
             $dropdown_columns = array("MEMBER_ACCESS", "REGISTER_TYPE");
             $choice_arrays = array(
@@ -105,7 +105,7 @@ class ManagegroupsElement extends Element
             foreach($data['GROUPS'] as $group) {
                 echo "<tr>";
                 foreach($group as $col_name => $group_column) {
-                    if(in_array($col_name, $id_columns) || (
+                    if(in_array($col_name, $ignore_columns) || (
                         MOBILE && !in_array($col_name, $mobile_columns))) {
                         continue;
                     }
@@ -143,7 +143,7 @@ class ManagegroupsElement extends Element
                         <input type="hidden" name="group_id" value="<?php
                             e($group['GROUP_ID']); ?>" />
                         <?php
-                        $this->view->optionsHelper->render(
+                        $this->view->helper("options")->render(
                             "update-$arg_name-{$group['GROUP_ID']}",
                             $arg_name, $data[$choice_array],
                             $group[$col_name], true);
@@ -263,14 +263,14 @@ class ManagegroupsElement extends Element
             <tr><th class="table-label"><label for="register-type"><?php
                 e(tl('managegroups_element_register'))?></label>:</th>
                 <td><?php 
-                    $this->view->optionsHelper->render(
+                    $this->view->helper("options")->render(
                         "register-type", "register", $data["REGISTER_CODES"], 
                          $data['CURRENT_GROUP']['register']);
                     ?></td></tr>
             <tr><th class="table-label"><label for="member-access"><?php
                 e(tl('managegroups_element_memberaccess'))?></label>:</th>
                 <td><?php 
-                    $this->view->optionsHelper->render(
+                    $this->view->helper("options")->render(
                         "member-access", "member_access", $data["ACCESS_CODES"],
                         $data['CURRENT_GROUP']['member_access']);
                     ?></td></tr>
@@ -467,7 +467,7 @@ class ManagegroupsElement extends Element
             e(tl('managegroups_element_groupname'))?>:</label>
             <?php
                 e($item_sep);
-                $this->view->optionsHelper->render(
+                $this->view->helper("options")->render(
                     "name-comparison", "name_comparison", 
                     $data['COMPARISON_TYPES'],
                     $data['name_comparison']);
@@ -478,7 +478,7 @@ class ManagegroupsElement extends Element
                 class="narrow-field"  />
             <?php
                 e($item_sep);
-                $this->view->optionsHelper->render(
+                $this->view->helper("options")->render(
                     "name-sort", "name_sort", 
                     $data['SORT_TYPES'],
                     $data['name_sort']);
@@ -487,7 +487,7 @@ class ManagegroupsElement extends Element
             e(tl('managegroups_element_groupowner'))?>:</label>
             <?php
                 e($item_sep);
-                $this->view->optionsHelper->render(
+                $this->view->helper("options")->render(
                     "owner-comparison", "owner_comparison", 
                     $data['COMPARISON_TYPES'],
                     $data['owner_comparison']);
@@ -498,7 +498,7 @@ class ManagegroupsElement extends Element
                 class="narrow-field"  />
             <?php
                 e($item_sep);
-                $this->view->optionsHelper->render(
+                $this->view->helper("options")->render(
                     "owner-sort", "owner_sort", 
                     $data['SORT_TYPES'],
                     $data['owner_sort']);
@@ -507,7 +507,7 @@ class ManagegroupsElement extends Element
                 e(tl('managegroups_element_registertype')); ?>:</label>
             <?php
                 e($item_sep);
-                $this->view->optionsHelper->render(
+                $this->view->helper("options")->render(
                     "register-comparison", "register_comparison", 
                     $data['DROPDOWN_COMPARISON_TYPES'],
                     $data['register_comparison']);
@@ -519,7 +519,7 @@ class ManagegroupsElement extends Element
             </style>
             <?php
             e($item_sep);
-            $this->view->optionsHelper->render(
+            $this->view->helper("options")->render(
                 "search-registertype",
                 "register", $data['REGISTER_CODES'],
                 $data['register']);
@@ -531,7 +531,7 @@ class ManagegroupsElement extends Element
             </style>
             <?php
                 e($item_sep);
-                $this->view->optionsHelper->render(
+                $this->view->helper("options")->render(
                     "register-sort", "register_sort", 
                     $data['SORT_TYPES'],
                     $data['register_sort']);
@@ -540,7 +540,7 @@ class ManagegroupsElement extends Element
                 e(tl('manageusers_element_member_access')); ?>:</label>
             <?php
                 e($item_sep);
-                $this->view->optionsHelper->render(
+                $this->view->helper("options")->render(
                     "access-comparison", "access_comparison", 
                     $data['DROPDOWN_COMPARISON_TYPES'],
                     $data['access_comparison']);
@@ -552,7 +552,7 @@ class ManagegroupsElement extends Element
             </style>
             <?php
             e($item_sep);
-            $this->view->optionsHelper->render(
+            $this->view->helper("options")->render(
                 "search-groupaccess",
                 "access", $data['ACCESS_CODES'],
                 $data['access']);
@@ -564,7 +564,7 @@ class ManagegroupsElement extends Element
             </style>
             <?php
                 e($item_sep);
-                $this->view->optionsHelper->render(
+                $this->view->helper("options")->render(
                     "access-sort", "access_sort", 
                     $data['SORT_TYPES'],
                     $data['access_sort']);

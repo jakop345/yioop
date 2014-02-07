@@ -69,7 +69,7 @@ class SearchsourcesElement extends Element
         <table class="name-table">
         <tr><td><label for="source-type"><b><?php
             e(tl('searchsources_element_sourcetype'))?></b></label></td><td>
-            <?php $this->view->optionsHelper->render("source-type",
+            <?php $this->view->helper("options")->render("source-type",
             "sourcetype", $data['SOURCE_TYPES'],
                 $data['SOURCE_TYPE']); ?></td></tr>
         <tr><td><label for="source-name"><b><?php
@@ -86,7 +86,7 @@ class SearchsourcesElement extends Element
                 maxlength="80" class="wide-field" /></td></tr>
         <tr><td><label for="source-locale-tag"><b id="locale-text"><?php
             e(tl('searchsources_element_locale_tag'))?></b></label></td><td>
-            <?php $this->view->optionsHelper->render("source-locale-tag",
+            <?php $this->view->helper("options")->render("source-locale-tag",
                 "sourcelocaletag", $data['LANGUAGES'],
                  $data['SOURCE_LOCALE_TAG']); ?></td></tr>
         <tr><td></td><td class="center"><button class="button-box"
@@ -127,14 +127,14 @@ class SearchsourcesElement extends Element
                 maxlength="80" class="wide-field" /></td></tr>
         <tr><td><label for="index-source"><b><?php
             e(tl('searchsources_element_indexsource'))?></b></label></td><td>
-            <?php $this->view->optionsHelper->render("index-source",
+            <?php $this->view->helper("options")->render("index-source",
             "indexsource", $data['SEARCH_LISTS'],
                 ""); ?></td></tr>
         <tr>
         <td class="table-label"><label for="per-page"><b><?php
             e(tl('searchsources_element_per_page')); ?></b></label></td>
             <td><?php
-            $this->view->optionsHelper->render("per-page", "perpage",
+            $this->view->helper("options")->render("per-page", "perpage",
                 $data['PER_PAGE'], $data['PER_PAGE_SELECTED']); ?>
         </td></tr>
         <tr><td></td><td class="center"><button class="button-box"

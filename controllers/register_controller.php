@@ -60,14 +60,6 @@ class RegisterController extends Controller implements CrawlConstants
      * @var array
      */
     var $views = array("recover", "register", "signin", "suggest");
-    /**
-     * List of models used by this controller
-     * User model is used to add/update users; the Visitor model is
-     * used to keep track of ip address of failed captcha or recovery questions
-     * attempts
-     * @var array
-     */
-    var $models = array("user", "visitor", "crawl");
 
     /**
      * Holds a list of the allowed activities. These encompass various
@@ -197,6 +189,7 @@ class RegisterController extends Controller implements CrawlConstants
      */
     function processRequest()
     {
+        $visitor_model = $this->model("visitor");
         if(isset($_SESSION['USER_ID'])) {
             $user = $_SESSION['USER_ID'];
         } else {
@@ -205,7 +198,7 @@ class RegisterController extends Controller implements CrawlConstants
         $visitor_check_names = array('captcha_time_out',
             'suggest_day_exceeded');
         foreach($visitor_check_names as $name) {
-            $visitor = $this->visitorModel->getVisitor($_SERVER['REMOTE_ADDR'],
+            $visitor = $visitor_model->getVisitor($_SERVER['REMOTE_ADDR'],
                 $name);
             if(isset($visitor['END_TIME']) && $visitor['END_TIME'] > time()) {
                 $_SESSION['value'] = date('Y-m-d H:i:s', $visitor['END_TIME']);
@@ -253,7 +246,7 @@ class RegisterController extends Controller implements CrawlConstants
                 $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
                     tl('register_controller_need_cookies')."</h1>');";
             }
-            $this->visitorModel->updateVisitor(
+            $visitor_model->updateVisitor(
                 $_SERVER['REMOTE_ADDR'], "captcha_time_out");
         }
         //used to ensure that we have sessions active
@@ -291,21 +284,22 @@ class RegisterController extends Controller implements CrawlConstants
         $data = array();
         $this->getCleanFields($data);
         $data['SCRIPT'] = "";
+        $user_model = $this->model("user");
         switch(REGISTRATION_TYPE)
         {
             case 'no_activation':
                 $data['REFRESH'] = "signin";
-                $this->userModel->addUser($data['USER'], $data['PASSWORD'],
+                $user_model->addUser($data['USER'], $data['PASSWORD'],
                     $data['FIRST'], $data['LAST'], $data['EMAIL']);
                 $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                     tl('register_controller_account_created')."</h1>')";
             break;
             case 'email_registration':
                 $data['REFRESH'] = "signin";
-                $this->userModel->addUser($data['USER'], $data['PASSWORD'],
+                $user_model->addUser($data['USER'], $data['PASSWORD'],
                     $data['FIRST'], $data['LAST'], $data['EMAIL'],
                     INACTIVE_STATUS);
-                $user = $this->userModel->getUser($data['USER']);
+                $user = $user_model->getUser($data['USER']);
                 $server = new MailServer(MAIL_SENDER, MAIL_SERVER,
                     MAIL_SERVERPORT, MAIL_USERNAME, MAIL_PASSWORD,
                     MAIL_SECURITY);
@@ -333,7 +327,7 @@ class RegisterController extends Controller implements CrawlConstants
             break;
             case 'admin_activation':
                 $data['REFRESH'] = "signin";
-                $this->userModel->addUser($data['USER'], $data['PASSWORD'],
+                $user_model->addUser($data['USER'], $data['PASSWORD'],
                     $data['FIRST'], $data['LAST'], $data['EMAIL'],
                     INACTIVE_STATUS);
                 $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
@@ -347,9 +341,9 @@ class RegisterController extends Controller implements CrawlConstants
                 $server->send($subject, MAIL_SENDER, MAIL_SENDER, $message);
             break;
         }
-        $user = $this->userModel->getUser($data['USER']);
+        $user = $user_model->getUser($data['USER']);
         if(isset($user['USER_ID'])) {
-            $this->userModel->setUserSession($user['USER_ID'], $_SESSION);
+            $user_model->setUserSession($user['USER_ID'], $_SESSION);
         }
         unset($_SESSION['CAPTCHA_ANSWERS']);
         unset($_SESSION['CAPTCHAS']);
@@ -372,6 +366,7 @@ class RegisterController extends Controller implements CrawlConstants
         $data = array();
         $data['REFRESH'] = "signin";
         $data['SCRIPT'] = "";
+        $user_model = $this->model("user");
         $clean_fields = array("email", "time", "hash");
         $verify = array();
         $error = false;
@@ -387,7 +382,7 @@ class RegisterController extends Controller implements CrawlConstants
             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                 tl('register_controller_email_verification_error')."</h1>');";
         } else {
-            $user = $this->userModel->getUserByEmailTime($verify["email"],
+            $user = $user_model->getUserByEmailTime($verify["email"],
                 $verify["time"]);
             if(isset($user['STATUS']) && $user['STATUS'] == ACTIVE_STATUS) {
                 $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
@@ -395,7 +390,7 @@ class RegisterController extends Controller implements CrawlConstants
             } else {
                 $hash = crawlCrypt($user["HASH"], $verify["hash"]);
                 if(isset($user["HASH"]) && $hash == $verify["hash"]) {
-                    $this->userModel->updateUserStatus($user["USER_ID"],
+                    $user_model->updateUserStatus($user["USER_ID"],
                         ACTIVE_STATUS);
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('register_controller_account_activated')."</h1>');";
@@ -403,7 +398,7 @@ class RegisterController extends Controller implements CrawlConstants
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('register_controller_email_verification_error').
                         "</h1>');";
-                    $this->visitorModel->updateVisitor(
+                    $this->model("visitor")->updateVisitor(
                         $_SERVER['REMOTE_ADDR'], "captcha_time_out");
                 }
             }
@@ -446,16 +441,17 @@ class RegisterController extends Controller implements CrawlConstants
         $data = array();
         $this->getCleanFields($data);
         $data['SCRIPT'] = "";
+        $user_model = $this->model("user");
         $data["REFRESH"] = "signin";
-        $user = $this->userModel->getUser($data['USER']);
+        $user = $user_model->getUser($data['USER']);
         if(!$user) {
             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                 tl('register_controller_account_recover_fail')."</h1>');";
-            $this->visitorModel->updateVisitor(
+            $this->model("visitor")->updateVisitor(
                 $_SERVER['REMOTE_ADDR'], "captcha_time_out");
             return $data;
         }
-        $session = $this->userModel->getUserSession($user["USER_ID"]);
+        $session = $user_model->getUserSession($user["USER_ID"]);
         if(!isset($session['RECOVERY']) || 
             !isset($session['RECOVERY_ANSWERS'])) {
             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
@@ -497,6 +493,8 @@ class RegisterController extends Controller implements CrawlConstants
     {
         $data = array();
         $data['REFRESH'] = "signin";
+        $user_model = $this->model("user");
+        $visitor_model = $this->model("visitor");
         $fields = array("user", "hash", "time");
         if(isset($_REQUEST['finish_hash'])) {
             $fields = array("user", "finish_hash", "time", "password",
@@ -512,20 +510,20 @@ class RegisterController extends Controller implements CrawlConstants
                 return $data;
             }
         }
-        $user = $this->userModel->getUser($data["user"]);
+        $user = $user_model->getUser($data["user"]);
         if(!$user) {
             $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
                 tl('register_controller_account_recover_fail')."</h1>');";
             return $data;
         }
-        $user_session = $this->userModel->getUserSession($user["USER_ID"]);
+        $user_session = $user_model->getUserSession($user["USER_ID"]);
         if(isset($data['finish_hash'])) {
             $finish_hash = urlencode(crawlCrypt($user['HASH'].$data["time"].
                 $user['CREATION_TIME'] . AUTH_KEY,
                 urldecode($data['finish_hash'])));
             if($finish_hash != $data['finish_hash'] ||
                 !$this->checkRecoveryQuestions($user)) {
-                $this->visitorModel->updateVisitor(
+                $visitor_model->updateVisitor(
                     $_SERVER['REMOTE_ADDR'], "captcha_time_out");
                 $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
                     tl('register_controller_account_recover_fail')."</h1>');";
@@ -543,11 +541,11 @@ class RegisterController extends Controller implements CrawlConstants
                     return $data;
                 } else {
                     $user["PASSWORD"] = crawlCrypt($data["password"]);
-                    $this->userModel->updateUser($user);
+                    $user_model->updateUser($user);
                     $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
                         tl('register_controller_password_changed')."</h1>');";
                     $user_session['LAST_RECOVERY_TIME'] = time();
-                    $this->userModel->setUserSession($user["USER_ID"],
+                    $user_model->setUserSession($user["USER_ID"],
                         $user_session);
                     return $data;
                 }
@@ -560,7 +558,7 @@ class RegisterController extends Controller implements CrawlConstants
                 $user['HASH'].$data["time"].$user['USER_NAME'].AUTH_KEY,
                 $data['hash']);
             if($hash != $data['hash']) {
-                $this->visitorModel->updateVisitor(
+                $visitor_model->updateVisitor(
                     $_SERVER['REMOTE_ADDR'], "captcha_time_out");
                 $data['SCRIPT'] = $recover_fail;
                 return $data;
@@ -605,6 +603,7 @@ class RegisterController extends Controller implements CrawlConstants
     {
         $data["REFRESH"] = "suggest";
         $num_captchas = self::NUM_CAPTCHA_QUESTIONS;
+        $visitor_model = $this->model("visitor");
         $clear = false;
         if(!isset($_SESSION['BUILD_TIME']) || !isset($_REQUEST['build_time']) ||
             $_SESSION['BUILD_TIME'] != $_REQUEST['build_time']) {
@@ -679,18 +678,18 @@ class RegisterController extends Controller implements CrawlConstants
                 }
                 unset($_SESSION['CAPTCHAS']);
                 unset($_SESSION['CAPTCHA_ANSWERS']);
-                $this->visitorModel->updateVisitor(
+                $visitor_model->updateVisitor(
                     $_SERVER['REMOTE_ADDR'], "captcha_time_out");
                 return $data;
             }
-            if(!$this->crawlModel->appendSuggestSites($url)) {
+            if(!$this->model("crawl")->appendSuggestSites($url)) {
                 $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
                     tl('register_controller_suggest_full')."</h1>');";
                 return $data;
             }
             $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
                 tl('register_controller_url_submitted')."</h1>');";
-            $this->visitorModel->updateVisitor(
+            $visitor_model->updateVisitor(
                 $_SERVER['REMOTE_ADDR'], "suggest_day_exceeded", 
                 self::ONE_DAY, self::ONE_DAY, MAX_SUGGEST_URLS_ONE_DAY);
             for($i = 0; $i < $num_captchas; $i++) {
@@ -842,7 +841,7 @@ class RegisterController extends Controller implements CrawlConstants
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('register_controller_need_cookies')."</h1>');";
                     $activity = 'createAccount';
-                    $this->visitorModel->updateVisitor(
+                    $this->model("visitor")->updateVisitor(
                         $_SERVER['REMOTE_ADDR'], "captcha_time_out");
                 } else if(!$this->checkCaptchaAnswers()) {
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
@@ -852,7 +851,7 @@ class RegisterController extends Controller implements CrawlConstants
                     }
                     unset($_SESSION['CAPTCHAS']);
                     unset($_SESSION['CAPTCHA_ANSWERS']);
-                    $this->visitorModel->updateVisitor(
+                    $this->model("visitor")->updateVisitor(
                         $_SERVER['REMOTE_ADDR'], "captcha_time_out");
                     $activity = $activity_fail;
                 }
@@ -881,7 +880,7 @@ class RegisterController extends Controller implements CrawlConstants
             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
             tl('register_controller_error_fields')."</h1>');";
         } else if(isset($data["check_user"]) && 
-            $this->userModel->getUserId($data['USER'])) {
+            $this->model("user")->getUserId($data['USER'])) {
             $data['SUCCESS'] = false;
             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
             tl('register_controller_user_already_exists')."</h1>');";
@@ -916,7 +915,7 @@ class RegisterController extends Controller implements CrawlConstants
      */
     function checkRecoveryQuestions($user)
     {
-        $user_session = $this->userModel->getUserSession($user["USER_ID"]);
+        $user_session = $this->model("user")->getUserSession($user["USER_ID"]);
         if(!isset($user_session['RECOVERY_ANSWERS'])) {
             return false;
         }
@@ -925,7 +924,7 @@ class RegisterController extends Controller implements CrawlConstants
             $field = "question_".$i;
             if($_REQUEST[$field] != $user_session['RECOVERY_ANSWERS'][$i]) {
                 $recovery_passed = false;
-                $this->visitorModel->updateVisitor(
+                $this->model("visitor")->updateVisitor(
                     $_SERVER['REMOTE_ADDR'], "captcha_time_out");
                 break;
             }

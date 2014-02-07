@@ -95,7 +95,7 @@ class PagingtableHelper extends Helper
             <input type="hidden" name="a" value="<?php e($activity); ?>" />
             <?php
             e("<b>".tl('pagingtable_helper_show')."</b>");
-            $this->view->optionsHelper->render(
+            $this->view->helper("options")->render(
                 "num-show", "num_show", $this->show_choices,
                 $data['num_show'], true);
             e("<br />");
@@ -181,7 +181,7 @@ class PagingtableHelper extends Helper
             <input type="hidden" name="a" value="<?php e($activity); ?>" />
             <?php
                 e("<b>".tl('pagingtable_helper_show')."</b>");
-                $data['VIEW']->optionsHelper->render(
+                $data['VIEW']->helper("options")->render(
                     "num-show", "num_show",  $this->show_choices,
                     $data['num_show'], true);
             ?>
