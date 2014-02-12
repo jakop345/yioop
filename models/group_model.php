@@ -69,17 +69,18 @@ class GroupModel extends Model
      */
     function getGroupUsers($group_id)
     {
-        $this->db->selectDB(DB_NAME);
-        $group_id = $this->db->escapeString($group_id);
+        $db = $this->db;
+        $db->selectDB(DB_NAME);
+        $group_id = $db->escapeString($group_id);
         $users = array();
         $sql = "SELECT UG.USER_ID, U.USER_NAME, UG.GROUP_ID, G.OWNER_ID,".
             " UG.STATUS ".
             " FROM USER_GROUP UG, USER U, GROUPS G".
             " where UG.GROUP_ID = '$group_id' AND UG.USER_ID = U.USER_ID AND" .
             " G.GROUP_ID = UG.GROUP_ID";
-        $result = $this->db->execute($sql);
+        $result = $db->execute($sql);
         $i = 0;
-        while($users[$i] = $this->db->fetchArray($result)) {
+        while($users[$i] = $db->fetchArray($result)) {
            $i++;
         }
         unset($users[$i]); //last one will be null
@@ -94,24 +95,25 @@ class GroupModel extends Model
     function addGroup($group_name, $user_id, $register = REQUEST_JOIN,
         $member=GROUP_READ)
     {
-        $this->db->selectDB(DB_NAME);
+        $db = $this->db;
+        $db->selectDB(DB_NAME);
         $timestamp = microTimestamp();
 
         $sql = 
             "INSERT INTO GROUPS (GROUP_NAME, CREATED_TIME, OWNER_ID,
                 REGISTER_TYPE, MEMBER_ACCESS)
-            VALUES ('".$this->db->escapeString($group_name)."',
-            $timestamp, '".$this->db->escapeString($user_id)."',
-            '".$this->db->escapeString($register)."',
-            '".$this->db->escapeString($member)."');";
-        $this->db->execute($sql);
+            VALUES ('".$db->escapeString($group_name)."',
+            $timestamp, '".$db->escapeString($user_id)."',
+            '".$db->escapeString($register)."',
+            '".$db->escapeString($member)."');";
+        $db->execute($sql);
 
-        $this->db->selectDB(DB_NAME);
+        $db->selectDB(DB_NAME);
         $sql = "SELECT G.GROUP_ID AS GROUP_ID FROM ".
             " GROUPS G WHERE G.GROUP_NAME = '" .
-            $this->db->escapeString($group_name) . "' ";
-        $result = $this->db->execute($sql);
-        if(!$row = $this->db->fetchArray($result) ) {
+            $db->escapeString($group_name) . "' ";
+        $result = $db->execute($sql);
+        if(!$row = $db->fetchArray($result) ) {
             $last_id = -1;
         }
         $last_id = $row['GROUP_ID'];
@@ -119,7 +121,7 @@ class GroupModel extends Model
         $sql= "INSERT INTO USER_GROUP (USER_ID, GROUP_ID, STATUS,
             JOIN_DATE) VALUES
             ($user_id, $last_id, ".ACTIVE_STATUS.", $now)";
-        $this->db->execute($sql);
+        $db->execute($sql);
     }
 
     /**
@@ -127,13 +129,14 @@ class GroupModel extends Model
      */
     function updateGroup($group)
     {
+        $db = $this->db;
         $group_id = $group['GROUP_ID'];
         unset($group['GROUP_ID']);
         unset($group['GROUP_NAME']);
         unset($group['OWNER']); //column not in table
         unset($group['STATUS']); // column not in table
         unset($group['JOIN_DATE']); // column not in table
-        $this->db->selectDB(DB_NAME);
+        $db->selectDB(DB_NAME);
         $sql = "UPDATE GROUPS SET ";
         $comma ="";
         foreach($group as $field => $value) {
@@ -141,7 +144,7 @@ class GroupModel extends Model
             $comma = ",";
         }
         $sql .= " WHERE GROUP_ID=$group_id";
-        $this->db->execute($sql);
+        $db->execute($sql);
     }
 
     /**
@@ -149,15 +152,16 @@ class GroupModel extends Model
      */
     function checkUserGroup($user_id, $group_id, $status = -1)
     {
-        $this->db->selectDB(DB_NAME);
+        $db = $this->db;
+        $db->selectDB(DB_NAME);
         $sql = "SELECT COUNT(*) AS NUM FROM USER_GROUP UG WHERE
-            UG.USER_ID='". $this->db->escapeString($user_id) .
-            "' AND UG.GROUP_ID='". $this->db->escapeString($group_id) . "'";
+            UG.USER_ID='". $db->escapeString($user_id) .
+            "' AND UG.GROUP_ID='". $db->escapeString($group_id) . "'";
         if($status >=0) {
-            $sql .= " AND STATUS='".$this->db->escapeString($status)."'";
+            $sql .= " AND STATUS='".$db->escapeString($status)."'";
         }
-        $result = $this->db->execute($sql);
-        if(!$row = $this->db->fetchArray($result) ) {
+        $result = $db->execute($sql);
+        if(!$row = $db->fetchArray($result) ) {
             return false;
         }
         if($row['NUM'] <= 0) {
@@ -171,11 +175,12 @@ class GroupModel extends Model
      */
     function updateStatusUserGroup($user_id, $group_id, $status)
     {
-        $this->db->selectDB(DB_NAME);
+        $db = $this->db;
+        $db->selectDB(DB_NAME);
         $sql = "UPDATE USER_GROUP SET STATUS='" .
-            $this->db->escapeString($status)."' ".
+            $db->escapeString($status)."' ".
             " WHERE GROUP_ID=$group_id AND USER_ID=$user_id";
-        $this->db->execute($sql);
+        $db->execute($sql);
     }
 
     /**
@@ -186,30 +191,35 @@ class GroupModel extends Model
      */
     function getGroupId($groupname)
     {
-        $this->db->selectDB(DB_NAME);
+        $db = $this->db;
+        $db->selectDB(DB_NAME);
         $sql = "SELECT G.GROUP_ID AS GROUP_ID FROM ".
             "GROUPS G WHERE G.GROUP_NAME = '".
-            $this->db->escapeString($groupname) . "' ";
-        $result = $this->db->execute($sql);
-        if(!$row = $this->db->fetchArray($result) ) {
+            $db->escapeString($groupname) . "' ";
+        $result = $db->execute($sql);
+        if(!$row = $db->fetchArray($result) ) {
             return -1;
         }
         return $row['GROUP_ID'];
     }
 
     /**
-     *  Delete a groupname to the database using provided string
+     *  Delete a group from the database and any associated data in
+     *  GROUP_ITEM and USER_GROUP tables.
      *
-     *  @param string $groupname  the groupname to be deleted
+     *  @param string $group_id id of the group to delete
      */
-        function deleteGroup($groupid)
+        function deleteGroup($group_id)
         {
-        $this->db->selectDB(DB_NAME);
-        $sql = "DELETE FROM GROUPS WHERE GROUP_ID='$groupid'";
-        $this->db->execute($sql);
-        $sql = "DELETE FROM GROUPS WHERE GROUP_ID='" .
-            $this->db->escapeString($groupid)."'";
-        $this->db->execute($sql);
+            $db = $this->db;
+            $group_id = $db->escapeString($group_id);
+            $db->selectDB(DB_NAME);
+            $sql = "DELETE FROM GROUPS WHERE GROUP_ID='$group_id'";
+            $db->execute($sql);
+            $sql = "DELETE FROM GROUP_ITEM WHERE GROUP_ID='$group_id'";
+            $db->execute($sql);
+            $sql = "DELETE FROM USER_GROUP WHERE GROUP_ID='$group_id'";
+            $db->execute($sql);
         }
     /**
      *  Get a list of all groups. Group names are not localized since these are
@@ -219,13 +229,14 @@ class GroupModel extends Model
      */
     function getGroupList()
     {
-        $this->db->selectDB(DB_NAME);
+        $db = $this->db;
+        $db->selectDB(DB_NAME);
         $groups = array();
         $sql = "SELECT G.GROUP_ID AS GROUP_ID, G.GROUP_NAME AS GROUP_NAME
              FROM GROUPS G";
-        $result = $this->db->execute($sql);
+        $result = $db->execute($sql);
         $i = 0;
-        while($groups[$i] = $this->db->fetchArray($result)) {
+        while($groups[$i] = $db->fetchArray($result)) {
             $i++;
         }
         unset($groups[$i]); //last one will be null
@@ -238,7 +249,8 @@ class GroupModel extends Model
     function getGroups($limit=0, $num=100, $search_array = array(),
         $user_id=ROOT_ID)
     {
-        $this->db->selectDB(DB_NAME);
+        $db = $this->db;
+        $db->selectDB(DB_NAME);
         $limit = "LIMIT $limit, $num";
         $any_fields = array("access", "register");
         list($where, $order_by) = 
@@ -247,7 +259,7 @@ class GroupModel extends Model
         if($where != "") {
             $add_where = " AND ";
         }
-        $where .= $add_where. " UG.USER_ID='".$this->db->escapeString($user_id).
+        $where .= $add_where. " UG.USER_ID='".$db->escapeString($user_id).
             "' AND  UG.GROUP_ID=G.GROUP_ID AND OWNER_ID = O.USER_ID";
         $sql = "SELECT G.GROUP_ID AS GROUP_ID,
             G.GROUP_NAME AS GROUP_NAME, G.OWNER_ID AS OWNER_ID,
@@ -255,9 +267,9 @@ class GroupModel extends Model
             G.MEMBER_ACCESS, UG.JOIN_DATE AS JOIN_DATE FROM GROUPS G, USER O,
             USER_GROUP UG
             $where $order_by $limit";
-        $result = $this->db->execute($sql);
+        $result = $db->execute($sql);
         $i = 0;
-        while($groups[$i] = $this->db->fetchArray($result)) {
+        while($groups[$i] = $db->fetchArray($result)) {
             $i++;
         }
         unset($groups[$i]); //last one will be null
@@ -269,14 +281,15 @@ class GroupModel extends Model
      */
     function getRegisterType($group_id)
     {
-        $this->db->selectDB(DB_NAME);
+        $db = $this->db;
+        $db->selectDB(DB_NAME);
         $groups = array();
         $sql = "SELECT REGISTER_TYPE
-             FROM GROUPS G WHERE GROUP_ID='".$this->db->escapeString($group_id).
+             FROM GROUPS G WHERE GROUP_ID='".$db->escapeString($group_id).
              "'";
-        $result = $this->db->execute($sql);
+        $result = $db->execute($sql);
         if(!$result) { return false; }
-        $row = $this->db->fetchArray($result);
+        $row = $db->fetchArray($result);
         if(!$row) { return false; }
         return $row['REGISTER_TYPE'];
     }
@@ -286,23 +299,24 @@ class GroupModel extends Model
      */
     function getGroupById($group_id, $user_id)
     {
+        $db = $this->db;
         $group = $this->getGroups(0, 1, array(
             array("group_id","=", $group_id, "")), $user_id);
         $where = " WHERE ";
         if($user_id != ROOT_ID) {
-            $where .= " UG.USER_ID='".$this->db->escapeString($user_id)."' AND ";
+            $where .= " UG.USER_ID='".$db->escapeString($user_id)."' AND ";
         }
-        $where .= " UG.GROUP_ID='".$this->db->escapeString($group_id).
+        $where .= " UG.GROUP_ID='".$db->escapeString($group_id).
             "' AND  UG.GROUP_ID=G.GROUP_ID AND OWNER_ID = O.USER_ID";
         $sql = "SELECT G.GROUP_ID AS GROUP_ID,
             G.GROUP_NAME AS GROUP_NAME, G.OWNER_ID AS OWNER_ID,
             O.USER_NAME AS OWNER, REGISTER_TYPE, UG.STATUS,
             G.MEMBER_ACCESS AS MEMBER_ACCESS, UG.JOIN_DATE AS JOIN_DATE
             FROM GROUPS G, USER O, USER_GROUP UG $where LIMIT 1";
-        $result = $this->db->execute($sql);
+        $result = $db->execute($sql);
         $group = false;
         if($result) {
-            $group = $this->db->fetchArray($result);
+            $group = $db->fetchArray($result);
         }
         if(!$group) {
             return false;
@@ -317,7 +331,8 @@ class GroupModel extends Model
      */
     function getGroupsCount($search_array = array(), $user_id = ROOT_ID)
     {
-        $this->db->selectDB(DB_NAME);
+        $db = $this->db;
+        $db->selectDB(DB_NAME);
         $any_fields = array("access", "register");
         list($where, $order_by) = 
             $this->searchArrayToWhereOrderClauses($search_array,$any_fields);
@@ -325,12 +340,12 @@ class GroupModel extends Model
         if($where != "") {
             $add_where = " AND ";
         }
-        $where .= $add_where. " UG.USER_ID='".$this->db->escapeString($user_id).
+        $where .= $add_where. " UG.USER_ID='".$db->escapeString($user_id).
             "' AND  UG.GROUP_ID=G.GROUP_ID";
         $sql = "SELECT COUNT(*) AS NUM FROM GROUPS G, USER_GROUP UG
             $where";
-        $result = $this->db->execute($sql);
-        $row = $this->db->fetchArray($result);
+        $result = $db->execute($sql);
+        $row = $db->fetchArray($result);
         return $row['NUM'];
     }
 
@@ -343,14 +358,15 @@ class GroupModel extends Model
     */
     function getUserGroups($userid)
     {
-        $this->db->selectDB(DB_NAME);
+        $db = $this->db;
+        $db->selectDB(DB_NAME);
         $groups = array();
         $sql = "SELECT UG.GROUP_ID AS GROUP_ID, UG.USER_ID AS USER_ID," .
             " G.GROUP_NAME AS GROUP_NAME FROM USER_GROUP UG, GROUPS G" .
             " WHERE USER_ID = $userid AND UG.GROUP_ID = G.GROUP_ID";
-        $result = $this->db->execute($sql);
+        $result = $db->execute($sql);
         $i = 0;
-        while($groups[$i] = $this->db->fetchArray($result)) {
+        while($groups[$i] = $db->fetchArray($result)) {
             $i++;
         }
         unset($groups[$i]); //last one will be null
@@ -366,14 +382,15 @@ class GroupModel extends Model
      */
      function getGroupListbyCreator($userid)
     {
-        $this->db->selectDB(DB_NAME);
+        $db = $this->db;
+        $db->selectDB(DB_NAME);
         $groups = array();
         $sql = "SELECT G.GROUP_ID AS GROUP_ID, G.OWNER_ID AS USER_ID," .
             "G.GROUP_NAME AS GROUP_NAME " .
             " FROM GROUPS G WHERE OWNER_ID = $userid";
-        $result = $this->db->execute($sql);
+        $result = $db->execute($sql);
         $i = 0;
-        while($groups[$i] = $this->db->fetchArray($result)) {
+        while($groups[$i] = $db->fetchArray($result)) {
             $i++;
         }
         unset($groups[$i]); //last one will be null
@@ -388,10 +405,11 @@ class GroupModel extends Model
      */
     function changeOwnerGroup($user_id, $group_id)
     {
-        $this->db->selectDB(DB_NAME);
-        $sql = "UPDATE GROUPS SET OWNER_ID=". $this->db->escapeString($user_id).
-            " WHERE GROUP_ID=".$this->db->escapeString($group_id);
-        $this->db->execute($sql);
+        $db = $this->db;
+        $db->selectDB(DB_NAME);
+        $sql = "UPDATE GROUPS SET OWNER_ID=". $db->escapeString($user_id).
+            " WHERE GROUP_ID=".$db->escapeString($group_id);
+        $db->execute($sql);
     }
 
     /**
@@ -403,26 +421,29 @@ class GroupModel extends Model
     function addUserGroup($user_id, $group_id, $status = ACTIVE_STATUS)
     {
         $join_date = time();
-        $this->db->selectDB(DB_NAME);
+        $db = $this->db;
+        $db->selectDB(DB_NAME);
         $sql = "INSERT INTO USER_GROUP VALUES ('".
-            $this->db->escapeString($user_id) . "', '".
-            $this->db->escapeString($group_id) . "', '".
-            $this->db->escapeString($status) . "', $join_date)";
-        $this->db->execute($sql);
+            $db->escapeString($user_id) . "', '".
+            $db->escapeString($group_id) . "', '".
+            $db->escapeString($status) . "', $join_date)";
+        $db->execute($sql);
     }
 
     /**
      *
+     *  @param int $user_id
+     *  @param int $group_id
      */
     function deletableUser($user_id, $group_id)
     {
-        $this->db->selectDB(DB_NAME);
+        $db->selectDB(DB_NAME);
         $sql = "SELECT COUNT(*) AS NUM FROM USER_GROUP UG, GROUPS G WHERE
             UG.USER_ID != G.OWNER_ID AND UG.USER_ID='".
-            $this->db->escapeString($user_id) ."' AND UG.GROUP_ID='".
-            $this->db->escapeString($group_id) . "'";
-        $result = $this->db->execute($sql);
-        if(!$row = $this->db->fetchArray($result) ) {
+            $db->escapeString($user_id) ."' AND UG.GROUP_ID='".
+            $db->escapeString($group_id) . "'";
+        $result = $db->execute($sql);
+        if(!$row = $db->fetchArray($result) ) {
             return false;
         }
         if($row['NUM'] <= 0) {
@@ -439,11 +460,12 @@ class GroupModel extends Model
      */
     function deleteUserGroup($user_id, $group_id)
     {
-        $this->db->selectDB(DB_NAME);
+        $db = $this->db;
+        $db->selectDB(DB_NAME);
         $sql = "DELETE FROM USER_GROUP WHERE USER_ID='".
-            $this->db->escapeString($user_id) . "' AND GROUP_ID='".
-            $this->db->escapeString($group_id) . "'";
-        $this->db->execute($sql);
+            $db->escapeString($user_id) . "' AND GROUP_ID='".
+            $db->escapeString($group_id) . "'";
+        $db->execute($sql);
     }
 
     /**
@@ -451,15 +473,16 @@ class GroupModel extends Model
      */
     function getGroupItem($item_id)
     {
-        $this->db->selectDB(DB_NAME);
+        $db = $this->db;
+        $db->selectDB(DB_NAME);
 
         $sql = "SELECT * FROM GROUP_ITEM WHERE ID='".
-            $this->db->escapeString($item_id)."' LIMIT 1";
-        $result = $this->db->execute($sql);
+            $db->escapeString($item_id)."' LIMIT 1";
+        $result = $db->execute($sql);
         if(!$result) {
             return false;
         }
-        $row = $this->db->fetchArray($result);
+        $row = $db->fetchArray($result);
         return $row;
     }
 
@@ -483,7 +506,7 @@ class GroupModel extends Model
             $id = $db->insertID();
             $sql = "UPDATE GROUP_ITEM SET PARENT_ID='$id'
                 WHERE ID='$id'";
-            $this->db->execute($sql);
+            $db->execute($sql);
         }
     }
 
@@ -491,9 +514,10 @@ class GroupModel extends Model
      *
      */
     function getGroupItems($limit=0, $num=100, $search_array = array(),
-        $user_id=ROOT_ID)
+        $user_id = ROOT_ID)
     {
-        $this->db->selectDB(DB_NAME);
+        $db = $this->db;
+        $db->selectDB(DB_NAME);
         $limit = "LIMIT $limit, $num";
         $any_fields = array("access", "register");
         list($where, $order_by) = 
@@ -502,7 +526,7 @@ class GroupModel extends Model
         if($where != "") {
             $add_where = " AND ";
         }
-        $user_id = $this->db->escapeString($user_id);
+        $user_id = $db->escapeString($user_id);
         $where .= $add_where. " UG.USER_ID='$user_id' AND
             GI.GROUP_ID=G.GROUP_ID AND GI.GROUP_ID=UG.GROUP_ID AND
             UG.USER_ID = U.USER_ID AND ((
@@ -516,9 +540,9 @@ class GroupModel extends Model
             G.GROUP_NAME AS GROUP_NAME, U.USER_NAME AS USER_NAME
             FROM GROUP_ITEM GI, GROUPS G, USER_GROUP UG, USER U
             $where $order_by $limit";
-        $result = $this->db->execute($sql);
+        $result = $db->execute($sql);
         $i = 0;
-        while($groups[$i] = $this->db->fetchArray($result)) {
+        while($groups[$i] = $db->fetchArray($result)) {
             $i++;
         }
         unset($groups[$i]); //last one will be null
@@ -532,7 +556,8 @@ class GroupModel extends Model
      */
     function getGroupItemCount($search_array = array(), $user_id = ROOT_ID)
     {
-        $this->db->selectDB(DB_NAME);
+        $db = $this->db;
+        $db->selectDB(DB_NAME);
         $any_fields = array("access", "register");
         list($where, $order_by) = 
             $this->searchArrayToWhereOrderClauses($search_array, $any_fields);
@@ -540,7 +565,7 @@ class GroupModel extends Model
         if($where != "") {
             $add_where = " AND ";
         }
-        $user_id = $this->db->escapeString($user_id);
+        $user_id = $db->escapeString($user_id);
         $where .= $add_where. " UG.USER_ID='$user_id' AND
             GI.GROUP_ID=G.GROUP_ID AND GI.GROUP_ID=UG.GROUP_ID AND ((
             UG.STATUS='".ACTIVE_STATUS."'
@@ -548,8 +573,8 @@ class GroupModel extends Model
             (G.OWNER_ID = UG.USER_ID))";
         $sql = "SELECT COUNT(*) AS NUM FROM GROUP_ITEM GI, GROUPS G,
             USER_GROUP UG $where";
-        $result = $this->db->execute($sql);
-        $row = $this->db->fetchArray($result);
+        $result = $db->execute($sql);
+        $row = $db->fetchArray($result);
         return $row['NUM'];
     }
 }

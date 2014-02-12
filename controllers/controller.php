@@ -293,6 +293,9 @@ abstract class Controller
     function generateCSRFToken($user)
     {
         $time = time();
+        $_SESSION['OLD_CSRF_TIME'] = (isset($_SESSION['CSRF_TIME'])) ?
+            $_SESSION['CSRF_TIME'] : 0;
+        $_SESSION['CSRF_TIME'] = $time;
         return crawlHash($user.$time.AUTH_KEY)."|$time";
     }
 
@@ -310,7 +313,8 @@ abstract class Controller
         if(isset($_REQUEST[$token_name]) &&
             strlen($_REQUEST[$token_name]) == 22) {
             $token_parts = explode("|", $_REQUEST[$token_name]);
-            if($token_parts[1] + Model::ONE_HOUR > time() &&
+            if(isset($token_parts[1]) &&
+                $token_parts[1] + Model::ONE_HOUR > time() &&
                 crawlHash($user.$token_parts[1].AUTH_KEY) == $token_parts[0]) {
                 $token_okay = true;
             }
@@ -318,6 +322,24 @@ abstract class Controller
 
         return $token_okay;
     }
+
+    /**
+     *
+     */
+     function checkCSRFTime($token_name)
+     {
+        $token_okay = false;
+        if(isset($_REQUEST[$token_name])) {
+            $token_parts = explode("|", $_REQUEST[$token_name]);
+            echo $_SESSION['OLD_CSRF_TIME']." ".$token_parts[1];
+            if(isset($token_parts[1]) && isset($_SESSION['OLD_CSRF_TIME']) &&
+                $token_parts[1] == $_SESSION['OLD_CSRF_TIME']) {
+                $token_okay = true;
+            }
+        }
+
+        return $token_okay;
+     }
 
     /**
      * Used to clean strings that might be tainted as originate from the user

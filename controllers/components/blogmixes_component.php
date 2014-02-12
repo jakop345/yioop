@@ -86,6 +86,9 @@ class BlogmixesComponent extends Component implements CrawlConstants
             switch($_REQUEST['arg'])
             {
                 case "addcomment":
+                    if(!$parent->checkCSRFTime(CSRF_TOKEN)) {
+                        break;
+                    }
                     if(!isset($_REQUEST['parent_id']) ||
                         !isset($_REQUEST['group_id'])) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
@@ -139,6 +142,9 @@ class BlogmixesComponent extends Component implements CrawlConstants
                 break;
 
                 case "newthread":
+                    if(!$parent->checkCSRFTime(CSRF_TOKEN)) {
+                        break;
+                    }
                     if(!isset($_REQUEST['group_id'])) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('blogmixes_component_comment_error').
