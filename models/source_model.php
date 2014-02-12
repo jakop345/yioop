@@ -409,7 +409,7 @@ class SourceModel extends Model
                 crawlTimeoutLog("..have added %s non-pruned items to index.",
                     $i);
                 $i++;
-                if(!isset($item['SOURCE_NAME'])) continue;
+                if(!isset($item['SOURCE_NAME'])) { continue; }
                 $source_name = $item['SOURCE_NAME'];
                 if(isset($feeds[$source_name])) {
                     $lang = $feeds[$source_name]['LANGUAGE'];

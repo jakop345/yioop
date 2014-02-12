@@ -51,15 +51,15 @@ class ProfileModel extends Model
 {
     var $profile_fields = array('API_ACCESS', 'AUTH_KEY', 'CACHE_LINK',
         'DEBUG_LEVEL', 'DESCRIPTION_WEIGHT', 'DB_HOST', 'DBMS', 'DB_NAME',
-        'DB_PASSWORD', 'DB_USER', 'DEFAULT_LOCALE', 'IN_LINK', 'IP_LINK',
-        'LINK_WEIGHT', 'MAIL_PASSWORD', 'MAIL_SECURITY', 'MAIL_SENDER',
-        'MAIL_SERVER', 'MAIL_SERVERPORT', 'MAIL_USERNAME', 'MEMCACHE_SERVERS',
-        'MIN_RESULTS_TO_GROUP', 'NAME_SERVER', 'NEWS_MODE', 'PROXY_SERVERS',
-        'REGISTRATION_TYPE', 'ROBOT_DESCRIPTION', 'ROBOT_INSTANCE',
-        'RSS_ACCESS', 'SERVER_ALPHA', 'SIGNIN_LINK', 'SIMILAR_LINK',
-        'SUBSEARCH_LINK', 'TITLE_WEIGHT', 'TOR_PROXY', 'USE_FILECACHE',
-        'USE_MAIL_PHP', 'USE_MEMCACHE', 'USE_PROXY', 'USER_AGENT_SHORT',
-        'WEB_URI', 'WEB_ACCESS', 'WORD_SUGGEST'
+        'DB_PASSWORD', 'DB_USER', 'DEFAULT_LOCALE', 'GROUP_ITEM', 'IN_LINK',
+        'IP_LINK', 'LINK_WEIGHT', 'MAIL_PASSWORD', 'MAIL_SECURITY',
+        'MAIL_SENDER', 'MAIL_SERVER', 'MAIL_SERVERPORT', 'MAIL_USERNAME',
+        'MEMCACHE_SERVERS', 'MIN_RESULTS_TO_GROUP', 'NAME_SERVER', 'NEWS_MODE',
+        'PROXY_SERVERS', 'REGISTRATION_TYPE', 'ROBOT_DESCRIPTION',
+        'ROBOT_INSTANCE', 'RSS_ACCESS', 'SERVER_ALPHA', 'SIGNIN_LINK',
+        'SIMILAR_LINK', 'SUBSEARCH_LINK', 'TITLE_WEIGHT', 'TOR_PROXY',
+        'USE_FILECACHE', 'USE_MAIL_PHP', 'USE_MEMCACHE', 'USE_PROXY',
+        'USER_AGENT_SHORT', 'WEB_URI', 'WEB_ACCESS', 'WORD_SUGGEST'
         );
     /**
      *  {@inheritdoc}
@@ -242,7 +242,7 @@ EOT;
         /*
             Don't copy MACHINE table as will be local to installation
          */
-        $copy_tables = array("ACCESS", "ACTIVITY", "BLOG_DESCRIPTION",
+        $copy_tables = array("ACCESS", "ACTIVITY",
             "CRAWL_MIXES", "CURRENT_WEB_INDEX", "FEED_ITEM", "GROUPS",
             "LOCALE", "MEDIA_SOURCE", "MIX_COMPONENTS",
             "MIX_GROUPS", "ROLE", "ROLE_ACTIVITY", "SUBSEARCH", "TRANSLATION",
@@ -280,7 +280,7 @@ EOT;
     {
         $auto_increment = $dbm->autoIncrement($dbinfo);
 
-        //create table statemetents (should be kept alphabetical)
+        //create table statements (should be kept alphabetical)
         $create_statements = array(
             "CREATE TABLE ACCESS (NAME VARCHAR(16), ID INTEGER, 
                 TYPE VARCHAR(16))",
@@ -288,8 +288,6 @@ EOT;
             "CREATE TABLE ACTIVITY (ACTIVITY_ID INTEGER PRIMARY KEY
                 $auto_increment, TRANSLATION_ID INTEGER,
                 METHOD_NAME VARCHAR(256))",
-            "CREATE TABLE BLOG_DESCRIPTION (TIMESTAMP INT(11) UNIQUE, 
-                DESCRIPTION VARCHAR(4096))",
             "CREATE TABLE CRAWL_MIXES (MIX_TIMESTAMP INT(11) PRIMARY KEY,
                 MIX_NAME VARCHAR(16) UNIQUE)",
             "CREATE TABLE CURRENT_WEB_INDEX (CRAWL_TIME INT(11) )",
@@ -297,6 +295,9 @@ EOT;
                 TITLE VARCHAR(512), LINK VARCHAR(256),
                 DESCRIPTION VARCHAR(4096),
                 PUBDATE INT, SOURCE_NAME VARCHAR(16))",
+            "CREATE TABLE GROUP_ITEM (ID INTEGER PRIMARY KEY $auto_increment,
+                PARENT_ID INTEGER, GROUP_ID INTEGER, TITLE VARCHAR(512),
+                DESCRIPTION VARCHAR(4096), PUBDATE INT(11))",
             "CREATE TABLE GROUPS (GROUP_ID INTEGER PRIMARY KEY $auto_increment,
                 GROUP_NAME VARCHAR(128), CREATED_TIME VARCHAR(20),
                 OWNER_ID INT(11), REGISTER_TYPE INTEGER,

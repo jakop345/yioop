@@ -45,15 +45,13 @@ require_once BASE_DIR."/lib/phrase_parser.php";
  * Used to manage data related to video, news, and other search sources
  * Also, used to manage data about available subsearches seen in SearchView
  *
- * @author Mallika Perepa
+ * @author Mallika Perepa (Creator), Chris Pollett (rewrite)
  * @package seek_quarry
  * @subpackage model
  */
 class BlogpageModel extends Model
 {
 
-    /** Mamimum number of feeds to download in one try */
-    const MAX_FEEDS_ONE_GO = 100;
     /**
      * Just calls the parent class constructor
      */
@@ -62,64 +60,6 @@ class BlogpageModel extends Model
         parent::__construct();
     }
 
-    /**
-     *  Add a blog to the database using provided title,description.
-     *
-     *  @param string $title title of the created blog
-     *  @param string $user user who created the blog
-     *  @param string $description description of the blog
-     *  @param string $source_type whether it is a blog or a page
-     *  @param string $language is the language selected from the list
-     *  @param int $select_group group id added to a blog
-     */
-    function addBlog($title, $description, $user, $source_type,
-                $language = DEFAULT_LOCALE, $select_group)
-    {
-        $this->db->selectDB(DB_NAME);
-        $timestamp= time();
-        $sql = "INSERT INTO MEDIA_SOURCE(TIMESTAMP, NAME, TYPE,
-            LANGUAGE) VALUES ('".$timestamp."','".
-            $this->db->escapeString($title)."','".
-            $this->db->escapeString($source_type)."','".
-            $this->db->escapeString($language)."')";
-            $this->db->execute($sql);
-        $sql = "INSERT INTO ACCESS(NAME,ID, TYPE) VALUES ('".
-            $this->db->escapeString($title)."','".
-            $user."','user')";
-        $this->db->execute($sql);
-        $sql = "INSERT INTO ACCESS(NAME,ID, TYPE) VALUES ('".
-            $this->db->escapeString($title)."','".
-            $select_group."','group')";
-        $this->db->execute($sql);
-        $sql = "INSERT INTO BLOG_DESCRIPTION(TIMESTAMP, DESCRIPTION)
-            VALUES ('".$timestamp."','".
-            $this->db->escapeString($description)."')";
-        $this->db->execute($sql);
-    }
-
-    /**
-     *  Delete a blog from the database using provided string
-     *
-     *  @param string $timestamp  of the blog to be deleted.
-     */
-    function deleteBlog($timestamp)
-    {
-        $this->db->selectDB(DB_NAME);
-        $sql = "DELETE FROM ACCESS WHERE NAME =
-            (SELECT TITLE FROM FEED_ITEM WHERE SOURCE_NAME = 
-            (SELECT NAME FROM MEDIA_SOURCE WHERE TIMESTAMP = '$timestamp') )";
-        $this->db->execute($sql);
-        $sql = "DELETE FROM FEED_ITEM WHERE SOURCE_NAME = 
-             (SELECT NAME FROM MEDIA_SOURCE WHERE TIMESTAMP = '$timestamp') ";
-        $this->db->execute($sql);
-        $sql = "DELETE FROM ACCESS WHERE NAME = 
-            (SELECT NAME from MEDIA_SOURCE WHERE TIMESTAMP = '$timestamp') ";
-        $this->db->execute($sql);
-        $sql = "DELETE FROM MEDIA_SOURCE WHERE TIMESTAMP = '$timestamp';";
-        $this->db->execute($sql);
-        $sql = "DELETE FROM BLOG_DESCRIPTION WHERE TIMESTAMP = '$timestamp';";
-        $this->db->execute($sql);
-    }
 
     /**
      *  Delete the feed item of a blog from the database using provided string
@@ -135,71 +75,6 @@ class BlogpageModel extends Model
         $sql = "DELETE FROM FEED_ITEM WHERE GUID = '$guid'";
         $this->db->execute($sql);
         $sql = "DELETE FROM ACCESS WHERE NAME = '$feed_temp'";
-        $this->db->execute($sql);
-    }
-
-    /**
-     *  Add a group to a blog
-     *  @param string $timestamp is the timestamp of the blog
-     *  @param int $select_group is the groupid to be added to the blog
-     */
-    function addGroup($timestamp, $select_group)
-    {
-        $this->db->selectDB(DB_NAME);
-        $sql = "SELECT NAME FROM MEDIA_SOURCE WHERE TIMESTAMP = '$timestamp'";
-            $result = $this->db->execute($sql);
-            $result2=  $this->db->fetchArray($result); 
-            $blog_name = $result2["NAME"];
-        $sql = "INSERT INTO ACCESS( NAME, ID, TYPE) VALUES ('".
-            $this->db->escapeString($blog_name)."','".
-            $select_group ."', 'group')";
-        $blog_group = $this->db->execute($sql);
-    }
-
-    /**
-     *  Get the groups that belong to a blog
-     *  @param string $timestamp is the timestamp of the blog
-     *  @return array $groups list of groups added to a blog
-     */
-    function getBlogGroup($timestamp)
-    {
-        $this->db->selectDB(DB_NAME);
-        $sql = "SELECT NAME FROM MEDIA_SOURCE WHERE TIMESTAMP = '$timestamp'";
-        $result = $this->db->execute($sql); 
-        $result2=  $this->db->fetchArray($result); 
-        $blog_name = $result2["NAME"];
-
-        $sql = "SELECT ID FROM ACCESS WHERE NAME = '$blog_name'
-            AND TYPE = 'group'";
-        $group_id = $this->db->execute($sql);
-        $i = 0;
-        while($groups[$i] = $this->db->fetchArray($group_id)) {
-            $groupid = $groups[$i]['ID']; 
-            $sql = "SELECT GROUP_NAME FROM GROUPS WHERE GROUP_ID = '$groupid'";
-            $result4 = $this->db->execute($sql); 
-            $group_name = $this->db->fetchArray($result4);
-            $groups[$i]['GROUP_NAME']= $group_name['GROUP_NAME'];
-            $groups[$i]['TIMESTAMP']= $timestamp;
-            $i++;
-        }
-        unset($groups[$i]); //last one will be null
-        return $groups;
-    }
-
-    /**
-     *  Delete an exsisting group that belonged to a blog
-     *  @param string $timestamp is the timestamp of the blog
-     *  @param int $group_id is the group id of the group to be deleted
-     */
-    function deleteGroup($timestamp, $group_id)
-    {
-        $this->db->selectDB(DB_NAME);
-        $sql = "SELECT NAME FROM MEDIA_SOURCE WHERE TIMESTAMP = '$timestamp'";
-        $result = $this->db->execute($sql);
-        $result2=  $this->db->fetchArray($result);
-        $blog_name = $result2["NAME"];
-        $sql = "DELETE FROM ACCESS WHERE NAME = '$blog_name'
-            AND ID = '$group_id' AND TYPE = 'group'";
         $this->db->execute($sql);
     }
 
@@ -348,57 +223,6 @@ class BlogpageModel extends Model
     }
 
     /**
-     *  Retrieve the blog details of a blog
-     *  @param string $timestamp timestamp of the blog
-     *  @return array $blogs blog selected to edit the details
-     */
-    function editBlog($timestamp)
-    {
-        $this->db->selectDB(DB_NAME);
-        $sql = "SELECT a.NAME,a.TYPE,a.LANGUAGE,a.TIMESTAMP, b.DESCRIPTION FROM
-            MEDIA_SOURCE a JOIN BLOG_DESCRIPTION b ON a.TIMESTAMP =
-            b.TIMESTAMP WHERE a.TIMESTAMP = '$timestamp'";
-        $result = $this->db->execute($sql);
-        $i = 0;
-        while($blogs[$i] = $this->db->fetchArray($result)) {
-            $blog_name = $blogs[$i]['NAME'];
-            $sql = "SELECT id FROM ACCESS WHERE NAME = '$blog_name'
-                AND TYPE = 'group'";
-            $blog = $this->db->execute($sql);
-            $row  = $this->db->fetchArray($blog);
-            $group_id = $row['ID'];
-            $sql = "SELECT GROUP_NAME FROM GROUPS WHERE
-                GROUP_ID = '$group_id'";
-            $blog_group = $this->db->execute($sql);
-            $group_name  = $this->db->fetchArray($blog_group);
-            $name = $group_name['GROUP_NAME'];
-            $blogs[$i]['GROUP_NAME'] = $name;
-            $blogs[$i]['id'] = $group_id;
-        $i++;
-        }
-        unset($blogs[$i]); //last one will be null
-        return $blogs;
-    }
-
-    /**
-     *  Retrieve the owner of a blog
-     *  @param string $timestamp is the timestamp of the blog
-     *  @return int $row['ID'] id of the blog owner
-     */
-    function getBlogOwner($timestamp)
-    {
-       $this->db->selectDB(DB_NAME);
-       $sql = "SELECT ID FROM ACCESS WHERE NAME = (
-            SELECT NAME FROM MEDIA_SOURCE WHERE
-            TIMESTAMP = '$timestamp')";
-        $result = $this->db->execute($sql);
-        if(!$row = $this->db->fetchArray($result) ) {
-            return -1;
-        }
-        return $row['ID'];
-    }
-
-    /**
      *  Retrieve the feed items of a blog
      *  @param string $title title of the blog 
      *  @param int $user id of the user
@@ -446,39 +270,7 @@ class BlogpageModel extends Model
         return $blogs;
     }
 
-    /**
-     *  Update the blog description after performing edit on a blog
-     *  @param string $description description of the blog
-     *  @param $timestamp timestamp of the blog
-     *  @param $description description of the blog
-     *  @return $blogs blogs to edit the details
-     */
-    function editDescription($timestamp, $title, $description)
-    {
-        $this->db->selectDB(DB_NAME);
-        $sql = "SELECT NAME from MEDIA_SOURCE WHERE TIMESTAMP = '$timestamp'";
-            $result=$this->db->execute($sql);
-            $temp =  $this->db->fetchArray($result);
-            $blog_title = $temp["NAME"];
-        $sql = "UPDATE ACCESS SET NAME = '$title' where NAME = '$blog_title'";
-        $result=$this->db->execute($sql);
-        $sql = "UPDATE BLOG_DESCRIPTION SET DESCRIPTION = '".
-            $this->db->escapeString($description)."'
-            WHERE TIMESTAMP ='$timestamp'";
-        $result=$this->db->execute($sql);
-        $sql = "UPDATE MEDIA_SOURCE SET NAME = '$title'
-            WHERE TIMESTAMP = '$timestamp'";
-        $result=$this->db->execute($sql);
-        $sql = "UPDATE FEED_ITEM SET SOURCE_NAME = '$title'
-            WHERE SOURCE_NAME = '$blog_title'";
-        $result = $this->db->execute($sql);
-        $i = 0;
-        while($blogs[$i] = $this->db->fetchArray($result)) {
-            $i++;
-        }
-        unset($blogs[$i]); //last one will be null
-        return $blogs;
-    }
+
 
     /**
      *  Update the feeditem description after performing edit on feeditem

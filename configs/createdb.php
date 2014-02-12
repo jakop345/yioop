@@ -201,9 +201,9 @@ $activities = array(
             "ko" => '크롤 관리',
             "vi-VN" => 'Quản lý sự bò',
         )),
-    "blogPages" => array('db_activity_blogs_pages',
+    "groupFeeds" => array('db_activity_group_feeds',
         array(
-            "en-US" => 'Blogs and Pages',
+            "en-US" => 'My Group Feeds',
         )),
     "mixCrawls" => array('db_activity_mix_crawls',
         array(
@@ -286,7 +286,7 @@ $new_user_activities = array(
     "manageAccount",
     "manageGroups",
     "mixCrawls",
-    "blogPages"
+    "groupFeeds"
 );
 
 foreach($new_user_activities as $new_activity) {

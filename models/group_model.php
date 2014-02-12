@@ -48,9 +48,11 @@ require_once BASE_DIR."/lib/utility.php";
 
 class GroupModel extends Model
 {
-    var $search_table_column_map = array("group_id"=>"G.GROUP_ID",
+    var $search_table_column_map = array("access"=>"G.MEMBER_ACCESS",
+        "group_id"=>"G.GROUP_ID", "join_date"=>"UG.JOIN_DATE",
         "name"=>"G.GROUP_NAME", "owner"=>"O.OWNER_NAME",
-        "register"=>"G.REGISTER_TYPE", "access"=>"G.MEMBER_ACCESS",
+        "pub_date" => "GI.PUBDATE", "parent_id"=>"GI.PARENT_ID",
+        "register"=>"G.REGISTER_TYPE",
         "status"=>"UG.STATUS");
         
     /**
@@ -316,8 +318,9 @@ class GroupModel extends Model
     function getGroupsCount($search_array = array(), $user_id = ROOT_ID)
     {
         $this->db->selectDB(DB_NAME);
+        $any_fields = array("access", "register");
         list($where, $order_by) = 
-            $this->searchArrayToWhereOrderClauses($search_array);
+            $this->searchArrayToWhereOrderClauses($search_array,$any_fields);
         $add_where = " WHERE ";
         if($where != "") {
             $add_where = " AND ";
@@ -344,7 +347,7 @@ class GroupModel extends Model
         $groups = array();
         $sql = "SELECT UG.GROUP_ID AS GROUP_ID, UG.USER_ID AS USER_ID," .
             " G.GROUP_NAME AS GROUP_NAME FROM USER_GROUP UG, GROUPS G" .
-            " where USER_ID = $userid AND UG.GROUP_ID = G.GROUP_ID";
+            " WHERE USER_ID = $userid AND UG.GROUP_ID = G.GROUP_ID";
         $result = $this->db->execute($sql);
         $i = 0;
         while($groups[$i] = $this->db->fetchArray($result)) {
@@ -441,6 +444,113 @@ class GroupModel extends Model
             $this->db->escapeString($user_id) . "' AND GROUP_ID='".
             $this->db->escapeString($group_id) . "'";
         $this->db->execute($sql);
+    }
+
+    /**
+     *
+     */
+    function getGroupItem($item_id)
+    {
+        $this->db->selectDB(DB_NAME);
+
+        $sql = "SELECT * FROM GROUP_ITEM WHERE ID='".
+            $this->db->escapeString($item_id)."' LIMIT 1";
+        $result = $this->db->execute($sql);
+        if(!$result) {
+            return false;
+        }
+        $row = $this->db->fetchArray($result);
+        return $row;
+    }
+
+    /**
+     *
+     */
+    function addGroupItem($parent_id, $group_id, $title, $description)
+    {
+        $db = $this->db;
+        $join_date = time();
+        $db->selectDB(DB_NAME);
+        $now = time();
+        $sql = "INSERT INTO GROUP_ITEM(PARENT_ID, GROUP_ID, TITLE,
+            DESCRIPTION, PUBDATE) VALUES ('".
+            $db->escapeString($parent_id) . "', '".
+            $db->escapeString($group_id) . "', '".
+            $db->escapeString($title) . "', '".
+            $db->escapeString($description)."', $now )";
+        $db->execute($sql);
+        if($parent_id == 0) {
+            $id = $db->insertID();
+            $sql = "UPDATE GROUP_ITEM SET PARENT_ID='$id'
+                WHERE ID='$id'";
+            $this->db->execute($sql);
+        }
+    }
+
+    /**
+     *
+     */
+    function getGroupItems($limit=0, $num=100, $search_array = array(),
+        $user_id=ROOT_ID)
+    {
+        $this->db->selectDB(DB_NAME);
+        $limit = "LIMIT $limit, $num";
+        $any_fields = array("access", "register");
+        list($where, $order_by) = 
+            $this->searchArrayToWhereOrderClauses($search_array, $any_fields);
+        $add_where = " WHERE ";
+        if($where != "") {
+            $add_where = " AND ";
+        }
+        $user_id = $this->db->escapeString($user_id);
+        $where .= $add_where. " UG.USER_ID='$user_id' AND
+            GI.GROUP_ID=G.GROUP_ID AND GI.GROUP_ID=UG.GROUP_ID AND
+            UG.USER_ID = U.USER_ID AND ((
+            UG.STATUS='".ACTIVE_STATUS."'
+            AND G.MEMBER_ACCESS IN ('".GROUP_READ."','".GROUP_READ_WRITE."')) OR
+            (G.OWNER_ID = UG.USER_ID))";
+        $sql = "SELECT DISTINCT GI.ID AS ID, GI.PARENT_ID AS PARENT_ID,
+            GI.GROUP_ID AS GROUP_ID, GI.TITLE AS TITLE,
+            GI.DESCRIPTION AS DESCRIPTION, GI.PUBDATE AS PUBDATE, G.OWNER_ID
+            AS OWNER_ID, G.MEMBER_ACCESS AS MEMBER_ACCESS,
+            G.GROUP_NAME AS GROUP_NAME, U.USER_NAME AS USER_NAME
+            FROM GROUP_ITEM GI, GROUPS G, USER_GROUP UG, USER U
+            $where $order_by $limit";
+        $result = $this->db->execute($sql);
+        $i = 0;
+        while($groups[$i] = $this->db->fetchArray($result)) {
+            $i++;
+        }
+        unset($groups[$i]); //last one will be null
+        return $groups;
+    }
+
+    /**
+     * Returns the number of users in the user table
+     *
+     * @return int number of users
+     */
+    function getGroupItemCount($search_array = array(), $user_id = ROOT_ID)
+    {
+        $this->db->selectDB(DB_NAME);
+        $any_fields = array("access", "register");
+        list($where, $order_by) = 
+            $this->searchArrayToWhereOrderClauses($search_array, $any_fields);
+        $add_where = " WHERE ";
+        if($where != "") {
+            $add_where = " AND ";
+        }
+        $user_id = $this->db->escapeString($user_id);
+        $where .= $add_where. " UG.USER_ID='$user_id' AND
+            GI.GROUP_ID=G.GROUP_ID AND GI.GROUP_ID=UG.GROUP_ID AND ((
+            UG.STATUS='".ACTIVE_STATUS."'
+            AND G.MEMBER_ACCESS IN ('".GROUP_READ."','".GROUP_READ_WRITE."')) OR
+            (G.OWNER_ID = UG.USER_ID))";
+        $sql = "SELECT COUNT(*) AS NUM FROM GROUP_ITEM GI, GROUPS G,
+            USER_GROUP UG $where";
+        $result = $this->db->execute($sql);
+        $row = $this->db->fetchArray($result);
+        return $row['NUM'];
     }
 }
 ?>

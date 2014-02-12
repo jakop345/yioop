@@ -1115,10 +1115,22 @@ ul.in-list li
     clear: both;
 }
 
-.result h2
+.group-result
+{
+    box-shadow: 0px 0px 3px 3px #ccc;
+    padding: .1in .1in .25in .1in;
+}
+
+.result h2,
+.group-result h2
 {
     font-size: 14pt;
     font-weight: normal;
+}
+.group-result div
+{
+    font-size: 12pt;
+    width:5.5in;
 }
 
 .serp-links-score

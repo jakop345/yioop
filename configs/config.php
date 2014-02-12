@@ -72,6 +72,21 @@ if(!defined('TIME_ZONE')) {
     date_default_timezone_set(TIME_ZONE);
 }
 
+/**
+ * @global array which activities are in which Component classes (use this
+ *      array so don't have to instantiate classes to find out. Keys are
+ *      names of components, values are the activities in that component.
+ */
+$COMPONENT_ACTIVITIES = array(
+    "accountaccess" => array("signin", "manageAccount", "manageUsers",
+        "manageRoles", "manageGroups"),
+    "blogmixes" => array("groupFeeds", "mixCrawls"),
+    "crawl" => array("manageCrawls", "manageClassifiers", "pageOptions",
+        "resultsEditor", "searchSources"),
+    "system" => array("manageMachines", "manageLocales", 
+        "serverSettings", "configure")
+);
+
 /** setting profile.php to something else in loac_config.php allows one to have
     two different yioop instances share the same work_directory but maybe have
     different
@@ -426,21 +441,6 @@ define('NORMALIZE_FREQUENCY', 10000);
  * lib/processors page processors
  */
 $INDEXED_FILE_TYPES = array("unknown");
-
-/**
- * @global array which activities are in which Component classes (use this
- *      array so don't have to instantiate classes to find out. Keys are
- *      names of components, values are the activities in that component.
- */
-$COMPONENT_ACTIVITIES = array(
-    "accountaccess" => array("signin", "manageAccount", "manageUsers",
-        "manageRoles", "manageGroups"),
-    "blogmixes" => array("blogPages", "mixCrawls"),
-    "crawl" => array("manageCrawls", "manageClassifiers", "pageOptions",
-        "resultsEditor", "searchSources"),
-    "system" => array("manageMachines", "manageLocales", 
-        "serverSettings", "configure")
-);
 
 /**
  * @global array filetypes which should be considered images. This

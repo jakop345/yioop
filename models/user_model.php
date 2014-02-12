@@ -364,9 +364,12 @@ class UserModel extends Model
         if(!$user_id = $this->getUserId($username)) {
             return false;
         }
+        $now = time();
         $user_id = $this->db->escapeString($user_id);
-        $sql = "INSERT INTO USER_GROUP (USER_ID, GROUP_ID, STATUS) VALUES('".
-            $user_id."', '" . PUBLIC_GROUP_ID . "', '" . ACTIVE_STATUS . "')";
+        $sql = "INSERT INTO USER_GROUP (USER_ID, GROUP_ID, STATUS,
+            JOIN_DATE) VALUES('".
+            $user_id."', '" . PUBLIC_GROUP_ID . "', '" . ACTIVE_STATUS . "',
+            $now)";
         $result = $this->db->execute($sql);
         $sql = "INSERT INTO USER_ROLE  VALUES ('". $user_id."', ".
             USER_ROLE.") ";
