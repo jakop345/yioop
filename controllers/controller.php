@@ -331,7 +331,6 @@ abstract class Controller
         $token_okay = false;
         if(isset($_REQUEST[$token_name])) {
             $token_parts = explode("|", $_REQUEST[$token_name]);
-            echo $_SESSION['OLD_CSRF_TIME']." ".$token_parts[1];
             if(isset($token_parts[1]) && isset($_SESSION['OLD_CSRF_TIME']) &&
                 $token_parts[1] == $_SESSION['OLD_CSRF_TIME']) {
                 $token_okay = true;

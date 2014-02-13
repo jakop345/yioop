@@ -152,7 +152,6 @@ p
     background-color: #CCC;
 }
 
-
 .gray-link
 {
     color: gray;
@@ -160,6 +159,16 @@ p
 }
 
 .gray-link:hover
+{
+    text-decoration: underline;
+}
+
+a.echo-link
+{
+    text-decoration: none;
+}
+
+a.echo-link:hover
 {
     text-decoration: underline;
 }

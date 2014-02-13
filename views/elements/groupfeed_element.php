@@ -103,13 +103,14 @@ class GroupfeedElement extends Element implements CrawlConstants
                 if($open_in_tabs) { ?> target="_blank" <?php }
                 ?>><?php  e($page[self::TITLE]); ?></a>.
                 <a class="gray-link" rel='nofollow' href="<?php e($base_query.
-                    "&amp;just_group_id=".$page['GROUP_ID']);?>" ><?php 
+                    "&amp;just_group_id=".$page['GROUP_ID']);?>" ><?php
                     e($page[self::SOURCE_NAME]."</a>"
                     ."<span class='gray'> - $pub_date</span>");
                  ?></h2>
-                <p class="echo-link"><?php
-                    e($page['USER_NAME']);
-                ?></p>
+                <p>
+                <a class="echo-link" rel='nofollow' href="<?php e($base_query.
+                    "&amp;just_user_id=".$page['USER_ID']);?>" ><?php
+                    e($page['USER_NAME']); ?></a></p>
                 <?php
                 $description = isset($page[self::DESCRIPTION]) ?
                     $page[self::DESCRIPTION] : "";?>

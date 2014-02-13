@@ -52,8 +52,8 @@ class GroupModel extends Model
         "group_id"=>"G.GROUP_ID", "join_date"=>"UG.JOIN_DATE",
         "name"=>"G.GROUP_NAME", "owner"=>"O.OWNER_NAME",
         "pub_date" => "GI.PUBDATE", "parent_id"=>"GI.PARENT_ID",
-        "register"=>"G.REGISTER_TYPE",
-        "status"=>"UG.STATUS");
+        "register"=>"G.REGISTER_TYPE", "status"=>"UG.STATUS",
+        "user_id"=>"P.USER_ID");
         
     /**
      *  {@inheritdoc}
@@ -278,6 +278,8 @@ class GroupModel extends Model
 
     /**
      *
+     *  @param int $group_id
+     *  @return int
      */
     function getRegisterType($group_id)
     {
@@ -295,7 +297,9 @@ class GroupModel extends Model
     }
 
     /**
-     *
+     *  @param int $group_id
+     *  @param int $user_id
+     *  @return array
      */
     function getGroupById($group_id, $user_id)
     {
@@ -349,7 +353,7 @@ class GroupModel extends Model
         return $row['NUM'];
     }
 
-    /**
+   /**
     *  Get a list of all groups which are created by the user_id. Group names
     *  are not localized since these are
     *  created by end user admins of the search engine
@@ -488,17 +492,23 @@ class GroupModel extends Model
 
     /**
      *
+     *  @param int $parent_id
+     *  @param int $group_id
+     *  @param int $user_id
+     *  @param string $title
+     *  @pararm string $description
      */
-    function addGroupItem($parent_id, $group_id, $title, $description)
+    function addGroupItem($parent_id, $group_id, $user_id, $title, $description)
     {
         $db = $this->db;
         $join_date = time();
         $db->selectDB(DB_NAME);
         $now = time();
-        $sql = "INSERT INTO GROUP_ITEM(PARENT_ID, GROUP_ID, TITLE,
+        $sql = "INSERT INTO GROUP_ITEM(PARENT_ID, GROUP_ID, USER_ID, TITLE,
             DESCRIPTION, PUBDATE) VALUES ('".
             $db->escapeString($parent_id) . "', '".
             $db->escapeString($group_id) . "', '".
+            $db->escapeString($user_id) . "', '".
             $db->escapeString($title) . "', '".
             $db->escapeString($description)."', $now )";
         $db->execute($sql);
@@ -512,6 +522,9 @@ class GroupModel extends Model
 
     /**
      *
+     *  @param int $limit
+     *  @param int $num
+     *  @param array $search_array
      */
     function getGroupItems($limit=0, $num=100, $search_array = array(),
         $user_id = ROOT_ID)
@@ -532,13 +545,15 @@ class GroupModel extends Model
             UG.USER_ID = U.USER_ID AND ((
             UG.STATUS='".ACTIVE_STATUS."'
             AND G.MEMBER_ACCESS IN ('".GROUP_READ."','".GROUP_READ_WRITE."')) OR
-            (G.OWNER_ID = UG.USER_ID))";
+            (G.OWNER_ID = UG.USER_ID)) AND
+            P.USER_ID = GI.USER_ID";
         $sql = "SELECT DISTINCT GI.ID AS ID, GI.PARENT_ID AS PARENT_ID,
             GI.GROUP_ID AS GROUP_ID, GI.TITLE AS TITLE,
             GI.DESCRIPTION AS DESCRIPTION, GI.PUBDATE AS PUBDATE, G.OWNER_ID
             AS OWNER_ID, G.MEMBER_ACCESS AS MEMBER_ACCESS,
-            G.GROUP_NAME AS GROUP_NAME, U.USER_NAME AS USER_NAME
-            FROM GROUP_ITEM GI, GROUPS G, USER_GROUP UG, USER U
+            G.GROUP_NAME AS GROUP_NAME, P.USER_NAME AS USER_NAME, P.USER_ID AS
+            USER_ID
+            FROM GROUP_ITEM GI, GROUPS G, USER_GROUP UG, USER U, USER P
             $where $order_by $limit";
         $result = $db->execute($sql);
         $i = 0;
@@ -550,9 +565,11 @@ class GroupModel extends Model
     }
 
     /**
-     * Returns the number of users in the user table
+     *  Returns the number of users in the user table
      *
-     * @return int number of users
+     *  @param array $search_array
+     *  @param int $$user_id
+     *  @return int number of users
      */
     function getGroupItemCount($search_array = array(), $user_id = ROOT_ID)
     {
@@ -567,12 +584,13 @@ class GroupModel extends Model
         }
         $user_id = $db->escapeString($user_id);
         $where .= $add_where. " UG.USER_ID='$user_id' AND
+            GI.USER_ID=P.USER_ID AND
             GI.GROUP_ID=G.GROUP_ID AND GI.GROUP_ID=UG.GROUP_ID AND ((
             UG.STATUS='".ACTIVE_STATUS."'
             AND G.MEMBER_ACCESS IN ('".GROUP_READ."','".GROUP_READ_WRITE."')) OR
             (G.OWNER_ID = UG.USER_ID))";
         $sql = "SELECT COUNT(*) AS NUM FROM GROUP_ITEM GI, GROUPS G,
-            USER_GROUP UG $where";
+            USER_GROUP UG, USER P $where";
         $result = $db->execute($sql);
         $row = $db->fetchArray($result);
         return $row['NUM'];

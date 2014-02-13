@@ -73,7 +73,8 @@ class BlogmixesComponent extends Component implements CrawlConstants
             $data['OPEN_IN_TABS'] = false;
         }
         $clean_array = array( "title" => "string", "description" => "string",
-            "just_group_id" => "int", "just_thread" => "int");
+            "just_group_id" => "int", "just_thread" => "int",
+            "just_user_id" => "int");
         foreach($clean_array as $field => $type) {
             $$field = ($type == "string") ? "" : 0;
             if(isset($_REQUEST[$field])) {
@@ -137,8 +138,8 @@ class BlogmixesComponent extends Component implements CrawlConstants
                         );
                     }
                     $title = "-- ".$parent_item['TITLE'];
-                    $group_model->addGroupItem($parent_item["ID"], 
-                        $group_id, $title, $description);
+                    $group_model->addGroupItem($parent_item["ID"],
+                        $group_id, $user_id, $title, $description);
                 break;
 
                 case "newthread":
@@ -170,12 +171,12 @@ class BlogmixesComponent extends Component implements CrawlConstants
                         break;
                     }
                     $group_model->addGroupItem(0,
-                        $group_id, $title, $description);
+                        $group_id, $user_id, $title, $description);
                 break;
             }
         }
         $groups_count = 0;
-        if(!$just_thread) {
+        if(!$just_thread && !$just_user_id) {
             $search_array = array(
                 array("group_id", "=", $just_group_id, ""),
                 array("access", "!=", GROUP_PRIVATE, ""),
@@ -208,6 +209,7 @@ class BlogmixesComponent extends Component implements CrawlConstants
         $search_array = array(
             array("parent_id", "=", $just_thread, ""),
             array("group_id", "=", $just_group_id, ""),
+            array("user_id", "=", $just_user_id, ""),
             array('pub_date', "=", "", "DESC"));
         $item_count = $group_model->getGroupItemCount($search_array, $user_id);
         $group_items = $group_model->getGroupItems(0,
@@ -232,6 +234,10 @@ class BlogmixesComponent extends Component implements CrawlConstants
         if($just_group_id && isset($page[self::SOURCE_NAME])) {
             $data['SUBTITLE'] = $page[self::SOURCE_NAME];
             $data['ADD_PAGING_QUERY'] = "&amp;just_group_id=$just_group_id";
+        }
+        if($just_user_id && isset($page["USER_NAME"])) {
+            $data['SUBTITLE'] = $page["USER_NAME"];
+            $data['ADD_PAGING_QUERY'] = "&amp;just_user_id=$just_user_id";
         }
         $pages = array_slice($pages, $limit , $results_per_page - 1);
         $data['TOTAL_ROWS'] = $item_count + $groups_count;
