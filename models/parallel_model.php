@@ -291,6 +291,7 @@ class ParallelModel extends Model implements CrawlConstants
                 $summary = array();
                 $ellipsis = "";
                 $description_hash = array();
+                $sql = "SELECT * FROM FEED_ITEM WHERE GUID=?";
                 foreach($lookup_info as $lookup_item) {
                     if(count($lookup_item) == 2) {
                         list($word_key, $index_name) = $lookup_item;
@@ -319,9 +320,7 @@ class ParallelModel extends Model implements CrawlConstants
                         $guid = base64Hash(substr($key,
                             IndexShard::DOC_KEY_LEN,
                             IndexShard::DOC_KEY_LEN));
-                        $sql = "SELECT * FROM FEED_ITEM WHERE GUID=".
-                            "'$guid'";
-                        $result = $db->execute($sql);
+                        $result = $db->execute($sql, array($guid));
                         $page = false;
                         if($result) {
                             $row = $db->fetchArray($result);

@@ -59,24 +59,21 @@ class SigninModel extends Model
      */
     function checkValidSignin($username, $password)
     {
-        $username = $this->db->escapeString($username);
-        $password = $this->db->escapeString($password);
-
+        $db = $this->db;
         $sql = "SELECT USER_NAME, PASSWORD FROM USERS ".
-            "WHERE USER_NAME = '$username' LIMIT 1";
-
+            "WHERE USER_NAME = ? " . $db->limitOffset(1);
         $i = 0;
         do {
             if($i > 0) {
                 sleep(3);
             }
-            $result = $this->db->execute($sql);
+            $result = $db->execute($sql, array($username));
             $i++;
         } while(!$result && $i < 2);
         if(!$result) {
             return false;
         }
-        $row = $this->db->fetchArray($result);
+        $row = $db->fetchArray($result);
 
         return ($username == $row['USER_NAME'] &&
             crawlCrypt($password, $row['PASSWORD']) == $row['PASSWORD']) ;
@@ -93,16 +90,15 @@ class SigninModel extends Model
 
     function checkValidEmail($username, $email)
     {
-        $username = $this->db->escapeString($username);
-        $email = $this->db->escapeString($email);
-            $sql = "SELECT USER_NAME, EMAIL FROM USERS ".
-            "WHERE USER_NAME = '$username' LIMIT 1";
+        $db = $this->db;
+        $sql = "SELECT USER_NAME, EMAIL FROM USERS ".
+            "WHERE USER_NAME = ? " . $db->limitOffset(1);
 
-        $result = $this->db->execute($sql);
+        $result = $db->execute($sql, array($username));
         if(!$result) {
             return false;
         }
-        $row = $this->db->fetchArray($result);
+        $row = $db->fetchArray($result);
 
         return ($username == $row['USER_NAME'] && $email == $row['EMAIL']) ;
     }
@@ -115,29 +111,28 @@ class SigninModel extends Model
      */
    function getUserName($user_id)
    {
-        $user_id = $this->db->escapeString($user_id);
-
-        $sql = "SELECT USER_NAME FROM USERS WHERE USER_ID = '$user_id' LIMIT 1";
-        $result = $this->db->execute($sql);
-        $row = $this->db->fetchArray($result);
+        $db = $this->db;
+        $sql = "SELECT USER_NAME FROM USERS WHERE USER_ID = ? " .
+            $db->limitOffset(1);
+        $result = $db->execute($sql, array($user_id));
+        $row = $db->fetchArray($result);
         $username = $row['USER_NAME'];
         return $username;
    }
 
      /**
-     *  Get the email associated with a given userid
+     *  Get the email associated with a given user_id
      *
      *  @param string $user_id the userid to look up
      *  @return string the corresponding email
      */
    function getEmail($user_id, $limit = 1)
    {
-        $user_id = $this->db->escapeString($user_id);
-
+        $db = $this->db;
         $sql = "SELECT EMAIL FROM USERS WHERE
-                    USER_ID = '$user_id' LIMIT $limit";
-        $result = $this->db->execute($sql);
-        $row = $this->db->fetchArray($result);
+            USER_ID = ?  " . $db->limitOffset($limit);
+        $result = $db->execute($sql, array($user_id));
+        $row = $db->fetchArray($result);
         $email = $row['EMAIL'];
         return $email;
    }
@@ -152,13 +147,8 @@ class SigninModel extends Model
 
     function changeEmail($username, $email)
     {
-        $username = $this->db->escapeString($username);
-        $email = $this->db->escapeString($email);
-
-        $sql = "UPDATE USERS SET EMAIL= '$email'
-                    WHERE USER_NAME = '$username' ";
-
-        $result = $this->db->execute($sql);
+        $sql = "UPDATE USERS SET EMAIL= ? WHERE USER_NAME = ? ";
+        $result = $this->db->execute($sql, array($email, $username));
         return $result != false;
     }
 
@@ -171,13 +161,9 @@ class SigninModel extends Model
      */
     function changePassword($username, $password)
     {
-        $username = $this->db->escapeString($username);
-        $password = $this->db->escapeString($password);
-
-        $sql = "UPDATE USERS SET PASSWORD='".
-            crawlCrypt($password)."' WHERE USER_NAME = '$username' ";
-
-        $result = $this->db->execute($sql);
+        $sql = "UPDATE USERS SET PASSWORD=? WHERE USER_NAME = ? ";
+        $result = $this->db->execute($sql,
+            array(crawlCrypt($password), $username) );
         return $result != false;
     }
 

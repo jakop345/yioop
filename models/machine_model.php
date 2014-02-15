@@ -83,6 +83,7 @@ class MachineModel extends Model
     function getQueueServerUrls($crawl_time = 0)
     {
         static $machines = array();
+        $db = $this->db;
         if(isset($machines[$crawl_time])) {
             return $machines[$crawl_time];
         }
@@ -98,11 +99,11 @@ class MachineModel extends Model
         $sql = "SELECT URL FROM MACHINE WHERE HAS_QUEUE_SERVER > 0 ".
             "ORDER BY NAME DESC";
 
-        $result = $this->db->execute($sql);
+        $result = $db->execute($sql);
         $i = 0;
 
         $machines[$crawl_time] =array();
-        while($row = $this->db->fetchArray($result)) {
+        while($row = $db->fetchArray($result)) {
             $machines[$crawl_time][$i] = $row["URL"];
             $i++;
         }
@@ -125,18 +126,12 @@ class MachineModel extends Model
     function addMachine($name, $url, $has_queue_server, $num_fetchers,
         $parent = "")
     {
-        if($has_queue_server == true) {
-            $has_string = "1";
-        } else {
+        $db = $this->db;
+        $has_string = ($has_queue_server) ? $has_string = "1" : 
             $has_string = "0";
-        }
-        $sql = "INSERT INTO MACHINE VALUES ('".
-            $this->db->escapeString($name)."','".
-            $this->db->escapeString($url)."',".$has_string.",'".
-            $this->db->escapeString($num_fetchers)."','".
-            $this->db->escapeString($parent)."')";
-
-        $this->db->execute($sql);
+        $sql = "INSERT INTO MACHINE VALUES (?, ?, ?, ?, ?)";
+        $this->db->execute($sql, array($name, $url, $has_string, $num_fetchers,
+            $parent));
     }
 
     /**
@@ -146,8 +141,8 @@ class MachineModel extends Model
      */
     function deleteMachine($machine_name)
     {
-        $sql = "DELETE FROM MACHINE WHERE NAME='$machine_name'";
-        $this->db->execute($sql);
+        $sql = "DELETE FROM MACHINE WHERE NAME=?";
+        $this->db->execute($sql, array($machine_name));
 
     }
 
@@ -250,27 +245,26 @@ class MachineModel extends Model
     function update($machine_name, $action, $fetcher_num = NULL,
         $is_mirror = false)
     {
+        $db = $this->db;
         $value = ($action == "start") ? "true" : "false";
         $time = time();
         $session = md5($time . AUTH_KEY);
-        $this->db->execute("BEGIN");
-        $sql = "SELECT URL FROM MACHINE WHERE NAME='$machine_name'";
-
-        $result = $this->db->execute($sql);
-        $row = $this->db->fetchArray($result);
+        $db->execute("BEGIN");
+        $sql = "SELECT URL FROM MACHINE WHERE NAME=?";
+        $result = $db->execute($sql, array($machine_name));
+        $row = $db->fetchArray($result);
         if($row) {
             $url = $row["URL"]. "?c=machine&a=update&time=$time".
                 "&session=$session";
             if($fetcher_num !== NULL) {
                 $url .= "&fetcher[$fetcher_num]=$value";
-                $sql = "DELETE FROM ACTIVE_FETCHER WHERE
-                        NAME='$machine_name' AND FETCHER_ID='$fetcher_num'";
-                $this->db->execute($sql);
+                $sql = "DELETE FROM ACTIVE_FETCHER WHERE NAME=? AND
+                    FETCHER_ID=?";
+                $db->execute($sql, array($machine_name, $fetcher_num));
                 if($action == "start") {
-                    $sql = "INSERT INTO ACTIVE_FETCHER VALUES ('$machine_name',
-                        '$fetcher_num')";
+                    $sql = "INSERT INTO ACTIVE_FETCHER VALUES (?, ?)";
                 }
-                $this->db->execute($sql);
+                $db->execute($sql, array($machine_name, $fetcher_num));
             } else if($is_mirror) {
                 $url .= "&mirror=$value";
             } else {
@@ -278,7 +272,7 @@ class MachineModel extends Model
             }
             echo FetchUrl::getPage($url);
         }
-        $this->db->execute("COMMIT");
+        $db->execute("COMMIT");
     }
 
     /**

@@ -645,21 +645,22 @@ function addActivityAtId(&$db, $string_id, $method_name, $activity_id)
 {
     
     $db->execute("UPDATE ACTIVITY SET ACTIVITY_ID = ACTIVITY_ID + 1 WHERE ".
-        "ACTIVITY_ID >= $activity_id");
-    $sql = "SELECT * FROM ACTIVITY WHERE ACTIVITY_ID >= $activity_id
+        "ACTIVITY_ID >= ?", array($activity_id));
+    $sql = "SELECT * FROM ACTIVITY WHERE ACTIVITY_ID >= ?
         ORDER BY ACTIVITY_ID DESC";
-    $result = $db->execute($sql);
+    $result = $db->execute($sql, array($activity_id));
     while($row = $db->fetchArray($result)) {
-        $db->execute("INSERT INTO ACTIVITY VALUES
-            (".($row['ACTIVITY_ID'] + 1).", {$row['TRANSLATION_ID']},
-            '{$row['METHOD_NAME']}')");
-        $db->execute("DELETE FROM ACTIVITY WHERE ACTIVITY_ID =
-            {$row['ACTIVITY_ID']}");
+        $db->execute("INSERT INTO ACTIVITY VALUES (?, ?, ?)",
+            array(($row['ACTIVITY_ID'] + 1), $row['TRANSLATION_ID'],
+            $row['METHOD_NAME']));
+        $db->execute("DELETE FROM ACTIVITY WHERE ACTIVITY_ID = ?",
+            array($row['ACTIVITY_ID']));
     }
     $db->execute("UPDATE ROLE_ACTIVITY SET ACTIVITY_ID = ACTIVITY_ID + 1 " .
-        "WHERE ACTIVITY_ID >= $activity_id");
+        "WHERE ACTIVITY_ID >= ?", array($activity_id));
     //give root account permissions on the activity.
-    $db->execute("INSERT INTO ROLE_ACTIVITY VALUES (1, $activity_id)");
+    $db->execute("INSERT INTO ROLE_ACTIVITY VALUES (1, ?)",
+        array($activity_id));
     $sql = "SELECT COUNT(*) AS NUM FROM TRANSLATION";
     $result = $db->execute($sql);
     if(!$result || !($row = $db->fetchArray($result))) {
@@ -668,10 +669,10 @@ function addActivityAtId(&$db, $string_id, $method_name, $activity_id)
     }
     //some search id start at 1000, so +1001 ensures we steer clear of them
     $translation_id = $row['NUM'] + 1001;
-    $db->execute("INSERT INTO ACTIVITY
-        VALUES ($activity_id, $translation_id, '$method_name')");
-    $db->execute("INSERT INTO TRANSLATION
-        VALUES ($translation_id, '$string_id')");
+    $db->execute("INSERT INTO ACTIVITY VALUES (?, ?, ?)",
+        array($activity_id, $translation_id, $method_name));
+    $db->execute("INSERT INTO TRANSLATION VALUES (?, ?)",
+        array($translation_id, $string_id));
 }
 
 /**
@@ -688,23 +689,23 @@ function updateTranslationForStringId(&$db, $string_id, $locale_tag,
     $translation)
 {
     $sql = "SELECT LOCALE_ID FROM LOCALE ".
-        "WHERE LOCALE_TAG = '$locale_tag' LIMIT 1";
-    $result = $db->execute($sql);
+        "WHERE LOCALE_TAG = ? " . $db->limitOffset(1);
+    $result = $db->execute($sql, array($locale_tag));
     $row = $db->fetchArray($result);
     $locale_id = $row['LOCALE_ID'];
 
     $sql = "SELECT TRANSLATION_ID FROM TRANSLATION ".
-        "WHERE IDENTIFIER_STRING = '$string_id' LIMIT 1";
-    $result = $db->execute($sql);
+        "WHERE IDENTIFIER_STRING = ? " . $db->limitOffset(1);
+    $result = $db->execute($sql, array($string_id));
     $row = $db->fetchArray($result);
     $translate_id = $row['TRANSLATION_ID'];
     $sql = "DELETE FROM TRANSLATION_LOCALE ".
-        "WHERE TRANSLATION_ID ='$translate_id' AND ".
-        "LOCALE_ID = '$locale_id'";
-    $result = $db->execute($sql);
+        "WHERE TRANSLATION_ID =? AND ".
+        "LOCALE_ID = ?";
+    $result = $db->execute($sql, array($translate_id, $locale_id));
 
-    $sql = "INSERT INTO TRANSLATION_LOCALE VALUES ".
-        "('$translate_id', '$locale_id', '$translation')";
-    $result = $db->execute($sql);
+    $sql = "INSERT INTO TRANSLATION_LOCALE VALUES (?, ?, ?)";
+    $result = $db->execute($sql, array($translate_id, $locale_id, 
+        $translation));
 }
 ?>

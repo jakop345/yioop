@@ -205,7 +205,7 @@ class DatabaseBundleIterator extends ArchiveBundleIterator
     {
         $pages = array();
         $page_count = 0;
-        $query = "{$this->sql} LIMIT {$this->limit}, $num";
+        $query = "{$this->sql} ". $db->limitOffset($this->limit, $num);
         $db = $this->db;
         $result = $db->execute($query);
         while($row = $db->fetchArray($result)) {

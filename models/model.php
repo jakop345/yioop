@@ -402,21 +402,21 @@ class Model implements CrawlConstants
     function translateDb($string_id, $locale_tag)
     {
         static $lookup = array();
-
+        $db = $this->db;
         if(isset($lookup[$string_id])) {
             return $lookup[$string_id];
         }
 
-        $sql = <<< EOD
+        $sql = "
             SELECT TL.TRANSLATION AS TRANSLATION
             FROM TRANSLATION T, LOCALE L, TRANSLATION_LOCALE TL
-            WHERE T.IDENTIFIER_STRING = '$string_id' AND
-                L.LOCALE_TAG = '$locale_tag' AND
+            WHERE T.IDENTIFIER_STRING = :string_id AND
+                L.LOCALE_TAG = :locale_tag AND
                 L.LOCALE_ID = TL.LOCALE_ID AND
-                T.TRANSLATION_ID = TL.TRANSLATION_ID LIMIT 1
-EOD;
-        $result = $this->db->execute($sql);
-        $row = $this->db->fetchArray($result);
+                T.TRANSLATION_ID = TL.TRANSLATION_ID" . $db->limitOffset(1);
+        $result = $db->execute($sql,
+            array(":string_id" => $string_id, ":locale_tag" => $locale_tag));
+        $row = $db->fetchArray($result);
         if(isset($row['TRANSLATION'])) {
             return $row['TRANSLATION'];
         }
@@ -433,13 +433,14 @@ EOD;
      */
     function getUserId($username)
     {
+        $db = $this->db;
         $sql = "SELECT USER_ID FROM USERS WHERE
-            UPPER(USER_NAME) = UPPER('$username') LIMIT 1";
-        $result = $this->db->execute($sql);
+            UPPER(USER_NAME) = UPPER(?) ". $db->limitOffset(1);
+        $result = $db->execute($sql, array($username));
         if(!$result) {
             return false;
         }
-        $row = $this->db->fetchArray($result);
+        $row = $db->fetchArray($result);
         $user_id = $row['USER_ID'];
         return $user_id;
     }
@@ -450,6 +451,7 @@ EOD;
     function searchArrayToWhereOrderClauses($search_array,
         $any_fields=array('status'))
     {
+        $db = $this->db;
         $where = "";
         $order_by = "";
         $order_by_comma = "";
@@ -469,23 +471,23 @@ EOD;
                 switch($comparison) {
                     case "=":
                          $where .= "$field_name='".
-                            $this->db->escapeString($value)."'";
+                            $db->escapeString($value)."'";
                     break;
                     case "!=":
                          $where .= "$field_name!='".
-                            $this->db->escapeString($value)."'";
+                            $db->escapeString($value)."'";
                     break;
                     case "CONTAINS":
                          $where .= "UPPER($field_name) LIKE UPPER('%".
-                            $this->db->escapeString( $value)."%')";
+                            $db->escapeString( $value)."%')";
                     break;
                     case "BEGINS WITH":
                          $where .= "UPPER($field_name) LIKE UPPER('".
-                            $this->db->escapeString( $value)."%')";
+                            $db->escapeString( $value)."%')";
                     break;
                     case "ENDS WITH":
                          $where .= "UPPER($field_name) LIKE UPPER('%".
-                            $this->db->escapeString( $value)."')";
+                            $db->escapeString( $value)."')";
                     break;
                 }
                 $where_and = " AND ";

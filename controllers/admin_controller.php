@@ -215,7 +215,6 @@ class AdminController extends Controller implements CrawlConstants
         }
         $allowed = true;
         $activity_model = $this->model("activity");
-
         if(!PROFILE) {
             $allowed_activities = array( array(
                 "ACTIVITY_NAME" =>

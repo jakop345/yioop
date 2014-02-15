@@ -64,7 +64,7 @@ class ActivityModel extends Model
         $locale_tag = getLocaleTag();
 
         $sql = "SELECT LOCALE_ID FROM LOCALE ".
-            "WHERE LOCALE_TAG = '$locale_tag' LIMIT 1";
+            "WHERE LOCALE_TAG = '$locale_tag' " . $db->limitOffset(1);
         $result = $db->execute($sql);
         $row = $db->fetchArray($result);
 
@@ -72,11 +72,12 @@ class ActivityModel extends Model
 
         $sql = "SELECT TL.TRANSLATION AS ACTIVITY_NAME  FROM ".
             " TRANSLATION_LOCALE TL, LOCALE L, ACTIVITY A ".
-            "WHERE A.METHOD_NAME = '$method_name' ".
+            "WHERE A.METHOD_NAME = :method_name ".
             "AND TL.TRANSLATION_ID = A.TRANSLATION_ID ".
-            "AND L.LOCALE_ID='$locale_id' AND ".
-            "L.LOCALE_ID = TL.LOCALE_ID LIMIT 1";
-        $result = $db->execute($sql);
+            "AND L.LOCALE_ID=:locale_id AND ".
+            "L.LOCALE_ID = TL.LOCALE_ID " . $db->limitOffset(1);
+        $result = $db->execute($sql, array(":method_name" => $method_name,
+            ":locale_id" => $locale_id));
         $row = $db->fetchArray($result);
         $activity_name = false;
         if(isset($row['ACTIVITY_NAME'])) {
@@ -86,10 +87,11 @@ class ActivityModel extends Model
         if(!$activity_name) {
             $sql = "SELECT T.IDENTIFIER_STRING AS STRING_ID FROM ".
                 " ACTIVITY A, TRANSLATION T ".
-                "WHERE A.METHOD_NAME = '$method_name' ".
-                " AND T.TRANSLATION_ID = A.TRANSLATION_ID LIMIT 1";
+                "WHERE A.METHOD_NAME = :method_name ".
+                " AND T.TRANSLATION_ID = A.TRANSLATION_ID " .
+                $db->limitOffset(1);
 
-            $result = $db->execute($sql);
+            $result = $db->execute($sql, array(":method_name" => $method_name));
             $row = $db->fetchArray($result);
             $activity_name = $this->translateDb($row['STRING_ID'],
                 DEFAULT_LOCALE);
@@ -114,8 +116,8 @@ class ActivityModel extends Model
         $locale_tag = getLocaleTag();
 
         $sql = "SELECT LOCALE_ID FROM LOCALE ".
-            "WHERE LOCALE_TAG = '$locale_tag' LIMIT 1";
-        $result = $db->execute($sql);
+            "WHERE LOCALE_TAG = :locale_tag " . $db->limitOffset(1);
+        $result = $db->execute($sql, array(":locale_tag" => $locale_tag));
         $row = $db->fetchArray($result);
         $locale_id = $row['LOCALE_ID'];
 
@@ -125,18 +127,17 @@ class ActivityModel extends Model
             " T.TRANSLATION_ID AS TRANSLATION_ID FROM ".
             " ACTIVITY A, TRANSLATION T WHERE  ".
             " T.TRANSLATION_ID = A.TRANSLATION_ID";
-
         $result = $db->execute($sql);
         $i = 0;
-
+        $sub_sql = "SELECT TRANSLATION AS ACTIVITY_NAME ".
+            "FROM TRANSLATION_LOCALE ".
+            " WHERE TRANSLATION_ID=:id AND LOCALE_ID=:locale_id " .
+            $db->limitOffset(1);
+            // maybe do left join at some point
         while($activities[$i] = $db->fetchArray($result)) {
             $id = $activities[$i]['TRANSLATION_ID'];
-            $sub_sql = "SELECT TRANSLATION AS ACTIVITY_NAME ".
-                "FROM TRANSLATION_LOCALE ".
-                " WHERE TRANSLATION_ID=$id AND LOCALE_ID=$locale_id LIMIT 1";
-                // maybe do left join at some point
-
-            $result_sub =  $db->execute($sub_sql);
+            $result_sub =  $db->execute($sub_sql, array(":id" => $id,
+                ":locale_id" => $locale_id));
             $translate = $db->fetchArray($result_sub);
 
             if($translate) {

@@ -91,8 +91,23 @@ class PdoManager extends DatasourceManager
     /** {@inheritdoc} */
     function exec($sql, $params = array())
     {
+        static $last_sql = NULL;
+        static $statement;
         $is_select = strtoupper(substr(ltrim($sql), 0, 6)) == "SELECT";
-        if($params == array()) {
+        if($params) {
+            if($last_sql != $sql) {
+                $statement = $this->pdo->prepare($sql);
+            }
+            $result = $statement->execute($params);
+            $this->num_affected = $statement->rowCount();
+            if($result) {
+                if($is_select) {
+                    $result = $statement;
+                } else {
+                    $result = $this->num_affected;
+                }
+            }
+        } else {
             if($is_select) {
                 $result = $this->pdo->query($sql);
                 $this->num_affected = 0;
@@ -100,11 +115,8 @@ class PdoManager extends DatasourceManager
                 $this->num_affected = $this->pdo->exec($sql);
                 $result = $this->num_affected + 1;
             }
-        } else {
-            $statement = $this->pdo->prepare($sql);
-            $result = $this->pdo->execute($statement, $params);
-            $this->num_affected = $this->pdo->rowCount();
         }
+        $last_sql = $sql;
         return $result;
     }
 

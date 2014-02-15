@@ -67,10 +67,13 @@ class SourceModel extends Model
      */
     function getMediaSources($source_type = "", $has_no_feed_items = false)
     {
+        $db = $this->db;
         $sources = array();
+        $params = array();
         $sql = "SELECT M.* FROM MEDIA_SOURCE M";
         if($source_type !="") {
-            $sql .= " WHERE TYPE='$source_type'";
+            $sql .= " WHERE TYPE=:type";
+            $params = array(":type" => $source_type);
         }
         if($has_no_feed_items) {
             if($source_type == "") {
@@ -83,8 +86,8 @@ class SourceModel extends Model
                 WHERE F.SOURCE_NAME = M.NAME)";
         }
         $i = 0;
-        $result = $this->db->execute($sql);
-        while($sources[$i] = $this->db->fetchArray($result)) {
+        $result = $db->execute($sql, $params);
+        while($sources[$i] = $db->fetchArray($result)) {
             $i++;
         }
         unset($sources[$i]); //last one will be null
@@ -113,14 +116,10 @@ class SourceModel extends Model
         $language = DEFAULT_LOCALE)
     {
         $db = $this->db;
-        $sql = "INSERT INTO MEDIA_SOURCE VALUES ('".time()."','".
-            $db->escapeString($name)."','".
-            $db->escapeString($source_type)."','".
-            $db->escapeString($source_url)."','".
-            $db->escapeString($thumb_url)."','".
-            $db->escapeString($language)."')";
+        $sql = "INSERT INTO MEDIA_SOURCE VALUES (?,?,?,?,?,?)";
 
-        $db->execute($sql);
+        $db->execute($sql, array(time(), $name, $source_type, $source_url,
+            $thumb_url, $language));
     }
 
     /**
@@ -136,15 +135,14 @@ class SourceModel extends Model
             $row = $this->db->fetchArray($result);
             if(isset($row['TYPE']) && $row['TYPE'] == "rss") {
                 if($row['NAME'] != "") {
-                    $sql = "DELETE FROM FEED_ITEM WHERE SOURCE_NAME='".
-                        $this->db->escapeString($row['NAME'])."'";
-                    $this->db->execute($sql);
+                    $sql = "DELETE FROM FEED_ITEM WHERE SOURCE_NAME=?";
+                    $this->db->execute($sql, array($row['NAME']));
                 }
             }
         }
-        $sql = "DELETE FROM MEDIA_SOURCE WHERE TIMESTAMP='$timestamp'";
+        $sql = "DELETE FROM MEDIA_SOURCE WHERE TIMESTAMP=?";
 
-        $this->db->execute($sql);
+        $this->db->execute($sql, array($timestamp));
     }
 
     /**
@@ -161,8 +159,8 @@ class SourceModel extends Model
         $locale_tag = getLocaleTag();
 
         $sql = "SELECT LOCALE_ID FROM LOCALE ".
-            "WHERE LOCALE_TAG = '$locale_tag' LIMIT 1";
-        $result = $db->execute($sql);
+            "WHERE LOCALE_TAG = ? " . $db->limitOffset(1);
+        $result = $db->execute($sql, array($locale_tag));
         $row = $db->fetchArray($result);
 
         $locale_id = $row['LOCALE_ID'];
@@ -175,13 +173,13 @@ class SourceModel extends Model
             " T.IDENTIFIER_STRING = S.LOCALE_STRING";
         $i = 0;
         $result = $db->execute($sql);
+        $sub_sql = "SELECT TRANSLATION AS SUBSEARCH_NAME ".
+            "FROM TRANSLATION_LOCALE ".
+            " WHERE TRANSLATION_ID=? AND LOCALE_ID=? " . $db->limitOffset(1);
+            // maybe do left join at some point
         while($subsearches[$i] = $db->fetchArray($result)) {
             $id = $subsearches[$i]["TRANSLATION_ID"];
-            $sub_sql = "SELECT TRANSLATION AS SUBSEARCH_NAME ".
-                "FROM TRANSLATION_LOCALE ".
-                " WHERE TRANSLATION_ID=$id AND LOCALE_ID=$locale_id LIMIT 1";
-                // maybe do left join at some point
-            $result_sub =  $db->execute($sub_sql);
+            $result_sub =  $db->execute($sub_sql, array($id, $locale_id));
             $translate = false;
             if($result_sub) {
                 $translate = $db->fetchArray($result_sub);
@@ -196,7 +194,6 @@ class SourceModel extends Model
             $i++;
         }
         unset($subsearches[$i]); //last one will be null
-
         return $subsearches;
     }
 
@@ -213,21 +210,13 @@ class SourceModel extends Model
      */
     function addSubsearch($folder_name, $index_identifier, $per_page)
     {
+        $db = $this->db;
         $locale_string = "db_subsearch_".$folder_name;
-
-
-        $sql = "INSERT INTO SUBSEARCH VALUES ('".
-            $this->db->escapeString($locale_string)."','".
-            $this->db->escapeString($folder_name)."','".
-            $this->db->escapeString($index_identifier)."','".
-            $this->db->escapeString($per_page)."')";
-
-        $this->db->execute($sql);
-
-        $sql = "INSERT INTO TRANSLATION VALUES ('".
-            time()."','".
-            $this->db->escapeString($locale_string)."')";
-        $this->db->execute($sql);
+        $sql = "INSERT INTO SUBSEARCH VALUES (?, ?, ?, ?)";
+        $db->execute($sql, array($locale_string, $folder_name,
+            $index_identifier, $per_page));
+        $sql = "INSERT INTO TRANSLATION VALUES (?, ?)";
+        $db->execute($sql, array(time(), $locale_string));
     }
 
 
@@ -239,26 +228,23 @@ class SourceModel extends Model
      */
     function deleteSubsearch($folder_name)
     {
+        $db = $this->db;
         $locale_string = "db_subsearch_".$folder_name;
-
-        $sql = "SELECT * FROM TRANSLATION WHERE IDENTIFIER_STRING =".
-            "'$locale_string'";
-        $result = $this->db->execute($sql);
+        $sql = "SELECT * FROM TRANSLATION WHERE IDENTIFIER_STRING = ?";
+        $result = $db->execute($sql, array($locale_string));
         if(isset($result)) {
-            $row = $this->db->fetchArray($result);
+            $row = $db->fetchArray($result);
             if(isset($row["TRANSLATION_ID"])) {
-                $translation_id = $row["TRANSLATION_ID"];
                 $sql = "DELETE FROM TRANSLATION_LOCALE WHERE ".
-                    "TRANSLATION_ID='$translation_id'";
-                $this->db->execute($sql);
+                    "TRANSLATION_ID=?";
+                $db->execute($sql, array($row["TRANSLATION_ID"]));
             }
         }
-        $sql = "DELETE FROM SUBSEARCH WHERE FOLDER_NAME='$folder_name'";
-        $this->db->execute($sql);
+        $sql = "DELETE FROM SUBSEARCH WHERE FOLDER_NAME=?";
+        $db->execute($sql, array($folder_name));
 
-        $sql = "DELETE FROM TRANSLATION WHERE IDENTIFIER_STRING='".
-            $locale_string."'";
-        $this->db->execute($sql);
+        $sql = "DELETE FROM TRANSLATION WHERE IDENTIFIER_STRING = ?";
+        $db->execute($sql, array($locale_string));
     }
 
     /**
@@ -271,22 +257,21 @@ class SourceModel extends Model
      */
     function updateFeedItems($age = self::ONE_WEEK)
     {
+        $db = $this->db;
         $time = time();
-
         $feeds_one_go = self::MAX_FEEDS_ONE_GO;
-
         $feeds = array();
         $sql = "SELECT COUNT(*) AS CNT FROM MEDIA_SOURCE WHERE TYPE='rss'";
-        $result = $this->db->execute($sql);
-        $row = $this->db->fetchArray($result);
+        $result = $db->execute($sql);
+        $row = $db->fetchArray($result);
         $num_feeds = (isset($row['CNT'])) ? $row['CNT'] : 0;
         $num_bins = floor($num_feeds/$feeds_one_go) + 1;
         $hour = date('H', $time);
         $current_bin = $hour % $num_bins;
         $limit = $current_bin * $feeds_one_go;
-        $sql = "SELECT * FROM MEDIA_SOURCE WHERE TYPE='rss' LIMIT ".
-            "$limit, $feeds_one_go";
-        $result = $this->db->execute($sql);
+        $limit = $db->limitOffset($limit, $feeds_one_go);
+        $sql = "SELECT * FROM MEDIA_SOURCE WHERE TYPE='rss' $limit";
+        $result = $db->execute($sql);
         $i = 0;
         while($feeds[$i] = $this->db->fetchArray($result)) {
             $i++;
@@ -296,6 +281,7 @@ class SourceModel extends Model
         $feeds = FetchUrl::getPages($feeds, false, 0, NULL, "SOURCE_URL",
             CrawlConstants::PAGE, true, NULL, true);
         $feed_items = array();
+        $sql = "UPDATE MEDIA_SOURCE SET LANGUAGE=? WHERE TIMESTAMP=?";
         foreach($feeds as $feed) {
             $dom = new DOMDocument();
             @$dom->loadXML($feed[CrawlConstants::PAGE]);
@@ -305,9 +291,7 @@ class SourceModel extends Model
                 if($languages && is_object($languages) &&
                     is_object($languages->item(0))) {
                     $lang = $languages->item(0)->textContent;
-                    $sql = "UPDATE MEDIA_SOURCE SET LANGUAGE='$lang' WHERE ".
-                        "TIMESTAMP='".$feed['TIMESTAMP']."'";
-                    $this->db->execute($sql);
+                    $this->db->execute($sql, array($lang, $feed['TIMESTAMP']));
                 }
             } else if(isset($feed["LANGUAGE"]) && $feed["LANGUAGE"] != "") {
                 $lang = $feed["LANGUAGE"];
@@ -383,9 +367,9 @@ class SourceModel extends Model
 
         // we now rebuild the inverted index with the remaining items
         $sql = "SELECT * FROM FEED_ITEM ".
-            "WHERE PUBDATE >= $too_old ".
+            "WHERE PUBDATE >= ? ".
             "ORDER BY PUBDATE DESC";
-        $result = $db->execute($sql);
+        $result = $db->execute($sql, array($too_old));
         if($result) {
             $completed = true;
             crawlLog("..still deleting. Making new index of non-pruned items.");
@@ -422,8 +406,8 @@ class SourceModel extends Model
 
         @rename($prune_shard_name, $feed_shard_name);
         @chmod($feed_shard_name, 0777);
-        $sql = "DELETE FROM FEED_ITEM WHERE PUBDATE < '$too_old'";
-        $db->execute($sql);
+        $sql = "DELETE FROM FEED_ITEM WHERE PUBDATE < ?";
+        $db->execute($sql, array($too_old));
     }
 
     /**
@@ -454,10 +438,9 @@ class SourceModel extends Model
         if(time() - $item["pubDate"] > $age) {
             return false;
         }
-        $sql = "SELECT COUNT(*) AS NUMBER FROM FEED_ITEM WHERE GUID=".
-            "'{$item["guid"]}'";
+        $sql = "SELECT COUNT(*) AS NUMBER FROM FEED_ITEM WHERE GUID = ?";
         $db = $this->db;
-        $result = $db->execute($sql);
+        $result = $db->execute($sql, array($item["guid"]));
         if($result) {
             $row = $db->fetchArray($result);
             if($row["NUMBER"] > 0) {
@@ -466,13 +449,10 @@ class SourceModel extends Model
         } else {
             return false;
         }
-        $sql = "INSERT INTO FEED_ITEM VALUES ('{$item['guid']}',
-            '".$db->escapeString($item['title'])."', '".
-            $db->escapeString($item['link'])."', '".
-            $db->escapeString($item['description'])."',
-            '{$item['pubDate']}',
-            '".$db->escapeString($source_name)."')";
-        $result = $db->execute($sql);
+        $sql = "INSERT INTO FEED_ITEM VALUES (?, ?, ?, ?, ?, ?)";
+        $result = $db->execute($sql, array($item['guid'], $item['title'],
+            $item['link'], $item['description'], $item['pubDate'],
+            $source_name));
         if(!$result) return false;
         return true;
     }

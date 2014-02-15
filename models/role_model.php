@@ -60,15 +60,14 @@ class RoleModel extends Model
      */
     function getRoleActivities($role_id)
     {
-        $role_id = $this->db->escapeString($role_id);
-
+        $db = $this->db;
         $activities = array();
         $locale_tag = getLocaleTag();
 
-        $sql = "SELECT LOCALE_ID FROM LOCALE ".
-            "WHERE LOCALE_TAG = '$locale_tag' LIMIT 1";
-        $result = $this->db->execute($sql);
-        $row = $this->db->fetchArray($result);
+        $sql = "SELECT LOCALE_ID FROM LOCALE WHERE LOCALE_TAG = ? " .
+            $db->limitOffset(1);
+        $result = $db->execute($sql, array($locale_tag));
+        $row = $db->fetchArray($result);
         $locale_id = $row['LOCALE_ID'];
 
         $sql = "SELECT R.ROLE_ID AS ROLE_ID, RA.ACTIVITY_ID AS ACTIVITY_ID, ".
@@ -76,23 +75,20 @@ class RoleModel extends Model
             "T.IDENTIFIER_STRING AS IDENTIFIER_STRING, ".
             "T.TRANSLATION_ID AS TRANSLATION_ID FROM ".
             "ROLE R, ROLE_ACTIVITY RA, ACTIVITY A, TRANSLATION T ".
-            "WHERE  R.ROLE_ID = '$role_id'  AND ".
+            "WHERE  R.ROLE_ID = ? AND ".
             "R.ROLE_ID = RA.ROLE_ID AND T.TRANSLATION_ID = A.TRANSLATION_ID ".
             "AND RA.ACTIVITY_ID = A.ACTIVITY_ID";
 
-        $result = $this->db->execute($sql);
-
+        $result = $db->execute($sql, array($role_id));
         $i = 0;
-        while($activities[$i] = $this->db->fetchArray($result)) {
+        $sub_sql = "SELECT TRANSLATION AS ACTIVITY_NAME ".
+            "FROM TRANSLATION_LOCALE ".
+            "WHERE TRANSLATION_ID=? AND LOCALE_ID=? " . $db->limitOffset(1);
+            // maybe do left join at some point
+        while($activities[$i] = $db->fetchArray($result)) {
             $id = $activities[$i]['TRANSLATION_ID'];
-
-            $sub_sql = "SELECT TRANSLATION AS ACTIVITY_NAME ".
-                "FROM TRANSLATION_LOCALE ".
-                "WHERE TRANSLATION_ID=$id AND LOCALE_ID=$locale_id LIMIT 1";
-                // maybe do left join at some point
-
-            $result_sub =  $this->db->execute($sub_sql);
-            $translate = $this->db->fetchArray($result_sub);
+            $result_sub =  $db->execute($sub_sql, array($id, $locale_id));
+            $translate = $db->fetchArray($result_sub);
 
             if($translate) {
                 $activities[$i]['ACTIVITY_NAME'] = $translate['ACTIVITY_NAME'];
@@ -117,22 +113,17 @@ class RoleModel extends Model
      */
     function getRoleList()
     {
+        $db = $this->db;
         $roles = array();
-
         $sql = "SELECT R.ROLE_ID AS ROLE_ID, R.NAME AS ROLE_NAME ".
             " FROM ROLE R";
-
-        $result = $this->db->execute($sql);
+        $result = $db->execute($sql);
         $i = 0;
-
-        while($roles[$i] = $this->db->fetchArray($result)) {
+        while($roles[$i] = $db->fetchArray($result)) {
             $i++;
         }
         unset($roles[$i]); //last one will be null
-
-
         return $roles;
-
     }
 
 
@@ -144,10 +135,10 @@ class RoleModel extends Model
      */
     function getRoleId($rolename)
     {
-        $sql = "SELECT R.ROLE_ID AS ROLE_ID FROM ".
-            " ROLE R WHERE R.NAME = '".$this->db->escapeString($rolename)."' ";
-        $result = $this->db->execute($sql);
-        if(!$row = $this->db->fetchArray($result) ) {
+        $db = $this->db;
+        $sql = "SELECT R.ROLE_ID AS ROLE_ID FROM ROLE R WHERE R.NAME = ? ";
+        $result = $db->execute($sql, array($rolename));
+        if(!$row = $db->fetchArray($result) ) {
             return -1;
         }
 
@@ -163,8 +154,7 @@ class RoleModel extends Model
         $dbinfo = array("DBMS" => DBMS, "DB_HOST" => DB_HOST,
             "DB_USER" => DB_USER, "DB_PASSWORD" => DB_PASSWORD,
             "DB_NAME" => DB_NAME);
-        $bounds = $db->limitOffset($dbinfo, $limit, $num);
-        $limit = "LIMIT $bounds";
+        $limit = $db->limitOffset($limit, $num);
         list($where, $order_by) = 
             $this->searchArrayToWhereOrderClauses($search_array);
         $sql = "SELECT NAME FROM ROLE $where $order_by $limit";
@@ -185,11 +175,12 @@ class RoleModel extends Model
      */
     function getRoleCount($search_array = array())
     {
+        $db = $this->db;
         list($where, $order_by) = 
             $this->searchArrayToWhereOrderClauses($search_array);
         $sql = "SELECT COUNT(*) AS NUM FROM ROLE $where";
-        $result = $this->db->execute($sql);
-        $row = $this->db->fetchArray($result);
+        $result = $db->execute($sql);
+        $row = $db->fetchArray($result);
         return $row['NUM'];
     }
 
@@ -199,13 +190,14 @@ class RoleModel extends Model
      */
     function getRole($rolename)
     {
-        $sql = "SELECT * FROM ROLE WHERE 
-         UPPER(NAME) = UPPER('$rolename') LIMIT 1";
-        $result = $this->db->execute($sql);
+        $db = $this->db;
+        $sql = "SELECT * FROM ROLE WHERE UPPER(NAME) = UPPER(?) " .
+            $db->limitOffset(1);
+        $result = $db->execute($sql, array($rolename));
         if(!$result) {
             return false;
         }
-        $row = $this->db->fetchArray($result);
+        $row = $db->fetchArray($result);
         return $row;
     }
     
@@ -213,65 +205,53 @@ class RoleModel extends Model
     /**
      *  Add a rolename to the database using provided string
      *
-     *  @param string $rolename  the rolename to be added
+     *  @param string $role_name  the rolename to be added
      */
-    function addRole($rolename)
+    function addRole($role_name)
     {
-        $sql = "INSERT INTO ROLE (NAME) VALUES ('".
-            $this->db->escapeString($rolename)."')";
+        $sql = "INSERT INTO ROLE (NAME) VALUES (?)";
 
-        $this->db->execute($sql);
+        $this->db->execute($sql, array($role_name));
     }
 
 
     /**
      *  Add an allowed activity to an existing role
      *
-     *  @param string $roleid  the role id of the role to add the activity to
-     *  @param string $activityid the id of the acitivity to add
+     *  @param string $role_id  the role id of the role to add the activity to
+     *  @param string $activity_id the id of the acitivity to add
      */
-    function addActivityRole($roleid, $activityid)
+    function addActivityRole($role_id, $activity_id)
     {
-        $sql = "INSERT INTO ROLE_ACTIVITY VALUES ('".
-            $this->db->escapeString($roleid)."', '".
-            $this->db->escapeString($activityid)."')";
-
-        $this->db->execute($sql);
+        $sql = "INSERT INTO ROLE_ACTIVITY VALUES (?, ?)";
+        $this->db->execute($sql, array($role_id, $activity_id));
     }
 
 
     /**
      *  Delete a role by its roleid
      *
-     *  @param string $roleid - the roleid of the role to delete
+     *  @param string $role_id - the roleid of the role to delete
      */
-    function deleteRole($roleid)
+    function deleteRole($role_id)
     {
-        $sql = "DELETE FROM ROLE_ACTIVITY WHERE ROLE_ID='$roleid'";
-
-        $this->db->execute($sql);
-        $sql = "DELETE FROM ROLE WHERE ROLE_ID='".
-            $this->db->escapeString($roleid)."'";
-        $this->db->execute($sql);
+        $sql = "DELETE FROM ROLE_ACTIVITY WHERE ROLE_ID=?";
+        $this->db->execute($sql, array($role_id));
+        $sql = "DELETE FROM ROLE WHERE ROLE_ID=?";
+        $this->db->execute($sql, array($role_id));
     }
 
 
     /**
      *  Remove an allowed activity from a role
      *
-     *  @param string $roleid  the roleid of the role to be modified
-     *  @param string $activityid  the activityid of the activity to remove
+     *  @param string $role_id  the roleid of the role to be modified
+     *  @param string $activity_id  the activityid of the activity to remove
      */
-    function deleteActivityRole($roleid, $activityid)
+    function deleteActivityRole($role_id, $activity_id)
     {
-        $sql = "DELETE FROM ROLE_ACTIVITY WHERE ROLE_ID='".
-            $this->db->escapeString($roleid)."' AND ACTIVITY_ID='".
-            $this->db->escapeString($activityid)."'";
-
-        $this->db->execute($sql);
+        $sql = "DELETE FROM ROLE_ACTIVITY WHERE ROLE_ID=? AND ACTIVITY_ID=?";
+        $this->db->execute($sql, array($role_id, $activity_id));
     }
 }
-
-
-
  ?>

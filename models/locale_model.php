@@ -154,13 +154,13 @@ class LocaleModel extends Model
      */
     function getLocaleList()
     {
+        $db = $this->db;
         $sql = "SELECT LOCALE_ID, LOCALE_TAG, LOCALE_NAME, WRITING_MODE ".
             " FROM LOCALE";
-
-        $result = $this->db->execute($sql);
+        $result = $db->execute($sql);
         $i = 0;
         $locales = array();
-        while($locales[$i] = $this->db->fetchArray($result)) {
+        while($locales[$i] = $db->fetchArray($result)) {
             /*
                 the statistics text file contains info used to calculate
                 what fraction of strings have been translated
@@ -213,14 +213,10 @@ class LocaleModel extends Model
      */
     function addLocale($locale_name, $locale_tag, $writing_mode)
     {
-        $sql = "INSERT INTO LOCALE".
-            "(LOCALE_NAME, LOCALE_TAG, WRITING_MODE) VALUES".
-            "('".$this->db->escapeString($locale_name).
-            "', '".$this->db->escapeString($locale_tag) .
-            "', '".$this->db->escapeString($writing_mode)."')";
-
-        $this->db->execute($sql);
-
+        $sql = "INSERT INTO LOCALE (LOCALE_NAME, LOCALE_TAG,
+            WRITING_MODE) VALUES (?, ?, ?)";
+        $this->db->execute($sql, array($locale_name, $locale_tag,
+            $writing_mode));
         if(!file_exists(LOCALE_DIR."/$locale_tag")) {
             mkdir(LOCALE_DIR."/$locale_tag");
             $this->db->setWorldPermissionsRecursive(LOCALE_DIR."/$locale_tag");
@@ -236,12 +232,8 @@ class LocaleModel extends Model
      */
     function deleteLocale($locale_tag)
     {
-        $sql = "DELETE FROM LOCALE WHERE LOCALE_TAG = '".
-            $this->db->escapeString($locale_tag)."'";
-
-        $this->db->execute($sql);
-
-
+        $sql = "DELETE FROM LOCALE WHERE LOCALE_TAG = ?";
+        $this->db->execute($sql, array($locale_tag));
         if(file_exists(LOCALE_DIR."/$locale_tag")) {
             $this->db->unlinkRecursive(LOCALE_DIR."/$locale_tag", true);
         }
@@ -319,17 +311,18 @@ class LocaleModel extends Model
      */
     function getStringData($locale_tag)
     {
+        $db = $this->db;
         $data = parse_ini_file(LOCALE_DIR."/$locale_tag/configure.ini", true);
         $data = $data['strings'];
 
         //hacky. Join syntax isn't quite the same between sqlite and mysql
-        if(in_array(DBMS, array('sqlite', 'sqlite3'))) {
+        if(in_array(DBMS, array('sqlite3'))) {
             $sql = "SELECT T.IDENTIFIER_STRING AS MSG_ID, ".
                 "TLL.TRANSLATION AS MSG_STRING " .
                 "FROM TRANSLATION T LEFT JOIN ".
                 //sqlite supports left but not right outer join
                 "(TRANSLATION_LOCALE TL JOIN LOCALE L ON ".
-                "L.LOCALE_TAG = '$locale_tag' AND ".
+                "L.LOCALE_TAG = ? AND ".
                 "L.LOCALE_ID = TL.LOCALE_ID) TLL " .
                 "ON T.TRANSLATION_ID = TLL.TRANSLATION_ID";
         } else {
@@ -337,14 +330,13 @@ class LocaleModel extends Model
                 "TL.TRANSLATION AS MSG_STRING " .
                 "FROM TRANSLATION T LEFT JOIN ".
                 "(TRANSLATION_LOCALE TL JOIN LOCALE L ON ".
-                "L.LOCALE_TAG = '$locale_tag' AND L.LOCALE_ID = TL.LOCALE_ID) ".
+                "L.LOCALE_TAG = ? AND L.LOCALE_ID = TL.LOCALE_ID) ".
                 "ON T.TRANSLATION_ID = TL.TRANSLATION_ID";
         }
-        $result = $this->db->execute($sql);
+        $result = $this->db->execute($sql, array($locale_tag));
         while($row = $this->db->fetchArray($result)) {
             $data[$row['MSG_ID']] = $row['MSG_STRING'];
         }
-
         return $data;
     }
 
@@ -358,36 +350,32 @@ class LocaleModel extends Model
      */
     function updateStringData($locale_tag, $new_strings)
     {
-        $sql = "SELECT LOCALE_ID FROM LOCALE ".
-            "WHERE LOCALE_TAG = '$locale_tag' LIMIT 1";
-        $result = $this->db->execute($sql);
-        $row = $this->db->fetchArray($result);
+        $db = $this->db;
+        $sql = "SELECT LOCALE_ID FROM LOCALE WHERE LOCALE_TAG = ? " .
+            $db->limitOffset(1);
+        $result = $db->execute($sql, array($locale_tag));
+        $row = $db->fetchArray($result);
         $locale_id = $row['LOCALE_ID'];
 
         list($general_ini, $strings) = $this->extractMergeLocales();
+        $select_sql = "SELECT TRANSLATION_ID FROM TRANSLATION ".
+            "WHERE IDENTIFIER_STRING = ? " . $db->limitOffset(1);
+        $delete_sql = "DELETE FROM TRANSLATION_LOCALE ".
+            "WHERE TRANSLATION_ID =? AND LOCALE_ID = ?";
+        $insert_sql = "INSERT INTO TRANSLATION_LOCALE VALUES (?, ?, ?)";
         foreach($new_strings as $msg_id => $msg_string) {
             if(strcmp($msg_id, strstr($msg_id, "db_")) == 0) {
-                $sql = "SELECT TRANSLATION_ID FROM TRANSLATION ".
-                    "WHERE IDENTIFIER_STRING = '$msg_id' LIMIT 1";
-                $result = $this->db->execute($sql);
-                $row = $this->db->fetchArray($result);
-
+                $result = $db->execute($select_sql, array($msg_id));
+                $row = $db->fetchArray($result);
                 $translate_id = $row['TRANSLATION_ID'];
-
-                $sql = "DELETE FROM TRANSLATION_LOCALE ".
-                    "WHERE TRANSLATION_ID ='$translate_id' AND ".
-                    "LOCALE_ID = '$locale_id'";
-                $result = $this->db->execute($sql);
-
-                $sql = "INSERT INTO TRANSLATION_LOCALE VALUES ".
-                    "('$translate_id', '$locale_id', '$msg_string')";
-                $result = $this->db->execute($sql);
-
+                $result = $db->execute($delete_sql, array($translate_id,
+                    $locale_id));
+                $result = $db->execute($insert_sql, array($translate_id,
+                    $locale_id, $msg_string));
                 $new_strings[$msg_id] = false;
             }
         }
         array_filter($new_strings);
-
         $data['strings'] = $new_strings;
         $this->updateLocale(
             $general_ini, $strings, LOCALE_DIR, $locale_tag, $data);

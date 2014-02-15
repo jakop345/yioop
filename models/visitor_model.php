@@ -65,10 +65,11 @@ class VisitorModel extends Model
      */
     function getVisitor($ip_address, $page_name = 'captcha_time_out')
     {
-        $ip_address = $this->db->escapeString($ip_address);
-        $sql = "SELECT * FROM VISITOR WHERE ADDRESS='$ip_address'
-        AND PAGE_NAME='$page_name' LIMIT 1";
-        $result = $this->db->execute($sql);
+        $db = $this->db;
+        $sql = "SELECT * FROM VISITOR WHERE ADDRESS=:address
+            AND PAGE_NAME=:page_name " . $db->limitOffset(1);
+        $result = $this->db->execute($sql, array(":address" => $ip_address,
+            ":page_name" => $page_name));
         if(!$result || !$row = $this->db->fetchArray($result))
         {
             return false;
@@ -90,11 +91,8 @@ class VisitorModel extends Model
      */
     function removeVisitor($ip_address, $page_name = 'captcha_time_out')
     {
-        $ip_address = $this->db->escapeString($ip_address, "string");
-        $page_name = $this->db->escapeString($page_name, "string");
-        $sql = "DELETE FROM VISITOR WHERE ADDRESS='$ip_address' AND
-            PAGE_NAME='$page_name'";
-        $this->db->execute($sql);
+        $sql = "DELETE FROM VISITOR WHERE ADDRESS = ? AND PAGE_NAME = ?";
+        $this->db->execute($sql, array($ip_address, $page_name));
     }
 
     /**
@@ -118,16 +116,12 @@ class VisitorModel extends Model
     function updateVisitor($ip_address, $page_name, $start_delay = 1,
         $forget_age = self::ONE_WEEK, $count_till_double = 1)
     {
-        $ip_address = $this->db->escapeString($ip_address);
-        $page_name = $this->db->escapeString($page_name);
-        $start_delay = $this->db->escapeString($start_delay);
-        $forget_age = $this->db->escapeString($forget_age);
         $visitor = $this->getVisitor($ip_address, $page_name);
         if(!$visitor) {
             $end_time = time();
-            $sql = "INSERT INTO VISITOR VALUES ('$ip_address', '$page_name',
-                '$end_time', '$start_delay', '$forget_age', '1')";
-            $this->db->execute($sql);
+            $sql = "INSERT INTO VISITOR VALUES (?, ?, ?, ?, ?, '1')";
+            $this->db->execute($sql, array($ip_address, $page_name,
+                $end_time, $start_delay, $forget_age));
             return;
         }
         $access_count = $visitor['ACCESS_COUNT'];
@@ -139,10 +133,13 @@ class VisitorModel extends Model
             $delay = $visitor['DELAY'];
             $end_time = time();
         }
-        $sql = "UPDATE VISITOR SET DELAY='$delay', END_TIME='$end_time',
-            FORGET_AGE='$forget_age', ACCESS_COUNT='$access_count'
-            WHERE ADDRESS='$ip_address' AND PAGE_NAME='$page_name'";
-        $this->db->execute($sql);
+        $sql = "UPDATE VISITOR SET DELAY=:delay, END_TIME=:end_time,
+            FORGET_AGE=:forget_age, ACCESS_COUNT=:account_count
+            WHERE ADDRESS=:ip_address AND PAGE_NAME=:page_name";
+        $this->db->execute($sql, array(
+            ":delay"=>$delay, ":end_time" => $end_time,
+            ":forget_age" => $forget_age, ":account_count" => $access_count,
+            ":ip_address" => $ip_address, ":page_name" => $page_name));
     }
 }
 

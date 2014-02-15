@@ -328,11 +328,20 @@ abstract class DatasourceManager
     /**
      *
      */
-    function limitOffset($dbinfo, $limit, $num)
+    function limitOffset($limit, $num = -1, $dbinfo = NULL)
     {
-        $bounds = "$limit , $num";
-        if($dbinfo['DBMS'] == 'pdo' && stristr($dbinfo['DB_HOST'], 'PGSQL')) {
-            $bounds = "$num OFFSET $limit"; //POSTGRES
+        if(!$dbinfo) {
+            $dbinfo = array("DBMS" => DBMS, "DB_HOST" => DB_HOST,
+                "DB_USER" => DB_USER, "DB_PASSWORD" => DB_PASSWORD,
+                "DB_NAME" => DB_NAME);
+        }
+
+        $bounds = ($num == -1) ? "LIMIT $limit" : "LIMIT $limit , $num";
+        if($dbinfo['DBMS'] == 'pdo') {
+            if(stristr($dbinfo['DB_HOST'], 'PGSQL')) {
+                $bounds = (($num == -1)) ? "LIMIT $limit" :
+                "LIMIT $num OFFSET $limit"; //POSTGRES
+            }
         }
         return $bounds;
     }
