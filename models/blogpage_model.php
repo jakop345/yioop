@@ -53,21 +53,11 @@ class BlogpageModel extends Model
 {
 
     /**
-     * Just calls the parent class constructor
-     */
-    function __construct()
-    {
-        parent::__construct();
-    }
-
-
-    /**
      *  Delete the feed item of a blog from the database using provided string
      *  @param string $guid guid is the unique id for the feeditem
      */
     function deleteFeed($guid)
     {
-        $this->db->selectDB(DB_NAME);
         $sql = "SELECT TITLE FROM FEED_ITEM WHERE GUID = '$guid'";
             $result = $this->db->execute($sql);
             $result1=  $this->db->fetchArray($result);
@@ -89,7 +79,6 @@ class BlogpageModel extends Model
 
     function searchBlog($title, $user, $groups_Ids, $is_admin)
     {
-        $this->db->selectDB(DB_NAME);
         if($is_admin === true){
             $sql = "SELECT TIMESTAMP,NAME,TYPE FROM MEDIA_SOURCE WHERE NAME
                 IN (SELECT NAME FROM ACCESS WHERE NAME LIKE '%$title%')";
@@ -128,7 +117,6 @@ class BlogpageModel extends Model
      */
     function recentBlog($user, $group_ids, $is_admin, $limit = 5)
     {
-        $this->db->selectDB(DB_NAME);
         if($is_admin === true){
             $sql = "SELECT TIMESTAMP,NAME,TYPE FROM MEDIA_SOURCE WHERE NAME
                 IN (SELECT NAME FROM ACCESS) AND TYPE = 'blog'
@@ -172,7 +160,6 @@ class BlogpageModel extends Model
      */
     function getBlogUsers($blog)
     {
-        $this->db->selectDB(DB_NAME);
         $blog_name = $blog["NAME"];
         $sql = "SELECT ID FROM ACCESS WHERE TYPE = 'group'
             AND NAME = '$blog_name'";
@@ -186,7 +173,7 @@ class BlogpageModel extends Model
             $group_id = $groups_row[$i]['ID'];
             $group_id = $this->db->escapeString($group_id);
             $sql = "SELECT UG.USER_ID, U.USER_NAME" .
-                " FROM USER_GROUP UG, USER U, GROUPS G".
+                " FROM USER_GROUP UG, USERS U, GROUPS G".
                 " WHERE UG.GROUP_ID = '$group_id' 
                 AND UG.USER_ID = U.USER_ID AND" .
                 " G.GROUP_ID = UG.GROUP_ID";
@@ -216,7 +203,6 @@ class BlogpageModel extends Model
      */
     function updateBlogUsers($select_user, $blog_name)
     {
-       $this->db->selectDB(DB_NAME);
        $sql = "UPDATE ACCESS SET ID = '$select_user' 
             WHERE TYPE = 'user' AND NAME = '$blog_name'";
        $result = $this->db->execute($sql);
@@ -230,7 +216,6 @@ class BlogpageModel extends Model
      */
     function getFeed($title, $user)
     {
-        $this->db->selectDB(DB_NAME);
         $sql = "SELECT guid, title, description FROM FEED_ITEM
             WHERE source_name='".
             $this->db->escapeString($title)."'";
@@ -258,7 +243,6 @@ class BlogpageModel extends Model
      */
     function getFeedByGUID($guid)
     {
-        $this->db->selectDB(DB_NAME);
         $sql = "SELECT guid,title,description FROM FEED_ITEM WHERE guid = '".
             $this->db->escapeString($guid)."'";
         $result = $this->db->execute($sql);
@@ -280,7 +264,6 @@ class BlogpageModel extends Model
      */
     function updateFeed($guid, $title, $description)
     {
-        $this->db->selectDB(DB_NAME);
         $sql = "SELECT TITLE FROM FEED_ITEM WHERE GUID = '$guid'";
         $result=$this->db->execute($sql);
             $temp_title =  $this->db->fetchArray($result);
@@ -306,7 +289,6 @@ class BlogpageModel extends Model
      */
     function addEntry($timestamp, $title_entry, $description, $title, $user)
     {
-        $this->db->selectDB(DB_NAME);
         $timestampe = time();
         $sql = "SELECT NAME FROM MEDIA_SOURCE WHERE timestamp = '$timestamp'";
         $result = $this->db->execute($sql);
@@ -340,7 +322,6 @@ class BlogpageModel extends Model
     function addPage($title, $description, $source_type, $language, $user,
         $select_group)
     {
-        $this->db->selectDB(DB_NAME);
         $timestamp = time();
 
         $sql = "INSERT INTO MEDIA_SOURCE(TIMESTAMP, NAME, TYPE,
@@ -388,7 +369,6 @@ class BlogpageModel extends Model
         if($user_id == $_SERVER['REMOTE_ADDR']) {
             $user_id = PUBLIC_USER_ID;
         }
-        $this->db->selectDB(DB_NAME);
         $sql = "SELECT USER_ID FROM USER_GROUP WHERE USER_ID ='$user_id'
             AND GROUP_ID IN (SELECT ID FROM ACCESS WHERE NAME = '".
             $this->db->escapeString($title)."' AND TYPE = 'group')";

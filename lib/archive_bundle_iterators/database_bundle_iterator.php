@@ -133,7 +133,6 @@ class DatabaseBundleIterator extends ArchiveBundleIterator
         $db_class = ucfirst($this->dbinfo["DBMS"])."Manager";
         $this->db = new $db_class();
         $this->db->connect();
-        $this->db->selectDB($this->dbinfo['DB_NAME']);
 
         if(isset($ini['sql'])) {
             $this->sql = $ini['sql'];

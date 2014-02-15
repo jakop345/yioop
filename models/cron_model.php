@@ -63,9 +63,9 @@ class CronModel extends Model
     /**
      *  {@inheritdoc}
      */
-    function __construct()
+    function __construct($db_name = DB_NAME, $connect = true)
     {
-        parent::__construct();
+        parent::__construct($db_name, $connect);
         $this->cron_table === NULL;
         $this->cron_file = WORK_DIRECTORY."/data/cron_time.txt";
     }

@@ -64,9 +64,9 @@ class ProfileModel extends Model
     /**
      *  {@inheritdoc}
      */
-    function __construct($db_name = DB_NAME)
+    function __construct($db_name = DB_NAME, $connect = true)
     {
-        parent::__construct($db_name);
+        parent::__construct($db_name, $connect);
     }
 
     /**
@@ -246,25 +246,23 @@ EOT;
             "CRAWL_MIXES", "CURRENT_WEB_INDEX", "FEED_ITEM", "GROUPS",
             "LOCALE", "MEDIA_SOURCE", "MIX_COMPONENTS",
             "MIX_GROUPS", "ROLE", "ROLE_ACTIVITY", "SUBSEARCH", "TRANSLATION",
-            "TRANSLATION_LOCALE", "USER", "USER_GROUP", "USER_ROLE",
+            "TRANSLATION_LOCALE", "USERS", "USER_GROUP", "USER_ROLE",
             "USER_SESSION", "VERSION", "VISITOR");
 
         if(!($create_ok = $this->createDatabaseTables($test_dbm, $dbinfo))) {
             return false;
         }
-
         require_once(BASE_DIR."/models/datasources/sqlite3_manager.php");
 
         $default_dbm = new Sqlite3Manager();
 
-        $default_dbm->dbhandle = new SQLite3(
-            BASE_DIR."/data/default.db", SQLITE3_OPEN_READWRITE);
-            // a little bit hacky
-        if(!$default_dbm->dbhandle) {return false;}
+        $default_dbm->connect("", "", "", BASE_DIR."/data/default.db");
+        if(!$default_dbm) {return false;}
         foreach($copy_tables as $table) {
             if(!$this->copyTable($table, $default_dbm, $test_dbm))
                 {return false;}
         }
+
         return true;
     }
 
@@ -279,65 +277,66 @@ EOT;
     function createDatabaseTables($dbm, $dbinfo)
     {
         $auto_increment = $dbm->autoIncrement($dbinfo);
+        $serial = $dbm->serialType($dbinfo);
 
         //create table statements (should be kept alphabetical)
         $create_statements = array(
-            "CREATE TABLE ACCESS (NAME VARCHAR(16), ID INTEGER, 
+            "CREATE TABLE ACCESS (NAME VARCHAR(16), ID INTEGER,
                 TYPE VARCHAR(16))",
-            "CREATE TABLE ACTIVE_FETCHER (NAME VARCHAR(16), FETCHER_ID INT(4))",
-            "CREATE TABLE ACTIVITY (ACTIVITY_ID INTEGER PRIMARY KEY
+            "CREATE TABLE ACTIVE_FETCHER (NAME VARCHAR(16),FETCHER_ID INTEGER)",
+            "CREATE TABLE ACTIVITY (ACTIVITY_ID $serial PRIMARY KEY
                 $auto_increment, TRANSLATION_ID INTEGER,
                 METHOD_NAME VARCHAR(256))",
-            "CREATE TABLE CRAWL_MIXES (MIX_TIMESTAMP INT(11) PRIMARY KEY,
+            "CREATE TABLE CRAWL_MIXES (MIX_TIMESTAMP NUMERIC(11) PRIMARY KEY,
                 MIX_NAME VARCHAR(16) UNIQUE)",
-            "CREATE TABLE CURRENT_WEB_INDEX (CRAWL_TIME INT(11) )",
-            "CREATE TABLE FEED_ITEM (GUID VARCHAR(11) PRIMARY KEY,
+            "CREATE TABLE CURRENT_WEB_INDEX (CRAWL_TIME NUMERIC(11) )",
+            "CREATE TABLE FEED_ITEM (GUID NUMERIC(11) PRIMARY KEY,
                 TITLE VARCHAR(512), LINK VARCHAR(256),
                 DESCRIPTION VARCHAR(4096),
                 PUBDATE INT, SOURCE_NAME VARCHAR(16))",
-            "CREATE TABLE GROUP_ITEM (ID INTEGER PRIMARY KEY $auto_increment,
+            "CREATE TABLE GROUP_ITEM (ID $serial PRIMARY KEY $auto_increment,
                 PARENT_ID INTEGER, GROUP_ID INTEGER, USER_ID INTEGER,
                 TITLE VARCHAR(512), DESCRIPTION VARCHAR(4096),
-                PUBDATE INT(11))",
-            "CREATE TABLE GROUPS (GROUP_ID INTEGER PRIMARY KEY $auto_increment,
+                PUBDATE NUMERIC(11))",
+            "CREATE TABLE GROUPS (GROUP_ID $serial PRIMARY KEY $auto_increment,
                 GROUP_NAME VARCHAR(128), CREATED_TIME VARCHAR(20),
-                OWNER_ID INT(11), REGISTER_TYPE INTEGER,
+                OWNER_ID INTEGER, REGISTER_TYPE INTEGER,
                 MEMBER_ACCESS INTEGER)",
             /* NOTE: We are not using singular name GROUP for GROUPS as
                is a reserved SQL keyword
              */
-            "CREATE TABLE LOCALE(LOCALE_ID INTEGER PRIMARY KEY
+            "CREATE TABLE LOCALE(LOCALE_ID $serial PRIMARY KEY
                 $auto_increment, LOCALE_TAG VARCHAR(16),
                 LOCALE_NAME VARCHAR(256), WRITING_MODE CHAR(5))",
             "CREATE TABLE MACHINE (NAME VARCHAR(16) PRIMARY KEY,
                 URL VARCHAR(256) UNIQUE, HAS_QUEUE_SERVER INT,
-                NUM_FETCHERS INT(4), PARENT VARCHAR(16) )",
-            "CREATE TABLE MEDIA_SOURCE (TIMESTAMP INT(11) PRIMARY KEY,
+                NUM_FETCHERS INTEGER, PARENT VARCHAR(16) )",
+            "CREATE TABLE MEDIA_SOURCE (TIMESTAMP NUMERIC(11) PRIMARY KEY,
                 NAME VARCHAR(16) UNIQUE, TYPE VARCHAR(16),
                 SOURCE_URL VARCHAR(256), THUMB_URL VARCHAR(256),
                 LANGUAGE VARCHAR(7))",
-            "CREATE TABLE MIX_COMPONENTS (MIX_TIMESTAMP INT(11),
-                GROUP_ID INT(4), CRAWL_TIMESTAMP INT(11), WEIGHT REAL,
+            "CREATE TABLE MIX_COMPONENTS (MIX_TIMESTAMP NUMERIC(11),
+                GROUP_ID INTEGER, CRAWL_TIMESTAMP NUMERIC(11), WEIGHT REAL,
                 KEYWORDS VARCHAR(256))",
-            "CREATE TABLE MIX_GROUPS (MIX_TIMESTAMP INT(11), GROUP_ID INT(4),
-                RESULT_BOUND INT(4))",
-            "CREATE TABLE ROLE (ROLE_ID INTEGER PRIMARY KEY $auto_increment,
+            "CREATE TABLE MIX_GROUPS (MIX_TIMESTAMP NUMERIC(11), GROUP_ID INTEGER,
+                RESULT_BOUND INTEGER)",
+            "CREATE TABLE ROLE (ROLE_ID $serial PRIMARY KEY $auto_increment,
                 NAME VARCHAR(512))",
             "CREATE TABLE ROLE_ACTIVITY (ROLE_ID INTEGER, ACTIVITY_ID INTEGER)",
             "CREATE TABLE SUBSEARCH (LOCALE_STRING VARCHAR(32) PRIMARY KEY,
                 FOLDER_NAME VARCHAR(16), INDEX_IDENTIFIER CHAR(13),
                 PER_PAGE INT)",
-            "CREATE TABLE TRANSLATION (TRANSLATION_ID INTEGER PRIMARY KEY
+            "CREATE TABLE TRANSLATION (TRANSLATION_ID $serial PRIMARY KEY
                 $auto_increment, IDENTIFIER_STRING VARCHAR(512) UNIQUE)",
             "CREATE TABLE TRANSLATION_LOCALE (TRANSLATION_ID INTEGER,
                 LOCALE_ID INTEGER, TRANSLATION VARCHAR(4096) )",
-            "CREATE TABLE USER(USER_ID INTEGER PRIMARY KEY $auto_increment,
+            "CREATE TABLE USERS(USER_ID $serial PRIMARY KEY $auto_increment,
                 FIRST_NAME VARCHAR(16), LAST_NAME VARCHAR(16),
                 USER_NAME VARCHAR(16) UNIQUE, EMAIL VARCHAR(60),
                 PASSWORD CHAR(60), STATUS INTEGER, HASH CHAR(60),
                 CREATION_TIME VARCHAR(20))",
             "CREATE TABLE USER_GROUP (USER_ID INTEGER , GROUP_ID INTEGER,
-                   STATUS INTEGER, JOIN_DATE INT(11),
+                   STATUS INTEGER, JOIN_DATE NUMERIC(11),
                    PRIMARY KEY (GROUP_ID, USER_ID) )",
             "CREATE TABLE USER_ROLE (USER_ID INTEGER, ROLE_ID INTEGER,
                 PRIMARY KEY (ROLE_ID, USER_ID))",
@@ -350,7 +349,7 @@ EOT;
             "CREATE TABLE VERSION(ID INTEGER PRIMARY KEY)",
             );
         foreach($create_statements as $statement) {
-            if(!$dbm->execute($statement)) {
+            if(!$result = $dbm->execute($statement)) {
                 echo $statement." ERROR!";
                 return false;
             }
@@ -374,42 +373,41 @@ EOT;
     function testDatabaseManager($dbinfo)
     {
         if(!isset($dbinfo['DBMS'])) {return false;}
-
-        // check if can establish a connect to dbms
-        require_once(
-            BASE_DIR."/models/datasources/".$dbinfo['DBMS']."_manager.php");
         $dbms_manager = ucfirst($dbinfo['DBMS'])."Manager";
+        // check if can establish a connect to dbms
+        if(!class_exists($dbms_manager)) {
+            require_once(
+                BASE_DIR."/models/datasources/".$dbinfo['DBMS']."_manager.php");
 
+        }
         $test_dbm = new $dbms_manager();
 
-        if(isset($dbinfo['DB_HOST'])) {
-            if(isset($dbinfo['DB_USER'])) {
-                if(isset($dbinfo['DB_PASSWORD'])) {
-                    $conn = @$test_dbm->connect(
-                        $dbinfo['DB_HOST'],
-                        $dbinfo['DB_USER'], $dbinfo['DB_PASSWORD']);
-                } else {
-                    $conn = @$test_dbm->connect(
-                        $dbinfo['DB_HOST'], $dbinfo['DB_USER']);
-                }
-            } else {
-                $conn = @$test_dbm->connect($dbinfo['DB_HOST']);
+        $fields = array('DB_HOST', 'DB_USER', 'DB_PASSWORD', 'DB_NAME');
+        foreach($fields as $field) {
+            if(!isset($dbinfo[$field])) {
+                $dbinfo[$field] = constant($field);
             }
-        } else {
-            $conn = @$test_dbm->connect();
         }
+        $host = str_ireplace("dbname=".$dbinfo['DB_NAME'],"",
+            $dbinfo['DB_HOST']); // to get rid of database from dsn postgres
+        $host = str_ireplace("database=".$dbinfo['DB_NAME'],"",
+            $host); // informix, ibm (use connection string DSN)
+        $host = str_replace(";;",";", $host);
+        $conn = @$test_dbm->connect($host, $dbinfo['DB_USER'],
+            $dbinfo['DB_PASSWORD'], "");
         if($conn === false) {return false;}
 
         //check if can select db or if not create it
-        if(!$test_dbm->selectDB($dbinfo['DB_NAME'])) {
-            $q = "";
-            if(isset($test_dbm->special_quote)) {
-                $q = $test_dbm->special_quote;
-            }
-            @$test_dbm->execute("CREATE DATABASE $q".$dbinfo['DB_NAME']."$q");
-            if(!$test_dbm->selectDB($dbinfo['DB_NAME'])) {
-                return false;
-            }
+        $q = "";
+        if(isset($test_dbm->special_quote)) {
+            $q = $test_dbm->special_quote;
+        }
+        @$test_dbm->execute("CREATE DATABASE $q".$dbinfo['DB_NAME']."$q");
+        $test_dbm->disconnect();
+        if(!$test_dbm->connect(
+            $dbinfo['DB_HOST'], $dbinfo['DB_USER'],
+            $dbinfo['DB_PASSWORD'], $dbinfo['DB_NAME'])) {
+            return false;
         }
         /*  check if need to create db contents.
             We check if any locale exists as proxy for contents being okay.

@@ -175,7 +175,6 @@ $locale_tag = guessLocale();
 if(upgradeDatabaseWorkDirectoryCheck()) {
     upgradeDatabaseWorkDirectory();
 }
-
 if(upgradeLocalesCheck()) {
     upgradeLocales();
 }

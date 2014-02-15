@@ -36,7 +36,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 /**
  *  Loads base datasource class if necessary
  */
-require_once "datasource_manager.php";
+require_once BASE_DIR."/models/datasources/pdo_manager.php";
 
 
 /**
@@ -58,7 +58,7 @@ require_once "datasource_manager.php";
  * @package seek_quarry
  * @subpackage datasource_manager
  */
-class MysqlManager extends DatasourceManager
+class MysqlManager extends PdoManager
 {
     /** Used when to quote column names of db names that contain a
      *  a keyword or special character
@@ -66,76 +66,25 @@ class MysqlManager extends DatasourceManager
      */
     var $special_quote = "`";
 
-    /**
-     * Connection to DB opened by this MysqlManager instance
-     * @var resource
-     */
-    var $conn;
-
-    /** {@inheritdoc} */
-    function __construct()
-    {
-        parent::__construct();
-        $this->conn = NULL;
-    }
-
     /** {@inheritdoc} */
     function connect($db_host = DB_HOST, $db_user = DB_USER,
-        $db_password = DB_PASSWORD)
+        $db_password = DB_PASSWORD, $db_name = DB_NAME)
     {
-        $this->conn = mysqli_connect($db_host, $db_user, $db_password);
-        return $this->conn;
+        $host_parts = explode(":", $db_host);
+        $db_port_string = "";
+        if(isset($host_parts[1])) {
+            $db_host = $host_parts[0];
+            $db_port_string = ";port=".$host_parts[1];
+        }
+        $db_name_string = "";
+        if($db_name != "") {
+            $db_name_string = ";dbname=".$db_name;
+        }
+        $this->pdo = new PDO("mysql:host={$db_host}".
+            $db_port_string.$db_name_string,
+            $db_user, $db_password);
+        return $this->pdo;
     }
-
-    /** {@inheritdoc} */
-    function selectDB($db_name)
-    {
-        return mysqli_select_db($this->conn, $db_name);
-    }
-
-    /** {@inheritdoc} */
-    function disconnect()
-    {
-        mysqli_close($this->conn);
-    }
-
-    /** {@inheritdoc} */
-    function exec($sql)
-    {
-        $result = mysqli_query($this->conn, $sql);
-
-        return $result;
-    }
-
-    /** {@inheritdoc} */
-    function affectedRows()
-    {
-        return mysqli_affected_rows($this->conn);
-    }
-
-
-    /** {@inheritdoc} */
-    function insertID()
-    {
-        return mysqli_insert_id($this->conn);
-    }
-
-    /** {@inheritdoc} */
-    function fetchArray($result)
-    {
-        $row = mysqli_fetch_array($result, MYSQLI_ASSOC);
-
-        return $row;
-    }
-
-
-    /** {@inheritdoc} */
-    function escapeString($str)
-    {
-        return mysqli_real_escape_string($this->conn, $str);
-    }
-
-
 }
 
 ?>

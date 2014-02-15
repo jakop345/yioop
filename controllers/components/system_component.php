@@ -503,6 +503,7 @@ class SystemComponent extends Component
     {
         $parent = $this->parent;
         $profile_model = $parent->model("profile");
+
         $data = array();
         $profile = array();
         $arg = "";
@@ -520,7 +521,6 @@ class SystemComponent extends Component
 
                 $old_profile =
                     $profile_model->getProfile(WORK_DIRECTORY);
-
                 $db_problem = false;
                 if((isset($profile['DBMS']) &&
                     $profile['DBMS'] != $old_profile['DBMS']) ||
@@ -528,6 +528,7 @@ class SystemComponent extends Component
                     $profile['DB_NAME'] != $old_profile['DB_NAME']) ||
                     (isset($profile['DB_HOST']) &&
                     $profile['DB_HOST'] != $old_profile['DB_HOST'])) {
+
                     if(!$profile_model->migrateDatabaseIfNecessary(
                         $profile)) {
                         $db_problem = true;
@@ -555,7 +556,6 @@ class SystemComponent extends Component
                     $data['DB_PASSWORD'] = $old_profile['DB_PASSWORD'];
                     break;
                 }
-
                 if($profile_model->updateProfile(
                     WORK_DIRECTORY, $profile, $old_profile)) {
                     $data['MESSAGE'] =
@@ -576,6 +576,7 @@ class SystemComponent extends Component
             break;
 
             default:
+
                 $data = array_merge($data,
                     $profile_model->getProfile(WORK_DIRECTORY));
                 $data['MEMCACHE_SERVERS'] = str_replace(
@@ -947,8 +948,8 @@ EOD;
                 "check"=>"curl_multi_init", "type"=>"function"),
             array("name" => "GD Graphics Library",
                 "check"=>"imagecreate", "type"=>"function"),
-            array("name" => "SQLite3 Library",
-                "check"=>"SQLite3|PDO", "type"=>"class"),
+            array("name" => "PDO SQLite3 Library",
+                "check"=>"PDO", "type"=>"class"),
             array("name" => "Multibyte Character Library",
                 "check"=>"mb_internal_encoding", "type"=>"function"),
         );

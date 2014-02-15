@@ -104,9 +104,9 @@ class PhraseModel extends ParallelModel
     /**
      * {@inheritdoc}
      */
-    function __construct($db_name = DB_NAME)
+    function __construct($db_name = DB_NAME, $connect = true)
     {
-        parent::__construct($db_name);
+        parent::__construct($db_name, $connect);
         $this->programming_language_map = array('java' => 'java', 'py' => 'py');
         $this->program_indicator = false;
     }

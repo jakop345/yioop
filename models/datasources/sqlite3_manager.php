@@ -36,7 +36,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 /**
  *  Loads base datasource class if necessary
  */
-require_once "datasource_manager.php";
+require_once BASE_DIR."/models/datasources/pdo_manager.php";
 
 
 /**
@@ -52,24 +52,8 @@ require_once "datasource_manager.php";
  * @package seek_quarry
  * @subpackage datasource_manager
  */
-class Sqlite3Manager extends DatasourceManager
+class Sqlite3Manager extends PdoManager
 {
-    /**
-     *  Stores  the current Sqlite3 DB object
-     *  @var object
-     */
-    var $dbhandle;
-    /**
-     *  Filename of the Sqlite3 Database
-     *  @var string
-     */
-    var $dbname;
-
-    /**
-     *  Sqlite3 whether access to DB is through PDO object or SQLite3 object
-     *  @var bool
-     */
-    var $pdo_flag;
 
     /** {@inheritdoc} */
     function __construct()
@@ -79,104 +63,37 @@ class Sqlite3Manager extends DatasourceManager
             mkdir(CRAWL_DIR."/data");
             chmod(CRAWL_DIR."/data", 0777);
         }
-        if(class_exists("SQLite3")) {
-            $this->pdo_flag = false;
-        } else if (class_exists("PDO") &&
+        if (class_exists("PDO") &&
             in_array("sqlite", PDO::getAvailableDrivers())) {
             $this->pdo_flag = true;
         } else {
-            echo "SQLite3 needs to be installed!";
+            echo "PDO sqlite needs to be installed!";
             $this->pdo_flag = false;
         }
-        $this->dbname = NULL;
+        $this->db_name = NULL;
     }
 
     /**
-     * For an Sqlite3 database no connection needs to be made so this
-     * method does nothing
-     * {@inheritdoc}
+     *  Select file name of database. If the 
+     *  @param string $db_host  not used but in base constructor
+     *  @param string $db_user  not used but in base constructor
+     *  @param string $db_password  not used but in base constructor
+     *  @param string $db_name filename of sqlite database. If the name
+     *      does not contain any "/" symbols assume it is in the 
+     *      crawl directory data folder and we don't have a file extension;
+     *      otherwise assume the name is a complete filepath
      */
-    function connect($db_HOST = DB_HOST, $db_user = DB_USER,
-        $db_password = DB_PASSWORD)
+    function connect($db_host = DB_HOST, $db_user = DB_USER,
+        $db_password = DB_PASSWORD, $db_name = DB_NAME)
     {
-        return true;
-    }
-
-    /** {@inheritdoc} */
-    function selectDB($db_name)
-    {
-        if(strcmp($db_name, $this->dbname) == 0) {
-            return $this->dbhandle;
-        }
-
-        $this->dbname = $db_name;
-        if(!$this->pdo_flag) {
-            $this->dbhandle = new SQLite3(CRAWL_DIR."/data/$db_name.db",
-                SQLITE3_OPEN_READWRITE |SQLITE3_OPEN_CREATE);
-        } else {
-            $this->dbhandle = new PDO("sqlite:".
+        if(!stristr($db_name, "/")) {
+            $this->pdo = new PDO("sqlite:".
                 CRAWL_DIR."/data/$db_name.db");
-        }
-        return $this->dbhandle;
-    }
-
-    /** {@inheritdoc} */
-    function disconnect()
-    {
-        if(!$this->pdo_flag) {
-            $this->dbhandle->close();
-        }
-    }
-
-    /** {@inheritdoc} */
-    function exec($sql)
-    {
-        $result = @$this->dbhandle->query($sql);
-
-        return $result;
-    }
-
-    /** {@inheritdoc} */
-    function affectedRows()
-    {
-        if(method_exists($this->dbhandle, "changes")) {
-            return $this->dbhandle->changes();
         } else {
-            echo "Affected rows not supported in PDO!";
+            $this->pdo = new PDO("sqlite:$db_name");
         }
+        return $this->pdo;
     }
-
-    /** {@inheritdoc} */
-    function insertID()
-    {
-        return $this->dbhandle->lastInsertRowID();
-    }
-
-    /** {@inheritdoc} */
-    function fetchArray($result)
-    {
-        if(!$result) {
-            return false;
-        }
-        if(!$this->pdo_flag) {
-            $row = $result->fetchArray(SQLITE3_ASSOC);
-        } else {
-            $row = $result->fetch(PDO::FETCH_ASSOC);
-        }
-        return $row;
-    }
-
-    /** {@inheritdoc} */
-    function escapeString($str)
-    {
-        if(method_exists($this->dbhandle, "escapeString")) {
-            return $this->dbhandle->escapeString($str);
-        } else {
-            return addslashes($str);
-        }
-    }
-
-
 }
 
 ?>

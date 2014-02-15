@@ -54,14 +54,6 @@ class GroupModel extends Model
         "pub_date" => "GI.PUBDATE", "parent_id"=>"GI.PARENT_ID",
         "register"=>"G.REGISTER_TYPE", "status"=>"UG.STATUS",
         "user_id"=>"P.USER_ID");
-        
-    /**
-     *  {@inheritdoc}
-     */
-    function __construct()
-    {
-        parent::__construct();
-    }
 
     /**
      *
@@ -70,12 +62,11 @@ class GroupModel extends Model
     function getGroupUsers($group_id)
     {
         $db = $this->db;
-        $db->selectDB(DB_NAME);
         $group_id = $db->escapeString($group_id);
         $users = array();
         $sql = "SELECT UG.USER_ID, U.USER_NAME, UG.GROUP_ID, G.OWNER_ID,".
             " UG.STATUS ".
-            " FROM USER_GROUP UG, USER U, GROUPS G".
+            " FROM USER_GROUP UG, USERS U, GROUPS G".
             " where UG.GROUP_ID = '$group_id' AND UG.USER_ID = U.USER_ID AND" .
             " G.GROUP_ID = UG.GROUP_ID";
         $result = $db->execute($sql);
@@ -96,7 +87,6 @@ class GroupModel extends Model
         $member=GROUP_READ)
     {
         $db = $this->db;
-        $db->selectDB(DB_NAME);
         $timestamp = microTimestamp();
 
         $sql = 
@@ -108,7 +98,6 @@ class GroupModel extends Model
             '".$db->escapeString($member)."');";
         $db->execute($sql);
 
-        $db->selectDB(DB_NAME);
         $sql = "SELECT G.GROUP_ID AS GROUP_ID FROM ".
             " GROUPS G WHERE G.GROUP_NAME = '" .
             $db->escapeString($group_name) . "' ";
@@ -136,7 +125,6 @@ class GroupModel extends Model
         unset($group['OWNER']); //column not in table
         unset($group['STATUS']); // column not in table
         unset($group['JOIN_DATE']); // column not in table
-        $db->selectDB(DB_NAME);
         $sql = "UPDATE GROUPS SET ";
         $comma ="";
         foreach($group as $field => $value) {
@@ -153,7 +141,6 @@ class GroupModel extends Model
     function checkUserGroup($user_id, $group_id, $status = -1)
     {
         $db = $this->db;
-        $db->selectDB(DB_NAME);
         $sql = "SELECT COUNT(*) AS NUM FROM USER_GROUP UG WHERE
             UG.USER_ID='". $db->escapeString($user_id) .
             "' AND UG.GROUP_ID='". $db->escapeString($group_id) . "'";
@@ -176,7 +163,6 @@ class GroupModel extends Model
     function updateStatusUserGroup($user_id, $group_id, $status)
     {
         $db = $this->db;
-        $db->selectDB(DB_NAME);
         $sql = "UPDATE USER_GROUP SET STATUS='" .
             $db->escapeString($status)."' ".
             " WHERE GROUP_ID=$group_id AND USER_ID=$user_id";
@@ -192,7 +178,6 @@ class GroupModel extends Model
     function getGroupId($groupname)
     {
         $db = $this->db;
-        $db->selectDB(DB_NAME);
         $sql = "SELECT G.GROUP_ID AS GROUP_ID FROM ".
             "GROUPS G WHERE G.GROUP_NAME = '".
             $db->escapeString($groupname) . "' ";
@@ -213,7 +198,6 @@ class GroupModel extends Model
         {
             $db = $this->db;
             $group_id = $db->escapeString($group_id);
-            $db->selectDB(DB_NAME);
             $sql = "DELETE FROM GROUPS WHERE GROUP_ID='$group_id'";
             $db->execute($sql);
             $sql = "DELETE FROM GROUP_ITEM WHERE GROUP_ID='$group_id'";
@@ -230,7 +214,6 @@ class GroupModel extends Model
     function getGroupList()
     {
         $db = $this->db;
-        $db->selectDB(DB_NAME);
         $groups = array();
         $sql = "SELECT G.GROUP_ID AS GROUP_ID, G.GROUP_NAME AS GROUP_NAME
              FROM GROUPS G";
@@ -250,8 +233,11 @@ class GroupModel extends Model
         $user_id=ROOT_ID)
     {
         $db = $this->db;
-        $db->selectDB(DB_NAME);
-        $limit = "LIMIT $limit, $num";
+        $dbinfo = array("DBMS" => DBMS, "DB_HOST" => DB_HOST,
+            "DB_USER" => DB_USER, "DB_PASSWORD" => DB_PASSWORD,
+            "DB_NAME" => DB_NAME);
+        $bounds = $db->limitOffset($dbinfo, $limit, $num);
+        $limit = "LIMIT $bounds";
         $any_fields = array("access", "register");
         list($where, $order_by) = 
             $this->searchArrayToWhereOrderClauses($search_array, $any_fields);
@@ -260,11 +246,11 @@ class GroupModel extends Model
             $add_where = " AND ";
         }
         $where .= $add_where. " UG.USER_ID='".$db->escapeString($user_id).
-            "' AND  UG.GROUP_ID=G.GROUP_ID AND OWNER_ID = O.USER_ID";
+            "' AND  UG.GROUP_ID=G.GROUP_ID AND G.OWNER_ID=O.USER_ID";
         $sql = "SELECT G.GROUP_ID AS GROUP_ID,
             G.GROUP_NAME AS GROUP_NAME, G.OWNER_ID AS OWNER_ID,
             O.USER_NAME AS OWNER, REGISTER_TYPE, UG.STATUS AS STATUS,
-            G.MEMBER_ACCESS, UG.JOIN_DATE AS JOIN_DATE FROM GROUPS G, USER O,
+            G.MEMBER_ACCESS, UG.JOIN_DATE AS JOIN_DATE FROM GROUPS G, USERS O,
             USER_GROUP UG
             $where $order_by $limit";
         $result = $db->execute($sql);
@@ -284,7 +270,6 @@ class GroupModel extends Model
     function getRegisterType($group_id)
     {
         $db = $this->db;
-        $db->selectDB(DB_NAME);
         $groups = array();
         $sql = "SELECT REGISTER_TYPE
              FROM GROUPS G WHERE GROUP_ID='".$db->escapeString($group_id).
@@ -316,7 +301,7 @@ class GroupModel extends Model
             G.GROUP_NAME AS GROUP_NAME, G.OWNER_ID AS OWNER_ID,
             O.USER_NAME AS OWNER, REGISTER_TYPE, UG.STATUS,
             G.MEMBER_ACCESS AS MEMBER_ACCESS, UG.JOIN_DATE AS JOIN_DATE
-            FROM GROUPS G, USER O, USER_GROUP UG $where LIMIT 1";
+            FROM GROUPS G, USERS O, USER_GROUP UG $where LIMIT 1";
         $result = $db->execute($sql);
         $group = false;
         if($result) {
@@ -336,7 +321,6 @@ class GroupModel extends Model
     function getGroupsCount($search_array = array(), $user_id = ROOT_ID)
     {
         $db = $this->db;
-        $db->selectDB(DB_NAME);
         $any_fields = array("access", "register");
         list($where, $order_by) = 
             $this->searchArrayToWhereOrderClauses($search_array,$any_fields);
@@ -363,7 +347,6 @@ class GroupModel extends Model
     function getUserGroups($userid)
     {
         $db = $this->db;
-        $db->selectDB(DB_NAME);
         $groups = array();
         $sql = "SELECT UG.GROUP_ID AS GROUP_ID, UG.USER_ID AS USER_ID," .
             " G.GROUP_NAME AS GROUP_NAME FROM USER_GROUP UG, GROUPS G" .
@@ -387,7 +370,6 @@ class GroupModel extends Model
      function getGroupListbyCreator($userid)
     {
         $db = $this->db;
-        $db->selectDB(DB_NAME);
         $groups = array();
         $sql = "SELECT G.GROUP_ID AS GROUP_ID, G.OWNER_ID AS USER_ID," .
             "G.GROUP_NAME AS GROUP_NAME " .
@@ -410,7 +392,6 @@ class GroupModel extends Model
     function changeOwnerGroup($user_id, $group_id)
     {
         $db = $this->db;
-        $db->selectDB(DB_NAME);
         $sql = "UPDATE GROUPS SET OWNER_ID=". $db->escapeString($user_id).
             " WHERE GROUP_ID=".$db->escapeString($group_id);
         $db->execute($sql);
@@ -426,7 +407,6 @@ class GroupModel extends Model
     {
         $join_date = time();
         $db = $this->db;
-        $db->selectDB(DB_NAME);
         $sql = "INSERT INTO USER_GROUP VALUES ('".
             $db->escapeString($user_id) . "', '".
             $db->escapeString($group_id) . "', '".
@@ -441,7 +421,6 @@ class GroupModel extends Model
      */
     function deletableUser($user_id, $group_id)
     {
-        $db->selectDB(DB_NAME);
         $sql = "SELECT COUNT(*) AS NUM FROM USER_GROUP UG, GROUPS G WHERE
             UG.USER_ID != G.OWNER_ID AND UG.USER_ID='".
             $db->escapeString($user_id) ."' AND UG.GROUP_ID='".
@@ -465,7 +444,6 @@ class GroupModel extends Model
     function deleteUserGroup($user_id, $group_id)
     {
         $db = $this->db;
-        $db->selectDB(DB_NAME);
         $sql = "DELETE FROM USER_GROUP WHERE USER_ID='".
             $db->escapeString($user_id) . "' AND GROUP_ID='".
             $db->escapeString($group_id) . "'";
@@ -478,7 +456,6 @@ class GroupModel extends Model
     function getGroupItem($item_id)
     {
         $db = $this->db;
-        $db->selectDB(DB_NAME);
 
         $sql = "SELECT * FROM GROUP_ITEM WHERE ID='".
             $db->escapeString($item_id)."' LIMIT 1";
@@ -502,7 +479,6 @@ class GroupModel extends Model
     {
         $db = $this->db;
         $join_date = time();
-        $db->selectDB(DB_NAME);
         $now = time();
         $sql = "INSERT INTO GROUP_ITEM(PARENT_ID, GROUP_ID, USER_ID, TITLE,
             DESCRIPTION, PUBDATE) VALUES ('".
@@ -522,6 +498,24 @@ class GroupModel extends Model
 
     /**
      *
+     */
+    function deleteGroupItem($post_id, $user_id)
+    {
+        $db = $this->db;
+        $post_id = $db->escapeString($post_id);
+        if($user_id == ROOT_ID) {
+            $and_where = "";
+        } else {
+            $user_id = $db->escapeString($user_id);
+            $and_where = " AND USER_ID='$user_id'";
+        }
+        $sql = "DELETE FROM GROUP_ITEM WHERE ID='$post_id' $and_where";
+        $db->execute($sql);
+        return $db->affectedRows();
+    }
+
+    /**
+     *
      *  @param int $limit
      *  @param int $num
      *  @param array $search_array
@@ -530,8 +524,11 @@ class GroupModel extends Model
         $user_id = ROOT_ID)
     {
         $db = $this->db;
-        $db->selectDB(DB_NAME);
-        $limit = "LIMIT $limit, $num";
+        $dbinfo = array("DBMS" => DBMS, "DB_HOST" => DB_HOST,
+            "DB_USER" => DB_USER, "DB_PASSWORD" => DB_PASSWORD,
+            "DB_NAME" => DB_NAME);
+        $bounds = $db->limitOffset($dbinfo, $limit, $num);
+        $limit = "LIMIT $bounds";
         $any_fields = array("access", "register");
         list($where, $order_by) = 
             $this->searchArrayToWhereOrderClauses($search_array, $any_fields);
@@ -553,7 +550,7 @@ class GroupModel extends Model
             AS OWNER_ID, G.MEMBER_ACCESS AS MEMBER_ACCESS,
             G.GROUP_NAME AS GROUP_NAME, P.USER_NAME AS USER_NAME, P.USER_ID AS
             USER_ID
-            FROM GROUP_ITEM GI, GROUPS G, USER_GROUP UG, USER U, USER P
+            FROM GROUP_ITEM GI, GROUPS G, USER_GROUP UG, USERS U, USERS P
             $where $order_by $limit";
         $result = $db->execute($sql);
         $i = 0;
@@ -574,7 +571,6 @@ class GroupModel extends Model
     function getGroupItemCount($search_array = array(), $user_id = ROOT_ID)
     {
         $db = $this->db;
-        $db->selectDB(DB_NAME);
         $any_fields = array("access", "register");
         list($where, $order_by) = 
             $this->searchArrayToWhereOrderClauses($search_array, $any_fields);
@@ -590,7 +586,7 @@ class GroupModel extends Model
             AND G.MEMBER_ACCESS IN ('".GROUP_READ."','".GROUP_READ_WRITE."')) OR
             (G.OWNER_ID = UG.USER_ID))";
         $sql = "SELECT COUNT(*) AS NUM FROM GROUP_ITEM GI, GROUPS G,
-            USER_GROUP UG, USER P $where";
+            USER_GROUP UG, USERS P $where";
         $result = $db->execute($sql);
         $row = $db->fetchArray($result);
         return $row['NUM'];

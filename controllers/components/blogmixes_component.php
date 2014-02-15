@@ -81,7 +81,8 @@ class BlogmixesComponent extends Component implements CrawlConstants
                 $$field = $parent->clean($_REQUEST[$field], $type);
             }
         }
-        $possible_arguments = array("addcomment","newthread");
+        $possible_arguments = array("addcomment", "deletepost", "newthread",
+            "updatepost");
         if(isset($_REQUEST['arg']) &&
             in_array($_REQUEST['arg'], $possible_arguments)) {
             switch($_REQUEST['arg'])
@@ -141,7 +142,28 @@ class BlogmixesComponent extends Component implements CrawlConstants
                     $group_model->addGroupItem($parent_item["ID"],
                         $group_id, $user_id, $title, $description);
                 break;
-
+                case "deletepost":
+                    if(!$parent->checkCSRFTime(CSRF_TOKEN)) {
+                        break;
+                    }
+                    if(!isset($_REQUEST['post_id'])) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('blogmixes_component_delete_error').
+                            "</h1>')";
+                        break;
+                    }
+                    $post_id =$parent->clean($_REQUEST['post_id'], "int");
+                    $success=$group_model->deleteGroupItem($post_id, $user_id);
+                    if($success) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('blogmixes_component_item_deleted').
+                            "</h1>')";
+                    } else {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('blogmixes_component_no_item_deleted').
+                            "</h1>')";
+                    }
+                break;
                 case "newthread":
                     if(!$parent->checkCSRFTime(CSRF_TOKEN)) {
                         break;
@@ -151,6 +173,7 @@ class BlogmixesComponent extends Component implements CrawlConstants
                             tl('blogmixes_component_comment_error').
                             "</h1>')";
                         break;
+                        $group_id =$parent->clean($_REQUEST['group_id'], "int");
                     }
                     if(!$description || !$title) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
@@ -182,7 +205,7 @@ class BlogmixesComponent extends Component implements CrawlConstants
                 array("access", "!=", GROUP_PRIVATE, ""),
                 array("status", "=", ACTIVE_STATUS, ""),
                 array("join_date", "=","", "DESC"));
-            $groups_count = $group_model->getGroupsCount($search_array, 
+            $groups_count = $group_model->getGroupsCount($search_array,
                 $user_id);
             $groups = $group_model->getGroups(0, $limit + $results_per_page,
                 $search_array, $user_id);
@@ -197,6 +220,7 @@ class BlogmixesComponent extends Component implements CrawlConstants
                 $page['ID'] = -1;
                 $page['PARENT_ID'] = -1;
                 $page['USER_NAME'] = "";
+                $page['USER_ID'] = "";
                 $page['GROUP_ID'] = $group['GROUP_ID'];
                 $page[self::SOURCE_NAME] = $group['GROUP_NAME'];
                 $page['MEMBER_ACCESS'] = $group['MEMBER_ACCESS'];

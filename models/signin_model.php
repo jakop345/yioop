@@ -49,17 +49,6 @@ require_once BASE_DIR."/lib/utility.php";
  */
 class SigninModel extends Model
 {
-
-
-    /**
-     * {@inheritdoc}
-     */
-    function __construct()
-    {
-        parent::__construct();
-    }
-
-
     /**
      * Checks that a username password pair is valid
      *
@@ -70,12 +59,10 @@ class SigninModel extends Model
      */
     function checkValidSignin($username, $password)
     {
-        $this->db->selectDB(DB_NAME);
-
         $username = $this->db->escapeString($username);
         $password = $this->db->escapeString($password);
 
-        $sql = "SELECT USER_NAME, PASSWORD FROM USER ".
+        $sql = "SELECT USER_NAME, PASSWORD FROM USERS ".
             "WHERE USER_NAME = '$username' LIMIT 1";
 
         $i = 0;
@@ -106,11 +93,9 @@ class SigninModel extends Model
 
     function checkValidEmail($username, $email)
     {
-        $this->db->selectDB(DB_NAME);
-
         $username = $this->db->escapeString($username);
         $email = $this->db->escapeString($email);
-            $sql = "SELECT USER_NAME, EMAIL FROM USER ".
+            $sql = "SELECT USER_NAME, EMAIL FROM USERS ".
             "WHERE USER_NAME = '$username' LIMIT 1";
 
         $result = $this->db->execute($sql);
@@ -130,11 +115,9 @@ class SigninModel extends Model
      */
    function getUserName($user_id)
    {
-        $this->db->selectDB(DB_NAME);
-
         $user_id = $this->db->escapeString($user_id);
 
-        $sql = "SELECT USER_NAME FROM USER WHERE USER_ID = '$user_id' LIMIT 1";
+        $sql = "SELECT USER_NAME FROM USERS WHERE USER_ID = '$user_id' LIMIT 1";
         $result = $this->db->execute($sql);
         $row = $this->db->fetchArray($result);
         $username = $row['USER_NAME'];
@@ -149,11 +132,9 @@ class SigninModel extends Model
      */
    function getEmail($user_id, $limit = 1)
    {
-        $this->db->selectDB(DB_NAME);
-
         $user_id = $this->db->escapeString($user_id);
 
-        $sql = "SELECT EMAIL FROM USER WHERE
+        $sql = "SELECT EMAIL FROM USERS WHERE
                     USER_ID = '$user_id' LIMIT $limit";
         $result = $this->db->execute($sql);
         $row = $this->db->fetchArray($result);
@@ -174,7 +155,7 @@ class SigninModel extends Model
         $username = $this->db->escapeString($username);
         $email = $this->db->escapeString($email);
 
-        $sql = "UPDATE USER SET EMAIL= '$email'
+        $sql = "UPDATE USERS SET EMAIL= '$email'
                     WHERE USER_NAME = '$username' ";
 
         $result = $this->db->execute($sql);
@@ -190,12 +171,10 @@ class SigninModel extends Model
      */
     function changePassword($username, $password)
     {
-        $this->db->selectDB(DB_NAME);
-
         $username = $this->db->escapeString($username);
         $password = $this->db->escapeString($password);
 
-        $sql = "UPDATE USER SET PASSWORD='".
+        $sql = "UPDATE USERS SET PASSWORD='".
             crawlCrypt($password)."' WHERE USER_NAME = '$username' ";
 
         $result = $this->db->execute($sql);

@@ -57,15 +57,6 @@ class UserModel extends Model
         "status"=>"STATUS");
 
     /**
-     * Just calls the parent class constructor
-     */
-    function __construct()
-    {
-        parent::__construct();
-    }
-
-
-    /**
      *  Get a list of admin activities that a user is allowed to perform.
      *  This includes their name and their associated method.
      *
@@ -73,8 +64,6 @@ class UserModel extends Model
      */
     function getUserActivities($user_id)
     {
-        $this->db->selectDB(DB_NAME);
-
         $user_id = $this->db->escapeString($user_id);
 
         $activities = array();
@@ -139,8 +128,6 @@ class UserModel extends Model
      */
     function getUserSession($user_id)
     {
-        $this->db->selectDB(DB_NAME);
-
         $sql = "SELECT SESSION FROM USER_SESSION ".
             "WHERE USER_ID = '$user_id' LIMIT 1";
         $result = $this->db->execute($sql);
@@ -159,8 +146,6 @@ class UserModel extends Model
      */
     function setUserSession($user_id, $session)
     {
-        $this->db->selectDB(DB_NAME);
-
         $sql = "DELETE FROM USER_SESSION ".
             "WHERE USER_ID = '$user_id'";
         $this->db->execute($sql);
@@ -178,8 +163,6 @@ class UserModel extends Model
      */
     function getUserRoles($user_id)
     {
-        $this->db->selectDB(DB_NAME);
-
         $user_id = $this->db->escapeString($user_id);
 
         $roles = array();
@@ -211,7 +194,12 @@ class UserModel extends Model
      */
     function getUsers($limit=0, $num=100, $search_array = array())
     {
-        $limit = "LIMIT $limit, $num";
+        $db = $this->db;
+        $dbinfo = array("DBMS" => DBMS, "DB_HOST" => DB_HOST,
+            "DB_USER" => DB_USER, "DB_PASSWORD" => DB_PASSWORD,
+            "DB_NAME" => DB_NAME);
+        $bounds = $db->limitOffset($dbinfo, $limit, $num);
+        $limit = "LIMIT $bounds";
         list($where, $order_by) = 
             $this->searchArrayToWhereOrderClauses($search_array);
         $add_where = " WHERE ";
@@ -220,10 +208,10 @@ class UserModel extends Model
         }
         $where .= $add_where. "USER_ID != '".PUBLIC_USER_ID."'";
         $sql = "SELECT USER_ID, USER_NAME, FIRST_NAME, LAST_NAME,
-            EMAIL, STATUS FROM USER $where $order_by $limit";
-        $result = $this->db->execute($sql);
+            EMAIL, STATUS FROM USERS $where $order_by $limit";
+        $result = $db ->execute($sql);
         $i = 0;
-        while($users[$i] = $this->db->fetchArray($result)) {
+        while($users[$i] = $db->fetchArray($result)) {
             $i++;
         }
         unset($users[$i]); //last one will be null
@@ -238,7 +226,6 @@ class UserModel extends Model
      */
     function getUserCount($search_array = array())
     {
-        $this->db->selectDB(DB_NAME);
         list($where, $order_by) = 
             $this->searchArrayToWhereOrderClauses($search_array);
         $add_where = " WHERE ";
@@ -246,7 +233,7 @@ class UserModel extends Model
             $add_where = " AND ";
         }
         $where .= $add_where. "USER_ID != '".PUBLIC_USER_ID."'";
-        $sql = "SELECT COUNT(*) AS NUM FROM USER $where";
+        $sql = "SELECT COUNT(*) AS NUM FROM USERS $where";
         $result = $this->db->execute($sql);
         $row = $this->db->fetchArray($result);
         return $row['NUM'];
@@ -260,8 +247,7 @@ class UserModel extends Model
     function getUsername($user_id)
     {
         $user_id = $this->db->escapeString($user_id);
-        $this->db->selectDB(DB_NAME);
-        $sql = "SELECT USER_NAME FROM USER WHERE USER_ID=$user_id;";
+        $sql = "SELECT USER_NAME FROM USERS WHERE USER_ID=$user_id;";
         $result = $this->db->execute($sql);
         $row = $this->db->fetchArray($result);
         return $row['USER_NAME'];
@@ -275,8 +261,7 @@ class UserModel extends Model
     function getUserStatus($user_id)
     {
         $user_id = $this->db->escapeString($user_id);
-        $this->db->selectDB(DB_NAME);
-        $sql = "SELECT STATUS FROM USER WHERE USER_ID=$user_id;";
+        $sql = "SELECT STATUS FROM USERS WHERE USER_ID=$user_id;";
         $result = $this->db->execute($sql);
         $row = $this->db->fetchArray($result);
         return $row['STATUS'];
@@ -288,8 +273,7 @@ class UserModel extends Model
      */
     function getUser($username)
     {
-        $this->db->selectDB(DB_NAME);
-        $sql = "SELECT * FROM USER WHERE 
+        $sql = "SELECT * FROM USERS WHERE 
          UPPER(USER_NAME) = UPPER('$username') LIMIT 1";
         $result = $this->db->execute($sql);
         if(!$result) {
@@ -306,8 +290,7 @@ class UserModel extends Model
      */
     function getUserByEmailTime($email, $creation_time)
     {
-        $this->db->selectDB(DB_NAME);
-        $sql = "SELECT * FROM USER WHERE UPPER(EMAIL) = UPPER('$email')
+        $sql = "SELECT * FROM USERS WHERE UPPER(EMAIL) = UPPER('$email')
             AND CREATION_TIME='$creation_time' LIMIT 1";
         $result = $this->db->execute($sql);
         if(!$result) {
@@ -329,8 +312,7 @@ class UserModel extends Model
             BANNED_STATUS))) {
             return;
         }
-        $this->db->selectDB(DB_NAME);
-        $sql = "UPDATE USER SET STATUS=$status WHERE USER_ID=$user_id";
+        $sql = "UPDATE USERS SET STATUS=$status WHERE USER_ID=$user_id";
         $this->db->execute($sql);
     }
 
@@ -348,9 +330,8 @@ class UserModel extends Model
     function addUser($username, $password, $firstname='', $lastname='',
         $email='', $status = ACTIVE_STATUS)
     {
-        $this->db->selectDB(DB_NAME);
         $creation_time = microTimestamp();
-        $sql = "INSERT INTO USER(FIRST_NAME, LAST_NAME, 
+        $sql = "INSERT INTO USERS(FIRST_NAME, LAST_NAME, 
             USER_NAME, EMAIL, PASSWORD, STATUS, HASH, CREATION_TIME) VALUES ('".
             $this->db->escapeString($firstname)."', '" .
             $this->db->escapeString($lastname)."', '" .
@@ -387,7 +368,6 @@ class UserModel extends Model
      */
     function deleteUser($username)
     {
-        $this->db->selectDB(DB_NAME);
         $userid = $this->db->escapeString($this->getUserId($username));
         if($userid) {
             $sql = "DELETE FROM USER_ROLE WHERE USER_ID='".$userid."'";
@@ -397,7 +377,7 @@ class UserModel extends Model
             $sql = "DELETE FROM USER_SESSION WHERE USER_ID='".$userid."'";
             $result = $this->db->execute($sql);
         }
-        $sql = "DELETE FROM USER WHERE USER_ID='".$userid."'";;
+        $sql = "DELETE FROM USERS WHERE USER_ID='".$userid."'";;
         $result = $this->db->execute($sql);
     }
 
@@ -409,8 +389,7 @@ class UserModel extends Model
         $user_id = $user['USER_ID'];
         unset($user['USER_ID']);
         unset($user['USER_NAME']);
-        $this->db->selectDB(DB_NAME);
-        $sql = "UPDATE USER SET ";
+        $sql = "UPDATE USERS SET ";
         $comma ="";
         foreach($user as $field=>$value) {
             $sql .= "$comma $field='$value' ";
@@ -427,7 +406,6 @@ class UserModel extends Model
      */
     function addUserRole($userid, $roleid)
     {
-        $this->db->selectDB(DB_NAME);
         $sql = "INSERT INTO USER_ROLE VALUES ('".
             $this->db->escapeString($userid)."', '".
             $this->db->escapeString($roleid)."' ) ";
@@ -443,7 +421,6 @@ class UserModel extends Model
      */
     function deleteUserRole($userid, $roleid)
     {
-        $this->db->selectDB(DB_NAME);
         $sql = "DELETE FROM USER_ROLE WHERE USER_ID='".
             $this->db->escapeString($userid)."' AND  ROLE_ID='".
             $this->db->escapeString($roleid)."'";

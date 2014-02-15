@@ -102,6 +102,7 @@ class AdminController extends Controller implements CrawlConstants
         $data['SCRIPT'] = "";
         $data[CSRF_TOKEN] = $this->generateCSRFToken($user);
         $token_okay = $this->checkCSRFToken(CSRF_TOKEN, $user);
+
         if($token_okay) {
             if(isset($_SESSION['USER_ID']) && !isset($_REQUEST['u'])) {
                 $data = array_merge($data, $this->processSession());
@@ -121,6 +122,7 @@ class AdminController extends Controller implements CrawlConstants
                 if(is_array($session)) {
                     $_SESSION = $session;
                 }
+
                 $_SESSION['USER_ID'] = $user_id;
                 $data[CSRF_TOKEN] = $this->generateCSRFToken(
                     $_SESSION['USER_ID']);
@@ -213,6 +215,7 @@ class AdminController extends Controller implements CrawlConstants
         }
         $allowed = true;
         $activity_model = $this->model("activity");
+
         if(!PROFILE) {
             $allowed_activities = array( array(
                 "ACTIVITY_NAME" =>
@@ -240,7 +243,6 @@ class AdminController extends Controller implements CrawlConstants
                 $allowed = true;
             }
         }
-
         //for now we allow anyone to get crawlStatus
         if($allowed) {
             $data = $this->call($activity);

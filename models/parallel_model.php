@@ -91,9 +91,9 @@ class ParallelModel extends Model implements CrawlConstants
     /**
      *  {@inheritdoc}
      */
-    function __construct($db_name = DB_NAME)
+    function __construct($db_name = DB_NAME, $connect = true)
     {
-        parent::__construct($db_name);
+        parent::__construct($db_name, $connect);
         $this->current_machine = 0;//if known, controller will set later
     }
 
@@ -271,7 +271,6 @@ class ParallelModel extends Model implements CrawlConstants
         $generation = null;
         $summaries = array();
         $db = $this->db;
-        $db->selectDB(DB_NAME);
         foreach($lookups as $lookup => $lookup_info) {
             $scheme = (isset($lookup_info[0]) && is_string($lookup_info[0])) ?
                 substr($lookup_info[0], 0, 3) : "";

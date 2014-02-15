@@ -51,15 +51,6 @@ require_once BASE_DIR."/lib/fetch_url.php";
 class MachineModel extends Model
 {
 
-
-    /**
-     *  {@inheritdoc}
-     */
-    function __construct()
-    {
-        parent::__construct();
-    }
-
     /**
      *  Returns all the machine names stored in the DB
      *
@@ -67,9 +58,6 @@ class MachineModel extends Model
      */
     function getMachineList()
     {
-
-        $this->db->selectDB(DB_NAME);
-
         $machines = array();
 
         $sql = "SELECT * FROM MACHINE ORDER BY NAME DESC";
@@ -107,8 +95,6 @@ class MachineModel extends Model
                 return $info["MACHINE_URLS"];
             }
         }
-        $this->db->selectDB(DB_NAME);
-
         $sql = "SELECT URL FROM MACHINE WHERE HAS_QUEUE_SERVER > 0 ".
             "ORDER BY NAME DESC";
 
@@ -121,7 +107,6 @@ class MachineModel extends Model
             $i++;
         }
         unset($machines[$crawl_time][$i]); //last one will be null
-
         return $machines[$crawl_time];
     }
 
@@ -140,7 +125,6 @@ class MachineModel extends Model
     function addMachine($name, $url, $has_queue_server, $num_fetchers,
         $parent = "")
     {
-        $this->db->selectDB(DB_NAME);
         if($has_queue_server == true) {
             $has_string = "1";
         } else {
@@ -162,7 +146,6 @@ class MachineModel extends Model
      */
     function deleteMachine($machine_name)
     {
-        $this->db->selectDB(DB_NAME);
         $sql = "DELETE FROM MACHINE WHERE NAME='$machine_name'";
         $this->db->execute($sql);
 

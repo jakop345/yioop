@@ -1315,6 +1315,7 @@ class CrawlComponent extends Component implements CrawlConstants
         $data['SOURCE_TYPES'] = array(-1 => tl('crawl_component_media_kind'),
             "video" => tl('crawl_component_video'),
             "rss" => tl('crawl_component_rss_feed'),
+            "group" => tl('crawl_component_group_feed'),
             "page" => tl('crawl_component_static_page'));
         $source_type_flag = false;
         if(isset($_REQUEST['sourcetype']) &&

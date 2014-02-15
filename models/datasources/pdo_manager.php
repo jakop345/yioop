@@ -66,27 +66,19 @@ class PdoManager extends DatasourceManager
      */
     var $num_affected = 0;
 
-    /** {@inheritdoc} */
-    function __construct()
-    {
-        parent::__construct();
-    }
+    var $to_upper_dbms;
 
     /** {@inheritdoc} */
     function connect($db_host = DB_HOST, $db_user = DB_USER,
-        $db_password = DB_PASSWORD)
+        $db_password = DB_PASSWORD, $db_name = DB_NAME)
     {
+        //assuming db_name is part of $db_host
         $this->pdo = new PDO($db_host, $db_user, $db_password);
+        $this->to_upper_dbms = false;
+        if(stristr($db_host, 'PGSQL')) {
+            $this->to_upper_dbms = true;
+        }
         return $this->pdo;
-    }
-
-    /** {@inheritdoc} */
-    function selectDB($db_name)
-    {
-        /* In this case $db_host in connect would also specify the database
-           so do nothing
-         */
-        return true;
     }
 
     /** {@inheritdoc} */
@@ -97,14 +89,21 @@ class PdoManager extends DatasourceManager
     }
 
     /** {@inheritdoc} */
-    function exec($sql)
+    function exec($sql, $params = array())
     {
-        if(stristr($sql, "SELECT ")) {
-            $result = $this->pdo->query($sql);
-            $this->num_affected = 0;
+        $is_select = strtoupper(substr(ltrim($sql), 0, 6)) == "SELECT";
+        if($params == array()) {
+            if($is_select) {
+                $result = $this->pdo->query($sql);
+                $this->num_affected = 0;
+            } else {
+                $this->num_affected = $this->pdo->exec($sql);
+                $result = $this->num_affected + 1;
+            }
         } else {
-            $this->num_affected = $this->pdo->exec($sql);
-            $result = $this->num_affected + 1;
+            $statement = $this->pdo->prepare($sql);
+            $result = $this->pdo->execute($statement, $params);
+            $this->num_affected = $this->pdo->rowCount();
         }
         return $result;
     }
@@ -126,8 +125,14 @@ class PdoManager extends DatasourceManager
     function fetchArray($result)
     {
         $row = $result->fetch(PDO::FETCH_ASSOC);
-
-        return $row;
+        if(!$this->to_upper_dbms || !$row) {
+            return $row;
+        }
+        $out_row = array();
+        foreach($row as $field => $value) {
+            $out_row[strtoupper($field)] = $value;
+        }
+        return $out_row;
     }
 
 
@@ -141,7 +146,6 @@ class PdoManager extends DatasourceManager
             pair of quotes we need to strip inner quotes
         */
     }
-
 
 }
 

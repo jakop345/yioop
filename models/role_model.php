@@ -54,23 +54,12 @@ class RoleModel extends Model
     var $search_table_column_map = array("name"=>"NAME");
 
     /**
-     *  {@inheritdoc}
-     */
-    function __construct()
-    {
-        parent::__construct();
-    }
-
-
-    /**
      *  Get the activities  (name, method, id) that a given role can perform
      *
      *  @param string $role_id  the rolid_id to get activities for
      */
     function getRoleActivities($role_id)
     {
-        $this->db->selectDB(DB_NAME);
-
         $role_id = $this->db->escapeString($role_id);
 
         $activities = array();
@@ -128,8 +117,6 @@ class RoleModel extends Model
      */
     function getRoleList()
     {
-        $this->db->selectDB(DB_NAME);
-
         $roles = array();
 
         $sql = "SELECT R.ROLE_ID AS ROLE_ID, R.NAME AS ROLE_NAME ".
@@ -157,8 +144,6 @@ class RoleModel extends Model
      */
     function getRoleId($rolename)
     {
-        $this->db->selectDB(DB_NAME);
-
         $sql = "SELECT R.ROLE_ID AS ROLE_ID FROM ".
             " ROLE R WHERE R.NAME = '".$this->db->escapeString($rolename)."' ";
         $result = $this->db->execute($sql);
@@ -174,13 +159,18 @@ class RoleModel extends Model
      */
     function getRoles($limit=0, $num=100, $search_array = array())
     {
-        $limit = "LIMIT $limit, $num";
+        $db = $this->db;
+        $dbinfo = array("DBMS" => DBMS, "DB_HOST" => DB_HOST,
+            "DB_USER" => DB_USER, "DB_PASSWORD" => DB_PASSWORD,
+            "DB_NAME" => DB_NAME);
+        $bounds = $db->limitOffset($dbinfo, $limit, $num);
+        $limit = "LIMIT $bounds";
         list($where, $order_by) = 
             $this->searchArrayToWhereOrderClauses($search_array);
         $sql = "SELECT NAME FROM ROLE $where $order_by $limit";
-        $result = $this->db->execute($sql);
+        $result = $db->execute($sql);
         $i = 0;
-        while($roles[$i] = $this->db->fetchArray($result)) {
+        while($roles[$i] = $db->fetchArray($result)) {
             $i++;
         }
         unset($roles[$i]); //last one will be null
@@ -195,7 +185,6 @@ class RoleModel extends Model
      */
     function getRoleCount($search_array = array())
     {
-        $this->db->selectDB(DB_NAME);
         list($where, $order_by) = 
             $this->searchArrayToWhereOrderClauses($search_array);
         $sql = "SELECT COUNT(*) AS NUM FROM ROLE $where";
@@ -210,7 +199,6 @@ class RoleModel extends Model
      */
     function getRole($rolename)
     {
-        $this->db->selectDB(DB_NAME);
         $sql = "SELECT * FROM ROLE WHERE 
          UPPER(NAME) = UPPER('$rolename') LIMIT 1";
         $result = $this->db->execute($sql);
@@ -229,7 +217,6 @@ class RoleModel extends Model
      */
     function addRole($rolename)
     {
-        $this->db->selectDB(DB_NAME);
         $sql = "INSERT INTO ROLE (NAME) VALUES ('".
             $this->db->escapeString($rolename)."')";
 
@@ -245,7 +232,6 @@ class RoleModel extends Model
      */
     function addActivityRole($roleid, $activityid)
     {
-        $this->db->selectDB(DB_NAME);
         $sql = "INSERT INTO ROLE_ACTIVITY VALUES ('".
             $this->db->escapeString($roleid)."', '".
             $this->db->escapeString($activityid)."')";
@@ -261,7 +247,6 @@ class RoleModel extends Model
      */
     function deleteRole($roleid)
     {
-        $this->db->selectDB(DB_NAME);
         $sql = "DELETE FROM ROLE_ACTIVITY WHERE ROLE_ID='$roleid'";
 
         $this->db->execute($sql);
@@ -279,7 +264,6 @@ class RoleModel extends Model
      */
     function deleteActivityRole($roleid, $activityid)
     {
-        $this->db->selectDB(DB_NAME);
         $sql = "DELETE FROM ROLE_ACTIVITY WHERE ROLE_ID='".
             $this->db->escapeString($roleid)."' AND ACTIVITY_ID='".
             $this->db->escapeString($activityid)."'";

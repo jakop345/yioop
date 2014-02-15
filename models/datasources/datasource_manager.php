@@ -67,23 +67,20 @@ abstract class DatasourceManager
     }
 
     /**
-     * Connects to a DBMS using data provided or from config.php
+     * Connects to a database on a DBMS using data provided or from config.php
      *
      * @param string $db_host the hostname of where the database is located
      *      (not used in all dbms's)
      * @param string $db_user the user to connect as
      * @param string $db_password the password of the user to connect as
+     * @param string $db_name the name of the database on host we are
+     *  connecting to
      * @return mixed return false if not successful and some kind of
      *      connection object/identifier otherwise
      */
 
-    abstract function connect($db_host = DB_HOST, $db_user = DB_USER,
-        $db_password = DB_PASSWORD);
-
-    /**
-     *  Connects to the correct DB on that system
-     */
-    abstract function selectDB($db_name);
+    abstract function connect($db_host = DB_HOST,
+        $db_user = DB_USER, $db_password = DB_PASSWORD, $db_name = DB_NAME);
 
     /**
      *  Closes connections to DBMS
@@ -142,17 +139,22 @@ abstract class DatasourceManager
      * This method operates either query or data manipulation statements
      *
      * @param string $sql  SQL statement to execute
+     * @param array $param bind_name => value values to interpolate into
+     *  the $sql to be executes
      * @return mixed false if query fails, resource or true otherwise
 
      */
-    function execute($sql)
+    function execute($sql, $params = array())
     {
         if(QUERY_STATISTICS) {
             $query_info = array();
             $query_info['QUERY'] = $sql;
+            if($params != array()) {
+                $query_info['QUERY'] .= "<br />".print_r($params, true);
+            }
             $start_time = microtime();
         }
-        $result =$this->exec($sql);
+        $result =$this->exec($sql, $params);
         if(QUERY_STATISTICS) {
             $query_info['ELAPSED_TIME'] = changeInMicrotime($start_time);
             $this->total_time += $query_info['ELAPSED_TIME'];
@@ -293,11 +295,11 @@ abstract class DatasourceManager
                    as auto_increment if don't give value
                  */
         }
-        if($dbinfo['DBMS'] == 'pdo') {
+        if(stristr($dbinfo['DBMS'], 'pdo')) {
             if(stristr($dbinfo['DB_HOST'], 'SQLITE')) {
                 $auto_increment = "";
             } else if(stristr($dbinfo['DB_HOST'], 'PGSQL')) { //POSTGRES
-                $auto_increment = "SERIAL";
+                $auto_increment = "";
             } else if(stristr($dbinfo['DB_HOST'], 'OCI')) { // ORACLE
                 $auto_increment = "DEFAULT SYS_GUID()";
             } else if(stristr($dbinfo['DB_HOST'], 'IBM')) { //DB2
@@ -311,5 +313,28 @@ abstract class DatasourceManager
         return $auto_increment;
     }
 
+    /**
+     *
+     */
+    function serialType($dbinfo)
+    {
+        $serial = "INTEGER"; //ONLY POSTGRES IS WEIRD
+        if($dbinfo['DBMS'] == 'pdo' && stristr($dbinfo['DB_HOST'], 'PGSQL')) {
+            $serial = "SERIAL"; //POSTGRES
+        }
+        return $serial;
+    }
+
+    /**
+     *
+     */
+    function limitOffset($dbinfo, $limit, $num)
+    {
+        $bounds = "$limit , $num";
+        if($dbinfo['DBMS'] == 'pdo' && stristr($dbinfo['DB_HOST'], 'PGSQL')) {
+            $bounds = "$num OFFSET $limit"; //POSTGRES
+        }
+        return $bounds;
+    }
 }
 ?>

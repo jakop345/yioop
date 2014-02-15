@@ -105,16 +105,6 @@ class LocaleModel extends Model
      */
     var $extensions = array("php");
 
-
-    /**
-     *  {@inheritdoc}
-     */
-    function __construct()
-    {
-       parent::__construct();
-    }
-
-
     /**
      * Loads the provided locale's configure file (containing transalation) and
      * calls setlocale to set up locale specific string formatting
@@ -125,8 +115,6 @@ class LocaleModel extends Model
      */
     function initialize($locale_tag)
     {
-        $this->db->selectDB(DB_NAME);
-
         $this->configure = parse_ini_file(
             LOCALE_DIR."/$locale_tag/configure.ini", true);
         if($locale_tag != DEFAULT_LOCALE) {
@@ -136,9 +124,11 @@ class LocaleModel extends Model
         $this->locale_tag = $locale_tag;
         $sql = "SELECT LOCALE_NAME, WRITING_MODE ".
             " FROM LOCALE WHERE LOCALE_TAG ='$locale_tag'";
-
         $result = $this->db->execute($sql);
-        $row = $this->db->fetchArray($result);
+        $row = false;
+        if($result) {
+            $row = $this->db->fetchArray($result);
+        }
         $this->locale_name = $row['LOCALE_NAME'];
         $this->writing_mode = $row['WRITING_MODE'];
 
@@ -164,10 +154,6 @@ class LocaleModel extends Model
      */
     function getLocaleList()
     {
-        $this->db->selectDB(DB_NAME);
-
-
-
         $sql = "SELECT LOCALE_ID, LOCALE_TAG, LOCALE_NAME, WRITING_MODE ".
             " FROM LOCALE";
 
@@ -227,8 +213,6 @@ class LocaleModel extends Model
      */
     function addLocale($locale_name, $locale_tag, $writing_mode)
     {
-        $this->db->selectDB(DB_NAME);
-
         $sql = "INSERT INTO LOCALE".
             "(LOCALE_NAME, LOCALE_TAG, WRITING_MODE) VALUES".
             "('".$this->db->escapeString($locale_name).
@@ -252,8 +236,6 @@ class LocaleModel extends Model
      */
     function deleteLocale($locale_tag)
     {
-        $this->db->selectDB(DB_NAME);
-
         $sql = "DELETE FROM LOCALE WHERE LOCALE_TAG = '".
             $this->db->escapeString($locale_tag)."'";
 
@@ -337,8 +319,6 @@ class LocaleModel extends Model
      */
     function getStringData($locale_tag)
     {
-        $this->db->selectDB(DB_NAME);
-
         $data = parse_ini_file(LOCALE_DIR."/$locale_tag/configure.ini", true);
         $data = $data['strings'];
 
@@ -378,8 +358,6 @@ class LocaleModel extends Model
      */
     function updateStringData($locale_tag, $new_strings)
     {
-        $this->db->selectDB(DB_NAME);
-
         $sql = "SELECT LOCALE_ID FROM LOCALE ".
             "WHERE LOCALE_TAG = '$locale_tag' LIMIT 1";
         $result = $this->db->execute($sql);

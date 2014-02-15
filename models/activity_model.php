@@ -47,17 +47,6 @@ require_once BASE_DIR."/models/model.php";
  */
 class ActivityModel extends Model
 {
-
-
-    /**
-     * {@inheritdoc}
-     */
-    function __construct()
-    {
-       parent::__construct();
-    }
-
-
     /**
      * Given the method name of a method to perform an activity return the
      * translated activity name
@@ -68,7 +57,6 @@ class ActivityModel extends Model
     function getActivityNameFromMethodName($method_name)
     {
         $db = $this->db;
-        $db->selectDB(DB_NAME);
 
         $method_name = $db->escapeString($method_name);
 
@@ -121,7 +109,6 @@ class ActivityModel extends Model
     function getActivityList()
     {
         $db = $this->db;
-        $db->selectDB(DB_NAME);
 
         $activities = array();
         $locale_tag = getLocaleTag();

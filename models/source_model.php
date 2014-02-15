@@ -56,14 +56,6 @@ class SourceModel extends Model
     const MAX_FEEDS_ONE_GO = 100;
 
     /**
-     * Just calls the parent class constructor
-     */
-    function __construct()
-    {
-        parent::__construct();
-    }
-
-    /**
      *  Returns a list of media sources such as (video, rss sites) and their
      *  URL and thumb url formats, etc
      *
@@ -76,7 +68,6 @@ class SourceModel extends Model
     function getMediaSources($source_type = "", $has_no_feed_items = false)
     {
         $sources = array();
-        $this->db->selectDB(DB_NAME);
         $sql = "SELECT M.* FROM MEDIA_SOURCE M";
         if($source_type !="") {
             $sql .= " WHERE TYPE='$source_type'";
@@ -121,16 +112,15 @@ class SourceModel extends Model
     function addMediaSource($name, $source_type, $source_url, $thumb_url,
         $language = DEFAULT_LOCALE)
     {
-        $this->db->selectDB(DB_NAME);
-
+        $db = $this->db;
         $sql = "INSERT INTO MEDIA_SOURCE VALUES ('".time()."','".
-            $this->db->escapeString($name)."','".
-            $this->db->escapeString($source_type)."','".
-            $this->db->escapeString($source_url)."','".
-            $this->db->escapeString($thumb_url)."','".
-            $this->db->escapeString($language)."')";
+            $db->escapeString($name)."','".
+            $db->escapeString($source_type)."','".
+            $db->escapeString($source_url)."','".
+            $db->escapeString($thumb_url)."','".
+            $db->escapeString($language)."')";
 
-        $this->db->execute($sql);
+        $db->execute($sql);
     }
 
     /**
@@ -140,7 +130,6 @@ class SourceModel extends Model
      */
     function deleteMediaSource($timestamp)
     {
-        $this->db->selectDB(DB_NAME);
         $sql = "SELECT * FROM MEDIA_SOURCE WHERE TIMESTAMP='$timestamp'";
         $result = $this->db->execute($sql);
         if($result) {
@@ -169,11 +158,10 @@ class SourceModel extends Model
     {
         $subsearches = array();
         $db = $this->db;
-        $db->selectDB(DB_NAME);
         $locale_tag = getLocaleTag();
 
         $sql = "SELECT LOCALE_ID FROM LOCALE ".
-            "WHERE LOCALE_TAG = '$locale_tag' LIMIT 0, 1";
+            "WHERE LOCALE_TAG = '$locale_tag' LIMIT 1";
         $result = $db->execute($sql);
         $row = $db->fetchArray($result);
 
@@ -191,9 +179,8 @@ class SourceModel extends Model
             $id = $subsearches[$i]["TRANSLATION_ID"];
             $sub_sql = "SELECT TRANSLATION AS SUBSEARCH_NAME ".
                 "FROM TRANSLATION_LOCALE ".
-                " WHERE TRANSLATION_ID=$id AND LOCALE_ID=$locale_id LIMIT 0, 1";
+                " WHERE TRANSLATION_ID=$id AND LOCALE_ID=$locale_id LIMIT 1";
                 // maybe do left join at some point
-
             $result_sub =  $db->execute($sub_sql);
             $translate = false;
             if($result_sub) {
@@ -209,6 +196,7 @@ class SourceModel extends Model
             $i++;
         }
         unset($subsearches[$i]); //last one will be null
+
         return $subsearches;
     }
 
@@ -225,7 +213,6 @@ class SourceModel extends Model
      */
     function addSubsearch($folder_name, $index_identifier, $per_page)
     {
-        $this->db->selectDB(DB_NAME);
         $locale_string = "db_subsearch_".$folder_name;
 
 
@@ -252,7 +239,6 @@ class SourceModel extends Model
      */
     function deleteSubsearch($folder_name)
     {
-        $this->db->selectDB(DB_NAME);
         $locale_string = "db_subsearch_".$folder_name;
 
         $sql = "SELECT * FROM TRANSLATION WHERE IDENTIFIER_STRING =".
@@ -286,7 +272,6 @@ class SourceModel extends Model
     function updateFeedItems($age = self::ONE_WEEK)
     {
         $time = time();
-        $this->db->selectDB(DB_NAME);
 
         $feeds_one_go = self::MAX_FEEDS_ONE_GO;
 

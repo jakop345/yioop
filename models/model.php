@@ -97,13 +97,16 @@ class Model implements CrawlConstants
      * engine database
      *
      * @param string $db_name  the name of the database for the search engine
+     * @param bool $connect whether to connect to the database by default
+     *      after making the datasource class
      */
-    function __construct($db_name = DB_NAME)
+    function __construct($db_name = DB_NAME, $connect = true)
     {
         $db_class = ucfirst(DBMS)."Manager";
         $this->db = new $db_class();
-
-        $this->db->connect();
+        if($connect) {
+            $this->db->connect();
+        }
         $this->db_name = $db_name;
 
     }
@@ -430,8 +433,7 @@ EOD;
      */
     function getUserId($username)
     {
-        $this->db->selectDB(DB_NAME);
-        $sql = "SELECT USER_ID FROM USER WHERE
+        $sql = "SELECT USER_ID FROM USERS WHERE
             UPPER(USER_NAME) = UPPER('$username') LIMIT 1";
         $result = $this->db->execute($sql);
         if(!$result) {
@@ -466,12 +468,12 @@ EOD;
                 $where .= $where_and;
                 switch($comparison) {
                     case "=":
-                         $where .= "UPPER($field_name)=UPPER('".
-                            $this->db->escapeString($value)."')";
+                         $where .= "$field_name='".
+                            $this->db->escapeString($value)."'";
                     break;
                     case "!=":
-                         $where .= "UPPER($field_name)!=UPPER('".
-                            $this->db->escapeString($value)."')";
+                         $where .= "$field_name!='".
+                            $this->db->escapeString($value)."'";
                     break;
                     case "CONTAINS":
                          $where .= "UPPER($field_name) LIKE UPPER('%".

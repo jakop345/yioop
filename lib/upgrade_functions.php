@@ -79,13 +79,13 @@ function upgradeLocales()
 function upgradeDatabaseWorkDirectoryCheck()
 {
     $model = new Model();
-    $model->db->selectDB(DB_NAME);
     $sql = "SELECT ID FROM VERSION";
     for($i = 0; $i < 3; $i++) {
         $result = @$model->db->execute($sql);
         if($result !== false) {
             $row = $model->db->fetchArray($result);
-            if(isset($row['ID']) && $row['ID'] >= YIOOP_VERSION) {
+            if((isset($row['ID']) && $row['ID'] >= YIOOP_VERSION) ||
+                (isset($row['id']) && $row['id'] >= YIOOP_VERSION)) {
                 return false;
             } else {
                 return true;
@@ -103,9 +103,8 @@ function upgradeDatabaseWorkDirectoryCheck()
  */
 function upgradeDatabaseWorkDirectory()
 {
-    $versions = range(0, YIOOP_VERSION);
+    $versions = range(1, YIOOP_VERSION);
     $model = new Model();
-    $model->db->selectDB(DB_NAME);
     $sql = "SELECT ID FROM VERSION";
     $result = @$model->db->execute($sql);
     if($result !== false) {
@@ -113,7 +112,7 @@ function upgradeDatabaseWorkDirectory()
         if(isset($row['ID']) && in_array($row['ID'], $versions)) {
             $current_version = $row['ID'];
         } else {
-            $current_version = 0;
+            $current_version = 1;
         }
     } else {
         exit(); // maybe someone else has locked DB, so bail
@@ -145,7 +144,7 @@ function upgradeDatabaseVersion1(&$db)
 function upgradeDatabaseVersion2(&$db)
 {
     $db->execute("UPDATE VERSION SET ID=2 WHERE ID=1");
-    $db->execute("ALTER TABLE USER ADD UNIQUE ( USER_NAME )" );
+    $db->execute("ALTER TABLE USERS ADD UNIQUE ( USER_NAME )" );
     $db->execute("INSERT INTO LOCALE VALUES (
         17, 'kn', 'ಕನ್ನಡ', 'lr-tb')");
     $db->execute("INSERT INTO LOCALE VALUES (
@@ -599,10 +598,10 @@ function upgradeDatabaseVersion19(&$db)
         FORGET_AGE INTEGER)");
     $dbinfo = array("DBMS" => DBMS, "DB_HOST" => DB_HOST, "DB_NAME" => DB_NAME,
         "DB_PASSWORD" => DB_PASSWORD);
-    $sql = "ALTER TABLE USER RENAME TO USER_OLD";
+    $sql = "ALTER TABLE USERS RENAME TO USER_OLD";
     $db->execute($sql);
     $auto_increment = $db->autoIncrement($dbinfo);
-    $db->execute("CREATE TABLE USER(USER_ID INTEGER PRIMARY KEY $auto_increment,
+    $db->execute("CREATE TABLE USERS(USER_ID INTEGER PRIMARY KEY $auto_increment,
         FIRST_NAME VARCHAR(16), LAST_NAME VARCHAR(16),
         USER_NAME VARCHAR(16) UNIQUE, EMAIL VARCHAR(60),
         PASSWORD CHAR(60), STATUS INTEGER, HASH CHAR(60))");
@@ -624,7 +623,6 @@ function upgradeDatabaseVersion19(&$db)
     $db->disconnect();
     $db->connect();
     $db->dbname = NULL;
-    $db->selectDB(DB_NAME);
     $sql = "DROP TABLE USER_OLD";
     $db->execute($sql);
 

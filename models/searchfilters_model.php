@@ -64,9 +64,9 @@ class SearchfiltersModel extends Model implements CrawlConstants
     /**
      *  {@inheritdoc}
      */
-    function __construct($db_name = DB_NAME)
+    function __construct($db_name = DB_NAME, $connect = true)
     {
-        parent::__construct($db_name);
+        parent::__construct($db_name, $connect);
         $this->dir_name = CRAWL_DIR."/search_filters";
         if(!file_exists(CRAWL_DIR."/search_filters")) {
             mkdir($this->dir_name);

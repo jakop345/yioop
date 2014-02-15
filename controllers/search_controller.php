@@ -92,6 +92,7 @@ class SearchController extends Controller implements CrawlConstants
         list($subsearches, $no_query) = $this->initializeSubsearches();
 
         $format_info = $this->initializeResponseFormat();
+
         if(!$format_info) { return;}
         list($view, $web_flag, $raw, $results_per_page, $limit) = $format_info;
 
@@ -128,7 +129,6 @@ class SearchController extends Controller implements CrawlConstants
             }
         }
         $data['ELAPSED_TIME'] = changeInMicrotime($start_time);
-
         if ($view == "serial" || $view == "json") {
             if(isset($data["PAGES"])) {
                 $count = count($data["PAGES"]);
@@ -382,9 +382,8 @@ class SearchController extends Controller implements CrawlConstants
         $crawl_model = $this->model("crawl");
         $this->model("phrase")->current_machine = $current_machine;
         $crawl_model->current_machine = $current_machine;
-
+        
         $machine_urls = $this->model("machine")->getQueueServerUrls();
-
         $current_its = $crawl_model->getCurrentIndexDatabaseName();
         $index_timestamp = $this->getIndexTimestamp();
         $is_mix = false;

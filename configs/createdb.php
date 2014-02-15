@@ -61,20 +61,30 @@ require_once BASE_DIR."/models/profile_model.php";
 /** For crawlHash function */
 require_once BASE_DIR."/lib/utility.php";
 
-$profile_model = new ProfileModel();
+$profile_model = new ProfileModel(DB_NAME, false);
 $db_class = ucfirst(DBMS)."Manager";
-$db = new $db_class();
-$db->connect();
 
-$dbinfo = array("DBMS" => DBMS, "DB_HOST" => DB_HOST, "DB_NAME" => DB_NAME,
-    "DB_PASSWORD" => DB_PASSWORD);
+$dbinfo = array("DBMS" => DBMS, "DB_HOST" => DB_HOST, "DB_USER" => DB_USER,
+    "DB_PASSWORD" => DB_PASSWORD, "DB_NAME" => DB_NAME);
 if(!in_array(DBMS, array('sqlite', 'sqlite3'))) {
+    $db = new $db_class();
+    //we deliberately set DN_NAME blank so just connect to DBMS not DB.
+    $host = str_ireplace("dbname=".$dbinfo['DB_NAME'],"",
+    DB_HOST); // to get rid of database from dsn postgres
+    $host = str_ireplace("database=".$dbinfo['DB_NAME'],"",
+        $host); // informix, ibm (use connection string DSN)
+    $host = str_replace(";;",";", $host);
+    $db->connect($host, DB_USER, DB_PASSWORD, "");
     $db->execute("DROP DATABASE IF EXISTS ".DB_NAME);
     $db->execute("CREATE DATABASE ".DB_NAME);
+    $db->disconnect();
+
+    $db->connect(); // default connection goes to actual DB
 } else {
     @unlink(CRAWL_DIR."/data/".DB_NAME.".db");
+    $db = new $db_class();
+    $db->connect();
 }
-$db->selectDB(DB_NAME);
 
 if(!$profile_model->createDatabaseTables($db, $dbinfo)) {
     echo "\n\nCouldn't create database tables!!!\n\n";
@@ -86,13 +96,14 @@ $db->execute("INSERT INTO VERSION VALUES (19)");
 $creation_time = microTimestamp();
 
 //default account is root without a password
-$sql ="INSERT INTO USER VALUES (".ROOT_ID.", 'admin', 'admin','root',
+$sql ="INSERT INTO USERS VALUES (".ROOT_ID.", 'admin', 'admin','root',
         'root@dev.null', '".crawlCrypt('')."', '".ACTIVE_STATUS.
         "', '".crawlCrypt('root'.AUTH_KEY.$creation_time)."','$creation_time')";
+
 $db->execute($sql);
 // public account is an inactive account for used for public permissions
 //default account is root without a password
-$sql ="INSERT INTO USER VALUES (".PUBLIC_USER_ID.", 'all', 'all','public',
+$sql ="INSERT INTO USERS VALUES (".PUBLIC_USER_ID.", 'all', 'all','public',
         'public@dev.null', '".crawlCrypt('')."', '".INACTIVE_STATUS.
         "', '".crawlCrypt('public'.AUTH_KEY.$creation_time)."',
         '$creation_time')";

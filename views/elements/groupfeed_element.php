@@ -55,6 +55,11 @@ class GroupfeedElement extends Element implements CrawlConstants
             <?php
             $base_query = $data['PAGING_QUERY']."&amp;".CSRF_TOKEN."=".
                 $data[CSRF_TOKEN];
+            $paging_query = $data['PAGING_QUERY']."&amp;".CSRF_TOKEN."=".
+                    $data[CSRF_TOKEN];
+            if(isset($data['ADD_PAGING_QUERY'])) {
+                $paging_query .= $data['ADD_PAGING_QUERY'];
+            }
             if($data['SUBTITLE'] != "") { ?>
                 <div class="float-opposite">
                 <a href="<?php e($base_query) ?>"><?php
@@ -96,12 +101,26 @@ class GroupfeedElement extends Element implements CrawlConstants
                 <?php
                 $subsearch = (isset($data["SUBSEARCH"])) ? $data["SUBSEARCH"] :
                     "";
+                if($page["MEMBER_ACCESS"] == GROUP_READ_WRITE &&
+                    !$page['USER_ID'] == "" &&
+                    ($page['USER_ID'] == $_SESSION['USER_ID'] ||
+                    $_SESSION['USER_ID'] == ROOT_ID)) {
+                    ?>
+                    <div class="float-opposite" >[<a
+                    href="javascript:update_post_form(<?php
+                        e($page['ID']); ?>)"><?php
+                        e(tl('groupfeed_element_edit')); ?></a>]
+                    [<a href="<?php e($paging_query.'&amp;arg=deletepost&amp;'.
+                        "post_id=".$page['ID']); ?>" title="<?php
+                        e(tl('groupfeed_element_delete')); ?>">X</a>]</div>
+                <?php
+                }
                 ?>
-
+                <div id='result-<?php e($page['ID']); ?>'>
                 <h2><a href="<?php e($base_query . "&amp;just_thread=".
                     $page['PARENT_ID']);?>" rel="nofollow" <?php
                 if($open_in_tabs) { ?> target="_blank" <?php }
-                ?>><?php  e($page[self::TITLE]); ?></a>.
+                ?>><?php e($page[self::TITLE]); ?></a>.
                 <a class="gray-link" rel='nofollow' href="<?php e($base_query.
                     "&amp;just_group_id=".$page['GROUP_ID']);?>" ><?php
                     e($page[self::SOURCE_NAME]."</a>"
@@ -116,6 +135,7 @@ class GroupfeedElement extends Element implements CrawlConstants
                     $page[self::DESCRIPTION] : "";?>
                 <div><?php e($description); ?></div>
                 <div class="float-opposite">
+                    <?php if($page["MEMBER_ACCESS"] == GROUP_READ_WRITE) { ?>
                     <a href='javascript:comment_form(<?php
                     e("{$page['ID']}, {$page['PARENT_ID']}, ".
                         "{$page['GROUP_ID']}"); ?>)'><?php
@@ -124,6 +144,10 @@ class GroupfeedElement extends Element implements CrawlConstants
                     e("{$page['ID']},".
                         "{$page['GROUP_ID']}"); ?>)'><?php
                         e(tl('groupfeed_element_start_thread'));?></a>.
+                    <?php
+                    }
+                    ?>
+                </div>
                 </div>
                 <div id='<?php e($page["ID"]); ?>'></div>
                 </div>
@@ -134,11 +158,6 @@ class GroupfeedElement extends Element implements CrawlConstants
             } //end foreach
             ?>
             <?php
-            $paging_query = $data['PAGING_QUERY']."&amp;".CSRF_TOKEN."=".
-                    $data[CSRF_TOKEN];
-            if(isset($data['ADD_PAGING_QUERY'])) {
-                $paging_query .= $data['ADD_PAGING_QUERY'];
-            }
             $this->view->helper("pagination")->render(
                 $paging_query,
                 $data['LIMIT'], $data['RESULTS_PER_PAGE'], $data['TOTAL_ROWS']);
@@ -210,6 +229,45 @@ class GroupfeedElement extends Element implements CrawlConstants
                     '</form>';
             } else {
                 elt(id).innerHTML = "";
+            }
+        }
+
+        function update_post_form(id)
+        {
+            tmp = '<div class="update"></div>';
+            start_elt = elt(id).innerHTML.substr(0, tmp.length)
+            if(start_elt != tmp) {
+                setDisplay('result-'+id, false);
+                elt(id).innerHTML =
+                    tmp +
+                    '<form action="./" >' +
+                    '<input type="hidden" name="c" value="admin" />' +
+                    '<input type="hidden" name="a" value="groupFeeds" />' +
+                    '<input type="hidden" name="arg" value="updatepost" />' +
+                    '<input type="hidden" name="id" value="' +
+                        id + '" />' +
+                    '<input type="hidden" name="<?php e(CSRF_TOKEN); ?>" '+
+                    'value="<?php e($data[CSRF_TOKEN]); ?>" />' +
+                    '<h2><b><?php
+                        e(tl("groupfeed_element_edit_post"));
+                    ?></b></h2>'+
+                    '<p><b><label for="title-'+ id +'" ><?php
+                        e(tl("groupfeed_element_subject"));
+                    ?></label></b></p>' +
+                    '<p><input type="text" name="title" value="" '+
+                    ' maxlength="80" class="wide-field"/></p>' +
+                    '<p><b><label for="description-'+ id +'" ><?php
+                        e(tl("groupfeed_element_post"));
+                    ?></label></b></p>' +
+                    '<textarea class="short-text-area" '+
+                    'id="description-'+ id +'" name="description" ></textarea>'+
+                    '<button class="button-box float-opposite" ' +
+                    'type="submit">Save</button>' +
+                    '<div>&nbsp;</div>'+
+                    '</form>';
+            } else {
+                elt(id).innerHTML = "";
+                setDisplay('result-'+id, true);
             }
         }
         </script>

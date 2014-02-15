@@ -1421,6 +1421,9 @@ class AccountaccessComponent extends Component
 
     /**
      *
+     *  @param array &$data
+     *  @param array &$group
+     *  @param array $update_fields
      */
     function updateGroup(&$data, &$group, $update_fields)
     {

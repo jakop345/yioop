@@ -65,7 +65,6 @@ class VisitorModel extends Model
      */
     function getVisitor($ip_address, $page_name = 'captcha_time_out')
     {
-        $this->db->selectDB(DB_NAME);
         $ip_address = $this->db->escapeString($ip_address);
         $sql = "SELECT * FROM VISITOR WHERE ADDRESS='$ip_address'
         AND PAGE_NAME='$page_name' LIMIT 1";

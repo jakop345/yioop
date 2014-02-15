@@ -1136,10 +1136,10 @@ ul.in-list li
     font-size: 14pt;
     font-weight: normal;
 }
-.group-result div
+ div.group-result
 {
     font-size: 12pt;
-    width:5.5in;
+    width:97%;
 }
 
 .serp-links-score
