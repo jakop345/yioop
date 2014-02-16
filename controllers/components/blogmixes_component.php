@@ -141,6 +141,8 @@ class BlogmixesComponent extends Component implements CrawlConstants
                     $title = "-- ".$parent_item['TITLE'];
                     $group_model->addGroupItem($parent_item["ID"],
                         $group_id, $user_id, $title, $description);
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('blogmixes_component_comment_added'). "</h1>')";
                 break;
                 case "deletepost":
                     if(!$parent->checkCSRFTime(CSRF_TOKEN)) {
@@ -173,8 +175,8 @@ class BlogmixesComponent extends Component implements CrawlConstants
                             tl('blogmixes_component_comment_error').
                             "</h1>')";
                         break;
-                        $group_id =$parent->clean($_REQUEST['group_id'], "int");
                     }
+                    $group_id =$parent->clean($_REQUEST['group_id'], "int");
                     if(!$description || !$title) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('blogmixes_component_need_title_description').
@@ -195,6 +197,51 @@ class BlogmixesComponent extends Component implements CrawlConstants
                     }
                     $group_model->addGroupItem(0,
                         $group_id, $user_id, $title, $description);
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('blogmixes_component_thread_created'). "</h1>')";
+                break;
+                case "updatepost":
+                    if(!$parent->checkCSRFTime(CSRF_TOKEN)) {
+                        break;
+                    }
+                    if(!isset($_REQUEST['post_id'])) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('blogmixes_component_comment_error').
+                            "</h1>')";
+                        break;
+                    }
+                    if(!$description || !$title) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('blogmixes_component_need_title_description').
+                            "</h1>')";
+                        break;
+                    }
+                    $post_id =$parent->clean($_REQUEST['post_id'], "int");
+                    $items = $group_model->getGroupItems(0, 1, array(
+                        array("post_id", "=", $post_id, "")), $user_id);
+                    if(isset($items[0])) {
+                        $item = $items[0];
+                    } else {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('blogmixes_component_no_update_access').
+                            "</h1>')";
+                        break;
+                    }
+                    $group_id = $item['GROUP_ID'];
+                    $group =  $group_model->getGroupById($group_id, $user_id);
+                    if(!$group || ($group["OWNER_ID"] != $user_id &&
+                        $group["MEMBER_ACCESS"] != GROUP_READ_WRITE &&
+                        $user_id != ROOT_ID)) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('blogmixes_component_no_update_access').
+                            "</h1>')";
+                        break;
+                    }
+                    $group_model->updateGroupItem($post_id, $title,
+                        $description);
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('blogmixes_component_post_updated'). "</h1>')";
+
                 break;
             }
         }
@@ -224,7 +271,7 @@ class BlogmixesComponent extends Component implements CrawlConstants
                 $page['GROUP_ID'] = $group['GROUP_ID'];
                 $page[self::SOURCE_NAME] = $group['GROUP_NAME'];
                 $page['MEMBER_ACCESS'] = $group['MEMBER_ACCESS'];
-                if($group['OWNER_ID'] == $user_id) {
+                if($group['OWNER_ID'] == $user_id || $user_id == ROOT_ID) {
                     $page['MEMBER_ACCESS'] = GROUP_READ_WRITE;
                 }
                 $pages[$group['JOIN_DATE']] = $page;
@@ -246,6 +293,9 @@ class BlogmixesComponent extends Component implements CrawlConstants
             unset($page['DESCRIPTION']);
             $page[self::SOURCE_NAME] = $page['GROUP_NAME'];
             unset($page['GROUP_NAME']);
+            if($group['OWNER_ID'] == $user_id || $user_id == ROOT_ID) {
+                $page['MEMBER_ACCESS'] = GROUP_READ_WRITE;
+            }
             $pages[$item["PUBDATE"]] = $page;
         }
         krsort($pages);

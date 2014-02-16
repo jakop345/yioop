@@ -118,9 +118,10 @@ class GroupfeedElement extends Element implements CrawlConstants
                 ?>
                 <div id='result-<?php e($page['ID']); ?>'>
                 <h2><a href="<?php e($base_query . "&amp;just_thread=".
-                    $page['PARENT_ID']);?>" rel="nofollow" <?php
-                if($open_in_tabs) { ?> target="_blank" <?php }
-                ?>><?php e($page[self::TITLE]); ?></a>.
+                    $page['PARENT_ID']);?>" rel="nofollow" 
+                    id='title<?php e($page['ID']);?>' <?php
+                    if($open_in_tabs) { ?> target="_blank" <?php }
+                    ?>><?php e($page[self::TITLE]); ?></a>.
                 <a class="gray-link" rel='nofollow' href="<?php e($base_query.
                     "&amp;just_group_id=".$page['GROUP_ID']);?>" ><?php
                     e($page[self::SOURCE_NAME]."</a>"
@@ -133,7 +134,8 @@ class GroupfeedElement extends Element implements CrawlConstants
                 <?php
                 $description = isset($page[self::DESCRIPTION]) ?
                     $page[self::DESCRIPTION] : "";?>
-                <div><?php e($description); ?></div>
+                <div id='description<?php e($page['ID']);?>' ><?php 
+                    e($description); ?></div>
                 <div class="float-opposite">
                     <?php if($page["MEMBER_ACCESS"] == GROUP_READ_WRITE) { ?>
                     <a href='javascript:comment_form(<?php
@@ -234,7 +236,9 @@ class GroupfeedElement extends Element implements CrawlConstants
 
         function update_post_form(id)
         {
-            tmp = '<div class="update"></div>';
+            var title = elt('title'+id).innerHTML;
+            var description = elt('description'+id).innerHTML;
+            var tmp = '<div class="update"></div>';
             start_elt = elt(id).innerHTML.substr(0, tmp.length)
             if(start_elt != tmp) {
                 setDisplay('result-'+id, false);
@@ -244,7 +248,7 @@ class GroupfeedElement extends Element implements CrawlConstants
                     '<input type="hidden" name="c" value="admin" />' +
                     '<input type="hidden" name="a" value="groupFeeds" />' +
                     '<input type="hidden" name="arg" value="updatepost" />' +
-                    '<input type="hidden" name="id" value="' +
+                    '<input type="hidden" name="post_id" value="' +
                         id + '" />' +
                     '<input type="hidden" name="<?php e(CSRF_TOKEN); ?>" '+
                     'value="<?php e($data[CSRF_TOKEN]); ?>" />' +
@@ -254,13 +258,14 @@ class GroupfeedElement extends Element implements CrawlConstants
                     '<p><b><label for="title-'+ id +'" ><?php
                         e(tl("groupfeed_element_subject"));
                     ?></label></b></p>' +
-                    '<p><input type="text" name="title" value="" '+
+                    '<p><input type="text" name="title" value="'+title+'" '+
                     ' maxlength="80" class="wide-field"/></p>' +
                     '<p><b><label for="description-'+ id +'" ><?php
                         e(tl("groupfeed_element_post"));
                     ?></label></b></p>' +
                     '<textarea class="short-text-area" '+
-                    'id="description-'+ id +'" name="description" ></textarea>'+
+                    'id="description-'+ id +'" name="description" >' +
+                    description + '</textarea>'+
                     '<button class="button-box float-opposite" ' +
                     'type="submit">Save</button>' +
                     '<div>&nbsp;</div>'+

@@ -49,7 +49,8 @@ require_once BASE_DIR."/lib/utility.php";
 class GroupModel extends Model
 {
     var $search_table_column_map = array("access"=>"G.MEMBER_ACCESS",
-        "group_id"=>"G.GROUP_ID", "join_date"=>"UG.JOIN_DATE",
+        "group_id"=>"G.GROUP_ID", "post_id" => "GI.ID",
+        "join_date"=>"UG.JOIN_DATE",
         "name"=>"G.GROUP_NAME", "owner"=>"O.OWNER_NAME",
         "pub_date" => "GI.PUBDATE", "parent_id"=>"GI.PARENT_ID",
         "register"=>"G.REGISTER_TYPE", "status"=>"UG.STATUS",
@@ -412,7 +413,7 @@ class GroupModel extends Model
     }
 
     /**
-     *
+     *  @param int $item_id
      */
     function getGroupItem($item_id)
     {
@@ -450,6 +451,21 @@ class GroupModel extends Model
 
     /**
      *
+     *  @param int $post_id
+     *  @param string $title
+     *  @pararm string $description
+     */
+    function updateGroupItem($id, $title, $description)
+    {
+        $db = $this->db;
+        $sql = "UPDATE GROUP_ITEM SET TITLE=?, DESCRIPTION=? WHERE ID=?";
+        $db->execute($sql, array($title, $description, $id));
+    }
+
+    /**
+     *
+     * @param int $post_id
+     * @param int $user_id
      */
     function deleteGroupItem($post_id, $user_id)
     {
