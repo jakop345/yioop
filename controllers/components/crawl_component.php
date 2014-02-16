@@ -106,7 +106,7 @@ class CrawlComponent extends Component implements CrawlConstants
                         $parent->clean($_REQUEST['timestamp'], "int");
                     $seed_info = $crawl_model->getCrawlSeedInfo(
                         $crawl_params[self::CRAWL_TIME], $machine_urls);
-                    $parent->getCrawlParametersFromSeedInfo($crawl_params,
+                    $this->getCrawlParametersFromSeedInfo($crawl_params,
                         $seed_info);
                     $crawl_params[self::TOR_PROXY] = TOR_PROXY;
                     if(USE_PROXY) {
