@@ -92,13 +92,13 @@ class PdoManager extends DatasourceManager
     function exec($sql, $params = array())
     {
         static $last_sql = NULL;
-        static $statement;
+        static $statement = NULL;
         $is_select = strtoupper(substr(ltrim($sql), 0, 6)) == "SELECT";
         if($last_sql != $sql) {
             $statement = NULL;//garbage collect so don't sqlite lock
         }
         if($params) {
-            if($last_sql != $sql) {
+            if(!$statement) {
                 $statement = $this->pdo->prepare($sql);
             }
             $result = $statement->execute($params);
@@ -139,6 +139,9 @@ class PdoManager extends DatasourceManager
     /** {@inheritdoc} */
     function fetchArray($result)
     {
+        if(!$result) {
+            return false;
+        }
         $row = $result->fetch(PDO::FETCH_ASSOC);
         if(!$this->to_upper_dbms || !$row) {
             return $row;
