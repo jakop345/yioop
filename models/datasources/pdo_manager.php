@@ -94,6 +94,9 @@ class PdoManager extends DatasourceManager
         static $last_sql = NULL;
         static $statement;
         $is_select = strtoupper(substr(ltrim($sql), 0, 6)) == "SELECT";
+        if($last_sql != $sql) {
+            $statement = NULL;//garbage collect so don't sqlite lock
+        }
         if($params) {
             if($last_sql != $sql) {
                 $statement = $this->pdo->prepare($sql);
