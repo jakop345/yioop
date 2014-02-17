@@ -327,11 +327,11 @@ class UserModel extends Model
     {
         $creation_time = microTimestamp();
         $db = $this->db;
-        $sql = "INSERT INTO USERS(FIRST_NAME, LAST_NAME, 
+        $sql = "INSERT INTO USERS(FIRST_NAME, LAST_NAME,
             USER_NAME, EMAIL, PASSWORD, STATUS, HASH, CREATION_TIME) VALUES (
             ?, ?, ?, ?, ?, ?, ?, ?)";
         $result = $db->execute($sql, array($firstname, $lastname,
-            $username, $email, $password, $status, 
+            $username, $email, crawlCrypt($password), $status,
             crawlCrypt($username.AUTH_KEY.$creation_time), $creation_time));
         if(!$user_id = $this->getUserId($username)) {
             return false;
