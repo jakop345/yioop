@@ -343,9 +343,10 @@ class ManagegroupsElement extends Element
                     }
                     e("</tr>");
                 }
+                $center = (MOBILE) ? "" : 'class="center"';
                 ?>
                 <tr>
-                <td colspan="4" class="center">&nbsp;&nbsp;[<?php
+                <td colspan="4" <?php e($center); ?>>&nbsp;&nbsp;[<?php
                 e("<a href='$action_url&amp;arg=inviteusers'>".
                     tl('managegroups_element_invite')."</a>");
                 ?>]&nbsp;&nbsp;</td>
