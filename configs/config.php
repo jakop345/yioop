@@ -571,6 +571,12 @@ define ('MAX_SUGGEST_URL_FILE_SIZE', 100000);
 /** Maximum number of a user can suggest to the suggest-a-url form in one day
  */
 define ('MAX_SUGGEST_URLS_ONE_DAY', 10);
+/**
+ *  Length after which to truncate names for users/groups/roles when
+ *  they are displayed (not in DB)
+ */
+define ('NAME_TRUNCATE_LEN', 7);
+
 /** ID of the root user */
 define('ROOT_ID', 1);
 /** Role of the root user */

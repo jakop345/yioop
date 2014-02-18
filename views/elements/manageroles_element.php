@@ -103,6 +103,9 @@ class ManagerolesElement extends Element
             }
         ?>
         </table>
+        <?php if(MOBILE) { ?>
+            <div class="clear">&nbsp;</div>
+        <?php } ?>
         </div>
     <?php
     }

@@ -39,6 +39,12 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 require_once BASE_DIR."/views/helpers/helper.php";
 
 /**
+ * Used to create links to go backward/forwards and search a database
+ * tables. HTML table with data representing a
+ * database table  might have millions of rows so want to
+ * limit what the user actually gets at one time and just
+ * allow the user to "page" through in increments of
+ * 10, 20, 50, 100, 200 rows at a time.
  *
  * @author Chris Pollett
  * @package seek_quarry
@@ -47,6 +53,7 @@ require_once BASE_DIR."/views/helpers/helper.php";
 class PagingtableHelper extends Helper
 {
     /**
+     *  The choices for how many rows out of the database table to display
      *  @var array
      */
     var $show_choices = array(
@@ -54,7 +61,9 @@ class PagingtableHelper extends Helper
     );
 
     /**
-     *
+     *  Used to render the  links to go
+     *  backwards and forwards through a databse table. We have two separate
+     *  functions for the mobile and desktop drawers.
      */
     function render($data)
     {
@@ -95,7 +104,7 @@ class PagingtableHelper extends Helper
             <input type="hidden" name="a" value="<?php e($activity); ?>" />
             <?php
             e("<b>".tl('pagingtable_helper_show')."</b>");
-            $this->view->helper("options")->render(
+            $data['VIEW']->helper("options")->render(
                 "num-show", "num_show", $this->show_choices,
                 $data['num_show'], true);
             e("<br />");

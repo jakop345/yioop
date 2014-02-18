@@ -80,7 +80,9 @@ class ManagegroupsElement extends Element
             <tr>
                 <th><?php e(tl('managegroups_element_groupname'));?></th>
                 <th><?php e(tl('managegroups_element_groupowner'));?></th>
+                <?php if(!MOBILE) { ?>
                 <th><?php e(tl('managegroups_element_registertype'));?></th>
+                <?php } ?>
                 <th><?php e(tl('managegroups_element_memberaccess'));?></th>
                 <th colspan='2'><?php 
                     e(tl('managegroups_element_actions'));?></th>
@@ -108,6 +110,12 @@ class ManagegroupsElement extends Element
                     if(in_array($col_name, $ignore_columns) || (
                         MOBILE && !in_array($col_name, $mobile_columns))) {
                         continue;
+                    }
+                    if(in_array($col_name, $mobile_columns)) {
+                        if(strlen($group_column) > NAME_TRUNCATE_LEN) {
+                            $group_column =substr($group_column, 0,
+                                NAME_TRUNCATE_LEN)."..";
+                        }
                     }
                     if($col_name == "STATUS") {
                         $group_column = 
@@ -210,7 +218,9 @@ class ManagegroupsElement extends Element
             }
         ?>
         </table>
-
+        <?php if(MOBILE) { ?>
+            <div class="clear">&nbsp;</div>
+        <?php } ?>
         </div>
         <?php
     }
@@ -285,8 +295,12 @@ class ManagegroupsElement extends Element
                     $action_url = $base_url."&amp;user_id=" .
                         $user_array['USER_ID'] . "&amp;group_id=".
                         $data['CURRENT_GROUP']['id'];
+                    $out_name = $user_array['USER_NAME'];
+                    if(strlen($out_name) > NAME_TRUNCATE_LEN) {
+                        $out_name =substr($out_name, 0, NAME_TRUNCATE_LEN)."..";
+                    }
                     e("<tr><td><b>".
-                        $user_array['USER_NAME'].
+                        $out_name.
                         "</b></td>");
                     if($data['CURRENT_GROUP']['owner'] ==
                         $user_array['USER_NAME']) {
@@ -330,13 +344,13 @@ class ManagegroupsElement extends Element
                     e("</tr>");
                 }
                 ?>
-                </table>
-                <div class='center'>
-                [<?php
+                <tr>
+                <td colspan="4" class="center">&nbsp;&nbsp;[<?php
                 e("<a href='$action_url&amp;arg=inviteusers'>".
                     tl('managegroups_element_invite')."</a>");
-                ?>]
-                </div>
+                ?>]&nbsp;&nbsp;</td>
+                </tr>
+                </table>
                 </div>
                 </td></tr>
         <?php
@@ -384,7 +398,8 @@ class ManagegroupsElement extends Element
         <b><label for="users-names"><?php
             e(tl('managegroups_element_usernames')); ?></label></b>
         </div>
-        <div class="center">
+        <?php $center = (!MOBILE) ? 'class="center"' : ""; ?>
+        <div <?php e($center); ?>>
         <textarea class="short-text-area" id='users-names'
             name='users_names'></textarea>
         <button class="button-box"

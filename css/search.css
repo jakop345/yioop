@@ -78,6 +78,11 @@ p
     float: right;
 }
 
+.clear
+{
+    clear:both;
+}
+
 .html-ltr .float-opposite
 {
     float: right;
@@ -468,7 +473,8 @@ body.mobile
     position: absolute;
     right: 0px;
     top: -5px;
-    width: 330px;
+    width: 320px;
+    min-width: 320px;
     z-index: 1;
 }
 

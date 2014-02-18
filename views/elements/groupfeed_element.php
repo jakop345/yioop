@@ -37,6 +37,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 require_once BASE_DIR."/lib/crawl_constants.php";
 
 /**
+ * Element responsible for draw the feeds a user is subscribed to
  *
  * @author Chris Pollett
  * @package seek_quarry
@@ -45,8 +46,11 @@ require_once BASE_DIR."/lib/crawl_constants.php";
 class GroupfeedElement extends Element implements CrawlConstants
 {
     /**
+     *  Draws the Feeds for the Various Groups a User is a associated with.
      *
-     *  @param array $data makes use of the CSRF token for anti CSRF attacks
+     *  @param array $data feed items should be prepared by the controller
+     *      and stored in the $data['PAGES'] variable.
+     *      makes use of the CSRF token for anti CSRF attacks
      */
     function render($data)
     {
@@ -165,10 +169,12 @@ class GroupfeedElement extends Element implements CrawlConstants
                 $data['LIMIT'], $data['RESULTS_PER_PAGE'], $data['TOTAL_ROWS']);
             ?>
         </div>
-        <script type="text/javascript">
+        <script type="text/javascript"><?php
+            $clear = (MOBILE) ? " clear" : "";
+        ?>
         function comment_form(id, parent_id, group_id)
         {
-            tmp = '<div class="comment"></div>';
+            tmp = '<div class="comment<?php e($clear); ?>" ></div>';
             start_elt = elt(id).innerHTML.substr(0, tmp.length)
             if(start_elt != tmp) {
                 elt(id).innerHTML =
@@ -199,7 +205,7 @@ class GroupfeedElement extends Element implements CrawlConstants
 
         function start_thread_form(id, group_id)
         {
-            tmp = '<div class="thread"></div>';
+            tmp = '<div class="thread<?php e($clear); ?>"></div>';
             start_elt = elt(id).innerHTML.substr(0, tmp.length)
             if(start_elt != tmp) {
                 elt(id).innerHTML =
@@ -238,7 +244,7 @@ class GroupfeedElement extends Element implements CrawlConstants
         {
             var title = elt('title'+id).innerHTML;
             var description = elt('description'+id).innerHTML;
-            var tmp = '<div class="update"></div>';
+            var tmp = '<div class="update<?php e($clear); ?>"></div>';
             start_elt = elt(id).innerHTML.substr(0, tmp.length)
             if(start_elt != tmp) {
                 setDisplay('result-'+id, false);
