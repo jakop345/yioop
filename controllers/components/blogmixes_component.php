@@ -133,8 +133,8 @@ class BlogmixesComponent extends Component implements CrawlConstants
                                 tl('blogmixes_component_join_group_detail',
                                     date("r", $group['JOIN_DATE']),
                                     $group['GROUP_NAME']),
-                            'ID' => -1,
-                            'PARENT_ID' => -1,
+                            'ID' => -$group_id,
+                            'PARENT_ID' => -$group_id,
                             'GROUP_ID' => $group_id
                         );
                     }
@@ -246,9 +246,10 @@ class BlogmixesComponent extends Component implements CrawlConstants
             }
         }
         $groups_count = 0;
-        if(!$just_thread && !$just_user_id) {
+        $page = array();
+        if(!$just_user_id) {
             $search_array = array(
-                array("group_id", "=", $just_group_id, ""),
+                array("group_id", "=", max(-$just_thread, $just_group_id), ""),
                 array("access", "!=", GROUP_PRIVATE, ""),
                 array("status", "=", ACTIVE_STATUS, ""),
                 array("join_date", "=","", "DESC"));
@@ -264,8 +265,8 @@ class BlogmixesComponent extends Component implements CrawlConstants
                 $page[self::DESCRIPTION] =
                     tl('blogmixes_component_join_group_detail',
                         date("r", $group['JOIN_DATE']), $group['GROUP_NAME']);
-                $page['ID'] = -1;
-                $page['PARENT_ID'] = -1;
+                $page['ID'] = -$group['GROUP_ID'];
+                $page['PARENT_ID'] = -$group['GROUP_ID'];
                 $page['USER_NAME'] = "";
                 $page['USER_ID'] = "";
                 $page['GROUP_ID'] = $group['GROUP_ID'];
@@ -293,7 +294,7 @@ class BlogmixesComponent extends Component implements CrawlConstants
             unset($page['DESCRIPTION']);
             $page[self::SOURCE_NAME] = $page['GROUP_NAME'];
             unset($page['GROUP_NAME']);
-            if($group['OWNER_ID'] == $user_id || $user_id == ROOT_ID) {
+            if($item['OWNER_ID'] == $user_id || $user_id == ROOT_ID) {
                 $page['MEMBER_ACCESS'] = GROUP_READ_WRITE;
             }
             $pages[$item["PUBDATE"]] = $page;

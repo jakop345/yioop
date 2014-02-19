@@ -78,9 +78,14 @@ class ManagerolesElement extends Element
                 "&amp;a=manageRoles";
             $delete_url = $base_url . "&amp;arg=deleterole&amp;";
             $edit_url = $base_url . "&amp;arg=editrole&amp;";
+            $stretch = (MOBILE) ? 1 :2;
             foreach($data['ROLES'] as $role) {
                 echo "<tr>";
                 foreach($role as $colname => $role_column) {
+                        if(strlen($role_column) > $stretch * NAME_TRUNCATE_LEN){
+                            $role_column =substr($role_column, 0,
+                                 $stretch * NAME_TRUNCATE_LEN)."..";
+                        }
                         echo "<td>$role_column</td>";
                 }
                 ?>

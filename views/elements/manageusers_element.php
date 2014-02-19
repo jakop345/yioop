@@ -86,12 +86,17 @@ class ManageusersElement extends Element
             $delete_url = $base_url . "&amp;arg=deleteuser&amp;";
             $edit_url = $base_url . "&amp;arg=edituser&amp;";
             $mobile_columns = array('USER_NAME', 'STATUS');
+            $stretch = (MOBILE) ? 1 :2;
             foreach($data['USERS'] as $user) {
                 echo "<tr>";
                 foreach($user as $colname => $user_column) {
                     if($colname == "USER_ID" || (
                         MOBILE && !in_array($colname, $mobile_columns))) {
                         continue;
+                    }
+                    if(strlen($user_column) > $stretch * NAME_TRUNCATE_LEN) {
+                        $user_column = substr($user_column, 0,
+                            $stretch * NAME_TRUNCATE_LEN)."..";
                     }
                     if(strcmp($colname,"STATUS") == 0) {
                         ?><td>

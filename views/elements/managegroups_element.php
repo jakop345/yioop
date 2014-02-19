@@ -104,6 +104,7 @@ class ManagegroupsElement extends Element
                 "MEMBER_ACCESS" => array("ACCESS_CODES", "memberaccess"),
                 "REGISTER_TYPE" =>  array("REGISTER_CODES", "registertype"),
             );
+            $stretch = (MOBILE) ? 1 :2;
             foreach($data['GROUPS'] as $group) {
                 echo "<tr>";
                 foreach($group as $col_name => $group_column) {
@@ -112,9 +113,9 @@ class ManagegroupsElement extends Element
                         continue;
                     }
                     if(in_array($col_name, $mobile_columns)) {
-                        if(strlen($group_column) > NAME_TRUNCATE_LEN) {
+                        if(strlen($group_column) >$stretch * NAME_TRUNCATE_LEN){
                             $group_column =substr($group_column, 0,
-                                NAME_TRUNCATE_LEN)."..";
+                                $stretch * NAME_TRUNCATE_LEN)."..";
                         }
                     }
                     if($col_name == "STATUS") {
@@ -291,13 +292,15 @@ class ManagegroupsElement extends Element
             <tr><th class="table-label" style="vertical-align:top"><?php
                     e(tl('managegroups_element_group_users')); ?>:</th>
                 <td><div class='light-gray-box'><table><?php
+                $stretch = (MOBILE) ? 1 :2;
                 foreach($data['GROUP_USERS'] as $user_array) {
                     $action_url = $base_url."&amp;user_id=" .
                         $user_array['USER_ID'] . "&amp;group_id=".
                         $data['CURRENT_GROUP']['id'];
                     $out_name = $user_array['USER_NAME'];
-                    if(strlen($out_name) > NAME_TRUNCATE_LEN) {
-                        $out_name =substr($out_name, 0, NAME_TRUNCATE_LEN)."..";
+                    if(strlen($out_name) > $stretch * NAME_TRUNCATE_LEN) {
+                        $out_name =substr($out_name, 0, 
+                            $stretch * NAME_TRUNCATE_LEN)."..";
                     }
                     e("<tr><td><b>".
                         $out_name.
