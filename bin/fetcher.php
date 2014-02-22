@@ -1616,15 +1616,12 @@ class Fetcher implements CrawlConstants
                 } else {
                     $type = $site[self::TYPE];
                 }
-            } else {
-                $type = $site[self::TYPE];
-            }
-            if(isset($site[self::FILE_NAME])) {
+            } else if(isset($site[self::FILE_NAME])) {
                 $extension = UrlParser::getDocumentType($site[self::FILE_NAME]);
                 if($extension == $this->programming_language_extension['java']){
                     $type = "text/java";
-                } else if($extension == $this->programming_language_extension[
-                    'py']){
+                } else if($extension ==
+                    $this->programming_language_extension['py']) {
                     $type = "text/py";
                 } else {
                     $type = $site[self::TYPE];

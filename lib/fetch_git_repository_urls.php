@@ -656,7 +656,7 @@ class FetchGitRepositoryUrls implements CrawlConstants
      * @return string $git_content actual content of the git url
      */
     static function getGitData($git_url)
-{
+    {
         $ch = curl_init();
         $timeout = self::CURL_TIMEOUT;
         curl_setopt($ch, CURLOPT_URL, $git_url);

@@ -905,11 +905,15 @@ class CrawlComponent extends Component implements CrawlConstants
             $data['INDEXING_PLUGINS'][$plugin_name]['checked'] =
                 (in_array($plugin_name, $included_plugins)) ?
                 "checked='checked'" : "";
+            /* to use method_exists we want that the require_once for the plugin
+               class has occurred so we instantiate the object via the plugin
+               method call which will also do the require if needed.
+             */
+            $plugin_object = $parent->plugin("$plugin_name");
             $class_name = $plugin_name."Plugin";
             if(method_exists($class_name, 'configureHandler') &&
                 method_exists($class_name, 'configureView')) {
                 $data['INDEXING_PLUGINS'][$plugin_name]['configure'] = true;
-                $plugin_object = new $class_name();
                 $plugin_object->configureHandler($data);
             } else {
                 $data['INDEXING_PLUGINS'][$plugin_name]['configure'] = false;
