@@ -699,7 +699,10 @@ function metricToInt($metric_num)
  *  @param string $msg message to log
  *  @param string $lname name of log file in the LOG_DIR directory, rotated logs
  *      will also use this as their basename followed by a number followed by
- *      bz2 (since they are bzipped).
+ *      gzipped (since they are gzipped (older versions of Yioop used bzip
+ *      Some distros don't have bzip but do have gzip. Also gzip was
+ *      being used elsewhere in Yioop, so to remove the dependency bzip was 
+ *      replaced )).
  */
 
 function crawlLog($msg, $lname = NULL, $check_process_handler = false)
@@ -725,20 +728,18 @@ function crawlLog($msg, $lname = NULL, $check_process_handler = false)
     $out_msg = "[$time_string] $msg";
     if(defined("LOG_TO_FILES") && LOG_TO_FILES) {
         $logfile = LOG_DIR."/$logname.log";
-
         clearstatcache(); //hopefully, this doesn't slow things too much
-
         if(file_exists($logfile) && filesize($logfile) > MAX_LOG_FILE_SIZE) {
-            if(file_exists("$logfile.".NUMBER_OF_LOG_FILES.".bz2")) {
-                unlink("$logfile.".NUMBER_OF_LOG_FILES.".bz2");
+            if(file_exists("$logfile.".NUMBER_OF_LOG_FILES.".gz")) {
+                unlink("$logfile.".NUMBER_OF_LOG_FILES.".gz");
             }
             for($i = NUMBER_OF_LOG_FILES; $i > 0; $i--) {
-                if(file_exists("$logfile.".($i-1).".bz2")) {
-                    rename("$logfile.".($i-1).".bz2", "$logfile.$i.bz2");
+                if(file_exists("$logfile.".($i-1).".gz")) {
+                    rename("$logfile.".($i-1).".gz", "$logfile.$i.gz");
                 }
             }
-            file_put_contents("$logfile.0.bz2",
-                bzcompress(file_get_contents($logfile)));
+            file_put_contents("$logfile.0.gz",
+                gzcompress(file_get_contents($logfile)));
             unlink($logfile);
         }
         //don't use error_log options in this case to happify hiphop4php

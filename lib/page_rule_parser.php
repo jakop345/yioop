@@ -46,13 +46,19 @@ require_once BASE_DIR."/lib/crawl_constants.php";
  * A command statement takes a key field argument for the page associative array
  * and does a function call to manipulate that page. Right now the supported
  * commands are to unset that field value, to add the field and field value to
- * the META_WORD array for the page and to split the field on comma, view this
- * as a search keywords => link text association, and add this the
+ * the META_WORD array for the page, and to split the field on a comma,
+ * view this as a search keywords => link text association, and add this the
  * KEYWORD_LINKS array.
  * These have the syntax:
- * unset(field)
  * addMetaWords(field)
  * addKeywordLink(field)
+ * setOutputFolder(dir)
+ * setOutputFormat(format)
+ * setOutputTable(table)
+ * toArray(field)
+ * toString(field)
+ * unset(field)
+ * writeOutput(field)
  *
  * Assignments can either be straight assignments with '=' or concatenation
  * assignments with '.='. There are three kinds of values that one can assign:
@@ -78,6 +84,30 @@ class PageRuleParser implements CrawlConstants
      * @var array
      */
     var $rule_trees;
+
+    /**
+     * If outputting to auxiliary file is being done, the current folder to
+     * use for such output
+     *
+     * @var string
+     */
+    var $output_folder="";
+
+    /**
+     * If outputting to auxiliary file is being done, the current file format
+     * to output with (either SQL or CSV)
+     *
+     * @var string
+     */
+    var $output_format="";
+
+    /**
+     * If outputting to auxiliary file is being done, and the current file
+     * format is SQL then what table to output insert statements for
+     *
+     * @var string
+     */
+    var $output_table="";
 
     /**
      * Constructs a PageRuleParser using the supplied page_rules
@@ -108,7 +138,8 @@ class PageRuleParser implements CrawlConstants
         $start = '(?:\A|\n)';
         $end = '(?:\n|\Z)';
         $substitution = '(/[^/\n]+/)([^/\n]*)/';
-        $command = '(\w+)\((\w+)\)';
+        $command = '(\w+)'."$blank*".'\('."$blank*".'([\w\/]+)'.
+            "$blank*".'\)';
         $rule =
             "@(?:$command$blank*($comment)?$end".
             "|$blank*($literal)$blank*($assignment)$blank*".
@@ -121,9 +152,15 @@ class PageRuleParser implements CrawlConstants
             ($num_rules = count($matches[0])) == 0) { return $rule_trees; }
         for($i = 0; $i < $num_rules; $i++) {
             $tree = array();
-            if($matches[1][$i] != "") {
+            if($matches[1][$i] != "" || $matches[3][$i] != "") {
                 $tree["func_call"] = $matches[1][$i];
-                $tree["arg"] = $matches[2][$i];
+                if(isset($matches[2][$i])) {
+                    $tree["arg"] = $matches[2][$i];
+                } else if(isset($matches[4][$i])) {
+                    $tree["arg"] = $matches[4][$i];
+                } else {
+                    $tree["arg"] = "";
+                }
             } else {
                 $tree["var"] = $matches[4][$i];
                 $tree["assign_op"] = $matches[5][$i];
@@ -176,9 +213,16 @@ class PageRuleParser implements CrawlConstants
      */
     function executeFunctionRule($tree, &$page_data)
     {
-        $allowed_functions = array("unset" => "unsetVariable",
-            "addMetaWord" => "addMetaWord",
-            "addKeywordLink" => "addKeywordLink");
+        $allowed_functions = array("addMetaWord" => "addMetaWord",
+            "addKeywordLink" => "addKeywordLink",
+            "setOutputFolder" => "setOutputFolder",
+            "setOutputFormat" => "setOutputFormat",
+            "setOutputTable" => "setOutputTable",
+            "toArray" => "toArray",
+            "toString" => "toString",
+            "unset" => "unsetVariable",
+            "writeOutput" => "writeOutput"
+            );
         if(in_array($tree['func_call'], array_keys($allowed_functions))) {
             $func = $allowed_functions[$tree['func_call']];
             $this->$func($tree['arg'], $page_data);
@@ -238,25 +282,6 @@ class PageRuleParser implements CrawlConstants
     }
 
     /**
-     *  Unsets the key $field (or the crawl constant it corresponds to)
-     *  in $page_data. If it is a crawlconstant it doesn't unset it --
-     *  it just sets it to the empty string
-     *
-     *  @param $field the key in $page_data to use
-     *  @param array &$page_data an associative array of containing summary
-     *      info of a web page/record
-     */
-    function unsetVariable($field, &$page_data)
-    {
-        $var_field = $this->getVarField($field);
-        if($var_field == $field) {
-            unset($page_data[$var_field]);
-        } else {
-            $page_data[$var_field] = "";
-        }
-    }
-
-    /**
      *  Adds a meta word u:$field:$page_data[$field_name] to the array
      *  of meta words for this page
      *
@@ -301,6 +326,152 @@ class PageRuleParser implements CrawlConstants
             $page_data[CrawlConstants::KEYWORD_LINKS] = array();
         }
         $page_data[CrawlConstants::KEYWORD_LINKS][$key_words] = $link_text;
+    }
+
+    /**
+     *  Set output folder
+     *
+     *  @param $dir
+     *  @param array &$page_data an associative array of containing summary
+     *      info of a web page/record
+     */
+    function setOutputFolder($dir, &$page_data)
+    {
+        $this->output_folder = realpath(trim($dir));
+    }
+
+    /**
+     *  Set output format
+     *
+     *  @param $format can be either csv or sql
+     *  @param array &$page_data an associative array of containing summary
+     *      info of a web page/record
+     */
+    function setOutputFormat($format, &$page_data)
+    {
+        if(in_array($format, array("csv", "sql"))) {
+            $this->output_format = $format;
+        }
+    }
+
+    /**
+     *  Set output table
+     *
+     *  @param $table table to use if output format is sql
+     *  @param array &$page_data an associative array of containing summary
+     *      info of a web page/record
+     */
+    function setOutputTable($table, &$page_data)
+    {
+            $this->output_table = $table;
+    }
+
+    /**
+     *  If $page_data[$field] is a string, splits it into an array on comma,
+     *  trims leading and trailing spaces from each item and stores the result
+     *  back into $page_data[$field]
+     *
+     *
+     *  @param $field the key in $page_data to use
+     *  @param array &$page_data an associative array of containing summary
+     *      info of a web page/record
+     */
+    function toArray($field, &$page_data)
+    {
+        $var_field = $this->getVarField($field);
+        if(is_string($page_data[$var_field])) {
+            $field_parts = explode(",", $page_data[$var_field]);
+            $page_data[$var_field] = array();
+            foreach($field_parts as $part) {
+                $page_data[$var_field][] = trim($part);
+            }
+        }
+    }
+
+    /**
+     *  If $page_data[$field] is an array, implode it into a string on comma,
+     *  and stores the result back into $page_data[$field]
+     *
+     *  @param $field the key in $page_data to use
+     *  @param array &$page_data an associative array of containing summary
+     *      info of a web page/record
+     */
+    function toString($field, &$page_data)
+    {
+        $var_field = $this->getVarField($field);
+        if(is_array($page_data[$var_field])) {
+            $page_data[$var_field] = implode(",", $page_data[$var_field]);
+        }
+    }
+
+    /**
+     *  Unsets the key $field (or the crawl constant it corresponds to)
+     *  in $page_data. If it is a crawlconstant it doesn't unset it --
+     *  it just sets it to the empty string
+     *
+     *  @param $field the key in $page_data to use
+     *  @param array &$page_data an associative array of containing summary
+     *      info of a web page/record
+     */
+    function unsetVariable($field, &$page_data)
+    {
+        $var_field = $this->getVarField($field);
+        if($var_field == $field) {
+            unset($page_data[$var_field]);
+        } else {
+            $page_data[$var_field] = "";
+        }
+    }
+
+    /**
+     *  Write the value of a field to the output folder in the current
+     *  format. If the field is not set nothing is written
+     *
+     *  @param $field the key in $page_data to use
+     *  @param array &$page_data an associative array of containing summary
+     *      info of a web page/record
+     */
+    function writeOutput($field, &$page_data)
+    {
+        $var_field = $this->getVarField($field);
+        if(isset($page_data[$var_field]) && $this->output_folder) {
+            $data_file = "{$this->output_folder}/data.txt";
+            if(file_exists($data_file) &&
+                filesize($data_file) > MAX_LOG_FILE_SIZE) {
+                clearstatcache(); //hopefully, this doesn't slow things too much
+                $data_files = glob("$data_file.*.gz");
+                $num_data_files = count($data_files);
+                file_put_contents("$data_file.$num_data_files.gz",
+                    gzcompress(file_get_contents($data_file)));
+                unlink($data_file);
+            }
+            $out = $page_data[$var_field];
+            if(!$out) {return; }
+            if(!is_array($out)) {
+                $out = array($out);
+            }
+            $out = array_values($out);
+            $fh = fopen($data_file, "a");
+            if(!$fh) {return; }
+            switch($this->output_format)
+            {
+                case 'csv':
+                    fputcsv($fh, $out);
+                break;
+                case 'sql':
+                    if(!$this->output_table) {break; }
+                    $sql = "INSERT INTO {$this->output_table} VALUES(";
+                    $comma = "";
+                    foreach($out as $value) {
+                        $sql .= "$comma '$value'";
+                        $comma = ",";
+                    }
+                    $sql .= ");\n";
+                    fwrite($fh, $sql);
+                break;
+            }
+            fclose($fh);
+        }
     }
 }
 

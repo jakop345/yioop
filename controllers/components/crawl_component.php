@@ -1124,8 +1124,10 @@ class CrawlComponent extends Component implements CrawlConstants
             }
             $page_processor = new $processor_name($plugin_processors,
                 $seed_info["general"]["max_description_len"]);
+            restore_error_handler();
             $doc_info = $page_processor->handle($_REQUEST['TESTPAGE'],
                 $site[self::URL]);
+            set_error_handler("yioop_error_handler");
 
             if($page_processor != "RobotProcessor" &&
                 !isset($doc_info[self::JUST_METAS])) {
