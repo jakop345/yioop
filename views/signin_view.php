@@ -56,7 +56,7 @@ class SigninView extends View
      *  @param array $data  contains the anti CSRF token
      *  the view
      */
-    function renderView($data) 
+    function renderView($data)
     {
         $logo = "resources/yioop.png";
         if(MOBILE) {
@@ -95,7 +95,7 @@ class SigninView extends View
         <div class="signin-exit">
             <ul>
                 <?php
-                if(in_array(REGISTRATION_TYPE, array('no_activation', 
+                if(in_array(REGISTRATION_TYPE, array('no_activation',
                     'email_registration', 'admin_activation'))) {
                     ?>
                     <li><a href="./?c=register&amp;a=recoverPassword&amp;<?php

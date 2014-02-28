@@ -271,8 +271,8 @@ class FetchController extends Controller implements CrawlConstants
         }
         $index_schedule_file = CRAWL_DIR."/schedules/".self::index_closed_name.
             $crawl_time. ".txt";
-        if($crawl_time > 0 && file_exists($index_schedule_file) && 
-            $check_crawl_time > intval(fileatime($index_schedule_file)) && 
+        if($crawl_time > 0 && file_exists($index_schedule_file) &&
+            $check_crawl_time > intval(fileatime($index_schedule_file)) &&
             !file_exists(CRAWL_DIR.
                 "/schedules/queue_server_messages.txt") ) {
             $restart = true;
@@ -448,7 +448,7 @@ class FetchController extends Controller implements CrawlConstants
             $pos = 0;
             $robot_data = substr($uploaded, $pos,$byte_counts["ROBOT"]);
             $pos += $byte_counts["ROBOT"];
-            $cache_page_validation_data = substr($uploaded, $pos, 
+            $cache_page_validation_data = substr($uploaded, $pos,
                 $byte_counts["CACHE_PAGE_VALIDATION"]);
             $pos += $byte_counts["CACHE_PAGE_VALIDATION"];
             $schedule_data =
@@ -463,7 +463,7 @@ class FetchController extends Controller implements CrawlConstants
         }
         if(USE_ETAG_EXPIRES && strlen($cache_page_validation_data) > 0) {
             $this->addScheduleToScheduleDirectory(
-                self::etag_expires_data_base_name, 
+                self::etag_expires_data_base_name,
                 $cache_page_validation_data);
         }
         if(strlen($schedule_data) > 0) {
@@ -557,12 +557,12 @@ class FetchController extends Controller implements CrawlConstants
                 $info[self::STATUS] == 'STOP_CRAWL';
                 $info[self::CRAWL_TIME] = 0;
             }
-            if($status[self::STATUS] != 'STOP_CRAWL'  && 
+            if($status[self::STATUS] != 'STOP_CRAWL'  &&
                 $crawl_time != $prev_crawl_time) {
                 $to_copy_fields = array(self::ALLOWED_SITES, self::ARC_DIR,
                     self::ARC_TYPE, self::CRAWL_INDEX, self::CRAWL_TYPE,
                     self::DISALLOWED_SITES, self::INDEXED_FILE_TYPES,
-                    self::PROXY_SERVERS, self::TOR_PROXY, 
+                    self::PROXY_SERVERS, self::TOR_PROXY,
                     self::RESTRICT_SITES_BY_URL
                     );
                 foreach($to_copy_fields as $field) {
@@ -581,13 +581,13 @@ class FetchController extends Controller implements CrawlConstants
                 if (isset($status[self::ACTIVE_CLASSIFIERS])) {
                     $classifier_array = array_merge(
                         $status[self::ACTIVE_CLASSIFIERS]);
-                    $info[self::ACTIVE_CLASSIFIERS] = 
+                    $info[self::ACTIVE_CLASSIFIERS] =
                         $status[self::ACTIVE_CLASSIFIERS];
                 }
                 if (isset($status[self::ACTIVE_RANKERS])) {
                     $classifier_array = array_merge($classifier_array,
                         $status[self::ACTIVE_RANKERS]);
-                    $info[self::ACTIVE_RANKERS] = 
+                    $info[self::ACTIVE_RANKERS] =
                         $status[self::ACTIVE_RANKERS];
                 }
                 if($classifier_array != array()) {

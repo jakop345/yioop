@@ -107,7 +107,7 @@ class IndexManager implements CrawlConstants
     /**
      *  Returns the version of the index, so that Yioop can determine
      *  how to do word lookup.The only major change to the format was
-     *  when word_id's went from 8 to 20 bytes which happened around Unix 
+     *  when word_id's went from 8 to 20 bytes which happened around Unix
      *  time 1369754208.
      *
      *  @param string $index_name unix timestamp of index
@@ -169,7 +169,7 @@ class IndexManager implements CrawlConstants
                    if($mask_len > $len) {continue; }
                    $mask_found = true;
                    for($k = 0; $k < $mask_len; $k++) {
-                       if(ord($test_mask[$k]) > 0 && 
+                       if(ord($test_mask[$k]) > 0 &&
                            $test_mask[$k] != $mask[$k]) {
                            $mask_found = false;
                            break;
@@ -232,7 +232,7 @@ class IndexManager implements CrawlConstants
      *  @param string $term_or_phrase what to look up in the indexes dictionary
      *      no  mask is used for this look up
      *  @param string $index_name index to look up term or phrase in
-     *  @param int $threshold if set and positive then once threshold many 
+     *  @param int $threshold if set and positive then once threshold many
      *      documents are found the search for more documents to add to the
      *      total is stopped
      *  @return int number of documents
@@ -251,11 +251,11 @@ class IndexManager implements CrawlConstants
         }
         foreach($hashes as $hash) {
             if(is_array($hash)) {
-                $dictionary_info = 
+                $dictionary_info =
                     IndexManager::getWordInfo($index_name, $hash[0],
                         $hash[1], $hash[2], $threshold);
             } else {
-                $dictionary_info = 
+                $dictionary_info =
                     IndexManager::getWordInfo($index_name, $hash);
             }
             $num_generations = count($dictionary_info);

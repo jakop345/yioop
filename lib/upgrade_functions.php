@@ -61,7 +61,7 @@ function upgradeLocales()
     $locale = new LocaleModel();
     $locale->initialize(DEFAULT_LOCALE);
     $force_folders = array();
-    /* 
+    /*
         if we're upgrading version2 to 3 we want to make sure stemmer becomes
         tokenizer
     */
@@ -534,7 +534,7 @@ function upgradeDatabaseVersion16(&$db)
  */
 function upgradeDatabaseVersion17(&$db)
 {
-    $dbinfo = array("DBMS" => DBMS, "DB_HOST" => DB_HOST, 
+    $dbinfo = array("DBMS" => DBMS, "DB_HOST" => DB_HOST,
         "DB_NAME" => DB_NAME, "DB_PASSWORD" => DB_PASSWORD);
     $auto_increment = $db->autoIncrement($dbinfo);
     $db->execute("DELETE FROM VERSION WHERE ID < 16");
@@ -583,7 +583,7 @@ function upgradeDatabaseVersion18(&$db)
 
 /**
  * Upgrades a Version 18 version of the Yioop! database to a Version 19 version
- * This is a major upgrade in that crawlCrypt was changed, so old passwords 
+ * This is a major upgrade in that crawlCrypt was changed, so old passwords
  * won't work. All accounts are copied over to the new system but are defaulted
  * to inactive. The root account is copied over but its password is reset to
  * blank
@@ -608,12 +608,12 @@ function upgradeDatabaseVersion19(&$db)
     $sql = "SELECT USER_ID, USER_NAME FROM USER_OLD";
     $result = $db->execute($sql);
     while($row = $db->fetchArray($result)) {
-        $status = ($row['USER_NAME'] == 'root') ? ACTIVE_STATUS : 
+        $status = ($row['USER_NAME'] == 'root') ? ACTIVE_STATUS :
             INACTIVE_STATUS;
         $creation_time = microTimestamp();
         $sql = "INSERT INTO USER (USER_ID, USER_NAME, FIRST_NAME, LAST_NAME,
             EMAIL, PASSWORD, STATUS, HASH)
-            VALUES ('{$row['USER_ID']}', '{$row['USER_NAME']}', 
+            VALUES ('{$row['USER_ID']}', '{$row['USER_NAME']}',
             '{$row['FIRST_NAME']}', '{$row['LAST_NAME']}', '{$row['EMAIL']}',
             '".crawlCrypt('')."', '".$status."', '".
             crawlCrypt($row['USER_NAME'].AUTH_KEY.$creation_time)."', '".
@@ -643,7 +643,7 @@ function upgradeDatabaseVersion19(&$db)
  */
 function addActivityAtId(&$db, $string_id, $method_name, $activity_id)
 {
-    
+
     $db->execute("UPDATE ACTIVITY SET ACTIVITY_ID = ACTIVITY_ID + 1 WHERE ".
         "ACTIVITY_ID >= ?", array($activity_id));
     $sql = "SELECT * FROM ACTIVITY WHERE ACTIVITY_ID >= ?
@@ -705,7 +705,7 @@ function updateTranslationForStringId(&$db, $string_id, $locale_tag,
     $result = $db->execute($sql, array($translate_id, $locale_id));
 
     $sql = "INSERT INTO TRANSLATION_LOCALE VALUES (?, ?, ?)";
-    $result = $db->execute($sql, array($translate_id, $locale_id, 
+    $result = $db->execute($sql, array($translate_id, $locale_id,
         $translation));
 }
 ?>

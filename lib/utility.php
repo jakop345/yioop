@@ -244,7 +244,7 @@ function unpackPosting($posting, &$offset, $dedelta = true)
 }
 
 /**
- * This method is used while appending one index shard to another. 
+ * This method is used while appending one index shard to another.
  * Given a string of postings adds $add_offset add to each offset to the
  * document map in each posting.
  *
@@ -701,7 +701,7 @@ function metricToInt($metric_num)
  *      will also use this as their basename followed by a number followed by
  *      gzipped (since they are gzipped (older versions of Yioop used bzip
  *      Some distros don't have bzip but do have gzip. Also gzip was
- *      being used elsewhere in Yioop, so to remove the dependency bzip was 
+ *      being used elsewhere in Yioop, so to remove the dependency bzip was
  *      replaced )).
  */
 
@@ -744,7 +744,7 @@ function crawlLog($msg, $lname = NULL, $check_process_handler = false)
         }
         //don't use error_log options in this case to happify hiphop4php
         file_put_contents($logfile, $out_msg."\n", FILE_APPEND);
-        if($check_handler && !$check_process_handler && 
+        if($check_handler && !$check_process_handler &&
             changeInMicrotime($last_check_time) > 5) {
             CrawlDaemon::processHandler();
             $last_check_time = microtime();
@@ -757,12 +757,12 @@ function crawlLog($msg, $lname = NULL, $check_process_handler = false)
 }
 
 /**
- * Writes a log message $msg if more than LOG_TIMEOUT time has passed since 
+ * Writes a log message $msg if more than LOG_TIMEOUT time has passed since
  * the last time crawlTimeoutLog was callled. Useful in loops to write a message
  * as progress is made through the loop (but not on every iteration, but
  * say every 30 seconds).
  *
- * @param mixed $msg usually a string with what to be printed out after the 
+ * @param mixed $msg usually a string with what to be printed out after the
  *      timeout period. If $msg === true then clears the timout cache
  */
 function crawlTimeoutLog($msg)
@@ -822,7 +822,7 @@ function crawlHash($string, $raw = false)
  *  @param bool $raw whether to base64Hash the result
  *  @param $meta_string the up to 11 byte string of meta information
  *  @return string first 8 bytes of md5 of $string concatenated with \x00
- *      to indicate the hash is of a word not a phrase concatenated  with the 
+ *      to indicate the hash is of a word not a phrase concatenated  with the
  *      padded to 11 byte $meta_string.
  */
 function crawlHashWord($string, $raw = false, $meta_string = "")
@@ -970,13 +970,13 @@ function allCrawlHashPaths($string, $metas = array(),
 }
 
 /**
- * Give an array of values for meta words (for example, media:video, lang:en) 
- * and an array of names of meta words to be encoded into word_id's 
+ * Give an array of values for meta words (for example, media:video, lang:en)
+ * and an array of names of meta words to be encoded into word_id's
  * (for example, media:, safe:, class:) return an associative array of pairs
  * (meta word name => array(value of that name)) which should be encoded
  * into word id's
  *
- * @param array $meta array of meta word values 
+ * @param array $meta array of meta word values
  * @param array $encode_meta a list of meta word names to encode in word_ids
  * @return array $found_materialized_metas associative array of name =>
  *      values for that name
@@ -1042,7 +1042,7 @@ function encodeMaterialMetas($metas, $encode_metas)
  *  given by splitting on space and separately hashing each element
  *  according to the number of elements and the 3bit selector below:
  *
- *  general format: (64 bit lead word hash, 3bit selector, hashes of rest of 
+ *  general format: (64 bit lead word hash, 3bit selector, hashes of rest of
  *  words)  according to:
  *  Selector Bits for each remaining word
  *   001     29 32 32
@@ -1055,15 +1055,15 @@ function encodeMaterialMetas($metas, $encode_metas)
  *  If $path_start is 0 behaves like crawlHashWord(). The above encoding is
  *  typically used to make word_ids for whole phrases, to make word id's
  *  for single words, the format is
- *  (64 bits for word, 1 byte null, remaining 11 bytes encode an materialized 
+ *  (64 bits for word, 1 byte null, remaining 11 bytes encode an materialized
  *  meta words present in document or query string). Of this 11 bytes,
  *  the first is used for the meta word media:, so if the document is of type
  *  media:image, then a single byte hash of media:image gives the value of this
- *  byte. The second byte encodes the meta word safe: in a similar fashion. 
+ *  byte. The second byte encodes the meta word safe: in a similar fashion.
  *  The remaining 9 bytes encode different values of the class: meta word.
  *  To encode class:some_value., first class:some_value[0] is hashed to a value
  *  j betwen 0 and 8. Then class:some_value is hash to a single byte b. Then
- *  the jth value of the remaining bytes is set to b. Non affected bytes are 
+ *  the jth value of the remaining bytes is set to b. Non affected bytes are
  *  null.
  *
  *  @param string $string what to hash

@@ -103,9 +103,9 @@ class FileCache
      * Stores in the cache a key-value pair
      *
      * Only when a key is set is there a check for whether to invalidate
-     * a cache bin. It is deleted as invalid if the following two conditions 
+     * a cache bin. It is deleted as invalid if the following two conditions
      * both hold:
-     * The last time it was expired is more than SECONDS_IN_A_BIN seconds ago, 
+     * The last time it was expired is more than SECONDS_IN_A_BIN seconds ago,
      * and the number of cache items is more than self::MAX_FILES_IN_A_BIN.
      *
      * @param string $key to associate with value

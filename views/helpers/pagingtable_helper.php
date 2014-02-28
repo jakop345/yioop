@@ -87,7 +87,7 @@ class PagingtableHelper extends Helper
         $base_url = "?c=admin&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
             "&amp;a=$activity";
         ?>
-        <h2><?php e($data['TABLE_TITLE']); ?>&nbsp;&nbsp;[<a 
+        <h2><?php e($data['TABLE_TITLE']); ?>&nbsp;&nbsp;[<a
                 href="<?php e($base_url . '&amp;arg=search');
                 ?>"><?php e(tl('pagingtable_helper_search'));?></a>]</h2>
         <div>
@@ -99,7 +99,7 @@ class PagingtableHelper extends Helper
                 $bound_url .="&amp;name=".$name;
             } ?>
             <input type="hidden" name="c" value="admin" />
-            <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" 
+            <input type="hidden" name="<?php e(CSRF_TOKEN); ?>"
                 value="<?php e($data[CSRF_TOKEN]); ?>" />
             <input type="hidden" name="a" value="<?php e($activity); ?>" />
             <?php
@@ -111,8 +111,8 @@ class PagingtableHelper extends Helper
             if($data['START_ROW'] > 0) {
                 ?>
                 <a href="<?php e($bound_url); ?>&amp;start_row=<?php
-                    e($data['PREV_START']); ?>&amp;end_row=<?php 
-                    e($data['PREV_END']); ?>&amp;num_show=<?php 
+                    e($data['PREV_START']); ?>&amp;end_row=<?php
+                    e($data['PREV_END']); ?>&amp;num_show=<?php
                     e($data['num_show'].$data['PAGING']); ?>">&lt;&lt;</a>
                 <?php
             }
@@ -121,8 +121,8 @@ class PagingtableHelper extends Helper
             if($data['END_ROW'] < $data['NUM_TOTAL']) {
                 ?>
                 <a href="<?php e($bound_url); ?>&amp;start_row=<?php
-                    e($data['NEXT_START']); ?>&amp;end_row=<?php 
-                    e($data['NEXT_END']); ?>&amp;num_show=<?php 
+                    e($data['NEXT_START']); ?>&amp;end_row=<?php
+                    e($data['NEXT_END']); ?>&amp;num_show=<?php
                     e($data['num_show'].$data['PAGING']); ?>" >&gt;&gt;</a>
                 <?php
             }
@@ -168,8 +168,8 @@ class PagingtableHelper extends Helper
             if($data['START_ROW'] > 0) {
                 ?>
                 <a href="<?php e($bound_url); ?>&amp;start_row=<?php
-                    e($data['PREV_START']); ?>&amp;end_row=<?php 
-                    e($data['PREV_END']); ?>&amp;show=<?php 
+                    e($data['PREV_START']); ?>&amp;end_row=<?php
+                    e($data['PREV_END']); ?>&amp;show=<?php
                     e($data['num_show'].$data['PAGING']); ?>">&lt;&lt;</a>
                 <?php
             }
@@ -178,14 +178,14 @@ class PagingtableHelper extends Helper
             if($data['END_ROW'] < $data['NUM_TOTAL']) {
                 ?>
                 <a href="<?php e($bound_url); ?>&amp;start_row=<?php
-                    e($data['NEXT_START']); ?>&amp;end_row=<?php 
-                    e($data['NEXT_END']); ?>&amp;num_show=<?php 
+                    e($data['NEXT_START']); ?>&amp;end_row=<?php
+                    e($data['NEXT_END']); ?>&amp;num_show=<?php
                     e($data['num_show'].$data['PAGING']); ?>" >&gt;&gt;</a>
                 <?php
             }
             ?>
             <input type="hidden" name="c" value="admin" />
-            <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" 
+            <input type="hidden" name="<?php e(CSRF_TOKEN); ?>"
                 value="<?php e($data[CSRF_TOKEN]); ?>" />
             <input type="hidden" name="a" value="<?php e($activity); ?>" />
             <?php

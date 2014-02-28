@@ -170,11 +170,11 @@ class PageOptionsElement extends Element
            ?>
                 <tr><td><label for="classifier-<?php e($label); ?>-id"><?php
                     e($label); ?>
-                </label></td><td class="check"><input type="checkbox" 
+                </label></td><td class="check"><input type="checkbox"
                     <?php e($class_checked) ?>
                     name="classifier[<?php  e($label); ?>]"
                     id="classifier-<?php e($label) ?>-id" value="true" /></td>
-                    <td class="check"><input type="checkbox" 
+                    <td class="check"><input type="checkbox"
                     <?php e($rank_checked) ?>
                     name="ranker[<?php  e($label); ?>]"
                     id="ranker-<?php e($label) ?>-id" value="true" /></td>
@@ -272,7 +272,7 @@ class PageOptionsElement extends Element
                 $data['SIGNIN_LINK']){ e("checked='checked'");}?>
             />
         </td></tr>
-        <tr><td><label for="cache-link"><?php 
+        <tr><td><label for="cache-link"><?php
             e(tl('pageoptions_element_cache_link')); ?></label>
         </td><td><input id='cache-link' type="checkbox"
             name="CACHE_LINK" value="true"
@@ -401,7 +401,7 @@ class PageOptionsElement extends Element
                 <div class="light-content">
                 <div class="float-opposite"><a  href="javascript:setDisplay(
                     'plugin-<?php
-                    e($plugin) ?>', false);"><?php 
+                    e($plugin) ?>', false);"><?php
                     e(tl('page_element_plugin_back'));
                 ?></a></div>
                 <?php

@@ -47,7 +47,7 @@ require_once BASE_DIR."/models/datasources/pdo_manager.php";
  * for the MySql DBMS. Method explanations
  * are from the parent class. Originally,
  * it was implemented using php mysql_ interface.
- * In July, 2013, it was rewritten to use 
+ * In July, 2013, it was rewritten to use
  * mysqli_ interface as the former interface was
  * deprecated. This was a minimal rewrite and
  * does not yet use the more advanced features

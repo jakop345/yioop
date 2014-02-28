@@ -33,16 +33,16 @@
  */
 
 /**
- * Default value of minimum degree. The minimum degree determines the minimum 
- * and maximum number of keys and child nodes, for nodes 
+ * Default value of minimum degree. The minimum degree determines the minimum
+ * and maximum number of keys and child nodes, for nodes
  * other than root node
  */
 define('MIN_DEGREE', 501);
 
 /**
- * This class implements the B-Tree data structure for storing int key based 
+ * This class implements the B-Tree data structure for storing int key based
  * key-value pairs based on the algorithms in Introduction To Algorithms,
- * by T.H. Cormen, C.E. Leiserson, R.L. Rivest, and C. Stein. Second 
+ * by T.H. Cormen, C.E. Leiserson, R.L. Rivest, and C. Stein. Second
  * Edition, 2001, The MIT Press
  *
  *  @author Akshat Kukreti
@@ -175,9 +175,9 @@ class BTree
 
     /**
      * Returns key-value pair in the B-Tree based on key
-     * @param int $key is the key for whicht the key-value pair is to be 
+     * @param int $key is the key for whicht the key-value pair is to be
      * found
-     * @return array key-value pair associated with $key or null if the 
+     * @return array key-value pair associated with $key or null if the
      * key-value pair is not found in the tree.
      */
     function findValue($key)
@@ -195,11 +195,11 @@ class BTree
     }
 
     /**
-     * Searches for key-value pair for a given key in a node. If key value pair 
-     * is not found in the node, recursively searches in the root node of the 
+     * Searches for key-value pair for a given key in a node. If key value pair
+     * is not found in the node, recursively searches in the root node of the
      * sub-tree till the pair is found. Search stops at leaf nodes.
      * @param object $node is the B-Tree node from where the search starts
-     * @param int $key is the key for which the key-value pair is to be 
+     * @param int $key is the key for which the key-value pair is to be
      * searched
      */
     function search($node, $key)
@@ -248,7 +248,7 @@ class BTree
 
     /**
      * Inserts a key-value pair in a leaf node that is not full. Searches for
-     * the appropriate leaf node, splitting full nodes before descending 
+     * the appropriate leaf node, splitting full nodes before descending
      * down the tree recursively.
      * @param object $node is the node from where the search for the leaf node
      * begins
@@ -295,7 +295,7 @@ class BTree
     }
 
     /**
-     * Splits a full node into two child node. The median key-value pair is 
+     * Splits a full node into two child node. The median key-value pair is
      * added to the parent node of the node being split.
      * @param object $parent is the parent node
      * @paran int $i is the link to child node
@@ -368,7 +368,7 @@ class BTree
      * @param array $keys is an array containing key-value pairs
      * @param int $key is the key
      * @return array containing flag indicating it the value was found or not,
-     * and the position equal to, or nearest to the position of the key being 
+     * and the position equal to, or nearest to the position of the key being
      * searched
      */
     function binarySearch($keys, $key)
@@ -400,10 +400,10 @@ class BTree
     }
 
     /**
-     * Deletes a key-value pair from the B-Tree from a node. 
+     * Deletes a key-value pair from the B-Tree from a node.
      * Handles deletion from leaf node and internal node. If the key-value pair
      * is not found in an internal node. The recrusion descends to the root
-     * of the sub-tree until a leaf node is encoutered that does not have the 
+     * of the sub-tree until a leaf node is encoutered that does not have the
      * key-value pair to be deleted.
      * @param object $node is from where the key search starts
      * @param int $key is the key to be deleted
@@ -426,12 +426,12 @@ class BTree
     }
 
     /**
-     * Shifts a key from a non-leaf root to it's child node using nodes 
-     * preceding and next to the key-value pair to be deleted. If the 
-     * preceding child node has atleast minimum MIN_DEGREE keys, a the last 
-     * key-value pair from the preceding node is moved to the position of the 
-     * key-value pair that is to be deleted. Otherwise the same process is done 
-     * using the first key-value pair of the child node next to the key-value 
+     * Shifts a key from a non-leaf root to it's child node using nodes
+     * preceding and next to the key-value pair to be deleted. If the
+     * preceding child node has atleast minimum MIN_DEGREE keys, a the last
+     * key-value pair from the preceding node is moved to the position of the
+     * key-value pair that is to be deleted. Otherwise the same process is done
+     * using the first key-value pair of the child node next to the key-value
      * pair to be deleted.
      * @param object $node is the internal node containing the key-value pair to
      * be deleted
@@ -444,10 +444,10 @@ class BTree
         $next_id = $node->links[$pos + 1];
         $next = $this->readNode($next_id);
         if($pred->count >= $this->min_degree) {
-            $this->adjustChildUsingLeftSiblingAndParent($node, $next, $pred, 
+            $this->adjustChildUsingLeftSiblingAndParent($node, $next, $pred,
                 $pos + 1);
         } else if($next->count >= $this->min_degree) {
-            $this->adjustChildUsingRightSiblingAndParent($node, $pred, 
+            $this->adjustChildUsingRightSiblingAndParent($node, $pred,
                 $next, $pos);
         }
     }
@@ -550,8 +550,8 @@ class BTree
      * If the key to be deleted is not found in an internal node, finds the root
      * of the sub-tree that might contain the key to be deleted. If the node
      * contains atleast $min_degree number of keys, the node is returned.
-     * Otherwise, the node is adjusted using one of its sibling nodes and the 
-     * parent node so that the resultant node has $min_degree keys. 
+     * Otherwise, the node is adjusted using one of its sibling nodes and the
+     * parent node so that the resultant node has $min_degree keys.
      * @param object $parent is the parent node
      * @param int pos is the link to the root of the sub-tree
      * @return object $child is the child node to which the recursion will
@@ -574,7 +574,7 @@ class BTree
                     $next_id = $siblings[1];
                     $next = $this->readNode($next_id);
                     if($next->count >= $this->min_degree) {
-                        $this->adjustChildUsingRightSiblingAndParent($parent, 
+                        $this->adjustChildUsingRightSiblingAndParent($parent,
                             $child, $next, $pos);
                         return $child;
                     } else {
@@ -597,7 +597,7 @@ class BTree
                         $pred, $pos);
                     return $child;
                 } else {
-                    $this->mergeChildWithParentKeyAndRightSibling($parent, 
+                    $this->mergeChildWithParentKeyAndRightSibling($parent,
                         $pred, $child, $pos - 1);
                     return $pred;
                 }
@@ -609,7 +609,7 @@ class BTree
                         $child, $next, $pos);
                     return $child;
                 } else {
-                    $this->mergeChildWithParentKeyAndRightSibling($parent, 
+                    $this->mergeChildWithParentKeyAndRightSibling($parent,
                         $child, $next, $pos);
                     return $child;
                 }
@@ -619,14 +619,14 @@ class BTree
 
     /**
      * Gives a child node an extra key by moving a key from the parent to the
-     * child node, and by moving a key from the child's left sibling to the 
+     * child node, and by moving a key from the child's left sibling to the
      * parent node
      * @param object $parent is the parent node
      * @param object $child is the child node
      * @param object $pred is the $child's left sibling node
      * @param $pos is the link from $parent to $child
      */
-    function adjustChildUsingLeftSiblingAndParent(&$parent, &$child, &$pred, 
+    function adjustChildUsingLeftSiblingAndParent(&$parent, &$child, &$pred,
         $pos)
     {
         $pred_pair = array_pop($pred->keys);
@@ -655,7 +655,7 @@ class BTree
 
     /**
      * Gives a child node an extra key by moving a key from the parent to the
-     * child node, and by moving a key from the child's right sibling to the 
+     * child node, and by moving a key from the child's right sibling to the
      * parent node
      * @param object $parent is the parent node
      * @param object $child is the child node
@@ -699,7 +699,7 @@ class BTree
      * @param object $next is the $child's right sibling node
      * @param $pos is the link from $parent to $child
      */
-    function mergeChildWithParentKeyAndRightSibling(&$parent, &$child, &$next, 
+    function mergeChildWithParentKeyAndRightSibling(&$parent, &$child, &$next,
         $pos)
     {
         $parent_pair = $parent->keys[$pos];

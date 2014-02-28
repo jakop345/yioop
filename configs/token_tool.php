@@ -73,7 +73,7 @@ token_tool.php
 Usage
 =====
 token_tool is used to create suggest word dictionaries,
-segment and 'n' word gram filter files for the Yioop! search engine. 
+segment and 'n' word gram filter files for the Yioop! search engine.
 To create either of these items, the user
 puts a source file in Yioop's WORK_DIRECTORY/prepare folder. Suggest word
 dictionaries are used to supply the content of the dropdown of search terms
@@ -90,7 +90,7 @@ $ works pretty well.
 
 token_tool.php can also be used to make filter files. A filter file is used to
 detect when words in a language should be treated as a unit when extracting text
-during a crawl and at search time.  For example, Bill Clinton is 2 word gram 
+during a crawl and at search time.  For example, Bill Clinton is 2 word gram
 which should be treated as unit because it is a particular person. These
 filter files can also be used  with a segmenter which
 might be used to split Chinese or Japanese text which does not have spaces into
@@ -102,11 +102,11 @@ php token_tool.php filter wiki_file lang locale n extract_type max_to_extract
 
 where file is a wikipedia xml file or is a bz2  compressed xml file whose urls
 or wiki page count dump file (it can also be a folder of these kind of files)
-used to determine the n-grams, 
+used to determine the n-grams,
 lang is an Wikipedia language tag (ignored in segmenter case),
 locale is the IANA language tag of the locale to store the results for
-(if different from lang, for example, en-US versus en for lang), n is the 
-number of words in a row to consider , extract_type is where from Wikipedia 
+(if different from lang, for example, en-US versus en for lang), n is the
+number of words in a row to consider , extract_type is where from Wikipedia
 source to extract:
 
 0 = title's,

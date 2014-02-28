@@ -244,7 +244,7 @@ class GroupIterator extends IndexBundleIterator
                 $count = count($pages);
             }
             if(isset($this->index_bundle_iterator->hard_query)) {
-                $this->results_per_block = 
+                $this->results_per_block =
                     $this->index_bundle_iterator->hard_query;
             }
             if($count < $this->results_per_block && !$done) {

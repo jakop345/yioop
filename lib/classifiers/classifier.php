@@ -1091,7 +1091,7 @@ class Classifier implements CrawlConstants
             }
             if(in_array($label, $active_rankers)) {
                 //scores for rankings are four bytes
-                $summary[self::USER_RANKS][$label] = 
+                $summary[self::USER_RANKS][$label] =
                     intval(floor($score * 65536));
             }
         }

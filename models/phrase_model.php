@@ -549,7 +549,7 @@ class PhraseModel extends ParallelModel
                 $new_words =
                     PhraseParser::extractPhrases($phrase_part, $locale_tag,
                          $index_name);
-                if(strpos($new_words[0], " ") > 0 && 
+                if(strpos($new_words[0], " ") > 0 &&
                     $found_materialized_metas == array()) {
                     array_pop($new_words);
                 }
@@ -713,7 +713,7 @@ class PhraseModel extends ParallelModel
     }
 
     /**
-     * Given a query string extracts meta word, which of these are 
+     * Given a query string extracts meta word, which of these are
      * "materialized" (i.e., should be encoded as part of word ids),
      * disallowed phrases, the query string after meta words removed
      * and ampersand substitution applied, the query string with meta words
@@ -751,7 +751,7 @@ class PhraseModel extends ParallelModel
                     $seen_match_count = 0;
                     foreach($matches as $pre_material_match) {
                         $match_kinds = explode(":", $pre_material_match);
-                        if(!in_array($match_kinds[1], array("all")) && 
+                        if(!in_array($match_kinds[1], array("all")) &&
                             !isset($match_kinds[2])){
                             $found_materialized_metas[] = $pre_material_match;
                             if($seen_match_count > 0 &&
@@ -892,7 +892,7 @@ class PhraseModel extends ParallelModel
         }
 
         $tokenizer_name = ucfirst($main_tag)."Tokenizer";
-        if(class_exists($tokenizer_name) && 
+        if(class_exists($tokenizer_name) &&
             isset($tokenizer_name::$semantic_rewrites)) {
             $rewrites = $tokenizer_name::$semantic_rewrites;
             $tmp = trim($phrase);
@@ -1079,7 +1079,7 @@ class PhraseModel extends ParallelModel
         $time = time();
         if(count($word_structs) > 1 || (isset($word_structs[0]["KEYS"])
             && count($word_structs[0]["KEYS"]) > 1) ||
-            ($word_structs == array() && 
+            ($word_structs == array() &&
             substr_count($original_query, " ") > 1)) {
             $use_proximity = true;
         }
@@ -1390,7 +1390,7 @@ class PhraseModel extends ParallelModel
         foreach($summaries as $hash_url => $summary) {
             $lookup_url = false;
             if(isset($summaries[$hash_url][self::LOCATION])) {
-                $tmp_url = explode(" => ", 
+                $tmp_url = explode(" => ",
                     $summaries[$hash_url][self::DESCRIPTION]);
                 if(isset($tmp_url[1])) {
                     $lookup_url = trim($tmp_url[1]);
@@ -1509,7 +1509,7 @@ class PhraseModel extends ParallelModel
         }
         if(!$network_flag) {
             $doc_iterate_hashes = array(substr(crawlHashWord("site:any"), 0, 9),
-                substr(crawlHash("site:any"), 0, 9), 
+                substr(crawlHash("site:any"), 0, 9),
                 substr(crawlHashWord("site:doc"), 0, 9),
                 substr(crawlHash("site:doc"), 0, 9));
             if($save_timestamp_name != "") {
@@ -1556,18 +1556,18 @@ class PhraseModel extends ParallelModel
                     if(!is_string($current_key)) {
                         $current_key = $current_key[0];
                     }
-                    if(in_array(substr($current_key, 0, 9), 
+                    if(in_array(substr($current_key, 0, 9),
                         $doc_iterate_hashes)) {
                         $word_iterators[$i] = new DocIterator(
                             $index_name, $filter, $to_retrieve);
                         $min_group_override = true;
                     } else {
                         //can happen if exact phrase search suffix approach used
-                        if(isset($distinct_word_keys[$i][0][0]) && 
+                        if(isset($distinct_word_keys[$i][0][0]) &&
                             is_array($distinct_word_keys[$i][0][0])) {
                             $distinct_keys = array(
                                 $distinct_word_keys[$i][0][1]);
-                        } else if(isset($distinct_word_keys[$i][0]) && 
+                        } else if(isset($distinct_word_keys[$i][0]) &&
                             is_array($distinct_word_keys[$i][0])) {
                             $distinct_keys = $distinct_word_keys[$i];
                         } else {
@@ -1577,17 +1577,17 @@ class PhraseModel extends ParallelModel
                         $old_distinct_key_id = "";
                         foreach($distinct_keys as $distinct_key) {
                             if(is_array($distinct_key)) {
-                                if(!isset($distinct_key[2]) && 
+                                if(!isset($distinct_key[2]) &&
                                     isset($distinct_key[1])) {
                                     $distinct_keys[] = $distinct_key[1];
                                 }
                                 $shift = (isset($distinct_key[1])) ?
                                     $distinct_key[1] : 0;
-                                $mask = (isset($distinct_key[2])) ? 
+                                $mask = (isset($distinct_key[2])) ?
                                     $distinct_key[2] : "\x00\x00\x00\x00\x00" .
                                     "\x00\x00\x00\x00\x00\x00";
                                 if(isset($distinct_key[3])) {
-                                    $old_distinct_key_id = 
+                                    $old_distinct_key_id =
                                         unbase64Hash($distinct_key[3]);
                                 }
                                 $distinct_key_id = unbase64Hash(

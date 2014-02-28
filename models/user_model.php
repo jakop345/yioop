@@ -50,7 +50,11 @@ require_once BASE_DIR."/lib/utility.php";
 class UserModel extends Model
 {
     /**
-     *
+     *  Associations of the form
+     *      name of field for web forms => database column names/abbreviations
+     *  In this case, things will in general map to the USERS table in the
+     *  Yioop data base
+     *  var array
      */
     var $search_table_column_map = array("first"=>"FIRST_NAME",
         "last" => "LAST_NAME", "user" => "USER_NAME", "email"=>"EMAIL",
@@ -186,13 +190,21 @@ class UserModel extends Model
     }
 
     /**
+     *  Return an array of up to $num many USERS rows starting from $limit and
+     *  meeting the search criterion in $search_array
      *
+     *  @param int $limit starting row to return with
+     *  @param int $num number of rows to return
+     *  @param array $search_array each element of this is a quadruple
+     *      name of a field, what comparison to perform, a value to check,
+     *      and an order (ascending/descending) to sort by
+     *  @return array elements are rows from the USERS tables
      */
-    function getUsers($limit = 0, $num=100, $search_array = array())
+    function getUsers($limit = 0, $num = 100, $search_array = array())
     {
         $db = $this->db;
         $limit = $db->limitOffset($limit, $num);
-        list($where, $order_by) = 
+        list($where, $order_by) =
             $this->searchArrayToWhereOrderClauses($search_array);
         $add_where = " WHERE ";
         if($where != "") {
@@ -219,7 +231,7 @@ class UserModel extends Model
     function getUserCount($search_array = array())
     {
         $db = $this->db;
-        list($where, $order_by) = 
+        list($where, $order_by) =
             $this->searchArrayToWhereOrderClauses($search_array);
         $add_where = " WHERE ";
         if($where != "") {
@@ -233,9 +245,10 @@ class UserModel extends Model
     }
 
     /**
-     * get a username by user_id
+     * Get a username by user_id
      *
      * @param string $user_id id of the user
+     * @return string
      */
     function getUsername($user_id)
     {
@@ -247,9 +260,10 @@ class UserModel extends Model
     }
 
     /**
-     * get a status of user by user_id
+     * Get the status of user by user_id
      *
      * @param string $user_id id of the user
+     * @return array
      */
     function getUserStatus($user_id)
     {
@@ -261,8 +275,10 @@ class UserModel extends Model
     }
 
     /**
+     * Returns a row from the USERS table based on a username (case-insensitive)
      *
-     * @param string $username
+     * @param string $username user login to be used for look up
+     * @return array corresponds to the row of that user in the USERS table
      */
     function getUser($username)
     {
@@ -278,9 +294,12 @@ class UserModel extends Model
     }
 
     /**
-     *
-     * @param string $email
-     * @param string $creation_time
+     *  Looks up a USERS row based on their $email (potentially not unique)
+     *  and the time at which their account was create in microseconds
+     *  @param string $email of user to lookup
+     *  @param string $creation_time when the user's account was created in
+     *      the current epoch
+     *  @return array row from USERS table
      */
     function getUserByEmailTime($email, $creation_time)
     {
@@ -296,7 +315,7 @@ class UserModel extends Model
     }
 
     /**
-     * get a status of user by user_id
+     * Get a status of user by user_id
      *
      * @param string $user_id id of the user
      */
@@ -372,7 +391,10 @@ class UserModel extends Model
     }
 
     /**
+     *  Used to update the fields stored in a USERS row according to
+     *  an array holding new values
      *
+     *  @param array $user updated values for a USERS row
      */
     function updateUser($user)
     {

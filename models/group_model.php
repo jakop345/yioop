@@ -39,7 +39,9 @@ require_once BASE_DIR."/lib/utility.php";
 /**
  * This is class is used to handle
  * db results related to Group Administration. Groups are collections of
- * users who might access a common blog and set of pages
+ * users who might access a common blog/news feed and set of pages. This
+ * method also controls adding and deleting entries to a group feed and
+ * does limited access control checks of these operations.
  *
  * @author Mallika Perepa (creator), Chris Pollett
  * @package seek_quarry
@@ -48,6 +50,13 @@ require_once BASE_DIR."/lib/utility.php";
 
 class GroupModel extends Model
 {
+    /**
+     *  Associations of the form
+     *      name of field for web forms => database column names/abbreviations
+     *  In this case, things will in general map to the GROUPS, or USER_GROUP
+     *  or GROUP_ITEM tables in the Yioop database
+     *  var array
+     */
     var $search_table_column_map = array("access"=>"G.MEMBER_ACCESS",
         "group_id"=>"G.GROUP_ID", "post_id" => "GI.ID",
         "join_date"=>"UG.JOIN_DATE",
@@ -57,8 +66,10 @@ class GroupModel extends Model
         "user_id"=>"P.USER_ID");
 
     /**
+     *  Get an array of users that belong to a group
      *
      *  @param string $group_id  the group_id to get users for
+     *  @return array of USERS rows
      */
     function getGroupUsers($group_id)
     {
@@ -91,7 +102,7 @@ class GroupModel extends Model
 
         $sql = "INSERT INTO GROUPS (GROUP_NAME, CREATED_TIME, OWNER_ID,
             REGISTER_TYPE, MEMBER_ACCESS) VALUES (?, ?, ?, ?, ?);";
-        $db->execute($sql, array($group_name, $timestamp, $user_id, 
+        $db->execute($sql, array($group_name, $timestamp, $user_id,
             $register, $member));
         $sql = "SELECT G.GROUP_ID AS GROUP_ID FROM ".
             " GROUPS G WHERE G.GROUP_NAME = ?";
@@ -108,7 +119,12 @@ class GroupModel extends Model
     }
 
     /**
+     *  Takes the passed associated array $group representing changes
+     *  fields of a GROUPS row, and executes an UPDATE statement to persist
+     *  those changes fields to the database.
      *
+     *  @param array $group associative array with a GROUP_ID as well as the
+     *      fields to update
      */
     function updateGroup($group)
     {
@@ -133,7 +149,14 @@ class GroupModel extends Model
     }
 
     /**
+     *   Check is a user given by $user_id belongs to a group given
+     *   by $group_id. If the field $status is sent then check if belongs
+     *   to the group with $status access (active, invited, request, banned)
      *
+     *   @param int $user_id user to look up
+     *   @param int $group_id group to check if member of
+     *   @param int $status membership type
+     *   @return bool whether or not is a member
      */
     function checkUserGroup($user_id, $group_id, $status = -1)
     {
@@ -156,7 +179,11 @@ class GroupModel extends Model
     }
 
     /**
+     *  Change the status of a user in a group
      *
+     *  @param int $user_id of user to change
+     *  @param int $group_id of group to change status for
+     *  @pram int $status what the new status should be
      */
     function updateStatusUserGroup($user_id, $group_id, $status)
     {
@@ -223,7 +250,19 @@ class GroupModel extends Model
     }
 
     /**
+     *  Gets the group items subscribed to by a user with $user_id
+     *  and which match the supplied search criteria found in $search_array,
+     *  starting from the $limit'th matching item to the $limit+$num item.
      *
+     *  @param int $limit starting offset group to display
+     *  @param int $num number of groups from offset to display
+     *  @param array $search_array each element of this is a quadruple
+     *      name of a field, what comparison to perform, a value to check,
+     *      and an order (ascending/descending) to sort by
+     *  @param int $user_id who is making this request to determine which
+     *      which groups will show up in the results (what that user owns
+     *      and is subscribed to)
+     *  @return array elements of which represent one group item
      */
     function getGroups($limit=0, $num=100, $search_array = array(),
         $user_id=ROOT_ID)
@@ -231,7 +270,7 @@ class GroupModel extends Model
         $db = $this->db;
         $limit = $db->limitOffset($limit, $num);
         $any_fields = array("access", "register");
-        list($where, $order_by) = 
+        list($where, $order_by) =
             $this->searchArrayToWhereOrderClauses($search_array, $any_fields);
         $add_where = " WHERE ";
         if($where != "") {
@@ -255,9 +294,12 @@ class GroupModel extends Model
     }
 
     /**
+     *  Return the type of the registration for a group given by $group_id
+     *  This says who is allowed to register for the group (i.e., is it
+     *   by invitation only, by request, or anyone can join)
      *
-     *  @param int $group_id
-     *  @return int
+     *  @param int $group_id which group to find the type of
+     *  @return int the numeric code for the registration type
      */
     function getRegisterType($group_id)
     {
@@ -272,9 +314,13 @@ class GroupModel extends Model
     }
 
     /**
-     *  @param int $group_id
-     *  @param int $user_id
-     *  @return array
+     *  Returns information about the group with id $group_id provided
+     *  that the requesting user $user_id has access to it
+     *
+     *  @param int $group_id id of group to look up
+     *  @param int $user_id user asking for group info
+     *  @return array row from group table or false (if no access or doesn't
+     *      existss)
      */
     function getGroupById($group_id, $user_id)
     {
@@ -293,7 +339,8 @@ class GroupModel extends Model
             G.GROUP_NAME AS GROUP_NAME, G.OWNER_ID AS OWNER_ID,
             O.USER_NAME AS OWNER, REGISTER_TYPE, UG.STATUS,
             G.MEMBER_ACCESS AS MEMBER_ACCESS, UG.JOIN_DATE AS JOIN_DATE
-            FROM GROUPS G, USERS O, USER_GROUP UG $where " .$db->limitOffset(1);
+            FROM GROUPS G, USERS O, USER_GROUP UG $where " .
+            $db->limitOffset(1);
         $result = $db->execute($sql, $params);
         $group = false;
         if($result) {
@@ -306,15 +353,23 @@ class GroupModel extends Model
     }
 
     /**
-     * Returns the number of users in the user table
+     *  Gets the number of group items subscribed to by a user with $user_id
+     *  and which match the supplied search criteria found in $search_array.
      *
-     * @return int number of users
+     *  @param array $search_array each element of this is a quadruple
+     *      name of a field, what comparison to perform, a value to check,
+     *      and an order (ascending/descending) to sort by
+     *  @param int $user_id who is making this request to determine which
+     *      which groups will be counted (what that user own
+     *      and is subscribed to)
+     *  @return int number of items matching the search criteria for the
+     *      given user_id
      */
     function getGroupsCount($search_array = array(), $user_id = ROOT_ID)
     {
         $db = $this->db;
         $any_fields = array("access", "register");
-        list($where, $order_by) = 
+        list($where, $order_by) =
             $this->searchArrayToWhereOrderClauses($search_array,$any_fields);
         $add_where = " WHERE ";
         if($where != "") {
@@ -381,9 +436,12 @@ class GroupModel extends Model
     }
 
     /**
+     *  Checks if a user belongs to a group but is not the owner of that group
+     *  Such a user could be deleted from the group
      *
-     *  @param int $user_id
-     *  @param int $group_id
+     *  @param int $user_id which user to look up
+     *  @param int $group_id which group to look up for
+     *  @return bool where user is deletable
      */
     function deletableUser($user_id, $group_id)
     {
@@ -413,7 +471,10 @@ class GroupModel extends Model
     }
 
     /**
-     *  @param int $item_id
+     *  Returns the GROUP_FEED item with the given id
+     *
+     *  @param int $item_id the item to get info about
+     *  @return array row from GROUP_FEED table
      */
     function getGroupItem($item_id)
     {
@@ -426,14 +487,16 @@ class GroupModel extends Model
     }
 
     /**
+     *  Creates a new group item
      *
-     *  @param int $parent_id
-     *  @param int $group_id
-     *  @param int $user_id
-     *  @param string $title
-     *  @pararm string $description
+     *  @param int $parent_id thread id to use for the item
+     *  @param int $group_id what group the item should be added to
+     *  @param int $user_id of user making the post
+     *  @param string $title title of the group feed item
+     *  @pararm string $description actual content of the post
      */
-    function addGroupItem($parent_id, $group_id, $user_id, $title, $description)
+    function addGroupItem($parent_id, $group_id, $user_id, $title,
+        $description)
     {
         $db = $this->db;
         $join_date = time();
@@ -450,10 +513,12 @@ class GroupModel extends Model
     }
 
     /**
+     *  Updates a group feed item's title and description. This assumes
+     *  the given item already exists.
      *
-     *  @param int $post_id
-     *  @param string $title
-     *  @pararm string $description
+     *  @param int $post_id which item to change
+     *  @param string $title the new title
+     *  @pararm string $description the new description
      */
     function updateGroupItem($id, $title, $description)
     {
@@ -463,9 +528,12 @@ class GroupModel extends Model
     }
 
     /**
+     * Removes a group feed item from the GROUP_ITEM table.
      *
-     * @param int $post_id
-     * @param int $user_id
+     * @param int $post_id of item to remove
+     * @param int $user_id the id of the person trying to perform the
+     *      removal. If not root, or the original creator of the item,
+     *      the item won'r be removed
      */
     function deleteGroupItem($post_id, $user_id)
     {
@@ -483,10 +551,17 @@ class GroupModel extends Model
     }
 
     /**
+     *  Gets the group feed items visible to a user with $user_id
+     *  and which match the supplied search criteria found in $search_array,
+     *  starting from the $limit'th matching item to the $limit+$num item.
      *
-     *  @param int $limit
-     *  @param int $num
-     *  @param array $search_array
+     *  @param int $limit starting offset group item to display
+     *  @param int $num number of items from offset to display
+     *  @param array $search_array each element of this is a quadruple
+     *      name of a field, what comparison to perform, a value to check,
+     *      and an order (ascending/descending) to sort by
+     *  @param int $user_id who is making this request to determine which
+     *  @return array elements of which represent one group feed item
      */
     function getGroupItems($limit=0, $num=100, $search_array = array(),
         $user_id = ROOT_ID)
@@ -494,7 +569,7 @@ class GroupModel extends Model
         $db = $this->db;
         $limit = $db->limitOffset($limit, $num);
         $any_fields = array("access", "register");
-        list($where, $order_by) = 
+        list($where, $order_by) =
             $this->searchArrayToWhereOrderClauses($search_array, $any_fields);
         $add_where = " WHERE ";
         if($where != "") {
@@ -505,7 +580,7 @@ class GroupModel extends Model
             GI.GROUP_ID=G.GROUP_ID AND GI.GROUP_ID=UG.GROUP_ID AND
             UG.USER_ID = U.USER_ID AND ((
             UG.STATUS='".ACTIVE_STATUS."'
-            AND G.MEMBER_ACCESS IN ('".GROUP_READ."','".GROUP_READ_WRITE."')) OR
+            AND G.MEMBER_ACCESS IN ('".GROUP_READ."','".GROUP_READ_WRITE."'))OR
             (G.OWNER_ID = UG.USER_ID)) AND
             P.USER_ID = GI.USER_ID";
         $sql = "SELECT DISTINCT GI.ID AS ID, GI.PARENT_ID AS PARENT_ID,
@@ -526,17 +601,21 @@ class GroupModel extends Model
     }
 
     /**
-     *  Returns the number of users in the user table
+     *  Gets the number of group feed items visible to a user with $user_id
+     *  and which match the supplied search criteria found in $search_array
      *
-     *  @param array $search_array
-     *  @param int $$user_id
-     *  @return int number of users
+     *  @param array $search_array each element of this is a quadruple
+     *      name of a field, what comparison to perform, a value to check,
+     *      and an order (ascending/descending) to sort by
+     *  @param int $user_id who is making this request to determine which
+     *  @return int number of items matching the search criteria for the
+     *      given user_id
      */
     function getGroupItemCount($search_array = array(), $user_id = ROOT_ID)
     {
         $db = $this->db;
         $any_fields = array("access", "register");
-        list($where, $order_by) = 
+        list($where, $order_by) =
             $this->searchArrayToWhereOrderClauses($search_array, $any_fields);
         $add_where = " WHERE ";
         if($where != "") {
@@ -547,7 +626,7 @@ class GroupModel extends Model
             GI.USER_ID=P.USER_ID AND
             GI.GROUP_ID=G.GROUP_ID AND GI.GROUP_ID=UG.GROUP_ID AND ((
             UG.STATUS='".ACTIVE_STATUS."'
-            AND G.MEMBER_ACCESS IN ('".GROUP_READ."','".GROUP_READ_WRITE."')) OR
+            AND G.MEMBER_ACCESS IN ('".GROUP_READ."','".GROUP_READ_WRITE."'))OR
             (G.OWNER_ID = UG.USER_ID))";
         $sql = "SELECT COUNT(*) AS NUM FROM GROUP_ITEM GI, GROUPS G,
             USER_GROUP UG, USERS P $where";

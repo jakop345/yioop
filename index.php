@@ -193,7 +193,7 @@ if(file_exists(APP_DIR."/index.php")) {
  */
 if(file_exists(APP_DIR."/controllers/".$controller_name."_controller.php")) {
     require_once(APP_DIR."/controllers/".$controller_name."_controller.php");
-} else { 
+} else {
     require_once(BASE_DIR."/controllers/".$controller_name."_controller.php");
 }
 $controller_class = ucfirst($controller_name)."Controller";

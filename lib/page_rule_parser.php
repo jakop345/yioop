@@ -44,30 +44,46 @@ require_once BASE_DIR."/lib/crawl_constants.php";
  * command statements and assignment statements
  *
  * A command statement takes a key field argument for the page associative array
- * and does a function call to manipulate that page. Right now the supported
- * commands are to unset that field value, to add the field and field value to
- * the META_WORD array for the page, and to split the field on a comma,
- * view this as a search keywords => link text association, and add this the
- * KEYWORD_LINKS array.
+ * and does a function call to manipulate that page.
  * These have the syntax:
- * addMetaWords(field)
- * addKeywordLink(field)
- * setOutputFolder(dir)
- * setOutputFormat(format)
- * setOutputTable(table)
- * toArray(field)
- * toString(field)
- * unset(field)
- * writeOutput(field)
+ * addMetaWords(field)       ;add the field and field value to the META_WORD
+ *                           ;array for the page
+ * addKeywordLink(field)     ;split the field on a comma, view this as a search
+ *                           ;keywords => link text association, and add this
+ *                           ;the KEYWORD_LINKS array.
+ * setStack(field)           ;set which field value should be used as a stack
+ * pushStack(field)          ;add the field value for field to the top of stack
+ * popStack(field)           ;pop the top of the stack into the field value for
+ *                           ;field
+ * setOutputFolder(dir)      ;if auxiliary output, rather than just to the
+ *                           ; a yioop index, is being done, then set the folder
+ *                           ; the folder for this output to be dir
+ * setOutputFormat(format)   ;format of auxiliary output either CSV or SQL
+ *                           ;SQL mean that writeOutput will write an insert
+ *                           ;statement
+ * setOutputTable(table)     ;if output is SQL then what table to use for the
+ *                           ;insert statements
+ * toArray(field)            ;splits field value for field on a comma and
+ *                           ;assign field value to be the resulting array
+ * toString(field)           ;if field value is an array then implode that
+ *                           ;array using comma and store the result in field
+ *                           ;value
+ * unset(field)              ;unset that field value
+ * writeOutput(field)        ;use the contents of field value viewed as an array
+ *                           ;to fill in the columns of a SQL insert statement
+ *                           ;or CSV row
  *
  * Assignments can either be straight assignments with '=' or concatenation
- * assignments with '.='. There are three kinds of values that one can assign:
+ * assignments with '.='. There are the following kinds of values that one
+ * can assign:
  *
  * field = some_other_field ; sets $page['field'] = $page['some_other_field']
  * field = "some_string" ; sets $page['field'] to "some string"
  * field = /some_regex/replacement_where_dollar_vars_allowed/
- * ; computes the results of replacing matches to some_regex in $page['field']
- * ; with replacement_where_dollar_vars_allowed
+ *     ; computes the results of replacing matches to some_regex in
+ *     ; $page['field'] with replacement_where_dollar_vars_allowed
+ * field = /some_regex/g ;sets $page['field'] to the array of all matches
+ *     ; of some regex in $page['field']
  *
  * For each of the above assignments we could have used ".=" instead of "="
  *
@@ -110,6 +126,14 @@ class PageRuleParser implements CrawlConstants
     var $output_table="";
 
     /**
+     * Name of field which will be used as a stack for push and popping other
+     * fields values
+     *
+     * @var string
+     */
+    var $stack;
+
+    /**
      * Constructs a PageRuleParser using the supplied page_rules
      *
      * @param string $page_rules a sequence of lines with page rules
@@ -121,7 +145,7 @@ class PageRuleParser implements CrawlConstants
     }
 
     /**
-     * Parses a string of pages rules into parse trees hican be excuted
+     * Parses a string of pages rules into parse trees that can be executed
      * later
      *
      * @param string $page_rules a sequence of lines with page rules
@@ -137,13 +161,13 @@ class PageRuleParser implements CrawlConstants
         $assignment = '\.?=';
         $start = '(?:\A|\n)';
         $end = '(?:\n|\Z)';
-        $substitution = '(/[^/\n]+/)([^/\n]*)/';
+        $sub_or_match_all = '(/[^/\n]+/)(g|([^/\n]*)/)';
         $command = '(\w+)'."$blank*".'\('."$blank*".'([\w\/]+)'.
             "$blank*".'\)';
         $rule =
             "@(?:$command$blank*($comment)?$end".
             "|$blank*($literal)$blank*($assignment)$blank*".
-            "((".$quote_string.")|($literal)|($substitution))".
+            "((".$quote_string.")|($literal)|($sub_or_match_all))".
             "$blank*($comment)?$end)@";
         $matches = array();
         preg_match_all($rule, $page_rules, $matches);
@@ -169,7 +193,11 @@ class PageRuleParser implements CrawlConstants
                     $tree["value_type"] = "string";
                     $tree["value"] = $matches[8][$i];
                 } else if($value_type_indicator == '/') {
-                    $tree["value_type"] = "substitution";
+                    if(substr($matches[6][$i],-1) == "g") {
+                        $tree["value_type"] = "match_all";
+                    } else {
+                        $tree["value_type"] = "substitution";
+                    }
                     $tree["value"] = array($matches[12][$i], $matches[13][$i]);
                 } else {
                     $tree["value_type"] = "literal";
@@ -218,6 +246,9 @@ class PageRuleParser implements CrawlConstants
             "setOutputFolder" => "setOutputFolder",
             "setOutputFormat" => "setOutputFormat",
             "setOutputTable" => "setOutputTable",
+            "setStack" => "setStack",
+            "pushStack" => "pushStack",
+            "popStack" => "popStack",
             "toArray" => "toArray",
             "toString" => "toString",
             "unset" => "unsetVariable",
@@ -257,6 +288,10 @@ class PageRuleParser implements CrawlConstants
             case "substitution":
                 $value = preg_replace($tree["value"][0], $tree["value"][1],
                     $page_data[$field]);
+            break;
+            case "match_all":
+                preg_match_all($tree["value"][0], $tree["value"][1],
+                    $page_data[$field], $value);
             break;
         }
         if($tree["assign_op"] == "=") {
@@ -327,6 +362,67 @@ class PageRuleParser implements CrawlConstants
         }
         $page_data[CrawlConstants::KEYWORD_LINKS][$key_words] = $link_text;
     }
+
+    /**
+     *  Set field variable to be used as a stack
+     *
+     *  @param $field what field variable to use for current stack
+     *  @param array &$page_data an associative array of containing summary
+     *      info of a web page/record
+     */
+    function setStack($field, &$page_data)
+    {
+        $this->stack = $this->getVarField($field);
+        if(!isset($page_data[$this->stack]) ||
+            (!is_string($page_data[$this->stack]) &&
+            !is_array($page_data[$this->stack]) )) {
+            $page_data[$this->stack] = array();
+        } else if(is_string($page_data[$this->stack])) {
+            $page_data[$this->stack] = array($page_data[$this->stack]);
+        }
+    }
+
+    /**
+     *  Pushes an element or items in an array stored in field onto the current
+     *  stack
+     *
+     *  @param $field what field  to get data to push onto fcurrent stack
+     *  @param array &$page_data an associative array of containing summary
+     *      info of a web page/record
+     */
+    function pushStack($field, &$page_data)
+    {
+        $var_field = $this->getVarField($field);
+        if(!isset($page_data[$this->stack]) || !isset($page_data[$var_field])
+            || (!is_string($page_data[$var_field])
+            && !is_array($page_data[$var_field])) ) {
+            return;
+        }
+        if(is_string($page_data[$var_field])) {
+            $page_data[$this->stack][] = $page_data[$var_field];
+        } else {
+            $this->stack = array_merge($page_data[$this->stack],
+                $page_data[$var_field]);
+        }
+    }
+
+    /**
+     *  Pop an element or items in an array stored in field onto the current
+     *  stack
+     *
+     *  @param $field what field  to get data to push onto fcurrent stack
+     *  @param array &$page_data an associative array of containing summary
+     *      info of a web page/record
+     */
+    function popStack($field, &$page_data)
+    {
+        $var_field = $this->getVarField($field);
+        if(!isset($page_data[$this->stack]) ) {
+            return;
+        }
+        $page_data[$var_field] = array_pop($page_data[$this->stack]);
+    }
+
 
     /**
      *  Set output folder
@@ -450,7 +546,6 @@ class PageRuleParser implements CrawlConstants
             if(!is_array($out)) {
                 $out = array($out);
             }
-            $out = array_values($out);
             $fh = fopen($data_file, "a");
             if(!$fh) {return; }
             switch($this->output_format)
@@ -460,10 +555,21 @@ class PageRuleParser implements CrawlConstants
                 break;
                 case 'sql':
                     if(!$this->output_table) {break; }
-                    $sql = "INSERT INTO {$this->output_table} VALUES(";
+                    $sql = "INSERT INTO {$this->output_table} ";
+                    if(isset($out[0])) {
+                        $sql .= " VALUES(";
+                    } else {
+                        $keys = array_keys($out);
+                        $sql .= '(';
+                        foreach($keys as $key) {
+                            $sql .= "$comma $key";
+                            $comma = ",";
+                        }
+                        $sql .= ') VALUES(';
+                    }
                     $comma = "";
                     foreach($out as $value) {
-                        $sql .= "$comma '$value'";
+                        $sql .= "$comma '". addslashes($value)."'";
                         $comma = ",";
                     }
                     $sql .= ");\n";

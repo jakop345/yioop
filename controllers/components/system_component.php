@@ -14,11 +14,11 @@
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  *  END LICENSE
  *
@@ -45,7 +45,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  */
 class SystemComponent extends Component
 {
-    var $activities = array("manageMachines", "manageLocales", 
+    var $activities = array("manageMachines", "manageLocales",
         "serverSettings", "configure");
 
     /**
@@ -497,7 +497,11 @@ class SystemComponent extends Component
     }
 
     /**
+     *  Handles admin panel requests for mail, database, tor, proxy server
+     *  settings
      *
+     *  @return array $data data for the view concerning the current settings
+     *      so they can be displayed
      */
     function serverSettings()
     {
@@ -572,11 +576,8 @@ class SystemComponent extends Component
                         "</h1>');";
                     break;
                 }
-
             break;
-
             default:
-
                 $data = array_merge($data,
                     $profile_model->getProfile(WORK_DIRECTORY));
                 $data['MEMCACHE_SERVERS'] = str_replace(
@@ -596,11 +597,11 @@ class SystemComponent extends Component
             }
         }
         $data['REGISTRATION_TYPES'] = array (
-                'disable_registration' => 
+                'disable_registration' =>
                     tl('system_component_configure_disable_registration'),
-                'no_activation' => 
+                'no_activation' =>
                     tl('system_component_configure_no_activation'),
-                'email_registration' => 
+                'email_registration' =>
                     tl('system_component_configure_email_activation'),
                 'admin_activation' =>
                     tl('system_component_configure_admin_activation'),
@@ -616,7 +617,7 @@ class SystemComponent extends Component
     elt('account-registration').onchange = function () {
         var show_mail_info = false;
         no_mail_registration = ['disable_registration', 'no_activation'];
-        if(no_mail_registration.indexOf(elt('account-registration').value) 
+        if(no_mail_registration.indexOf(elt('account-registration').value)
             < 0) {
             show_mail_info = true;
         }

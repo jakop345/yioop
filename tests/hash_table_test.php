@@ -218,7 +218,7 @@ class HashTableTest extends UnitTest
     {
         $start_time = microtime();
         for($i = 0; $i < 10000; $i++) {
-            $this->test_objects['FILE1']->insert(crawlHash("hi$i",true), 
+            $this->test_objects['FILE1']->insert(crawlHash("hi$i",true),
             "0000".packInt($i));
         }
         $this->assertTrue((changeInMicrotime($start_time) < 2),

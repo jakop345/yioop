@@ -346,7 +346,7 @@ class HtmlProcessor extends TextProcessor
         }
         if(self::$max_description_len > 2 * MAX_DESCRIPTION_LEN) {
             /* if don't need to summarize much, take meta description
-               from above code, then concatenate body of doc 
+               from above code, then concatenate body of doc
                after stripping tags, return result
              */
             $description .= "\n".self::crudeDescription($page);
@@ -361,7 +361,7 @@ class HtmlProcessor extends TextProcessor
         $page_parts = array("/html//p[1]",
             "/html//div[1]", "/html//p[2]", "/html//div[2]", "/html//p[3]",
             "/html//div[3]", "/html//p[4]", "/html//div[4]",
-            "/html//td", "/html//li", "/html//dt", "/html//dd", 
+            "/html//td", "/html//li", "/html//dt", "/html//dd",
             "/html//pre", "/html//a", "/html//article",
             "/html//section", "/html//cite");
 
@@ -475,12 +475,12 @@ class HtmlProcessor extends TextProcessor
                         if(isset($sites[$url])) {
                             $sites[$url] .=" .. ".
                                 preg_replace("/\s+/", " ", strip_tags($text));
-                            $sites[$url] = mb_substr($sites[$url], 0, 
+                            $sites[$url] = mb_substr($sites[$url], 0,
                                 2* MAX_LINKS_WORD_TEXT);
                         } else {
                             $sites[$url] = preg_replace("/\s+/", " ",
                                 strip_tags($text));
-                            $sites[$url] = mb_substr($sites[$url], 0, 
+                            $sites[$url] = mb_substr($sites[$url], 0,
                                 2* MAX_LINKS_WORD_TEXT);
                         }
 
@@ -528,11 +528,11 @@ class HtmlProcessor extends TextProcessor
                     && $len < MAX_URL_LENGTH && $len > 4) {
                     if(isset($sites[$url])) {
                         $sites[$url] .=" .. ".$alt;
-                        $sites[$url] = mb_substr($sites[$url], 0, 
+                        $sites[$url] = mb_substr($sites[$url], 0,
                             2* MAX_LINKS_WORD_TEXT);
                     } else {
                         $sites[$url] =$alt;
-                        $sites[$url] = mb_substr($sites[$url], 0, 
+                        $sites[$url] = mb_substr($sites[$url], 0,
                             2* MAX_LINKS_WORD_TEXT);
                     }
                     $i++;

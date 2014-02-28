@@ -82,7 +82,7 @@ class RegisterController extends Controller implements CrawlConstants
 
     /**
      * An array of triples, each triple consisting of a question of the form
-     * Which is your favorite..? followed by one of the form 
+     * Which is your favorite..? followed by one of the form
      * Which is your like the least..? followed by a string which is a comma
      * separated choices. The values for these triples are determined
      * via the translate function tl. So can be set under Manage Locales
@@ -346,7 +346,7 @@ class RegisterController extends Controller implements CrawlConstants
 
 
     /**
-     *  Used to verify the email sent to a user try to set up an account. 
+     *  Used to verify the email sent to a user try to set up an account.
      *  If the email is legit the account is activated
      *
      *  @return array $data will contain a SCRIPT field with the
@@ -420,7 +420,7 @@ class RegisterController extends Controller implements CrawlConstants
 
     /**
      *  Called with the data from the initial recover form was completely
-     *  provided and captcha was correct. This method 
+     *  provided and captcha was correct. This method
      *  sends the recover email provided the account had
      *  recover questions set otherwise sets up an error message.
      *
@@ -444,7 +444,7 @@ class RegisterController extends Controller implements CrawlConstants
             return $data;
         }
         $session = $user_model->getUserSession($user["USER_ID"]);
-        if(!isset($session['RECOVERY']) || 
+        if(!isset($session['RECOVERY']) ||
             !isset($session['RECOVERY_ANSWERS'])) {
             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                 tl('register_controller_account_recover_fail')."</h1>');";
@@ -475,7 +475,7 @@ class RegisterController extends Controller implements CrawlConstants
 
     /**
      *  This activity either verifies the recover email and sets up the
-     *  appropriate  data for a change password form or it verifies the 
+     *  appropriate  data for a change password form or it verifies the
      *  change password form data and changes the password. If verifications
      *  error messages are set up
      *
@@ -565,7 +565,7 @@ class RegisterController extends Controller implements CrawlConstants
                 return $data;
             }
         }
-        if(!isset($user_session['RECOVERY']) || 
+        if(!isset($user_session['RECOVERY']) ||
             !isset($user_session['RECOVERY_ANSWERS'])) {
             $data['SCRIPT'] = $recover_fail;
             return $data;
@@ -682,7 +682,7 @@ class RegisterController extends Controller implements CrawlConstants
             $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
                 tl('register_controller_url_submitted')."</h1>');";
             $visitor_model->updateVisitor(
-                $_SERVER['REMOTE_ADDR'], "suggest_day_exceeded", 
+                $_SERVER['REMOTE_ADDR'], "suggest_day_exceeded",
                 self::ONE_DAY, self::ONE_DAY, MAX_SUGGEST_URLS_ONE_DAY);
             for($i = 0; $i < $num_captchas; $i++) {
                 $data["question_$i"] = "-1";
@@ -743,9 +743,9 @@ class RegisterController extends Controller implements CrawlConstants
     /**
      *  Picks $num_select most/least questions from an array of triplets of
      *  the form a string question: Which is the most ..?, a string
-     *  question: Which is the least ..?, followed by a comma separated list 
-     *  of choices ranked from least to most. For each question pick, 
-     *  $num_choices many items from the last element of the triplet are 
+     *  question: Which is the least ..?, followed by a comma separated list
+     *  of choices ranked from least to most. For each question pick,
+     *  $num_choices many items from the last element of the triplet are
      *  chosen.
      *
      *  @param array $questions_answers an array t_1, t_2, t_3, t_4, where
@@ -806,7 +806,7 @@ class RegisterController extends Controller implements CrawlConstants
 
     /**
      *  Used to select which activity a controller will do. If the $activity
-     *  is $activity_success, then this method checks the prereqs for 
+     *  is $activity_success, then this method checks the prereqs for
      *  $activity_success. If they are not met then the view $data array is
      *  updated with an error message and $activity_fail is set to be the
      *  next activity. If the prereq is met then the $activity is left as
@@ -871,7 +871,7 @@ class RegisterController extends Controller implements CrawlConstants
             $data['SUCCESS'] = false;
             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
             tl('register_controller_error_fields')."</h1>');";
-        } else if(isset($data["check_user"]) && 
+        } else if(isset($data["check_user"]) &&
             $this->model("user")->getUserId($data['USER'])) {
             $data['SUCCESS'] = false;
             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
@@ -976,7 +976,7 @@ class RegisterController extends Controller implements CrawlConstants
             $data["PASSWORD"] = "";
             $data["REPASSWORD"] = "";
         }
-        $num_questions = self::NUM_CAPTCHA_QUESTIONS + 
+        $num_questions = self::NUM_CAPTCHA_QUESTIONS +
             self::NUM_RECOVERY_QUESTIONS;
         $num_captchas = self::NUM_CAPTCHA_QUESTIONS;
         for($i = 0; $i < $num_questions; $i++) {

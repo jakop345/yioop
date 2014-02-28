@@ -132,7 +132,7 @@ class MailServer
      *  Encapuslates the domain and credentials of a SMTP server
      *  in a MailServer object
      *
-     *  @param string $sender_email who mail will be sent from (can be 
+     *  @param string $sender_email who mail will be sent from (can be
      *      overwritten)
      *  @param string $server domain name of machine will connect to
      *  @param int $port port on that machine
@@ -277,7 +277,7 @@ class MailServer
         $mail .= "To: ". $to . $eol;
         $mail .= $eol . $eol . $message. $eol . ".";
 
-        $commands = array( 
+        $commands = array(
             "MAIL FROM: <$from>" => self::OKAY,
             "RCPT TO: <$to>" => self::OKAY,
             "DATA" => self::START_INPUT,

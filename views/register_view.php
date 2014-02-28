@@ -140,7 +140,7 @@ class RegisterView extends View
                             <td class="table-input">
                                 <input id="password" type="password"
                                     class="narrow-field" maxlength="80"
-                                    name="password" value="<?php 
+                                    name="password" value="<?php
                                     e($data['PASSWORD']); ?>" />
                                 <?php echo in_array("password", $missing)
                                     ? '<span class="red">*</span>':'';?></td>
@@ -180,7 +180,7 @@ class RegisterView extends View
                                 <?php
                                 }
                                 $this->helper("options")->render(
-                                    "question-$i", "question_$i", 
+                                    "question-$i", "question_$i",
                                     $question, $data["question_$i"]);
                                 $first = false;
                                 e(in_array("question_$i", $missing)

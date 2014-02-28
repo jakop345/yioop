@@ -144,7 +144,7 @@ class CrawloptionsElement extends Element
             e(tl('crawloptions_element_add_suggest_urls')); ?></a>]
             [<a href="?c=admin&amp;a=manageCrawls&amp;arg=options<?php
                 e('&amp;'.CSRF_TOKEN.'='.$data[CSRF_TOKEN]);
-                ?>&amp;suggest=clear"><?php 
+                ?>&amp;suggest=clear"><?php
                 e(tl('crawloptions_element_clear_suggest_urls'));
                 ?></a>]</div>
         <textarea class="tall-text-area" id="seed-sites"
@@ -159,7 +159,7 @@ class CrawloptionsElement extends Element
             e(tl('crawloptions_element_add_suggest_urls')); ?></a>]
             [<a href="?c=admin&amp;a=manageCrawls&amp;arg=options<?php
                 e('&amp;'.CSRF_TOKEN.'='.$data[CSRF_TOKEN]);
-                ?>&amp;suggest=clear"><?php 
+                ?>&amp;suggest=clear"><?php
                 e(tl('crawloptions_element_clear_suggest_urls'));
                 ?></a>]</div></div>
         <textarea class="short-text-area" id="inject-sites"

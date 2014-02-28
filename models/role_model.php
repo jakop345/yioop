@@ -155,7 +155,7 @@ class RoleModel extends Model
             "DB_USER" => DB_USER, "DB_PASSWORD" => DB_PASSWORD,
             "DB_NAME" => DB_NAME);
         $limit = $db->limitOffset($limit, $num);
-        list($where, $order_by) = 
+        list($where, $order_by) =
             $this->searchArrayToWhereOrderClauses($search_array);
         $sql = "SELECT NAME FROM ROLE $where $order_by $limit";
         $result = $db->execute($sql);
@@ -176,7 +176,7 @@ class RoleModel extends Model
     function getRoleCount($search_array = array())
     {
         $db = $this->db;
-        list($where, $order_by) = 
+        list($where, $order_by) =
             $this->searchArrayToWhereOrderClauses($search_array);
         $sql = "SELECT COUNT(*) AS NUM FROM ROLE $where";
         $result = $db->execute($sql);
@@ -200,7 +200,7 @@ class RoleModel extends Model
         $row = $db->fetchArray($result);
         return $row;
     }
-    
+
 
     /**
      *  Add a rolename to the database using provided string

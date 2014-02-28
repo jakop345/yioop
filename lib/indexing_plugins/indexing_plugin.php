@@ -71,7 +71,7 @@ require_once BASE_DIR."/models/datasources/".DBMS."_manager.php";
  *     info which is then handed back to the fetcher (@see pageProcessing method
  *     below for more info.)
  *
- * pageSummaryProcessing(&$summary) -- which is called by a page processor in a 
+ * pageSummaryProcessing(&$summary) -- which is called by a page processor in a
  *     fetcher after the initial summary has been generated (by processor itself
  *     and all plugins which are associated with the processor). This method can
  *     be used to further modify the summary
@@ -81,10 +81,10 @@ require_once BASE_DIR."/models/datasources/".DBMS."_manager.php";
  *      meta words to be extracted from the query. @see getAdditionalMetaWords
  *      for more details on the return type of this method.
  *
- * If you would like to write a plugin which can be configured on the 
+ * If you would like to write a plugin which can be configured on the
  * Admin > Page Options page, then you need to write four other methods:
  *
- * loadConfiguration() -- which can read plugin configuration data from 
+ * loadConfiguration() -- which can read plugin configuration data from
  *     persistent storage on the name server into an array or object when a
  *     crawl is started. This data is then automatically serialized and sent to
  *     queue servers as part of starting a crawl
@@ -105,7 +105,7 @@ require_once BASE_DIR."/models/datasources/".DBMS."_manager.php";
  *      used by the plugin given the information in &$data. This might display
  *      a form a user would use to alter the behavior of the plugin
  *
- * Subclasses of IndexingPlugin stored in 
+ * Subclasses of IndexingPlugin stored in
  *      WORK_DIRECTORY/app/lib/indexing_plugins
  * will be detected by Yioop. So one can add code there to make it easier
  * to upgrade Yioop. I.e., your site specific code can stay in the work

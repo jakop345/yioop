@@ -151,7 +151,7 @@ class SearchView extends View implements CrawlConstants
         }
         ?>
         <div class="landing-footer">
-            <div><b><?php 
+            <div><b><?php
             if(isset($data['INDEX_INFO'])) {
                 e($data['INDEX_INFO']);
             } else {
@@ -287,7 +287,7 @@ class SearchView extends View implements CrawlConstants
                     !in_array("NOSNIPPET", $page[self::ROBOT_METAS])) {
                         $description = isset($page[self::DESCRIPTION]) ?
                             $page[self::DESCRIPTION] : "";
-                        $description = mb_convert_encoding($description, 
+                        $description = mb_convert_encoding($description,
                             "UTF-8", "UTF-8");
                         e("<p>".$this->helper("displayresults")->
                             render($description)."</p>");

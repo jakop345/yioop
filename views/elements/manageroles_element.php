@@ -70,7 +70,7 @@ class ManagerolesElement extends Element
         <table class="role-table table-margin">
             <tr>
                 <th><?php e(tl('manageroles_element_rolename'));?></th>
-                <th colspan='2'><?php 
+                <th colspan='2'><?php
                     e(tl('manageroles_element_actions'));?></th>
             </tr>
         <?php
@@ -100,7 +100,7 @@ class ManagerolesElement extends Element
                     } else {
                     ?>
                         <a href="<?php e($delete_url . 'name='.
-                        $role['NAME']); ?>"><?php 
+                        $role['NAME']); ?>"><?php
                         e(tl('manageroles_element_delete'));
                     }?></a></td>
                 </tr>
@@ -178,7 +178,7 @@ class ManagerolesElement extends Element
                 }
                 ?>
                 </table>
-                <?php 
+                <?php
                     if(count($data['AVAILABLE_ACTIVITIES']) > 1) {
                         $this->view->helper("options")->render(
                             "add-roleactivity",
@@ -227,7 +227,7 @@ class ManagerolesElement extends Element
             <?php
                 e($item_sep);
                 $this->view->helper("options")->render(
-                    "name-comparison", "name_comparison", 
+                    "name-comparison", "name_comparison",
                     $data['COMPARISON_TYPES'],
                     $data['name_comparison']);
                 e($item_sep);
@@ -238,13 +238,13 @@ class ManagerolesElement extends Element
             <?php
                 e($item_sep);
                 $this->view->helper("options")->render(
-                    "name-sort", "name_sort", 
+                    "name-sort", "name_sort",
                     $data['SORT_TYPES'],
                     $data['name_sort']);
             ?></td></tr>
         <tr><?php if(!MOBILE) {?><td></td><td></td> <?php } ?>
             <td <?php if(!MOBILE) {
-                    ?>class="center" <?php 
+                    ?>class="center" <?php
                 }
                 ?>><button class="button-box"
                 type="submit"><?php e(tl('manageroles_element_search'));

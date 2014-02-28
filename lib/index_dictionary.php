@@ -216,7 +216,7 @@ class IndexDictionary implements CrawlConstants
         $prefix_string = $index_shard->getShardSubstring(
             IndexShard::HEADER_LENGTH, $index_shard->prefixes_len, false);
         $next_offset = $base_offset;
-        $word_item_len = IndexShard:: WORD_KEY_LEN + 
+        $word_item_len = IndexShard:: WORD_KEY_LEN +
                 IndexShard:: WORD_DATA_LEN;
         $num_prefix_letters = self::NUM_PREFIX_LETTERS;
         $prefix_item_size = self::PREFIX_ITEM_SIZE;
@@ -749,7 +749,7 @@ class IndexDictionary implements CrawlConstants
 
     /**
      * This method is used when computing the array of
-     * (generation,posting_list_start, len, exact_word_id) quadruples when 
+     * (generation,posting_list_start, len, exact_word_id) quadruples when
      * looking up a $word_id in an index dictionary.It checks
      * if the $id of a dictionary row matches $word_id up to the $mask info.
      * If so, it adds the word record to the quadruple array $info that has been
@@ -851,7 +851,7 @@ class IndexDictionary implements CrawlConstants
         if(isset($this->blocks[$file_num][$tier][$bytes])) {
             return $this->blocks[$file_num][$tier][$bytes];
         }
-        if(!isset($this->fhs[$file_num][$tier]) || 
+        if(!isset($this->fhs[$file_num][$tier]) ||
             $this->fhs[$file_num][$tier] === NULL) {
             $file_name = $this->dir_name."/$file_num/".$tier."A.dic";
             if(!file_exists($file_name)) return $false;

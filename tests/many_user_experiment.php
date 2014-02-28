@@ -67,7 +67,7 @@ $user_model = new UserModel();
 
 for($i = 0; $i < 1000; $i++) {
     echo "Adding User $i\n";
-    $user_model->addUser("User$i", "test", "First$i", "Last$i", 
+    $user_model->addUser("User$i", "test", "First$i", "Last$i",
         "user$i@email.net", 1);
 }
 ?>

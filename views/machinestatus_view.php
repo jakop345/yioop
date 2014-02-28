@@ -77,7 +77,7 @@ class MachinestatusView extends View
         <td>[<a href="<?php e($log_url);?>"><?php
             e(tl('machinestatus_view_log'));?></a>]</td>
         <td><?php $this->helper("toggle")->render(
-            ($data["NEWS_MODE"] == "news_process"), $on_news_updater, 
+            ($data["NEWS_MODE"] == "news_process"), $on_news_updater,
             $off_news_updater);?>
         </td>
         </tr></table>

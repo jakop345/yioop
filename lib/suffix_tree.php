@@ -97,7 +97,7 @@ class SuffixTree
 
     /**
      * How many words from the start of the active edge label to get the
-     * last suffix. If active edge label was: "a black cat a black" and 
+     * last suffix. If active edge label was: "a black cat a black" and
      * $active_len was 2, then would have "a black" from the first two chars.
      * @var int
      */
@@ -166,7 +166,7 @@ class SuffixTree
      * Makes a new node for the suffix tree structure. This node
      * is inserted at the end of the tree so far. A node is associative
      * array consisting of the fields "start" whose value
-     * is the starting location in $this->text for this node, 
+     * is the starting location in $this->text for this node,
      * "end" location in $this->text up to which this node is
      * responsible, "sym_link" is a link to an isomorphic subtree for the
      * purposes of building the suffix tree, and "next" is an array of
@@ -283,12 +283,12 @@ class SuffixTree
                 $this->addSuffixLink($splitNode); //rule 2
             }
             $this->remainder--;
-            if ($this->active_index == $this->root && $this->active_len > 0) { 
+            if ($this->active_index == $this->root && $this->active_len > 0) {
                 //rule 1
                 $this->active_len--;
                 $this->active_edge_index = $this->pos - $this->remainder + 1;
             } else {
-                $this->active_index = 
+                $this->active_index =
                     ($this->tree[$this->active_index]["sym_link"] > 0 ) ?
                     $this->tree[$this->active_index]["sym_link"] : $this->root;
                     //rule 3

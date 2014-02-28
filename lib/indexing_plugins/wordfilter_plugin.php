@@ -51,14 +51,14 @@ require_once BASE_DIR."/lib/crawl_constants.php";
  * processing the summary's title and description are sent to
  * the method checkFilter. Here they are compared against the array of rules
  * $this->filter_rules which consists of a list of rules each of which
- * has a PRECONDITIONS and an ACTIONS field. Actions can either be directives 
+ * has a PRECONDITIONS and an ACTIONS field. Actions can either be directives
  * that might appear within a ROBOTS
  * meta tag of an HTML document: NOINDEX, NOFOLLOW, NOCACHE, NOARCHIVE, NOODP,
  * NOYDIR, NONE or can be the word NOPROCESS, JUSTFOLLOW, NOTCONTAINS.
  * The preconditions is checked in the function checkFilter. Details on
  * what constitutes are legal precondition are described in the
  * @see $filter_rules and @see $rules_string documentation.
- * Usually, if checkFilter returns true then pageSummaryProcessing adds the 
+ * Usually, if checkFilter returns true then pageSummaryProcessing adds the
  * meta words to the document summary and returns. If one of the actions
  * was NOTCONTAIN, then only if checkFilter returned false are the meta words
  * added. The crawl makes use of the meta word info when performing indexing.
@@ -66,15 +66,15 @@ require_once BASE_DIR."/lib/crawl_constants.php";
  * pageSummaryProcessing will be false this will prevent any indexing of this
  * document from occuring at all. In the case where the actions contain
  * JUSTFOLLOW, the document won't be stored in the index but links from it will
- * be followed. JUSTFOLLOW has a slightly different semantics than NOINDEX. 
+ * be followed. JUSTFOLLOW has a slightly different semantics than NOINDEX.
  * When NOINDEX is used the document is actually stored in the index
  * (unlike JUSTFOLLOW). If another document links to this document, it can be
- * detected. If at search time a NOINDEX document or a link to a NOINDEX 
- * document is about to be returned, the NOINDEX is detected and the result 
- * won't be returned. With JUSTFOLLOW since the data is not stored in the 
+ * detected. If at search time a NOINDEX document or a link to a NOINDEX
+ * document is about to be returned, the NOINDEX is detected and the result
+ * won't be returned. With JUSTFOLLOW since the data is not stored in the
  * index we can't tell if a link pointing to a JUSTFOLLOW page just hasn't been
  * crawled yet or if it is a link to a JUSTFOLLOW page, so links to JUSTFOLLOW
- * pages might appear in the index. One can see this effect by doing a search 
+ * pages might appear in the index. One can see this effect by doing a search
  * on site:any. The link that found the p7.html page shows up.
  *
  * This plugin has been created with a dummy list of filter rules. By doing a
@@ -82,7 +82,7 @@ require_once BASE_DIR."/lib/crawl_constants.php";
  *      tests/word-filter-test-crawl.zip
  * one can  test how it behaves on those terms. To make use of
  * this plugin on real web data one probably wants to alter the choice of words.
- * This can be done from Admin > Page Options > Crawl Time tab by clicking on 
+ * This can be done from Admin > Page Options > Crawl Time tab by clicking on
  * the Configure link next to the plugin. Alternatively, one could subclass this
  * plugin in WORK_DIRECTORY/app/lib/indexing_plugins where one has a different
  * array of filter_terms. To get a more sophisticated filtering process than a
@@ -109,7 +109,7 @@ class WordfilterPlugin extends IndexingPlugin implements CrawlConstants
      * raw count of occurrences that is required; a value between 0 and 1 is
      * treated a fraction of the document that must be made up of occurrence of
      * that term. The array in $this->filter rules is typically created by
-     * calling $this->parseRules() which converts the string in 
+     * calling $this->parseRules() which converts the string in
      * $this->rules_string into the format described above
      *
      * @var array
@@ -131,7 +131,7 @@ class WordfilterPlugin extends IndexingPlugin implements CrawlConstants
 ; A filter rule is specified in a single line that contains a ':'
 ; All lines in a rule file without a ':' are treated as comments. Anything on
 ; a line after a ';' is also treated as a comment.
-; 
+;
 ; A rule has the format:
 ; PRECONDITIONS:ACTIONS
 ; For example,
@@ -152,8 +152,8 @@ class WordfilterPlugin extends IndexingPlugin implements CrawlConstants
 ; NOINDEX, NOFOLLOW, NOCACHE, NOARCHIVE, NOODP, NOYDIR, NONE,
 ; NOTCONTAIN, JUSTFOLLOW, and NOPROCESS. These say how the summary
 ; of whole page should be processed and  most of them correspond to robot
-; meta tag directives. We indicate here the non standard directive. If one of 
-; the actions was NOTCONTAIN, then only if checkFilter returned false are the 
+; meta tag directives. We indicate here the non standard directive. If one of
+; the actions was NOTCONTAIN, then only if checkFilter returned false are the
 ; meta words added. The crawl makes use of the meta word info when performing
 ; indexing. In the case where the actions contain NOPROCESS the summary returned
 ; from pageSummaryProcessing will be false this will prevent any indexing of
@@ -253,7 +253,7 @@ EOD;
     /**
      *  Reads plugin configuration data from data/word_filter_plugin.txt
      *  on the name server into $this->rule_string. Then parse this string
-     *  to $this->filter_rules, the format used by 
+     *  to $this->filter_rules, the format used by
      *  $this->pageSummaryProcessing(&$summary)
      *
      *  @return array configuration associative array
@@ -269,14 +269,14 @@ EOD;
     }
 
     /**
-     * Ttakes a configuration array of rules and sets them as the rules for 
-     *  this instance of the plugin. Typically used on a 
-     *  queue_server or on a fetcher. It first sets the value of 
+     * Ttakes a configuration array of rules and sets them as the rules for
+     *  this instance of the plugin. Typically used on a
+     *  queue_server or on a fetcher. It first sets the value of
      *  $this->filter_rules, then in case we later call saveConfiguration(),
      *  it also call serializeRules to store the serial format in
      *  $this->rules_string
      *
-     *  @param array $configuration 
+     *  @param array $configuration
      */
     function setConfiguration($configuration)
     {
@@ -405,7 +405,7 @@ EOD;
             value="crawl_time" />
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />
-        <textarea class="medium-text-area" name="filter_rules" ><?php 
+        <textarea class="medium-text-area" name="filter_rules" ><?php
             e($data["filter_rules"])?></textarea>
         <div class="center slight-pad">
             <button class="button-box"

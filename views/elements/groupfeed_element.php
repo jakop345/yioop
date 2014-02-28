@@ -122,7 +122,7 @@ class GroupfeedElement extends Element implements CrawlConstants
                 ?>
                 <div id='result-<?php e($page['ID']); ?>'>
                 <h2><a href="<?php e($base_query . "&amp;just_thread=".
-                    $page['PARENT_ID']);?>" rel="nofollow" 
+                    $page['PARENT_ID']);?>" rel="nofollow"
                     id='title<?php e($page['ID']);?>' <?php
                     if($open_in_tabs) { ?> target="_blank" <?php }
                     ?>><?php e($page[self::TITLE]); ?></a>.
@@ -138,7 +138,7 @@ class GroupfeedElement extends Element implements CrawlConstants
                 <?php
                 $description = isset($page[self::DESCRIPTION]) ?
                     $page[self::DESCRIPTION] : "";?>
-                <div id='description<?php e($page['ID']);?>' ><?php 
+                <div id='description<?php e($page['ID']);?>' ><?php
                     e($description); ?></div>
                 <div class="float-opposite">
                     <?php if($page["MEMBER_ACCESS"] == GROUP_READ_WRITE) { ?>

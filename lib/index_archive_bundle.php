@@ -271,7 +271,7 @@ class IndexArchiveBundle implements CrawlConstants
     }
 
     /**
-     * Starts a new generation,  the dictionary of the old shard is copied to 
+     * Starts a new generation,  the dictionary of the old shard is copied to
      * the bundles dictionary and a log-merge performed if needed. This
      * function may be called by initGenerationToAdd as well as when resuming
      * a crawl rather than loading the periodic index of save of a too large
@@ -362,7 +362,7 @@ class IndexArchiveBundle implements CrawlConstants
                     $this->current_shard->getShardHeader();
                     $this->current_shard->read_only_from_disk = true;
                 } else {
-                    if(filesize($current_index_shard_file) > 
+                    if(filesize($current_index_shard_file) >
                         self::NO_LOAD_SIZE) {
                         $this->addAdvanceGeneration();
                     } else {

@@ -221,6 +221,8 @@ class Fetcher implements CrawlConstants
     var $disallowed_sites;
 
     /**
+     * Holds the parsed page rules which will be applied to document summaries
+     * before finally storing and indexing them
      * @var array
      */
     var $page_rule_parser;
@@ -439,14 +441,18 @@ class Fetcher implements CrawlConstants
     var $programming_language_extension;
 
     /**
-     *
+     * If this is not null and a .onion url is detected then this url will
+     * used as a proxy server to download the .onion url
      * @var string
      */
     var $tor_proxy;
 
     /**
+     * an array of proxy servers to use rather than to directly download web
+     * pages from the current machine. If is the empty array, then we just
+     * directly download from the current machine
      *
-     * @var string
+     * @var array
      */
     var $proxy_servers;
 
@@ -1381,7 +1387,7 @@ class Fetcher implements CrawlConstants
                         $info[self::INDEXING_PLUGINS_DATA][$plugin]);
                 }
                 foreach($processors as $processor) {
-                    $this->plugin_processors[$processor][$plugin_name] = 
+                    $this->plugin_processors[$processor][$plugin_name] =
                         $plugin_object;
                 }
             }
@@ -1392,11 +1398,11 @@ class Fetcher implements CrawlConstants
                     $this->plugin_processors[$processor] = array();
                 }
                 $parent_processor = $processor;
-                while(($parent_processor = 
-                    get_parent_class($parent_processor)) && 
+                while(($parent_processor =
+                    get_parent_class($parent_processor)) &&
                     $parent_processor != "PageProcessor") {
                     if(isset($this->plugin_processors[$parent_processor])) {
-                        $this->plugin_processors[$processor] += 
+                        $this->plugin_processors[$processor] +=
                             $this->plugin_processors[$parent_processor];
                     }
                 }
@@ -1880,7 +1886,7 @@ class Fetcher implements CrawlConstants
             $cache_page_partition = $this->web_archive->addPages(
                 self::OFFSET, $filter_stored);
         } else if ($num_pages > 0) {
-            
+
             $this->web_archive->addCount(count($filter_stored));
         }
         for($i = 0; $i < $num_pages; $i++) {
@@ -2098,7 +2104,7 @@ class Fetcher implements CrawlConstants
 
             //Add cache page validation data
             if(isset($site[self::CACHE_PAGE_VALIDATORS])) {
-                $this->found_sites[self::CACHE_PAGE_VALIDATION_DATA][] = 
+                $this->found_sites[self::CACHE_PAGE_VALIDATION_DATA][] =
                     array($site[self::URL], $site[self::CACHE_PAGE_VALIDATORS]);
             }
 
@@ -2152,7 +2158,7 @@ class Fetcher implements CrawlConstants
      * @param array $link_urls an array of urls to be crawled
      * @param int $old_weight the weight of the web page the links came from
      * @param string $site_hash a hash of the web_page on which the link was
-     *      found, for use in deduplication 
+     *      found, for use in deduplication
      * @param string $old_url url of page where links came from
      * @param bool whether the links are coming from a sitemap
      */
@@ -2324,7 +2330,7 @@ class Fetcher implements CrawlConstants
             crawlLog("...".$bytes_cache_page_validation.
                 " bytes of cache page validation data");
             $byte_counts["TOTAL"] += $bytes_cache_page_validation;
-            $byte_counts["CACHE_PAGE_VALIDATION"] = 
+            $byte_counts["CACHE_PAGE_VALIDATION"] =
                 $bytes_cache_page_validation;
         }
 
@@ -2450,7 +2456,7 @@ class Fetcher implements CrawlConstants
                     $site_string = gzcompress(serialize($site));
                     $compress_urls.= packInt(strlen($site_string)).$site_string;
                 } else {
-                    crawlLog("..filtering ".$site[self::URL] . 
+                    crawlLog("..filtering ".$site[self::URL] .
                         " because of JUSTFOLLOW.");
                 }
             }
@@ -2519,7 +2525,7 @@ class Fetcher implements CrawlConstants
                                and two high a post_max_size
                              */
                             crawlLog("Using smaller post size to see if helps");
-                            if(!defined('FORCE_SMALL')) { 
+                            if(!defined('FORCE_SMALL')) {
                                 define('FORCE_SMALL', true);
                             }
                             $this->post_max_size = 1000000;
@@ -2612,7 +2618,7 @@ class Fetcher implements CrawlConstants
             $site = $this->found_sites[self::SEEN_URLS][$i];
             if(!isset($site[self::HASH]) ||
                 (isset($site[self::ROBOT_METAS]) &&
-                 in_array("JUSTFOLLOW", $site[self::ROBOT_METAS]))) 
+                 in_array("JUSTFOLLOW", $site[self::ROBOT_METAS])))
                 {continue; }
 
             $doc_rank = false;
@@ -2673,7 +2679,7 @@ class Fetcher implements CrawlConstants
                 }
                 if(isset($site[self::LANG])) {
                     $lang = guessLocaleFromString(
-                        mb_substr($site[self::DESCRIPTION], 0, 
+                        mb_substr($site[self::DESCRIPTION], 0,
                         AD_HOC_TITLE_LENGTH), $site[self::LANG]);
                 }
                 $word_lists =
@@ -2704,7 +2710,7 @@ class Fetcher implements CrawlConstants
             }
 
             $num_queue_servers = count($this->queue_servers);
-            if(isset($site[self::USER_RANKS]) && 
+            if(isset($site[self::USER_RANKS]) &&
                 count($site[self::USER_RANKS]) > 0) {
                 $score_keys = "";
                 foreach($site[self::USER_RANKS] as $label => $score) {
@@ -2794,7 +2800,7 @@ class Fetcher implements CrawlConstants
                 crawlLog("..Inverting ".$site[self::URL]."...took > 5s.");
             }
             crawlTimeoutLog("..Still building inverted index. Have processed ".
-                "%s of %s documents.\nLast url processed was %s.", 
+                "%s of %s documents.\nLast url processed was %s.",
                 $i, $num_seen, $site[self::URL]);
         }
         if($this->crawl_type == self::ARCHIVE_CRAWL) {
@@ -2805,8 +2811,6 @@ class Fetcher implements CrawlConstants
     }
 
 }
-
-
 /*
  *  Instantiate and runs the Fetcher
  */

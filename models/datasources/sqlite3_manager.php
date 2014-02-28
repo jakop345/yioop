@@ -74,12 +74,12 @@ class Sqlite3Manager extends PdoManager
     }
 
     /**
-     *  Select file name of database. If the 
+     *  Select file name of database. If the
      *  @param string $db_host  not used but in base constructor
      *  @param string $db_user  not used but in base constructor
      *  @param string $db_password  not used but in base constructor
      *  @param string $db_name filename of sqlite database. If the name
-     *      does not contain any "/" symbols assume it is in the 
+     *      does not contain any "/" symbols assume it is in the
      *      crawl directory data folder and we don't have a file extension;
      *      otherwise assume the name is a complete filepath
      */

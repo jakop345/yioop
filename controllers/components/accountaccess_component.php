@@ -190,7 +190,7 @@ class AccountaccessComponent extends Component
         if(isset($_REQUEST['user_name'])) {
             $username = $parent->clean($_REQUEST['user_name'], "string" );
         }
-        if($username == "" && isset($_REQUEST['arg']) && $_REQUEST['arg'] 
+        if($username == "" && isset($_REQUEST['arg']) && $_REQUEST['arg']
             != "search") {
             unset($_REQUEST['arg']);
         }
@@ -281,7 +281,7 @@ class AccountaccessComponent extends Component
                                 $_REQUEST["retypepassword"])) {
                                 $user[$upper_field] = $parent->clean(
                                     $_REQUEST[$field], "string");
-                                $data['CURRENT_USER'][$field] = 
+                                $data['CURRENT_USER'][$field] =
                                     $user[$upper_field];
                                 $update = true;
                             } else if($_REQUEST["password"] !=
@@ -290,7 +290,7 @@ class AccountaccessComponent extends Component
                                 break;
                             }
                         } else if (isset($user[$upper_field])){
-                            if($field != "password" && 
+                            if($field != "password" &&
                                 $field != "retypepassword") {
                                 $data['CURRENT_USER'][$field] =
                                     $user[$upper_field];
@@ -311,7 +311,7 @@ class AccountaccessComponent extends Component
                     }
                 break;
                 case "deleteuser":
-                    $userid = 
+                    $userid =
                         $signin_model->getUserId($username);
                     if($userid <= 0) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
@@ -487,7 +487,7 @@ class AccountaccessComponent extends Component
                 break;
 
                 case "search":
-                    $data['STATUS_CODES'][0] = 
+                    $data['STATUS_CODES'][0] =
                         tl('accountaccess_component_any_status');
                     ksort($data['STATUS_CODES']);
                     $data["FORM_TYPE"] = "search";
@@ -705,7 +705,7 @@ class AccountaccessComponent extends Component
         $data['CURRENT_ROLE'] = array("name" => "");
         $data['PAGING'] = "";
         if(isset($_REQUEST['arg']) && $_REQUEST['arg'] == 'editrole') {
-            if(isset($_REQUEST['selectactivity']) && 
+            if(isset($_REQUEST['selectactivity']) &&
                 $_REQUEST['selectactivity'] >= 0) {
                 $_REQUEST['arg'] = "addactivity";
             }
@@ -808,7 +808,7 @@ class AccountaccessComponent extends Component
                         if(isset($_REQUEST[$field]) && $field != 'name') {
                             $role[$upper_field] = $parent->clean(
                                 $_REQUEST[$field], "string");
-                            $data['CURRENT_ROLE'][$field] = 
+                            $data['CURRENT_ROLE'][$field] =
                                 $role[$upper_field];
                             $update = true;
                         } else if (isset($role[$upper_field])){
@@ -999,7 +999,7 @@ class AccountaccessComponent extends Component
         $data['PAGING'] = "";
         $name = "";
         /* start owner verify code / get current group
-           $group_id is only set in this block (except creategroup) and it 
+           $group_id is only set in this block (except creategroup) and it
            is only not NULL if $group['OWNER_ID'] == $_SESSION['USER_ID'] where
            this is also the only place group loaded using $group_id
         */
@@ -1014,9 +1014,9 @@ class AccountaccessComponent extends Component
                 $data['CURRENT_GROUP']['name'] = $name;
                 $data['CURRENT_GROUP']['id'] = $group['GROUP_ID'];
                 $data['CURRENT_GROUP']['owner'] = $group['OWNER'];
-                $data['CURRENT_GROUP']['register'] = 
+                $data['CURRENT_GROUP']['register'] =
                     $group['REGISTER_TYPE'];
-                $data['CURRENT_GROUP']['member_access'] = 
+                $data['CURRENT_GROUP']['member_access'] =
                     $group['MEMBER_ACCESS'];
             } else if(!in_array($_REQUEST['arg'], array("deletegroup",
                 "joingroup", "unsubscribe"))) {
@@ -1040,7 +1040,7 @@ class AccountaccessComponent extends Component
             {
                 case "activateuser":
                     $data['FORM_TYPE'] = "editgroup";
-                    $user_id = (isset($_REQUEST['user_id'])) ? 
+                    $user_id = (isset($_REQUEST['user_id'])) ?
                         $parent->clean($_REQUEST['user_id'], 'int'): 0;
                     if($user_id && $group_id &&
                         $group_model->checkUserGroup($user_id,
@@ -1061,7 +1061,7 @@ class AccountaccessComponent extends Component
                 case "addgroup":
                     if(($add_id = $group_model->getGroupId($name)) > 0 ||
                         $name =="" ) {
-                        $register = 
+                        $register =
                             $group_model->getRegisterType($add_id);
                         if($add_id > 0 && $register && $register != NO_JOIN) {
                             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
@@ -1089,12 +1089,12 @@ class AccountaccessComponent extends Component
                 break;
                 case "banuser":
                     $data['FORM_TYPE'] = "editgroup";
-                    $user_id = (isset($_REQUEST['user_id'])) ? 
+                    $user_id = (isset($_REQUEST['user_id'])) ?
                         $parent->clean($_REQUEST['user_id'], 'int'): 0;
                     if($user_id && $group_id &&
-                        $group_model->checkUserGroup($user_id, 
+                        $group_model->checkUserGroup($user_id,
                         $group_id)) {
-                        $group_model->updateStatusUserGroup($user_id, 
+                        $group_model->updateStatusUserGroup($user_id,
                             $group_id, BANNED_STATUS);
                         $data['GROUP_USERS'] =
                             $group_model->getGroupUsers($group_id);
@@ -1119,7 +1119,7 @@ class AccountaccessComponent extends Component
                                 $new_owner['USER_ID'], $group_id)) {
                                 $group_model->changeOwnerGroup(
                                     $new_owner['USER_ID'], $group_id);
-                                $data['SCRIPT'] .= 
+                                $data['SCRIPT'] .=
                                     "doMessage('<h1 class=\"red\" >".
                                     tl('accountaccess_component_owner_changed').
                                     "</h1>')";
@@ -1128,7 +1128,7 @@ class AccountaccessComponent extends Component
                                     "id" => "", "owner" =>"", "register" => -1,
                                     "member_access" => -1);
                             } else {
-                                $data['SCRIPT'] .= 
+                                $data['SCRIPT'] .=
                                     "doMessage('<h1 class=\"red\" >".
                                     tl('accountaccess_component_not_in_group').
                                     "</h1>')";
@@ -1154,7 +1154,7 @@ class AccountaccessComponent extends Component
                         );
                         foreach($group_fields as $field => $info) {
                             if(!isset($_REQUEST[$field]) ||
-                                !in_array($_REQUEST[$field], 
+                                !in_array($_REQUEST[$field],
                                 array_keys($data[$info[0]]))) {
                                 $_REQUEST[$field] = $info[1];
                             }
@@ -1196,7 +1196,7 @@ class AccountaccessComponent extends Component
                 break;
                 case "deleteuser":
                     $data['FORM_TYPE'] = "editgroup";
-                    $user_id = (isset($_REQUEST['user_id'])) ? 
+                    $user_id = (isset($_REQUEST['user_id'])) ?
                         $parent->clean($_REQUEST['user_id'], 'int'): 0;
                     if($group_model->deletableUser(
                         $user_id, $group_id)) {
@@ -1220,9 +1220,9 @@ class AccountaccessComponent extends Component
                         array('member_access', 'MEMBER_ACCESS', 'ACCESS_CODES')
                         );
                     $this->updateGroup($data, $group, $update_fields);
-                    $data['CURRENT_GROUP']['register'] = 
+                    $data['CURRENT_GROUP']['register'] =
                         $group['REGISTER_TYPE'];
-                    $data['CURRENT_GROUP']['member_access'] = 
+                    $data['CURRENT_GROUP']['member_access'] =
                         $group['MEMBER_ACCESS'];
                     $data['GROUP_USERS'] =
                         $group_model->getGroupUsers($group_id);
@@ -1260,10 +1260,9 @@ class AccountaccessComponent extends Component
                         $data['GROUP_USERS'] =
                             $group_model->getGroupUsers($group_id);
                     }
-                    
                 break;
                 case "joingroup":
-                    $user_id = (isset($_REQUEST['user_id'])) ? 
+                    $user_id = (isset($_REQUEST['user_id'])) ?
                         $parent->clean($_REQUEST['user_id'], 'int'): 0;
                     if($user_id && $group_id &&
                         $group_model->checkUserGroup($user_id,
@@ -1298,7 +1297,7 @@ class AccountaccessComponent extends Component
                 break;
                 case "reinstateuser":
                     $data['FORM_TYPE'] = "editgroup";
-                    $user_id = (isset($_REQUEST['user_id'])) ? 
+                    $user_id = (isset($_REQUEST['user_id'])) ?
                         $parent->clean($_REQUEST['user_id'], 'int'): 0;
                     if($user_id && $group_id &&
                         $group_model->checkUserGroup($user_id,
@@ -1321,11 +1320,11 @@ class AccountaccessComponent extends Component
                     $data['REGISTER_CODES'][0] =
                         tl('accountaccess_component_any');
                     ksort($data['REGISTER_CODES']);
-                    $data['ACCESS_CODES'][INACTIVE_STATUS * 10] = 
+                    $data['ACCESS_CODES'][INACTIVE_STATUS * 10] =
                         tl('accountaccess_component_request_join');
-                    $data['ACCESS_CODES'][INVITED_STATUS * 10] = 
+                    $data['ACCESS_CODES'][INVITED_STATUS * 10] =
                         tl('accountaccess_component_invited');
-                    $data['ACCESS_CODES'][BANNED_STATUS * 10] = 
+                    $data['ACCESS_CODES'][BANNED_STATUS * 10] =
                         tl('accountaccess_component_banned_status');
                     $data['ACCESS_CODES'][0] =
                         tl('accountaccess_component_any');
@@ -1373,7 +1372,7 @@ class AccountaccessComponent extends Component
                     $data['PAGING'] = $paging;
                 break;
                 case "unsubscribe":
-                    $user_id = (isset($_REQUEST['user_id'])) ? 
+                    $user_id = (isset($_REQUEST['user_id'])) ?
                         $parent->clean($_REQUEST['user_id'], 'int'): 0;
                     if($user_id && $group_id &&
                         $group_model->checkUserGroup($user_id,
@@ -1420,10 +1419,18 @@ class AccountaccessComponent extends Component
     }
 
     /**
+     *  Used by $this->manageGroups to check and clean $_REQUEST variables
+     *  related to groups, to check that a user has the correct permissions
+     *  if the current group is to be modfied, and if so, to call model to
+     *  handle the update
      *
-     *  @param array &$data
-     *  @param array &$group
-     *  @param array $update_fields
+     *  @param array &$data used to add any information messages for the view
+     *      about changes or non-changes to the model
+     *  @param array &$group current group which might be altered
+     *  @param array $update_field which fields in the current group might be
+     *      changed. Elements of this array are triples, the name of the
+     *      group field, name of the request field to use for data, and an
+     *      array of allowed values for the field
      */
     function updateGroup(&$data, &$group, $update_fields)
     {

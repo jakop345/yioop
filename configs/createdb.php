@@ -124,7 +124,7 @@ $db->execute("INSERT INTO USER_GROUP VALUES (".ROOT_ID.", ".
     PUBLIC_GROUP_ID.", ".ACTIVE_STATUS.", $now)");
 $db->execute("INSERT INTO USER_GROUP VALUES (".PUBLIC_USER_ID.", ".
     PUBLIC_GROUP_ID.", ".ACTIVE_STATUS.", $now)");
-$public_pages = array("404", "409", "blog", "bot", "privacy", 
+$public_pages = array("404", "409", "blog", "bot", "privacy",
     "captcha_time_out", "suggest_day_exceeded", "terms");
 foreach($public_pages as $page) {
     $sql = "INSERT INTO ACCESS VALUES ('".$page."', '".

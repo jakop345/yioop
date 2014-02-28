@@ -72,7 +72,7 @@ class MoreoptionsElement extends Element
             if($cur_row == 0) {
                 e("<td><ul class='square-list'>");
             }
-            $query = ($search["FOLDER_NAME"] == "") ? "?": 
+            $query = ($search["FOLDER_NAME"] == "") ? "?":
                 "?s={$search["FOLDER_NAME"]}";
             $query .= (isset($data[CSRF_TOKEN])) ? "&amp;".CSRF_TOKEN.
                 "=".$data[CSRF_TOKEN] : "";

@@ -46,7 +46,7 @@ class ManageusersElement extends Element
 {
 
     /**
-     * draws a screen in which an admin can add users, delete users,
+     * Draws a screen in which an admin can add users, delete users,
      * and manipulate user roles.
      *
      * @param array $data info about current users and current roles, CSRF token
@@ -77,7 +77,7 @@ class ManageusersElement extends Element
                 <th><?php e(tl('manageusers_element_email'));?></th>
                 <?php } ?>
                 <th><?php e(tl('manageusers_element_status'));?></th>
-                <th colspan='2'><?php 
+                <th colspan='2'><?php
                     e(tl('manageusers_element_actions'));?></th>
             </tr>
         <?php
@@ -109,7 +109,7 @@ class ManageusersElement extends Element
                         ?>
                         <form  method="get" action='#' >
                         <input type="hidden" name="c" value="admin" />
-                        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" 
+                        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>"
                             value="<?php e($data[CSRF_TOKEN]); ?>" />
                         <input type="hidden" name="a" value="manageUsers" />
                         <input type="hidden" name="arg" value="updatestatus" />
@@ -150,7 +150,7 @@ class ManageusersElement extends Element
                     } else {
                     ?>
                         <a href="<?php e($delete_url . 'user_name='.
-                        $user['USER_NAME']); ?>"><?php 
+                        $user['USER_NAME']); ?>"><?php
                         e(tl('manageusers_element_delete'));
                     }?></a></td>
                 </tr>
@@ -192,7 +192,7 @@ class ManageusersElement extends Element
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="manageUsers" />
-        <input type="hidden" name="arg" value="<?php 
+        <input type="hidden" name="arg" value="<?php
             e($data['FORM_TYPE']);?>" />
         <table class="name-table">
         <tr><th class="table-label"><label for="user-name"><?php
@@ -342,7 +342,7 @@ class ManageusersElement extends Element
             <?php
                 e($item_sep);
                 $this->view->helper("options")->render(
-                    "user-comparison", "user_comparison", 
+                    "user-comparison", "user_comparison",
                     $data['COMPARISON_TYPES'],
                     $data['user_comparison']);
                 e($item_sep);
@@ -353,7 +353,7 @@ class ManageusersElement extends Element
             <?php
                 e($item_sep);
                 $this->view->helper("options")->render(
-                    "user-sort", "user_sort", 
+                    "user-sort", "user_sort",
                     $data['SORT_TYPES'],
                     $data['user_sort']);
             ?></td></tr>
@@ -362,7 +362,7 @@ class ManageusersElement extends Element
             <?php
                 e($item_sep);
                 $this->view->helper("options")->render(
-                    "first-comparison", "first_comparison", 
+                    "first-comparison", "first_comparison",
                     $data['COMPARISON_TYPES'],
                     $data['first_comparison']);
                 e($item_sep);
@@ -373,7 +373,7 @@ class ManageusersElement extends Element
             <?php
                 e($item_sep);
                 $this->view->helper("options")->render(
-                    "first-sort", "first_sort", 
+                    "first-sort", "first_sort",
                     $data['SORT_TYPES'],
                     $data['first_sort']);
             ?></td></tr>
@@ -382,7 +382,7 @@ class ManageusersElement extends Element
             <?php
                 e($item_sep);
                 $this->view->helper("options")->render(
-                    "last-comparison", "last_comparison", 
+                    "last-comparison", "last_comparison",
                     $data['COMPARISON_TYPES'],
                     $data['last_comparison']);
                 e($item_sep);
@@ -393,7 +393,7 @@ class ManageusersElement extends Element
             <?php
                 e($item_sep);
                 $this->view->helper("options")->render(
-                    "last-sort", "last_sort", 
+                    "last-sort", "last_sort",
                     $data['SORT_TYPES'],
                     $data['last_sort']);
             ?></td></tr>
@@ -402,7 +402,7 @@ class ManageusersElement extends Element
             <?php
                 e($item_sep);
                 $this->view->helper("options")->render(
-                    "email-comparison", "email_comparison", 
+                    "email-comparison", "email_comparison",
                     $data['COMPARISON_TYPES'],
                     $data['email_comparison']);
                 e($item_sep);
@@ -413,7 +413,7 @@ class ManageusersElement extends Element
             <?php
                 e($item_sep);
                 $this->view->helper("options")->render(
-                    "email-sort", "email_sort", 
+                    "email-sort", "email_sort",
                     $data['SORT_TYPES'],
                     $data['email_sort']);
             ?></td></tr>
@@ -422,7 +422,7 @@ class ManageusersElement extends Element
             <?php
                 e($item_sep);
                 $this->view->helper("options")->render(
-                    "status-comparison", "status_comparison", 
+                    "status-comparison", "status_comparison",
                     $data['STATUS_COMPARISON_TYPES'],
                     $data['status_comparison']);
             ?>
@@ -446,13 +446,13 @@ class ManageusersElement extends Element
             <?php
                 e($item_sep);
                 $this->view->helper("options")->render(
-                    "status-sort", "status_sort", 
+                    "status-sort", "status_sort",
                     $data['SORT_TYPES'],
                     $data['status_sort']);
             ?></td></tr>
         <tr><?php if(!MOBILE) {?><td></td><td></td> <?php } ?>
             <td <?php if(!MOBILE) {
-                    ?>class="center" <?php 
+                    ?>class="center" <?php
                 }
                 ?>><button class="button-box"
                 type="submit"><?php e(tl('manageusers_element_search'));

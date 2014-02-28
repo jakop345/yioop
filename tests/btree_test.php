@@ -86,25 +86,25 @@ define('NUM_VALS', 25);
         $model->db->unlinkRecursive(BTREE_TEST_DIR);
     }
 
-    /** 
-     * Test to check that an empty B-Tree is not saved to disk. 
-     * A B-Tree object is created. The test directory is checked for B-Tree 
-     * files. A value is inserted, the test directory is again checked. The 
-     * inserted value is removed and the test directory is again checked for 
+    /**
+     * Test to check that an empty B-Tree is not saved to disk.
+     * A B-Tree object is created. The test directory is checked for B-Tree
+     * files. A value is inserted, the test directory is again checked. The
+     * inserted value is removed and the test directory is again checked for
      * B-Tree files.
      */
     function emptyBTreeNoSaveTestCase()
     {
         $all_files = glob(BTREE_TEST_DIR.'/*.txt');
-        $this->assertEqual(0, count($all_files), 'Empty B-Tree not saved 
+        $this->assertEqual(0, count($all_files), 'Empty B-Tree not saved
             saved to disk');
         $this->test_objects['FILE1']->insert(array(1, 1));
         $all_files = glob(BTREE_TEST_DIR.'/*.txt');
-        $this->assertEqual(2, count($all_files), 'Non-empty B-Tree successfully 
+        $this->assertEqual(2, count($all_files), 'Non-empty B-Tree successfully
             saved to disk');
         $this->test_objects['FILE1']->remove(1);
         $all_files = glob(BTREE_TEST_DIR.'/*.txt');
-        $this->assertEqual(0, count($all_files), 'Empty B-Tree not saved 
+        $this->assertEqual(0, count($all_files), 'Empty B-Tree not saved
             saved to disk');
     }
 
@@ -134,11 +134,11 @@ define('NUM_VALS', 25);
         }
     }
 
-    /** 
+    /**
      * Test to check that a key is deleted successfully from a leaf node
-     * Key-value pairs are inserted in the B-Tree. key-value pairs present in 
+     * Key-value pairs are inserted in the B-Tree. key-value pairs present in
      * leaf nodes are then deleted from the B-Tree. The deleted key-value pairs
-     * are looked up to check if they were removed successfully. 
+     * are looked up to check if they were removed successfully.
      */
     function deleteFromLeafNodeTestCase()
     {
@@ -155,8 +155,8 @@ define('NUM_VALS', 25);
 
         //Lookup deleted keys
         foreach($leaf_keys as $key) {
-            $this->assertEqual(null, 
-                $this->test_objects['FILE1']->findValue($key), 
+            $this->assertEqual(null,
+                $this->test_objects['FILE1']->findValue($key),
                 'Key successfully deleted from leaf node');
         }
 
@@ -165,7 +165,7 @@ define('NUM_VALS', 25);
     /**
      * Test to check that a key is deleted successfully from an internal node
      * Key-value pairs are first added to the B-Tree. Key-value pairs are then
-     * deleted successively from the root node. The deleted key-value pairs are 
+     * deleted successively from the root node. The deleted key-value pairs are
      * then looked up to check if they were successfully
      */
     function deleteFromInternalNodeTestCase()
@@ -181,8 +181,8 @@ define('NUM_VALS', 25);
         for($i = 1;$i <= NUM_VALS - 10; $i++) {
             $internal_key = $this->test_objects['FILE1']->root->keys[0][0];
             $this->test_objects['FILE1']->remove($internal_key);
-            $this->assertEqual(null, 
-                $this->test_objects['FILE1']->findValue($internal_key), 
+            $this->assertEqual(null,
+                $this->test_objects['FILE1']->findValue($internal_key),
                 'Key deleted successfully from internal node');
         }
 
@@ -192,7 +192,7 @@ define('NUM_VALS', 25);
      * Function to check that keys are successfully deleted from the B-Tree
      * Random key-value pairs are firs inserted in the B-Tree. From the inserted
      * key-value pairs, key-value pairs are randomly selected and deleted from
-     * the B-Tree. The deleted key-value pairs are then looked up using their 
+     * the B-Tree. The deleted key-value pairs are then looked up using their
      * keys to check if they were successfully deleted.
      */
     function deleteLookupTestCase()
@@ -218,7 +218,7 @@ define('NUM_VALS', 25);
 
         //Lookup values
         foreach($deleted as $deleted_key) {
-            $this->assertEqual(null, 
+            $this->assertEqual(null,
                 $this->test_objects['FILE1']->findValue($deleted_key),
                 'Deleted Value not found');
         }

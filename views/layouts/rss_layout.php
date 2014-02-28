@@ -55,7 +55,7 @@ class RssLayout extends Layout
      *  @param array $data  an array of data set up by the controller to be
      *  be used in drawing the WebLayout and its View.
      */
-    function render($data) 
+    function render($data)
     {
         header("Content-type: application/rss+xml");
         e('<?xml version="1.0" encoding="UTF-8" ?>'."\n");?>

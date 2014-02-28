@@ -222,7 +222,7 @@ class PhraseParser
                 return $terms;
             }
         }
-        if($index_name != 'feed' && 
+        if($index_name != 'feed' &&
             IndexManager::getVersion($index_name) == 0) {
             return $terms; //old style index before max phrase extraction
         }
@@ -628,9 +628,9 @@ class PhraseParser
     }
 
     /**
-     * Given an array of pre_terms returns the characters n-grams for the 
-     * given terms where n is the length Yioop uses for the language in 
-     * question. If a stemmer is used for language then n-gramming is not 
+     * Given an array of pre_terms returns the characters n-grams for the
+     * given terms where n is the length Yioop uses for the language in
+     * question. If a stemmer is used for language then n-gramming is not
      * done and this just returns an empty array this method differs from
      * getCharGramsTerm in that it may do checking of certain words and
      * not char gram them. For example, it won't char gram urls.
@@ -744,7 +744,7 @@ class PhraseParser
      */
     static function stemTerms($string_or_array, $lang)
     {
-        if($string_or_array == array() || 
+        if($string_or_array == array() ||
             $string_or_array == "") { return array();}
         if(is_array($string_or_array)) {
             $terms = & $string_or_array;
@@ -790,7 +790,7 @@ class PhraseParser
             $tokenizer_class_name = ucfirst($lang)."Tokenizer";
         }
         if(class_exists($tokenizer_class_name)) {
-            $tokenizer_obj = new $tokenizer_class_name(); 
+            $tokenizer_obj = new $tokenizer_class_name();
                 //for php 5.2 compatibility
         } else {
             $tokenizer_obj = NULL;
@@ -1008,7 +1008,7 @@ class PhraseParser
     }
 
     /**
-     * Used to split a string of text in the language given by $locale into 
+     * Used to split a string of text in the language given by $locale into
      * space separated words. Ex: "acontinuousstringofwords" becomes
      * "a continuous string of words". It operates by scanning from the end of
      * the string to the front and splitting on the longest segment that is a
@@ -1049,7 +1049,7 @@ class PhraseParser
                 $was_space = true;
             }
             if($suffix_check) {
-                $is_suffix = NWordGrams::ngramsContains("*".$word_guess, 
+                $is_suffix = NWordGrams::ngramsContains("*".$word_guess,
                     $locale, "segment");
             } else {
                 $is_suffix = false;

@@ -66,6 +66,11 @@ class FetchUrl implements CrawlConstants
      *      doing things like extract HTTP headers sent, etcs
      * @param array $post_data data to be POST'd to each site
      * @param bool $follow whether to follow redirects or not
+     * @param string $tor_proxy url of a proxy that knows how to download
+     *      .onion urls
+     * @param array $proxy_servers if not array(), then an array of proxy
+     *      server to use rather than to directly download web pages from
+     *      the current machine
      *
      * @return array an updated array with the contents of those pages
      */
@@ -73,7 +78,7 @@ class FetchUrl implements CrawlConstants
     static function getPages($sites, $timer = false,
         $page_range_request = PAGE_RANGE_REQUEST, $temp_dir = NULL,
         $key=CrawlConstants::URL, $value = CrawlConstants::PAGE, $minimal=false,
-        $post_data = NULL, $follow = false, $tor_proxy = "", 
+        $post_data = NULL, $follow = false, $tor_proxy = "",
         $proxy_servers=array())
     {
         $agent_handler = curl_multi_init();
@@ -517,7 +522,7 @@ class FetchUrl implements CrawlConstants
             }
             if(USE_ETAG_EXPIRES && !($cache_page_validators['etag'] == -1 &&
                 $cache_page_validators['expires'] == -1)) {
-                $site[CrawlConstants::CACHE_PAGE_VALIDATORS] = 
+                $site[CrawlConstants::CACHE_PAGE_VALIDATORS] =
                     $cache_page_validators;
             }
         }

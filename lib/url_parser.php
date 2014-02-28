@@ -865,7 +865,7 @@ class UrlParser
                     $cache[$name]["domains"][] = substr($site, 7);
                     continue;
                 }
-                list($site_host, $site_path) = 
+                list($site_host, $site_path) =
                     UrlParser::getHostAndPath($site, true, true);
                 $cache[$name]["hosts"][] = $site_host;
                 $cache[$name]["paths"][] = $site_path;
@@ -958,7 +958,7 @@ class UrlParser
      *  by choosing those whose text has the most information. Information
      *  crudely measured by the length of the gzipped version of the text.
      *
-     *  @param array $links list of pairs $url=>$text 
+     *  @param array $links list of pairs $url=>$text
      *  @param int $max_links maximum number of links from $links to return
      *  @return array $out_links extracted from $links accodring to the
      *      description above.

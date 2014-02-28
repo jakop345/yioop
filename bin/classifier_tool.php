@@ -133,7 +133,7 @@ mb_regex_encoding("UTF-8");
 
 /**
  * Class used to encapsulate all the activities of the classifier_tool.php
- * command line script. This script allows one to automate the building and 
+ * command line script. This script allows one to automate the building and
  * testing of classifiers, providing an alternative to the web interface when
  *
  * a labeled training set is available.

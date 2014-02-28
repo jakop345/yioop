@@ -649,7 +649,7 @@ class IndexShard extends PersistentStructure implements
                                 */
             $num_keys = 3;
         }
-        $doc_id_len = ($num_keys > 3) ? self::DOC_ID_LEN : $num_keys  * 
+        $doc_id_len = ($num_keys > 3) ? self::DOC_ID_LEN : $num_keys  *
             $doc_key_len; /* original format allowed shorter doc ids,
                 keys might be used for other things than ranking */
         $doc_len = ($doc_int >> 8);
@@ -959,7 +959,7 @@ class IndexShard extends PersistentStructure implements
      }
 
     /**
-     * Performs a galloping search (double forward jump distance each failure 
+     * Performs a galloping search (double forward jump distance each failure
      * step)  forward in a posting list from
      * position $current forward until either $end is reached or a
      * posting with document index bigger than $doc_index is found
@@ -1182,7 +1182,7 @@ class IndexShard extends PersistentStructure implements
                         $this->word_postings .= $tmp_string;
                     } else {
                         charCopy($tmp_string, $this->word_postings,
-                            $write_offset, $copy_data_len, 
+                            $write_offset, $copy_data_len,
                             "merge index charCopy 2");
                         $tmp_string = substr($tmp_string, $copy_data_len);
                         $this->word_postings .= $tmp_string;
@@ -1803,7 +1803,7 @@ class IndexShard extends PersistentStructure implements
             $shard->doc_infos = substr($data, $pos, $shard->docids_len);
         }
 
-        $pre_words_array = str_split($words, self::WORD_KEY_LEN + 
+        $pre_words_array = str_split($words, self::WORD_KEY_LEN +
             self::WORD_DATA_LEN);
         unset($words);
         array_walk($pre_words_array, 'IndexShard::makeWords', $shard);

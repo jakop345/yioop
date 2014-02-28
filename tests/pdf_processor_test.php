@@ -93,7 +93,7 @@ class PdfProcessorTest extends UnitTest implements CrawlConstants
      */
     function wordExtractionTestCase()
     {
-        $words = explode(" ", 
+        $words = explode(" ",
             $this->test_objects['summary'][self::DESCRIPTION]);
         $this->assertTrue(in_array("Documentation", $words),
             "Word Extraction 1");

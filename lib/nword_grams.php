@@ -95,7 +95,7 @@ class NWordGrams
                 LOCALE_DIR . "/$lang/resources/" .
                 "{$filter_prefix}" . self::FILTER_SUFFIX;
             if (file_exists($filter_path)) {
-                self::$ngrams[$filter_prefix] = 
+                self::$ngrams[$filter_prefix] =
                     BloomFilterFile::load($filter_path);
             } else  {
                 return false;

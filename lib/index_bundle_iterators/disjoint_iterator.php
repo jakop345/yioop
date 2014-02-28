@@ -231,7 +231,7 @@ class DisjointIterator extends IndexBundleIterator
                     }
                     $this->seen_docs_unfiltered +=
                         $this->index_bundle_iterators[$i]->seen_docs;
-                    $total_num_docs += 
+                    $total_num_docs +=
                         $this->index_bundle_iterators[$i]->num_docs;
                     $this->index_bundle_iterators[$i]->advance($gen_doc_offset);
                 }
@@ -262,7 +262,7 @@ class DisjointIterator extends IndexBundleIterator
      * the maximum number of results that can be returned in one go by
      * currentDocsWithWord(). This method cannot be consistently
      * implemented for this iterator and expect it to behave nicely
-     * it this iterator is used together with union_iterator or 
+     * it this iterator is used together with union_iterator or
      * intersect_iterator. So to prevent a user for doing this, calling this
      * method results in a user defined error
      *

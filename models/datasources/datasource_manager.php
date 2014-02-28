@@ -314,7 +314,13 @@ abstract class DatasourceManager
     }
 
     /**
+     *  Used to return the database column type for a column that can be
+     *  used to do autoincrementing. Usually this will just be INTEGER,
+     *  however, for Postgres is SERIAL.
      *
+     *  @param array $dbinfo containing fields for the current DBMS
+     *      (pdo for Postgres) and DB_HOST (DSN connection string to database)
+     *  @return string what to use for serial data type
      */
     function serialType($dbinfo)
     {
@@ -326,7 +332,19 @@ abstract class DatasourceManager
     }
 
     /**
+     *  How a daabase can perform LIMIT OFFSET queries is not standardized
+     *  between DBMS's. This method take a $limit, a $num, and a $dbinfo
+     *  and returns the string that would restrict a query to show $num
+     *  many rows starting at $limit. In the case that $num is not provided
+     *  then it returns the string represent returning the first $limit many
+     *  rows. In the case that $dbinfo is not provided the current Yioop
+     *  default database is used.
      *
+     *  @param int $limit starting row to return from
+     *  @param int $num number of rows to return
+     *  @param array $dbinfo containing fields for how tot connect to a database
+     *  @return string what to use for for LIMIT OFFSET query with input $limit
+     *      and $num for the DBMS in question
      */
     function limitOffset($limit, $num = -1, $dbinfo = NULL)
     {

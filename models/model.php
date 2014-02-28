@@ -446,10 +446,20 @@ class Model implements CrawlConstants
     }
 
     /**
+     *  Creates the WHERE and ORDER BY clauses for a query of a Yioop
+     *  table such as USERS, ROLE, GROUP, which have associated search web
+     *  forms. Searches are case insensitive
      *
+     *  @param array $search_array each element of this is a quadruple
+     *      name of a field, what comparison to perform, a value to check,
+     *      and an order (ascending/descending) to sort by
+     *  @param array $any_fields these fields if present in search array
+     *      but with value "0" will be skipped as part of the where clause
+     *      but will be used for order by clause
+     *  @return array string for where clause, string for order by clause
      */
     function searchArrayToWhereOrderClauses($search_array,
-        $any_fields=array('status'))
+        $any_fields = array('status'))
     {
         $db = $this->db;
         $where = "";
@@ -462,7 +472,7 @@ class Model implements CrawlConstants
             $comparison = $row[1];
             $value = $row[2];
             $sort_dir = $row[3];
-            if($value != "" && (!in_array($row[0], $any_fields) 
+            if($value != "" && (!in_array($row[0], $any_fields)
                 || $value != "0")) {
                 if($where == "") {
                     $where = " WHERE ";

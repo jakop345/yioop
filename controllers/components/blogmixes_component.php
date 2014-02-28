@@ -106,7 +106,7 @@ class BlogmixesComponent extends Component implements CrawlConstants
                     }
                     $parent_id = $parent->clean($_REQUEST['parent_id'], "int");
                     $group_id = $parent->clean($_REQUEST['group_id'], "int");
-                    $group = 
+                    $group =
                         $group_model->getGroupById($group_id,
                         $user_id);
                     if(!$group || ($group["OWNER_ID"] != $user_id &&
@@ -184,7 +184,7 @@ class BlogmixesComponent extends Component implements CrawlConstants
                         break;
                     }
                     $group_id = $parent->clean($_REQUEST['group_id'], "int");
-                    $group = 
+                    $group =
                         $group_model->getGroupById($group_id,
                         $user_id);
                     if(!$group || ($group["OWNER_ID"] != $user_id &&

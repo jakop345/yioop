@@ -52,7 +52,7 @@ require_once BASE_DIR."/lib/phrase_parser.php";
 class BlogpageModel extends Model
 {
     /**
-     * create a page and stores the file with .thtml extension 
+     * create a page and stores the file with .thtml extension
      * in the user's work directory.
      * @param string $title - title of the page
      * @param string $description description of the page
@@ -92,7 +92,7 @@ class BlogpageModel extends Model
         }
         return false;
     }
-    
+
     /**
      * Checks whether a page is accessible to a user
      * @param int $user_id id of the logged in user
@@ -110,7 +110,7 @@ class BlogpageModel extends Model
         $sql = "SELECT USER_ID FROM USER_GROUP WHERE USER_ID =:user_id
             AND GROUP_ID IN (SELECT ID FROM ACCESS WHERE NAME=".
             ":title AND TYPE = 'group')";
-        if(($result = $this->db->execute($sql, 
+        if(($result = $this->db->execute($sql,
             array(":user_id" => $user_id, ":title" => $title))) &&
             ($row = $this->db->fetchArray($result))) {
             return true;
@@ -120,4 +120,3 @@ class BlogpageModel extends Model
     }
 }
 ?>
-

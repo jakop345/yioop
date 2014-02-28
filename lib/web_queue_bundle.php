@@ -66,7 +66,7 @@ require_once 'url_parser.php';
  *  Used for the crawlHash function
  */
 require_once 'utility.php';
-/** 
+/**
  * B-Tree class for storing Etag and Expires https header data
  */
 require_once "btree.php";

@@ -83,7 +83,7 @@ $COMPONENT_ACTIVITIES = array(
     "blogmixes" => array("groupFeeds", "mixCrawls"),
     "crawl" => array("manageCrawls", "manageClassifiers", "pageOptions",
         "resultsEditor", "searchSources"),
-    "system" => array("manageMachines", "manageLocales", 
+    "system" => array("manageMachines", "manageLocales",
         "serverSettings", "configure")
 );
 
@@ -104,7 +104,7 @@ if(MAINTENANCE_MODE && $_SERVER["SERVER_ADDR"] != $_SERVER["REMOTE_ADDR"]) {
 }
 
 if(!defined('WORK_DIRECTORY')) {
-/*+++ The next block of code is machine edited, change at 
+/*+++ The next block of code is machine edited, change at
 your own risk, please use configure web page instead +++*/
 define('WORK_DIRECTORY', '');
 /*++++++*/
@@ -596,25 +596,44 @@ define('ACTIVE_STATUS', 1);
  */
 define('INACTIVE_STATUS', 2);
 /**
- * USER STATUS of used to indicate an account which can no longer perform
+ * USER STATUS used to indicate an account which can no longer perform
  * activities but which might be retained to preserve old blog posts.
  */
 define('BANNED_STATUS', 3);
-
-/** */
+/** Group status used to indicate a user that has been invited to join
+ *  a group but who has not yet accepted
+ */
 define('INVITED_STATUS', 4);
-
-/** */
+/**
+ *  Group registration type that only allows people to join a group by
+ *  invitation
+ */
 define('NO_JOIN', 1);
-/** */
+/**
+ *  Group registration type that only allows people to request a membership
+ *  in a group from the group's owner
+ */
 define('REQUEST_JOIN', 2);
-/** */
+/**
+ *  Group registration type that only allows anyone to obtain membership
+ *  in the group
+ */
 define('PUBLIC_JOIN', 3);
 
-/** */
+/**
+ *   Group access code signifying only the group owner can
+ *   read items posted to the group or post new items
+ */
 define('GROUP_PRIVATE', 1);
-/** */
+/**
+ *   Group access code signifying members of the group can
+ *   read items posted to the group but only the owner can post
+ *    new items
+ */
 define('GROUP_READ', 2);
-/** */
+/**
+ *   Group access code signifying members of the group can both
+ *   read items posted to the group as well as post new items
+ */
 define('GROUP_READ_WRITE', 3);
 ?>

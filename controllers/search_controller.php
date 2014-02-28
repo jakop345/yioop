@@ -382,7 +382,6 @@ class SearchController extends Controller implements CrawlConstants
         $crawl_model = $this->model("crawl");
         $this->model("phrase")->current_machine = $current_machine;
         $crawl_model->current_machine = $current_machine;
-        
         $machine_urls = $this->model("machine")->getQueueServerUrls();
         $current_its = $crawl_model->getCurrentIndexDatabaseName();
         $index_timestamp = $this->getIndexTimestamp();
@@ -721,7 +720,7 @@ class SearchController extends Controller implements CrawlConstants
                     $filter = $filters_model->getFilter();
                     $phrase_model->edited_page_summaries =
                         $filters_model->getEditedPageSummaries();
-                    $phrase_results = 
+                    $phrase_results =
                         $phrase_model->getPhrasePageResults(
                             $query, $limit, $results_per_page, true, $filter,
                             $use_cache_if_possible, $raw, $queue_servers,
@@ -977,7 +976,7 @@ class SearchController extends Controller implements CrawlConstants
     function markChildren($node, $words, $dom)
     {
 
-        if(!isset($node->childNodes->length) || 
+        if(!isset($node->childNodes->length) ||
             get_class($node) != 'DOMElement') {
             return $node;
         }
@@ -1025,7 +1024,7 @@ class SearchController extends Controller implements CrawlConstants
      */
     function canonicalizeLinks($node, $url)
     {
-        if(!isset($node->childNodes->length) || 
+        if(!isset($node->childNodes->length) ||
             get_class($node) != 'DOMElement') {
             return $node;
         }

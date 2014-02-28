@@ -182,7 +182,7 @@ class WordIterator extends IndexBundleIterator
         }
         $this->word_key = $word_key;
         $this->index_name =  $index_name;
-        $this->dictionary_info = 
+        $this->dictionary_info =
             IndexManager::getWordInfo($index_name, $word_key, 0,
             $mask);
         $this->feed_shard_name = WORK_DIRECTORY."/feeds/index";
@@ -555,7 +555,7 @@ class WordIterator extends IndexBundleIterator
         }
         if($feeds) {
             $index = IndexManager::getIndex("feed");
-            $this->current_doc_offset = 
+            $this->current_doc_offset =
                 $index->docOffsetFromPostingOffset($this->current_offset);
             return array(-1, $this->current_doc_offset);
         }

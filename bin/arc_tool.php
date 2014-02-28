@@ -294,11 +294,11 @@ class ArcTool implements CrawlConstants
             strlen(self::index_data_base_name));
         $mask = "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00";
         $hash_key = crawlHashWord($word, true, $mask) ;
-        $info = IndexManager::getWordInfo($index_timestamp, $hash_key, 0, 
+        $info = IndexManager::getWordInfo($index_timestamp, $hash_key, 0,
             $mask, 1);
         if(!$info) {
             //fallback to old word hashes
-            $info = IndexManager::getWordInfo($index_timestamp, 
+            $info = IndexManager::getWordInfo($index_timestamp,
                 crawlHash($word, true), 0, "", 1);
             if(!$info) {
                 echo "\n$word does not appear in bundle!\n\n";
@@ -762,7 +762,7 @@ class ArcTool implements CrawlConstants
     }
 
     /**
-     * Used to recompute both the index shards and the dictionary 
+     * Used to recompute both the index shards and the dictionary
      * of an index archive. The first step involves re-extracting the
      * word into an inverted index from the summaries' web_archives.
      * Then a reindex is done.
@@ -839,7 +839,7 @@ class ArcTool implements CrawlConstants
                     $seen++;
                     $word_lists = array();
                     /*
-                        self::JUST_METAS check to avoid getting sitemaps in 
+                        self::JUST_METAS check to avoid getting sitemaps in
                         results for popular words
                      */
                     $lang = NULL;
@@ -856,7 +856,7 @@ class ArcTool implements CrawlConstants
                         }
                         if(isset($site[self::LANG])) {
                             $lang = guessLocaleFromString(
-                                mb_substr($site[self::DESCRIPTION], 0, 
+                                mb_substr($site[self::DESCRIPTION], 0,
                                 AD_HOC_TITLE_LENGTH), $site[self::LANG]);
                         }
                         $word_lists =
@@ -872,7 +872,7 @@ class ArcTool implements CrawlConstants
                             $safe = false;
                         }
                     }
-                    if(isset($site[self::USER_RANKS]) && 
+                    if(isset($site[self::USER_RANKS]) &&
                         count($site[self::USER_RANKS]) > 0) {
                         $score_keys = "";
                         foreach($site[self::USER_RANKS] as $label => $score) {

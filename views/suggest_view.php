@@ -34,6 +34,7 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
+ * View repsonsible for drawing the form where a user can suggest aURL
  *
  * @author Chris Pollett
  * @package seek_quarry
@@ -49,6 +50,7 @@ class SuggestView extends View
     var $layout = "web";
 
     /**
+     *  Draws the form where a user can suggest a url
      *
      *  @param array $data  contains the anti CSRF token
      *      the view, data for captcha and recover dropdowns
@@ -76,7 +78,7 @@ class SuggestView extends View
             <input type="hidden" name="c" value="register" />
             <input type="hidden" name="a" value="suggestUrl" />
             <input type="hidden" name="arg" value="save" />
-            <input type="hidden" name="build_time" value="<?php 
+            <input type="hidden" name="build_time" value="<?php
                 e($data['build_time']); ?>" />
                 <div class="register">
                     <table>
@@ -94,7 +96,6 @@ class SuggestView extends View
                                     ?'<span class="red">*</span>':'';?></td>
                         </tr>
                         <tr>
-
                         <?php
                         $question_sets = array(
                             tl('register_view_human_check')=>$data['CAPTCHAS']);
@@ -114,7 +115,7 @@ class SuggestView extends View
                                 <?php
                                 }
                                 $this->helper("options")->render(
-                                    "question-$i", "question_$i", 
+                                    "question-$i", "question_$i",
                                     $question, $data["question_$i"]);
                                 $first = false;
                                 e(in_array("question_$i", $missing)

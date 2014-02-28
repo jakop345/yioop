@@ -77,11 +77,11 @@ class StaticView extends View
         </div>
         <div class="content">
             <?php if(isset($data["value"])) {
-                    $page = sprintf($this->page_objects[$data['page']], 
+                    $page = sprintf($this->page_objects[$data['page']],
                         $data["value"]);
                     e($page);
                 } else {
-                    e($this->page_objects[$data['page']]); 
+                    e($this->page_objects[$data['page']]);
                 }?>
         </div>
         <div class="landing-footer">

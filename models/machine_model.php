@@ -127,7 +127,7 @@ class MachineModel extends Model
         $parent = "")
     {
         $db = $this->db;
-        $has_string = ($has_queue_server) ? $has_string = "1" : 
+        $has_string = ($has_queue_server) ? $has_string = "1" :
             $has_string = "0";
         $sql = "INSERT INTO MACHINE VALUES (?, ?, ?, ?, ?)";
         $this->db->execute($sql, array($name, $url, $has_string, $num_fetchers,

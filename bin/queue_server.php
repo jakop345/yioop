@@ -287,7 +287,7 @@ class QueueServer implements CrawlConstants, Join
 
     /**
      * This is a array of crawl parameters for indexing_plugins which might do
-     * post processing after the crawl. 
+     * post processing after the crawl.
      * @var array
      */
     var $indexing_plugins_data;
@@ -802,7 +802,7 @@ class QueueServer implements CrawlConstants, Join
         if($this->isAScheduler()) {
             $this->dumpQueueToSchedules();
             //Write B-Tree root node to disk before before exiting
-            if(USE_ETAG_EXPIRES && 
+            if(USE_ETAG_EXPIRES &&
                 isset($this->web_queue) && $this->web_queue != NULL &&
                 is_object($this->web_queue->etag_btree)) {
                 $this->web_queue->etag_btree->writeRoot();
@@ -1721,13 +1721,13 @@ class QueueServer implements CrawlConstants, Join
         crawlLog("Checking for etag expires http header data");
         $etag_expires_dir = CRAWL_DIR."/schedules/".
             self::etag_expires_data_base_name.$this->crawl_time;
-        $this->processDataFile($etag_expires_dir, 
+        $this->processDataFile($etag_expires_dir,
             "processEtagExpiresArchive");
         crawlLog("done etag check and process.");
     }
 
     /**
-     * Processes a cache page validation data file. Extracts key-value pairs 
+     * Processes a cache page validation data file. Extracts key-value pairs
      * from the file and inserts into the B-Tree used for storing cache
      * page validation data.
      * @param string $file is the cache page validation data file written by
@@ -1738,7 +1738,7 @@ class QueueServer implements CrawlConstants, Join
         crawlLog("Processing etag expires http header data in $file");
         $start_time = microtime();
 
-        $etag_expires_data = 
+        $etag_expires_data =
             unserialize(gzuncompress(webdecode(file_get_contents($file))));
         crawlLog("Done uncompressing etag data. Starting to add to btree");
         $num_entries = count($etag_expires_data);
@@ -1935,7 +1935,7 @@ class QueueServer implements CrawlConstants, Join
                         $this->web_queue->adjustQueueWeight(
                             $host_with_robots, $weight, false);
                     }
-                    $this->web_queue->adjustQueueWeight($url, 
+                    $this->web_queue->adjustQueueWeight($url,
                         $weight, false);
                 } else if($this->allowedToCrawlSite($url) &&
                     !$this->disallowedToCrawlSite($url)) {
@@ -2002,7 +2002,7 @@ class QueueServer implements CrawlConstants, Join
         $crawl_status['COUNT'] = $info_bundle['COUNT'];
         $now = time();
         $change_in_time = self::ONE_HOUR + 1;
-        while (count($this->hourly_crawl_data) > 0 && 
+        while (count($this->hourly_crawl_data) > 0 &&
             $change_in_time > self::ONE_HOUR) {
             $least_recent_hourly_pair = array_pop($this->hourly_crawl_data);
             $change_in_time =
@@ -2264,7 +2264,7 @@ class QueueServer implements CrawlConstants, Join
                             $this->web_queue->setQueueFlag($url,
                                 $delay + WebQueueBundle::SCHEDULABLE);
                         }
-                    } else if(!$is_waiting_host) { 
+                    } else if(!$is_waiting_host) {
                         // has crawl delay but too many already waiting
                         $delete_urls[$i] = $url;
                         //delete from queue (so no clog) but don't mark seen
@@ -2358,20 +2358,20 @@ class QueueServer implements CrawlConstants, Join
 
                 $key = crawlHash($url, true);
                 if(USE_ETAG_EXPIRES) {
-                /*check if we have cache validation data for a URL. If both 
+                /*check if we have cache validation data for a URL. If both
                   ETag and Expires timestamp are found or only an expires
                   timestamp is found, the timestamp is compared with the current
                   time. If the current time is less than the expires timestamp,
-                  the URL is not added to the fetch batch. If only an ETag is 
+                  the URL is not added to the fetch batch. If only an ETag is
                   found, the ETag is appended to the URL so that it can be
                   processed by the fetcher.
                  */
                     $value = $this->web_queue->etag_btree->findValue($key);
                     if($value !== null) {
                         $cache_validation_data = $value[1];
-                        if($cache_validation_data['etag'] !== -1 && 
+                        if($cache_validation_data['etag'] !== -1 &&
                             $cache_validation_data['expires'] !== -1) {
-                            $expires_timestamp = 
+                            $expires_timestamp =
                                 $cache_validation_data['expires'];
                             $current_time = time();
                             if($current_time < $expires_timestamp) {
@@ -2384,7 +2384,7 @@ class QueueServer implements CrawlConstants, Join
                             $etag = $cache_validation_data['etag'];
                             $extracted_etag = "ETag: ".$etag;
                         } else if($cache_validation_data['expires'] !== -1){
-                            $expires_timestamp = 
+                            $expires_timestamp =
                                 $cache_validation_data['expires'];
                             $current_time = time();
                             if($current_time < $expires_timestamp) {

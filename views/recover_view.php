@@ -34,7 +34,7 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- * This View is responsible for drawing the 
+ * This View is responsible for drawing the
  * screen for recovering a forgotten password
  *
  * @author Chris Pollett
@@ -55,7 +55,7 @@ class RecoverView extends View
      *  @param array $data  contains the anti CSRF token
      *      the view, data for captcha and recover dropdowns
      */
-    function renderView($data) 
+    function renderView($data)
     {
         $logo = "resources/yioop.png";
         if(MOBILE) {
@@ -65,7 +65,7 @@ class RecoverView extends View
         if(isset($data['MISSING'])) {
             $missing = $data['MISSING'];
         }
-        $activity = (isset($data["RECOVER_COMPLETE"])) ? 
+        $activity = (isset($data["RECOVER_COMPLETE"])) ?
             "recoverComplete" : "processRecoverData";
         ?>
         <div class="landing non-search">
@@ -158,7 +158,7 @@ class RecoverView extends View
                             <?php
                             }
                             $this->helper("options")->render(
-                                "question-$i", "question_$i", 
+                                "question-$i", "question_$i",
                                 $question, $data["question_$i"]);
                             $first = false;
                             e(in_array("question_$i", $missing)

@@ -202,7 +202,7 @@ class CrawlComponent extends Component implements CrawlConstants
             is_array($crawl_params[self::INDEXING_PLUGINS])) {
             foreach($crawl_params[self::INDEXING_PLUGINS] as $plugin) {
                 $plugin_class = $plugin."Plugin";
-                $plugin_obj = $parent->plugin($plugin);
+                $plugin_obj = $parent->plugin(lcfirst($plugin));
                 if(method_exists($plugin_class, "loadConfiguration")) {
                     $crawl_params[self::INDEXING_PLUGINS_DATA][$plugin] =
                         $plugin_obj->loadConfiguration();
@@ -382,7 +382,7 @@ class CrawlComponent extends Component implements CrawlConstants
         }
         if(isset($_REQUEST['suggest']) && $_REQUEST['suggest']=='add') {
             $suggest_urls = $crawl_model->getSuggestSites();
-            $seed_info['seed_sites']['url'] = 
+            $seed_info['seed_sites']['url'] =
             $tmp_urls = array_merge(
                 $seed_info['seed_sites']['url'], $suggest_urls);
             $urls = array();
@@ -909,7 +909,7 @@ class CrawlComponent extends Component implements CrawlConstants
                class has occurred so we instantiate the object via the plugin
                method call which will also do the require if needed.
              */
-            $plugin_object = $parent->plugin("$plugin_name");
+            $plugin_object = $parent->plugin(lcfirst($plugin_name));
             $class_name = $plugin_name."Plugin";
             if(method_exists($class_name, 'configureHandler') &&
                 method_exists($class_name, 'configureView')) {
@@ -1116,9 +1116,15 @@ class CrawlComponent extends Component implements CrawlConstants
                     $plugin_name = $plugin."Plugin";
                     $supported_processors = $plugin_name::getProcessors();
                     foreach($supported_processors as $supported_processor) {
-                        if ($supported_processor == $processor_name) {
-                            $plugin_processors[] = $plugin_name;
-                        }
+                        $parent_processor = $processor_name;
+                        do {
+                            if ($supported_processor == $parent_processor) {
+                                $plugin_processors[] = new $plugin_name();
+                                break;
+                            }
+                        } while(($parent_processor =
+                            get_parent_class($parent_processor)) &&
+                            $parent_processor != "PageProcessor");
                     }
                 }
             }

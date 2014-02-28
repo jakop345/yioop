@@ -110,7 +110,7 @@ class IntersectIterator extends IndexBundleIterator
     var $sync_timer_on;
 
     /**
-     *  Number of seconds before timeout and stop 
+     *  Number of seconds before timeout and stop
      *  syncGenDocOffsetsAmongstIterators if slow
      */
     const SYNC_TIMEOUT = 4;

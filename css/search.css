@@ -2192,7 +2192,7 @@ ul.in-list li
 #transfer
 {
     background-color: black;
-    color: white; 
+    color: white;
     height: 100%;
     left: 0px;
     opacity: 0.7;
@@ -2204,6 +2204,5 @@ ul.in-list li
     width: 100%;
     z-index: 200;
 }
-
 
 
