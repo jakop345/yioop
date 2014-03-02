@@ -172,7 +172,6 @@ class HtmlProcessor extends TextProcessor
             $body = strip_tags($page, $body_tags);
             $page = "<html><head>$head</head><body>$body</body></html>";
         }
-
         $dom = new DOMDocument();
 
         //this hack modified from php.net
@@ -275,7 +274,7 @@ class HtmlProcessor extends TextProcessor
         $title = "";
 
         foreach($titles as $pre_title) {
-            $title .= $pre_title->textContent;
+            $title .= self::domNodeToString($pre_title);
         }
         if($title == "") {
             $title_parts = array("/html//h1", "/html//h2", "/html//h3",
@@ -283,7 +282,7 @@ class HtmlProcessor extends TextProcessor
             foreach($title_parts as $part) {
                 $doc_nodes = $xpath->evaluate($part);
                 foreach($doc_nodes as $node) {
-                    $title .= " .. ".$node->textContent;
+                    $title .= " .. ".self::domNodeToString($node);
                     if(strlen($title) >
                         self::MAX_TITLE_LEN) { break 2;}
                 }
@@ -352,7 +351,6 @@ class HtmlProcessor extends TextProcessor
             $description .= "\n".self::crudeDescription($page);
             return $description;
         }
-
         /*
           concatenate the contents of then additional dom elements up to
           the limit of description length. Choose tags in order of likely
@@ -377,10 +375,10 @@ class HtmlProcessor extends TextProcessor
                         mb_strlen($content));
                     $para_data[$add_len][] = mb_substr($content, 0, $add_len);
                 }
+                $node_text = self::domNodeToString($node);
                 $add_len  = min(self::$max_description_len / 2,
-                    mb_strlen($node->textContent));
-                $para_data[$add_len][] = mb_substr($node->textContent,
-                    0, $add_len);
+                    mb_strlen($node_text));
+                $para_data[$add_len][] = mb_substr($node_text, 0, $add_len);
                 $len += $add_len;
 
                 if($len > self::$max_description_len) { break 2;}
@@ -400,7 +398,7 @@ class HtmlProcessor extends TextProcessor
             if($first_len > 3 * $add_len) break;
         }
 
-        $description = mb_ereg_replace("(\s)+", " ",  $description);
+        $description = preg_replace("/(\s)+/u", " ",  $description);
 
         return $description;
     }
@@ -471,7 +469,7 @@ class HtmlProcessor extends TextProcessor
                     $len = strlen($url);
                     if(!UrlParser::checkRecursiveUrl($url)  &&
                         $len < MAX_URL_LENGTH && $len > 4) {
-                        $text = $href->textContent;
+                        $text = self::domNodeToString($href);
                         if(isset($sites[$url])) {
                             $sites[$url] .=" .. ".
                                 preg_replace("/\s+/", " ", strip_tags($text));
@@ -544,6 +542,20 @@ class HtmlProcessor extends TextProcessor
        return $sites;
     }
 
+    /**
+     *  This returns the text content of a node but with spaces
+     *  where tags were (unlike just using textContent)
+     *
+     *  @param object $node a DOMNode
+     *  @return string its text content with spaces
+     */
+    static function domNodeToString($node)
+    {
+        $text = $node->C14N();
+        $text = html_entity_decode($text);
+        $text = preg_replace('/\</', ' <', $text);
+        return strip_tags($text);
+    }
 }
 
 ?>

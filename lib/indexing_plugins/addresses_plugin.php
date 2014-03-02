@@ -34,6 +34,9 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /** Loads processor used for */
+if(!isset($PAGE_PROCESSORS)) {
+    $PAGE_PROCESSORS = array();
+}
 require_once BASE_DIR."/lib/processors/text_processor.php";
 /** Base indexing plugin class*/
 require_once BASE_DIR."/lib/indexing_plugins/indexing_plugin.php";
@@ -43,7 +46,9 @@ require_once BASE_DIR."/lib/utility.php";
 require_once BASE_DIR."/lib/crawl_constants.php";
 
 /**
- *
+ *  Used to extract emails, phone numbers, and addresses from a web page.
+ *  These are extracted into the EMAILS, PHONE_NUMBERS, and
+ *  ADDRESSES fields of the page's summary.
  *
  * @author Chris Pollett
  * @package seek_quarry
@@ -51,6 +56,223 @@ require_once BASE_DIR."/lib/crawl_constants.php";
  */
 class AddressesPlugin extends IndexingPlugin implements CrawlConstants
 {
+
+    /**
+     *  Associative array of world countries and country code. Some
+     *  entries are duplicated into country's local script
+     *  @var array
+     */
+    var $countries = array("ANDORRA" => "AD","UNITED ARAB EMIRATES" => "AE",
+        "AFGHANISTAN" => "AF","ANTIGUA AND BARBUDA" => "AG",
+        "ANGUILLA" => "AI","ALBANIA" => "AL","ARMENIA" => "AM","ANGOLA" =>"AO",
+        "ANTARCTICA" => "AQ","ARGENTINA" => "AR","AMERICAN SAMOA" => "AS",
+        "AUSTRIA" => "AT","AUSTRALIA" => "AU","ARUBA" => "AW",
+        "ÅLAND ISLANDS" => "AX","AZERBAIJAN" => "AZ",
+        "BOSNIA AND HERZEGOVINA" => "BA","BARBADOS" => "BB",
+        "BANGLADESH" => "BD","BELGIUM" => "BE","BURKINA FASO" => "BF",
+        "BULGARIA" => "BG","BAHRAIN" => "BH","BURUNDI" => "BI","BENIN" => "BJ",
+        "SAINT BARTHELEMY" => "BL","BERMUDA" => "BM",
+        "BRUNEI DARUSSALAM" => "BN", "BOLIVIA" => "BO",
+        "BONAIRE, SINT EUSTATIUS AND SABA" => "BQ", "BRAZIL" => "BR",
+        "BAHAMAS" => "BS","BHUTAN" => "BT",
+        "BOUVET ISLAND" => "BV","BOTSWANA" => "BW","BELARUS" => "BY",
+        "BELIZE" => "BZ","CANADA" => "CA","COCOS ISLANDS" => "CC",
+        "DEMOCRATIC REPUBLIC OF THE CONGO" => "CD",
+        "CENTRAL AFRICAN REPUBLIC" => "CF","CONGO" => "CG",
+        "SWITZERLAND" => "CH", "COTE D'IVOIRE" => "CI",
+        "COOK ISLANDS" => "CK","CHILE" => "CL",
+        "CAMEROON" => "CM","CHINA" => "CN", "中国" => "China",
+        "COLOMBIA" => "CO",
+        "COSTA RICA" => "CR", "CUBA" => "CU","CAPE VERDE" => "CV",
+        "CURACAO" => "CW", "CHRISTMAS ISLAND" => "CX","CYPRUS" => "CY",
+        "CZECH REPUBLIC" => "CZ", "GERMANY" => "DE","DJIBOUTI" => "DJ",
+        "DENMARK" => "DK","DOMINICA" => "DM",
+        "DOMINICAN REPUBLIC" => "DO","ALGERIA" => "DZ","ECUADOR" => "EC",
+        "ESTONIA" => "EE","EGYPT" => "EG","WESTERN SAHARA" => "EH",
+        "ERITREA" => "ER","SPAIN" => "ES","ETHIOPIA" => "ET","FINLAND" => "FI",
+        "FIJI" => "FJ","FALKLAND ISLANDS (MALVINAS)" => "FK",
+        "MICRONESIA, FEDERATED STATES OF" => "FM","FAROE ISLANDS" => "FO",
+        "FRANCE" => "FR","GABON" => "GA","UNITED KINGDOM" => "GB",
+        "GRENADA" => "GD","GEORGIA" => "GE","FRENCH GUIANA" => "GF",
+        "GUERNSEY" => "GG","GHANA" => "GH","GIBRALTAR" => "GI",
+        "GREENLAND" => "GL", "GAMBIA" => "GM","GUINEA" => "GN",
+        "GUADELOUPE" => "GP", "EQUATORIAL GUINEA" => "GQ","GREECE" => "GR",
+        "SOUTH GEORGIA AND THE SOUTH SANDWICH ISLANDS" => "GS",
+        "GUATEMALA" => "GT", "GUAM" => "GU","GUINEA-BISSAU" => "GW",
+        "GUYANA" => "GY", "HONG KONG" => "HK",
+        "HEARD ISLAND AND MCDONALD ISLANDS" => "HM",
+        "HONDURAS" => "HN","CROATIA" => "HR","HAITI" => "HT","HUNGARY" => "HU",
+        "INDONESIA" => "ID","IRELAND" => "IE","ISRAEL" => "IL",
+        "ISLE OF MAN" => "IM","INDIA" => "IN",
+        "BRITISH INDIAN OCEAN TERRITORY" => "IO","IRAQ" => "IQ",
+        "IRAN" => "IR","ICELAND" => "IS","ITALY" => "IT","JERSEY" => "JE",
+        "JAMAICA" => "JM","JORDAN" => "JO","JAPAN" => "JP",
+        "日本"=>"JA","KENYA" => "KE",
+        "KYRGYZSTAN" => "KG","CAMBODIA" => "KH","KIRIBATI" => "KI",
+        "COMOROS" => "KM","SAINT KITTS AND NEVIS" => "KN",
+        "NORTH KOREA" => "KP","SOUTH KOREA" => "KR",
+        "한국"=>"KR","KUWAIT" => "KW",
+        "CAYMAN ISLANDS" => "KY","KAZAKHSTAN" => "KZ",
+        "LAOS" => "LA","LEBANON" => "LB","SAINT LUCIA" => "LC",
+        "LIECHTENSTEIN" => "LI","SRI LANKA" => "LK","LIBERIA" => "LR",
+        "LESOTHO" => "LS","LITHUANIA" => "LT","LUXEMBOURG" => "LU",
+        "LATVIA" => "LV","LIBYA" => "LY","MOROCCO" => "MA","MONACO" => "MC",
+        "MOLDOVA, REPUBLIC OF" => "MD","MONTENEGRO" => "ME",
+        "SAINT MARTIN" => "MF","MADAGASCAR" => "MG","MARSHALL ISLANDS" => "MH",
+        "MACEDONIA, THE FORMER YUGOSLAV REPUBLIC OF" => "MK","MALI" => "ML",
+        "MYANMAR" => "MM","MONGOLIA" => "MN","MACAO" => "MO",
+        "NORTHERN MARIANA ISLANDS" => "MP","MARTINIQUE" => "MQ",
+        "MAURITANIA" => "MR","MONTSERRAT" => "MS","MALTA" => "MT",
+        "MAURITIUS" => "MU","MALDIVES" => "MV","MALAWI" => "MW",
+        "MEXICO" => "MX","MALAYSIA" => "MY","MOZAMBIQUE" => "MZ",
+        "NAMIBIA" => "NA","NEW CALEDONIA" => "NC","NIGER" => "NE",
+        "NORFOLK ISLAND" => "NF","NIGERIA" => "NG","NICARAGUA" => "NI",
+        "NETHERLANDS" => "NL","NORWAY" => "NO","NEPAL" => "NP","NAURU" => "NR",
+        "NIUE" => "NU","NEW ZEALAND" => "NZ","OMAN" => "OM","PANAMA" => "PA",
+        "PERU" => "PE","FRENCH POLYNESIA" => "PF","PAPUA NEW GUINEA" => "PG",
+        "PHILIPPINES" => "PH","PAKISTAN" => "PK","POLAND" => "PL",
+        "SAINT PIERRE AND MIQUELON" => "PM","PITCAIRN" => "PN",
+        "PUERTO RICO" => "PR","PALESTINE, STATE OF" => "PS",
+        "PORTUGAL" => "PT","PALAU" => "PW","PARAGUAY" => "PY",
+        "QATAR" => "QA","REUNION" => "RE","ROMANIA" => "RO",
+        "SERBIA" => "RS","RUSSIA" => "RU", "Россия"=>"RU", "RWANDA" => "RW",
+        "SAUDI ARABIA" => "SA","SOLOMON ISLANDS" => "SB","SEYCHELLES" => "SC",
+        "SUDAN" => "SD","SWEDEN" => "SE","SINGAPORE" => "SG",
+        "SAINT HELENA, ASCENSION AND TRISTAN DA CUNHA" => "SH",
+        "SLOVENIA" => "SI","SVALBARD AND JAN MAYEN" => "SJ","SLOVAKIA" => "SK",
+        "SIERRA LEONE" => "SL","SAN MARINO" => "SM","SENEGAL" => "SN",
+        "SOMALIA" => "SO","SURINAME" => "SR","SOUTH SUDAN" => "SS",
+        "SAO TOME AND PRINCIPE" => "ST","EL SALVADOR" => "SV",
+        "SINT MAARTEN" => "SX","SYRIAN ARAB REPUBLIC" => "SY",
+        "SWAZILAND" => "SZ","TURKS AND CAICOS ISLANDS" => "TC","CHAD" => "TD",
+        "FRENCH SOUTHERN TERRITORIES" => "TF","TOGO" => "TG","THAILAND" =>"TH",
+        "TAJIKISTAN" => "TJ","TOKELAU" => "TK","TIMOR-LESTE" => "TL",
+        "TURKMENISTAN" => "TM","TUNISIA" => "TN","TONGA" => "TO",
+        "TURKEY" => "TR","TRINIDAD AND TOBAGO" => "TT","TUVALU" => "TV",
+        "TAIWAN" => "TW", "臺灣" => "TW","TANZANIA, UNITED REPUBLIC OF" => "TZ",
+        "UKRAINE" => "UA","UGANDA" => "UG",
+        "UNITED STATES MINOR OUTLYING ISLANDS" => "UM",
+        "UNITED STATES" => "US","URUGUAY" => "UY","UZBEKISTAN" => "UZ",
+        "VATICAN CITY" => "VA","SAINT VINCENT AND THE GRENADINES" => "VC",
+        "VENEZUELA, BOLIVARIAN REPUBLIC OF" => "VE",
+        "BRITISH VIRGIN ISLANDS" => "VG","U.S. VIRGIN ISLANDS" => "VI",
+        "VIETNAM" => "VN","VANUATU" => "VU","WALLIS AND FUTUNA" => "WF",
+        "SAMOA" => "WS","YEMEN" => "YE", "MAYOTTE" => "YT",
+        "SOUTH AFRICA" => "ZA","ZAMBIA" => "ZM", "ZIMBABWE" => "ZW");
+
+    /**
+     *  List of common regions, abbreviations, and local spellings of
+     *  regions of the US, Canada, Australia, UK, as well as major cities
+     *  elsewhere
+     *  @var array
+     */
+    var $regions = array("ALABAMA", "AL",
+        "ALASKA", "AK", "ARIZONA", "AZ", "ARKANSAS", "AR",
+        "CALIFORNIA", "CA", "COLORADO", "CO", "CONNECTICUT", "CT",
+        "DELAWARE", "DE", "FLORIDA", "FL", "GEORGIA", "GA",
+        "HAWAII", "HI", "IDAHO", "ID", "ILLINOIS", "IL",
+        "INDIANA", "IN", "IOWA", "IA", "KANSAS", "KS",
+        "KENTUCKY", "KY", "LOUISIANA", "LA", "MAINE", "ME",
+        "MARYLAND", "MD", "MASSACHUSETTS", "MA", "MICHIGAN", "MI",
+        "MINNESOTA", "MN", "MISSISSIPPI", "MS", "MISSOURI", "MO",
+        "MONTANA", "MT", "NEBRASKA", "NE", "NEVADA", "NV",
+        "HAMPSHIRE", "NH", "NEW JERSEY", "NJ",
+        "MEXICO", "NM", "NEW YORK", "NY", "NC",
+        "NORTH DAKOTA", "ND", "OHIO", "OH", "OKLAHOMA", "OK",
+        "OREGON", "OR", "PENNSYLVANIA", "PA", "RHODE", "RI",
+        "CAROLINA", "SC", "DAKOTA", "SD", "TENNESSEE", "TN",
+        "TEXAS", "TX", "UTAH", "UT", "VERMONT", "VT", "VIRGINIA", "VA",
+        "WASHINGTON", "WA", "WV", "WISCONSIN", "WI",
+        "WYOMING", "WY", "SAMOA", "AS",
+        "COLUMBIA", "DC",
+        "MICRONESIA", "FM", "GUAM", "GU",
+        "MARSHALL", "MH", "MARIANA", "MP",
+        "PALAU", "PW", "PUERTO", "RICO", "PR", "VIRGIN", "ISLANDS", "VI",
+        "ALBERTA", "AB", "BRITISH", "COLUMBIA", "BC", "MANITOBA", "MB",
+        "NEW BRUNSWICK", "NB", "NEWFOUNDLAND", "NL",
+        "NORTHWEST", "TERRITORIES", "NT", "NOVA SCOTIA", "NS",
+        "NUNAVUT", "NU", "ONTARIO", "ON", "PRINCE EDWARD ISLAND", "PE",
+        "QUEBEC", "QC", "SASKATCHEWAN", "SK", "YUKON", "YT",
+        "CAPITAL", "ACT", "CHRISTMAS", "CX",
+        "COCOS ISLANDS", "CC", "JERVIS","BAY", "JBT",
+        "SOUTH","WALES", "NSW", "NORFOLK", "NF", "NT", "QUEENSLAND", "QLD",
+        "SA", "TASMANIA", "TAS", "VICTORIA", "VIC",
+        "WA", "ABERDEENSHIRE", "ABD",
+        "ANGLESEY", "AGY", "ALDERNEY", "ALD", "ANGUS", "ANS",
+        "ANTRIM", "ANT", "ARGYLLSHIRE", "ARL",
+        "ARMAGH", "ARM", "AVON", "AVN", "AYRSHIRE", "AYR",
+        "BANFFSHIRE", "BAN", "BEDFORDSHIRE", "BDF",
+        "BERWICKSHIRE", "BEW", "BUCKINGHAMSHIRE", "BKM",
+        "BORDERS", "BOR", "BRECONSHIRE", "BRE", "BERKSHIRE", "BRK",
+        "BUTE", "BUT", "CAERNARVONSHIRE", "CAE",
+        "CAITHNESS", "CAI", "CAMBRIDGESHIRE", "CAM", "CARLOW", "CAR",
+        "CAVAN", "CAV", "CENTRAL", "CEN", "CARDIGANSHIRE", "CGN",
+        "CHESHIRE", "CHS", "CLARE", "CLA", "CLACKMANNANSHIRE", "CLK",
+        "CLEVELAND", "CLV", "CUMBRIA", "CMA", "CARMARTHENSHIRE", "CMN",
+        "CORNWALL", "CON", "CORK", "COR", "CUMBERLAND", "CUL",
+        "CLWYD", "CWD", "DERBYSHIRE", "DBY", "DENBIGHSHIRE", "DEN",
+        "DEVON", "DEV", "DYFED", "DFD", "DUMFRIES-SHIRE", "DFS",
+        "DUMFRIES", "GALLOWAY", "DGY", "DUNBARTONSHIRE", "DNB",
+        "DONEGAL", "DON", "DORSET", "DOR", "DOWN", "DOW",
+        "DUBLIN", "DUB", "DURHAM", "DUR", "ELN",
+        "ERY", "ESSEX", "ESS",
+        "FERMANAGH", "FER", "FIFE", "FIF", "FLINTSHIRE", "FLN",
+        "GALWAY", "GAL", "GLAMORGAN", "GLA","GLOUCESTERSHIRE", "GLS",
+        "GRAMPIAN", "GMP", "GWENT", "GNT", "GUERNSEY", "GSY",
+        "MANCHESTER", "GTM", "GWYNEDD", "GWN","HAMPSHIRE", "HAM",
+        "HEREFORDSHIRE", "HEF", "HIGHLAND", "HLD","HERTFORDSHIRE", "HRT",
+        "HUMBERSIDE", "HUM", "HUNTINGDONSHIRE", "HUN",
+        "HEREFORD", "WORCESTER", "HWR", "INVERNESS-SHIRE", "INV",
+        "WIGHT", "IOW", "JERSEY", "JSY","KINCARDINESHIRE", "KCD",
+        "KENT", "KEN", "KERRY", "KER", "KILDARE", "KID",
+        "KILKENNY", "KIK", "KIRKCUDBRIGHTSHIRE", "KKD",
+        "KINROSS-SHIRE", "KRS", "LANCASHIRE", "LAN",
+        "LONDONDERRY", "LDY", "LEICESTERSHIRE", "LEI",
+        "LEITRIM", "LET", "LAOIS", "LEX", "LIMERICK", "LIM",
+        "LINCOLNSHIRE", "LIN", "LANARKSHIRE", "LKS",
+        "LONGFORD", "LOG", "LOUTH", "LOU", "LOTHIAN", "LTN",
+        "MAYO", "MAY", "MEATH", "MEA", "MERIONETHSHIRE", "MER",
+        "GLAMORGAN", "MGM", "MONTGOMERYSHIRE", "MGY",
+        "MIDLOTHIAN", "MLN", "MONAGHAN", "MOG",
+        "MONMOUTHSHIRE", "MON", "MORAYSHIRE", "MOR",
+        "MERSEYSIDE", "MSY", "NAIRN", "NAI", "NORTHUMBERLAND", "NBL",
+        "NORFOLK", "NFK", "NORTH RIDING OF YORKSHIRE", "NRY",
+        "NORTHAMPTONSHIRE", "NTH", "NOTTINGHAMSHIRE", "NTT",
+        "NYK", "OFFALY", "OFF",
+        "ORKNEY", "OKI", "OXFORDSHIRE", "OXF", "PEEBLES-SHIRE", "PEE",
+        "PEMBROKESHIRE", "PEM", "PERTH", "PER",
+        "POWYS", "POW", "RADNORSHIRE", "RAD",
+        "RENFREWSHIRE", "RFW", "ROSS", "CROMARTY", "ROC",
+        "ROSCOMMON", "ROS", "ROXBURGHSHIRE", "ROX",
+        "RUTLAND", "RUT", "SHROPSHIRE", "SAL", "SELKIRKSHIRE", "SEL",
+        "SUFFOLK", "SFK", "GLAMORGAN", "SGM", "SHETLAND", "SHI",
+        "SLIGO", "SLI", "SOMERSET", "SOM", "SARK", "SRK",
+        "SURREY", "SRY", "SUSSEX", "SSX", "STRATHCLYDE", "STD",
+        "STIRLINGSHIRE", "STI", "STAFFORDSHIRE", "STS",
+        "SUTHERLAND", "SUT", "SUSSEX", "SXE", "SXW",
+        "SYK", "TAYSIDE", "TAY",
+        "TIPPERARY", "TIP", "TYNE", "TWR",
+        "TYRONE", "TYR", "WARWICKSHIRE", "WAR",
+        "WATERFORD", "WAT", "WESTMEATH", "WEM",
+        "WESTMORLAND", "WES", "WEXFORD", "WEX",
+        "WEST GLAMORGAN", "WGM", "WICKLOW", "WIC",
+        "WIGTOWNSHIRE", "WIG", "WILTSHIRE", "WIL",
+        "ISLES", "WIS", "LOTHIAN", "WLN",
+        "WEST MIDLANDS", "WMD", "WORCESTERSHIRE", "WOR",
+        "WRY", "WEST", "WYK",
+        "YORKSHIRE", "YKS", "HELSINKI", "МОСКВА", "上海","北京","南京","成都",
+        "HONG", "KONG", "TOKYO", "SEOUL", "東京","香港","서울", "MADRID",
+        "BARCELONA", "ROME", "PARIS", "MARSEILLE", "TOULOUSE", "LYON",
+        "ORLEAN", "BRUSSELS", "DELHI", "UTRECHT", "COPENHAGEN", "BERLIN",
+        "FRANKFURT", "MÜNCHEN", "MUNICH", "VIENNA", "ISTANBUL", "ΑΘΗΝΑ",
+        "ATHENS", "ПЕТЕРБУРГ", "BUENOS", "AIRES", "RIO", "JANEIRO",
+        "MANILA", "深圳", "CHICAGO", "KARACHI", "BANGKOK", "LAGOS",
+        "JOHANNESBERG", "FRANSCICO", "TORONTO", "MIAMI", "PHILADELPHIA",
+        "KUALA", "LAMPUR", "ESSEN", "LONDON", "KINSHASA", "BOSTON",
+        "AMSTERDAM", "臺北", "武漢", "AHMEDABAD", "BANGALORE", "HYDERABAD",
+        "BAGHDAD", "LIMA", "名古屋", "ANGELES", "SANTIAGO", "MILANO", "HOUSTON"
+    );
+
     /**
      * This method is called by a PageProcessor in its handle() method
      * just after it has processed a web page. This method allows
@@ -67,14 +289,29 @@ class AddressesPlugin extends IndexingPlugin implements CrawlConstants
      */
     function pageProcessing($page, $url)
     {
-        $page = preg_replace("/\<br\s*(\/)?\s*\>/", "\n", $page);
+        $substitutions = array('@<script[^>]*?>.*?</script>@si',
+            '/\&nbsp\;|\&rdquo\;|\&ldquo\;|\&mdash\;/si',
+            '@<style[^>]*?>.*?</style>@si'
+        );
+        $page = preg_replace($substitutions, ' ', $page);
+        $new_page = preg_replace("/\<br\s*(\/)?\s*\>/", "\n", $page);
+        $changed = false;
+        if($new_page != $page) {
+            $changed = true;
+            $page = $new_page;
+        }
         $page = preg_replace("/\<\/(h1|h2|h3|h4|h5|h6|table|tr|td|div|".
-            "p|address|section)\s*\>/", "\n", $page);
-        $page = preg_replace("/\&\#\d{3}\;|\&\w+\;/", " ", $page);
-        $page = preg_replace("/((\r|\t| )*\n){2}/", "\n", $page);
+            "p|address|section)\s*\>/", "\n\n", $page);
+        $page = preg_replace("/\<a/", " <a", $page);
+        $page = preg_replace("/\&\#\d{3}(\d?)\;|\&\w+\;/", " ", $page);
         $page = strip_tags($page);
-        $addresses = $this->parseAddresses($page);
-        print_r($addresses);
+        if($changed) {
+            $page = preg_replace("/(\r?\n[\t| ]*){2}/", "\n", $page);
+        }
+        $page = preg_replace("/(\r?\n[\t| ]*)/", "\n", $page);
+        $page = preg_replace("/\n\n\n+/", "\n\n", $page);
+        $subdocs = array($this->parseSubdoc($page, $url));
+        return $subdocs;
     }
 
 
@@ -92,7 +329,7 @@ class AddressesPlugin extends IndexingPlugin implements CrawlConstants
     /**
      *
      */
-    function parseAddresses($text)
+    function parseSubdoc($text, $url)
     {
         $lines = explode("\n", $text);
         $lines[] = "";
@@ -104,9 +341,18 @@ class AddressesPlugin extends IndexingPlugin implements CrawlConstants
         $min_len = 2;
         $max_lines = 8;
         $min_lines = 2;
+        $emails = array();
+        $phones = array();
         foreach($lines as $line) {
             $line = trim($line);
-            print $line."\n";
+            $line_emails = $this->parseEmails($line);
+            if($line_emails) {
+                $emails = array_merge($emails , $line_emails);
+            }
+            $line_phones = $this->parsePhones($line);
+            if($line_phones) {
+                $phones = array_merge($phones, $line_phones);
+            }
             $len = strlen($line);
             $len_about_right = $len < $max_len && $len >= $min_len;
             switch($state)
@@ -130,8 +376,8 @@ class AddressesPlugin extends IndexingPlugin implements CrawlConstants
                         }
                     } else {
                         $state = "dont";
-                        if($num_lines <= $max_lines &&$num_lines >= $min_lines){
-                            $current_candidate = $this->checkAndTagCandidate(
+                        if($num_lines <= $max_lines&&$num_lines >= $min_lines){
+                            $current_candidate = $this->checkCandidate(
                                 $current_candidate);
                             if($current_candidate) {
                                 $addresses[] = $current_candidate;
@@ -142,466 +388,190 @@ class AddressesPlugin extends IndexingPlugin implements CrawlConstants
                     }
                 break;
                 case "advance":
-                    if($len >= $max_len) {
+                    if($len >= $max_len || $len == 0) {
                         $state = "dont";
                     }
                 break;
             }
         }
-        return $addresses;
+        $subdocs["EMAILS"] = array_unique($emails);
+        $subdocs["PHONE_NUMBERS"] = array_unique($phones);
+        $subdocs["ADDRESSES"] = $addresses;
+        return $subdocs;
     }
 
     /**
      *
      */
-    function checkAndTagCandidate($pre_address)
+    function pageSummaryProcessing(&$summary)
     {
-        $out_address = array();
-        $last_line = count($pre_address) - 1;
-        list($fields, $optional_fields, $repeat_fields, $skip_if_no_previous) =
-            $this->getFieldsCountry();
-        $last_field = count($fields) - 1;
-        $active_field = 0;
-        $num_fields = count($fields);
-        $real_last_line = $last_line;
-        for($i = $last_line; $i >= 0; $i--) {
-            if($i == 0 && $real_last_line <= 1 &&
-                !isset($out_address["ESTABLISHMENT"])) {
-                $active_field = $last_field;
-            }
-            $pre_address_line = mb_strtoupper(trim($pre_address[$i],
-                " \t\n\r\0\x0B,"));
-            while($active_field < $num_fields) {
-                $parser_field = $fields[$active_field];
-                $address_line = $this->$parser_field($pre_address_line, $i);
-                if(in_array($parser_field, $optional_fields)) {
-                    $real_last_line--;
-                }
-                if($address_line) {
-                    if(isset($address_line["COUNTRY_CODE"])) {
-                        list($fields, $optional_fields, $repeat_fields,
-                            $skip_if_no_previous) =
-                                $this->getFieldsCountry(
-                                    $address_line["COUNTRY_CODE"]);
-                        $last_field = count($fields) - 1;
-                    }
-                    $out_address = array_merge($address_line, $out_address);
-                    if(!in_array($parser_field, $repeat_fields) ||
-                        ($parser_field == "parseCityLine" &&
-                        isset($out_address['CITY']))) {
-                        $active_field++;
-                    }
-                    break;
-                } else {
-                    $repeating = false;
-                    $active_field++;
-                    if(isset($fields[$active_field]) &&
-                        in_array($fields[$active_field], $skip_if_no_previous)) {
-                        $active_field++; // only parse office if had Department
-                    }
+        if(isset($summary[self::SUBDOCS])) {;
+            $num_subdocs = count($summary[self::SUBDOCS]);
+            for($i = 0; $i < $num_subdocs; $i++) {
+                if($summary[self::SUBDOCS][$i][self::SUBDOCTYPE]=="addresses"){
+                    $summary["EMAILS"] = $summary[self::SUBDOCS][$i][
+                        "EMAILS"];
+                    $summary["PHONE_NUMBERS"] = $summary[self::SUBDOCS][$i][
+                        "PHONE_NUMBERS"];
+                    $summary["ADDRESSES"] = $summary[self::SUBDOCS][$i][
+                        "ADDRESSES"];
+                    unset($summary[self::SUBDOCS][$i]);
                 }
             }
-            if($active_field >= $num_fields && $i > 0) {
-                return false;
+            $meta_ids = array();
+            foreach($summary["EMAILS"] as $email) {
+                $meta_ids[] ="email:$email";
+            }
+            foreach($summary["PHONE_NUMBERS"] as $phone) {
+                $meta_ids[] ="phone:$phone";
+            }
+            $summary[self::META_WORDS] = $meta_ids;
+            $summary[self::SUBDOCS] = array_values($summary[self::SUBDOCS]);
+        }
+    }
+
+    /**
+     * Returns an array of additional meta words which have been added by
+     * this plugin
+     *
+     * @return array meta words and maximum description length of results
+     *      allowed for that meta word
+     */
+    static function getAdditionalMetaWords()
+    {
+
+        return array("email:" =>  100,
+            "phone:" => 100);
+    }
+
+    /**
+     *
+     */
+    function checkCandidate($pre_address)
+    {
+        $address = false;
+        $found_count = 0;
+        $num_lines = count($pre_address);
+        $check_array = array("checkCountry"=>"checkCountry",
+            "checkStreet"=>"checkStreet",
+            "checkPhoneOrEmail" => "checkPhoneOrEmail",
+            "checkRegion" => "checkRegion");
+        foreach($pre_address as $line) {
+            foreach($check_array as $check) {
+                if($this->$check($line)) {
+                                    echo  $line." $check\n";
+                    $found_count++;
+                    unset($check_array[$check]);
+                }
             }
         }
-        if(!isset($out_address["NAME"]) &&
-            !isset($out_address["ESTABLISHMENT"])) {
-            return false;
+        if($found_count > 1) {
+            $address = implode("\n", $pre_address);
         }
-        return $out_address;
+        return $address;
+    }
+
+    function checkRegion($line)
+    {
+        $line_parts = explode(" ", $line);
+        foreach($line_parts as $part) {
+            $part = mb_strtoupper($part);
+            if(in_array($part, $this->regions)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
      *
      */
-    function getFieldsCountry($country = "US")
+    function checkPhoneOrEmail($line)
     {
-        switch($country)
-        {
-            case "GB":
-                $fields = array("parseIgnorable",
-                    "parseOfficeOpenHours", "parsePhoneOrEmail",
-                    "parseCountry", "parsePostalCode",
-                    "parseLocality", "parseStreetLine",
-                    "parseInstitution", "parseDepartmentOrCareof",
-                    "parseOfficeResidenceNumber", "parseName");
-                $optional_fields = array("parseOfficeOpenHours",
-                    "parsePhoneOrEmail");
-                $repeat_fields = array("parsePhoneOrEmail","parseLocality",
-                    "parseStreetLine", "parseOfficeResidenceNumber");
-                $skip_if_no_previous = array( "parseOfficeNumber");
-            break;
-            case "US":
-            default:
-                $fields = array("parseIgnorable",
-                    "parseOfficeOpenHours", "parsePhoneOrEmail",
-                    "parseCountry", "parseCityLine",
-                    "parseStreetLine", "parseInstitution","parseDepartmentOrCareof",
-                    "parseOfficeResidenceNumber", "parseName");
-                $optional_fields = array("parseOfficeOpenHours",
-                    "parsePhoneOrEmail");
-                $repeat_fields = array("parsePhoneOrEmail","parseCityLine",
-                    "parseStreetLine", "parseOfficeResidenceNumber");
-                $skip_if_no_previous = array( "parseOfficeNumber");
-            break;
+        $emails = $this->parseEmails($line);
+        if(isset($emails) && count($emails) > 0) {
+            return true;
         }
-        return array($fields, $optional_fields, $repeat_fields,
-            $skip_if_no_previous);
+        $phones = $this->parsePhones($line);
+        if(is_array($phones) && $phones) {
+            return true;
+        }
+        return false;
     }
 
     /**
      *
      */
-    function parseIgnorable($line)
+    function parseEmails($line, $country_code = "US")
     {
-        $out = false;
-        if(preg_match("/STOCK/i", $line)) {
-            $out = array("EXTRA" => $line);
-        }
-        return $out;
-    }
-
-    /**
-     *
-     */
-    function parseOfficeOpenHours($line)
-    {
-        $out = false;
-        if(preg_match("/OH|Office\s+Hours|Hours|Open/i", $line)) {
-            $out = array("HOURS" => $line);
-        }
-        return $out;
-    }
-
-    /**
-     *
-     */
-    function parsePhoneOrEmail($line, $i)
-    {
-        $email_regex = '/[_a-zA-Z0-9-]+(\.[_a-zA-Z0-9-]+)*@[a-zA-Z0-9-]+'.
-                '(\.[a-zA-Z0-9-]+)*(\.[a-zA-Z]{2,3})/';
+        $email_regex =
+            '/[_a-zA-Z0-9-]+(\.[_a-zA-Z0-9-]+)*@[a-zA-Z0-9-]+'.
+            '(\.[a-zA-Z0-9-]+)*(\.[a-zA-Z]{2,3})/';
         preg_match_all($email_regex, $line, $emails);
-        if(isset($emails[0]) && count($emails[0]) > 0) {
-            $out = array("EMAIL"=>$emails[0]);
-            return $out;
-        }
-        $out_line = preg_replace('/[^\da-zA-Z]/',"", $line);
-        $parts = preg_split('/[a-zA-Z]/', $out_line);
-        $out = false;
-        $j = 0;
-        foreach($parts as $part) {
-            if(strlen($part) >= 10) {
-                $out = array("PHONE$i" => $part);
-                break;
-            }
-            $j++;
-        }
-        return $out;
+        return $emails[0];
     }
 
     /**
      *
      */
-    function parseCountry($line)
+    function parsePhones($line, $country_code = "US")
     {
-        $countries = array("ANDORRA" => "AD","UNITED ARAB EMIRATES" => "AE",
-            "AFGHANISTAN" => "AF","ANTIGUA AND BARBUDA" => "AG",
-            "ANGUILLA" => "AI","ALBANIA" => "AL","ARMENIA" => "AM","ANGOLA" => "AO",
-            "ANTARCTICA" => "AQ","ARGENTINA" => "AR","AMERICAN SAMOA" => "AS",
-            "AUSTRIA" => "AT","AUSTRALIA" => "AU","ARUBA" => "AW",
-            "ÅLAND ISLANDS" => "AX","AZERBAIJAN" => "AZ",
-            "BOSNIA AND HERZEGOVINA" => "BA","BARBADOS" => "BB",
-            "BANGLADESH" => "BD","BELGIUM" => "BE","BURKINA FASO" => "BF",
-            "BULGARIA" => "BG","BAHRAIN" => "BH","BURUNDI" => "BI","BENIN" => "BJ",
-            "SAINT BARTHELEMY" => "BL","BERMUDA" => "BM",
-            "BRUNEI DARUSSALAM" => "BN", "BOLIVIA" => "BO",
-            "BONAIRE, SINT EUSTATIUS AND SABA" => "BQ", "BRAZIL" => "BR",
-            "BAHAMAS" => "BS","BHUTAN" => "BT",
-            "BOUVET ISLAND" => "BV","BOTSWANA" => "BW","BELARUS" => "BY",
-            "BELIZE" => "BZ","CANADA" => "CA","COCOS ISLANDS" => "CC",
-            "DEMOCRATIC REPUBLIC OF THE CONGO" => "CD",
-            "CENTRAL AFRICAN REPUBLIC" => "CF","CONGO" => "CG",
-            "SWITZERLAND" => "CH", "COTE D'IVOIRE" => "CI",
-            "COOK ISLANDS" => "CK","CHILE" => "CL",
-            "CAMEROON" => "CM","CHINA" => "CN","COLOMBIA" => "CO",
-            "COSTA RICA" => "CR", "CUBA" => "CU","CAPE VERDE" => "CV",
-            "CURACAO" => "CW", "CHRISTMAS ISLAND" => "CX","CYPRUS" => "CY",
-            "CZECH REPUBLIC" => "CZ", "GERMANY" => "DE","DJIBOUTI" => "DJ",
-            "DENMARK" => "DK","DOMINICA" => "DM",
-            "DOMINICAN REPUBLIC" => "DO","ALGERIA" => "DZ","ECUADOR" => "EC",
-            "ESTONIA" => "EE","EGYPT" => "EG","WESTERN SAHARA" => "EH",
-            "ERITREA" => "ER","SPAIN" => "ES","ETHIOPIA" => "ET","FINLAND" => "FI",
-            "FIJI" => "FJ","FALKLAND ISLANDS (MALVINAS)" => "FK",
-            "MICRONESIA, FEDERATED STATES OF" => "FM","FAROE ISLANDS" => "FO",
-            "FRANCE" => "FR","GABON" => "GA","UNITED KINGDOM" => "GB",
-            "GRENADA" => "GD","GEORGIA" => "GE","FRENCH GUIANA" => "GF",
-            "GUERNSEY" => "GG","GHANA" => "GH","GIBRALTAR" => "GI",
-            "GREENLAND" => "GL", "GAMBIA" => "GM","GUINEA" => "GN",
-            "GUADELOUPE" => "GP", "EQUATORIAL GUINEA" => "GQ","GREECE" => "GR",
-            "SOUTH GEORGIA AND THE SOUTH SANDWICH ISLANDS" => "GS",
-            "GUATEMALA" => "GT", "GUAM" => "GU","GUINEA-BISSAU" => "GW",
-            "GUYANA" => "GY", "HONG KONG" => "HK",
-            "HEARD ISLAND AND MCDONALD ISLANDS" => "HM",
-            "HONDURAS" => "HN","CROATIA" => "HR","HAITI" => "HT","HUNGARY" => "HU",
-            "INDONESIA" => "ID","IRELAND" => "IE","ISRAEL" => "IL",
-            "ISLE OF MAN" => "IM","INDIA" => "IN",
-            "BRITISH INDIAN OCEAN TERRITORY" => "IO","IRAQ" => "IQ",
-            "IRAN" => "IR","ICELAND" => "IS","ITALY" => "IT","JERSEY" => "JE",
-            "JAMAICA" => "JM","JORDAN" => "JO","JAPAN" => "JP","KENYA" => "KE",
-            "KYRGYZSTAN" => "KG","CAMBODIA" => "KH","KIRIBATI" => "KI",
-            "COMOROS" => "KM","SAINT KITTS AND NEVIS" => "KN",
-            "NORTH KOREA" => "KP","SOUTH KOREA" => "KR","KUWAIT" => "KW",
-            "CAYMAN ISLANDS" => "KY","KAZAKHSTAN" => "KZ",
-            "LAOS" => "LA","LEBANON" => "LB","SAINT LUCIA" => "LC",
-            "LIECHTENSTEIN" => "LI","SRI LANKA" => "LK","LIBERIA" => "LR",
-            "LESOTHO" => "LS","LITHUANIA" => "LT","LUXEMBOURG" => "LU",
-            "LATVIA" => "LV","LIBYA" => "LY","MOROCCO" => "MA","MONACO" => "MC",
-            "MOLDOVA, REPUBLIC OF" => "MD","MONTENEGRO" => "ME",
-            "SAINT MARTIN" => "MF","MADAGASCAR" => "MG","MARSHALL ISLANDS" => "MH",
-            "MACEDONIA, THE FORMER YUGOSLAV REPUBLIC OF" => "MK","MALI" => "ML",
-            "MYANMAR" => "MM","MONGOLIA" => "MN","MACAO" => "MO",
-            "NORTHERN MARIANA ISLANDS" => "MP","MARTINIQUE" => "MQ",
-            "MAURITANIA" => "MR","MONTSERRAT" => "MS","MALTA" => "MT",
-            "MAURITIUS" => "MU","MALDIVES" => "MV","MALAWI" => "MW",
-            "MEXICO" => "MX","MALAYSIA" => "MY","MOZAMBIQUE" => "MZ",
-            "NAMIBIA" => "NA","NEW CALEDONIA" => "NC","NIGER" => "NE",
-            "NORFOLK ISLAND" => "NF","NIGERIA" => "NG","NICARAGUA" => "NI",
-            "NETHERLANDS" => "NL","NORWAY" => "NO","NEPAL" => "NP","NAURU" => "NR",
-            "NIUE" => "NU","NEW ZEALAND" => "NZ","OMAN" => "OM","PANAMA" => "PA",
-            "PERU" => "PE","FRENCH POLYNESIA" => "PF","PAPUA NEW GUINEA" => "PG",
-            "PHILIPPINES" => "PH","PAKISTAN" => "PK","POLAND" => "PL",
-            "SAINT PIERRE AND MIQUELON" => "PM","PITCAIRN" => "PN",
-            "PUERTO RICO" => "PR","PALESTINE, STATE OF" => "PS",
-            "PORTUGAL" => "PT","PALAU" => "PW","PARAGUAY" => "PY",
-            "QATAR" => "QA","REUNION" => "RE","ROMANIA" => "RO",
-            "SERBIA" => "RS","RUSSIA" => "RU","RWANDA" => "RW",
-            "SAUDI ARABIA" => "SA","SOLOMON ISLANDS" => "SB","SEYCHELLES" => "SC",
-            "SUDAN" => "SD","SWEDEN" => "SE","SINGAPORE" => "SG",
-            "SAINT HELENA, ASCENSION AND TRISTAN DA CUNHA" => "SH",
-            "SLOVENIA" => "SI","SVALBARD AND JAN MAYEN" => "SJ","SLOVAKIA" => "SK",
-            "SIERRA LEONE" => "SL","SAN MARINO" => "SM","SENEGAL" => "SN",
-            "SOMALIA" => "SO","SURINAME" => "SR","SOUTH SUDAN" => "SS",
-            "SAO TOME AND PRINCIPE" => "ST","EL SALVADOR" => "SV",
-            "SINT MAARTEN" => "SX","SYRIAN ARAB REPUBLIC" => "SY",
-            "SWAZILAND" => "SZ","TURKS AND CAICOS ISLANDS" => "TC","CHAD" => "TD",
-            "FRENCH SOUTHERN TERRITORIES" => "TF","TOGO" => "TG","THAILAND" => "TH",
-            "TAJIKISTAN" => "TJ","TOKELAU" => "TK","TIMOR-LESTE" => "TL",
-            "TURKMENISTAN" => "TM","TUNISIA" => "TN","TONGA" => "TO",
-            "TURKEY" => "TR","TRINIDAD AND TOBAGO" => "TT","TUVALU" => "TV",
-            "TAIWAN" => "TW","TANZANIA, UNITED REPUBLIC OF" => "TZ",
-            "UKRAINE" => "UA","UGANDA" => "UG",
-            "UNITED STATES MINOR OUTLYING ISLANDS" => "UM",
-            "UNITED STATES" => "US","URUGUAY" => "UY","UZBEKISTAN" => "UZ",
-            "VATICAN CITY" => "VA","SAINT VINCENT AND THE GRENADINES" => "VC",
-            "VENEZUELA, BOLIVARIAN REPUBLIC OF" => "VE",
-            "BRITISH VIRGIN ISLANDS" => "VG","U.S. VIRGIN ISLANDS" => "VI",
-            "VIETNAM" => "VN","VANUATU" => "VU","WALLIS AND FUTUNA" => "WF",
-            "SAMOA" => "WS","YEMEN" => "YE", "MAYOTTE" => "YT",
-            "SOUTH AFRICA" => "ZA","ZAMBIA" => "ZM", "ZIMBABWE" => "ZW");
+        $phones = array();
+        $line = preg_replace('/('.PUNCT.'|\s)+/',"", $line);
+        $phone_keywords = "/sales|mobile|phone|call|电话|電話|fono|fone|".
+            "fon|foon|전화|φωνο|фон/ui";
+        $phone_parts = preg_split($phone_keywords, $line);
+        if(isset($phone_parts[1])) {
+            $num_parts = count($phone_parts);
+            for($i = 1; $i < $num_parts; $i++) {
+                $phone_sub_parts = preg_split("/[^\d]/",$phone_parts[$i]);
+                $candidate_number = trim($phone_sub_parts[0]);
+                if(strlen($candidate_number) > 6 &&
+                    strlen($candidate_number) < 14 &&
+                    is_numeric($candidate_number)){
+                    $phones[] = $candidate_number;
+                }
+            }
+        }
+        return $phones;
+    }
+
+    /**
+     *
+     */
+    function checkCountry($line, $country_code = "US")
+    {
+        $line_parts = explode(",", $line);
+        $num_parts = count($line_parts);
+        $line = mb_strtoupper(trim($line_parts[$num_parts - 1]));
+        $countries = $this->countries;
 
         $country_codes = array_flip($countries);
-        $out = false;
-        if(strlen($line) == 3) {
+        if(strlen($line) == 2) {
             $line = substr($line, 0, 2);
         }
         if(isset($country_codes[$line])) {
-            $line = $country_codes[$line];
+            return true;
         }
         if(isset($countries[$line])) {
-            $out = array("COUNTRY" => $line, "COUNTRY_CODE" =>
-                $countries[$line]);
+            return true;
         }
-        return $out;
+        return false;
     }
 
     /**
      *
      */
-    function parsePostalCode($line)
+    function checkStreet($line)
     {
-        $line = preg_replace("/\./", "", $line);
-        $parts = preg_split("/\s+/", $line);
-        $parts = array_values(array_filter($parts));
-        $num = count($parts);
-        $out = array();
-        if($num == 1) {
-            if(preg_match("/\d/", $parts[0])) {
-                $out = array("ZIP/POSTAL CODE" => $parts[0]);
-            }
-            return $out;
-        } else {
-            $last = $num - 1;
-            $len1 = strlen($parts[$last]);
-            $len2 = strlen($parts[$last - 1]);
-            $allowed = array(2,3,4);
-            $found_zip = false;
-            if(in_array($len1, $allowed) && in_array($len2, $allowed)) {
-                if(preg_match("/\d/", $parts[$last])) {
-                    $out["ZIP/POSTAL CODE"] = $parts[$last - 1]." ".
-                        $parts[$last];
-                    $last = $num - 3;
-                    $found_zip = true;
-                }
-            }
+        $line = preg_replace("/\.|\s+/", " ", $line);
+        if(preg_match("/\b(P O BOX|PO\s+BOX|AVE|AVENUE|".
+            "BOULEVARD|BLVD|\sSQ\b|SQUARE|".
+            "ROAD|RD|STREET|WAY|WY|LANE|LN|RUE|ROUTE|CALLE|DR|DRIVE".
+            "|通り|거리|VIA|街道|街道|STRAAT|ΟΔΟΣ|RUA|УЛИЦА)\b/ui", $line)) {
+            return true;
         }
-        return $out;
-    }
-
-    /**
-     *
-     */
-    function parseLocality($line)
-    {
-        $out = array("LOCALITY" => $line);
-        if(preg_match("/\d+|AVE|AVENUE|BOULEVARD|BLVD|".
-            "ROAD|RD|STREET|WAY|WY|LANE|LN/", $line)) {
-            $out = false;
-        }
-        return $out;
-    }
-
-    /**
-     *
-     */
-    function parseCityLine($line)
-    {
-        $line = preg_replace("/\./", "", $line);
-        $parts = preg_split("/\s+|\,/", $line);
-        $parts = array_values(array_filter($parts));
-        $num = count($parts);
-        $out = array();
-        if($num == 1) {
-            if(preg_match("/\d/", $parts[0])) {
-                $out = array("ZIP/POSTAL CODE" => $parts[0]);
-            }
-            return $out;
-        } else {
-            $last = $num - 1;
-            if($last - 1 < 0) {return false;}
-            $len1 = strlen($parts[$last]);
-            $len2 = strlen($parts[$last - 1]);
-            $allowed = array(3,4);
-            $found_zip = false;
-            if(in_array($len1, $allowed) && in_array($len2, $allowed)) {
-                if(preg_match("/\d/", $parts[$last])) {
-                    $out["ZIP/POSTAL CODE"] = $parts[$last - 1]." ".
-                        $parts[$last];
-                    $last = $num - 3;
-                    $found_zip = true;
-                }
-            } else if(preg_match("/\d{5}|\d{5}\-\{4}/", $parts[$num - 1])) {
-                $out["ZIP/POSTAL CODE"] = $parts[$num - 1];
-                $last = $num - 2;
-                $found_zip = true;
-            }
-            if($last < 0) {
-                return $out;
-            }
-            if(strlen($parts[$last]) > 1) {
-                $out["COUNTY/STATE/PROVINCE"] = preg_replace("/\./", "",
-                    $parts[$last]);
-                $last--;
-                if($last < 0) {
-                    if($found_zip) {
-                        return false;
-                    }
-                    ksort($out);
-                    return $out;
-                }
-            } else {
-                return false;
-            }
-            if(preg_match("/\d+/", $parts[0])) {
-                return false;
-            }
-            $city = "";
-            for($i = 0 ; $i <= $last; $i++) {
-                $city .= " ".$parts[$i];
-            }
-            $out["CITY"] = $city;
-        }
-        ksort($out);
-        return $out;
-    }
-
-    /**
-     *
-     */
-    function parseStreetLine($line, $i)
-    {
-        $line = preg_replace("/\./", "", $line);
-        $parts = preg_split("/\s+|\,/", $line);
-        $num = count($parts);
-        $out = false;
-        if($num < 2) {
-            return $out;
-        }
-        if(preg_match(
-            "/(\#)?\d+|PO|APT|ONE|TWO|THREE|FOUR|FIVE|SIX|SEVEN|EIGHT|NINE/",
-            $parts[0])) {
-            $out = array("STREET LINE$i" => $line);
-        } else if(preg_match(
-            "/AVE|AVENUE|BOULEVARD|BLVD|ROAD|STREET|HOUSE|ST|WAY|LN|WY|LANE/",
-            $parts[$num - 1])) {
-            $out = array("STREET LINE$i" => $line);
-        }
-        return $out;
-    }
-
-    /**
-     *
-     */
-    function parseInstitution($line)
-    {
-        $out = false;
-        $check_line = preg_replace("/\.|\//", "", $line);
-        if(preg_match("/LLC|PLC|INC|LTD|CORP|CORPORATION"."
-            |LIMITED|INST|ORG|HOSP|UNIV|COLLEGE/",
-            $line)) {
-            $out = array("ESTABLISHMENT" => $check_line);;
-        }
-        return $out;
-    }
-
-    /**
-     *
-     */
-    function parseDepartmentOrCareof($line)
-    {
-        $line = preg_replace("/\.|\//", "", $line);
-        $out = false;
-        if(preg_match("/^CO/", $line)) {
-            $out = array("CARE OF" => substr($line, 3));
-        } else if(preg_match("/^DEP/i", $line)) {
-            $out = array("DEPARTMENT" => $line);
-        }
-        return $out;
-    }
-
-    /**
-     *
-     */
-    function parseOfficeResidenceNumber($line)
-    {
-        $out = false;
-        if(preg_match("/ROOM|RM\BLDG|BUILDING|HALL|FLOOR|(\#)?\d+/", $line)) {
-            $out = array("OFFICE/RESIDENCE NUMBER" => $line);
-        }
-        return $out;
-    }
-
-    /**
-     *
-     */
-    function parseName($line)
-    {
-        $line = preg_replace("/\.[^com|^COM]/", " ", $line);
-        $out = array("NAME" => $line);
-        if(preg_match("/\d+/", $line)) {
-            $out = false;
-        }
-        return $out;
+        return false;
     }
 
 }

@@ -67,9 +67,6 @@ define('MAX_DOM_LEVEL', 15);
  * @package seek_quarry
  * @subpackage processor
  */
-
-
-
 class EpubProcessor extends TextProcessor
 {
     /**

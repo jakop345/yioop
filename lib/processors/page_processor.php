@@ -115,13 +115,11 @@ abstract class PageProcessor implements CrawlConstants
                 if(is_array($subdocs_description)
                     && count($subdocs_description) != 0) {
                     foreach($subdocs_description as $subdoc_description) {
-                        $subdoc[self::TITLE] = $subdoc_description[self::TITLE];
-                        $subdoc[self::DESCRIPTION] =
-                            $subdoc_description[self::DESCRIPTION];
+                        $subdoc = $subdoc_description;
                         $subdoc[self::LANG] = $summary[self::LANG];
                         $subdoc[self::LINKS] = $summary[self::LINKS];
                         $subdoc[self::PAGE] = $page;
-                        $subdoc[self::SUBDOCTYPE] = $subtypes;
+                        $subdoc[self::SUBDOCTYPE] = $subtype;
                         $summary[self::SUBDOCS][] = $subdoc;
                     }
                 }
