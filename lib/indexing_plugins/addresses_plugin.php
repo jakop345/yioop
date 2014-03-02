@@ -44,6 +44,8 @@ require_once BASE_DIR."/lib/indexing_plugins/indexing_plugin.php";
 require_once BASE_DIR."/lib/utility.php";
 /** Loads common constants for web crawling */
 require_once BASE_DIR."/lib/crawl_constants.php";
+/** Used for guessLocaleFromString */
+require_once BASE_DIR."/lib/locale_functions.php";
 
 /**
  *  Used to extract emails, phone numbers, and addresses from a web page.
@@ -270,7 +272,18 @@ class AddressesPlugin extends IndexingPlugin implements CrawlConstants
         "JOHANNESBERG", "FRANSCICO", "TORONTO", "MIAMI", "PHILADELPHIA",
         "KUALA", "LAMPUR", "ESSEN", "LONDON", "KINSHASA", "BOSTON",
         "AMSTERDAM", "臺北", "武漢", "AHMEDABAD", "BANGALORE", "HYDERABAD",
-        "BAGHDAD", "LIMA", "名古屋", "ANGELES", "SANTIAGO", "MILANO", "HOUSTON"
+        "BAGHDAD", "LIMA", "名古屋", "ANGELES", "SANTIAGO", "MILANO", "HOUSTON",
+        "SHÀNGHAISHÌ", "AP", "ANDHRA", "AR", "ARUNACHAL", "AS", "ASSAM",
+        "BR", "BIHAR", "CT", "CHHATTISGARH", "GA", "GOA", "GJ", "GUJARAT",
+        "HR", "HARYANA", "HP", "HIMACHAL", "JK", "JAMMU", "KASHMIR",
+        "JH", "JHARKHAND", "KA", "KARNATAKA", "KL", "KERALA", "MP", "MADHYA",
+        "MH", "MAHARASHTRA", "MN", "MANIPUR", "ML", "MEGHALAYA",
+        "MZ", "MIZORAM", "NL", "NAGALAND", "OR", "ORISSA", "PB", "PUNJAB",
+        "RJ", "RAJASTHAN", "SK", "SIKKIM",
+        "TN", "TAMIL", "NADU", "TR", "TRIPURA", "UT", "UTTARAKHAND",
+        "UP", "UTTAR", "PRADESH", "WB", "BENGAL", "ANDAMAN", "NICOBAR",
+        "CH", "CHANDIGARH", "DN", "DADRA", "NAGAR", "HAVELI", "DD", "DAMAN",
+        "DIU", "DL", "LD", "LAKSHADWEEP", "PY", "PUDUCHERRY", "PONDICHERRY"
     );
 
     /**
@@ -310,26 +323,55 @@ class AddressesPlugin extends IndexingPlugin implements CrawlConstants
         }
         $page = preg_replace("/(\r?\n[\t| ]*)/", "\n", $page);
         $page = preg_replace("/\n\n\n+/", "\n\n", $page);
-        $subdocs = array($this->parseSubdoc($page, $url));
+        $subdocs = array($this->parseSubdoc($page));
         return $subdocs;
     }
 
-
     /**
-     * Which mime type page processors this plugin should do additional
-     * processing for
+     *  Adjusts the document summary of a page after the page processor's
+     *  process method has been called so that the subdoc's fields
+     *  associated with the addresses plugin get copied as fields of
+     *  the whole page summary. Then it deletes the subdoc fields.
      *
-     * @return array an array of page processors
+     *  @param array $summary of current document. It will be adjusted
+     *      by the code below
      */
-    static function getProcessors()
+    function pageSummaryProcessing(&$summary)
     {
-        return array("TextProcessor"); //will apply to all subclasses
+        if(isset($summary[self::SUBDOCS])) {;
+            $num_subdocs = count($summary[self::SUBDOCS]);
+            for($i = 0; $i < $num_subdocs; $i++) {
+                if($summary[self::SUBDOCS][$i][self::SUBDOCTYPE]=="addresses"){
+                    $summary["EMAILS"] = $summary[self::SUBDOCS][$i][
+                        "EMAILS"];
+                    $summary["PHONE_NUMBERS"] = $summary[self::SUBDOCS][$i][
+                        "PHONE_NUMBERS"];
+                    $summary["ADDRESSES"] = $summary[self::SUBDOCS][$i][
+                        "ADDRESSES"];
+                    unset($summary[self::SUBDOCS][$i]);
+                }
+            }
+            $meta_ids = array();
+            foreach($summary["EMAILS"] as $email) {
+                $meta_ids[] ="email:$email";
+            }
+            foreach($summary["PHONE_NUMBERS"] as $phone) {
+                $meta_ids[] ="phone:$phone";
+            }
+            $summary[self::META_WORDS] = $meta_ids;
+            $summary[self::SUBDOCS] = array_values($summary[self::SUBDOCS]);
+        }
     }
 
     /**
+     *  Parses EMAILS, PHONE_NUMBERS and ADDRESSES from $text and returns
+     *  an array with these three fields containing sub-arrays of the given
+     *  items
      *
+     *  @param string $text to use for extraction
+     *  @return array with found emails, phone numbers, and addresses
      */
-    function parseSubdoc($text, $url)
+    function parseSubdoc($text)
     {
         $lines = explode("\n", $text);
         $lines[] = "";
@@ -353,7 +395,7 @@ class AddressesPlugin extends IndexingPlugin implements CrawlConstants
             if($line_phones) {
                 $phones = array_merge($phones, $line_phones);
             }
-            $len = strlen($line);
+            $len = mb_strlen($line);
             $len_about_right = $len < $max_len && $len >= $min_len;
             switch($state)
             {
@@ -401,65 +443,28 @@ class AddressesPlugin extends IndexingPlugin implements CrawlConstants
     }
 
     /**
+     *  Checks if the passed sequence of lines has enough features of a
+     *  postal address to call it an address. If so, return the address as
+     *  a single string
      *
-     */
-    function pageSummaryProcessing(&$summary)
-    {
-        if(isset($summary[self::SUBDOCS])) {;
-            $num_subdocs = count($summary[self::SUBDOCS]);
-            for($i = 0; $i < $num_subdocs; $i++) {
-                if($summary[self::SUBDOCS][$i][self::SUBDOCTYPE]=="addresses"){
-                    $summary["EMAILS"] = $summary[self::SUBDOCS][$i][
-                        "EMAILS"];
-                    $summary["PHONE_NUMBERS"] = $summary[self::SUBDOCS][$i][
-                        "PHONE_NUMBERS"];
-                    $summary["ADDRESSES"] = $summary[self::SUBDOCS][$i][
-                        "ADDRESSES"];
-                    unset($summary[self::SUBDOCS][$i]);
-                }
-            }
-            $meta_ids = array();
-            foreach($summary["EMAILS"] as $email) {
-                $meta_ids[] ="email:$email";
-            }
-            foreach($summary["PHONE_NUMBERS"] as $phone) {
-                $meta_ids[] ="phone:$phone";
-            }
-            $summary[self::META_WORDS] = $meta_ids;
-            $summary[self::SUBDOCS] = array_values($summary[self::SUBDOCS]);
-        }
-    }
-
-    /**
-     * Returns an array of additional meta words which have been added by
-     * this plugin
-     *
-     * @return array meta words and maximum description length of results
-     *      allowed for that meta word
-     */
-    static function getAdditionalMetaWords()
-    {
-
-        return array("email:" =>  100,
-            "phone:" => 100);
-    }
-
-    /**
-     *
+     *  @param array $pre_address an array of potential address lines
+     *  @return mixed false if not address, the lines imploded together using
+     *      space if an address
      */
     function checkCandidate($pre_address)
     {
+        print_r($pre_address);
         $address = false;
         $found_count = 0;
         $num_lines = count($pre_address);
         $check_array = array("checkCountry"=>"checkCountry",
             "checkStreet"=>"checkStreet",
             "checkPhoneOrEmail" => "checkPhoneOrEmail",
-            "checkRegion" => "checkRegion");
+            "checkRegion" => "checkRegion",
+            "checkZipPostalCodeWords" => "checkZipPostalCodeWords");
         foreach($pre_address as $line) {
             foreach($check_array as $check) {
                 if($this->$check($line)) {
-                                    echo  $line." $check\n";
                     $found_count++;
                     unset($check_array[$check]);
                 }
@@ -471,9 +476,25 @@ class AddressesPlugin extends IndexingPlugin implements CrawlConstants
         return $address;
     }
 
+    /**
+     *  Used to check if a line countains a word associated with a province,
+     *  state or major city.
+     *
+     *  @param string $line from address to check
+     *  @return bool whether it contains  acountry term
+     */
     function checkRegion($line)
     {
+        $locale = guessLocaleFromString($line);
         $line_parts = explode(" ", $line);
+        if(in_array($locale, array("zh-CN", "ja", "ko"))) {
+            //Chinese, Japanese or Korean so chargram size 2.
+            $line_parts = array();
+            $len = mb_strlen($line);
+            for($i = 0; $i < $len; $i++) {
+                $line_parts[] = mb_substr($line, $i, 2);
+            }
+        }
         foreach($line_parts as $part) {
             $part = mb_strtoupper($part);
             if(in_array($part, $this->regions)) {
@@ -484,7 +505,11 @@ class AddressesPlugin extends IndexingPlugin implements CrawlConstants
     }
 
     /**
+     *  Used to check if a line countains either an email address or a phone
+     *  number
      *
+     *  @param string $line from address to check
+     *  @return bool whether it contains  acountry term
      */
     function checkPhoneOrEmail($line)
     {
@@ -500,9 +525,13 @@ class AddressesPlugin extends IndexingPlugin implements CrawlConstants
     }
 
     /**
+     *  Extracts substrings from the provided $line that are in the format
+     *  of an email address. Returns first email from line
      *
+     *  @param string $line string to extract email from
+     *  @return string first email found on line
      */
-    function parseEmails($line, $country_code = "US")
+    function parseEmails($line)
     {
         $email_regex =
             '/[_a-zA-Z0-9-]+(\.[_a-zA-Z0-9-]+)*@[a-zA-Z0-9-]+'.
@@ -512,9 +541,13 @@ class AddressesPlugin extends IndexingPlugin implements CrawlConstants
     }
 
     /**
+     *  Checks for a phone number related keyword in the line and if
+     *  found extracts digits which are presumed to be a phone number
      *
+     *  @param string $line to check for phone numbers
+     *  @return array all phone numbers detected by this method from the $line
      */
-    function parsePhones($line, $country_code = "US")
+    function parsePhones($line)
     {
         $phones = array();
         $line = preg_replace('/('.PUNCT.'|\s)+/',"", $line);
@@ -537,9 +570,13 @@ class AddressesPlugin extends IndexingPlugin implements CrawlConstants
     }
 
     /**
+     *  Used to check if a line countains a word associated with a World
+     *  country or country code.
      *
+     *  @param string $line from address to check
+     *  @return bool whether it contains  acountry term
      */
-    function checkCountry($line, $country_code = "US")
+    function checkCountry($line)
     {
         $line_parts = explode(",", $line);
         $num_parts = count($line_parts);
@@ -559,14 +596,29 @@ class AddressesPlugin extends IndexingPlugin implements CrawlConstants
         return false;
     }
 
+
+    function checkZipPostalCodeWords($line)
+    {
+        $line = preg_replace("/\.|\s+/", " ", $line);
+        if(preg_match("/ZIP|POSTAL|邮编/", $line)){
+            return true;
+        }
+        return false;
+    }
+
     /**
+     *  Used to check if a given line in an address candidate has features
+     *  associated with being a street address.
      *
+     *  @param string $line address line to check
+     *  @return bool whether or not it contains a word identified with
+     *      being a street address such as WAY, AVENUE, STREET, etc.
      */
     function checkStreet($line)
     {
         $line = preg_replace("/\.|\s+/", " ", $line);
         if(preg_match("/\b(P O BOX|PO\s+BOX|AVE|AVENUE|".
-            "BOULEVARD|BLVD|\sSQ\b|SQUARE|".
+            "BOULEVARD|BLVD|SQ|SQUARE|".
             "ROAD|RD|STREET|WAY|WY|LANE|LN|RUE|ROUTE|CALLE|DR|DRIVE".
             "|通り|거리|VIA|街道|街道|STRAAT|ΟΔΟΣ|RUA|УЛИЦА)\b/ui", $line)) {
             return true;
@@ -574,6 +626,30 @@ class AddressesPlugin extends IndexingPlugin implements CrawlConstants
         return false;
     }
 
+    /**
+     * Returns an array of additional meta words which have been added by
+     * this plugin
+     *
+     * @return array meta words and maximum description length of results
+     *      allowed for that meta word
+     */
+    static function getAdditionalMetaWords()
+    {
+
+        return array("email:" =>  100,
+            "phone:" => 100);
+    }
+
+    /**
+     * Which mime type page processors this plugin should do additional
+     * processing for
+     *
+     * @return array an array of page processors
+     */
+    static function getProcessors()
+    {
+        return array("TextProcessor"); //will apply to all subclasses
+    }
 }
 
 ?>
