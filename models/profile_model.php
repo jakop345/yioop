@@ -50,9 +50,9 @@ require_once(BASE_DIR.'/lib/url_parser.php');
 class ProfileModel extends Model
 {
     var $profile_fields = array('API_ACCESS', 'AUTH_KEY', 'CACHE_LINK',
-        'DEBUG_LEVEL', 'DESCRIPTION_WEIGHT', 'DB_HOST', 'DBMS', 'DB_NAME',
-        'DB_PASSWORD', 'DB_USER', 'DEFAULT_LOCALE', 'GROUP_ITEM', 'IN_LINK',
-        'IP_LINK', 'LINK_WEIGHT', 'MAIL_PASSWORD', 'MAIL_SECURITY',
+        'CAPTCHA_MODE','DEBUG_LEVEL', 'DESCRIPTION_WEIGHT', 'DB_HOST', 'DBMS',
+        'DB_NAME','DB_PASSWORD', 'DB_USER', 'DEFAULT_LOCALE', 'GROUP_ITEM', 
+        'IN_LINK','IP_LINK', 'LINK_WEIGHT', 'MAIL_PASSWORD', 'MAIL_SECURITY',
         'MAIL_SENDER', 'MAIL_SERVER', 'MAIL_SERVERPORT', 'MAIL_USERNAME',
         'MEMCACHE_SERVERS', 'MIN_RESULTS_TO_GROUP', 'NAME_SERVER', 'NEWS_MODE',
         'PROXY_SERVERS', 'REGISTRATION_TYPE', 'ROBOT_DESCRIPTION',
@@ -499,7 +499,6 @@ EOT;
             $profile['ROBOT_DESCRIPTION'] =
                 file_get_contents($robot_path);
         }
-
         return $profile;
     }
 

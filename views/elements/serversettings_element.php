@@ -237,6 +237,20 @@ class ServersettingsElement extends Element
                 </div>
             </fieldset>
             </div>
+            <div class="top-margin">
+            <fieldset>
+                <legend><label
+                for="captcha_setting"><?php
+                e(tl('serversettings_element_captcha_setting'));
+                ?>
+                </label></legend>
+                    <?php $this->view->helper("options")->render(
+                        "captcha_setting", "CAPTCHA_MODE",
+                       $data['CAPTCHA_MODES'],
+                     $data['CAPTCHA_MODE']);
+                ?>
+            </fieldset>
+            </div>
             <div class="top-margin center">
             <button class="button-box" type="submit"><?php
                 e(tl('serversettings_element_submit')); ?></button>

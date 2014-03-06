@@ -75,6 +75,16 @@ class SuggestView extends View
                 ?></span></h1>
             <p class="center"><?php e(tl('suggest_view_instructions'));?></p>
             <form method="post" action="#">
+            <input type='hidden' name='nonce_for_string'
+            id='nonce_for_string' />
+            <input type='hidden' name='random_string' id='random_string'
+            value='<?php e($_SESSION["random_string"]);?>' />
+            <input type='hidden' name='time1' id='time1'
+            value='<?php e($_SESSION["request_time"]);?>' />
+            <input type='hidden' name='level' id='level'
+            value='<?php e($_SESSION["level"]);?>' />
+            <input type='hidden' name='time' id='time'
+            value='<?php e(time());?>'/>
             <input type="hidden" name="c" value="register" />
             <input type="hidden" name="a" value="suggestUrl" />
             <input type="hidden" name="arg" value="save" />
@@ -97,6 +107,7 @@ class SuggestView extends View
                         </tr>
                         <tr>
                         <?php
+                        if(!isset($_SESSION["random_string"])){
                         $question_sets = array(
                             tl('register_view_human_check')=>$data['CAPTCHAS']);
                         $i = 0;
@@ -108,7 +119,7 @@ class SuggestView extends View
                                     <tr><th class="table-label"
                                         rowspan='<?php e($num); ?>'><?php
                                         e($name);
-                                    ?></th><td class="table-input border-top">
+                                      ?></th><td class="table-input border-top">
                                 <?php
                                 } else { ?>
                                     <tr><td class="table-input">
@@ -123,17 +134,22 @@ class SuggestView extends View
                                 e("</td></tr>");
                                 $i++;
                             }
+                          } 
                         }
                         ?>
                         <tr>
                             <td></td>
-                            <td class="table-input border-top">
-                            <input type="hidden"
+                            <?php if(isset($_SESSION["randomString"])) { ?>
+                            <td class="table-input"> 
+                            <?php } else { ?>
+                               <td class="table-input border-top"> 
+                            <?php }?>
+                               <input type="hidden"
                                 name="<?php e(CSRF_TOKEN);?>"
                                 value="<?php e($data[CSRF_TOKEN]); ?>"/>
-                                <button class="sides-margin" type="submit"><?php
-                                    e(tl('suggest_view_submit_url'));
-                                ?></button>
+                                <button class="sides-margin" type="submit">
+                                <?php e(tl('suggest_view_submit_url')); ?>
+                                </button>
                             </td>
                         </tr>
                     </table>
@@ -148,7 +164,13 @@ class SuggestView extends View
         </div>
         </div>
         <div class='tall-landing-spacer'></div>
-    <?php
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+            var body = tag(body);
+            body.onload = findNonce('nonce_for_string','random_string','time1','level');
+            }, false);
+        </script>
+        <?php
         }
     }
-    ?>
+?>

@@ -153,9 +153,8 @@ function runAllTests()
 function runTestBasedOnRequest()
 {
     echo "<p><a href='?activity=listTests'>See test case list</a>.</p>";
-
     if(isset($_REQUEST['test'])) {
-        $name = preg_replace("/[^A-Za-z_]/", '', $_REQUEST['test'])."_test.php";
+        $name = preg_replace("/[^A-Za-z_0-9]/", '', $_REQUEST['test'])."_test.php";
         if(file_exists($name)) {
             runTest($name);
         }
@@ -170,10 +169,9 @@ function runTestBasedOnRequest()
  */
 function runTest($name)
 {
-    require_once $name;
-
     $class_name = getClassNameFromFileName($name);
     echo "<h2>$class_name</h2>";
+    require_once $name;
 
     $test = new $class_name();
     $results = $test->run();
@@ -193,7 +191,6 @@ function runTest($name)
                 }
                 $count++;
             }
-
             if ($count == $passed) {
                 $color = "green";
             } else {
@@ -222,7 +219,6 @@ function runTest($name)
 function getTestNames()
 {
     return glob('*_test.php');
-
 }
 
 /**
@@ -242,7 +238,6 @@ function getClassNameFromFileName($name)
     foreach($name_parts as $part) {
         $class_name .= ucfirst($part);
     }
-
     //strip .php
     $class_name = substr($class_name, 0, strlen($class_name) - strlen(".php"));
 
