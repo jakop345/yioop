@@ -311,11 +311,16 @@ class CrawlComponent extends Component implements CrawlConstants
         $crawls = $crawl_model->getCrawlList(false, false,
             $machine_urls);
         $indexes = $crawl_model->getCrawlList(true, true, $machine_urls);
-        $mixes = $crawl_model->getMixList(false);
+        if(isset($_SESSION['USER_ID'])) {
+            $user = $_SESSION['USER_ID'];
+        } else {
+            $user = $_SERVER['REMOTE_ADDR'];
+        }
+        $mixes = $crawl_model->getMixList($user, false);
         foreach($mixes as $mix) {
             $tmp = array();
-            $tmp["DESCRIPTION"] = "MIX::".$mix["MIX_NAME"];
-            $tmp["CRAWL_TIME"] = $mix["MIX_TIMESTAMP"];
+            $tmp["DESCRIPTION"] = "MIX::".$mix["NAME"];
+            $tmp["CRAWL_TIME"] = $mix["TIMESTAMP"];
             $tmp["ARC_DIR"] = "MIX";
             $tmp["ARC_TYPE"] = "MixArchiveBundle";
             $indexes[] = $tmp;
@@ -1347,10 +1352,15 @@ class CrawlComponent extends Component implements CrawlConstants
             $data["SEARCH_LISTS"]["i:".$item["CRAWL_TIME"]] =
                 $item["DESCRIPTION"];
         }
-        $search_lists= $crawl_model->getMixList();
+        if(isset($_SESSION['USER_ID'])) {
+            $user = $_SESSION['USER_ID'];
+        } else {
+            $user = $_SERVER['REMOTE_ADDR'];
+        }
+        $search_lists= $crawl_model->getMixList($user);
         foreach($search_lists as $item) {
-            $data["SEARCH_LISTS"]["m:".$item["MIX_TIMESTAMP"]] =
-                $item["MIX_NAME"];
+            $data["SEARCH_LISTS"]["m:".$item["TIMESTAMP"]] =
+                $item["NAME"];
         }
         $n = NUM_RESULTS_PER_PAGE;
         $data['PER_PAGE'] =

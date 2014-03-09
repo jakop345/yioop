@@ -134,8 +134,8 @@ class PhraseModel extends ParallelModel
     {
         $disjunct_phrases = explode("|", $query);
         $rewrite = "";
-        if(isset($mix['GROUPS'])) {
-            foreach($mix['GROUPS'] as $group) {
+        if(isset($mix['FRAGMENTS'])) {
+            foreach($mix['FRAGMENTS'] as $fragment) {
                 $pipe = "";
                 foreach($disjunct_phrases as $disjunct) {
                     $rewrite .= $pipe;
@@ -169,9 +169,9 @@ class PhraseModel extends ParallelModel
                             preg_replace($pattern,"", $disjunct_string);
                     }
                     $pipe2 = "";
-                    if(isset($group['COMPONENTS'])) {
+                    if(isset($fragment['COMPONENTS'])) {
                         $start_disjunct_string = $disjunct_string;
-                        foreach($group['COMPONENTS'] as $component) {
+                        foreach($fragment['COMPONENTS'] as $component) {
                             $disjunct_string = $start_disjunct_string;
                             if(isset($component['KEYWORDS'])) {
                                 $disjunct_string .= " ".$component['KEYWORDS'];
@@ -185,9 +185,9 @@ class PhraseModel extends ParallelModel
                     }
 
                 }
-                $num_results = (isset($group['RESULT_BOUND']) &&
-                    $group['RESULT_BOUND'] > 1) ?
-                    $group['RESULT_BOUND'] : 1;
+                $num_results = (isset($fragment['RESULT_BOUND']) &&
+                    $fragment['RESULT_BOUND'] > 1) ?
+                    $fragment['RESULT_BOUND'] : 1;
                 $rewrite .= " #$num_results# ";
             }
         }

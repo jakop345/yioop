@@ -118,9 +118,9 @@ class SettingsController extends Controller
             $data['CRAWLS'][$crawl['CRAWL_TIME']] = $crawl['DESCRIPTION'].
                 " ... ".$crawl['COUNT']." urls";
         }
-        $mixes = $crawl_model->getMixList();
+        $mixes = $crawl_model->getMixList($user);
         foreach($mixes as $mix) {
-            $data['CRAWLS'][$mix['MIX_TIMESTAMP']] = $mix['MIX_NAME'].
+            $data['CRAWLS'][$mix['TIMESTAMP']] = $mix['NAME'].
                 " ... ".tl('settings_controller_crawl_mix');
         }
         $crawl_stamps = array_keys($data['CRAWLS']);

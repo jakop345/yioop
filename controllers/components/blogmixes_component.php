@@ -44,7 +44,10 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 class BlogmixesComponent extends Component implements CrawlConstants
 {
     /**
+     *  Used to support requests related to posting, editing, modifying,
+     *  and deleting group feed items.
      *
+     *  @return array $data fields to be used by GroupfeedElement
      */
     function groupFeeds()
     {
@@ -290,7 +293,23 @@ class BlogmixesComponent extends Component implements CrawlConstants
             $page = $item;
             $page[self::TITLE] = $page['TITLE'];
             unset($page['TITLE']);
-            $page[self::DESCRIPTION] = $page['DESCRIPTION'];
+            $description = $page['DESCRIPTION'];
+            preg_match_all("/\[\[([^\:\n]+)\:mix(\d+)\]\]/", $description,
+                $matches);
+            $num_matches = count($matches[0]);
+            for($i = 0; $i < $num_matches; $i++) {
+                $match = preg_quote($matches[0][$i]);
+                $match = str_replace("@","\@", $match);
+                $replace = "<a href='?c=admin&amp;a=mixCrawls".
+                    "&amp;arg=importmix&amp;".CSRF_TOKEN."=".
+                    $parent->generateCSRFToken($user_id).
+                    "&amp;timestamp={$matches[2][$i]}'>".
+                    $matches[1][$i]."</a>";
+                $description = preg_replace("@".$match."@u", $replace,
+                    $description);
+                $page["NO_EDIT"] = true;
+            }
+            $page[self::DESCRIPTION] = $description;
             unset($page['DESCRIPTION']);
             $page[self::SOURCE_NAME] = $page['GROUP_NAME'];
             unset($page['GROUP_NAME']);
@@ -339,10 +358,13 @@ class BlogmixesComponent extends Component implements CrawlConstants
     {
         $parent = $this->parent;
         $crawl_model = $parent->model("crawl");
+        $user_model = $parent->model("user");
         $possible_arguments = array(
-            "createmix", "deletemix", "editmix", "index");
+            "createmix", "deletemix", "editmix", "index", "importmix",
+            "sharemix");
 
         $data["ELEMENT"] = "mixcrawls";
+        $user_id = $_SESSION['USER_ID'];
 
         $data['mix_default'] = 0;
         $machine_urls = $parent->model("machine")->getQueueServerUrls();
@@ -364,47 +386,35 @@ class BlogmixesComponent extends Component implements CrawlConstants
             $data['SCRIPT'] .= 'c['.$crawl['CRAWL_TIME'].']="'.
                 $crawl['DESCRIPTION'].'";';
         }
-        $mixes = $crawl_model->getMixList(true);
+        $mixes = $crawl_model->getMixList($user_id, true);
+        $mix_ids = array();
         if(count($mixes) > 0 ) {
             $data['available_mixes']= $mixes;
-            $mix_ids = array();
             foreach($mixes as $mix) {
-                $mix_ids[] = $mix['MIX_TIMESTAMP'];
+                $mix_ids[] = $mix['TIMESTAMP'];
             }
         }
-
-        $mix = array();
+        $can_manage_crawls = $user_model->isAllowedUserActivity(
+                $_SESSION['USER_ID'], "manageCrawls");
         if(isset($_REQUEST['arg']) &&
             in_array($_REQUEST['arg'], $possible_arguments)) {
             switch($_REQUEST['arg'])
             {
                 case "createmix":
-                    $mix['MIX_TIMESTAMP'] = time();
-                    if(isset($_REQUEST['MIX_NAME'])) {
-                        $mix['MIX_NAME'] = $parent->clean($_REQUEST['MIX_NAME'],
+                    $mix['TIMESTAMP'] = time();
+                    if(isset($_REQUEST['NAME'])) {
+                        $mix['NAME'] = $parent->clean($_REQUEST['NAME'],
                             'string');
                     } else {
-                        $mix['MIX_NAME'] = tl('blogmixes_component_unnamed');
+                        $mix['NAME'] = tl('blogmixes_component_unnamed');
                     }
-                    $mix['GROUPS'] = array();
+                    $mix['FRAGMENTS'] = array();
+                    $mix['OWNER_ID'] = $user_id;
+                    $mix['PARENT'] = -1;
                     $crawl_model->setCrawlMix($mix);
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('blogmixes_component_mix_created')."</h1>');";
-
-                case "editmix":
-                    //$data passed by reference
-                    $this->editMix($data, $mix_ids, $mix);
                 break;
-
-                case "index":
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('blogmixes_component_set_index')."</h1>')";
-
-                    $timestamp = $parent->clean($_REQUEST['timestamp'], "int");
-                    $crawl_model->setCurrentIndexDatabaseName(
-                        $timestamp);
-                break;
-
                 case "deletemix":
                     if(!isset($_REQUEST['timestamp'])|| !isset($mix_ids) ||
                         !in_array($_REQUEST['timestamp'], $mix_ids)) {
@@ -415,14 +425,105 @@ class BlogmixesComponent extends Component implements CrawlConstants
                     }
                     $crawl_model->deleteCrawlMix($_REQUEST['timestamp']);
                     $data['available_mixes'] =
-                        $crawl_model->getMixList(true);
+                        $crawl_model->getMixList($user_id, true);
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('blogmixes_component_mix_deleted')."</h1>')";
                 break;
+                case "editmix":
+                    //$data passed by reference
+                    $this->editMix($data, $mix_ids);
+                break;
+                case "importmix":
+                    $import_success = true;
+                    if(!isset($_REQUEST['timestamp'])) {
+                        $import_success = false;
+                    }
+                    $timestamp = $parent->clean($_REQUEST['timestamp'], "int");
+                    $mix = $crawl_model->getCrawlMix($timestamp);
+                    if(!$mix) {
+                        $import_success = false;
+                    }
+                    if(!$import_success) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('blogmixes_component_mix_doesnt_exists').
+                            "</h1>')";
+                        return $data;
+                    }
+                    $mix['PARENT'] = $mix['TIMESTAMP'];
+                    $mix['OWNER_ID'] = $user_id;
+                    $mix['TIMESTAMP'] = time();
+                    $crawl_model->setCrawlMix($mix);
+                    $data['available_mixes'] =
+                        $crawl_model->getMixList($user_id, true);
+
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('blogmixes_component_mix_imported')."</h1>');";
+                break;
+                case "index":
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('blogmixes_component_set_index')."</h1>')";
+                    $timestamp = $parent->clean($_REQUEST['timestamp'], "int");
+                    if($can_manage_crawls) {
+                        $crawl_model->setCurrentIndexDatabaseName(
+                            $timestamp);
+                    } else {
+                        $_SESSION['its'] = $timestamp;
+                        $user_model->setUserSession($user_id, $_SESSION);
+                    }
+                break;
+                case "sharemix":
+                    if(!$parent->checkCSRFTime(CSRF_TOKEN)) {
+                        break;
+                    }
+                    if(!isset($_REQUEST['group_name'])) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('blogmixes_component_comment_error').
+                            "</h1>')";
+                        break;
+                    }
+                    if(!isset($_REQUEST['timestamp']) || 
+                        !in_array($_REQUEST['timestamp'], $mix_ids)) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('blogmixes_component_invalid_timestamp').
+                            "</h1>')";
+                        break;
+                    }
+                    $timestamp = $parent->clean($_REQUEST['timestamp'], "int");
+                    $group_model = $parent->model("group");
+                    $group_name = 
+                        $parent->clean($_REQUEST['group_name'], "string");
+                    $group_id = $group_model->getGroupId($group_name);
+                    $group = NULL;
+                    if($group_id) {
+                        $group =
+                            $group_model->getGroupById($group_id,
+                            $user_id);
+                    }
+                    if(!$group || ($group["OWNER_ID"] != $user_id &&
+                        $group["MEMBER_ACCESS"] != GROUP_READ_WRITE &&
+                        $user_id != ROOT_ID)) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('blogmixes_component_no_post_access').
+                            "</h1>')";
+                        break;
+                    }
+                    $user_name = $user_model->getUserName($user_id);
+                    $title = tl('blogmixes_component_share_title',
+                        $user_name);
+                    $description = tl('blogmixes_component_share_description',
+                        $user_name,"[[{$mix['NAME']}:mix{$mix['TIMESTAMP']}]]");
+                    $group_model->addGroupItem(0,
+                        $group_id, $user_id, $title, $description);
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('blogmixes_component_thread_created'). "</h1>')";
+                break;
             }
         }
-
-        $crawl_time = $crawl_model->getCurrentIndexDatabaseName();
+        if(!$can_manage_crawls && isset($_SESSION['its'])) {
+            $crawl_time = $_SESSION['its'];
+        } else {
+            $crawl_time = $crawl_model->getCurrentIndexDatabaseName();
+        }
         if(isset($crawl_time) ) {
             $data['CURRENT_INDEX'] = (int)$crawl_time;
         } else {
@@ -435,10 +536,11 @@ class BlogmixesComponent extends Component implements CrawlConstants
     /**
      * Handles admin request related to the editing a crawl mix activity
      *
-     * @return array $data info about the groups and their contents for a
-     *      particular crawl mix
+     * @param array $data info about the fragments and their contents for a
+     *      particular crawl mix (changed by this methos)
+     * @param array  &$mix_ids a list of mix ids available to the current user
      */
-    function editMix(&$data, &$mix_ids, $mix)
+    function editMix(&$data, &$mix_ids)
     {
         $parent = $this->parent;
         $crawl_model = $parent->model("crawl");
@@ -446,10 +548,23 @@ class BlogmixesComponent extends Component implements CrawlConstants
             (getLocaleDirection() == 'ltr') ? "right": "left";
         $data["ELEMENT"] = "editmix";
 
+        $mix = array();
+        $timestamp = 0;
         if(isset($_REQUEST['timestamp'])) {
-            $mix = $crawl_model->getCrawlMix(
-                $_REQUEST['timestamp']);
+            $timestamp = $parent->clean($_REQUEST['timestamp'], "int");
+        } else if (isset($_REQUEST['mix']['TIMESTAMP'])) {
+            $timestamp = $parent->clean($_REQUEST['mix']['TIMESTAMP'], "int");
         }
+        if(!in_array($timestamp, $mix_ids)) {
+            $data["ELEMENT"] = "mixcrawls";
+            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                tl('blogmixes_component_mix_doesnt_exists').
+                "</h1>')";
+            return;
+        }
+        $mix = $crawl_model->getCrawlMix($timestamp);
+        $owner_id = $mix['OWNER_ID'];
+        $parent_id = $mix['PARENT'];
         $data['MIX'] = $mix;
         $data['INCLUDE_SCRIPTS'] = array("mix");
 
@@ -459,8 +574,8 @@ class BlogmixesComponent extends Component implements CrawlConstants
                 tl('blogmixes_component_add_crawls') .
             '",' . 'blogmixes_component_num_results:"'.
                 tl('blogmixes_component_num_results').'",'.
-            'blogmixes_component_del_grp:"'.
-                tl('blogmixes_component_del_grp').'",'.
+            'blogmixes_component_del_frag:"'.
+                tl('blogmixes_component_del_frag').'",'.
             'blogmixes_component_weight:"'.
                 tl('blogmixes_component_weight').'",'.
             'blogmixes_component_name:"'.tl('blogmixes_component_name').'",'.
@@ -476,25 +591,26 @@ class BlogmixesComponent extends Component implements CrawlConstants
         if(isset($_REQUEST['update']) && $_REQUEST['update'] ==
             "update") {
             $mix = $_REQUEST['mix'];
-            $mix['MIX_TIMESTAMP'] =
-                $parent->clean($mix['MIX_TIMESTAMP'], "int");
-            $mix['MIX_NAME'] =$parent->clean($mix['MIX_NAME'],
+            $mix['TIMESTAMP'] = $timestamp;
+            $mix['OWNER_ID']= $owner_id;
+            $mix['PARENT'] = $parent_id;
+            $mix['NAME'] =$parent->clean($mix['NAME'],
                 "string");
             $comp = array();
-            if(isset($mix['GROUPS'])) {
+            if(isset($mix['FRAGMENTS'])) {
 
-                if($mix['GROUPS'] != NULL) {
-                    foreach($mix['GROUPS'] as $group_id => $group_data) {
-                        if(isset($group_data['RESULT_BOUND'])) {
-                            $mix['GROUPS'][$group_id]['RESULT_BOUND'] =
-                                $parent->clean($group_data['RESULT_BOUND'],
+                if($mix['FRAGMENTS'] != NULL) {
+                    foreach($mix['FRAGMENTS'] as $fragment_id=>$fragment_data) {
+                        if(isset($fragment_data['RESULT_BOUND'])) {
+                            $mix['FRAGMENTS'][$fragment_id]['RESULT_BOUND'] =
+                                $parent->clean($fragment_data['RESULT_BOUND'],
                                     "int");
                         } else {
-                            $mix['GROUPS']['RESULT_BOUND'] = 0;
+                            $mix['FRAGMENTS']['RESULT_BOUND'] = 0;
                         }
-                        if(isset($group_data['COMPONENTS'])) {
+                        if(isset($fragment_data['COMPONENTS'])) {
                             $comp = array();
-                            foreach($group_data['COMPONENTS'] as $component) {
+                            foreach($fragment_data['COMPONENTS'] as $component){
                                 $row = array();
                                 $row['CRAWL_TIMESTAMP'] =
                                     $parent->clean(
@@ -506,9 +622,10 @@ class BlogmixesComponent extends Component implements CrawlConstants
                                     "string");
                                 $comp[] =$row;
                             }
-                            $mix['GROUPS'][$group_id]['COMPONENTS'] = $comp;
+                            $mix['FRAGMENTS'][$fragment_id]['COMPONENTS']=$comp;
                         } else {
-                            $mix['GROUPS'][$group_id]['COMPONENTS'] = array();
+                            $mix['FRAGMENTS'][$fragment_id]['COMPONENTS'] =
+                                array();
                         }
                     }
                 } else {
@@ -516,7 +633,7 @@ class BlogmixesComponent extends Component implements CrawlConstants
                 }
 
             } else {
-                $mix['GROUPS'] = $data['MIX']['GROUPS'];
+                $mix['FRAGMENTS'] = $data['MIX']['FRAGMENTS'];
             }
 
             $data['MIX'] = $mix;
@@ -525,20 +642,21 @@ class BlogmixesComponent extends Component implements CrawlConstants
                 tl('blogmixes_component_mix_saved')."</h1>');";
         }
 
-        $data['SCRIPT'] .= 'groups = [';
+        $data['SCRIPT'] .= 'fragments = [';
         $not_first = "";
-        foreach($mix['GROUPS'] as $group_id => $group_data) {
+        foreach($mix['FRAGMENTS'] as $fragment_id => $fragment_data) {
             $data['SCRIPT'] .= $not_first.'{';
             $not_first= ",";
-            if(isset($group_data['RESULT_BOUND'])) {
-                $data['SCRIPT'] .= "num_results:".$group_data['RESULT_BOUND'];
+            if(isset($fragment_data['RESULT_BOUND'])) {
+                $data['SCRIPT'] .= "num_results:".
+                    $fragment_data['RESULT_BOUND'];
             } else {
                 $data['SCRIPT'] .= "num_results:1 ";
             }
             $data['SCRIPT'] .= ", components:[";
-            if(isset($group_data['COMPONENTS'])) {
+            if(isset($fragment_data['COMPONENTS'])) {
                 $comma = "";
-                foreach($group_data['COMPONENTS'] as $component) {
+                foreach($fragment_data['COMPONENTS'] as $component) {
                     $crawl_ts = $component['CRAWL_TIMESTAMP'];
                     $crawl_name = $data['available_crawls'][$crawl_ts];
                     $data['SCRIPT'] .= $comma." [$crawl_ts, '$crawl_name', ".
@@ -551,6 +669,6 @@ class BlogmixesComponent extends Component implements CrawlConstants
             }
             $data['SCRIPT'] .= "] }";
         }
-        $data['SCRIPT'] .= ']; drawGroups();';
+        $data['SCRIPT'] .= ']; drawFragments();';
     }
 }

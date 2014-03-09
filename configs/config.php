@@ -619,7 +619,6 @@ define('REQUEST_JOIN', 2);
  *  in the group
  */
 define('PUBLIC_JOIN', 3);
-
 /**
  *   Group access code signifying only the group owner can
  *   read items posted to the group or post new items

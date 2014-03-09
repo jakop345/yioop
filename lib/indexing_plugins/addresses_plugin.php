@@ -283,7 +283,8 @@ class AddressesPlugin extends IndexingPlugin implements CrawlConstants
         "TN", "TAMIL", "NADU", "TR", "TRIPURA", "UT", "UTTARAKHAND",
         "UP", "UTTAR", "PRADESH", "WB", "BENGAL", "ANDAMAN", "NICOBAR",
         "CH", "CHANDIGARH", "DN", "DADRA", "NAGAR", "HAVELI", "DD", "DAMAN",
-        "DIU", "DL", "LD", "LAKSHADWEEP", "PY", "PUDUCHERRY", "PONDICHERRY"
+        "DIU", "DL", "LD", "LAKSHADWEEP", "PY", "PUDUCHERRY", "PONDICHERRY",
+        "澳門半島"
     );
 
     /**

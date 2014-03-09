@@ -1949,6 +1949,11 @@ ul.in-list li
     padding: 2px;
 }
 
+.mixes-table td
+{
+    font-size:12pt;
+}
+
 .html-ltr .file-types-table,
 .html-ltr .file-types-all td,
 .html-ltr .classifiers-table,
@@ -2050,7 +2055,7 @@ ul.in-list li
     text-align: left;
 }
 
-.indexing-plugin-lightbox
+.indexing-plugin-lightbox, .share-lightbox
 {
     background-color:gray;
     display: none;
@@ -2086,11 +2091,26 @@ ul.in-list li
     overflow: auto;
     padding: 16px;
     position: absolute;
-    top: 8.5in;
     width: 60%;
     z-index:101;
 
 }
+
+.indexing-plugin-lightbox .light-content
+{
+    top: 8.5in;
+}
+
+.share-lightbox .light-content
+{
+    top: 1.5in;
+    font-size:16pt;
+}
+.share-lightbox .light-content input
+{
+    font-size:16pt;
+}
+
 .mobile .light-content
 {
     border: 5px solid #8A4;

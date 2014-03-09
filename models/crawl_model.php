@@ -198,21 +198,21 @@ class CrawlModel extends ParallelModel implements CrawlConstants
     /**
      * Gets a list of all mixes of available crawls
      *
-     * @param bool $components if false then don't load the factors
+     * @param bool $with_components if false then don't load the factors
      *      that make up the crawl mix, just load the name of the mixes
      *      and their timestamps; otherwise, if true loads everything
      * @return array list of available crawls
      */
-    function getMixList($components = false)
+    function getMixList($user_id, $with_components = false)
     {
-        $sql = "SELECT MIX_TIMESTAMP, MIX_NAME FROM CRAWL_MIXES";
-        $result = $this->db->execute($sql);
+        $sql = "SELECT TIMESTAMP, NAME FROM CRAWL_MIXES WHERE OWNER_ID=?";
+        $result = $this->db->execute($sql, array($user_id));
 
         $rows = array();
         while($row = $this->db->fetchArray($result)) {
-            if($components) {
-                $mix = $this->getCrawlMix($row['MIX_TIMESTAMP'], true);
-                $row['GROUPS'] = $mix['GROUPS'];
+            if($with_components) {
+                $mix = $this->getCrawlMix($row['TIMESTAMP'], true);
+                $row['FRAGMENTS'] = $mix['FRAGMENTS'];
             }
             $rows[] = $row;
         }
@@ -233,33 +233,33 @@ class CrawlModel extends ParallelModel implements CrawlConstants
     {
         $db = $this->db;
         if(!$just_components) {
-            $sql = "SELECT MIX_TIMESTAMP, MIX_NAME FROM CRAWL_MIXES WHERE ".
-                " MIX_TIMESTAMP = ?";
+            $sql = "SELECT TIMESTAMP, NAME, OWNER_ID, PARENT FROM CRAWL_MIXES ".
+                "WHERE TIMESTAMP = ?";
             $result = $db->execute($sql, array($timestamp));
             $mix =  $db->fetchArray($result);
         } else {
             $mix = array();
         }
-        $sql = "SELECT GROUP_ID, RESULT_BOUND".
-            " FROM MIX_GROUPS WHERE ".
-            " MIX_TIMESTAMP = ?";
+        $sql = "SELECT FRAGMENT_ID, RESULT_BOUND".
+            " FROM MIX_FRAGMENTS WHERE ".
+            " TIMESTAMP = ?";
         $result = $db->execute($sql, array($timestamp));
-        $mix['GROUPS'] = array();
+        $mix['FRAGMENTS'] = array();
         while($row = $db->fetchArray($result)) {
-            $mix['GROUPS'][$row['GROUP_ID']]['RESULT_BOUND'] =
+            $mix['FRAGMENTS'][$row['FRAGMENT_ID']]['RESULT_BOUND'] =
                 $row['RESULT_BOUND'];
         }
         $sql = "SELECT CRAWL_TIMESTAMP, WEIGHT, KEYWORDS ".
             " FROM MIX_COMPONENTS WHERE ".
-            " MIX_TIMESTAMP=:timestamp AND GROUP_ID=:group_id";
+            " TIMESTAMP=:timestamp AND FRAGMENT_ID=:fragment_id";
         $params = array(":timestamp" => $timestamp);
-        foreach($mix['GROUPS'] as $group_id => $data) {
-            $params[":group_id"] = $group_id;
+        foreach($mix['FRAGMENTS'] as $fragment_id => $data) {
+            $params[":fragment_id"] = $fragment_id;
             $result = $db->execute($sql, $params);
             $mix['COMPONENTS'] = array();
             $count = 0;
             while($row =  $db->fetchArray($result)) {
-                $mix['GROUPS'][$group_id]['COMPONENTS'][$count] =$row;
+                $mix['FRAGMENTS'][$fragment_id]['COMPONENTS'][$count] =$row;
                 $count++;
             }
         }
@@ -275,12 +275,12 @@ class CrawlModel extends ParallelModel implements CrawlConstants
     function getCrawlMixTimestamp($mix_name)
     {
         $db = $this->db;
-        $sql = "SELECT MIX_TIMESTAMP, MIX_NAME FROM CRAWL_MIXES WHERE ".
-            " MIX_NAME= ?";
+        $sql = "SELECT TIMESTAMP, NAME FROM CRAWL_MIXES WHERE ".
+            " NAME= ?";
         $result = $db->execute($sql);
         $mix =  $db->fetchArray($result, array($mix_name));
-        if(isset($mix["MIX_TIMESTAMP"])) {
-            return $mix["MIX_TIMESTAMP"];
+        if(isset($mix["TIMESTAMP"])) {
+            return $mix["TIMESTAMP"];
         }
         return false;
     }
@@ -296,8 +296,8 @@ class CrawlModel extends ParallelModel implements CrawlConstants
     function isCrawlMix($timestamp)
     {
         $db = $this->db;
-        $sql = "SELECT MIX_TIMESTAMP, MIX_NAME FROM CRAWL_MIXES WHERE ".
-            " MIX_TIMESTAMP = ?";
+        $sql = "SELECT TIMESTAMP, NAME FROM CRAWL_MIXES WHERE ".
+            " TIMESTAMP = ?";
         $result = $db->execute($sql);
         if($result) {
             if($mix = $db->fetchArray($result, array($timestamp))) {
@@ -316,30 +316,25 @@ class CrawlModel extends ParallelModel implements CrawlConstants
     function setCrawlMix($mix)
     {
         $db = $this->db;
-
         //although maybe slower, we first get rid of any old data
-        $timestamp = $mix['MIX_TIMESTAMP'];
-
+        $timestamp = $mix['TIMESTAMP'];
         $this->deleteCrawlMix($timestamp);
-
         //next we store the new data
-        $sql = "INSERT INTO CRAWL_MIXES VALUES (?, ?)";
-        $db->execute($sql, array($timestamp, $mix['MIX_NAME']));
-
-        $gid = 0;
-        foreach($mix['GROUPS'] as $group_id => $group_data) {
-
-            $sql = "INSERT INTO MIX_GROUPS VALUES ('$timestamp', '$gid', ".
-                "'".$group_data['RESULT_BOUND']."')";
-            $db->execute($sql);
-            foreach($group_data['COMPONENTS'] as $component) {
-                $sql = "INSERT INTO MIX_COMPONENTS VALUES ('$timestamp', '".
-                    $gid."', '".$component['CRAWL_TIMESTAMP']."', '".
-                    $component['WEIGHT']."', '" .
-                    $component['KEYWORDS']."')";
-                $db->execute($sql);
+        $sql = "INSERT INTO CRAWL_MIXES VALUES (?, ?, ?, ?)";
+        $db->execute($sql, array($timestamp, $mix['NAME'], $mix['OWNER_ID'],
+            $mix['PARENT']));
+        $fid = 0;
+        foreach($mix['FRAGMENTS'] as $fragment_id => $fragment_data) {
+            $sql = "INSERT INTO MIX_FRAGMENTS VALUES (?, ?, ?)";
+            $db->execute($sql, array($timestamp, $fid, 
+                $fragment_data['RESULT_BOUND']));
+            foreach($fragment_data['COMPONENTS'] as $component) {
+                $sql = "INSERT INTO MIX_COMPONENTS VALUES (?, ?, ?, ?, ?)";
+                $db->execute($sql, array($timestamp, $fid, 
+                    $component['CRAWL_TIMESTAMP'], $component['WEIGHT'],
+                    $component['KEYWORDS']));
             }
-            $gid++;
+            $fid++;
         }
     }
 
@@ -350,12 +345,12 @@ class CrawlModel extends ParallelModel implements CrawlConstants
      */
     function deleteCrawlMix($timestamp)
     {
-        $sql = "DELETE FROM CRAWL_MIXES WHERE MIX_TIMESTAMP='$timestamp'";
-        $this->db->execute($sql);
-        $sql = "DELETE FROM MIX_GROUPS WHERE MIX_TIMESTAMP='$timestamp'";
-        $this->db->execute($sql);
-        $sql = "DELETE FROM MIX_COMPONENTS WHERE MIX_TIMESTAMP='$timestamp'";
-        $this->db->execute($sql);
+        $sql = "DELETE FROM CRAWL_MIXES WHERE TIMESTAMP=?";
+        $this->db->execute($sql, array($timestamp));
+        $sql = "DELETE FROM MIX_FRAGMENTS WHERE TIMESTAMP=?";
+        $this->db->execute($sql, array($timestamp));
+        $sql = "DELETE FROM MIX_COMPONENTS WHERE TIMESTAMP=?";
+        $this->db->execute($sql, array($timestamp));
     }
 
     /**
@@ -733,12 +728,12 @@ EOT;
         $is_mix = $this->isCrawlMix($timestamp);
         $info = array();
         if($is_mix) {
-            $sql = "SELECT MIX_TIMESTAMP, MIX_NAME FROM CRAWL_MIXES WHERE ".
-                " MIX_TIMESTAMP='$timestamp'";
-            $result = $this->db->execute($sql);
+            $sql = "SELECT TIMESTAMP, NAME FROM CRAWL_MIXES WHERE ".
+                " TIMESTAMP=?";
+            $result = $this->db->execute($sql, array($timestamp));
             $mix =  $this->db->fetchArray($result);
             $info['TIMESTAMP'] = $timestamp;
-            $info['DESCRIPTION'] = $mix['MIX_NAME'];
+            $info['DESCRIPTION'] = $mix['NAME'];
             $info['IS_MIX'] = true;
         } else {
             if($machine_urls != NULL &&
@@ -846,14 +841,14 @@ EOT;
             @unlink($save_point_file);
         }
 
-        $sql = "SELECT DISTINCT MIX_TIMESTAMP FROM MIX_COMPONENTS WHERE ".
+        $sql = "SELECT DISTINCT TIMESTAMP FROM MIX_COMPONENTS WHERE ".
             " CRAWL_TIMESTAMP='$timestamp'";
         $result = $this->db->execute($sql);
         $rows = array();
         while($rows[] =  $this->db->fetchArray($result)) ;
 
         foreach($rows as $row) {
-            $this->deleteCrawlMix($row['MIX_TIMESTAMP']);
+            $this->deleteCrawlMix($row['TIMESTAMP']);
         }
         $current_timestamp = $this->getCurrentIndexDatabaseName();
         if($current_timestamp == $timestamp) {

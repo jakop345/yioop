@@ -32,113 +32,114 @@
 
 /*
  * This file Contains Javascripts used to edit Crawl Mixes
- * A crawl mix consists of a sequence of groups. Each group
+ * A crawl mix consists of a sequence of fragments. Each fragment
  * represents a number of search results to be presented. The
- * sources of these search results is the contents of the group.
+ * sources of these search results is the contents of the fragment.
  * These sources are a weighted sum of individual crawls and the
- * edit crawl mix page allows you to create both groups and select
+ * edit crawl mix page allows you to create both fragments and select
  * which individuals crawls they contain.
  */
 
 /*
- * Used to draw all of the list of groups of crawl results for the
+ * Used to draw all of the list of fragments of crawl results for the
  * current crawl mix
  */
-function drawGroups()
+function drawFragments()
 {
-    var gcnt = 0;
-    for(key in groups) {
-        var group = groups[key];
-        drawGroup(gcnt, group['num_results']);
+    var fcnt = 0;
+    for(key in fragments) {
+        var fragment = fragments[key];
+        drawFragment(fcnt, fragment['num_results']);
         var rcnt = 0;
-        for(var ckey in group['components']) {
-            var comp = group['components'][ckey];
-            drawCrawl(gcnt, rcnt, comp[0], comp[1], comp[2], comp[3]);
+        for(var ckey in fragment['components']) {
+            var comp = fragment['components'][ckey];
+            drawCrawl(fcnt, rcnt, comp[0], comp[1], comp[2], comp[3]);
             rcnt++;
         }
-        gcnt++;
+        fcnt++;
     }
 }
 
 /*
  * Used to erase the current rendering of crawl grouls and then draw it again
  */
-function redrawGroups()
+function redrawFragments()
 {
     var mts = elt("mix-tables");
     mts.innerHTML = "";
-    drawGroups();
+    drawFragments();
 }
 /*
- * Adds a crawl group to the end of the list of crawl groups.
+ * Adds a crawl fragment to the end of the list of crawl fragments.
  *
- * @param int num_results the number of results the crawl group should be used
- *      for
+ * @param int num_results the number of results the crawl fragment should be 
+ *      used for
  */
-function addGroup(num_results)
+function addFragment(num_results)
 {
 
-    num_groups = groups.length;
-    groups[num_groups] ={};
-    groups[num_groups]['num_results'] = num_results;
-    groups[num_groups]['components'] = [];
-    drawGroup(num_groups, num_results)
+    num_fragments = fragments.length;
+    fragments[num_fragments] ={};
+    fragments[num_fragments]['num_results'] = num_results;
+    fragments[num_fragments]['components'] = [];
+    drawFragment(num_fragments, num_results)
 }
 
 /*
- * Draws a single crawl group within the crawl mix
+ * Draws a single crawl fragment within the crawl mix
  *
- * @param int group_num the index of group to draw
- * @param int num_results the number of results to this crawl group
+ * @param int fragment_num the index of fragment to draw
+ * @param int num_results the number of results to this crawl fragment
  */
-function drawGroup(group_num, num_results)
+function drawFragment(fragment_num, num_results)
 {
     var mts = elt("mix-tables");
     var tbl = document.createElement("table");
-    tbl.id = "mix-table-"+group_num;
+    tbl.id = "mix-table-" + fragment_num;
     tbl.className = "mixes-table top-margin";
-    makeBlankMixTable(tbl, group_num, num_results);
+    makeBlankMixTable(tbl, fragment_num, num_results);
     mts.appendChild(tbl);
-    addCrawlHandler(group_num);
+    addCrawlHandler(fragment_num);
 }
 
 /*
- * Draw a blank crawl mix group, without the Javascript functions attached to it
+ * Draw a blank crawl mix fragment, without the Javascript functions attached 
+ * to it
  *
  * @param Object tbl the table object to store blank mix table in
- * @param int num_groups which group this table will be
- * @param int num_results number of results this crawl group will be used for
+ * @param int num_fragments which fragment this table will be
+ * @param int num_results number of results this crawl fragment will be used for
  */
-function makeBlankMixTable(tbl, num_groups, num_results)
+function makeBlankMixTable(tbl, num_fragments, num_results)
 {
-    var tdata = "<tr><td colspan=\"2\"><label for=\"add-crawls-"+num_groups+
+    var tdata = "<tr><td colspan=\"2\"><label for=\"add-crawls-"+num_fragments +
         "\">"+tl['blogmixes_component_add_crawls']+"</label>"+
-        drawCrawlSelect(num_groups)+"</td><td><label for=\"num-results-"+
-        num_groups+"\">"+tl['blogmixes_component_num_results']+"</label>"+
-        drawNumResultSelect(num_groups, num_results)+
-            "<td><a href=\"javascript:removeGroup("+num_groups+")\">"+
-            tl['blogmixes_component_del_grp']+'</a></td></tr>'+
+        drawCrawlSelect(num_fragments)+"</td><td><label for=\"num-results-"+
+        num_fragments+"\">"+tl['blogmixes_component_num_results']+"</label>"+
+        drawNumResultSelect(num_fragments, num_results)+
+            "<td><a href=\"javascript:removeFragment(" + num_fragments + ")\">"+
+            tl['blogmixes_component_del_frag']+'</a></td></tr>'+
             "<tr><th>"+tl['blogmixes_component_weight']+'</th>'+
-            "<th>"+tl['blogmixes_component_element_name']+'</th>'+
+            "<th>"+tl['blogmixes_component_name']+'</th>'+
             "<th>"+tl['blogmixes_component_add_keywords']+'</th>'+
             "<th>"+tl['blogmixes_component_actions']+"</th></tr>";
     tbl.innerHTML = tdata;
 }
 
 /*
- * Removes the ith group from the current crawl mix and redraws the screen
+ * Removes the ith fragment from the current crawl mix and redraws the screen
  *
- * @param int i index of group to delete
+ * @param int i index of fragment to delete
  */
-function removeGroup(i)
+function removeFragment(i)
 {
-    num_groups = groups.length;
-    for(j = i+1; j < num_groups; j++) {
-        groups[j - 1] = groups[j];
+    num_fragments = fragments.length;
+    for(j = i+1; j < num_fragments; j++) {
+        fragments[j - 1] = fragments[j];
     }
-    delete groups[num_groups - 1];
-    groups.length--;
-    redrawGroups();
+    delete fragments[num_fragments - 1];
+    fragments.length--;
+    redrawFragments();
 }
 
 
@@ -146,7 +147,7 @@ function removeGroup(i)
  * Adds the javascript needed to handle adding a crawl when the crawl
  * selection done
  *
- * @param int i the group to add the Javascript handler for
+ * @param int i the fragment to add the Javascript handler for
  */
 function addCrawlHandler(i)
 {
@@ -162,30 +163,31 @@ function addCrawlHandler(i)
 }
 
 /*
- * Adds a crawl to the given crawl group with the listed parameters
+ * Adds a crawl to the given crawl fragment with the listed parameters
  *
- * @param int i crawl group to add to
+ * @param int i crawl fragment to add to
  * @param int ts timestamp of crawl that is being added
  * @param String name name of crawl
- * @param float weight the crawl should ahve within group
+ * @param float weight the crawl should ahve within fragment
  * @param String keywords  words to add to search when using this crawl
  */
 function addCrawl(i, ts, name, weight, keywords)
 {
-    var grp = groups[i]['components'];
+    var grp = fragments[i]['components'];
     var j = grp.length;
-    groups[i]['components'][j] = [ts, name, weight, keywords];
+    fragments[i]['components'][j] = [ts, name, weight, keywords];
     drawCrawl(i, j, ts, name, weight, keywords)
 }
 
 /*
- * Draws a single crawl within a crawl group according to the passed parameters
+ * Draws a single crawl within a crawl fragment according to the passed
+ * parameters
  *
- * @param int i crawl group to draw to
+ * @param int i crawl fragment to draw to
  * @param int j index of crawl that is being added
  * @param int ts timestamp of crawl that is being drawn
  * @param String name name of crawl
- * @param float weight the crawl should ahve within group
+ * @param float weight the crawl should ahve within fragment
  *
  */
 function drawCrawl(i, j, ts, name, weight, keywords)
@@ -195,10 +197,10 @@ function drawCrawl(i, j, ts, name, weight, keywords)
     elt("mix-table-"+i).appendChild(tr);
     tr.innerHTML +=
         "<td>"+drawWeightSelect(i, j, weight)+"</td><td>"+name+
-        "</td><td><input type='hidden' name= \"mix[GROUPS]["+i+
+        "</td><td><input type='hidden' name= \"mix[FRAGMENTS]["+i+
         "][COMPONENTS]["+j+"][CRAWL_TIMESTAMP]\"' value=\""+ts+"\" />"+
         "<input title=\""+tl['blogmixes_component_add_query']+"\" "+
-        "name=\"mix[GROUPS]["+i+"][COMPONENTS]["+j+"][KEYWORDS]\" "+
+        "name=\"mix[FRAGMENTS]["+i+"][COMPONENTS]["+j+"][KEYWORDS]\" "+
         "value=\""+ keywords+"\" onchange=\"updateKeywords("+i+","+j+
         ", this.value)\""+
         "class=\"widefield\"/></td><td><a href=\""+
@@ -207,45 +209,45 @@ function drawCrawl(i, j, ts, name, weight, keywords)
 }
 
 /*
- * Used to update the keywords of a crawl in the groups array whenever it is
+ * Used to update the keywords of a crawl in the fragments array whenever it is
  * changed in the form.
  *
- * @param int i group to update keywords in
- * @param int j crawl within group to update
+ * @param int i fragment to update keywords in
+ * @param int j crawl within fragment to update
  * @param String keywords the new keywords
  */
 function updateKeywords(i, j, keywords)
 {
-    groups[i]['components'][j][3] = keywords;
+    fragments[i]['components'][j][3] = keywords;
 
 }
 
 /*
- * Deletes the jth crawl from the ith group in the current crawl mix
+ * Deletes the jth crawl from the ith fragment in the current crawl mix
  *
- * @param int i group to delete crawl from
- * @param int j index of the crawl within the group to delete
+ * @param int i fragment to delete crawl from
+ * @param int j index of the crawl within the fragment to delete
  */
 function removeCrawl(i, j)
 {
 
-    var grp = groups[i]['components'];
-    var len = grp.length;
+    var frg = fragments[i]['components'];
+    var len = frg.length;
     for( k = j + 1; k < len; k++) {
-        grp[k-1] = grp[k];
+        frg[k-1] = frg[k];
     }
     delete grp[len - 1];
 
-    redrawGroups();
+    redrawFragments();
 }
 
 
 /*
  * Used to draw the select drop down to allow users to select a weighting of
- * a given crawl within a crawl group
+ * a given crawl within a crawl fragment
  *
- * @param int i which crawl group the crawl belongs to
- * @param int j which crawl index within the group to draw this weight select
+ * @param int i which crawl fragment the crawl belongs to
+ * @param int j which crawl index within the fragment to draw this weight select
  *      for
  * @param int selected_weight the originally selected weight value
  */
@@ -253,7 +255,7 @@ function drawWeightSelect(i, j, selected_weight) {
     var weights = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1,
         2, 3, 4, 5, 6, 7, 8, 9, 10];
     var select =
-        "<select name=\'mix[GROUPS]["+i+"][COMPONENTS]["+j+"][WEIGHT]\'>";
+        "<select name=\'mix[FRAGMENTS]["+i+"][COMPONENTS]["+j+"][WEIGHT]\'>";
     for ( wt in weights) {
         if(weights[wt] == selected_weight) {
             val = weights[wt] + "\' selected=\'selected";
@@ -269,9 +271,9 @@ function drawWeightSelect(i, j, selected_weight) {
 
 /*
  * Used to draw the select drop down to allow users to select a crawl to be
- * added to a crawl group
+ * added to a crawl fragment
  *
- * @param int i which crawl group to draw this for
+ * @param int i which crawl fragment to draw this for
  */
 function drawCrawlSelect(i) {
     select = "<select id=\'add-crawls-"+i+"\' name=\'add_crawls_"+i+"\'>";
@@ -288,16 +290,16 @@ function drawCrawlSelect(i) {
 
 /*
  * Used to draw the select drop down to allow users to select the number
- * results a crawl group will be used for
+ * results a crawl fragment will be used for
  *
- * @param int i which crawl group this selection drop down is for
+ * @param int i which crawl fragment this selection drop down is for
  * @param int selected_num what number of results should be initially selected
  */
 function drawNumResultSelect(i, selected_num) {
     var num_results = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 100];
 
     var select = "<select id=\'num-results-"+i+
-        "\' name=\'mix[GROUPS]["+i+"][RESULT_BOUND]\'>";
+        "\' name=\'mix[FRAGMENTS]["+i+"][RESULT_BOUND]\'>";
     for ( nr in num_results) {
         if(num_results[nr] == selected_num) {
             val = num_results[nr] + "\' selected=\'selected";

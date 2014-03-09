@@ -66,19 +66,19 @@ class EditmixElement extends Element
         <input type="hidden" name="a" value="mixCrawls" />
         <input type="hidden" name="arg" value="editmix" />
         <input type="hidden" name="update" value="update" />
-        <input type="hidden" name="mix[MIX_TIMESTAMP]"
-            value="<?php e($data['MIX']['MIX_TIMESTAMP']);?>" />
+        <input type="hidden" name="mix[TIMESTAMP]"
+            value="<?php e($data['MIX']['TIMESTAMP']);?>" />
         <div class="top-margin"><label for="mix-name"><?php
             e(tl('mixcrawls_element_mix_name')); ?></label>
-            <input type="text" id="mix-name" name="mix[MIX_NAME]"
-                value="<?php if(isset($data['MIX']['MIX_NAME'])) {
-                    e($data['MIX']['MIX_NAME']); } ?>" maxlength="80"
+            <input type="text" id="mix-name" name="mix[NAME]"
+                value="<?php if(isset($data['MIX']['NAME'])) {
+                    e($data['MIX']['NAME']); } ?>" maxlength="80"
                     class="wide-field"/>
         </div>
         <h3><?php e(tl('mixcrawls_element_mix_components'))?></h3>
         <div>
-        [<a href='javascript:addGroup(1)'><?php
-                e(tl('mixcrawls_element_add_group')); ?></a>]
+        [<a href='javascript:addFragment(1)'><?php
+                e(tl('mixcrawls_element_add_fragment')); ?></a>]
         </div>
         <div id="mix-tables" >
         </div>

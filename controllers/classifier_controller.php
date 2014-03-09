@@ -254,9 +254,9 @@ class ClassifierController extends Controller implements CrawlConstants
         }
 
         $crawl_model->setCrawlMix(array(
-            'MIX_TIMESTAMP' => $mix_time,
-            'MIX_NAME' => $mix_name,
-            'GROUPS' => array(
+            'TIMESTAMP' => $mix_time,
+            'NAME' => $mix_name,
+            'FRAGMENTS' => array(
                 array(
                     'RESULT_BOUND' => 1,
                     'COMPONENTS' => array(

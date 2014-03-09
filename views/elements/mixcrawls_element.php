@@ -68,7 +68,7 @@ class MixcrawlsElement extends Element
         <?php } ?>
         <div class="top-margin"><label for="mix-name"><?php
             e(tl('mixcrawls_element_mix_name')); ?></label>
-            <input type="text" id="mix-name" name="MIX_NAME"
+            <input type="text" id="mix-name" name="NAME"
                 value="" maxlength="80"
                     class="wide-field"/>
            <button class="button-box"  type="submit"><?php
@@ -80,23 +80,23 @@ class MixcrawlsElement extends Element
         <table class="mixes-table">
         <tr><th><?php e(tl('mixcrawls_view_name'));?></th>
         <th><?php e(tl('mixcrawls_view_definition'));?></th>
-        <th colspan="3"><?php e(tl('mixcrawls_view_actions'));?></th></tr>
+        <th colspan="4"><?php e(tl('mixcrawls_view_actions'));?></th></tr>
         <?php
         foreach($data['available_mixes'] as $mix) {
         ?>
-            <tr><td><b><?php e($mix['MIX_NAME']); ?></b><br />
-                <?php e($mix['MIX_TIMESTAMP']); ?><br /><?php
-                e("<small>".date("d M Y H:i:s", $mix['MIX_TIMESTAMP']).
+            <tr><td><b><?php e($mix['NAME']); ?></b><br />
+                <?php e($mix['TIMESTAMP']); ?><br /><?php
+                e("<small>".date("d M Y H:i:s", $mix['TIMESTAMP']).
                     "</small>"); ?></td>
             <td><?php
-                if(isset($mix['GROUPS']) && count($mix['GROUPS'])  > 0){
-                    foreach($mix['GROUPS'] as $group_id => $group_data) {
-                        if(!isset($group_data['RESULT_BOUND']) ||
-                           !isset($group_data['COMPONENTS']) ||
-                           count($group_data['COMPONENTS']) == 0) continue;
-                        e(" #".$group_data['RESULT_BOUND']."[");
+                if(isset($mix['FRAGMENTS']) && count($mix['FRAGMENTS'])  > 0) {
+                    foreach($mix['FRAGMENTS'] as $fragment_id=>$fragment_data) {
+                        if(!isset($fragment_data['RESULT_BOUND']) ||
+                           !isset($fragment_data['COMPONENTS']) ||
+                           count($fragment_data['COMPONENTS']) == 0) continue;
+                        e(" #".$fragment_data['RESULT_BOUND']."[");
                         $plus = "";
-                        foreach($group_data['COMPONENTS'] as $component){
+                        foreach($fragment_data['COMPONENTS'] as $component){
                             $crawl_timestamp = $component['CRAWL_TIMESTAMP'];
                             e($plus.$component['WEIGHT']." * (".
                                 $data['available_crawls'][
@@ -110,14 +110,17 @@ class MixcrawlsElement extends Element
                     e(tl('mixcrawls_view_no_components'));
                 }
             ?></td>
+            <td><a href="javascript:share_form(<?php
+                e($mix['TIMESTAMP']); ?>, '<?php e($mix['NAME']);?>')"><?php
+                e(tl('mixcrawls_view_share'));?></a></td>
             <td><a href="<?php e($base_url); ?>editmix&timestamp=<?php
-                e($mix['MIX_TIMESTAMP']); ?>"><?php
+                e($mix['TIMESTAMP']); ?>"><?php
                 e(tl('mixcrawls_view_edit'));?></a></td>
             <td>
             <?php
-            if( $mix['MIX_TIMESTAMP'] != $data['CURRENT_INDEX']) { ?>
+            if( $mix['TIMESTAMP'] != $data['CURRENT_INDEX']) { ?>
                 <a href="<?php e($base_url); ?>index&timestamp=<?php
-                    e($mix['MIX_TIMESTAMP']); ?>"><?php
+                    e($mix['TIMESTAMP']); ?>"><?php
                     e(tl('mixcrawls_set_index')); ?></a>
             <?php
             } else { ?>
@@ -127,7 +130,7 @@ class MixcrawlsElement extends Element
             ?>
             </td>
             <td><a href="<?php e($base_url); ?>deletemix&timestamp=<?php
-                e($mix['MIX_TIMESTAMP']); ?>"><?php
+                e($mix['TIMESTAMP']); ?>"><?php
                 e(tl('mixcrawls_view_delete'));?></a></td>
 
             </tr>
@@ -136,6 +139,44 @@ class MixcrawlsElement extends Element
         ?></table>
         <?php } ?>
         </div>
+        <div class="share-lightbox" id="share-mix" >
+        <div class="light-content">
+        <div class="float-opposite"><a  href="javascript:setDisplay(
+            'share-mix',false);"><?php e(tl('mixcrawls_view_back'));?></a></div>
+        <h2><?php e(tl('mixcrawls_element_share_mix_group')); ?></h2>
+        <form action="./" >
+        <input type="hidden" name="c" value="admin" />
+        <input type="hidden" name="a" value="mixCrawls" />
+        <input type="hidden" name="arg" value="sharemix" />
+        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>"
+            value="<?php e($data[CSRF_TOKEN]); ?>" />
+        <input type="hidden" id="time-stamp" name="timestamp" value="" />
+        <table>
+        <tr><th><label for="share-mix-name" ><?php 
+            e(tl("mixcrawls_element_mixname")); ?></label></th>
+        <td><input type="text" name="smixname" value="" disabled="disabled"
+            id="share-mix-name" maxlength="80" class="wide-field"/></td>
+        </tr>
+        <tr><th><label for="share-group" ><?php 
+            e(tl("mixcrawls_element_group")); ?></label></th>
+        <td><input type="text" name="group_name"
+            id="share-group" maxlength="80" class="wide-field"/></td>
+        </tr>
+        <tr><td></td><td><button class="button-box" type="submit"><?php
+            e(tl("mixcrawls_element_share")); ?></button></td>
+        </tr>
+        </table>
+        </form>
+        </div>
+        </div>
+        <script type="text/javascript">
+        function share_form(timestamp, mix_name)
+        {
+            elt('time-stamp').value = timestamp;
+            elt('share-mix-name').value = mix_name;
+            setDisplay('share-mix', true);
+        }
+        </script>
     <?php
     }
 }

@@ -110,10 +110,12 @@ class GroupfeedElement extends Element implements CrawlConstants
                     ($page['USER_ID'] == $_SESSION['USER_ID'] ||
                     $_SESSION['USER_ID'] == ROOT_ID)) {
                     ?>
-                    <div class="float-opposite" >[<a
+                    <div class="float-opposite" ><?php
+                    if(!isset($page['NO_EDIT'])) { ?>[<a
                     href="javascript:update_post_form(<?php
                         e($page['ID']); ?>)"><?php
-                        e(tl('groupfeed_element_edit')); ?></a>]
+                        e(tl('groupfeed_element_edit')); ?></a>]<?php
+                    } ?>
                     [<a href="<?php e($paging_query.'&amp;arg=deletepost&amp;'.
                         "post_id=".$page['ID']); ?>" title="<?php
                         e(tl('groupfeed_element_delete')); ?>">X</a>]</div>
@@ -195,7 +197,8 @@ class GroupfeedElement extends Element implements CrawlConstants
                     '<textarea class="short-text-area" '+
                     'id="comment-'+ id +'" name="description" ></textarea>' +
                     '<button class="button-box float-opposite" ' +
-                    'type="submit">Save</button>' +
+                    'type="submit"><?php e(tl("groupfeed_element_save"));
+                    ?></button>' +
                     '<div>&nbsp;</div>'+
                     '</form>';
             } else {
@@ -232,7 +235,8 @@ class GroupfeedElement extends Element implements CrawlConstants
                     '<textarea class="short-text-area" '+
                     'id="description-'+ id +'" name="description" ></textarea>'+
                     '<button class="button-box float-opposite" ' +
-                    'type="submit">Save</button>' +
+                    'type="submit"><?php e(tl("groupfeed_element_save"));
+                    ?></button>' +
                     '<div>&nbsp;</div>'+
                     '</form>';
             } else {
@@ -273,7 +277,8 @@ class GroupfeedElement extends Element implements CrawlConstants
                     'id="description-'+ id +'" name="description" >' +
                     description + '</textarea>'+
                     '<button class="button-box float-opposite" ' +
-                    'type="submit">Save</button>' +
+                    'type="submit"><?php e(tl("groupfeed_element_save"));
+                    ?></button>' +
                     '<div>&nbsp;</div>'+
                     '</form>';
             } else {

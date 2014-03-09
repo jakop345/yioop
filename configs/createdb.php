@@ -331,16 +331,16 @@ $db->execute("INSERT INTO MEDIA_SOURCE VALUES ('1342634200',
     'Yahoo News', 'rss', 'http://news.yahoo.com/rss/',
     '', 'en')");
 
-$db->execute("INSERT INTO CRAWL_MIXES VALUES (2, 'images')");
-$db->execute("INSERT INTO MIX_GROUPS VALUES(2, 0, 1)");
+$db->execute("INSERT INTO CRAWL_MIXES VALUES (2, 'images', ".ROOT_ID.", -1)");
+$db->execute("INSERT INTO MIX_FRAGMENTS VALUES(2, 0, 1)");
 $db->execute("INSERT INTO MIX_COMPONENTS VALUES(
     2, 0, 1, 1, 'media:image site:doc')");
-$db->execute("INSERT INTO CRAWL_MIXES VALUES (3, 'videos')");
-$db->execute("INSERT INTO MIX_GROUPS VALUES(3, 0, 1)");
+$db->execute("INSERT INTO CRAWL_MIXES VALUES (3, 'videos', ".ROOT_ID.", -1)");
+$db->execute("INSERT INTO MIX_FRAGMENTS VALUES(3, 0, 1)");
 $db->execute("INSERT INTO MIX_COMPONENTS VALUES(
     3, 0, 1, 1, 'media:video site:doc')");
-$db->execute("INSERT INTO CRAWL_MIXES VALUES (4, 'news')");
-$db->execute("INSERT INTO MIX_GROUPS VALUES(4, 0, 1)");
+$db->execute("INSERT INTO CRAWL_MIXES VALUES (4, 'news', ".ROOT_ID.", -1)");
+$db->execute("INSERT INTO MIX_FRAGMENTS VALUES(4, 0, 1)");
 $db->execute("INSERT INTO MIX_COMPONENTS VALUES(4, 0, 1, 1,
     'media:news')");
 

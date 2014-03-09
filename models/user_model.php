@@ -114,7 +114,31 @@ class UserModel extends Model
         unset($activities[$i]); //last one will be null
 
         return $activities;
+    }
 
+    /**
+     *  Checks if a user is allowed to perform the activity given by
+     *  method name
+     *
+     *  @param string $user_id  id of user to check
+     *  @param string $method_name to see if user allowed to do
+     *  @return bool whether or not the user is allowed
+     */
+    function isAllowedUserActivity($user_id, $method_name)
+    {
+        $db = $this->db;
+        $sql = "SELECT COUNT(*) AS ALLOWED FROM ACTIVITY A, ".
+            "USER_ROLE UR, ROLE_ACTIVITY RA WHERE UR.USER_ID = ? ".
+            "AND UR.ROLE_ID=RA.ROLE_ID AND A.METHOD_NAME = ? ".
+            "AND RA.ACTIVITY_ID = A.ACTIVITY_ID";
+        $result = $db->execute($sql, array($user_id, $method_name));
+        if($result) {
+            $row = $db->fetchArray($result);
+            if(isset($row["ALLOWED"]) && $row["ALLOWED"] > 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
