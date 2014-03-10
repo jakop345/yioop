@@ -435,7 +435,7 @@ class UserModel extends Model
         }
         $sql .= " WHERE USER_ID=?";
         $params[] = $user_id;
-        $this->db->execute($sql);
+        $this->db->execute($sql, $params);
     }
     /**
      * Adds a role to a given user

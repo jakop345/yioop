@@ -71,19 +71,58 @@ class AccountaccessComponent extends Component
     {
         $parent = $this->parent;
         $signin_model = $parent->model("signin");
-        $possible_arguments = array("changepassword","changeemail");
+        $group_model = $parent->model("group");
+        $user_model = $parent->model("user");
+        $crawl_model = $parent->model("crawl");
+        $possible_arguments = array("updateuser");
         $data["ELEMENT"] = "manageaccount";
         $data['SCRIPT'] = "";
         $data['MESSAGE'] = "";
-        $old_email = $signin_model->getEmail($_SESSION['USER_ID']);
-        $data["OLD_EMAIL"] = $old_email;
+        $user_id = $_SESSION['USER_ID'];
+        $username = $signin_model->getUserName($user_id);
+        $data["USER"] = $user_model->getUser($username);
+        if(isset($_REQUEST['edit']) && $_REQUEST['edit'] == "true") {
+            $data['EDIT_USER'] = true;
+        }
+        if(isset($_REQUEST['edit_pass'])) {
+            if($_REQUEST['edit_pass'] == "true") {
+                $data['EDIT_USER'] = true;
+                $data['EDIT_PASSWORD'] = true;
+            } else {
+                $data['EDIT_USER'] = true;
+            }
+        }
+        $data['USERNAME'] = $username;
+        $data['NUM_GROUPS'] = $group_model->getGroupsCount(array(), $user_id);
+        $data['NUM_SHOWN'] = 5;
+        $data['GROUPS'] = $group_model->getGroups(0, $data['NUM_SHOWN'],
+            array(), $user_id);
+        $num_shown = count($data['GROUPS']);
+        for($i = 0; $i < $num_shown; $i++) {
+            $item = $group_model->getGroupItems(0, 1,
+                array(array("group_id", "=",
+                $data['GROUPS'][$i]['GROUP_ID'], "")), $user_id);
+            if(isset($item[0]['TITLE'])) {
+                $data['GROUPS'][$i]["ITEM_TITLE"] = $item[0]['TITLE'];
+                $data['GROUPS'][$i]["THREAD_ID"] = $item[0]['PARENT_ID'];
+            } else {
+                $data['GROUPS'][$i]["ITEM_TITLE"] = 
+                    tl('accountaccess_component_no_posts_yet');
+                $data['GROUPS'][$i]["THREAD_ID"] = -1;
+            }
+        }
+        $data['NUM_SHOWN'] = $num_shown;
+        $data['NUM_MIXES'] = count($crawl_model->getMixList($user_id));
         if(isset($_REQUEST['arg']) &&
             in_array($_REQUEST['arg'], $possible_arguments)) {
             switch($_REQUEST['arg'])
             {
-                case "changepassword":
-                    if($_REQUEST['re_type_password'] !=
-                            $_REQUEST['new_password']){
+                case "updateuser":
+                    if(isset($data['EDIT_PASSWORD']) &&
+                        (!isset($_REQUEST['re_type_password']) ||
+                        !isset($_REQUEST['new_password']) ||
+                        $_REQUEST['re_type_password'] !=
+                            $_REQUEST['new_password'])){
                         $data["MESSAGE"] =
                             tl('accountaccess_component_passwords_dont_match');
                         $data['SCRIPT'] .=
@@ -91,49 +130,33 @@ class AccountaccessComponent extends Component
                             "</h1>')";
                         return $data;
                     }
-                    $username =
-                        $signin_model->getUserName($_SESSION['USER_ID']);
                     $result = $signin_model->checkValidSignin($username,
-                        $parent->clean($_REQUEST['old_password'], "string") );
+                        $parent->clean($_REQUEST['password'], "string") );
                     if(!$result) {
                         $data["MESSAGE"] =
-                            tl('accountaccess_component_invalid_old_password');
+                            tl('accountaccess_component_invalid_password');
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             $data["MESSAGE"]."</h1>')";
                         return $data;
                     }
-                    $signin_model->changePassword($username,
-                        $parent->clean($_REQUEST['new_password'], "string"));
+                    if(isset($data['EDIT_PASSWORD'])) {
+                        $signin_model->changePassword($username,
+                            $parent->clean($_REQUEST['new_password'],
+                            "string"));
+                    }
+                    $user = array();
+                    $user['USER_ID'] = $user_id;
+                    $fields = array("EMAIL", "FIRST_NAME", "LAST_NAME");
+                    foreach($fields as $field) {
+                        if(isset($_REQUEST[$field])) {
+                            $user[$field] = $parent->clean(
+                                $_REQUEST[$field], "string");
+                            $data['USER'][$field] =  $user[$field];
+                        }
+                    }
+                    $user_model->updateUser($user);
                     $data["MESSAGE"] =
-                        tl('accountaccess_component_change_password');
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        $data["MESSAGE"]."</h1>')";
-                break;
-
-                case "changeemail":
-                   if($_REQUEST['re_type_email'] != $_REQUEST['new_email']) {
-                        $data["MESSAGE"] =
-                            tl('accountaccess_component_emails_dont_match');
-                        $data['SCRIPT'] .=
-                            "doMessage('<h1 class=\"red\" >". $data["MESSAGE"].
-                            "</h1>')";
-                        return $data;
-                    }
-                    $username =
-                        $signin_model->getUserName($_SESSION['USER_ID']);
-                    $result = $signin_model->checkValidEmail($username,
-                        $parent->clean($_REQUEST['old_email'], "string") );
-                    if(!$result) {
-                        $data["MESSAGE"] =
-                            tl('accountaccess_component_invalid_old_email');
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            $data["MESSAGE"]."</h1>')";
-                        return $data;
-                    }
-                    $signin_model->changeEmail($username,
-                        $parent->clean($_REQUEST['new_email'], "string"));
-                    $data["MESSAGE"] = tl('accountaccess_component_change_email'
-                        );
+                        tl('accountaccess_component_user_updated');
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         $data["MESSAGE"]."</h1>')";
                 break;

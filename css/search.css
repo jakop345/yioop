@@ -83,6 +83,21 @@ p
     clear:both;
 }
 
+.no-margin
+{
+    margin:0;
+}
+
+.indent
+{
+    text-indent:0.25in;
+}
+
+.mobile .indent
+{
+    text-indent:10px;
+}
+
 .html-ltr .float-opposite
 {
     float: right;
@@ -1132,6 +1147,14 @@ ul.in-list li
 .result
 {
     clear: both;
+}
+
+.access-result
+{
+    box-shadow: 0px 0px 3px 3px #ccc;
+    font-size: 12pt;
+    padding: 5px;
+    margin:10px;
 }
 
 .group-result

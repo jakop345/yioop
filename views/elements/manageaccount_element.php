@@ -45,79 +45,146 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 class ManageaccountElement extends Element
 {
-
     /**
      *  Draws a change password form.
      *
      *  @param array $data   anti-CSRF token
      */
     function render($data)
-    {?>
+    {
+        $token = CSRF_TOKEN . "=". $data[CSRF_TOKEN];
+        $feed_url = "?c=admin&amp;a=groupFeeds&amp;$token";
+        $group_url = "?c=admin&amp;a=manageGroups&amp;$token";
+        $mix_url = "?c=admin&amp;a=mixCrawls&amp;$token";
+        $base_url = "?c=admin&amp;a=manageAccount&amp;$token";
+        $edit_or_no_url = $base_url .(
+            (isset($data['EDIT_USER'])) ? "&amp;edit=false":"&amp;edit=true");
+        $edit_or_no_text = (isset($data['EDIT_USER'])) ?
+            tl('manageaccount_element_lock') : tl('manageaccount_element_edit');
+        $password_or_no_url = $base_url .(
+            (isset($data['EDIT_PASSWORD'])) ? "&amp;edit_pass=false":
+            "&amp;edit_pass=true");
+        $disabled = (isset($data['EDIT_USER'])) ? "" : "disabled='disabled'";
+    ?>
         <div class="current-activity">
-            <h2><?php e(tl('manageaccount_element_change_email'))?></h2>
-            <form id="changePasswordForm" method="post" action='#'>
+            <h2><?php e(tl('manageaccount_element_welcome', 
+                $data['USERNAME'])); ?></h2>
+            <p><?php e(tl('manageaccount_element_what_can_do')); ?></p>
+            <h2><?php
+                e(tl('manageaccount_element_account_details')); ?> <small>[<a
+                href="<?php e($edit_or_no_url); ?>"><?php
+                e($edit_or_no_text); ?></a>]</small></h2>
+            <form id="changeUserForm" method="post" action='#'>
             <input type="hidden" name="c" value="admin" />
             <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
                 e($data[CSRF_TOKEN]); ?>" />
             <input type="hidden" name="a" value="manageAccount" />
-            <input type="hidden" name="arg" value="changeemail" />
+            <input type="hidden" name="arg" value="updateuser" />
 
             <table class="name-table">
-            <tr><td><label for="old-email"><?php
-                e(tl('manageaccount_element_old_email'))?></label></td>
-                <td><input type="txt" id="old-email"
-                    name="old_email"  maxlength="80" class="narrow-field"
-                    value = "<?php e($data['OLD_EMAIL']);?>"/>
+            <tr><th class="table-label"><label for="user-name"><?php
+                e(tl('manageusers_element_username'))?>:</label></th>
+                <td><input type="text" id="user-name"
+                    name="user_name"  maxlength="80"
+                    value="<?php e($data['USER']['USER_NAME']); ?>"
+                    class="narrow-field" disabled="disabled" /></td></tr>
+            <tr><th class="table-label"><label for="first-name"><?php
+                    e(tl('manageusers_element_firstname')); ?>:</label></th>
+                <td><input type="text" id="first-name"
+                    name="FIRST_NAME"  maxlength="80"
+                    value="<?php e($data['USER']['FIRST_NAME']); ?>"
+                    class="narrow-field" <?php e($disabled);?> /></td></tr>
+            <tr><th class="table-label"><label for="last-name"><?php
+                    e(tl('manageusers_element_lastname')); ?>:</label></th>
+                <td><input type="text" id="last-name"
+                    name="LAST_NAME"  maxlength="80"
+                    value="<?php e($data['USER']['LAST_NAME']); ?>"
+                    class="narrow-field" <?php e($disabled);?> /></td></tr>
+            <tr><th class="table-label"><label for="e-mail"><?php
+                    e(tl('manageusers_element_email')); ?>:</label></th>
+                <td><input type="text" id="e-mail"
+                    name="EMAIL"  maxlength="80" <?php e($disabled);?>
+                    value="<?php e($data['USER']['EMAIL']); ?>"
+                    class="narrow-field"/></td></tr>
+            <?php if(isset($data['EDIT_USER'])) { ?>
+            <tr><th class="table-label"><label for="password"><a href="<?php
+                e($password_or_no_url);?>"><?php
+                e(tl('manageaccount_element_password'))?></a></label></th>
+                <td><input type="password" id="password"
+                    name="password"  maxlength="80" class="narrow-field"/>
                 </td></tr>
-            <tr><td><label for="new-email"><?php
-                e(tl('manageaccount_element_new_email'))?></label></td>
-                <td><input type="text" id="new-email"
-                    name="new_email"  maxlength="80" class="narrow-field"/>
-                </td></tr>
-            <tr><td><label for="retype-email"><?php
-                e(tl('manageaccount_element_retype_email'))?></label></td>
-                <td><input type="text" id="retype-email"
-                    name="re_type_email"  maxlength="80"
-                    class="narrow-field" />
-                </td></tr>
+                <?php if(isset($data['EDIT_PASSWORD'])) { ?>
+                <tr><th class="table-label"><label for="new-password"><?php
+                    e(tl('manageaccount_element_new_password'))?></label></th>
+                    <td><input type="password" id="new-password"
+                        name="new_password"  maxlength="80"
+                        class="narrow-field"/>
+                    </td></tr>
+                <tr><th class="table-label"><label for="retype-password"><?php
+                    e(tl('manageaccount_element_retype_password'));
+                    ?></label></th>
+                    <td><input type="password" id="re-type-password"
+                        name="re_type_password"  maxlength="80"
+                        class="narrow-field" />
+                    </td></tr>
+                <?php
+                }
+                ?>
             <tr><td></td>
                 <td class="center"><button
                     class="button-box" type="submit"><?php
                     e(tl('manageaccount_element_save')); ?></button></td></tr>
+            <?php
+            } ?>
             </table>
             </form>
-
-            <h2><?php e(tl('manageaccount_element_change_password'))?></h2>
-            <form id="changePasswordForm" method="post" action='#'>
-            <input type="hidden" name="c" value="admin" />
-            <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
-                e($data[CSRF_TOKEN]); ?>" />
-            <input type="hidden" name="a" value="manageAccount" />
-            <input type="hidden" name="arg" value="changepassword" />
-
-            <table class="name-table">
-            <tr><td><label for="old-password"><?php
-                e(tl('manageaccount_element_old_password'))?></label></td>
-                <td><input type="password" id="old-password"
-                    name="old_password"  maxlength="80" class="narrow-field"/>
-                </td></tr>
-            <tr><td><label for="new-password"><?php
-                e(tl('manageaccount_element_new_password'))?></label></td>
-                <td><input type="password" id="new-password"
-                    name="new_password"  maxlength="80" class="narrow-field"/>
-                </td></tr>
-            <tr><td><label for="retype-password"><?php
-                e(tl('manageaccount_element_retype_password'))?></label></td>
-                <td><input type="password" id="re-type-password"
-                    name="re_type_password"  maxlength="80"
-                    class="narrow-field" />
-                </td></tr>
-            <tr><td></td>
-                <td class="center"><button
-                    class="button-box" type="submit"><?php
-                    e(tl('manageaccount_element_save')); ?></button></td></tr>
-            </table>
-            </form>
+            <h2><?php
+                e(tl('manageaccount_element_groups_and_feeds'))?></h2>
+            <p><?php e(tl('manageaccount_element_group_info')); ?></p>
+            <p><?php if($data['NUM_GROUPS'] > 1 || $data['NUM_GROUPS'] == 0) {
+                e(tl('manageaccount_element_num_groups',
+                    $data['NUM_GROUPS']));
+            } else {
+                e(tl('manageaccount_element_num_group',
+                    $data['NUM_GROUPS']));
+            }?></p>
+            <?php
+            foreach($data['GROUPS'] as $group) {
+                ?>
+                <div class="access-result">
+                    <div><b><a href="<?php
+                    e($feed_url.'&amp;just_group_id='.$group['GROUP_ID']); ?>"
+                    rel="nofollow"><?php e($group['GROUP_NAME']);
+                    ?></a></b>
+                    </div>
+                    <div class="slight-pad">
+                    <b><?php
+                    e(tl('manageaccount_element_last_post')); ?></b>
+                    <a href="<?php
+                    e($feed_url.'&amp;just_thread_id='.$group['THREAD_ID']); ?>"
+                    ><?php e($group['ITEM_TITLE']); ?></a>
+                    </div>
+                </div>
+                <?php
+            }
+            ?>
+            <p>[<a href="<?php e($group_url); ?>"><?php
+                e(tl('manageaccount_element_manage_all_groups'));
+                ?></a>] [<a href="<?php e($feed_url); ?>"><?php
+                e(tl('manageaccount_element_go_to_group_feed')); ?></a>]</p>
+            <h2><?php
+                e(tl('manageaccount_element_crawl_mixes'))?></h2>
+            <p><?php e(tl('manageaccount_element_mixes_info')); ?></p>
+            <p><?php if($data['NUM_MIXES'] > 1 || $data['NUM_MIXES'] == 0) {
+                e(tl('manageaccount_element_num_mixes',
+                    $data['NUM_MIXES']));
+            } else {
+                e(tl('manageaccount_element_num_mix',
+                    $data['NUM_MIXES']));
+            }?></p>
+            <p>[<a href="<?php e($mix_url); ?>"><?php
+                e(tl('manageaccount_element_manage_mixes'));
+                ?></a>]</p>
         </div>
         <?php
     }
