@@ -53,6 +53,7 @@ class ManageaccountElement extends Element
     function render($data)
     {
         $token = CSRF_TOKEN . "=". $data[CSRF_TOKEN];
+        $settings_url = "?c=settings&amp;$token";
         $feed_url = "?c=admin&amp;a=groupFeeds&amp;$token";
         $group_url = "?c=admin&amp;a=manageGroups&amp;$token";
         $mix_url = "?c=admin&amp;a=mixCrawls&amp;$token";
@@ -138,6 +139,8 @@ class ManageaccountElement extends Element
             } ?>
             </table>
             </form>
+            <p>[<a href="<?php e($settings_url); ?>"><?php
+                e(tl('manageaccount_element_search_lang_settings')); ?></a>]</p>
             <h2><?php
                 e(tl('manageaccount_element_groups_and_feeds'))?></h2>
             <p><?php e(tl('manageaccount_element_group_info')); ?></p>
