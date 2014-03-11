@@ -115,11 +115,11 @@ class LocaleModel extends Model
      */
     function initialize($locale_tag)
     {
-        $this->configure = parse_ini_file(
-            LOCALE_DIR."/$locale_tag/configure.ini", true);
+        $this->configure = parse_ini_with_fallback(
+            LOCALE_DIR."/$locale_tag/configure.ini");
         if($locale_tag != DEFAULT_LOCALE) {
-            $this->default_configure = parse_ini_file(
-                LOCALE_DIR."/".DEFAULT_LOCALE."/configure.ini", true);
+            $this->default_configure = parse_ini_with_fallback(
+                LOCALE_DIR."/".DEFAULT_LOCALE."/configure.ini");
         }
         $this->locale_tag = $locale_tag;
         $sql = "SELECT LOCALE_NAME, WRITING_MODE ".
@@ -174,7 +174,8 @@ class LocaleModel extends Model
                 filemtime("$tag_prefix/statistics.txt") <
                 filemtime("$tag_prefix/configure.ini")) {
 
-                $tmp = parse_ini_file("$tag_prefix/configure.ini", true);
+                $tmp = parse_ini_with_fallback(
+                    "$tag_prefix/configure.ini");
                 $num_ids = 0;
                 $num_strings = 0;
                 foreach ($tmp['strings'] as $msg_id => $msg_string) {
@@ -312,7 +313,8 @@ class LocaleModel extends Model
     function getStringData($locale_tag)
     {
         $db = $this->db;
-        $data = parse_ini_file(LOCALE_DIR."/$locale_tag/configure.ini", true);
+        $data = parse_ini_with_fallback(
+            LOCALE_DIR."/$locale_tag/configure.ini");
         $data = $data['strings'];
 
         //hacky. Join syntax isn't quite the same between sqlite and mysql
@@ -522,7 +524,7 @@ class LocaleModel extends Model
             // getLocaleList will also create any missing locale dirs
         $strings =
             $this->getTranslateStrings($this->extract_dirs, $this->extensions);
-        $general_ini = parse_ini_file(LOCALE_DIR."/general.ini", true);
+        $general_ini = parse_ini_with_fallback(LOCALE_DIR."/general.ini");
         $this->updateLocales($general_ini, $strings, $force_folders);
 
         return array($general_ini, $strings);
@@ -597,12 +599,13 @@ class LocaleModel extends Model
         $old_configure = array();
         $cur_path = $dir . '/' . $locale;
         if(file_exists($cur_path.'/configure.ini')) {
-            $old_configure = parse_ini_file($cur_path.'/configure.ini', true);
+            $old_configure = parse_ini_with_fallback(
+                $cur_path.'/configure.ini');
         }
         $fallback_path = FALLBACK_LOCALE_DIR. '/' . $locale;
         if(file_exists($fallback_path . '/configure.ini')) {
-            $fallback_configure = parse_ini_file(
-                $fallback_path . '/configure.ini', true);
+            $fallback_configure = parse_ini_with_fallback(
+                $fallback_path . '/configure.ini');
         }
         if(file_exists($fallback_path.'/pages')) {
             if(in_array("pages", $force_folders)) {

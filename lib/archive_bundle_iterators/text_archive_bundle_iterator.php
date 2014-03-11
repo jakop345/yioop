@@ -204,7 +204,7 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
         $this->partitions = array();
         if($this->iterate_dir != false) { // false =network/fetcher iterator
             if($ini == array()) {
-                $ini = parse_ini_file(
+                $ini = parse_ini_with_fallback(
                     "{$this->iterate_dir}/arc_description.ini");
             }
             $extension = $ini['file_extension'];

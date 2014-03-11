@@ -118,7 +118,8 @@ class DatabaseBundleIterator extends ArchiveBundleIterator
         $this->result_timestamp = $result_timestamp;
         $this->result_dir = $result_dir;
 
-        $ini = parse_ini_file("{$this->iterate_dir}/arc_description.ini");
+        $ini = parse_ini_with_fallback(
+            "{$this->iterate_dir}/arc_description.ini");
 
         $this->dbinfo = array("DBMS" => DBMS, "DB_HOST" => DB_HOST,
             "DB_NAME" => DB_NAME, "DB_USER" => DB_USER,

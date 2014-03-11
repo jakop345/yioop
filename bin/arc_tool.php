@@ -947,7 +947,7 @@ class ArcTool implements CrawlConstants
         }
         $desc_path = "$archive_path/arc_description.ini";
         if(file_exists($desc_path)) {
-            $desc = parse_ini_file($desc_path);
+            $desc = parse_ini_with_fallback($desc_path);
             if(!isset($desc['arc_type'])) {
                 return false;
             }

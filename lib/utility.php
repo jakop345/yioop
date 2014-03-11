@@ -102,6 +102,87 @@ function addRegexDelimiters($expression)
 }
 
 /**
+ * Yioop replacement for parse_ini_file($name, true) in case
+ * parse_ini_file is on the disable_functions list. This function
+ * checks if parse_ini_file is disabled on not. If not, it just
+ * calls parse_ini_file; otherwise, it simulates it enough so
+ * that configure.ini files used for string translations can be read.
+ *
+ * @param string $file filename of ini data to parse into an array
+ * @return array data parse from file
+ */
+function parse_ini_with_fallback($file)
+{
+    static $disabled;
+    if(!isset($disabled)) {
+        $disabled_string = ini_get('disable_functions');
+        $disabled = strpos($disabled_string, "parse_ini_file") !== false;
+    }
+    if(!$disabled) {
+        return parse_ini_file($file, true);
+    }
+    $lines = file($file);
+    $name_space = NULL;
+    $ini = array();
+    $assigned = '"((?:[^"\\\]|\\\.)*)"|\w+|'."'".
+        '((?:[^'."'".'\\\]|\\\.)*)'."'";
+    foreach($lines as $line) {
+        if(preg_match('/\[(\w+)\]/', $line, $matches)) {
+            $name_space = $matches[1];
+            $ini[$name_space] = array();
+        }
+        if(preg_match("/(\w+|(\w+)(\[\]))\s*\=\s*($assigned)/", $line,
+            $matches)){
+            if($name_space) {
+                if($matches[3] == '[]') {
+                    $ini[$name_space][$matches[2]][] = 
+                        get_ini_assign_match($matches);
+                } else {
+                    $ini[$name_space][$matches[1]] = 
+                        get_ini_assign_match($matches);
+                }
+            } else {
+                if($matches[3] == '[]') {
+                    $ini[$name_space][$matches[2]][] = 
+                        get_ini_assign_match($matches);
+                } else {
+                    $ini[$matches[1]] = 
+                        get_ini_assign_match($matches);
+                }
+            }
+        }
+    }
+    return $ini;
+}
+
+/**
+ * Auxiliary function called from parse_ini_with_fallback to extract from
+ * the $matches array produced by the former function's preg_match
+ * what kind of assignment occurred in the ini file being parsed.
+ *
+ * @param string $matches produced by a preg_match in 
+ *      parse_ini_with_fallback
+ * @return mixed value of ini file assignment
+ */
+function get_ini_assign_match($matches)
+{
+    if(isset($matches[6])) {
+        return $matches[6];
+    } else if (isset($matches[5])) {
+        return $matches[5];
+    } else if (isset($matches[4])) {
+        $tmp = $matches[4];
+        if($tmp == "true") {
+            return true;
+        } else if($tmp == "false") {
+            return false;
+        }
+        return $tmp;
+    }
+    return false;
+}
+
+/**
  * Copies from $source string beginning at position $start, $length many
  * bytes to destination string
  *
