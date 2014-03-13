@@ -190,7 +190,9 @@ class DatabaseBundleIterator extends ArchiveBundleIterator
         $this->limit = 0;
         $this->end_of_iterator = false;
 
-        @unlink("{$this->result_dir}/iterate_status.txt");
+        if(file_exists("{$this->result_dir}/iterate_status.txt")) {
+            unlink("{$this->result_dir}/iterate_status.txt");
+        }
     }
 
     /**

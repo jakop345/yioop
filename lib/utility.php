@@ -130,8 +130,7 @@ function parse_ini_with_fallback($file)
         if(preg_match('/\[(\w+)\]/', $line, $matches)) {
             $name_space = $matches[1];
             $ini[$name_space] = array();
-        }
-        if(preg_match("/(\w+|(\w+)(\[\]))\s*\=\s*($assigned)/", $line,
+        } else if(preg_match("/(\w+|(\w+)(\[\]))\s*\=\s*($assigned)/", $line,
             $matches)){
             if($name_space) {
                 if($matches[3] == '[]') {
@@ -1611,6 +1610,10 @@ function deleteFileOrDir($file_or_dir)
  */
 function setWorldPermissions($file)
 {
+    if(php_sapi_name() == 'cli') {
+        chmod($file, 0777);
+        return;
+    }
     restore_error_handler();
     chmod($file, 0777);
     set_error_handler("yioop_error_handler");

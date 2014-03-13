@@ -239,7 +239,9 @@ class WebArchiveBundleIterator extends ArchiveBundleIterator
             $this->current_partition_num, false);
         $this->partition->reset();
         $archive_name = $this->getArchiveName($this->result_timestamp);
-        @unlink("$archive_name/iterate_status.txt");
+        if(file_exists("$archive_name/iterate_status.txt")) {
+            unlink("$archive_name/iterate_status.txt");
+        }
     }
 }
 ?>

@@ -316,7 +316,11 @@ function setLocaleObject($locale_tag)
 if(!function_exists("getLocaleTag")) {
 function getLocaleTag()
 {
-    global $locale;
+    global $locale, $locale_tag;
+    if(!$locale) {
+        $locale_tag = guessLocale();
+        setLocaleObject($locale_tag);
+    }
     return $locale->getLocaleTag();
 }
 }

@@ -454,7 +454,6 @@ class AddressesPlugin extends IndexingPlugin implements CrawlConstants
      */
     function checkCandidate($pre_address)
     {
-        print_r($pre_address);
         $address = false;
         $found_count = 0;
         $num_lines = count($pre_address);

@@ -172,8 +172,12 @@ class FetchController extends Controller implements CrawlConstants
             if($info[self::STATUS] == 'STOP_CRAWL') {
                 /* The stop crawl message gets created by the admin_controller
                    when the "stop crawl" button is pressed.*/
-                @unlink($messages_filename);
-                @unlink($lock_filename);
+                if(file_exists($messages_filename)) {
+                    unlink($messages_filename);
+                }
+                if(file_exists($lock_filename)) {
+                    unlink($lock_filename);
+                }
                 $fetch_pages = false;
                 $info = array();
             }
@@ -232,7 +236,9 @@ class FetchController extends Controller implements CrawlConstants
                         ARCHIVE_BATCH_SIZE);
                 }
             }
-            @unlink($lock_filename);
+            if(file_exists($lock_filename)) {
+                unlink($lock_filename);
+            }
         }
         if($archive_iterator && $archive_iterator->end_of_iterator) {
             $info[self::END_ITERATOR] = true;

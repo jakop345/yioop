@@ -1204,7 +1204,6 @@ class Fetcher implements CrawlConstants
             crawlLog($request);
             return false;
         }
-
         if($response_string) {
             $info = @unserialize($response_string);
         } else {

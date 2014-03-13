@@ -298,8 +298,12 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
         $this->buffer = "";
         $this->header = array();
         $this->remainder = "";
-        @unlink($this->status_filename);
-        @unlink($this->buffer_filename);
+        if(file_exists($this->status_filename)) {
+            unlink($this->status_filename);
+        }
+        if(file_exists($this->buffer_filename)) {
+            unlink($this->buffer_filename);
+        }
     }
 
     /**
