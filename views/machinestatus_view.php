@@ -65,6 +65,7 @@ class MachinestatusView extends View
             $log_url = $base_url ."log&amp;name=news";
             $on_news_updater = $base_url ."newsmode&amp;news_mode=news_process";
             $off_news_updater = $base_url ."newsmode&amp;news_mode=news_off";
+            $caution = ($data['MACHINES']['NAME_SERVER']["news_updater"] == 0);
         ?></h3>
         <form id="newsModeForm" method="post" action=''>
         <input type="hidden" name="c" value="admin" />
@@ -78,13 +79,17 @@ class MachinestatusView extends View
             e(tl('machinestatus_view_log'));?></a>]</td>
         <td><?php $this->helper("toggle")->render(
             ($data["NEWS_MODE"] == "news_process"), $on_news_updater,
-            $off_news_updater);?>
+            $off_news_updater, $caution);?>
         </td>
         </tr></table>
         </form>
         </div><br />
         <?php
-        foreach($data['MACHINES'] as $m) { ?>
+        foreach($data['MACHINES'] as $k => $m) {
+            if(!is_numeric($k)) {
+                continue;
+            }
+            ?>
             <div class="box">
             <h3 class="nomargin"><?php e($m['NAME']);?></h3>
             <p><?php e($m['URL']);
@@ -149,7 +154,7 @@ class MachinestatusView extends View
                 <td><table><tr><td>#<?php
                 $log_url = $base_url .
                     "log&amp;name={$m['NAME']}&amp;fetcher_num=$i";
-                if($i <10){e("0");} e($i);
+                if($i < 10){e("0");} e($i);
                 ?>[<a href="<?php e($log_url);?>"><?php
                     e(tl('machinestatus_view_log'));?></a>]</td>
                 </tr><tr><td><?php

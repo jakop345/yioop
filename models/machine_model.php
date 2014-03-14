@@ -180,13 +180,19 @@ class MachineModel extends Model
         $active_fetchers = array();
         while($row = $this->db->fetchArray($result)) {
             for($i = 0; $i < $num_machines; $i++) {
-                if($machines[$i]['NAME'] == $row['NAME'] &&
-                    !isset($machines[$i]["STATUSES"]["fetcher"][
+                if($machines[$i]['NAME'] == $row['NAME']) {
+                    if(!isset($machines[$i]["STATUSES"]["fetcher"][
                         $row['FETCHER_ID']])) {
-                    $machines[$i]["STATUSES"]["fetcher"][
+                        $machines[$i]["STATUSES"]["fetcher"][
                         $row['FETCHER_ID']] = 0;
+                    }
                 }
             }
+        }
+        $name_server_statuses = CrawlDaemon::statuses();
+        $machines['NAME_SERVER']['news_updater'] = 0;
+        if(isset($name_server_statuses['news_updater'])) {
+            $machines['NAME_SERVER']['news_updater'] = 1;
         }
         return $machines;
     }

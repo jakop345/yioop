@@ -347,6 +347,11 @@ class AdminController extends Controller implements CrawlConstants
         $profile =  $this->model("profile")->getProfile(WORK_DIRECTORY);
         $data['NEWS_MODE'] = isset($profile['NEWS_MODE']) ?
             $profile['NEWS_MODE']: "";
+        if($profile['NEWS_MODE'] == "news_process" && 
+            $data['MACHINES']['NAME_SERVER']["news_updater"] == 0) {
+            // try to restart news server if dead
+            CrawlDaemon::start("news_updater", 'none', "", -1);
+        }
         return $data;
     }
 
