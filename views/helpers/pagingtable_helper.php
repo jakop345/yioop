@@ -68,9 +68,15 @@ class PagingtableHelper extends Helper
     function render($data)
     {
         if(MOBILE) {
-            $this->mobileTableControls($data);
+            if(isset($data['PAGING-TYPE']) == "SMALL") {
+            } else {
+                $this->mobileTableControls($data);
+            }
         } else {
-            $this->desktopTableControls($data);
+            if(isset($data['PAGING-TYPE']) == "SMALL") {
+            } else {
+                $this->desktopTableControls($data);
+            }
         }
     }
 

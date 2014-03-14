@@ -944,7 +944,7 @@ class Fetcher implements CrawlConstants
             $name_server."?c=fetch&a=crawlTime&time=$time&session=$session".
             "&robot_instance=".$robot_instance."&machine_uri=".WEB_URI.
             "&crawl_time=$crawl_time";
-        $info_string = FetchUrl::getPage($request);
+        $info_string = FetchUrl::getPage($request, NULL, true);
         $info = @unserialize(trim($info_string));
 
         if(isset($info[self::SAVED_CRAWL_TIMES])) {
@@ -1102,7 +1102,7 @@ class Fetcher implements CrawlConstants
             "&robot_instance=".$prefix.ROBOT_INSTANCE."&machine_uri=".WEB_URI.
             "&crawl_time=".$this->crawl_time."&check_crawl_time=".
             $this->check_crawl_time;
-        $info_string = FetchUrl::getPage($request);
+        $info_string = FetchUrl::getPage($request, NULL, true);
         crawlLog("Making request: ");
         crawlLog($request);
         if($info_string === false) {
@@ -1191,14 +1191,14 @@ class Fetcher implements CrawlConstants
         $time = time();
         $session = md5($time . AUTH_KEY);
         $prefix = $this->fetcher_num."-";
-
         $request =
             $name_server."?c=fetch&a=archiveSchedule&time=$time".
             "&session=$session&robot_instance=".$prefix.ROBOT_INSTANCE.
             "&machine_uri=".WEB_URI."&crawl_time=".$this->crawl_time.
             "&check_crawl_time=".$this->check_crawl_time;
         crawlLog($request);
-        $response_string = FetchUrl::getPage($request);
+        $response_string = FetchUrl::getPage($request, NULL, true);
+        
         if($response_string === false) {
             crawlLog("The following request failed:");
             crawlLog($request);
@@ -2541,7 +2541,8 @@ class Fetcher implements CrawlConstants
                     sleep(5);
                 }
                 $sleep = true;
-                $info_string = FetchUrl::getPage($queue_server, $post_data);
+                $info_string = FetchUrl::getPage($queue_server, $post_data,
+                    true);
                 $info = unserialize(trim($info_string));
                 if(isset($info[self::LOGGING])) {
                     crawlLog("Messages from Fetch Controller:");

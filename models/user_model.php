@@ -83,7 +83,7 @@ class UserModel extends Model
         $row = $db->fetchArray($result);
         $locale_id = $row['LOCALE_ID'];
 
-        $sql = "SELECT DISTINCT  RA.ACTIVITY_ID AS ACTIVITY_ID, ".
+        $sql = "SELECT DISTINCT A.ACTIVITY_ID AS ACTIVITY_ID, ".
             "T.TRANSLATION_ID AS TRANSLATION_ID, A.METHOD_NAME AS METHOD_NAME,".
             " T.IDENTIFIER_STRING AS IDENTIFIER_STRING FROM ACTIVITY A, ".
             " USER_ROLE UR, ROLE_ACTIVITY RA, TRANSLATION T ".

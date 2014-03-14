@@ -39,6 +39,11 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 require_once BASE_DIR.
     '/lib/archive_bundle_iterators/archive_bundle_iterator.php';
 
+/** For datasource managers */
+$data_sources = glob(BASE_DIR."/models/datasources/*_manager.php");
+foreach($data_sources as $data_source) {
+    require_once $data_source;
+}
 /** For webencode */
 require_once BASE_DIR.'/lib/utility.php';
 
@@ -133,7 +138,9 @@ class DatabaseBundleIterator extends ArchiveBundleIterator
         }
         $db_class = ucfirst($this->dbinfo["DBMS"])."Manager";
         $this->db = new $db_class();
-        $this->db->connect();
+        $this->db->connect($this->dbinfo['DB_HOST'],
+            $this->dbinfo['DB_USER'], $this->dbinfo['DB_PASSWORD'],
+            $this->dbinfo['DB_NAME']);
 
         if(isset($ini['sql'])) {
             $this->sql = $ini['sql'];
@@ -208,9 +215,10 @@ class DatabaseBundleIterator extends ArchiveBundleIterator
     {
         $pages = array();
         $page_count = 0;
-        $query = "{$this->sql} ". $db->limitOffset($this->limit, $num);
         $db = $this->db;
+        $query = "{$this->sql} ". $db->limitOffset($this->limit, $num);
         $result = $db->execute($query);
+        $i = 0;
         while($row = $db->fetchArray($result)) {
             crawlTimeoutLog("..Still getting pages from archive iterator. At %s"
                 ." of %s", $i, $num);

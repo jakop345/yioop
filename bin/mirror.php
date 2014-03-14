@@ -248,7 +248,7 @@ class Mirror implements CrawlConstants
             "&last_sync=".$this->last_sync;
         if($this->start_sync <= $this->last_sync) {
             $request .= "&a=syncList";
-            $info_string = FetchUrl::getPage($request);
+            $info_string = FetchUrl::getPage($request, NULL, true);
             if($info_string === false) {
                 return false;
             }
@@ -266,7 +266,7 @@ class Mirror implements CrawlConstants
             $info[self::STATUS] = self::CONTINUE_STATE;
             if($time - $this->last_notify > MIRROR_NOTIFY_FREQUENCY) {
                 $request .= "&a=syncNotify";
-                FetchUrl::getPage($request);
+                FetchUrl::getPage($request, NULL, true);
                 $this->last_notify = $time;
                 CrawlLog("Notifying master that mirror is alive..");
             }
@@ -310,7 +310,7 @@ class Mirror implements CrawlConstants
                 "&last_sync=".$this->last_sync."&f=cache&n=".
                 urlencode($file["name"]);
             if($file["size"] < self::DOWNLOAD_RANGE) {
-                $data = FetchUrl::getPage($request);
+                $data = FetchUrl::getPage($request, NULL, true);
                 if($file["size"] != strlen($data)) {
                     array_push($this->sync_schedule, $file);
                     crawlLog(".. {$file['name']} error downloading, retrying.");
@@ -323,7 +323,8 @@ class Mirror implements CrawlConstants
                 $fh = fopen("$dir/{$file['name']}", "wb");
                 $request .= "&l=".self::DOWNLOAD_RANGE;
                 while($offset < $file['size']) {
-                    $data = FetchUrl::getPage($request."&o=$offset");
+                    $data = FetchUrl::getPage($request."&o=$offset", NULL,
+                        true);
                     $old_offset = $offset;
                     $offset += self::DOWNLOAD_RANGE;
                     $end_point = min($offset, $file["size"]);

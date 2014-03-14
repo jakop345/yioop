@@ -70,7 +70,8 @@ class RoleModel extends Model
         $row = $db->fetchArray($result);
         $locale_id = $row['LOCALE_ID'];
 
-        $sql = "SELECT R.ROLE_ID AS ROLE_ID, RA.ACTIVITY_ID AS ACTIVITY_ID, ".
+        $sql = "SELECT DISTINCT R.ROLE_ID AS ROLE_ID, ".
+            "RA.ACTIVITY_ID AS ACTIVITY_ID, ".
             "A.METHOD_NAME AS METHOD_NAME, ".
             "T.IDENTIFIER_STRING AS IDENTIFIER_STRING, ".
             "T.TRANSLATION_ID AS TRANSLATION_ID FROM ".

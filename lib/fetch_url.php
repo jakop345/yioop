@@ -582,10 +582,12 @@ class FetchUrl implements CrawlConstants
      *
      *  @param string $site  url of page to request
      *  @param string $post_data  any data to be POST'd to the URL
+     *  @param bool whether or not to check the response for the words,
+     *      NOTICE, WARNING, FATAL which might indicate an error on the server
      *
      *  @return string the contents of what the curl request fetched
      */
-    static function getPage($site, $post_data = NULL)
+    static function getPage($site, $post_data = NULL, $check_for_errors = false)
     {
         static $agents = array();
         $MAX_SIZE = 50;
@@ -630,7 +632,27 @@ class FetchUrl implements CrawlConstants
         }
         curl_setopt($agents[$host], CURLOPT_POSTFIELDS, "");
         crawlLog("  Done curl exec");
+        if($check_for_errors) {
+            self::checkResponseForErrors($response);
+        }
         return $response;
+    }
+
+    /**
+     *  Given the results of a getPage call, check whether or not the response
+     *  had the words NOTICE, WARNING, FATAL which might indicate an error on 
+     *  the server. If it does, then the $response string is sent to the
+     *  crawlLog
+     *
+     * @param string $response getPage response in which to check for errors
+     */
+    static function checkResponseForErrors($response)
+    {
+        if(preg_match("/NOTICE|WARNING|FATAL/i", $response)) {
+            crawlLog("There appears to have been an error in the server ".
+                "response. Response was:");
+            crawlLog(wordwrap($response));
+        }
     }
 }
 ?>
