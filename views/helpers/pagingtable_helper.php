@@ -81,6 +81,15 @@ class PagingtableHelper extends Helper
     }
 
     /**
+     *
+     *  @param array $data needed for dropdown values for number of groups to
+     *      display
+     */
+    function smallTableControls($data)
+    {
+    }
+
+    /**
      *  Draws the heading before a paging table as well as the controls
      *  for what rows to see (mobile phone case).
      *

@@ -54,9 +54,11 @@ class GroupfeedElement extends Element implements CrawlConstants
      */
     function render($data)
     {
+        if(!isset($data['STATUS'])) {
         ?>
-        <div class="current-activity">
-            <?php
+            <div id="feedstatus" class="current-activity">
+        <?php
+        }
             $base_query = $data['PAGING_QUERY']."&amp;".CSRF_TOKEN."=".
                 $data[CSRF_TOKEN];
             $paging_query = $data['PAGING_QUERY']."&amp;".CSRF_TOKEN."=".
@@ -170,12 +172,36 @@ class GroupfeedElement extends Element implements CrawlConstants
                 $paging_query,
                 $data['LIMIT'], $data['RESULTS_PER_PAGE'], $data['TOTAL_ROWS']);
             ?>
+
+        <?php
+        if(!isset($data['STATUS'])) {
+            $this->renderScripts($data);
+        } else { ?>
         </div>
+        <?php
+        }
+    }
+
+    /**
+     *  Used to render the Javascript that appears at the non-status updating
+     *  portion of the footer of this element.
+     *
+     *  @param array $data contains arguments needs to draw urls correctly.
+     */
+    function renderScripts($data)
+    {
+        $paging_query = $data['PAGING_QUERY']."&amp;".CSRF_TOKEN."=".
+            $data[CSRF_TOKEN];
+        if(isset($data['ADD_PAGING_QUERY'])) {
+            $paging_query .= $data['ADD_PAGING_QUERY'];
+        }
+        ?>
         <script type="text/javascript"><?php
             $clear = (MOBILE) ? " clear" : "";
         ?>
         function comment_form(id, parent_id, group_id)
         {
+            clearInterval(updateId );
             tmp = '<div class="comment<?php e($clear); ?>" ></div>';
             start_elt = elt(id).innerHTML.substr(0, tmp.length)
             if(start_elt != tmp) {
@@ -208,6 +234,7 @@ class GroupfeedElement extends Element implements CrawlConstants
 
         function start_thread_form(id, group_id)
         {
+            clearInterval(updateId );
             tmp = '<div class="thread<?php e($clear); ?>"></div>';
             start_elt = elt(id).innerHTML.substr(0, tmp.length)
             if(start_elt != tmp) {
@@ -246,6 +273,7 @@ class GroupfeedElement extends Element implements CrawlConstants
 
         function update_post_form(id)
         {
+            clearInterval(updateId );
             var title = elt('title'+id).innerHTML;
             var description = elt('description'+id).innerHTML;
             var tmp = '<div class="update<?php e($clear); ?>"></div>';
@@ -288,6 +316,40 @@ class GroupfeedElement extends Element implements CrawlConstants
         }
         </script>
         <?php
+        if($data['LIMIT'] == 0) { ?>
+            <script type="text/javascript" >
+            var updateId;
+            function feedStatusUpdate()
+            {
+                var startUrl = "<?php e(html_entity_decode(
+                    $paging_query).'&arg=status'); ?>";
+                var feedTag = elt('feedstatus');
+                getPage(feedTag, startUrl);
+                elt('feedstatus').style.backgroundColor = "#EEE";
+                setTimeout("resetBackground()", 0.5*sec);
+            }
+
+            function clearUpdate()
+            {
+                 clearInterval(updateId );
+                 var feedTag = elt('feedstatus');
+                 feedTag.innerHTML= "<h2 class='red'><?php
+                    e(tl('groupfeed_element_no_longer_update'))?></h2>";
+            }
+            function resetBackground()
+            {
+                 elt('feedstatus').style.backgroundColor = "#FFF";
+            }
+            function doUpdate()
+            {
+                 var sec = 1000;
+                 var minute = 60*sec;
+                 updateId = setInterval("feedStatusUpdate()", 15*sec);
+                 setTimeout("clearUpdate()", 20*minute + sec);
+            }
+            </script>
+        <?php
+        }
     }
 }
  ?>

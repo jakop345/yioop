@@ -55,7 +55,7 @@ class BlogmixesComponent extends Component implements CrawlConstants
         $group_model = $parent->model("group");
         $user_model = $parent->model("user");
         $data["ELEMENT"] = "groupfeed";
-        $data['SCRIPT'] = "";
+        $data['SCRIPT'] = "doUpdate();";
         $user_id = $_SESSION['USER_ID'];
         $username = $user_model->getUsername($user_id);
         if(isset($_REQUEST['num'])) {
@@ -85,7 +85,7 @@ class BlogmixesComponent extends Component implements CrawlConstants
             }
         }
         $possible_arguments = array("addcomment", "deletepost", "newthread",
-            "updatepost");
+            "updatepost", "status");
         if(isset($_REQUEST['arg']) &&
             in_array($_REQUEST['arg'], $possible_arguments)) {
             switch($_REQUEST['arg'])
@@ -203,6 +203,9 @@ class BlogmixesComponent extends Component implements CrawlConstants
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('blogmixes_component_thread_created'). "</h1>')";
                 break;
+                case "status":
+                    $data['REFRESH'] = "feedstatus";
+                break;
                 case "updatepost":
                     if(!$parent->checkCSRFTime(CSRF_TOKEN)) {
                         break;
@@ -244,7 +247,6 @@ class BlogmixesComponent extends Component implements CrawlConstants
                         $description);
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('blogmixes_component_post_updated'). "</h1>')";
-
                 break;
             }
         }

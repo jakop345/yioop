@@ -78,6 +78,7 @@ function makeRequest()
 
 /*
  *  Make an AJAX request for a url and put the results as inner HTML of a tag
+ *  If the response is the empty string then the tag is not replaced
  *
  *  @param Object tag  a DOM element to put the results of the AJAX request
  *  @param String url  web page to fetch using AJAX
@@ -90,8 +91,8 @@ function getPage(tag, url)
         var self = this;
         request.onreadystatechange = function()
         {
-            if(self.request.readyState == 4 ) {
-                tag.innerHTML = self.request.responseText;
+            if(self.request.readyState == 4) {
+                    tag.innerHTML = self.request.responseText;
             }
         }
         request.open("GET", url, true);
