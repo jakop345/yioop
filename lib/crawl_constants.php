@@ -99,6 +99,9 @@ interface CrawlConstants
     /** Number of seconds in an hour */
     const ONE_HOUR = 3600;
 
+    /** Number of seconds in a minute */
+    const ONE_MINUTE = 60;
+
     const STATUS = 'a';
     const CRAWL_TIME = 'b';
 

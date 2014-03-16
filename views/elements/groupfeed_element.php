@@ -84,22 +84,11 @@ class GroupfeedElement extends Element implements CrawlConstants
             </div>
             <?php
             $open_in_tabs = $data['OPEN_IN_TABS'];
+            $time = time();
             foreach($data['PAGES'] as $page) {
-                $time = time();
-                $pub_date = $time;
-                $delta = $time - $pub_date;
-                if($delta < self::ONE_DAY) {
-                    $num_hours = ceil($delta/self::ONE_HOUR);
-                    if($num_hours <= 1) {
-                        $pub_date =
-                            tl('feeds_helper_view_onehour');
-                    } else {
-                        $pub_date =
-                            tl('feeds_helper_view_hourdate', $num_hours);
-                    }
-                } else {
-                    $pub_date = date("d/m/Y", $pub_date);
-                }
+                $pub_date = $page['PUBDATE'];
+                $pub_date = $this->view->helper("feeds")->getPubdateString(
+                    $time, $pub_date);
                 $encode_source = urlencode(
                     urlencode($page[self::SOURCE_NAME]));
                 ?>

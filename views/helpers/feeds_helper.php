@@ -100,19 +100,7 @@ class FeedsHelper extends Helper implements CrawlConstants
                 $title = isset($page[self::TITLE]) ? $page[self::TITLE] :"";
                 $subtitle = "";
             }
-            $delta = $time - $pub_date;
-            if($delta < self::ONE_DAY) {
-                $num_hours = ceil($delta/self::ONE_HOUR);
-                if($num_hours <= 1) {
-                    $pub_date =
-                        tl('feeds_helper_view_onehour');
-                } else {
-                    $pub_date =
-                        tl('feeds_helper_view_hourdate', $num_hours);
-                }
-            } else {
-                $pub_date = date("d/m/Y", $pub_date);
-            }
+            $pub_date = $this->getPubdateString($time, $pub_date);
             if($not_news) {
         ?>
                 <div class="blockquote">
@@ -154,5 +142,38 @@ class FeedsHelper extends Helper implements CrawlConstants
         <?php
     }
 
+    /**
+     *  Write as an string in the current locale the difference between the 
+     *  publication date of a post and the current time
+     *
+     *  @param int $time timestamp for current time
+     *  @param int $pub_date timestamp for feed_item publication
+     *  @return string in the current locale the time difference
+     */
+    function getPubdateString($time, $pub_date)
+    {
+        $delta = $time - $pub_date;
+        if($delta < self::ONE_DAY) {
+            $num_hours = ceil($delta/self::ONE_HOUR);
+            if($num_hours <= 2) {
+                if($num_hours > 1) {
+                    $pub_date = floor();
+                        tl('feeds_helper_view_onehour');
+                } else {
+                    $num_minutes = floor($delta/self::ONE_MINUTE);
+                    $remainder_seconds = $delta % self::ONE_MINUTE;
+                    $pub_date =
+                        tl('feeds_helper_view_minsecs', $num_minutes,
+                            $remainder_seconds);
+                }
+            } else {
+                $pub_date =
+                    tl('feeds_helper_view_hourdate', $num_hours);
+            }
+        } else {
+            $pub_date = date("d/m/Y", $pub_date);
+        }
+        return $pub_date;
+    }
 }
 ?>
