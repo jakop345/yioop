@@ -363,7 +363,7 @@ class UserModel extends Model
      * @param string $firstname the firstname of the user to be added
      * @param string $lastname the lastname of the user to be added
      * @param string $email the email of the user to be added
-     * @return bool whether the operation was successful
+     * @return mixed false if operation not successful, user_id otherwise
      */
     function addUser($username, $password, $firstname='', $lastname='',
         $email='', $status = ACTIVE_STATUS)
@@ -387,7 +387,7 @@ class UserModel extends Model
             ACTIVE_STATUS, $now));
         $sql = "INSERT INTO USER_ROLE  VALUES (?, ?) ";
         $result_id = $db->execute($sql, array($user_id, USER_ROLE));
-        return true;
+        return $user_id;
     }
 
 

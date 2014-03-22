@@ -215,6 +215,18 @@ a.echo-link:hover
     padding: 5px;
 }
 
+.very-narrow-field
+{
+    width: 1in;
+    font-size:10pt;
+    height:25px;
+}
+
+.mobile .very-narrow-field
+{
+    width: 80px;
+}
+
 .narrow-field
 {
     width: 2in;

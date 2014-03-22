@@ -43,7 +43,7 @@ require_once BASE_DIR."/lib/utility.php";
  * method also controls adding and deleting entries to a group feed and
  * does limited access control checks of these operations.
  *
- * @author Mallika Perepa (creator), Chris Pollett
+ * @author Mallika Perepa (creator), Chris Pollett (rewrite)
  * @package seek_quarry
  * @subpackage model
  */
@@ -69,24 +69,57 @@ class GroupModel extends Model
      *  Get an array of users that belong to a group
      *
      *  @param string $group_id  the group_id to get users for
+     *  @param int $limit first user to get
+     *  @param int $num number of users to return
      *  @return array of USERS rows
      */
-    function getGroupUsers($group_id)
+    function getGroupUsers($group_id, $filter, $limit,
+        $num = NUM_RESULTS_PER_PAGE)
     {
         $db = $this->db;
+        $limit = $db->limitOffset($limit, $num);
+        $like = "";
+        $param_array = array($group_id);
+        if($filter != "") {
+            $like = "AND U.USER_NAME LIKE ?";
+            $param_array[] = "%".$filter."%";
+        }
         $users = array();
         $sql = "SELECT UG.USER_ID, U.USER_NAME, UG.GROUP_ID, G.OWNER_ID,".
             " UG.STATUS ".
             " FROM USER_GROUP UG, USERS U, GROUPS G".
-            " where UG.GROUP_ID = ? AND UG.USER_ID = U.USER_ID AND" .
-            " G.GROUP_ID = UG.GROUP_ID";
-        $result = $db->execute($sql, array($group_id));
+            " WHERE UG.GROUP_ID = ? AND UG.USER_ID = U.USER_ID AND" .
+            " G.GROUP_ID = UG.GROUP_ID $like $limit";
+        $result = $db->execute($sql, $param_array);
         $i = 0;
         while($users[$i] = $db->fetchArray($result)) {
            $i++;
         }
         unset($users[$i]); //last one will be null
         return $users;
+    }
+
+    /**
+     *
+     */
+    function countGroupUsers($group_id, $filter="")
+    {
+        $db = $this->db;
+        $users = array();
+        $like = "";
+        $param_array = array($group_id);
+        if($filter != "") {
+            $like = "AND U.USER_NAME LIKE ?";
+            $param_array[] = "%".$filter."%";
+        }
+        $sql = "SELECT COUNT(*) AS NUM ".
+            " FROM USER_GROUP UG, USERS U".
+            " WHERE UG.GROUP_ID = ? AND UG.USER_ID = U.USER_ID $like";
+        $result = $db->execute($sql, $param_array);
+        if($result) {
+            $row = $db->fetchArray($result);
+        }
+        return $row['NUM'];
     }
 
     /**
@@ -116,6 +149,7 @@ class GroupModel extends Model
             JOIN_DATE) VALUES
             ($user_id, $last_id, ".ACTIVE_STATUS.", $now)";
         $db->execute($sql);
+        return $last_id;
     }
 
     /**
@@ -353,7 +387,7 @@ class GroupModel extends Model
     }
 
     /**
-     *  Gets the number of group items subscribed to by a user with $user_id
+     *  Gets the number of groups subscribed to by a user with $user_id
      *  and which match the supplied search criteria found in $search_array.
      *
      *  @param array $search_array each element of this is a quadruple

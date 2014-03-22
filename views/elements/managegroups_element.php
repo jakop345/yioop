@@ -310,7 +310,8 @@ class ManagegroupsElement extends Element
                         e("<td>".
                             $data['MEMBERSHIP_CODES'][$user_array['STATUS']] .
                             "</td>");
-                        e("<td></td><td><span class='gray'>".
+                        e("<td>" . tl('managegroups_element_groupowner') .
+                            "</td><td><span class='gray'>".
                             tl('managegroups_element_delete')."</span></td>");
                     } else {
                         e("<td>".$data['MEMBERSHIP_CODES'][
@@ -347,6 +348,45 @@ class ManagegroupsElement extends Element
                     e("</tr>");
                 }
                 $center = (MOBILE) ? "" : 'class="center"';
+                if(isset($data['NUM_USERS_GROUP']) && 
+                    $data['NUM_USERS_GROUP'] > NUM_RESULTS_PER_PAGE) {
+                    $limit = isset($data['GROUP_LIMIT']) ? $data['GROUP_LIMIT']:
+                        0;
+                ?>
+                    <tr>
+                    <td class="right"><?php
+                        if($limit >= NUM_RESULTS_PER_PAGE) {
+                            ?><a href='<?php e(
+                            "$action_url&amp;arg=editgroup&amp;group_limit=".
+                            ($limit - NUM_RESULTS_PER_PAGE)); ?>'
+                            >&lt;&lt;</a><?php
+                        }
+                        ?>
+                        </td>
+                        <td colspan="2" class="center">
+                            <form method="GET" action="."><input type="hidden"
+                                name="change_filter" value="true"
+                            /><input
+                            class="very-narrow-field center" name="user_filter"
+                            type="text" max-length="10" value='<?php
+                            e($data['USER_FILTER']); ?>' /><br />
+                            <button type="submit"><?php
+                            e(tl('managegroups_element_filter')); ?></button>
+                            </form>
+                            </td>
+                        <td class="left"><?php
+                        if($data['NUM_USERS_GROUP'] >= $limit +
+                            NUM_RESULTS_PER_PAGE) {
+                            ?><a href='<?php e(
+                            "$action_url&amp;arg=editgroup&amp;group_limit=".
+                            ($limit + NUM_RESULTS_PER_PAGE)); ?>'>&gt;&gt;</a>
+                        <?php
+                        }
+                        ?>
+                        </td>
+                    </tr>
+                <?php
+                }
                 ?>
                 <tr>
                 <td colspan="4" <?php e($center); ?>>&nbsp;&nbsp;[<?php
@@ -370,7 +410,10 @@ class ManagegroupsElement extends Element
     }
 
     /**
-     *
+     *  Draws form used to invite users to the current group
+     *  @param array $data from the admin controller with a
+     *      'CURRENT_GROUP' field providing information about the
+     *      current group as well as info about the current CSRF_TOKEN
      */
     function renderInviteUsersForm($data)
     {
@@ -416,7 +459,10 @@ class ManagegroupsElement extends Element
 
 
     /**
-     *
+     *  Draws the form used to change the owner of a group
+     *  @param array $data from the admin controller with a
+     *      'CURRENT_GROUP' field providing information about the
+     *      current group as well as info about the current CSRF_TOKEN
      */
     function renderChangeOwnerForm($data)
     {
@@ -503,7 +549,7 @@ class ManagegroupsElement extends Element
                     $data['name_sort']);
             ?></td></tr>
         <tr><td class="table-label"><label for="owner-name"><?php
-            e(tl('managegroups_element_groupowner'))?>:</label>
+            e(tl('managegroups_element_groupowner')); ?>:</label>
             <?php
                 e($item_sep);
                 $this->view->helper("options")->render(

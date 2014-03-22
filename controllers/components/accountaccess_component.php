@@ -1056,6 +1056,7 @@ class AccountaccessComponent extends Component
             $group = NULL;
         }
         /* end ownership verify */
+        $data['USER_FILTER'] = "";
 
         if(isset($_REQUEST['arg']) &&
             in_array($_REQUEST['arg'], $possible_arguments)) {
@@ -1247,8 +1248,27 @@ class AccountaccessComponent extends Component
                         $group['REGISTER_TYPE'];
                     $data['CURRENT_GROUP']['member_access'] =
                         $group['MEMBER_ACCESS'];
+                    if(isset($_REQUEST['user_filter'])) {
+                        $user_filter = $parent->clean(
+                            $_REQUEST['user_filter'], 'string');
+                    } else {
+                        $user_filter = "";
+                    }
+                    $data['USER_FILTER'] = $user_filter;
+                    $data['NUM_USERS_GROUP'] =
+                        $group_model->countGroupUsers($group_id, $user_filter);
+                    if(isset($_REQUEST['group_limit'])) {
+                        $group_limit = min($parent->clean(
+                            $_REQUEST['group_limit'], 'int'),
+                            $data['NUM_USERS_GROUP']);
+                        $group_limit = max($group_limit, 0);
+                    } else {
+                        $group_limit = 0;
+                    }
+                    $data['GROUP_LIMIT'] = $group_limit;
                     $data['GROUP_USERS'] =
-                        $group_model->getGroupUsers($group_id);
+                        $group_model->getGroupUsers($group_id, $user_filter,
+                        $group_limit);
                 break;
                 case "inviteusers":
                     $data['FORM_TYPE'] = "inviteusers";
@@ -1472,8 +1492,10 @@ class AccountaccessComponent extends Component
                     array_keys($data[$check_field]))) {
                 $group[$group_field] =
                     $_REQUEST[$request_field];
-                $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                    tl('accountaccess_component_group_updated')."</h1>');";
+                if(!isset($_REQUEST['change_filter'])) {
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('accountaccess_component_group_updated')."</h1>');";
+                }
                 $changed = true;
             } else if(isset($_REQUEST[$request_field]) &&
                 $_REQUEST[$request_field] != "") {
@@ -1482,7 +1504,13 @@ class AccountaccessComponent extends Component
             }
         }
         if($changed) {
-            $parent->model("group")->updateGroup($group);
+            if(!isset($_REQUEST['change_filter'])) {
+                $parent->model("group")->updateGroup($group);
+            } else {
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('accountaccess_component_group_filter_users').
+                        "</h1>');";
+            }
         }
     }
 }

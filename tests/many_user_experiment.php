@@ -39,8 +39,9 @@ if(isset($_SERVER['DOCUMENT_ROOT']) && strlen($_SERVER['DOCUMENT_ROOT']) > 0) {
     exit();
 }
 /**
- * This script inserts 1000 random users into the database so that one can
+ * This script inserts 1500 users into the database so that one can
  * test UI of Yioop in a scenario that has a moderate number of users.
+ * It then insert groups for these users
  */
 
 
@@ -60,14 +61,40 @@ require_once BASE_DIR."/models/model.php";
 /** For UserModel::addUser method*/
 require_once BASE_DIR."/models/user_model.php";
 
+/** To create groups that can add users to */
+require_once BASE_DIR."/models/group_model.php";
+
 /** For crawlHash function */
 require_once BASE_DIR."/lib/utility.php";
 
 $user_model = new UserModel();
 
-for($i = 0; $i < 1000; $i++) {
+//Add lots of users
+$user_ids = array();
+for($i = 0; $i < 500; $i++) {
     echo "Adding User $i\n";
-    $user_model->addUser("User$i", "test", "First$i", "Last$i",
-        "user$i@email.net", 1);
+    $id = $user_model->addUser("User$i", "test", "First$i", "Last$i",
+        "user$i@email.net", ACTIVE_STATUS);
+    if($id === false) {
+        echo "Problem inserting user into DB, aborting...\n";
+        exit(1);
+    }
+    $user_ids[$i] = $id;
+}
+
+// add lots of groups
+$group_model = new GroupModel();
+$group_ids = array();
+for($i = 0; $i < 100; $i++) {
+    echo "Creating Group $i\n";
+    $group_ids[$i] = $group_model->addGroup("Group$i", $user_ids[$i],
+        PUBLIC_JOIN, GROUP_READ_WRITE);
+}
+
+// add lots of users to group 1
+
+for($i = 0; $i < 100; $i++) {
+    $user_id = $user_ids[$i + 2];
+    $group_model->addUserGroup($user_id, $group_ids[1], ACTIVE_STATUS);
 }
 ?>
