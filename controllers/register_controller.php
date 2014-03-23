@@ -119,7 +119,7 @@ class RegisterController extends Controller implements CrawlConstants
      * Use to match the leading zero in the sha1 of the string
      * @var int
      */
-    const HASH_CAPTCHA_LEVEL = 4;
+    const HASH_CAPTCHA_LEVEL = 3;
     /**
      *  Besides invoking the base controller, sets up in field variables
      *  the captcha and recovery question and possible answers.
@@ -610,7 +610,7 @@ class RegisterController extends Controller implements CrawlConstants
         if($profile['CAPTCHA_MODE'] == HASH_CAPTCHA) {
             $data['INCLUDE_SCRIPTS'] = array("hashcash");
         }
-        if(profile['CAPTCHA_MODE'] == TEXT_CAPTCHA) {
+        if($profile['CAPTCHA_MODE'] == TEXT_CAPTCHA) {
             $num_captchas = self::NUM_CAPTCHA_QUESTIONS;
             unset($_SESSION["request_time"]);
             unset($_SESSION["level"] );
