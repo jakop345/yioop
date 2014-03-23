@@ -134,15 +134,15 @@ class SuggestView extends View
                                 e("</td></tr>");
                                 $i++;
                             }
-                          } 
+                          }
                         }
                         ?>
                         <tr>
                             <td></td>
                             <?php if(isset($_SESSION["randomString"])) { ?>
-                            <td class="table-input"> 
+                            <td class="table-input">
                             <?php } else { ?>
-                               <td class="table-input border-top"> 
+                               <td class="table-input border-top">
                             <?php }?>
                                <input type="hidden"
                                 name="<?php e(CSRF_TOKEN);?>"
@@ -167,7 +167,8 @@ class SuggestView extends View
         <script>
             document.addEventListener('DOMContentLoaded', function() {
             var body = tag(body);
-            body.onload = findNonce('nonce_for_string','random_string','time1','level');
+            body.onload = findNonce('nonce_for_string', 'random_string',
+                'time1', 'level');
             }, false);
         </script>
         <?php

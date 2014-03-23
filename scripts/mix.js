@@ -72,7 +72,7 @@ function redrawFragments()
 /*
  * Adds a crawl fragment to the end of the list of crawl fragments.
  *
- * @param int num_results the number of results the crawl fragment should be 
+ * @param int num_results the number of results the crawl fragment should be
  *      used for
  */
 function addFragment(num_results)
@@ -103,7 +103,7 @@ function drawFragment(fragment_num, num_results)
 }
 
 /*
- * Draw a blank crawl mix fragment, without the Javascript functions attached 
+ * Draw a blank crawl mix fragment, without the Javascript functions attached
  * to it
  *
  * @param Object tbl the table object to store blank mix table in

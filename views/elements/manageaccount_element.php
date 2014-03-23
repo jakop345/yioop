@@ -68,7 +68,7 @@ class ManageaccountElement extends Element
         $disabled = (isset($data['EDIT_USER'])) ? "" : "disabled='disabled'";
     ?>
         <div class="current-activity">
-            <h2><?php e(tl('manageaccount_element_welcome', 
+            <h2><?php e(tl('manageaccount_element_welcome',
                 $data['USERNAME'])); ?></h2>
             <p><?php e(tl('manageaccount_element_what_can_do')); ?></p>
             <h2><?php

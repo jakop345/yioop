@@ -348,7 +348,7 @@ class ManagegroupsElement extends Element
                     e("</tr>");
                 }
                 $center = (MOBILE) ? "" : 'class="center"';
-                if(isset($data['NUM_USERS_GROUP']) && 
+                if(isset($data['NUM_USERS_GROUP']) &&
                     $data['NUM_USERS_GROUP'] > NUM_RESULTS_PER_PAGE) {
                     $limit = isset($data['GROUP_LIMIT']) ? $data['GROUP_LIMIT']:
                         0;

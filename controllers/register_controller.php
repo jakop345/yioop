@@ -111,12 +111,6 @@ class RegisterController extends Controller implements CrawlConstants
      */
     const NUM_RECOVERY_QUESTIONS = 3;
     /**
-     * Use to check the captcha mode 
-     * @var string
-     */
-    const  TEXT_CAPTCHA = 'text_captcha';
-    const  HASH_CAPTCHA = 'hash_captcha';
-    /**
      * Define the number of seconds till hash code is valid
      * @var int
      */
@@ -125,7 +119,7 @@ class RegisterController extends Controller implements CrawlConstants
      * Use to match the leading zero in the sha1 of the string
      * @var int
      */
-    const HASH_CAPTCHA_LEVEL = 2;
+    const HASH_CAPTCHA_LEVEL = 4;
     /**
      *  Besides invoking the base controller, sets up in field variables
      *  the captcha and recovery question and possible answers.
@@ -609,22 +603,22 @@ class RegisterController extends Controller implements CrawlConstants
     function suggestUrl()
     {
         $profile_model = $this->model("profile");
-        $profile =  $profile_model->getProfile( WORK_DIRECTORY);    
+        $profile = $profile_model->getProfile(WORK_DIRECTORY);
         $data["REFRESH"] = "suggest";
         $visitor_model = $this->model("visitor");
         $clear = false;
-        if(strcasecmp($profile['CAPTCHA_MODE'],self::HASH_CAPTCHA) == 0) {
+        if($profile['CAPTCHA_MODE'] == HASH_CAPTCHA) {
             $data['INCLUDE_SCRIPTS'] = array("hashcash");
         }
-        if(strcasecmp($profile['CAPTCHA_MODE'],self::TEXT_CAPTCHA) == 0) {
+        if(profile['CAPTCHA_MODE'] == TEXT_CAPTCHA) {
             $num_captchas = self::NUM_CAPTCHA_QUESTIONS;
             unset($_SESSION["request_time"]);
             unset($_SESSION["level"] );
-            unset($_SESSION["random_String"] );
+            unset($_SESSION["random_string"] );
         }
         if(!isset($_SESSION['BUILD_TIME']) || !isset($_REQUEST['build_time'])||
             $_SESSION['BUILD_TIME'] != $_REQUEST['build_time']) {
-            if(strcmp($profile['CAPTCHA_MODE'],self::HASH_CAPTCHA) == 0) {
+            if($profile['CAPTCHA_MODE'] == HASH_CAPTCHA) {
                 $time = time();
                 $_SESSION["request_time"] = $time;
                 $_SESSION["level"] = self::HASH_CAPTCHA_LEVEL;
@@ -640,7 +634,7 @@ class RegisterController extends Controller implements CrawlConstants
             $data['build_time'] = time();
             $_SESSION['BUILD_TIME'] = $data['build_time'];
         }
-        if(strcmp($profile['CAPTCHA_MODE'],self::TEXT_CAPTCHA) == 0) { 
+        if($profile['CAPTCHA_MODE'] == TEXT_CAPTCHA) {
             for($i = 0; $i < $num_captchas; $i++) {
                 $data["question_$i"] = "-1";
                 if($clear && isset($_REQUEST["question_$i"])) {
@@ -652,7 +646,7 @@ class RegisterController extends Controller implements CrawlConstants
         if(isset($_REQUEST['url'])) {
             $data['url'] = $this->clean($_REQUEST['url'], "string");
         }
-        if(strcmp($profile['CAPTCHA_MODE'],self::TEXT_CAPTCHA) == 0) {
+        if($profile['CAPTCHA_MODE'] == TEXT_CAPTCHA) {
             if(!isset($_SESSION['CAPTCHAS']) ||
                !isset($_SESSION['CAPTCHA_ANSWERS'])){
                 list($captchas, $answers) = $this->selectQuestionsAnswers(
@@ -668,7 +662,7 @@ class RegisterController extends Controller implements CrawlConstants
         }
         $missing = array();
         $save = isset($_REQUEST['arg']) && $_REQUEST['arg'];
-        if(strcmp($profile['CAPTCHA_MODE'],self::TEXT_CAPTCHA) == 0) {
+        if($profile['CAPTCHA_MODE'] == TEXT_CAPTCHA) {
             for($i = 0; $i < $num_captchas; $i++) {
             $field = "question_$i";
             $captchas = isset($_SESSION['CAPTCHAS'][$i]) ?
@@ -702,7 +696,7 @@ class RegisterController extends Controller implements CrawlConstants
                     tl('register_controller_error_fields')."</h1>');";
                 return $data;
             }
-            if(strcmp($profile['CAPTCHA_MODE'],self::HASH_CAPTCHA) == 0) {
+            if($profile['CAPTCHA_MODE'] == HASH_CAPTCHA) {
                 if(!$this->validateHashCode()) {
                     $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
                     tl('register_controller_failed_hashcode')."</h1>');";
@@ -711,7 +705,7 @@ class RegisterController extends Controller implements CrawlConstants
                     return $data;
                 }
             }
-            if(strcmp($profile['CAPTCHA_MODE'],self::TEXT_CAPTCHA) == 0) {
+            if($profile['CAPTCHA_MODE'] == TEXT_CAPTCHA) {
                 if(!$this->checkCaptchaAnswers()) {
                     $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
                     tl('register_controller_failed_human')."</h1>');";
@@ -721,7 +715,7 @@ class RegisterController extends Controller implements CrawlConstants
                 unset($_SESSION['CAPTCHAS']);
                 unset($_SESSION['CAPTCHA_ANSWERS']);
                 $visitor_model->updateVisitor(
-                $_SERVER['REMOTE_ADDR'], "captcha_time_out");
+                    $_SERVER['REMOTE_ADDR'], "captcha_time_out");
                 return $data;
                 }
             }
@@ -735,7 +729,7 @@ class RegisterController extends Controller implements CrawlConstants
             $visitor_model->updateVisitor(
                 $_SERVER['REMOTE_ADDR'], "suggest_day_exceeded",
                 self::ONE_DAY, self::ONE_DAY, MAX_SUGGEST_URLS_ONE_DAY);
-            if(strcmp($profile['CAPTCHA_MODE'],self::TEXT_CAPTCHA) == 0) {
+            if($profile['CAPTCHA_MODE'] == TEXT_CAPTCHA) {
                 for($i = 0; $i < $num_captchas; $i++) {
                 $data["question_$i"] = "-1";
                 }
@@ -1055,10 +1049,10 @@ class RegisterController extends Controller implements CrawlConstants
 
      /**
      *  Calculates the sha1 of a string consist of a randomString,request_time
-     *  send by a server and the nonce send by a client.It checks 
+     *  send by a server and the nonce send by a client.It checks
      *  whether the sha1 produces expected number of a leading zeroes
      *
-     *  @return bool true if the sha1 produces expected number 
+     *  @return bool true if the sha1 produces expected number
      *  of a leading zeroes.
      */
     function validateHashCode()
@@ -1074,7 +1068,7 @@ class RegisterController extends Controller implements CrawlConstants
             return true;
         }
         return false;
-    }  
+    }
 }
 
 ?>

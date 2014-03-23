@@ -640,7 +640,7 @@ class FetchUrl implements CrawlConstants
 
     /**
      *  Given the results of a getPage call, check whether or not the response
-     *  had the words NOTICE, WARNING, FATAL which might indicate an error on 
+     *  had the words NOTICE, WARNING, FATAL which might indicate an error on
      *  the server. If it does, then the $response string is sent to the
      *  crawlLog
      *

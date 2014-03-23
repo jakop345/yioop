@@ -143,7 +143,7 @@ class FeedsHelper extends Helper implements CrawlConstants
     }
 
     /**
-     *  Write as an string in the current locale the difference between the 
+     *  Write as an string in the current locale the difference between the
      *  publication date of a post and the current time
      *
      *  @param int $time timestamp for current time

@@ -106,7 +106,7 @@ class AccountaccessComponent extends Component
                 $data['GROUPS'][$i]["ITEM_TITLE"] = $item[0]['TITLE'];
                 $data['GROUPS'][$i]["THREAD_ID"] = $item[0]['PARENT_ID'];
             } else {
-                $data['GROUPS'][$i]["ITEM_TITLE"] = 
+                $data['GROUPS'][$i]["ITEM_TITLE"] =
                     tl('accountaccess_component_no_posts_yet');
                 $data['GROUPS'][$i]["THREAD_ID"] = -1;
             }

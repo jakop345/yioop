@@ -240,12 +240,12 @@ class ServersettingsElement extends Element
             <div class="top-margin">
             <fieldset>
                 <legend><label
-                for="captcha_setting"><?php
+                for="captcha-setting"><?php
                 e(tl('serversettings_element_captcha_setting'));
                 ?>
                 </label></legend>
                     <?php $this->view->helper("options")->render(
-                        "captcha_setting", "CAPTCHA_MODE",
+                        "captcha-setting", "CAPTCHA_MODE",
                        $data['CAPTCHA_MODES'],
                      $data['CAPTCHA_MODE']);
                 ?>

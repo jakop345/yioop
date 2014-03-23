@@ -607,9 +607,9 @@ class SystemComponent extends Component
                     tl('system_component_configure_admin_activation'),
             );
         $data['CAPTCHA_MODES'] = array (
-                'text_captcha' => 
+                TEXT_CAPTCHA =>
                    tl('serversettings_element_text_captcha'),
-                'hash_captcha' => 
+                HASH_CAPTCHA =>
                    tl('serversettings_element_hash_captcha'),
             );
         $data['show_mail_info'] = "false";

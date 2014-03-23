@@ -152,12 +152,12 @@ class MixcrawlsElement extends Element
             value="<?php e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" id="time-stamp" name="timestamp" value="" />
         <table>
-        <tr><th><label for="share-mix-name" ><?php 
+        <tr><th><label for="share-mix-name" ><?php
             e(tl("mixcrawls_element_mixname")); ?></label></th>
         <td><input type="text" name="smixname" value="" disabled="disabled"
             id="share-mix-name" maxlength="80" class="wide-field"/></td>
         </tr>
-        <tr><th><label for="share-group" ><?php 
+        <tr><th><label for="share-group" ><?php
             e(tl("mixcrawls_element_group")); ?></label></th>
         <td><input type="text" name="group_name"
             id="share-group" maxlength="80" class="wide-field"/></td>

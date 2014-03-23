@@ -31,17 +31,16 @@
  */
 
 /*
- *  To find the nonce for the inpute paramaters given by the server.
- * 
+ *  To find the nonce for the input parameters given by the server.
+ *
  *  @param Object nonce_for_string a DOM element to put the value of a nonce
  *  @param Object random_string a DOM element to get the value of random_string
  *  @param Object time a DOM element to get the value of the time
  *  @param Object level a DOM element to get the value of a level
  */
-function findNonce(nonce_for_string, random_string, time, level) 
+function findNonce(nonce_for_string, random_string, time, level)
 {
-    if(elt(random_string).value)
-    {
+    if(elt(random_string).value) {
         var random_string = elt(random_string).value;
         var level = elt(level).value;
         var time = elt(time).value;
@@ -54,7 +53,7 @@ function findNonce(nonce_for_string, random_string, time, level)
 
 /*
  *  This function calculates the sha1 on the strings until
- *  numeber of a leading zeroes in the sha1 value matches with a level 
+ *  numeber of a leading zeroes in the sha1 value matches with a level
  *  parameter.
  *
  *  @param String random_string a string sent by the server
@@ -81,7 +80,7 @@ function hashStamp(random_string, time, level)
  *  @param String input string for the function
  *  @return String sha1 of the input string
  */
-function generateSha1(str) 
+function generateSha1(str)
 {
     var n = ((str.toString().length + 8) >> 6) + 1;
     var x = new Array();
@@ -91,8 +90,8 @@ function generateSha1(str)
     }
 
     for (i = 0; i < str.toString().length; i++) {
-        x[i >> 2] += 
-        (str.toString().substr(i, 1)).charCodeAt(0) << (24 - (i % 4) * 8);
+        x[i >> 2] +=
+            (str.toString().substr(i, 1)).charCodeAt(0) << (24 - (i % 4) * 8);
     }
 
     x[i >> 2] |= 0x80 << (24 - (i % 4) * 8);
@@ -167,7 +166,7 @@ function bin2hex(binarray)
  *  @param int d constant value
  *  @return int result of a xor value on constants
  */
-function hashOperationByIteration(t, b, c, d) 
+function hashOperationByIteration(t, b, c, d)
 {
     if (t < 20) {
         return (b & c) | ((~b) & d);
@@ -187,7 +186,7 @@ function hashOperationByIteration(t, b, c, d)
  *  @param int t value of iteration
  *  @return int constant value
  */
-function constantForIteration(t) 
+function constantForIteration(t)
 {
     if (t < 20) {
         return 1518500249;
@@ -256,7 +255,7 @@ function zeroFill(a, b)
  *  @param int number input number
  *  @return string binary number
  */
-function dec2bin(number) 
+function dec2bin(number)
 {
     if (number < 0) {
         number = 0xFFFFFFFF + number + 1;

@@ -1198,7 +1198,7 @@ class Fetcher implements CrawlConstants
             "&check_crawl_time=".$this->check_crawl_time;
         crawlLog($request);
         $response_string = FetchUrl::getPage($request, NULL, true);
-        
+
         if($response_string === false) {
             crawlLog("The following request failed:");
             crawlLog($request);

@@ -483,7 +483,7 @@ class BlogmixesComponent extends Component implements CrawlConstants
                             "</h1>')";
                         break;
                     }
-                    if(!isset($_REQUEST['timestamp']) || 
+                    if(!isset($_REQUEST['timestamp']) ||
                         !in_array($_REQUEST['timestamp'], $mix_ids)) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('blogmixes_component_invalid_timestamp').
@@ -492,7 +492,7 @@ class BlogmixesComponent extends Component implements CrawlConstants
                     }
                     $timestamp = $parent->clean($_REQUEST['timestamp'], "int");
                     $group_model = $parent->model("group");
-                    $group_name = 
+                    $group_name =
                         $parent->clean($_REQUEST['group_name'], "string");
                     $group_id = $group_model->getGroupId($group_name);
                     $group = NULL;

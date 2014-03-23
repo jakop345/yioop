@@ -326,11 +326,11 @@ class CrawlModel extends ParallelModel implements CrawlConstants
         $fid = 0;
         foreach($mix['FRAGMENTS'] as $fragment_id => $fragment_data) {
             $sql = "INSERT INTO MIX_FRAGMENTS VALUES (?, ?, ?)";
-            $db->execute($sql, array($timestamp, $fid, 
+            $db->execute($sql, array($timestamp, $fid,
                 $fragment_data['RESULT_BOUND']));
             foreach($fragment_data['COMPONENTS'] as $component) {
                 $sql = "INSERT INTO MIX_COMPONENTS VALUES (?, ?, ?, ?, ?)";
-                $db->execute($sql, array($timestamp, $fid, 
+                $db->execute($sql, array($timestamp, $fid,
                     $component['CRAWL_TIMESTAMP'], $component['WEIGHT'],
                     $component['KEYWORDS']));
             }

@@ -134,18 +134,18 @@ function parse_ini_with_fallback($file)
             $matches)){
             if($name_space) {
                 if($matches[3] == '[]') {
-                    $ini[$name_space][$matches[2]][] = 
+                    $ini[$name_space][$matches[2]][] =
                         get_ini_assign_match($matches);
                 } else {
-                    $ini[$name_space][$matches[1]] = 
+                    $ini[$name_space][$matches[1]] =
                         get_ini_assign_match($matches);
                 }
             } else {
                 if($matches[3] == '[]') {
-                    $ini[$name_space][$matches[2]][] = 
+                    $ini[$name_space][$matches[2]][] =
                         get_ini_assign_match($matches);
                 } else {
-                    $ini[$matches[1]] = 
+                    $ini[$matches[1]] =
                         get_ini_assign_match($matches);
                 }
             }
@@ -159,7 +159,7 @@ function parse_ini_with_fallback($file)
  * the $matches array produced by the former function's preg_match
  * what kind of assignment occurred in the ini file being parsed.
  *
- * @param string $matches produced by a preg_match in 
+ * @param string $matches produced by a preg_match in
  *      parse_ini_with_fallback
  * @return mixed value of ini file assignment
  */

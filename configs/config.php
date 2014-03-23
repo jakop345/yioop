@@ -104,7 +104,7 @@ if(MAINTENANCE_MODE && $_SERVER["SERVER_ADDR"] != $_SERVER["REMOTE_ADDR"]) {
 }
 
 if(!defined('WORK_DIRECTORY')) {
-/*+++ The next block of code is machine edited, change at 
+/*+++ The next block of code is machine edited, change at
 your own risk, please use configure web page instead +++*/
 define('WORK_DIRECTORY', '');
 /*++++++*/
@@ -114,7 +114,6 @@ define('WORK_DIRECTORY', '');
 
 define('APP_DIR', WORK_DIRECTORY."/app");
 define('PREP_DIR', WORK_DIRECTORY."/prepare");
-
 define('FALLBACK_LOCALE_DIR', BASE_DIR."/locale");
 
 /** name of the cookie used to manage the session
@@ -122,6 +121,12 @@ define('FALLBACK_LOCALE_DIR', BASE_DIR."/locale");
  */
 define ('SESSION_NAME', "yioopbiscuit");
 define('CSRF_TOKEN', "YIOOP_TOKEN");
+
+/** Captcha Mode Possibility*/
+define('TEXT_CAPTCHA', 1);
+
+/** Captcha Mode Possibility*/
+define('HASH_CAPTCHA', 2);
 
 if(file_exists(WORK_DIRECTORY.PROFILE_FILE_NAME)) {
     require_once(WORK_DIRECTORY.PROFILE_FILE_NAME);
@@ -152,6 +157,7 @@ if(file_exists(WORK_DIRECTORY.PROFILE_FILE_NAME)) {
     /** @ignore */
     define('PROFILE', false);
     define('DBMS', 'sqlite3');
+    define('CAPTCHA_MODE', HASH_CAPTCHA);
     define('DEBUG_LEVEL', NO_DEBUG_INFO);
     define('USE_FILECACHE', false);
     define('WEB_ACCESS', true);

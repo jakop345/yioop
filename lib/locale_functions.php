@@ -285,6 +285,9 @@ function tl()
 {
     global $locale;
 
+    if(!is_object($locale)) {
+        return false;
+    }
     $args = func_get_args();
     $translation = $locale->translate($args);
     if(!$translation) {

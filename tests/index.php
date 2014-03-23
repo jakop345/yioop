@@ -154,7 +154,8 @@ function runTestBasedOnRequest()
 {
     echo "<p><a href='?activity=listTests'>See test case list</a>.</p>";
     if(isset($_REQUEST['test'])) {
-        $name = preg_replace("/[^A-Za-z_0-9]/", '', $_REQUEST['test'])."_test.php";
+        $name = preg_replace("/[^A-Za-z_0-9]/", '', $_REQUEST['test']).
+            "_test.php";
         if(file_exists($name)) {
             runTest($name);
         }
