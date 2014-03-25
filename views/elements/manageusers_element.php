@@ -272,10 +272,13 @@ class ManageusersElement extends Element
             <tr><th class="table-label" style="vertical-align:top"><?php
                     e(tl('manageusers_element_groups')); ?>:</th>
                 <td><div class='light-gray-box'><table><?php
-                foreach($data['SELECT_GROUPS'] as $group_array) {
+                foreach($data['USER_GROUPS'] as $group_array) {
                     e("<tr><td><b>".
                         $group_array['GROUP_NAME'].
                         "</b></td>");
+                    e("<td class='gray'>".
+                        $data["MEMBERSHIP_CODES"][$group_array['STATUS']].
+                        "</td>");
                     e("<td><a href='?c=admin&amp;a=manageUsers".
                         "&amp;arg=deleteusergroup&amp;selectgroup=".
                         $group_array['GROUP_ID']);
@@ -285,9 +288,51 @@ class ManageusersElement extends Element
                 }
                 ?>
                 </table>
-                <?php $this->view->helper("options")->render("add-usergroup",
-                        "selectgroup", $data['AVAILABLE_GROUPS'],
-                        $data['SELECT_GROUP']); ?>
+                <?php
+                if(isset($data['GROUP_FILTER']) || 
+                    (isset($data['NUM_USER_GROUPS']) &&
+                    $data['NUM_USER_GROUPS'] > NUM_RESULTS_PER_PAGE)) {
+                    $limit = isset($data['GROUP_LIMIT']) ? $data['GROUP_LIMIT']:
+                        0;
+                ?>
+                    <div class="center">
+                    <?php
+                        $action_url = $base_url. "&amp;user_name=".
+                        $data['CURRENT_USER']['user_name'];
+                        if($limit >= NUM_RESULTS_PER_PAGE ) {
+                            ?><a href='<?php e(
+                            "$action_url&amp;arg=edituser&amp;group_limit=".
+                            ($limit - NUM_RESULTS_PER_PAGE)); ?>'
+                            >&lt;&lt;</a><?php
+                        }
+                        ?>
+                    <input class="very-narrow-field center" name="group_filter"
+                    type="text" max-length="10" value='<?php
+                    e($data['GROUP_FILTER']); ?>' />
+                    <?php
+                        if($data['NUM_USER_GROUPS'] >= $limit +
+                            NUM_RESULTS_PER_PAGE) {
+                            ?><a href='<?php e(
+                            "$action_url&amp;arg=edituser&amp;group_limit=".
+                            ($limit + NUM_RESULTS_PER_PAGE)); ?>'>&gt;&gt;</a>
+                        <?php
+                        }
+                    ?><br />
+                    <button type="submit" name="change_filter"
+                        value="true"><?php
+                    e(tl('manageusers_element_filter')); ?></button><br />&nbsp;
+                </div>
+                <?php
+                }
+                ?>
+                <div class="center" >
+                <input type="text" name="selectgroup" id='select-group'
+                    class="very-narrow-field" />
+                <button type="submit"
+                    class="button-box">
+                    <label for='select-group'><?php
+                    e(tl('manageusers_element_add_group')); ?></label></button>
+                </div>
                 </div>
                 </td></tr>
         <?php

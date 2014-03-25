@@ -348,8 +348,8 @@ class ManagegroupsElement extends Element
                     e("</tr>");
                 }
                 $center = (MOBILE) ? "" : 'class="center"';
-                if(isset($data['NUM_USERS_GROUP']) &&
-                    $data['NUM_USERS_GROUP'] > NUM_RESULTS_PER_PAGE) {
+                if($data['USER_FILTER'] || (isset($data['NUM_USERS_GROUP']) &&
+                    $data['NUM_USERS_GROUP'] > NUM_RESULTS_PER_PAGE)) {
                     $limit = isset($data['GROUP_LIMIT']) ? $data['GROUP_LIMIT']:
                         0;
                 ?>
@@ -364,15 +364,13 @@ class ManagegroupsElement extends Element
                         ?>
                         </td>
                         <td colspan="2" class="center">
-                            <form method="GET" action="."><input type="hidden"
-                                name="change_filter" value="true"
-                            /><input
+                            <input
                             class="very-narrow-field center" name="user_filter"
                             type="text" max-length="10" value='<?php
                             e($data['USER_FILTER']); ?>' /><br />
-                            <button type="submit"><?php
+                            <button type="submit" name="change_filter"
+                                value="true"><?php
                             e(tl('managegroups_element_filter')); ?></button>
-                            </form>
                             </td>
                         <td class="left"><?php
                         if($data['NUM_USERS_GROUP'] >= $limit +

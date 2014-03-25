@@ -69,6 +69,7 @@ class GroupModel extends Model
      *  Get an array of users that belong to a group
      *
      *  @param string $group_id  the group_id to get users for
+     *  @param string $filter to LIKE filter users
      *  @param int $limit first user to get
      *  @param int $num number of users to return
      *  @return array of USERS rows
@@ -262,26 +263,6 @@ class GroupModel extends Model
             $sql = "DELETE FROM USER_GROUP WHERE GROUP_ID=?";
             $db->execute($sql, $params);
         }
-    /**
-     *  Get a list of all groups. Group names are not localized since these are
-     *  created by end user admins of the search engine
-     *
-     *  @return array an array of group_id, group_name pairs
-     */
-    function getGroupList()
-    {
-        $db = $this->db;
-        $groups = array();
-        $sql = "SELECT G.GROUP_ID AS GROUP_ID, G.GROUP_NAME AS GROUP_NAME
-             FROM GROUPS G";
-        $result = $db->execute($sql);
-        $i = 0;
-        while($groups[$i] = $db->fetchArray($result)) {
-            $i++;
-        }
-        unset($groups[$i]); //last one will be null
-        return $groups;
-    }
 
     /**
      *  Gets the group items subscribed to by a user with $user_id
@@ -419,27 +400,66 @@ class GroupModel extends Model
     }
 
    /**
-    *  Get a list of all groups which are created by the user_id. Group names
+    *  Get a list of all groups which user_id belongs to. Group names
     *  are not localized since these are
     *  created by end user admins of the search engine
     *
     *  @param int $user_id to get groups for
+    *  @param string $filter to LIKE filter groups
+    *  @param int $limit first user to get
+    *  @param int $num number of users to return
     *  @return array an array of group_id, group_name pairs
     */
-    function getUserGroups($user_id)
+    function getUserGroups($user_id, $filter, $limit,
+        $num = NUM_RESULTS_PER_PAGE)
     {
         $db = $this->db;
         $groups = array();
+        $limit = $db->limitOffset($limit, $num);
+        $like = "";
+        $param_array = array($user_id);
+        if($filter != "") {
+            $like = "AND G.GROUP_NAME LIKE ?";
+            $param_array[] = "%".$filter."%";
+        }
         $sql = "SELECT UG.GROUP_ID AS GROUP_ID, UG.USER_ID AS USER_ID," .
-            " G.GROUP_NAME AS GROUP_NAME FROM USER_GROUP UG, GROUPS G" .
-            " WHERE USER_ID = ? AND UG.GROUP_ID = G.GROUP_ID";
-        $result = $db->execute($sql, array($user_id));
+            " G.GROUP_NAME AS GROUP_NAME, UG.STATUS AS STATUS ".
+            " FROM USER_GROUP UG, GROUPS G" .
+            " WHERE USER_ID = ? AND UG.GROUP_ID = G.GROUP_ID $like $limit";
+        $result = $db->execute($sql, $param_array);
         $i = 0;
         while($groups[$i] = $db->fetchArray($result)) {
             $i++;
         }
         unset($groups[$i]); //last one will be null
         return $groups;
+    }
+
+    /**
+     *  Get a count of the number of groups to which user_id belongs.
+     *
+     *  @param int $user_id to get groups for
+     *  @param string $filter to LIKE filter groups
+     *  @return int number of groups of the filtered type for the user
+     */
+    function countUserGroups($user_id, $filter="")
+    {
+        $db = $this->db;
+        $users = array();
+        $like = "";
+        $param_array = array($user_id);
+        if($filter != "") {
+            $like = "AND G.GROUP_NAME LIKE ?";
+            $param_array[] = "%".$filter."%";
+        }
+        $sql = "SELECT COUNT(*) AS NUM ".
+            " FROM USER_GROUP UG, GROUPS G".
+            " WHERE UG.USER_ID = ? AND UG.GROUP_ID = G.GROUP_ID $like";
+        $result = $db->execute($sql, $param_array);
+        if($result) {
+            $row = $db->fetchArray($result);
+        }
+        return $row['NUM'];
     }
 
     /**
@@ -479,6 +499,7 @@ class GroupModel extends Model
      */
     function deletableUser($user_id, $group_id)
     {
+        $db = $this->db;
         $sql = "SELECT COUNT(*) AS NUM FROM USER_GROUP UG, GROUPS G WHERE
             UG.USER_ID != G.OWNER_ID AND UG.USER_ID=? AND UG.GROUP_ID=?";
         $result = $db->execute($sql, array($user_id, $group_id));
