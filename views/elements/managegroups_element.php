@@ -69,7 +69,6 @@ class ManagegroupsElement extends Element
             default:
                 $this->renderGroupsForm($data);
         }
-
         $data['TABLE_TITLE'] = tl('managegroups_element_groups');
         $data['ACTIVITY'] = 'manageGroups';
         $data['VIEW'] = $this->view;
@@ -303,7 +302,6 @@ class ManagegroupsElement extends Element
                 <?php
                 if($data['visible_users'] == 'true') {
                 ?>
-                    <div id="group-users">
                     <table><?php
                     $stretch = (MOBILE) ? 1 :2;
                     foreach($data['GROUP_USERS'] as $user_array) {
@@ -410,11 +408,11 @@ class ManagegroupsElement extends Element
                     ?>]&nbsp;&nbsp;</td>
                     </tr>
                     </table>
-                    </div>
                 </div>
                 </td></tr>
-        <?php
-        }
+            <?php
+            }
+                }
         ?>
         <tr><td></td><td class="center"><button class="button-box"
             type="submit"><?php e(tl('managegroups_element_save'));
@@ -432,7 +430,6 @@ class ManagegroupsElement extends Element
         }
         </script>
         <?php
-        }
     }
 
     /**
