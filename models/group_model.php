@@ -425,7 +425,8 @@ class GroupModel extends Model
         $sql = "SELECT UG.GROUP_ID AS GROUP_ID, UG.USER_ID AS USER_ID," .
             " G.GROUP_NAME AS GROUP_NAME, UG.STATUS AS STATUS ".
             " FROM USER_GROUP UG, GROUPS G" .
-            " WHERE USER_ID = ? AND UG.GROUP_ID = G.GROUP_ID $like $limit";
+            " WHERE USER_ID = ? AND UG.GROUP_ID = G.GROUP_ID $like ".
+            " ORDER BY G.GROUP_NAME $limit";
         $result = $db->execute($sql, $param_array);
         $i = 0;
         while($groups[$i] = $db->fetchArray($result)) {

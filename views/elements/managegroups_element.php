@@ -104,7 +104,7 @@ class ManagegroupsElement extends Element
                 "MEMBER_ACCESS" => array("ACCESS_CODES", "memberaccess"),
                 "REGISTER_TYPE" =>  array("REGISTER_CODES", "registertype"),
             );
-            $stretch = (MOBILE) ? 1 :2;
+            $stretch = (MOBILE) ? 1 : 2;
             foreach($data['GROUPS'] as $group) {
                 echo "<tr>";
                 foreach($group as $col_name => $group_column) {
@@ -236,7 +236,7 @@ class ManagegroupsElement extends Element
     function renderGroupsForm($data)
     {
         $base_url = "?c=admin&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
-            "&amp;a=manageGroups";
+            "&amp;a=manageGroups&amp;visible_users=".$data['visible_users'];
         $editgroup = ($data['FORM_TYPE'] == "editgroup") ? true: false;
         $creategroup = ($data['FORM_TYPE'] == "creategroup") ? true: false;
         if($editgroup) {
@@ -250,13 +250,15 @@ class ManagegroupsElement extends Element
         }
 
         ?>
-        <form id="addGroupForm" method="post" action='./'>
+        <form id="group-form" method="post" action='./'>
         <input type="hidden" name="c" value="admin" />
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="manageGroups" />
         <input type="hidden" name="arg" value="<?php
             e($data['FORM_TYPE']);?>" />
+        <input type="hidden" id="visible-users" name="visible_users"
+            value="<?php e($data['visible_users']);?>" />
         <input type="hidden" name="group_id" value="<?php
             e($data['CURRENT_GROUP']['id']); ?>" />
         <table class="name-table">
@@ -270,7 +272,8 @@ class ManagegroupsElement extends Element
                     e(' disabled="disabled" ');
                 }
                 ?> /></td></tr>
-        <?php if($creategroup || $editgroup) { ?>
+        <?php 
+        if($creategroup || $editgroup) { ?>
             <tr><th class="table-label"><label for="register-type"><?php
                 e(tl('managegroups_element_register'))?></label>:</th>
                 <td><?php
@@ -291,108 +294,123 @@ class ManagegroupsElement extends Element
         ?>
             <tr><th class="table-label" style="vertical-align:top"><?php
                     e(tl('managegroups_element_group_users')); ?>:</th>
-                <td><div class='light-gray-box'><table><?php
-                $stretch = (MOBILE) ? 1 :2;
-                foreach($data['GROUP_USERS'] as $user_array) {
-                    $action_url = $base_url."&amp;user_id=" .
-                        $user_array['USER_ID'] . "&amp;group_id=".
-                        $data['CURRENT_GROUP']['id'];
-                    $out_name = $user_array['USER_NAME'];
-                    if(strlen($out_name) > $stretch * NAME_TRUNCATE_LEN) {
-                        $out_name =substr($out_name, 0,
-                            $stretch * NAME_TRUNCATE_LEN)."..";
-                    }
-                    e("<tr><td><b>".
-                        $out_name.
-                        "</b></td>");
-                    if($data['CURRENT_GROUP']['owner'] ==
-                        $user_array['USER_NAME']) {
-                        e("<td>".
-                            $data['MEMBERSHIP_CODES'][$user_array['STATUS']] .
-                            "</td>");
-                        e("<td>" . tl('managegroups_element_groupowner') .
-                            "</td><td><span class='gray'>".
-                            tl('managegroups_element_delete')."</span></td>");
-                    } else {
-                        e("<td>".$data['MEMBERSHIP_CODES'][
-                            $user_array['STATUS']]);
-                        e("</td>");
-                        switch($user_array['STATUS'])
-                        {
-                            case INACTIVE_STATUS:
-                                e("<td><a href='$action_url".
-                                    "&amp;arg=activateuser'>".
-                                    tl('managegroups_element_activate').
-                                    '</a></td>');
-                            break;
-                            case ACTIVE_STATUS:
-                                e("<td><a href='$action_url".
-                                    "&amp;arg=banuser'>".
-                                    tl('managegroups_element_ban').
-                                    '</a></td>');
-                            break;
-                            case BANNED_STATUS:
-                                e("<td><a href='$action_url".
-                                    "&amp;arg=reinstateuser'>".
-                                    tl('managegroups_element_unban')
-                                    .'</a></td>');
-                            break;
-                            default:
-                            e("<td></td>");
-                            break;
-                        }
-
-                        e("<td><a href='$action_url&amp;arg=deleteuser'>".
-                            tl('managegroups_element_delete')."</a></td>");
-                    }
-                    e("</tr>");
-                }
-                $center = (MOBILE) ? "" : 'class="center"';
-                if($data['USER_FILTER'] || (isset($data['NUM_USERS_GROUP']) &&
-                    $data['NUM_USERS_GROUP'] > NUM_RESULTS_PER_PAGE)) {
-                    $limit = isset($data['GROUP_LIMIT']) ? $data['GROUP_LIMIT']:
-                        0;
-                ?>
-                    <tr>
-                    <td class="right"><?php
-                        if($limit >= NUM_RESULTS_PER_PAGE) {
-                            ?><a href='<?php e(
-                            "$action_url&amp;arg=editgroup&amp;group_limit=".
-                            ($limit - NUM_RESULTS_PER_PAGE)); ?>'
-                            >&lt;&lt;</a><?php
-                        }
-                        ?>
-                        </td>
-                        <td colspan="2" class="center">
-                            <input
-                            class="very-narrow-field center" name="user_filter"
-                            type="text" max-length="10" value='<?php
-                            e($data['USER_FILTER']); ?>' /><br />
-                            <button type="submit" name="change_filter"
-                                value="true"><?php
-                            e(tl('managegroups_element_filter')); ?></button>
-                            </td>
-                        <td class="left"><?php
-                        if($data['NUM_USERS_GROUP'] >= $limit +
-                            NUM_RESULTS_PER_PAGE) {
-                            ?><a href='<?php e(
-                            "$action_url&amp;arg=editgroup&amp;group_limit=".
-                            ($limit + NUM_RESULTS_PER_PAGE)); ?>'>&gt;&gt;</a>
-                        <?php
-                        }
-                        ?>
-                        </td>
-                    </tr>
+                <td><div class='light-gray-box'>
+                <div class="center">
+                    [<a href="javascript:toggleUserCollection('visible-users')"
+                        ><?php e(tl('managegroups_element_num_users',
+                        $data['NUM_USERS_GROUP']));?></a>]
+                </div>
                 <?php
-                }
+                if($data['visible_users'] == 'true') {
                 ?>
-                <tr>
-                <td colspan="4" <?php e($center); ?>>&nbsp;&nbsp;[<?php
-                e("<a href='$action_url&amp;arg=inviteusers'>".
-                    tl('managegroups_element_invite')."</a>");
-                ?>]&nbsp;&nbsp;</td>
-                </tr>
-                </table>
+                    <div id="group-users">
+                    <table><?php
+                    $stretch = (MOBILE) ? 1 :2;
+                    foreach($data['GROUP_USERS'] as $user_array) {
+                        $action_url = $base_url."&amp;user_id=" .
+                            $user_array['USER_ID'] . "&amp;group_id=".
+                            $data['CURRENT_GROUP']['id'].
+                            "&amp;user_filter=".$data['USER_FILTER'];
+                        $out_name = $user_array['USER_NAME'];
+                        if(strlen($out_name) > $stretch * NAME_TRUNCATE_LEN) {
+                            $out_name =substr($out_name, 0,
+                                $stretch * NAME_TRUNCATE_LEN)."..";
+                        }
+                        e("<tr><td><b>".
+                            $out_name.
+                            "</b></td>");
+                        if($data['CURRENT_GROUP']['owner'] ==
+                            $user_array['USER_NAME']) {
+                            e("<td>".
+                                $data['MEMBERSHIP_CODES'][$user_array['STATUS']] .
+                                "</td>");
+                            e("<td>" . tl('managegroups_element_groupowner') .
+                                "</td><td><span class='gray'>".
+                                tl('managegroups_element_delete')."</span></td>");
+                        } else {
+                            e("<td>".$data['MEMBERSHIP_CODES'][
+                                $user_array['STATUS']]);
+                            e("</td>");
+                            switch($user_array['STATUS'])
+                            {
+                                case INACTIVE_STATUS:
+                                    e("<td><a href='$action_url".
+                                        "&amp;arg=activateuser'>".
+                                        tl('managegroups_element_activate').
+                                        '</a></td>');
+                                break;
+                                case ACTIVE_STATUS:
+                                    e("<td><a href='$action_url".
+                                        "&amp;arg=banuser'>".
+                                        tl('managegroups_element_ban').
+                                        '</a></td>');
+                                break;
+                                case BANNED_STATUS:
+                                    e("<td><a href='$action_url".
+                                        "&amp;arg=reinstateuser'>".
+                                        tl('managegroups_element_unban')
+                                        .'</a></td>');
+                                break;
+                                default:
+                                e("<td></td>");
+                                break;
+                            }
+
+                            e("<td><a href='$action_url&amp;arg=deleteuser'>".
+                                tl('managegroups_element_delete')."</a></td>");
+                        }
+                        e("</tr>");
+                    }
+                    $center = (MOBILE) ? "" : 'class="center"';
+                    if($data['USER_FILTER'] != "" ||
+                        (isset($data['NUM_USERS_GROUP']) &&
+                        $data['NUM_USERS_GROUP'] > NUM_RESULTS_PER_PAGE)) {
+                        $limit = isset($data['GROUP_LIMIT']) ?
+                            $data['GROUP_LIMIT']:  0;
+                    ?>
+                        <tr>
+                        <td class="right"><?php
+                            if($limit >= NUM_RESULTS_PER_PAGE) {
+                                ?><a href='<?php e("$action_url".
+                                    "&amp;arg=editgroup&amp;group_limit=".
+                                    ($limit - NUM_RESULTS_PER_PAGE)); ?>'
+                                    >&lt;&lt;</a><?php
+                            }
+                            ?>
+                            </td>
+                            <td colspan="2" class="center">
+                                <input class="very-narrow-field center"
+                                    name="user_filter" type="text" 
+                                    max-length="10" value='<?php
+                                    e($data['USER_FILTER']); ?>' /><br />
+                                <button type="submit" name="change_filter"
+                                    value="true"><?php
+                                    e(tl('managegroups_element_filter'));
+                                    ?></button>
+                                </td>
+                            <td class="left"><?php
+                            if($data['NUM_USERS_GROUP'] > $limit +
+                                NUM_RESULTS_PER_PAGE) {
+                                ?><a href='<?php e("$action_url".
+                                    "&amp;arg=editgroup&amp;group_limit=".
+                                    ($limit + NUM_RESULTS_PER_PAGE)); ?>'
+                                    >&gt;&gt;</a>
+                            <?php
+                            }
+                            ?>
+                            </td>
+                        </tr>
+                    <?php
+                    }
+                    ?>
+                    <tr>
+                    <td colspan="4" <?php e($center); ?>>&nbsp;&nbsp;[<?php
+                    e("<a href='$action_url&amp;arg=inviteusers'>".
+                        tl('managegroups_element_invite')."</a>");
+                    ?>]&nbsp;&nbsp;</td>
+                    </tr>
+                    </table>
+                    </div>
                 </div>
                 </td></tr>
         <?php
@@ -404,7 +422,17 @@ class ManagegroupsElement extends Element
         </tr>
         </table>
         </form>
+        <script type="text/javascript">
+        function toggleUserCollection(collection_name)
+        {
+            var collection = elt(collection_name);
+            collection.value = (collection.value =='true')
+                ? 'false' : 'true';
+            elt('group-form').submit();
+        }
+        </script>
         <?php
+        }
     }
 
     /**
@@ -422,7 +450,7 @@ class ManagegroupsElement extends Element
         <div class='float-opposite'><a href='<?php e($base_url); ?>'><?php
             e(tl('managegroups_element_group_info')); ?></a></div>
         <h2><?php e(tl('managegroups_element_invite_users_group')); ?></h2>
-        <form id="addGroupForm" method="post" action='./'>
+        <form id="group-form" method="post" action='./'>
         <input type="hidden" name="c" value="admin" />
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />
@@ -470,7 +498,7 @@ class ManagegroupsElement extends Element
         <div class='float-opposite'><a href='<?php e($base_url); ?>'><?php
             e(tl('managegroups_element_addgroup_form')); ?></a></div>
         <h2><?php e(tl('managegroups_element_transfer_group_owner')); ?></h2>
-        <form id="addGroupForm" method="post" action='./'>
+        <form id="group-form" method="post" action='./'>
         <input type="hidden" name="c" value="admin" />
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />

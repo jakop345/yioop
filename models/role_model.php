@@ -107,18 +107,38 @@ class RoleModel extends Model
 
 
     /**
-     *  Get a list of all roles. Role names are not localized since these are
-     *  created by end user admins of the search engine
+     * Gets all the roles associated with a user id
      *
-     *  @return array an array of role_id, role_name pairs
+     * @param string $user_id  the user_id to get roles of
+     * @return array of role_ids and their names
      */
-    function getRoleList()
+    function getUserRoles($user_id, $filter, $limit,
+        $num = NUM_RESULTS_PER_PAGE)
     {
         $db = $this->db;
+        $user_id = $db->escapeString($user_id);
+
         $roles = array();
-        $sql = "SELECT R.ROLE_ID AS ROLE_ID, R.NAME AS ROLE_NAME ".
-            " FROM ROLE R";
-        $result = $db->execute($sql);
+        $locale_tag = getLocaleTag();
+        $limit = $db->limitOffset($limit, $num);
+        $like = "";
+        $param_array = array($user_id);
+        if($filter != "") {
+            $like = "AND R.NAME LIKE ?";
+            $param_array[] = "%".$filter."%";
+        }
+        $sql = "SELECT LOCALE_ID FROM LOCALE ".
+            "WHERE LOCALE_TAG = ? ". $db->limitOffset(1);
+        $result = $db->execute($sql, array($locale_tag));
+        $row = $db->fetchArray($result);
+        $locale_id = $row['LOCALE_ID'];
+
+
+        $sql = "SELECT UR.ROLE_ID AS ROLE_ID, R.NAME AS ROLE_NAME ".
+            " FROM  USER_ROLE UR, ROLE R WHERE UR.USER_ID = ? ".
+            " AND R.ROLE_ID = UR.ROLE_ID $like  ORDER BY R.NAME ASC $limit";
+
+        $result = $db->execute($sql, $param_array);
         $i = 0;
         while($roles[$i] = $db->fetchArray($result)) {
             $i++;
@@ -127,18 +147,92 @@ class RoleModel extends Model
         return $roles;
     }
 
+    /**
+     *  Get a count of the number of groups that a user_id has.
+     *
+     *  @param int $user_id to get roles for
+     *  @param string $filter to LIKE filter groups
+     *  @return int number of roles of the filtered type for the user
+     */
+    function countUserRoles($user_id, $filter="")
+    {
+        $db = $this->db;
+        $users = array();
+        $like = "";
+        $param_array = array($user_id);
+        if($filter != "") {
+            $like = "AND R.NAME LIKE ?";
+            $param_array[] = "%".$filter."%";
+        }
+        $sql = "SELECT COUNT(*) AS NUM ".
+            " FROM USER_ROLE UR, ROLE R".
+            " WHERE UR.USER_ID = ? AND UR.ROLE_ID = R.ROLE_ID $like";
+        $result = $db->execute($sql, $param_array);
+        if($result) {
+            $row = $db->fetchArray($result);
+        }
+        return $row['NUM'];
+    }
 
     /**
-     * Get role id associated with rolename (so rolenames better be unique)
+     *   Check is a user given by $user_id has the role $role_id
      *
-     * @param string $rolename to use to look up a role_id
+     *   @param int $user_id user to look up
+     *   @param int $role_id role to check if member of
+     *   @return bool whether or not has role
+     */
+    function checkUserRole($user_id, $role_id)
+    {
+        $db = $this->db;
+        $params = array($user_id, $role_id);
+        $sql = "SELECT COUNT(*) AS NUM FROM USER_ROLE UR WHERE
+            UR.USER_ID=? AND UR.ROLE_ID=?";
+        $result = $db->execute($sql, $params);
+        if(!$row = $db->fetchArray($result) ) {
+            return false;
+        }
+        if($row['NUM'] <= 0) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Adds a role to a given user
+     *
+     * @param string $userid  the id of the user to add the role to
+     * @param string $roleid  the id of the role to add
+     */
+    function addUserRole($user_id, $role_id)
+    {
+        $sql = "INSERT INTO USER_ROLE VALUES (?, ?) ";
+        $result = $this->db->execute($sql, array($user_id, $role_id));
+    }
+
+
+    /**
+     * Deletes a role from a given user
+     *
+     * @param string $userid  the id of the user to delete the role from
+     * @param string $roleid  the id of the role to delete
+     */
+    function deleteUserRole($user_id, $role_id)
+    {
+        $sql = "DELETE FROM USER_ROLE WHERE USER_ID=? AND  ROLE_ID=?";
+        $result = $this->db->execute($sql, array($user_id, $role_id));
+    }
+
+    /**
+     * Get role id associated with role_name (so role_names better be unique)
+     *
+     * @param string $role_name to use to look up a role_id
      * @return string  role_id corresponding to the rolename.
      */
-    function getRoleId($rolename)
+    function getRoleId($role_name)
     {
         $db = $this->db;
         $sql = "SELECT R.ROLE_ID AS ROLE_ID FROM ROLE R WHERE R.NAME = ? ";
-        $result = $db->execute($sql, array($rolename));
+        $result = $db->execute($sql, array($role_name));
         if(!$row = $db->fetchArray($result) ) {
             return -1;
         }
@@ -149,7 +243,7 @@ class RoleModel extends Model
     /**
      *
      */
-    function getRoles($limit=0, $num=100, $search_array = array())
+    function getRoles($limit = 0, $num = 100, $search_array = array())
     {
         $db = $this->db;
         $dbinfo = array("DBMS" => DBMS, "DB_HOST" => DB_HOST,
@@ -170,9 +264,9 @@ class RoleModel extends Model
 
 
     /**
-     * Returns the number of users in the user table
+     * Returns the number of roles in the user table
      *
-     * @return int number of users
+     * @return int number of roles
      */
     function getRoleCount($search_array = array())
     {

@@ -179,41 +179,6 @@ class UserModel extends Model
     }
 
     /**
-     * Gets all the roles associated with a user id
-     *
-     * @param string $user_id  the user_id to get roles of
-     * @return array of role_ids and their names
-     */
-    function getUserRoles($user_id)
-    {
-        $db = $this->db;
-        $user_id = $db->escapeString($user_id);
-
-        $roles = array();
-        $locale_tag = getLocaleTag();
-
-        $sql = "SELECT LOCALE_ID FROM LOCALE ".
-            "WHERE LOCALE_TAG = ? ". $db->limitOffset(1);
-        $result = $db->execute($sql, array($locale_tag));
-        $row = $db->fetchArray($result);
-        $locale_id = $row['LOCALE_ID'];
-
-
-        $sql = "SELECT UR.ROLE_ID AS ROLE_ID, R.NAME AS ROLE_NAME ".
-            " FROM  USER_ROLE UR, ROLE R WHERE UR.USER_ID = ? ".
-            " AND R.ROLE_ID = UR.ROLE_ID";
-
-        $result = $db->execute($sql, array($user_id));
-        $i = 0;
-        while($roles[$i] = $db->fetchArray($result)) {
-            $i++;
-        }
-        unset($roles[$i]); //last one will be null
-
-        return $roles;
-    }
-
-    /**
      *  Return an array of up to $num many USERS rows starting from $limit and
      *  meeting the search criterion in $search_array
      *
@@ -436,30 +401,6 @@ class UserModel extends Model
         $sql .= " WHERE USER_ID=?";
         $params[] = $user_id;
         $this->db->execute($sql, $params);
-    }
-    /**
-     * Adds a role to a given user
-     *
-     * @param string $userid  the id of the user to add the role to
-     * @param string $roleid  the id of the role to add
-     */
-    function addUserRole($user_id, $role_id)
-    {
-        $sql = "INSERT INTO USER_ROLE VALUES (?, ?) ";
-        $result = $this->db->execute($sql, array($user_id, $role_id));
-    }
-
-
-    /**
-     * Deletes a role from a given user
-     *
-     * @param string $userid  the id of the user to delete the role from
-     * @param string $roleid  the id of the role to delete
-     */
-    function deleteUserRole($user_id, $role_id)
-    {
-        $sql = "DELETE FROM USER_ROLE WHERE USER_ID=? AND  ROLE_ID=?";
-        $result = $this->db->execute($sql, array($user_id, $role_id));
     }
 }
 ?>

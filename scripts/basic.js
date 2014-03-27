@@ -139,3 +139,18 @@ function setDisplay(id, value)
     }
     obj.style.display = value;
 }
+
+/*
+ * Toggles an element between display:none and display block
+ *  @param String id  the id of the DOM element one wants
+ */
+function toggleDisplay(id)
+{
+    obj = elt(id);
+    if(obj.style.display == "block")  {
+        value = "none";
+    } else {
+        value = "block";
+    }
+    obj.style.display = value;
+}

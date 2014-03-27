@@ -83,6 +83,11 @@ p
     clear:both;
 }
 
+.none
+{
+    display:none;
+}
+
 .no-margin
 {
     margin: 0;

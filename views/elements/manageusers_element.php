@@ -177,7 +177,8 @@ class ManageusersElement extends Element
     function renderUserForm($data)
     {
         $base_url = "?c=admin&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
-            "&amp;a=manageUsers";
+            "&amp;a=manageUsers&amp;visible_roles=".$data['visible_roles'].
+            "&amp;visible_groups=".$data['visible_groups'];
         $edituser = ($data['FORM_TYPE'] == "edituser") ? true: false;
         if($edituser) {
             e("<div class='float-opposite'><a href='$base_url'>".
@@ -187,13 +188,17 @@ class ManageusersElement extends Element
             e("<h2>".tl('manageusers_element_add_user'). "</h2>");
         }
         ?>
-        <form id="userForm" method="post" action='#' autocomplete="off">
+        <form id="user-form" method="post" action='#' autocomplete="off">
         <input type="hidden" name="c" value="admin" />
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="manageUsers" />
         <input type="hidden" name="arg" value="<?php
             e($data['FORM_TYPE']);?>" />
+        <input type="hidden" id="visible-roles" name="visible_roles"
+            value="<?php e($data['visible_roles']);?>" />
+        <input type="hidden" id="visible-groups" name="visible_groups"
+            value="<?php e($data['visible_groups']);?>" />
         <table class="name-table">
         <tr><th class="table-label"><label for="user-name"><?php
             e(tl('manageusers_element_username'))?>:</label></th>
@@ -237,102 +242,182 @@ class ManageusersElement extends Element
                         "update-userstatus-currentuser",
                         "status", $data['STATUS_CODES'],
                         $data['CURRENT_USER']['status']);
-                }?></td></tr>
+                } ?></td></tr>
         <?php
         if($edituser) {
         ?>
             <tr><th class="table-label" style="vertical-align:top"><?php
                     e(tl('manageusers_element_roles')); ?>:</th>
-                <td><div class='light-gray-box'><table><?php
-                foreach($data['SELECT_ROLES'] as $role_array) {
-                    e("<tr><td><b>".
-                        $role_array['ROLE_NAME'].
-                        "</b></td>");
-                    if($data['CURRENT_USER']['user_name'] == 'root' &&
-                        $role_array['ROLE_NAME'] == 'Admin') {
-                        e("<td><span class='gray'>".
-                            tl('manageusers_element_delete')."</span></td>");
-                    } else {
-                        e("<td><a href='?c=admin&amp;a=manageUsers".
-                            "&amp;arg=deleteuserrole&amp;selectrole=".
-                            $role_array['ROLE_ID']);
-                        e("&amp;user_name=".$data['CURRENT_USER']['user_name'].
-                            "&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
-                            "'>".tl('manageusers_element_delete')."</a></td>");
+                <td><div class='light-gray-box'>
+                <div class="center">
+                    [<a href="javascript:toggleUserCollection('visible-roles');"
+                        ><?php e(tl('manageusers_element_num_roles',
+                        $data['NUM_USER_ROLES']));?></a>]
+                </div>
+                <?php
+                if($data['visible_roles'] == 'true') {
+                ?>
+                    <div id="user-roles">
+                    <table><?php
+                    foreach($data['USER_ROLES'] as $role_array) {
+                        e("<tr><td><b>".
+                            $role_array['ROLE_NAME'].
+                            "</b></td>");
+                        if($data['CURRENT_USER']['user_name'] == 'root' &&
+                            $role_array['ROLE_NAME'] == 'Admin') {
+                            e("<td><span class='gray'>".
+                                tl('manageusers_element_delete').
+                                "</span></td>");
+                        } else {
+                            e("<td><a href='?c=admin&amp;a=manageUsers".
+                                "&amp;arg=deleteuserrole&amp;selectrole=".
+                                $role_array['ROLE_ID']);
+                            e("&amp;user_name=".
+                                $data['CURRENT_USER']['user_name'].
+                                "&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
+                                "'>".tl('manageusers_element_delete').
+                                "</a></td>");
+                        }
+                        e("</tr>");
                     }
-                    e("</tr>");
+                    ?>
+                    </table>
+                    <?php
+                    if($data['ROLE_FILTER'] != "" ||
+                        (isset($data['NUM_USER_ROLES']) &&
+                        $data['NUM_USER_ROLES'] > NUM_RESULTS_PER_PAGE)) {
+                        $limit = isset($data['ROLE_LIMIT']) ? 
+                            $data['ROLE_LIMIT']: 0;
+                    ?>
+                        <div class="center">
+                        <?php
+                            $action_url = $base_url. "&amp;user_name=".
+                                $data['CURRENT_USER']['user_name'].
+                                "&amp;role_filter=".$data['ROLE_FILTER'].
+                                "&amp;group_filter=".$data['GROUP_FILTER'];
+                            if($limit >= NUM_RESULTS_PER_PAGE ) {
+                                ?><a href='<?php e(
+                                "$action_url&amp;arg=edituser&amp;role_limit=".
+                                ($limit - NUM_RESULTS_PER_PAGE)); ?>'
+                                >&lt;&lt;</a><?php
+                            }
+                            ?>
+                        <input class="very-narrow-field center" 
+                            name="role_filter" type="text" max-length="10"
+                            value='<?php e($data['ROLE_FILTER']); ?>' />
+                            <?php
+                            if($data['NUM_USER_ROLES'] > $limit +
+                                NUM_RESULTS_PER_PAGE) {
+                                ?><a href='<?php e(
+                                "$action_url&amp;arg=edituser&amp;role_limit=".
+                                ($limit + NUM_RESULTS_PER_PAGE)); ?>'>&gt;&gt;</a>
+                            <?php
+                            }
+                        ?><br />
+                        <button type="submit" name="change_filter"
+                            value="role"><?php
+                        e(tl('manageusers_element_filter')); ?></button><br />&nbsp;
+                    </div>
+                    <?php
+                    }
+                    ?>
+                    <div class="center" >
+                    <input type="text" name="selectrole" id='select-role'
+                        class="very-narrow-field" />
+                    <button type="submit"
+                        class="button-box">
+                        <label for='select-role'><?php
+                        e(tl('manageusers_element_add_role')); ?></label></button>
+                    </div>
+                    </div>
+                <?php
                 }
                 ?>
-                </table>
-                <?php $this->view->helper("options")->render("add-userrole",
-                        "selectrole", $data['AVAILABLE_ROLES'],
-                        $data['SELECT_ROLE']); ?>
                 </div>
                 </td></tr>
             <tr><th class="table-label" style="vertical-align:top"><?php
                     e(tl('manageusers_element_groups')); ?>:</th>
-                <td><div class='light-gray-box'><table><?php
-                foreach($data['USER_GROUPS'] as $group_array) {
-                    e("<tr><td><b>".
-                        $group_array['GROUP_NAME'].
-                        "</b></td>");
-                    e("<td class='gray'>".
-                        $data["MEMBERSHIP_CODES"][$group_array['STATUS']].
-                        "</td>");
-                    e("<td><a href='?c=admin&amp;a=manageUsers".
-                        "&amp;arg=deleteusergroup&amp;selectgroup=".
-                        $group_array['GROUP_ID']);
-                    e("&amp;user_name=".$data['CURRENT_USER']['user_name'].
-                        "&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
-                        "'>".tl('manageusers_element_delete')."</a></td>");
-                }
-                ?>
-                </table>
+                <td><div class='light-gray-box'>
+                <div class="center">
+                    [<a href="javascript:toggleUserCollection('visible-groups')"
+                        ><?php e(tl('manageusers_element_num_groups',
+                        $data['NUM_USER_GROUPS']));?></a>]
+                </div>
                 <?php
-                if(isset($data['GROUP_FILTER']) || 
-                    (isset($data['NUM_USER_GROUPS']) &&
-                    $data['NUM_USER_GROUPS'] > NUM_RESULTS_PER_PAGE)) {
-                    $limit = isset($data['GROUP_LIMIT']) ? $data['GROUP_LIMIT']:
-                        0;
+                if($data['visible_groups'] == 'true') {
                 ?>
-                    <div class="center">
+                    <div id="user-groups">
+                    <table><?php
+                    foreach($data['USER_GROUPS'] as $group_array) {
+                        e("<tr><td><b>".
+                            $group_array['GROUP_NAME'].
+                            "</b></td>");
+                        e("<td class='gray'>".
+                            $data["MEMBERSHIP_CODES"][$group_array['STATUS']].
+                            "</td>");
+                        e("<td><a href='?c=admin&amp;a=manageUsers".
+                            "&amp;arg=deleteusergroup&amp;selectgroup=".
+                            $group_array['GROUP_ID']);
+                        e("&amp;user_name=".$data['CURRENT_USER']['user_name'].
+                            "&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
+                            "'>".tl('manageusers_element_delete')."</a></td>");
+                    }
+                    ?>
+                    </table>
                     <?php
-                        $action_url = $base_url. "&amp;user_name=".
-                        $data['CURRENT_USER']['user_name'];
-                        if($limit >= NUM_RESULTS_PER_PAGE ) {
-                            ?><a href='<?php e(
-                            "$action_url&amp;arg=edituser&amp;group_limit=".
-                            ($limit - NUM_RESULTS_PER_PAGE)); ?>'
-                            >&lt;&lt;</a><?php
-                        }
-                        ?>
-                    <input class="very-narrow-field center" name="group_filter"
-                    type="text" max-length="10" value='<?php
-                    e($data['GROUP_FILTER']); ?>' />
-                    <?php
-                        if($data['NUM_USER_GROUPS'] >= $limit +
-                            NUM_RESULTS_PER_PAGE) {
-                            ?><a href='<?php e(
-                            "$action_url&amp;arg=edituser&amp;group_limit=".
-                            ($limit + NUM_RESULTS_PER_PAGE)); ?>'>&gt;&gt;</a>
+                    if($data['GROUP_FILTER'] != "" ||
+                        (isset($data['NUM_USER_GROUPS']) &&
+                        $data['NUM_USER_GROUPS'] > NUM_RESULTS_PER_PAGE)) {
+                        $limit = isset($data['GROUP_LIMIT']) ? 
+                            $data['GROUP_LIMIT']: 0;
+                    ?>
+                        <div class="center">
                         <?php
-                        }
-                    ?><br />
-                    <button type="submit" name="change_filter"
-                        value="true"><?php
-                    e(tl('manageusers_element_filter')); ?></button><br />&nbsp;
-                </div>
+                            $action_url = $base_url. "&amp;user_name=".
+                                $data['CURRENT_USER']['user_name'].
+                                "&amp;role_filter=".$data['ROLE_FILTER'].
+                                "&amp;group_filter=".$data['GROUP_FILTER'];
+                            if($limit >= NUM_RESULTS_PER_PAGE ) {
+                                ?><a href='<?php e(
+                                "$action_url&amp;arg=edituser&amp;group_limit=".
+                                ($limit - NUM_RESULTS_PER_PAGE)); ?>'
+                                >&lt;&lt;</a><?php
+                            }
+                            ?>
+                        <input class="very-narrow-field center" 
+                            name="group_filter" type="text" max-length="10" 
+                            value='<?php  e($data['GROUP_FILTER']); ?>' />
+                        <?php
+                            if($data['NUM_USER_GROUPS'] > $limit +
+                                NUM_RESULTS_PER_PAGE) {
+                                ?><a href='<?php e(
+                                "$action_url&amp;arg=edituser&amp;group_limit=".
+                                ($limit + NUM_RESULTS_PER_PAGE)); 
+                                ?>'>&gt;&gt;</a>
+                            <?php
+                            }
+                        ?><br />
+                        <button type="submit" name="change_filter"
+                            value="group"><?php
+                        e(tl('manageusers_element_filter')); 
+                        ?></button><br />&nbsp;
+                    </div>
+                    <?php
+                    }
+                    ?>
+                    <div class="center" >
+                    <input type="text" name="selectgroup" id='select-group'
+                        class="very-narrow-field" />
+                    <button type="submit"
+                        class="button-box">
+                        <label for='select-group'><?php
+                        e(tl('manageusers_element_add_group')); 
+                        ?></label></button>
+                    </div>
+                    </div>
                 <?php
                 }
                 ?>
-                <div class="center" >
-                <input type="text" name="selectgroup" id='select-group'
-                    class="very-narrow-field" />
-                <button type="submit"
-                    class="button-box">
-                    <label for='select-group'><?php
-                    e(tl('manageusers_element_add_group')); ?></label></button>
-                </div>
                 </div>
                 </td></tr>
         <?php
@@ -357,6 +442,15 @@ class ManageusersElement extends Element
         </tr>
         </table>
         </form>
+        <script type="text/javascript">
+        function toggleUserCollection(collection_name)
+        {
+            var collection = elt(collection_name);
+            collection.value = (collection.value =='true')
+                ? 'false' : 'true';
+            elt('user-form').submit();
+        }
+        </script>
         <?php
     }
 
@@ -375,7 +469,7 @@ class ManageusersElement extends Element
         e("<h2>".tl('manageusers_element_search_user'). "</h2>");
         $item_sep = (MOBILE) ? "<br />" : "</td><td>";
         ?>
-        <form id="userForm" method="post" action='#' autocomplete="off">
+        <form id="user-form" method="post" action='#' autocomplete="off">
         <input type="hidden" name="c" value="admin" />
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />
