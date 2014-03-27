@@ -280,6 +280,7 @@ class BlogmixesComponent extends Component implements CrawlConstants
                 if($group['OWNER_ID'] == $user_id || $user_id == ROOT_ID) {
                     $page['MEMBER_ACCESS'] = GROUP_READ_WRITE;
                 }
+                $page['PUBDATE'] = $group['JOIN_DATE'];
                 $pages[$group['JOIN_DATE']] = $page;
             }
         }
