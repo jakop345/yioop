@@ -157,8 +157,7 @@ class FeedsHelper extends Helper implements CrawlConstants
             $num_hours = ceil($delta/self::ONE_HOUR);
             if($num_hours <= 2) {
                 if($num_hours > 1) {
-                    $pub_date = floor();
-                        tl('feeds_helper_view_onehour');
+                    $pub_date = tl('feeds_helper_view_onehour');
                 } else {
                     $num_minutes = floor($delta/self::ONE_MINUTE);
                     $remainder_seconds = $delta % self::ONE_MINUTE;
