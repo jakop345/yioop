@@ -157,12 +157,10 @@ class SourceModel extends Model
         $subsearches = array();
         $db = $this->db;
         $locale_tag = getLocaleTag();
-
         $sql = "SELECT LOCALE_ID FROM LOCALE ".
             "WHERE LOCALE_TAG = ? " . $db->limitOffset(1);
         $result = $db->execute($sql, array($locale_tag));
         $row = $db->fetchArray($result);
-
         $locale_id = $row['LOCALE_ID'];
         $sql = "SELECT S.LOCALE_STRING AS LOCALE_STRING, ".
             "S.FOLDER_NAME AS FOLDER_NAME, ".

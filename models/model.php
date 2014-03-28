@@ -406,14 +406,13 @@ class Model implements CrawlConstants
         if(isset($lookup[$string_id])) {
             return $lookup[$string_id];
         }
-
         $sql = "
             SELECT TL.TRANSLATION AS TRANSLATION
             FROM TRANSLATION T, LOCALE L, TRANSLATION_LOCALE TL
             WHERE T.IDENTIFIER_STRING = :string_id AND
                 L.LOCALE_TAG = :locale_tag AND
                 L.LOCALE_ID = TL.LOCALE_ID AND
-                T.TRANSLATION_ID = TL.TRANSLATION_ID" . $db->limitOffset(1);
+                T.TRANSLATION_ID = TL.TRANSLATION_ID " . $db->limitOffset(1);
         $result = $db->execute($sql,
             array(":string_id" => $string_id, ":locale_tag" => $locale_tag));
         $row = $db->fetchArray($result);
