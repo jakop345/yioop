@@ -78,13 +78,13 @@ class SuggestView extends View
             <input type='hidden' name='nonce_for_string'
             id='nonce_for_string' />
             <input type='hidden' name='random_string' id='random_string'
-            value='<?php e($_SESSION["random_string"]);?>' />
+                value='<?php e($_SESSION["random_string"]);?>' />
             <input type='hidden' name='time1' id='time1'
-            value='<?php e($_SESSION["request_time"]);?>' />
+                value='<?php e($_SESSION["request_time"]);?>' />
             <input type='hidden' name='level' id='level'
-            value='<?php e($_SESSION["level"]);?>' />
+                value='<?php e($_SESSION["level"]);?>' />
             <input type='hidden' name='time' id='time'
-            value='<?php e(time());?>'/>
+                value='<?php e(time());?>'/>
             <input type="hidden" name="c" value="register" />
             <input type="hidden" name="a" value="suggestUrl" />
             <input type="hidden" name="arg" value="save" />
@@ -107,9 +107,9 @@ class SuggestView extends View
                         </tr>
                         <tr>
                         <?php
-                        if(!isset($_SESSION["random_string"])){
-                        $question_sets = array(
-                            tl('register_view_human_check')=>$data['CAPTCHAS']);
+                        if(!isset($_SESSION["random_string"])) {
+                        $question_sets = array(tl('register_view_human_check')
+                            => $data['CAPTCHAS']);
                         $i = 0;
                         foreach($question_sets as $name => $set) {
                             $first = true;
@@ -139,7 +139,7 @@ class SuggestView extends View
                         ?>
                         <tr>
                             <td></td>
-                            <?php if(isset($_SESSION["randomString"])) { ?>
+                            <?php if(isset($_SESSION["random_string"])) { ?>
                             <td class="table-input">
                             <?php } else { ?>
                                <td class="table-input border-top">
@@ -164,12 +164,14 @@ class SuggestView extends View
         </div>
         </div>
         <div class='tall-landing-spacer'></div>
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-            var body = tag(body);
-            body.onload = findNonce('nonce_for_string', 'random_string',
-                'time1', 'level');
-            }, false);
+        <script type="text/javascript">
+            document.addEventListener('DOMContentLoaded',
+                function()
+                {
+                    var body = tag(body);
+                    body.onload = findNonce('nonce_for_string', 'random_string',
+                        'time1', 'level');
+                }, false);
         </script>
         <?php
         }
