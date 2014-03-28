@@ -102,14 +102,16 @@ class GroupfeedElement extends Element implements CrawlConstants
                     $_SESSION['USER_ID'] == ROOT_ID)) {
                     ?>
                     <div class="float-opposite" ><?php
-                    if(!isset($page['NO_EDIT'])) { ?>[<a
-                    href="javascript:update_post_form(<?php
+                    if(!isset($page['NO_EDIT'])) {
+                        ?>[<a href="javascript:update_post_form(<?php
                         e($page['ID']); ?>)"><?php
                         e(tl('groupfeed_element_edit')); ?></a>]<?php
-                    } ?>
+                    }
+                    ?>
                     [<a href="<?php e($paging_query.'&amp;arg=deletepost&amp;'.
                         "post_id=".$page['ID']); ?>" title="<?php
-                        e(tl('groupfeed_element_delete')); ?>">X</a>]</div>
+                        e(tl('groupfeed_element_delete')); ?>">X</a>]
+                    </div>
                 <?php
                 }
                 ?>
@@ -161,13 +163,10 @@ class GroupfeedElement extends Element implements CrawlConstants
                 $paging_query,
                 $data['LIMIT'], $data['RESULTS_PER_PAGE'], $data['TOTAL_ROWS']);
             ?>
-
+        </div>
         <?php
         if(!isset($data['STATUS'])) {
             $this->renderScripts($data);
-        } else { ?>
-        </div>
-        <?php
         }
     }
 

@@ -136,21 +136,18 @@ class WebLayout extends Layout
                     $script_name.'.js" ></script>');
             }
         }
-
         if(isset($data['INCLUDE_LOCALE_SCRIPT'])) {
                 e('<script type="text/javascript"
                     src="./locale/'.$data["LOCALE_TAG"].
                     '/resources/locale.js" ></script>');
         }
         ?>
-
         <script type="text/javascript" >
         <?php
         if(isset($data['SCRIPT'])) {
             e($data['SCRIPT']);
         }
         ?></script>
-
         </body>
     </html><?php
     }
