@@ -60,7 +60,7 @@ class GroupModel extends Model
     var $search_table_column_map = array("access"=>"G.MEMBER_ACCESS",
         "group_id"=>"G.GROUP_ID", "post_id" => "GI.ID",
         "join_date"=>"UG.JOIN_DATE",
-        "name"=>"G.GROUP_NAME", "owner"=>"O.OWNER_NAME",
+        "name"=>"G.GROUP_NAME", "owner"=>"O.USER_NAME",
         "pub_date" => "GI.PUBDATE", "parent_id"=>"GI.PARENT_ID",
         "register"=>"G.REGISTER_TYPE", "status"=>"UG.STATUS",
         "user_id"=>"P.USER_ID");
@@ -277,10 +277,11 @@ class GroupModel extends Model
      *  @param int $user_id who is making this request to determine which
      *      which groups will show up in the results (what that user owns
      *      and is subscribed to)
+     *  @param bool $browse
      *  @return array elements of which represent one group item
      */
-    function getGroups($limit=0, $num=100, $search_array = array(),
-        $user_id=ROOT_ID)
+    function getGroups($limit = 0, $num = 100, $search_array = array(),
+        $user_id=ROOT_ID, $browse = false)
     {
         $db = $this->db;
         $limit = $db->limitOffset($limit, $num);
@@ -291,12 +292,23 @@ class GroupModel extends Model
         if($where != "") {
             $add_where = " AND ";
         }
-        $where .= $add_where. " UG.USER_ID='".$db->escapeString($user_id).
-            "' AND  UG.GROUP_ID=G.GROUP_ID AND G.OWNER_ID=O.USER_ID";
-        $sql = "SELECT G.GROUP_ID AS GROUP_ID,
+        if($browse) {
+            $where .= $add_where.
+                " UG.GROUP_ID=G.GROUP_ID AND G.OWNER_ID=O.USER_ID AND NOT ".
+                "EXISTS (SELECT * FROM USER_GROUP UG2 WHERE UG2.USER_ID = ".
+                $db->escapeString($user_id)." AND UG2.GROUP_ID = G.GROUP_ID)";
+            $join_date = "";
+            $status = "";
+        } else {
+            $where .= $add_where. " UG.USER_ID='".$db->escapeString($user_id).
+                "' AND  UG.GROUP_ID=G.GROUP_ID AND G.OWNER_ID=O.USER_ID";
+            $join_date = ", UG.JOIN_DATE AS JOIN_DATE";
+            $status = " UG.STATUS AS STATUS,";
+        }
+        $sql = "SELECT DISTINCT G.GROUP_ID AS GROUP_ID,
             G.GROUP_NAME AS GROUP_NAME, G.OWNER_ID AS OWNER_ID,
-            O.USER_NAME AS OWNER, REGISTER_TYPE, UG.STATUS AS STATUS,
-            G.MEMBER_ACCESS, UG.JOIN_DATE AS JOIN_DATE FROM GROUPS G, USERS O,
+            O.USER_NAME AS OWNER, REGISTER_TYPE, $status
+            G.MEMBER_ACCESS $join_date FROM GROUPS G, USERS O,
             USER_GROUP UG
             $where $order_by $limit";
         $result = $db->execute($sql);
@@ -306,6 +318,49 @@ class GroupModel extends Model
         }
         unset($groups[$i]); //last one will be null
         return $groups;
+    }
+
+    /**
+     *  Gets the number of groups subscribed to by a user with $user_id
+     *  and which match the supplied search criteria found in $search_array.
+     *
+     *  @param array $search_array each element of this is a quadruple
+     *      name of a field, what comparison to perform, a value to check,
+     *      and an order (ascending/descending) to sort by
+     *  @param int $user_id who is making this request to determine which
+     *      which groups will be counted (what that user own
+     *      and is subscribed to)
+     *  @param bool $browse
+     *  @return int number of items matching the search criteria for the
+     *      given user_id
+     */
+    function getGroupsCount($search_array = array(), $user_id = ROOT_ID, 
+        $browse = false)
+    {
+        $db = $this->db;
+        $any_fields = array("access", "register");
+        list($where, $order_by) =
+            $this->searchArrayToWhereOrderClauses($search_array,$any_fields);
+        $add_where = " WHERE ";
+        if($where != "") {
+            $add_where = " AND ";
+        }
+        if($browse) {
+            $where .= $add_where.
+                " UG.GROUP_ID=G.GROUP_ID AND NOT ".
+                "EXISTS (SELECT * FROM USER_GROUP UG2 WHERE UG2.USER_ID = ".
+                $db->escapeString($user_id)." AND UG2.GROUP_ID = G.GROUP_ID)";
+            $sql = "SELECT COUNT(*) AS NUM FROM (SELECT DISTINCT UG.GROUP_ID
+                FROM GROUPS G, USER_GROUP UG $where) AS BROWSE_GROUPS";
+        } else {
+            $where .= $add_where. " UG.USER_ID='".$db->escapeString($user_id).
+                "' AND UG.GROUP_ID=G.GROUP_ID";
+            $sql = "SELECT COUNT(*) AS NUM FROM GROUPS G, USER_GROUP UG
+                $where";
+        }
+        $result = $db->execute($sql);
+        $row = $db->fetchArray($result);
+        return $row['NUM'];
     }
 
     /**
@@ -365,38 +420,6 @@ class GroupModel extends Model
             return false;
         }
         return $group;
-    }
-
-    /**
-     *  Gets the number of groups subscribed to by a user with $user_id
-     *  and which match the supplied search criteria found in $search_array.
-     *
-     *  @param array $search_array each element of this is a quadruple
-     *      name of a field, what comparison to perform, a value to check,
-     *      and an order (ascending/descending) to sort by
-     *  @param int $user_id who is making this request to determine which
-     *      which groups will be counted (what that user own
-     *      and is subscribed to)
-     *  @return int number of items matching the search criteria for the
-     *      given user_id
-     */
-    function getGroupsCount($search_array = array(), $user_id = ROOT_ID)
-    {
-        $db = $this->db;
-        $any_fields = array("access", "register");
-        list($where, $order_by) =
-            $this->searchArrayToWhereOrderClauses($search_array,$any_fields);
-        $add_where = " WHERE ";
-        if($where != "") {
-            $add_where = " AND ";
-        }
-        $where .= $add_where. " UG.USER_ID='".$db->escapeString($user_id).
-            "' AND  UG.GROUP_ID=G.GROUP_ID";
-        $sql = "SELECT COUNT(*) AS NUM FROM GROUPS G, USER_GROUP UG
-            $where";
-        $result = $db->execute($sql);
-        $row = $db->fetchArray($result);
-        return $row['NUM'];
     }
 
    /**
@@ -687,6 +710,20 @@ class GroupModel extends Model
         $sql = "SELECT COUNT(*) AS NUM FROM GROUP_ITEM GI, GROUPS G,
             USER_GROUP UG, USERS P $where";
         $result = $db->execute($sql);
+        $row = $db->fetchArray($result);
+        return $row['NUM'];
+    }
+
+    /**
+     *
+     *  @param int $group_id
+     */
+    function getGroupThreadCount($group_id)
+    {
+        $db = $this->db;
+        $sql = "SELECT COUNT(*) AS NUM FROM (SELECT DISTINCT PARENT_ID
+            FROM GROUP_ITEM  WHERE GROUP_ID = ?) AS THREADS";
+        $result = $db->execute($sql, array($group_id));
         $row = $db->fetchArray($result);
         return $row['NUM'];
     }

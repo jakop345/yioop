@@ -189,7 +189,7 @@ class GroupfeedElement extends Element implements CrawlConstants
         ?>
         function comment_form(id, parent_id, group_id)
         {
-            clearInterval(updateId );
+            clearInterval(updateId);
             tmp = '<div class="comment<?php e($clear); ?>" ></div>';
             start_elt = elt(id).innerHTML.substr(0, tmp.length)
             if(start_elt != tmp) {
@@ -222,7 +222,7 @@ class GroupfeedElement extends Element implements CrawlConstants
 
         function start_thread_form(id, group_id)
         {
-            clearInterval(updateId );
+            clearInterval(updateId);
             tmp = '<div class="thread<?php e($clear); ?>"></div>';
             start_elt = elt(id).innerHTML.substr(0, tmp.length)
             if(start_elt != tmp) {
@@ -261,7 +261,7 @@ class GroupfeedElement extends Element implements CrawlConstants
 
         function update_post_form(id)
         {
-            clearInterval(updateId );
+            clearInterval(updateId);
             var title = elt('title'+id).innerHTML;
             var description = elt('description'+id).innerHTML;
             var tmp = '<div class="update<?php e($clear); ?>"></div>';

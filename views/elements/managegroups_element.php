@@ -69,7 +69,11 @@ class ManagegroupsElement extends Element
             default:
                 $this->renderGroupsForm($data);
         }
-        $data['TABLE_TITLE'] = tl('managegroups_element_groups');
+        if(isset($data['browse']) && $data['browse'] == 'true') {
+            $data['TABLE_TITLE'] = tl('managegroups_element_not_my_groups');
+        } else {
+            $data['TABLE_TITLE'] = tl('managegroups_element_groups');
+        }
         $data['ACTIVITY'] = 'manageGroups';
         $data['VIEW'] = $this->view;
         $data['NO_FLOAT_TABLE'] = true;
@@ -89,14 +93,21 @@ class ManagegroupsElement extends Element
         <?php
             $base_url = "?c=admin&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
                 "&amp;a=manageGroups";
+            if(isset($data['browse'])) {
+                $base_url .= "&amp;browse=".$data['browse'];
+            }
             $is_root = ($_SESSION['USER_ID'] == ROOT_ID);
             $delete_url = $base_url . "&amp;arg=deletegroup&amp;";
             $unsubscribe_url = $base_url . "&amp;arg=unsubscribe&amp;";
             $join_url = $base_url . "&amp;arg=joingroup&amp;";
+            $add_url = $base_url . "&amp;arg=addgroup&amp;";
             $edit_url = $base_url . "&amp;arg=editgroup&amp;";
             $transfer_url = $base_url . "&amp;arg=changeowner&amp;";
             $mobile_columns = array('GROUP_NAME', 'OWNER');
             $ignore_columns = array("GROUP_ID", "OWNER_ID", "JOIN_DATE");
+            if(isset($data['browse'])) {
+                $igore_columns[] = 'STATUS';
+            }
             $access_columns = array("MEMBER_ACCESS");
             $dropdown_columns = array("MEMBER_ACCESS", "REGISTER_TYPE");
             $choice_arrays = array(
@@ -105,7 +116,7 @@ class ManagegroupsElement extends Element
             );
             $stretch = (MOBILE) ? 1 : 2;
             foreach($data['GROUPS'] as $group) {
-                echo "<tr>";
+                e("<tr>");
                 foreach($group as $col_name => $group_column) {
                     if(in_array($col_name, $ignore_columns) || (
                         MOBILE && !in_array($col_name, $mobile_columns))) {
@@ -124,7 +135,7 @@ class ManagegroupsElement extends Element
                             continue;
                         }
                     }
-                    if($col_name == "MEMBER_ACCESS" &&
+                    if($col_name == "MEMBER_ACCESS" && isset($group['STATUS'])&&
                         $group['STATUS'] != ACTIVE_STATUS) {
                         continue;
                     }
@@ -179,7 +190,8 @@ class ManagegroupsElement extends Element
                 <td><?php
                     if($group['OWNER_ID']!=$_SESSION['USER_ID']||
                         $group['GROUP_NAME'] == 'Public') {
-                        if($group['STATUS'] == INVITED_STATUS) {
+                        if(isset($group['STATUS']) && 
+                            $group['STATUS'] == INVITED_STATUS) {
                             ?><a href="<?php e($join_url . 'group_id='.
                                 $group['GROUP_ID'].'&amp;user_id=' .
                                 $_SESSION['USER_ID']); ?>"><?php
@@ -198,11 +210,25 @@ class ManagegroupsElement extends Element
                     if($group['GROUP_NAME'] == 'Public') {
                         e('<span class="gray">'.
                             tl('managegroups_element_delete').'</span>');
+                    } else if(isset($data['browse']) && 
+                        $data['browse'] == 'true') {
+                        if( $group['REGISTER_TYPE'] == NO_JOIN &&
+                            $_SESSION['USER_ID']  != ROOT_ID) {
+                            e('<span class="gray">'.
+                                tl('managegroups_element_join').'</span>');
+                        } else {
+                            ?><a href="<?php e($add_url . 'name='.
+                                $group['GROUP_NAME'].'&amp;user_id=' .
+                                $_SESSION['USER_ID']); ?>"><?php
+                                e(tl('managegroups_element_join'));
+                            ?></a><?php
+                        }
                     } else if($_SESSION['USER_ID']!=$group['OWNER_ID']) {?>
                         <a href="<?php e($unsubscribe_url . 'group_id='.
                             $group['GROUP_ID'].'&amp;user_id=' .
                             $_SESSION['USER_ID']); ?>"><?php
-                            if($group['STATUS'] == INVITED_STATUS) {
+                            if(isset($group['STATUS']) &&
+                                $group['STATUS'] == INVITED_STATUS) {
                                 e(tl('managegroups_element_decline'));
                             } else {
                                 e(tl('managegroups_element_unsubscribe'));
@@ -236,8 +262,10 @@ class ManagegroupsElement extends Element
     {
         $base_url = "?c=admin&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
             "&amp;a=manageGroups&amp;visible_users=".$data['visible_users'];
+        $browse_url = $base_url . '&amp;arg=search&amp;browse=true';
         $editgroup = ($data['FORM_TYPE'] == "editgroup") ? true: false;
         $creategroup = ($data['FORM_TYPE'] == "creategroup") ? true: false;
+        $addgroup = !$editgroup && !$creategroup;
         if($editgroup) {
             e("<div class='float-opposite'><a href='$base_url'>".
                 tl('managegroups_element_addgroup_form')."</a></div>");
@@ -270,7 +298,13 @@ class ManagegroupsElement extends Element
                 if($editgroup) {
                     e(' disabled="disabled" ');
                 }
-                ?> /></td></tr>
+                ?> /></td><?php
+                if($addgroup) { ?>
+                    <td>[<a href="<?php e($browse_url); ?>"><?php 
+                        e(tl('managegroups_element_browse')); ?></a>]</td>
+                <?php
+                }
+        ?></tr>
         <?php 
         if($creategroup || $editgroup) { ?>
             <tr><th class="table-label"><label for="register-type"><?php
@@ -541,15 +575,26 @@ class ManagegroupsElement extends Element
             "&amp;a=manageGroups";
         e("<div class='float-opposite'><a href='$base_url'>".
             tl('managegroups_element_addgroup_form')."</a></div>");
-        e("<h2>".tl('managegroups_element_search_group'). "</h2>");
+        if(isset($data['browse'])) {
+            $base_url .= "&amp;browse=".$data['browse'];
+            e("<h2>".tl('managegroups_element_discover_groups'). "</h2>");
+        } else {
+            e("<h2>".tl('managegroups_element_search_group'). "</h2>");
+        }
         $item_sep = (MOBILE) ? "<br />" : "</td><td>";
         ?>
-        <form id="searchForm" method="post" action='./' autocomplete="off">
+        <form id="search-form" method="post" action='./' autocomplete="off">
         <input type="hidden" name="c" value="admin" />
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="manageGroups" />
         <input type="hidden" name="arg" value="search" />
+        <?php
+            if(isset($data['browse'])) { ?>
+                <input type="hidden" name="browse" value="true" />
+            <?php
+            }
+        ?>
         <table class="name-table">
         <tr><td class="table-label"><label for="group-name"><?php
             e(tl('managegroups_element_groupname'))?>:</label>

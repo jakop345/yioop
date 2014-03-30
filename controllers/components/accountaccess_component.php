@@ -99,9 +99,15 @@ class AccountaccessComponent extends Component
             array(), $user_id);
         $num_shown = count($data['GROUPS']);
         for($i = 0; $i < $num_shown; $i++) {
+            $search_array = array(array("group_id", "=",
+                $data['GROUPS'][$i]['GROUP_ID'], ""));
             $item = $group_model->getGroupItems(0, 1,
-                array(array("group_id", "=",
-                $data['GROUPS'][$i]['GROUP_ID'], "")), $user_id);
+                $search_array, $user_id);
+            $data['GROUPS'][$i]['NUM_POSTS'] =
+                $group_model->getGroupItemCount($search_array, $user_id);
+            $data['GROUPS'][$i]['NUM_THREADS'] =
+                $group_model->getGroupThreadCount(
+                $data['GROUPS'][$i]['GROUP_ID']);
             if(isset($item[0]['TITLE'])) {
                 $data['GROUPS'][$i]["ITEM_TITLE"] = $item[0]['TITLE'];
                 $data['GROUPS'][$i]["THREAD_ID"] = $item[0]['PARENT_ID'];
@@ -1044,7 +1050,7 @@ class AccountaccessComponent extends Component
                 break;
                 case "addgroup":
                     if(($add_id = $group_model->getGroupId($name)) > 0 ||
-                        $name =="" ) {
+                        $name == "" ) {
                         $register =
                             $group_model->getRegisterType($add_id);
                         if($add_id > 0 && $register && $register != NO_JOIN) {
@@ -1370,8 +1376,14 @@ class AccountaccessComponent extends Component
             }
         }
         $current_id = $_SESSION["USER_ID"];
+        $browse = false;
+        if(isset($_REQUEST['browse']) && $_REQUEST['browse'] == 'true' &&
+            $_REQUEST['arg'] == 'search') {
+            $browse = true;
+            $data['browse'] = 'true';
+        }
         $num_groups = $group_model->getGroupsCount($search_array,
-            $current_id);
+            $current_id, $browse);
         $data['NUM_TOTAL'] = $num_groups;
         $num_show = (isset($_REQUEST['num_show']) &&
             isset($parent->view("admin")->helper("pagingtable")->show_choices[
@@ -1381,7 +1393,7 @@ class AccountaccessComponent extends Component
         if(isset($_REQUEST['start_row'])) {
             $data['START_ROW'] = min(
                 max(0, $parent->clean($_REQUEST['start_row'],"int")),
-                $num_users);
+                $num_groups);
         }
         $data['END_ROW'] = min($data['START_ROW'] + $num_show, $num_groups);
         if(isset($_REQUEST['start_row'])) {
@@ -1389,7 +1401,7 @@ class AccountaccessComponent extends Component
                 min($parent->clean($_REQUEST['end_row'],"int"), $num_groups));
         }
         $data["GROUPS"] = $group_model->getGroups($data['START_ROW'],
-            $num_show, $search_array, $current_id);
+            $num_show, $search_array, $current_id, $browse);
         $data['NEXT_START'] = $data['END_ROW'];
         $data['NEXT_END'] = min($data['NEXT_START'] + $num_show, $num_groups);
         $data['PREV_START'] = max(0, $data['START_ROW'] - $num_show);

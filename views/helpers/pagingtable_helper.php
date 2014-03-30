@@ -68,27 +68,11 @@ class PagingtableHelper extends Helper
     function render($data)
     {
         if(MOBILE) {
-            if(isset($data['PAGING-TYPE']) == "SMALL") {
-            } else {
-                $this->mobileTableControls($data);
-            }
+            $this->mobileTableControls($data);
         } else {
-            if(isset($data['PAGING-TYPE']) == "SMALL") {
-            } else {
-                $this->desktopTableControls($data);
-            }
+            $this->desktopTableControls($data);
         }
     }
-
-    /**
-     *
-     *  @param array $data needed for dropdown values for number of groups to
-     *      display
-     */
-    function smallTableControls($data)
-    {
-    }
-
     /**
      *  Draws the heading before a paging table as well as the controls
      *  for what rows to see (mobile phone case).
@@ -102,14 +86,20 @@ class PagingtableHelper extends Helper
         $base_url = "?c=admin&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
             "&amp;a=$activity";
         ?>
-        <h2><?php e($data['TABLE_TITLE']); ?>&nbsp;&nbsp;[<a
+        <h2><?php e($data['TABLE_TITLE']); ?>&nbsp;&nbsp;<?php
+                if(!isset($_REQUEST['arg']) || $_REQUEST['arg'] != 'search'){ ?>
+                [<a
                 href="<?php e($base_url . '&amp;arg=search');
-                ?>"><?php e(tl('pagingtable_helper_search'));?></a>]</h2>
+                ?>"><?php e(tl('pagingtable_helper_search'));?></a>]<?php
+                }?></h2>
         <div>
             <form  method="get" action='#' >
             <?php
             $name = isset($data['NAME']) ? $data['NAME'] : "";
             $bound_url = $base_url."&amp;arg=".$data['FORM_TYPE'];
+            if(isset($data['browse'])) {
+                $bound_url .= "&amp;browse=".$data['browse'];
+            }
             if($name != "") {
                 $bound_url .="&amp;name=".$name;
             } ?>
@@ -180,6 +170,9 @@ class PagingtableHelper extends Helper
             if($name != "") {
                 $bound_url .="&amp;name=".$name;
             }
+            if(isset($data['browse'])) {
+                $bound_url .= "&amp;browse=".$data['browse'];
+            }
             if($data['START_ROW'] > 0) {
                 ?>
                 <a href="<?php e($bound_url); ?>&amp;start_row=<?php
@@ -208,9 +201,12 @@ class PagingtableHelper extends Helper
                 $data['VIEW']->helper("options")->render(
                     "num-show", "num_show",  $this->show_choices,
                     $data['num_show'], true);
-            ?>
-            [<a href="<?php e($base_url . '&amp;arg=search');
-                ?>"><?php e(tl('pagingtable_helper_search'));?></a>]
+                if(!isset($_REQUEST['arg']) || $_REQUEST['arg'] != "search") {?>
+                    [<a href="<?php e($base_url . '&amp;arg=search');
+                        ?>"><?php e(tl('pagingtable_helper_search'));?></a>]
+                <?php
+                }
+                ?>
             </form>
         </div>
         <?php if(!$top) {

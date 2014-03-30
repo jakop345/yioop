@@ -158,7 +158,8 @@ class ManageaccountElement extends Element
                     <div><b><a href="<?php
                     e($feed_url.'&amp;just_group_id='.$group['GROUP_ID']); ?>"
                     rel="nofollow"><?php e($group['GROUP_NAME']);
-                    ?></a></b>
+                    ?></a> (<?php e(tl('manageaccount_element_group_stats',
+                        $group['NUM_POSTS'], $group['NUM_THREADS']) ); ?>)</b>
                     </div>
                     <div class="slight-pad">
                     <b><?php
