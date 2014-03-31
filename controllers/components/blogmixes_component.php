@@ -422,6 +422,8 @@ class BlogmixesComponent extends Component implements CrawlConstants
                     $mix['OWNER_ID'] = $user_id;
                     $mix['PARENT'] = -1;
                     $crawl_model->setCrawlMix($mix);
+                    $data['available_mixes'] =
+                        $crawl_model->getMixList($user_id, true);
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('blogmixes_component_mix_created')."</h1>');";
                 break;

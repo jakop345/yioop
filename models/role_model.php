@@ -280,8 +280,9 @@ class RoleModel extends Model
     }
 
     /**
-     *
+     * Return the role_id and role_name row corresponding to a given rolename
      * @param string $rolename
+     * @return array row in role table corresponding to $rolenames
      */
     function getRole($rolename)
     {

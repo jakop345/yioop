@@ -705,7 +705,6 @@ class AccountaccessComponent extends Component
         } else {
             $name = "";
         }
-
         if($name != "" ) {
             $role_id = $role_model->getRoleId($name);
             $data['ROLE_ACTIVITIES'] =
@@ -790,7 +789,14 @@ class AccountaccessComponent extends Component
 
                 case "editrole":
                     $data['FORM_TYPE'] = "editrole";
-                    $role = $role_model->getRole($name);
+                    $role = false;
+                    if($name) {
+                        $role = $role_model->getRole($name);
+                    }
+                    if($role === false) {
+                        $data['FORM_TYPE'] = "addrole";
+                        break;
+                    }
                     $update = false;
                     foreach($data['CURRENT_ROLE'] as $field => $value) {
                         $upper_field = strtoupper($field);
@@ -909,7 +915,7 @@ class AccountaccessComponent extends Component
         if(isset($_REQUEST['start_row'])) {
             $data['START_ROW'] = min(
                 max(0, $parent->clean($_REQUEST['start_row'],"int")),
-                $num_users);
+                $num_roles);
         }
         $data['END_ROW'] = min($data['START_ROW'] + $num_show, $num_roles);
         if(isset($_REQUEST['start_row'])) {

@@ -87,11 +87,11 @@ class PagingtableHelper extends Helper
             "&amp;a=$activity";
         ?>
         <h2><?php e($data['TABLE_TITLE']); ?>&nbsp;&nbsp;<?php
-                if(!isset($_REQUEST['arg']) || $_REQUEST['arg'] != 'search'){ ?>
+            if($data['FORM_TYPE'] != 'search'){ ?>
                 [<a
                 href="<?php e($base_url . '&amp;arg=search');
                 ?>"><?php e(tl('pagingtable_helper_search'));?></a>]<?php
-                }?></h2>
+            }?></h2>
         <div>
             <form  method="get" action='#' >
             <?php
