@@ -76,6 +76,16 @@ class RegisterView extends View
             <form method="post" action="#">
             <input type="hidden" name="c" value="register" />
             <input type="hidden" name="a" value="processAccountData" />
+            <?php  if(isset($_SESSION["random_string"])) { ?>
+            <input type='hidden' name='nonce_for_string'
+            id='nonce_for_string' />
+            <input type='hidden' name='random_string' id='random_string'
+            value='<?php e($_SESSION["random_string"]);?>' />
+            <input type='hidden' name='time' id='time'
+            value='<?php e($_SESSION["request_time"]);?>' />
+            <input type='hidden' name='level' id='level'
+            value='<?php e($_SESSION["level"]);?>' />
+            <?php  } ?>
                 <div class="register">
                     <table>
                         <tr>
@@ -160,10 +170,18 @@ class RegisterView extends View
                                     ?'<span class="red">*</span>':''; ?></td>
                         </tr>
                         <?php
-                        $question_sets = array(
-                            tl('register_view_human_check')=>$data['CAPTCHAS'],
-                            tl('register_view_account_recovery')
+                        if(isset($_SESSION["random_string"])) {
+                            $question_sets = array(
+                                tl('register_view_account_recovery')=>
+                                $data['RECOVERY']);
+                        }
+                        else {
+                            $question_sets = array(
+                                tl('register_view_human_check')=>
+                                $data['CAPTCHAS'],
+                                tl('register_view_account_recovery')
                                 =>$data['RECOVERY']);
+                        }
                         $i = 0;
                         foreach($question_sets as $name => $set) {
                             $first = true;
@@ -183,9 +201,11 @@ class RegisterView extends View
                                     "question-$i", "question_$i",
                                     $question, $data["question_$i"]);
                                 $first = false;
-                                e(in_array("question_$i", $missing)
-                                    ?'<span class="red">*</span>':'');
-                                e("</td></tr>");
+                                if(!isset($_SESSION["random_string"])) {
+                                    e(in_array("question_$i", $missing)
+                                        ?'<span class="red">*</span>':'');
+                                    e("</td></tr>");
+                                }
                                 $i++;
                             }
                         }
@@ -193,7 +213,7 @@ class RegisterView extends View
                         <tr>
                             <td></td>
                             <td class="table-input border-top">
-                        <input type="hidden"
+                            <input type="hidden"
                                 name="<?php e(CSRF_TOKEN);?>"
                                 value="<?php e($data[CSRF_TOKEN]); ?>"/>
                                 <button  type="submit"><?php
@@ -213,6 +233,13 @@ class RegisterView extends View
         </div>
         </div>
         <div class='tall-landing-spacer'></div>
+        <script type="text/javascript" >
+            document.addEventListener('DOMContentLoaded', function() {
+            var body = tag(body);
+            body.onload = findNonce('nonce_for_string', 'random_string'
+                , 'time', 'level');
+            }, false);
+        </script>
     <?php
         }
     }

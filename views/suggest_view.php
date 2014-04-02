@@ -75,6 +75,7 @@ class SuggestView extends View
                 ?></span></h1>
             <p class="center"><?php e(tl('suggest_view_instructions'));?></p>
             <form method="post" action="#">
+            <?php  if(isset($_SESSION["random_string"])) { ?>
             <input type='hidden' name='nonce_for_string'
             id='nonce_for_string' />
             <input type='hidden' name='random_string' id='random_string'
@@ -83,6 +84,7 @@ class SuggestView extends View
                 value='<?php e($_SESSION["request_time"]);?>' />
             <input type='hidden' name='level' id='level'
                 value='<?php e($_SESSION["level"]);?>' />
+            <?php } ?>
             <input type='hidden' name='time' id='time'
                 value='<?php e(time());?>'/>
             <input type="hidden" name="c" value="register" />
@@ -164,14 +166,12 @@ class SuggestView extends View
         </div>
         </div>
         <div class='tall-landing-spacer'></div>
-        <script type="text/javascript">
-            document.addEventListener('DOMContentLoaded',
-                function()
-                {
-                    var body = tag(body);
-                    body.onload = findNonce('nonce_for_string', 'random_string',
-                        'time1', 'level');
-                }, false);
+        <script type="text/javascript" >
+            document.addEventListener('DOMContentLoaded', function() {
+            var body = tag(body);
+            body.onload = findNonce('nonce_for_string', 'random_string'
+                , 'time', 'level');
+            }, false);
         </script>
         <?php
         }

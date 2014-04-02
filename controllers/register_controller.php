@@ -119,7 +119,7 @@ class RegisterController extends Controller implements CrawlConstants
      * Use to match the leading zero in the sha1 of the string
      * @var int
      */
-    const HASH_CAPTCHA_LEVEL = 3;
+    const HASH_CAPTCHA_LEVEL = 2;
     /**
      *  Besides invoking the base controller, sets up in field variables
      *  the captcha and recovery question and possible answers.
@@ -608,7 +608,7 @@ class RegisterController extends Controller implements CrawlConstants
         $visitor_model = $this->model("visitor");
         $clear = false;
         if($profile['CAPTCHA_MODE'] == HASH_CAPTCHA) {
-            $data['INCLUDE_SCRIPTS'] = array("hashcash");
+            $data['INCLUDE_SCRIPTS'] = array("hashcaptcha");
         }
         if($profile['CAPTCHA_MODE'] == TEXT_CAPTCHA) {
             $num_captchas = self::NUM_CAPTCHA_QUESTIONS;
@@ -758,6 +758,8 @@ class RegisterController extends Controller implements CrawlConstants
      */
     function setupQuestionViewData()
     {
+        $profile_model = $this->model("profile");
+        $profile = $profile_model->getProfile(WORK_DIRECTORY);
         $data = array();
         $fields = $this->register_fields;
         foreach($fields as $field) {
@@ -767,6 +769,17 @@ class RegisterController extends Controller implements CrawlConstants
             self::NUM_CAPTCHA_CHOICES; $i++) {
             $data["question_$i"] = "-1";
         }
+        if($profile['CAPTCHA_MODE'] == HASH_CAPTCHA) {
+            $data['INCLUDE_SCRIPTS'] = array("hashcaptcha");
+            $time = time();
+            $_SESSION["request_time"] = $time;
+            $_SESSION["level"] = self::HASH_CAPTCHA_LEVEL;
+            $_SESSION["random_string"] = md5( $time . AUTH_KEY );
+        }
+        if($profile['CAPTCHA_MODE'] == TEXT_CAPTCHA) {
+            unset($_SESSION["request_time"]);
+            unset($_SESSION["level"] );
+            unset($_SESSION["random_string"] );
         if(!isset($_SESSION['CAPTCHAS'])||!isset($_SESSION['CAPTCHA_ANSWERS'])){
             list($captchas, $answers) = $this->selectQuestionsAnswers(
                 $this->captchas_qa, self::NUM_CAPTCHA_QUESTIONS,
@@ -776,6 +789,7 @@ class RegisterController extends Controller implements CrawlConstants
             $_SESSION['CAPTCHAS'] = $data['CAPTCHAS'];
         } else {
             $data['CAPTCHAS'] = $_SESSION['CAPTCHAS'];
+        }
         }
         if(!isset($_SESSION['RECOVERY'])) {
             list($data['RECOVERY'], ) = $this->selectQuestionsAnswers(
@@ -870,29 +884,42 @@ class RegisterController extends Controller implements CrawlConstants
     function preactivityPrerequisiteCheck(&$activity,
         $activity_success, $activity_fail, &$data)
     {
+        $profile_model = $this->model("profile");
+        $profile = $profile_model->getProfile(WORK_DIRECTORY);
         if($activity == $activity_success) {
             $this->dataIntegrityCheck($data);
             if(!$data["SUCCESS"]) {
                 $activity = $activity_fail;
             }
             if($activity == $activity_success) {
-                if(!isset($_SESSION['CAPTCHA_ANSWERS']) ) {
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                if($profile['CAPTCHA_MODE'] == TEXT_CAPTCHA) {
+                    if(!isset($_SESSION['CAPTCHA_ANSWERS']) ) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('register_controller_need_cookies')."</h1>');";
-                    $activity = 'createAccount';
-                    $this->model("visitor")->updateVisitor(
+                        $activity = 'createAccount';
+                        $this->model("visitor")->updateVisitor(
                         $_SERVER['REMOTE_ADDR'], "captcha_time_out");
-                } else if(!$this->checkCaptchaAnswers()) {
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                    } else if(!$this->checkCaptchaAnswers()) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('register_controller_failed_human')."</h1>');";
-                    for($i = 0; $i < self::NUM_CAPTCHA_QUESTIONS; $i++) {
-                        $data["question_$i"] = "-1";
-                    }
+                        for($i = 0; $i < self::NUM_CAPTCHA_QUESTIONS; $i++) {
+                            $data["question_$i"] = "-1";
+                        }
                     unset($_SESSION['CAPTCHAS']);
                     unset($_SESSION['CAPTCHA_ANSWERS']);
                     $this->model("visitor")->updateVisitor(
                         $_SERVER['REMOTE_ADDR'], "captcha_time_out");
                     $activity = $activity_fail;
+                    }
+                }
+                else {
+                    if(!$this->validateHashCode()) {
+                        $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
+                        tl('register_controller_failed_hashcode')."</h1>');";
+                        $this->model("visitor")->updateVisitor(
+                        $_SERVER['REMOTE_ADDR'], "captcha_time_out");
+                        $activity = $activity_fail;
+                    }
                 }
             }
         }
