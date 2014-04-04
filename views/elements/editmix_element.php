@@ -77,8 +77,11 @@ class EditmixElement extends Element
         </div>
         <h3><?php e(tl('mixcrawls_element_mix_components'))?></h3>
         <div>
-        [<a href='javascript:addFragment(1)'><?php
-                e(tl('mixcrawls_element_add_fragment')); ?></a>]
+        [<a href='javascript:addFragment(1, <?php
+            e(MAX_MIX_FRAGMENTS);?>, <?php e('"'.
+                tl('mixcrawls_element_too_many').'"');
+            ?>)'><?php
+            e(tl('mixcrawls_element_add_fragment')); ?></a>]
         </div>
         <div id="mix-tables" >
         </div>

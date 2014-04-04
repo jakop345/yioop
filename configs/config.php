@@ -578,6 +578,10 @@ define ('MAX_SUGGEST_URL_FILE_SIZE', 100000);
  */
 define ('MAX_SUGGEST_URLS_ONE_DAY', 10);
 /**
+ * Maximum number of search result fragments in a crawl mix
+ */
+define('MAX_MIX_FRAGMENTS', 10);
+/**
  *  Length after which to truncate names for users/groups/roles when
  *  they are displayed (not in DB)
  */

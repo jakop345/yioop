@@ -74,11 +74,16 @@ function redrawFragments()
  *
  * @param int num_results the number of results the crawl fragment should be
  *      used for
+ * @param int the maximum number of fragments one is allowed to add
+ * @param String error to give if too many fragments
  */
-function addFragment(num_results)
+function addFragment(num_results, max_fragments, error_message)
 {
-
     num_fragments = fragments.length;
+    if(num_fragments >= max_fragments) {
+        doMessage('<h1 class=\"red\" >' + error_message + '</h1>');
+        return;
+    }
     fragments[num_fragments] ={};
     fragments[num_fragments]['num_results'] = num_results;
     fragments[num_fragments]['components'] = [];

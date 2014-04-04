@@ -672,9 +672,10 @@ class BlogmixesComponent extends Component implements CrawlConstants
             $mix['NAME'] =$parent->clean($mix['NAME'],
                 "string");
             $comp = array();
+            $save_mix = false;
             if(isset($mix['FRAGMENTS'])) {
-
-                if($mix['FRAGMENTS'] != NULL) {
+                if($mix['FRAGMENTS'] != NULL && count($mix['FRAGMENTS']) <
+                    MAX_MIX_FRAGMENTS) {
                     foreach($mix['FRAGMENTS'] as $fragment_id=>$fragment_data) {
                         if(isset($fragment_data['RESULT_BOUND'])) {
                             $mix['FRAGMENTS'][$fragment_id]['RESULT_BOUND'] =
@@ -703,18 +704,23 @@ class BlogmixesComponent extends Component implements CrawlConstants
                                 array();
                         }
                     }
+                    $save_mix = true;
+                } else if(count($mix['FRAGMENTS']) >= MAX_MIX_FRAGMENTS) {
+                    $mix['FRAGMENTS'] = $data['MIX']['FRAGMENTS'];
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('blogmixes_component_too_many_fragments')."</h1>');";
                 } else {
-                    $mix['COMPONENTS'] = array();
+                    $mix['FRAGMENTS'] = $data['MIX']['FRAGMENTS'];
                 }
-
             } else {
                 $mix['FRAGMENTS'] = $data['MIX']['FRAGMENTS'];
             }
-
-            $data['MIX'] = $mix;
-            $crawl_model->setCrawlMix($mix);
-            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                tl('blogmixes_component_mix_saved')."</h1>');";
+            if($save_mix) {
+                $data['MIX'] = $mix;
+                $crawl_model->setCrawlMix($mix);
+                $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                    tl('blogmixes_component_mix_saved')."</h1>');";
+            }
         }
 
         $data['SCRIPT'] .= 'fragments = [';
