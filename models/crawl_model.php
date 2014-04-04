@@ -58,6 +58,12 @@ if(!defined("POST_PROCESSING") && !defined("NO_LOGGING")) {
 class CrawlModel extends ParallelModel implements CrawlConstants
 {
     /**
+     * Used to map between search crawl mix form variables and database columns
+     * @var array
+     */
+    var $search_table_column_map = array("name"=>"NAME");
+
+    /**
      * File to be used to store suggest-a-url form data
      * @var string
      */
@@ -194,7 +200,6 @@ class CrawlModel extends ParallelModel implements CrawlConstants
     }
 
 
-
     /**
      * Gets a list of all mixes of available crawls
      *
@@ -219,6 +224,45 @@ class CrawlModel extends ParallelModel implements CrawlConstants
         return $rows;
     }
 
+    function getMixes($limit = 0, $num = 100, $with_components = false,
+        $search_array = array())
+    {
+        $db = $this->db;
+        $limit = $db->limitOffset($limit, $num);
+        list($where, $order_by) =
+            $this->searchArrayToWhereOrderClauses($search_array);
+        $sql = "SELECT TIMESTAMP, NAME FROM CRAWL_MIXES ".
+            "$where $order_by $limit";
+        $result = $db->execute($sql);
+        $i = 0;
+        while($row = $db->fetchArray($result)) {
+            if($with_components) {
+                $mix = $this->getCrawlMix($row['TIMESTAMP'], true);
+                $row['FRAGMENTS'] = $mix['FRAGMENTS'];
+            }
+            $mixes[$i] = $row;
+            $i++;
+        }
+        unset($mixes[$i]); //last one will be null
+        return $mixes;
+    }
+
+    /**
+     * Returns the number of roles in the user table
+     *
+     * @param array $search_array
+     * @return int number of roles
+     */
+    function getMixCount($search_array = array())
+    {
+        $db = $this->db;
+        list($where, $order_by) =
+            $this->searchArrayToWhereOrderClauses($search_array);
+        $sql = "SELECT COUNT(*) AS NUM FROM CRAWL_MIXES $where";
+        $result = $db->execute($sql);
+        $row = $db->fetchArray($result);
+        return $row['NUM'];
+    }
 
     /**
      * Retrieves the weighting component of the requested crawl mix
@@ -298,9 +342,33 @@ class CrawlModel extends ParallelModel implements CrawlConstants
         $db = $this->db;
         $sql = "SELECT TIMESTAMP, NAME FROM CRAWL_MIXES WHERE ".
             " TIMESTAMP = ?";
-        $result = $db->execute($sql);
+        $result = $db->execute($sql, array($timestamp));
         if($result) {
-            if($mix = $db->fetchArray($result, array($timestamp))) {
+            if($mix = $db->fetchArray($result)) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
+    /**
+     * Returns whether there is a mix with the given $timestamp that $user_id
+     * owns
+     *
+     * @param string $timestamp to see if exists
+     * @param string $user_id id of would be owner
+     *
+     * @return bool true if owner; false otherwise
+     */
+    function isMixOwner($timestamp, $user_id)
+    {
+        $db = $this->db;
+        $sql = "SELECT TIMESTAMP, NAME FROM CRAWL_MIXES WHERE ".
+            " TIMESTAMP = ? and OWNER_ID = ?";
+        $result = $db->execute($sql, array($timestamp, $user_id));
+        if($result) {
+            if($mix = $db->fetchArray($result)) {
                 return true;
             } else {
                 return false;

@@ -67,6 +67,10 @@ require_once BASE_DIR."/models/group_model.php";
 /** To create roles that can add users to */
 require_once BASE_DIR."/models/role_model.php";
 
+/** To create a set of crawl mixes */
+require_once BASE_DIR."/models/crawl_model.php";
+
+
 /** For crawlHash function */
 require_once BASE_DIR."/lib/utility.php";
 
@@ -112,4 +116,15 @@ for($i = 0; $i < 100; $i++) {
     $role_model->addUserRole($user_id, $role_id);
 }
 
+$crawl_model = new CrawlModel();
+$mix = array();
+$mix['TIMESTAMP'] = time();
+$mix['FRAGMENTS'] = array();
+$mix['OWNER_ID'] = ROOT_ID;
+$mix['PARENT'] = -1;
+for($i = 0; $i < 100; $i++) {
+    $mix['TIMESTAMP']++;
+    $mix['NAME'] = "Mix$i";
+    $crawl_model->setCrawlMix($mix);
+}
 ?>

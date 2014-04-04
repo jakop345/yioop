@@ -57,26 +57,21 @@ class MixcrawlsElement extends Element
             $data[CSRF_TOKEN]."&amp;arg=";
         ?>
         <div class="current-activity">
-        <h2><?php e(tl('mixcrawls_element_make_mix'))?></h2>
-        <form id="mixForm" method="get" action=''>
-        <input type="hidden" name="c" value="admin" />
-        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
-            e($data[CSRF_TOKEN]); ?>" />
-        <input type="hidden" name="a" value="mixCrawls" />
-        <input type="hidden" name="arg" value="createmix" />
-        <?php if(isset($data['available_mixes'])) { ?>
-        <?php } ?>
-        <div class="top-margin"><label for="mix-name"><?php
-            e(tl('mixcrawls_element_mix_name')); ?></label>
-            <input type="text" id="mix-name" name="NAME"
-                value="" maxlength="80"
-                    class="wide-field"/>
-           <button class="button-box"  type="submit"><?php
-                e(tl('mixcrawls_element_create_button')); ?></button></div>
-        </form>
-        <?php if(isset($data['available_mixes']) &&
-            count($data['available_mixes']) > 0) { ?>
-        <h2><?php e(tl('mixcrawls_element_available_mixes'))?></h2>
+        <?php
+        $mixes_exist = isset($data['available_mixes']) &&
+            count($data['available_mixes']) > 0;
+        if($data['FORM_TYPE'] == "search" && $mixes_exist) {
+            $this->renderSearchForm($data);
+        } else {
+            $this->renderMixForm($data);
+        }
+        if($mixes_exist) { 
+        $data['TABLE_TITLE'] = tl('mixcrawls_element_available_mixes');
+        $data['ACTIVITY'] = 'mixCrawls';
+        $data['VIEW'] = $this->view;
+        $data['NO_FLOAT_TABLE'] = true;
+        $this->view->helper("pagingtable")->render($data);
+        ?>
         <table class="mixes-table">
         <tr><th><?php e(tl('mixcrawls_view_name'));?></th>
         <th><?php e(tl('mixcrawls_view_definition'));?></th>
@@ -178,6 +173,81 @@ class MixcrawlsElement extends Element
         }
         </script>
     <?php
+    }
+
+    /**
+     *  @param array $data
+     */
+    function renderMixForm($data)
+    {
+        ?>
+        <h2><?php e(tl('mixcrawls_element_make_mix'))?></h2>
+        <form id="mixForm" method="get" action=''>
+        <input type="hidden" name="c" value="admin" />
+        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
+            e($data[CSRF_TOKEN]); ?>" />
+        <input type="hidden" name="a" value="mixCrawls" />
+        <input type="hidden" name="arg" value="createmix" />
+        <?php if(isset($data['available_mixes'])) { ?>
+        <?php } ?>
+        <div class="top-margin"><label for="mix-name"><?php
+            e(tl('mixcrawls_element_mix_name')); ?></label>
+            <input type="text" id="mix-name" name="NAME"
+                value="" maxlength="80"
+                    class="wide-field"/>
+           <button class="button-box"  type="submit"><?php
+                e(tl('mixcrawls_element_create_button')); ?></button></div>
+        </form>
+        <?php
+    }
+
+    function renderSearchForm($data)
+    {
+        $base_url = "?c=admin&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
+            "&amp;a=mixCrawls";
+        e("<div class='float-opposite'><a href='$base_url'>".
+            tl('mixcrawls_element_createmix_form')."</a></div>");
+        e("<h2>".tl('mixcrawls_element_search_mix'). "</h2>");
+        $item_sep = (MOBILE) ? "<br />" : "</td><td>";
+        ?>
+        <form id="roleForm" method="post" action='#' autocomplete="off">
+        <input type="hidden" name="c" value="admin" />
+        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
+            e($data[CSRF_TOKEN]); ?>" />
+        <input type="hidden" name="a" value="mixCrawls" />
+        <input type="hidden" name="arg" value="search" />
+        <table class="name-table">
+        <tr><td class="table-label"><label for="role-name"><b><?php
+            e(tl('mixcrawls_element_mixname'))?></b></label>
+            <?php
+                e($item_sep);
+                $this->view->helper("options")->render(
+                    "name-comparison", "name_comparison",
+                    $data['COMPARISON_TYPES'],
+                    $data['name_comparison']);
+                e($item_sep);
+            ?><input type="text" id="mix-name"
+                name="name"  maxlength="80"
+                value="<?php e($data['name']); ?>"
+                class="narrow-field"  />
+            <?php
+                e($item_sep);
+                $this->view->helper("options")->render(
+                    "name-sort", "name_sort",
+                    $data['SORT_TYPES'],
+                    $data['name_sort']);
+            ?></td></tr>
+        <tr><?php if(!MOBILE) {?><td></td><td></td> <?php } ?>
+            <td <?php if(!MOBILE) {
+                    ?>class="center" <?php
+                }
+                ?>><button class="button-box"
+                type="submit"><?php e(tl('mixcrawls_element_search'));
+                ?></button></td>
+        </tr>
+        </table>
+        </form>
+        <?php
     }
 }
 ?>

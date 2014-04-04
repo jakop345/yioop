@@ -49,7 +49,8 @@ require_once BASE_DIR."/lib/utility.php";
 class RoleModel extends Model
 {
     /**
-     *
+     * Used to map between search role form variables and database columns
+     * @var array
      */
     var $search_table_column_map = array("name"=>"NAME");
 
@@ -241,14 +242,16 @@ class RoleModel extends Model
     }
 
     /**
+     * Gets a range of roles which match the procided search criteria
      *
+     * @param int $limit
+     * @param int $num
+     * @param array $search_array
+     * @return array
      */
     function getRoles($limit = 0, $num = 100, $search_array = array())
     {
         $db = $this->db;
-        $dbinfo = array("DBMS" => DBMS, "DB_HOST" => DB_HOST,
-            "DB_USER" => DB_USER, "DB_PASSWORD" => DB_PASSWORD,
-            "DB_NAME" => DB_NAME);
         $limit = $db->limitOffset($limit, $num);
         list($where, $order_by) =
             $this->searchArrayToWhereOrderClauses($search_array);
@@ -266,6 +269,7 @@ class RoleModel extends Model
     /**
      * Returns the number of roles in the user table
      *
+     * @param array $search_array
      * @return int number of roles
      */
     function getRoleCount($search_array = array())
