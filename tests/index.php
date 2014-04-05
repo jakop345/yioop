@@ -173,9 +173,11 @@ function runTest($name)
     $class_name = getClassNameFromFileName($name);
     echo "<h2>$class_name</h2>";
     require_once $name;
-
     $test = new $class_name();
-    $results = $test->run();
+    if($test instanceof JavaScriptTest) {
+        $test->sha1TestCase();
+    } else {
+        $results = $test->run();
     ?>
     <table border="1" summary="Displays info about this test case">
     <?php
@@ -208,6 +210,7 @@ function runTest($name)
     ?>
     </table>
     <?php
+    }
 }
 
 /**
