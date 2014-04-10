@@ -258,10 +258,12 @@ class BlogmixesComponent extends Component implements CrawlConstants
                 array("access", "!=", GROUP_PRIVATE, ""),
                 array("status", "=", ACTIVE_STATUS, ""),
                 array("join_date", "=","", "DESC"));
-            $groups_count = $group_model->getGroupsCount($search_array,
-                $user_id);
-            $groups = $group_model->getGroups(0, $limit + $results_per_page,
-                $search_array, $user_id);
+            $groups_count = $group_model->getCount(
+                "GROUPS G, USER_GROUP UG, USERS O", $search_array,
+                array($user_id, false));
+            $groups = $group_model->getRows("GROUPS G, USER_GROUP UG, USERS O",
+                0, $limit + $results_per_page,
+                $search_array, array($user_id, false));
             $pages = array();
             foreach($groups as $group) {
                 $page = array();
@@ -570,29 +572,8 @@ class BlogmixesComponent extends Component implements CrawlConstants
                 break;
             }
         }
-        $num_mixes = $crawl_model->getMixCount($search_array);
-        $data['NUM_TOTAL'] = $num_mixes;
-        $num_show = (isset($_REQUEST['num_show']) &&
-            isset($parent->view("admin")->helper("pagingtable")->show_choices[
-                $_REQUEST['num_show']])) ? $_REQUEST['num_show'] : 50;
-        $data['num_show'] = $num_show;
-        $data['START_ROW'] = 0;
-        if(isset($_REQUEST['start_row'])) {
-            $data['START_ROW'] = min(
-                max(0, $parent->clean($_REQUEST['start_row'],"int")),
-                $num_mixes);
-        }
-        $data['END_ROW'] = min($data['START_ROW'] + $num_show, $num_mixes);
-        if(isset($_REQUEST['start_row'])) {
-            $data['END_ROW'] = max($data['START_ROW'],
-                min($parent->clean($_REQUEST['end_row'],"int"), $num_mixes));
-        }
-        $data["available_mixes"] = $crawl_model->getMixes($data['START_ROW'],
-            $num_show, true, $search_array);
-        $data['NEXT_START'] = $data['END_ROW'];
-        $data['NEXT_END'] = min($data['NEXT_START'] + $num_show, $num_mixes);
-        $data['PREV_START'] = max(0, $data['START_ROW'] - $num_show);
-        $data['PREV_END'] = $data['START_ROW'];
+        $parent->pagingLogic($data, $crawl_model, "CRAWL_MIXES", 
+            "available_mixes", 50, $search_array, "", true);
 
         if(!$can_manage_crawls && isset($_SESSION['its'])) {
             $crawl_time = $_SESSION['its'];

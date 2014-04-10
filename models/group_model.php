@@ -51,6 +51,15 @@ require_once BASE_DIR."/lib/utility.php";
 class GroupModel extends Model
 {
     /**
+     *  @var string
+     */
+    var $where_callback = "groupWhereCallback";
+    /**
+     *  @var string
+     */
+     var $select_callback = "groupSelectCallback";
+
+    /**
      *  Associations of the form
      *      name of field for web forms => database column names/abbreviations
      *  In this case, things will in general map to the GROUPS, or USER_GROUP
@@ -64,6 +73,51 @@ class GroupModel extends Model
         "pub_date" => "GI.PUBDATE", "parent_id"=>"GI.PARENT_ID",
         "register"=>"G.REGISTER_TYPE", "status"=>"UG.STATUS",
         "user_id"=>"P.USER_ID");
+
+    function __construct($db_name = DB_NAME, $connect = true)
+    {
+        parent::__construct($db_name, $connect);
+        $this->any_fields = array("access", "register");
+    }
+
+    function groupWhereCallback($args)
+    {
+        $db = $this->db;
+        if(count($args) < 2) {
+            return "";
+        }
+        list($user_id, $browse, ) = $args;
+        if($browse) {
+            $where =
+                " UG.GROUP_ID=G.GROUP_ID AND G.OWNER_ID=O.USER_ID AND NOT ".
+                "EXISTS (SELECT * FROM USER_GROUP UG2 WHERE UG2.USER_ID = ".
+                $db->escapeString($user_id)." AND UG2.GROUP_ID = G.GROUP_ID)";
+        } else {
+            $where = " UG.USER_ID='".$db->escapeString($user_id).
+                "' AND  UG.GROUP_ID=G.GROUP_ID AND G.OWNER_ID=O.USER_ID";
+        }
+        return $where;
+    }
+
+    function groupSelectCallback($args)
+    {
+        if(count($args) < 2) {
+            return "*";
+        }
+        list($user_id, $browse, ) = $args;
+        if($browse) {
+            $join_date = "";
+            $status = "";
+        } else {
+            $join_date = ", UG.JOIN_DATE AS JOIN_DATE";
+            $status = " UG.STATUS AS STATUS,";
+        }
+        $select = "DISTINCT G.GROUP_ID AS GROUP_ID,
+            G.GROUP_NAME AS GROUP_NAME, G.OWNER_ID AS OWNER_ID,
+            O.USER_NAME AS OWNER, REGISTER_TYPE, $status
+            G.MEMBER_ACCESS $join_date";
+        return $select;
+    }
 
     /**
      *  Get an array of users that belong to a group
@@ -252,115 +306,16 @@ class GroupModel extends Model
      *
      *  @param string $group_id id of the group to delete
      */
-        function deleteGroup($group_id)
-        {
-            $db = $this->db;
-            $params = array($group_id);
-            $sql = "DELETE FROM GROUPS WHERE GROUP_ID=?";
-            $db->execute($sql, $params);
-            $sql = "DELETE FROM GROUP_ITEM WHERE GROUP_ID=?";
-            $db->execute($sql, $params);
-            $sql = "DELETE FROM USER_GROUP WHERE GROUP_ID=?";
-            $db->execute($sql, $params);
-        }
-
-    /**
-     *  Gets the group items subscribed to by a user with $user_id
-     *  and which match the supplied search criteria found in $search_array,
-     *  starting from the $limit'th matching item to the $limit+$num item.
-     *
-     *  @param int $limit starting offset group to display
-     *  @param int $num number of groups from offset to display
-     *  @param array $search_array each element of this is a quadruple
-     *      name of a field, what comparison to perform, a value to check,
-     *      and an order (ascending/descending) to sort by
-     *  @param int $user_id who is making this request to determine which
-     *      which groups will show up in the results (what that user owns
-     *      and is subscribed to)
-     *  @param bool $browse
-     *  @return array elements of which represent one group item
-     */
-    function getGroups($limit = 0, $num = 100, $search_array = array(),
-        $user_id=ROOT_ID, $browse = false)
+    function deleteGroup($group_id)
     {
         $db = $this->db;
-        $limit = $db->limitOffset($limit, $num);
-        $any_fields = array("access", "register");
-        list($where, $order_by) =
-            $this->searchArrayToWhereOrderClauses($search_array, $any_fields);
-        $add_where = " WHERE ";
-        if($where != "") {
-            $add_where = " AND ";
-        }
-        if($browse) {
-            $where .= $add_where.
-                " UG.GROUP_ID=G.GROUP_ID AND G.OWNER_ID=O.USER_ID AND NOT ".
-                "EXISTS (SELECT * FROM USER_GROUP UG2 WHERE UG2.USER_ID = ".
-                $db->escapeString($user_id)." AND UG2.GROUP_ID = G.GROUP_ID)";
-            $join_date = "";
-            $status = "";
-        } else {
-            $where .= $add_where. " UG.USER_ID='".$db->escapeString($user_id).
-                "' AND  UG.GROUP_ID=G.GROUP_ID AND G.OWNER_ID=O.USER_ID";
-            $join_date = ", UG.JOIN_DATE AS JOIN_DATE";
-            $status = " UG.STATUS AS STATUS,";
-        }
-        $sql = "SELECT DISTINCT G.GROUP_ID AS GROUP_ID,
-            G.GROUP_NAME AS GROUP_NAME, G.OWNER_ID AS OWNER_ID,
-            O.USER_NAME AS OWNER, REGISTER_TYPE, $status
-            G.MEMBER_ACCESS $join_date FROM GROUPS G, USERS O,
-            USER_GROUP UG
-            $where $order_by $limit";
-        $result = $db->execute($sql);
-        $i = 0;
-        while($groups[$i] = $db->fetchArray($result)) {
-            $i++;
-        }
-        unset($groups[$i]); //last one will be null
-        return $groups;
-    }
-
-    /**
-     *  Gets the number of groups subscribed to by a user with $user_id
-     *  and which match the supplied search criteria found in $search_array.
-     *
-     *  @param array $search_array each element of this is a quadruple
-     *      name of a field, what comparison to perform, a value to check,
-     *      and an order (ascending/descending) to sort by
-     *  @param int $user_id who is making this request to determine which
-     *      which groups will be counted (what that user own
-     *      and is subscribed to)
-     *  @param bool $browse
-     *  @return int number of items matching the search criteria for the
-     *      given user_id
-     */
-    function getGroupsCount($search_array = array(), $user_id = ROOT_ID, 
-        $browse = false)
-    {
-        $db = $this->db;
-        $any_fields = array("access", "register");
-        list($where, $order_by) =
-            $this->searchArrayToWhereOrderClauses($search_array,$any_fields);
-        $add_where = " WHERE ";
-        if($where != "") {
-            $add_where = " AND ";
-        }
-        if($browse) {
-            $where .= $add_where.
-                " UG.GROUP_ID=G.GROUP_ID AND NOT ".
-                "EXISTS (SELECT * FROM USER_GROUP UG2 WHERE UG2.USER_ID = ".
-                $db->escapeString($user_id)." AND UG2.GROUP_ID = G.GROUP_ID)";
-            $sql = "SELECT COUNT(*) AS NUM FROM (SELECT DISTINCT UG.GROUP_ID
-                FROM GROUPS G, USER_GROUP UG $where) AS BROWSE_GROUPS";
-        } else {
-            $where .= $add_where. " UG.USER_ID='".$db->escapeString($user_id).
-                "' AND UG.GROUP_ID=G.GROUP_ID";
-            $sql = "SELECT COUNT(*) AS NUM FROM GROUPS G, USER_GROUP UG
-                $where";
-        }
-        $result = $db->execute($sql);
-        $row = $db->fetchArray($result);
-        return $row['NUM'];
+        $params = array($group_id);
+        $sql = "DELETE FROM GROUPS WHERE GROUP_ID=?";
+        $db->execute($sql, $params);
+        $sql = "DELETE FROM GROUP_ITEM WHERE GROUP_ID=?";
+        $db->execute($sql, $params);
+        $sql = "DELETE FROM USER_GROUP WHERE GROUP_ID=?";
+        $db->execute($sql, $params);
     }
 
     /**

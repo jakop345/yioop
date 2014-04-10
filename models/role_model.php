@@ -49,10 +49,23 @@ require_once BASE_DIR."/lib/utility.php";
 class RoleModel extends Model
 {
     /**
+     * @var string
+     */
+    var $select_callback = "roleSelectCallback";
+
+    /**
      * Used to map between search role form variables and database columns
      * @var array
      */
     var $search_table_column_map = array("name"=>"NAME");
+
+    /**
+     * @param mixed $args
+     */
+    function roleSelectCallback($args = NULL)
+    {
+        return "NAME";
+    }
 
     /**
      *  Get the activities  (name, method, id) that a given role can perform
@@ -239,48 +252,6 @@ class RoleModel extends Model
         }
 
         return $row['ROLE_ID'];
-    }
-
-    /**
-     * Gets a range of roles which match the procided search criteria
-     *
-     * @param int $limit
-     * @param int $num
-     * @param array $search_array
-     * @return array
-     */
-    function getRoles($limit = 0, $num = 100, $search_array = array())
-    {
-        $db = $this->db;
-        $limit = $db->limitOffset($limit, $num);
-        list($where, $order_by) =
-            $this->searchArrayToWhereOrderClauses($search_array);
-        $sql = "SELECT NAME FROM ROLE $where $order_by $limit";
-        $result = $db->execute($sql);
-        $i = 0;
-        while($roles[$i] = $db->fetchArray($result)) {
-            $i++;
-        }
-        unset($roles[$i]); //last one will be null
-        return $roles;
-    }
-
-
-    /**
-     * Returns the number of roles in the user table
-     *
-     * @param array $search_array
-     * @return int number of roles
-     */
-    function getRoleCount($search_array = array())
-    {
-        $db = $this->db;
-        list($where, $order_by) =
-            $this->searchArrayToWhereOrderClauses($search_array);
-        $sql = "SELECT COUNT(*) AS NUM FROM ROLE $where";
-        $result = $db->execute($sql);
-        $row = $db->fetchArray($result);
-        return $row['NUM'];
     }
 
     /**

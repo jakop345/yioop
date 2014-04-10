@@ -74,6 +74,43 @@ class MachineModel extends Model
     }
 
     /**
+     * Gets a range of the machine names stored in the DB
+     *
+     * @param int $limit
+     * @param int $num
+     * @return array
+     */
+    function getMachines($limit = 0, $num = 10)
+    {
+        $db = $this->db;
+        $machines = array();
+        $limit = $db->limitOffset($limit, $num);
+        $sql = "SELECT * FROM MACHINE ORDER BY NAME DESC $limit";
+        $result = $db->execute($sql);
+        $i = 0;
+        while($machines[$i] = $db->fetchArray($result)) {
+            $i++;
+        }
+        unset($machines[$i]); //last one will be null
+        return $machines;
+    }
+
+    /**
+     * Returns the number of machines in the user table
+     *
+     * @param array $search_array
+     * @return int number of roles
+     */
+    function getMachineCount()
+    {
+        $db = $this->db;
+        $sql = "SELECT COUNT(*) AS NUM FROM MACHINE";
+        $result = $db->execute($sql);
+        $row = $db->fetchArray($result);
+        return $row['NUM'];
+    }
+
+    /**
      *  Returns urls for all the queue_servers stored in the DB
      *
      *  @param string a crawl_time of a crawl to see the machines used in

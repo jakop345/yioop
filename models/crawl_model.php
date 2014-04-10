@@ -57,6 +57,11 @@ if(!defined("POST_PROCESSING") && !defined("NO_LOGGING")) {
  */
 class CrawlModel extends ParallelModel implements CrawlConstants
 {
+
+    /**
+     * @var string
+     */
+    var $row_callback = "mixRowCallback";
     /**
      * Used to map between search crawl mix form variables and database columns
      * @var array
@@ -78,6 +83,17 @@ class CrawlModel extends ParallelModel implements CrawlConstants
         parent::__construct($db_name, $connect);
     }
 
+    /**
+     *
+     */
+    function mixRowCallback($row, $with_components)
+    {
+        if($with_components) {
+            $mix = $this->getCrawlMix($row['TIMESTAMP'], true);
+            $row['FRAGMENTS'] = $mix['FRAGMENTS'];
+        }
+        return $row;
+    }
 
     /**
      * Gets the cached version of a web page from the machine on which it was
@@ -222,46 +238,6 @@ class CrawlModel extends ParallelModel implements CrawlConstants
             $rows[] = $row;
         }
         return $rows;
-    }
-
-    function getMixes($limit = 0, $num = 100, $with_components = false,
-        $search_array = array())
-    {
-        $db = $this->db;
-        $limit = $db->limitOffset($limit, $num);
-        list($where, $order_by) =
-            $this->searchArrayToWhereOrderClauses($search_array);
-        $sql = "SELECT TIMESTAMP, NAME FROM CRAWL_MIXES ".
-            "$where $order_by $limit";
-        $result = $db->execute($sql);
-        $i = 0;
-        while($row = $db->fetchArray($result)) {
-            if($with_components) {
-                $mix = $this->getCrawlMix($row['TIMESTAMP'], true);
-                $row['FRAGMENTS'] = $mix['FRAGMENTS'];
-            }
-            $mixes[$i] = $row;
-            $i++;
-        }
-        unset($mixes[$i]); //last one will be null
-        return $mixes;
-    }
-
-    /**
-     * Returns the number of roles in the user table
-     *
-     * @param array $search_array
-     * @return int number of roles
-     */
-    function getMixCount($search_array = array())
-    {
-        $db = $this->db;
-        list($where, $order_by) =
-            $this->searchArrayToWhereOrderClauses($search_array);
-        $sql = "SELECT COUNT(*) AS NUM FROM CRAWL_MIXES $where";
-        $result = $db->execute($sql);
-        $row = $db->fetchArray($result);
-        return $row['NUM'];
     }
 
     /**
@@ -1112,6 +1088,7 @@ EOT;
      */
     function aggregateCrawlList($list_strings, $data_field = NULL)
     {
+        restore_error_handler();
         $pre_list = array();
         foreach($list_strings as $list_string) {
             $a_list = @unserialize(webdecode(
@@ -1140,6 +1117,7 @@ EOT;
             }
         }
         $list = array_values($pre_list);
+        set_error_handler("yioop_error_handler");
         return $list;
     }
 
@@ -1196,20 +1174,25 @@ EOT;
      */
     function aggregateStalled($stall_statuses, $data_field = NULL)
     {
+        restore_error_handler();
+        $result = true;
         foreach($stall_statuses as $status) {
-            $stall_status = unserialize(webdecode($status[self::PAGE]));
+            $stall_status = @unserialize(webdecode($status[self::PAGE]));
             if($data_field != NULL) {
                 $stall_status = $stall_status[$data_field];
             } else {
                 /* this case would mean some kind of error occurred, but
                    don't stop crawl for it */
-                return false;
+                $result = false;
+                break;
             }
             if($stall_status === false) {
-                return false;
+                $result = false;
+                break;
             }
         }
-        return true;
+        set_error_handler("yioop_error_handler");
+        return $result;
     }
 
     /**
@@ -1296,9 +1279,9 @@ EOT;
         $status['MOST_RECENT_FETCHER'] = "";
         $status['MOST_RECENT_URLS_SEEN'] = array();
         $status['CRAWL_TIME'] = 0;
-
+        restore_error_handler();
         foreach($status_strings as $status_string) {
-            $a_status = unserialize(webdecode(
+            $a_status = @unserialize(webdecode(
                     $status_string[self::PAGE]));
             if($data_field != NULL) {
                 $a_status = $a_status[$data_field];
@@ -1342,6 +1325,7 @@ EOT;
                         max($status[$field], $a_status[$field]);
             }
         }
+        set_error_handler("yioop_error_handler");
         return $status;
     }
 

@@ -269,6 +269,56 @@ abstract class Controller
     }
 
     /**
+     *
+     */
+     function pagingLogic(&$data, $model, $table_name, $output_field,
+        $default_show, $search_array, $var_prefix = "", $args = NULL)
+     {
+        $num_rows = $model->getCount($table_name, $search_array, $args);
+        $data_fields = array();
+        $r = array();
+        $request_fields = array('num_show', 'start_row', 'end_row');
+        foreach($request_fields as $field) {
+            if(isset($_REQUEST[$var_prefix . $field])) {
+                $r[$field] = $_REQUEST[$var_prefix . $field];
+            }
+        }
+        $d = array();
+        $data_fields = array('NUM_TOTAL', 'NUM_SHOW', 'START_ROW', 'END_ROW',
+            'NEXT_START', 'NEXT_END', 'PREV_START', 'PREV_END');
+        $var_field = strtoupper($var_prefix);
+        foreach($data_fields as $field) {
+            $d[$field] = $var_prefix . $field;
+        }
+        $data['NUM_TOTAL'] = $num_rows;
+
+        $num_show = (isset($r['num_show']) &&
+            isset($this->view("admin")->helper("pagingtable")->show_choices[
+                $r['num_show']])) ? $r['num_show'] : $default_show;
+        $data[$d['NUM_SHOW']] = $num_show;
+        $data[$d['START_ROW']] = 0;
+        if(isset($r['start_row'])) {
+            $data[$d['START_ROW']] = min(
+                max(0, $this->clean($r['start_row'],"int")),
+                $num_rows);
+        }
+        $data[$d['END_ROW']] = min($data[$d['START_ROW']] + $num_show,
+            $num_rows);
+        if(isset($r['start_row'])) {
+            $data[$d['END_ROW']] = max($data[$d['START_ROW']],
+                    min($this->clean($r['end_row'],"int"), $num_rows));
+        }
+        $data[$output_field] = $model->getRows($table_name,
+            $data[$d['START_ROW']], $num_show, $search_array, $args);
+        $data[$d['NEXT_START']] = $data[$d['END_ROW']];
+        $data[$d['NEXT_END']] = min($data[$d['NEXT_START']] + $num_show,
+            $num_rows);
+        $data[$d['PREV_START']] = max(0, $data[$d['START_ROW']] - $num_show);
+        $data[$d['PREV_END']] = $data[$d['START_ROW']];
+     }
+
+
+    /**
      *  Used to invoke an activity method of the current controller or one
      *  its components
      *

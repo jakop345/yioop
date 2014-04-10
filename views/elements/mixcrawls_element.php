@@ -60,7 +60,7 @@ class MixcrawlsElement extends Element
         <?php
         $mixes_exist = isset($data['available_mixes']) &&
             count($data['available_mixes']) > 0;
-        if($data['FORM_TYPE'] == "search" && $mixes_exist) {
+        if($data['FORM_TYPE'] == "search") {
             $this->renderSearchForm($data);
         } else {
             $this->renderMixForm($data);

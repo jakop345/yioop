@@ -111,14 +111,14 @@ class PagingtableHelper extends Helper
             e("<b>".tl('pagingtable_helper_show')."</b>");
             $data['VIEW']->helper("options")->render(
                 "num-show", "num_show", $this->show_choices,
-                $data['num_show'], true);
+                $data['NUM_SHOW'], true);
             e("<br />");
             if($data['START_ROW'] > 0) {
                 ?>
                 <a href="<?php e($bound_url); ?>&amp;start_row=<?php
                     e($data['PREV_START']); ?>&amp;end_row=<?php
                     e($data['PREV_END']); ?>&amp;num_show=<?php
-                    e($data['num_show'].$data['PAGING']); ?>">&lt;&lt;</a>
+                    e($data['NUM_SHOW'].$data['PAGING']); ?>">&lt;&lt;</a>
                 <?php
             }
             e("<b>".tl('pagingtable_helper_row_range', $data['START_ROW'],
@@ -128,7 +128,7 @@ class PagingtableHelper extends Helper
                 <a href="<?php e($bound_url); ?>&amp;start_row=<?php
                     e($data['NEXT_START']); ?>&amp;end_row=<?php
                     e($data['NEXT_END']); ?>&amp;num_show=<?php
-                    e($data['num_show'].$data['PAGING']); ?>" >&gt;&gt;</a>
+                    e($data['NUM_SHOW'].$data['PAGING']); ?>" >&gt;&gt;</a>
                 <?php
             }
             ?>
@@ -177,8 +177,8 @@ class PagingtableHelper extends Helper
                 ?>
                 <a href="<?php e($bound_url); ?>&amp;start_row=<?php
                     e($data['PREV_START']); ?>&amp;end_row=<?php
-                    e($data['PREV_END']); ?>&amp;show=<?php
-                    e($data['num_show'].$data['PAGING']); ?>">&lt;&lt;</a>
+                    e($data['PREV_END']); ?>&amp;num_show=<?php
+                    e($data['NUM_SHOW'].$data['PAGING']); ?>">&lt;&lt;</a>
                 <?php
             }
             e("<b>".tl('pagingtable_helper_row_range', $data['START_ROW'],
@@ -188,7 +188,7 @@ class PagingtableHelper extends Helper
                 <a href="<?php e($bound_url); ?>&amp;start_row=<?php
                     e($data['NEXT_START']); ?>&amp;end_row=<?php
                     e($data['NEXT_END']); ?>&amp;num_show=<?php
-                    e($data['num_show'].$data['PAGING']); ?>" >&gt;&gt;</a>
+                    e($data['NUM_SHOW'].$data['PAGING']); ?>" >&gt;&gt;</a>
                 <?php
             }
             ?>
@@ -200,7 +200,7 @@ class PagingtableHelper extends Helper
                 e("<b>".tl('pagingtable_helper_show')."</b>");
                 $data['VIEW']->helper("options")->render(
                     "num-show", "num_show",  $this->show_choices,
-                    $data['num_show'], true);
+                    $data['NUM_SHOW'], true);
                 if(!isset($_REQUEST['arg']) || $_REQUEST['arg'] != "search") {?>
                     [<a href="<?php e($base_url . '&amp;arg=search');
                         ?>"><?php e(tl('pagingtable_helper_search'));?></a>]

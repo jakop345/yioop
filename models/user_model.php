@@ -50,6 +50,14 @@ require_once BASE_DIR."/lib/utility.php";
 class UserModel extends Model
 {
     /**
+     *  @var string
+     */
+    var $where_callback = "userWhereCallback";
+    /**
+     *  @var string
+     */
+     var $select_callback = "userSelectCallback";
+    /**
      *  Associations of the form
      *      name of field for web forms => database column names/abbreviations
      *  In this case, things will in general map to the USERS table in the
@@ -59,6 +67,21 @@ class UserModel extends Model
     var $search_table_column_map = array("first"=>"FIRST_NAME",
         "last" => "LAST_NAME", "user" => "USER_NAME", "email"=>"EMAIL",
         "status"=>"STATUS");
+    /**
+     * @param mixed $args
+     */
+    function userWhereCallback($args = NULL)
+    {
+        return "USER_ID != '".PUBLIC_USER_ID."'";
+    }
+
+    /**
+     * @param mixed $args
+     */
+    function userSelectCallback($args = NULL)
+    {
+        return "USER_ID, USER_NAME, FIRST_NAME, LAST_NAME, EMAIL, STATUS";
+    }
 
     /**
      *  Get a list of admin activities that a user is allowed to perform.
@@ -176,61 +199,6 @@ class UserModel extends Model
         $sql = "INSERT INTO USER_SESSION ".
             "VALUES (?, ?)";
         $this->db->execute($sql, array($user_id, $session_string));
-    }
-
-    /**
-     *  Return an array of up to $num many USERS rows starting from $limit and
-     *  meeting the search criterion in $search_array
-     *
-     *  @param int $limit starting row to return with
-     *  @param int $num number of rows to return
-     *  @param array $search_array each element of this is a quadruple
-     *      name of a field, what comparison to perform, a value to check,
-     *      and an order (ascending/descending) to sort by
-     *  @return array elements are rows from the USERS tables
-     */
-    function getUsers($limit = 0, $num = 100, $search_array = array())
-    {
-        $db = $this->db;
-        $limit = $db->limitOffset($limit, $num);
-        list($where, $order_by) =
-            $this->searchArrayToWhereOrderClauses($search_array);
-        $add_where = " WHERE ";
-        if($where != "") {
-            $add_where = " AND ";
-        }
-        $where .= $add_where. "USER_ID != '".PUBLIC_USER_ID."'";
-        $sql = "SELECT USER_ID, USER_NAME, FIRST_NAME, LAST_NAME,
-            EMAIL, STATUS FROM USERS $where $order_by $limit";
-        $result = $db ->execute($sql);
-        $i = 0;
-        while($users[$i] = $db->fetchArray($result)) {
-            $i++;
-        }
-        unset($users[$i]); //last one will be null
-        return $users;
-    }
-
-
-    /**
-     * Returns the number of users in the user table
-     *
-     * @return int number of users
-     */
-    function getUserCount($search_array = array())
-    {
-        $db = $this->db;
-        list($where, $order_by) =
-            $this->searchArrayToWhereOrderClauses($search_array);
-        $add_where = " WHERE ";
-        if($where != "") {
-            $add_where = " AND ";
-        }
-        $where .= $add_where. "USER_ID != '".PUBLIC_USER_ID."'";
-        $sql = "SELECT COUNT(*) AS NUM FROM USERS $where";
-        $result = $db->execute($sql);
-        $row = $db->fetchArray($result);
-        return $row['NUM'];
     }
 
     /**

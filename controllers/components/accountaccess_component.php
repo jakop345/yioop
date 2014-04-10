@@ -93,10 +93,12 @@ class AccountaccessComponent extends Component
             }
         }
         $data['USERNAME'] = $username;
-        $data['NUM_GROUPS'] = $group_model->getGroupsCount(array(), $user_id);
+        $data['NUM_GROUPS'] = $group_model->getCount(
+            "GROUPS G, USER_GROUP UG, USERS O",array(), array($user_id, false));
         $data['NUM_SHOWN'] = 5;
-        $data['GROUPS'] = $group_model->getGroups(0, $data['NUM_SHOWN'],
-            array(), $user_id);
+        $data['GROUPS'] = $group_model->getRows(
+            "GROUPS G, USER_GROUP UG, USERS O", 0,
+            $data['NUM_SHOWN'], array(), array($user_id, false));
         $num_shown = count($data['GROUPS']);
         for($i = 0; $i < $num_shown; $i++) {
             $search_array = array(array("group_id", "=",
@@ -559,29 +561,8 @@ class AccountaccessComponent extends Component
                 break;
             }
         }
-        $num_users = $user_model->getUserCount($search_array);
-        $data['NUM_TOTAL'] = $num_users;
-        $num_show = (isset($_REQUEST['num_show']) &&
-            isset($parent->view("admin")->helper("pagingtable")->show_choices[
-                $_REQUEST['num_show']])) ? $_REQUEST['num_show'] : 50;
-        $data['num_show'] = $num_show;
-        $data['START_ROW'] = 0;
-        if(isset($_REQUEST['start_row'])) {
-            $data['START_ROW'] = min(
-                max(0, $parent->clean($_REQUEST['start_row'],"int")),
-                $num_users);
-        }
-        $data['END_ROW'] = min($data['START_ROW'] + $num_show, $num_users);
-        if(isset($_REQUEST['start_row'])) {
-            $data['END_ROW'] = max($data['START_ROW'],
-                    min($parent->clean($_REQUEST['end_row'],"int"),$num_users));
-        }
-        $data["USERS"] = $user_model->getUsers($data['START_ROW'],
-            $num_show, $search_array);
-        $data['NEXT_START'] = $data['END_ROW'];
-        $data['NEXT_END'] = min($data['NEXT_START'] + $num_show, $num_users);
-        $data['PREV_START'] = max(0, $data['START_ROW'] - $num_show);
-        $data['PREV_END'] = $data['START_ROW'];
+        $parent->pagingLogic($data, $user_model, "USERS",
+            "USERS", 50, $search_array, "");
         return $data;
     }
     /**
@@ -759,11 +740,11 @@ class AccountaccessComponent extends Component
             switch($_REQUEST['arg'])
             {
                 case "addrole":
-                    if($role_model->getRoleId($name) > 0) {
+                    if($name != "" && $role_model->getRoleId($name) > 0) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_rolename_exists').
                             "</h1>')";
-                    } else {
+                    } else if($name != "") {
                         $role_model->addRole($name);
                         $data['CURRENT_ROLE']['name'] = "";
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
@@ -905,29 +886,9 @@ class AccountaccessComponent extends Component
                 break;
             }
         }
-        $num_roles = $role_model->getRoleCount($search_array);
-        $data['NUM_TOTAL'] = $num_roles;
-        $num_show = (isset($_REQUEST['num_show']) &&
-            isset($parent->view("admin")->helper("pagingtable")->show_choices[
-                $_REQUEST['num_show']])) ? $_REQUEST['num_show'] : 50;
-        $data['num_show'] = $num_show;
-        $data['START_ROW'] = 0;
-        if(isset($_REQUEST['start_row'])) {
-            $data['START_ROW'] = min(
-                max(0, $parent->clean($_REQUEST['start_row'],"int")),
-                $num_roles);
-        }
-        $data['END_ROW'] = min($data['START_ROW'] + $num_show, $num_roles);
-        if(isset($_REQUEST['start_row'])) {
-            $data['END_ROW'] = max($data['START_ROW'],
-                    min($parent->clean($_REQUEST['end_row'],"int"),$num_roles));
-        }
-        $data["ROLES"] = $role_model->getRoles($data['START_ROW'],
-            $num_show, $search_array);
-        $data['NEXT_START'] = $data['END_ROW'];
-        $data['NEXT_END'] = min($data['NEXT_START'] + $num_show, $num_roles);
-        $data['PREV_START'] = max(0, $data['START_ROW'] - $num_show);
-        $data['PREV_END'] = $data['START_ROW'];
+        $parent->pagingLogic($data, $role_model, "ROLE", "ROLES", 50,
+            $search_array, "");
+
         return $data;
     }
 
@@ -1388,30 +1349,9 @@ class AccountaccessComponent extends Component
             $browse = true;
             $data['browse'] = 'true';
         }
-        $num_groups = $group_model->getGroupsCount($search_array,
-            $current_id, $browse);
-        $data['NUM_TOTAL'] = $num_groups;
-        $num_show = (isset($_REQUEST['num_show']) &&
-            isset($parent->view("admin")->helper("pagingtable")->show_choices[
-                $_REQUEST['num_show']])) ? $_REQUEST['num_show'] : 50;
-        $data['num_show'] = $num_show;
-        $data['START_ROW'] = 0;
-        if(isset($_REQUEST['start_row'])) {
-            $data['START_ROW'] = min(
-                max(0, $parent->clean($_REQUEST['start_row'],"int")),
-                $num_groups);
-        }
-        $data['END_ROW'] = min($data['START_ROW'] + $num_show, $num_groups);
-        if(isset($_REQUEST['start_row'])) {
-            $data['END_ROW'] = max($data['START_ROW'],
-                min($parent->clean($_REQUEST['end_row'],"int"), $num_groups));
-        }
-        $data["GROUPS"] = $group_model->getGroups($data['START_ROW'],
-            $num_show, $search_array, $current_id, $browse);
-        $data['NEXT_START'] = $data['END_ROW'];
-        $data['NEXT_END'] = min($data['NEXT_START'] + $num_show, $num_groups);
-        $data['PREV_START'] = max(0, $data['START_ROW'] - $num_show);
-        $data['PREV_END'] = $data['START_ROW'];
+        $parent->pagingLogic($data, $group_model,
+            "GROUPS G, USER_GROUP UG, USERS O",
+            "GROUPS", 50, $search_array, "", array($current_id, $browse));
         return $data;
     }
 
