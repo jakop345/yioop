@@ -522,14 +522,15 @@ class Model implements CrawlConstants
      *  Gets a range of rows which match the procided search criteria from
      *  $th provided table
      *
-     * @param string $table_name
+     * @param string $tables
      * @param int $limit
      * @param int $num
+     * @param int &$total_rows
      * @param array $search_array
      * @param array $args
      * @return array
      */
-    function getRows($table_names, $limit = 0, $num = 100,
+    function getRows($tables, $limit = 0, $num = 100, &$total,
         $search_array = array(), $args = NULL)
     {
         $db = $this->db;
@@ -548,13 +549,17 @@ class Model implements CrawlConstants
                 $where .= $add_where. $more_conditions;
             }
         }
+        $sql = "SELECT COUNT(*) AS NUM FROM $tables $where";
+        $result = $db->execute($sql);
+        $row = $db->fetchArray($result);
+        $total = $row['NUM'];
         $select_columns = "*";
         if(isset($this->select_callback)) {
             $select_callback = $this->select_callback;
             $select_columns = $this->$select_callback($args);
         }
         $sql = "SELECT $select_columns FROM ".
-            "$table_names $where $order_by $limit";
+            "$tables $where $order_by $limit";
         $result = $db->execute($sql);
         $i = 0;
         $row = array();
@@ -572,35 +577,6 @@ class Model implements CrawlConstants
         }
         unset($rows[$i]); //last one will be null
         return $rows;
-    }
-
-    /**
-     * Returns the number of rows in the table that satisfy the search criteria
-     *
-     * @param string $table_name database table name
-     * @param array $search_array
-     * @return int number of roles
-     */
-    function getCount($table_name, $search_array = array(), $args = NULL)
-    {
-        $db = $this->db;
-        list($where, $order_by) =
-            $this->searchArrayToWhereOrderClauses($search_array);
-        if(isset($this->where_callback)) {
-            $where_callback = $this->where_callback;
-            $more_conditions = $this->$where_callback($args);
-            if($more_conditions) {
-                $add_where = " WHERE ";
-                if($where != "") {
-                    $add_where = " AND ";
-                }
-                $where .= $add_where. $more_conditions;
-            }
-        }
-        $sql = "SELECT COUNT(*) AS NUM FROM $table_name $where";
-        $result = $db->execute($sql);
-        $row = $db->fetchArray($result);
-        return $row['NUM'];
     }
 }
 ?>

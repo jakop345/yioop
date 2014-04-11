@@ -36,7 +36,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 /**
  * Draws the page that allows a user to register for an account
  *
- * @author Mallika Perepa (creator), Chris Pollett
+ * @author Mallika Perepa (creator), Chris Pollett, Akash Patel
  * @package seek_quarry
  * @subpackage view
  */

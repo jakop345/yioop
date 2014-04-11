@@ -67,6 +67,9 @@ class PagingtableHelper extends Helper
      */
     function render($data)
     {
+        if(!isset($data['PAGING'])) {
+            $data['PAGING'] = "";
+        }
         if(MOBILE) {
             $this->mobileTableControls($data);
         } else {
@@ -87,7 +90,8 @@ class PagingtableHelper extends Helper
             "&amp;a=$activity";
         ?>
         <h2><?php e($data['TABLE_TITLE']); ?>&nbsp;&nbsp;<?php
-            if($data['FORM_TYPE'] != 'search'){ ?>
+            if($data['FORM_TYPE'] != 'search' &&
+                    !isset($data['NO_SEARCH'])){ ?>
                 [<a
                 href="<?php e($base_url . '&amp;arg=search');
                 ?>"><?php e(tl('pagingtable_helper_search'));?></a>]<?php
@@ -201,7 +205,8 @@ class PagingtableHelper extends Helper
                 $data['VIEW']->helper("options")->render(
                     "num-show", "num_show",  $this->show_choices,
                     $data['NUM_SHOW'], true);
-                if(!isset($_REQUEST['arg']) || $_REQUEST['arg'] != "search") {?>
+                if( $data['FORM_TYPE'] != "search" &&
+                    !isset($data['NO_SEARCH'])) {?>
                     [<a href="<?php e($base_url . '&amp;arg=search');
                         ?>"><?php e(tl('pagingtable_helper_search'));?></a>]
                 <?php

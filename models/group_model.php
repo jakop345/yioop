@@ -350,8 +350,8 @@ class GroupModel extends Model
     function getGroupById($group_id, $user_id)
     {
         $db = $this->db;
-        $group = $this->getGroups(0, 1, array(
-            array("group_id","=", $group_id, "")), $user_id);
+        $group = $this->getRows("GROUPS G, USER_GROUP UG, USERS O", 0, 1, 
+            $total_rows, array(array("group_id","=", $group_id, "")), $user_id);
         $where = " WHERE ";
         $params = array(":group_id" => $group_id);
         if($user_id != ROOT_ID) {

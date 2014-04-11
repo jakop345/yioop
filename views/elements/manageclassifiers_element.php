@@ -72,8 +72,15 @@ class ManageclassifiersElement extends Element
                 e(tl('manageclassifiers_create_button')) ?></button>
         </div>
         </form>
-        <?php if (!empty($data['classifiers'])) { ?>
-        <h3><?php e(tl('manageclassifiers_available_classifiers')) ?></h3>
+        <?php if (!empty($data['classifiers'])) { 
+        $data['TABLE_TITLE'] = tl('manageclassifiers_available_classifiers');
+        $data['ACTIVITY'] = 'manageClassifiers';
+        $data['VIEW'] = $this->view;
+        $data['NO_FLOAT_TABLE'] = true;
+        $data['FORM_TYPE'] = null;
+        $data['NO_SEARCH'] = true;
+        $this->view->helper("pagingtable")->render($data);
+        ?>
         <table class="classifiers-table">
             <tr>
                 <th><?php e(tl('manageclassifiers_label_col')) ?></th>

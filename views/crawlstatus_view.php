@@ -198,13 +198,16 @@ class CrawlstatusView extends View
         } else {
             e("<p>".tl('crawlstatus_view_no_recent_urls')."</p>");
         }
-        ?>
 
-        <h2><?php e(tl('crawlstatus_view_previous_crawls'))?></h2>
-        <?php
+        $data['TABLE_TITLE'] = tl('crawlstatus_view_previous_crawls');
+        $data['ACTIVITY'] = 'manageCrawls';
+        $data['VIEW'] = $this;
+        $data['NO_FLOAT_TABLE'] = true;
+        $data['FORM_TYPE'] = null;
+        $data['NO_SEARCH'] = true;
+        $this->helper("pagingtable")->render($data);
         if(isset($data['RECENT_CRAWLS']) && count($data['RECENT_CRAWLS']) > 0) {
             ?>
-
             <table class="crawls-table">
             <tr><th><?php e(tl('crawlstatus_view_description'));?></th><th><?php
                 e(tl('crawlstatus_view_timestamp')); ?></th>

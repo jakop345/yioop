@@ -325,7 +325,8 @@ class AdminController extends Controller implements CrawlConstants
                 'CRAWL_TIME');
             usort($data['RECENT_CRAWLS'], "rorderCallback");
         }
-
+        $this->pagingLogic($data, null, 'RECENT_CRAWLS', 'RECENT_CRAWLS',
+            50);
         return $data;
     }
 

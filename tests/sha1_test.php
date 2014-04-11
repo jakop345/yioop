@@ -66,7 +66,7 @@ class Sha1Test extends JavaScriptTest
         <div id="sha1Test">
         </div>
         <head>
-        <script type="text/javascript" src="../scripts/hashcash.js" ></script>
+        <script type="text/javascript" src="../scripts/hashcaptcha.js" ></script>
         <script type="text/javascript">
         var input_array = <?php echo $js_array; ?>;
         var total_test_cases = <?php echo self::NUM_TEST_CASES?>;

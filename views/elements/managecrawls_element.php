@@ -84,7 +84,9 @@ class ManagecrawlsElement
         function crawlStatusUpdate()
         {
             var startUrl = "?c=admin&<?php
-                e(CSRF_TOKEN."=".$data[CSRF_TOKEN]); ?>&a=crawlStatus";
+                e(CSRF_TOKEN."=".$data[CSRF_TOKEN]); ?>&a=crawlStatus<?php
+                e('&num_show='.$data['NUM_SHOW']."&start_row=".
+                    $data['START_ROW']."&end_row=".$data['END_ROW']); ?>";
             var crawlTag = elt('crawlstatus');
             getPage(crawlTag, startUrl);
         }

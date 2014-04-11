@@ -93,12 +93,11 @@ class AccountaccessComponent extends Component
             }
         }
         $data['USERNAME'] = $username;
-        $data['NUM_GROUPS'] = $group_model->getCount(
-            "GROUPS G, USER_GROUP UG, USERS O",array(), array($user_id, false));
         $data['NUM_SHOWN'] = 5;
         $data['GROUPS'] = $group_model->getRows(
             "GROUPS G, USER_GROUP UG, USERS O", 0,
-            $data['NUM_SHOWN'], array(), array($user_id, false));
+            $data['NUM_SHOWN'], $data['NUM_GROUPS'], array(),
+            array($user_id, false));
         $num_shown = count($data['GROUPS']);
         for($i = 0; $i < $num_shown; $i++) {
             $search_array = array(array("group_id", "=",
@@ -561,8 +560,8 @@ class AccountaccessComponent extends Component
                 break;
             }
         }
-        $parent->pagingLogic($data, $user_model, "USERS",
-            "USERS", 50, $search_array, "");
+        $parent->pagingLogic($data, $user_model, "USERS", "USERS", 50,
+            $search_array, "");
         return $data;
     }
     /**
@@ -886,9 +885,8 @@ class AccountaccessComponent extends Component
                 break;
             }
         }
-        $parent->pagingLogic($data, $role_model, "ROLE", "ROLES", 50,
-            $search_array, "");
-
+        $parent->pagingLogic($data, $role_model, "ROLE", "ROLES",
+            50, $search_array, "");
         return $data;
     }
 

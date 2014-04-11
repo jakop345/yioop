@@ -63,7 +63,14 @@ class CrawlComponent extends Component implements CrawlConstants
 
         $data["ELEMENT"] = "managecrawls";
         $data['SCRIPT'] = "doUpdate();";
-
+        $request_fields = array('start_row', 'num_show', 'end_row');
+        $flag = 0;
+        foreach($request_fields as $field) {
+            $data[strtoupper($field)] = isset($_REQUEST[$field]) ? max(0,
+                $parent->clean($_REQUEST[$field], 'int')) :
+                (isset($data['NUM_SHOW']) ? $data['NUM_SHOW'] : $flag * 50);
+            $flag = 1;
+        }
         if(isset($_REQUEST['arg']) &&
             in_array($_REQUEST['arg'], $possible_arguments)) {
 
@@ -73,7 +80,6 @@ class CrawlComponent extends Component implements CrawlConstants
                 UrlParser::isLocalhostUrl($machine_urls[0]))) {
                 $machine_urls = NULL;
             }
-
             switch($_REQUEST['arg'])
             {
                 case "start":
@@ -647,6 +653,8 @@ class CrawlComponent extends Component implements CrawlConstants
         }
 
         $data['classifiers'] = $classifiers;
+        $parent->pagingLogic($data, null, 'classifiers', 'classifiers',
+            10);
         $data['reload'] = false;
         foreach($classifiers as $label => $classifier) {
             if($classifier->finalized == Classifier::FINALIZING) {
