@@ -91,6 +91,10 @@ class Model implements CrawlConstants
      */
     var $edited_page_summaries = NULL;
     /**
+     * @var string
+     */
+    var $from_tables = "MODEL";
+    /**
      * @var array
      */
     var $any_fields = array();
@@ -530,10 +534,11 @@ class Model implements CrawlConstants
      * @param array $args
      * @return array
      */
-    function getRows($tables, $limit = 0, $num = 100, &$total,
+    function getRows($limit = 0, $num = 100, &$total,
         $search_array = array(), $args = NULL)
     {
         $db = $this->db;
+        $tables = $this->from_tables;
         $limit = $db->limitOffset($limit, $num);
         list($where, $order_by) =
             $this->searchArrayToWhereOrderClauses($search_array,

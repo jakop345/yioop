@@ -50,6 +50,11 @@ require_once BASE_DIR."/lib/utility.php";
 class UserModel extends Model
 {
     /**
+     * @var string
+     */
+    var $from_tables = "USERS";
+
+    /**
      *  @var string
      */
     var $where_callback = "userWhereCallback";

@@ -653,7 +653,7 @@ class CrawlComponent extends Component implements CrawlConstants
         }
 
         $data['classifiers'] = $classifiers;
-        $parent->pagingLogic($data, null, 'classifiers', 'classifiers',
+        $parent->pagingLogic($data, 'classifiers', 'classifiers',
             10);
         $data['reload'] = false;
         foreach($classifiers as $label => $classifier) {

@@ -271,7 +271,7 @@ abstract class Controller
     /**
      *
      */
-     function pagingLogic(&$data, $model, $field_or_tables, $output_field,
+     function pagingLogic(&$data, $field_or_model, $output_field,
         $default_show, $search_array = array(), $var_prefix = "", $args = NULL)
      {
         $data_fields = array();
@@ -295,13 +295,13 @@ abstract class Controller
         $data[$d['NUM_SHOW']] = $num_show;
         $data[$d['START_ROW']] = isset($r['start_row']) ?
              max(0, $this->clean($r['start_row'],"int")) : 0;
-        if($model) {
-            $data[$output_field] = $model->getRows($field_or_tables,
+        if(is_object($field_or_model)) {
+            $data[$output_field] = $field_or_model->getRows(
                 $data[$d['START_ROW']], $num_show, $num_rows, $search_array,
                 $args);
         } else {
-            $num_rows = count($data[$field_or_tables]);
-            $data[$output_field] = array_slice($data[$field_or_tables],
+            $num_rows = count($data[$field_or_model]);
+            $data[$output_field] = array_slice($data[$field_or_model],
                 $data[$d['START_ROW']], $num_show);
         }
         $data[$d['START_ROW']] = min($data[$d['START_ROW']], $num_rows);
@@ -376,7 +376,7 @@ abstract class Controller
     }
 
     /**
-     *
+     *  @param string $token_name
      */
      function checkCSRFTime($token_name)
      {

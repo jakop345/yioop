@@ -259,7 +259,7 @@ class BlogmixesComponent extends Component implements CrawlConstants
                 array("status", "=", ACTIVE_STATUS, ""),
                 array("join_date", "=","", "DESC"));
             $groups = $group_model->getRows(
-                "GROUPS G, USER_GROUP UG, USERS O",
+                "database",
                 0, $limit + $results_per_page, $groups_count,
                 $search_array, array($user_id, false));
             $pages = array();
@@ -570,7 +570,7 @@ class BlogmixesComponent extends Component implements CrawlConstants
                 break;
             }
         }
-        $parent->pagingLogic($data, $crawl_model, "CRAWL_MIXES",
+        $parent->pagingLogic($data, $crawl_model,
             "available_mixes", 50, $search_array, "", true);
 
         if(!$can_manage_crawls && isset($_SESSION['its'])) {

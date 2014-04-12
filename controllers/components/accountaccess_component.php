@@ -94,8 +94,7 @@ class AccountaccessComponent extends Component
         }
         $data['USERNAME'] = $username;
         $data['NUM_SHOWN'] = 5;
-        $data['GROUPS'] = $group_model->getRows(
-            "GROUPS G, USER_GROUP UG, USERS O", 0,
+        $data['GROUPS'] = $group_model->getRows(0,
             $data['NUM_SHOWN'], $data['NUM_GROUPS'], array(),
             array($user_id, false));
         $num_shown = count($data['GROUPS']);
@@ -560,7 +559,7 @@ class AccountaccessComponent extends Component
                 break;
             }
         }
-        $parent->pagingLogic($data, $user_model, "USERS", "USERS", 50,
+        $parent->pagingLogic($data, $user_model, "USERS", 50,
             $search_array, "");
         return $data;
     }
@@ -885,7 +884,7 @@ class AccountaccessComponent extends Component
                 break;
             }
         }
-        $parent->pagingLogic($data, $role_model, "ROLE", "ROLES",
+        $parent->pagingLogic($data, $role_model, "ROLES",
             50, $search_array, "");
         return $data;
     }
@@ -1348,7 +1347,6 @@ class AccountaccessComponent extends Component
             $data['browse'] = 'true';
         }
         $parent->pagingLogic($data, $group_model,
-            "GROUPS G, USER_GROUP UG, USERS O",
             "GROUPS", 50, $search_array, "", array($current_id, $browse));
         return $data;
     }

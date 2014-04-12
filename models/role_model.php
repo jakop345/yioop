@@ -51,6 +51,10 @@ class RoleModel extends Model
     /**
      * @var string
      */
+    var $from_tables = "ROLE";
+    /**
+     * @var string
+     */
     var $select_callback = "roleSelectCallback";
 
     /**

@@ -61,6 +61,10 @@ class CrawlModel extends ParallelModel implements CrawlConstants
     /**
      * @var string
      */
+    var $from_tables = "CRAWL_MIXES";
+    /**
+     * @var string
+     */
     var $row_callback = "mixRowCallback";
     /**
      * Used to map between search crawl mix form variables and database columns
