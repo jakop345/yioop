@@ -70,9 +70,7 @@ class SystemComponent extends Component
             "newsmode", "log", "update");
         $data['SCRIPT'] = "doUpdate();";
         $data["leftorright"]=(getLocaleDirection() == 'ltr') ? "right": "left";
-        $data['MACHINES'] = array();
         $data['MACHINE_NAMES'] = array();
-        $urls = array();
         $data['FETCHER_NUMBERS'] = array(
             0 => 0,
             1 => 1,
@@ -85,23 +83,8 @@ class SystemComponent extends Component
             8 => 8,
             16 => 16
         );
-        $machines = $machine_model->getMachineList();
+
         $tmp = tl('system_component_select_machine');
-        $data['DELETABLE_MACHINES'] = array(
-            $tmp => $tmp
-        );
-        $data['REPLICATABLE_MACHINES'] = array(
-            $tmp => $tmp
-        );
-        foreach($machines as $machine) {
-            $data['MACHINE_NAMES'][] = $machine["NAME"];
-            $urls[] = $machine["URL"];
-            $data['DELETABLE_MACHINES'][$machine["NAME"]] = $machine["NAME"];
-            if(!isset($machine["PARENT"]) || $machine["PARENT"] == "") {
-                $data['REPLICATABLE_MACHINES'][$machine["NAME"]]
-                    = $machine["NAME"];
-            }
-        }
 
         if(!isset($_REQUEST["has_queue_server"]) ||
             isset($_REQUEST['is_replica'])) {
@@ -125,7 +108,8 @@ class SystemComponent extends Component
         foreach($request_fields as $field => $type) {
             if(isset($_REQUEST[$field])) {
                 $r[$field] = $parent->clean($_REQUEST[$field], $type);
-                if($field == "url" && $r[$field][strlen($r[$field])-1]
+                if($field == "url" && isset($r[$field][strlen($r[$field])-1]) &&
+                    $r[$field][strlen($r[$field])-1]
                     != "/") {
                     $r[$field] .= "/";
                 }
@@ -142,9 +126,10 @@ class SystemComponent extends Component
                 $r["num_fetchers"] = 0;
             }
         }
-        $machine_exists = (isset($r["name"]) && in_array($r["name"],
-            $data['MACHINE_NAMES']) ) || (isset($r["url"]) &&
-            in_array($r["url"], $urls));
+        $machine_exists = (isset($r["name"]) && 
+            $machine_model->checkMachineExists("NAME", $r["name"]) ) ||
+            (isset($r["url"]) && $machine_model->checkMachineExists("URL",
+            $r["url"]) );
 
         if(isset($_REQUEST['arg']) &&
             in_array($_REQUEST['arg'], $possible_arguments)) {
@@ -174,13 +159,16 @@ class SystemComponent extends Component
                 break;
 
                 case "deletemachine":
-                    if(!isset($r["name"]) ||
-                        !in_array($r["name"], $data['MACHINE_NAMES'])) {
+                    if(!$machine_exists) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('system_component_machine_doesnt_exists').
                             "</h1>');";
                     } else {
-                        $machines = $machine_model->getMachineStatuses();
+                        $machines = $machine_model->getRows(0, 1,
+                            $total_rows, array(
+                                array("name", "=", $r["name"], "")));
+                        $machines = 
+                            $machine_model->getMachineStatuses($machines);
                         $service_in_use = false;
                         foreach($machines as $machine) {
                             if($machine['NAME'] == $r["name"]) {
@@ -198,14 +186,6 @@ class SystemComponent extends Component
                             break;
                         }
                         $machine_model->deleteMachine($r["name"]);
-                        $tmp_array = array($r["name"]);
-                        $diff =
-                            array_diff($data['MACHINE_NAMES'],  $tmp_array);
-                        $data['MACHINE_NAMES'] = array_merge($diff);
-                        $tmp_array = array($r["name"] => $r["name"]);
-                        $diff =
-                            array_diff($data['DELETABLE_MACHINES'], $tmp_array);
-                        $data['DELETABLE_MACHINES'] = array_merge($diff);
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('system_component_machine_deleted')."</h1>');";
                     }
@@ -338,6 +318,8 @@ class SystemComponent extends Component
 
             }
         }
+        $parent->pagingLogic($data, $machine_model, "MACHINE",
+            DEFAULT_ADMIN_PAGING_NUM);
         if(!isset($_REQUEST['arg']) || $_REQUEST['arg'] != 'log') {
             $data['SCRIPT'] .= "toggleReplica(false);";
         }

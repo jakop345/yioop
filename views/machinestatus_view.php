@@ -85,12 +85,23 @@ class MachinestatusView extends View
         </form>
         </div><br />
         <?php
+        $data['TABLE_TITLE'] = "";
+        $data['ACTIVITY'] = 'manageMachines';
+        $data['VIEW'] = $this;
+        $data['FORM_TYPE'] = null;
+        $data['NO_SEARCH'] = true;
+        $data['NO_FLOAT_TABLE'] = true;
+        $this->helper("pagingtable")->render($data);
+
         foreach($data['MACHINES'] as $k => $m) {
             if(!is_numeric($k)) {
                 continue;
             }
             ?>
             <div class="box">
+            <div class="float-opposite" >[<a href='<?php
+                e($base_url . "deletemachine&amp;name={$m['NAME']}"); ?>'><?php
+                e(tl('machinestatus_view_delete'));?></a>]</div>
             <h3 class="nomargin"><?php e($m['NAME']);?></h3>
             <p><?php e($m['URL']);
                 $on_queue_server = $base_url . "update&amp;name={$m['NAME']}".

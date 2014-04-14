@@ -326,7 +326,7 @@ class AdminController extends Controller implements CrawlConstants
             usort($data['RECENT_CRAWLS'], "rorderCallback");
         }
         $this->pagingLogic($data, 'RECENT_CRAWLS', 'RECENT_CRAWLS',
-            50);
+            DEFAULT_ADMIN_PAGING_NUM);
         return $data;
     }
 
@@ -344,7 +344,8 @@ class AdminController extends Controller implements CrawlConstants
     {
         $data = array();
         $data['REFRESH'] = "machinestatus";
-        $data['MACHINES'] = $this->model("machine")->getMachineStatuses();
+        $this->pagingLogic($data, $this->model("machine"), 'MACHINES',
+            DEFAULT_ADMIN_PAGING_NUM);
         $profile =  $this->model("profile")->getProfile(WORK_DIRECTORY);
         $data['NEWS_MODE'] = isset($profile['NEWS_MODE']) ?
             $profile['NEWS_MODE']: "";

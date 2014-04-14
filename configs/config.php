@@ -569,7 +569,11 @@ define ('MAX_QUERY_CACHE_TIME', 2 * 86400); //two days
 /** Minimum time a set of results can stay in query cache before it is
     invalidated */
 define ('MIN_QUERY_CACHE_TIME', 3600); //one hour
-
+/**
+ * Default number of items to page through for users,roles, mixes, etc
+ * on the admin screens
+ */
+define ('DEFAULT_ADMIN_PAGING_NUM', 50);
 /** Maximum number of bytes that the file that the suggest-a-url form
  *  send data to can be.
  */

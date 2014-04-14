@@ -82,11 +82,9 @@ class ManagemachinesElement extends Element
                 onclick="toggleReplica(this.checked)" /></td></tr>
          <tr id="m1"><th><label for="parent-machine-name"><?php
             e(tl('managemachines_element_parent_name'))?></label></th>
-            <td><?php $this->view->helper("options")->render(
-                "parent-machine-name", "parent",
-                $data['REPLICATABLE_MACHINES'],
-                tl('system_component_select_machine'));
-                ?></td>
+            <td><input type="text" name="parent" id="parent-machine-name"
+                 maxlength="80" class="wide-field" />
+            </td>
         </tr>
         <tr id="m2"><th><label for="queue-box"><?php
             e(tl('managemachines_element_has_queueserver'))?></label></th>
@@ -103,26 +101,6 @@ class ManagemachinesElement extends Element
         </table>
         </form>
 
-        <h2><?php e(tl('managemachines_element_delete_machine'))?></h2>
-        <form id="deleteMachineForm" method="post" action=''>
-        <input type="hidden" name="c" value="admin" />
-        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
-            e($data[CSRF_TOKEN]); ?>" />
-        <input type="hidden" name="a" value="manageMachines" />
-        <input type="hidden" name="arg" value="deletemachine" />
-        <table class="name-table">
-         <tr><th><label for="delete-machine-name"><?php
-            e(tl('managemachines_element_machine_name'))?></label></th>
-            <td><?php $this->view->helper("options")->render(
-                "delete-machine-name", "name",
-                $data['DELETABLE_MACHINES'],
-                tl('system_component_select_machine'));
-                ?></td><td><button class="button-box" type="submit"><?php
-                e(tl('managemachines_element_submit')); ?></button></td>
-        </tr>
-        </table>
-        </form>
-
         <h2><?php e(tl('managemachines_element_machine_info'))?></h2>
         <div id="machinestatus" >
         <p class="red"><?php
@@ -133,7 +111,9 @@ class ManagemachinesElement extends Element
         function machineStatusUpdate()
         {
             var startUrl = "?c=admin&<?php
-                e(CSRF_TOKEN."=".$data[CSRF_TOKEN]); ?>&a=machineStatus";
+                e(CSRF_TOKEN."=".$data[CSRF_TOKEN]); ?>&a=machineStatus<?php
+                e('&num_show='.$data['NUM_SHOW']."&start_row=".
+                    $data['START_ROW']."&end_row=".$data['END_ROW']); ?>";
             var machineTag = elt('machinestatus');
             getPage(machineTag, startUrl);
         }

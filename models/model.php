@@ -581,6 +581,12 @@ class Model implements CrawlConstants
             }
         }
         unset($rows[$i]); //last one will be null
+        if(isset($this->post_query_callback) &&
+            $this->post_query_callback != "") {
+            $post_callback = $this->post_query_callback;
+            $rows = $this->$post_callback($rows);
+        }
+
         return $rows;
     }
 }

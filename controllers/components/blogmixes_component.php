@@ -570,8 +570,8 @@ class BlogmixesComponent extends Component implements CrawlConstants
                 break;
             }
         }
-        $parent->pagingLogic($data, $crawl_model,
-            "available_mixes", 50, $search_array, "", true);
+        $parent->pagingLogic($data, $crawl_model, "available_mixes",
+            DEFAULT_ADMIN_PAGING_NUM, $search_array, "", true);
 
         if(!$can_manage_crawls && isset($_SESSION['its'])) {
             $crawl_time = $_SESSION['its'];

@@ -559,8 +559,8 @@ class AccountaccessComponent extends Component
                 break;
             }
         }
-        $parent->pagingLogic($data, $user_model, "USERS", 50,
-            $search_array, "");
+        $parent->pagingLogic($data, $user_model, "USERS", 
+            DEFAULT_ADMIN_PAGING_NUM, $search_array, "");
         return $data;
     }
     /**
@@ -885,7 +885,7 @@ class AccountaccessComponent extends Component
             }
         }
         $parent->pagingLogic($data, $role_model, "ROLES",
-            50, $search_array, "");
+            DEFAULT_ADMIN_PAGING_NUM, $search_array, "");
         return $data;
     }
 
@@ -1347,7 +1347,8 @@ class AccountaccessComponent extends Component
             $data['browse'] = 'true';
         }
         $parent->pagingLogic($data, $group_model,
-            "GROUPS", 50, $search_array, "", array($current_id, $browse));
+            "GROUPS", DEFAULT_ADMIN_PAGING_NUM, $search_array, "",
+            array($current_id, $browse));
         return $data;
     }
 

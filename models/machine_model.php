@@ -50,65 +50,17 @@ require_once BASE_DIR."/lib/fetch_url.php";
  */
 class MachineModel extends Model
 {
+    /**
+     * @var string
+     */
+    var $from_tables = "MACHINE";
 
     /**
-     *  Returns all the machine names stored in the DB
-     *
-     *  @return array machine names
+     * @var string
      */
-    function getMachineList()
-    {
-        $machines = array();
+    var $post_query_callback = "getMachineStatuses";
 
-        $sql = "SELECT * FROM MACHINE ORDER BY NAME DESC";
-
-        $result = $this->db->execute($sql);
-        $i = 0;
-        while($machines[$i] = $this->db->fetchArray($result)) {
-            $i++;
-        }
-        unset($machines[$i]); //last one will be null
-
-        return $machines;
-
-    }
-
-    /**
-     * Gets a range of the machine names stored in the DB
-     *
-     * @param int $limit
-     * @param int $num
-     * @return array
-     */
-    function getMachines($limit = 0, $num = 10)
-    {
-        $db = $this->db;
-        $machines = array();
-        $limit = $db->limitOffset($limit, $num);
-        $sql = "SELECT * FROM MACHINE ORDER BY NAME DESC $limit";
-        $result = $db->execute($sql);
-        $i = 0;
-        while($machines[$i] = $db->fetchArray($result)) {
-            $i++;
-        }
-        unset($machines[$i]); //last one will be null
-        return $machines;
-    }
-
-    /**
-     * Returns the number of machines in the user table
-     *
-     * @param array $search_array
-     * @return int number of roles
-     */
-    function getMachineCount()
-    {
-        $db = $this->db;
-        $sql = "SELECT COUNT(*) AS NUM FROM MACHINE";
-        $result = $db->execute($sql);
-        $row = $db->fetchArray($result);
-        return $row['NUM'];
-    }
+    var $search_table_column_map = array("name" => "NAME");
 
     /**
      *  Returns urls for all the queue_servers stored in the DB
@@ -148,8 +100,31 @@ class MachineModel extends Model
         return $machines[$crawl_time];
     }
 
+
     /**
-     *  Add a rolename to the database using provided string
+     *   Check if there is a machine with $column equal to value
+     *
+     *   @param string $column to use to look up machine (either name or url)
+     *   @param string $value for that field
+     *   @return bool whether or not has role
+     */
+    function checkMachineExists($field, $value)
+    {
+        $db = $this->db;
+        $params = array($value);
+        $sql = "SELECT COUNT(*) AS NUM FROM MACHINE WHERE
+            $field=? ";
+        $result = $db->execute($sql, $params);
+        if(!$row = $db->fetchArray($result) ) {
+            return false;
+        }
+        if($row['NUM'] <= 0) {
+            return false;
+        }
+        return true;
+    }
+    /**
+     *  Add a machine to the database using provided string
      *
      *  @param string $name  the name of the machine to be added
      *  @param string $url the url of this machine
@@ -187,12 +162,12 @@ class MachineModel extends Model
      * Returns the statuses of machines in the machine table of their
      * fetchers and queue_server as well as the name and url's of these machines
      *
+     * @param array $machines an array of machines to check the status for
      * @return array  a list of machines, together with all their properties
      *  and the statuses of their fetchers and queue_servers
      */
-    function getMachineStatuses()
+    function getMachineStatuses($machines = array())
     {
-        $machines = $this->getMachineList();
         $num_machines = count($machines);
         $time = time();
         $session = md5($time . AUTH_KEY);

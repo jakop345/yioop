@@ -68,7 +68,8 @@ class CrawlComponent extends Component implements CrawlConstants
         foreach($request_fields as $field) {
             $data[strtoupper($field)] = isset($_REQUEST[$field]) ? max(0,
                 $parent->clean($_REQUEST[$field], 'int')) :
-                (isset($data['NUM_SHOW']) ? $data['NUM_SHOW'] : $flag * 50);
+                (isset($data['NUM_SHOW']) ? $data['NUM_SHOW'] :
+                $flag * DEFAULT_ADMIN_PAGING_NUM);
             $flag = 1;
         }
         if(isset($_REQUEST['arg']) &&
