@@ -167,8 +167,6 @@ class SystemComponent extends Component
                         $machines = $machine_model->getRows(0, 1,
                             $total_rows, array(
                                 array("name", "=", $r["name"], "")));
-                        $machines = 
-                            $machine_model->getMachineStatuses($machines);
                         $service_in_use = false;
                         foreach($machines as $machine) {
                             if($machine['NAME'] == $r["name"]) {
