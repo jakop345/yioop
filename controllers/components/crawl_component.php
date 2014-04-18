@@ -556,10 +556,12 @@ class CrawlComponent extends Component implements CrawlConstants
         $parent = $this->parent;
         $crawl_model = $parent->model("crawl");
         $possible_arguments = array('createclassifier', 'editclassifier',
-            'finalizeclassifier', 'deleteclassifier');
+            'finalizeclassifier', 'deleteclassifier', 'search');
 
         $data['ELEMENT'] = 'manageclassifiers';
         $data['SCRIPT'] = '';
+        $data['FORM_TYPE'] = '';
+        $search_array = array();
 
         $machine_urls = $parent->model("machine")->getQueueServerUrls();
         $num_machines = count($machine_urls);
@@ -567,23 +569,26 @@ class CrawlComponent extends Component implements CrawlConstants
             UrlParser::isLocalhostUrl($machine_urls[0]))) {
             $machine_urls = NULL;
         }
-
         $data['leftorright'] =
             (getLocaleDirection() == 'ltr') ? 'right': 'left';
 
         $classifiers = Classifier::getClassifierList();
         $start_finalizing = false;
-        if (isset($_REQUEST['arg']) &&
+        if(isset($_REQUEST['arg']) &&
             in_array($_REQUEST['arg'], $possible_arguments)) {
-            $label = $parent->clean($_REQUEST['class_label'], 'string');
-            $label = Classifier::cleanLabel($label);
+            if(isset($_REQUEST['name'])) {
+                $name = $parent->clean($_REQUEST['name'], 'string');
+                $name = Classifier::cleanLabel($name);
+            } else {
+                $name = "";
+            }
             switch ($_REQUEST['arg'])
             {
                 case 'createclassifier':
-                    if (!isset($classifiers[$label])) {
-                        $classifier = new Classifier($label);
+                    if (!isset($classifiers[$name])) {
+                        $classifier = new Classifier($name);
                         Classifier::setClassifier($classifier);
-                        $classifiers[$label] = $classifier;
+                        $classifiers[$name] = $classifier;
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\">".
                             tl('crawl_component_new_classifier').'</h1>\');';
                     } else {
@@ -591,37 +596,7 @@ class CrawlComponent extends Component implements CrawlConstants
                             tl('crawl_component_classifier_exists').
                             '</h1>\');';
                     }
-                    break;
-
-                case 'editclassifier':
-                    if (isset($classifiers[$label])) {
-                        $data['class_label'] = $label;
-                        $this->editClassifier($data, $classifiers,
-                            $machine_urls);
-                    } else {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\">".
-                            tl('crawl_component_no_classifier').
-                            '</h1>\');';
-                    }
-                    break;
-
-                case 'finalizeclassifier':
-                    /*
-                       Finalizing is too expensive to be done directly in the
-                       controller that responds to the web request. Instead, a
-                       daemon is launched to finalize the classifier
-                       asynchronously and save it back to disk when it's done.
-                       In the meantime, a flag is set to indicate the current
-                       finalizing state.
-                     */
-                    CrawlDaemon::start("classifier_trainer", $label, '', -1);
-                    $classifier = $classifiers[$label];
-                    $classifier->finalized = Classifier::FINALIZING;
-                    $start_finalizing = true;
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\">".
-                        tl('crawl_component_finalizing_classifier').
-                        '</h1>\');';
-                    break;
+                break;
 
                 case 'deleteclassifier':
                     /*
@@ -630,10 +605,10 @@ class CrawlComponent extends Component implements CrawlConstants
                        iterate over existing indexes in search of new training
                        examples.
                      */
-                    if (isset($classifiers[$label])) {
-                        unset($classifiers[$label]);
-                        Classifier::deleteClassifier($label);
-                        $mix_name = Classifier::getCrawlMixName($label);
+                    if (isset($classifiers[$name])) {
+                        unset($classifiers[$name]);
+                        Classifier::deleteClassifier($name);
+                        $mix_name = Classifier::getCrawlMixName($name);
                         $mix_time = $crawl_model->getCrawlMixTimestamp(
                             $mix_name);
                         if ($mix_time) {
@@ -649,13 +624,49 @@ class CrawlComponent extends Component implements CrawlConstants
                             tl('crawl_component_no_classifier').
                             '</h1>\');';
                     }
-                    break;
+                break;
+
+                case 'editclassifier':
+                    if (isset($classifiers[$name])) {
+                        $data['class_label'] = $name;
+                        $this->editClassifier($data, $classifiers,
+                            $machine_urls);
+                    } else {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\">".
+                            tl('crawl_component_no_classifier').
+                            '</h1>\');';
+                    }
+                break;
+
+                case 'finalizeclassifier':
+                    /*
+                       Finalizing is too expensive to be done directly in the
+                       controller that responds to the web request. Instead, a
+                       daemon is launched to finalize the classifier
+                       asynchronously and save it back to disk when it's done.
+                       In the meantime, a flag is set to indicate the current
+                       finalizing state.
+                     */
+                    CrawlDaemon::start("classifier_trainer", $name, '', -1);
+                    $classifier = $classifiers[$name];
+                    $classifier->finalized = Classifier::FINALIZING;
+                    $start_finalizing = true;
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\">".
+                        tl('crawl_component_finalizing_classifier').
+                        '</h1>\');';
+                break;
+
+                case 'search':
+                    $search_array = 
+                        $parent->tableSearchRequestHandler($data,
+                        array('name'));
+                break;
             }
         }
 
         $data['classifiers'] = $classifiers;
         $parent->pagingLogic($data, 'classifiers', 'classifiers',
-            10);
+            10, $search_array, "", array('name' => 'class_label'));
         $data['reload'] = false;
         foreach($classifiers as $label => $classifier) {
             if($classifier->finalized == Classifier::FINALIZING) {

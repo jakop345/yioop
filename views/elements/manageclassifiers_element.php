@@ -52,82 +52,75 @@ class ManageclassifiersElement extends Element
      */
     function render($data)
     {
-        $base_url = "?c=admin&amp;a=manageClassifiers&amp;".CSRF_TOKEN."=".
-            $data[CSRF_TOKEN]."&amp;arg=";
         ?>
         <div class="current-activity">
-        <h2><?php e(tl('manageclassifiers_manage_classifiers')) ?></h2>
-        <form id="classifiersForm" method="get" action=''>
-        <input type="hidden" name="c" value="admin" />
-        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
-            e($data[CSRF_TOKEN]); ?>" />
-        <input type="hidden" name="a" value="manageClassifiers" />
-        <input type="hidden" name="arg" value="createclassifier" />
-        <div class="top-margin"><label for="class-label"><?php
-            e(tl('manageclassifiers_classifier_name')) ?></label>
-            <input type="text" id="class-label" name="class_label"
-                value="" maxlength="80"
-                    class="wide-field"/>
-            <button class="button-box"  type="submit"><?php
-                e(tl('manageclassifiers_create_button')) ?></button>
-        </div>
-        </form>
-        <?php if (!empty($data['classifiers'])) { 
-        $data['TABLE_TITLE'] = tl('manageclassifiers_available_classifiers');
-        $data['ACTIVITY'] = 'manageClassifiers';
-        $data['VIEW'] = $this->view;
-        $data['NO_FLOAT_TABLE'] = true;
-        $data['FORM_TYPE'] = null;
-        $data['NO_SEARCH'] = true;
-        $this->view->helper("pagingtable")->render($data);
-        ?>
-        <table class="classifiers-table">
-            <tr>
-                <th><?php e(tl('manageclassifiers_label_col')) ?></th>
-                <th><?php e(tl('manageclassifiers_positive_col')) ?></th>
-                <th><?php e(tl('manageclassifiers_negative_col')) ?></th>
-                <th colspan="3"><?php
-                    e(tl('manageclassifiers_actions_col')) ?></th>
-            </tr>
-        <?php foreach ($data['classifiers'] as $label => $classifier) { ?>
-            <tr>
-                <td><b><?php e($label) ?></b><br />
-                    <small><?php e(date("d M Y H:i:s",
-                        $classifier->timestamp)) ?></small>
-                </td>
-                <td><?php e($classifier->positive) ?></td>
-                <td><?php e($classifier->negative) ?></td>
-                <td><a href="<?php e($base_url)
-                    ?>editclassifier&amp;class_label=<?php
-                    e($label) ?>"><?php
-                        e(tl('manageclassifiers_edit')) ?></a></td>
-                <td><?php
-                if ($classifier->finalized == Classifier::FINALIZED) {
-                    e(tl('manageclassifiers_finalized'));
-                } else if ($classifier->finalized == Classifier::UNFINALIZED) {
-                    if ($classifier->total > 0) {
-                        ?><a href="<?php e($base_url)
-                        ?>finalizeclassifier&amp;class_label=<?php
+        <?php
+        if($data['FORM_TYPE'] == "search") {
+            $this->renderSearchForm($data);
+        } else {
+            $this->renderClassifierForm($data);
+        }
+        if (!empty($data['classifiers'])) {
+            $data['TABLE_TITLE'] = 
+                tl('manageclassifiers_available_classifiers');
+            $data['ACTIVITY'] = 'manageClassifiers';
+            $data['VIEW'] = $this->view;
+            $data['NO_FLOAT_TABLE'] = true;
+            $this->view->helper("pagingtable")->render($data);
+            ?>
+            <table class="classifiers-table">
+                <tr>
+                    <th><?php e(tl('manageclassifiers_label_col')) ?></th>
+                    <th><?php e(tl('manageclassifiers_positive_col')) ?></th>
+                    <th><?php e(tl('manageclassifiers_negative_col')) ?></th>
+                    <th colspan="3"><?php
+                        e(tl('manageclassifiers_actions_col')) ?></th>
+                </tr>
+                <?php
+                foreach ($data['classifiers'] as $label => $classifier) { ?>
+                <tr>
+                    <td><b><?php e($label) ?></b><br />
+                        <small><?php e(date("d M Y H:i:s",
+                            $classifier->timestamp)) ?></small>
+                    </td>
+                    <td><?php e($classifier->positive) ?></td>
+                    <td><?php e($classifier->negative) ?></td>
+                    <td><a href="<?php e($base_url)
+                        ?>editclassifier&amp;name=<?php
                         e($label) ?>"><?php
-                            e(tl('manageclassifiers_finalize')) ?></a><?php
-                    } else {
-                        e(tl('manageclassifiers_finalize'));
+                            e(tl('manageclassifiers_edit')) ?></a></td>
+                    <td><?php
+                    if ($classifier->finalized == Classifier::FINALIZED) {
+                        e(tl('manageclassifiers_finalized'));
+                    } else if ($classifier->finalized == 
+                        Classifier::UNFINALIZED) {
+                        if ($classifier->total > 0) {
+                            ?><a href="<?php e($base_url)
+                            ?>finalizeclassifier&amp;name=<?php
+                            e($label) ?>"><?php
+                                e(tl('manageclassifiers_finalize')) ?></a><?php
+                        } else {
+                            e(tl('manageclassifiers_finalize'));
+                        }
+                    } else if($classifier->finalized == Classifier::FINALIZING){
+                        e("<span class='red'>".
+                            tl('manageclassifiers_finalizing')."</span>");
                     }
-                } else if ($classifier->finalized == Classifier::FINALIZING) {
-                    e("<span class='red'>".tl('manageclassifiers_finalizing').
-                      "</span>");
-                }
-                ?></td>
-                <td><a href="<?php e($base_url)
-                    ?>deleteclassifier&amp;class_label=<?php
-                    e($label) ?>"><?php
-                        e(tl('manageclassifiers_delete')) ?></a></td>
-            </tr>
-        <?php } // end foreach over classifiers ?>
-        </table>
-        <?php } // endif for available classifiers ?>
+                    ?></td>
+                    <td><a href="<?php e($base_url)
+                        ?>deleteclassifier&amp;name=<?php
+                        e($label) ?>"><?php
+                            e(tl('manageclassifiers_delete')) ?></a></td>
+                </tr>
+            <?php } // end foreach over classifiers ?>
+            </table>
+            <?php
+            } // endif for available classifiers 
+            ?>
         </div>
-        <?php if($data['reload']) { ?>
+        <?php
+        if($data['reload']) { 
+            ?>
             <script type="text/javascript">
             var sec = 1000;
             function classifierUpdate()
@@ -138,9 +131,50 @@ class ManageclassifiersElement extends Element
             }
             setTimeout(classifierUpdate, 5 * sec);
             </script>
-        <?php
-        } ?>
-    <?php
+            <?php
+        }
     }
+    /**
+     *
+     */
+     function renderClassifierForm($data)
+     {
+        $base_url = "?c=admin&amp;a=manageClassifiers&amp;".CSRF_TOKEN."=".
+            $data[CSRF_TOKEN]."&amp;arg=";
+        ?>
+        <h2><?php e(tl('manageclassifiers_manage_classifiers')) ?></h2>
+        <form id="classifiersForm" method="get" action=''>
+        <input type="hidden" name="c" value="admin" />
+        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
+            e($data[CSRF_TOKEN]); ?>" />
+        <input type="hidden" name="a" value="manageClassifiers" />
+        <input type="hidden" name="arg" value="createclassifier" />
+        <div class="top-margin"><label for="class-label"><?php
+            e(tl('manageclassifiers_classifier_name')) ?></label>:
+            <input type="text" id="class-label" name="name"
+                value="" maxlength="80"
+                    class="wide-field"/>
+            <button class="button-box"  type="submit"><?php
+                e(tl('manageclassifiers_create_button')) ?></button>
+        </div>
+        </form>
+        <?php
+     }
+    /**
+     *
+     */
+     function renderSearchForm($data)
+     {
+        $controller = "admin";
+        $activity = "manageClassifiers";
+        $view = $this->view;
+        $title = tl('manageclassifiers_element_search');
+        $return_form_name = tl('manageclassifiers_element_create_form');
+        $fields = array(
+            tl('manageclassifiers_classifier_name') => "name",
+        );
+        $view->helper("searchtable")->render($data, $controller, $activity,
+                $view, $title, $return_form_name, $fields);
+     }
 }
 ?>

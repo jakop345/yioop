@@ -301,7 +301,62 @@ abstract class Controller
                 $args);
         } else {
             $num_rows = count($data[$field_or_model]);
-            $data[$output_field] = array_slice($data[$field_or_model],
+            if($search_array != array()) {
+                $out_data = array();
+                foreach($data[$field_or_model] as $name => $field_data) {
+                    $checks_passed = true;
+                    foreach($search_array as $search_data) {
+                        list($column_name, $comparison, $search_value, $sort) =
+                            $search_data;
+                        if($search_value == "") {continue; }
+                        if(isset($args[$column_name])) {
+                            $column_name = $args[$column_name];
+                        }
+                        $row_value = is_object($field_data) ? 
+                            $field_data->$column_name:
+                            $field_data[$column_name];
+                        $cmp = strcmp($search_value, $row_value);
+                        if(($cmp == 0 && $comparison == "=") ||
+                            ($cmp != 0 && $comparison == "!=")
+                            ) {
+                            continue;
+                        }
+                        $pos = strpos($row_value, $search_value);
+                        $len_row = strlen($row_value);
+                        $len_search = strlen($search_value);
+                        if(($comparison == "CONTAINS" && $pos !== false) ||
+                            ($comparison == "BEGINS WITH" && $pos === 0) ||
+                            ($comparison == "ENDS WITH" && $pos === $len_row -
+                            $len_search)) {
+                            continue;
+                        }
+                        $checks_passed = false;
+                        break;
+                    }
+                    if($checks_passed) {
+                        $out_data[$name] = $field_data;
+                    }
+                }
+                foreach($search_array as $search_data) {
+                    list($column_name, $comparison, $search_value, $sort) =
+                        $search_data;
+                    if($sort == "NONE") { continue; }
+                    if(isset($args[$column_name])) {
+                        $column_name = $args[$column_name];
+                    }
+                    $values = array();
+                    foreach($out_data as $name => $field_data) {
+                        $values[$name] = is_object($field_data) ? 
+                            $field_data->$column_name:
+                            $field_data[$column_name];
+                    }
+                    $sort = ($sort=="DESC") ? SORT_DESC: SORT_ASC;
+                    array_multisort($values, $sort, $out_data);
+                }
+            } else {
+                $out_data = $data[$field_or_model];
+            }
+            $data[$output_field] = array_slice($out_data,
                 $data[$d['START_ROW']], $num_show);
         }
         $data[$d['START_ROW']] = min($data[$d['START_ROW']], $num_rows);

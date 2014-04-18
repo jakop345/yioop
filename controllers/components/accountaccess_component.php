@@ -670,6 +670,28 @@ class AccountaccessComponent extends Component
 
             switch($_REQUEST['arg'])
             {
+                case "addactivity":
+                    $data['FORM_TYPE'] = "editrole";
+                    if(($role_id = $role_model->getRoleId($name)) <= 0) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('accountaccess_component_rolename_doesnt_exists'
+                            ). "</h1>')";
+                    } else if(!in_array($select_activity, $activity_ids)) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl(
+                            'accountaccess_component_activityname_doesnt_exists'
+                            ). "</h1>')";
+                    } else {
+                        $role_model->addActivityRole(
+                            $role_id, $select_activity);
+                        unset($data['AVAILABLE_ACTIVITIES'][$select_activity]);
+                        $data['ROLE_ACTIVITIES'] =
+                            $role_model->getRoleActivities($role_id);
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('accountaccess_component_activity_added').
+                            "</h1>')";
+                    }
+                break;
                 case "addrole":
                     if($name != "" && $role_model->getRoleId($name) > 0) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
@@ -684,7 +706,30 @@ class AccountaccessComponent extends Component
                    }
                    $data['CURRENT_ROLE']['name'] = "";
                 break;
-
+                case "deleteactivity":
+                   $data['FORM_TYPE'] = "editrole";
+                   if(($role_id = $role_model->getRoleId($name)) <= 0) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('accountaccess_component_rolename_doesnt_exists'
+                            ). "</h1>')";
+                    } else if(!in_array($select_activity, $activity_ids)) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl(
+                            'accountaccess_component_activityname_doesnt_exists'
+                            ). "</h1>')";
+                    } else {
+                        $role_model->deleteActivityRole(
+                            $role_id, $select_activity);
+                        $data['ROLE_ACTIVITIES'] =
+                            $role_model->getRoleActivities($role_id);
+                        $data['AVAILABLE_ACTIVITIES'][$select_activity] =
+                            $activity_names[$select_activity];
+                        $data['SELECT_ACTIVITY'] = -1;
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('accountaccess_component_activity_deleted').
+                            "</h1>')";
+                    }
+                break;
                 case "deleterole":
                     if(($role_id = $role_model->getRoleId($name)) <= 0) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
@@ -698,7 +743,6 @@ class AccountaccessComponent extends Component
                     }
                     $data['CURRENT_ROLE']['name'] = "";
                 break;
-
                 case "editrole":
                     $data['FORM_TYPE'] = "editrole";
                     $role = false;
@@ -734,54 +778,6 @@ class AccountaccessComponent extends Component
                     $search_array = 
                         $parent->tableSearchRequestHandler($data,
                         array('name'));
-                break;
-
-                case "addactivity":
-                    $data['FORM_TYPE'] = "editrole";
-                    if(($role_id = $role_model->getRoleId($name)) <= 0) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('accountaccess_component_rolename_doesnt_exists'
-                            ). "</h1>')";
-                    } else if(!in_array($select_activity, $activity_ids)) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl(
-                            'accountaccess_component_activityname_doesnt_exists'
-                            ). "</h1>')";
-                    } else {
-                        $role_model->addActivityRole(
-                            $role_id, $select_activity);
-                        unset($data['AVAILABLE_ACTIVITIES'][$select_activity]);
-                        $data['ROLE_ACTIVITIES'] =
-                            $role_model->getRoleActivities($role_id);
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('accountaccess_component_activity_added').
-                            "</h1>')";
-                    }
-                break;
-
-                case "deleteactivity":
-                   $data['FORM_TYPE'] = "editrole";
-                   if(($role_id = $role_model->getRoleId($name)) <= 0) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('accountaccess_component_rolename_doesnt_exists'
-                            ). "</h1>')";
-                    } else if(!in_array($select_activity, $activity_ids)) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl(
-                            'accountaccess_component_activityname_doesnt_exists'
-                            ). "</h1>')";
-                    } else {
-                        $role_model->deleteActivityRole(
-                            $role_id, $select_activity);
-                        $data['ROLE_ACTIVITIES'] =
-                            $role_model->getRoleActivities($role_id);
-                        $data['AVAILABLE_ACTIVITIES'][$select_activity] =
-                            $activity_names[$select_activity];
-                        $data['SELECT_ACTIVITY'] = -1;
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('accountaccess_component_activity_deleted').
-                            "</h1>')";
-                    }
                 break;
             }
         }
